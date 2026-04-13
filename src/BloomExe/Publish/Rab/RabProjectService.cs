@@ -36,8 +36,8 @@ namespace Bloom.Publish.Rab
         private const string kDefaultAlias = "bloomkey";
         private const string kWebSocketContext = RabPublishApi.kWebSocketContext;
         private const string kBloomOwnedRabToolchainFolderName = "ReadingAppBuilder";
-        private const string kDefaultRabInstallDir =
-            @"C:\Program Files (x86)\SIL\Reading App Builder";
+        private const string kRabInstallFolderParentName = "SIL";
+        private const string kBloomRabInstallFolderName = "Reading App Builder for Bloom";
         private const string kRabRegistrySubKey = @"Software\SIL\Reading App Builder";
         private const string kBloomRabRegistrySubKey =
             @"Software\SIL\Reading App Builder for Bloom";
@@ -2173,7 +2173,7 @@ namespace Bloom.Publish.Rab
 
         internal virtual IReadOnlyList<string> GetRabRegistrySubKeys()
         {
-            return new[] { kRabRegistrySubKey, kBloomRabRegistrySubKey };
+            return new[] { kBloomRabRegistrySubKey, kRabRegistrySubKey };
         }
 
         internal static bool IsRabSetupInstallerFileName(string fileName)
@@ -2366,18 +2366,21 @@ namespace Bloom.Publish.Rab
 
         internal virtual string BuildRabInstallerArguments(string logPath)
         {
-            return string.Join(
-                " ",
-                new[]
-                {
-                    "/VERYSILENT",
-                    "/SUPPRESSMSGBOXES",
-                    "/NORESTART",
-                    "/SP-",
-                    $"/LANG={kRabSetupLanguage}",
-                    $"/LOG={QuoteArgument(logPath)}",
-                }
-            );
+            var arguments = new List<string>
+            {
+                "/VERYSILENT",
+                "/SUPPRESSMSGBOXES",
+                "/NORESTART",
+                "/SP-",
+                $"/LANG={kRabSetupLanguage}",
+                $"/LOG={QuoteArgument(logPath)}",
+            };
+
+            var installDir = GetDefaultRabInstallDir();
+            if (!string.IsNullOrWhiteSpace(installDir))
+                arguments.Add($"/DIR={QuoteArgument(installDir)}");
+
+            return string.Join(" ", arguments);
         }
 
         internal virtual string GetRabJdkInstallFolder()
@@ -3225,7 +3228,24 @@ namespace Bloom.Publish.Rab
 
         internal virtual string GetDefaultRabInstallDir()
         {
-            return kDefaultRabInstallDir;
+            var nativeProgramFiles = GetNativeProgramFilesDirectory();
+            if (string.IsNullOrWhiteSpace(nativeProgramFiles))
+                return null;
+
+            return Path.Combine(
+                nativeProgramFiles,
+                kRabInstallFolderParentName,
+                kBloomRabInstallFolderName
+            );
+        }
+
+        internal virtual string GetNativeProgramFilesDirectory()
+        {
+            var nativeProgramFiles = Environment.GetEnvironmentVariable("ProgramW6432");
+            if (!string.IsNullOrWhiteSpace(nativeProgramFiles))
+                return nativeProgramFiles;
+
+            return Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         }
 
         internal virtual string GetRabRegistryValue(string valueName)
@@ -3257,10 +3277,14 @@ namespace Bloom.Publish.Rab
         private string GetRabNotFoundMessage()
         {
             var version = GetRabRegistryValue("Version");
+            var defaultInstallDir = GetDefaultRabInstallDir();
+            var installLocation = string.IsNullOrWhiteSpace(defaultInstallDir)
+                ? "the expected install location"
+                : defaultInstallDir;
             if (string.IsNullOrWhiteSpace(version))
-                return $"Bloom could not find Reading App Builder at {GetDefaultRabInstallDir()}.";
+                return $"Bloom could not find Reading App Builder at {installLocation}.";
 
-            return $"Bloom could not find Reading App Builder at {GetDefaultRabInstallDir()} (registry reports version {version}).";
+            return $"Bloom could not find Reading App Builder at {installLocation} (registry reports version {version}).";
         }
 
         internal virtual string FindAdbPath()
