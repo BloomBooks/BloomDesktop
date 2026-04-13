@@ -4189,6 +4189,36 @@
         <target xml:lang="pt-PT" state="final">Publicando</target>
         <note>This is shown while Bloom is sharing a book over wifi, over a usb cable, or uploading. </note>
       </trans-unit>
+      <trans-unit id="BookGridSetupDialog.Title">
+        <source xml:lang="en">Book Grid Setup</source>
+        <target xml:lang="pt-PT" state="needs-translation">Book Grid Setup</target>
+        <note>ID: BookGridSetupDialog.Title</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.BooksInCollection">
+        <source xml:lang="en">Books in this Collection</source>
+        <target xml:lang="pt-PT" state="needs-translation">Books in this Collection</target>
+        <note>ID: BookGridSetup.BooksInCollection</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.AddBook">
+        <source xml:lang="en">Add Book →</source>
+        <target xml:lang="pt-PT" state="needs-translation">Add Book →</target>
+        <note>ID: BookGridSetup.AddBook</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.AddAllBooks">
+        <source xml:lang="en">Add All Books →</source>
+        <target xml:lang="pt-PT" state="needs-translation">Add All Books →</target>
+        <note>ID: BookGridSetup.AddAllBooks</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.LinksInGrid">
+        <source xml:lang="en">Links in Grid (%0)</source>
+        <target xml:lang="pt-PT" state="needs-translation">Links in Grid (%0)</target>
+        <note>ID: BookGridSetup.LinksInGrid</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.BooksInApp" translate="no">
+        <source xml:lang="en">Books in App (%0)</source>
+        <target xml:lang="pt-PT" state="needs-translation">Books in App (%0)</target>
+        <note>ID: BookGridSetup.BooksInApp</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Common.StopPublishing" approved="yes">
         <source xml:lang="en">Stop Publishing</source>
         <target xml:lang="pt-PT" state="final">Parar Publicação</target>
