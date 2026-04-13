@@ -1,7 +1,7 @@
 param(
     [string[]]$SourcePaths = @(
-        "C:\Users\hatto\Downloads\bloom-ai-9n6bi2m.png",
-        "C:\Users\hatto\Downloads\bloom-ai-zc7in7e.png"
+        "DistFiles\appbuilder-icons-old\bloom-ai2-01-open-book-stars.png",
+        "DistFiles\appbuilder-icons-old\bloom-ai2-19-rocket-book.png"
     ),
     [string]$OutputRoot = "output\copilot-verify\appbuilder-icon-samples",
     [int]$CanvasSize = 512,
@@ -246,7 +246,7 @@ foreach ($sourcePath in $SourcePaths) {
 
     $sourceBitmap = [System.Drawing.Bitmap]::new($sourcePath)
     try {
-        $regions = Get-Regions -bitmap $sourceBitmap -threshold $BackgroundThreshold -gapTolerance $BandGapTolerance -minWidth $MinRegionWidth -minHeight $MinRegionHeight -padding $BoxPadding
+        $regions = @(Get-Regions -bitmap $sourceBitmap -threshold $BackgroundThreshold -gapTolerance $BandGapTolerance -minWidth $MinRegionWidth -minHeight $MinRegionHeight -padding $BoxPadding)
         if ($regions.Count -eq 0) {
             throw "No icon regions found in $sourcePath"
         }
