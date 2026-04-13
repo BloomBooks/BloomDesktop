@@ -217,7 +217,10 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "Install build tools",
         "PublishTab.Apps.PrepareStepper.BuildToolsInstalled",
     );
-    const publisherIdentityCreatedLabel = useL10n("Create keystore", null);
+    const publisherIdentityCreatedLabel = useL10n(
+        "Create keystore",
+        "PublishTab.Apps.PrepareStepper.SigningKeyReady",
+    );
     const projectCreatedLabel = useL10n(
         "Create project",
         "PublishTab.Apps.PrepareStepper.ProjectCreated",
