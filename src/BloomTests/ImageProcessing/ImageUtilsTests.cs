@@ -1156,5 +1156,289 @@ namespace BloomTests.ImageProcessing
                 );
             }
         }
+
+        [Test]
+        public void ReallyCropImages_CroppedImageWithDataBook_UpdatesDataDiv()
+        {
+            // When a cropped img element has a data-book attribute and is assigned a new filename,
+            // the corresponding bloomDataDiv entry should have its src attribute and InnerText updated.
+
+            using (var folder = new TemporaryFolder("DataDivSyncCroppedTest"))
+            {
+                var _pathToTestImages = "src\\BloomTests\\ImageProcessing\\images";
+                var sourcePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestImages,
+                    "man.png"
+                );
+                RobustFile.Copy(sourcePath, Path.Combine(folder.Path, "man.png"));
+
+                // An uncropped img with the same src forces the cropped img to get a new name.
+                var dom = new HtmlDom(
+                    @"<html><head></head><body>
+                    <div id=""bloomDataDiv"">
+                        <div data-book=""coverImage"" lang=""*"" src=""man.png"">man.png</div>
+                    </div>
+                    <div class=""bloom-page"">
+                        <div class=""marginBox"">
+                            <div class=""bloom-canvas"">"
+                    + MakeImageCanvasElement(
+                        "uncroppedImg",
+                        "man.png",
+                        "height: 300px; left: 10px; top: 10px; width: 200px;"
+                    )
+                    + @"<div class=""bloom-canvas-element"" style=""height: 300px; left: 10px; top: 10px; width: 200px;"">
+                                <div tabindex=""0"" class=""bloom-imageContainer bloom-leadingElement"">
+                                    <img id=""croppedImg"" src=""man.png"" data-book=""coverImage""
+                                         style=""width: 400px; left: -50px; top: -50px"" />
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </body></html>"
+                );
+
+                // Sanity check: data-div entry starts with original src
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+                Assert.That(dataDivEntry.GetAttribute("src"), Is.EqualTo("man.png"));
+                Assert.That(dataDivEntry.InnerText, Is.EqualTo("man.png"));
+
+                // SUT
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path);
+
+                var croppedImg = dom.SelectSingleNode("//img[@id='croppedImg']");
+                var newSrc = croppedImg.GetAttribute("src");
+                Assert.That(newSrc, Is.Not.EqualTo("man.png"), "Cropped img should have a new src");
+
+                // data-div entry should be updated to match the new filename.
+                Assert.That(
+                    dataDivEntry.GetAttribute("src"),
+                    Is.EqualTo(newSrc),
+                    "bloomDataDiv src attribute should be updated to the new cropped filename"
+                );
+                Assert.That(
+                    dataDivEntry.InnerText,
+                    Is.EqualTo(newSrc),
+                    "bloomDataDiv InnerText should be updated to the new cropped filename"
+                );
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_DuplicateCroppedImageWithDataBook_UpdatesDataDiv()
+        {
+            // When two img elements share an identical crop (the second hits the "duplicate" fast path),
+            // and the second has a data-book attribute, the bloomDataDiv should still be updated.
+
+            using (var folder = new TemporaryFolder("DataDivSyncDuplicateTest"))
+            {
+                var _pathToTestImages = "src\\BloomTests\\ImageProcessing\\images";
+                var sourcePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestImages,
+                    "man.png"
+                );
+                RobustFile.Copy(sourcePath, Path.Combine(folder.Path, "man.png"));
+
+                // An uncropped img forces the cropped ones to get new names.
+                // Two identical crops: the first processes the key; the second hits the duplicate path.
+                // The second has data-book="coverImage".
+                var dom = new HtmlDom(
+                    @"<html><head></head><body>
+                    <div id=""bloomDataDiv"">
+                        <div data-book=""coverImage"" lang=""*"" src=""man.png"">man.png</div>
+                    </div>
+                    <div class=""bloom-page"">
+                        <div class=""marginBox"">
+                            <div class=""bloom-canvas"">"
+                    + MakeImageCanvasElement(
+                        "uncroppedImg",
+                        "man.png",
+                        "height: 300px; left: 10px; top: 10px; width: 200px;"
+                    )
+                    + MakeImageCanvasElement(
+                        "firstCrop",
+                        "man.png",
+                        "height: 300px; left: 10px; top: 10px; width: 200px;",
+                        "width: 400px; left: -50px; top: -50px"
+                    )
+                    + @"<div class=""bloom-canvas-element"" style=""height: 300px; left: 10px; top: 10px; width: 200px;"">
+                                <div tabindex=""0"" class=""bloom-imageContainer bloom-leadingElement"">
+                                    <img id=""duplicateCrop"" src=""man.png"" data-book=""coverImage""
+                                         style=""width: 400px; left: -50px; top: -50px"" />
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </body></html>"
+                );
+
+                // Sanity check
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+                Assert.That(dataDivEntry.GetAttribute("src"), Is.EqualTo("man.png"));
+
+                // SUT
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path);
+
+                var firstCropImg = dom.SelectSingleNode("//img[@id='firstCrop']");
+                var duplicateCropImg = dom.SelectSingleNode("//img[@id='duplicateCrop']");
+                var firstSrc = firstCropImg.GetAttribute("src");
+                var duplicateSrc = duplicateCropImg.GetAttribute("src");
+
+                // Both should use the same cropped file.
+                Assert.That(
+                    firstSrc,
+                    Is.EqualTo(duplicateSrc),
+                    "Duplicate crops should reference the same cropped file"
+                );
+                Assert.That(firstSrc, Is.Not.EqualTo("man.png"));
+
+                // The data-div should be updated even though duplicateCrop hit the fast path.
+                Assert.That(
+                    dataDivEntry.GetAttribute("src"),
+                    Is.EqualTo(duplicateSrc),
+                    "bloomDataDiv src should be updated via the duplicate-crop fast path"
+                );
+                Assert.That(
+                    dataDivEntry.InnerText,
+                    Is.EqualTo(duplicateSrc),
+                    "bloomDataDiv InnerText should be updated via the duplicate-crop fast path"
+                );
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_UncroppedImageWithDataBook_DataDivPreserved()
+        {
+            // When an img with data-book is uncropped (no rename occurs), the bloomDataDiv entry
+            // should be left unchanged.
+
+            using (var folder = new TemporaryFolder("DataDivSyncUncroppedTest"))
+            {
+                var _pathToTestImages = "src\\BloomTests\\ImageProcessing\\images";
+                var sourcePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestImages,
+                    "man.png"
+                );
+                RobustFile.Copy(sourcePath, Path.Combine(folder.Path, "man.png"));
+
+                var dom = new HtmlDom(
+                    @"<html><head></head><body>
+                    <div id=""bloomDataDiv"">
+                        <div data-book=""coverImage"" lang=""*"" src=""man.png"">man.png</div>
+                    </div>
+                    <div class=""bloom-page"">
+                        <div class=""marginBox"">
+                            <div class=""bloom-canvas"">
+                                <div class=""bloom-canvas-element"" style=""height: 300px; left: 10px; top: 10px; width: 200px;"">
+                                    <div tabindex=""0"" class=""bloom-imageContainer bloom-leadingElement"">
+                                        <img id=""uncroppedImg"" src=""man.png"" data-book=""coverImage"" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </body></html>"
+                );
+
+                // Sanity check
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+                Assert.That(dataDivEntry.GetAttribute("src"), Is.EqualTo("man.png"));
+                Assert.That(dataDivEntry.InnerText, Is.EqualTo("man.png"));
+
+                // SUT
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path);
+
+                // Uncropped image keeps its src name.
+                var img = dom.SelectSingleNode("//img[@id='uncroppedImg']");
+                Assert.That(img.GetAttribute("src"), Is.EqualTo("man.png"));
+
+                // data-div entry should be untouched.
+                Assert.That(
+                    dataDivEntry.GetAttribute("src"),
+                    Is.EqualTo("man.png"),
+                    "bloomDataDiv src should be unchanged for uncropped image"
+                );
+                Assert.That(
+                    dataDivEntry.InnerText,
+                    Is.EqualTo("man.png"),
+                    "bloomDataDiv InnerText should be unchanged for uncropped image"
+                );
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_CroppedImageWithNonCoverDataBook_UpdatesDataDiv()
+        {
+            // The old implementation only handled "coverImage". The new implementation syncs
+            // the data-div for any data-book attribute. This test verifies the generality.
+
+            using (var folder = new TemporaryFolder("DataDivSyncNonCoverTest"))
+            {
+                var _pathToTestImages = "src\\BloomTests\\ImageProcessing\\images";
+                var sourcePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestImages,
+                    "man.png"
+                );
+                RobustFile.Copy(sourcePath, Path.Combine(folder.Path, "man.png"));
+
+                // An uncropped img forces the cropped one to get a new name.
+                var dom = new HtmlDom(
+                    @"<html><head></head><body>
+                    <div id=""bloomDataDiv"">
+                        <div data-book=""someOtherImage"" lang=""*"" src=""man.png"">man.png</div>
+                    </div>
+                    <div class=""bloom-page"">
+                        <div class=""marginBox"">
+                            <div class=""bloom-canvas"">"
+                    + MakeImageCanvasElement(
+                        "uncroppedImg",
+                        "man.png",
+                        "height: 300px; left: 10px; top: 10px; width: 200px;"
+                    )
+                    + @"<div class=""bloom-canvas-element"" style=""height: 300px; left: 10px; top: 10px; width: 200px;"">
+                                <div tabindex=""0"" class=""bloom-imageContainer bloom-leadingElement"">
+                                    <img id=""croppedImg"" src=""man.png"" data-book=""someOtherImage""
+                                         style=""width: 400px; left: -50px; top: -50px"" />
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </body></html>"
+                );
+
+                // Sanity check
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='someOtherImage']"
+                );
+                Assert.That(dataDivEntry.GetAttribute("src"), Is.EqualTo("man.png"));
+
+                // SUT
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path);
+
+                var croppedImg = dom.SelectSingleNode("//img[@id='croppedImg']");
+                var newSrc = croppedImg.GetAttribute("src");
+                Assert.That(newSrc, Is.Not.EqualTo("man.png"));
+
+                // data-div entry for a non-coverImage data-book should also be updated.
+                Assert.That(
+                    dataDivEntry.GetAttribute("src"),
+                    Is.EqualTo(newSrc),
+                    "bloomDataDiv src for non-coverImage data-book should be updated"
+                );
+                Assert.That(
+                    dataDivEntry.InnerText,
+                    Is.EqualTo(newSrc),
+                    "bloomDataDiv InnerText for non-coverImage data-book should be updated"
+                );
+            }
+        }
     }
 }
