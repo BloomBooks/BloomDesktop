@@ -3685,7 +3685,7 @@
         <note>Header for the list of links that have been added to the grid, %0 is the count</note>
       </trans-unit>
       <trans-unit id="BookGridSetup.BooksInApp">
-        <source xml:lang="en">Book in App (%0)</source>
+        <source xml:lang="en">Books in App (%0)</source>
         <note>ID: BookGridSetup.BooksInApp</note>
         <note>Header for the list of books that have been added to the app, %0 is the count</note>
       </trans-unit>
