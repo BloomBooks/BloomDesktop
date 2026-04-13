@@ -158,6 +158,7 @@ namespace Bloom
                                 typeof(PublishPdfApi),
                                 typeof(PublishAudioVideoAPI),
                                 typeof(PublishEpubApi),
+                                typeof(RabPublishApi),
                                 typeof(AccessibilityCheckApi),
                                 typeof(CollectionSettingsApi),
                                 typeof(SubscriptionSettingsEditorApi),
