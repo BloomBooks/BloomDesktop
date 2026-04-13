@@ -161,7 +161,7 @@ export const EstimatedAppSizeIndicator: React.FunctionComponent<{
         "PublishTab.Apps.SizeEstimate.OverheadLabel",
     );
     const estimateTemplate = useL10n(
-        "Apps have a maximum size of about 100mb. The current estimate for this app is %0.",
+        "Apps have a maximum size of about %1. The current estimate for this app is %0.",
         "PublishTab.Apps.SizeEstimate.Total",
     );
     const overLimitText = useL10n(
