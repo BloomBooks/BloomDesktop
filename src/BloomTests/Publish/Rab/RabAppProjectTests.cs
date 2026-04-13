@@ -495,7 +495,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void GetRabRegistrySubKeys_IncludesBloomInstallerRegistryKey()
+        public void GetRabRegistrySubKeys_PrefersBloomInstallerRegistryKey()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
@@ -510,8 +510,8 @@ namespace BloomTests.Publish.Rab
                 Is.EqualTo(
                     new[]
                     {
-                        @"Software\SIL\Reading App Builder",
                         @"Software\SIL\Reading App Builder for Bloom",
+                        @"Software\SIL\Reading App Builder",
                     }
                 )
             );
@@ -1952,12 +1952,13 @@ namespace BloomTests.Publish.Rab
         public void BuildRabInstallerArguments_UsesSilentArguments()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
-            var paths = new RabWorkspacePaths(tempFolder.Path);
-            var service = new TestRabProjectService(
-                paths,
-                "Sample App",
-                new List<RabBookPublishInfo>()
+            var installDir = Path.Combine(
+                tempFolder.Path,
+                "Program Files",
+                "SIL",
+                "Reading App Builder for Bloom"
             );
+            var service = new RegistryAwareRabProjectService(installDir, null, null);
 
             var arguments = service.BuildRabInstallerArguments(@"C:\temp\rab-install.log");
 
@@ -1967,6 +1968,7 @@ namespace BloomTests.Publish.Rab
             Assert.That(arguments, Does.Contain("/SP-"));
             Assert.That(arguments, Does.Contain("/LANG=en"));
             Assert.That(arguments, Does.Contain("/LOG=\"C:\\temp\\rab-install.log\""));
+            Assert.That(arguments, Does.Contain($"/DIR=\"{installDir}\""));
         }
 
         [Test]
