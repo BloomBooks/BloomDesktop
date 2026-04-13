@@ -8,6 +8,13 @@ const main = async () => {
     const rootEntries = await fs.readdir(iconRoot, { withFileTypes: true });
     let movedCount = 0;
     let removedCount = 0;
+    const plannedMoves = [];
+    const rootFileNames = new Set(
+        rootEntries
+            .filter((entry) => entry.isFile())
+            .map((entry) => entry.name),
+    );
+    const plannedDestinationNames = new Set(rootFileNames);
 
     for (const entry of rootEntries) {
         if (!entry.isDirectory()) {
@@ -25,12 +32,31 @@ const main = async () => {
             }
 
             const sourcePath = path.join(directoryPath, childEntry.name);
-            const destinationPath = path.join(iconRoot, childEntry.name);
+            if (plannedDestinationNames.has(childEntry.name)) {
+                throw new Error(
+                    `Cannot flatten icons because ${childEntry.name} already exists at the root.`,
+                );
+            }
 
-            await fs.rename(sourcePath, destinationPath);
-            movedCount += 1;
+            plannedDestinationNames.add(childEntry.name);
+            plannedMoves.push({
+                sourcePath,
+                destinationPath: path.join(iconRoot, childEntry.name),
+            });
+        }
+    }
+
+    for (const move of plannedMoves) {
+        await fs.rename(move.sourcePath, move.destinationPath);
+        movedCount += 1;
+    }
+
+    for (const entry of rootEntries) {
+        if (!entry.isDirectory()) {
+            continue;
         }
 
+        const directoryPath = path.join(iconRoot, entry.name);
         await fs.rmdir(directoryPath);
         removedCount += 1;
     }
