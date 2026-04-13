@@ -233,26 +233,33 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                     />
                                 </div>
                             </div>
-
-                            <ConfigrBoolean
-                                label={appBuilderLabel}
-                                path="allowAppBuilder"
-                                disabled={!appBuilderOptionEnabled}
-                            />
                             <div
                                 css={css`
-                                    display: flex;
-                                    justify-content: flex-end;
-                                    .bloom-subscriptionIndicator {
-                                        font-size: 10pt;
-                                        font-weight: 700;
+                                    .Mui-disabled {
+                                        opacity: 1;
                                     }
                                 `}
                             >
-                                <BloomSubscriptionIndicatorIconAndText
-                                    feature="AppBuilder"
-                                    className="bloom-subscriptionIndicator"
+                                <ConfigrBoolean
+                                    label={appBuilderLabel}
+                                    path="allowAppBuilder"
+                                    disabled={!appBuilderOptionEnabled}
                                 />
+                                <div
+                                    css={css`
+                                        display: flex;
+                                        justify-content: flex-end;
+                                        .bloom-subscriptionIndicator {
+                                            font-size: 10pt;
+                                            font-weight: 700;
+                                        }
+                                    `}
+                                >
+                                    <BloomSubscriptionIndicatorIconAndText
+                                        feature="AppBuilder"
+                                        className="bloom-subscriptionIndicator"
+                                    />
+                                </div>
                             </div>
                         </ConfigrGroup>
                     </ConfigrPage>
