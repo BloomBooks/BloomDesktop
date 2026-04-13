@@ -355,7 +355,10 @@ export async function initializeAppBuilderSettings(
         await saveAppBuilderSettings(appDefPath, initializedSettings);
     }
 
-    return initializedSettings;
+    return {
+        ...initializedSettings,
+        iconPath: rawSettings.iconPath,
+    };
 }
 
 export function refreshAppBuilderSettings(
