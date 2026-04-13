@@ -357,10 +357,7 @@ namespace Bloom.web.controllers
             if (allowAppBuilderToken != null)
             {
                 var allowAppBuilder = allowAppBuilderToken.Value<bool>();
-                var previousValue = dialog.PendingAllowAppBuilder;
                 dialog.PendingAllowAppBuilder = allowAppBuilder;
-                if (allowAppBuilder != previousValue)
-                    dialog.ChangeThatRequiresRestart();
             }
 
             var showQrCodeToken = data["showQrCode"];
