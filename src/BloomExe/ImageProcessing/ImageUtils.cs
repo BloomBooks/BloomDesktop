@@ -2173,20 +2173,10 @@ namespace Bloom.ImageProcessing
         )
         {
             var images = bookDom.SafeSelectElements("//img").ToList();
-            // We need to keep the cover image data in the bloomDataDiv consistent if anything
-            // (e.g., cropping) causes us to rename the cover image file.  If we upload the
-            // book to bloomlibrary.org, the cover image file stored in the bloomDataDiv will
-            // be needed to harvest the book or to make derivatives of it. (BL-16096)
-            if (images.Any(x => x.GetAttribute("data-book") == "coverImage"))
-            {
-                var coverImageDiv = bookDom
-                    .SafeSelectElements(
-                        "//div[@id='bloomDataDiv']/div[@data-book='coverImage' and @src]"
-                    )
-                    .FirstOrDefault();
-                if (coverImageDiv != null)
-                    images.Add(coverImageDiv);
-            }
+            var bloomDataDivEntriesByDataBook = bookDom
+                .SafeSelectElements("//div[@id='bloomDataDiv']/*[@data-book]")
+                .GroupBy(x => x.GetAttribute("data-book"))
+                .ToDictionary(group => group.Key, group => group.First());
             // src values that occur in uncropped images. Note, it is NOT the case that an img whose src
             // is in this set never cropped; it just means that at least one occurrence of it is not
             // cropped, which makes the image name unavailable to use for a cropped image.
@@ -2236,7 +2226,8 @@ namespace Bloom.ImageProcessing
                             cropped,
                             img,
                             src,
-                            style
+                            style,
+                            bloomDataDivEntriesByDataBook
                         );
                 }
                 else
@@ -2251,7 +2242,8 @@ namespace Bloom.ImageProcessing
                         img,
                         src,
                         style,
-                        canvasElementStyle
+                        canvasElementStyle,
+                        bloomDataDivEntriesByDataBook
                     );
                 }
             }
@@ -2264,17 +2256,15 @@ namespace Bloom.ImageProcessing
             Dictionary<string, string> cropped,
             SafeXmlElement img,
             string src,
-            string style
+            string style,
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
         )
         {
             var key = $"{src}|{style}|0|0";
             if (cropped.TryGetValue(key, out string fileName))
             {
                 // This is a duplicate. We can use the same metadata-cropped image file.
-                img.SetAttribute("src", fileName);
-                // Handle the bloomDataDiv definition for the cover image.  (BL-16096)
-                if (img.Name.ToLowerInvariant() == "div")
-                    img.InnerText = fileName;
+                SetImageSrcAndSyncDataDiv(img, fileName, bloomDataDivEntriesByDataBook);
                 return;
             }
             TrimMetadataInImage(img, imageSourceFolder, imageDestFolder);
@@ -2291,7 +2281,8 @@ namespace Bloom.ImageProcessing
             SafeXmlElement img,
             string src,
             string style,
-            string canvasElementStyle
+            string canvasElementStyle,
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
         )
         {
             var canvasElementWidth = GetNumberFromPx("width", canvasElementStyle);
@@ -2301,7 +2292,7 @@ namespace Bloom.ImageProcessing
             if (cropped.TryGetValue(key, out string fileName))
             {
                 // This is a duplicate. We can use the same cropped image file.
-                img.SetAttribute("src", fileName);
+                SetImageSrcAndSyncDataDiv(img, fileName, bloomDataDivEntriesByDataBook);
                 // With that src, it's already cropped, so remove the style to avoid
                 // applying the cropping again to the already-cropped image.
                 img.RemoveAttribute("style");
@@ -2314,7 +2305,8 @@ namespace Bloom.ImageProcessing
                 img,
                 imageSourceFolder,
                 imageDestFolder,
-                needNewName
+                needNewName,
+                bloomDataDivEntriesByDataBook
             );
 
             // Track if we replaced an original file with a new one
@@ -2484,7 +2476,8 @@ namespace Bloom.ImageProcessing
             SafeXmlElement img,
             string imageSourceFolder,
             string imageDestFolder,
-            bool useNewName
+            bool useNewName,
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
         )
         {
             var croppedImagePath = MakeCroppedImage(img, imageSourceFolder, imageDestFolder);
@@ -2512,7 +2505,7 @@ namespace Bloom.ImageProcessing
                     // All images with this name and crop should use this
                     result = Path.GetFileName(croppedImagePath);
                     // Including the current image
-                    img.SetAttribute("src", result);
+                    SetImageSrcAndSyncDataDiv(img, result, bloomDataDivEntriesByDataBook);
                 }
                 else
                 {
@@ -2524,6 +2517,24 @@ namespace Bloom.ImageProcessing
             }
             img.RemoveAttribute("style"); // so nothing can possibly think it needs more cropping
             return result;
+        }
+
+        private static void SetImageSrcAndSyncDataDiv(
+            SafeXmlElement img,
+            string src,
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
+        )
+        {
+            img.SetAttribute("src", src);
+            var dataBook = img.GetAttribute("data-book");
+            if (string.IsNullOrWhiteSpace(dataBook))
+                return;
+
+            if (bloomDataDivEntriesByDataBook.TryGetValue(dataBook, out var dataDivElement))
+            {
+                dataDivElement.SetAttribute("src", src);
+                dataDivElement.InnerText = src;
+            }
         }
 
         /// <summary>
