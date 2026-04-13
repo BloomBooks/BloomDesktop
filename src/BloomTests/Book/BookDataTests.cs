@@ -3538,6 +3538,44 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void SuckInDataFromEditedDom_CustomLayoutPage_DataBookEntriesKeepTalkingBookAttributes()
+        {
+            var bookDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'>
+                    <div data-book='contentLanguage1' lang='*'>xyz</div>
+                    <div data-book='contentLanguage2' lang='*'>en</div>
+                </div>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+                    <div class='marginBox'></div>
+				</div>
+			</body></html>"
+            );
+            var data = new BookData(bookDom, _collectionSettings, null);
+
+            var editedPageDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+					<div class='marginBox'>
+                        <div class='bloom-translationGroup'>
+                            <div class='bloom-editable bloom-visibility-code-on audio-sentence' data-book='bookTitle' lang='en' id='i6a720491' data-audiorecordingmode='TextBox' recordingmd5='5b5efdab7f705554614a6383ae6d9469' data-duration='5.839433'><p>My Title</p></div>
+						</div>
+					</div>
+				</div>
+			</body></html>"
+            );
+
+            data.SuckInDataFromEditedDom(editedPageDom);
+
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and @id='i6a720491' and @data-audiorecordingmode='TextBox' and @recordingmd5='5b5efdab7f705554614a6383ae6d9469' and @data-duration='5.839433']",
+                    1
+                );
+        }
+
+        [Test]
         public void GatherDataItemsFromXElement_CustomLayoutPageWithXmatterPage_GathersXmatterAttributes()
         {
             var dom = new HtmlDom(
