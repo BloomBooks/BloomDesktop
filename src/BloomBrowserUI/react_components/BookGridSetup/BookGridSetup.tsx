@@ -28,9 +28,6 @@ const BookGridSetup: React.FC<{
         showsBooksInApp
             ? "BookGridSetup.BooksInApp"
             : "BookGridSetup.LinksInGrid",
-        showsBooksInApp
-            ? "Header for the list of books that have been added to the app, %0 is the count"
-            : "Header for the list of links that have been added to the grid, %0 is the count",
     );
 
     React.useEffect(() => {

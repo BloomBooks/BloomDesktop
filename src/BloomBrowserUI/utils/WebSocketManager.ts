@@ -21,15 +21,40 @@ export function useWebSocketListener(
     clientContext: string,
     listener: (messageEvent: IBloomWebSocketEvent) => void,
 ) {
+    // This hook intentionally uses an effect because a websocket subscription is
+    // synchronization with an external system, not derived render state.
+    // We need to subscribe when the component starts listening and unsubscribe
+    // when it stops or switches to a different clientContext.
+
+    // Keep track of the most recent callback without forcing the websocket
+    // subscription itself to be torn down and recreated on every render.
+    // Many callers pass an inline listener that closes over current props/state,
+    // so its identity changes often even though it still wants the same socket.
     const latestListener = useRef(listener);
     latestListener.current = listener;
 
     useEffect(() => {
+        // The websocket manager needs a stable function reference so we can later
+        // remove exactly the listener we added.
         const listenerWrapper = (messageEvent: IBloomWebSocketEvent) => {
+            // When a websocket message arrives, forward it to whatever listener
+            // the component most recently rendered with.
+            //
+            // If we subscribed once with the original listener and never updated it,
+            // things would get messy. If that
+            // listener captured state from the first render, later websocket
+            // messages would keep using stale values. For example:
+            // - a dialog listener might keep using the old selected book or tab
+            // - a progress handler might append to stale local state
+            // - a callback replaced after a prop change would never be called
             latestListener.current(messageEvent);
         };
+
+        // Subscribe only when the clientContext changes. Re-subscribing on every
+        // render would be unnecessary churn for the same websocket channel.
         WebSocketManager.addListener(clientContext, listenerWrapper);
         return () => {
+            // Cleanup to prevent orphaned listeners and memory leaks.
             WebSocketManager.removeListener(clientContext, listenerWrapper);
         };
     }, [clientContext]);

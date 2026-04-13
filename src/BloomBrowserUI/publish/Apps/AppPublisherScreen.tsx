@@ -39,7 +39,7 @@ import { PrepareAppStepper } from "./PrepareAppStepper";
 import { useAppBuilderPublisherScreen } from "./useAppBuilderPublisherScreen";
 
 const apkToPhoneIconUrl = new URL(
-    "../PublishTab/ApkToPhone.svg",
+    "./ApkToPhone.svg",
     import.meta.url,
 ).toString();
 

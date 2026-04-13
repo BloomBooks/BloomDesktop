@@ -91,7 +91,7 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const appBuilderFeatureStatus = useGetFeatureStatus("AppBuilder");
     const appBuilderOptionEnabled =
         appBuilderFeatureStatus === undefined
-            ? true
+            ? false
             : appBuilderFeatureStatus.enabled;
     const canChangeTeamCollectionOption = allowTeamCollectionEnabled !== false;
 

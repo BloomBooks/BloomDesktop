@@ -41,7 +41,6 @@ namespace Bloom.web.controllers
         private int _thumbnailEventsToWaitFor = -1;
 
         private object _thumbnailEventsLock = new object();
-        private readonly object _coverImageRequestLock = new object();
 
         public CollectionApi(
             CollectionSettings settings,
@@ -708,14 +707,9 @@ namespace Bloom.web.controllers
 
             string fullImagePath;
             SafeXmlElement imgElement;
-            // Book grids and app-publisher pickers can request many cover images at once.
-            // Serialize this shared book lookup so concurrent requests do not race while reading cover data.
-            lock (_coverImageRequestLock)
-            {
-                fullImagePath = _collectionModel
-                    .GetBookFromBookInfo(bookInfo)
-                    .GetCoverImagePathAndElt(out imgElement);
-            }
+            fullImagePath = _collectionModel
+                .GetBookFromBookInfo(bookInfo)
+                .GetCoverImagePathAndElt(out imgElement);
             if (string.IsNullOrEmpty(fullImagePath))
             {
                 HandleThumbnailRequest(request);
