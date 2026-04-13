@@ -3492,6 +3492,52 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void SuckInDataFromEditedDom_CustomLayoutPageWithImage_UpdatesSavedMarginBoxImageMetadata()
+        {
+            var bookDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='customOutsideFrontCover' lang='*'>
+						<div class='marginBox'>
+							<img src='cover.png' data-copyright='Old Copyright' data-creator='Old Creator' data-license='Old License'/>
+						</div>
+					</div>
+				</div>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+					<div class='marginBox'>
+						<img src='cover.png' data-copyright='Old Copyright' data-creator='Old Creator' data-license='Old License'/>
+					</div>
+				</div>
+			</body></html>"
+            );
+            var data = new BookData(bookDom, _collectionSettings, null);
+
+            var editedPageDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+					<div class='marginBox'>
+						<img src='cover.png' data-copyright='New Copyright' data-creator='New Creator' data-license='New License'/>
+					</div>
+				</div>
+			</body></html>"
+            );
+
+            var editedPage = (SafeXmlElement)
+                editedPageDom.RawDom.SelectSingleNode(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']"
+                );
+
+            data.SuckInDataFromEditedDom(editedPage);
+
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//img[@src='cover.png' and @data-copyright='New Copyright' and @data-creator='New Creator' and @data-license='New License']",
+                    1
+                );
+        }
+
+        [Test]
         public void GatherDataItemsFromXElement_CustomLayoutPageWithXmatterPage_GathersXmatterAttributes()
         {
             var dom = new HtmlDom(
