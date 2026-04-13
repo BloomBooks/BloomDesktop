@@ -1181,12 +1181,12 @@ namespace BloomTests.ImageProcessing
                     <div class=""bloom-page"">
                         <div class=""marginBox"">
                             <div class=""bloom-canvas"">"
-                    + MakeImageCanvasElement(
-                        "uncroppedImg",
-                        "man.png",
-                        "height: 300px; left: 10px; top: 10px; width: 200px;"
-                    )
-                    + @"<div class=""bloom-canvas-element"" style=""height: 300px; left: 10px; top: 10px; width: 200px;"">
+                        + MakeImageCanvasElement(
+                            "uncroppedImg",
+                            "man.png",
+                            "height: 300px; left: 10px; top: 10px; width: 200px;"
+                        )
+                        + @"<div class=""bloom-canvas-element"" style=""height: 300px; left: 10px; top: 10px; width: 200px;"">
                                 <div tabindex=""0"" class=""bloom-imageContainer bloom-leadingElement"">
                                     <img id=""croppedImg"" src=""man.png"" data-book=""coverImage""
                                          style=""width: 400px; left: -50px; top: -50px"" />
@@ -1252,18 +1252,18 @@ namespace BloomTests.ImageProcessing
                     <div class=""bloom-page"">
                         <div class=""marginBox"">
                             <div class=""bloom-canvas"">"
-                    + MakeImageCanvasElement(
-                        "uncroppedImg",
-                        "man.png",
-                        "height: 300px; left: 10px; top: 10px; width: 200px;"
-                    )
-                    + MakeImageCanvasElement(
-                        "firstCrop",
-                        "man.png",
-                        "height: 300px; left: 10px; top: 10px; width: 200px;",
-                        "width: 400px; left: -50px; top: -50px"
-                    )
-                    + @"<div class=""bloom-canvas-element"" style=""height: 300px; left: 10px; top: 10px; width: 200px;"">
+                        + MakeImageCanvasElement(
+                            "uncroppedImg",
+                            "man.png",
+                            "height: 300px; left: 10px; top: 10px; width: 200px;"
+                        )
+                        + MakeImageCanvasElement(
+                            "firstCrop",
+                            "man.png",
+                            "height: 300px; left: 10px; top: 10px; width: 200px;",
+                            "width: 400px; left: -50px; top: -50px"
+                        )
+                        + @"<div class=""bloom-canvas-element"" style=""height: 300px; left: 10px; top: 10px; width: 200px;"">
                                 <div tabindex=""0"" class=""bloom-imageContainer bloom-leadingElement"">
                                     <img id=""duplicateCrop"" src=""man.png"" data-book=""coverImage""
                                          style=""width: 400px; left: -50px; top: -50px"" />
@@ -1397,12 +1397,12 @@ namespace BloomTests.ImageProcessing
                     <div class=""bloom-page"">
                         <div class=""marginBox"">
                             <div class=""bloom-canvas"">"
-                    + MakeImageCanvasElement(
-                        "uncroppedImg",
-                        "man.png",
-                        "height: 300px; left: 10px; top: 10px; width: 200px;"
-                    )
-                    + @"<div class=""bloom-canvas-element"" style=""height: 300px; left: 10px; top: 10px; width: 200px;"">
+                        + MakeImageCanvasElement(
+                            "uncroppedImg",
+                            "man.png",
+                            "height: 300px; left: 10px; top: 10px; width: 200px;"
+                        )
+                        + @"<div class=""bloom-canvas-element"" style=""height: 300px; left: 10px; top: 10px; width: 200px;"">
                                 <div tabindex=""0"" class=""bloom-imageContainer bloom-leadingElement"">
                                     <img id=""croppedImg"" src=""man.png"" data-book=""someOtherImage""
                                          style=""width: 400px; left: -50px; top: -50px"" />
