@@ -177,6 +177,7 @@ namespace Bloom.Publish.Rab
                 SetColorSchemeName(settings.ColorScheme.Trim());
 
             SetAboutFileName(DefaultAboutFileName);
+            SetMetadataValue(kIconPathMetadataName, settings?.IconPath?.Trim());
             SetMetadataValue("copyright-text", settings?.Copyright?.Trim());
         }
 
