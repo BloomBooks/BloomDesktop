@@ -121,7 +121,7 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "PublishTab.Apps.Build.NeedsPrepareTooltip",
     );
     const tryOnPhoneTooltip = useL10n(
-        "Load and run the app on your phone. First ble USB Debugging on the phone and connect it with a USB cable.",
+        "Load and run the app on your phone. First enable USB Debugging on the phone and connect it with a USB cable.",
         "PublishTab.Apps.TryOnPhone.Tooltip",
     );
     const showApkInExplorer = useL10n(
