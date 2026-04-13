@@ -191,7 +191,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
             labelL10nKey: "PublishTab.Apps",
             label: "Apps",
             id: "apps",
-            hidden: appBuilderFeatureStatus?.visible === false,
+            hidden: !appBuilderFeatureStatus?.visible,
         },
         {
             tipL10nKey: "PublishTab.EpubRadio-tooltip",
