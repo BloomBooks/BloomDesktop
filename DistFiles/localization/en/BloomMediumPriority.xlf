@@ -1403,7 +1403,7 @@
         <note>Button label that installs the generated Android app on a connected phone and launches it.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.TryOnPhone.Tooltip" translate="no">
-        <source xml:lang="en">Load and run the app on your phone. First ble USB Debugging on the phone and connect it with a USB cable.</source>
+        <source xml:lang="en">Load and run the app on your phone. First enable USB Debugging on the phone and connect it with a USB cable.</source>
         <note>ID: PublishTab.Apps.TryOnPhone.Tooltip</note>
         <note>Tooltip for the Try on phone button. "USB Debugging" is the Android setting name and may need to stay recognizable.</note>
       </trans-unit>
