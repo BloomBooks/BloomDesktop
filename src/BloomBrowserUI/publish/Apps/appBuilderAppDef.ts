@@ -772,14 +772,3 @@ function joinWindowsPath(...segments: string[]): string {
 function normalizePathForComparison(path: string): string {
     return path.replace(/[\\/]+/g, "\\").toLowerCase();
 }
-
-async function fetchAppBuilderAboutText(appDefPath: string): Promise<string> {
-    try {
-        const response = await postJsonAsync("fileIO/readFile", {
-            path: getAboutTextPath(appDefPath),
-        });
-        return typeof response?.data === "string" ? response.data : "";
-    } catch {
-        return "";
-    }
-}

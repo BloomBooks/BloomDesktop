@@ -825,6 +825,7 @@ namespace Bloom.Collection
 
         private void UpdateAppBuilderAllowed()
         {
+            // NB: This change does not require a restart.
             ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, PendingAllowAppBuilder);
         }
     }
