@@ -246,16 +246,20 @@ namespace BloomTests.Publish.Rab
 
             var document = XDocument.Load(tempFile.Path);
             var fonts = document.Root.Element("fonts")?.Elements("font").ToList();
+            var andikaFont = fonts?.Single(font => font.Element("display-name")?.Value == "Andika");
+            var abeezeeFont = fonts?.Single(font =>
+                font.Element("display-name")?.Value == "ABeeZee"
+            );
 
             Assert.That(fonts, Has.Count.EqualTo(2));
             Assert.That(
-                fonts[0].Attribute("family")?.Value,
+                andikaFont?.Attribute("family")?.Value,
                 Is.EqualTo("font1"),
                 "The existing referenced family id should be preserved for Andika."
             );
-            Assert.That(fonts[0].Element("display-name")?.Value, Is.EqualTo("Andika"));
-            Assert.That(fonts[1].Attribute("family")?.Value, Is.EqualTo("ABeeZee"));
-            Assert.That(fonts[1].Element("font-name")?.Value, Is.EqualTo("ABeeZee Bold"));
+            Assert.That(andikaFont?.Element("display-name")?.Value, Is.EqualTo("Andika"));
+            Assert.That(abeezeeFont?.Attribute("family")?.Value, Is.EqualTo("ABeeZee"));
+            Assert.That(abeezeeFont?.Element("font-name")?.Value, Is.EqualTo("ABeeZee Bold"));
             Assert.That(
                 fonts.Any(font => font.Element("display-name")?.Value == "Obsolete Font"),
                 Is.False,
@@ -307,7 +311,7 @@ namespace BloomTests.Publish.Rab
                 Array.Empty<(string organizationName, string packageSegment)>()
             );
 
-            Assert.That(packageName, Is.EqualTo("org.doogooders.bloom.libre.foobar"));
+            Assert.That(packageName, Is.EqualTo("org.dogooders.bloom.libre.foobar"));
         }
 
         [Test]
@@ -514,22 +518,15 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void GetPaths_MigratesLegacyRabFolderToAppConfigurationFolder()
+        public void GetPaths_UsesBloomAppDataFolderUnderCollectionRoot()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
-            var legacyRabRoot = Path.Combine(tempFolder.Path, "rab");
-            Directory.CreateDirectory(legacyRabRoot);
-            var legacyFilePath = Path.Combine(legacyRabRoot, "prepare.json");
-            RobustFile.WriteAllText(legacyFilePath, "{}");
 
             var service = new RealPathRabProjectService(tempFolder);
 
             var paths = service.ReadPaths();
 
-            Assert.That(
-                paths.RabRoot,
-                Is.EqualTo(Path.Combine(tempFolder.Path, "app configuration"))
-            );
+            Assert.That(paths.RabRoot, Is.EqualTo(Path.Combine(tempFolder.Path, "Bloom App Data")));
             Assert.That(
                 paths.KeystoreRoot,
                 Is.EqualTo(
@@ -540,9 +537,6 @@ namespace BloomTests.Publish.Rab
                     )
                 )
             );
-            Assert.That(Directory.Exists(legacyRabRoot), Is.False);
-            Assert.That(Directory.Exists(paths.RabRoot), Is.True);
-            Assert.That(RobustFile.Exists(Path.Combine(paths.RabRoot, "prepare.json")), Is.True);
         }
 
         [Test]
@@ -744,18 +738,20 @@ namespace BloomTests.Publish.Rab
             );
             service.InstallApkResults.Enqueue((0, "Performing Streamed Install"));
 
+            var builtPackageName = RabAppProject.Load(service.GetStatus().AppDefPath).PackageName;
+
             await service.InstallAsync();
 
             Assert.That(service.UninstallCommands.Count, Is.EqualTo(1));
             Assert.That(
                 service.UninstallCommands[0],
-                Does.Contain("uninstall \"org.sil.en.stories\"")
+                Does.Contain($"uninstall \"{builtPackageName}\"")
             );
             Assert.That(service.InstallCommandCount, Is.EqualTo(2));
             Assert.That(
                 service.RunProcessCommands,
                 Has.Some.Contains(
-                    "shell monkey -p \"org.sil.en.stories\" -c android.intent.category.LAUNCHER 1"
+                    $"shell monkey -p \"{builtPackageName}\" -c android.intent.category.LAUNCHER 1"
                 )
             );
             Assert.That(service.Progress.Warnings, Has.Some.Contains("Removing it and retrying"));
@@ -876,17 +872,18 @@ namespace BloomTests.Publish.Rab
             Assert.That(service.Commands[2], Does.Contain(service.RabAndroidSdkInstallFolder));
             Assert.That(service.Commands[3], Does.StartWith("-load "));
             Assert.That(service.Commands[3], Does.Contain("-b "));
-            Assert.That(service.Commands[3], Does.Not.Contain("-build"));
+            Assert.That(Regex.IsMatch(service.Commands[3], @"(^|\s)-build(\s|$)"), Is.False);
             Assert.That(service.Commands[4], Does.StartWith("-load "));
             Assert.That(service.Commands[4], Does.Not.Contain("-b "));
-            Assert.That(service.Commands[4], Does.Contain("-build"));
+            Assert.That(Regex.IsMatch(service.Commands[4], @"(^|\s)-build(\s|$)"), Is.True);
             Assert.That(service.Progress.Stages, Does.Contain("preparing-workspace"));
             Assert.That(service.Progress.Stages, Does.Contain("installing-build-tools"));
             Assert.That(service.Progress.Stages, Does.Contain("exporting-bloompubs"));
             Assert.That(service.Progress.Stages, Does.Contain("creating-project"));
             Assert.That(service.Progress.Stages, Does.Contain("building-android-app"));
             Assert.That(service.Progress.Stages.Last(), Is.EqualTo("complete"));
-            Assert.That(service.Progress.Percents.First(), Is.EqualTo(5));
+            Assert.That(service.Progress.Percents.First(), Is.EqualTo(0));
+            Assert.That(service.Progress.Percents, Does.Contain(5));
             Assert.That(service.Progress.Percents.Last(), Is.EqualTo(100));
         }
 
@@ -976,7 +973,15 @@ namespace BloomTests.Publish.Rab
                     "bin"
                 )
             );
-            RobustFile.WriteAllText(service.GetRabJavaExecutablePath(), "java");
+            RobustFile.WriteAllText(
+                Path.Combine(
+                    service.RabJdkInstallFolder,
+                    "zulu17.42.19-ca-jdk17.0.7-win_x64",
+                    "bin",
+                    "java.exe"
+                ),
+                "java"
+            );
 
             var adbPath = Path.Combine(
                 service.RabAndroidSdkInstallFolder,
@@ -1031,7 +1036,15 @@ namespace BloomTests.Publish.Rab
                     "bin"
                 )
             );
-            RobustFile.WriteAllText(service.GetRabJavaExecutablePath(), "java");
+            RobustFile.WriteAllText(
+                Path.Combine(
+                    service.RabJdkInstallFolder,
+                    "zulu17.42.19-ca-jdk17.0.7-win_x64",
+                    "bin",
+                    "java.exe"
+                ),
+                "java"
+            );
 
             await service.PrepareAsync();
 

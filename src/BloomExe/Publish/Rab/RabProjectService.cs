@@ -1330,8 +1330,8 @@ namespace Bloom.Publish.Rab
             ("processReleaseResources", 68),
             ("compileReleaseJavaWithJavac", 70),
             ("minifyReleaseWithR8", 85),
-            ("compileReleaseArtProfile", 95),
-            ("packageRelease", 96),
+            ("compileReleaseArtProfile", 94),
+            ("packageRelease", 95),
             ("assembleRelease", 97),
         };
 
@@ -2011,11 +2011,7 @@ namespace Bloom.Publish.Rab
                     continue;
 
                 var installerPath = Directory
-                    .GetFiles(
-                        directory,
-                        $"{kRabSetupInstallerPrefix}*.exe",
-                        SearchOption.TopDirectoryOnly
-                    )
+                    .GetFiles(directory, "Reading-App-Builder*.exe", SearchOption.TopDirectoryOnly)
                     .Where(path => IsRabSetupInstallerFileName(Path.GetFileName(path)))
                     .OrderBy(path => path.Length)
                     .FirstOrDefault();
@@ -2184,6 +2180,15 @@ namespace Bloom.Publish.Rab
         {
             if (string.IsNullOrWhiteSpace(fileName))
                 return false;
+
+            if (
+                string.Equals(
+                    fileName,
+                    kRabSetupInstallerFileName,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+                return true;
 
             return fileName.StartsWith(kRabSetupInstallerPrefix, StringComparison.OrdinalIgnoreCase)
                 && fileName.EndsWith(kRabSetupInstallerSuffix, StringComparison.OrdinalIgnoreCase);
