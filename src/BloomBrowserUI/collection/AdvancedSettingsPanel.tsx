@@ -88,6 +88,11 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const featureStatus = useGetFeatureStatus("TeamCollection");
     const teamCollectionOptionEnabled =
         featureStatus === undefined ? true : featureStatus.enabled;
+    const appBuilderFeatureStatus = useGetFeatureStatus("AppBuilder");
+    const appBuilderOptionEnabled =
+        appBuilderFeatureStatus === undefined
+            ? true
+            : appBuilderFeatureStatus.enabled;
     const canChangeTeamCollectionOption = allowTeamCollectionEnabled !== false;
 
     const normalizeConfigrSettings = React.useCallback(
@@ -232,6 +237,7 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                             <ConfigrBoolean
                                 label={appBuilderLabel}
                                 path="allowAppBuilder"
+                                disabled={!appBuilderOptionEnabled}
                             />
                             <div
                                 css={css`
