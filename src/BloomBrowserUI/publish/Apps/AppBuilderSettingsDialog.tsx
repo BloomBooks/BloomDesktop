@@ -241,6 +241,9 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
     const openReadingAppBuilderCancelSource = React.useRef<
         CancelTokenSource | undefined
     >(undefined);
+    const saveSettingsAndOpenReadingAppBuilderRef = React.useRef<
+        (() => Promise<void>) | undefined
+    >(undefined);
     const cancelStartingReadingAppBuilderRef = React.useRef(false);
     // Configr returns the edited form state only when OK is pressed, so stash that payload until we convert and save it.
     const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
@@ -297,22 +300,6 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
         "Use this to do more customization of your app. Make sure to click Save and quit Reading App Builder before returning to Bloom.",
         "PublishTab.Apps.SettingsDialog.RunRAB.Description",
     );
-    const openReadingAppBuilderControl: React.FunctionComponent<{
-        value: string;
-        disabled?: boolean;
-        onChange: (value: string) => void;
-    }> = (controlProps) => {
-        return (
-            <ReadingAppBuilderButtonForConfigr
-                {...controlProps}
-                buttonLabel={readingAppBuilderButtonLabel}
-                canOpenInRab={props.canOpenInRab}
-                onOpen={() => {
-                    void saveSettingsAndOpenReadingAppBuilder();
-                }}
-            />
-        );
-    };
 
     function validatePackageName(packageName: string | number): true | string {
         const issue = getAppBuilderPackageNameValidationIssue(
@@ -442,6 +429,32 @@ export const AppBuilderSettingsDialog: React.FunctionComponent<{
             throw error;
         }
     }
+
+    saveSettingsAndOpenReadingAppBuilderRef.current =
+        saveSettingsAndOpenReadingAppBuilder;
+
+    const openReadingAppBuilderControl = React.useMemo<
+        React.FunctionComponent<{
+            value: string;
+            disabled?: boolean;
+            onChange: (value: string) => void;
+        }>
+    >(
+        () =>
+            function OpenReadingAppBuilderControl(controlProps) {
+                return (
+                    <ReadingAppBuilderButtonForConfigr
+                        {...controlProps}
+                        buttonLabel={readingAppBuilderButtonLabel}
+                        canOpenInRab={props.canOpenInRab}
+                        onOpen={() => {
+                            void saveSettingsAndOpenReadingAppBuilderRef.current?.();
+                        }}
+                    />
+                );
+            },
+        [readingAppBuilderButtonLabel, props.canOpenInRab],
+    );
 
     return (
         <>
