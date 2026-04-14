@@ -127,6 +127,18 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const hasImage = !!imgContainer;
     const hasText =
         props.canvasElement.getElementsByClassName("bloom-editable").length > 0;
+    let canHaveChildBubbles = hasText;
+    if (hasText) {
+        const dataBubble = props.canvasElement.getAttribute("data-bubble");
+        if (dataBubble) {
+            if (
+                dataBubble.includes("`style`:`caption`") ||
+                dataBubble.includes("`style`:`none`")
+            ) {
+                canHaveChildBubbles = false;
+            }
+        }
+    }
     const linkGrid = props.canvasElement.getElementsByClassName(
         "bloom-link-grid",
     )[0] as HTMLElement | undefined;
@@ -307,7 +319,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         });
     }
 
-    if (hasText && !isInDraggableGame && !isNavButton) {
+    if (canHaveChildBubbles && !isInDraggableGame && !isNavButton) {
         menuOptions.splice(0, 0, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
             english: "Add Child Bubble",
@@ -1732,17 +1744,17 @@ function addImageMenuOptions(
             icon: <SearchIcon css={getMenuIconCss()} />,
         },
         {
-            l10nId: "EditTab.Image.PasteImage",
-            english: "Paste image",
-            onClick: () => doImageCommand(img, "paste"),
-            icon: <PasteIcon css={getMenuIconCss()} />,
-        },
-        {
             l10nId: "EditTab.Image.CopyImage",
             english: "Copy image",
             onClick: () => doImageCommand(img, "copy"),
             icon: <CopyIcon css={getMenuIconCss()} />,
             disabled: !realImagePresent,
+        },
+        {
+            l10nId: "EditTab.Image.PasteImage",
+            english: "Paste image",
+            onClick: () => doImageCommand(img, "paste"),
+            icon: <PasteIcon css={getMenuIconCss()} />,
         },
         {
             l10nId: "EditTab.Image.Reset",
