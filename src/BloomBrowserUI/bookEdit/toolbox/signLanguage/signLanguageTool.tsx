@@ -535,7 +535,7 @@ export class SignLanguageToolControls extends React.Component<
         updateVideoInContainer(container, url);
     }
 
-    private refreshAfterVideoChange() {
+    public leaveCurrentVideoContext(onComplete?: () => void) {
         document.removeEventListener("keydown", this.onKeyPress);
         window.clearTimeout(this.timerId);
         SignLanguageTool.removeVideoOverlay();
@@ -545,12 +545,18 @@ export class SignLanguageToolControls extends React.Component<
                 stateClass: "idle",
                 minutesRecorded: "",
                 secondsRecorded: "",
+                haveRecording: false,
+                videoStatistics: emptyVideoStatistics,
                 videoInfoLoaded: false,
             },
-            () => {
-                this.getVideoStatsFromFile();
-            },
+            onComplete,
         );
+    }
+
+    private refreshAfterVideoChange() {
+        this.leaveCurrentVideoContext(() => {
+            this.getVideoStatsFromFile();
+        });
     }
 
     private importRecording() {
@@ -946,7 +952,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public static getSelectedVideoPath(): string | null {
-        // strip off the ?now= param we sometimes use to prevent use of cached old versions,
+        // strip off the temporary cache-busting query param we sometimes use to prevent use of cached old versions,
         // and the #t= fragment used to trim videos.
         return UrlUtils.extractPathComponent(
             SignLanguageTool.getSelectedVideoPathAndTiming() as string,
@@ -954,13 +960,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        this.reactControls.setNoVideo(false);
-        this.reactControls.setState({
-            recording: false,
-            stateClass: "idle",
-            minutesRecorded: "",
-            secondsRecorded: "",
-        });
+        this.reactControls.leaveCurrentVideoContext();
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
         // does anything with it) and leaving it allows us to keep the same one selected
         // when we come back to the page. This is especially important when refreshing the
