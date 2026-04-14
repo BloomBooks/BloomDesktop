@@ -18,45 +18,47 @@ import { getReplayIcon } from "../img/replayIcon";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
 import $ from "jquery";
 
-export function SetupVideoEditing(container) {
+const kBloomVideoTransientTimestampParam = "bloomVideoTransientTimestamp";
+
+export function SetupVideoEditing(container: HTMLElement) {
     $(container)
         .find(".bloom-videoContainer")
         .each((index, vc) => {
             SetupVideoContainer(vc);
         });
-    Array.from(container.getElementsByTagName("video")).forEach(
-        (videoElement: HTMLVideoElement) => {
-            videoElement.removeAttribute("controls");
-            // I don't think we need to do this in normal operation, but it's useful when
-            // debugging, and just might prevent a problem in normal operation.
-            videoElement.parentElement?.classList.remove("playing");
-            videoElement.parentElement?.classList.remove("paused");
-            videoElement.addEventListener("click", handleVideoClick);
-            const playButton = wrapVideoIcon(
-                videoElement,
-                // Alternatively, we could import the Material UI icon, make this file a TSX, and use
-                // ReactDom.render to render the icon into the div. But just creating the SVG
-                // ourselves (as these methods do) seems more natural to me. We would not be using
-                // React for anything except to make use of an image which unfortunately is only
-                // available by default as a component.
-                getPlayIcon("#ffffff", videoElement),
-                "bloom-videoPlayIcon",
-            );
-            playButton.addEventListener("click", handlePlayClick);
-            const pauseButton = wrapVideoIcon(
-                videoElement,
-                getPauseIcon("#ffffff", videoElement),
-                "bloom-videoPauseIcon",
-            );
-            pauseButton.addEventListener("click", handlePauseClick);
-            const replayButton = wrapVideoIcon(
-                videoElement,
-                getReplayIcon("#ffffff", videoElement),
-                "bloom-videoReplayIcon",
-            );
-            replayButton.addEventListener("click", handleReplayClick);
-        },
-    );
+    Array.from<HTMLVideoElement>(
+        container.getElementsByTagName("video"),
+    ).forEach((videoElement: HTMLVideoElement) => {
+        videoElement.removeAttribute("controls");
+        // I don't think we need to do this in normal operation, but it's useful when
+        // debugging, and just might prevent a problem in normal operation.
+        videoElement.parentElement?.classList.remove("playing");
+        videoElement.parentElement?.classList.remove("paused");
+        videoElement.addEventListener("click", handleVideoClick);
+        const playButton = wrapVideoIcon(
+            videoElement,
+            // Alternatively, we could import the Material UI icon, make this file a TSX, and use
+            // ReactDom.render to render the icon into the div. But just creating the SVG
+            // ourselves (as these methods do) seems more natural to me. We would not be using
+            // React for anything except to make use of an image which unfortunately is only
+            // available by default as a component.
+            getPlayIcon("#ffffff", videoElement),
+            "bloom-videoPlayIcon",
+        );
+        playButton.addEventListener("click", handlePlayClick);
+        const pauseButton = wrapVideoIcon(
+            videoElement,
+            getPauseIcon("#ffffff", videoElement),
+            "bloom-videoPauseIcon",
+        );
+        pauseButton.addEventListener("click", handlePauseClick);
+        const replayButton = wrapVideoIcon(
+            videoElement,
+            getReplayIcon("#ffffff", videoElement),
+            "bloom-videoReplayIcon",
+        );
+        replayButton.addEventListener("click", handleReplayClick);
+    });
 }
 
 function SetupVideoContainer(videoContainerDiv: Element) {
@@ -92,7 +94,7 @@ function videoPlayingEventHandler(e: Event) {
     currentVideoElement = video;
     let end: number = getVideoEndSeconds(video);
     const untrimmedEndPoint: number = 0.0;
-    if (end == untrimmedEndPoint) {
+    if (end === untrimmedEndPoint) {
         // We can't just set the endpoint to equal the duration of the video here, because
         // we will be testing that the current playback time is greater than the endpoint.
         // Since we test for the end of the video every 1/10th of a second, set the endpoint
@@ -292,7 +294,7 @@ export function updateVideoInContainer(container: Element, url: string): void {
             video.appendChild(source);
         }
         if (source) {
-            source.setAttribute("src", addNowParam(url));
+            source.setAttribute("src", addTransientVideoTimestampParam(url));
             video.load();
             // Transparent background videos allow the placeholder to show.  See BL-13918.
             container.classList.remove("bloom-noVideoSelected");
@@ -300,15 +302,49 @@ export function updateVideoInContainer(container: Element, url: string): void {
     }
 }
 
-function addNowParam(url: string): string {
+function addTransientVideoTimestampParam(url: string): string {
     const hashIndex = url.indexOf("#");
     const hash = hashIndex >= 0 ? url.substring(hashIndex) : "";
     const beforeHash = hashIndex >= 0 ? url.substring(0, hashIndex) : url;
     const queryIndex = beforeHash.indexOf("?");
     const baseUrl =
         queryIndex >= 0 ? beforeHash.substring(0, queryIndex) : beforeHash;
+    const query = queryIndex >= 0 ? beforeHash.substring(queryIndex + 1) : "";
+    const searchParams = new URLSearchParams(query);
+    searchParams.set(kBloomVideoTransientTimestampParam, Date.now().toString());
+    const search = searchParams.toString();
 
-    return `${baseUrl}?now=${Date.now()}${hash}`;
+    return `${baseUrl}${search ? `?${search}` : ""}${hash}`;
+}
+
+export function stripTransientVideoTimestampParam(url: string): string {
+    const hashIndex = url.indexOf("#");
+    const hash = hashIndex >= 0 ? url.substring(hashIndex) : "";
+    const beforeHash = hashIndex >= 0 ? url.substring(0, hashIndex) : url;
+    const queryIndex = beforeHash.indexOf("?");
+    if (queryIndex < 0) {
+        return url;
+    }
+
+    const baseUrl = beforeHash.substring(0, queryIndex);
+    const query = beforeHash.substring(queryIndex + 1);
+    const searchParams = new URLSearchParams(query);
+    searchParams.delete(kBloomVideoTransientTimestampParam);
+    const search = searchParams.toString();
+
+    return `${baseUrl}${search ? `?${search}` : ""}${hash}`;
+}
+
+export function removeTransientVideoTimestampParams(root: ParentNode): void {
+    for (const element of Array.from(
+        root.querySelectorAll<HTMLElement>("video[src], video source[src]"),
+    )) {
+        const src = element.getAttribute("src");
+        if (!src) {
+            continue;
+        }
+        element.setAttribute("src", stripTransientVideoTimestampParam(src));
+    }
 }
 
 // configure one of the icons we display over videos. We put a div around it and apply
