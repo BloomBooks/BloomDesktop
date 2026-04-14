@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import * as React from "react";
 import { BloomStepper } from "../../react_components/BloomStepper";
+import { NoteBox } from "../../react_components/boxes";
 import HelpLink from "../../react_components/helpLink";
 import { Link } from "../../react_components/link";
 import BloomButton from "../../react_components/bloomButton";
@@ -607,6 +608,27 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                     </BloomStepper>
                 </div>
             </PublishPanel>
+            <NoteBox
+                css={css`
+                    margin-left: 50px;
+                    margin-top: 16px;
+                    width: max(400px);
+                `}
+            >
+                <div
+                    css={css`
+                        font-weight: 600;
+                        margin-bottom: 4px;
+                    `}
+                >
+                    What's Next?
+                </div>
+                <div>
+                    Actually publishing your app to the Android App Store
+                    requires several more steps. In the near future we hope to
+                    expand Bloom to help with that part of the process.
+                </div>
+            </NoteBox>
             {showSettingsDialog && (
                 <AppBuilderSettingsDialog
                     appDefPath={screenState.status.appDefPath ?? ""}
