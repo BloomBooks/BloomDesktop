@@ -121,6 +121,8 @@ export class SignLanguageToolControls extends React.Component<
     private timerId: number;
     private recordingStarted: number;
     private turningOnVideo: boolean = false;
+    private videoRequestVersion: number = 0;
+    private wantsVideoMonitorOn: boolean = false;
 
     public isVideoMonitorRunning(): boolean {
         if (!this.videoStream) {
@@ -582,18 +584,24 @@ export class SignLanguageToolControls extends React.Component<
         if (this.turningOnVideo || this.isVideoMonitorRunning()) {
             return;
         }
+        this.wantsVideoMonitorOn = true;
         this.turningOnVideo = true;
+        const requestVersion = ++this.videoRequestVersion;
         const constraints = { video: true };
         navigator.mediaDevices
             .getUserMedia(constraints)
-            .then((stream) => this.startMonitoring(stream))
-            .catch((reason) => this.errorCallback(reason))
+            .then((stream) => this.startMonitoring(stream, requestVersion))
+            .catch((reason) => this.errorCallback(reason, requestVersion))
             .finally(() => {
-                this.turningOnVideo = false;
+                if (requestVersion === this.videoRequestVersion) {
+                    this.turningOnVideo = false;
+                }
             });
     }
 
     public turnOffVideo() {
+        this.wantsVideoMonitorOn = false;
+        this.videoRequestVersion++;
         this.turningOnVideo = false;
         if (this.videoStream) {
             const oldStream = this.videoStream;
@@ -604,7 +612,10 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     // callback from getUserMedia when it fails.
-    private errorCallback(reason) {
+    private errorCallback(reason, requestVersion: number) {
+        if (requestVersion !== this.videoRequestVersion) {
+            return;
+        }
         // something wrong! Developers note: Bloom and Firefox cannot both use it, so be careful about
         // "open in browser".
         // reason.name seems to be "NotFoundError" if there is no camera at all.
@@ -618,14 +629,25 @@ export class SignLanguageToolControls extends React.Component<
         });
         // In case the user plugs in a camera, try once a second to turn it on.
         window.setTimeout(() => {
-            if (this.state.enabled) {
+            if (
+                this.wantsVideoMonitorOn &&
+                requestVersion === this.videoRequestVersion
+            ) {
                 this.turnOnVideo();
             }
         }, 1000);
     }
 
     // callback from getUserMedia when it succeeds; gives us a stream we can monitor and record from.
-    private startMonitoring(stream: MediaStream) {
+    private startMonitoring(stream: MediaStream, requestVersion: number) {
+        if (
+            requestVersion !== this.videoRequestVersion ||
+            !this.wantsVideoMonitorOn
+        ) {
+            stream.getVideoTracks().forEach((t) => t.stop());
+            stream.getAudioTracks().forEach((t) => t.stop());
+            return;
+        }
         this.setState({
             cameraAccess: true,
         });
