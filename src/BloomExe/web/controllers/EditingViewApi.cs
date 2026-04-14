@@ -127,11 +127,6 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                "editView/showBookSettingsDialog",
-                HandleShowBookSettingsDialog,
-                true
-            );
-            apiHandler.RegisterEndpointHandler(
                 "editView/toggleCustomPageLayout",
                 HandleToggleCustomCover,
                 true
@@ -193,6 +188,9 @@ namespace Bloom.web.controllers
                 var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");
                 if (string.IsNullOrEmpty(customLayoutData.Xml))
                 {
+                    // "data-tool-id" needs to be set in TS in order to persist when we
+                    // reply "false" here.  (It needs to be set in C# when we reply "true"
+                    // and save the page here.)
                     request.ReplyWithText("false");
                     return;
                 }
@@ -269,12 +267,6 @@ namespace Bloom.web.controllers
             var pageId = request.GetPostStringOrNull();
             request.PostSucceeded();
             View.Model.SaveThen(() => pageId, () => { });
-        }
-
-        private void HandleShowBookSettingsDialog(ApiRequest request)
-        {
-            request.PostSucceeded();
-            View.SaveAndOpenBookSettingsDialog();
         }
 
         /// <summary>

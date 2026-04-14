@@ -22,7 +22,6 @@ namespace Bloom.Book
     {
         private readonly HtmlDom _bookDom;
         private readonly string _nameOfXMatterPack;
-        private readonly IFileLocator _fileLocator;
 
         /// <summary>
         /// Constructs by finding the file and folder of the xmatter pack, given the its key name e.g. "Factory", "SILIndonesia".
@@ -41,7 +40,6 @@ namespace Bloom.Book
             bool useDeviceVersionIfAvailable = false
         )
         {
-            _fileLocator = fileLocator;
             string directoryPath = null;
             _bookDom = bookDom;
             var bookSpecificXMatterPack = bookDom.GetMetaValue("xmatter", null);
@@ -307,8 +305,7 @@ namespace Bloom.Book
             Layout layout,
             bool orderXmatterForDeviceUse,
             string metadataLangTag,
-            List<string> oldIds = null,
-            bool coverIsImage = false
+            List<string> oldIds = null
         )
         {
             //don't want to pollute shells with this content
@@ -350,29 +347,7 @@ namespace Bloom.Book
                 )
             )
             {
-                var newPageSource = xmatterPage;
-
-                // If we are using an image for the front cover, replace the typical front cover with
-                // a special one which has a full-page bloom-canvas.
-                if (coverIsImage && IsOutsideFrontCoverPage(xmatterPage))
-                {
-                    var directoryPath = GetXMatterDirectory(
-                        "CoverIsImage",
-                        _fileLocator,
-                        null,
-                        true
-                    );
-                    var coverIsImageDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(
-                        directoryPath.CombineForPath("CoverIsImage-XMatter.html"),
-                        false
-                    );
-                    var coverIsImagePage = coverIsImageDom.SelectSingleNode(
-                        "/html/body/div[contains(@data-page,'required')]"
-                    );
-                    newPageSource = coverIsImagePage as SafeXmlElement;
-                }
-
-                var newPageDiv = _bookDom.RawDom.ImportNode(newPageSource, true) as SafeXmlElement;
+                var newPageDiv = _bookDom.RawDom.ImportNode(xmatterPage, true) as SafeXmlElement;
 
                 // If we're updating an existing book, we want to keep the IDs (as much as possible; sometimes
                 // the number of xmatter pages changes and we have to add IDs). In this case, oldIds is obtained
@@ -558,6 +533,40 @@ namespace Bloom.Book
                     oldPageIds.Add(id);
                 }
                 div.ParentNode.RemoveChild(div);
+            }
+        }
+
+        /// <summary>
+        /// Collect the data-custom-layout-id values of any pages that currently have bloom-customLayout,
+        /// so that <see cref="RestoreCustomLayoutClasses"/> can re-apply the class after xmatter replacement.
+        /// </summary>
+        public static HashSet<string> GatherCustomLayoutIds(HtmlDom dom)
+        {
+            return dom.SafeSelectNodes(
+                    "//div[contains(@class, 'bloom-page') and @data-custom-layout-id and contains(concat(' ', normalize-space(@class), ' '), ' bloom-customLayout ')]"
+                )
+                .Cast<SafeXmlElement>()
+                .Select(page => page.GetAttribute("data-custom-layout-id"))
+                .Where(id => !string.IsNullOrEmpty(id))
+                .ToHashSet();
+        }
+
+        /// <summary>
+        /// Re-apply bloom-customLayout to any pages whose data-custom-layout-id was collected by
+        /// <see cref="GatherCustomLayoutIds"/> before xmatter was replaced.
+        /// </summary>
+        public static void RestoreCustomLayoutClasses(HtmlDom dom, HashSet<string> customLayoutIds)
+        {
+            foreach (
+                var page in dom.SafeSelectNodes(
+                        "//div[contains(@class, 'bloom-page') and @data-custom-layout-id]"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var id = page.GetAttribute("data-custom-layout-id");
+                if (customLayoutIds.Contains(id))
+                    page.AddClass("bloom-customLayout");
             }
         }
 

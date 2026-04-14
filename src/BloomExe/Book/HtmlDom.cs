@@ -1886,6 +1886,102 @@ namespace Bloom.Book
         public const string musicAttrName = "data-backgroundaudio";
         public const string musicVolumeName = musicAttrName + "volume";
 
+        /* Why do we whitelist? Agent says:
+        Bloom already has history of bad results from copying inline style too broadly.
+        The nearby element-level comment in BookData.cs:2073 explains one concrete example:
+        inline display rules copied into saved content caused visibility regressions on covers, while some inline style still had to
+         be preserved for legitimate cases like image cropping. Same pattern here: don’t ban style completely,
+         but only allow the specific inline properties that represent intentional persisted settings.
+
+        These five properties are exactly the ones the Page Settings UI writes onto the page element in PageSettingsConfigrPages.tsx:191.
+        Everything else about page appearance is supposed to come from theme CSS and userModifiedStyles, not from arbitrary leftovers in
+        the page’s inline style.
+
+        Summary: we whitelist because page.style is a noisy transport layer coming back from the live editor,
+        not a durable format. Without the whitelist, saving a page would risk persisting accidental editor state and causing hard-to-debug visual
+        regressions.*/
+        private static readonly string[] kPageStylePropertiesToPersist =
+        {
+            "--page-background-color",
+            "--pageNumber-color",
+            "--pageNumber-outline-color",
+            "--pageNumber-background-color",
+        };
+
+        private static string GetPersistedPageStyleValue(SafeXmlElement editedPageDiv)
+        {
+            var style = editedPageDiv.GetAttribute("style");
+            if (string.IsNullOrWhiteSpace(style))
+                return string.Empty;
+
+            var persistedStyleSegments = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(segment => segment.Trim())
+                .Where(segment => !string.IsNullOrEmpty(segment))
+                .Where(segment =>
+                {
+                    var colonIndex = segment.IndexOf(':');
+                    if (colonIndex <= 0)
+                        return false;
+
+                    var propertyName = segment.Substring(0, colonIndex).Trim();
+                    return kPageStylePropertiesToPersist.Contains(
+                        propertyName,
+                        StringComparer.OrdinalIgnoreCase
+                    );
+                })
+                .ToArray();
+
+            return persistedStyleSegments.Any()
+                ? string.Join("; ", persistedStyleSegments)
+                : string.Empty;
+        }
+
+        public static void RemovePageBackgroundColorStyles(SafeXmlDocument dom)
+        {
+            foreach (
+                SafeXmlElement pageDiv in dom.SafeSelectNodes(
+                    "//div[contains(@class,'bloom-page')]"
+                )
+            )
+            {
+                RemoveStyleProperties(pageDiv, "--page-background-color");
+            }
+        }
+
+        private static void RemoveStyleProperties(
+            SafeXmlElement element,
+            params string[] propertyNames
+        )
+        {
+            var style = element.GetAttribute("style");
+            if (string.IsNullOrWhiteSpace(style))
+                return;
+
+            var filteredSegments = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(segment => segment.Trim())
+                .Where(segment => !string.IsNullOrEmpty(segment))
+                .Where(segment =>
+                {
+                    var colonIndex = segment.IndexOf(':');
+                    if (colonIndex < 0)
+                        return true;
+
+                    var propertyName = segment.Substring(0, colonIndex).Trim();
+                    return !propertyNames.Contains(propertyName);
+                })
+                .ToArray();
+
+            if (filteredSegments.Length == 0)
+            {
+                element.RemoveAttribute("style");
+                return;
+            }
+
+            element.SetAttribute("style", string.Join("; ", filteredSegments) + ";");
+        }
+
         public static void ProcessPageAfterEditing(
             SafeXmlElement destinationPageDiv,
             SafeXmlElement edittedPageDiv
@@ -1920,6 +2016,14 @@ namespace Bloom.Book
             //back to the html in keeping with our goal of having the page look right if you were to just open the
             //html file in a browser.
             destinationPageDiv.SetAttribute("lang", edittedPageDiv.GetAttribute("lang"));
+
+            // Save only the page color custom properties we manage in Page Settings.
+            // If all are missing, remove any previously-saved page-level custom properties.
+            var style = GetPersistedPageStyleValue(edittedPageDiv);
+            if (string.IsNullOrEmpty(style))
+                destinationPageDiv.RemoveAttribute("style");
+            else
+                destinationPageDiv.SetAttribute("style", style);
 
             // Copy the two background audio attributes which can be set using the music toolbox.
             // Ensuring that volume is missing unless the main attribute is non-empty is

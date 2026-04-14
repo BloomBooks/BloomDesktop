@@ -328,15 +328,7 @@ namespace Bloom.Book
         /// </remarks>
         public virtual string NameBestForUserDisplay
         {
-            get
-            {
-                if (BookInfo.FileNameLocked)
-                {
-                    // The user has explicitly chosen a name to use for the book, distinct from its titles.
-                    return Path.GetFileName(FolderPath);
-                }
-                return TitleBestForUserDisplay;
-            }
+            get { return BookInfo.GetBestDisplayTitle(null, this); }
         }
 
         /// <summary>
@@ -1764,6 +1756,8 @@ namespace Bloom.Book
         /// </summary>
         public void EnsureUpToDateMemory(IProgress progress)
         {
+            Storage.CaptureInitialStateForMigration();
+
             string oldMetaData = "";
             if (RobustFile.Exists(BookInfo.MetaDataPath))
             {
@@ -1852,6 +1846,7 @@ namespace Bloom.Book
             // but it takes almost no time when the book IS already up-to-date.
             // These methods work with the same book metadata to determine what migration has
             // already been done, so they must be called in exactly this order.
+            Storage.RestoreStuffBeforeMigration();
             Storage.MigrateMaintenanceLevels();
             Storage.MigrateToMediaLevel1ShrinkLargeImages();
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
@@ -1866,6 +1861,7 @@ namespace Bloom.Book
             // Migration 11 does not exist.
             Storage.MigrateToLevel12PageNumberPosition();
             Storage.MigrateToLevel13SplitPaneMarginBoxes();
+            Storage.MigrateToLevel14CoverIsImageToCustomLayout(_bookData);
 
             Storage.DoBackMigrations();
 
@@ -2545,14 +2541,7 @@ namespace Bloom.Book
             // Various things, especially publication, don't work with unknown page sizes.
             Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator);
             var oldIds = new List<string>();
-            var customLayoutIds = bookDOM
-                .SafeSelectNodes(
-                    "//div[contains(@class, 'bloom-page') and @data-custom-layout-id and contains(concat(' ', normalize-space(@class), ' '), ' bloom-customLayout ')]"
-                )
-                .Cast<SafeXmlElement>()
-                .Select(page => page.GetAttribute("data-custom-layout-id"))
-                .Where(id => !string.IsNullOrEmpty(id))
-                .ToHashSet();
+            var customLayoutIds = XMatterHelper.GatherCustomLayoutIds(bookDOM);
             XMatterHelper.RemoveExistingXMatter(bookDOM, oldIds);
             // this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
             // still requiring it to be a valid layout.
@@ -2562,21 +2551,9 @@ namespace Bloom.Book
                 layout,
                 BookInfo.UseDeviceXMatter,
                 _bookData.MetadataLanguage1Tag,
-                oldIds,
-                CoverIsImage
+                oldIds
             );
-            foreach (
-                var page in bookDOM
-                    .SafeSelectNodes(
-                        "//div[contains(@class, 'bloom-page') and @data-custom-layout-id]"
-                    )
-                    .Cast<SafeXmlElement>()
-            )
-            {
-                var customLayoutId = page.GetAttribute("data-custom-layout-id");
-                if (customLayoutIds.Contains(customLayoutId))
-                    page.AddClass("bloom-customLayout");
-            }
+            XMatterHelper.RestoreCustomLayoutClasses(bookDOM, customLayoutIds);
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
             TranslationGroupManager.PrepareDataBookTranslationGroups(bookDOM.RawDom, dataBookLangs);
 
@@ -4125,15 +4102,6 @@ namespace Bloom.Book
             }
         }
 
-        public bool CoverIsImage =>
-            BookInfo.AppearanceSettings.CoverIsImage
-            && FeatureStatus
-                .GetFeatureStatus(
-                    CollectionSettings.Subscription,
-                    FeatureName.FullPageCoverImage,
-                    this
-                )
-                .Enabled;
         public bool FullBleed =>
             PageSizeSupportsFullBleed()
             && BookInfo.AppearanceSettings.FullBleed
@@ -4503,7 +4471,11 @@ namespace Bloom.Book
             {
                 InsertFullBleedMarkup(printingDom.Body);
             }
-            if (!FullBleed)
+            if (!UserPrefs.IncludeBackgroundColors)
+            {
+                HtmlDom.RemovePageBackgroundColorStyles(printingDom.RawDom);
+            }
+            if (!FullBleed && !UserPrefs.IncludeBackgroundColors)
                 SetBackwardsCompatibleCoverBackgroundColor(printingDom.RawDom, "white", true);
             AddPreviewJavascript(printingDom);
             return printingDom;
@@ -4860,35 +4832,6 @@ namespace Bloom.Book
                 // current book location.
                 PageTemplateSource = Path.GetFileName(FolderPath);
             }
-
-            // This doesn't seem like the best place for this code.
-            // For example, it would probably be better to do immediately when saving book settings dialog.
-            // But this is the only place I could find to plumb things to actually get it to work.
-            // Other attempts to break into the complicated book save cycle were unsuccessful.
-            if (BookInfo.AppearanceSettings.PendingChangeRequiresXmatterUpdate)
-            {
-                // Yes, calling EnsureUpToDateMemory() is unfortunately overkill.
-                // And an unfortunate expansion of the use of this version of the method.
-                // It would be great if there was a way to just update the XMatter;
-                // in theory, that would be BringXmatterHtmlUpToDate().
-                // But just calling that leaves several things undone, including
-                // - calling either UpdateVariablesAndDataDivThroughDOM() or SynchronizeDataItemsThroughoutDOM()
-                //    (such that data-book values are lost)
-                // - calling UpdatePageNumberAndSideClassOfPages()
-                //    (such that side-right/left classes are lost)
-                // If we knew it was just those, we could call them here instead
-                // (we can even move this above the call to UpdateVariablesAndDataDivThroughDOM above).
-                // But there is a whole slew of things EnsureUpToDateMemory() does after calling BringXmatterHtmlUpToDate()
-                // and I wouldn't have any confidence that some of the rest of it is not needed here as well.
-                EnsureUpToDateMemory(new NullProgress());
-                // and since we may be changing xmatter, we should update supporting files, which includes
-                // xmatter css, if we can (the current case where we can't is updating a template we want
-                // to import pages from, which I don't think will come here at all, so it would be safe
-                // currently to call this unconditionally).
-                if (IsSaveable)
-                    UpdateSupportFiles();
-            }
-            BookInfo.AppearanceSettings.PendingChangeRequiresXmatterUpdate = false;
 
             try
             {

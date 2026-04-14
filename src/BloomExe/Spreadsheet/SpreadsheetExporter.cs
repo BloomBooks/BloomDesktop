@@ -121,7 +121,7 @@ namespace Bloom.Spreadsheet
         {
             if (_outputImageFolder != null)
             {
-                ImageUtils.ReallyCropImages(dom.RawDom, bookFolderPath, _outputImageFolder);
+                ImageUtils.ReallyCropImages(dom.RawDom, bookFolderPath, _outputImageFolder, true);
             }
 
             _progress = progress ?? new NullWebSocketProgress();

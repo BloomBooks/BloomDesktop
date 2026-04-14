@@ -3,9 +3,11 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+    findRunningStandardBloomInstances,
     requireOptionValue,
     requireTcpPortOption,
 } from "../.github/skills/bloom-automation/bloomProcessCommon.mjs";
+import { isManualRestartCommand } from "./watchBloomExeInput.mjs";
 import { getHelpfulStartupLabel } from "./watchBloomExeLabel.mjs";
 
 const automationReadyPrefix = "BLOOM_AUTOMATION_READY ";
@@ -69,6 +71,8 @@ const launchTimeoutMs = 120000;
 const bloomMonitorPollMs = 500;
 const shortLivedBloomMs = 5000;
 const launchesUnderWatch = true;
+const restartPrompt =
+    "Bloom is closed. Press Enter to relaunch, or press Ctrl+C to stop watching.";
 const projectPath = path.join(
     options.repoRoot,
     "src",
@@ -82,6 +86,42 @@ if (!existsSync(projectPath)) {
     );
     process.exit(1);
 }
+
+const normalizeComparablePath = (value) =>
+    path.resolve(value).replace(/\//g, "\\").toLowerCase();
+
+const tryInferVitePortFromRunningBloom = async () => {
+    const runningInstances = await findRunningStandardBloomInstances();
+    const expectedRepoRoot = normalizeComparablePath(options.repoRoot);
+    const vitePorts = [
+        ...new Set(
+            runningInstances
+                .filter(
+                    (instance) =>
+                        instance.detectedRepoRoot &&
+                        normalizeComparablePath(instance.detectedRepoRoot) ===
+                            expectedRepoRoot &&
+                        instance.vitePort,
+                )
+                .map((instance) => instance.vitePort),
+        ),
+    ];
+
+    if (vitePorts.length === 1) {
+        return vitePorts[0];
+    }
+
+    if (vitePorts.length > 1) {
+        console.warn(
+            `Multiple running Bloom instances from this worktree reported different Vite ports (${vitePorts.join(", ")}). Launching without an inherited Vite port.`,
+        );
+    }
+
+    return undefined;
+};
+
+const effectiveVitePort =
+    options.vitePort ?? (await tryInferVitePortFromRunningBloom());
 
 const dotnetArgs = [
     "watch",
@@ -98,12 +138,18 @@ if (startupLabel) {
     dotnetArgs.push("--label", startupLabel);
 }
 
-if (options.vitePort) {
-    dotnetArgs.push("--vite-port", String(options.vitePort));
+if (effectiveVitePort) {
+    dotnetArgs.push("--vite-port", String(effectiveVitePort));
 }
 
-if (options.vitePort) {
-    console.log(`Bloom Vite dev port: ${options.vitePort}`);
+if (effectiveVitePort) {
+    if (options.vitePort) {
+        console.log(`Bloom Vite dev port: ${effectiveVitePort}`);
+    } else {
+        console.log(
+            `Inherited Bloom Vite dev port from running worktree instance: ${effectiveVitePort}`,
+        );
+    }
 }
 
 const createForwardingLineWriter = (target, onLine) => {
@@ -152,16 +198,7 @@ const createForwardingLineWriter = (target, onLine) => {
     };
 };
 
-const child = spawn("dotnet", dotnetArgs, {
-    stdio: ["ignore", "pipe", "pipe"],
-    shell: false,
-});
-
-console.log(`dotnet PID: ${child.pid}`);
-console.log(
-    "watchBloomExe.mjs tracks the launched Bloom instance until it exits. Treat the latest 'Bloom ready.' line as the launch success signal and keep this terminal open while you target the reported HTTP port.",
-);
-
+let child;
 let childExited = false;
 let bloomProcessId;
 let bloomReadyAt;
@@ -170,6 +207,16 @@ let childExitCode = 0;
 let childExitSignal;
 let launchCompleted = false;
 let launchFailed = false;
+let launchTimeout;
+let launchNumber = 0;
+let activeLaunchToken = 0;
+let restartRequested = false;
+let awaitingManualRestart = false;
+let restartInProgress = false;
+
+console.log(
+    "watchBloomExe.mjs tracks the launched Bloom instance until it exits. Treat the latest 'Bloom ready.' line as the launch success signal and keep this terminal open while you target the reported HTTP port.",
+);
 
 const isProcessRunning = (pid) => {
     if (!Number.isInteger(pid) || pid <= 0) {
@@ -193,9 +240,31 @@ const stopBloomMonitor = () => {
     bloomMonitor = undefined;
 };
 
+const clearLaunchTimeout = () => {
+    if (!launchTimeout) {
+        return;
+    }
+
+    clearTimeout(launchTimeout);
+    launchTimeout = undefined;
+};
+
+const resetLaunchState = () => {
+    childExited = false;
+    bloomProcessId = undefined;
+    bloomReadyAt = undefined;
+    childExitCode = 0;
+    childExitSignal = undefined;
+    launchCompleted = false;
+    launchFailed = false;
+    awaitingManualRestart = false;
+    stopBloomMonitor();
+    clearLaunchTimeout();
+};
+
 const exitForFinishedLaunch = (exitCode = 0) => {
     stopBloomMonitor();
-    clearTimeout(launchTimeout);
+    clearLaunchTimeout();
 
     if (childExitSignal) {
         process.kill(process.pid, childExitSignal);
@@ -212,13 +281,6 @@ const startBloomMonitor = () => {
 
     bloomMonitor = setInterval(() => {
         if (isProcessRunning(bloomProcessId)) {
-            if (
-                launchesUnderWatch &&
-                bloomReadyAt &&
-                Date.now() - bloomReadyAt >= shortLivedBloomMs
-            ) {
-                stopBloomMonitor();
-            }
             return;
         }
 
@@ -231,6 +293,10 @@ const startBloomMonitor = () => {
                 `Bloom PID ${bloomProcessId} exited after ${runtimeMs} ms while dotnet watch remains active.`,
             );
             stopBloomMonitor();
+            awaitingManualRestart = true;
+            if (process.stdin.isTTY) {
+                console.log(restartPrompt);
+            }
             return;
         }
 
@@ -289,10 +355,11 @@ const reportAutomationReady = (rawAutomationInfo) => {
     }
 
     launchCompleted = true;
-    clearTimeout(launchTimeout);
+    clearLaunchTimeout();
     bloomProcessId = automationInfo.processId;
     bloomReadyAt = Date.now();
     stopBloomMonitor();
+    awaitingManualRestart = false;
 
     console.log(
         `Bloom ready. HTTP ${automationInfo.httpPort}, CDP ${automationInfo.cdpPort}, Bloom PID ${automationInfo.processId}.`,
@@ -307,7 +374,11 @@ const reportAutomationReady = (rawAutomationInfo) => {
     startBloomMonitor();
 };
 
-const handleOutputLine = (line) => {
+const handleOutputLine = (launchToken, line) => {
+    if (launchToken !== activeLaunchToken) {
+        return;
+    }
+
     if (!line.startsWith(automationReadyPrefix)) {
         return;
     }
@@ -323,61 +394,187 @@ const handleOutputLine = (line) => {
     }
 };
 
-const stdoutWriter = createForwardingLineWriter(
-    process.stdout,
-    handleOutputLine,
-);
-const stderrWriter = createForwardingLineWriter(
-    process.stderr,
-    handleOutputLine,
-);
+const terminateChild = (targetChild) =>
+    new Promise((resolve) => {
+        if (
+            !targetChild ||
+            targetChild.exitCode !== null ||
+            targetChild.signalCode
+        ) {
+            resolve();
+            return;
+        }
 
-child.stdout.on("data", stdoutWriter.write);
-child.stderr.on("data", stderrWriter.write);
-child.stdout.on("end", stdoutWriter.flush);
-child.stderr.on("end", stderrWriter.flush);
+        let settled = false;
+        let forceTimer;
 
-const launchTimeout = setTimeout(() => {
-    if (launchCompleted || launchFailed) {
-        return;
-    }
+        const finish = () => {
+            if (settled) {
+                return;
+            }
 
-    launchFailed = true;
-    console.error(
-        `Bloom did not emit ${automationReadyPrefix.trim()} within ${launchTimeoutMs} ms.`,
+            settled = true;
+            if (forceTimer) {
+                clearTimeout(forceTimer);
+            }
+            resolve();
+        };
+
+        targetChild.once("exit", finish);
+
+        try {
+            targetChild.kill("SIGINT");
+        } catch {
+            finish();
+            return;
+        }
+
+        forceTimer = setTimeout(() => {
+            if (settled) {
+                return;
+            }
+
+            if (process.platform === "win32") {
+                const killer = spawn(
+                    "taskkill",
+                    ["/pid", String(targetChild.pid), "/t", "/f"],
+                    {
+                        stdio: "ignore",
+                        shell: false,
+                    },
+                );
+
+                killer.on("exit", finish);
+                killer.on("error", finish);
+                return;
+            }
+
+            try {
+                targetChild.kill("SIGTERM");
+            } catch {
+                finish();
+                return;
+            }
+
+            setTimeout(finish, 250);
+        }, 1500);
+    });
+
+const startLaunchTimeout = () => {
+    launchTimeout = setTimeout(() => {
+        if (launchCompleted || launchFailed) {
+            return;
+        }
+
+        launchFailed = true;
+        console.error(
+            `Bloom did not emit ${automationReadyPrefix.trim()} within ${launchTimeoutMs} ms.`,
+        );
+        exitForFinishedLaunch(childExitCode || 1);
+    }, launchTimeoutMs);
+};
+
+const spawnWatchChild = () => {
+    resetLaunchState();
+    launchNumber++;
+    activeLaunchToken++;
+    const launchToken = activeLaunchToken;
+
+    child = spawn("dotnet", dotnetArgs, {
+        stdio: ["ignore", "pipe", "pipe"],
+        shell: false,
+    });
+
+    console.log(`dotnet PID: ${child.pid} (launch ${launchNumber})`);
+
+    const stdoutWriter = createForwardingLineWriter(process.stdout, (line) =>
+        handleOutputLine(launchToken, line),
     );
-    exitForFinishedLaunch(childExitCode || 1);
-}, launchTimeoutMs);
+    const stderrWriter = createForwardingLineWriter(process.stderr, (line) =>
+        handleOutputLine(launchToken, line),
+    );
 
-child.on("error", (error) => {
-    console.error(`Failed to start dotnet: ${error.message}`);
-    launchFailed = true;
-    exitForFinishedLaunch(1);
-});
+    child.stdout.on("data", stdoutWriter.write);
+    child.stderr.on("data", stderrWriter.write);
+    child.stdout.on("end", stdoutWriter.flush);
+    child.stderr.on("end", stderrWriter.flush);
 
-child.on("exit", (code, signal) => {
-    childExited = true;
-    childExitCode = code ?? 0;
-    childExitSignal = signal ?? undefined;
+    startLaunchTimeout();
 
-    if (
-        bloomProcessId &&
-        isProcessRunning(bloomProcessId) &&
-        !launchesUnderWatch
-    ) {
-        console.log(
-            `dotnet exited${code !== null ? ` with code ${code}` : ""}, but Bloom PID ${bloomProcessId} is still running. Waiting for Bloom to exit before this launcher exits.`,
-        );
-        startBloomMonitor();
+    child.on("error", (error) => {
+        if (launchToken !== activeLaunchToken) {
+            return;
+        }
+
+        console.error(`Failed to start dotnet: ${error.message}`);
+        launchFailed = true;
+        exitForFinishedLaunch(1);
+    });
+
+    child.on("exit", (code, signal) => {
+        if (launchToken !== activeLaunchToken) {
+            return;
+        }
+
+        childExited = true;
+        childExitCode = code ?? 0;
+        childExitSignal = signal ?? undefined;
+
+        if (restartRequested) {
+            restartRequested = false;
+            restartInProgress = false;
+            if (!launchFailed) {
+                console.log("Starting a fresh Bloom watch cycle...");
+            }
+            spawnWatchChild();
+            return;
+        }
+
+        if (
+            bloomProcessId &&
+            isProcessRunning(bloomProcessId) &&
+            !launchesUnderWatch
+        ) {
+            console.log(
+                `dotnet exited${code !== null ? ` with code ${code}` : ""}, but Bloom PID ${bloomProcessId} is still running. Waiting for Bloom to exit before this launcher exits.`,
+            );
+            startBloomMonitor();
+            return;
+        }
+
+        if (!bloomProcessId) {
+            console.log(
+                "dotnet exited before Bloom reported automation-ready startup info. Waiting briefly for Bloom to appear.",
+            );
+            return;
+        }
+
+        exitForFinishedLaunch(childExitCode);
+    });
+};
+
+const restartWatchChild = async () => {
+    if (restartInProgress) {
         return;
     }
 
-    if (!bloomProcessId) {
-        console.log(
-            "dotnet exited before Bloom reported automation-ready startup info. Waiting briefly for Bloom to appear.",
-        );
-        return;
-    }
+    restartInProgress = true;
+    restartRequested = true;
+    awaitingManualRestart = false;
+    console.log("Restarting Bloom...");
+    await terminateChild(child);
+};
 
-    exitForFinishedLaunch(childExitCode);
-});
+if (process.stdin.readable) {
+    process.stdin.setEncoding("utf8");
+    process.stdin.on("data", (chunk) => {
+        if (!awaitingManualRestart || !isManualRestartCommand(chunk)) {
+            return;
+        }
+
+        void restartWatchChild();
+    });
+    process.stdin.resume();
+}
+
+spawnWatchChild();

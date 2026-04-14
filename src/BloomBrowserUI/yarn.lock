@@ -2940,10 +2940,10 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.52.5.tgz#1657f56326bbe0ac80eedc9f9c18fc1ddd24e107"
   integrity sha512-TAcgQh2sSkykPRWLrdyy2AiceMckNf5loITqXxFI5VuQjS5tSuw3WlwdN8qv8vzjLAUTvYaH/mVjSFpbkFbpTg==
 
-"@sillsdev/config-r@1.0.0-alpha.23":
-  version "1.0.0-alpha.23"
-  resolved "https://registry.yarnpkg.com/@sillsdev/config-r/-/config-r-1.0.0-alpha.23.tgz#70805e49e6dd8bb197eb2b110999a3501f80e98b"
-  integrity sha512-8s6+frggiRi7YUzF8J1wBAVEHXE1BucxEyKoqymyYSokqwzc107GokTIDr7YJO39rIOcrhI3ojWNGTUeeHfQjQ==
+"@sillsdev/config-r@1.0.0-alpha.25":
+  version "1.0.0-alpha.25"
+  resolved "https://registry.npmjs.org/@sillsdev/config-r/-/config-r-1.0.0-alpha.25.tgz#1120b952e04a7f5b1c5cca6ffc0eb13661afc8e4"
+  integrity sha512-HZ0OuVaL4R01ppzKUvC5ybW+PnZic+Ze3We3K1fzOLEU5rtqZarXEkCDr0mj6xhUcXjAw05F8QR2vTl4vD/DDw==
   dependencies:
     "@textea/json-viewer" "^2.13.1"
     formik "^2.2.9"
@@ -4210,10 +4210,10 @@ bindings@^1.5.0:
   dependencies:
     file-uri-to-path "1.0.0"
 
-bloom-player@^2.17.3:
-  version "2.19.3"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.19.3.tgz#05a04881387f0ceee9723f222dc9a058012c09e3"
-  integrity sha512-3Ml4R6F5qeQAvGzJjc23heTRWYzvKEObXjFwx2Xh3VrCz8cAXWMbZjU2FJxfgZQ+xSCJlwu2mx9kv41VGknACA==
+bloom-player@^2.19.4:
+  version "2.19.4"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.19.4.tgz#669ebcc8788b45d5b0d8072ee07a49c81f8f7b2a"
+  integrity sha512-VF03Ukz8OW0/9Bw/SRTS+v7RICIFVgrPPf1XW9/6OyWxUn7DV94dnyPYiuTW26HQCMbWnRRer3zwFmOPX3NTcA==
 
 boom@2.x.x:
   version "2.10.1"
@@ -9347,6 +9347,14 @@ react-tabs@^3.0.0:
   dependencies:
     clsx "^1.1.0"
     prop-types "^15.5.0"
+
+react-toastify@11.0.1-react17:
+  version "11.0.1-react17"
+  resolved "https://registry.yarnpkg.com/react-toastify/-/react-toastify-11.0.1-react17.tgz#797af2f213b23147f8aef337f2cd65d71695d530"
+  integrity sha512-OVzc+wLzStoUU2B2QEKSKvfjg5rymCqfIhvVbRRl+ONF8gPT04VQPVNzCrUcsow8elrkeqB5tlAhRx/osD0xSw==
+  dependencies:
+    clsx "^2.1.1"
+    use-sync-external-store "^1.4.0"
 
 react-tooltip@^4.2.10:
   version "4.2.18"

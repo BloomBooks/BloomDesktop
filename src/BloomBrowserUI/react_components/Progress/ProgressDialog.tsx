@@ -70,6 +70,10 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
     const [listenerReady, setListenerReady] = useState(false);
     const [progressBoxReady, setProgressBoxReady] = useState(false);
 
+    const handleProgressBoxReady = React.useCallback(() => {
+        setProgressBoxReady(true);
+    }, []);
+
     // The parent's mechanism to control opening/closing the dialog via props.open
     // (Same model as MaterialUI's Dialog or Modal components)
     // All our current non-Storybook parents want to have at least partial (if not full) influence
@@ -250,7 +254,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
             >
                 <ProgressBox
                     webSocketContext="progress"
-                    onReadyToReceive={() => setProgressBoxReady(true)}
+                    onReadyToReceive={handleProgressBoxReady}
                     css={css`
                         // If we have dialogFrameProvidedExternally that means the dialog height is controlled by c#, so let the progress grow to fit it.
                         // Maybe we could have that approach *all* the time?

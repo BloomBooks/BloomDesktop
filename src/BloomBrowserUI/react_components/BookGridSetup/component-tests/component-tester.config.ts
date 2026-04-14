@@ -5,6 +5,7 @@ export interface IBookGridSetupProps {
     sourceBooks: BookInfoForLinks[];
     links: Link[];
     onLinksChanged: ((links: Link[]) => void) | string;
+    targetLabel?: "links-in-grid" | "books-in-app";
 }
 
 const config: IBloomComponentConfig<IBookGridSetupProps> = {
@@ -34,6 +35,7 @@ const config: IBloomComponentConfig<IBookGridSetupProps> = {
         ],
         links: [],
         onLinksChanged: "testapi/bookGridSetup/linksChanged",
+        targetLabel: "links-in-grid",
     },
     modulePath: "../BookGridSetup/BookGridSetup",
     exportName: "BookGridSetup",

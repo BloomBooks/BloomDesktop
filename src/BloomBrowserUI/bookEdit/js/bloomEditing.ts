@@ -29,7 +29,6 @@ import {
     kCanvasElementClass,
     kCanvasElementSelector,
 } from "../toolbox/canvas/canvasElementUtils";
-import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
 import "../../lib/jquery.qtip.js";
@@ -67,6 +66,7 @@ import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
+import { resetAbovePageControls } from "./AbovePageControls";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -754,16 +754,6 @@ export function SetupElements(
 
     SetupMetadataButton(container);
 
-    //note, the normal way is for the user to click the link on the bubble.
-    //But clicking on the existing topic may be natural too, and this prevents
-    //them from editing it by hand.
-    $(container)
-        .find("div[data-derived='topic']")
-        .click(function () {
-            if ($(this).css("cursor") === "not-allowed") return;
-            showTopicChooserDialog();
-        });
-
     setupBookLinkGrids(container);
 
     const { divsThatHaveSourceBubbles, bubbleDivs } =
@@ -1215,8 +1205,9 @@ export function localizeCkeditorTooltips(bar: JQuery) {
 
 // This is invoked when we are about to change pages.
 function removeEditingDebris() {
-    // We are mirroring the origami layoutToggleClickHandler() here, in case the user changes
-    // pages while the origami toggle in on.
+    resetAbovePageControls();
+    // We are mirroring the Change Layout mode toggle behavior here, in case the user changes
+    // pages while the Change Layout mode toggle is on.
     // The DOM here is for just one page, so there's only ever one marginBox.
     const marginBox = document.getElementsByClassName("marginBox")[0];
     marginBox.classList.remove("origami-layout-mode");

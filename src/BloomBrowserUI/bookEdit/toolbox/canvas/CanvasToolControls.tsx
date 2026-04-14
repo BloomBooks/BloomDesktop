@@ -50,6 +50,7 @@ import {
     kImageFitModeContainValue,
     kImageFitModeCoverValue,
 } from "./canvasElementUtils";
+import { getPersistedCanvasColor } from "./canvasColorUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
 import { ToolBox } from "../toolbox";
@@ -542,7 +543,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     // We come into this from chooser change
     const updateTextColor = (newColor: IColorInfo) => {
-        const color = newColor.colors[0]; // text color is always monochrome
+        const color = getPersistedCanvasColor(newColor);
         const canvasElementManager = getCanvasElementManager();
         if (canvasElementManager) {
             // Update the toolbox controls
@@ -565,7 +566,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     // We come into this from chooser change
     const updateTextOutlineColor = (newColor: IColorInfo) => {
-        const color = newColor.colors[0];
+        const color = getPersistedCanvasColor(newColor);
         const canvasElementManager = getCanvasElementManager();
         if (canvasElementManager) {
             setTextOutlineColorIsDefault(false);
@@ -719,7 +720,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
         defaultButtonLabel?: string,
     ) => {
         const colorPickerDialogProps: IColorPickerDialogProps = {
-            transparency: false,
+            transparency: true,
             noGradientSwatches: true,
             localizedTitle,
             initialColor,
@@ -944,8 +945,8 @@ const CanvasToolControls: React.FunctionComponent = () => {
                     <form autoComplete="off">
                         <FormControl variant="standard">
                             <InputLabel htmlFor="canvasElement-style-dropdown">
-                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
-                                    Style
+                                <Span l10nKey="EditTab.Toolbox.ComicTool.Options.ElementType">
+                                    Element Type
                                 </Span>
                             </InputLabel>
                             <ThemeProvider theme={toolboxMenuPopupTheme}>

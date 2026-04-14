@@ -4,7 +4,7 @@ import Grid from "@mui/material/Grid";
 import * as React from "react";
 import { useState, useEffect } from "react";
 import "./BooksOfCollection.less";
-import { useApiData, useWatchApiData } from "../utils/bloomApi";
+import { post, useApiData, useWatchApiData } from "../utils/bloomApi";
 import {
     BookButton,
     bookButtonHeight,
@@ -86,6 +86,17 @@ export const BooksOfCollection: React.FunctionComponent<{
         setReloadParameter("");
     }, [unfilteredBooks, props.filter]);
 
+    // Notify the backend that the collection pane is ready to receive book label updates.
+    // Using a ref callback so this happens after the DOM is rendered, without needing useEffect.
+    const collectionPaneRef = React.useCallback(
+        (node: HTMLDivElement | null) => {
+            if (node && props.isEditableCollection && books.length > 0) {
+                post("collections/collectionPaneReady");
+            }
+        },
+        [props.isEditableCollection, books.length],
+    );
+
     //const selectedBookInfo = useMonitorBookSelection();
     const collection: ICollection = useApiData(
         `collections/collectionProps?${collectionQuery}`,
@@ -123,6 +134,7 @@ export const BooksOfCollection: React.FunctionComponent<{
             key={"BookCollection-" + props.collectionId}
             className="bookButtonPane"
             style={{ cursor: "context-menu" }}
+            ref={collectionPaneRef}
         >
             {books.length > 0 && (
                 <Grid

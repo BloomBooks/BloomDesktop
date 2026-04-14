@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -21,7 +19,6 @@ using Bloom.SafeXml;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
-using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.IO;
@@ -38,6 +35,7 @@ namespace Bloom.web.controllers
         private BookThumbNailer _thumbNailer;
         private BloomWebSocketServer _webSocketServer;
         private readonly EditBookCommand _editBookCommand;
+        private readonly CollectionTabView _collectionTabView;
         private Timer _clickTimer = new Timer();
 
         private int _thumbnailEventsToWaitFor = -1;
@@ -50,7 +48,8 @@ namespace Bloom.web.controllers
             BookSelection bookSelection,
             EditBookCommand editBookCommand,
             BookThumbNailer thumbNailer,
-            BloomWebSocketServer webSocketServer
+            BloomWebSocketServer webSocketServer,
+            CollectionTabView collectionTabView
         )
         {
             _settings = settings;
@@ -59,6 +58,7 @@ namespace Bloom.web.controllers
             _editBookCommand = editBookCommand;
             _thumbNailer = thumbNailer;
             _webSocketServer = webSocketServer;
+            _collectionTabView = collectionTabView;
             _clickTimer.Interval = SystemInformation.DoubleClickTime;
             _clickTimer.Tick += _clickTimer_Tick;
         }
@@ -129,6 +129,16 @@ namespace Bloom.web.controllers
                     request.ReplyWithJson(json);
                 },
                 true
+            );
+
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "collectionPaneReady",
+                request =>
+                {
+                    _collectionTabView.ProcessPendingBookLabelUpdate();
+                    request.PostSucceeded();
+                },
+                true // interacts with data stored on the UI thread
             );
 
             // Note: the get part of this doesn't need to run on the UI thread, or even requiresSync. If it gets called a lot, consider
@@ -617,6 +627,13 @@ namespace Bloom.web.controllers
                             ignoreFolderName: true
                         );
                     }
+                    else if (
+                        String.IsNullOrEmpty(info.Title)
+                        && !String.IsNullOrEmpty(info.ThumbnailLabel)
+                    )
+                    {
+                        title = info.ThumbnailLabel;
+                    }
                     return new
                     {
                         id = info.Id,
@@ -688,9 +705,11 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            string fullImagePath = _collectionModel
+            string fullImagePath;
+            SafeXmlElement imgElement;
+            fullImagePath = _collectionModel
                 .GetBookFromBookInfo(bookInfo)
-                .GetCoverImagePathAndElt(out SafeXmlElement imgElement);
+                .GetCoverImagePathAndElt(out imgElement);
             if (string.IsNullOrEmpty(fullImagePath))
             {
                 HandleThumbnailRequest(request);

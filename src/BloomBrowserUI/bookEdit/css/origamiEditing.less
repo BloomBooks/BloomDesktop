@@ -163,13 +163,32 @@
     top: @ToggleVerticalOffset;
     width: 100%;
     display: flex;
-    justify-content: end;
+    align-items: center;
+    justify-content: space-between;
     box-sizing: border-box;
 }
-.origami-toggle {
+
+#drag-activity-tab-control {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    margin-left: auto;
+}
+
+.above-page-control-typography {
+    font-family: @UIFontStack;
+    font-size: 9pt !important;
+    line-height: 16px !important;
+    font-weight: 400 !important;
+}
+
+.change-layout-mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     cursor: pointer;
+    margin-top: 2px;
     margin-right: 19px;
-    line-height: 1em;
     color: @DisabledColor;
     div {
         color: @ActiveSwitchColor;
@@ -178,6 +197,41 @@
         display: inline;
     }
 }
+
+// .page-settings-button {
+//     display: flex;
+//     align-items: center;
+//     justify-content: flex-start;
+//     gap: 6px;
+//     width: auto;
+//     height: 24px;
+//     padding: 0 4px;
+//     margin-right: 8px;
+//     border: none;
+//     background-color: transparent;
+//     cursor: pointer;
+//     color: @bloom-purple;
+//     white-space: nowrap;
+//     font-family: inherit;
+//     font-size: inherit;
+//     line-height: inherit;
+//     font-weight: inherit;
+
+//     &:hover {
+//         opacity: 0.8;
+//     }
+
+//     svg {
+//         width: 20px;
+//         height: 20px;
+//         flex-shrink: 0;
+//         align-self: center;
+//     }
+
+//     .page-settings-button-label {
+//         white-space: nowrap;
+//     }
+// }
 
 // here follows the inner workings of the toggle
 .onoffswitch {

@@ -235,8 +235,13 @@ namespace Bloom.web.controllers
             if (request.HttpMethod != HttpMethods.Get)
                 throw new ArgumentException("common/instanceInfo only supports GET");
 
+            // Give automation one stable discovery payload for the running Bloom instance instead of making
+            // scripts scrape window titles, ports, or process command lines.
             var executablePath = Application.ExecutablePath;
             var cdpPort = Bloom.WebView2Browser.RemoteDebuggingPort;
+            int? vitePort = ReactControl.TryGetActiveViteDevPort(out var activeVitePort)
+                ? activeVitePort
+                : null;
             request.ReplyWithJson(
                 new
                 {
@@ -251,6 +256,7 @@ namespace Bloom.web.controllers
                     workspaceTabsUrl = BloomServer.ServerUrlWithBloomPrefixEndingInSlash
                         + "api/workspace/tabs",
                     cdpPort,
+                    vitePort,
                     cdpOrigin = cdpPort.HasValue ? $"http://localhost:{cdpPort.Value}" : null,
                 }
             );

@@ -107,13 +107,20 @@ export const extractRepoRoot = (text) => {
 export const normalizeBloomInstanceInfo = (info, discoveredViaPort) => {
     const httpPort = toTcpPort(info?.httpPort) ?? discoveredViaPort;
     const cdpPort = toTcpPort(info?.cdpPort);
+    const executablePath = normalizePath(info?.executablePath);
+    const detectedRepoRoot = extractRepoRoot(executablePath);
+    const vitePort = toTcpPort(info?.vitePort);
 
+    // Normalize old and new discovery payloads into one shape so the CLI helpers can stay simple.
     return {
         processId: toPositiveInteger(info?.processId),
         discoveredViaPort,
         httpPort,
         origin: toLocalOrigin(httpPort),
         cdpPort,
+        executablePath,
+        detectedRepoRoot,
+        vitePort,
     };
 };
 

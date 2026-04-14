@@ -416,6 +416,15 @@ namespace Bloom.Book
             UpdateVariablesAndDataDiv(dom.RawDom, info);
         }
 
+        /// <summary>
+        /// Create or update the data div with all the data-book values in the specified page element.
+        /// </summary>
+        /// <param name="pageElement">This is a page div that we just edited and want to read from.</param>
+        public void SuckInDataFromEditedDom(SafeXmlElement pageElement, BookInfo info = null)
+        {
+            UpdateVariablesAndDataDiv(pageElement, info);
+        }
+
         public void SynchronizeDataItemsThroughoutDOM()
         {
             var itemsToDelete = new HashSet<Tuple<string, string>>();
@@ -1025,6 +1034,10 @@ namespace Bloom.Book
                 //switch to html/xml encoding
                 form = XmlString.FromUnencoded(decodedUrlStr);
             }
+            if (node is SafeXmlElement element && element.HasClass("bloom-editable"))
+            {
+                form = XmlString.FromXml(NormalizeEditableInnerXml(form.Xml));
+            }
             node.InnerXml = form.Xml;
             if (node.GetAttribute("data-textonly") == "true")
             {
@@ -1035,6 +1048,105 @@ namespace Bloom.Book
                 // that was synchronized.
                 node.InnerText = node.InnerText;
             }
+        }
+
+        /// <summary>
+        /// Somehow Bloom sometimes gets an extra div in the editable content, which should only contain p elements
+        /// (BL-16065). CkEditor may be implicated. Whe bookdata round-trips them, somehow things were getting
+        /// messed up so that an extra div containing just a br was visible as an extra line. CoPilot came up
+        /// with this patch. It may be doing more than is strictly necessary to prevent BL-16065.
+        /// </summary>
+        private static string NormalizeEditableInnerXml(string xml)
+        {
+            if (string.IsNullOrWhiteSpace(xml))
+            {
+                return xml;
+            }
+
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml("<wrapper>" + xml + "</wrapper>");
+            var wrapper = doc.DocumentElement;
+
+            // Remove top-level divs that contain only whitespace/nbsp/br and optional CKEditor bookmark spans.
+            // These are CKEditor artifacts with no visible content; a <br> at the start or end of a <p>
+            // does not affect rendering, so there is no need to preserve them.
+            foreach (var child in wrapper.ChildNodes)
+            {
+                if (
+                    child is SafeXmlElement el
+                    && string.Equals(el.Name, "div", StringComparison.OrdinalIgnoreCase)
+                    && IsEmptyishTopLevelBreakDiv(el)
+                )
+                {
+                    wrapper.RemoveChild(child);
+                }
+            }
+
+            return wrapper.InnerXml;
+        }
+
+        private static bool IsWhitespaceOrNbsp(string text)
+        {
+            if (text == null)
+            {
+                return true;
+            }
+
+            return string.IsNullOrWhiteSpace(text.Replace('\u00A0', ' '));
+        }
+
+        private static bool IsEmptyishTopLevelBreakDiv(SafeXmlElement div)
+        {
+            if (!string.Equals(div.Name, "div", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!IsWhitespaceOrNbsp(div.InnerText))
+            {
+                return false;
+            }
+
+            foreach (var child in div.ChildNodes)
+            {
+                if (child.NodeType == XmlNodeType.Text && IsWhitespaceOrNbsp(child.Value))
+                {
+                    continue;
+                }
+
+                if (child is SafeXmlElement childElement)
+                {
+                    if (string.Equals(childElement.Name, "br", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (IsCkEditorBookmarkSpan(childElement))
+                    {
+                        continue;
+                    }
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool IsCkEditorBookmarkSpan(SafeXmlElement span)
+        {
+            if (!string.Equals(span.Name, "span", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var id = span.GetAttribute("id") ?? string.Empty;
+            if (id.StartsWith("cke_bm", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            return span.HasAttribute("data-cke-bookmark");
         }
 
         public SafeXmlElement AddDataDivElementContainingBookVariable(
@@ -1354,12 +1466,21 @@ namespace Bloom.Book
             try
             {
                 string query =
-                    $".//{elementName}[(@data-book or @data-library or @data-collection or @{kDataXmatterPage} or @data-custom-layout-id) and not(contains(@class,'bloom-writeOnly'))]";
+                    $"self::{elementName}[(@data-book or @data-library or @data-collection or @{kDataXmatterPage} or @data-custom-layout-id) and not(contains(@class,'bloom-writeOnly'))] | .//{elementName}[(@data-book or @data-library or @data-collection or @{kDataXmatterPage} or @data-custom-layout-id) and not(contains(@class,'bloom-writeOnly'))]";
 
                 var nodesOfInterest = sourceElement.SafeSelectNodes(query);
 
                 foreach (SafeXmlElement node in nodesOfInterest)
                 {
+                    var xmatterPageKey = node.GetAttribute(kDataXmatterPage).Trim();
+                    if (
+                        xmatterPageKey != string.Empty
+                        && !data.XmatterPageDataAttributeSets.ContainsKey(xmatterPageKey)
+                    )
+                    {
+                        GatherXmatterPageDataAttributeSetIntoDataSet(data, node);
+                    }
+
                     bool isCollectionValue = false;
                     bool hasCustomLayoutId = node.HasAttribute("data-custom-layout-id");
                     if (hasCustomLayoutId)
@@ -1396,11 +1517,9 @@ namespace Bloom.Book
                     }
                     if (key == String.Empty)
                     {
-                        key = node.GetAttribute(kDataXmatterPage).Trim();
+                        key = xmatterPageKey;
                         if (key != String.Empty)
                         {
-                            if (!data.XmatterPageDataAttributeSets.ContainsKey(key))
-                                GatherXmatterPageDataAttributeSetIntoDataSet(data, node);
                             // This element has a data-xmatter-page attribute. So it is a bloom-page div.
                             // And currently a bloom-page cannot also be an element waiting to be filled with data-collection, so we're done here.
                             continue;
@@ -1436,6 +1555,8 @@ namespace Bloom.Book
                         if (hasCustomLayoutId)
                             HideStuffInDataDivChildren(node1 as SafeXmlElement);
                         value = node1.InnerXml.Trim(); //may contain formatting
+                        if (node.HasClass("bloom-editable"))
+                            value = NormalizeEditableInnerXml(value);
                         if (KeysOfVariablesThatAreUrlEncoded.Contains(key))
                         {
                             value = UrlPathString.CreateFromHtmlXmlEncodedString(value).UrlEncoded;
@@ -1620,21 +1741,30 @@ namespace Bloom.Book
         private List<Tuple<string, XmlString>> GetAttributesToSave(SafeXmlElement node)
         {
             var result = new List<Tuple<string, XmlString>>();
-            if (HtmlDom.IsInCustomLayoutPage(node))
+            if (node.Name == "img" && HtmlDom.IsInCustomLayoutPage(node))
             {
-                // We don't want to transfer attribute values or classes from the custom page
+                // We don't want to transfer most image attribute values or classes from the custom page
                 // layout to the standard one. It's likely that special styling or image cropping
                 // or anything similar  will have the wrong effect there. The one exception is the
                 // src of an image: we allow changing the cover image in one place to change it in
                 // the other, just as changing the text of a title in one place changes it in both.
                 // We don't need to worry about re-creating attribute values inside the custom margin
                 // box, because its whole content is saved.
-                if (node.Name == "img" && !string.IsNullOrWhiteSpace(node.GetAttribute("src")))
+                // We do want to transfer data normally for text elements; for example, talking book
+                // recordings should transfer (and also survive the book being opened in 6.3).
+                if (!string.IsNullOrWhiteSpace(node.GetAttribute("src")))
                     result.Add(
                         Tuple.Create("src", XmlString.FromUnencoded(node.GetAttribute("src")))
                     );
                 return result;
             }
+            // Margin box doesn't have any of the properties that would normally make it one of the nodes
+            // passed to this method. However, it is the node that gets passed for a custom page. It would
+            // probably be harmless to process it normally, but it would result in the data-div node for
+            // the custom page content having the class marignBox. That might cause something unexpected,
+            // and the marginBox doesn't have any classes or attributes we need to preserve, so just skip it.
+            if (node.HasClass("marginBox"))
+                return result;
             foreach (var attr in node.AttributePairs)
             {
                 if (_attributesNotToCopy.Contains(attr.Name))
@@ -1678,7 +1808,11 @@ namespace Bloom.Book
                 new HashSet<KeyValuePair<string, string>>();
             foreach (var attribute in element.AttributePairs)
             {
-                if (attribute.Name != kDataXmatterPage && attribute.Name.StartsWith("data-"))
+                if (
+                    attribute.Name != kDataXmatterPage
+                    && attribute.Name != "data-custom-layout-id"
+                    && attribute.Name.StartsWith("data-")
+                )
                 {
                     // xmatter pages are not numbered.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7303.
                     // This will clean up books that have wrongly set backmatter page numbers.
@@ -1737,6 +1871,13 @@ namespace Bloom.Book
                 foreach (var elt in nodesToProcessFirst)
                     UpdateOneElementFromDataSet(data, itemsToDelete, elt);
 
+                // After restoring custom page content from the data-div, prepare any bloom-editables
+                // for languages that weren't present in the saved version (e.g. a newly-added content
+                // language). Without this, the second pass below that updates e.g. bookTitle would
+                // find no destination elements for newly-added languages on the custom page.
+                foreach (var elt in nodesToProcessFirst)
+                    TranslationGroupManager.PrepareElementsInPageOrDocument(elt, this);
+
                 // Run this query AFTER that update, so that we're updating the (possibly modified) set of nodes that
                 // result from doing it.
                 var query =
@@ -1772,6 +1913,11 @@ namespace Bloom.Book
         )
         {
             var customLayoutId = node.GetAttribute("data-custom-layout-id").Trim();
+            var xmatterKey = node.GetAttribute(kDataXmatterPage).Trim();
+            if (xmatterKey != string.Empty)
+            {
+                UpdateXmatterPageDataAttributeSets(data, node);
+            }
             if (customLayoutId != string.Empty)
             {
                 // Pages with this attribute typically also have data-xmatter-page.
@@ -1780,11 +1926,6 @@ namespace Bloom.Book
                 // class bloom-customLayout), or in the second pass because it has data-xmatter-page. In either case, we want to restore the custom page content first.
                 // We need to do attribute processing in both cases, but only restore
                 // the page content when we have the class.
-                var xmatterKey = node.GetAttribute(kDataXmatterPage).Trim();
-                if (xmatterKey != string.Empty)
-                {
-                    UpdateXmatterPageDataAttributeSets(data, node);
-                }
                 if (!node.HasClass("bloom-customLayout"))
                 {
                     // This is a custom layout element, but it is not in custom layout mode.
@@ -1801,10 +1942,9 @@ namespace Bloom.Book
 
             if (key == string.Empty)
             {
-                key = node.GetAttribute(kDataXmatterPage).Trim();
+                key = xmatterKey;
                 if (key != string.Empty)
                 {
-                    UpdateXmatterPageDataAttributeSets(data, node);
                     return;
                 }
                 key = node.GetAttribute("data-collection").Trim();

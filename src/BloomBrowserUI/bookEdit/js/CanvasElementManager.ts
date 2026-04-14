@@ -77,7 +77,7 @@ import {
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
-import { get, postData, postJson } from "../../utils/bloomApi";
+import { get, postData, postJson, postString } from "../../utils/bloomApi";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { getExactClientSize } from "../../utils/elementUtils";
@@ -8021,6 +8021,14 @@ export function showCanvasTool() {
         } else {
             toolbox.activateToolFromId(kCanvasToolId);
         }
+        // Saving this setting is normally done when the user clicks on the tool to enable/disable it
+        // (in the toolbox.ts / showOrHideTool_click function).  Since we're not clicking on the
+        // tool's checkbox here, we need to save the setting ourselves.  It doesn't hurt to do this
+        // if the canvas tool is alreay active.
+        postString(
+            "editView/saveToolboxSetting",
+            "active\t" + kCanvasToolId + "Check\t1",
+        );
     };
 
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();

@@ -1,8 +1,6 @@
 // This collectionSettings reference defines the function GetSettings(): ICollectionSettings
 // The actual function is injected by C#.
 /// <reference path="../../js/collectionSettings.d.ts"/>
-import * as ReactDOM from "react-dom";
-import { CustomPageLayoutMenu } from "./customPageLayoutMenu";
 import {
     CanvasElementManager,
     kBackgroundImageClass,
@@ -17,10 +15,11 @@ import {
     recomputeSourceBubblesForPage,
     wrapWithRequestPageContentDelay,
 } from "../../js/bloomEditing";
+import { updateAbovePageControls } from "../../js/AbovePageControls";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { getToolboxBundleExports } from "../../js/workspaceFrames";
-import { ILanguageNameValues } from "../../bookSettings/FieldVisibilityGroup";
-import { isLegacyThemeCssLoaded } from "../../bookSettings/appearanceThemeUtils";
+import { ILanguageNameValues } from "../../bookAndPageSettings/FieldVisibilityGroup";
+import { isLegacyThemeCssLoaded } from "../../bookAndPageSettings/appearanceThemeUtils";
 
 /* Summary of how custom covers work
 	- a page (currently just cover) which can be customized has a new attribute,
@@ -76,10 +75,11 @@ async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
     BloomSourceBubbles.removeSourceBubbles(page);
 
     const contentElements = Array.from(
-        marginBox.querySelectorAll("[data-book], [data-derived]"),
+        marginBox.querySelectorAll<HTMLElement>("[data-book], [data-derived]"),
     );
     const newCanvasElements: HTMLElement[] = [];
     const newCeImages: HTMLElement[] = [];
+    const measurementHost = createMeasurementHost(marginBox);
 
     for (const elem of contentElements) {
         // If something was completely hidden on the source page (typically by a book setting),
@@ -107,6 +107,7 @@ async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
         } else {
             let ceContent = elem;
             const baseSizeOn = elem;
+            let useContentBoundsSizing = false;
             if (elem.classList.contains("bloom-editable")) {
                 const tg = elem.parentElement;
                 if (!tg || !tg.classList.contains("bloom-translationGroup")) {
@@ -164,7 +165,11 @@ async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
                 // until we finish the loop, so that nothing moves before we figure out
                 // where to put its new canvas element.
                 ceContent = elem.cloneNode(true) as HTMLElement;
+                useContentBoundsSizing = true;
             }
+
+            preserveHintMetadata(elem as HTMLElement, ceContent as HTMLElement);
+
             // make a new canvas element to hold this. Not sure what problems it will
             // cause when it's NOT a TG, but we have at least topic and language name that
             // never are and are commonly on the front cover.
@@ -172,29 +177,43 @@ async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
             newCe.classList.add(kCanvasElementClass);
             newCanvasElements.push(newCe);
             newCe.appendChild(ceContent);
-            // Before we move the tg, measure its size and make newCe match
-            // Review: do we need to add allowance for borders/margins/padding?
-            const baseComputedStyle = window.getComputedStyle(baseSizeOn);
-            const marginLeft =
-                Number.parseFloat(baseComputedStyle.marginLeft) || 0;
-            const marginRight =
-                Number.parseFloat(baseComputedStyle.marginRight) || 0;
-            const marginTop =
-                Number.parseFloat(baseComputedStyle.marginTop) || 0;
-            const marginBottom =
-                Number.parseFloat(baseComputedStyle.marginBottom) || 0;
-            newCe.style.width =
-                baseSizeOn.clientWidth + marginLeft + marginRight + "px";
-            newCe.style.height =
-                baseSizeOn.clientHeight + marginTop + marginBottom + "px";
-            // set its top and left to where it currently is relative to the page
-            const pageRect = page.getBoundingClientRect();
-            const tgRect = baseSizeOn.getBoundingClientRect();
-            const scale = EditableDivUtils.getPageScale();
-            newCe.style.left =
-                (tgRect.left - pageRect.left) / scale - marginLeft + "px";
-            newCe.style.top =
-                (tgRect.top - pageRect.top) / scale - marginTop + "px";
+
+            if (useContentBoundsSizing) {
+                setCanvasElementSizeAndPositionFromVisibleContent(
+                    newCe,
+                    ceContent,
+                    baseSizeOn,
+                    page,
+                    measurementHost,
+                );
+                // Once the CE itself is positioned/sized to account for source margins,
+                // keep the root converted content from adding an extra offset.
+                ceContent.style.margin = "0";
+            } else {
+                // Before we move the tg, measure its size and make newCe match
+                // Review: do we need to add allowance for borders/margins/padding?
+                const baseComputedStyle = window.getComputedStyle(baseSizeOn);
+                const marginLeft =
+                    Number.parseFloat(baseComputedStyle.marginLeft) || 0;
+                const marginRight =
+                    Number.parseFloat(baseComputedStyle.marginRight) || 0;
+                const marginTop =
+                    Number.parseFloat(baseComputedStyle.marginTop) || 0;
+                const marginBottom =
+                    Number.parseFloat(baseComputedStyle.marginBottom) || 0;
+                newCe.style.width =
+                    baseSizeOn.clientWidth + marginLeft + marginRight + "px";
+                newCe.style.height =
+                    baseSizeOn.clientHeight + marginTop + marginBottom + "px";
+                // set its top and left to where it currently is relative to the page
+                const pageRect = page.getBoundingClientRect();
+                const tgRect = baseSizeOn.getBoundingClientRect();
+                const scale = EditableDivUtils.getPageScale();
+                newCe.style.left =
+                    (tgRect.left - pageRect.left) / scale - marginLeft + "px";
+                newCe.style.top =
+                    (tgRect.top - pageRect.top) / scale - marginTop + "px";
+            }
         }
     }
     const mainCanvas = document.createElement("div");
@@ -219,6 +238,7 @@ async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
         bubble.setBubbleSpec(bubbleSpec);
     }
 
+    measurementHost.remove();
     marginBox.innerHTML = ""; // remove all the existing content
     marginBox.appendChild(mainCanvas);
     // This needs to be after we measure positions of things!
@@ -226,9 +246,195 @@ async function convertXmatterPageToCustom(page: HTMLElement): Promise<void> {
     finishReactivatingPage(page);
 }
 
+function createMeasurementHost(parent: HTMLElement): HTMLElement {
+    const measurementHost = document.createElement("div");
+    measurementHost.style.position = "absolute";
+    measurementHost.style.left = "-100000px";
+    measurementHost.style.top = "-100000px";
+    measurementHost.style.visibility = "hidden";
+    measurementHost.style.pointerEvents = "none";
+    parent.appendChild(measurementHost);
+    return measurementHost;
+}
+
+/** Returns true if the element has any visible CSS border on any side. */
+function hasVisibleBorder(element: HTMLElement): boolean {
+    const style = window.getComputedStyle(element);
+    return ["top", "right", "bottom", "left"].some((side) => {
+        const width = parseFloat(
+            style.getPropertyValue(`border-${side}-width`),
+        );
+        const borderStyle = style.getPropertyValue(`border-${side}-style`);
+        return width > 0 && borderStyle !== "none" && borderStyle !== "hidden";
+    });
+}
+
+function getVisibleContentRect(element: HTMLElement): DOMRect {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const rects: DOMRect[] = Array.from(range.getClientRects()).filter(
+        (rect) => rect.width > 0 && rect.height > 0,
+    );
+
+    // img elements need their full bounding rect included; the range-based approach
+    // may not fully account for all image area.
+    for (const img of Array.from(
+        element.querySelectorAll<HTMLElement>("img"),
+    )) {
+        const rect = img.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+            rects.push(rect);
+        }
+    }
+
+    // Elements with visible borders need their full border box included,
+    // since range rects only cover the content area inside the border.
+    for (const child of [
+        element,
+        ...Array.from(element.querySelectorAll<HTMLElement>("*")),
+    ]) {
+        if (hasVisibleBorder(child)) {
+            const rect = child.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                rects.push(rect);
+            }
+        }
+    }
+
+    if (rects.length === 0) {
+        return element.getBoundingClientRect();
+    }
+
+    let left = rects[0].left;
+    let top = rects[0].top;
+    let right = rects[0].right;
+    let bottom = rects[0].bottom;
+    for (const rect of rects.slice(1)) {
+        left = Math.min(left, rect.left);
+        top = Math.min(top, rect.top);
+        right = Math.max(right, rect.right);
+        bottom = Math.max(bottom, rect.bottom);
+    }
+
+    return new DOMRect(left, top, right - left, bottom - top);
+}
+
+function setCanvasElementSizeAndPositionFromVisibleContent(
+    canvasElement: HTMLElement,
+    canvasContent: HTMLElement,
+    sourceElement: HTMLElement,
+    page: HTMLElement,
+    measurementHost: HTMLElement,
+): void {
+    const scale = EditableDivUtils.getPageScale() || 1;
+    const sourceContentRect = getVisibleContentRect(sourceElement);
+    const width = Math.max(1, Math.ceil(sourceContentRect.width / scale));
+    const height = Math.max(1, Math.ceil(sourceContentRect.height / scale));
+    canvasElement.style.width = `${width}px`;
+    canvasElement.style.height = `${height}px`;
+
+    const probeCanvasElement = document.createElement("div");
+    probeCanvasElement.classList.add(kCanvasElementClass);
+    probeCanvasElement.style.width = `${width}px`;
+    probeCanvasElement.style.height = `${height}px`;
+    const probeContent = canvasContent.cloneNode(true) as HTMLElement;
+    probeCanvasElement.appendChild(probeContent);
+    measurementHost.appendChild(probeCanvasElement);
+
+    const probeContentRect = getVisibleContentRect(probeContent);
+    const probeCanvasRect = probeCanvasElement.getBoundingClientRect();
+    const contentOffsetLeft =
+        (probeContentRect.left - probeCanvasRect.left) / scale;
+    const contentOffsetTop =
+        (probeContentRect.top - probeCanvasRect.top) / scale;
+
+    probeCanvasElement.remove();
+
+    const pageRect = page.getBoundingClientRect();
+    canvasElement.style.left =
+        (sourceContentRect.left - pageRect.left) / scale -
+        contentOffsetLeft +
+        "px";
+    canvasElement.style.top =
+        (sourceContentRect.top - pageRect.top) / scale -
+        contentOffsetTop +
+        "px";
+}
+
 async function getLanguageNameValues(): Promise<ILanguageNameValues> {
     return (await getAsync("settings/languageNames"))
         .data as ILanguageNameValues;
+}
+
+function copyHintAttributes(source: Element, target: HTMLElement): void {
+    [
+        "data-hint",
+        "data-i18n",
+        "data-link-text",
+        "data-link-target",
+        "data-functiononhintclick",
+    ].forEach((attr) => {
+        const value = source.getAttribute(attr);
+        if (value && !target.hasAttribute(attr)) {
+            target.setAttribute(attr, value);
+        }
+    });
+}
+
+function preserveHintMetadata(
+    sourceElement: HTMLElement,
+    convertedElement: HTMLElement,
+): void {
+    // If we've already preserved label content or explicit hint metadata, leave it alone.
+    if (
+        convertedElement.querySelector("label.bubble") ||
+        convertedElement.hasAttribute("data-hint")
+    ) {
+        return;
+    }
+
+    const translationGroup = sourceElement.closest(
+        ".bloom-translationGroup",
+    ) as HTMLElement | null;
+    if (!translationGroup) {
+        copyHintAttributes(sourceElement, convertedElement);
+        if (
+            !convertedElement.hasAttribute("data-hint") &&
+            sourceElement.parentElement
+        ) {
+            copyHintAttributes(sourceElement.parentElement, convertedElement);
+        }
+        return;
+    }
+
+    copyHintAttributes(translationGroup, convertedElement);
+
+    const label = translationGroup.querySelector("label.bubble");
+    if (!label) {
+        if (
+            !convertedElement.hasAttribute("data-hint") &&
+            translationGroup.parentElement
+        ) {
+            copyHintAttributes(
+                translationGroup.parentElement,
+                convertedElement,
+            );
+        }
+        return;
+    }
+
+    const labelText = label.textContent?.trim();
+    if (labelText && !convertedElement.hasAttribute("data-hint")) {
+        convertedElement.setAttribute("data-hint", labelText);
+    }
+    copyHintAttributes(label, convertedElement);
+
+    if (
+        !convertedElement.hasAttribute("data-hint") &&
+        translationGroup.parentElement
+    ) {
+        copyHintAttributes(translationGroup.parentElement, convertedElement);
+    }
 }
 
 function setDataDefault(
@@ -288,6 +494,7 @@ function ensureDerivedFieldsFitOnCustomPage(page: HTMLElement): void {
     const derivedElements = Array.from(
         bloomCanvas.querySelectorAll("div[data-derived]"),
     ) as HTMLElement[];
+    const scale = EditableDivUtils.getPageScale() || 1;
     for (const derivedElement of derivedElements) {
         const canvasElement = derivedElement.closest(
             `.${kCanvasElementClass}`,
@@ -307,11 +514,11 @@ function ensureDerivedFieldsFitOnCustomPage(page: HTMLElement): void {
         }
 
         const getRenderedHeight = (): number =>
-            Math.ceil(derivedElement.getBoundingClientRect().height);
+            Math.ceil(derivedElement.getBoundingClientRect().height / scale);
         const getRenderedWidth = (): number =>
             Math.ceil(
                 Math.max(
-                    derivedElement.getBoundingClientRect().width,
+                    derivedElement.getBoundingClientRect().width / scale,
                     derivedElement.offsetWidth,
                 ),
             );
@@ -398,30 +605,11 @@ export function setupPageLayoutMenu(): void {
         return;
     }
 
-    // Create the container if needed (which it usually will be, because the cover
-    // is not a customPage and doesn't get one automatically). This duplicates
-    // (but without jquery) some code in origami.ts
-    let container: HTMLElement | undefined = document.getElementsByClassName(
-        "above-page-control-container",
-    )[0] as HTMLElement;
-    if (!container) {
-        container = document.createElement("div") as HTMLElement;
-        container.classList.add("above-page-control-container");
-        container.classList.add("bloom-ui");
-        container.style.maxWidth = page.clientWidth + "px";
-        // see commment in origami.ts about why we put it first.
-        // the code there puts it at the start of #page-scaling-container, but that
-        // is always the parent of .bloom-page, so this is equivalent.
-        page.parentElement?.insertBefore(
-            container,
-            page.parentElement.firstChild,
-        );
-    }
-
-    renderPageLayoutMenu(page as HTMLElement, container as HTMLElement);
+    renderPageLayoutMenu(page as HTMLElement);
 
     if (page.classList.contains("bloom-customLayout")) {
         ensureDerivedFieldsFitOnCustomPage(page as HTMLElement);
+        showCanvasTool();
     }
 }
 
@@ -436,54 +624,54 @@ function toggleCustomPageLayout(
     });
 }
 
-function renderPageLayoutMenu(page: HTMLElement, container: HTMLElement): void {
-    // Render a CustomPageLayoutMenu React component into this container
+function renderPageLayoutMenu(page: HTMLElement): void {
     const isCustomPage = page.classList.contains("bloom-customLayout");
     const usingLegacyTheme = isLegacyThemeCssLoaded();
-    ReactDOM.render(
-        <CustomPageLayoutMenu
-            isCustom={isCustomPage}
-            disableCustomPage={usingLegacyTheme}
-            setCustom={async (
-                selection,
+    updateAbovePageControls({
+        showPageLayoutMenu: true,
+        isCustomPageLayout: isCustomPage,
+        disableCustomPage: usingLegacyTheme,
+        onSetCustom: async (
+            selection,
+            keepCustomLayoutDataWhenSwitchingToStandard,
+        ) => {
+            if (usingLegacyTheme && selection !== "standard") {
+                return;
+            }
+            const response = await toggleCustomPageLayout(
+                page.getAttribute("id")!,
                 keepCustomLayoutDataWhenSwitchingToStandard,
-            ) => {
-                if (usingLegacyTheme && selection !== "standard") {
-                    return;
-                }
-                const response = await toggleCustomPageLayout(
-                    page.getAttribute("id")!,
-                    keepCustomLayoutDataWhenSwitchingToStandard,
+            );
+            if (
+                selection === "custom" &&
+                response &&
+                // C# returns the string "false" if we don't have any saved state for custom mode,
+                // but currently something in axios converts that to a boolean false.
+                // I'm not sure that might not change one day, so we check for both.
+                (response.data === "false" || response.data === false)
+            ) {
+                // making a custom cover for the first time
+                await wrapWithRequestPageContentDelay(
+                    () => convertXmatterPageToCustom(page),
+                    "customPageLayout-convertFirstTime",
                 );
-                if (
-                    selection === "custom" &&
-                    response &&
-                    // C# returns the string "false" if we don't have any saved state for custom mode,
-                    // but currently something in axios converts that to a boolean false.
-                    // I'm not sure that might not change one day, so we check for both.
-                    (response.data === "false" || response.data === false)
-                ) {
-                    // making a custom cover for the first time
-                    await wrapWithRequestPageContentDelay(
-                        () => convertXmatterPageToCustom(page),
-                        "customPageLayout-convertFirstTime",
-                    );
-                    // Set data-tool-id on the browser DOM so it persists when jumpToPage saves.
-                    // (The C# toggleCustomPageLayout set it on the C# DOM, but returned early
-                    // without SaveThen, so that change would be overwritten by the browser save.)
-                    page.setAttribute("data-tool-id", "canvas");
-                    // Persist the newly created custom layout state so a later toggle back
-                    // to standard has matching server-side state to work from.
-                    await postString(
-                        "editView/jumpToPage",
-                        page.getAttribute("id")!,
-                    );
-                    renderPageLayoutMenu(page, container);
-                } else if (selection === "custom" && response) {
-                    showCanvasTool(); // otherwise called from convertXmatterPageToCustom()/finishReactivatingPage()
-                }
-            }}
-        />,
-        container,
-    );
+                // Set data-tool-id on the browser DOM so it persists when jumpToPage saves.
+                // (The C# toggleCustomPageLayout set it on the C# DOM, but returned early
+                // without SaveThen, so that change would be overwritten by the browser save.)
+                page.setAttribute("data-tool-id", "canvas");
+                // Persist the newly created custom layout state so a later toggle back
+                // to standard has matching server-side state to work from.
+                await postString(
+                    "editView/jumpToPage",
+                    page.getAttribute("id")!,
+                );
+                renderPageLayoutMenu(page);
+            } else if (selection === "custom" && response) {
+                showCanvasTool(); // otherwise called from convertXmatterPageToCustom()/finishReactivatingPage()
+                renderPageLayoutMenu(page);
+            } else if (response) {
+                renderPageLayoutMenu(page);
+            }
+        },
+    });
 }

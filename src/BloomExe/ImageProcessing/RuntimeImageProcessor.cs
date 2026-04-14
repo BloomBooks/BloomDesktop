@@ -225,36 +225,37 @@ namespace Bloom.ImageProcessing
                     (newW * originalImage.Image.Height + (originalImage.Image.Width / 2))
                     / originalImage.Image.Width;
 
-                var thumbnail = new Bitmap(newW, newH);
-
-                var g = Graphics.FromImage(thumbnail);
-                if (backColor != Color.Empty)
+                using (var thumbnail = new Bitmap(newW, newH))
+                using (var g = Graphics.FromImage(thumbnail))
                 {
-                    using (var brush = new SolidBrush(backColor))
+                    if (backColor != Color.Empty)
                     {
-                        g.FillRectangle(brush, new Rectangle(0, 0, newW, newH));
+                        using (var brush = new SolidBrush(backColor))
+                        {
+                            g.FillRectangle(brush, new Rectangle(0, 0, newW, newH));
+                        }
                     }
+                    Image imageToDraw = originalImage.Image;
+                    bool makeTransparentImage = ImageUtils.ShouldMakeBackgroundTransparent(
+                        originalImage
+                    );
+                    if (makeTransparentImage)
+                    {
+                        imageToDraw = MakePngBackgroundTransparent(originalImage);
+                    }
+                    var destRect = new Rectangle(0, 0, newW, newH);
+                    // Note the image size may change when the background is made transparent.
+                    // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5632.
+                    g.DrawImage(
+                        imageToDraw,
+                        destRect,
+                        new Rectangle(0, 0, imageToDraw.Width, imageToDraw.Height),
+                        GraphicsUnit.Pixel
+                    );
+                    if (makeTransparentImage)
+                        imageToDraw.Dispose();
+                    RobustImageIO.SaveImage(thumbnail, pathToProcessedImage);
                 }
-                Image imageToDraw = originalImage.Image;
-                bool makeTransparentImage = ImageUtils.ShouldMakeBackgroundTransparent(
-                    originalImage
-                );
-                if (makeTransparentImage)
-                {
-                    imageToDraw = MakePngBackgroundTransparent(originalImage);
-                }
-                var destRect = new Rectangle(0, 0, newW, newH);
-                // Note the image size may change when the background is made transparent.
-                // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5632.
-                g.DrawImage(
-                    imageToDraw,
-                    destRect,
-                    new Rectangle(0, 0, imageToDraw.Width, imageToDraw.Height),
-                    GraphicsUnit.Pixel
-                );
-                if (makeTransparentImage)
-                    imageToDraw.Dispose();
-                RobustImageIO.SaveImage(thumbnail, pathToProcessedImage);
             }
 
             return true;

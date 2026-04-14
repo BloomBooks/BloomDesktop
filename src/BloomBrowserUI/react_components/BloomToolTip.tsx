@@ -15,6 +15,7 @@ export interface IBloomToolTipProps {
     tipWhenDisabled?: TipContent;
     showDisabled?: boolean;
     hidden?: boolean;
+    open?: boolean;
     placement?: TooltipProps["placement"];
     slotProps?: TooltipProps["slotProps"];
     className?: string; // carry in the css props from the caller
@@ -61,6 +62,7 @@ export const BloomTooltip: React.FunctionComponent<IBloomToolTipProps> = (
         <Tooltip
             id={props.id}
             title={tipContent}
+            open={props.open}
             placement={props.placement || "left"}
             arrow
             // make the tooltip disappear when the mouse is over the tooltip itself
