@@ -10,11 +10,11 @@ interface IGamePromptDialogProps {
 import { useRef } from "react";
 import {
     adjustDraggablesForLanguage,
-    copyContentToTarget,
     getTarget,
     shuffle,
     isTheTextInDraggablesTheSame,
 } from "bloom-player";
+import { copyContentToTargetAndCleanup } from "../../js/dragActivityRuntimeUtils";
 import { setGeneratedDraggableId } from "../canvas/CanvasElementItem";
 import { adjustTarget, makeTargetForDraggable } from "../games/GameTool";
 import * as ReactDOM from "react-dom";
@@ -403,7 +403,7 @@ const initializeDialog = (prompt: HTMLElement, tg: HTMLElement | null) => {
                 "bloom-unused-in-lang",
                 i >= letters.length,
             );
-            copyContentToTarget(draggables[i]);
+            copyContentToTargetAndCleanup(draggables[i]);
         }
         const shuffledDraggables = draggables.slice();
         shuffledDraggables.splice(letters.length); // don't want any invisible ones taking up space

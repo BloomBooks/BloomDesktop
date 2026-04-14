@@ -26,7 +26,6 @@ import { ToolBox } from "../toolbox";
 import {
     adjustDraggablesForLanguage,
     classSetter,
-    copyContentToTarget,
     getTarget,
     playInitialElements,
     prepareActivity,
@@ -58,6 +57,7 @@ import {
     kBackgroundImageClass,
     kDraggableIdAttribute,
 } from "../../js/CanvasElementManager";
+import { copyContentToTargetAndCleanup } from "../../js/dragActivityRuntimeUtils";
 import {
     getCanvasElementManager,
     kCanvasElementSelector,
@@ -935,7 +935,7 @@ const DragActivityControls: React.FunctionComponent<{
                     currentCanvasElement ===
                     getCanvasElementManager()?.getActiveElement()
                 ) {
-                    copyContentToTarget(currentCanvasElement);
+                    copyContentToTargetAndCleanup(currentCanvasElement);
                 }
             });
             draggableToTargetObserver.current.observe(currentCanvasElement, {
@@ -1877,6 +1877,18 @@ export function getActiveDragActivityTab(): number {
     return window.top!["dragActivityPage"] ?? 0;
 }
 
+function removeBloomSelectedFromTargets(page: HTMLElement): void {
+    page.querySelectorAll("[data-target-of] .bloom-selected").forEach((el) => {
+        el.classList.remove("bloom-selected");
+    });
+}
+
+function scheduleRemoveBloomSelectedFromTargets(page: HTMLElement): void {
+    // Some drag-activity runtime operations can copy content asynchronously after
+    // tab setup, so run cleanup again on the next tick.
+    setTimeout(() => removeBloomSelectedFromTargets(page), 0);
+}
+
 // The top-level function to get everything into the right state for the specified tab
 // (Start, Correct, Wrong, Play).
 // Note: the games code is currently pulled into the page bundle, but this function
@@ -1981,6 +1993,11 @@ export function setActiveDragActivityTab(tab: number) {
         disableDraggingTargets(page);
         hideGamePromptDialog(page);
     }
+
+    // Defensive cleanup: copies of draggables in targets should never carry video
+    // selection state, even if copied by external runtime code paths.
+    removeBloomSelectedFromTargets(page);
+    scheduleRemoveBloomSelectedFromTargets(page);
 }
 
 // Replace the origami control with the Game tab control if the page is a game.
