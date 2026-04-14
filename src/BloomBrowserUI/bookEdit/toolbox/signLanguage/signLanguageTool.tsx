@@ -20,6 +20,10 @@ import calculateAspectRatio from "calculate-aspect-ratio";
 import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 import { updateVideoInContainer } from "../../js/bloomVideo";
 import { selectVideoContainer } from "../../js/videoUtils";
+import {
+    getCanvasElementManager,
+    kCanvasElementSelector,
+} from "../canvas/canvasElementUtils";
 import $ from "jquery";
 
 // The recording process can be in one of these states:
@@ -116,6 +120,18 @@ export class SignLanguageToolControls extends React.Component<
     private mediaRecorder: MediaRecorder;
     private timerId: number;
     private recordingStarted: number;
+    private turningOnVideo: boolean = false;
+
+    public isVideoMonitorRunning(): boolean {
+        if (!this.videoStream) {
+            return false;
+        }
+        const videoTracks = this.videoStream.getVideoTracks();
+        return (
+            videoTracks.length > 0 &&
+            videoTracks.some((track) => track.readyState === "live")
+        );
+    }
 
     public render() {
         return (
@@ -563,14 +579,22 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     public turnOnVideo() {
+        if (this.turningOnVideo || this.isVideoMonitorRunning()) {
+            return;
+        }
+        this.turningOnVideo = true;
         const constraints = { video: true };
         navigator.mediaDevices
             .getUserMedia(constraints)
             .then((stream) => this.startMonitoring(stream))
-            .catch((reason) => this.errorCallback(reason));
+            .catch((reason) => this.errorCallback(reason))
+            .finally(() => {
+                this.turningOnVideo = false;
+            });
     }
 
     public turnOffVideo() {
+        this.turningOnVideo = false;
         if (this.videoStream) {
             const oldStream = this.videoStream;
             this.videoStream = null; // prevent recursive calls
@@ -593,7 +617,11 @@ export class SignLanguageToolControls extends React.Component<
                     reason.name == "SourceUnavailableError"), // Gecko45
         });
         // In case the user plugs in a camera, try once a second to turn it on.
-        window.setTimeout(() => this.turnOnVideo(), 1000);
+        window.setTimeout(() => {
+            if (this.state.enabled) {
+                this.turnOnVideo();
+            }
+        }, 1000);
     }
 
     // callback from getUserMedia when it succeeds; gives us a stream we can monitor and record from.
@@ -786,6 +814,50 @@ export class SignLanguageToolControls extends React.Component<
 
 export class SignLanguageTool extends ToolboxToolReactAdaptor {
     private reactControls: SignLanguageToolControls;
+    private readonly kCanvasChangeNotificationId = "signLanguageTool";
+
+    private selectedVideoCanBeRecorded(container: Element | null): boolean {
+        if (!container) {
+            return false;
+        }
+        const containingCanvasElement = container.closest(
+            kCanvasElementSelector,
+        );
+        if (!containingCanvasElement) {
+            return true;
+        }
+        return (
+            containingCanvasElement ===
+            getCanvasElementManager()?.getActiveElement()
+        );
+    }
+
+    private updateEnabledStateForSelectedVideo(): void {
+        const selectedVideos = SignLanguageTool.getVideoContainers(true);
+        const selectedContainer =
+            selectedVideos.length > 0 ? selectedVideos[0] : null;
+        const shouldEnable = this.selectedVideoCanBeRecorded(selectedContainer);
+
+        if (shouldEnable) {
+            if (!this.reactControls.isVideoMonitorRunning()) {
+                this.reactControls.turnOnVideo();
+            }
+            if (!this.reactControls.state.enabled) {
+                this.reactControls.setState({ enabled: true });
+            }
+            return;
+        }
+
+        if (
+            this.reactControls.state.enabled ||
+            this.reactControls.isVideoMonitorRunning()
+        ) {
+            this.reactControls.turnOffVideo();
+            if (this.reactControls.state.enabled) {
+                this.reactControls.setState({ enabled: false });
+            }
+        }
+    }
 
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
@@ -861,6 +933,9 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                 );
             }
         }
+        getCanvasElementManager()?.detachCanvasElementChangeNotification(
+            this.kCanvasChangeNotificationId,
+        );
         this.reactControls.turnOffVideo();
     }
 
@@ -880,6 +955,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         const container = event.currentTarget as HTMLElement;
         selectVideoContainer(container);
         this.updateStateForSelected(container);
+        this.updateEnabledStateForSelectedVideo();
         // And now in most locations we want to prevent the default behavior where click starts playback.
         // This may need adjustment for zoom.
         // The idea here is that it should be possible to select a video by clicking it
@@ -922,6 +998,10 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             videoInfoLoaded: false,
         });
         const containers = SignLanguageTool.getVideoContainers(false);
+        getCanvasElementManager()?.requestCanvasElementChangeNotification(
+            this.kCanvasChangeNotificationId,
+            (_bubble) => this.updateEnabledStateForSelectedVideo(),
+        );
         if (!containers || containers.length === 0) {
             if (this.reactControls.state.enabled) {
                 this.reactControls.turnOffVideo();
@@ -953,12 +1033,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
                     this.containerClickListener,
                 );
             }
-            // we turn it off when we leave a page, so even if we already have enabled:true,
-            // we need to turn it on for this page now we know there is something to record.
-            this.reactControls.turnOnVideo();
-            if (!this.reactControls.state.enabled) {
-                this.reactControls.setState({ enabled: true });
-            }
+            this.updateEnabledStateForSelectedVideo();
         }
     }
 
