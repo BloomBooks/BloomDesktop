@@ -438,7 +438,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                     &:first-child {
                         margin-top: 0; // override the default that sees a lack of a title and adds a margin
                     }
-                    overflow-y: hidden;
+                    overflow-y: auto; // fonts tab may need to scroll (BL-16149)
                     min-height: 0;
 
                     .${kConfigrPaneClassName} {
