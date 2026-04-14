@@ -787,6 +787,18 @@ export class SignLanguageToolControls extends React.Component<
 export class SignLanguageTool extends ToolboxToolReactAdaptor {
     private reactControls: SignLanguageToolControls;
 
+    private static getVideoContainersFromPage(
+        page: HTMLElement,
+        selected?: boolean,
+    ): HTMLElement[] {
+        const selector = selected
+            ? ".bloom-videoContainer.bloom-selected"
+            : ".bloom-videoContainer";
+        return Array.from(page.querySelectorAll(selector)).filter(
+            (container) => !container.closest("[data-target-of]"),
+        ) as HTMLElement[];
+    }
+
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
         root.setAttribute("class", "signLanguageBody");
@@ -811,14 +823,11 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
 
     // Specify 'true' to get only containers marked as selected
     public static getVideoContainers(selected?: boolean): HTMLElement[] {
-        let classes = "bloom-videoContainer";
-        if (selected) {
-            classes += " bloom-selected";
-        }
         const page = ToolBox.getPage();
-        return (
-            page ? Array.from(page.getElementsByClassName(classes)) : []
-        ) as HTMLElement[];
+        if (!page) {
+            return [];
+        }
+        return this.getVideoContainersFromPage(page, selected);
     }
 
     public static getSelectedVideoPathAndTiming(): string | null {
