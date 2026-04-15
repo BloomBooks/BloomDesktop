@@ -37,8 +37,11 @@ export function setupOrigami() {
                     "origami-layout-mode",
                 );
                 updateAbovePageControls({
-                    isGamePage:
-                        bloomPage?.getAttribute("data-tool-id") === "game",
+                    isDragGamePage:
+                        bloomPage?.getAttribute("data-tool-id") === "game" &&
+                        bloomPage
+                            ?.getAttribute("data-activity")
+                            ?.startsWith("drag-"),
                     showChangeLayoutModeToggle: showChangeLayoutModeControls,
                     isChangeLayoutMode,
                     onChangeLayoutModeToggle: handleChangeLayoutModeToggle,
