@@ -1016,6 +1016,14 @@
         <source xml:lang="en">When you publish a book to the web or as an ebook, Bloom will flag any problematic fonts. For example, we cannot legally host most Microsoft fonts on BloomLibrary.org.</source>
         <note>ID: BookSettings.Fonts.Problematic</note>
       </trans-unit>
+      <trans-unit id="BookSettings.Fonts.OtherLanguages" translate="no">
+        <source xml:lang="en">Other Languages</source>
+        <note>ID: BookSettings.Fonts.OtherLanguages</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Fonts.MaybeProblematic" translate="no">
+        <source xml:lang="en">The Bloom file for this book also has some text in other languages. Please ignore any warnings here unless you plan to publish the book with these languages.</source>
+        <note>ID: BookSettings.Fonts.MaybeProblematic</note>
+      </trans-unit>
       <trans-unit id="BookSettings.Fonts.TableDescription" sil:dynamic="true">
         <source xml:lang="en">The following table shows where fonts have been used.</source>
         <note>ID: BookSettings.Fonts.TableDescription</note>
