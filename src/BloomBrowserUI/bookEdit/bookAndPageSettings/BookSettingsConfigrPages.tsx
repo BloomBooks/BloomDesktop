@@ -60,6 +60,7 @@ type BookSettingsAreaProps = {
     onGoToThemeAndLayout?: () => void;
     onColorPickerVisibilityChanged?: (open: boolean) => void;
     themeNames: Array<{ label: string; value: string }>;
+    unusedLanguageDataExists?: boolean;
 };
 
 export type IConfigrAreaDefinition = {
@@ -192,6 +193,10 @@ export const useBookSettingsAreaDefinition = (
     const fullBleedDescription = useL10n(
         "Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.",
         "BookSettings.FullBleed.Description",
+    );
+    const otherLanguagesLabel = useL10n(
+        "Other Languages",
+        "BookSettings.Fonts.OtherLanguages",
     );
 
     const coverColorPickerControl = React.useCallback(
@@ -548,10 +553,32 @@ export const useBookSettingsAreaDefinition = (
                             </div>
                         </NoteBox>
                         <StyleAndFontTable
+                            languages="current"
                             closeDialog={props.saveSettingsAndCloseDialog}
                         />
                     </ConfigrStatic>
                 </ConfigrGroup>
+                {props.unusedLanguageDataExists && (
+                    <ConfigrGroup label={otherLanguagesLabel}>
+                        <ConfigrStatic>
+                            <NoteBox>
+                                <div>
+                                    <P l10nKey="BookSettings.Fonts.MaybeProblematic">
+                                        The Bloom file for this book also has
+                                        some text in other languages. Please
+                                        ignore any warnings here unless you plan
+                                        to publish the book with these
+                                        languages.
+                                    </P>
+                                </div>
+                            </NoteBox>
+                            <StyleAndFontTable
+                                languages="other"
+                                closeDialog={props.saveSettingsAndCloseDialog}
+                            />
+                        </ConfigrStatic>
+                    </ConfigrGroup>
+                )}
             </ConfigrPage>,
         ],
     };

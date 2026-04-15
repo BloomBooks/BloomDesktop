@@ -112,6 +112,11 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         true,
     );
 
+    const [unusedLanguageDataExists] = useApiBoolean(
+        "stylesAndFonts/unusedLanguageDataExists",
+        false,
+    );
+
     const xmatterLockedBy = useL10n(
         "Locked by {0} Front/Back matter",
         "BookSettings.LockedByXMatter",
@@ -375,6 +380,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         },
         onColorPickerVisibilityChanged: setDialogVisibleWhileColorPickerOpen,
         themeNames: appearanceUIOptions.themeNames,
+        unusedLanguageDataExists: unusedLanguageDataExists,
     });
 
     const pageSettingsArea = usePageSettingsAreaDefinition({
