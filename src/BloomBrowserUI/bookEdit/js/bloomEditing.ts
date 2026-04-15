@@ -5,6 +5,7 @@ import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
     HandleImageError,
+    normalizeCoverImageDesignation,
     SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
@@ -467,6 +468,15 @@ export function changeImageInfo(
     imgOrImageContainer.setAttribute("data-copyright", imageInfo.copyright);
     imgOrImageContainer.setAttribute("data-creator", imageInfo.creator);
     imgOrImageContainer.setAttribute("data-license", imageInfo.license);
+
+    const page = imgOrImageContainer.closest(
+        ".bloom-page",
+    ) as HTMLElement | null;
+    // In case we're on a custom outside front cover page, keep the coverImage
+    // designation aligned with the current best image choice.
+    if (page) {
+        normalizeCoverImageDesignation(page);
+    }
 }
 
 // This origami checking business is related BL-13120

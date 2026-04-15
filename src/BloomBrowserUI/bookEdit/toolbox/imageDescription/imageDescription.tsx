@@ -278,6 +278,16 @@ export function setupImageDescriptions(
     }
 }
 
+function shouldMarkAsCoverImageDescription(container: Element): boolean {
+    const page = container.closest(".bloom-page");
+    return !!(
+        page &&
+        page.classList.contains("bloom-customLayout") &&
+        page.classList.contains("outsideFrontCover") &&
+        container.classList.contains(kBloomCanvasClass)
+    );
+}
+
 // Adds a new bloom-translationGroup
 // This function is meant to get called after we send a request to C# land to figure out what kind of bloom-editables/languages we need inside this translation group
 // The container must be inside the (editing) page iFrame (because this relies on getPageFromExports()
@@ -309,12 +319,17 @@ function appendTranslationGroup(innerHtml, container: Element) {
     const newTg = getEditablePageBundleExports()!
         .makeElement(newElementHtml)
         .get(0);
+    const markAsCoverImageDescription =
+        shouldMarkAsCoverImageDescription(container);
 
     for (const editable of Array.from(
         newTg.getElementsByClassName("bloom-editable"),
     )) {
         editable.classList.add("ImageDescriptionEdit-style");
         editable.classList.remove("normal-style");
+        if (markAsCoverImageDescription) {
+            editable.setAttribute("data-book", "coverImageDescription");
+        }
     }
 
     container.appendChild(newTg);
