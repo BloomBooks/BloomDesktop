@@ -3,6 +3,7 @@ import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
 import SettingsIcon from "@mui/icons-material/Settings";
 import {
+    Button,
     Step,
     StepContent,
     StepLabel,
@@ -36,6 +37,7 @@ import {
 } from "./appBuilderShared";
 import { InlineProgressStatus } from "./InlineProgressStatus";
 import { PrepareAppStepper } from "./PrepareAppStepper";
+import { UsbDebuggingHelpDialog } from "./UsbDebuggingHelpDialog";
 import { useAppBuilderPublisherScreen } from "./useAppBuilderPublisherScreen";
 
 const apkToPhoneIconUrl = new URL(
@@ -87,6 +89,8 @@ const AppPublisherScreenContents: React.FunctionComponent<{
     const screenState = useAppBuilderPublisherScreen(props.isActive);
     const [showSettingsDialog, setShowSettingsDialog] = React.useState(false);
     const [showChooseBooksDialog, setShowChooseBooksDialog] =
+        React.useState(false);
+    const [showUsbDebuggingHelpDialog, setShowUsbDebuggingHelpDialog] =
         React.useState(false);
     const prepareTooltip = useL10n(
         "Create the Reading App Builder project in this collection's Bloom App Data folder.",
@@ -568,6 +572,26 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                             }
                                         />
                                     )}
+                                <div
+                                    css={css`
+                                        margin-top: 8px;
+                                    `}
+                                >
+                                    <Button
+                                        variant="text"
+                                        onClick={() =>
+                                            setShowUsbDebuggingHelpDialog(true)
+                                        }
+                                        css={css`
+                                            padding: 0;
+                                            min-width: 0;
+                                            justify-content: flex-start;
+                                            text-transform: none;
+                                        `}
+                                    >
+                                        How to set up your Android phone
+                                    </Button>
+                                </div>
                                 <ActionLogAccordion
                                     controller={screenState.installLog}
                                     isActive={busyAction === "install"}
@@ -605,6 +629,10 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                     }}
                 />
             )}
+            <UsbDebuggingHelpDialog
+                open={showUsbDebuggingHelpDialog}
+                onClose={() => setShowUsbDebuggingHelpDialog(false)}
+            />
         </>
     );
 };
