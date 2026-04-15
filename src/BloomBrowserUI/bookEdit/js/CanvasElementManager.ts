@@ -8014,10 +8014,11 @@ export function showCanvasTool() {
     const handleToolbox = (toolbox) => {
         // We choose behavior based on whether the toolbox is showing.
         // This matters because we may have to delay the actual work until the toolbox bundle is loaded.
-        // - If the toolbox is already open, don't switch tools; just ensure Canvas is available.
+        // - If the toolbox is already open, switch tools to Canvas.
         // - If the toolbox is closed, activate Canvas (which also opens the toolbox).
         if (toolbox.toolboxIsShowing()) {
             toolbox.ensureToolEnabled(kCanvasToolId);
+            toolbox.setCurrentTool(kCanvasToolId);
         } else {
             toolbox.activateToolFromId(kCanvasToolId);
         }
