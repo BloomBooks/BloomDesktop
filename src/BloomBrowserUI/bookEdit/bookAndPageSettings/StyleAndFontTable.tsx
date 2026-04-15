@@ -26,10 +26,11 @@ export interface IStyleAndFont {
     pageDescription: string;
 }
 export const StyleAndFontTable: React.FunctionComponent<{
+    languages: "current" | "other";
     closeDialog: () => void;
 }> = (props) => {
     const rowsSource: IStyleAndFont[] = useApiObject<IStyleAndFont[]>(
-        "stylesAndFonts/getDataRows",
+        `stylesAndFonts/getDataRows?languages=${props.languages}`,
         [],
     );
     // getDataRows tries to be very comprehensive about fonts used by anything in the document.

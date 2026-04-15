@@ -41,6 +41,7 @@ import {
     UpdateImageTooltipVisibility,
     HandleImageError,
     isPlaceHolderImage,
+    normalizeCoverImageDesignation,
 } from "./bloomImages";
 import {
     adjustTarget,
@@ -5935,6 +5936,9 @@ export class CanvasElementManager {
         if (!textOverPicDiv || !textOverPicDiv.parentElement) {
             return;
         }
+        const page = textOverPicDiv.closest(
+            ".bloom-page",
+        ) as HTMLElement | null;
         if (textOverPicDiv.classList.contains(kBackgroundImageClass)) {
             // just revert it to a placeholder
             const img = getImageFromCanvasElement(textOverPicDiv);
@@ -5942,6 +5946,9 @@ export class CanvasElementManager {
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
+                if (page) {
+                    normalizeCoverImageDesignation(page);
+                }
                 this.updateCanvasElementForChangedImage(img);
                 notifyToolOfChangedImage(img);
             }
@@ -5971,6 +5978,9 @@ export class CanvasElementManager {
         this.setActiveElement(undefined);
         // By this point it's really gone, so this will clean up if it had a target.
         this.removeDetachedTargets();
+        if (page) {
+            normalizeCoverImageDesignation(page);
+        }
     }
 
     // We verify that 'textElement' is the active element before calling this method.

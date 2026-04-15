@@ -42,6 +42,64 @@ export function isPlaceHolderImage(url: string | null | undefined): boolean {
     return url.toLowerCase().includes("placeholder.png");
 }
 
+function isCustomLayoutOutsideFrontCoverPage(
+    page: Element | null,
+): page is HTMLElement {
+    return (
+        page instanceof HTMLElement &&
+        page.classList.contains("bloom-customLayout") &&
+        page.classList.contains("outsideFrontCover")
+    );
+}
+
+function getNonUiImages(page: HTMLElement): HTMLImageElement[] {
+    return Array.from(page.querySelectorAll("img")).filter(
+        (img) => !img.closest(".bloom-ui"),
+    );
+}
+
+function getFirstNonPlaceholderImage(
+    candidates: HTMLElement[],
+): HTMLElement | undefined {
+    return candidates.find((img) => !isPlaceHolderImage(GetRawImageUrl(img)));
+}
+
+// This is called when we add or remove images on a page. If it is the outside front
+// cover and has a custom layout, we want to make sure that
+// - there is at most one image marked as the cover image,
+// - if there is a real (non-placeholder) background image, it is marked as the cover image
+// - otherwise, the first real image is marked as the cover image
+// If the page is not a custom layout outside front cover or has no real image,
+// this function does nothing.
+export function normalizeCoverImageDesignation(page: HTMLElement): void {
+    if (!isCustomLayoutOutsideFrontCoverPage(page)) {
+        return;
+    }
+
+    const nonUiImages = getNonUiImages(page);
+    const markedImages = Array.from(
+        page.querySelectorAll('[data-book="coverImage"]'),
+    ) as HTMLElement[];
+
+    const backgroundImage = getFirstNonPlaceholderImage(
+        nonUiImages.filter((img) => img.closest(`.${kBackgroundImageClass}`)),
+    );
+    const markedRealImage = getFirstNonPlaceholderImage(markedImages);
+    const firstRealImage = getFirstNonPlaceholderImage(nonUiImages);
+
+    // The one we want to be marked as the cover image
+    const chosenElement =
+        backgroundImage ?? markedRealImage ?? firstRealImage ?? markedImages[0];
+
+    for (const markedElement of markedImages) {
+        if (markedElement !== chosenElement) {
+            markedElement.removeAttribute("data-book");
+        }
+    }
+
+    chosenElement?.setAttribute("data-book", "coverImage");
+}
+
 export function cleanupImages() {
     $(".bloom-imageContainer").css("opacity", ""); //comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing
     $(".bloom-imageContainer").css("overflow", ""); //review: also comes form myimgscale; is it a problem?
