@@ -1591,6 +1591,44 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public async Task OpenInRab_WhenRabSettingsXmlIsCorrupt_RecreatesSettingsFile()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.PrepareAsync();
+
+            Directory.CreateDirectory(Path.GetDirectoryName(service.GetRabSettingsFilePath()));
+            RobustFile.WriteAllText(service.GetRabSettingsFilePath(), "<settings><apps>");
+
+            Assert.DoesNotThrow(() => service.OpenInRab());
+
+            var settingsDocument = XDocument.Load(service.GetRabSettingsFilePath());
+
+            Assert.That(service.DetachedFileName, Is.EqualTo("cmd.exe"));
+            Assert.That(
+                settingsDocument.Root?.Element("apps")?.Elements("app").Count(),
+                Is.EqualTo(1)
+            );
+            Assert.That(
+                settingsDocument.Root?.Element("apps")?.Element("app")?.Element("filename")?.Value,
+                Is.EqualTo(service.GetStatus().AppDefPath)
+            );
+        }
+
+        [Test]
         public async Task OpenInRab_DoesNotWriteToProgress()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
