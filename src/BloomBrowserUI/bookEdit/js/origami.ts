@@ -11,6 +11,7 @@ import { splitPane } from "../../lib/split-pane/split-pane";
 import { kCanvasToolId } from "../toolbox/toolIds";
 import { updateAbovePageControls } from "./AbovePageControls";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
+import { isInDragActivity } from "../toolbox/games/GameInfo";
 
 $(() => {
     splitPane($("div.split-pane"));
@@ -37,8 +38,10 @@ export function setupOrigami() {
                     "origami-layout-mode",
                 );
                 updateAbovePageControls({
-                    isGamePage:
-                        bloomPage?.getAttribute("data-tool-id") === "game",
+                    isDragGamePage:
+                        bloomPage?.getAttribute("data-tool-id") === "game" &&
+                        isInDragActivity(bloomPage),
+
                     showChangeLayoutModeToggle: showChangeLayoutModeControls,
                     isChangeLayoutMode,
                     onChangeLayoutModeToggle: handleChangeLayoutModeToggle,
