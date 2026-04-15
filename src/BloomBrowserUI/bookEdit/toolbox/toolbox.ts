@@ -659,6 +659,10 @@ export class ToolBox {
     public getCurrentTool() {
         return currentTool;
     }
+
+    public setCurrentTool(toolId: string): void {
+        setCurrentTool(toolId);
+    }
 }
 
 const toolbox = new ToolBox();
