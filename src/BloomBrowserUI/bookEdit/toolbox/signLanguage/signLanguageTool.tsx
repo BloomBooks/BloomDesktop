@@ -119,7 +119,6 @@ export class SignLanguageToolControls extends React.Component<
     private mediaRecorder: MediaRecorder;
     private timerId: number;
     private recordingStarted: number;
-    private turningOnVideo: boolean = false;
     private videoRequestVersion: number = 0;
     private wantsVideoMonitorOn: boolean = false;
 
@@ -434,6 +433,18 @@ export class SignLanguageToolControls extends React.Component<
         });
     }
 
+    public setEnabledState(enabled: boolean) {
+        if (this.state.enabled === enabled) {
+            return;
+        }
+
+        this.setState({ enabled }, () => {
+            // Canvas-selection notifications come from outside React events.
+            // Force a repaint after enabled-state transitions to keep UI in sync.
+            this.forceUpdate();
+        });
+    }
+
     public getCameraMessageLabel() {
         if (!this.state.enabled) {
             return (
@@ -596,28 +607,21 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     public turnOnVideo() {
-        if (this.turningOnVideo || this.isVideoMonitorRunning()) {
+        this.wantsVideoMonitorOn = true;
+        if (this.isVideoMonitorRunning()) {
             return;
         }
-        this.wantsVideoMonitorOn = true;
-        this.turningOnVideo = true;
         const requestVersion = ++this.videoRequestVersion;
         const constraints = { video: true };
         navigator.mediaDevices
             .getUserMedia(constraints)
             .then((stream) => this.startMonitoring(stream, requestVersion))
-            .catch((reason) => this.errorCallback(reason, requestVersion))
-            .finally(() => {
-                if (requestVersion === this.videoRequestVersion) {
-                    this.turningOnVideo = false;
-                }
-            });
+            .catch((reason) => this.errorCallback(reason, requestVersion));
     }
 
     public turnOffVideo() {
         this.wantsVideoMonitorOn = false;
         this.videoRequestVersion++;
-        this.turningOnVideo = false;
         if (this.videoStream) {
             const oldStream = this.videoStream;
             this.videoStream = null; // prevent recursive calls
@@ -864,19 +868,49 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         );
     }
 
+    private getActiveCanvasVideoContainer(): HTMLElement | undefined {
+        const activeCanvasElement =
+            getCanvasElementManager()?.getActiveElement();
+        if (!activeCanvasElement) {
+            return undefined;
+        }
+
+        const activeVideoContainer = activeCanvasElement.querySelector(
+            ".bloom-videoContainer",
+        ) as HTMLElement | null;
+        if (
+            !activeVideoContainer ||
+            activeVideoContainer.closest("[data-target-of]")
+        ) {
+            return undefined;
+        }
+
+        return activeVideoContainer;
+    }
+
     private updateEnabledStateForSelectedVideo(): void {
         const selectedVideos = SignLanguageTool.getVideoContainers(true);
         const selectedContainer =
             selectedVideos.length > 0 ? selectedVideos[0] : null;
-        const shouldEnable = this.selectedVideoCanBeRecorded(selectedContainer);
+        const activeCanvasElement =
+            getCanvasElementManager()?.getActiveElement();
+        const activeCanvasVideoContainer = this.getActiveCanvasVideoContainer();
+
+        if (activeCanvasElement && !activeCanvasVideoContainer) {
+            selectVideoContainer(undefined, false);
+        }
+
+        const effectiveSelectedContainer =
+            activeCanvasVideoContainer ?? selectedContainer;
+        const shouldEnable = activeCanvasElement
+            ? !!activeCanvasVideoContainer
+            : this.selectedVideoCanBeRecorded(effectiveSelectedContainer);
 
         if (shouldEnable) {
             if (!this.reactControls.isVideoMonitorRunning()) {
                 this.reactControls.turnOnVideo();
             }
-            if (!this.reactControls.state.enabled) {
-                this.reactControls.setState({ enabled: true });
-            }
+            this.reactControls.setEnabledState(true);
             return;
         }
 
@@ -885,10 +919,37 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             this.reactControls.isVideoMonitorRunning()
         ) {
             this.reactControls.turnOffVideo();
-            if (this.reactControls.state.enabled) {
-                this.reactControls.setState({ enabled: false });
-            }
+            this.reactControls.setEnabledState(false);
         }
+    }
+
+    private syncSelectionFromActiveCanvasElementIfNeeded(): void {
+        const activeCanvasElement =
+            getCanvasElementManager()?.getActiveElement();
+        if (!activeCanvasElement) {
+            return;
+        }
+
+        const activeVideoContainer = activeCanvasElement.querySelector(
+            ".bloom-videoContainer",
+        ) as HTMLElement | null;
+        if (
+            !activeVideoContainer ||
+            activeVideoContainer.closest("[data-target-of]")
+        ) {
+            selectVideoContainer(undefined, false);
+            return;
+        }
+
+        const selectedVideos = SignLanguageTool.getVideoContainers(true);
+        const selectedContainer =
+            selectedVideos.length > 0 ? selectedVideos[0] : undefined;
+        if (selectedContainer === activeVideoContainer) {
+            return;
+        }
+
+        selectVideoContainer(activeVideoContainer, false);
+        this.updateStateForSelected(activeVideoContainer);
     }
 
     private static getVideoContainersFromPage(
@@ -1070,9 +1131,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         if (containers.length === 0) {
             if (this.reactControls.state.enabled) {
                 this.reactControls.turnOffVideo();
-                this.reactControls.setState({
-                    enabled: false,
-                });
+                this.reactControls.setEnabledState(false);
             }
             return;
         }
@@ -1097,12 +1156,6 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             container.removeEventListener("click", this.containerClickListener);
             container.addEventListener("click", this.containerClickListener);
         }
-        // we turn it off when we leave a page, so even if we already have enabled:true,
-        // we need to turn it on for this page now we know there is something to record.
-        this.reactControls.turnOnVideo();
-        if (!this.reactControls.state.enabled) {
-            this.reactControls.setState({ enabled: true });
-        }
     }
 
     public newPageReady() {
@@ -1117,7 +1170,16 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             videoInfoLoaded: false,
         });
 
+        getCanvasElementManager()?.requestCanvasElementChangeNotification(
+            this.kCanvasChangeNotificationId,
+            (_bubble) => {
+                this.syncSelectionFromActiveCanvasElementIfNeeded();
+                this.updateEnabledStateForSelectedVideo();
+            },
+        );
+
         this.syncSelectionFromCurrentPage();
+        this.updateEnabledStateForSelectedVideo();
     }
 
     // This (param) container has just been selected as the current one by either:

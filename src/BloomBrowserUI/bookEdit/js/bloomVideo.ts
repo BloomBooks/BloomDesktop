@@ -26,52 +26,52 @@ export function SetupVideoEditing(container: HTMLElement) {
         .each((index, vc) => {
             SetupVideoContainer(vc);
         });
-    Array.from<HTMLVideoElement>(
-        container.getElementsByTagName("video"),
-    ).forEach((videoElement: HTMLVideoElement) => {
-        videoElement.removeAttribute("controls");
-        // I don't think we need to do this in normal operation, but it's useful when
-        // debugging, and just might prevent a problem in normal operation.
-        videoElement.parentElement?.classList.remove("playing");
-        videoElement.parentElement?.classList.remove("paused");
-        videoElement.addEventListener("click", handleVideoClick);
-        const playButton = wrapVideoIcon(
-            videoElement,
-            // Alternatively, we could import the Material UI icon, make this file a TSX, and use
-            // ReactDom.render to render the icon into the div. But just creating the SVG
-            // ourselves (as these methods do) seems more natural to me. We would not be using
-            // React for anything except to make use of an image which unfortunately is only
-            // available by default as a component.
-            getPlayIcon("#ffffff", videoElement),
-            "bloom-videoPlayIcon",
-        );
-        playButton.addEventListener("click", handlePlayClick);
-        const pauseButton = wrapVideoIcon(
-            videoElement,
-            getPauseIcon("#ffffff", videoElement),
-            "bloom-videoPauseIcon",
-        );
-        pauseButton.addEventListener("click", handlePauseClick);
-        const replayButton = wrapVideoIcon(
-            videoElement,
-            getReplayIcon("#ffffff", videoElement),
-            "bloom-videoReplayIcon",
-        );
-        replayButton.addEventListener("click", handleReplayClick);
-    });
 }
 
 function SetupVideoContainer(videoContainerDiv: Element) {
     const videoElts = videoContainerDiv.getElementsByTagName("video");
     for (let i = 0; i < videoElts.length; i++) {
-        const video = videoElts[i] as HTMLVideoElement;
-        // Early sign language code included this; now we do it only on hover.
-        video.removeAttribute("controls");
-        video.addEventListener("playing", (e) => videoPlayingEventHandler(e));
-        video.addEventListener("ended", (e) => videoEndedEventHandler(e));
+        setupVideoElement(videoElts[i] as HTMLVideoElement);
     }
 
     SetupClickToShowSignLanguageTool(videoContainerDiv);
+}
+
+function setupVideoElement(videoElement: HTMLVideoElement) {
+    if (videoElement.dataset.bloomVideoInitialized === "true") {
+        return;
+    }
+
+    // Early sign language code included this; now we do it only on hover.
+    videoElement.removeAttribute("controls");
+    // I don't think we need to do this in normal operation, but it's useful when
+    // debugging, and just might prevent a problem in normal operation.
+    videoElement.parentElement?.classList.remove("playing");
+    videoElement.parentElement?.classList.remove("paused");
+    videoElement.addEventListener("playing", (e) =>
+        videoPlayingEventHandler(e),
+    );
+    videoElement.addEventListener("ended", (e) => videoEndedEventHandler(e));
+    videoElement.addEventListener("click", handleVideoClick);
+    const playButton = wrapVideoIcon(
+        videoElement,
+        getPlayIcon("#ffffff", videoElement),
+        "bloom-videoPlayIcon",
+    );
+    playButton.addEventListener("click", handlePlayClick);
+    const pauseButton = wrapVideoIcon(
+        videoElement,
+        getPauseIcon("#ffffff", videoElement),
+        "bloom-videoPauseIcon",
+    );
+    pauseButton.addEventListener("click", handlePauseClick);
+    const replayButton = wrapVideoIcon(
+        videoElement,
+        getReplayIcon("#ffffff", videoElement),
+        "bloom-videoReplayIcon",
+    );
+    replayButton.addEventListener("click", handleReplayClick);
+    videoElement.dataset.bloomVideoInitialized = "true";
 }
 
 function videoEndedEventHandler(e: Event) {
@@ -296,6 +296,7 @@ export function updateVideoInContainer(container: Element, url: string): void {
         if (source) {
             source.setAttribute("src", addTransientVideoTimestampParam(url));
             video.load();
+            setupVideoElement(video);
             // Transparent background videos allow the placeholder to show.  See BL-13918.
             container.classList.remove("bloom-noVideoSelected");
         }

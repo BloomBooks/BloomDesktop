@@ -1296,6 +1296,23 @@ function beginAddTool(
             );
             return;
         }
+
+        if (isToolInitialized(tool)) {
+            if (openTool) {
+                const toolName = ToolBox.addToolToString(tool.id());
+                const adapter = getToolboxReactAdapter();
+                if (adapter) {
+                    adapter.setActiveToolByToolId(toolName);
+                    switchTool(toolName);
+                }
+            }
+
+            if (whenLoaded) {
+                whenLoaded();
+            }
+            return;
+        }
+
         const content = $(tool.makeRootElement());
         const toolName = ToolBox.addToolToString(tool.id());
         // const parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
