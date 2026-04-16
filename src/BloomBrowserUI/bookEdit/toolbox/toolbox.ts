@@ -1169,7 +1169,6 @@ function setCurrentTool(toolID: string) {
 
         if (toolID) {
             adapter.setActiveToolByToolId(toolID);
-            switchTool(toolID);
         }
         return;
     }
@@ -1298,12 +1297,11 @@ function beginAddTool(
         }
 
         if (isToolInitialized(tool)) {
-            if (openTool) {
+            if (openTool && toolbox.toolboxIsShowing()) {
                 const toolName = ToolBox.addToolToString(tool.id());
                 const adapter = getToolboxReactAdapter();
                 if (adapter) {
                     adapter.setActiveToolByToolId(toolName);
-                    switchTool(toolName);
                 }
             }
 
@@ -1871,13 +1869,12 @@ function loadToolboxTool(
     }
 
     // if requested, open the tool that was just inserted
-    if (openTool) {
+    if (openTool && toolbox.toolboxIsShowing()) {
         const adapter = getToolboxReactAdapter();
         if (adapter) {
             const toolId = header.attr("data-toolId");
             if (toolId) {
                 adapter.setActiveToolByToolId(toolId);
-                switchTool(toolId);
             }
         } else {
             toolboxElt.accordion("refresh");
@@ -1932,6 +1929,7 @@ function showToolboxChanged(wasShowing: boolean): void {
         const adapter = getToolboxReactAdapter();
         if (adapter) {
             adapter.setActiveToolByToolId(newToolName);
+            return;
         }
         switchTool(newToolName);
     }

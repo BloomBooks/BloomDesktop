@@ -19,6 +19,7 @@ import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
 import $ from "jquery";
 
 const kBloomVideoTransientTimestampParam = "bloomVideoTransientTimestamp";
+const initializedVideos = new WeakSet<HTMLVideoElement>();
 
 export function SetupVideoEditing(container: HTMLElement) {
     $(container)
@@ -38,7 +39,7 @@ function SetupVideoContainer(videoContainerDiv: Element) {
 }
 
 function setupVideoElement(videoElement: HTMLVideoElement) {
-    if (videoElement.dataset.bloomVideoInitialized === "true") {
+    if (initializedVideos.has(videoElement)) {
         return;
     }
 
@@ -71,7 +72,7 @@ function setupVideoElement(videoElement: HTMLVideoElement) {
         "bloom-videoReplayIcon",
     );
     replayButton.addEventListener("click", handleReplayClick);
-    videoElement.dataset.bloomVideoInitialized = "true";
+    initializedVideos.add(videoElement);
 }
 
 function videoEndedEventHandler(e: Event) {
