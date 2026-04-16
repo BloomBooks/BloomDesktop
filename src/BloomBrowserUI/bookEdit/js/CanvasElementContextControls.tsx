@@ -1935,6 +1935,7 @@ function addImageMenuOptions(
                     // review: do we want to preserve cropping? Also when going the other way?
                     theOneCanvasElementManager.updateCanvasElementForChangedImage(
                         bgImg,
+                        true,
                     );
 
                     // We want to make it active. However, if it used to be a placeholder, it was

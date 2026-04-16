@@ -2911,7 +2911,10 @@ export class CanvasElementManager {
 
     // When the image is changed in a canvas element (e.g., choose or paste image),
     // we remove cropping, adjust the aspect ratio, and move the control frame.
-    updateCanvasElementForChangedImage(imgOrImageContainer: HTMLElement) {
+    updateCanvasElementForChangedImage(
+        imgOrImageContainer: HTMLElement,
+        becomeBackground?: boolean,
+    ) {
         const canvasElement = imgOrImageContainer.closest(
             kCanvasElementSelector,
         ) as HTMLElement;
@@ -2932,6 +2935,7 @@ export class CanvasElementManager {
                 canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
                 true,
+                becomeBackground,
             );
             SetupMetadataButton(canvasElement);
         } else {
@@ -7186,6 +7190,7 @@ export class CanvasElementManager {
         bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
+        becomeBackground?: boolean,
     ) {
         // adjustBackgroundImageSizeInternal may wait for the image to load and make modifications after, and we want to make
         // sure those modifications are included in any save that occurs in the meanwhile.
@@ -7196,6 +7201,7 @@ export class CanvasElementManager {
                     bloomCanvas,
                     bgCanvasElement,
                     useSizeOfNewImage,
+                    becomeBackground,
                 ),
             this.pageContentDelayRequestId,
         );
@@ -7244,6 +7250,9 @@ export class CanvasElementManager {
         // We'll always have to wait for it to load in this case, otherwise, we may get
         // the dimensions of a previous image.
         useSizeOfNewImage: boolean,
+        // If this is set to true, then we need to set fitCoverMode to true
+        // when the image is on a custom layout xmatter page.
+        becomeBackground?: boolean,
     ): Promise<void> {
         const { width: bloomCanvasWidth, height: bloomCanvasHeight } =
             getExactClientSize(bloomCanvas);
@@ -7341,9 +7350,12 @@ export class CanvasElementManager {
             bgCanvasElement.clientHeight,
         );
         const containerAspectRatio = bloomCanvasWidth / bloomCanvasHeight;
-        const fitCoverMode = img?.classList.contains(
-            "bloom-imageObjectFit-cover",
-        );
+        const fitCoverMode =
+            img?.classList.contains("bloom-imageObjectFit-cover") ||
+            !!(
+                becomeBackground &&
+                img?.closest(".bloom-page.bloom-customLayout")
+            );
         let matchWidthOfContainer = imgAspectRatio > containerAspectRatio;
         if (fitCoverMode) {
             // In case it is NOT already cropped, its size will be 100%, so we must capture
