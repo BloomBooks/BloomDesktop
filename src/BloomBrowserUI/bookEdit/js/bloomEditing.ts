@@ -10,7 +10,10 @@ import {
     SetupResizableElement,
     SetupImagesInContainer,
 } from "./bloomImages";
-import { SetupVideoEditing } from "./bloomVideo";
+import {
+    removeTransientVideoTimestampParams,
+    SetupVideoEditing,
+} from "./bloomVideo";
 import { SetupWidgetEditing } from "./bloomWidgets";
 import { setupOrigami, cleanupOrigami } from "./origami";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
@@ -1225,6 +1228,7 @@ function removeEditingDebris() {
     for (let i = 0; i < textLabels.length; i++) {
         textLabels[i].remove();
     }
+    removeTransientVideoTimestampParams(document.body);
     cleanupNiceScroll(); // don't leave the nicescroll debris around
 }
 
