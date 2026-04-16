@@ -1896,6 +1896,7 @@ function addImageMenuOptions(
                             "data-license",
                             bgImg.getAttribute("data-license") || "",
                         );
+                        img.classList.remove("bloom-imageObjectFit-cover");
                         theOneCanvasElementManager.updateCanvasElementForChangedImage(
                             img,
                         );
@@ -1908,6 +1909,7 @@ function addImageMenuOptions(
                     );
                     bgImg.setAttribute("data-creator", currentCreator || "");
                     bgImg.setAttribute("data-license", currentLicense || "");
+                    bgImg.classList.add("bloom-imageObjectFit-cover");
                     // Not sure how or if this should generalize. When we make a custom cover,
                     // the cover image is initially a moveable canvas element with data-book=coverImage.
                     // Changing it to a background image should preserve that.
