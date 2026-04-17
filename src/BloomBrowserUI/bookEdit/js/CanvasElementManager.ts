@@ -3802,7 +3802,8 @@ export class CanvasElementManager {
         // thing originally clicked on. Addding it here means that the test for whether it's a click
         // this set of functions should handle is not needed in onMouseUp; only if we decide here that it's
         // ours to handle will the mouse up handler even be added.
-        // (I'd like to do the same with mouse move but we still have some hover effects.)
+        // (I think we can do the same now with mouse move, but it feels slightly risky for a stabilization
+        // phase.)
         document.addEventListener("mouseup", this.onMouseUp, {
             capture: true,
         });
@@ -3963,7 +3964,6 @@ export class CanvasElementManager {
 
         // Capture the most recent data to use when our animation frame request is satisfied.
         // or so keyboard events can reference the current mouse position.
-        this.lastMoveEvent = event;
         const deltaX = event.clientX - this.clientXAtMouseDown;
         const deltaY = event.clientY - this.clientYAtMouseDown;
         if (
@@ -4016,7 +4016,6 @@ export class CanvasElementManager {
     }
 
     private animationFrame: number;
-    private lastMoveEvent: MouseEvent;
     private lastMoveContainer: HTMLElement;
 
     // A canvas element is currently in drag mode, and the mouse is being moved.
@@ -4314,7 +4313,7 @@ export class CanvasElementManager {
             // New drag controls
             return true;
         }
-        if (targetElement.closest("[data-target-of")) {
+        if (targetElement.closest("[data-target-of]")) {
             // Bloom game targets want to handle their own dragging.
             return true;
         }

@@ -928,136 +928,35 @@ const DragActivityControls: React.FunctionComponent<{
             currentCanvasElement &&
             currentDraggableTarget
         ) {
-            // These helper functions support a mutation observer we're going to set up to copy
-            // significant changes the the draggable to its target. The functions support
-            // determining whether a mutation is significant (i.e., not just a transient change
-            // related to dragging). It's a fair bit of complication to go to avoid copying the
-            // content to the target when it's not needed, but copying the content produces
-            // noticeable flicker if we do it every time the mouse moves. There may be still more
-            // mutations we can identify as transient and ignore, but this is a good start and
-            // prevents flicker during drags.
-            const parseClassList = (classText: string): Set<string> => {
-                return new Set(
-                    classText.split(/\s+/).filter((c) => c.length > 0),
-                );
-            };
-
-            // Parse an inline style string into a Map of property:value pairs
-            const parseStyleMap = (styleText: string): Map<string, string> => {
-                const map = new Map<string, string>();
-                if (!styleText) return map;
-                styleText.split(";").forEach((decl) => {
-                    const [prop, value] = decl.split(":").map((s) => s.trim());
-                    if (prop && value) {
-                        map.set(prop.toLowerCase(), value);
-                    }
-                });
-                return map;
-            };
-
-            // Check if a mutation is only a transient change (moving class or top/left position change)
-            // Transient mutations don't require syncing content to the target.
-            const isOnlyTransientRootMutation = (
-                mutation: MutationRecord,
-                draggableElement: HTMLElement,
-            ): boolean => {
-                if (mutation.type !== "attributes") {
-                    return false; // Non-attribute mutations are never transient
+            draggableToTargetObserver.current = new MutationObserver(() => {
+                // Skip if it's no longer current (observer hasn't been removed yet)
+                if (
+                    currentCanvasElement !==
+                    getCanvasElementManager()?.getActiveElement()
+                ) {
+                    return;
                 }
-                if (mutation.target !== draggableElement) {
-                    return false; // Mutations on children are never just transient
-                }
-
-                if (mutation.attributeName === "class") {
-                    // Check if only the 'moving' class changed
-                    const oldClasses = parseClassList(mutation.oldValue || "");
-                    const newClasses = parseClassList(
-                        (mutation.target as HTMLElement).className,
-                    );
-
-                    // See if the only difference is 'moving'
-                    const hasMovingInOld = oldClasses.has("moving");
-                    const hasMovingInNew = newClasses.has("moving");
-
-                    if (hasMovingInOld === hasMovingInNew) {
-                        return false; // 'moving' didn't change
-                    }
-
-                    // Check if removing 'moving' from both leaves them identical
-                    oldClasses.delete("moving");
-                    newClasses.delete("moving");
-                    return (
-                        oldClasses.size === newClasses.size &&
-                        [...oldClasses].every((c) => newClasses.has(c))
-                    );
-                }
-
-                if (mutation.attributeName === "style") {
-                    // Check if only top/left position changed
-                    const oldStyles = parseStyleMap(mutation.oldValue || "");
-                    const newStyles = parseStyleMap(
-                        (mutation.target as HTMLElement).style.cssText,
-                    );
-
-                    // See if the styles differ only in top/left
-                    const allKeys = new Set([
-                        ...oldStyles.keys(),
-                        ...newStyles.keys(),
-                    ]);
-                    for (const key of allKeys) {
-                        if (key !== "top" && key !== "left") {
-                            const oldVal = oldStyles.get(key);
-                            const newVal = newStyles.get(key);
-                            if (oldVal !== newVal) {
-                                return false; // Some other property changed
-                            }
-                        }
-                    }
-                    // If we got here, only top/left changed (or no other properties differed)
-                    return true;
-                }
-
-                return false; // Other attribute changes are not transient
-            };
-
-            // Check if all mutations are transient mutations from the draggable element
-            const allMutationsAreTransient = (
-                mutations: MutationRecord[],
-                draggableElement: HTMLElement,
-            ): boolean => {
-                return mutations.every((m) =>
-                    isOnlyTransientRootMutation(m, draggableElement),
-                );
-            };
-
-            draggableToTargetObserver.current = new MutationObserver(
-                (mutations) => {
-                    // Skip if it's no longer current (observer hasn't been removed yet)
-                    if (
-                        currentCanvasElement !==
-                        getCanvasElementManager()?.getActiveElement()
-                    ) {
-                        return;
-                    }
-
-                    // Skip if all mutations are transient (just moving class or position changes)
-                    if (
-                        allMutationsAreTransient(
-                            mutations,
-                            currentCanvasElement,
-                        )
-                    ) {
-                        return;
-                    }
-
-                    copyContentToTargetAndCleanup(currentCanvasElement);
-                },
-            );
+                // copyContentToTarget diffs the result against the current target
+                // innerHTML before making any DOM change, so it's safe to call even
+                // when the mutation doesn't actually affect the copy (e.g. position
+                // changes during a canvas element drag).
+                copyContentToTargetAndCleanup(currentCanvasElement);
+            });
             draggableToTargetObserver.current.observe(currentCanvasElement, {
                 childList: true,
                 subtree: true,
-                attributes: true, // e.g., cropping of image
-                attributeOldValue: true, // needed to compare old vs new values
+                // It's not obvious that we need to observe attribute changes, since
+                // copyContentToTargetAndCleanup() mainly copies content. However, it does
+                // pay attention to the size of the container, and uses it to create a cropping
+                // container inside the target in some cases. Especially when moving the
+                // right and bottom crop handles, the attributes of the img don't change at all,
+                // but the size of the cropping container needs to.
+                // There are lots of possible attribute changes on the canvas element
+                // that we don't care about, but rather than making a complex filter,
+                // I decided to just leave it to copyContentToTargetAndCleanup to ignore
+                // irrelevant ones, by means of a test that doesn't replace the content
+                // if the innerHTML of the target isn't actually going to change.
+                attributes: true,
             });
         }
     }, [currentCanvasElement, currentDraggableTarget, props.activeTab]);
