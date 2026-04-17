@@ -5,12 +5,12 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { post } from "../../../utils/bloomApi";
 import { ToolBox } from "../toolbox";
-import { getEditablePageBundleExports } from "../../js/bloomFrames";
+import { getEditablePageBundleExports } from "../../js/workspaceFrames";
 import "./imageDescription.less";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Label } from "../../../react_components/l10nComponents";
 import { Link } from "../../../react_components/link";
-import { ToolBottomHelpLink } from "../../../react_components/helpLink";
+import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import {
     hideImageDescriptions,
@@ -278,6 +278,16 @@ export function setupImageDescriptions(
     }
 }
 
+function shouldMarkAsCoverImageDescription(container: Element): boolean {
+    const page = container.closest(".bloom-page");
+    return !!(
+        page &&
+        page.classList.contains("bloom-customLayout") &&
+        page.classList.contains("outsideFrontCover") &&
+        container.classList.contains(kBloomCanvasClass)
+    );
+}
+
 // Adds a new bloom-translationGroup
 // This function is meant to get called after we send a request to C# land to figure out what kind of bloom-editables/languages we need inside this translation group
 // The container must be inside the (editing) page iFrame (because this relies on getPageFromExports()
@@ -309,12 +319,17 @@ function appendTranslationGroup(innerHtml, container: Element) {
     const newTg = getEditablePageBundleExports()!
         .makeElement(newElementHtml)
         .get(0);
+    const markAsCoverImageDescription =
+        shouldMarkAsCoverImageDescription(container);
 
     for (const editable of Array.from(
         newTg.getElementsByClassName("bloom-editable"),
     )) {
         editable.classList.add("ImageDescriptionEdit-style");
         editable.classList.remove("normal-style");
+        if (markAsCoverImageDescription) {
+            editable.setAttribute("data-book", "coverImageDescription");
+        }
     }
 
     container.appendChild(newTg);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Dynamic;
 using System.Globalization;
 using System.IO;
@@ -22,6 +23,7 @@ using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
 using Newtonsoft.Json;
+using QRCoder;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
@@ -29,6 +31,7 @@ using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Reporting;
 using Image = System.Drawing.Image;
+using Path = System.IO.Path;
 
 namespace Bloom.Book
 {
@@ -42,6 +45,8 @@ namespace Bloom.Book
         string FolderName { get; }
         string FolderPath { get; }
         string PathToExistingHtml { get; }
+
+        // Caller owns the returned image and must dispose it promptly.
         bool TryGetPremadeThumbnail(string fileName, out Image image);
 
         //bool DeleteBook();
@@ -99,6 +104,8 @@ namespace Bloom.Book
         bool LinkToLocalCollectionStyles { get; set; }
 
         IEnumerable<string> GetActivityFolderNamesReferencedInBook();
+        void CaptureInitialStateForMigration();
+        void RestoreStuffBeforeMigration();
         void MigrateMaintenanceLevels();
         void MigrateToMediaLevel1ShrinkLargeImages();
         void MigrateToLevel2RemoveTransparentComicalSvgs();
@@ -113,6 +120,7 @@ namespace Bloom.Book
         void MigrateToLevel10GameHeader();
         void MigrateToLevel12PageNumberPosition(); // Level 11 was skipped.
         void MigrateToLevel13SplitPaneMarginBoxes();
+        void MigrateToLevel14CoverIsImageToCustomLayout(BookData bookData);
 
         void DoBackMigrations();
 
@@ -182,12 +190,13 @@ namespace Bloom.Book
         ///   Bloom 6.3 11 = unused migration (decided operation wasn't needed after 12 introduced)
         ///   Bloom 6.3 12 = change appearance settings page number control to use page number position system
         ///   Bloom 6.3 13 = fix split-pane-component margin boxes with positioning style
+        ///   Bloom 6.4 14 = migrate legacy coverIsImage setting to custom-layout cover
         /// History of kMediaMaintenanceLevel (introduced in 6.0)
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// </summary>
-        public const int kMaintenanceLevel = 13;
+        public const int kMaintenanceLevel = 14;
         public const int kMediaMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
@@ -428,6 +437,7 @@ namespace Bloom.Book
             string path = Path.Combine(FolderPath, fileName);
             if (RobustFile.Exists(path))
             {
+                // Caller owns this image and must dispose it promptly to release any file lock.
                 image = RobustImageIO.GetImageFromFile(path);
                 return true;
             }
@@ -1734,7 +1744,8 @@ namespace Bloom.Book
         private static string GetActualPathToSave(
             string idealFolderName,
             string currentFolderName,
-            string idealFolderPath
+            string idealFolderPath,
+            string instanceId = null
         )
         {
             // As of 16 Dec 2019 we changed our definition of "sanitized" to include some more characters that can
@@ -1766,8 +1777,9 @@ namespace Bloom.Book
             )
                 return Path.Combine(Path.GetDirectoryName(idealFolderPath), currentFolderName);
             // 4. ideal name is in use, and currentFolderName is not a variant of it,
-            // so find a new variant that is not in use.
-            return GetUniqueFolderPath(idealFolderPath);
+            // so find a new variant that is not in use. Override the default separator since
+            // this not typically a copy.
+            return GetAvailableDirectoryPath(idealFolderPath, instanceId, " - ");
         }
 
         public void SetBookName(string name)
@@ -1784,7 +1796,7 @@ namespace Bloom.Book
                     ),
                     msg
                 );
-                // Application .Exit() is not drastic enough to terminate all the call paths here and all the code
+                // Application. Exit() is not drastic enough to terminate all the call paths here and all the code
                 // that tries to make sure we save on exit. Get lots of flashing windows during shutdown.
                 Environment.Exit(-1);
             }
@@ -1794,7 +1806,12 @@ namespace Bloom.Book
             var currentFilePath = PathToExistingHtml;
             var currentFolderName = Path.GetFileNameWithoutExtension(currentFilePath);
             var idealFolderPath = Path.Combine(Directory.GetParent(FolderPath).FullName, name);
-            var actualSavePath = GetActualPathToSave(name, currentFolderName, idealFolderPath);
+            var actualSavePath = GetActualPathToSave(
+                name,
+                currentFolderName,
+                idealFolderPath,
+                _metaData?.Id
+            );
             if (actualSavePath == Path.GetDirectoryName(currentFilePath))
                 return; // for this path they must be exactly the same, even by case.
 
@@ -1834,9 +1851,9 @@ namespace Bloom.Book
                 Debug.Fail("(debug mode only): could not rename the folder");
             }
 
-            RaiseBookRenamedEvent(fromToPair);
-
             OnFolderPathChanged();
+
+            RaiseBookRenamedEvent(fromToPair);
         }
 
         // Move a file, possibly only changing the case of the name.
@@ -1851,7 +1868,7 @@ namespace Bloom.Book
                 return;
             if (oldPath.ToLowerInvariant() == newPath.ToLowerInvariant())
             {
-                var tempName = new Guid().ToString();
+                var tempName = Guid.NewGuid().ToString();
                 var tempPath = Path.Combine(Path.GetDirectoryName(oldPath), tempName);
                 // This is a case-only change. We can't just rename the file, because that throws.
                 // So we move the file to a temporary name, and then rename again to what we want.
@@ -1879,7 +1896,7 @@ namespace Bloom.Book
                 return;
             if (oldPath.ToLowerInvariant() == newPath.ToLowerInvariant())
             {
-                var tempName = new Guid().ToString();
+                var tempName = Guid.NewGuid().ToString();
                 var tempPath = Path.Combine(Path.GetDirectoryName(oldPath), tempName);
                 // This is a case-only change. We can't just rename the directory, because that throws.
                 // So we move the directory to the new name, and then move again to the one we want.
@@ -1904,9 +1921,8 @@ namespace Bloom.Book
             string restoredPath = Path.Combine(Path.GetDirectoryName(FolderPath), restoredName);
             var fromToPair = new KeyValuePair<string, string>(FolderPath, restoredPath);
             FolderPath = restoredPath;
-            RaiseBookRenamedEvent(fromToPair);
-
             OnFolderPathChanged();
+            RaiseBookRenamedEvent(fromToPair);
         }
 
         private void RaiseBookRenamedEvent(KeyValuePair<string, string> fromToPair)
@@ -2774,6 +2790,226 @@ namespace Bloom.Book
             );
         }
 
+        public static void UpdateQrCode(
+            HtmlDom dom,
+            bool shouldHaveQrCode,
+            string langCode,
+            string badgeQrCodeLabelLocalizedWithLang,
+            string bookFolderPath,
+            bool updateQrCodeFileEvenIfItExists = true
+        )
+        {
+            var qrWrappers = dom.SafeSelectNodes(
+                    "//div[contains(@class, 'bloom-branding-wrapper')]"
+                )
+                .Cast<SafeXmlElement>();
+            var url = "https://bloomlibrary.org/language:" + langCode;
+
+            string qrFileName = null;
+            const string kQrFileName = "lang-qr-code.png";
+            var qrFilePath = Path.Combine(bookFolderPath, kQrFileName);
+
+            foreach (var qrWrapper in qrWrappers)
+            {
+                var anchor =
+                    qrWrapper.ChildNodes.FirstOrDefault(n =>
+                        n is SafeXmlElement element && element.Name.ToLowerInvariant() == "a"
+                    ) as SafeXmlElement;
+                if (anchor == null)
+                    continue; // html structure is corrupt/empty: nothing we can do
+
+                var imgBranding = FindChildElement(anchor, "img", "branding");
+                var imgQr = FindChildElement(anchor, "img", "bloom-qrcode");
+                var label = FindChildElement(anchor, "div", "bloom-lang-on-blorg");
+
+                if (!shouldHaveQrCode)
+                {
+                    AdjustHtmlForNoQrCode(qrWrapper, anchor, imgBranding, imgQr, label);
+                    continue; // change both data-div and back page
+                }
+
+                anchor.SetAttribute("href", url + "?utm_source=badgeclick");
+
+                if (qrFileName == null)
+                {
+                    if (updateQrCodeFileEvenIfItExists || !RobustFile.Exists(qrFilePath))
+                        qrFileName = GenerateQrCodeImage(bookFolderPath, url + "?utm_source=qr");
+                    else
+                        qrFileName = kQrFileName;
+                }
+
+                AdjustHtmlForHavingQrCode(
+                    qrWrapper,
+                    anchor,
+                    imgBranding,
+                    imgQr,
+                    label,
+                    qrFileName,
+                    badgeQrCodeLabelLocalizedWithLang
+                );
+            }
+        }
+
+        private static SafeXmlElement FindChildElement(
+            SafeXmlElement parent,
+            string name,
+            string className
+        )
+        {
+            return parent.ChildNodes.FirstOrDefault(n =>
+                    n is SafeXmlElement element
+                    && element.Name.ToLowerInvariant() == name
+                    && element.HasClass(className)
+                ) as SafeXmlElement;
+        }
+
+        private static void AdjustHtmlForNoQrCode(
+            SafeXmlElement qrWrapper,
+            SafeXmlElement anchor,
+            SafeXmlNode imgBranding,
+            SafeXmlNode imgQr,
+            SafeXmlNode label
+        )
+        {
+            if (imgQr != null)
+            {
+                anchor.RemoveChild(imgQr);
+                // We could delete the qrcode image file, but I'm inclined to leave it for
+                // our usual cleanup code.
+            }
+            if (label != null)
+                anchor.RemoveChild(label);
+            if (imgBranding != null)
+            {
+                var src = imgBranding.GetAttribute("src");
+                var name = Path.GetFileNameWithoutExtension(src);
+                var extension = Path.GetExtension(src);
+                var src1 = Regex.Replace(name, "^(.*)-text$", "$1") + extension;
+                imgBranding.SetAttribute("src", src1);
+            }
+            anchor.RemoveAttribute("href");
+        }
+
+        private static void AdjustHtmlForHavingQrCode(
+            SafeXmlElement qrWrapper,
+            SafeXmlElement anchor,
+            SafeXmlNode imgBranding,
+            SafeXmlNode imgQr,
+            SafeXmlNode label,
+            string qrFileName,
+            string badgeLabel
+        )
+        {
+            if (imgBranding != null)
+            {
+                var src = imgBranding.GetAttribute("src");
+                var name = Path.GetFileNameWithoutExtension(src);
+                if (!name.EndsWith("-text"))
+                {
+                    var extension = Path.GetExtension(src);
+                    src = name + "-text" + extension;
+                    imgBranding.SetAttribute("src", src);
+                }
+            }
+
+            if (imgQr == null)
+            {
+                imgQr = anchor.OwnerDocument.CreateElement("img");
+                imgQr.SetAttribute("class", "bloom-qrcode");
+                anchor.AppendChild(imgQr);
+            }
+            imgQr.SetAttribute("src", qrFileName);
+            imgQr.SetAttribute("alt", "QR code linking to book online");
+
+            if (label == null)
+            {
+                label = anchor.OwnerDocument.CreateElement("div");
+                label.SetAttribute("class", "bloom-lang-on-blorg");
+                anchor.AppendChild(label);
+            }
+
+            label.InnerText = badgeLabel;
+        }
+
+        private static string GenerateQrCodeImage(string bookFolderPath, string url)
+        {
+            string qrFileName;
+            using (var qrGenerator = new QRCodeGenerator())
+            {
+                using (var qrData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q))
+                {
+                    using (var qrCode = new ArtQRCode(qrData))
+                    {
+                        using (
+                            var qrBitmap = qrCode.GetGraphic(
+                                20,
+                                Color.FromArgb(255, 91, 91, 91), // medium dark gray
+                                Color.White,
+                                Color.White,
+                                null,
+                                1,
+                                false
+                            )
+                        )
+                        {
+                            // Modify image to make corner detection pattern centers red
+                            // (TODO) Round off corners of detection squares
+                            // (These first two might be possible to do with the QR code library.  GetGraphic has
+                            // a "finderPatternImage" parameter that might work for these.)
+                            // Also make center square white to overlay Bloom logo and overlay the Bloom logo
+                            TweakQrCodeBitmap(qrBitmap);
+                            qrFileName = "lang-qr-code.png";
+                            qrBitmap.Save(Path.Combine(bookFolderPath, qrFileName));
+                        }
+                    }
+                }
+            }
+            return qrFileName;
+        }
+
+        public static void TweakQrCodeBitmap(Bitmap qrBitmap)
+        {
+            var height = qrBitmap.Height;
+            var width = qrBitmap.Width;
+            if (height != width || height < 660)
+                throw new Exception(
+                    $"Unexpected QrCode bitmap size: height={height}, width={width}"
+                );
+            using (Graphics g = Graphics.FromImage(qrBitmap))
+            {
+                var bloomRed = Color.FromArgb(255, 206, 85, 70);
+                using (var brush = new SolidBrush(bloomRed))
+                {
+                    // Fill the specified rectangle area with the brush color
+                    g.FillRectangle(brush, new Rectangle(40, 40, 60, 60));
+                    g.FillRectangle(brush, new Rectangle(40, height - 100, 60, 60));
+                    g.FillRectangle(brush, new Rectangle(width - 100, 40, 60, 60));
+                }
+                var logoWidth = (width / 4) + (width / 32);
+                var logoHeight = (height / 4) + (height / 32);
+                var x = (width - logoWidth) / 2;
+                var y = (height - logoHeight) / 2;
+                // Make background of the logo in the center white.
+                using (var brush = new SolidBrush(Color.White))
+                {
+                    g.FillRectangle(brush, new Rectangle(x, y, logoWidth, logoHeight));
+                }
+                // Fill in the logo at the proper size inside one pixel of white border.
+                var logoPath = Path.Combine(
+                    BloomFileLocator.GetBrandingFolder("shared"),
+                    "bloom-icon.png"
+                );
+                using (var logoBitmap = (Bitmap)Image.FromFile(logoPath))
+                {
+                    var newSize = new Size(logoWidth - 2, logoHeight - 2);
+                    using (var resizedLogo = new Bitmap(logoBitmap, newSize))
+                    {
+                        g.DrawImage(resizedLogo, x + 1, y + 1);
+                    }
+                }
+            }
+        }
+
         public ExpandoObject XmatterAppearanceSettings =>
             XMatterSettings.GetSettingsOrNull(XMatterHelper.PathToXMatterSettings)?.Appearance;
 
@@ -2888,6 +3124,7 @@ namespace Bloom.Book
         private string _cachedXmatterPackName;
         private HtmlDom _cachedXmatterDom;
         private BookInfo _cachedXmatterBookInfo;
+        private SafeXmlElement _preMigrationOutsideFrontCover;
 
         private XMatterHelper XMatterHelper
         {
@@ -3307,12 +3544,22 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// if necessary, append a number to make the folder path unique
+        /// as necessary, shorten and/or append a guid to make a path to a new folder
+        /// with a name that does not exceed our limit.
         /// </summary>
-        private static string GetUniqueFolderPath(string folderPath)
+        private static string GetAvailableDirectoryPath(
+            string folderPath,
+            string instanceId = null,
+            string separator = " - Copy"
+        )
         {
             var parent = Directory.GetParent(folderPath).FullName;
-            var name = GetUniqueFolderName(parent, Path.GetFileName(folderPath));
+            var name = GetAvailableDirectory(
+                parent,
+                Path.GetFileName(folderPath),
+                instanceId,
+                separator
+            );
             return Path.Combine(parent, name);
         }
 
@@ -3344,24 +3591,6 @@ namespace Bloom.Book
                 }
             }
             return Path.Combine(parentFolderPath, newName);
-        }
-
-        /// <summary>
-        /// if necessary, append a number to make the subfolder name unique within the given folder
-        /// </summary>
-        internal static string GetUniqueFolderName(string parentPath, string name)
-        {
-            // Don't be tempted to give this parentheses. That isn't compatible with
-            // SanitizeNameForFileSystem which removes parentheses. See BL-11663.
-
-            int i = 1; // First non-blank suffix should be " 2"
-            string suffix = "";
-            while (Directory.Exists(Path.Combine(parentPath, name + suffix)))
-            {
-                ++i;
-                suffix = " " + i.ToString(CultureInfo.InvariantCulture);
-            }
-            return name + suffix;
         }
 
         /// <summary>
@@ -3445,25 +3674,26 @@ namespace Bloom.Book
         /// <returns>a path to the directory containing the duplicate</returns>
         public string Duplicate()
         {
-            // get the book name and copy number of the current directory
+            // get the book name of the current directory
             var baseName = Path.GetFileName(FolderPath);
 
-            // see if this already has a name like "foo Copy 3"
-            // If it does, we will use that number plus 1 as the starting point for looking for a new unique folder name
-            var regexToGetCopyNumber = new Regex(@"^(.+)(\s-\sCopy)(\s[0-9]+)?$");
-            var match = regexToGetCopyNumber.Match(baseName);
-            var copyNum = 1;
+            // see if this already has a name like "foo - Copy-abc12345" or "foo - Copy 3"
+            // (The second is obsolete, but might still be encountered.)
+            // If it does, remove that suffix so we get back to the base name
+            var regexToRemoveCopySuffix = new Regex(@"^(.+)(\s-\sCopy)(-[0-9a-f]+|\s[0-9]+)?$");
+            var match = regexToRemoveCopySuffix.Match(baseName);
 
             if (match.Success)
             {
                 baseName = match.Groups[1].Value;
-                if (match.Groups[3].Success)
-                    copyNum = 1 + Int32.Parse(match.Groups[3].Value.Trim());
             }
+
+            // Generate a new instance ID for the duplicate
+            var newInstanceId = Guid.NewGuid().ToString();
 
             // directory for the new book
             var collectionDir = Path.GetDirectoryName(FolderPath);
-            var newBookName = GetAvailableDirectory(collectionDir, baseName, copyNum);
+            var newBookName = GetAvailableDirectory(collectionDir, baseName, newInstanceId);
             var newBookDir = Path.Combine(collectionDir, newBookName);
             Directory.CreateDirectory(newBookDir);
 
@@ -3476,7 +3706,7 @@ namespace Bloom.Book
             );
             var metaPath = Path.Combine(newBookDir, "meta.json");
 
-            ChangeInstanceId(metaPath);
+            UpdateInstanceId(metaPath, newInstanceId);
 
             // rename the book htm file
             var oldName = Path.Combine(newBookDir, Path.GetFileName(PathToExistingHtml));
@@ -3485,7 +3715,7 @@ namespace Bloom.Book
             return newBookDir;
         }
 
-        private void ChangeInstanceId(string metaDataPath)
+        private void UpdateInstanceId(string metaDataPath, string newInstanceId)
         {
             // Update the InstanceId. This was not done prior to Bloom 4.2.104
             // If the meta.json file is missing, ok that's weird but that means we
@@ -3493,37 +3723,91 @@ namespace Bloom.Book
             if (RobustFile.Exists(metaDataPath))
             {
                 var meta = DynamicJson.Parse(RobustFile.ReadAllText(metaDataPath));
-                meta.bookInstanceId = Guid.NewGuid().ToString();
+                meta.bookInstanceId = newInstanceId;
                 RobustFile.WriteAllText(metaDataPath, meta.ToString());
             }
         }
 
         /// <summary>
-        /// Get an available directory name for a new copy of a book
+        /// Get an available directory name for a new copy of a book using part of the instance ID
         /// </summary>
         /// <param name="collectionDir"></param>
         /// <param name="baseName"></param>
-        /// <param name="copyNum"></param>
+        /// <param name="instanceId">The instance ID to use for generating a unique suffix. If null, a new GUID will be generated.</param>
         /// <returns></returns>
         private static string GetAvailableDirectory(
             string collectionDir,
             string baseName,
-            int copyNum
+            string instanceId = null,
+            string separator = " - Copy-"
         )
         {
-            string newName;
-            if (copyNum == 1)
-                newName = baseName + " - Copy";
-            else
-                newName = baseName + " - Copy " + copyNum;
+            return GetUniqueBookFolderName(collectionDir, baseName, instanceId, separator);
+        }
 
-            while (Directory.Exists(Path.Combine(collectionDir, newName)))
+        /// <summary>
+        /// Get a unique book folder name using part of the instance ID or a new guid.
+        /// Observes our standard constraint on book folder name length.
+        /// </summary>
+        /// <param name="parentPath">Parent directory path</param>
+        /// <param name="baseName">Base name for the book</param>
+        /// <param name="instanceId">The instance ID to use for generating a unique suffix.
+        /// If null, a new GUID will be generated.
+        /// When making a new book (derivative, duplicate, etc) that already involves
+        /// making a new guid as the book's instanceId, we try to use that ID to make
+        /// a unique name. This is mainly helpful when the rest of the name is something
+        /// fixed like "Book"...it means the folder name has at least some relationship
+        /// to the book it contains. On the other hand, when it's an existing book,
+        /// part of the purpose of adding these guids rather than just a number is
+        /// that we want it to be unlikely that, in a Team Collection, someone elsewhere
+        /// will do a similar operation on the book (or another one) and come up with
+        /// the same name.
+        /// So, if the name is for a book that has a newly created instanceId,
+        /// it's good to pass it. If it's an instance Id that might already have been
+        /// shared somehow, don't pass it. (If it's just difficult for any reason
+        /// to get the instanceId, it's also harmless not to pass it.)
+        /// (There's about one chance in 4 billion that the name-plus-instanceId
+        /// produces the name of a folder that exists. In those very rare cases,
+        /// we will generate a new GUID even though one was passed.)</param>
+        /// <param name="separator">Separator string before the ID suffix (e.g., " - Copy-" or "-")</param>
+        /// <returns>A unique folder name</returns>
+        internal static string GetUniqueBookFolderName(
+            string parentPath,
+            string baseName,
+            string instanceId = null,
+            string separator = "-"
+        )
+        {
+            // Generate an instanceId if not provided
+            if (string.IsNullOrEmpty(instanceId))
             {
-                copyNum++;
-                newName = baseName + " - Copy " + copyNum;
+                instanceId = Guid.NewGuid().ToString();
             }
 
-            return newName;
+            // Calculate the maximum length for the base name
+            // We need room for: separator (variable length) + 8 characters from instanceId
+            var suffixLength = separator.Length + 8; // 8 hex chars from GUID
+            var maxBaseNameLength = kMaxFilenameLength - suffixLength;
+
+            // Truncate and clean the base name if necessary
+            if (baseName.Length > maxBaseNameLength)
+            {
+                baseName = MiscUtils.TruncateSafely(baseName, maxBaseNameLength);
+                baseName = Regex.Replace(baseName, "[\\s.]+$", "", RegexOptions.Compiled);
+            }
+
+            string proposedName;
+            do
+            {
+                // Use first 8 characters of the instance ID (without hyphens) as the unique suffix
+                var instanceSuffix = instanceId.Replace("-", "").Substring(0, 8).ToLowerInvariant();
+                proposedName = baseName + separator + instanceSuffix;
+
+                if (!Directory.Exists(Path.Combine(parentPath, proposedName)))
+                    return proposedName;
+                // If there's a collision, generate a new GUID and try again
+                instanceId = Guid.NewGuid().ToString();
+            } while (true);
         }
 
         public void EnsureOriginalTitle()
@@ -3662,6 +3946,53 @@ namespace Bloom.Book
             return level;
         }
 
+        public void CaptureInitialStateForMigration()
+        {
+            _preMigrationOutsideFrontCover = null;
+            if (GetMaintenanceLevel() >= 14)
+                return;
+
+            var outsideFrontCover = Dom.SafeSelectNodes(
+                    "//body//div[contains(@class,'bloom-page') and contains(@class,'outsideFrontCover')]"
+                )
+                .Cast<SafeXmlElement>()
+                .FirstOrDefault();
+            if (outsideFrontCover == null || !outsideFrontCover.HasClass("cover-is-image"))
+                return;
+
+            _preMigrationOutsideFrontCover = outsideFrontCover.CloneNode(true) as SafeXmlElement;
+        }
+
+        public void RestoreStuffBeforeMigration()
+        {
+            if (_preMigrationOutsideFrontCover == null)
+                return;
+
+            var currentOutsideFrontCover = Dom.SafeSelectNodes(
+                    "//body//div[contains(@class,'bloom-page') and contains(@class,'outsideFrontCover')]"
+                )
+                .Cast<SafeXmlElement>()
+                .FirstOrDefault();
+            if (currentOutsideFrontCover == null)
+                return;
+
+            var preservedMarginBox = GetMarginBox(_preMigrationOutsideFrontCover);
+            var currentMarginBox = GetMarginBox(currentOutsideFrontCover);
+            if (preservedMarginBox == null || currentMarginBox == null)
+                return;
+
+            while (currentMarginBox.HasChildNodes)
+                currentMarginBox.RemoveChild(currentMarginBox.ChildNodes[0]);
+
+            var preservedChildren = preservedMarginBox.ChildNodes.Cast<SafeXmlNode>().ToList();
+            foreach (var child in preservedChildren)
+            {
+                currentMarginBox.AppendChild(
+                    currentMarginBox.OwnerDocument.ImportNode(child, true)
+                );
+            }
+        }
+
         /// <summary>
         /// Bloom 4.9 and later (a bit later than the above 4.9 and therefore a separate maintenance
         /// level) will only put comical-generated svgs in Bloom imageContainers if they are
@@ -3793,7 +4124,17 @@ namespace Bloom.Book
         {
             if (desiredPath == null)
                 desiredPath = oldBookFolder;
-            var newPathForExtraBook = BookStorage.GetUniqueFolderPath(desiredPath);
+            // not passing an instanceId here. Although we usually like to use the book's
+            // own instanceId when necessary to make a unique folder name if possible, the
+            // uses of this method mostly involve moving an existing book. That makes it
+            // at least somewhat likely that someone somewhere might already be using that
+            // instanceId in a name. So a brand new one makes for more uniqueness.
+            // Since we're not making a copy we will use a shorter separator
+            var newPathForExtraBook = BookStorage.GetAvailableDirectoryPath(
+                desiredPath,
+                null,
+                " - "
+            );
             SIL.IO.RobustIO.MoveDirectory(oldBookFolder, newPathForExtraBook);
             var extraBookPath = Path.Combine(
                 newPathForExtraBook,
@@ -4240,6 +4581,49 @@ namespace Bloom.Book
             Dom.UpdateMetaElement("maintenanceLevel", "13");
         }
 
+        public void MigrateToLevel14CoverIsImageToCustomLayout(BookData bookData)
+        {
+            if (GetMaintenanceLevel() >= 14)
+                return;
+
+            var hadLegacyCoverSetting =
+                BookInfo.AppearanceSettings.TryGetBooleanPropertyValue(
+                    "coverIsImage",
+                    out var legacyCoverSettingValue
+                ) && legacyCoverSettingValue;
+            BookInfo.AppearanceSettings.Properties.Remove("coverIsImage");
+
+            if (hadLegacyCoverSetting)
+            {
+                var outsideFrontCover = Dom.SafeSelectNodes(
+                        "//body//div[contains(@class,'bloom-page') and contains(@class,'outsideFrontCover')]"
+                    )
+                    .Cast<SafeXmlElement>()
+                    .FirstOrDefault();
+                if (outsideFrontCover != null)
+                {
+                    outsideFrontCover.RemoveClass("cover-is-image");
+                    outsideFrontCover.AddClass("bloom-customLayout");
+
+                    if (
+                        outsideFrontCover.HasClass("bloom-customLayout")
+                        && !string.IsNullOrEmpty(
+                            outsideFrontCover.GetAttribute("data-custom-layout-id")
+                        )
+                    )
+                    {
+                        var onePageDom = new HtmlDom("<html><head></head><body></body></html>");
+                        onePageDom.Body.AppendChild(
+                            onePageDom.RawDom.ImportNode(outsideFrontCover, true)
+                        );
+                        bookData.SuckInDataFromEditedDom(onePageDom, BookInfo);
+                    }
+                }
+            }
+
+            Dom.UpdateMetaElement("maintenanceLevel", "14");
+        }
+
         /// <summary>
         /// This method reduces the list of features to the most specific one, based largely on the
         /// subscription tier.  If there are multiple features that are at the same subscription
@@ -4585,6 +4969,10 @@ namespace Bloom.Book
             var marginBox = GetMarginBox(page);
             if (marginBox == null)
                 return true; // marginBox should not be missing
+            // If we're on a custom cover page, well, I suppose the author can delete
+            // everything if they want.
+            if (page.HasClass("bloom-customLayout"))
+                return false;
             var internalNodes = marginBox.ChildNodes.Where(x => x is SafeXmlElement).ToList();
             if (internalNodes.Count == 0)
             {
@@ -4606,14 +4994,16 @@ namespace Bloom.Book
         }
 
         // I think this is more efficient than an xpath, especially since marginBox is usually the last top-level child.
-        static SafeXmlElement GetMarginBox(SafeXmlElement parent)
+        public static SafeXmlElement GetMarginBox(SafeXmlElement parent)
         {
             foreach (
                 SafeXmlElement child in parent.ChildNodes.Where(x => x is SafeXmlElement).Reverse()
             )
             {
-                if (child.GetAttribute("class").Contains("marginBox"))
+                if (child.HasClass("marginBox"))
+                {
                     return child;
+                }
                 var mb = GetMarginBox(child);
                 if (mb != null)
                     return mb;

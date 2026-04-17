@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Utils;
 using L10NSharp;
@@ -341,6 +342,12 @@ namespace Bloom.Book
         /// </summary>
         public string QuickTitleUserDisplay => FolderName;
 
+        /// <summary>
+        /// Non-persistent storage for a label to show on book thumbnails, especially for
+        /// the collection tab listing of books.
+        /// </summary>
+        public string ThumbnailLabel { get; set; }
+
         public bool TryGetPremadeThumbnail(out Image image)
         {
             string path = Path.Combine(FolderPath, "thumbnail.png");
@@ -348,6 +355,7 @@ namespace Bloom.Book
             {
                 try
                 {
+                    // Caller owns this image and must dispose it promptly to release any file lock.
                     image = RobustImageIO.GetImageFromFile(path);
                     return true;
                 }
@@ -852,8 +860,65 @@ namespace Bloom.Book
             bool ignoreFolderName = false
         )
         {
+            return GetBestDisplayTitle(null, null, langCodes, ignoreFolderName);
+        }
+
+        internal string GetBestDisplayTitle(
+            CollectionSettings settings, // may be null
+            Book book, // may be null, but if we have it, we can use it to get the title without having to read the html again
+            List<string> langCodes = null,
+            bool ignoreFolderName = false
+        )
+        {
             if (!ignoreFolderName && FileNameLocked)
+            {
+                // The user has explicitly chosen a name to use for the book, distinct from its titles.
                 return FolderName;
+            }
+            if (IsInEditableCollection)
+            {
+                // If we have the book, we can use that for getting the title.
+                // If we have the settings but not the book, we can use the settings to get the title from the html.
+                if (!string.IsNullOrEmpty(FolderPath) && (book != null || settings != null))
+                {
+                    // Use the loaded book if we have it to get the best title.
+                    if (FolderPath == book?.FolderPath && book.BookInfo.SaveContext == SaveContext)
+                    {
+                        if (langCodes == null)
+                            langCodes = book.BookData.GetBasicBookLanguageCodes().ToList();
+                        return Book.GetBestTitleForDisplay(
+                            book.BookData.GetMultiTextVariableOrEmpty("bookTitle"),
+                            langCodes,
+                            IsInEditableCollection
+                        );
+                    }
+                    else
+                    {
+                        // If we can create a BookData, we can get the title from there.
+                        var htmlPath = BookStorage.FindBookHtmlInFolder(FolderPath);
+                        if (
+                            !string.IsNullOrEmpty(htmlPath)
+                            && RobustFile.Exists(htmlPath)
+                            && settings != null
+                        )
+                        {
+                            var dom = HtmlDom.CreateFromHtmlFile(htmlPath);
+                            var bookData = new BookData(dom, settings, null);
+                            if (langCodes == null)
+                                langCodes = bookData.GetBasicBookLanguageCodes().ToList();
+                            return Book.GetBestTitleForDisplay(
+                                bookData.GetMultiTextVariableOrEmpty("bookTitle"),
+                                langCodes,
+                                IsInEditableCollection
+                            );
+                        }
+                    }
+                }
+            }
+            // If we still don't have a title, try to get one from the metadata.
+            // This code is used for all books that are not in the editable collection, and for any books
+            // in the editable collection that don't seem to have any title in the HTML.  (The latter case
+            // may be hopeless, but this check isn't very expensive.)
             try
             {
                 // JSON parsing requires newlines to be double quoted with backslashes inside string values.
@@ -867,13 +932,20 @@ namespace Bloom.Book
                 // behave as expected.
                 foreach (var lang in langs.Where((l) => l != "item"))
                     multiText[lang] = titles[lang].Trim();
-                return Book.GetBestTitleForDisplay(multiText, langCodes, IsInEditableCollection);
+                if (langCodes == null)
+                    langCodes = langs.Where((l) => l != "item").ToList();
+                if (langCodes.Count > 0)
+                    return Book.GetBestTitleForDisplay(
+                        multiText,
+                        langCodes,
+                        IsInEditableCollection
+                    );
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
-            return Title;
+            return Title; // Title may be empty, but we have no better option at this point.
         }
 
         private static void SafelyAddToIdSet(

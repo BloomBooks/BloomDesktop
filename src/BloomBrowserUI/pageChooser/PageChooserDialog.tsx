@@ -12,10 +12,10 @@ import {
 } from "../react_components/BloomDialog/BloomDialog";
 import { useL10n } from "../react_components/l10nHooks";
 import { getBloomApiPrefix } from "../utils/bloomApi";
-import { getToolboxBundleExports } from "../bookEdit/js/bloomFrames";
+import { getToolboxBundleExports } from "../bookEdit/js/workspaceFrames";
 import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
-import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
+import { ShowEditViewDialog } from "../bookEdit/workspaceRoot";
 import axios from "axios";
 import { getFeatureStatusAsync } from "../react_components/featureStatus";
 import {
@@ -80,7 +80,7 @@ export const getTemplatePageImageSource = (
     );
 };
 
-// To test the AddPage/ChangeLayout dialog in devtools, type 'editTabBundle.showPageChooserDialog(false)' in
+// To test the AddPage/ChangeLayout dialog in devtools, type 'workspaceBundle.showPageChooserDialog(false)' in
 // the Console. Substitute 'true' for the ChangeLayout dialog.
 
 // latest version of the expected JSON initialization string (from PageTemplatesApi.HandleTemplatesRequest)
@@ -324,9 +324,30 @@ export const PageChooserDialog: React.FunctionComponent<
     }, [templateBooks]);
 
     const getToolId = (templatePageDiv: HTMLDivElement | undefined): string => {
-        return templatePageDiv
-            ? getAttributeStringSafely(templatePageDiv, "data-tool-id")
-            : "";
+        if (templatePageDiv) {
+            const pageToolId = getAttributeStringSafely(
+                templatePageDiv,
+                "data-tool-id",
+            );
+            if (pageToolId) {
+                return pageToolId;
+            }
+            const featureName = getAttributeStringSafely(
+                templatePageDiv,
+                "data-feature",
+            );
+            if (featureName === "canvas") {
+                const canvas =
+                    templatePageDiv.querySelector(kBloomCanvasSelector);
+                const canvasToolId = (canvas as Element)?.getAttribute(
+                    "data-tool-id",
+                );
+                if (canvasToolId) {
+                    return canvasToolId;
+                }
+            }
+        }
+        return "";
     };
 
     // "Safely" from a type-checking point of view. The calling code is responsible
@@ -409,7 +430,7 @@ export const PageChooserDialog: React.FunctionComponent<
             willLoseData(selectedPageDiv),
             convertWholeBookCheckbox ? convertWholeBookCheckbox.checked : false,
             props.forChooseLayout ? -1 : 1,
-            selectedPageDiv.getAttribute("data-tool-id") ?? "",
+            getToolId(selectedPageDiv),
             getToolId(selectedPageDiv),
         );
     }
@@ -706,11 +727,7 @@ export const PageChooserDialog: React.FunctionComponent<
                             learnMoreLink={learnMoreLink}
                             requiredTool={getToolId(selectedTemplatePageDiv)}
                             onSubmit={handleAddPageOrChooseLayoutButtonClick}
-                            dataToolId={
-                                selectedTemplatePageDiv.getAttribute(
-                                    "data-tool-id",
-                                ) ?? ""
-                            }
+                            dataToolId={getToolId(selectedTemplatePageDiv)}
                         />
                     )}
                 </div>

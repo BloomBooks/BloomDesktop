@@ -255,6 +255,13 @@ span.bloom-linebreak {
             }
         }
     }
+    // A bloom-canvas-element only ever shows one bloom-editable, so the gap
+    // between items is irrelevant. More importantly, when the canvas-element
+    // is auto-sized, a non-zero bottom margin
+    // triggers flex-shrink and makes the editable smaller than its content.
+    .bloom-canvas-element .bloom-translationGroup.bookTitle .bloom-editable {
+        margin-bottom: 0;
+    }
 }
 
 .Title-On-Cover-style {

@@ -6,9 +6,11 @@ using System.Text;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
@@ -58,6 +60,28 @@ namespace Bloom.web.controllers
                     }
                     else if (request.HttpMethod == HttpMethods.Post)
                     {
+                        request.PostSucceeded();
+                    }
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "advancedProgramSettings",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Get)
+                    {
+                        request.ReplyWithJson(
+                            JsonConvert.SerializeObject(GetAdvancedSettingsData())
+                        );
+                    }
+                    else
+                    {
+                        var dialog = DialogBeingEdited;
+                        if (dialog != null)
+                        {
+                            StoreAdvancedSettingsData(request, dialog);
+                        }
                         request.PostSucceeded();
                     }
                 },
@@ -272,6 +296,94 @@ namespace Bloom.web.controllers
             );
         }
 
+        private object GetAdvancedSettingsData()
+        {
+            var dialog = DialogBeingEdited;
+            var isAutoUpdateSupported =
+                dialog?.ShowAutomaticallyUpdateOption
+                ?? CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform;
+            return new
+            {
+                values = new
+                {
+                    autoUpdate = dialog?.PendingAutomaticallyUpdate
+                        ?? (isAutoUpdateSupported && Settings.Default.AutoUpdate),
+                    showExperimentalBookSources = dialog?.PendingShowExperimentalBookSources
+                        ?? ExperimentalFeatures.IsFeatureEnabled(
+                            ExperimentalFeatures.kExperimentalSourceBooks
+                        ),
+                    allowTeamCollection = dialog?.PendingAllowTeamCollection
+                        ?? ExperimentalFeatures.IsFeatureEnabled(
+                            ExperimentalFeatures.kTeamCollections
+                        ),
+                    allowAppBuilder = dialog?.PendingAllowAppBuilder
+                        ?? ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kAppBuilder),
+                    showQrCode = dialog?.PendingShowQrCode
+                        ?? _collectionSettings.ShowBlorgLanguageQrCode,
+                    qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
+                        ?? _collectionSettings.BadgeQrCodeLabelLocalized,
+                },
+                showAutoUpdate = isAutoUpdateSupported,
+                showExperimentalBookSourcesOption = dialog?.ShowExperimentalBookSourcesOption
+                    ?? false,
+                allowTeamCollectionEnabled = dialog?.AllowTeamCollectionOptionEnabled ?? true,
+            };
+        }
+
+        private void StoreAdvancedSettingsData(ApiRequest request, CollectionSettingsDialog dialog)
+        {
+            var data = JObject.Parse(request.RequiredPostJson());
+
+            var autoUpdateToken = data["autoUpdate"];
+            if (autoUpdateToken != null)
+                dialog.PendingAutomaticallyUpdate = autoUpdateToken.Value<bool>();
+
+            var showExperimentalBookSourcesToken = data["showExperimentalBookSources"];
+            if (showExperimentalBookSourcesToken != null)
+                dialog.PendingShowExperimentalBookSources =
+                    showExperimentalBookSourcesToken.Value<bool>();
+
+            var allowTeamCollectionToken = data["allowTeamCollection"];
+            if (allowTeamCollectionToken != null)
+            {
+                var allowTeamCollection = allowTeamCollectionToken.Value<bool>();
+                var previousValue = dialog.PendingAllowTeamCollection;
+                dialog.PendingAllowTeamCollection = allowTeamCollection;
+                if (allowTeamCollection != previousValue)
+                    dialog.ChangeThatRequiresRestart();
+            }
+
+            var allowAppBuilderToken = data["allowAppBuilder"];
+            if (allowAppBuilderToken != null)
+            {
+                var allowAppBuilder = allowAppBuilderToken.Value<bool>();
+                dialog.PendingAllowAppBuilder = allowAppBuilder;
+            }
+
+            var showQrCodeToken = data["showQrCode"];
+            if (showQrCodeToken != null)
+            {
+                var showQrCode = showQrCodeToken.Value<bool>();
+                var previousValue = dialog.PendingShowQrCode;
+                dialog.PendingShowQrCode = showQrCode;
+                // We don't really need a change as drastic as a restart, but I don't expect
+                // this to change often and somehow the badge needs to get updated.
+                if (showQrCode != previousValue)
+                    dialog.ChangeThatRequiresRestart();
+            }
+            var qrcodeCaptionToken = data["qrcodeCaption"];
+            if (qrcodeCaptionToken != null)
+            {
+                var qrcodeCaption = qrcodeCaptionToken.Value<string>();
+                var previousValue = dialog.PendingBadgeQrCodeCaption;
+                dialog.PendingBadgeQrCodeCaption = qrcodeCaption;
+                // We don't really need a change as drastic as a restart, but I don't expect
+                // this to change often and somehow the badge needs to get updated.
+                if (qrcodeCaption != previousValue)
+                    dialog.ChangeThatRequiresRestart();
+            }
+        }
+
         private void ResetBookshelf()
         {
             if (DialogBeingEdited != null)
@@ -313,24 +425,34 @@ namespace Bloom.web.controllers
             request.ReplyWithJson(jsonString);
         }
 
-        // Used by BookSettingsDialog
+        // Used by BookSettingsDialog and others
         private void HandleGetLanguageNames(ApiRequest request)
         {
             var x = new ExpandoObject() as IDictionary<string, object>;
             // The values set here should correspond to the declaration of ILanguageNameValues
             // in BookSettingsDialog.tsx.
             x["language1Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language1.Name;
+            x["language1Tag"] = _bookSelection.CurrentSelection.CollectionSettings.Language1.Tag;
             x["language2Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language2.Name;
+            x["language2Tag"] = _bookSelection.CurrentSelection.CollectionSettings.Language2.Tag;
             if (
                 !String.IsNullOrEmpty(
                     _bookSelection.CurrentSelection.CollectionSettings.Language3?.Name
                 )
             )
+            {
                 x["language3Name"] = _bookSelection
                     .CurrentSelection
                     .CollectionSettings
                     .Language3
                     .Name;
+                x["language3Tag"] = _bookSelection
+                    .CurrentSelection
+                    .CollectionSettings
+                    .Language3
+                    .Tag;
+            }
+
             request.ReplyWithJson(JsonConvert.SerializeObject(x));
         }
 

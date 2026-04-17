@@ -1,0 +1,17 @@
+//- Common template for pageThumbnailList
+//- Use with extends to customize headContent and endBodyScripts blocks
+doctype html
+include ../../../content/templates/bloom-foundation-mixins.pug
+// including the lang attribute is causing css problems with defaultLangStyles.css
+// <html lang="en">
+html
+	head
+		meta(charset='utf-8')
+		block headContent
+	body(data-pageSize='A5Portrait')
+		#panelFlexContainer
+			div#pageThumbnailListLabel(data-i18n="EditTab.PageList.Heading") Pages
+			#pageGridWrapper
+				#pageGrid
+			#PageControls
+		block endBodyScripts

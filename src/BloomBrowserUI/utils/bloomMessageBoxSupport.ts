@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { BloomMessageBox, showBloomMessageBox } from "./BloomMessageBox";
-import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
+import { getWorkspaceBundleExports } from "../bookEdit/js/workspaceFrames";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 
 // This class contains static methods that simplify using the BloomMessageBox component, especially from
@@ -22,7 +22,7 @@ export default class BloomMessageBoxSupport {
             .asyncGetText(l10nKey, englishText, l10nComment)
             .done((localizedMessage) => {
                 const container =
-                    getEditTabBundleExports().getModalDialogContainer();
+                    getWorkspaceBundleExports().getModalDialogContainer();
                 if (!container) {
                     // Fallback to alert; unlikely to happen.
                     alert(localizedMessage);

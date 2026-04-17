@@ -4,6 +4,8 @@ using Bloom.Collection;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
 using NUnit.Framework;
+using SIL.Core.ClearShare;
+using SIL.Core.Desktop.i18n;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.TestUtilities;
@@ -21,6 +23,9 @@ namespace BloomTests.Book
         [SetUp]
         public void Setup()
         {
+            // Normally set in Program.cs, but not for unit tests
+            SIL.Localizer.Default = new L10NSharpLocalizer();
+
             _collectionSettings = new CollectionSettings(
                 new NewCollectionSettings()
                 {
@@ -74,7 +79,7 @@ namespace BloomTests.Book
         public void GetLicenseMetadata_HasNoCopyrightOrLicense_ReturnCcByForDefault()
         {
             string dataDivContent = @"";
-            Assert.True(GetMetadata(dataDivContent).License is CreativeCommonsLicense);
+            Assert.True(GetMetadata(dataDivContent).License is CreativeCommonsLicenseInfo);
         }
 
         [Test]
@@ -92,7 +97,7 @@ namespace BloomTests.Book
             string dataDivContent =
                 @"<div lang='en' data-book='licenseNotes'>my custom</div>
 					<div data-book='copyright' lang='*' class='bloom-content1'>Copyright © 2012, test</div>";
-            Assert.IsTrue(GetMetadata(dataDivContent).License is CustomLicense);
+            Assert.IsTrue(GetMetadata(dataDivContent).License is CustomLicenseInfo);
         }
 
         [Test]
@@ -108,7 +113,7 @@ namespace BloomTests.Book
             Assert.IsFalse(creativeCommonsLicense.CommercialUseAllowed);
             Assert.IsTrue(
                 creativeCommonsLicense.DerivativeRule
-                    == CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike
+                    == CreativeCommonsLicenseInfo.DerivativeRules.DerivativesWithShareAndShareAlike
             );
         }
 
@@ -257,7 +262,7 @@ namespace BloomTests.Book
                     License = new CreativeCommonsLicense(
                         true,
                         true,
-                        CreativeCommonsLicense.DerivativeRules.Derivatives
+                        CreativeCommonsLicenseInfo.DerivativeRules.Derivatives
                     ),
                 },
                 startingDataDivContent: "",
@@ -276,7 +281,7 @@ namespace BloomTests.Book
                     License = new CreativeCommonsLicense(
                         true,
                         true,
-                        CreativeCommonsLicense.DerivativeRules.Derivatives
+                        CreativeCommonsLicenseInfo.DerivativeRules.Derivatives
                     ),
                 },
                 startingDataDivContent: "",
@@ -359,7 +364,7 @@ namespace BloomTests.Book
                     + "</div></head><body></body></html>"
             );
             var bookData = new BookData(dom, _collectionSettings, null);
-            Bloom.Book.BookCopyrightAndLicense.SetMetadata(metadata, dom, null, bookData, false);
+            BookCopyrightAndLicense.SetMetadata(metadata, dom, null, bookData, false);
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(xpath, expectedCount);

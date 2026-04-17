@@ -16,7 +16,7 @@ namespace Bloom.SubscriptionAndFeatures
         ViewBookHistory, // Sort of tied to team collections now, but nothing says it has to be in the future...
         Motion,
         Music,
-        FullPageCoverImage, // The whole front cover is one full-bleed image
+        CustomXMatterPage,
 
         WholeTextBoxAudio,
 
@@ -28,6 +28,7 @@ namespace Bloom.SubscriptionAndFeatures
         BulkUpload,
         BulkBloomPub,
         Bookshelf,
+        AppBuilder,
     }
 
     public static class FeatureRegistry
@@ -161,18 +162,13 @@ namespace Bloom.SubscriptionAndFeatures
             },
             new FeatureInfo
             {
-                Feature = FeatureName.FullPageCoverImage,
+                Feature = FeatureName.CustomXMatterPage,
                 SubscriptionTier = SubscriptionTier.Pro,
-                ExistsInPageXPath = "self::div[contains(@class,'cover-is-image')]",
-                // This disabling doesn't get a chance to work, because when we bring a book's XMatter
-                // up to date, we update the cover-is-image class to something consistent with both
-                // the AppearanceSettings.CoverIsImage and Subscription.HaveActiveSubscription.
-                // (The latter should be changed to something involving this feature, but even then,
-                // the class will be removed by the time we execute the code that processes these properties.)
+                ExistsInPageXPath = "self::div[contains(@class,'bloom-customLayout')]",
                 PreventPublishingInDerivativeBooks = PreventionMethod.DisabledByModifyingDom,
                 PreventPublishingInOriginalBooks = PreventionMethod.DisabledByModifyingDom,
-                ClassesToRemoveToDisable = "cover-is-image no-margin-page",
-                L10NId = "BookSettings.CoverIsImage",
+                ClassesToRemoveToDisable = "bloom-customLayout",
+                L10NId = "PageLayout.CustomXMatterPage",
             },
             // ----------------------------------------
             // LocalCommunity Tier Features
@@ -191,6 +187,12 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.ViewBookHistory,
                 SubscriptionTier = SubscriptionTier.LocalCommunity,
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.AppBuilder,
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kAppBuilder,
             },
             // ----------------------------------------
             // Enterprise Tier Features

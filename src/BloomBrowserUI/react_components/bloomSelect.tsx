@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 import Select, { SelectProps } from "@mui/material/Select";
-import { callWhenFocusLost } from "../bookEdit/toolbox/toolbox";
+import { callOnBlur } from "../utils/menuCloseOnBlur";
 
 const BloomSelect = <TValue,>(
     props: SelectProps<TValue>,
@@ -11,15 +11,14 @@ const BloomSelect = <TValue,>(
     const handleOpen: NonNullable<SelectProps<TValue>["onOpen"]> = (event) => {
         setIsOpen(true);
         props.onOpen?.(event);
-        callWhenFocusLost(() => setIsOpen(false));
+        callOnBlur(() => setIsOpen(false));
     };
 
     const handleClose: NonNullable<SelectProps<TValue>["onClose"]> = (
         event,
-        child,
     ) => {
         setIsOpen(false);
-        props.onClose?.(event, child);
+        props.onClose?.(event);
     };
 
     return (

@@ -9,13 +9,13 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.MiscUI;
+using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
-using ApplicationException = System.ApplicationException;
 using Timer = System.Windows.Forms.Timer;
 
 namespace Bloom.web.controllers
@@ -69,7 +69,7 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 "common/showSettingsDialog",
                 HandleShowSettingsDialog,
-                false
+                true
             ); // Common
             apiHandler.RegisterEndpointHandler("common/logger/writeEvent", HandleLogEvent, false);
             apiHandler.RegisterEndpointHandler(
@@ -188,6 +188,7 @@ namespace Bloom.web.controllers
                 false,
                 false
             );
+            apiHandler.RegisterEndpointHandler("common/instanceInfo", HandleInstanceInfo, false);
             // This is useful for debugging TypeScript code, especially on Linux.  I wouldn't necessarily expect
             // to see it used anywhere in code that gets submitted and merged.
             apiHandler.RegisterEndpointHandler(
@@ -226,6 +227,38 @@ namespace Bloom.web.controllers
                 "common/reloadCollection",
                 HandleReloadCollection,
                 true
+            );
+        }
+
+        private void HandleInstanceInfo(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Get)
+                throw new ArgumentException("common/instanceInfo only supports GET");
+
+            // Give automation one stable discovery payload for the running Bloom instance instead of making
+            // scripts scrape window titles, ports, or process command lines.
+            var executablePath = Application.ExecutablePath;
+            var cdpPort = Bloom.WebView2Browser.RemoteDebuggingPort;
+            int? vitePort = ReactControl.TryGetActiveViteDevPort(out var activeVitePort)
+                ? activeVitePort
+                : null;
+            request.ReplyWithJson(
+                new
+                {
+                    instanceKind = "running-bloom",
+                    processId = Process.GetCurrentProcess().Id,
+                    executablePath,
+                    executableDirectory = Path.GetDirectoryName(executablePath),
+                    httpPort = BloomServer.portForHttp,
+                    webSocketPort = BloomServer.WebSocketPort,
+                    serverUrl = BloomServer.ServerUrl,
+                    serverUrlWithBloomPrefix = BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
+                    workspaceTabsUrl = BloomServer.ServerUrlWithBloomPrefixEndingInSlash
+                        + "api/workspace/tabs",
+                    cdpPort,
+                    vitePort,
+                    cdpOrigin = cdpPort.HasValue ? $"http://localhost:{cdpPort.Value}" : null,
+                }
             );
         }
 
@@ -275,39 +308,30 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// The tab which should display first when the settings dialog opens.
+        /// </summary>
+        private string SettingsDialogTab;
+
+        /// <summary>
         /// Handle showing the settings dialog, opening it to the desired tab.
         /// </summary>
         /// <remarks>
         /// This is here instead of CollectionSettingsApi because we have easier access to
-        /// showing the dialog via the WorkspaceView object.  But it's a bit tricky getting
-        /// the dialog to display, and allowing the dialog to display help or to restart
-        /// the program if the user changes the settings.  Starting the dialog after a very
-        /// brief delay, and being sure in WorkSpaceView to Invoke it on the UI thread,
-        /// allows the full functionality without any crashes or annoying yellow dialog boxes.
+        /// showing the dialog via the WorkspaceView object.  Starting the dialog on the idle
+        /// loop allows the full functionality without locking up the API.
         /// </remarks>
         private void HandleShowSettingsDialog(ApiRequest request)
         {
-            lock (request)
-            {
-                var tab = request.Parameters["tab"];
-                _timerForOpenSettingsDialog = new System.Threading.Timer(
-                    OpenSettingsDialog,
-                    tab,
-                    100,
-                    System.Threading.Timeout.Infinite
-                );
-                request.PostSucceeded();
-            }
+            SettingsDialogTab = request.Parameters["tab"];
+            Application.Idle += ShowSettingsDialogOnIdle;
+            request.PostSucceeded();
         }
 
-        System.Threading.Timer _timerForOpenSettingsDialog;
-
-        private void OpenSettingsDialog(Object state)
+        private void ShowSettingsDialogOnIdle(object sender, EventArgs e)
         {
-            _timerForOpenSettingsDialog.Dispose();
-            _timerForOpenSettingsDialog = null;
-            var tab = state as String;
-            WorkspaceView.OpenLegacySettingsDialog(tab);
+            Application.Idle -= ShowSettingsDialogOnIdle;
+            WorkspaceView.OpenLegacySettingsDialog(SettingsDialogTab);
+            SettingsDialogTab = null;
         }
 
         private void HandleLogEvent(ApiRequest request)

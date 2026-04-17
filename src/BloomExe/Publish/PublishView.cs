@@ -1,4 +1,4 @@
-using System.Drawing;
+using System;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.CollectionTab;
@@ -6,13 +6,13 @@ using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.BloomPub;
 using Bloom.Publish.Epub;
 using Bloom.Publish.Video;
-using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 
 namespace Bloom.Publish
 {
-    public class PublishView : UserControl, IBloomTabArea
+    public class PublishView : IBloomTabArea, IDisposable
     {
         public readonly PublishModel _model;
         private BookUpload _bookTransferrer;
@@ -20,13 +20,16 @@ namespace Bloom.Publish
         private PublishAudioVideoAPI _publishToVideoApi;
         private PublishEpubApi _publishEpubApi;
         private BloomWebSocketServer _webSocketServer;
+        private readonly WorkspaceTabSelection _tabSelection;
+        private bool _isActive;
 
-        private web.ReactControl _reactControl;
+        internal WorkspaceView WorkspaceView { get; set; }
 
         public delegate PublishView Factory(); //autofac uses this
 
         public PublishView(
             PublishModel model,
+            WorkspaceTabSelection tabSelection,
             SelectedTabChangedEvent selectedTabChangedEvent,
             LocalizationChangedEvent localizationChangedEvent,
             BookUpload bookTransferrer,
@@ -43,29 +46,24 @@ namespace Bloom.Publish
             _model = model;
             _model.View = this;
             _webSocketServer = webSocketServer;
-
-            _reactControl = new ReactControl();
-            _reactControl.JavascriptBundleName = "publishTabPaneBundle";
-            _reactControl.BackColor = Palette.GeneralBackground;
-            _reactControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            _reactControl.Location = new System.Drawing.Point(0, 0);
-            _reactControl.Name = "_reactControl";
-            _reactControl.Size = new System.Drawing.Size(773, 518);
-            _reactControl.TabIndex = 16;
-            Controls.Add(_reactControl);
-            _reactControl.SetLocalizationChangedEvent(localizationChangedEvent);
+            _tabSelection = tabSelection;
 
             //NB: just triggering off "VisibilityChanged" was unreliable. So now we trigger
             //off the tab itself changing, either to us or away from us.
-            selectedTabChangedEvent.Subscribe(c =>
+            selectedTabChangedEvent.Subscribe(_ =>
             {
-                if (c.To == this)
+                if (_tabSelection.ActiveTab == WorkspaceTab.publish)
                 {
-                    Activate();
+                    if (!_isActive)
+                    {
+                        Activate();
+                        _isActive = true;
+                    }
                 }
-                else if (c.To != this)
+                else if (_isActive)
                 {
                     Deactivate();
+                    _isActive = false;
                 }
             });
 
@@ -86,22 +84,27 @@ namespace Bloom.Publish
             _webSocketServer.SendEvent("publish", "switchOutOfPublishTab");
         }
 
-        protected override void Dispose(bool disposing)
+        public void Dispose()
         {
-            if (disposing)
-            {
-                _reactControl?.Dispose();
-                _publishEpubApi?.EpubMaker?.Dispose();
-                _publishToBloomPubApi?.Dispose();
-            }
-            base.Dispose(disposing);
+            _publishEpubApi?.EpubMaker?.Dispose();
+            _publishToBloomPubApi?.Dispose();
+        }
+
+        internal Control GetHostControlForInvoke()
+        {
+            var hostForm = WorkspaceView?.FindForm();
+            if (hostForm != null)
+                return hostForm;
+
+            return WorkspaceView;
         }
 
         private void Activate()
         {
             PublishHelper.InPublishTab = true;
-            BloomPubMaker.ControlForInvoke = ParentForm;
-            PublishEpubApi.ControlForInvoke = ParentForm;
+            var hostForm = GetHostControlForInvoke() as Form;
+            BloomPubMaker.ControlForInvoke = hostForm;
+            PublishEpubApi.ControlForInvoke = hostForm;
             LibraryPublishApi.Model = new BloomLibraryPublishModel(
                 _bookTransferrer,
                 _model.BookSelection.CurrentSelection,
@@ -114,14 +117,6 @@ namespace Bloom.Publish
             );
             _webSocketServer.SendEvent("publish", "switchToPublishTab");
         }
-
-        public Control TopBarControl => new Control();
-
-        public int WidthToReserveForTopBarControl => 0;
-
-        public void PlaceTopBarControl() { }
-
-        public Bitmap ToolStripBackground { get; set; }
 
         // This property is invoked in WorkspaceView as "CurrentTabView.HelpTopicUrl".  Until the
         // tab view mechanism and overall WorkspaceView is converted to typescript, carrying the

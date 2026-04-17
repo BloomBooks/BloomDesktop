@@ -43,7 +43,7 @@ import {
 import {
     getEditablePageBundleExports,
     getToolboxBundleExports,
-} from "../../editViewFrame";
+} from "../../workspaceRoot";
 import { MenuItem, Select } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
@@ -928,20 +928,35 @@ const DragActivityControls: React.FunctionComponent<{
             currentCanvasElement &&
             currentDraggableTarget
         ) {
-            draggableToTargetObserver.current = new MutationObserver((_) => {
-                // if it's no longer current, we just haven't removed the observer yet,
-                // don't do it.
+            draggableToTargetObserver.current = new MutationObserver(() => {
+                // Skip if it's no longer current (observer hasn't been removed yet)
                 if (
-                    currentCanvasElement ===
+                    currentCanvasElement !==
                     getCanvasElementManager()?.getActiveElement()
                 ) {
-                    copyContentToTargetAndCleanup(currentCanvasElement);
+                    return;
                 }
+                // copyContentToTarget diffs the result against the current target
+                // innerHTML before making any DOM change, so it's safe to call even
+                // when the mutation doesn't actually affect the copy (e.g. position
+                // changes during a canvas element drag).
+                copyContentToTargetAndCleanup(currentCanvasElement);
             });
             draggableToTargetObserver.current.observe(currentCanvasElement, {
                 childList: true,
                 subtree: true,
-                attributes: true, // e.g., cropping of image
+                // It's not obvious that we need to observe attribute changes, since
+                // copyContentToTargetAndCleanup() mainly copies content. However, it does
+                // pay attention to the size of the container, and uses it to create a cropping
+                // container inside the target in some cases. Especially when moving the
+                // right and bottom crop handles, the attributes of the img don't change at all,
+                // but the size of the cropping container needs to.
+                // There are lots of possible attribute changes on the canvas element
+                // that we don't care about, but rather than making a complex filter,
+                // I decided to just leave it to copyContentToTargetAndCleanup to ignore
+                // irrelevant ones, by means of a test that doesn't replace the content
+                // if the innerHTML of the target isn't actually going to change.
+                attributes: true,
             });
         }
     }, [currentCanvasElement, currentDraggableTarget, props.activeTab]);
@@ -1297,12 +1312,12 @@ const DragActivityControls: React.FunctionComponent<{
                                         color={kBloomBlue}
                                         strokeColor={kBloomBlue}
                                     />
-                                    <CanvasElementRectangleItem />
+                                    <GameTextItem capitalize={true} />
                                     <CanvasElementVideoItem />
                                 </CanvasElementItemRow>
                                 <CanvasElementItemRow>
                                     <CanvasElementGifItem />
-                                    <GameTextItem />
+                                    <CanvasElementRectangleItem />
                                 </CanvasElementItemRow>
                             </CanvasElementItemRegion>
                         )}
@@ -1460,6 +1475,7 @@ const DragActivityControls: React.FunctionComponent<{
 
 const GameTextItem: React.FunctionComponent<{
     addClasses?: string;
+    capitalize?: boolean;
 }> = (props) => {
     // We don't want game text items to autosize, so we add this class to them. (BL-14779)
     let classesToAdd = props.addClasses ?? "";
@@ -1468,7 +1484,10 @@ const GameTextItem: React.FunctionComponent<{
     }
     return (
         <CanvasElementTextItem
-            css={textItemCss("14pt")}
+            css={textItemCss({
+                fontSize: "14pt",
+                capitalize: props.capitalize,
+            })}
             l10nKey="EditTab.Toolbox.DragActivity.Text"
             makeTarget={false}
             addClasses={classesToAdd.trim()}
@@ -1477,11 +1496,16 @@ const GameTextItem: React.FunctionComponent<{
     );
 };
 
-function textItemCss(
-    fontSize: string = "larger",
-    darkBackground: boolean = false,
-    radius: string = "0",
-) {
+function textItemCss(options?: {
+    fontSize?: string;
+    darkBackground?: boolean;
+    radius?: string;
+    capitalize?: boolean;
+}) {
+    const fontSize = options?.fontSize ?? "larger";
+    const darkBackground = options?.darkBackground ?? false;
+    const radius = options?.radius ?? "0";
+    const capitalize = options?.capitalize ?? false;
     return css`
         margin-left: 5px;
         text-align: center; // Center the text horizontally
@@ -1491,10 +1515,15 @@ function textItemCss(
         background-color: ${darkBackground ? kBloomBlue : "white"};
         border-radius: ${radius};
         font-size: ${fontSize};
+        text-transform: ${capitalize ? "uppercase" : "none"};
     `;
 }
 
-const draggableWordCss = textItemCss("20px", true, "5px");
+const draggableWordCss = textItemCss({
+    fontSize: "20px",
+    darkBackground: true,
+    radius: "5px",
+});
 
 const playAudioCss = css`
     margin-top: 10px;
@@ -2010,25 +2039,6 @@ export function setupDragActivityTabControl() {
     if (!isPageBloomGame(page)) {
         return;
     }
-    const tabControl = page.ownerDocument.createElement("div");
-    tabControl.setAttribute("id", kIdForDragActivityTabControl);
-    const abovePageControlContainer = page.ownerDocument.getElementsByClassName(
-        "above-page-control-container",
-    )[0];
-    if (!abovePageControlContainer) {
-        // if it's not already created, keep trying until it is.
-        setTimeout(setupDragActivityTabControl, 200);
-        return;
-    }
-    // We want the Game controls exactly when we don't
-    // want origami, so we use the control container we usually use for origami,
-    // a nice wrapper inside the page (so we can
-    // get the correct page alignment) and have already arranged to delete before saving the page.
-    abovePageControlContainer.appendChild(tabControl);
-    // Seems strange that we need to do this to call a function in the same file,
-    // but currently this code is also pulled into the page bundle, and called from
-    // its initialization code, and it's vital to be consistent about the bundle
-    // from which event handler functions are taken, so they can later be removed.
     getToolboxBundleExports()?.setActiveDragActivityTab(
         getActiveDragActivityTab(),
     );

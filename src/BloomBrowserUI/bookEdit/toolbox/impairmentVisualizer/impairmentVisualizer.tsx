@@ -7,7 +7,7 @@ import { get, postDataWithConfig } from "../../../utils/bloomApi";
 import "./impairmentVisualizer.less";
 import { RadioGroup } from "../../../react_components/RadioGroup";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
-import { ToolBottomHelpLink } from "../../../react_components/helpLink";
+import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import { kImageContainerClass, isPlaceHolderImage } from "../../js/bloomImages";
 import { CanvasElementManager } from "../../js/CanvasElementManager";
 import { ThemeProvider } from "@mui/material";

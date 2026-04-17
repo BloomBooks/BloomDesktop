@@ -4,13 +4,14 @@
 // This is one of the root files for our webpack build, the root from which
 // pageThumbnailListBundle.js is built. Currently, contrary to our usual practice,
 // this bundle is one of two loaded by pageThumbnailList.pug. It is imported last,
-// so things it exports are accessible from outside the bundle using editTabBundle.
+// so things it exports are accessible from outside the bundle using workspaceBundle.
 
 import $ from "jquery";
 import { css } from "@emotion/react";
+import { Menu } from "@mui/material";
 
 import * as React from "react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
@@ -18,9 +19,16 @@ import * as toastr from "toastr";
 import "errorHandler";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { Responsive } from "react-grid-layout";
-import { get, postJson, postString, useApiData } from "../../utils/bloomApi";
+import {
+    get,
+    getAsync,
+    postJson,
+    postString,
+    useApiData,
+} from "../../utils/bloomApi";
 import { PageThumbnail } from "./PageThumbnail";
 import LazyLoad, { forceCheck } from "react-lazyload";
+import { LocalizableMenuItem } from "../../react_components/localizableMenuItem";
 
 // We're using the Responsive version of react-grid-layout because
 // (1) the previous version of the page thumbnails, which this replaces,
@@ -57,6 +65,33 @@ export interface IPage {
     content: string;
 }
 
+interface IPageMenuItem {
+    id: string;
+    label: string;
+    l10nId: string;
+    enabled?: boolean;
+}
+
+interface IContextMenuPoint {
+    mouseX: number;
+    mouseY: number;
+    pageId: string;
+}
+
+// Thumbnails render only the page div, but many Bloom layout rules are written against
+// body[data-*] selectors. Copy the book body's data-* attributes onto a wrapper here so
+// those selectors still match in the thumbnail pane. Lowercase them first because React
+// only forwards custom DOM attributes reliably when the prop name is lowercase.
+const normalizeBookDisplayAttributes = (
+    attributes: Record<string, string>,
+): Record<string, string> => {
+    const normalized: Record<string, string> = {};
+    Object.entries(attributes).forEach(([key, value]) => {
+        normalized[key.startsWith("data-") ? key.toLowerCase() : key] = value;
+    });
+    return normalized;
+};
+
 // This map goes from page ID to a callback that we get from the page thumbnail
 // which should be called when the main Bloom program informs us that
 // the thumbnail needs to be updated.
@@ -75,12 +110,47 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
     // when the websocket detects a request for this.
     const [resetValue, setResetValue] = useState(1);
     const [twoColumns, setTwoColumns] = useState(true);
+    const [contextMenuPoint, setContextMenuPoint] =
+        useState<IContextMenuPoint>();
+    const [contextMenuItems, setContextMenuItems] = useState<IPageMenuItem[]>(
+        [],
+    );
 
     const [selectedPageId, setSelectedPageId] = useState("");
     const bookAttributesThatMayAffectDisplay = useApiData<any>(
         "pageList/bookAttributesThatMayAffectDisplay",
         {},
     );
+    const normalizedBookDisplayAttributes = React.useMemo(
+        () =>
+            normalizeBookDisplayAttributes(bookAttributesThatMayAffectDisplay),
+        [bookAttributesThatMayAffectDisplay],
+    );
+
+    const pageMenuDefinition: IPageMenuItem[] = [
+        {
+            id: "duplicatePage",
+            label: "Duplicate Page",
+            l10nId: "EditTab.DuplicatePageButton",
+        },
+        {
+            id: "duplicatePageManyTimes",
+            label: "Duplicate Page Many Times...",
+            l10nId: "EditTab.DuplicatePageMultiple",
+        },
+        { id: "copyPage", label: "Copy Page", l10nId: "EditTab.CopyPage" },
+        { id: "pastePage", label: "Paste Page", l10nId: "EditTab.PastePage" },
+        {
+            id: "removePage",
+            label: "Remove Page",
+            l10nId: "EditTab.DeletePageButton",
+        },
+        {
+            id: "chooseDifferentLayout",
+            label: "Choose Different Layout",
+            l10nId: "EditTab.ChooseLayoutButton",
+        },
+    ];
 
     // All the code in this useEffect is one-time initialization.
     useEffect(() => {
@@ -88,8 +158,7 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
 
         // This function will be hooked up (after we set localizedNotification properly)
         // to be called when C# sends messages through the web socket.
-        // We need a named function because it looks cleaner and we use it to remove the
-        // listener when we shut down.
+        // We need a named function because it looks cleaner.
         webSocketListenerFunction = (event) => {
             switch (event.id) {
                 case "saving": {
@@ -133,9 +202,6 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
                     // below that uses resetValue for something we don't care about.
                     setResetValue((oldResetValue) => oldResetValue + 1);
                     break;
-                case "stopListening":
-                    WebSocketManager.closeSocket(kWebsocketContext);
-                    break;
             }
         };
 
@@ -147,6 +213,12 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
                     kWebsocketContext,
                     webSocketListenerFunction,
                 );
+            });
+        theOneLocalizationManager
+            .asyncGetText("EditTab.PageList.Heading", "Pages", "")
+            .done((heading) => {
+                const label = document.getElementById("pageThumbnailListLabel");
+                if (label) label.textContent = heading;
             });
     }, []);
 
@@ -196,13 +268,13 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
         // https://stackoverflow.com/questions/61191496/why-is-my-react-lazyload-component-not-working)
         // This actually runs each time a page is deleted.
         forceCheck();
-    }, [realPageList]);
+    }, [realPageList, selectedPageId]);
 
     // this is embedded so that we have access to realPageList
     const handleGridItemClick = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation();
         e.preventDefault();
-        NotifyCSharpOfClick();
+        closeContextMenu();
 
         // for manual testing
         if (e.getModifierState("Control") && e.getModifierState("Alt")) {
@@ -228,17 +300,70 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
         }
     };
 
+    const openContextMenuCount = React.useRef(0);
+
+    const closeContextMenu = () => {
+        openContextMenuCount.current = 0;
+        setContextMenuPoint(undefined);
+        setContextMenuItems([]);
+    };
+
+    const openContextMenu = (pageId: string, x: number, y: number) => {
+        openContextMenuCount.current++;
+        const currentCount = openContextMenuCount.current;
+        // If the user right-clicks on a page that is not selected, ignore the click and
+        // close any existing context menu.
+        if (pageId !== selectedPageId) {
+            closeContextMenu();
+            return;
+        }
+
+        Promise.all(
+            pageMenuDefinition.map(async (item) => {
+                const response = await getAsync(
+                    `pageList/contextMenuItemEnabled?commandId=${encodeURIComponent(item.id)}&pageId=${encodeURIComponent(pageId)}`,
+                );
+                return {
+                    id: item.id,
+                    label: item.label,
+                    l10nId: item.l10nId,
+                    enabled: !!response.data,
+                };
+            }),
+        ).then((menuItems) => {
+            if (currentCount !== openContextMenuCount.current) {
+                // Either the menu was closed or a newer context menu has been opened since this async
+                // call was made, so ignore the results.
+                return;
+            }
+            setContextMenuItems(menuItems);
+            setContextMenuPoint({
+                mouseX: x - 2,
+                mouseY: y - 4,
+                pageId,
+            });
+        });
+    };
+
+    const onContextMenuItemClick = (commandId: string) => {
+        if (!contextMenuPoint) return;
+
+        postJson("pageList/contextMenuItemClicked", {
+            pageId: contextMenuPoint.pageId,
+            commandId,
+        });
+        closeContextMenu();
+    };
+
     const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation();
         e.preventDefault();
-        NotifyCSharpOfClick();
         if (e.currentTarget) {
             const pageElt = e.currentTarget.closest("[id]")!;
             const pageId = pageElt.getAttribute("id");
-            if (pageId === selectedPageId)
-                postJson("pageList/menuClicked", {
-                    pageId,
-                });
+            if (pageId) {
+                openContextMenu(pageId, e.clientX, e.clientY);
+            }
         }
     };
 
@@ -253,66 +378,63 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
         },
         ...realPageList,
     ];
-    const pages = useMemo(() => {
-        const pages1 = pageList.map((pageContent, index) => {
-            return (
-                <div
-                    key={pageContent.key} // for efficient react manipulation of list
-                    id={pageContent.key} // used by C# code to identify page
-                    data-caption={pageContent.caption}
-                    className={
-                        "gridItem " +
-                        (pageContent.key === "placeholder"
-                            ? " placeholder"
-                            : "") +
-                        (selectedPageId === pageContent.key
-                            ? " gridSelected"
-                            : "")
+    const pages = pageList.map((pageContent, index) => {
+        return (
+            <div
+                key={pageContent.key} // for efficient react manipulation of list
+                id={pageContent.key} // used by C# code to identify page
+                data-caption={pageContent.caption}
+                className={
+                    "gridItem " +
+                    (pageContent.key === "placeholder" ? " placeholder" : "") +
+                    (selectedPageId === pageContent.key ? " gridSelected" : "")
+                }
+                css={css`
+                    .lazyload-wrapper {
+                        height: 100%;
                     }
-                    css={css`
-                        .lazyload-wrapper {
-                            height: 100%;
-                        }
-                    `}
+                `}
+            >
+                <LazyLoad
+                    height={rowHeight}
+                    scrollContainer="#pageGridWrapper"
+                    resize={true} // expand lazy elements as needed when container resizes
                 >
-                    <LazyLoad
-                        height={rowHeight}
-                        scrollContainer="#pageGridWrapper"
-                        resize={true} // expand lazy elements as needed when container resizes
-                    >
-                        <PageThumbnail
-                            page={pageContent}
-                            left={!(index % 2)}
-                            pageLayout={props.pageLayout}
-                            configureReloadCallback={(id, callback) =>
-                                pageIdToRefreshMap.set(id, callback)
-                            }
-                            onClick={handleGridItemClick}
-                            onContextMenu={handleContextMenu}
-                        />
-                        {selectedPageId === pageContent.key && (
-                            <div id="menuIconHolder" className="menuHolder">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="18"
-                                    height="18"
-                                    viewBox="0 0 18 18"
-                                    onClick={() => {
-                                        postJson("pageList/menuClicked", {
-                                            pageId: pageContent.key,
-                                        });
-                                    }}
-                                >
-                                    <path d="M5 8l4 4 4-4z" fill="white" />
-                                </svg>
-                            </div>
-                        )}
-                    </LazyLoad>
-                </div>
-            );
-        });
-        return pages1;
-    }, [pageList]);
+                    <PageThumbnail
+                        page={pageContent}
+                        left={!(index % 2)}
+                        pageLayout={props.pageLayout}
+                        configureReloadCallback={(id, callback) =>
+                            pageIdToRefreshMap.set(id, callback)
+                        }
+                        onClick={handleGridItemClick}
+                        onContextMenu={handleContextMenu}
+                    />
+                    {selectedPageId === pageContent.key && (
+                        <div id="menuIconHolder" className="menuHolder">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 18 18"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    openContextMenu(
+                                        pageContent.key,
+                                        e.clientX,
+                                        e.clientY,
+                                    );
+                                }}
+                            >
+                                <path d="M5 8l4 4 4-4z" fill="white" />
+                            </svg>
+                        </div>
+                    )}
+                </LazyLoad>
+            </div>
+        );
+    });
 
     // Set up some objects and functions we need as params for our main element.
     // Some of them come in sets "lg" and "sm". Currently the "lg" (two-column)
@@ -361,10 +483,7 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
     };
 
     return (
-        <div
-            id="wrapperForBodyAttributes"
-            {...bookAttributesThatMayAffectDisplay}
-        >
+        <div id="wrapperForBodyAttributes" {...normalizedBookDisplayAttributes}>
             <Responsive
                 className="page-thumbnail-list"
                 width={180}
@@ -386,9 +505,50 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
                 }}
                 onLayoutChange={onLayoutChange}
                 onDragStop={onDragStop}
+                // override react-grid-layout sticking a fixed height on us.  It can occasionally be wrong and
+                // cause a scroll bar to appear when it shouldn't.  (BL-16021)
+                css={css`
+                    height: 100% !important;
+                `}
             >
                 {pages}
             </Responsive>
+            {contextMenuPoint && (
+                <Menu
+                    keepMounted={true}
+                    open={!!contextMenuPoint}
+                    onClose={closeContextMenu}
+                    anchorReference="anchorPosition"
+                    anchorPosition={{
+                        top: contextMenuPoint.mouseY,
+                        left: contextMenuPoint.mouseX,
+                    }}
+                    disableAutoFocusItem={true} // don't automatically focus the first item
+                >
+                    {contextMenuItems.map((item) => (
+                        <LocalizableMenuItem
+                            key={item.id}
+                            english={item.label}
+                            l10nId={item.l10nId}
+                            disabled={!item.enabled}
+                            onClick={() => onContextMenuItemClick(item.id)}
+                            hasLeadingIconSpace={false}
+                            css={css`
+                                display: block !important;
+                                min-height: 24px !important;
+                                padding: 3px 8px !important;
+                            `}
+                            labelCss={css`
+                                font-size: 10pt !important;
+                                white-space: normal !important;
+                                line-height: normal !important;
+                            `}
+                        >
+                            {item.label}
+                        </LocalizableMenuItem>
+                    ))}
+                </Menu>
+            )}
         </div>
     );
 };
@@ -400,19 +560,7 @@ $(window).ready(() => {
         <PageList pageLayout={pageLayout} />,
         document.getElementById("pageGridWrapper"),
     );
-
-    // If the user clicks outside of the context menu, we want to close it.
-    // Since it is currently a winforms menu, we do that by sending a message
-    // back to c#-land.
-    // We can remove this in 5.6, or whenever we replace the winforms context menu with a rect menu.
-    $(window).click(() => {
-        NotifyCSharpOfClick();
-    });
 });
-
-function NotifyCSharpOfClick() {
-    (window as any).chrome?.webview?.postMessage("browser-clicked");
-}
 
 // Function invoked when dragging a page ends. Note that it is often
 // called when all the user intended was to click the page, presumably

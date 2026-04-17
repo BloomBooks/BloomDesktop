@@ -1,1 +1,1 @@
-[V4] Based on the Device front/back matter, this also provides some special inputs which are passed to Story Producer for its configuration.
+[V5] Based on the Device front/back matter, this also provides some special inputs which are passed to Story Producer for its configuration.

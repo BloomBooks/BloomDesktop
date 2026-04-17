@@ -65,19 +65,13 @@ namespace Bloom.Collection
 			this._teamCollectionTab = new System.Windows.Forms.TabPage();
 			this.teamCollectionSettingsReactControl = new Bloom.web.ReactControl();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
-			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
-			this.label2 = new System.Windows.Forms.Label();
-			this._showExperimentalBookSources = new System.Windows.Forms.CheckBox();
-			this._enterpriseRequiredForTeamCollection = new System.Windows.Forms.Label();
-			this._allowTeamCollection = new System.Windows.Forms.CheckBox();
+			this.advancedProgramSettingsReactControl = new web.ReactControl();
 			this._okButton = new System.Windows.Forms.Button();
 			this._restartReminder = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			this._cancelButton = new System.Windows.Forms.Button();
-			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this._settingsProtectionButtonProxy = new System.Windows.Forms.LinkLabel();
             this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this._bookMakingTab.SuspendLayout();
@@ -549,11 +543,7 @@ namespace Bloom.Collection
             //
             // tabPage4
             //
-            this.tabPage4.Controls.Add(this._automaticallyUpdate);
-            this.tabPage4.Controls.Add(this.label2);
-            this.tabPage4.Controls.Add(this._showExperimentalBookSources);
-			this.tabPage4.Controls.Add(this._enterpriseRequiredForTeamCollection);
-			this.tabPage4.Controls.Add(this._allowTeamCollection);
+            this.tabPage4.Controls.Add(this.advancedProgramSettingsReactControl);
 			this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.tabPage4, null);
 			this._L10NSharpExtender.SetLocalizingId(this.tabPage4, "CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel");
@@ -563,76 +553,22 @@ namespace Bloom.Collection
             this.tabPage4.Size = new System.Drawing.Size(642, 452);
             this.tabPage4.TabIndex = 5;
             this.tabPage4.Text = "Advanced Program Settings";
-            //
-            // _automaticallyUpdate
-            //
-			this._automaticallyUpdate.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._automaticallyUpdate, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._automaticallyUpdate, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._automaticallyUpdate, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._automaticallyUpdate, "CollectionSettingsDialog.AdvancedTab.AutoUpdate");
-			this._automaticallyUpdate.Location = new System.Drawing.Point(27, 24);
-			this._automaticallyUpdate.Name = "_automaticallyUpdate";
-			this._automaticallyUpdate.Size = new System.Drawing.Size(203, 23);
-			this._automaticallyUpdate.TabIndex = 5;
-			this._automaticallyUpdate.Text = "Automatically Update Bloom";
-			this._automaticallyUpdate.UseVisualStyleBackColor = false;
+			this.tabPage4.UseVisualStyleBackColor = false;
+			this.tabPage4.BackColor = SystemColors.Control;
 			//
-			// label2
+			// advancedProgramSettingsReactControl
 			//
-			this.label2.AutoSize = true;
-			this.label2.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.label2, null);
-			this._L10NSharpExtender.SetLocalizingId(this.label2, "CollectionSettingsDialog.AdvancedTab.ExperimentalFeaturesLabel");
-			this.label2.Location = new System.Drawing.Point(23, 70);
-			this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(146, 19);
-			this.label2.TabIndex = 6;
-			this.label2.Text = "Experimental Features";
-			//
-			// _showExperimentalBookSources
-			//
-			this._showExperimentalBookSources.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._showExperimentalBookSources, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._showExperimentalBookSources, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._showExperimentalBookSources, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._showExperimentalBookSources, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources");
-			this._showExperimentalBookSources.Location = new System.Drawing.Point(27, 100);
-			this._showExperimentalBookSources.Name = "_showExperimentalBookSources";
-			this._showExperimentalBookSources.Size = new System.Drawing.Size(229, 23);
-			this._showExperimentalBookSources.TabIndex = 7;
-			this._showExperimentalBookSources.Text = "Show Experimental Book Sources";
-            this._showExperimentalBookSources.UseVisualStyleBackColor = false;
-            this._showExperimentalBookSources.Visible = false;
-            this._showExperimentalBookSources.CheckedChanged += new System.EventHandler(this._showExperimentalBookSources_CheckedChanged);
-			//
-			// _enterpriseRequiredForTeamCollection
-			//
-			this._enterpriseRequiredForTeamCollection.Image = global::Bloom.Properties.Resources.enterpriseBadge;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._enterpriseRequiredForTeamCollection, "To use this feature, you\'ll need a Bloom Subscription.");
-			this._L10NSharpExtender.SetLocalizationComment(this._enterpriseRequiredForTeamCollection, null);
-			this._L10NSharpExtender.SetLocalizingId(this._enterpriseRequiredForTeamCollection, "CollectionSettingsDialog.RequiresSubscription");
-			this._enterpriseRequiredForTeamCollection.Location = new System.Drawing.Point(0, 100);
-			this._enterpriseRequiredForTeamCollection.Name = "_enterpriseRequiredForTeamCollection";
-			this._enterpriseRequiredForTeamCollection.Size = new System.Drawing.Size(23, 23);
-			this._enterpriseRequiredForTeamCollection.TabIndex = 8;
-			//
-			// _allowTeamCollection
-			//
-			this._allowTeamCollection.AutoSize = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._allowTeamCollection, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._allowTeamCollection, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._allowTeamCollection, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._allowTeamCollection, "TeamCollection.TeamCollections");
-			this._allowTeamCollection.Location = new System.Drawing.Point(27, 100);
-			this._allowTeamCollection.Name = "_allowTeamCollection";
-			this._allowTeamCollection.Size = new System.Drawing.Size(130, 23);
-			this._allowTeamCollection.TabIndex = 9;
-			this._allowTeamCollection.Text = "Team Collections";
-			this._allowTeamCollection.UseVisualStyleBackColor = false;
-			this._allowTeamCollection.CheckedChanged += new System.EventHandler(this._allowTeamCollection_CheckedChanged);
+			this.advancedProgramSettingsReactControl.BackColor = SystemColors.Control;
+			this.advancedProgramSettingsReactControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.advancedProgramSettingsReactControl.JavascriptBundleName = "advancedSettingsBundle";
+			this._L10NSharpExtender.SetLocalizableToolTip(this.advancedProgramSettingsReactControl, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.advancedProgramSettingsReactControl, null);
+			this._L10NSharpExtender.SetLocalizingId(this.advancedProgramSettingsReactControl, "ReactControl");
+			this.advancedProgramSettingsReactControl.Location = new System.Drawing.Point(3, 3);
+			this.advancedProgramSettingsReactControl.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+			this.advancedProgramSettingsReactControl.Name = "advancedProgramSettingsReactControl";
+			this.advancedProgramSettingsReactControl.Size = new System.Drawing.Size(636, 446);
+			this.advancedProgramSettingsReactControl.TabIndex = 0;
 			//
 			// _okButton
 			//
@@ -685,18 +621,6 @@ namespace Bloom.Collection
 			this._cancelButton.UseVisualStyleBackColor = false;
 			this._cancelButton.Click += new System.EventHandler(this._cancelButton_Click);
 			//
-			// settingsProtectionLauncherButton1
-			//
-			this.settingsProtectionLauncherButton1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this.settingsProtectionLauncherButton1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.settingsProtectionLauncherButton1, null);
-			this._L10NSharpExtender.SetLocalizingId(this.settingsProtectionLauncherButton1, "CollectionSettingsDialog.SettingsProtectionLauncherButton");
-			this.settingsProtectionLauncherButton1.Location = new System.Drawing.Point(13, 486);
-			this.settingsProtectionLauncherButton1.Margin = new System.Windows.Forms.Padding(0);
-			this.settingsProtectionLauncherButton1.Name = "settingsProtectionLauncherButton1";
-			this.settingsProtectionLauncherButton1.Size = new System.Drawing.Size(257, 37);
-			this.settingsProtectionLauncherButton1.TabIndex = 20;
-			//
 			// _helpButton
 			//
 			this._helpButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -710,22 +634,6 @@ namespace Bloom.Collection
 			this._helpButton.Text = "&Help";
             this._helpButton.UseVisualStyleBackColor = false;
             this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
-            //
-            // _settingsProtectionButtonProxy
-            //
-            this._settingsProtectionButtonProxy.AutoSize = true;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._settingsProtectionButtonProxy, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._settingsProtectionButtonProxy, null);
-            this._L10NSharpExtender.SetLocalizingId(this._settingsProtectionButtonProxy, "SettingsProtection.LauncherButtonLabel");
-            this._settingsProtectionButtonProxy.LinkColor = Palette.BloomBlue;
-            this._settingsProtectionButtonProxy.Location = new System.Drawing.Point(13, 500);
-            this._settingsProtectionButtonProxy.Name = "_settingsProtectionButtonProxy";
-            this._settingsProtectionButtonProxy.Size = new System.Drawing.Size(75, 19);
-            this._settingsProtectionButtonProxy.TabIndex = 23;
-            this._settingsProtectionButtonProxy.TabStop = true;
-            this._settingsProtectionButtonProxy.Text = "Settings Protection...";
-            this._settingsProtectionButtonProxy.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._settingsProtectionButtonProxy_LinkClicked);
-            //
             // CollectionSettingsDialog
             //
             this.AcceptButton = this._okButton;
@@ -734,21 +642,19 @@ namespace Bloom.Collection
 			this.CancelButton = this._cancelButton;
 			this.ClientSize = new System.Drawing.Size(652, 572);
 			this.ControlBox = false;
-            this.Controls.Add(this._settingsProtectionButtonProxy);
 			this.Controls.Add(this._helpButton);
 			this.Controls.Add(this._cancelButton);
-			this.Controls.Add(this.settingsProtectionLauncherButton1);
 			this.Controls.Add(this._restartReminder);
 			this.Controls.Add(this._okButton);
 			this.Controls.Add(this._tab);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
-			this._L10NSharpExtender.SetLocalizingId(this, "CollectionSettingsDialog.CollectionSettingsWindowTitle");
+			this._L10NSharpExtender.SetLocalizingId(this, "CollectionSettingsDialog.Title");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "CollectionSettingsDialog";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "Settings";
+			this.Text = "Collection Settings";
 			this.Load += new System.EventHandler(this.OnLoad);
 			this._tab.ResumeLayout(false);
 			this.tabPage1.ResumeLayout(false);
@@ -758,7 +664,6 @@ namespace Bloom.Collection
 			this.tabPage3.PerformLayout();
 			this._teamCollectionTab.ResumeLayout(false);
 			this.tabPage4.ResumeLayout(false);
-			this.tabPage4.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
@@ -788,19 +693,14 @@ namespace Bloom.Collection
 		private System.Windows.Forms.Label _provinceLabel;
 		private System.Windows.Forms.LinkLabel _removeLanguage3Link;
 		private System.Windows.Forms.Label _restartReminder;
-		private SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton settingsProtectionLauncherButton1;
 		private L10NSharp.Windows.Forms.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.TabPage tabPage4;
+		private web.ReactControl advancedProgramSettingsReactControl;
 		private System.Windows.Forms.ToolTip toolTip1;
         protected System.Windows.Forms.Label _language1Name;
         private System.Windows.Forms.TextBox _bloomCollectionName;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button _cancelButton;
-		private CheckBox _automaticallyUpdate;
-		private Label label2;
-		private System.Windows.Forms.CheckBox _showExperimentalBookSources;
-		private Label _enterpriseRequiredForTeamCollection;
-		private CheckBox _allowTeamCollection;
 		private Button _helpButton;
 		private TabPage _subscriptionTab;
 		private web.ReactControl _subscriptionSettingsControl;
@@ -811,6 +711,5 @@ namespace Bloom.Collection
 		protected Label _signLanguageName;
 		protected Label _signLanguageLabel;
 		private Label _noRenameTeamCollectionLabel;
-		private LinkLabel _settingsProtectionButtonProxy;
 	}
 }

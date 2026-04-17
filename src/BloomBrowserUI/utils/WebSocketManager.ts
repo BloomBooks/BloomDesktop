@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export interface IBloomWebSocketEvent {
     clientContext: string;
@@ -21,9 +21,43 @@ export function useWebSocketListener(
     clientContext: string,
     listener: (messageEvent: IBloomWebSocketEvent) => void,
 ) {
+    // This hook intentionally uses an effect because a websocket subscription is
+    // synchronization with an external system, not derived render state.
+    // We need to subscribe when the component starts listening and unsubscribe
+    // when it stops or switches to a different clientContext.
+
+    // Keep track of the most recent callback without forcing the websocket
+    // subscription itself to be torn down and recreated on every render.
+    // Many callers pass an inline listener that closes over current props/state,
+    // so its identity changes often even though it still wants the same socket.
+    const latestListener = useRef(listener);
+    latestListener.current = listener;
+
     useEffect(() => {
-        WebSocketManager.addListener(clientContext, listener);
-    }, []);
+        // The websocket manager needs a stable function reference so we can later
+        // remove exactly the listener we added.
+        const listenerWrapper = (messageEvent: IBloomWebSocketEvent) => {
+            // When a websocket message arrives, forward it to whatever listener
+            // the component most recently rendered with.
+            //
+            // If we subscribed once with the original listener and never updated it,
+            // things would get messy. If that
+            // listener captured state from the first render, later websocket
+            // messages would keep using stale values. For example:
+            // - a dialog listener might keep using the old selected book or tab
+            // - a progress handler might append to stale local state
+            // - a callback replaced after a prop change would never be called
+            latestListener.current(messageEvent);
+        };
+
+        // Subscribe only when the clientContext changes. Re-subscribing on every
+        // render would be unnecessary churn for the same websocket channel.
+        WebSocketManager.addListener(clientContext, listenerWrapper);
+        return () => {
+            // Cleanup to prevent orphaned listeners and memory leaks.
+            WebSocketManager.removeListener(clientContext, listenerWrapper);
+        };
+    }, [clientContext]);
 }
 
 // avoid making this public, so that we can have more freedom to make changes to the signature
@@ -34,16 +68,26 @@ function useWebSocketListenerInnerWithMessage<T>(
     processEvent: (e: IBloomWebSocketEvent) => T,
     filter?: (e: IBloomWebSocketEvent) => boolean,
 ) {
+    const latestListener = useRef(listener);
+    const latestProcessEvent = useRef(processEvent);
+    const latestFilter = useRef(filter);
+    latestListener.current = listener;
+    latestProcessEvent.current = processEvent;
+    latestFilter.current = filter;
+
     useEffect(() => {
         const l = (e: IBloomWebSocketEvent) => {
-            if (e.id === eventId && (!filter || filter(e))) {
-                listener(processEvent(e));
+            if (
+                e.id === eventId &&
+                (!latestFilter.current || latestFilter.current(e))
+            ) {
+                latestListener.current(latestProcessEvent.current(e));
             }
         };
         WebSocketManager.addListener(clientContext, l);
-        // Clean up when we are unmounted or this useEffect runs again (i.e. if the props.webSocketContext were to change)
+        // This effect is required because the websocket is an external system that must be subscribed and unsubscribed explicitly.
         return () => WebSocketManager.removeListener(clientContext, l);
-    }, []);
+    }, [clientContext, eventId]);
 }
 
 export function useSubscribeToWebSocketForEvent(
@@ -74,23 +118,27 @@ export function useSubscribeToWebSocketForStringMessage(
     );
 }
 
-// Subscribe to an event and listen for the whole object bundle that the server sends. For an example of the c# server side of this, see HandleChooseFolder().
+// Subscribe to an object event and listen for payload-only data.
+// This strips websocket envelope fields (currently clientContext and id)
+// so callers can work with a stable object shape matching API payloads.
+// If a caller needs envelope fields, use useSubscribeToWebSocketForEvent instead.
+// For an example of the c# server side of this, see HandleChooseFolder().
 export function useSubscribeToWebSocketForObject<T>(
     clientContext: string,
     eventId: string,
     listener: (message: T) => void,
 ) {
-    useEffect(() => {
-        const websocketListener = (e) => {
-            if (e.id === eventId) {
-                listener(e as unknown as T);
-            }
-        };
-        WebSocketManager.addListener(clientContext, websocketListener);
-        return () => {
-            WebSocketManager.removeListener(clientContext, websocketListener);
-        };
-    }, [clientContext]);
+    useWebSocketListenerInnerWithMessage<T>(
+        clientContext,
+        eventId,
+        listener,
+        (e) => {
+            const payload = { ...(e as unknown as Record<string, unknown>) };
+            delete payload.clientContext;
+            delete payload.id;
+            return payload as T;
+        },
+    );
 }
 
 // Subscribe to an event where the "message" string is holding a JSON object
@@ -323,8 +371,12 @@ export default class WebSocketManager {
             "bookImage",
             "book", // via useWatchString
             "bookTeamCollectionStatus", // via useTColBookStatus
+            "bookCollection", // one BookOnBlorgBadge per book subscribes here
             // each book collection subscribes to this
             "editableCollectionList",
+            // dialog launchers and app builder screens legitimately keep several listeners mounted
+            "LaunchDialog",
+            "publish-rab",
         ];
 
         // in the case of the progressDialog, we expect to have 2: one for the dialog, which is listening, and one for the ProgressBox.

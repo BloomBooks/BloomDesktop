@@ -10,15 +10,25 @@ import { useL10n } from "../l10nHooks";
 import { postJson } from "../../utils/bloomApi";
 import BloomButton from "../bloomButton";
 
+type BookGridSetupTargetLabel = "links-in-grid" | "books-in-app";
+
 const BookGridSetup: React.FC<{
     sourceBooks: BookInfoForLinks[];
 
-    links: Link[]; // the set of links that are currently in the grid
+    links: Link[]; // the set of links that are currently in the grid; order matters for app contents as well as visual layout
     onLinksChanged: ((links: Link[]) => void) | string; // function for normal use, string URL for testing
+    targetLabel?: BookGridSetupTargetLabel;
 }> = (props) => {
     const [selectedSource, setSelectedSource] =
         useState<BookInfoForLinks | null>(null);
     const [targets, setTargets] = useState<Link[]>(props.links); // initialize with links prop
+    const showsBooksInApp = props.targetLabel === "books-in-app";
+    const targetHeader = useL10n(
+        showsBooksInApp ? "Books in App (%0)" : "Links in Grid (%0)",
+        showsBooksInApp
+            ? "BookGridSetup.BooksInApp"
+            : "BookGridSetup.LinksInGrid",
+    );
 
     React.useEffect(() => {
         setTargets(props.links);
@@ -219,11 +229,7 @@ const BookGridSetup: React.FC<{
                     }}
                 >
                     <Typography variant="h6" sx={{ mb: 0.5 }}>
-                        {useL10n(
-                            "Links in Grid (%0)",
-                            "BookGridSetup.LinksInGrid",
-                            "Header for the list of books that have been added to the grid, %0 is the count",
-                        ).replace("%0", targets.length.toString())}
+                        {targetHeader.replace("%0", targets.length.toString())}
                     </Typography>
                     <Box
                         sx={{

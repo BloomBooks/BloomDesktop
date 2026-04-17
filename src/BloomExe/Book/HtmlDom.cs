@@ -376,6 +376,14 @@ namespace Bloom.Book
             return script;
         }
 
+        public static void AddInlineScript(SafeXmlDocument doc, string content, bool module)
+        {
+            var script = doc.CreateElement("script");
+            var typeAttr = module ? "module" : "text/javascript";
+            script.InnerText = content;
+            doc.Head.AppendChild(script);
+        }
+
         public void AddOrReplaceMetaElement(string name, string content)
         {
             var meta = _dom.SelectSingleNode($"/html/head/meta[@name='{name}']") as SafeXmlElement;
@@ -599,8 +607,14 @@ namespace Bloom.Book
             e.RemoveAttribute("dir");
         }
 
-        public static void RemoveClassesBeginningWith(SafeXmlElement xmlElement, string classPrefix)
+        public static void RemoveClassesBeginningWith(
+            SafeXmlElement xmlElement,
+            string classPrefix,
+            HashSet<string> classesToKeep = null
+        )
         {
+            if (classesToKeep == null)
+                classesToKeep = new HashSet<string>();
             var oldClasses = xmlElement.GetClasses();
 
             if (oldClasses.Length == 0)
@@ -609,7 +623,7 @@ namespace Bloom.Book
             var classes = "";
             foreach (var part in oldClasses)
             {
-                if (!part.StartsWith(classPrefix))
+                if (!part.StartsWith(classPrefix) || classesToKeep.Contains(part))
                     classes += part + " ";
             }
             xmlElement.SetAttribute("class", classes.Trim());
@@ -1872,6 +1886,102 @@ namespace Bloom.Book
         public const string musicAttrName = "data-backgroundaudio";
         public const string musicVolumeName = musicAttrName + "volume";
 
+        /* Why do we whitelist? Agent says:
+        Bloom already has history of bad results from copying inline style too broadly.
+        The nearby element-level comment in BookData.cs:2073 explains one concrete example:
+        inline display rules copied into saved content caused visibility regressions on covers, while some inline style still had to
+         be preserved for legitimate cases like image cropping. Same pattern here: don’t ban style completely,
+         but only allow the specific inline properties that represent intentional persisted settings.
+
+        These five properties are exactly the ones the Page Settings UI writes onto the page element in PageSettingsConfigrPages.tsx:191.
+        Everything else about page appearance is supposed to come from theme CSS and userModifiedStyles, not from arbitrary leftovers in
+        the page’s inline style.
+
+        Summary: we whitelist because page.style is a noisy transport layer coming back from the live editor,
+        not a durable format. Without the whitelist, saving a page would risk persisting accidental editor state and causing hard-to-debug visual
+        regressions.*/
+        private static readonly string[] kPageStylePropertiesToPersist =
+        {
+            "--page-background-color",
+            "--pageNumber-color",
+            "--pageNumber-outline-color",
+            "--pageNumber-background-color",
+        };
+
+        private static string GetPersistedPageStyleValue(SafeXmlElement editedPageDiv)
+        {
+            var style = editedPageDiv.GetAttribute("style");
+            if (string.IsNullOrWhiteSpace(style))
+                return string.Empty;
+
+            var persistedStyleSegments = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(segment => segment.Trim())
+                .Where(segment => !string.IsNullOrEmpty(segment))
+                .Where(segment =>
+                {
+                    var colonIndex = segment.IndexOf(':');
+                    if (colonIndex <= 0)
+                        return false;
+
+                    var propertyName = segment.Substring(0, colonIndex).Trim();
+                    return kPageStylePropertiesToPersist.Contains(
+                        propertyName,
+                        StringComparer.OrdinalIgnoreCase
+                    );
+                })
+                .ToArray();
+
+            return persistedStyleSegments.Any()
+                ? string.Join("; ", persistedStyleSegments)
+                : string.Empty;
+        }
+
+        public static void RemovePageBackgroundColorStyles(SafeXmlDocument dom)
+        {
+            foreach (
+                SafeXmlElement pageDiv in dom.SafeSelectNodes(
+                    "//div[contains(@class,'bloom-page')]"
+                )
+            )
+            {
+                RemoveStyleProperties(pageDiv, "--page-background-color");
+            }
+        }
+
+        private static void RemoveStyleProperties(
+            SafeXmlElement element,
+            params string[] propertyNames
+        )
+        {
+            var style = element.GetAttribute("style");
+            if (string.IsNullOrWhiteSpace(style))
+                return;
+
+            var filteredSegments = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(segment => segment.Trim())
+                .Where(segment => !string.IsNullOrEmpty(segment))
+                .Where(segment =>
+                {
+                    var colonIndex = segment.IndexOf(':');
+                    if (colonIndex < 0)
+                        return true;
+
+                    var propertyName = segment.Substring(0, colonIndex).Trim();
+                    return !propertyNames.Contains(propertyName);
+                })
+                .ToArray();
+
+            if (filteredSegments.Length == 0)
+            {
+                element.RemoveAttribute("style");
+                return;
+            }
+
+            element.SetAttribute("style", string.Join("; ", filteredSegments) + ";");
+        }
+
         public static void ProcessPageAfterEditing(
             SafeXmlElement destinationPageDiv,
             SafeXmlElement edittedPageDiv
@@ -1906,6 +2016,14 @@ namespace Bloom.Book
             //back to the html in keeping with our goal of having the page look right if you were to just open the
             //html file in a browser.
             destinationPageDiv.SetAttribute("lang", edittedPageDiv.GetAttribute("lang"));
+
+            // Save only the page color custom properties we manage in Page Settings.
+            // If all are missing, remove any previously-saved page-level custom properties.
+            var style = GetPersistedPageStyleValue(edittedPageDiv);
+            if (string.IsNullOrEmpty(style))
+                destinationPageDiv.RemoveAttribute("style");
+            else
+                destinationPageDiv.SetAttribute("style", style);
 
             // Copy the two background audio attributes which can be set using the music toolbox.
             // Ensuring that volume is missing unless the main attribute is non-empty is
@@ -1987,6 +2105,13 @@ namespace Bloom.Book
                 var element in topElement.SafeSelectNodes(".//a").Cast<SafeXmlElement>().ToArray()
             )
             {
+                var branding = element.ChildNodes.FirstOrDefault(n =>
+                    n is SafeXmlElement e
+                    && n.Name.ToLowerInvariant() == "img"
+                    && e.HasClass("branding")
+                );
+                if (branding != null)
+                    continue; // Don't remove an <a> that contains a branding image, even if it has no text.
                 if (element.InnerText == "")
                     element.ParentNode.RemoveChild(element);
                 else if (element.HasAttribute("data-cke-saved-href"))
@@ -3463,6 +3588,47 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// If the element has an attribute 'style' with a declaration for the specified subfield,
+        /// remove that declaration from the style attribute. For example, if subfieldName is "display"
+        /// and style is "display: none; color: red;", then the style attribute will be changed to "color: red;".
+        /// If style is "display:block", then the style attribute will be removed entirely.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="subfieldName"></param>
+        public static void RemoveInlineStyleSubfield(SafeXmlElement element, string subfieldName)
+        {
+            if (element == null || String.IsNullOrWhiteSpace(subfieldName))
+                return;
+
+            var existingStyle = element.GetAttribute("style");
+            if (String.IsNullOrWhiteSpace(existingStyle))
+                return;
+
+            var filteredStyleDeclarations = existingStyle
+                .Split(';')
+                .Select(part => part.Trim())
+                .Where(part => !String.IsNullOrWhiteSpace(part))
+                .Where(part =>
+                {
+                    var colonIndex = part.IndexOf(':');
+                    if (colonIndex < 0)
+                        return true;
+                    var propertyName = part.Substring(0, colonIndex).Trim();
+                    return !propertyName.Equals(subfieldName, StringComparison.OrdinalIgnoreCase);
+                })
+                .ToList();
+
+            if (filteredStyleDeclarations.Any())
+            {
+                element.SetAttribute("style", String.Join("; ", filteredStyleDeclarations));
+            }
+            else if (element.HasAttribute("style"))
+            {
+                element.RemoveAttribute("style");
+            }
+        }
+
+        /// <summary>
         /// Reorder any div elements that need to be reordered for proper use in publications.
         /// The different-language children of a translation group are ordered in Bloom's displays by flex-box CSS
         /// that puts the div with class bloom-content1 before the one with bloom-content2 etc.  Since we don't
@@ -3779,6 +3945,12 @@ namespace Bloom.Book
         )
         {
             var result = new List<Tuple<string, string>>();
+            // Don't save any of this data for an image in the custom margin box. We don't
+            // need it for reconstructing that image, because it is saved with all its parents
+            // in the data-div entry for the custom margin box. And we don't want to transfer
+            // its layout settings to the standard one.
+            if (IsInCustomLayoutPage(node))
+                return result;
             var ce = node.ParentElement?.ParentElement;
             if (ce != null)
             {
@@ -3820,6 +3992,13 @@ namespace Bloom.Book
             string[] backgroundImgValues
         )
         {
+            // We don't need to do this to the cover image that is on a page with custom layout,
+            // because its containers with the style on the bloom-canvas-element
+            // and the data-imgsizebasedon of the bloom-canvas are saved as part of the content
+            // of the custom margin box. (We won't find one in the data-div copy, because we rename
+            // the data-book attribute there.)
+            if (IsInCustomLayoutPage(node))
+                return;
             // The situation we want to establish is that the image is inside an imageContainer
             // inside a canvasElement inside a bloomCanvas. That may not be true initially.
             var imageContainer = node.ParentElement;
@@ -3862,6 +4041,11 @@ namespace Bloom.Book
             bloomCanvas.AddClass("bloom-has-canvas-element"); // probably only necessary if we added the canvas element
             bloomCanvas.SetAttribute("data-imgsizebasedon", backgroundImgValues[0]);
             canvasElement.SetAttribute("style", backgroundImgValues[1]);
+        }
+
+        public static bool IsInCustomLayoutPage(SafeXmlElement node)
+        {
+            return node.ParentWithClass("bloom-customLayout") != null;
         }
     }
 }

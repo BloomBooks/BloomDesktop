@@ -92,7 +92,7 @@ mixin afg-outsideFrontCover(langForBubbles)
 					+field-prototypeDeclaredExplicity("V").levelInfo
 						+hint-bubble(langForBubbles,'معلومات صنف، سمستر و سویه','د ټولگی، سمستر او سویي معلومات','Grade, Semester, and Level Information, in {lang}')
 						+editable(kLanguageForPrototypeOnly).Cover-Default-style.bloom-padForOverflow(data-book='levelInformation')
-
+		//- Note: we have since made changes to the image handling; check the behavior here if we revive this pug file.
 		.bloom-canvas.bloom-background-image-in-style-attr(data-book='coverImage', style="background-image:url('placeHolder.png')")
 
 		//- 2 columns: first for an optional logo, then text content
@@ -134,6 +134,7 @@ mixin afg-titlePage(langForBubbles)
 		.topBlock
 			+title-page-branding-top-left
 			.topContent.bishmallah
+				//- Note: we have since made changes to the image mixins; check the behavior here if we revive this pug file.
 				+image-xmatter('bishmallah')
 		+field-prototypeDeclaredExplicity("V")#titlePageTitleBlock
 			label.bubble Book title in {lang}

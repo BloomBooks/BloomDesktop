@@ -1,4 +1,4 @@
-﻿/// <reference path="../../toolbox.ts" />
+/// <reference path="../../toolbox.ts" />
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import {
     beginInitializeLeveledReaderTool,
@@ -70,6 +70,10 @@ export class LeveledReaderToolboxTool implements ITool {
     }
 
     public newPageReady() {
+        // Remount the toggle after the page is ready so it can pick up the
+        // current page body's reader classes instead of the initial placeholder state.
+        createToggle(true);
+
         // Often we could get away without reloading this, but we might
         // have just deleted a page, or duplicated one, or pasted one...
         getTheOneReaderToolsModel().clearWholeBookCache();
@@ -80,6 +84,7 @@ export class LeveledReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().setMarkupType(
             isToggleOff(isForLeveled) ? 0 : 2,
         );
+        getTheOneReaderToolsModel().updateControlContents();
         // usually updateMarkup will do this, unless we are coming from showTool
         getTheOneReaderToolsModel().doMarkup();
     }

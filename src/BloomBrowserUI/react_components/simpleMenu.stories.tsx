@@ -1,5 +1,6 @@
 import * as React from "react";
-import { SimpleMenu, SimpleMenuItem } from "./simpleMenu";
+import { SimpleMenu } from "./simpleMenu";
+import { SimpleMenuItem } from "./SimpleMenuItem";
 
 const menuItems: (SimpleMenuItem | "-")[] = [
     {

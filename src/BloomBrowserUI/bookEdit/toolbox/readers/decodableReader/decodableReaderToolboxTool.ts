@@ -193,6 +193,10 @@ export class DecodableReaderToolboxTool implements ITool {
     }
 
     public newPageReady() {
+        // Remount the toggle after the page is ready so it can pick up the
+        // current page body's reader classes instead of the initial placeholder state.
+        createToggle(false);
+
         // Most cases don't require setMarkupType(), but when switching pages
         // it will have been set to 0 by detachFromPage() on the old page.
         // So we do want to set the appropriate markup, but if the toggle is off, we want the markup off.
@@ -200,6 +204,7 @@ export class DecodableReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().setMarkupType(
             isToggleOff(isForLeveled) ? 0 : 1,
         );
+        getTheOneReaderToolsModel().updateControlContents();
         // usually updateMarkup will do this, unless we are coming from showTool
         getTheOneReaderToolsModel().doMarkup();
     }

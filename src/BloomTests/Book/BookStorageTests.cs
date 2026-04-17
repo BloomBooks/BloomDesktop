@@ -200,31 +200,11 @@ namespace BloomTests.Book
 
             var expectedFolder = bookFolder.Replace("e\x0301", "\x00e9");
 
-            Assert.That(BookStorage.MoveBookToSafeName(bookFolder), Is.EqualTo(expectedFolder));
-            Assert.That(Directory.Exists(expectedFolder));
-            var expectedBookPath = bookPath.Replace("e\x0301", "\x00e9");
-            Assert.That(File.ReadAllText(expectedBookPath), Is.EqualTo("this is a test"));
-        }
-
-        [Test]
-        public void MoveBookToSafeName_NameNotNFC_NewNameConflicts_Moves()
-        {
-            var oldName = "Some nice\x0301 book";
-            var bookFolder = Path.Combine(_fixtureFolder.Path, oldName);
-            Directory.CreateDirectory(bookFolder);
-            var bookPath = Path.Combine(bookFolder, oldName + ".htm");
-            File.WriteAllText(bookPath, "this is a test");
-
-            var desiredFolder = bookFolder.Replace("e\x0301", "\x00e9");
-            Directory.CreateDirectory(desiredFolder);
-            var expectedFolder = desiredFolder + " 2";
-
-            Assert.That(BookStorage.MoveBookToSafeName(bookFolder), Is.EqualTo(expectedFolder));
-            Assert.That(Directory.Exists(expectedFolder));
-            var expectedBookPath = Path.Combine(
-                expectedFolder,
-                Path.GetFileName(expectedFolder) + ".htm"
-            );
+            // Typically we added hyphen and a guid. Not sure if that's good.
+            var result = BookStorage.MoveBookToSafeName(bookFolder);
+            Assert.That(result, Does.StartWith(expectedFolder));
+            Assert.That(Directory.Exists(result));
+            var expectedBookPath = Path.Combine(result, Path.GetFileName(result) + ".htm");
             Assert.That(File.ReadAllText(expectedBookPath), Is.EqualTo("this is a test"));
         }
 
@@ -1098,12 +1078,12 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void SetBookName_FolderWithNameAlreadyExists_AddsANumberToName()
+        public void SetBookName_IdealNameAlreadyExists_AddsGuidToName()
         {
+            // Simulate renaming a book called 'original' to a name that, after sanitizing,
+            // reduces to 'foo'. But there's already a book called 'foo'.
             using (var original = new TemporaryFolder(_folder, "original"))
-            using (var x = new TemporaryFolder(_folder, "foo"))
-            using (new TemporaryFolder(_folder, "foo 2"))
-            using (var z = new TemporaryFolder(_folder, "foo 3"))
+            using (new TemporaryFolder(_folder, "foo")) // causes a conflict, so we can't call the new book 'foo'
             using (var projectFolder = new TemporaryFolder("BookStorage_ProjectCollection"))
             {
                 File.WriteAllText(
@@ -1122,49 +1102,45 @@ namespace BloomTests.Book
                 );
                 storage.Save();
 
-                Directory.Delete(z.Path);
-                //so, we ask for "foo", but should get "foo 3", because there is already a "foo" and "foo 2"
-                var newBookName = Path.GetFileName(x.Path);
-                storage.SetBookName(newBookName);
-                var newPath = z.Combine("foo 3.htm");
-                Assert.IsTrue(Directory.Exists(z.Path), "Expected folder:" + z.Path);
-                Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
-            }
-        }
+                // Get folders before rename
+                var foldersBeforeRename = Directory.GetDirectories(_folder.Path);
 
-        [Test]
-        public void SetBookName_FolderWithSanitizedNameAlreadyExists_AddsANumberToName()
-        {
-            using (var original = new TemporaryFolder(_folder, "original"))
-            using (new TemporaryFolder(_folder, "foo"))
-            using (new TemporaryFolder(_folder, "foo 2"))
-            using (var z = new TemporaryFolder(_folder, "foo 3"))
-            using (var projectFolder = new TemporaryFolder("BookStorage_ProjectCollection"))
-            {
-                File.WriteAllText(
-                    Path.Combine(original.Path, "original.htm"),
-                    "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>"
-                );
-
-                var collectionSettings = new CollectionSettings(
-                    Path.Combine(projectFolder.Path, "test.bloomCollection")
-                );
-                var storage = new BookStorage(
-                    original.Path,
-                    _fileLocator,
-                    new BookRenamedEvent(),
-                    collectionSettings
-                );
-                storage.Save();
-
-                Directory.Delete(z.Path);
-                //so, we ask for "foo", but should get "foo 3", because there is already a "foo" and "foo 2"
+                //so, we ask for "foo", but should get something like "foo - 12345678",
+                // because we want a unique name each time
                 // BL-7816 We added some new characters to the sanitization routine
                 const string newBookName = "foo?:&<>\'\"{}";
                 storage.SetBookName(newBookName);
-                var newPath = z.Combine("foo 3.htm");
-                Assert.IsTrue(Directory.Exists(z.Path), "Expected folder:" + z.Path);
-                Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
+
+                // Get folders after rename - should be just one that was not there before.
+                var foldersAfterRename = Directory.GetDirectories(_folder.Path);
+                Assert.That(
+                    foldersAfterRename.Length,
+                    Is.EqualTo(foldersBeforeRename.Length),
+                    "Should have exactly one new folder"
+                );
+
+                // Find the new folder
+                var newFolders = foldersAfterRename.Except(foldersBeforeRename).ToArray();
+
+                Assert.That(newFolders.Length, Is.EqualTo(1));
+
+                var newFolderPath = newFolders[0];
+                var newFolderName = Path.GetFileName(newFolderPath);
+
+                // Verify folder name starts with "foo - " followed by 8 hex digits
+                Assert.That(
+                    newFolderName,
+                    Does.Match("^foo - [a-f0-9]{8}$"),
+                    "Folder name should be 'foo - ' followed by 8 hex characters"
+                );
+
+                // Verify the htm file exists with the same name as the folder
+                var expectedHtmlFile = Path.Combine(newFolderPath, newFolderName + ".htm");
+                Assert.That(
+                    File.Exists(expectedHtmlFile),
+                    Is.True,
+                    "Expected file: " + expectedHtmlFile
+                );
             }
         }
 
@@ -1650,6 +1626,15 @@ namespace BloomTests.Book
                 Path.GetDirectoryName(storage.FolderPath),
                 "Should be in same collection folder"
             );
+
+            // Verify the duplicate folder name follows the pattern: "theBook - Copy-<8 hex chars>"
+            var duplicateFolderName = Path.GetFileName(folderForDuplicate);
+            Assert.That(
+                duplicateFolderName,
+                Does.Match("^theBook - Copy-[a-f0-9]{8}$"),
+                "Duplicate folder name should be 'theBook - Copy-' followed by 8 hex characters from instance ID"
+            );
+
             var metaPath = Path.Combine(folderForDuplicate, "meta.json");
             var meta = DynamicJson.Parse(File.ReadAllText(metaPath));
             Assert.AreNotEqual(
@@ -1660,6 +1645,47 @@ namespace BloomTests.Book
             Assert.AreEqual("thing", meta.some, "rest of meta.json should be preserved");
             Assert.AreEqual("stuff", meta.other, "rest of meta.json should be preserved");
             Guid.Parse(meta.bookInstanceId); // will throw if we didn't actually get a guid
+        }
+
+        [Test]
+        public void Duplicate_OfAPreviousDuplicate_RemovesOldCopySuffix()
+        {
+            var storage = GetInitialStorage();
+
+            // First duplication
+            var firstDuplicate = storage.Duplicate();
+            var firstDuplicateName = Path.GetFileName(firstDuplicate);
+
+            // Verify first duplicate has the expected name pattern
+            Assert.That(
+                firstDuplicateName,
+                Does.Match("^theBook - Copy-[a-f0-9]{8}$"),
+                "First duplicate should follow naming pattern"
+            );
+
+            // Now duplicate the duplicate
+            var duplicateStorage = new BookStorage(
+                firstDuplicate,
+                _fileLocator,
+                new BookRenamedEvent(),
+                new CollectionSettings()
+            );
+            var secondDuplicate = duplicateStorage.Duplicate();
+            var secondDuplicateName = Path.GetFileName(secondDuplicate);
+
+            // Verify second duplicate also uses base name "theBook", not "theBook - Copy-abc12345"
+            Assert.That(
+                secondDuplicateName,
+                Does.Match("^theBook - Copy-[a-f0-9]{8}$"),
+                "Second duplicate should also use base name 'theBook' with new unique suffix"
+            );
+
+            // And they should be different from each other
+            Assert.AreNotEqual(
+                firstDuplicateName,
+                secondDuplicateName,
+                "Each duplicate should have a unique suffix"
+            );
         }
 
         [Test]
@@ -2177,6 +2203,255 @@ These are similar but already have game-theme classes
                 storage.Dom.SafeSelectNodes("//*[@class='comical-generated']").Count,
                 Is.EqualTo(1)
             );
+        }
+
+        [Test]
+        public void MigrateToLevel14CoverIsImageToCustomLayout_ConvertsCoverClassAndCompletes()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div class='bloom-page cover cover-is-image outsideFrontCover'></div>
+</body></html>"
+            );
+
+            storage.BookInfo.AppearanceSettings.UpdateFromDynamic(
+                new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = true }
+            );
+
+            storage.MigrateToLevel14CoverIsImageToCustomLayout(null);
+
+            var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+            Assert.That(maintLevel, Is.EqualTo("14"));
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'cover-is-image')]").Count,
+                Is.EqualTo(0)
+            );
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-customLayout')]").Count,
+                Is.EqualTo(1)
+            );
+            var appearanceProperties = (System.Collections.Generic.IDictionary<string, object>)
+                storage.BookInfo.AppearanceSettings.TestOnlyPropertiesAccess;
+            Assert.That(appearanceProperties.ContainsKey("coverIsImage"), Is.False);
+        }
+
+        [Test]
+        public void MigrateToLevel14CoverIsImageToCustomLayout_WhenClassMissingButSettingPresent_MarksOutsideFrontCoverCustomLayout()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div class='bloom-page cover outsideFrontCover'></div>
+</body></html>"
+            );
+
+            storage.BookInfo.AppearanceSettings.UpdateFromDynamic(
+                new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = true }
+            );
+
+            storage.MigrateToLevel14CoverIsImageToCustomLayout(null);
+
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[contains(@class,'outsideFrontCover') and contains(@class,'bloom-customLayout')]"
+                    )
+                    .Count,
+                Is.EqualTo(1)
+            );
+            var appearanceProperties = (System.Collections.Generic.IDictionary<string, object>)
+                storage.BookInfo.AppearanceSettings.TestOnlyPropertiesAccess;
+            Assert.That(appearanceProperties.ContainsKey("coverIsImage"), Is.False);
+        }
+
+        [Test]
+        public void MigrateToLevel14CoverIsImageToCustomLayout_WhenSettingIsFalse_RemovesPropertyWithoutConvertingCover()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div class='bloom-page cover cover-is-image outsideFrontCover'></div>
+</body></html>"
+            );
+
+            storage.BookInfo.AppearanceSettings.UpdateFromDynamic(
+                new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = false }
+            );
+
+            storage.MigrateToLevel14CoverIsImageToCustomLayout(null);
+
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'cover-is-image')]").Count,
+                Is.EqualTo(1)
+            );
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-customLayout')]").Count,
+                Is.EqualTo(0)
+            );
+            var appearanceProperties = (System.Collections.Generic.IDictionary<string, object>)
+                storage.BookInfo.AppearanceSettings.TestOnlyPropertiesAccess;
+            Assert.That(appearanceProperties.ContainsKey("coverIsImage"), Is.False);
+            Assert.That(storage.Dom.GetMetaValue("maintenanceLevel", "0"), Is.EqualTo("14"));
+        }
+
+        [Test]
+        public void RestoreStuffBeforeMigration_WhenLegacyCoverCaptured_RestoresOutsideFrontCoverMarginBoxContent()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div class='bloom-page cover cover-is-image outsideFrontCover'>
+  <div class='marginBox'><div class='original-content'>original</div></div>
+</div>
+</body></html>"
+            );
+
+            storage.CaptureInitialStateForMigration();
+
+            var currentOutsideFrontCover = storage
+                .Dom.SafeSelectNodes("//div[contains(@class,'outsideFrontCover')]")
+                .Cast<SafeXmlElement>()
+                .First();
+            currentOutsideFrontCover.RemoveClass("cover-is-image");
+            var currentMarginBox = BookStorage.GetMarginBox(currentOutsideFrontCover);
+            currentMarginBox.InnerXml = "<div class='replacement-content'>replacement</div>";
+
+            storage.RestoreStuffBeforeMigration();
+
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[contains(@class,'outsideFrontCover')]//div[contains(@class,'original-content')]"
+                    )
+                    .Count,
+                Is.EqualTo(1)
+            );
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[contains(@class,'outsideFrontCover')]//div[contains(@class,'replacement-content')]"
+                    )
+                    .Count,
+                Is.EqualTo(0)
+            );
+        }
+
+        [Test]
+        public void RestoreStuffBeforeMigration_WhenNoLegacyCoverCaptured_DoesNothing()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div class='bloom-page cover outsideFrontCover'>
+  <div class='marginBox'><div class='replacement-content'>replacement</div></div>
+</div>
+</body></html>"
+            );
+
+            storage.CaptureInitialStateForMigration();
+            storage.RestoreStuffBeforeMigration();
+
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[contains(@class,'outsideFrontCover')]//div[contains(@class,'replacement-content')]"
+                    )
+                    .Count,
+                Is.EqualTo(1)
+            );
+        }
+
+        [Test]
+        public void MigrateToLevel14CoverIsImageToCustomLayout_WithBookData_SavesCustomLayoutContentInDataDiv()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div id='bloomDataDiv'></div>
+<div class='bloom-page cover cover-is-image outsideFrontCover bloom-customLayout' data-custom-layout-id='outsideFrontCoverCustom'>
+  <div class='marginBox'><p>Cover custom text</p></div>
+</div>
+</body></html>"
+            );
+
+            storage.BookInfo.AppearanceSettings.UpdateFromDynamic(
+                new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = true }
+            );
+            var bookData = new BookData(storage.Dom, storage.CollectionSettings, _ => { });
+
+            storage.MigrateToLevel14CoverIsImageToCustomLayout(bookData);
+
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[@id='bloomDataDiv']/div[@data-book='outsideFrontCoverCustom' and @lang='*' and contains(.,'Cover custom text')]"
+                    )
+                    .Count,
+                Is.EqualTo(1)
+            );
+        }
+
+        [Test]
+        public void MigrateToLevel14CoverIsImageToCustomLayout_WithBookData_PerformsFullLegacyCoverMigration()
+        {
+            var storage = GetInitialStorageWithCustomHtml(
+                @"<html><head>
+<meta name='maintenanceLevel' content='13'></meta>
+</head><body>
+<div id='bloomDataDiv'></div>
+<div class='bloom-page cover cover-is-image outsideFrontCover' data-custom-layout-id='outsideFrontCoverCustom'>
+  <div class='marginBox'><p>Cover custom text</p></div>
+</div>
+</body></html>"
+            );
+
+            storage.BookInfo.AppearanceSettings.UpdateFromDynamic(
+                new Newtonsoft.Json.Linq.JObject { ["coverIsImage"] = true }
+            );
+            var bookData = new BookData(storage.Dom, storage.CollectionSettings, _ => { });
+
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'cover-is-image')]").Count,
+                Is.EqualTo(1)
+            );
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'bloom-customLayout')]").Count,
+                Is.EqualTo(0)
+            );
+
+            storage.MigrateToLevel14CoverIsImageToCustomLayout(bookData);
+
+            Assert.That(storage.Dom.GetMetaValue("maintenanceLevel", "0"), Is.EqualTo("14"));
+            Assert.That(
+                storage.Dom.SafeSelectNodes("//div[contains(@class,'cover-is-image')]").Count,
+                Is.EqualTo(0)
+            );
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[contains(@class,'outsideFrontCover') and contains(@class,'bloom-customLayout') and @data-custom-layout-id='outsideFrontCoverCustom']"
+                    )
+                    .Count,
+                Is.EqualTo(1)
+            );
+            Assert.That(
+                storage
+                    .Dom.SafeSelectNodes(
+                        "//div[@id='bloomDataDiv']/div[@data-book='outsideFrontCoverCustom' and @lang='*' and contains(.,'Cover custom text')]"
+                    )
+                    .Count,
+                Is.EqualTo(1)
+            );
+            var appearanceProperties = (System.Collections.Generic.IDictionary<string, object>)
+                storage.BookInfo.AppearanceSettings.TestOnlyPropertiesAccess;
+            Assert.That(appearanceProperties.ContainsKey("coverIsImage"), Is.False);
         }
 
         [Test]

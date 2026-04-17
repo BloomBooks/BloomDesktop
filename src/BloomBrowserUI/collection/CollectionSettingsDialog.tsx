@@ -1,6 +1,12 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { ConfigrGroup, ConfigrPane } from "@sillsdev/config-r";
+import {
+    ConfigrValues,
+    ConfigrGroup,
+    ConfigrPage,
+    ConfigrPane,
+    ConfigrStatic,
+} from "@sillsdev/config-r";
 import {
     BloomDialog,
     DialogBottomButtons,
@@ -12,6 +18,7 @@ import {
     DialogCancelButton,
     DialogOkButton,
 } from "../react_components/BloomDialog/commonDialogComponents";
+import { useL10n } from "../react_components/l10nHooks";
 import { get, postJson } from "../utils/bloomApi";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 
@@ -22,11 +29,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         propsForBloomDialog,
     } = useEventLaunchedBloomDialog("CollectionSettingsDialog");
 
-    const [settings, setSettings] = React.useState<object | undefined>(
-        undefined,
-    );
-
     const [settingsString, setSettingsString] = React.useState<string>("{}");
+    // Fetch collection settings when the dialog opens so we sync with host state.
     React.useEffect(() => {
         if (propsForBloomDialog.open)
             get("collection/settings", (result) => {
@@ -34,18 +38,23 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             });
     }, [propsForBloomDialog.open]);
 
-    const [settingsToReturnLater, setSettingsToReturnLater] =
-        React.useState("");
-    React.useEffect(() => {
+    const settings = React.useMemo((): ConfigrValues | undefined => {
         if (settingsString === "{}") {
-            return; // leave settings as undefined
+            return undefined;
         }
         if (typeof settingsString === "string") {
-            setSettings(JSON.parse(settingsString));
-        } else {
-            setSettings(settingsString);
+            return JSON.parse(settingsString) as ConfigrValues;
         }
+        return settingsString as unknown as ConfigrValues;
     }, [settingsString]);
+
+    const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
+        ConfigrValues | undefined
+    >(undefined);
+    const dialogTitle = useL10n(
+        "Collection Settings",
+        "CollectionSettingsDialog.Title",
+    );
 
     return (
         <BloomDialog
@@ -57,7 +66,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             draggable={false}
             maxWidth={false}
         >
-            <DialogTitle title="Collection Settings"></DialogTitle>
+            <DialogTitle title={dialogTitle}></DialogTitle>
             <DialogMiddle>
                 <div
                     css={css`
@@ -66,33 +75,76 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         height: 100%;
                     `}
                 >
-                    <ConfigrPane
-                        label={"Collection Settings"}
-                        showSearch={true}
-                        // showJson={true} // useful for debugging
-                        initialValues={settings || {}}
-                        showAllGroups={true}
-                        //themeOverrides={lightTheme}
-                        themeOverrides={{
-                            // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
-                            palette: {
-                                primary: { main: kBloomBlue },
-                            },
-                        }}
-                        onChange={(s) => {
-                            setSettingsToReturnLater(s);
-                        }}
-                    >
-                        <ConfigrGroup label={"Languages"}></ConfigrGroup>
-                        <ConfigrGroup label={"Appearance"}></ConfigrGroup>
-                    </ConfigrPane>
+                    {settings && (
+                        <ConfigrPane
+                            label={dialogTitle}
+                            showAppBar={false}
+                            showSearch={true}
+                            // showJson={true} // useful for debugging
+                            initialValues={settings}
+                            //themeOverrides={lightTheme}
+                            themeOverrides={{
+                                // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
+                                palette: {
+                                    primary: { main: kBloomBlue },
+                                },
+                            }}
+                            onChange={(s) => {
+                                setSettingsToReturnLater(s);
+                            }}
+                        >
+                            <ConfigrPage
+                                label={"Languages"}
+                                pageKey="languages"
+                                topLevel={true}
+                            >
+                                <ConfigrGroup label={"Languages"}>
+                                    <ConfigrStatic>
+                                        <div
+                                            css={css`
+                                                font-size: 0.9em;
+                                                color: #555;
+                                            `}
+                                        >
+                                            Settings for this section are not
+                                            available yet.
+                                        </div>
+                                    </ConfigrStatic>
+                                </ConfigrGroup>
+                            </ConfigrPage>
+                            <ConfigrPage
+                                label={"Appearance"}
+                                pageKey="appearance"
+                                topLevel={true}
+                            >
+                                <ConfigrGroup label={"Appearance"}>
+                                    <ConfigrStatic>
+                                        <div
+                                            css={css`
+                                                font-size: 0.9em;
+                                                color: #555;
+                                            `}
+                                        >
+                                            Settings for this section are not
+                                            available yet.
+                                        </div>
+                                    </ConfigrStatic>
+                                </ConfigrGroup>
+                            </ConfigrPage>
+                        </ConfigrPane>
+                    )}
                 </div>
             </DialogMiddle>
             <DialogBottomButtons>
                 <DialogOkButton
                     default={true}
                     onClick={() => {
-                        postJson("collection/settings", settingsToReturnLater);
+                        if (settingsToReturnLater) {
+                            postJson(
+                                "collection/settings",
+                                settingsToReturnLater,
+                            );
+                        }
                         closeDialog();
                     }}
                 />

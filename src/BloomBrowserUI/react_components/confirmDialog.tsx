@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { useL10n } from "./l10nHooks";
-import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
+import { getWorkspaceBundleExports } from "../bookEdit/js/workspaceFrames";
 import { postBoolean } from "../utils/bloomApi";
 import {
     BloomDialog,
@@ -97,7 +97,7 @@ const doRender = (props: IConfirmDialogProps, container?: Element | null) => {
     let modalContainer;
     if (container) modalContainer = container;
     else {
-        modalContainer = getEditTabBundleExports().getModalDialogContainer();
+        modalContainer = getWorkspaceBundleExports().getModalDialogContainer();
         if (!props.dialogEnvironment) {
             props.dialogEnvironment = {
                 dialogFrameProvidedExternally: false,

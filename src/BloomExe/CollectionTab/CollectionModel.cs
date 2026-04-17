@@ -360,7 +360,8 @@ namespace Bloom.CollectionTab
             {
                 editableCollection = _bookCollectionFactory(
                     _pathToCollection,
-                    BookCollection.CollectionType.TheOneEditableCollection
+                    BookCollection.CollectionType.TheOneEditableCollection,
+                    _collectionSettings
                 );
                 if (_bookCollectionHolder != null)
                     _bookCollectionHolder.TheOneEditableCollection = editableCollection;
@@ -720,7 +721,17 @@ namespace Bloom.CollectionTab
             UpdateThumbnailAsync(
                 book,
                 BookThumbNailer.GetCoverThumbnailOptions(-1, Guid.Empty),
-                RefreshOneThumbnail,
+                (bookInfo, image) =>
+                {
+                    try
+                    {
+                        RefreshOneThumbnail(bookInfo, image);
+                    }
+                    finally
+                    {
+                        image?.Dispose();
+                    }
+                },
                 HandleThumbnailerErrror
             );
         }

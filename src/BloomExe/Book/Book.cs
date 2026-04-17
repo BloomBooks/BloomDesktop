@@ -21,11 +21,13 @@ using Bloom.Publish;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
+using SIL.Core.ClearShare;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Linq;
@@ -326,15 +328,7 @@ namespace Bloom.Book
         /// </remarks>
         public virtual string NameBestForUserDisplay
         {
-            get
-            {
-                if (BookInfo.FileNameLocked)
-                {
-                    // The user has explicitly chosen a name to use for the book, distinct from its titles.
-                    return Path.GetFileName(FolderPath);
-                }
-                return TitleBestForUserDisplay;
-            }
+            get { return BookInfo.GetBestDisplayTitle(null, this); }
         }
 
         /// <summary>
@@ -569,7 +563,30 @@ namespace Bloom.Book
             // first tried this as import 'jquery.hotkeys' in bloomEditing, but that didn't work
             //dom.AddJavascriptFile("jquery.hotkeys.js".ToLocalhost());
 
-            dom.AddJavascriptFile("editablePageBundle.js".ToLocalhost());
+            if (ReactControl.ShouldUseViteDev())
+            {
+                // This bit of magic somehow enables vite dev hot reloading (maybe only for react controls)
+                // I think it needs to come before we load the vite script that is the root of the
+                // bundle in production.
+                HtmlDom.AddInlineScript(
+                    dom.RawDom,
+                    $@"
+                        window.$RefreshSig$ = window.$RefreshSig$ || (function () {{ return function (type) {{ return type; }}; }});
+                        window.$RefreshReg$ = window.$RefreshReg$ || function () {{}};
+                        window.__vite_plugin_react_preamble_installed__ = true;",
+                    true
+                );
+                HtmlDom.AddScriptFile(
+                    dom.RawDom,
+                    ReactControl.GetViteDevUrl("/bookEdit/editablePage.ts"),
+                    true
+                );
+            }
+            else
+            {
+                dom.AddJavascriptFile("editablePageBundle.js".ToLocalhost());
+            }
+
             // At one point we made a point of adding this last so that other code
             // could get in and set disableAutoInline to prevent ckeditor from attaching itself
             // to things we don't want it to. Could not get this to work after we switched our
@@ -1027,6 +1044,28 @@ namespace Bloom.Book
             }
             _pagesCache = null;
 
+            // Ensure that custom xmatter layout pages are not used if the subscription tier doesn't allow them.
+            // EnsureUpToDateMemory() handles the additional DOM manipulations needed to restore the standard layout.
+            var customLayoutPages = OurHtmlDom
+                .SafeSelectNodes(
+                    "//div[contains(@class,'bloom-page') and contains(@class,'bloom-customLayout')]"
+                )
+                .Cast<SafeXmlElement>()
+                .ToList();
+            if (
+                customLayoutPages.Count > 0
+                && !FeatureStatus
+                    .GetFeatureStatus(
+                        CollectionSettings.Subscription,
+                        FeatureName.CustomXMatterPage
+                    )
+                    .Enabled
+            )
+            {
+                foreach (var page in customLayoutPages)
+                    page.RemoveClass("bloom-customLayout");
+            }
+
             EnsureUpToDateMemory(progress);
             UpdateSupportFiles();
 
@@ -1321,6 +1360,7 @@ namespace Bloom.Book
                 {
                     var newId = FixDuplicateAudioId(audioElement, id);
                     idSet.Add(newId);
+                    duplicateAudioIdsFixed++;
                 }
             }
             // OK, now fix all the places any duplicates were used in the book's pages.
@@ -1456,12 +1496,12 @@ namespace Bloom.Book
             var keepOriginal =
                 originalLicense is NullLicense
                 || // must preserve "contact copyright holder"
-                originalLicense is CustomLicense
+                originalLicense is CustomLicenseInfo
                 || // must preserve custom licenses
                 (
-                    originalLicense is CreativeCommonsLicense
-                    && (originalLicense as CreativeCommonsLicense).DerivativeRule
-                        == CreativeCommonsLicense.DerivativeRules.NoDerivatives
+                    originalLicense is CreativeCommonsLicenseInfo
+                    && (originalLicense as CreativeCommonsLicenseInfo).DerivativeRule
+                        == CreativeCommonsLicenseInfo.DerivativeRules.NoDerivatives
                 );
             if (!keepOriginal)
                 return;
@@ -1716,6 +1756,8 @@ namespace Bloom.Book
         /// </summary>
         public void EnsureUpToDateMemory(IProgress progress)
         {
+            Storage.CaptureInitialStateForMigration();
+
             string oldMetaData = "";
             if (RobustFile.Exists(BookInfo.MetaDataPath))
             {
@@ -1804,6 +1846,7 @@ namespace Bloom.Book
             // but it takes almost no time when the book IS already up-to-date.
             // These methods work with the same book metadata to determine what migration has
             // already been done, so they must be called in exactly this order.
+            Storage.RestoreStuffBeforeMigration();
             Storage.MigrateMaintenanceLevels();
             Storage.MigrateToMediaLevel1ShrinkLargeImages();
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
@@ -1818,6 +1861,7 @@ namespace Bloom.Book
             // Migration 11 does not exist.
             Storage.MigrateToLevel12PageNumberPosition();
             Storage.MigrateToLevel13SplitPaneMarginBoxes();
+            Storage.MigrateToLevel14CoverIsImageToCustomLayout(_bookData);
 
             Storage.DoBackMigrations();
 
@@ -2497,6 +2541,7 @@ namespace Bloom.Book
             // Various things, especially publication, don't work with unknown page sizes.
             Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator);
             var oldIds = new List<string>();
+            var customLayoutIds = XMatterHelper.GatherCustomLayoutIds(bookDOM);
             XMatterHelper.RemoveExistingXMatter(bookDOM, oldIds);
             // this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
             // still requiring it to be a valid layout.
@@ -2506,10 +2551,9 @@ namespace Bloom.Book
                 layout,
                 BookInfo.UseDeviceXMatter,
                 _bookData.MetadataLanguage1Tag,
-                oldIds,
-                CoverIsImage
+                oldIds
             );
-
+            XMatterHelper.RestoreCustomLayoutClasses(bookDOM, customLayoutIds);
             var dataBookLangs = bookDOM.GatherDataBookLanguages();
             TranslationGroupManager.PrepareDataBookTranslationGroups(bookDOM.RawDom, dataBookLangs);
 
@@ -2640,7 +2684,7 @@ namespace Bloom.Book
                 "//body/div[@id='bloomDataDiv']/div[@data-book='coverImage']"
             );
             if (node == null)
-                return; // shouldn't happen, but nothing to fix if it does.
+                return;
             var text = node.InnerText;
             if (
                 !String.IsNullOrWhiteSpace(text)
@@ -4058,15 +4102,6 @@ namespace Bloom.Book
             }
         }
 
-        public bool CoverIsImage =>
-            BookInfo.AppearanceSettings.CoverIsImage
-            && FeatureStatus
-                .GetFeatureStatus(
-                    CollectionSettings.Subscription,
-                    FeatureName.FullPageCoverImage,
-                    this
-                )
-                .Enabled;
         public bool FullBleed =>
             PageSizeSupportsFullBleed()
             && BookInfo.AppearanceSettings.FullBleed
@@ -4436,7 +4471,11 @@ namespace Bloom.Book
             {
                 InsertFullBleedMarkup(printingDom.Body);
             }
-            if (!FullBleed)
+            if (!UserPrefs.IncludeBackgroundColors)
+            {
+                HtmlDom.RemovePageBackgroundColorStyles(printingDom.RawDom);
+            }
+            if (!FullBleed && !UserPrefs.IncludeBackgroundColors)
                 SetBackwardsCompatibleCoverBackgroundColor(printingDom.RawDom, "white", true);
             AddPreviewJavascript(printingDom);
             return printingDom;
@@ -4701,7 +4740,8 @@ namespace Bloom.Book
                 BookStorage.ShowAccessDeniedErrorReport(e);
                 return; // Probably not much point to saving if copying the image metadata didn't fully complete successfully
             }
-            Save();
+            // This function is always called on a publication we are creating
+            Save(true);
         }
 
         public Metadata GetLicenseMetadata()
@@ -4746,7 +4786,7 @@ namespace Bloom.Book
             }
         }
 
-        public void Save()
+        public void Save(bool forPublication = false)
         {
             // If you add something here, consider whether it is needed in SaveForPageChanged().
             // I believe all the things currently here before the actual Save are not needed
@@ -4770,10 +4810,18 @@ namespace Bloom.Book
 
             RemoveObsoleteSoundAttributes(OurHtmlDom);
             RemoveVideoWarnings();
-            // Note that at this point _bookData has already been updated with the edited page's data, if any.
-            // This will take priority over other data it finds in the book, even earlier in the book
-            // than the edited page.
-            _bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo); //will update the title if needed
+            if (!forPublication)
+            {
+                // Note that at this point _bookData has already been updated with the edited page's data, if any.
+                // This will take priority over other data it finds in the book, even earlier in the book
+                // than the edited page.
+                // We don't need to do this if we're saving a temporary DOM for making a publication,
+                // since we already did it once when first creating the temporary book, and doing it
+                // again might wipe out intentional changes (e.g., where the src of coverImage has been
+                // changed for cropping).
+                _bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo); //will update the title if needed
+            }
+
             if (OkToChangeFileAndFolderName)
             {
                 Storage.UpdateBookFileAndFolderName(CollectionSettings); //which will update the file name if needed
@@ -4784,35 +4832,6 @@ namespace Bloom.Book
                 // current book location.
                 PageTemplateSource = Path.GetFileName(FolderPath);
             }
-
-            // This doesn't seem like the best place for this code.
-            // For example, it would probably be better to do immediately when saving book settings dialog.
-            // But this is the only place I could find to plumb things to actually get it to work.
-            // Other attempts to break into the complicated book save cycle were unsuccessful.
-            if (BookInfo.AppearanceSettings.PendingChangeRequiresXmatterUpdate)
-            {
-                // Yes, calling EnsureUpToDateMemory() is unfortunately overkill.
-                // And an unfortunate expansion of the use of this version of the method.
-                // It would be great if there was a way to just update the XMatter;
-                // in theory, that would be BringXmatterHtmlUpToDate().
-                // But just calling that leaves several things undone, including
-                // - calling either UpdateVariablesAndDataDivThroughDOM() or SynchronizeDataItemsThroughoutDOM()
-                //    (such that data-book values are lost)
-                // - calling UpdatePageNumberAndSideClassOfPages()
-                //    (such that side-right/left classes are lost)
-                // If we knew it was just those, we could call them here instead
-                // (we can even move this above the call to UpdateVariablesAndDataDivThroughDOM above).
-                // But there is a whole slew of things EnsureUpToDateMemory() does after calling BringXmatterHtmlUpToDate()
-                // and I wouldn't have any confidence that some of the rest of it is not needed here as well.
-                EnsureUpToDateMemory(new NullProgress());
-                // and since we may be changing xmatter, we should update supporting files, which includes
-                // xmatter css, if we can (the current case where we can't is updating a template we want
-                // to import pages from, which I don't think will come here at all, so it would be safe
-                // currently to call this unconditionally).
-                if (IsSaveable)
-                    UpdateSupportFiles();
-            }
-            BookInfo.AppearanceSettings.PendingChangeRequiresXmatterUpdate = false;
 
             try
             {
@@ -5185,51 +5204,107 @@ namespace Bloom.Book
             coverImgElt = null;
             if (Storage == null)
                 return null; // can happen in tests
-            // This first branch covers the currently obsolete approach to images using background-image.
-            // In that approach the data-book attribute is on the imageContainer.
-            // Note that we want the coverImage from a page, instead of the dataDiv because the former
-            // "doesn't have the data in the form that GetImageElementUrl can handle."
-            coverImgElt = Storage
-                .Dom.SafeSelectNodes("//div[not(@id='bloomDataDiv')]/div[@data-book='coverImage']")
+            var outsideFrontCover = Storage
+                .Dom.SafeSelectNodes(
+                    "//div[contains(concat(' ', normalize-space(@class), ' '), ' outsideFrontCover ')]"
+                )
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
-            // If that fails, we look for an img with the relevant attribute. Happily this doesn't conflict with the data-div.
-            if (coverImgElt == null)
-            {
-                coverImgElt = Storage
-                    .Dom.SafeSelectNodes("//img[@data-book='coverImage']")
-                    .Cast<SafeXmlElement>()
-                    .FirstOrDefault();
-            }
-            if (coverImgElt == null)
+
+            if (outsideFrontCover == null)
                 return null;
-            var coverImageUrl = HtmlDom.GetImageElementUrl(coverImgElt);
-            var coverImageFileName = coverImageUrl.PathOnly.NotEncoded;
-            if (string.IsNullOrEmpty(coverImageFileName))
-                return null;
-            // The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
-            var coverImagePath = UrlPathString.GetFullyDecodedPath(
-                StoragePageFolder,
-                ref coverImageFileName
-            );
-            // We no longer put placeHolder.png files in books (BL-15441) but we still need to detect when the placeholder
-            // is called for, so return coverImagePath unchanged when it is a placeholder. Callers of this method should handle this special-case value.
-            if (ImageUtils.IsPlaceholderImageFilename(coverImagePath))
+
+            // Prefer the designated cover image if it is present and not placeholder.
+            var designatedCoverImage = outsideFrontCover
+                .SafeSelectNodes(
+                    ".//img[@data-book='coverImage'] | .//div[@data-book='coverImage']"
+                )
+                .Cast<SafeXmlElement>()
+                .FirstOrDefault();
+
+            SafeXmlElement bestPlaceholderElt = null;
+            string bestPlaceholderPath = null;
+
+            if (designatedCoverImage != null)
             {
-                return coverImagePath;
-            }
-            if (!RobustFile.Exists(coverImagePath))
-            {
-                // And the filename might be multiply-HTML encoded.
-                while (coverImagePath.Contains("&amp;"))
+                var designatedPath = GetImagePath(designatedCoverImage);
+                if (designatedPath != null)
                 {
-                    coverImagePath = HttpUtility.HtmlDecode(coverImagePath);
-                    if (RobustFile.Exists(coverImagePath))
-                        return coverImagePath;
+                    if (!ImageUtils.IsPlaceholderImageFilename(designatedPath))
+                    {
+                        coverImgElt = designatedCoverImage;
+                        return designatedPath;
+                    }
+
+                    bestPlaceholderElt = designatedCoverImage;
+                    bestPlaceholderPath = designatedPath;
                 }
-                return null;
             }
-            return coverImagePath;
+
+            foreach (
+                // we may not need to consider any options other than img, since anything that is old enough
+                // in format to use an obsolete image representation probably only has one image on the
+                // cover, properly designated with data-book. However, it's not much more work or complexity
+                // to handle the older cases here, too, and we do use this code in publish and preview situations,
+                // not only for editable books.
+                var candidate in outsideFrontCover
+                    .SafeSelectNodes(
+                        ".//img | .//div[contains(@class, 'bloom-imageContainer') or contains(@class, 'bloom-canvas')]"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                if (candidate == designatedCoverImage)
+                    continue;
+
+                var candidatePath = GetImagePath(candidate);
+                if (candidatePath == null)
+                    continue;
+
+                if (!ImageUtils.IsPlaceholderImageFilename(candidatePath))
+                {
+                    coverImgElt = candidate;
+                    return candidatePath;
+                }
+
+                if (bestPlaceholderPath == null)
+                {
+                    bestPlaceholderElt = candidate;
+                    bestPlaceholderPath = candidatePath;
+                }
+            }
+
+            coverImgElt = bestPlaceholderElt;
+            return bestPlaceholderPath;
+        }
+
+        private string GetImagePath(SafeXmlElement imageElement)
+        {
+            var imageUrl = HtmlDom.GetImageElementUrl(imageElement);
+            var imageFileName = imageUrl.PathOnly.NotEncoded;
+            if (string.IsNullOrEmpty(imageFileName))
+                return null;
+
+            // The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
+            var imagePath = UrlPathString.GetFullyDecodedPath(StoragePageFolder, ref imageFileName);
+
+            // We no longer put placeHolder.png files in books (BL-15441) but we still need to detect when the placeholder
+            // is called for, so return imagePath unchanged when it is a placeholder. Callers of this method should handle this special-case value.
+            if (ImageUtils.IsPlaceholderImageFilename(imagePath))
+                return imagePath;
+
+            if (RobustFile.Exists(imagePath))
+                return imagePath;
+
+            // And the filename might be multiply-HTML encoded.
+            while (imagePath.Contains("&amp;"))
+            {
+                imagePath = HttpUtility.HtmlDecode(imagePath);
+                if (RobustFile.Exists(imagePath))
+                    return imagePath;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -5306,6 +5381,19 @@ namespace Bloom.Book
         public void UpdateSupportFiles()
         {
             Storage.UpdateSupportFiles();
+            UpdateQrCodeHtmlForCurrentSettings();
+        }
+
+        internal void UpdateQrCodeHtmlForCurrentSettings(bool updateQrCodeFileEvenIfItExists = true)
+        {
+            BookStorage.UpdateQrCode(
+                OurHtmlDom,
+                CollectionSettings.ShowBlorgLanguageQrCode,
+                CollectionSettings.PrimaryLangTagWithSignPrioritized,
+                CollectionSettings.BadgeQrCodeLabelLocalizedWithLang,
+                FolderPath,
+                updateQrCodeFileEvenIfItExists
+            );
         }
 
         private bool IsPageProtectedFromRemoval(SafeXmlElement pageElement)
@@ -5687,7 +5775,7 @@ namespace Bloom.Book
             // Make sure we publish this feature consistent with the publication setting.
             BookInfo.MetaData.Feature_Motion = motion;
 
-            Save();
+            Save(true);
         }
 
         /// <summary>
@@ -5949,7 +6037,7 @@ namespace Bloom.Book
             // that removing it causes. If you find a reason we need it, please document thoroughly.
             //BookInfo.Save();
             // Should not be needed when deleting customBookStyles.css, but definitely when we change theme.
-            Storage.UpdateSupportFiles();
+            UpdateSupportFiles();
             // temporary while we're in transition between storing cover color in the HTML and in the bookInfo
             var color = BookInfo.AppearanceSettings.GetStringPropertyValueOrDefault(
                 "cover-background-color",

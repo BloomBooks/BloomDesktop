@@ -1151,6 +1151,34 @@ export default class StyleEditor {
 
     private uiLang: string;
 
+    // We allow read-only fields to have a style dialog on custom-layout pages
+    // for elements that have a -style class to edit.
+    public static shouldAllowNonEditableStyleDialogTarget(
+        targetBox: HTMLElement,
+    ): boolean {
+        if (targetBox.classList.contains("bloom-editable")) {
+            return false;
+        }
+        if (StyleEditor.GetStyleClassFromElement(targetBox) === null) {
+            return false;
+        }
+        return (
+            targetBox.closest(
+                ".bloom-page.bloom-customLayout[data-custom-layout-id]",
+            ) !== null
+        );
+    }
+
+    // When we allow an element that's not a bloom-editable to have a format dialog,
+    // we always use the default (not langauge-dependent) version of the rules,
+    // since we don't have the structure of a translation group containing multiple
+    // bloom-editables that might need different formatting.
+    private targetUsesLanguageIndependentRules(
+        targetBox: HTMLElement,
+    ): boolean {
+        return StyleEditor.shouldAllowNonEditableStyleDialogTarget(targetBox);
+    }
+
     public AttachToBox(targetBox: HTMLElement) {
         this.uiLang = theOneLocalizationManager.getCurrentUILocale();
 
@@ -1498,7 +1526,11 @@ export default class StyleEditor {
         // BL-5616 This also applies if the textbox's default language is '*',
         // like it is for an Arithmetic Equation.
         const tag = $(this.boxBeingEdited).attr("lang");
-        if (this.shouldSetDefaultRule() || tag === "*") {
+        if (
+            this.shouldSetDefaultRule() ||
+            this.targetUsesLanguageIndependentRules(this.boxBeingEdited) ||
+            tag === "*"
+        ) {
             theOneLocalizationManager
                 .asyncGetText(
                     "BookEditor.DefaultForText",
@@ -2217,11 +2249,15 @@ export default class StyleEditor {
         if (!styleName) {
             return null; // bizarre, since we put up the dialog
         }
-        const langAttrValue = StyleEditor.GetLangValueOrNull(target);
+        const useLanguageIndependentRule =
+            ignoreLanguage || this.targetUsesLanguageIndependentRules(target);
+        const langAttrValue = useLanguageIndependentRule
+            ? null
+            : StyleEditor.GetLangValueOrNull(target);
         return this.GetOrCreateRuleForStyle(
             styleName,
             langAttrValue,
-            ignoreLanguage,
+            useLanguageIndependentRule,
             forChildPara,
         );
     }
@@ -2264,7 +2300,7 @@ export default class StyleEditor {
         onChange: (s: string) => void,
     ) {
         const colorPickerDialogProps: ISimpleColorPickerDialogProps = {
-            transparency: false,
+            transparency: true,
             localizedTitle: title,
             initialColor: initialColor,
             palette: BloomPalette.Text,

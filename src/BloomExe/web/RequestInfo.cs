@@ -13,6 +13,7 @@ using System.Web;
 using Bloom.Book;
 using Bloom.web;
 using Bloom.web.controllers;
+using SIL.Code;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -136,6 +137,23 @@ namespace Bloom.Api
 
         public bool HaveFullyProcessedRequest { get; private set; }
 
+        // We intentionally do not use RobustFile.OpenRead() in this endpoint.
+        // We need a read stream that permits concurrent overwrite/delete of the same file
+        // while it is being served (notably for thumbnails and media), so we require
+        // FileShare.ReadWrite | FileShare.Delete. We still want robust retry behavior,
+        // so we wrap this open in RetryUtility.Retry().
+        private static FileStream OpenSharedReadStreamWithRetry(string path)
+        {
+            return RetryUtility.Retry(() =>
+                new FileStream(
+                    path,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete
+                )
+            );
+        }
+
         public void ReplyWithFileContent(string path, string originalPath = null)
         {
             //Deal with BL-3153, where the file was still open in another thread
@@ -152,7 +170,7 @@ namespace Bloom.Api
 
             try
             {
-                fs = RobustFile.OpenRead(path);
+                fs = OpenSharedReadStreamWithRetry(path);
             }
             catch (Exception error)
             {
@@ -255,7 +273,7 @@ namespace Bloom.Api
                             _actualContext.Response.OutputStream.Write(buffer, 0, read);
                             try
                             {
-                                fs = RobustFile.OpenRead(path);
+                                fs = OpenSharedReadStreamWithRetry(path);
                             }
                             catch (FileNotFoundException)
                             {
@@ -378,6 +396,13 @@ namespace Bloom.Api
             if (RawUrl.EndsWith("no-cache=true"))
                 return false;
 
+            if (Path.GetExtension(path).Equals(".js", StringComparison.OrdinalIgnoreCase))
+            {
+                // Allow caching only when the URL is versioned (assetv=...),
+                // so caches are reused for this Bloom version but invalidated on upgrade.
+                return RawUrl.Contains("assetv=", StringComparison.OrdinalIgnoreCase);
+            }
+
             return _cacheableExtensions.Contains(Path.GetExtension(path));
         }
 
@@ -461,8 +486,13 @@ namespace Bloom.Api
 
         public string GetPostString(bool unescape = true)
         {
+            var contentType = _actualContext.Request.ContentType;
             Debug.Assert(
-                _actualContext.Request.ContentType.ToLowerInvariant().Contains("text/plain"),
+                contentType != null,
+                "The backend expected this post to have content-type text/plain but its ContentType is null."
+            );
+            Debug.Assert(
+                contentType != null && contentType.ToLowerInvariant().Contains("text/plain"),
                 "The backend expected this post to have content-type text/plain."
             );
             return GetPostStringInner(unescape);
@@ -613,8 +643,17 @@ namespace Bloom.Api
         public void WriteRedirect(string url, bool permanent)
         {
             _actualContext.Response.StatusCode = permanent ? 301 : 302;
+            // Encode only the path segment. If we encode the whole URL, query separators
+            // like '?' and '&' become %3F/%26 and the redirected URL no longer has params.
+            var queryIndex = url.IndexOf("?", StringComparison.Ordinal);
+            var pathPart = queryIndex >= 0 ? url.Substring(0, queryIndex) : url;
+            var queryPart = queryIndex >= 0 ? url.Substring(queryIndex) : string.Empty;
+
             // handle, e.g. http://localhost:8089/bloom/C:/foo/bar/ปก2.jpg
-            var encodedUrl = UrlPathString.CreateFromUnencodedString(url).UrlEncodedForHttpPath;
+            var encodedPath = UrlPathString
+                .CreateFromUnencodedString(pathPart)
+                .UrlEncodedForHttpPath;
+            var encodedUrl = encodedPath + queryPart;
             _actualContext.Response.Headers.Add("Location", encodedUrl);
             // This supports Bloom Player Storybook's "Live from Bloom Editor" feature, preventing CORS errors on the redirect.
             _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");

@@ -17,7 +17,7 @@ import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
 import { LinkIcon } from "./LinkIcon";
-import { showCopyrightAndLicenseDialog } from "../editViewFrame";
+import { showCopyrightAndLicenseDialog } from "../workspaceRoot";
 import {
     doImageCommand,
     getImageUrlFromImageContainer,
@@ -53,7 +53,12 @@ import {
     kDraggableIdAttribute,
     theOneCanvasElementManager,
 } from "./CanvasElementManager";
-import { copySelection, GetEditor, pasteClipboard } from "./bloomEditing";
+import {
+    copySelection,
+    GetEditor,
+    IsPageXMatter,
+    pasteClipboard,
+} from "./bloomEditing";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useL10n } from "../../react_components/l10nHooks";
 import { CogIcon } from "./CogIcon";
@@ -67,7 +72,15 @@ import { GameType, getGameType } from "../toolbox/games/GameInfo";
 import { setGeneratedDraggableId } from "../toolbox/canvas/CanvasElementItem";
 import { editLinkGrid } from "./linkGrid";
 import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
-import { kBloomButtonClass } from "../toolbox/canvas/canvasElementUtils";
+import {
+    kBloomButtonClass,
+    kBloomCanvasSelector,
+} from "../toolbox/canvas/canvasElementUtils";
+import { wrapWithRequestPageContentDelay } from "./bloomEditing";
+import { get, post, useApiObject } from "../../utils/bloomApi";
+import { ILanguageNameValues } from "../bookAndPageSettings/FieldVisibilityGroup";
+import StyleEditor from "../StyleEditor/StyleEditor";
+import OverflowChecker from "../OverflowChecker/OverflowChecker";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -78,6 +91,24 @@ interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
 // Eventually we may need a way to distinguish buttons used for navigation from other buttons.
 function isNavigationButton(canvasElement: HTMLElement) {
     return canvasElement.classList.contains(kBloomButtonClass);
+}
+
+function getFormatTargetElement(
+    canvasElement: HTMLElement,
+): HTMLElement | undefined {
+    const editable = canvasElement.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on",
+    )[0] as HTMLElement | undefined;
+    if (editable) {
+        return editable;
+    }
+
+    const candidates = Array.from(
+        canvasElement.querySelectorAll("[class]"),
+    ) as HTMLElement[];
+    return candidates.find((candidate) =>
+        StyleEditor.shouldAllowNonEditableStyleDialogTarget(candidate),
+    );
 }
 
 // This is the controls bar that appears beneath a canvas element when it is selected. It contains buttons
@@ -101,6 +132,18 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const hasImage = !!imgContainer;
     const hasText =
         props.canvasElement.getElementsByClassName("bloom-editable").length > 0;
+    let canHaveChildBubbles = hasText;
+    if (hasText) {
+        const dataBubble = props.canvasElement.getAttribute("data-bubble");
+        if (dataBubble) {
+            if (
+                dataBubble.includes("`style`:`caption`") ||
+                dataBubble.includes("`style`:`none`")
+            ) {
+                canHaveChildBubbles = false;
+            }
+        }
+    }
     const linkGrid = props.canvasElement.getElementsByClassName(
         "bloom-link-grid",
     )[0] as HTMLElement | undefined;
@@ -153,6 +196,14 @@ const CanvasElementContextControls: React.FunctionComponent<{
         }
     };
 
+    const languageNameValues: ILanguageNameValues =
+        useApiObject<ILanguageNameValues>("settings/languageNames", {
+            language1Name: "",
+            language1Tag: "",
+            language2Name: "",
+            language2Tag: "",
+        });
+
     const menuEl = useRef<HTMLElement | null>();
 
     const noneLabel = useL10n("None", "EditTab.Toolbox.DragActivity.None", "");
@@ -160,6 +211,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const chooseBooksLabel = useL10n(
         "Choose books...",
         "EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks",
+        "",
     );
 
     const currentDraggableTargetId = props.canvasElement?.getAttribute(
@@ -183,7 +235,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         );
         // We need to re-evaluate when changing pages, it's possible the initially selected item
         // on a new page has the same currentDraggableTargetId.
-    }, [currentDraggableTargetId]);
+    }, [currentDraggableTargetId, page]);
 
     // The audio menu item states the audio will play when the item is touched.
     // That isn't true yet outside of games, so don't show it.
@@ -272,7 +324,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         });
     }
 
-    if (hasText && !isInDraggableGame && !isNavButton) {
+    if (canHaveChildBubbles && !isInDraggableGame && !isNavButton) {
         menuOptions.splice(0, 0, {
             l10nId: "EditTab.Toolbox.ComicTool.Options.AddChildBubble",
             english: "Add Child Bubble",
@@ -318,6 +370,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const editableTextElement = props.canvasElement.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement;
+    const formatTargetElement = getFormatTargetElement(props.canvasElement);
+    const showFormatButton = !!formatTargetElement && !isNavButton;
 
     if (isNavButton) {
         menuOptions.splice(0, 0, {
@@ -333,6 +387,9 @@ const CanvasElementContextControls: React.FunctionComponent<{
                 menuOptions,
                 editableTextElement,
                 props.canvasElement,
+                setMenuOpen,
+                languageNameValues,
+                noneLabel,
             );
         }
     }
@@ -372,8 +429,21 @@ const CanvasElementContextControls: React.FunctionComponent<{
 
     // and these for text boxes
     if (editableTextElement && !isNavButton) {
-        addTextMenuItems(menuOptions, editableTextElement, props.canvasElement);
-        menuOptions.push(divider);
+        addTextMenuItems(
+            menuOptions,
+            editableTextElement,
+            props.canvasElement,
+            setMenuOpen,
+            languageNameValues,
+            noneLabel,
+        );
+    } else if (formatTargetElement && !isNavButton) {
+        menuOptions.push({
+            l10nId: "EditTab.Toolbox.ComicTool.Options.Format",
+            english: "Format",
+            onClick: () => GetEditor().runFormatDialog(formatTargetElement),
+            icon: <CogIcon css={getMenuIconCss()} />,
+        });
     }
 
     if (!isBackgroundImage && !isSpecialGameElementSelected && !isLinkGrid) {
@@ -604,7 +674,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             )}
                         </Fragment>
                     )}
-                    {editableTextElement && !isNavButton && (
+                    {showFormatButton && (
                         <ButtonWithTooltip
                             tipL10nKey="EditTab.Toolbox.ComicTool.Options.Format"
                             icon={CogIcon}
@@ -612,7 +682,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                             onClick={() => {
                                 if (!props.canvasElement) return;
                                 GetEditor().runFormatDialog(
-                                    editableTextElement,
+                                    formatTargetElement,
                                 );
                             }}
                         />
@@ -637,7 +707,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         </Fragment>
                     )}
                     {(!(hasImage && isPlaceHolder) &&
-                        !editableTextElement &&
+                        !showFormatButton &&
                         !(hasVideo && !videoAlreadyChosen)) || (
                         // Add a spacer if there is any button before these
                         <div
@@ -916,6 +986,518 @@ const CanvasElementContextControls: React.FunctionComponent<{
     }
 };
 
+// Fields that should get the bloom-contentFirst, Second, etc. classes managed by the appearance system.
+// This is a pain. The proper way to know whether a field is controlled by the appearance system is that
+// it has a data-visibility-variable attribute. We remove those when we make a custom page.
+// The canvas elements that are actually on the page should be visible. We could copy it to some other attribute.
+// But that would only work for the fields that were originally on the page. We want to be able to add new data-book fields.
+// And there are certain clauses we need to add to such fields to give them the standard appearance.
+// So until I get a better idea, I'm just putting in a hard-coded list.
+const fieldsControlledByAppearanceSystem = ["bookTitle"];
+
+function adjustAutoSizeForVisibleEditableInTranslationGroup(tg: HTMLElement) {
+    const visibleEditable = tg.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on",
+    )[0] as HTMLElement;
+    if (!visibleEditable) {
+        return;
+    }
+    OverflowChecker.AdjustSizeOrMarkOverflow(visibleEditable);
+}
+
+function setEditableContentFromKnownDataBookValueIfAny(
+    editable: HTMLElement,
+    dataBook: string | null,
+    tg: HTMLElement,
+) {
+    if (!dataBook) {
+        return;
+    }
+    wrapWithRequestPageContentDelay(
+        () =>
+            new Promise<void>((resolve, reject) => {
+                get(
+                    `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${dataBook}`,
+                    (result) => {
+                        try {
+                            const content = result.data;
+                            // content comes from a source that looked empty, we don't want to overwrite something the user may
+                            // already have typed here.
+                            // But it may well have something in it, because we usually have an empty paragraph to start with.
+                            // To test whether it looks empty, we put the text into a newly created element and then
+                            // see whether it's textContent is empty.
+                            // The logic of overwriting something which the user has typed here is that if we keep what's here,
+                            // then the user may never know that there was already something in that field. But if we overwrite, then
+                            // the user can always correct it back to what he just typed.
+                            const temp = document.createElement("div");
+                            temp.innerHTML = content || "";
+                            if (temp.textContent.trim() !== "") {
+                                editable.innerHTML = content;
+                            }
+                            adjustAutoSizeForVisibleEditableInTranslationGroup(
+                                tg,
+                            );
+                            resolve();
+                        } catch (error) {
+                            reject(error);
+                        }
+                    },
+                    (error) => {
+                        reject(error);
+                    },
+                );
+            }),
+        "setCanvasFieldValueFromDataBook",
+    );
+}
+
+function applyAppearanceClassForEditable(editable: HTMLElement) {
+    editable.classList.remove(
+        "bloom-contentFirst",
+        "bloom-contentSecond",
+        "bloom-contentThird",
+    );
+    if (editable.classList.contains("bloom-content1")) {
+        editable.classList.add("bloom-contentFirst");
+    } else if (editable.classList.contains("bloom-contentNational1")) {
+        editable.classList.add("bloom-contentSecond");
+    } else if (editable.classList.contains("bloom-contentNational2")) {
+        editable.classList.add("bloom-contentThird");
+    }
+}
+
+function makeLanguageMenuItem(
+    ce: HTMLElement,
+    menuOptions: IMenuItemWithSubmenu[],
+    setMenuOpen: (open: boolean) => void,
+    languageNameValues: ILanguageNameValues,
+) {
+    const tg = ce.getElementsByClassName(
+        "bloom-translationGroup",
+    )[0] as HTMLElement;
+    if (!tg) {
+        // no way to mess with language, leave this menu item out.
+        return;
+    }
+    const updateTg = (
+        tg: HTMLElement,
+        langCode: string,
+        langName: string,
+        dataDefaultLang: string,
+        classes: string[],
+        appearanceClasses: string[],
+    ) => {
+        tg.setAttribute("data-default-languages", dataDefaultLang);
+        const editables = Array.from(
+            tg.getElementsByClassName("bloom-editable"),
+        ) as HTMLElement[];
+        if (editables.length === 0) return; // not able to handle this yet.
+        let editableInLang = editables.find(
+            (e) => e.getAttribute("lang") === langCode,
+        );
+        if (editableInLang) {
+            // remove editableInLang from the array editables
+            editables.splice(editables.indexOf(editableInLang), 1);
+        } else {
+            // This can happen for a newly created bubble
+            let editableToClone = editables.find(
+                (e) => e.getAttribute("lang") === "z",
+            );
+            if (!editableToClone) {
+                // just clone the first one
+                editableToClone = editables[0];
+            }
+            editableInLang = editableToClone.cloneNode(true) as HTMLElement;
+            editableInLang.innerHTML = "<p><br></p>"; // start in the usual empty state
+            editableInLang.setAttribute("lang", langCode);
+            editableInLang.setAttribute("data-languagetipcontent", langName);
+            tg.appendChild(editableInLang);
+        }
+
+        // Ensure that we have the expected set of bloom-contentN and visibility classes.
+        // This duplicates some knowledge in the C# TranslationGroupManager class,
+        // but I don't see a good way to avoid that without reloading the page.
+        // First, remove classes generated by TranslationGroupManager that are
+        // already present. These would usually be right if we found an existing
+        // element, but possibly not if the collection languages changed. And for a clone
+        // they are likely to be wrong.
+        Array.from(editableInLang.classList).forEach((c) => {
+            if (c.startsWith("bloom-content")) {
+                editableInLang!.classList.remove(c);
+            }
+        });
+
+        editableInLang.classList.add("bloom-visibility-code-on");
+        for (const c of classes) {
+            editableInLang.classList.add(c);
+        }
+        const dataBookValue = editableInLang.getAttribute("data-book");
+        if (
+            dataBookValue &&
+            fieldsControlledByAppearanceSystem.includes(dataBookValue)
+        ) {
+            for (const c of appearanceClasses) {
+                editableInLang.classList.add(c);
+            }
+        }
+
+        setEditableContentFromKnownDataBookValueIfAny(
+            editableInLang,
+            dataBookValue,
+            tg,
+        );
+
+        // and conversely remove them from the others
+        for (const editable of editables) {
+            // Ensure visibility code is  off for others.
+            editable.classList.remove("bloom-visibility-code-on");
+        }
+        adjustAutoSizeForVisibleEditableInTranslationGroup(tg);
+        setMenuOpen(false);
+    };
+
+    const activeLangTag = tg
+        .getElementsByClassName("bloom-editable bloom-visibility-code-on")[0]
+        ?.getAttribute("lang");
+    const subMenu: ILocalizableMenuItemProps[] = [
+        {
+            l10nId: null,
+            english: languageNameValues.language1Name,
+            onClick: () => {
+                updateTg(
+                    tg,
+                    languageNameValues.language1Tag,
+                    languageNameValues.language1Name,
+                    "V",
+                    ["bloom-content1"],
+                    ["bloom-contentFirst"],
+                );
+            },
+            icon: activeLangTag === languageNameValues.language1Tag && (
+                <CheckIcon css={getMenuIconCss()} />
+            ),
+        },
+    ];
+
+    if (
+        languageNameValues.language2Tag &&
+        languageNameValues.language2Tag !== languageNameValues.language1Tag
+    ) {
+        subMenu.push({
+            l10nId: null,
+            english: languageNameValues.language2Name, // todo: nice name
+            onClick: () => {
+                updateTg(
+                    tg,
+                    languageNameValues.language2Tag,
+                    languageNameValues.language2Name,
+                    "N1",
+                    ["bloom-contentNational1"],
+                    ["bloom-contentSecond"],
+                );
+            },
+            icon: activeLangTag === languageNameValues.language2Tag && (
+                <CheckIcon css={getMenuIconCss()} />
+            ),
+        });
+    }
+    if (
+        languageNameValues.language3Tag &&
+        languageNameValues.language3Tag !== languageNameValues.language1Tag &&
+        languageNameValues.language3Tag !== languageNameValues.language2Tag
+    ) {
+        subMenu.push({
+            l10nId: null,
+            english: languageNameValues.language3Name!,
+            onClick: () => {
+                updateTg(
+                    tg,
+                    languageNameValues.language3Tag!,
+                    languageNameValues.language3Name!,
+                    "N2",
+                    ["bloom-contentNational2"],
+                    ["bloom-contentThird"],
+                );
+            },
+            icon: activeLangTag === languageNameValues.language3Tag && (
+                <CheckIcon css={getMenuIconCss()} />
+            ),
+        });
+    }
+    if (subMenu.length < 2) return; // no choice we can make, leave this menu item out.
+    menuOptions.push({
+        l10nId: "EditTab.Toolbox.ComicTool.Options.Language",
+        english: "Language:",
+        subMenu: subMenu,
+        onClick: () => {},
+    });
+}
+
+const fieldTypeData: Array<{
+    dataBook: string;
+    dataDerived: string;
+    label: string;
+    readOnly: boolean;
+    editableClasses: string[];
+    classes: string[];
+    hint?: string;
+    functionOnHintClick?: string;
+}> = [
+    {
+        dataBook: "bookTitle",
+        dataDerived: "",
+        label: "Book Title",
+        readOnly: false,
+        editableClasses: ["Title-On-Cover-style", "bloom-padForOverflow"],
+        classes: ["bookTitle"],
+    },
+    {
+        dataBook: "smallCoverCredits",
+        dataDerived: "",
+        label: "Cover Credits",
+        readOnly: false,
+        editableClasses: ["smallCoverCredits", "Cover-Default-style"],
+        classes: [],
+    },
+    {
+        dataBook: "",
+        dataDerived: "languagesOfBook",
+        label: "Languages",
+        readOnly: true,
+        editableClasses: [],
+        classes: ["coverBottomLangName", "Cover-Default-style"],
+    },
+    {
+        dataBook: "",
+        dataDerived: "topic",
+        label: "Topic",
+        readOnly: true,
+        editableClasses: [],
+        classes: [
+            "coverBottomBookTopic",
+            "bloom-userCannotModifyStyles",
+            "bloom-alwaysShowBubble",
+            "Cover-Default-style",
+        ],
+        hint: "Choose topic",
+        functionOnHintClick: "showTopicChooser",
+    },
+];
+
+function makeFieldTypeMenuItem(
+    ce: HTMLElement,
+    menuOptions: IMenuItemWithSubmenu[],
+    setMenuOpen: (open: boolean) => void,
+    noneLabel: string,
+) {
+    // We only do this on custom pages, at least for now
+    if (!ce.closest(".bloom-page")?.classList?.contains("bloom-customLayout"))
+        return;
+    const tg = ce.getElementsByClassName(
+        "bloom-translationGroup",
+    )[0] as HTMLElement;
+    // This menu should currently only be made for bloom-editable elements which
+    // should be in translation groups, but just in case we generalize to include
+    // something that doesn't have one, let's not crash.
+    // As a result, conversion to a read-only field type is one-way: such overlays
+    // don't have TGs and wont' get the menu item, so the user can't change them
+    // again to some other field type. The work-around would just be to delete
+    // the whole canvas element and add a new one of the desired type.
+    if (!tg) return;
+
+    const clearFieldTypeClasses = () => {
+        for (const fieldType of fieldTypeData) {
+            for (const className of fieldType.classes) {
+                tg.classList.remove(className);
+            }
+            for (const editable of Array.from(
+                tg.getElementsByClassName("bloom-editable"),
+            )) {
+                editable.classList.remove(...fieldType.editableClasses);
+            }
+        }
+    };
+
+    const removeConflictingStyleClasses = (
+        fieldType: {
+            editableClasses: string[];
+            classes: string[];
+        },
+        editables: HTMLElement[],
+    ) => {
+        const newStyleClasses = new Set(
+            [...fieldType.classes, ...fieldType.editableClasses].filter((c) =>
+                c.endsWith("-style"),
+            ),
+        );
+        if (newStyleClasses.size === 0) {
+            return;
+        }
+
+        const stripStyleClasses = (element: HTMLElement) => {
+            Array.from(element.classList).forEach((className) => {
+                if (
+                    className.endsWith("-style") &&
+                    !newStyleClasses.has(className)
+                ) {
+                    element.classList.remove(className);
+                }
+            });
+        };
+
+        stripStyleClasses(tg);
+        editables.forEach((editable) => stripStyleClasses(editable));
+    };
+
+    const activeType = tg
+        .getElementsByClassName("bloom-editable bloom-visibility-code-on")[0]
+        ?.getAttribute("data-book");
+    const subMenu: ILocalizableMenuItemProps[] = [
+        {
+            l10nId: null,
+            english: noneLabel,
+            onClick: () => {
+                clearFieldTypeClasses();
+                for (const editable of Array.from(
+                    tg.getElementsByClassName("bloom-editable"),
+                ) as HTMLElement[]) {
+                    editable.removeAttribute("data-book");
+                    // There's a bit of guess-work involved in what would be most helpful here.
+                    // clearFieldTypeClasses removes any field-type-specific style class,
+                    // and we generally expect a bloom-editable to have some style class.
+                    // Should it be Normal-style or Bubble-style? Bubble-style is the default
+                    // for canvas elements, so I decided to go with that.
+                    const hasStyleClass = Array.from(editable.classList).some(
+                        (className) => className.endsWith("-style"),
+                    );
+                    if (!hasStyleClass) {
+                        editable.classList.add("Bubble-style");
+                    }
+                }
+                adjustAutoSizeForVisibleEditableInTranslationGroup(tg);
+                setMenuOpen(false);
+            },
+            icon: !activeType && <CheckIcon css={getMenuIconCss()} />,
+        },
+    ];
+    for (const fieldType of fieldTypeData) {
+        subMenu.push({
+            l10nId: null,
+            english: fieldType.label,
+            onClick: () => {
+                clearFieldTypeClasses();
+                const editables = Array.from(
+                    tg.getElementsByClassName("bloom-editable"),
+                ) as HTMLElement[];
+                if (fieldType.readOnly) {
+                    const readOnlyDiv = document.createElement("div");
+                    readOnlyDiv.setAttribute(
+                        "data-derived",
+                        fieldType.dataDerived,
+                    );
+                    if (fieldType.hint) {
+                        readOnlyDiv.setAttribute("data-hint", fieldType.hint);
+                    }
+                    if (fieldType.functionOnHintClick) {
+                        readOnlyDiv.setAttribute(
+                            "data-functiononhintclick",
+                            fieldType.functionOnHintClick,
+                        );
+                    }
+                    readOnlyDiv.classList.add(...fieldType.classes);
+                    tg.parentElement!.insertBefore(readOnlyDiv, tg);
+                    tg.remove();
+                    // Reload the page to get the derived content loaded.
+                    post("common/saveChangesAndRethinkPageEvent", () => {});
+                } else {
+                    removeConflictingStyleClasses(fieldType, editables);
+                    tg.classList.add(...fieldType.classes);
+                    for (const editable of editables) {
+                        editable.classList.add(...fieldType.editableClasses);
+                        editable.setAttribute("data-book", fieldType.dataBook);
+                        if (
+                            fieldsControlledByAppearanceSystem.includes(
+                                fieldType.dataBook,
+                            )
+                        ) {
+                            applyAppearanceClassForEditable(editable);
+                        } else {
+                            editable.classList.remove(
+                                "bloom-contentFirst",
+                                "bloom-contentSecond",
+                                "bloom-contentThird",
+                            );
+                        }
+                        if (
+                            editable.classList.contains(
+                                "bloom-visibility-code-on",
+                            )
+                        ) {
+                            setEditableContentFromKnownDataBookValueIfAny(
+                                editable,
+                                fieldType.dataBook,
+                                tg,
+                            );
+                        }
+                    }
+                    adjustAutoSizeForVisibleEditableInTranslationGroup(tg);
+                }
+                setMenuOpen(false);
+            },
+            icon: activeType === fieldType.dataBook && (
+                <CheckIcon css={getMenuIconCss()} />
+            ),
+        });
+    }
+
+    menuOptions.push({
+        l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
+        english: "Field Type:",
+        subMenu: subMenu,
+        onClick: () => {},
+    });
+}
+
+function makeImageFieldMenuItem(
+    canvasElement: HTMLElement,
+    img: HTMLElement,
+    menuOptions: IMenuItemWithSubmenu[],
+    setMenuOpen: (open: boolean, launchingDialog?: boolean) => void,
+) {
+    // We only do this on custom pages, at least for now.
+    if (
+        !canvasElement
+            .closest(".bloom-page")
+            ?.classList?.contains("bloom-customLayout")
+    )
+        return;
+
+    const isCoverImage = img.getAttribute("data-book") === "coverImage";
+    menuOptions.push({
+        l10nId: "EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail",
+        english: "Use for book thumbnail",
+        onClick: () => {
+            if (isCoverImage) {
+                img.removeAttribute("data-book");
+            } else {
+                const page = canvasElement.closest(
+                    ".bloom-page",
+                ) as HTMLElement;
+                for (const existingCoverImage of Array.from(
+                    page.querySelectorAll('img[data-book="coverImage"]'),
+                )) {
+                    if (existingCoverImage !== img) {
+                        existingCoverImage.removeAttribute("data-book");
+                    }
+                }
+                img.setAttribute("data-book", "coverImage");
+            }
+            setMenuOpen(false);
+        },
+        icon: isCoverImage && <CheckIcon css={getMenuIconCss()} />,
+    });
+}
+
 const buttonWidth = "22px";
 
 const ButtonWithTooltip: React.FunctionComponent<{
@@ -1010,6 +1592,9 @@ function addTextMenuItems(
     menuOptions: IMenuItemWithSubmenu[],
     editable: HTMLElement,
     canvasElement: HTMLElement,
+    setMenuOpen: (open: boolean) => void,
+    languageNameValues: ILanguageNameValues,
+    noneLabel: string,
 ) {
     const autoHeight = !canvasElement.classList.contains("bloom-noAutoHeight");
     const toggleAutoHeight = () => {
@@ -1056,7 +1641,15 @@ function addTextMenuItems(
             icon: autoHeight && <CheckIcon css={getMenuIconCss()} />,
         });
     }
+
     menuOptions.push(...textMenuItem);
+    makeLanguageMenuItem(
+        canvasElement,
+        menuOptions,
+        setMenuOpen,
+        languageNameValues,
+    );
+    makeFieldTypeMenuItem(canvasElement, menuOptions, setMenuOpen, noneLabel);
 }
 
 function addVideoMenuItems(
@@ -1132,6 +1725,19 @@ function addImageMenuOptions(
         );
     };
 
+    // The "Become background" option is not available for standard xmatter pages.
+    const xmatterPage = IsPageXMatter($(canvasElement));
+    const customLayoutablePage = canvasElement.closest(
+        ".bloom-page[data-custom-layout-id]",
+    );
+    const pageAllowsCanvasElements =
+        (!xmatterPage ||
+            (customLayoutablePage &&
+                customLayoutablePage.classList.contains(
+                    "bloom-customLayout",
+                ))) ??
+        false;
+
     const realImagePresent = hasRealImage(img);
     const imageMenuOptions: IMenuItemWithSubmenu[] = [
         // If the image doesn't exist, we still show the menu item for editing metadata,
@@ -1156,17 +1762,17 @@ function addImageMenuOptions(
             icon: <SearchIcon css={getMenuIconCss()} />,
         },
         {
-            l10nId: "EditTab.Image.PasteImage",
-            english: "Paste image",
-            onClick: () => doImageCommand(img, "paste"),
-            icon: <PasteIcon css={getMenuIconCss()} />,
-        },
-        {
             l10nId: "EditTab.Image.CopyImage",
             english: "Copy image",
             onClick: () => doImageCommand(img, "copy"),
             icon: <CopyIcon css={getMenuIconCss()} />,
             disabled: !realImagePresent,
+        },
+        {
+            l10nId: "EditTab.Image.PasteImage",
+            english: "Paste image",
+            onClick: () => doImageCommand(img, "paste"),
+            icon: <PasteIcon css={getMenuIconCss()} />,
         },
         {
             l10nId: "EditTab.Image.Reset",
@@ -1247,7 +1853,126 @@ function addImageMenuOptions(
                 );
             },
         });
+        if (realImagePresent && pageAllowsCanvasElements) {
+            imageMenuOptions.push({
+                l10nId: "EditTab.Toolbox.ComicTool.Options.BecomeBackground",
+                english: "Become Background",
+                onClick: () => {
+                    const bloomCanvas = canvasElement.closest(
+                        kBloomCanvasSelector,
+                    ) as HTMLElement;
+                    const bgImageCe = bloomCanvas.getElementsByClassName(
+                        kBackgroundImageClass,
+                    )[0] as HTMLElement;
+                    if (!bgImageCe) return; // paranoia
+                    const bgImgContainer = bgImageCe.getElementsByClassName(
+                        kImageContainerClass,
+                    )[0] as HTMLElement;
+                    const bgImg = bgImgContainer?.getElementsByTagName(
+                        "img",
+                    )[0] as HTMLImageElement;
+                    if (!bgImg) return;
+                    const haveRealBgImage = hasRealImage(bgImg);
+                    const currentImgSrce = img.getAttribute("src") || "";
+                    const currentCopyright = img.getAttribute("data-copyright");
+                    const currentCreator = img.getAttribute("data-creator");
+                    const currentLicense = img.getAttribute("data-license");
+                    const currentDataBook = img.getAttribute("data-book");
+
+                    if (haveRealBgImage) {
+                        img.setAttribute(
+                            "src",
+                            bgImg.getAttribute("src") || "",
+                        );
+                        img.setAttribute(
+                            "data-copyright",
+                            bgImg.getAttribute("data-copyright") || "",
+                        );
+                        img.setAttribute(
+                            "data-creator",
+                            bgImg.getAttribute("data-creator") || "",
+                        );
+                        img.setAttribute(
+                            "data-license",
+                            bgImg.getAttribute("data-license") || "",
+                        );
+                        img.classList.remove("bloom-imageObjectFit-cover");
+                        theOneCanvasElementManager.updateCanvasElementForChangedImage(
+                            img,
+                        );
+                    }
+
+                    bgImg.src = currentImgSrce;
+                    bgImg.setAttribute(
+                        "data-copyright",
+                        currentCopyright || "",
+                    );
+                    bgImg.setAttribute("data-creator", currentCreator || "");
+                    bgImg.setAttribute("data-license", currentLicense || "");
+                    bgImg.classList.add("bloom-imageObjectFit-cover");
+                    // Not sure how or if this should generalize. When we make a custom cover,
+                    // the cover image is initially a moveable canvas element with data-book=coverImage.
+                    // Changing it to a background image should preserve that.
+                    // However, if we then create another image overlay and make THAT the background,
+                    // I think we still want the cover background to be the cover image. So we will not
+                    // remove an existing data-book value if the current image doesn't have one.
+                    if (currentDataBook) {
+                        // Arguable. But the only image that currently has a data-book is the cover image.
+                        // I think it makes most sense to consider the background image on the cover page
+                        // to be the cover image, if it once becomes that way. So we'll not transfer that
+                        // to the demoted image. The user can correct things with the field type menu.
+                        // (It's dangerous if two different images both have this...eventually one will
+                        // get changed to match the other.)
+                        img.removeAttribute("data-book");
+                        // Order is important here: we need to retain the data-book value if img === bgImg. (BL-16093)
+                        bgImg.setAttribute("data-book", currentDataBook);
+                    }
+
+                    if (!haveRealBgImage) {
+                        // delete the image that we turned into the background; there's no
+                        // real image to swap with it. We avoid doing this before we've copied everything
+                        // we want from it.
+                        theOneCanvasElementManager.deleteCurrentCanvasElement();
+                    }
+                    // review: do we want to preserve cropping? Also when going the other way?
+                    theOneCanvasElementManager.updateCanvasElementForChangedImage(
+                        bgImg,
+                    );
+
+                    // We want to make it active. However, if it used to be a placeholder, it was
+                    // previously hidden. This interferes with making the measurements to move the
+                    // control frame (at least), so we make a few attempts to activate it.
+                    // Don't make a long timeout here, because it could override some other
+                    // selection that the user quickly makes.
+                    const activateConvertedBackground = () => {
+                        requestAnimationFrame(() => {
+                            theOneCanvasElementManager.setActiveElement(
+                                bgImageCe,
+                            );
+                            theOneCanvasElementManager.expandImageToFillSpace();
+                        });
+                    };
+                    activateConvertedBackground();
+                    if (!haveRealBgImage) {
+                        const fallbackHandle = setTimeout(() => {
+                            activateConvertedBackground();
+                        }, 120);
+                        bgImg.addEventListener(
+                            "load",
+                            () => {
+                                clearTimeout(fallbackHandle);
+                                activateConvertedBackground();
+                            },
+                            { once: true },
+                        );
+                    }
+                    setMenuOpen(false);
+                },
+            });
+        }
     }
+
+    makeImageFieldMenuItem(canvasElement, img, imageMenuOptions, setMenuOpen);
 
     menuOptions.unshift(...imageMenuOptions);
 }

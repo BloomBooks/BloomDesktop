@@ -61,9 +61,13 @@ namespace Bloom.Book
                 parentCollectionPath
             );
 
+            // Generate a new instance ID for the book before creating the folder
+            // so we can use it to create a unique folder name
+            var newBookInstanceId = Guid.NewGuid().ToString();
+
             // We use the "initial name" to make the initial copy, and it gives us something
             //to name the folder and file until such time as the user enters a title in for the book.
-            string initialBookName = GetInitialName(parentCollectionPath);
+            string initialBookName = GetInitialName(parentCollectionPath, newBookInstanceId);
             var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
             CopyFolder(sourceBookFolder, newBookFolder);
             BookStorage.RemoveLocalOnlyFiles(newBookFolder);
@@ -89,7 +93,11 @@ namespace Bloom.Book
                 RobustFile.Move(oldNamedFile, newNamedFile);
 
                 //the destination may change here...
-                newBookFolder = SetupNewDocumentContents(sourceBookFolder, newBookFolder);
+                newBookFolder = SetupNewDocumentContents(
+                    sourceBookFolder,
+                    newBookFolder,
+                    newBookInstanceId
+                );
 
                 if (OnNextRunSimulateFailureMakingBook)
                     throw new ApplicationException("Simulated failure for unit test");
@@ -162,7 +170,11 @@ namespace Bloom.Book
             return defaultValue;
         }
 
-        private string SetupNewDocumentContents(string sourceFolderPath, string initialPath)
+        private string SetupNewDocumentContents(
+            string sourceFolderPath,
+            string initialPath,
+            string newBookInstanceId
+        )
         {
             // This bookInfo is temporary, just used to make the (also temporary) BookStorage we
             // use here in this method. I don't think it actually matters what its save context is.
@@ -239,6 +251,10 @@ namespace Bloom.Book
             // class to figure out which BookData keys to remove.
             ClearUnneededOriginalContentFromDerivative(storage.Dom, bookData);
 
+            // Preserve the bloom-customLayout class through xmatter replacement, so that
+            // EnsureUpToDate can later decide whether to keep or remove it based on the subscription.
+            var customLayoutIds = XMatterHelper.GatherCustomLayoutIds(storage.Dom);
+
             // For a new book, we discard any old xmatter Ids, so the new book will have its own page IDs.
             // One way this is helpful is caching cover images by page ID, so each book has a different cover page ID.
             XMatterHelper.RemoveExistingXMatter(storage.Dom, new List<string>());
@@ -269,7 +285,10 @@ namespace Bloom.Book
 
             InjectXMatter(initialPath, storage, sizeAndOrientation);
 
-            SetLineageAndId(storage, sourceFolderPath);
+            // Restore bloom-customLayout to any pages that had it before xmatter replacement.
+            XMatterHelper.RestoreCustomLayoutClasses(storage.Dom, customLayoutIds);
+
+            SetLineageAndId(storage, sourceFolderPath, newBookInstanceId);
 
             if (makingTranslation)
             {
@@ -412,7 +431,11 @@ namespace Bloom.Book
             storage.Dom.RemoveMetaElement("xmatter-for-children");
         }
 
-        private void SetLineageAndId(BookStorage storage, string sourceFolderPath)
+        private void SetLineageAndId(
+            BookStorage storage,
+            string sourceFolderPath,
+            string newBookInstanceId
+        )
         {
             string parentId = null;
             string lineage = null;
@@ -439,7 +462,8 @@ namespace Bloom.Book
             {
                 storage.BookInfo.BookLineage = lineage + parentId;
             }
-            storage.BookInfo.Id = Guid.NewGuid().ToString();
+            // Use the pre-generated instance ID that was used to create the unique folder name
+            storage.BookInfo.Id = newBookInstanceId;
             storage.Dom.RemoveMetaElement("bloomBookLineage"); //old metadata
             storage.Dom.RemoveMetaElement("bookLineage"); // even older name
         }
@@ -680,10 +704,10 @@ namespace Bloom.Book
             }
         }
 
-        private string GetInitialName(string parentCollectionPath)
+        private string GetInitialName(string parentCollectionPath, string instanceId)
         {
             var name = BookStorage.SanitizeNameForFileSystem(UntitledBookName);
-            return BookStorage.GetUniqueFolderName(parentCollectionPath, name);
+            return BookStorage.GetUniqueBookFolderName(parentCollectionPath, name, instanceId);
         }
 
         public static string UntitledBookName

@@ -23,7 +23,7 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[css]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
     },
     "[html]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -50,7 +50,6 @@
         "draggables",
         "editables",
         "elevenlabs",
-        "Expando",
         "invisibles",
         "jquery",
         "localizable",
@@ -58,7 +57,6 @@
         "nicescroll",
         "pixabay",
         "portafino",
-        "Prefs",
         "printshop",
         "qtip",
         "shellbook",
@@ -70,13 +68,5 @@
         "Winforms",
         "xmatter"
     ],
-    "chat.useNestedAgentsMdFiles": true,
-    "workbench.colorCustomizations": {
-        "statusBar.background": "#96668f",
-        "statusBar.foreground": "#e7e7e7",
-        "statusBarItem.hoverBackground": "#ab84a5",
-        "statusBarItem.remoteBackground": "#96668f",
-        "statusBarItem.remoteForeground": "#e7e7e7"
-    },
-    "peacock.color": "#96668f"
+    "chat.useNestedAgentsMdFiles": true
 }

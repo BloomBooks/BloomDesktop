@@ -142,6 +142,25 @@ body:has(.MuiPaper-root:hover) > .qtip {
     outline: none !important;
 }
 
+// Topic chooser hint bubbles are edit-only affordances; hide them unless the page affordances are visible.
+// Some of these rules are to make sure that it stays visible while the mouse is over the button itself.
+#page-scaling-container .qtip.topic-chooser-hint-bubble {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease-out;
+}
+#page-scaling-container:has(.bloom-page:hover) .qtip.topic-chooser-hint-bubble,
+body:has(#canvas-element-context-controls:hover)
+    #page-scaling-container
+    .qtip.topic-chooser-hint-bubble,
+#page-scaling-container .qtip.topic-chooser-hint-bubble:hover,
+body:has(.qtip.topic-chooser-hint-bubble:hover)
+    #page-scaling-container
+    .qtip.topic-chooser-hint-bubble {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 // Keep together here all the effects we want when hovering (previously: also when focus-within)
 // the bloom-page. All of them need to also apply when the canvas element context controls are hovered,
 // even though that is no longer a child of the bloom-page. (That's what the second rule is for.)
@@ -332,6 +351,10 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
     left: 5mm;
     top: @PageLabelVerticalDisplacement;
     float: left;
+    font-family: @UIFontStack;
+    font-size: 9pt;
+    line-height: 16px;
+    font-weight: 400;
 
     &[contenteditable="true"] {
         color: @ControlColor;
@@ -541,7 +564,7 @@ body.bloom-fullBleed {
     // to the code that tries to keep the background image and canvas elements aligned.
     .imageButton,
     .split-pane-divider,
-    .origami-toggle {
+    .change-layout-mode-toggle {
         display: none !important;
     }
 
@@ -1307,10 +1330,8 @@ body.hideAllCKEditors .cke_chrome {
 }
 
 // ----- Bloom Games ----
-// Tweak the position of the Start/Correct/Wrong/Play control
+// Width is handled here; top-strip alignment is controlled alongside the other above-page controls.
 #drag-activity-tab-control {
-    position: relative;
-    top: -8px;
     width: 100%;
 }
 

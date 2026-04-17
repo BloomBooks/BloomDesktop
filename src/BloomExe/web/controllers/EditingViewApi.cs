@@ -14,6 +14,7 @@ using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
+using SIL.Progress;
 using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom.web.controllers
@@ -84,8 +85,23 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "editView/topBarDropdownClicked",
-                HandleTopBarDropdownClicked,
+                "editView/topBar/contentLanguageUsage",
+                HandleGetContentLanguageUsage,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBar/contentLanguageUsageChange",
+                HandleContentLanguageUsageChange,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBar/layoutChoiceData",
+                HandleGetLayoutChoiceData,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBar/layoutChoiceChange",
+                HandleLayoutChoiceChange,
                 true
             );
             apiHandler.RegisterEndpointHandler(
@@ -109,6 +125,130 @@ namespace Bloom.web.controllers
                 "editView/currentBookId",
                 HandleGetCurrentBookId,
                 false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/toggleCustomPageLayout",
+                HandleToggleCustomCover,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/getDataBookValue",
+                HandleGetDataBookValue,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/frameSources",
+                HandleGetFrameSources,
+                true
+            );
+        }
+
+        private void HandleGetFrameSources(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Get)
+                throw new ArgumentException("editView/frameSources only supports GET");
+
+            request.ReplyWithJson(View.GetEditFrameSources());
+        }
+
+        private void HandleGetDataBookValue(ApiRequest request)
+        {
+            var lang = request.RequiredParam("lang");
+            var dataBook = request.RequiredParam("dataBook");
+            var multiText = View.Model.CurrentBook.BookData.GetMultiTextVariableOrEmpty(dataBook);
+            var value = multiText.GetExactAlternative(lang) ?? "";
+            request.ReplyWithText(value);
+        }
+
+        /// <summary>
+        /// Save the current state of the page, then toggle the book cover custom flag, and finally reload the page.
+        /// If we are in standard mode and do not have any saved state for custom mode, we return false, and
+        /// the calling code will generate a new custom page state.
+        /// </summary>
+        private void HandleToggleCustomCover(ApiRequest request)
+        {
+            var requestJson = request.GetPostJsonOrNull();
+            var pageId =
+                requestJson == null
+                    ? request.GetPostStringOrNull()
+                    : request.RequiredPostString("pageId");
+            var keepCustomLayoutDataWhenSwitchingToStandard =
+                requestJson != null
+                && request.RequiredPostString("keepCustomLayoutDataWhenSwitchingToStandard")
+                    == "true";
+            var book = View.Model.CurrentBook;
+            var page = book.GetPage(pageId);
+            var pageElt = page.GetDivNodeForThisPage();
+            var switchingToCustom = !pageElt.HasClass("bloom-customLayout");
+            var shouldRemoveCustomLayoutDataWhenSwitchingToStandard =
+                !switchingToCustom && !keepCustomLayoutDataWhenSwitchingToStandard;
+            var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
+            if (switchingToCustom)
+            {
+                var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");
+                if (string.IsNullOrEmpty(customLayoutData.Xml))
+                {
+                    request.ReplyWithText("false");
+                    return;
+                }
+            }
+            else
+            {
+                pageElt.RemoveAttribute("data-tool-id");
+            }
+
+            request.ReplyWithText("true");
+            View.Model.SaveThen(
+                () =>
+                {
+                    if (pageElt.HasClass("bloom-customLayout"))
+                        pageElt.RemoveClass("bloom-customLayout");
+                    else
+                        pageElt.AddClass("bloom-customLayout");
+                    // We must capture these from the saved page before typically replacing that with a different
+                    // page element.
+                    var backgroundAudio = pageElt.GetAttribute(HtmlDom.musicAttrName);
+                    var backgroundAudioVolume = pageElt.GetAttribute(HtmlDom.musicVolumeName);
+                    // Bring everything up to date consistent with the new
+                    // state. Might be enough just do the BookData update.
+                    book.EnsureUpToDateMemory(new NullProgress());
+                    // Toggling between custom and standard layout can replace the xMatter page HTML,
+                    // so reapply branding QR-code HTML adjustments for the current book settings.
+                    // This should not need to regenerate the QR code file.
+                    book.UpdateQrCodeHtmlForCurrentSettings(updateQrCodeFileEvenIfItExists: false);
+
+                    if (
+                        shouldRemoveCustomLayoutDataWhenSwitchingToStandard
+                        && !string.IsNullOrWhiteSpace(customLayoutId)
+                    )
+                    {
+                        book.BookData.RemoveAllFormsAndDataDivChildrenForDataBook(customLayoutId);
+                    }
+
+                    var updatedPageElt = book.GetPage(pageId)?.GetDivNodeForThisPage();
+                    if (updatedPageElt != null)
+                    {
+                        if (string.IsNullOrEmpty(backgroundAudio))
+                            updatedPageElt.RemoveAttribute(HtmlDom.musicAttrName);
+                        else
+                            updatedPageElt.SetAttribute(HtmlDom.musicAttrName, backgroundAudio);
+
+                        if (string.IsNullOrEmpty(backgroundAudioVolume))
+                            updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
+                        else
+                            updatedPageElt.SetAttribute(
+                                HtmlDom.musicVolumeName,
+                                backgroundAudioVolume
+                            );
+
+                        // Keep the same invariant we enforce elsewhere.
+                        if (string.IsNullOrEmpty(backgroundAudio))
+                            updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
+                    }
+
+                    return pageId;
+                },
+                () => { }
             );
         }
 
@@ -239,7 +379,7 @@ namespace Bloom.web.controllers
             }
 
             View.Browser.RunJavascriptAsync(
-                $"editTabBundle?.getEditablePageBundleExports()?.topBarButtonClick({data})"
+                $"workspaceBundle?.getEditablePageBundleExports()?.topBarButtonClick({data})"
             );
             request.PostSucceeded();
         }
@@ -250,19 +390,34 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
-        private void HandleTopBarDropdownClicked(ApiRequest request)
+        private void HandleGetContentLanguageUsage(ApiRequest request)
         {
-            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            request.ReplyWithJson(View.GetContentLanguageUsage());
+        }
+
+        private void HandleContentLanguageUsageChange(ApiRequest request)
+        {
+            dynamic data = request.RequiredPostDynamic();
+            var languageTag = (string)data.languageTag;
+            var isUsedForContent = Convert.ToBoolean(data.isUsedForContent);
+
             View.Browser.Focus();
-            switch (data.command)
-            {
-                case "contentLanguages":
-                    View.ContentLanguagesDropdownClicked();
-                    break;
-                case "layoutChoices":
-                    View.LayoutChoicesDropdownClicked();
-                    break;
-            }
+            View.HandleContentLanguageUsageChange(languageTag, isUsedForContent);
+            request.PostSucceeded();
+        }
+
+        private void HandleGetLayoutChoiceData(ApiRequest request)
+        {
+            request.ReplyWithJson(View.GetLayoutChoicesMenu());
+        }
+
+        private void HandleLayoutChoiceChange(ApiRequest request)
+        {
+            dynamic data = request.RequiredPostDynamic();
+            var layoutClassName = (string)data.layoutChoiceId;
+
+            View.Browser.Focus();
+            View.HandleLayoutChoicesMenuAction(layoutClassName);
             request.PostSucceeded();
         }
 

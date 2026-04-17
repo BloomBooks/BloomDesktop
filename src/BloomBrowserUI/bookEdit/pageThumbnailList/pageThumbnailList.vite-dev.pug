@@ -1,0 +1,20 @@
+extends pageThumbnailList.mixins.pug
+
+block headContent
+	//- This bit of 'magic' is needed to get React Fast Refresh working with Vite Dev.
+	script(type='module').
+		import RefreshRuntime from "http://localhost:5173/@react-refresh";
+		RefreshRuntime.injectIntoGlobalHook(window);
+		//- Avoiding arrow functions here because our HTML to XML converter mangles wedge characters
+		window.$RefreshReg$ = function () {};
+		window.$RefreshSig$ = function () {return function (type) {return type;};};
+		window.__vite_plugin_react_preamble_installed__ = true;
+	script(type='module' src='http://localhost:5173/@vite/client')
+
+block endBodyScripts
+	script(type='module').
+		//-These LESS files are imported in a different way in the Vite-Dev version of this file.
+		import "http://localhost:5173/bookEdit/pageThumbnailList/pageThumbnailList.less";
+		import "http://localhost:5173/bookEdit/pageThumbnailList/pageControls/pageControls.less";
+		import "http://localhost:5173/bookEdit/pageThumbnailList/pageControls/pageControls.tsx";
+		import "http://localhost:5173/bookEdit/pageThumbnailList/pageThumbnailList.tsx";

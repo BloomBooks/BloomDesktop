@@ -13,7 +13,7 @@ import { hookupLinkHandler } from "./linkHandler";
  */
 export function WireUpForWinforms(
     component: React.VoidFunctionComponent | React.FunctionComponent,
-    bgcolor: string = "#ffffff",
+    bgcolor?: string,
 ) {
     // The c# ReactControl creates an html page that will call this function.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,8 +21,10 @@ export function WireUpForWinforms(
         root: HTMLElement,
         props?: object,
     ) => {
-        // Set background immediately to prevent flash during React mounting
-        root.style.backgroundColor = bgcolor;
+        if (bgcolor) {
+            // Set background immediately to prevent flash during React mounting
+            root.style.backgroundColor = bgcolor;
+        }
 
         props = AddDialogPropsWhenWrappedByWinforms(props);
         const c = React.createElement(component, props, null);

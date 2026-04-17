@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.web;
 using BloomTemp;
+using SIL.IO;
 
 namespace Bloom.Edit
 {
@@ -37,7 +40,7 @@ namespace Bloom.Edit
     ///		which specifies the icon for your tool. (And create the icon in the BloomBrowserUI/images folder).
     /// - Usually you will add a line to GetToolboxServerDirectories() in this file
     /// - Add two lines like this to src\BloomBrowserUI\bookEdit\toolbox\settings\Settings.pug
-    ///		.checkbox.clear#musicCheck(data-tool='musicTool', onclick='editTabBundle.showOrHideTool_click(this);')
+    ///		.checkbox.clear#musicCheck(data-tool='musicTool', onclick='workspaceBundle.showOrHideTool_click(this);')
     ///		.checkbox-label(data-i18n='EditTab.Toolbox.Music.Heading') Music Tool
     /// </summary>
     public class ToolboxView
@@ -91,8 +94,16 @@ namespace Bloom.Edit
 
         public static string MakeToolboxContent(Book.Book book)
         {
-            var path = BloomFileLocator.GetBrowserFile(false, "bookEdit/toolbox", "toolbox.html");
-            var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
+            var useViteDev = ReactControl.ShouldUseViteDev();
+            var path = BloomFileLocator.GetBrowserFile(
+                false,
+                "bookEdit/toolbox",
+                useViteDev ? "toolbox.vite-dev.html" : "toolbox.html"
+            );
+            var html = RobustFile.ReadAllText(path, Encoding.UTF8);
+            if (useViteDev)
+                html = ReactControl.ReplaceViteDevOrigin(html);
+            var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(html));
             XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForToolbox.RawDom);
             return domForToolbox.getHtmlStringDisplayOnly();
         }
@@ -105,6 +116,7 @@ namespace Bloom.Edit
             var settings = new Dictionary<string, object>
             {
                 { "current", request.CurrentBook.BookInfo.CurrentTool },
+                { "visibility", request.CurrentBook.BookInfo.ToolboxIsOpen ? "visible" : "" },
             };
 
             foreach (var tool in request.CurrentBook.BookInfo.Tools)

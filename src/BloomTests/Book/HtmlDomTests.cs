@@ -77,6 +77,30 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void RemovePageBackgroundColorStyles_RemovesOnlyPageBackgroundColor()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(
+                @"<html><body>
+                    <div class='bloom-page' style='--page-background-color: #123456; --marginBox-background-color: #abcdef; --pageNumber-color: #111111;'></div>
+                    <div class='bloom-page coverColor' style='--page-background-color: #654321;'></div>
+                </body></html>"
+            );
+
+            HtmlDom.RemovePageBackgroundColorStyles(dom);
+
+            var assertThatDom = AssertThatXmlIn.Dom(dom);
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'bloom-page')][contains(@style,'--marginBox-background-color: #abcdef') and contains(@style,'--pageNumber-color: #111111') and not(contains(@style,'--page-background-color'))]",
+                1
+            );
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'coverColor') and not(@style)]",
+                1
+            );
+        }
+
+        [Test]
         public void BaseForRelativePaths_NoHead_NoLongerThrows()
         {
             var dom = new HtmlDom(@"<html></html>");
@@ -233,6 +257,42 @@ namespace BloomTests.Book
             HtmlDom.AppendInlineStyle(element, "; color: red;");
 
             Assert.AreEqual("font-size:12px; color: red;", element.GetAttribute("style"));
+        }
+
+        [Test]
+        public void RemoveInlineStyleSubfield_WhenOtherStylesRemain_OnlyRemovesSpecifiedSubfield()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml("<div style='display:block; color: red; font-size: 12px;' />");
+            var element = (SafeXmlElement)dom.FirstChild;
+
+            HtmlDom.RemoveInlineStyleSubfield(element, "display");
+
+            Assert.AreEqual("color: red; font-size: 12px", element.GetAttribute("style"));
+        }
+
+        [Test]
+        public void RemoveInlineStyleSubfield_WhenOnlySpecifiedSubfield_RemovesStyleAttribute()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml("<div style='display: block;' />");
+            var element = (SafeXmlElement)dom.FirstChild;
+
+            HtmlDom.RemoveInlineStyleSubfield(element, "display");
+
+            Assert.IsFalse(element.HasAttribute("style"));
+        }
+
+        [Test]
+        public void RemoveInlineStyleSubfield_IsCaseInsensitive()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml("<div style='DISPLAY:block; COLOR:red;' />");
+            var element = (SafeXmlElement)dom.FirstChild;
+
+            HtmlDom.RemoveInlineStyleSubfield(element, "display");
+
+            Assert.AreEqual("COLOR:red", element.GetAttribute("style"));
         }
 
         [Test]

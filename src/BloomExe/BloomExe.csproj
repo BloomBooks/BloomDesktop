@@ -11,7 +11,7 @@
 		<Company>SIL</Company>
 		<Product>Bloom</Product>
 		<Copyright>© SIL International 2012-2025</Copyright>
-		<Version>6.3.0.0</Version>
+		<Version>6.4.0.0</Version>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
 		<TargetFramework>net8.0-windows</TargetFramework>
@@ -191,8 +191,7 @@
 		<Copy SourceFiles="@(FfmpegFiles)" DestinationFolder="$(OutDir)" />
 		<Message Text="Copying platform-specific ffmpeg for $(Platform)" Importance="high" />
 
-		<Error Text="Platform-specific ffmpeg not found for $(Platform) - expected at @(FfmpegFiles)"
-		       Condition="'$(Platform)'=='ARM64' AND !Exists('@(FfmpegFiles)')" />
+		<Error Text="Platform-specific ffmpeg not found for $(Platform) - expected at @(FfmpegFiles)" Condition="'$(Platform)'=='ARM64' AND !Exists('@(FfmpegFiles)')" />
 	</Target>
 	<Target Name="ReallyAfterBuild" AfterTargets="CopySomeFiles">
 		<Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
@@ -223,12 +222,11 @@
 		</PropertyGroup>
 
 		<!-- Fail immediately if ARM64 SQLite library is not where NuGet should have placed it -->
-		<Error Text="ARM64 SQLite library not found at expected location: $(Arm64SqliteSource). Check that RuntimeIdentifiers includes 'win-arm64' and NuGet restore completed successfully."
-		       Condition="!Exists('$(Arm64SqliteSource)')" />
+		<Error Text="ARM64 SQLite library not found at expected location: $(Arm64SqliteSource). Check that RuntimeIdentifiers includes 'win-arm64' and NuGet restore completed successfully." Condition="!Exists('$(Arm64SqliteSource)')" />
 
 		<!-- Copy ARM64 SQLite library to main output directory -->
 		<Copy SourceFiles="$(Arm64SqliteSource)" DestinationFiles="$(Arm64SqliteTarget)" />
-		<Message Text="Copied ARM64 SQLite library: $(Arm64SqliteSource) -> $(Arm64SqliteTarget)" Importance="high" />
+		<Message Text="Copied ARM64 SQLite library: $(Arm64SqliteSource) -&gt; $(Arm64SqliteTarget)" Importance="high" />
 	</Target>
 	<ItemGroup>
 		<ProjectReference Include="..\WebView2PdfMaker\WebView2PdfMaker.csproj" ReferenceOutputAssembly="false" />
@@ -243,7 +241,7 @@
 		<PackageReference Include="Fleck" Version="1.1.0" />
 		<PackageReference Include="Glob" Version="1.1.8" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
-		<PackageReference Include="L10NSharp" Version="9.0.0-beta0001" />
+		<PackageReference Include="L10NSharp" Version="9.0.0" />
 		<PackageReference Include="LargeAddressAware" Version="1.0.5" />
 		<PackageReference Include="Markdig.Signed" Version="0.37.0" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
@@ -254,18 +252,19 @@
 		<PackageReference Include="NAudio" Version="1.10.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="PDFsharp" Version="6.2.1" />
+		<PackageReference Include="QRCoder" Version="1.7.0" />
 		<PackageReference Include="RestSharp" Version="106.12.0" />
 		<PackageReference Include="Sentry" Version="3.9.4" />
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />
 		<PackageReference Include="SIL.BuildTasks" Version="3.1.1" GeneratePathProperty="true" />
-		<PackageReference Include="SIL.Core.Desktop" Version="17.0.0-beta0079" />
+		<PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0001" />
 		<PackageReference Include="SIL.DesktopAnalytics" Version="4.0.4" />
-		<PackageReference Include="SIL.libpalaso.l10ns" Version="17.0.0-beta0070" GeneratePathProperty="true" />
-		<PackageReference Include="SIL.Media" Version="17.0.0-beta0079" />
-		<PackageReference Include="SIL.Windows.Forms" Version="17.0.0-beta0079" />
-		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="17.0.0-beta0079" />
-		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="17.0.0-beta0079" />
-		<PackageReference Include="SIL.WritingSystems" Version="17.0.0-beta0079" />
+		<PackageReference Include="SIL.libpalaso.l10ns" Version="18.0.0-beta0001" GeneratePathProperty="true" />
+		<PackageReference Include="SIL.Media" Version="18.0.0-beta0001" />
+		<PackageReference Include="SIL.Windows.Forms" Version="18.0.0-beta0001" />
+		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="18.0.0-beta0001" />
+		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="18.0.0-beta0001" />
+		<PackageReference Include="SIL.WritingSystems" Version="18.0.0-beta0001" />
 		<PackageReference Include="sillsdev.dotImpose" Version="2.6.2" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.2" />
@@ -315,60 +314,25 @@
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="Resources\current-service-urls.json" />
-		<None Include="Resources\DeleteMessageBoxButtonImage.png" />
 		<None Include="Resources\DeleteMessageBoxImage.png" />
 		<None Include="Resources\open.png" />
 		<None Include="Resources\edit.png" />
 		<None Include="Resources\Error70x70.png" />
 		<None Include="Resources\pagePlaceHolder.png" />
 		<None Include="Resources\collection32x32.png" />
-		<None Include="Resources\settings16x16.png" />
-		<None Include="Resources\settings32x32.png" />
-		<None Include="Resources\settings24x24.png" />
-		<None Include="Resources\OpenCreateCollection24x24.png" />
 		<None Include="Resources\help24x24.png" />
 		<None Include="Resources\publish32x32.png" />
-		<None Include="Resources\coverOnly.png" />
-		<None Include="Resources\insideBookletPages.png" />
-		<None Include="Resources\simplePages.png" />
-		<None Include="Resources\deletePage16x16.png" />
-		<None Include="Resources\deletePage24x24.png" />
-		<None Include="Resources\Paste16x16.png" />
-		<None Include="Resources\Undo16x16.png" />
-		<None Include="Resources\paste24x24.png" />
 		<None Include="Resources\newCollection32x32.png" />
 		<None Include="Resources\BloomPack64x64.png" />
-		<None Include="Resources\DeletePageDisabled24x24.png" />
-		<None Include="Resources\DeletePageDisabled32x32.png" />
-		<None Include="Resources\DeletePage32x32.png" />
 	</ItemGroup>
 	<ItemGroup>
-		<None Include="Resources\PackageFlat48x47.png" />
 		<None Include="Resources\pdf16x16.png" />
 		<None Include="Resources\thumbnail.png" />
-		<None Include="Resources\PackageFlat.png" />
 		<None Include="Resources\placeHolderBookThumbnail.png" />
-		<None Include="Resources\upload.png" />
-		<None Include="Resources\duplicatePage32x32.png" />
-		<None Include="Resources\duplicatePageDisabled32x32.png" />
 		<None Include="Resources\videos.png" />
-		<None Include="Resources\settingsbw16x16.png" />
-		<None Include="Resources\OpenCreateCollection16x16.png" />
-		<None Include="Resources\AddPageButton.PNG" />
-		<None Include="Resources\AddPageButtonDisabled.PNG" />
-		<None Include="Resources\epubPublishButton.png" />
 	</ItemGroup>
 	<ItemGroup>
 		<Content Include="bloom.ico" />
-		<None Include="Resources\book-settings.png" />
-		<None Include="Resources\PdfPrint.png" />
-		<None Include="Resources\BloomPUB.png" />
-		<None Include="Resources\publish video.png" />
-		<None Include="Resources\Disconnected.png" />
-		<None Include="Resources\TC Button Grey Small Team.png" />
-		<None Include="Resources\TC Button Warning.png" />
-		<None Include="Resources\TC Button Updates Available.png" />
-		<None Include="Resources\Team32x32.png" />
 		<None Include="Resources\help16x16Darker.png" />
 		<None Include="Resources\sad16x16.png" />
 		<None Include="Resources\weblink.png" />

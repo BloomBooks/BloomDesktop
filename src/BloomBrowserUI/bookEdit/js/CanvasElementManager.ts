@@ -41,6 +41,7 @@ import {
     UpdateImageTooltipVisibility,
     HandleImageError,
     isPlaceHolderImage,
+    normalizeCoverImageDesignation,
 } from "./bloomImages";
 import {
     adjustTarget,
@@ -77,7 +78,7 @@ import {
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasElementKeyboardProvider } from "./CanvasElementKeyboardProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
-import { get, postData, postJson } from "../../utils/bloomApi";
+import { get, postData, postJson, postString } from "../../utils/bloomApi";
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { getExactClientSize } from "../../utils/elementUtils";
@@ -88,11 +89,16 @@ import { FeatureStatus } from "../../react_components/featureStatus";
 import $ from "jquery";
 import { kCanvasToolId } from "../toolbox/toolIds";
 import {
-    doWhenEditTabBundleLoaded,
+    doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
-} from "./bloomFrames";
+} from "./workspaceFrames";
 
 export interface ITextColorInfo {
+    color: string;
+    isDefault: boolean;
+}
+
+export interface ITextOutlineColorInfo {
     color: string;
     isDefault: boolean;
 }
@@ -538,6 +544,7 @@ export class CanvasElementManager {
         const bloomCanvases: HTMLElement[] = this.getAllBloomCanvasesOnPage();
 
         bloomCanvases.forEach((bloomCanvas) => {
+            this.setupBackgroundImageAttributes(bloomCanvas);
             this.adjustCanvasElementsForCurrentLanguage(bloomCanvas);
             this.ensureCanvasElementsIntersectParent(bloomCanvas);
             // image containers are already set by CSS to overflow:hidden, so they
@@ -1074,7 +1081,8 @@ export class CanvasElementManager {
             clickedElement.closest("#canvas-element-context-controls") ||
             clickedElement.closest(".MuiMenu-list") ||
             clickedElement.closest(".above-page-control-container") ||
-            clickedElement.closest(".MuiDialog-container")
+            clickedElement.closest(".MuiDialog-container") ||
+            clickedElement.closest("[data-target-of]")
         ) {
             // clicking things in here (such as menu item in the pull-down, or a prompt dialog) should not
             // clear the active element
@@ -1252,10 +1260,16 @@ export class CanvasElementManager {
     // Keeps track of whether the mouse was moved during a mouse event in the main content of a
     // canvas element. If so, we interpret it as a drag, moving the canvas element. If not, we interpret it as a click.
     private gotAMoveWhileMouseDown: boolean = false;
+    private pendingRemoveControlFrameTimeout?: number;
 
     // Remove the canvas element control frame if it exists (when no canvas element is active)
     // Also remove the menu if it's still open.  See BL-13852.
     removeControlFrame() {
+        if (this.pendingRemoveControlFrameTimeout !== undefined) {
+            window.clearTimeout(this.pendingRemoveControlFrameTimeout);
+            this.pendingRemoveControlFrameTimeout = undefined;
+        }
+
         // this.activeElement is still set and works for hiding the menu.
         const eltWithControlOnIt = this.activeElement;
         const controlFrame = document.getElementById(
@@ -1269,11 +1283,18 @@ export class CanvasElementManager {
                 renderCanvasElementContextControls(eltWithControlOnIt, false);
             }
             // Reschedule so that the rerender can finish before removing the control frame.
-            setTimeout(() => {
+            // The timeout, however, creates a possible race condition: some new event (like a click
+            // on another canvas element) could come in and cause a new control frame to be created
+            // before this timeout runs, and then the timeout would remove the new control frame.
+            // To prevent that, we keep track of the pending timeout and cancel it if we need to
+            // set up a new control frame before it runs. (It feels bizarre to need to cancel
+            // a timeout with a zero delay, but even a zero delay races against real-world events.))
+            this.pendingRemoveControlFrameTimeout = window.setTimeout(() => {
                 controlFrame.remove();
                 document
                     .getElementById("canvas-element-context-controls")
                     ?.remove();
+                this.pendingRemoveControlFrameTimeout = undefined;
             }, 0);
         }
     }
@@ -1281,6 +1302,11 @@ export class CanvasElementManager {
     // Set up the control frame for the active canvas element. This includes creating it if it
     // doesn't exist, and positioning it correctly.
     setupControlFrame() {
+        if (this.pendingRemoveControlFrameTimeout !== undefined) {
+            window.clearTimeout(this.pendingRemoveControlFrameTimeout);
+            this.pendingRemoveControlFrameTimeout = undefined;
+        }
+
         // If the active element isn't visible, it isn't really active.  See BL-14439.
         this.checkActiveElementIsVisible();
         const eltToPutControlsOn = this.activeElement;
@@ -3152,6 +3178,38 @@ export class CanvasElementManager {
     // Set the color of the text in all of the active canvas element family's canvas elements.
     // If hexOrRgbColor is empty string, we are setting the canvas element to use the style default.
     public setTextColor(hexOrRgbColor: string) {
+        this.setTextStyleColorForActiveFamily(
+            ["color"],
+            hexOrRgbColor,
+            "black",
+        );
+    }
+
+    // Set the outline color of the text in all of the active canvas element family's canvas elements.
+    // If hexOrRgbColor is empty string, we are clearing text outlines.
+    public setTextOutlineColor(hexOrRgbColor: string) {
+        const activeEl = theOneCanvasElementManager.getActiveElement();
+        if (activeEl) {
+            // First, see if this canvas element is in parent/child relationship with any others.
+            // We need to set text outline color on the whole 'family' at once.
+            const bubble = new Bubble(activeEl);
+            const relatives = Comical.findRelatives(bubble);
+            relatives.push(bubble);
+            relatives.forEach((relativeBubble) =>
+                this.setTextOutlineColorInternal(
+                    hexOrRgbColor,
+                    relativeBubble.content,
+                ),
+            );
+        }
+        this.restoreFocus();
+    }
+
+    private setTextStyleColorForActiveFamily(
+        propertyNames: string[],
+        value: string,
+        defaultColorIfNoTargets: string,
+    ) {
         const activeEl = theOneCanvasElementManager.getActiveElement();
         if (activeEl) {
             // First, see if this canvas element is in parent/child relationship with any others.
@@ -3160,28 +3218,124 @@ export class CanvasElementManager {
             const relatives = Comical.findRelatives(bubble);
             relatives.push(bubble);
             relatives.forEach((bubble) =>
-                this.setTextColorInternal(hexOrRgbColor, bubble.content),
+                this.setTextStyleColorInternal(
+                    propertyNames,
+                    value,
+                    bubble.content,
+                    defaultColorIfNoTargets,
+                ),
             );
         }
         this.restoreFocus();
     }
 
     private setTextColorInternal(hexOrRgbColor: string, element: HTMLElement) {
-        // BL-11621: We are in the process of moving to putting the canvas element text color on the inner
-        // bloom-editables. So we clear any color on the canvas element div and set it on all of the
-        // inner bloom-editables.
+        this.setTextStyleColorInternal(
+            ["color"],
+            hexOrRgbColor,
+            element,
+            "black",
+        );
+    }
+
+    private setTextOutlineColorInternal(
+        hexOrRgbColor: string,
+        element: HTMLElement,
+    ) {
+        this.setTextStyleColorInternal(
+            ["-webkit-text-stroke-color"],
+            hexOrRgbColor,
+            element,
+            "",
+        );
+
+        const outlineWidth = hexOrRgbColor ? "2px" : "";
+        const paintOrder = hexOrRgbColor ? "stroke" : "";
         const topBox = element.closest(
             kCanvasElementSelector,
         ) as HTMLDivElement;
-        topBox.style.color = "";
-        const editables = topBox.getElementsByClassName("bloom-editable");
-        for (let i = 0; i < editables.length; i++) {
-            const editableElement = editables[i] as HTMLElement;
-            editableElement.style.color = hexOrRgbColor;
+        const textColorTargets = this.getTextColorTargets(topBox);
+
+        // I originally thought it would be cleaner to put these properties in CSS.
+        // But setting a stroke width, at least, has an effect even when no stroke color is set.
+        // (Makes the font look bolder.)
+        // So we need to set it only when we are actually applying an outline color.
+        // This will also save us data migration if we one day want to give the user control
+        // over the outline width or (much less likely) paint order
+        const outlineWidthProperty = "-webkit-text-stroke-width";
+        const paintOrderProperty = "paint-order";
+        const applyOutlineProperties = (target: HTMLElement) => {
+            if (outlineWidth) {
+                target.style.setProperty(outlineWidthProperty, outlineWidth);
+            } else {
+                target.style.removeProperty(outlineWidthProperty);
+            }
+
+            if (paintOrder) {
+                target.style.setProperty(paintOrderProperty, paintOrder);
+            } else {
+                target.style.removeProperty(paintOrderProperty);
+            }
+        };
+
+        if (textColorTargets.length === 0) {
+            applyOutlineProperties(topBox);
+            return;
         }
+        textColorTargets.forEach((target) => {
+            applyOutlineProperties(target);
+        });
+    }
+
+    private setTextStyleColorInternal(
+        propertyNames: string[],
+        value: string,
+        element: HTMLElement,
+        defaultColorIfNoTargets: string,
+    ) {
+        const topBox = element.closest(
+            kCanvasElementSelector,
+        ) as HTMLDivElement;
+        propertyNames.forEach((propertyName) =>
+            topBox.style.removeProperty(propertyName),
+        );
+        const textColorTargets = this.getTextColorTargets(topBox);
+        if (textColorTargets.length === 0) {
+            propertyNames.forEach((propertyName) =>
+                topBox.style.setProperty(
+                    propertyName,
+                    value || defaultColorIfNoTargets,
+                ),
+            );
+        }
+        textColorTargets.forEach((target) => {
+            propertyNames.forEach((propertyName) => {
+                target.style.setProperty(propertyName, value);
+            });
+        });
     }
 
     public getTextColorInformation(): ITextColorInfo {
+        return this.getTextStyleColorInformation(
+            ["color"],
+            "black",
+            (textElement) => this.getDefaultStyleTextColor(textElement),
+        );
+    }
+
+    public getTextOutlineColorInformation(): ITextOutlineColorInfo {
+        return this.getTextStyleColorInformation(
+            ["-webkit-text-stroke-color"],
+            "black",
+            () => "",
+        );
+    }
+
+    private getTextStyleColorInformation(
+        propertyNames: string[],
+        defaultColorIfNoTargets: string,
+        getDefaultColorForFirstTarget: (textElement: HTMLElement) => string,
+    ): ITextColorInfo {
         const activeEl = theOneCanvasElementManager.getActiveElement();
         let textColor = "";
         let isDefaultStyleColor = false;
@@ -3189,29 +3343,32 @@ export class CanvasElementManager {
             const topBox = activeEl.closest(
                 kCanvasElementSelector,
             ) as HTMLDivElement;
-            // const allUserStyles = StyleEditor.GetFormattingStyleRules(
-            //     topBox.ownerDocument
-            // );
             const style = topBox.style;
-            textColor = style && style.color ? style.color : "";
-            // We are in the process of moving to putting the Canvas element text color on the inner
-            // bloom-editables. So if the canvas element div didn't have a color, check the inner
-            // bloom-editables.
+            textColor =
+                propertyNames
+                    .map((propertyName) => style.getPropertyValue(propertyName))
+                    .find((color) => !!color) || "";
             if (textColor === "") {
-                const editables =
-                    topBox.getElementsByClassName("bloom-editable");
-                if (editables.length === 0) {
+                const textColorTargets = this.getTextColorTargets(topBox);
+                if (textColorTargets.length === 0) {
                     // Image on Image case comes here.
                     isDefaultStyleColor = true;
-                    textColor = "black";
+                    textColor = defaultColorIfNoTargets;
                 } else {
-                    const firstEditable = editables[0] as HTMLElement;
-                    const colorStyle = firstEditable.style.color;
+                    const firstTextTarget = textColorTargets[0];
+                    const colorStyle =
+                        propertyNames
+                            .map((propertyName) =>
+                                firstTextTarget.style.getPropertyValue(
+                                    propertyName,
+                                ),
+                            )
+                            .find((color) => !!color) || "";
                     if (colorStyle) {
                         textColor = colorStyle;
                     } else {
                         textColor =
-                            this.getDefaultStyleTextColor(firstEditable);
+                            getDefaultColorForFirstTarget(firstTextTarget);
                         isDefaultStyleColor = true;
                     }
                 }
@@ -3220,11 +3377,28 @@ export class CanvasElementManager {
         return { color: textColor, isDefault: isDefaultStyleColor };
     }
 
+    private getTextColorTargets(topBox: HTMLElement): HTMLElement[] {
+        const editables = Array.from(
+            topBox.getElementsByClassName("bloom-editable"),
+        ) as HTMLElement[];
+        if (editables.length > 0) {
+            return editables;
+        }
+
+        const derivedTargets = Array.from(
+            topBox.querySelectorAll("[data-derived]"),
+        ) as HTMLElement[];
+        if (topBox.hasAttribute("data-derived")) {
+            derivedTargets.unshift(topBox);
+        }
+        return derivedTargets;
+    }
+
     // Returns the computed color of the text, which in the absence of a color style from the
     // Canvas element Tool will be from the Bubble-style (set in the StyleEditor).
     // An unfortunate, but greatly simplifying, use of JQuery.
-    public getDefaultStyleTextColor(firstEditable: HTMLElement): string {
-        return $(firstEditable).css("color");
+    public getDefaultStyleTextColor(textElement: HTMLElement): string {
+        return $(textElement).css("color");
     }
 
     // This gives us the patriarch (farthest ancestor) canvas element of a family of canvas elements.
@@ -3406,6 +3580,9 @@ export class CanvasElementManager {
 
     // Move all child canvas elements as necessary so they are at least partly inside their container
     // (by as much as we require when dragging them).
+    // Note: a similar algorithm that tries harder to get elements entirely on the page may be found
+    // in customXmatterPage.ensureDerivedFieldsFitOnCustomPage. If it proves more widely usable it
+    // should probably be moved.
     public ensureCanvasElementsIntersectParent(parentContainer: HTMLElement) {
         const canvasElements = Array.from(
             parentContainer.getElementsByClassName(kCanvasElementClass),
@@ -3625,7 +3802,8 @@ export class CanvasElementManager {
         // thing originally clicked on. Addding it here means that the test for whether it's a click
         // this set of functions should handle is not needed in onMouseUp; only if we decide here that it's
         // ours to handle will the mouse up handler even be added.
-        // (I'd like to do the same with mouse move but we still have some hover effects.)
+        // (I think we can do the same now with mouse move, but it feels slightly risky for a stabilization
+        // phase.)
         document.addEventListener("mouseup", this.onMouseUp, {
             capture: true,
         });
@@ -3779,9 +3957,13 @@ export class CanvasElementManager {
             this.onMouseUp(event);
             return;
         }
+        // If we're not dragging a canvas element, don't do anything else.
+        if (!this.bubbleToDrag) {
+            return;
+        }
+
         // Capture the most recent data to use when our animation frame request is satisfied.
         // or so keyboard events can reference the current mouse position.
-        this.lastMoveEvent = event;
         const deltaX = event.clientX - this.clientXAtMouseDown;
         const deltaY = event.clientY - this.clientYAtMouseDown;
         if (
@@ -3796,12 +3978,7 @@ export class CanvasElementManager {
         }
 
         const container = event.currentTarget as HTMLElement;
-
-        if (!this.bubbleToDrag) {
-            this.handleMouseMoveHover(event, container);
-        } else if (this.bubbleToDrag) {
-            this.handleMouseMoveDragCanvasElement(event, container);
-        }
+        this.handleMouseMoveDragCanvasElement(event, container);
     };
 
     // Add the classes that let various controls know that a move, resize, or drag is in progress.
@@ -3814,29 +3991,6 @@ export class CanvasElementManager {
         document
             .getElementById("canvas-element-context-controls")
             ?.classList?.add("moving");
-    }
-
-    // Mouse hover - No move or resize is currently active, but check if there is a canvas element under the mouse that COULD be
-    // and add or remove the classes we use to indicate this
-    private handleMouseMoveHover(event: MouseEvent, container: HTMLElement) {
-        if (this.isMouseEventAlreadyHandled(event)) {
-            return;
-        }
-
-        let hoveredBubble = this.getBubbleUnderMouse(event, container);
-
-        // Now there are several options depending on various conditions. There's some
-        // overlap in the conditions and it is tempting to try to combine into a single compound
-        // "if" statement. But note, this first one may change hoveredBubble to null,
-        // which then changes which of the following options is chosen. Be careful!
-        if (hoveredBubble && hoveredBubble.content !== this.activeElement) {
-            // The hovered canvas element is not selected. If it's an image, the user might
-            // want to drag a tail tip there, which is hard to do with a grab cursor,
-            // so don't switch.
-            if (this.isPictureCanvasElement(hoveredBubble.content)) {
-                hoveredBubble = null;
-            }
-        }
     }
 
     /**
@@ -3862,7 +4016,6 @@ export class CanvasElementManager {
     }
 
     private animationFrame: number;
-    private lastMoveEvent: MouseEvent;
     private lastMoveContainer: HTMLElement;
 
     // A canvas element is currently in drag mode, and the mouse is being moved.
@@ -4160,7 +4313,7 @@ export class CanvasElementManager {
             // New drag controls
             return true;
         }
-        if (targetElement.closest("[data-target-of")) {
+        if (targetElement.closest("[data-target-of]")) {
             // Bloom game targets want to handle their own dragging.
             return true;
         }
@@ -4707,6 +4860,13 @@ export class CanvasElementManager {
         if (!parentTextColor.isDefault) {
             this.setTextColorInternal(parentTextColor.color, childElement);
         }
+        const parentTextOutlineColor = this.getTextOutlineColorInformation();
+        if (!parentTextOutlineColor.isDefault) {
+            this.setTextOutlineColorInternal(
+                parentTextOutlineColor.color,
+                childElement,
+            );
+        }
 
         Comical.initializeChild(childElement, parentElement);
         // In this case, the 'addCanvasElement()' above will already have done the new canvas element's
@@ -4807,24 +4967,6 @@ export class CanvasElementManager {
             newY,
             PointScaling.Unscaled,
             "Scaled viewport coordinates",
-        );
-    }
-
-    public addCanvasElementWithScreenCoords(
-        screenX: number,
-        screenY: number,
-        canvasElementType: CanvasElementType,
-        userDefinedStyleName?: string,
-        rightTopOffset?: string,
-    ): HTMLElement | undefined {
-        const clientX = screenX - window.screenX;
-        const clientY = screenY - window.screenY;
-        return this.addCanvasElement(
-            clientX,
-            clientY,
-            canvasElementType,
-            userDefinedStyleName,
-            rightTopOffset,
         );
     }
 
@@ -4930,16 +5072,18 @@ export class CanvasElementManager {
             // Don't add a canvas element if we can't find the containing bloom-canvas.
             return undefined;
         }
-        // initial mouseX, mouseY coordinates are relative to viewport
-        const positionInViewport = new Point(
-            mouseX,
-            mouseY,
+        // initial mouseX, mouseY coordinates are relative to viewport. We want relative to bloom-canvas.
+        const rect = bloomCanvas[0].getBoundingClientRect();
+        const requestedPositionInCanvas = new Point(
+            mouseX - rect.left,
+            mouseY - rect.top,
             PointScaling.Scaled,
-            "Scaled Viewport coordinates",
+            "Scaled bloom-canvas coordinates",
         );
+        // Adjust so it's more certain to be IN the bloom-canvas.
         const positionInBloomCanvas = this.adjustRelativePointToBloomCanvas(
             bloomCanvas[0],
-            positionInViewport,
+            requestedPositionInCanvas,
         );
         if (canvasElementType === "video") {
             return this.addVideoCanvasElement(
@@ -5788,6 +5932,9 @@ export class CanvasElementManager {
         if (!textOverPicDiv || !textOverPicDiv.parentElement) {
             return;
         }
+        const page = textOverPicDiv.closest(
+            ".bloom-page",
+        ) as HTMLElement | null;
         if (textOverPicDiv.classList.contains(kBackgroundImageClass)) {
             // just revert it to a placeholder
             const img = getImageFromCanvasElement(textOverPicDiv);
@@ -5795,6 +5942,9 @@ export class CanvasElementManager {
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
+                if (page) {
+                    normalizeCoverImageDesignation(page);
+                }
                 this.updateCanvasElementForChangedImage(img);
                 notifyToolOfChangedImage(img);
             }
@@ -5824,6 +5974,9 @@ export class CanvasElementManager {
         this.setActiveElement(undefined);
         // By this point it's really gone, so this will clean up if it had a target.
         this.removeDetachedTargets();
+        if (page) {
+            normalizeCoverImageDesignation(page);
+        }
     }
 
     // We verify that 'textElement' is the active element before calling this method.
@@ -6919,16 +7072,7 @@ export class CanvasElementManager {
             newImg.classList.remove("bloom-imageLoadError");
             newImgContainer.appendChild(newImg);
 
-            // Set level so Comical will consider the new canvas element to be under the existing ones.
-            const canvasElementElements = Array.from(
-                bloomCanvas.getElementsByClassName(kCanvasElementClass),
-            ) as HTMLElement[];
-            CanvasElementManager.putBubbleBefore(
-                bgCanvasElement,
-                canvasElementElements,
-                1,
-            );
-            bgCanvasElement.style.visibility = "none"; // hide it until we adjust its shape and position
+            bgCanvasElement.style.visibility = "hidden"; // hide it until we adjust its shape and position
             // consistent with level, we want it in front of the (new, placeholder) background image
             // and behind the other canvas elements.
             if (oldBgImage) {
@@ -6963,12 +7107,41 @@ export class CanvasElementManager {
             "src",
             oldBgImage?.getAttribute("src") ?? "placeHolder.png",
         );
-        this.adjustBackgroundImageSize(bloomCanvas, bgCanvasElement, true);
+        this.setupBackgroundImageAttributes(bloomCanvas, bgCanvasElement, true);
         bgCanvasElement.style.visibility = ""; // now we can show it, if it was new and hidden
         SetupMetadataButton(bloomCanvas);
         if (oldBgImage) {
             oldBgImage.remove();
         }
+    }
+
+    public setupBackgroundImageAttributes(
+        bloomCanvas: HTMLElement,
+        bgElement?: HTMLElement,
+        useSizeOfNewImage: boolean = false,
+    ) {
+        if (!bgElement) {
+            bgElement = bloomCanvas.getElementsByClassName(
+                kBackgroundImageClass,
+            )[0] as HTMLElement;
+        }
+        if (bgElement?.getAttribute("data-bubble")) {
+            return; // setup has already been done (data-bubble is added by putBubbleBefore)
+        }
+        // Newly added background image element has not yet been given its size
+        this.adjustBackgroundImageSize(
+            bloomCanvas,
+            bgElement,
+            useSizeOfNewImage,
+        );
+        // Set level so Comical will consider the new canvas element to be under the existing ones.
+        CanvasElementManager.putBubbleBefore(
+            bgElement,
+            Array.from(
+                bloomCanvas.getElementsByClassName(kCanvasElementClass),
+            ) as HTMLElement[],
+            1,
+        );
     }
 
     // Adjust the levels of all the bubbles of all the listed canvas elements so that
@@ -7847,13 +8020,22 @@ export function showCanvasTool() {
     const handleToolbox = (toolbox) => {
         // We choose behavior based on whether the toolbox is showing.
         // This matters because we may have to delay the actual work until the toolbox bundle is loaded.
-        // - If the toolbox is already open, don't switch tools; just ensure Canvas is available.
+        // - If the toolbox is already open, switch tools to Canvas.
         // - If the toolbox is closed, activate Canvas (which also opens the toolbox).
         if (toolbox.toolboxIsShowing()) {
             toolbox.ensureToolEnabled(kCanvasToolId);
+            toolbox.setCurrentTool(kCanvasToolId);
         } else {
             toolbox.activateToolFromId(kCanvasToolId);
         }
+        // Saving this setting is normally done when the user clicks on the tool to enable/disable it
+        // (in the toolbox.ts / showOrHideTool_click function).  Since we're not clicking on the
+        // tool's checkbox here, we need to save the setting ourselves.  It doesn't hurt to do this
+        // if the canvas tool is alreay active.
+        postString(
+            "editView/saveToolboxSetting",
+            "active\t" + kCanvasToolId + "Check\t1",
+        );
     };
 
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
@@ -7862,7 +8044,7 @@ export function showCanvasTool() {
         return;
     }
 
-    doWhenEditTabBundleLoaded((rootFrameExports) => {
+    doWhenWorkspaceBundleLoaded((rootFrameExports) => {
         rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
             const loadedToolbox = toolboxFrameExports.getTheOneToolbox();
             if (!loadedToolbox) {
