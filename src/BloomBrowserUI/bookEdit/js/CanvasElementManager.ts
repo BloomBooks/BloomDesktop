@@ -4314,7 +4314,7 @@ export class CanvasElementManager {
             // New drag controls
             return true;
         }
-        if (targetElement.closest("[data-target-of")) {
+        if (targetElement.closest("[data-target-of]")) {
             // Bloom game targets want to handle their own dragging.
             return true;
         }
