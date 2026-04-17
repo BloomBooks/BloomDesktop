@@ -928,20 +928,35 @@ const DragActivityControls: React.FunctionComponent<{
             currentCanvasElement &&
             currentDraggableTarget
         ) {
-            draggableToTargetObserver.current = new MutationObserver((_) => {
-                // if it's no longer current, we just haven't removed the observer yet,
-                // don't do it.
+            draggableToTargetObserver.current = new MutationObserver(() => {
+                // Skip if it's no longer current (observer hasn't been removed yet)
                 if (
-                    currentCanvasElement ===
+                    currentCanvasElement !==
                     getCanvasElementManager()?.getActiveElement()
                 ) {
-                    copyContentToTargetAndCleanup(currentCanvasElement);
+                    return;
                 }
+                // copyContentToTarget diffs the result against the current target
+                // innerHTML before making any DOM change, so it's safe to call even
+                // when the mutation doesn't actually affect the copy (e.g. position
+                // changes during a canvas element drag).
+                copyContentToTargetAndCleanup(currentCanvasElement);
             });
             draggableToTargetObserver.current.observe(currentCanvasElement, {
                 childList: true,
                 subtree: true,
-                attributes: true, // e.g., cropping of image
+                // It's not obvious that we need to observe attribute changes, since
+                // copyContentToTargetAndCleanup() mainly copies content. However, it does
+                // pay attention to the size of the container, and uses it to create a cropping
+                // container inside the target in some cases. Especially when moving the
+                // right and bottom crop handles, the attributes of the img don't change at all,
+                // but the size of the cropping container needs to.
+                // There are lots of possible attribute changes on the canvas element
+                // that we don't care about, but rather than making a complex filter,
+                // I decided to just leave it to copyContentToTargetAndCleanup to ignore
+                // irrelevant ones, by means of a test that doesn't replace the content
+                // if the innerHTML of the target isn't actually going to change.
+                attributes: true,
             });
         }
     }, [currentCanvasElement, currentDraggableTarget, props.activeTab]);
