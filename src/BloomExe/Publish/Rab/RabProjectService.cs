@@ -2444,17 +2444,7 @@ namespace Bloom.Publish.Rab
             var settingsPath = GetRabSettingsFilePath();
             Directory.CreateDirectory(Path.GetDirectoryName(settingsPath));
 
-            XDocument document;
-            if (RobustFile.Exists(settingsPath))
-            {
-                document = XDocument.Load(settingsPath, LoadOptions.PreserveWhitespace);
-                if (document.Root == null)
-                    document.Add(new XElement("settings"));
-            }
-            else
-            {
-                document = new XDocument(new XElement("settings"));
-            }
+            var document = LoadRabSettingsDocument(settingsPath);
 
             var root = document.Root;
             var appsElement = root.Element("apps");
@@ -2473,7 +2463,50 @@ namespace Bloom.Publish.Rab
                 )
             );
 
-            document.Save(settingsPath);
+            SaveRabSettingsDocument(settingsPath, document);
+        }
+
+        /// <summary>
+        /// Loads Reading App Builder's shared settings file, recreating it if the existing XML is malformed.
+        /// </summary>
+        private XDocument LoadRabSettingsDocument(string settingsPath)
+        {
+            if (!RobustFile.Exists(settingsPath))
+                return new XDocument(new XElement("settings"));
+
+            try
+            {
+                var document = XDocument.Load(settingsPath, LoadOptions.PreserveWhitespace);
+                if (document.Root == null)
+                    document.Add(new XElement("settings"));
+
+                return document;
+            }
+            catch (System.Xml.XmlException error)
+            {
+                Logger.WriteEvent(
+                    $"Recreating corrupt Reading App Builder settings file at {settingsPath}: {error.Message}"
+                );
+                return new XDocument(new XElement("settings"));
+            }
+        }
+
+        /// <summary>
+        /// Writes Reading App Builder's shared settings file through a temp file so interrupted saves do not leave partial XML behind.
+        /// </summary>
+        private void SaveRabSettingsDocument(string settingsPath, XDocument document)
+        {
+            string tempFilePath;
+            using (var temp = TempFile.InFolderOf(settingsPath))
+            {
+                tempFilePath = temp.Path;
+            }
+
+            document.Save(tempFilePath);
+            if (RobustFile.Exists(settingsPath))
+                RobustFile.Replace(tempFilePath, settingsPath, null);
+            else
+                RobustFile.Move(tempFilePath, settingsPath);
         }
 
         internal virtual RabPrepareStepStatus[] GetPrepareSteps(

@@ -638,7 +638,12 @@ export const ToolboxRoot: React.FunctionComponent = () => {
         window.toolboxReactAdapter = {
             isEnabled: () => true,
             setActiveToolByToolId: (toolId: string) => {
-                setExpandedSectionId(normalizeToolId(toolId));
+                const normalizedToolId = normalizeToolId(toolId);
+                setExpandedSectionId(normalizedToolId);
+                const callbackToolId = toToolboxToolId(normalizedToolId);
+                activeToolChangedCallbacks.current.forEach((callback) => {
+                    callback(callbackToolId);
+                });
             },
             getActiveToolId: () => {
                 if (!expandedSectionId) {

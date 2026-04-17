@@ -10,7 +10,6 @@ import {
     post,
     postDataWithConfig,
     postJson,
-    postThatMightNavigate,
 } from "../../../utils/bloomApi";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import { UrlUtils } from "../../../utils/urlUtils";
@@ -120,7 +119,6 @@ export class SignLanguageToolControls extends React.Component<
     private mediaRecorder: MediaRecorder;
     private timerId: number;
     private recordingStarted: number;
-    private turningOnVideo: boolean = false;
     private videoRequestVersion: number = 0;
     private wantsVideoMonitorOn: boolean = false;
 
@@ -435,6 +433,18 @@ export class SignLanguageToolControls extends React.Component<
         });
     }
 
+    public setEnabledState(enabled: boolean) {
+        if (this.state.enabled === enabled) {
+            return;
+        }
+
+        this.setState({ enabled }, () => {
+            // Canvas-selection notifications come from outside React events.
+            // Force a repaint after enabled-state transitions to keep UI in sync.
+            this.forceUpdate();
+        });
+    }
+
     public getCameraMessageLabel() {
         if (!this.state.enabled) {
             return (
@@ -536,13 +546,34 @@ export class SignLanguageToolControls extends React.Component<
         updateVideoInContainer(container, url);
     }
 
+    public leaveCurrentVideoContext(onComplete?: () => void) {
+        document.removeEventListener("keydown", this.onKeyPress);
+        window.clearTimeout(this.timerId);
+        SignLanguageTool.removeVideoOverlay();
+        this.setState(
+            {
+                recording: false,
+                stateClass: "idle",
+                minutesRecorded: "",
+                secondsRecorded: "",
+                haveRecording: false,
+                videoStatistics: emptyVideoStatistics,
+                videoInfoLoaded: false,
+            },
+            onComplete,
+        );
+    }
+
+    private refreshAfterVideoChange() {
+        this.leaveCurrentVideoContext(() => {
+            this.getVideoStatsFromFile();
+        });
+    }
+
     private importRecording() {
         post("signLanguage/importVideo", (result) => {
             this.updateVideo(result.data);
-            // Makes sure the page gets saved with a reference to the new video,
-            // and incidentally that everything gets updated to be consistent with the
-            // new state of things.
-            postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+            this.refreshAfterVideoChange();
         });
     }
 
@@ -564,12 +595,7 @@ export class SignLanguageToolControls extends React.Component<
                         if (video && video.parentElement)
                             video.parentElement.removeChild(video);
                     }
-                    // Makes sure the page gets saved without a reference to the deleted video,
-                    // and incidentally that everything gets updated to be consistent with the
-                    // new state of things.
-                    postThatMightNavigate(
-                        "common/saveChangesAndRethinkPageEvent",
-                    );
+                    this.refreshAfterVideoChange();
                 }
             },
         );
@@ -581,28 +607,21 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     public turnOnVideo() {
-        if (this.turningOnVideo || this.isVideoMonitorRunning()) {
+        this.wantsVideoMonitorOn = true;
+        if (this.isVideoMonitorRunning()) {
             return;
         }
-        this.wantsVideoMonitorOn = true;
-        this.turningOnVideo = true;
         const requestVersion = ++this.videoRequestVersion;
         const constraints = { video: true };
         navigator.mediaDevices
             .getUserMedia(constraints)
             .then((stream) => this.startMonitoring(stream, requestVersion))
-            .catch((reason) => this.errorCallback(reason, requestVersion))
-            .finally(() => {
-                if (requestVersion === this.videoRequestVersion) {
-                    this.turningOnVideo = false;
-                }
-            });
+            .catch((reason) => this.errorCallback(reason, requestVersion));
     }
 
     public turnOffVideo() {
         this.wantsVideoMonitorOn = false;
         this.videoRequestVersion++;
-        this.turningOnVideo = false;
         if (this.videoStream) {
             const oldStream = this.videoStream;
             this.videoStream = null; // prevent recursive calls
@@ -777,12 +796,7 @@ export class SignLanguageToolControls extends React.Component<
                 },
                 (result) => {
                     this.updateVideo(result.data);
-                    // Makes sure the page gets saved with a reference to the new video,
-                    // and incidentally that everything gets updated to be consistent with the
-                    // new state of things.
-                    postThatMightNavigate(
-                        "common/saveChangesAndRethinkPageEvent",
-                    );
+                    this.refreshAfterVideoChange();
                 },
             );
             // Don't know why this is necessary, but for some reason, the stream we have is no
@@ -854,19 +868,49 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         );
     }
 
+    private getActiveCanvasVideoContainer(): HTMLElement | undefined {
+        const activeCanvasElement =
+            getCanvasElementManager()?.getActiveElement();
+        if (!activeCanvasElement) {
+            return undefined;
+        }
+
+        const activeVideoContainer = activeCanvasElement.querySelector(
+            ".bloom-videoContainer",
+        ) as HTMLElement | null;
+        if (
+            !activeVideoContainer ||
+            activeVideoContainer.closest("[data-target-of]")
+        ) {
+            return undefined;
+        }
+
+        return activeVideoContainer;
+    }
+
     private updateEnabledStateForSelectedVideo(): void {
         const selectedVideos = SignLanguageTool.getVideoContainers(true);
         const selectedContainer =
             selectedVideos.length > 0 ? selectedVideos[0] : null;
-        const shouldEnable = this.selectedVideoCanBeRecorded(selectedContainer);
+        const activeCanvasElement =
+            getCanvasElementManager()?.getActiveElement();
+        const activeCanvasVideoContainer = this.getActiveCanvasVideoContainer();
+
+        if (activeCanvasElement && !activeCanvasVideoContainer) {
+            selectVideoContainer(undefined, false);
+        }
+
+        const effectiveSelectedContainer =
+            activeCanvasVideoContainer ?? selectedContainer;
+        const shouldEnable = activeCanvasElement
+            ? !!activeCanvasVideoContainer
+            : this.selectedVideoCanBeRecorded(effectiveSelectedContainer);
 
         if (shouldEnable) {
             if (!this.reactControls.isVideoMonitorRunning()) {
                 this.reactControls.turnOnVideo();
             }
-            if (!this.reactControls.state.enabled) {
-                this.reactControls.setState({ enabled: true });
-            }
+            this.reactControls.setEnabledState(true);
             return;
         }
 
@@ -875,10 +919,49 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             this.reactControls.isVideoMonitorRunning()
         ) {
             this.reactControls.turnOffVideo();
-            if (this.reactControls.state.enabled) {
-                this.reactControls.setState({ enabled: false });
-            }
+            this.reactControls.setEnabledState(false);
         }
+    }
+
+    private syncSelectionFromActiveCanvasElementIfNeeded(): void {
+        const activeCanvasElement =
+            getCanvasElementManager()?.getActiveElement();
+        if (!activeCanvasElement) {
+            return;
+        }
+
+        const activeVideoContainer = activeCanvasElement.querySelector(
+            ".bloom-videoContainer",
+        ) as HTMLElement | null;
+        if (
+            !activeVideoContainer ||
+            activeVideoContainer.closest("[data-target-of]")
+        ) {
+            selectVideoContainer(undefined, false);
+            return;
+        }
+
+        const selectedVideos = SignLanguageTool.getVideoContainers(true);
+        const selectedContainer =
+            selectedVideos.length > 0 ? selectedVideos[0] : undefined;
+        if (selectedContainer === activeVideoContainer) {
+            return;
+        }
+
+        selectVideoContainer(activeVideoContainer, false);
+        this.updateStateForSelected(activeVideoContainer);
+    }
+
+    private static getVideoContainersFromPage(
+        page: HTMLElement,
+        selected?: boolean,
+    ): HTMLElement[] {
+        const selector = selected
+            ? ".bloom-videoContainer.bloom-selected"
+            : ".bloom-videoContainer";
+        return Array.from(page.querySelectorAll(selector)).filter(
+            (container) => !container.closest("[data-target-of]"),
+        ) as HTMLElement[];
     }
 
     public makeRootElement(): HTMLDivElement {
@@ -905,14 +988,11 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
 
     // Specify 'true' to get only containers marked as selected
     public static getVideoContainers(selected?: boolean): HTMLElement[] {
-        let classes = "bloom-videoContainer";
-        if (selected) {
-            classes += " bloom-selected";
-        }
         const page = ToolBox.getPage();
-        return (
-            page ? Array.from(page.getElementsByClassName(classes)) : []
-        ) as HTMLElement[];
+        if (!page) {
+            return [];
+        }
+        return this.getVideoContainersFromPage(page, selected);
     }
 
     public static getSelectedVideoPathAndTiming(): string | null {
@@ -933,7 +1013,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public static getSelectedVideoPath(): string | null {
-        // strip off the ?now= param we sometimes use to prevent use of cached old versions,
+        // strip off the temporary cache-busting query param we sometimes use to prevent use of cached old versions,
         // and the #t= fragment used to trim videos.
         return UrlUtils.extractPathComponent(
             SignLanguageTool.getSelectedVideoPathAndTiming() as string,
@@ -941,7 +1021,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        this.reactControls.setNoVideo(false);
+        this.reactControls.leaveCurrentVideoContext();
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
         // does anything with it) and leaving it allows us to keep the same one selected
         // when we come back to the page. This is especially important when refreshing the
@@ -1008,6 +1088,76 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         }
     };
 
+    public showTool() {
+        this.syncSelectionFromCurrentPage();
+    }
+
+    private syncSelectionFromCurrentPage() {
+        const pageBody = ToolBox.getPage();
+        if (!pageBody) {
+            // Tool activation can race with page readiness.
+            window.setTimeout(() => this.syncSelectionFromCurrentPage(), 100);
+            return;
+        }
+
+        const preselectedVideo = pageBody.querySelector(
+            ".bloom-videoContainer.bloom-selected",
+        ) as HTMLElement | null;
+        if (preselectedVideo) {
+            // Normalize any existing selection through videoUtils logic so target copies
+            // cannot remain selected.
+            selectVideoContainer(preselectedVideo);
+        }
+
+        let containers = SignLanguageTool.getVideoContainersFromPage(
+            pageBody,
+            false,
+        );
+        if (containers.length === 0) {
+            const activeCanvasElement =
+                getCanvasElementManager()?.getActiveElement();
+            const activeVideoContainer = activeCanvasElement?.querySelector(
+                ".bloom-videoContainer",
+            ) as HTMLElement | null;
+            if (
+                activeVideoContainer &&
+                !activeVideoContainer.closest("[data-target-of]")
+            ) {
+                selectVideoContainer(activeVideoContainer);
+                containers = [activeVideoContainer];
+            }
+        }
+
+        if (containers.length === 0) {
+            if (this.reactControls.state.enabled) {
+                this.reactControls.turnOffVideo();
+                this.reactControls.setEnabledState(false);
+            }
+            return;
+        }
+
+        // We want one video container to be selected, so pick the first.
+        // If one is already marked selected, presumably from a previous use of this page,
+        // we'll leave that one active.
+        const selectedVideos = SignLanguageTool.getVideoContainersFromPage(
+            pageBody,
+            true,
+        );
+        const videoToUse =
+            selectedVideos.length > 0 ? selectedVideos[0] : containers[0];
+        selectVideoContainer(videoToUse);
+        this.updateStateForSelected(videoToUse);
+
+        for (let i = 0; i < containers.length; i++) {
+            const container = containers[i];
+            // UpdateMarkup is called fairlyfrequently. Not sure what effect having
+            // the same listener attached multiple times might have, so play safe by
+            // removing it before adding.
+            container.removeEventListener("click", this.containerClickListener);
+            container.addEventListener("click", this.containerClickListener);
+        }
+    }
+
     public newPageReady() {
         // among other things, this clears us out of "processing"
         // when the page is refreshed with the new video
@@ -1019,44 +1169,17 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             haveRecording: false,
             videoInfoLoaded: false,
         });
-        const containers = SignLanguageTool.getVideoContainers(false);
+
         getCanvasElementManager()?.requestCanvasElementChangeNotification(
             this.kCanvasChangeNotificationId,
-            (_bubble) => this.updateEnabledStateForSelectedVideo(),
+            (_bubble) => {
+                this.syncSelectionFromActiveCanvasElementIfNeeded();
+                this.updateEnabledStateForSelectedVideo();
+            },
         );
-        if (!containers || containers.length === 0) {
-            if (this.reactControls.state.enabled) {
-                this.reactControls.turnOffVideo();
-                this.reactControls.setState({
-                    enabled: false,
-                });
-            }
-        } else {
-            // We want one video container to be selected, so pick the first.
-            // If one is already marked selected, presumably from a previous use of this page,
-            // we'll leave that one active.
-            const selectedVideos = SignLanguageTool.getVideoContainers(true);
-            const videoToUse =
-                selectedVideos.length > 0 ? selectedVideos[0] : containers[0];
-            selectVideoContainer(videoToUse);
-            this.updateStateForSelected(videoToUse);
 
-            for (let i = 0; i < containers.length; i++) {
-                const container = containers[i];
-                // UpdateMarkup is called fairlyfrequently. Not sure what effect having
-                // the same listener attached multiple times might have, so play safe by
-                // removing it before adding.
-                container.removeEventListener(
-                    "click",
-                    this.containerClickListener,
-                );
-                container.addEventListener(
-                    "click",
-                    this.containerClickListener,
-                );
-            }
-            this.updateEnabledStateForSelectedVideo();
-        }
+        this.syncSelectionFromCurrentPage();
+        this.updateEnabledStateForSelectedVideo();
     }
 
     // This (param) container has just been selected as the current one by either:
