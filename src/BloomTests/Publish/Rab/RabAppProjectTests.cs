@@ -68,6 +68,7 @@ namespace BloomTests.Publish.Rab
                         FolderPath = @"C:\books\book-1",
                         Title = "First Book",
                         BloomPubPath = @"C:\exports\first-book.bloompub",
+                        ThumbnailFileName = "thumbnail.png",
                     },
                     new RabBookPublishInfo()
                     {
@@ -75,6 +76,7 @@ namespace BloomTests.Publish.Rab
                         FolderPath = @"C:\books\book-2",
                         Title = "Second/Book",
                         BloomPubPath = @"C:\exports\second-book.bloompub",
+                        ThumbnailFileName = "thumbnail.jpg",
                     },
                 }
             );
@@ -119,7 +121,7 @@ namespace BloomTests.Publish.Rab
             Assert.That(contentsItems[0].Element("title")?.Value, Is.EqualTo("First Book"));
             Assert.That(
                 contentsItems[0].Element("image-filename")?.Value,
-                Is.EqualTo("thumbnail.jpg")
+                Is.EqualTo("thumbnail.png")
             );
             Assert.That(
                 contentsItems[0].Element("link")?.Attribute("target")?.Value,
@@ -151,6 +153,26 @@ namespace BloomTests.Publish.Rab
                     ?.Attribute("value")
                     ?.Value,
                 Is.EqualTo("app-name")
+            );
+        }
+
+        [TestCase("thumbnail.png")]
+        [TestCase("thumbnail.jpg")]
+        public void GetBloomPubThumbnailFileName_ReturnsThumbnailPresentInBloomPub(
+            string thumbnailFileName
+        )
+        {
+            using var tempFile = TempFile.WithExtension(".bloompub");
+            RobustFile.Delete(tempFile.Path);
+            using (var archive = ZipFile.Open(tempFile.Path, ZipArchiveMode.Create))
+            {
+                archive.CreateEntry("index.htm");
+                archive.CreateEntry(thumbnailFileName);
+            }
+
+            Assert.That(
+                RabProjectService.GetBloomPubThumbnailFileName(tempFile.Path),
+                Is.EqualTo(thumbnailFileName)
             );
         }
 
@@ -1195,6 +1217,55 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public async Task BuildAsync_ReusedBloomPubRefreshesTrackedThumbnailFileName()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Flower",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "Flower.bloompub"),
+                    ThumbnailFileName = "thumbnail.png",
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+
+            await service.PrepareAsync();
+
+            RewriteBloomPubThumbnail(trackedBooks[0].BloomPubPath, "thumbnail.jpg");
+            trackedBooks[0].ThumbnailFileName = "thumbnail.jpg";
+
+            await service.BuildAsync();
+
+            var prepareState = JsonConvert.DeserializeObject<RabPrepareState>(
+                RobustFile.ReadAllText(paths.PrepareStatePath)
+            );
+            Assert.That(prepareState?.Books?[0].ThumbnailFileName, Is.EqualTo("thumbnail.jpg"));
+
+            var contentsPath = Path.Combine(
+                Path.GetDirectoryName(prepareState.AppDefPath),
+                Path.GetFileNameWithoutExtension(prepareState.AppDefPath) + "_data",
+                "contents",
+                "contents.xml"
+            );
+            var contentsDoc = XDocument.Load(contentsPath);
+            Assert.That(
+                contentsDoc
+                    .Root?.Element("contents-items")
+                    ?.Element("contents-item")
+                    ?.Element("image-filename")
+                    ?.Value,
+                Is.EqualTo("thumbnail.jpg")
+            );
+        }
+
+        [Test]
         public async Task ResetBloomPubCacheForScreenSession_DeletesExistingBloomPubs()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -1281,6 +1352,48 @@ namespace BloomTests.Publish.Rab
 
             Assert.That(service.GetStatus().BuildNeeded, Is.True);
             Assert.That(service.Commands, Is.Empty);
+        }
+
+        [Test]
+        public async Task SaveTrackedBooks_RefreshesPersistedThumbnailFileNameFromExistingBloomPub()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                    ThumbnailFileName = "thumbnail.png",
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.PrepareAsync();
+            await service.BuildAsync();
+
+            RewriteBloomPubThumbnail(trackedBooks[0].BloomPubPath, "thumbnail.jpg");
+
+            service.SaveTrackedBooks(
+                new[]
+                {
+                    new RabTrackedBookInfo
+                    {
+                        BookId = trackedBooks[0].BookId,
+                        FolderPath = trackedBooks[0].FolderPath,
+                        Title = trackedBooks[0].Title,
+                    },
+                }
+            );
+
+            var prepareState = JsonConvert.DeserializeObject<RabPrepareState>(
+                RobustFile.ReadAllText(paths.PrepareStatePath)
+            );
+            Assert.That(prepareState?.Books?[0].ThumbnailFileName, Is.EqualTo("thumbnail.jpg"));
         }
 
         [Test]
@@ -2157,6 +2270,24 @@ namespace BloomTests.Publish.Rab
             );
         }
 
+        private static void RewriteBloomPubThumbnail(string bloomPubPath, string thumbnailFileName)
+        {
+            using var archive = ZipFile.Open(bloomPubPath, ZipArchiveMode.Update);
+            foreach (
+                var existingThumbnail in archive
+                    .Entries.Where(entry =>
+                        entry.FullName == "thumbnail.png" || entry.FullName == "thumbnail.jpg"
+                    )
+                    .ToList()
+            )
+            {
+                existingThumbnail.Delete();
+            }
+
+            using var writer = new StreamWriter(archive.CreateEntry(thumbnailFileName).Open());
+            writer.Write("thumbnail");
+        }
+
         private class TestRabProjectService : RabProjectService
         {
             private readonly RabWorkspacePaths _paths;
@@ -2616,6 +2747,9 @@ namespace BloomTests.Publish.Rab
                             FolderPath = book.FolderPath,
                             Title = book.Title,
                             BloomPubPath = bloomPubPath,
+                            ThumbnailFileName = RabProjectService.GetBloomPubThumbnailFileName(
+                                bloomPubPath
+                            ),
                         };
                     })
                     .ToList();
@@ -2634,6 +2768,15 @@ namespace BloomTests.Publish.Rab
                 using (var htmlWriter = new StreamWriter(archive.CreateEntry("index.htm").Open()))
                 {
                     htmlWriter.Write($"<html><body>{book.Title}</body></html>");
+                }
+
+                using (
+                    var thumbnailWriter = new StreamWriter(
+                        archive.CreateEntry(book.ThumbnailFileName ?? "thumbnail.png").Open()
+                    )
+                )
+                {
+                    thumbnailWriter.Write("thumbnail");
                 }
 
                 if (!FontsCssByFolderPath.TryGetValue(book.FolderPath, out var fontsCss))

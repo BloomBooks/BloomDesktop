@@ -1117,6 +1117,8 @@ namespace Bloom.Publish.Rab
                 }
                 ReportBloomPubStageProgress(index + 1, booksToExport.Count);
 
+                var thumbnailFileName = GetBloomPubThumbnailFileName(bloomPubPath);
+
                 exportedBooks.Add(
                     new RabBookPublishInfo()
                     {
@@ -1124,6 +1126,7 @@ namespace Bloom.Publish.Rab
                         FolderPath = bookInfo.FolderPath,
                         Title = bookTitle,
                         BloomPubPath = bloomPubPath,
+                        ThumbnailFileName = thumbnailFileName,
                     }
                 );
             }
@@ -1209,6 +1212,21 @@ namespace Bloom.Publish.Rab
                 )
                 .Select(group => group.First())
                 .ToList();
+        }
+
+        internal static string GetBloomPubThumbnailFileName(string bloomPubPath)
+        {
+            if (string.IsNullOrWhiteSpace(bloomPubPath) || !RobustFile.Exists(bloomPubPath))
+                return "thumbnail.jpg";
+
+            using var archive = ZipFile.OpenRead(bloomPubPath);
+            if (archive.GetEntry("thumbnail.jpg") != null)
+                return "thumbnail.jpg";
+
+            if (archive.GetEntry("thumbnail.png") != null)
+                return "thumbnail.png";
+
+            return "thumbnail.jpg";
         }
 
         private static RabAppFontDefinition CreateFontDefinitionFromCss(string cssBody)
@@ -1932,7 +1950,7 @@ namespace Bloom.Publish.Rab
         {
             _progress.MessageWithoutLocalizing($"> {Path.GetFileName(fileName)} {arguments}");
 
-            var process = new Process()
+            using var process = new Process()
             {
                 StartInfo = new ProcessStartInfo()
                 {
@@ -2693,6 +2711,7 @@ namespace Bloom.Publish.Rab
                     FolderPath = trackedBook.FolderPath,
                     Title = trackedBook.Title,
                     BloomPubPath = existingTrackedBook?.BloomPubPath,
+                    ThumbnailFileName = GetExistingThumbnailFileName(existingTrackedBook),
                 };
             }
 
@@ -2705,7 +2724,19 @@ namespace Bloom.Publish.Rab
                 FolderPath = matchingBookInfo.FolderPath,
                 Title = matchingBookInfo.Title,
                 BloomPubPath = existing?.BloomPubPath,
+                ThumbnailFileName = GetExistingThumbnailFileName(existing),
             };
+        }
+
+        private static string GetExistingThumbnailFileName(RabBookPublishInfo book)
+        {
+            if (
+                !string.IsNullOrWhiteSpace(book?.BloomPubPath)
+                && RobustFile.Exists(book.BloomPubPath)
+            )
+                return GetBloomPubThumbnailFileName(book.BloomPubPath);
+
+            return book?.ThumbnailFileName;
         }
 
         private BookInfo FindTrackedBookInfo(RabTrackedBookInfo trackedBook)

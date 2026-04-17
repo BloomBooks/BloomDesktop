@@ -29,6 +29,7 @@ namespace Bloom.Publish.Rab
         public string FolderPath { get; set; }
         public string Title { get; set; }
         public string BloomPubPath { get; set; }
+        public string ThumbnailFileName { get; set; }
     }
 
     /// <summary>
@@ -386,7 +387,9 @@ namespace Bloom.Publish.Rab
             }
 
             SetContentsEntries(
-                bookEntries.Select(book => (book.BookElementId, book.Book.Title, "thumbnail.jpg"))
+                bookEntries.Select(book =>
+                    (book.BookElementId, book.Book.Title, GetThumbnailFileName(book.Book))
+                )
             );
         }
 
@@ -409,7 +412,9 @@ namespace Bloom.Publish.Rab
         public void SetTrackedContentsEntries(IEnumerable<RabBookPublishInfo> books)
         {
             SetContentsEntries(
-                books.Select((book, index) => ($"B{index + 1:000}", book.Title, "thumbnail.jpg"))
+                books.Select(
+                    (book, index) => ($"B{index + 1:000}", book.Title, GetThumbnailFileName(book))
+                )
             );
         }
 
@@ -944,6 +949,13 @@ namespace Bloom.Publish.Rab
                 safeName = "Bloom_App";
 
             return safeName + ".apk";
+        }
+
+        private static string GetThumbnailFileName(RabBookPublishInfo book)
+        {
+            return !string.IsNullOrWhiteSpace(book?.ThumbnailFileName)
+                ? book.ThumbnailFileName
+                : "thumbnail.jpg";
         }
     }
 }
