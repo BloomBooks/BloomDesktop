@@ -928,20 +928,136 @@ const DragActivityControls: React.FunctionComponent<{
             currentCanvasElement &&
             currentDraggableTarget
         ) {
-            draggableToTargetObserver.current = new MutationObserver((_) => {
-                // if it's no longer current, we just haven't removed the observer yet,
-                // don't do it.
-                if (
-                    currentCanvasElement ===
-                    getCanvasElementManager()?.getActiveElement()
-                ) {
-                    copyContentToTargetAndCleanup(currentCanvasElement);
+            // These helper functions support a mutation observer we're going to set up to copy
+            // significant changes the the draggable to its target. The functions support
+            // determining whether a mutation is significant (i.e., not just a transient change
+            // related to dragging). It's a fair bit of complication to go to avoid copying the
+            // content to the target when it's not needed, but copying the content produces
+            // noticeable flicker if we do it every time the mouse moves. There may be still more
+            // mutations we can identify as transient and ignore, but this is a good start and
+            // prevents flicker during drags.
+            const parseClassList = (classText: string): Set<string> => {
+                return new Set(
+                    classText.split(/\s+/).filter((c) => c.length > 0),
+                );
+            };
+
+            // Parse an inline style string into a Map of property:value pairs
+            const parseStyleMap = (styleText: string): Map<string, string> => {
+                const map = new Map<string, string>();
+                if (!styleText) return map;
+                styleText.split(";").forEach((decl) => {
+                    const [prop, value] = decl.split(":").map((s) => s.trim());
+                    if (prop && value) {
+                        map.set(prop.toLowerCase(), value);
+                    }
+                });
+                return map;
+            };
+
+            // Check if a mutation is only a transient change (moving class or top/left position change)
+            // Transient mutations don't require syncing content to the target.
+            const isOnlyTransientRootMutation = (
+                mutation: MutationRecord,
+                draggableElement: HTMLElement,
+            ): boolean => {
+                if (mutation.type !== "attributes") {
+                    return false; // Non-attribute mutations are never transient
                 }
-            });
+                if (mutation.target !== draggableElement) {
+                    return false; // Mutations on children are never just transient
+                }
+
+                if (mutation.attributeName === "class") {
+                    // Check if only the 'moving' class changed
+                    const oldClasses = parseClassList(mutation.oldValue || "");
+                    const newClasses = parseClassList(
+                        (mutation.target as HTMLElement).className,
+                    );
+
+                    // See if the only difference is 'moving'
+                    const hasMovingInOld = oldClasses.has("moving");
+                    const hasMovingInNew = newClasses.has("moving");
+
+                    if (hasMovingInOld === hasMovingInNew) {
+                        return false; // 'moving' didn't change
+                    }
+
+                    // Check if removing 'moving' from both leaves them identical
+                    oldClasses.delete("moving");
+                    newClasses.delete("moving");
+                    return (
+                        oldClasses.size === newClasses.size &&
+                        [...oldClasses].every((c) => newClasses.has(c))
+                    );
+                }
+
+                if (mutation.attributeName === "style") {
+                    // Check if only top/left position changed
+                    const oldStyles = parseStyleMap(mutation.oldValue || "");
+                    const newStyles = parseStyleMap(
+                        (mutation.target as HTMLElement).style.cssText,
+                    );
+
+                    // See if the styles differ only in top/left
+                    const allKeys = new Set([
+                        ...oldStyles.keys(),
+                        ...newStyles.keys(),
+                    ]);
+                    for (const key of allKeys) {
+                        if (key !== "top" && key !== "left") {
+                            const oldVal = oldStyles.get(key);
+                            const newVal = newStyles.get(key);
+                            if (oldVal !== newVal) {
+                                return false; // Some other property changed
+                            }
+                        }
+                    }
+                    // If we got here, only top/left changed (or no other properties differed)
+                    return true;
+                }
+
+                return false; // Other attribute changes are not transient
+            };
+
+            // Check if all mutations are transient mutations from the draggable element
+            const allMutationsAreTransient = (
+                mutations: MutationRecord[],
+                draggableElement: HTMLElement,
+            ): boolean => {
+                return mutations.every((m) =>
+                    isOnlyTransientRootMutation(m, draggableElement),
+                );
+            };
+
+            draggableToTargetObserver.current = new MutationObserver(
+                (mutations) => {
+                    // Skip if it's no longer current (observer hasn't been removed yet)
+                    if (
+                        currentCanvasElement !==
+                        getCanvasElementManager()?.getActiveElement()
+                    ) {
+                        return;
+                    }
+
+                    // Skip if all mutations are transient (just moving class or position changes)
+                    if (
+                        allMutationsAreTransient(
+                            mutations,
+                            currentCanvasElement,
+                        )
+                    ) {
+                        return;
+                    }
+
+                    copyContentToTargetAndCleanup(currentCanvasElement);
+                },
+            );
             draggableToTargetObserver.current.observe(currentCanvasElement, {
                 childList: true,
                 subtree: true,
                 attributes: true, // e.g., cropping of image
+                attributeOldValue: true, // needed to compare old vs new values
             });
         }
     }, [currentCanvasElement, currentDraggableTarget, props.activeTab]);

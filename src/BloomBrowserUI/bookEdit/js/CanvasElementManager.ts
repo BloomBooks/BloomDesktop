@@ -1081,7 +1081,8 @@ export class CanvasElementManager {
             clickedElement.closest("#canvas-element-context-controls") ||
             clickedElement.closest(".MuiMenu-list") ||
             clickedElement.closest(".above-page-control-container") ||
-            clickedElement.closest(".MuiDialog-container")
+            clickedElement.closest(".MuiDialog-container") ||
+            clickedElement.closest("[data-target-of]")
         ) {
             // clicking things in here (such as menu item in the pull-down, or a prompt dialog) should not
             // clear the active element
@@ -1259,10 +1260,16 @@ export class CanvasElementManager {
     // Keeps track of whether the mouse was moved during a mouse event in the main content of a
     // canvas element. If so, we interpret it as a drag, moving the canvas element. If not, we interpret it as a click.
     private gotAMoveWhileMouseDown: boolean = false;
+    private pendingRemoveControlFrameTimeout?: number;
 
     // Remove the canvas element control frame if it exists (when no canvas element is active)
     // Also remove the menu if it's still open.  See BL-13852.
     removeControlFrame() {
+        if (this.pendingRemoveControlFrameTimeout !== undefined) {
+            window.clearTimeout(this.pendingRemoveControlFrameTimeout);
+            this.pendingRemoveControlFrameTimeout = undefined;
+        }
+
         // this.activeElement is still set and works for hiding the menu.
         const eltWithControlOnIt = this.activeElement;
         const controlFrame = document.getElementById(
@@ -1276,11 +1283,18 @@ export class CanvasElementManager {
                 renderCanvasElementContextControls(eltWithControlOnIt, false);
             }
             // Reschedule so that the rerender can finish before removing the control frame.
-            setTimeout(() => {
+            // The timeout, however, creates a possible race condition: some new event (like a click
+            // on another canvas element) could come in and cause a new control frame to be created
+            // before this timeout runs, and then the timeout would remove the new control frame.
+            // To prevent that, we keep track of the pending timeout and cancel it if we need to
+            // set up a new control frame before it runs. (It feels bizarre to need to cancel
+            // a timeout with a zero delay, but even a zero delay races against real-world events.))
+            this.pendingRemoveControlFrameTimeout = window.setTimeout(() => {
                 controlFrame.remove();
                 document
                     .getElementById("canvas-element-context-controls")
                     ?.remove();
+                this.pendingRemoveControlFrameTimeout = undefined;
             }, 0);
         }
     }
@@ -1288,6 +1302,11 @@ export class CanvasElementManager {
     // Set up the control frame for the active canvas element. This includes creating it if it
     // doesn't exist, and positioning it correctly.
     setupControlFrame() {
+        if (this.pendingRemoveControlFrameTimeout !== undefined) {
+            window.clearTimeout(this.pendingRemoveControlFrameTimeout);
+            this.pendingRemoveControlFrameTimeout = undefined;
+        }
+
         // If the active element isn't visible, it isn't really active.  See BL-14439.
         this.checkActiveElementIsVisible();
         const eltToPutControlsOn = this.activeElement;
@@ -3937,6 +3956,11 @@ export class CanvasElementManager {
             this.onMouseUp(event);
             return;
         }
+        // If we're not dragging a canvas element, don't do anything else.
+        if (!this.bubbleToDrag) {
+            return;
+        }
+
         // Capture the most recent data to use when our animation frame request is satisfied.
         // or so keyboard events can reference the current mouse position.
         this.lastMoveEvent = event;
@@ -3954,12 +3978,7 @@ export class CanvasElementManager {
         }
 
         const container = event.currentTarget as HTMLElement;
-
-        if (!this.bubbleToDrag) {
-            this.handleMouseMoveHover(event, container);
-        } else if (this.bubbleToDrag) {
-            this.handleMouseMoveDragCanvasElement(event, container);
-        }
+        this.handleMouseMoveDragCanvasElement(event, container);
     };
 
     // Add the classes that let various controls know that a move, resize, or drag is in progress.
@@ -3972,29 +3991,6 @@ export class CanvasElementManager {
         document
             .getElementById("canvas-element-context-controls")
             ?.classList?.add("moving");
-    }
-
-    // Mouse hover - No move or resize is currently active, but check if there is a canvas element under the mouse that COULD be
-    // and add or remove the classes we use to indicate this
-    private handleMouseMoveHover(event: MouseEvent, container: HTMLElement) {
-        if (this.isMouseEventAlreadyHandled(event)) {
-            return;
-        }
-
-        let hoveredBubble = this.getBubbleUnderMouse(event, container);
-
-        // Now there are several options depending on various conditions. There's some
-        // overlap in the conditions and it is tempting to try to combine into a single compound
-        // "if" statement. But note, this first one may change hoveredBubble to null,
-        // which then changes which of the following options is chosen. Be careful!
-        if (hoveredBubble && hoveredBubble.content !== this.activeElement) {
-            // The hovered canvas element is not selected. If it's an image, the user might
-            // want to drag a tail tip there, which is hard to do with a grab cursor,
-            // so don't switch.
-            if (this.isPictureCanvasElement(hoveredBubble.content)) {
-                hoveredBubble = null;
-            }
-        }
     }
 
     /**
