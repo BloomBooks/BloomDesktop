@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -9,8 +10,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.web;
+using DesktopAnalytics;
 using L10NSharp;
+using SIL.IO;
 using SIL.PlatformUtilities;
+using SIL.Reporting;
 #if !__MonoCS__
 using Bloom.ErrorReporter;
 using SIL.Reporting;
@@ -226,6 +230,9 @@ namespace Bloom
                 // so we're just completing something already approved).
                 Application.ApplicationExit += (sender, args) =>
                 {
+                    // Write a file so that if the update fails (e.g., a running process prevents it),
+                    // we can detect it on the next launch and warn the user.
+                    WriteUpdateAttemptFile(_newVersion.TargetFullRelease.Version.ToString());
                     if (!_restartingAfterToastClicked)
                     {
                         // If the user clicked the toast, we already made the call to WaitExitThenApplyUpdates,
@@ -459,6 +466,119 @@ namespace Bloom
         private static void ShowFailureNotification(string failMsg)
         {
             ToastService.ShowToast(ToastType.Warning, text: failMsg, durationSeconds: 5);
+        }
+
+        /// <summary>
+        /// Gets the path to the file we write when Bloom is about to exit for a Velopack update.
+        /// The channel name is included so that parallel installations on different channels
+        /// (e.g. Alpha and Release) do not interfere with each other.
+        /// </summary>
+        private static string UpdateAttemptFilePath
+        {
+            get
+            {
+                // Sanitize the channel name so it is safe to use in a file name.
+                var safeChannel = Regex.Replace(ChannelName, @"[^A-Za-z0-9\-]", "-");
+                var fileName = $"pending-velopack-update-{safeChannel}.txt";
+                return Path.Combine(ProjectContext.GetBloomAppDataFolder(), fileName);
+            }
+        }
+
+        /// <summary>
+        /// Writes a file recording the current and target versions when Bloom is about to exit
+        /// for a Velopack update. If the update fails, CheckForFailedUpdate() will detect it on
+        /// the next launch and notify the user.
+        /// </summary>
+        private static void WriteUpdateAttemptFile(string targetVersion)
+        {
+            try
+            {
+                var fromVersion = Shell.GetShortVersionInfo();
+                RobustFile.WriteAllText(
+                    UpdateAttemptFilePath,
+                    fromVersion + Environment.NewLine + targetVersion
+                );
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("Could not write Velopack update attempt file", e);
+            }
+        }
+
+        /// <summary>
+        /// Called at startup to check whether a previous Velopack update attempt failed (e.g.,
+        /// because a running process prevented it). If so, sends an analytics event and shows a
+        /// warning toast.
+        /// </summary>
+        internal static void CheckForFailedUpdate()
+        {
+#if !__MonoCS__
+            var filePath = UpdateAttemptFilePath;
+            if (!RobustFile.Exists(filePath))
+                return;
+
+            string fromVersion = null;
+            string targetVersion = null;
+            try
+            {
+                var lines = RobustFile.ReadAllLines(filePath);
+                if (lines.Length >= 2)
+                {
+                    fromVersion = lines[0].Trim();
+                    targetVersion = lines[1].Trim();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("Could not read Velopack update attempt file", e);
+            }
+
+            // Always delete the file — whether the update succeeded or not we only want to
+            // check once per recorded attempt.
+            try
+            {
+                RobustFile.Delete(filePath);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("Could not delete Velopack update attempt file", e);
+            }
+
+            if (fromVersion == null || targetVersion == null)
+                return;
+
+            // Check whether we have successfully updated to at least the expected version.
+            var currentVersion = Shell.GetShortVersionInfo();
+            if (
+                Version.TryParse(currentVersion, out var current)
+                && Version.TryParse(targetVersion, out var target)
+                && current >= target
+            )
+            {
+                // Update succeeded; nothing to report.
+                return;
+            }
+
+            Analytics.Track(
+                "Velopack Update Failed",
+                new Dictionary<string, string>
+                {
+                    { "fromVersion", fromVersion },
+                    { "targetVersion", targetVersion },
+                    { "runningVersion", currentVersion },
+                }
+            );
+
+            var msg = String.Format(
+                LocalizationManager.GetString(
+                    "CollectionTab.VelopackUpdateFailed",
+                    "Bloom failed to update from version {0} to version {1}. If this continues to happen, try restarting your computer. If it still happens, please Report a Problem."
+                ),
+                fromVersion,
+                targetVersion
+            );
+            ToastService.ShowToast(ToastType.Warning, text: msg, durationSeconds: 20);
+#endif
         }
 
         internal static void DebugShowToastScenario(string scenario, Action restartBloom = null)
