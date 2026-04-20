@@ -2780,9 +2780,25 @@
         <source xml:lang="en">Video files</source>
         <note>ID: EditTab.Toolbox.SignLanguage.FileDialogVideoFiles</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.ChooseVideoFile" sil:dynamic="true">
+        <source xml:lang="en">Choose a video file to import.</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.ChooseVideoFile</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.ImportVideo" sil:dynamic="true">
         <source xml:lang="en">Import</source>
         <note>ID: EditTab.Toolbox.SignLanguage.ImportVideo</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.ImportingVideo" sil:dynamic="true">
+        <source xml:lang="en">Importing Video</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.ImportingVideo</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.OptimizingImportedVideo" sil:dynamic="true">
+        <source xml:lang="en">Optimizing imported video...</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.OptimizingImportedVideo</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.OptimizingImportedVideoFailed" sil:dynamic="true">
+        <source xml:lang="en">Optimizing imported video failed.  The original video file will be stored.</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.OptimizingImportedVideoFailed</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.ShowInFolder" sil:dynamic="true">
         <source xml:lang="en">Show in Folder</source>

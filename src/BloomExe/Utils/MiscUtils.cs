@@ -915,5 +915,40 @@ namespace Bloom.Utils
                 sb.AppendLine(stacklines[i]);
             return sb.ToString();
         }
+
+        /// <summary>
+        /// Return a list of all child processes of the current process.
+        /// </summary>
+        /// <returns></returns>
+        public static List<Process> GetChildProcesses()
+        {
+            List<Process> children = new List<Process>();
+            if (Platform.IsWindows)
+            {
+                int parentId = Process.GetCurrentProcess().Id;
+                // Search for all processes where parentId matches current PID
+                string query =
+                    $"SELECT ProcessId FROM Win32_Process WHERE ParentProcessId = {parentId}";
+                using (var searcher = new ManagementObjectSearcher(query))
+                {
+                    using (var results = searcher.Get())
+                    {
+                        foreach (var obj in results)
+                        {
+                            int childId = Convert.ToInt32(obj["ProcessId"]);
+                            try
+                            {
+                                children.Add(Process.GetProcessById(childId));
+                            }
+                            catch (ArgumentException)
+                            {
+                                // Process might have exited between query and retrieval
+                            }
+                        }
+                    }
+                }
+            }
+            return children;
+        }
     }
 }
