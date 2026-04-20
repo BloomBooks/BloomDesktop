@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</source>
-        <target xml:lang="es-ES" state="final">Para seleccionar, utilice la rueda del ratón, apunte a lo que quiere, o apriete la tecla mostrada en color púrpura. 
+        <target xml:lang="es-ES" state="final">Para seleccionar, utilice la rueda del ratón, apunte a lo que quiere, o apriete la tecla mostrada en color púrpura.
 Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
       </trans-unit>
@@ -2516,12 +2516,12 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Duplicar</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true">
         <source xml:lang="en">Fill Background</source>
         <target xml:lang="es-ES" state="needs-translation">Fill Background</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FillBackground</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true">
         <source xml:lang="en">Expand image to fill space</source>
         <target xml:lang="es-ES" state="translated">Ampliar imagen para llenar espacio</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FillSpace</note>
