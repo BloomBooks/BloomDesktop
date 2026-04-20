@@ -2780,9 +2780,17 @@
         <source xml:lang="en">Video files</source>
         <note>ID: EditTab.Toolbox.SignLanguage.FileDialogVideoFiles</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.HasSound" sil:dynamic="true">
+        <source xml:lang="en">Has Sound</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.HasSound</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.ImportVideo" sil:dynamic="true">
         <source xml:lang="en">Import</source>
         <note>ID: EditTab.Toolbox.SignLanguage.ImportVideo</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.SignLanguage.Processing" sil:dynamic="true">
+        <source xml:lang="en">Processing</source>
+        <note>ID: EditTab.Toolbox.SignLanguage.Processing</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.ShowInFolder" sil:dynamic="true">
         <source xml:lang="en">Show in Folder</source>
