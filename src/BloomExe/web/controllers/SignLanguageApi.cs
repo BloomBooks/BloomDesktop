@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
@@ -14,12 +14,10 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.Code;
-using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.FileSystem;
-using SIL.Xml;
 
 namespace Bloom.web.controllers
 {
@@ -37,6 +35,10 @@ namespace Bloom.web.controllers
         public EditingModel Model { get; set; }
 
         private static string _ffmpeg;
+
+        // This flag can be set (and read) on different threads, so we need to lock access to it.
+        private bool _importCancelled;
+        private object _cancelLock = new object();
 
         public SignLanguageApi(BookSelection bookSelection, PageSelection pageSelection)
         {
@@ -59,10 +61,21 @@ namespace Bloom.web.controllers
                 .Measureable("Delete video");
             ;
             apiHandler.RegisterEndpointHandler(
-                "signLanguage/importVideo",
-                HandleImportVideoRequest,
-                true
-            ); // has dialog, so measure internally after the dialog.
+                "signLanguage/chooseVideo",
+                HandleChooseVideoRequest,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "signLanguage/processVideo",
+                HandleProcessVideoRequest,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "signLanguage/cancelImportVideo",
+                HandleCancelImportVideoRequest,
+                false,
+                false
+            );
             apiHandler.RegisterEndpointHandler(
                 "signLanguage/getStats",
                 HandleVideoStatisticsRequest,
@@ -203,8 +216,266 @@ namespace Bloom.web.controllers
             }
         }
 
-        // Request from sign language tool to import a video.
-        private void HandleImportVideoRequest(ApiRequest request)
+        /// <summary>
+        /// Runs ffmpeg -i on the given video file and returns the output (which ffmpeg writes to stderr).
+        /// Returns an empty string if ffmpeg is unavailable or times out.
+        /// </summary>
+        internal static string GetVideoCharacteristicsOutput(string videoFilePath)
+        {
+            if (string.IsNullOrEmpty(FfmpegProgram))
+                return string.Empty;
+            // ffmpeg writes its file info to stderr even with -i alone; -hide_banner reduces noise.
+            var parameters = $"-hide_banner -i \"{videoFilePath}\"";
+            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                FfmpegProgram,
+                parameters,
+                "",
+                60,
+                new NullProgress()
+            );
+            if (result.DidTimeOut)
+                return string.Empty;
+            return result.StandardError ?? string.Empty;
+        }
+
+        /// <summary>
+        /// If the imported video at <param name="videoFilePath"/> needs re-encoding (dimensions too large,
+        /// or bad fps, or sound when we have sign language in use), this re-encodes it in place using the same
+        /// ffmpeg settings as recorded videos. It does nothing if ffmpeg is unavailable.
+        /// </summary>
+        private void ReencodeVideoIfNeeded(string videoFilePath, WebSocketProgress progress)
+        {
+            if (string.IsNullOrEmpty(FfmpegProgram))
+            {
+                return;
+            }
+            var hasSignLanguage = !string.IsNullOrEmpty(
+                CurrentBook?.CollectionSettings?.SignLanguageTag
+            );
+
+            var ffmpegOutput = GetVideoCharacteristicsOutput(videoFilePath);
+            if (string.IsNullOrWhiteSpace(ffmpegOutput))
+            {
+                return;
+            }
+
+            var hasAudio = Regex.IsMatch(ffmpegOutput, "Stream #.*: Audio: ");
+            var duration = GetVideoDuration(ffmpegOutput);
+            if (duration == TimeSpan.Zero)
+            {
+                return;
+            }
+            var matchVideoSettings = Regex.Matches(
+                ffmpegOutput,
+                "Stream #.*: Video: ([A-Za-z0-9]+)[, ].*, ([0-9]+)x([0-9]+)[, ].*, ([0-9.]+) fps, "
+            );
+            if (matchVideoSettings.Count == 0)
+                return;
+
+            var match = matchVideoSettings[0];
+            var encodedCodec = match.Groups[1].Value.ToLowerInvariant();
+            if (
+                encodedCodec == "vp8"
+                || encodedCodec == "vp9"
+                || Path.GetExtension(videoFilePath).ToLowerInvariant() == ".webm"
+            )
+            {
+                // We're not trying to re-encode webm files at this point.
+                return;
+            }
+            var width = int.Parse(match.Groups[2].Value);
+            var height = int.Parse(match.Groups[3].Value);
+            if (IsRotated90Degrees(ffmpegOutput))
+            {
+                var temp = width;
+                width = height;
+                height = temp;
+            }
+            var fps = double.Parse(match.Groups[4].Value, CultureInfo.InvariantCulture);
+            var fixFps = false;
+            // what is a good minimum/maximum for fps?  Is there a good minimum to check?  We really
+            // want to check for an invalid value, and keep the original if it's valid, and in a range
+            // that the computer hardware can handle.  Newer displays can go above 60fps, but I'm not
+            // sure that there would be any benefit to having a sign language video at a higher frame
+            // rate than 60fps.  And we're trying to minimize file sizes here.
+            if (fps > 60 || fps == 0)
+            {
+                fixFps = true;
+            }
+
+            var crf = 23; // Select the quality for constant quality mode (from -1 to 63) (default -1)
+            var preset = "medium"; // Set the encoding preset (cf. x264 --fullhelp) (default "medium")
+            var maxSmallDimension = 576; // default value for ffmpeg, which is a good balance of quality and size [matches PAL variant of SD]
+            var maxBitrate = 50000; // maximum bitrate (in bits/s). Used for VBV together with bufsize. (from 0 to INT_MAX) (default 0)
+            var bufferSize = 2 * maxBitrate; // set ratecontrol buffer size (in bits) (from INT_MIN to INT_MAX) (default 0)
+
+            // ih = input height, iw = input width.  A negative number indicates the dimension should
+            // be calculated to preserve the aspect ratio.  -2 keeps the dimension size divisible by 2.
+            // The trunc() function is used to ensure the other output dimension is even.
+            // The h.264 encoder requires even dimensions, and some videos have odd dimensions.
+            // (Having dimension evenly divisible by 16 would be even better for h.264, but we
+            // want to keep the video scaled as close as possible to the original sizes.
+            string videoScale = $"scale=-2:trunc(ih/2)*2";
+            var fixSize = false;
+            if (width >= height)
+            {
+                // if the video is landscape (or square), we need to check the height.
+                if (height > maxSmallDimension)
+                {
+                    // scale the height to maxSmallDimension, and scale the width to preserve
+                    // the aspect ratio.
+                    videoScale = $"scale=-2:trunc({maxSmallDimension}/2)*2";
+                    fixSize = true;
+                }
+            }
+            else
+            {
+                // if the video is portrait, we need to check the width.
+                if (width > maxSmallDimension)
+                {
+                    // scale the width to maxSmallDimension, and scale the height to preserve
+                    // the aspect ratio.
+                    videoScale = $"scale=trunc({maxSmallDimension}/2)*2:-2";
+                    fixSize = true;
+                }
+                else
+                {
+                    // Ensure even dimensions for h.264 encoding, preserving the aspect ratio.
+                    // We base this on the width, since it is the smaller dimension.
+                    videoScale = $"scale=trunc(iw/2)*2:-2";
+                }
+            }
+            // Check whether we need to ensure even output dimensions as required for h.264 encoding.
+            if (height % 2 != 0 || width % 2 != 0)
+                fixSize = true;
+
+            var tempPath = videoFilePath + ".tmp.mp4";
+
+            var soundFlag = "";
+            if (hasSignLanguage && hasAudio)
+                soundFlag = "-an"; // remove all audio
+            else if (hasAudio)
+                soundFlag = "-c:a copy"; // keeps audio in original format without re-encoding needed
+
+            var parameters = string.Empty;
+            if (fixFps)
+                parameters = // handles fixing size and sound as well as fps
+                    $"-hide_banner -y -i \"{videoFilePath}\" -progress pipe:1 -c:v libx264 -crf {crf} -preset {preset} -pix_fmt yuv420p -bufsize {bufferSize}k -maxrate {maxBitrate}k {soundFlag} -vf \"{videoScale},fps=fps=25\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{tempPath}\"";
+            else if (fixSize)
+                parameters = // handles fixing sound as well as size
+                    $"-hide_banner -y -i \"{videoFilePath}\" -progress pipe:1 -c:v libx264 -crf {crf} -preset {preset} -pix_fmt yuv420p -bufsize {bufferSize}k -maxrate {maxBitrate}k {soundFlag} -vf \"{videoScale}\" -force_key_frames \"expr:gte(t,n_forced*0.5)\" \"{tempPath}\"";
+            else if (hasSignLanguage && hasAudio)
+                parameters =
+                    $"-hide_banner -y -i \"{videoFilePath}\" -progress pipe:1 -c copy -an \"{tempPath}\"";
+
+            if (string.IsNullOrEmpty(parameters))
+            {
+                // Nothing needs to be done, so just report 100% progress and return.
+                progress.SendPercent(100);
+                return;
+            }
+            lock (_cancelLock)
+            {
+                // This is rather unlikely, but possible.
+                if (_importCancelled)
+                {
+                    RobustFile.Delete(tempPath);
+                    return;
+                }
+            }
+
+            try
+            {
+                var seconds = (int)duration.TotalSeconds;
+                var start = DateTime.Now;
+                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                    FfmpegProgram,
+                    parameters,
+                    null,
+                    "",
+                    seconds + 60,
+                    new NullProgress(),
+                    (line) => ReportProgressAction(line, duration, progress)
+                );
+                var finish = DateTime.Now;
+                lock (_cancelLock)
+                {
+                    if (_importCancelled)
+                    {
+                        RobustFile.Delete(tempPath);
+                        return;
+                    }
+                }
+                Debug.WriteLine(
+                    $"ffmpeg re-encoding video took {(finish - start)}; timeout was set to {seconds + 60} seconds"
+                );
+
+                if (result.DidTimeOut || result.ExitCode != 0)
+                {
+                    Logger.WriteEvent(
+                        $"ReencodeVideoIfNeeded: ffmpeg issue for {videoFilePath}: exit code={result.ExitCode}; stderr= {result.StandardError}"
+                    );
+                    progress.SendPercent(100);
+                    return; // leave original in place
+                }
+                RobustFile.Copy(tempPath, videoFilePath, true);
+                progress.SendPercent(100);
+            }
+            finally
+            {
+                if (RobustFile.Exists(tempPath))
+                    RobustFile.Delete(tempPath);
+            }
+        }
+
+        private static bool IsRotated90Degrees(string ffmpegOutput)
+        {
+            return Regex.IsMatch(ffmpegOutput, "displaymatrix: rotation of -*90\\.00 degrees");
+        }
+
+        private static void ReportProgressAction(
+            string fromStdout,
+            TimeSpan duration,
+            WebSocketProgress progress
+        )
+        {
+            if (fromStdout.StartsWith("out_time="))
+            {
+                var timeStr = fromStdout.Substring(9);
+                if (TimeSpan.TryParse(timeStr, out var time))
+                {
+                    var percent = (int)(100 * time.TotalMilliseconds / duration.TotalMilliseconds);
+                    progress.SendPercent(Math.Min(percent, 100));
+                }
+            }
+        }
+
+        private static TimeSpan GetVideoDuration(string ffmpegOutput)
+        {
+            var matchDuration = Regex.Matches(
+                ffmpegOutput,
+                "Duration: ([0-9]+:[0-9][0-9]:[0-9][0-9]\\.[0-9]+), "
+            );
+            if (matchDuration.Count == 0)
+                return TimeSpan.Zero;
+            var match = matchDuration[0];
+            if (TimeSpan.TryParse(match.Groups[1].Value, out var duration))
+                return duration;
+            return TimeSpan.Zero;
+        }
+
+        // Request from sign language tool to choose a video file to import.
+        private void HandleChooseVideoRequest(ApiRequest request)
+        {
+            // Run as fire-and-forget on a new thread so the API request returns immediately
+            // while the file dialog (and any subsequent re-encoding) runs without blocking
+            // the API handler.
+            var thread = new System.Threading.Thread(ChooseVideo);
+            thread.Start();
+            request.PostSucceeded();
+        }
+
+        private void ChooseVideo()
         {
             string path = null;
             View.Invoke(
@@ -230,28 +501,134 @@ namespace Bloom.web.controllers
                     }
                 )
             );
-            if (!string.IsNullOrEmpty(path))
+            dynamic chooseResult = new DynamicJson();
+            chooseResult.success = !string.IsNullOrEmpty(path);
+            chooseResult.path = path;
+            BloomWebSocketServer.Instance?.SendBundle(
+                "signLanguage",
+                "chooseVideo-results",
+                chooseResult
+            );
+        }
+
+        // Request from sign language tool to copy and process a selected video file.
+        private void HandleProcessVideoRequest(ApiRequest request)
+        {
+            lock (_cancelLock)
             {
-                using (PerformanceMeasurement.Global.Measure("Import Video", path))
+                _importCancelled = false;
+            }
+            var path = request.GetParamOrNull("sourcePath");
+            // Run the (potentially slow) ffmpeg processing on a new thread as fire-and-forget
+            // so the API request can return immediately.  Results are sent via WebSocket.
+            var thread = new System.Threading.Thread(() => ProcessVideo(path));
+            thread.IsBackground = true;
+            thread.Start();
+            request.PostSucceeded();
+        }
+
+        private void ProcessVideo(string path)
+        {
+            var progress = new WebSocketProgress(BloomWebSocketServer.Instance, "progress");
+            dynamic processResult = new DynamicJson();
+            try
+            {
+                if (!string.IsNullOrEmpty(path))
                 {
-                    _importedVideoIntoBloom = true;
-                    var newVideoPath = Path.Combine(
-                        BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath),
-                        GetNewVideoFileName(Path.GetExtension(path))
-                    ); // Use a new name to defeat caching.
-                    RobustFile.Copy(path, newVideoPath);
-                    var relativePath =
-                        BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath);
-                    request.ReplyWithText(
-                        UrlPathString.CreateFromUnencodedString(relativePath).UrlEncodedForHttpPath
-                    );
+                    using (PerformanceMeasurement.Global.Measure("Import Video", path))
+                    {
+                        _importedVideoIntoBloom = true;
+                        var newVideoPath = Path.Combine(
+                            BookStorage.GetVideoDirectoryAndEnsureExistence(CurrentBook.FolderPath),
+                            GetNewVideoFileName(Path.GetExtension(path))
+                        ); // Use a new name to defeat caching.
+                        RobustFile.Copy(path, newVideoPath);
+                        ReencodeVideoIfNeeded(newVideoPath, progress); // may be very slow for large videos.
+                        lock (_cancelLock)
+                        {
+                            if (_importCancelled)
+                            {
+                                RobustFile.Delete(newVideoPath);
+                                _importedVideoIntoBloom = false;
+                                // Cancelling the import is not really a failure as such, but gets reported
+                                // the same way to the sign language tool.
+                                ReportProcessingFailure(processResult);
+                                return;
+                            }
+                        }
+                        progress.SendPercent(100);
+                        var relativePath =
+                            BookStorage.GetVideoFolderName + Path.GetFileName(newVideoPath);
+                        processResult.success = true;
+                        processResult.importedPath = UrlPathString
+                            .CreateFromUnencodedString(relativePath)
+                            .UrlEncodedForHttpPath;
+                        BloomWebSocketServer.Instance?.SendBundle(
+                            "signLanguage",
+                            "processVideo-results",
+                            processResult
+                        );
+                    }
+                }
+                else
+                {
+                    ReportProcessingFailure(processResult);
                 }
             }
-            else
+            catch (Exception e)
             {
-                // If the user canceled, we didn't exactly succeed, but having the user cancel is such a normal
-                // event that posting a failure, which is a nuisance to ignore, is not warranted.
-                request.ReplyWithText("");
+                Logger.WriteEvent(
+                    $"SignLanguageApi.ProcessVideo: exception processing video {path}: {e.Message}"
+                );
+                ReportProcessingFailure(processResult);
+            }
+            finally
+            {
+                progress.Finished();
+            }
+        }
+
+        private static void ReportProcessingFailure(dynamic processResult)
+        {
+            processResult.success = false;
+            processResult.importedPath = string.Empty;
+            BloomWebSocketServer.Instance?.SendBundle(
+                "signLanguage",
+                "processVideo-results",
+                processResult
+            );
+        }
+
+        private void HandleCancelImportVideoRequest(ApiRequest request)
+        {
+            lock (_cancelLock)
+            {
+                _importCancelled = true;
+            }
+            request.PostSucceeded();
+            // We don't know the process that is running ffmpeg, so we have to look for a
+            // child process with the name "ffmpeg" and kill it.  It is extremely unlikely
+            // that more than one child ffmpeg processes will be running.  (I can't think
+            // of a way we could have multiple ffmpeg processes running at the same time.)
+            // There's no way to distinguish between processes with the same process name:
+            // we'll just kill the first "ffmpeg" we find and quit.
+            foreach (var proc in MiscUtils.GetChildProcesses())
+            {
+                try
+                {
+                    if (proc.ProcessName.ToLowerInvariant() == "ffmpeg")
+                    {
+                        proc.Kill();
+                        break;
+                    }
+                }
+                catch
+                { /*ignore*/
+                }
+                finally
+                {
+                    proc.Dispose();
+                }
             }
         }
 
@@ -363,6 +740,8 @@ namespace Bloom.web.controllers
             ParseFileSize(sizeInBytes, statistics);
             ParseFrameSize(output, statistics);
             ParseFramesPerSecond(output, statistics);
+            ParseMegabitsPerSecond(output, statistics);
+            ParseForAudioStream(output, statistics);
             ParseFileFormat(output, statistics);
 
             return statistics;
@@ -405,7 +784,7 @@ namespace Bloom.web.controllers
 
         private static void ParseFrameSize(string output, IDictionary<string, object> statistics)
         {
-            var re = new Regex("(\\d{2,3})x(\\d{2,3})");
+            var re = new Regex("(\\d{2,4})x(\\d{2,4})");
             var match = re.Match(output);
             if (!match.Success)
                 return;
@@ -433,15 +812,44 @@ namespace Bloom.web.controllers
             );
         }
 
+        private static void ParseMegabitsPerSecond(
+            string output,
+            IDictionary<string, object> statistics
+        )
+        {
+            var re = new Regex("Stream #.*: Video: .*, ([0-9]+) kb/s, [0-9.]+ fps, ");
+            var match = re.Match(output);
+            if (!match.Success)
+            {
+                var re2 = new Regex("Duration: .* bitrate: ([0-9]+) kb/s");
+                match = re2.Match(output);
+                if (!match.Success)
+                    return;
+            }
+            var kbps = match.Groups[1].Value;
+            var fmbps = double.Parse(kbps, CultureInfo.InvariantCulture) / 1000.0;
+            statistics.Add("megabitsPerSecond", $"{fmbps:F2} Mb/s");
+        }
+
+        private static void ParseForAudioStream(
+            string output,
+            IDictionary<string, object> statistics
+        )
+        {
+            var re = new Regex("Stream #.*: Audio: ");
+            var match = re.Match(output);
+            statistics.Add("hasAudio", match.Success.ToString().ToLowerInvariant());
+        }
+
         private static void ParseFileFormat(string output, IDictionary<string, object> statistics)
         {
-            var re = new Regex("[V|v]ideo: [A-Za-z0-9]* ");
+            var re = new Regex("[V|v]ideo: ([A-Za-z0-9]+)[, ]");
             var match = re.Match(output);
             if (!match.Success)
                 return;
             statistics.Add(
                 "fileFormat",
-                match.Value.Substring(7).ToUpper(CultureInfo.CurrentUICulture)
+                match.Groups[1].Value.ToUpper(CultureInfo.CurrentUICulture)
             );
         }
 

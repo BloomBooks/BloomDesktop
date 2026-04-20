@@ -1,4 +1,4 @@
-import { post, postThatMightNavigate } from "../../utils/bloomApi";
+import { postThatMightNavigate } from "../../utils/bloomApi";
 
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).
 // It sets things up for the button (plural eventually) to appear when hovering over the video.
@@ -16,6 +16,7 @@ import { getPlayIcon } from "../img/playIcon";
 import { getPauseIcon } from "../img/pauseIcon";
 import { getReplayIcon } from "../img/replayIcon";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
+import { chooseAndProcessVideo } from "./ChooseAndProcessVideo";
 import $ from "jquery";
 
 const kBloomVideoTransientTimestampParam = "bloomVideoTransientTimestamp";
@@ -189,9 +190,9 @@ export function doVideoCommand(
     command: "choose" | "record" | "playEarlier" | "playLater",
 ) {
     if (command === "choose" && videoContainer) {
-        post("signLanguage/importVideo", (result) => {
-            if (result.data) {
-                updateVideoInContainer(videoContainer, result.data);
+        chooseAndProcessVideo((importedPath) => {
+            if (importedPath) {
+                updateVideoInContainer(videoContainer, importedPath);
                 // Makes sure the page gets saved with a reference to the new video,
                 // and incidentally that everything gets updated to be consistent with the
                 // new state of things.

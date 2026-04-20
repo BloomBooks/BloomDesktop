@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 
-import { Button, CircularProgress } from "@mui/material";
+import { Button, CircularProgress, LinearProgress } from "@mui/material";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { post, postJson } from "../../utils/bloomApi";
@@ -44,8 +44,10 @@ export interface IProgressDialogProps {
     onReadyToReceive?: () => void;
 
     dialogEnvironment?: IBloomDialogEnvironmentParams;
-    determinate?: boolean;
+    determinate?: boolean; // if not set true, shows circular spinner regardless of linearProgess setting
+    linearProgress?: boolean; // default is circular progress; set to true for linear progress bar instead
     size?: "small"; // For a much smaller dialog, when we only expect a few lines.
+    noMessages?: boolean; // If true, the ProgressBox won't show any messages. This is useful if you just want to use the ProgressDialog for its title, buttons, and progress indicators.
 }
 
 export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
@@ -209,7 +211,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
                 }
             }}
         >
-            {props.determinate && (
+            {props.determinate && !props.linearProgress && (
                 <div
                     css={css`
                         position: absolute;
@@ -250,6 +252,8 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
                     overflow-y: ${propsForBloomDialog.dialogFrameProvidedExternally
                         ? "auto"
                         : "unset"};
+                    min-height: ${props.noMessages ? "unset" : "inherit"};
+                    background-color: transparent;
                 `}
             >
                 <ProgressBox
@@ -261,12 +265,15 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
                         height: ${props.dialogEnvironment
                             ?.dialogFrameProvidedExternally
                             ? "100%"
-                            : props.size === "small"
-                              ? "80px"
-                              : "400px"};
+                            : props.noMessages
+                              ? "0px"
+                              : props.size === "small"
+                                ? "80px"
+                                : "400px"};
                         min-width: ${props.size === "small"
                             ? "250px"
                             : "540px"};
+                        background-color: transparent;
                     `}
                     // This is utterly bizarre. When not wrapped in a material UI Dialog, ProgressBox happily
                     // keeps track of its own messages. But Dialog repeatedly mounts and unmounts its children,
@@ -276,6 +283,36 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
                     setMessages={setMessages}
                 />
             </DialogMiddle>
+            {props.determinate && props.linearProgress && (
+                <div
+                    css={css`
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        background-color: transparent;
+                    `}
+                >
+                    <LinearProgress
+                        variant="determinate"
+                        value={percent}
+                        css={css`
+                            flex: 1;
+                            left: 0px;
+                            height: 10px;
+                            border-radius: 5px;
+                        `}
+                    />
+                    <div
+                        css={css`
+                            min-width: 25px;
+                            text-align: right;
+                            font-size: 12px;
+                        `}
+                    >
+                        {`${percent}%`}
+                    </div>
+                </div>
+            )}
             <DialogBottomButtons>
                 {done ? (
                     <React.Fragment>
