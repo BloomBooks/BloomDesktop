@@ -1117,6 +1117,8 @@ namespace Bloom.Publish.Rab
                 }
                 ReportBloomPubStageProgress(index + 1, booksToExport.Count);
 
+                var bloomPubContent = ReadBloomPubContentInfo(bloomPubPath);
+
                 exportedBooks.Add(
                     new RabBookPublishInfo()
                     {
@@ -1124,6 +1126,8 @@ namespace Bloom.Publish.Rab
                         FolderPath = bookInfo.FolderPath,
                         Title = bookTitle,
                         BloomPubPath = bloomPubPath,
+                        ThumbnailFileName = bloomPubContent.ThumbnailFileName,
+                        EmbeddedFonts = bloomPubContent.FontDefinitions,
                     }
                 );
             }
@@ -1168,33 +1172,17 @@ namespace Bloom.Publish.Rab
             string bloomPubPath
         )
         {
-            if (string.IsNullOrWhiteSpace(bloomPubPath) || !RobustFile.Exists(bloomPubPath))
-                return new List<RabAppFontDefinition>();
-
-            using var archive = ZipFile.OpenRead(bloomPubPath);
-            var fontsCssEntry = archive.GetEntry("fonts.css");
-            if (fontsCssEntry == null)
-                return new List<RabAppFontDefinition>();
-
-            using var reader = new StreamReader(fontsCssEntry.Open());
-            var fontsCss = reader.ReadToEnd();
-            if (string.IsNullOrWhiteSpace(fontsCss))
-                return new List<RabAppFontDefinition>();
-
-            return Regex
-                .Matches(fontsCss, "@font-face\\s*\\{(?<body>[^}]*)\\}", RegexOptions.IgnoreCase)
-                .Cast<Match>()
-                .Select(match => CreateFontDefinitionFromCss(match.Groups["body"].Value))
-                .Where(font => font != null)
-                .ToList();
+            return ReadBloomPubContentInfo(bloomPubPath, true).FontDefinitions;
         }
 
-        private static List<RabAppFontDefinition> ReadFontDefinitionsFromBloomPubs(
+        internal static List<RabAppFontDefinition> ReadFontDefinitionsFromBloomPubs(
             IEnumerable<RabBookPublishInfo> trackedBooks
         )
         {
             return (trackedBooks ?? Array.Empty<RabBookPublishInfo>())
-                .SelectMany(book => ReadFontDefinitionsFromBloomPub(book.BloomPubPath))
+                .SelectMany(book =>
+                    book?.EmbeddedFonts ?? ReadFontDefinitionsFromBloomPub(book?.BloomPubPath)
+                )
                 .GroupBy(
                     font =>
                         string.Join(
@@ -1209,6 +1197,61 @@ namespace Bloom.Publish.Rab
                 )
                 .Select(group => group.First())
                 .ToList();
+        }
+
+        private static BloomPubContentInfo ReadBloomPubContentInfo(
+            string bloomPubPath,
+            bool includeFonts = true
+        )
+        {
+            if (string.IsNullOrWhiteSpace(bloomPubPath) || !RobustFile.Exists(bloomPubPath))
+                return new BloomPubContentInfo();
+
+            using var archive = ZipFile.OpenRead(bloomPubPath);
+            var fontsCss = string.Empty;
+
+            if (includeFonts)
+            {
+                var fontsCssEntry = archive.GetEntry("fonts.css");
+                if (fontsCssEntry != null)
+                {
+                    using var reader = new StreamReader(fontsCssEntry.Open());
+                    fontsCss = reader.ReadToEnd();
+                }
+            }
+
+            var thumbnailFileName = "thumbnail.jpg";
+            if (
+                archive.GetEntry("thumbnail.jpg") == null
+                && archive.GetEntry("thumbnail.png") != null
+            )
+                thumbnailFileName = "thumbnail.png";
+
+            return new BloomPubContentInfo
+            {
+                ThumbnailFileName = thumbnailFileName,
+                FontDefinitions = string.IsNullOrWhiteSpace(fontsCss)
+                    ? new List<RabAppFontDefinition>()
+                    : Regex
+                        .Matches(
+                            fontsCss,
+                            "@font-face\\s*\\{(?<body>[^}]*)\\}",
+                            RegexOptions.IgnoreCase
+                        )
+                        .Cast<Match>()
+                        .Select(match => CreateFontDefinitionFromCss(match.Groups["body"].Value))
+                        .Where(font => font != null)
+                        .ToList(),
+            };
+        }
+
+        /// <summary>
+        /// Reads the thumbnail entry directly from the BloomPUB so reused exports do not trust stale tracked-book metadata.
+        /// Export paths share this lookup with embedded font parsing so each BloomPUB archive is opened only once per pass.
+        /// </summary>
+        internal static string GetBloomPubThumbnailFileName(string bloomPubPath)
+        {
+            return ReadBloomPubContentInfo(bloomPubPath, false).ThumbnailFileName;
         }
 
         private static RabAppFontDefinition CreateFontDefinitionFromCss(string cssBody)
@@ -1276,6 +1319,13 @@ namespace Bloom.Publish.Rab
                 parts.Add(char.ToUpperInvariant(style[0]) + style.Substring(1).ToLowerInvariant());
 
             return string.Join(" ", parts.Where(part => !string.IsNullOrWhiteSpace(part)));
+        }
+
+        private class BloomPubContentInfo
+        {
+            public string ThumbnailFileName { get; set; } = "thumbnail.jpg";
+            public List<RabAppFontDefinition> FontDefinitions { get; set; } =
+                new List<RabAppFontDefinition>();
         }
 
         private void ReportProgressStage(string stage, int percent)
@@ -1932,7 +1982,7 @@ namespace Bloom.Publish.Rab
         {
             _progress.MessageWithoutLocalizing($"> {Path.GetFileName(fileName)} {arguments}");
 
-            var process = new Process()
+            using var process = new Process()
             {
                 StartInfo = new ProcessStartInfo()
                 {
@@ -2693,6 +2743,7 @@ namespace Bloom.Publish.Rab
                     FolderPath = trackedBook.FolderPath,
                     Title = trackedBook.Title,
                     BloomPubPath = existingTrackedBook?.BloomPubPath,
+                    ThumbnailFileName = GetExistingThumbnailFileName(existingTrackedBook),
                 };
             }
 
@@ -2705,7 +2756,19 @@ namespace Bloom.Publish.Rab
                 FolderPath = matchingBookInfo.FolderPath,
                 Title = matchingBookInfo.Title,
                 BloomPubPath = existing?.BloomPubPath,
+                ThumbnailFileName = GetExistingThumbnailFileName(existing),
             };
+        }
+
+        private static string GetExistingThumbnailFileName(RabBookPublishInfo book)
+        {
+            if (
+                !string.IsNullOrWhiteSpace(book?.BloomPubPath)
+                && RobustFile.Exists(book.BloomPubPath)
+            )
+                return GetBloomPubThumbnailFileName(book.BloomPubPath);
+
+            return book?.ThumbnailFileName;
         }
 
         private BookInfo FindTrackedBookInfo(RabTrackedBookInfo trackedBook)
@@ -3091,6 +3154,9 @@ namespace Bloom.Publish.Rab
             IEnumerable<RabBookPublishInfo> trackedBooks
         )
         {
+            // Build Needed intentionally tracks only explicit settings and tracked-book selection/order/title.
+            // Thumbnail file names can also go stale, but we avoid special-casing that for now because other
+            // book-content changes inside the BloomPUB are already outside this signature.
             return ComputeBuildInputSignature(
                 settings,
                 (trackedBooks ?? Enumerable.Empty<RabBookPublishInfo>()).Select(
