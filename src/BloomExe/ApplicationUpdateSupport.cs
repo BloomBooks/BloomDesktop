@@ -559,15 +559,14 @@ namespace Bloom
                 return;
             }
 
-            Analytics.Track(
-                "Velopack Update Failed",
-                new Dictionary<string, string>
-                {
-                    { "fromVersion", fromVersion },
-                    { "targetVersion", targetVersion },
-                    { "runningVersion", currentVersion },
-                }
-            );
+            var sentryMessage =
+                "Velopack update failed: from "
+                + fromVersion
+                + " to "
+                + targetVersion
+                + "; running version "
+                + currentVersion;
+            NonFatalProblem.ReportSentryOnly(sentryMessage);
 
             var msg = String.Format(
                 LocalizationManager.GetString(
