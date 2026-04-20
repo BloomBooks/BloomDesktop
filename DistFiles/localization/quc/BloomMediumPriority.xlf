@@ -834,7 +834,7 @@
         <target xml:lang="quc" state="needs-translation">Current Page</target>
         <note>ID: BookAndPageSettings.PageArea</note>
       </trans-unit>
-      <trans-unit id="BookAndPageSettings.PageArea.Description" sil:dynamic="true" translate="no">
+      <trans-unit id="BookAndPageSettings.PageArea.Description" sil:dynamic="true">
         <source xml:lang="en">Page settings apply to the current page.</source>
         <target xml:lang="quc" state="needs-translation">Page settings apply to the current page.</target>
         <note>ID: BookAndPageSettings.PageArea.Description</note>
@@ -909,12 +909,12 @@
         <target xml:lang="quc" state="needs-translation">Content Pages</target>
         <note>BookSettings.ContentPagesGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" translate="no" sil:dynamic="true">
+      <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Theme &amp; Layout</source>
         <target xml:lang="quc" state="needs-translation">Theme &amp; Layout</target>
         <note>ID: BookSettings.ThemeAndLayoutGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.LanguagesGroupLabel" translate="no" sil:dynamic="true">
+      <trans-unit id="BookSettings.LanguagesGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Languages</source>
         <target xml:lang="quc" state="needs-translation">Languages</target>
         <note>ID: BookSettings.LanguagesGroupLabel</note>
@@ -1063,12 +1063,12 @@
         <target xml:lang="quc" state="needs-translation">The selected page theme does not support the following settings.</target>
         <note>BookSettings.ThemeDisablesOptionsNotice</note>
       </trans-unit>
-      <trans-unit id="BookSettings.ThemeDisablesOptionsNoticeWithLink" translate="no" sil:dynamic="true">
+      <trans-unit id="BookSettings.ThemeDisablesOptionsNoticeWithLink" sil:dynamic="true">
         <source xml:lang="en">The selected [Page Theme] does not support the following settings.</source>
         <target xml:lang="quc" state="needs-translation">The selected [Page Theme] does not support the following settings.</target>
         <note>BookSettings.ThemeDisablesOptionsNoticeWithLink</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" translate="no" sil:dynamic="true">
+      <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" sil:dynamic="true">
         <source xml:lang="en">This feature requires a newer [Page Theme].</source>
         <target xml:lang="quc" state="needs-translation">This feature requires a newer [Page Theme].</target>
         <note>ID: EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message</note>
@@ -1118,12 +1118,12 @@
         <target xml:lang="quc" state="needs-translation">When you publish a book to the web or as an ebook, Bloom will flag any problematic fonts. For example, we cannot legally host most Microsoft fonts on BloomLibrary.org.</target>
         <note>ID: BookSettings.Fonts.Problematic</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.OtherLanguages" translate="no">
+      <trans-unit id="BookSettings.Fonts.OtherLanguages">
         <source xml:lang="en">Other Languages</source>
         <target xml:lang="quc" state="needs-translation">Other Languages</target>
         <note>ID: BookSettings.Fonts.OtherLanguages</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.MaybeProblematic" translate="no">
+      <trans-unit id="BookSettings.Fonts.MaybeProblematic">
         <source xml:lang="en">The Bloom file for this book also has some text in other languages. Please ignore any warnings here unless you plan to publish the book with these languages.</source>
         <target xml:lang="quc" state="needs-translation">The Bloom file for this book also has some text in other languages. Please ignore any warnings here unless you plan to publish the book with these languages.</target>
         <note>ID: BookSettings.Fonts.MaybeProblematic</note>
@@ -1342,31 +1342,6 @@
         <target xml:lang="quc" state="needs-translation">Template: org.&lt;yourorg&gt;.&lt;language-code&gt;.&lt;appname&gt;. E.g. org.sil.xyz.stories. For additional help please contact the Digital Publishing Department of your organization.</target>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Description</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.TipsLabel" translate="no">
-        <source xml:lang="en">Tips on choosing the package name:</source>
-        <target xml:lang="quc" state="needs-translation">Tips on choosing the package name:</target>
-        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.TipsLabel</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip1" translate="no">
-        <source xml:lang="en">Start the package name by turning round the web address of your organisation, e.g. if your web address is 'sil.org', the package name can start with 'org.sil'.</source>
-        <target xml:lang="quc" state="needs-translation">Start the package name by turning round the web address of your organisation, e.g. if your web address is 'sil.org', the package name can start with 'org.sil'.</target>
-        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip1</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip2" translate="no">
-        <source xml:lang="en">After that, add additional strings to identify the app, such as 'org.sil.xyz.stories' where 'xyz' is the language code.</source>
-        <target xml:lang="quc" state="needs-translation">After that, add additional strings to identify the app, such as 'org.sil.xyz.stories' where 'xyz' is the language code.</target>
-        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip2</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip3" translate="no">
-        <source xml:lang="en">For test applications, you can use a temporary package name beginning with 'com.example', e.g. 'com.example.test1', 'com.example.stories', etc.</source>
-        <target xml:lang="quc" state="needs-translation">For test applications, you can use a temporary package name beginning with 'com.example', e.g. 'com.example.test1', 'com.example.stories', etc.</target>
-        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip3</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip4" translate="no">
-        <source xml:lang="en">For additional help, please contact the digital publishing department of your organisation.</source>
-        <target xml:lang="quc" state="needs-translation">For additional help, please contact the digital publishing department of your organisation.</target>
-        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip4</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Required" translate="no">
         <source xml:lang="en">Package name is required.</source>
         <target xml:lang="quc" state="needs-translation">Package name is required.</target>
@@ -1511,11 +1486,6 @@
         <source xml:lang="en">The Reading App Builder project is already prepared for this collection.</source>
         <target xml:lang="quc" state="needs-translation">The Reading App Builder project is already prepared for this collection.</target>
         <note>ID: PublishTab.Apps.Prepare.DoneTooltip</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.Setup.Tooltip" translate="no">
-        <source xml:lang="en">Create the Reading App Builder project in this collection's rab folder.</source>
-        <target xml:lang="quc" state="needs-translation">Create the Reading App Builder project in this collection's rab folder.</target>
-        <note>ID: PublishTab.Apps.Setup.Tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Prepare.TooltipBloomAppData" translate="no">
         <source xml:lang="en">Create the Reading App Builder project in this collection's Bloom App Data folder.</source>
