@@ -21,9 +21,13 @@ export interface IWorkspaceExports {
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
         task: (toolboxFrameExports: IToolboxFrameExports) => unknown,
-    );
+    ): void;
     getModalDialogContainer(): HTMLElement | null;
     ShowEditViewDialog(dialog: FunctionComponentElement<unknown>): void;
+    processVideoAndShowProgressDialog(
+        sourcePath: string,
+        onImported: (importedPath?: string) => void,
+    ): void;
     showConfirmDialog(props: IConfirmDialogProps): void;
     showColorPickerDialog(props: IColorPickerDialogProps): void;
     hideColorPickerDialog(): void;
@@ -38,7 +42,7 @@ export interface IWorkspaceExports {
             timingsFilePath?: string,
         ) => Promise<string | undefined>,
         closing: (canceled: boolean) => void,
-    );
+    ): void;
     showRequiresSubscriptionDialog(featureName: string): void;
     showRegistrationDialogFromWorkspaceRoot(
         mayChangeEmail?: boolean,
@@ -82,6 +86,7 @@ import { ToastDebugInput, toastDebugEvents } from "../toast/toastUtils";
 import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
 import { getPageIframeBody } from "../utils/shared";
 import { showRequiresSubscriptionDialogInEditView } from "../react_components/requiresSubscription";
+import { processVideoAndShowProgressDialog } from "./ProcessVideoProgressDialog";
 export { showAdjustTimingsDialog as showAdjustTimingsDialogFromWorkspaceRoot };
 // Local alias so we have an in-scope identifier for legacy global exposure typing.
 const showAdjustTimingsDialogFromWorkspaceRoot = showAdjustTimingsDialog;
@@ -385,6 +390,7 @@ interface WorkspaceBundleApi {
     canUndo: typeof canUndo;
     getModalDialogContainer: typeof getModalDialogContainer;
     ShowEditViewDialog: typeof ShowEditViewDialog;
+    processVideoAndShowProgressDialog: typeof processVideoAndShowProgressDialog;
     showConfirmDialog: typeof showConfirmDialog;
     showColorPickerDialog: typeof showColorPickerDialog;
     hideColorPickerDialog: typeof hideColorPickerDialog;
@@ -426,6 +432,7 @@ window.workspaceBundle = {
     canUndo,
     getModalDialogContainer,
     ShowEditViewDialog,
+    processVideoAndShowProgressDialog: processVideoAndShowProgressDialog,
     showConfirmDialog,
     showColorPickerDialog,
     hideColorPickerDialog,
