@@ -47,6 +47,8 @@ namespace Bloom.Publish.Rab
         private const string kRabSetupInstallerFileName =
             "Reading-App-Builder-For-Bloom-6-4-Setup.exe";
         private const string kDefaultBundledIconId = "bloom-app-icon-52";
+
+        // Keep this URL in sync with rabInstallerDownloadUrl in BloomBrowserUI/publish/Apps/AppPublisherScreen.tsx.
         private const string kRabSetupDownloadUrl =
             "https://bloomlibrary.org/installers/Reading-App-Builder-For-Bloom-6-4-Setup.exe";
         private const string kRabSetupLanguage = "en";

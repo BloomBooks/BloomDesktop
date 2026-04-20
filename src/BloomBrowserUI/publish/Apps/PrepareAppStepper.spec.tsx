@@ -129,7 +129,7 @@ describe("PrepareAppStepper", () => {
         const tooltipText =
             "This will download the installer for Reading App Builder. Alternatively you can download and run it yourself from [here].";
         const tooltipHref =
-            "https://bloomlibrary.org/installers/Reading-App-Builder-14.0-Bloom-Setup.exe";
+            "https://bloomlibrary.org/installers/Reading-App-Builder-For-Bloom-6-4-Setup.exe";
         const host = renderStepper(
             <PrepareAppStepper
                 steps={[
@@ -178,7 +178,7 @@ describe("PrepareAppStepper", () => {
                 tooltip={{
                     text: "Download the installer from [here].",
                     linkHref:
-                        "https://bloomlibrary.org/installers/Reading-App-Builder-14.0-Bloom-Setup.exe",
+                        "https://bloomlibrary.org/installers/Reading-App-Builder-For-Bloom-6-4-Setup.exe",
                 }}
             />,
         );
