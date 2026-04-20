@@ -2,6 +2,11 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="ne-NP">
     <body>
+      <trans-unit id="CollectionTab.VelopackUpdateFailed" translate="no">
+        <source xml:lang="en">Bloom failed to update from version {0} to version {1}. If this continues to happen, try restarting your computer. If it still happens, please Report a Problem.</source>
+        <target xml:lang="ne-NP" state="needs-translation">Bloom failed to update from version {0} to version {1}. If this continues to happen, try restarting your computer. If it still happens, please Report a Problem.</target>
+        <note>ID: CollectionTab.VelopackUpdateFailed</note>
+      </trans-unit>
       <trans-unit id="Installer.InstallationInProgress">
         <source xml:lang="en">Installing...</source>
         <target xml:lang="ne-NP" state="needs-translation">Installing...</target>
