@@ -1014,29 +1014,39 @@ namespace Bloom.Publish.Rab
                 return ExportPrepareBooks(paths);
 
             var bookInfos = new List<BookInfo>();
+            var normalizedTrackedBooks = new List<RabBookPublishInfo>();
             foreach (var trackedBook in state.Books)
             {
-                var matchingBook = _collectionModel
-                    .TheOneEditableCollection.GetBookInfos()
-                    .FirstOrDefault(info =>
-                        string.Equals(
-                            info.FolderPath,
-                            trackedBook.FolderPath,
-                            StringComparison.OrdinalIgnoreCase
-                        )
-                    );
-                if (matchingBook == null)
-                    throw new ApplicationException(
-                        $"Bloom could not find the tracked book '{trackedBook.Title}' in this collection anymore."
-                    );
+                var matchingBook = FindTrackedBookInfo(
+                    new RabTrackedBookInfo
+                    {
+                        BookId = trackedBook.BookId,
+                        FolderPath = trackedBook.FolderPath,
+                        Title = trackedBook.Title,
+                    }
+                );
 
                 bookInfos.Add(matchingBook);
+                normalizedTrackedBooks.Add(
+                    new RabBookPublishInfo
+                    {
+                        BookId = string.IsNullOrWhiteSpace(trackedBook.BookId)
+                            ? matchingBook.Id
+                            : trackedBook.BookId,
+                        FolderPath = matchingBook.FolderPath,
+                        Title = matchingBook.Title,
+                        BloomPubPath = trackedBook.BloomPubPath,
+                        ThumbnailFileName = trackedBook.ThumbnailFileName,
+                    }
+                );
             }
 
             return ExportBookInfos(
                 paths,
                 bookInfos,
-                state.Books.ToDictionary(book => book.FolderPath, StringComparer.OrdinalIgnoreCase)
+                normalizedTrackedBooks
+                    .Where(book => !string.IsNullOrWhiteSpace(book.FolderPath))
+                    .ToDictionary(book => book.FolderPath, StringComparer.OrdinalIgnoreCase)
             );
         }
 
@@ -1057,12 +1067,11 @@ namespace Bloom.Publish.Rab
                     && existingByFolder.TryGetValue(bookInfo.FolderPath, out var found)
                         ? found
                         : null;
-                var bloomPubPath =
+                var bloomPubPath = ResolveBloomPubPath(
+                    paths.BloomPubRoot,
+                    bookInfo.FolderName + BloomPubMaker.BloomPubExtensionWithDot,
                     existing?.BloomPubPath
-                    ?? Path.Combine(
-                        paths.BloomPubRoot,
-                        bookInfo.FolderName + BloomPubMaker.BloomPubExtensionWithDot
-                    );
+                );
 
                 if (
                     !string.IsNullOrWhiteSpace(bloomPubPath)
@@ -1087,12 +1096,11 @@ namespace Bloom.Publish.Rab
                         ? found
                         : null;
                 var bookTitle = GetBookTitleForRab(book, bookInfo);
-                var bloomPubPath =
+                var bloomPubPath = ResolveBloomPubPath(
+                    paths.BloomPubRoot,
+                    bookInfo.FolderName + BloomPubMaker.BloomPubExtensionWithDot,
                     existing?.BloomPubPath
-                    ?? Path.Combine(
-                        paths.BloomPubRoot,
-                        bookInfo.FolderName + BloomPubMaker.BloomPubExtensionWithDot
-                    );
+                );
 
                 if (RobustFile.Exists(bloomPubPath))
                 {
@@ -1133,6 +1141,33 @@ namespace Bloom.Publish.Rab
             }
 
             return exportedBooks;
+        }
+
+        internal static string ResolveBloomPubPath(
+            string bloomPubRoot,
+            string defaultFileName,
+            string existingBloomPubPath
+        )
+        {
+            var fileName = defaultFileName;
+            if (!string.IsNullOrWhiteSpace(existingBloomPubPath))
+            {
+                var existingFileName = Path.GetFileName(existingBloomPubPath);
+                if (!string.IsNullOrWhiteSpace(existingFileName))
+                    fileName = existingFileName;
+
+                var existingDirectory = Path.GetDirectoryName(existingBloomPubPath);
+                if (
+                    string.Equals(
+                        existingDirectory,
+                        bloomPubRoot,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                    return existingBloomPubPath;
+            }
+
+            return Path.Combine(bloomPubRoot, fileName);
         }
 
         private static void DeleteStaleBloomPubExports(
@@ -1820,6 +1855,10 @@ namespace Bloom.Publish.Rab
                 ["ANDROID_SDK_ROOT"] = string.Empty,
                 ["JAVA_HOME"] = string.Empty,
                 ["JDK_HOME"] = string.Empty,
+                // Disable the Gradle daemon so no background JVM process lingers after the build.
+                // A persistent Gradle daemon would hold file handles inside the collection's
+                // "Bloom App Data/build" folder, preventing the collection from being renamed.
+                ["GRADLE_OPTS"] = "-Dorg.gradle.daemon=false",
             };
         }
 
@@ -2789,6 +2828,47 @@ namespace Bloom.Publish.Rab
                         StringComparison.OrdinalIgnoreCase
                     )
                 );
+
+                // These fallbacks may be helpful where things have changed since the last build,
+                // especially when the collection has been renamed.
+                if (matchingBookInfo == null)
+                {
+                    var trackedFolderName = Path.GetFileName(
+                        trackedBook.FolderPath.TrimEnd(
+                            Path.DirectorySeparatorChar,
+                            Path.AltDirectorySeparatorChar
+                        )
+                    );
+                    if (!string.IsNullOrWhiteSpace(trackedFolderName))
+                    {
+                        var folderNameMatches = bookInfos
+                            .Where(info =>
+                                string.Equals(
+                                    info.FolderName,
+                                    trackedFolderName,
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            )
+                            .ToList();
+                        if (folderNameMatches.Count == 1)
+                            matchingBookInfo = folderNameMatches[0];
+                    }
+                }
+            }
+
+            if (matchingBookInfo == null && !string.IsNullOrWhiteSpace(trackedBook.Title))
+            {
+                var titleMatches = bookInfos
+                    .Where(info =>
+                        string.Equals(
+                            info.Title,
+                            trackedBook.Title,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                    .ToList();
+                if (titleMatches.Count == 1)
+                    matchingBookInfo = titleMatches[0];
             }
 
             if (matchingBookInfo == null)
@@ -2824,6 +2904,10 @@ namespace Bloom.Publish.Rab
         {
             appDefPath = string.IsNullOrWhiteSpace(appDefPath) ? state?.AppDefPath : appDefPath;
             appDefPath = string.IsNullOrWhiteSpace(appDefPath) ? FindAppDefPath(paths) : appDefPath;
+            // The stored path may be stale (e.g. after the collection folder was renamed).
+            // Fall back to searching the current workspace so the project is still found.
+            if (!string.IsNullOrWhiteSpace(appDefPath) && !RobustFile.Exists(appDefPath))
+                appDefPath = FindAppDefPath(paths);
             if (string.IsNullOrWhiteSpace(appDefPath) || !RobustFile.Exists(appDefPath))
                 return state;
 
