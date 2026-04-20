@@ -7,7 +7,6 @@ import "./signLanguage.less";
 import {
     get,
     getWithConfig,
-    post,
     postDataWithConfig,
     postJson,
 } from "../../../utils/bloomApi";
@@ -18,6 +17,7 @@ import theOneLocalizationManager from "../../../lib/localizationManager/localiza
 import calculateAspectRatio from "calculate-aspect-ratio";
 import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 import { updateVideoInContainer } from "../../js/bloomVideo";
+import { importVideoWithProgressDialog } from "../../js/ImportVideoProgressDialog";
 import { selectVideoContainer } from "../../js/videoUtils";
 import {
     getCanvasElementManager,
@@ -51,6 +51,7 @@ interface IComponentState {
         fileSize: string;
         frameSize: string;
         framesPerSecond: string;
+        megabitsPerSecond: string;
         fileFormat: string;
         startSeconds: string;
         endSeconds: string;
@@ -75,6 +76,7 @@ const emptyVideoStatistics = {
     fileSize: "",
     frameSize: "",
     framesPerSecond: "",
+    megabitsPerSecond: "",
     fileFormat: "",
     startSeconds: UNTRIMMED_TIMING,
     endSeconds: UNTRIMMED_TIMING,
@@ -395,6 +397,7 @@ export class SignLanguageToolControls extends React.Component<
                             : "")}
                 </div>
                 <div>{this.state.videoStatistics.framesPerSecond}</div>
+                <div>{this.state.videoStatistics.megabitsPerSecond}</div>
                 <div>{this.state.videoStatistics.fileFormat}</div>
             </div>
         );
@@ -571,8 +574,12 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private importRecording() {
-        post("signLanguage/importVideo", (result) => {
-            this.updateVideo(result.data);
+        importVideoWithProgressDialog((importedPath) => {
+            if (!importedPath) {
+                return;
+            }
+
+            this.updateVideo(importedPath);
             this.refreshAfterVideoChange();
         });
     }
