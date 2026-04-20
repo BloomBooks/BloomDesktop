@@ -6,6 +6,7 @@ import {
     PrepareAppStepper,
     PrepareStepTooltipContent,
 } from "./PrepareAppStepper";
+import { rabInstallerDownloadUrl } from "./AppPublisherScreen";
 
 describe("PrepareAppStepper", () => {
     let container: HTMLDivElement | null = null;
@@ -128,8 +129,7 @@ describe("PrepareAppStepper", () => {
     it("adds a tooltip only to steps that provide one", () => {
         const tooltipText =
             "This will download the installer for Reading App Builder. Alternatively you can download and run it yourself from [here].";
-        const tooltipHref =
-            "https://bloomlibrary.org/installers/Reading-App-Builder-For-Bloom-6-4-Setup.exe";
+        const tooltipHref = rabInstallerDownloadUrl;
         const host = renderStepper(
             <PrepareAppStepper
                 steps={[
@@ -177,8 +177,7 @@ describe("PrepareAppStepper", () => {
             <PrepareStepTooltipContent
                 tooltip={{
                     text: "Download the installer from [here].",
-                    linkHref:
-                        "https://bloomlibrary.org/installers/Reading-App-Builder-For-Bloom-6-4-Setup.exe",
+                    linkHref: rabInstallerDownloadUrl,
                 }}
             />,
         );

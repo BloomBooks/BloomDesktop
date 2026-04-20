@@ -42,15 +42,15 @@ namespace Bloom.Publish.Rab
         private const string kBloomRabRegistrySubKey =
             @"Software\SIL\Reading App Builder for Bloom";
         private const int kUserCanceledShellLaunchErrorCode = 1223;
-        private const string kRabSetupInstallerPrefix = "Reading-App-Builder-14.0";
+        private const string kRabSetupInstallerPrefix = "Reading-App-Builder-For-Bloom-6-4";
         private const string kRabSetupInstallerSuffix = "-Setup.exe";
         private const string kRabSetupInstallerFileName =
-            "Reading-App-Builder-For-Bloom-6-4-Setup.exe";
+            kRabSetupInstallerPrefix + kRabSetupInstallerSuffix;
         private const string kDefaultBundledIconId = "bloom-app-icon-52";
 
         // Keep this URL in sync with rabInstallerDownloadUrl in BloomBrowserUI/publish/Apps/AppPublisherScreen.tsx.
         private const string kRabSetupDownloadUrl =
-            "https://bloomlibrary.org/installers/Reading-App-Builder-For-Bloom-6-4-Setup.exe";
+            "https://bloomlibrary.org/installers/" + kRabSetupInstallerFileName;
         private const string kRabSetupLanguage = "en";
         private const int kRabLaunchPollIntervalMs = 250;
         private const int kRabLaunchTimeoutMs = 60000;
