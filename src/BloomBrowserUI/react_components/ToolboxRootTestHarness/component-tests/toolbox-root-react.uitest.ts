@@ -63,14 +63,14 @@ test.describe("ToolboxRoot React mode", () => {
             timeout: 15000,
         });
 
-        await expect(page.getByText("Talking Book").first()).toBeVisible({
+        await expect(page.getByText("Talking Book Tool").first()).toBeVisible({
             timeout: 10000,
         });
         await expect(page.getByText("More...").first()).toBeVisible({
             timeout: 10000,
         });
 
-        await page.getByText("Talking Book").first().click();
+        await page.getByText("Talking Book Tool").first().click();
 
         await expect(
             page.getByText("Talking tool content injected"),
@@ -131,7 +131,7 @@ test.describe("ToolboxRoot React mode", () => {
             timeout: 15000,
         });
 
-        await expect(page.getByText("Decodable Reader")).toHaveCount(0);
+        await expect(page.getByText("Decodable Reader Tool")).toHaveCount(0);
 
         await page.evaluate(() => {
             window.dispatchEvent(
@@ -144,7 +144,9 @@ test.describe("ToolboxRoot React mode", () => {
             );
         });
 
-        await expect(page.getByText("Decodable Reader").first()).toBeVisible({
+        await expect(
+            page.getByText("Decodable Reader Tool").first(),
+        ).toBeVisible({
             timeout: 10000,
         });
         await expect(page.getByText("Decodable controls injected")).toBeVisible(
@@ -173,13 +175,13 @@ test.describe("ToolboxRoot React mode", () => {
             timeout: 15000,
         });
 
-        await expect(page.getByText("Canvas").first()).toBeVisible({
+        await expect(page.getByText("Canvas Tool").first()).toBeVisible({
             timeout: 10000,
         });
 
         await expect(await getToolHeaderTexts(page)).toEqual([
-            "Canvas",
-            "Talking Book",
+            "Canvas Tool",
+            "Talking Book Tool",
             "More...",
         ]);
     });
@@ -211,14 +213,41 @@ test.describe("ToolboxRoot React mode", () => {
             );
         });
 
-        await expect(page.getByText("Decodable Reader").first()).toBeVisible({
+        await expect(
+            page.getByText("Decodable Reader Tool").first(),
+        ).toBeVisible({
             timeout: 10000,
         });
 
         await expect(await getToolHeaderTexts(page)).toEqual([
-            "Canvas",
-            "Decodable Reader",
-            "Talking Book",
+            "Canvas Tool",
+            "Decodable Reader Tool",
+            "Talking Book Tool",
+            "More...",
+        ]);
+    });
+
+    test("accordion headers match More panel tool names", async ({ page }) => {
+        await routeToolboxApis(page);
+
+        await page.route("**/bloom/api/toolbox/enabledTools", async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: "text/plain",
+                body: "impairmentVisualizer,signLanguage,settings",
+            });
+        });
+
+        await page.goto("/?component=ToolboxRootTestHarness");
+
+        await expect(page.getByText("Loading component…")).toHaveCount(0, {
+            timeout: 15000,
+        });
+
+        await expect(await getToolHeaderTexts(page)).toEqual([
+            "Impairment Visualizer",
+            "Sign Language Tool",
+            "Talking Book Tool",
             "More...",
         ]);
     });
@@ -243,10 +272,10 @@ test.describe("ToolboxRoot React mode", () => {
         });
 
         await expect(await getToolHeaderTexts(page)).toEqual([
-            "Canvas",
-            "Motion",
-            "Music",
-            "Talking Book",
+            "Canvas Tool",
+            "Motion Tool",
+            "Music Tool",
+            "Talking Book Tool",
             "More...",
         ]);
 
