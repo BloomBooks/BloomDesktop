@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 
-import { Button, CircularProgress } from "@mui/material";
+import { Button, CircularProgress, LinearProgress } from "@mui/material";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { post, postJson } from "../../utils/bloomApi";
@@ -44,7 +44,8 @@ export interface IProgressDialogProps {
     onReadyToReceive?: () => void;
 
     dialogEnvironment?: IBloomDialogEnvironmentParams;
-    determinate?: boolean;
+    determinate?: boolean; // if not set true, shows circular spinner regardless of linearProgess setting
+    linearProgress?: boolean; // default is circular progress; set to true for linear progress bar instead
     size?: "small"; // For a much smaller dialog, when we only expect a few lines.
 }
 
@@ -209,7 +210,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
                 }
             }}
         >
-            {props.determinate && (
+            {props.determinate && !props.linearProgress && (
                 <div
                     css={css`
                         position: absolute;
@@ -276,6 +277,16 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
                     setMessages={setMessages}
                 />
             </DialogMiddle>
+            {props.determinate && props.linearProgress && (
+                <LinearProgress
+                    variant="determinate"
+                    value={percent}
+                    css={css`
+                        height: 10px;
+                        border-radius: 5px;
+                    `}
+                />
+            )}
             <DialogBottomButtons>
                 {done ? (
                     <React.Fragment>
