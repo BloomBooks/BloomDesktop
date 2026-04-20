@@ -101,8 +101,11 @@ const normalizeBookDisplayAttributes = (
 // there ever being more than one instance of pageThumbnailList.
 const pageIdToRefreshMap = new Map<string, () => void>();
 
-const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
+const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
+    props,
+) => {
     const [realPageList, setRealPageList] = useState<IPage[]>([]);
+    const [pageLayout, setPageLayout] = useState(props.initialPageLayout);
     // a value to be bumped to force a reload of page content when the websocket detects
     // a request for this.
     const [reloadValue, setReloadValue] = useState(0);
@@ -238,6 +241,7 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
             // WebThumbnailList hears about it, and we get it along with the page list
             // in case we miss a notification.
             setSelectedPageId(response.data.selectedPageId);
+            setPageLayout(response.data.pageLayout || "A5Portrait");
             setRealPageList(response.data.pages);
             // The current page may need to be refreshed as well for new or retitled books.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-9039.
@@ -403,7 +407,7 @@ const PageList: React.FunctionComponent<{ pageLayout: string }> = (props) => {
                     <PageThumbnail
                         page={pageContent}
                         left={!(index % 2)}
-                        pageLayout={props.pageLayout}
+                        pageLayout={pageLayout}
                         configureReloadCallback={(id, callback) =>
                             pageIdToRefreshMap.set(id, callback)
                         }
@@ -557,7 +561,7 @@ $(window).ready(() => {
     const pageLayout =
         document.body.getAttribute("data-pageSize") || "A5Portrait";
     ReactDOM.render(
-        <PageList pageLayout={pageLayout} />,
+        <PageList initialPageLayout={pageLayout} />,
         document.getElementById("pageGridWrapper"),
     );
 });

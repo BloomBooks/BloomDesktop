@@ -758,7 +758,7 @@
         <note>ID: BookAndPageSettings.PageArea</note>
         <note>Area label for tabs/pages that affect only the current page.</note>
       </trans-unit>
-      <trans-unit id="BookAndPageSettings.PageArea.Description" sil:dynamic="true" translate="no">
+      <trans-unit id="BookAndPageSettings.PageArea.Description" sil:dynamic="true">
         <source xml:lang="en">Page settings apply to the current page.</source>
         <note>ID: BookAndPageSettings.PageArea.Description</note>
         <note>Description text shown for the Page area in the combined Book and Page Settings dialog.</note>
@@ -830,11 +830,11 @@
         <note>BookSettings.ContentPagesGroupLabel</note>
         <note>obsolete as of Bloom 6.4, replaced by BookSettings.ThemeAndLayoutGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" translate="no" sil:dynamic="true">
+      <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Theme &amp; Layout</source>
         <note>ID: BookSettings.ThemeAndLayoutGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.LanguagesGroupLabel" translate="no" sil:dynamic="true">
+      <trans-unit id="BookSettings.LanguagesGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Languages</source>
         <note>ID: BookSettings.LanguagesGroupLabel</note>
       </trans-unit>
@@ -970,12 +970,12 @@
         <source xml:lang="en">The selected page theme does not support the following settings.</source>
         <note>BookSettings.ThemeDisablesOptionsNotice</note>
       </trans-unit>
-      <trans-unit id="BookSettings.ThemeDisablesOptionsNoticeWithLink" translate="no" sil:dynamic="true">
+      <trans-unit id="BookSettings.ThemeDisablesOptionsNoticeWithLink" sil:dynamic="true">
         <source xml:lang="en">The selected [Page Theme] does not support the following settings.</source>
         <note>BookSettings.ThemeDisablesOptionsNoticeWithLink</note>
         <note>When you translate, make sure to include some text in between square brackets. Those become the clickable link that opens Book and Page Settings.</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" translate="no" sil:dynamic="true">
+      <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" sil:dynamic="true">
         <source xml:lang="en">This feature requires a newer [Page Theme].</source>
         <note>ID: EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message</note>
         <note>When you translate, make sure to include some text in between square brackets. Those become the clickable link that opens Book and Page Settings.</note>
@@ -1016,11 +1016,11 @@
         <source xml:lang="en">When you publish a book to the web or as an ebook, Bloom will flag any problematic fonts. For example, we cannot legally host most Microsoft fonts on BloomLibrary.org.</source>
         <note>ID: BookSettings.Fonts.Problematic</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.OtherLanguages" translate="no">
+      <trans-unit id="BookSettings.Fonts.OtherLanguages">
         <source xml:lang="en">Other Languages</source>
         <note>ID: BookSettings.Fonts.OtherLanguages</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.MaybeProblematic" translate="no">
+      <trans-unit id="BookSettings.Fonts.MaybeProblematic">
         <source xml:lang="en">The Bloom file for this book also has some text in other languages. Please ignore any warnings here unless you plan to publish the book with these languages.</source>
         <note>ID: BookSettings.Fonts.MaybeProblematic</note>
       </trans-unit>
@@ -1225,31 +1225,6 @@
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Description</note>
         <note>Help text explaining how to form a valid Android package name. Keep the example package names lowercase and dot-separated.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.TipsLabel" translate="no">
-        <source xml:lang="en">Tips on choosing the package name:</source>
-        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.TipsLabel</note>
-        <note>Obsolete as of Bloom 6.4</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip1" translate="no">
-        <source xml:lang="en">Start the package name by turning round the web address of your organisation, e.g. if your web address is 'sil.org', the package name can start with 'org.sil'.</source>
-        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip1</note>
-        <note>Obsolete as of Bloom 6.4</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip2" translate="no">
-        <source xml:lang="en">After that, add additional strings to identify the app, such as 'org.sil.xyz.stories' where 'xyz' is the language code.</source>
-        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip2</note>
-        <note>Obsolete as of Bloom 6.4</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip3" translate="no">
-        <source xml:lang="en">For test applications, you can use a temporary package name beginning with 'com.example', e.g. 'com.example.test1', 'com.example.stories', etc.</source>
-        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip3</note>
-        <note>Obsolete as of Bloom 6.4</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Tip4" translate="no">
-        <source xml:lang="en">For additional help, please contact the digital publishing department of your organisation.</source>
-        <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Tip4</note>
-        <note>Obsolete as of Bloom 6.4</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Required" translate="no">
         <source xml:lang="en">Package name is required.</source>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Required</note>
@@ -1394,11 +1369,6 @@
         <source xml:lang="en">The Reading App Builder project is already prepared for this collection.</source>
         <note>ID: PublishTab.Apps.Prepare.DoneTooltip</note>
         <note>Tooltip shown when the Prepare step is already complete.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Apps.Setup.Tooltip" translate="no">
-        <source xml:lang="en">Create the Reading App Builder project in this collection's rab folder.</source>
-        <note>ID: PublishTab.Apps.Setup.Tooltip</note>
-        <note>obsolete as of 6.4</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Prepare.TooltipBloomAppData" translate="no">
         <source xml:lang="en">Create the Reading App Builder project in this collection's Bloom App Data folder.</source>

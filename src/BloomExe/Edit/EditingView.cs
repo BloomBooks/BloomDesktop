@@ -490,6 +490,13 @@ namespace Bloom.Edit
             }
             _pageListApi.ClearPagesCache();
             _pageListView.SetBook(_model.CurrentBook);
+            if (emptyThumbnailCache && _model.CurrentBook != null)
+            {
+                var pageListUrl = _model.GetUrlForPageListFile();
+                _mainBrowser.RunJavascriptFireAndForget(
+                    "workspaceBundle.switchThumbnailPage('" + pageListUrl + "');"
+                );
+            }
         }
 
         internal async Task<string> GetStringFromJavascriptAsync(string script)
