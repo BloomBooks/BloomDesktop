@@ -2514,12 +2514,12 @@
         <target xml:lang="my" state="needs-translation">Duplicate</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true">
         <source xml:lang="en">Fill Background</source>
         <target xml:lang="my" state="needs-translation">Fill Background</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FillBackground</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true">
         <source xml:lang="en">Expand image to fill space</source>
         <target xml:lang="my" state="needs-translation">Expand image to fill space</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FillSpace</note>
