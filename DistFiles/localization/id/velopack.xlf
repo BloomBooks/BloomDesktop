@@ -187,7 +187,7 @@
       </trans-unit>
       <trans-unit id="dialogs.uninstall_success.content">
         <source xml:lang="en">{app_title} was successfully uninstalled.</source>
-        <target xml:lang="id">{app_title} berhasil dicopot pemasangannya.</target>
+        <target xml:lang="id" state="needs-translation">{app_title} was successfully uninstalled.</target>
       </trans-unit>
     </body>
   </file>

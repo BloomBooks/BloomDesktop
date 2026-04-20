@@ -595,6 +595,41 @@
         <target xml:lang="lo" state="needs-translation">Upper-Armenian</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Program" translate="no">
+        <source xml:lang="en">Program</source>
+        <target xml:lang="lo" state="needs-translation">Program</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Program</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodes" translate="no">
+        <source xml:lang="en">QR Codes</source>
+        <target xml:lang="lo" state="needs-translation">QR Codes</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodes</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes" translate="no">
+        <source xml:lang="en">Show QR Codes</source>
+        <target xml:lang="lo" state="needs-translation">Show QR Codes</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.ShowQrCodes</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description" translate="no">
+        <source xml:lang="en">Scanning the code or clicking the badge will take the user to the collection of books in this collection's primary language. Note, if you want to use this but your branding does not show it, contact us.</source>
+        <target xml:lang="lo" state="needs-translation">Scanning the code or clicking the badge will take the user to the collection of books in this collection's primary language. Note, if you want to use this but your branding does not show it, contact us.</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption" translate="no">
+        <source xml:lang="en">Caption</source>
+        <target xml:lang="lo" state="needs-translation">Caption</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Caption</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description" translate="no">
+        <source xml:lang="en">If your caption contains "{0}", Bloom will fill this in with the name of the language.</source>
+        <target xml:lang="lo" state="needs-translation">If your caption contains "{0}", Bloom will fill this in with the name of the language.</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Caption.Description</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText" translate="no">
+        <source xml:lang="en">Get more books in the {0} language on BloomLibrary.org.</source>
+        <target xml:lang="lo" state="needs-translation">Get more books in the {0} language on BloomLibrary.org.</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
         <source xml:lang="en">Special Script Settings</source>
         <target xml:lang="lo" state="needs-translation">Special Script Settings</target>
@@ -604,6 +639,11 @@
         <source xml:lang="en">Settings</source>
         <target xml:lang="lo" state="final">ການຕັ້ງຄ່າ</target>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.Title">
+        <source xml:lang="en">Collection Settings</source>
+        <target xml:lang="lo" state="needs-translation">Collection Settings</target>
+        <note>ID: CollectionSettingsDialog.Title</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink" approved="yes">
         <source xml:lang="en">Change...</source>
@@ -1019,6 +1059,11 @@
         <source xml:lang="en">New...</source>
         <target xml:lang="lo" state="needs-translation">New...</target>
         <note>ID: ColorPicker.New</note>
+      </trans-unit>
+      <trans-unit id="ColorPicker.SampleColor" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Sample Color</source>
+        <target xml:lang="lo" state="needs-translation">Sample Color</target>
+        <note>ID: ColorPicker.SampleColor</note>
       </trans-unit>
       <trans-unit id="Common.BookSettings">
         <source xml:lang="en">Book Settings</source>
@@ -1538,6 +1583,26 @@
         <source xml:lang="en">Copy Page</source>
         <target xml:lang="lo" state="needs-translation">Copy Page</target>
         <note>ID: EditTab.CopyPage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.Standard" translate="no">
+        <source xml:lang="en">Standard</source>
+        <target xml:lang="lo" state="needs-translation">Standard</target>
+        <note>ID: EditTab.CustomCover.Standard</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.StandardLayout" translate="no">
+        <source xml:lang="en">Standard Layout</source>
+        <target xml:lang="lo" state="needs-translation">Standard Layout</target>
+        <note>ID: EditTab.CustomCover.StandardLayout</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.Custom" translate="no">
+        <source xml:lang="en">Custom</source>
+        <target xml:lang="lo" state="needs-translation">Custom</target>
+        <note>ID: EditTab.CustomCover.Custom</note>
+      </trans-unit>
+      <trans-unit id="EditTab.CustomCover.CustomLayout" translate="no">
+        <source xml:lang="en">Custom Layout</source>
+        <target xml:lang="lo" state="needs-translation">Custom Layout</target>
+        <note>ID: EditTab.CustomCover.CustomLayout</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Layout</source>
@@ -2099,6 +2164,11 @@
         <target xml:lang="lo" state="final">ຄລິກທີ່ນີ້ເພື່ອເລືອກເອົາເລື້ຶອງ</target>
         <note>ID: EditTab.FrontMatter.TopicPrompt</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.TopicPrompt2" translate="no">
+        <source xml:lang="en">Choose topic</source>
+        <target xml:lang="lo" state="needs-translation">Choose topic</target>
+        <note>ID: EditTab.FrontMatter.TopicPrompt2</note>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Acknowledgments for translated version, in {lang}</source>
         <target xml:lang="lo" state="final">ການຢັ້ງຢືນສໍາລັບການສະບັບທ້ອງຖິ່ນ, , ໃນ {lang}</target>
@@ -2499,6 +2569,11 @@
         <target xml:lang="lo" state="needs-translation">Old Lace</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BecomeBackground" translate="no">
+        <source xml:lang="en">Become background</source>
+        <target xml:lang="lo" state="needs-translation">Become background</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.BecomeBackground</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true">
         <source xml:lang="en">Choose video from your computer...</source>
         <target xml:lang="lo" state="needs-translation">Choose video from your computer...</target>
@@ -2509,10 +2584,20 @@
         <target xml:lang="lo" state="needs-translation">Copy text</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Use for book thumbnail</source>
+        <target xml:lang="lo" state="needs-translation">Use for book thumbnail</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true">
         <source xml:lang="en">Duplicate</source>
         <target xml:lang="lo" state="needs-translation">Duplicate</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FieldType" translate="no">
+        <source xml:lang="en">Field Type:</source>
+        <target xml:lang="lo" state="needs-translation">Field Type:</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.FieldType</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate="no">
         <source xml:lang="en">Fill Background</source>
@@ -2538,6 +2623,11 @@
         <source xml:lang="en">Outer Outline Color</source>
         <target xml:lang="lo" state="needs-translation">Outer Outline Color</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language" translate="no">
+        <source xml:lang="en">Language:</source>
+        <target xml:lang="lo" state="needs-translation">Language:</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
@@ -2578,6 +2668,11 @@
         <source xml:lang="en">Style</source>
         <target xml:lang="lo" state="final">ແບບ</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ElementType" sil:dynamic="true">
+        <source xml:lang="en">Element Type</source>
+        <target xml:lang="lo" state="needs-translation">Element Type</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.ElementType</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Caption" sil:dynamic="true">
         <source xml:lang="en">Caption</source>
@@ -2623,6 +2718,11 @@
         <source xml:lang="en">Text Color</source>
         <target xml:lang="lo" state="needs-translation">Text Color</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextOutlineColor" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Text Outline Color</source>
+        <target xml:lang="lo" state="needs-translation">Text Outline Color</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Options.TextOutlineColor</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true">
         <source xml:lang="en">Text Block</source>
@@ -4089,6 +4189,36 @@
         <target xml:lang="lo" state="needs-translation">Publishing</target>
         <note>This is shown while Bloom is sharing a book over wifi, over a usb cable, or uploading. </note>
       </trans-unit>
+      <trans-unit id="BookGridSetupDialog.Title">
+        <source xml:lang="en">Book Grid Setup</source>
+        <target xml:lang="lo" state="needs-translation">Book Grid Setup</target>
+        <note>ID: BookGridSetupDialog.Title</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.BooksInCollection">
+        <source xml:lang="en">Books in this Collection</source>
+        <target xml:lang="lo" state="needs-translation">Books in this Collection</target>
+        <note>ID: BookGridSetup.BooksInCollection</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.AddBook">
+        <source xml:lang="en">Add Book →</source>
+        <target xml:lang="lo" state="needs-translation">Add Book →</target>
+        <note>ID: BookGridSetup.AddBook</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.AddAllBooks">
+        <source xml:lang="en">Add All Books →</source>
+        <target xml:lang="lo" state="needs-translation">Add All Books →</target>
+        <note>ID: BookGridSetup.AddAllBooks</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.LinksInGrid">
+        <source xml:lang="en">Links in Grid (%0)</source>
+        <target xml:lang="lo" state="needs-translation">Links in Grid (%0)</target>
+        <note>ID: BookGridSetup.LinksInGrid</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.BooksInApp" translate="no">
+        <source xml:lang="en">Books in App (%0)</source>
+        <target xml:lang="lo" state="needs-translation">Books in App (%0)</target>
+        <note>ID: BookGridSetup.BooksInApp</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Common.StopPublishing">
         <source xml:lang="en">Stop Publishing</source>
         <target xml:lang="lo" state="needs-translation">Stop Publishing</target>
@@ -4807,6 +4937,11 @@
         <source xml:lang="en">Exclude print bleed around page edges</source>
         <target xml:lang="lo" state="needs-translation">Exclude print bleed around page edges</target>
         <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.IncludeBackgroundColors" translate="no">
+        <source xml:lang="en">Include background colors</source>
+        <target xml:lang="lo" state="needs-translation">Include background colors</target>
+        <note>ID: PublishTab.PdfMaker.IncludeBackgroundColors</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
         <source xml:lang="en">Making PDF from HTML</source>

@@ -2,6 +2,11 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="fr">
     <body>
+      <trans-unit id="CollectionTab.VelopackUpdateFailed" translate="no">
+        <source xml:lang="en">Bloom failed to update from version {0} to version {1}. If this continues to happen, try restarting your computer. If it still happens, please Report a Problem.</source>
+        <target xml:lang="fr" state="needs-translation">Bloom failed to update from version {0} to version {1}. If this continues to happen, try restarting your computer. If it still happens, please Report a Problem.</target>
+        <note>ID: CollectionTab.VelopackUpdateFailed</note>
+      </trans-unit>
       <trans-unit id="Installer.InstallationInProgress" approved="yes">
         <source xml:lang="en">Installing...</source>
         <target xml:lang="fr" state="final">Installation en cours...</target>
@@ -377,31 +382,6 @@
         <source xml:lang="en">Move into {0}</source>
         <target xml:lang="fr" state="needs-translation">Move into {0}</target>
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
-      </trans-unit>
-      <trans-unit id="BookGridSetupDialog.Title" approved="yes">
-        <source xml:lang="en">Book Grid Setup</source>
-        <target xml:lang="fr" state="final">Configuration de la Grille de Livres</target>
-        <note>ID: BookGridSetupDialog.Title</note>
-      </trans-unit>
-      <trans-unit id="BookGridSetup.BooksInCollection" approved="yes">
-        <source xml:lang="en">Books in this Collection</source>
-        <target xml:lang="fr" state="final">Livres de cette Collection</target>
-        <note>ID: BookGridSetup.BooksInCollection</note>
-      </trans-unit>
-      <trans-unit id="BookGridSetup.AddBook" approved="yes">
-        <source xml:lang="en">Add Book →</source>
-        <target xml:lang="fr" state="final">Ajouter un Livre →</target>
-        <note>ID: BookGridSetup.AddBook</note>
-      </trans-unit>
-      <trans-unit id="BookGridSetup.AddAllBooks" approved="yes">
-        <source xml:lang="en">Add All Books →</source>
-        <target xml:lang="fr" state="final">Ajouter Tous les Livres →</target>
-        <note>ID: BookGridSetup.AddAllBooks</note>
-      </trans-unit>
-      <trans-unit id="BookGridSetup.LinksInGrid" approved="yes">
-        <source xml:lang="en">Links in Grid (%0)</source>
-        <target xml:lang="fr" state="final">Liens dans la Grille (%0)</target>
-        <note>ID: BookGridSetup.LinksInGrid</note>
       </trans-unit>
     </body>
   </file>
