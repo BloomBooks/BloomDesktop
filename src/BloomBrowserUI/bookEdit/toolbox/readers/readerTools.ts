@@ -37,6 +37,30 @@ window.addEventListener("message", processDLRMessage, false);
 let readerToolsInitialized: boolean = false;
 let lastReaderToolSettingsContent: string | undefined;
 const maxReaderSettingsLoadAttempts = 5;
+let decodableToggleRenderVersion = 0;
+let leveledToggleRenderVersion = 0;
+let lastDecodableToggleBookKey: string | undefined;
+let lastLeveledToggleBookKey: string | undefined;
+function getReaderToggleRenderKey(
+    isForLeveled: boolean,
+    currentBookKey: string,
+): string {
+    if (isForLeveled) {
+        if (currentBookKey !== lastLeveledToggleBookKey) {
+            lastLeveledToggleBookKey = currentBookKey;
+            leveledToggleRenderVersion++;
+        }
+
+        return `leveled-${leveledToggleRenderVersion}`;
+    }
+
+    if (currentBookKey !== lastDecodableToggleBookKey) {
+        lastDecodableToggleBookKey = currentBookKey;
+        decodableToggleRenderVersion++;
+    }
+
+    return `decodable-${decodableToggleRenderVersion}`;
+}
 
 // I'm not sure how copilot came to add this normalization. It claims that it is
 // useful defensiveness against some uncertainty about whether Axios will return
@@ -225,26 +249,52 @@ function markLeveledStatus(): void {
 export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
     // load synphony settings and then finish init
     return beginLoadSynphonySettings().then(() => {
+        const runWithReaderModelReady = (action: () => void) => {
+            const model = getTheOneReaderToolsModel();
+            if (model.synphony) {
+                action();
+                return;
+            }
+
+            beginLoadSynphonySettings().then(() => action());
+        };
+
+        const delegationRoot = $(document);
+
         // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
-        $("#incStage").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().incrementStage();
-        });
+        delegationRoot
+            .off("click.readerTools", "#incStage")
+            .on("click.readerTools", "#incStage", () => {
+                runWithReaderModelReady(() =>
+                    getTheOneReaderToolsModel().incrementStage(),
+                );
+            });
 
-        $("#decStage").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().decrementStage();
-        });
+        delegationRoot
+            .off("click.readerTools", "#decStage")
+            .on("click.readerTools", "#decStage", () => {
+                runWithReaderModelReady(() =>
+                    getTheOneReaderToolsModel().decrementStage(),
+                );
+            });
 
-        $("#sortAlphabetic").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().sortAlphabetically();
-        });
+        delegationRoot
+            .off("click.readerTools", "#sortAlphabetic")
+            .on("click.readerTools", "#sortAlphabetic", () => {
+                getTheOneReaderToolsModel().sortAlphabetically();
+            });
 
-        $("#sortLength").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().sortByLength();
-        });
+        delegationRoot
+            .off("click.readerTools", "#sortLength")
+            .on("click.readerTools", "#sortLength", () => {
+                getTheOneReaderToolsModel().sortByLength();
+            });
 
-        $("#sortFrequency").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().sortByFrequency();
-        });
+        delegationRoot
+            .off("click.readerTools", "#sortFrequency")
+            .on("click.readerTools", "#sortFrequency", () => {
+                getTheOneReaderToolsModel().sortByFrequency();
+            });
 
         getTheOneReaderToolsModel().updateControlContents();
         $("#toolbox").accordion("refresh");
@@ -265,13 +315,33 @@ export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
 export function beginInitializeLeveledReaderTool(): JQueryPromise<void> {
     // load synphony settings
     return beginLoadSynphonySettings().then(() => {
-        $("#incLevel").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().incrementLevel();
-        });
+        const runWithReaderModelReady = (action: () => void) => {
+            const model = getTheOneReaderToolsModel();
+            if (model.synphony) {
+                action();
+                return;
+            }
 
-        $("#decLevel").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().decrementLevel();
-        });
+            beginLoadSynphonySettings().then(() => action());
+        };
+
+        const delegationRoot = $(document);
+
+        delegationRoot
+            .off("click.readerTools", "#incLevel")
+            .on("click.readerTools", "#incLevel", () => {
+                runWithReaderModelReady(() =>
+                    getTheOneReaderToolsModel().incrementLevel(),
+                );
+            });
+
+        delegationRoot
+            .off("click.readerTools", "#decLevel")
+            .on("click.readerTools", "#decLevel", () => {
+                runWithReaderModelReady(() =>
+                    getTheOneReaderToolsModel().decrementLevel(),
+                );
+            });
 
         getTheOneReaderToolsModel().updateControlContents();
         $("#toolbox").accordion("refresh");
@@ -626,11 +696,26 @@ export function createToggle(isForLeveled: boolean) {
         return;
     }
 
-    // ReaderToolSwitch is controlled, so a normal render updates it for the current page
-    // without the visible blanking caused by unmounting first.
-    ReactDOM.render(
-        React.createElement(ReaderToolSwitch, { isForLeveled }),
-        container,
+    const renderToggle = (currentBookKey: string) => {
+        // ReaderToolSwitch is controlled, so a normal render updates it for the current page
+        // without the visible blanking caused by unmounting first.
+        ReactDOM.render(
+            React.createElement(ReaderToolSwitch, {
+                isForLeveled,
+                key: getReaderToggleRenderKey(isForLeveled, currentBookKey),
+            }),
+            container,
+        );
+    };
+
+    get(
+        "editView/currentBookId",
+        (result) => {
+            renderToggle((result?.data as string) || "");
+        },
+        () => {
+            renderToggle("");
+        },
     );
 }
 
@@ -657,12 +742,4 @@ export function setReaderToolToggleShown(
     }
 
     element.style.display = isShown ? "" : "none";
-}
-
-export function isToggleOff(isForLeveled: boolean): boolean {
-    const prefix = isForLeveled ? "leveled" : "decodable";
-    const classes = document.getElementById(
-        prefix + "-reader-tool-content",
-    )?.classList;
-    return classes?.contains("turned-off") ?? false;
 }

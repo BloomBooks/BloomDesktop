@@ -3,7 +3,6 @@ import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import {
     beginInitializeLeveledReaderTool,
     createToggle,
-    isToggleOff,
     setReaderToolContentShown,
     setReaderToolToggleShown,
 } from "../readerTools";
@@ -21,7 +20,7 @@ export class LeveledReaderToolboxTool implements ITool {
         "actualSentenceCount",
     ];
 
-    imageUpdated(img: HTMLImageElement | undefined): void {
+    imageUpdated(_img: HTMLImageElement | undefined): void {
         // No action needed for this tool
     }
     public makeRootElement(): HTMLDivElement {
@@ -33,13 +32,16 @@ export class LeveledReaderToolboxTool implements ITool {
     public beginRestoreSettings(opts: string): JQueryPromise<void> {
         return beginInitializeLeveledReaderTool().then(() => {
             const restoreDone = $.Deferred<void>();
-            if (opts["leveledReaderState"]) {
+            const leveledReaderState = (
+                opts as unknown as Record<string, string>
+            )["leveledReaderState"];
+            if (leveledReaderState) {
                 // The true passed here prevents re-saving the state we just read.
                 // One non-obvious implication is that simply opening a level-4 book
                 // will not switch the default level for new books to 4. That only
                 // happens when you CHANGE the level in the toolbox.
                 getTheOneReaderToolsModel().setLevelNumber(
-                    parseInt(opts["leveledReaderState"], 10),
+                    parseInt(leveledReaderState, 10),
                     true,
                 );
                 restoreDone.resolve();
@@ -61,7 +63,7 @@ export class LeveledReaderToolboxTool implements ITool {
         });
     }
 
-    public configureElements(container: HTMLElement) {
+    public configureElements(_container: HTMLElement) {
         // Leveled reader makes use of the setup in this.setupReaderKeyAndFocusHandlers(container).
         // This would be the place to call it, but it is called by decodableReaderToolboxTool.ts' configureElements().
         // And configureElements gets called for every tool, whether or not that tool is open,
@@ -163,10 +165,7 @@ export class LeveledReaderToolboxTool implements ITool {
         // current page body's reader classes instead of the initial placeholder state.
         createToggle(true);
 
-        const isForLeveled = true;
-        const shouldShowContent =
-            page.classList.contains("leveled-reader") ||
-            !isToggleOff(isForLeveled);
+        const shouldShowContent = page.classList.contains("leveled-reader");
         this.showWhenActualCountsReady(shouldShowContent);
 
         // Often we could get away without reloading this, but we might
@@ -201,11 +200,11 @@ export class LeveledReaderToolboxTool implements ITool {
         return "leveledReader";
     }
 
-    public hasRestoredSettings: boolean;
+    public hasRestoredSettings: boolean = false;
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
-    public finishToolLocalization(paneDOM: HTMLElement) {
+    public finishToolLocalization(_paneDOM: HTMLElement) {
         // Unneeded in Leveled Reader, since Bloom.web.ExternalLinkController
         // 'translates' external links to include the current UI language.
     }
