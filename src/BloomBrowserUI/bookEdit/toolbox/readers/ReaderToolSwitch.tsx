@@ -14,12 +14,7 @@ export const ReaderToolSwitch: React.FunctionComponent<{
     // The page body will have a copy of the classes from the book's body.
     // So that is our record of whether the book is a reader.
     // Note, we could ask the server, but thankfully we don't need to.
-    const checked = ToolBox.getPage()?.classList.contains(`${prefix}-reader`);
-    if (checked) {
-        document
-            .getElementById(prefix + "-reader-tool-content")
-            ?.classList.remove("turned-off");
-    }
+    const checked = !!ToolBox.getPage()?.classList.contains(`${prefix}-reader`);
 
     return (
         <ThemeProvider theme={toolboxTheme}>
@@ -38,8 +33,8 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                         ? "EditTab.Toolbox.LeveledReaderTool.BookIsLeveled"
                         : "EditTab.Toolbox.DecodableReaderTool.BookIsDecodable"
                 }
-                // We're not making a controlled component, but we do want to control the initial state.
-                defaultChecked={checked}
+                // Keep this controlled so rerenders can sync state without forcing an unmount/remount.
+                checked={checked}
                 onChange={(_, checked) => {
                     // Toggle the display of the reader tool UI.
                     document

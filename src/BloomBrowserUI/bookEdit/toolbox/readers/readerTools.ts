@@ -626,13 +626,37 @@ export function createToggle(isForLeveled: boolean) {
         return;
     }
 
-    // ReaderToolSwitch uses defaultChecked. Remount so it picks up current page
-    // reader classes whenever we switch books/pages and reactivate the tool.
-    ReactDOM.unmountComponentAtNode(container);
+    // ReaderToolSwitch is controlled, so a normal render updates it for the current page
+    // without the visible blanking caused by unmounting first.
     ReactDOM.render(
         React.createElement(ReaderToolSwitch, { isForLeveled }),
         container,
     );
+}
+
+export function setReaderToolContentShown(
+    isForLeveled: boolean,
+    isShown: boolean,
+): void {
+    const prefix = isForLeveled ? "leveled" : "decodable";
+    document
+        .getElementById(`${prefix}-reader-tool-content`)
+        ?.classList.toggle("turned-off", !isShown);
+}
+
+export function setReaderToolToggleShown(
+    isForLeveled: boolean,
+    isShown: boolean,
+): void {
+    const prefix = isForLeveled ? "leveled" : "decodable";
+    const element = document.getElementById(
+        `${prefix}-reader-tool-toggle-react-container`,
+    );
+    if (!element) {
+        return;
+    }
+
+    element.style.display = isShown ? "" : "none";
 }
 
 export function isToggleOff(isForLeveled: boolean): boolean {

@@ -4,10 +4,6 @@
 
 #leveled-reader-tool-content,
 #decodable-reader-tool-content {
-    // Slide/fade the content in and out when toggled.
-    transition-property: max-height, opacity;
-    transition-duration: 0.5s;
-    transition-timing-function: ease-in-out;
     max-height: calc(100% - @toggle-button-height);
     overflow: auto;
     &.turned-off {

@@ -1,17 +1,13 @@
 ﻿/// <reference path="../../toolbox.ts" />
 /// <reference path="../readerToolsModel.ts" />
 
-import {
-    DRTState,
-    getTheOneReaderToolsModel,
-    MarkupType,
-} from "../readerToolsModel";
+import { getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
 import {
     beginInitializeDecodableReaderTool,
     createToggle,
-    isToggleOff,
+    setReaderToolContentShown,
 } from "../readerTools";
-import { isLongPressEvaluating, ITool } from "../../toolbox";
+import { isLongPressEvaluating, ITool, ToolBox } from "../../toolbox";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 import { get } from "../../../../utils/bloomApi";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
@@ -29,8 +25,8 @@ export class DecodableReaderToolboxTool implements ITool {
     }
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
         return beginInitializeDecodableReaderTool().then(() => {
+            const restoreDone = $.Deferred<void>();
             if (settings["decodableReaderState"]) {
-                const state = new DRTState();
                 const decState = settings["decodableReaderState"];
                 if (decState.startsWith("stage:")) {
                     const parts = decState.split(";");
@@ -41,22 +37,34 @@ export class DecodableReaderToolboxTool implements ITool {
                     // will not switch the default stage for new books to 4. That only
                     // happens when you CHANGE the stage in the toolbox.
                     getTheOneReaderToolsModel().setSort(sort, true);
-                    getTheOneReaderToolsModel().setStageNumber(stage, true);
+                    Promise.resolve(
+                        getTheOneReaderToolsModel().setStageNumber(stage, true),
+                    ).then(() => restoreDone.resolve());
                 } else {
                     // old state
-                    getTheOneReaderToolsModel().setStageNumber(
-                        parseInt(decState, 10),
-                        true,
-                    );
+                    Promise.resolve(
+                        getTheOneReaderToolsModel().setStageNumber(
+                            parseInt(decState, 10),
+                            true,
+                        ),
+                    ).then(() => restoreDone.resolve());
                 }
             } else {
-                get("readers/io/defaultStage", (result) => {
-                    // Presumably a brand new book. We'd better save the settings we come up with in it.
-                    getTheOneReaderToolsModel().setStageNumber(
-                        parseInt(result.data, 10),
-                    );
-                });
+                get(
+                    "readers/io/defaultStage",
+                    (result) => {
+                        // Presumably a brand new book. We'd better save the settings we come up with in it.
+                        Promise.resolve(
+                            getTheOneReaderToolsModel().setStageNumber(
+                                parseInt(result.data, 10),
+                            ),
+                        ).then(() => restoreDone.resolve());
+                    },
+                    () => restoreDone.resolve(),
+                );
             }
+
+            return restoreDone.promise();
         });
     }
     public isAlwaysEnabled(): boolean {
@@ -187,9 +195,7 @@ export class DecodableReaderToolboxTool implements ITool {
     public showTool() {
         // change markup based on visible options
         getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
-
-        const isForLeveled = false;
-        createToggle(isForLeveled);
+        // Toggle render is handled in newPageReady(), where page reader classes are settled.
     }
 
     public newPageReady() {
@@ -197,13 +203,15 @@ export class DecodableReaderToolboxTool implements ITool {
         // current page body's reader classes instead of the initial placeholder state.
         createToggle(false);
 
+        const isForLeveled = false;
+        const shouldShowContent =
+            !!ToolBox.getPage()?.classList.contains("decodable-reader");
+        setReaderToolContentShown(isForLeveled, shouldShowContent);
+
         // Most cases don't require setMarkupType(), but when switching pages
         // it will have been set to 0 by detachFromPage() on the old page.
         // So we do want to set the appropriate markup, but if the toggle is off, we want the markup off.
-        const isForLeveled = false;
-        getTheOneReaderToolsModel().setMarkupType(
-            isToggleOff(isForLeveled) ? 0 : 1,
-        );
+        getTheOneReaderToolsModel().setMarkupType(shouldShowContent ? 1 : 0);
         getTheOneReaderToolsModel().updateControlContents();
         // usually updateMarkup will do this, unless we are coming from showTool
         getTheOneReaderToolsModel().doMarkup();
