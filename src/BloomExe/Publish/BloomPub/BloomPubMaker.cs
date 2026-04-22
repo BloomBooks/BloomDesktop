@@ -629,10 +629,7 @@ namespace Bloom.Publish.BloomPub
             IEnumerable<string> languagesToInclude
         )
         {
-            var languages = languagesToInclude
-                .Where(tag => !string.IsNullOrWhiteSpace(tag))
-                .Distinct()
-                .ToArray();
+            var languages = OrderPublicationLanguages(modifiedBook, languagesToInclude);
             if (!languages.Any())
                 return;
 
@@ -661,6 +658,31 @@ namespace Bloom.Publish.BloomPub
                 "contentLanguage3",
                 languages.Length > 2 ? languages[2] : ""
             );
+        }
+
+        internal static string[] OrderPublicationLanguages(
+            Book.Book modifiedBook,
+            IEnumerable<string> languagesToInclude
+        )
+        {
+            var includedLanguages = languagesToInclude
+                .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Distinct()
+                .ToArray();
+            if (!includedLanguages.Any())
+                return includedLanguages;
+
+            var includedLanguageSet = new HashSet<string>(includedLanguages);
+            var preferredLanguages = modifiedBook.BookData.GetAllBookLanguageCodes();
+            var orderedLanguages = preferredLanguages
+                .Where(includedLanguageSet.Contains)
+                .Concat(
+                    includedLanguages
+                        .Where(tag => !preferredLanguages.Contains(tag))
+                        .OrderBy(tag => tag, StringComparer.Ordinal)
+                )
+                .ToArray();
+            return orderedLanguages;
         }
 
         private static void SetDataBookValueInDataDiv(

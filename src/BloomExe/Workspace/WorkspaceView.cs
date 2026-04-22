@@ -1363,6 +1363,12 @@ window.showWorkspaceInitializationFailure = function(message) {
             CheckDPISettings();
             ShowAutoUpdateDialogIfNeeded();
             ShowForumInvitationDialogIfNeeded();
+            // Check whether the last Velopack update attempt actually succeeded. Shows a toast if not.
+            StartupScreenManager.AddStartupAction(
+                () => ApplicationUpdateSupport.CheckForFailedUpdate(),
+                shouldHideSplashScreen: false,
+                lowPriority: true
+            );
             // Whether we showed the dialog or not we'll check for a new version in 1 minute.
             _applicationUpdateCheckTimer.Enabled = true;
             SendTopBarState();
