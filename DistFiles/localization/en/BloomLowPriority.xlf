@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" version="1.2">
   <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
     <body>
+      <trans-unit id="CollectionTab.VelopackUpdateFailed">
+        <source xml:lang="en">Bloom failed to update from version {0} to version {1}. If this continues to happen, try restarting your computer. If it still happens, please Report a Problem.</source>
+        <note>ID: CollectionTab.VelopackUpdateFailed</note>
+        <note>Shown as a toast when Bloom detects that a background update failed to install (e.g., a running process prevented it). {0} is the version Bloom was running before the update, {1} is the version it tried to update to.</note>
+      </trans-unit>
       <trans-unit id="Installer.InstallationInProgress">
         <source xml:lang="en">Installing...</source>
         <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>

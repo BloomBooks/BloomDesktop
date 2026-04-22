@@ -8,6 +8,7 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import Typography from "@mui/material/Typography";
 import { ThemeProvider } from "@mui/material/styles";
 import { toolboxTheme } from "../../bloomMaterialUITheme";
+import { LocalizedString } from "../../react_components/l10nComponents";
 import {
     kBloomBlue,
     kBloomPanelBackground,
@@ -42,7 +43,8 @@ import { getMasterToolList } from "./toolbox";
 
 type ToolboxSection = {
     id: string;
-    label: string;
+    englishLabel: string;
+    l10nKey: string;
     legacyToolHtmlSubPath?: string;
     legacyToolBodyHtml?: string;
     liveToolBodyElement?: HTMLDivElement;
@@ -110,22 +112,37 @@ const toToolboxToolId = (toolId: string): string => {
     return `${toolId}Tool`;
 };
 
-const makeLabelFromToolId = (toolId: string): string => {
-    if (toolId === "settings") {
-        return "More...";
+const getToolboxLabelInfo = (
+    toolId: string,
+): { englishLabel: string; l10nKey: string } => {
+    const normalizedToolId = normalizeToolId(toolId);
+    if (normalizedToolId === "settings") {
+        return {
+            englishLabel: "More...",
+            l10nKey: "EditTab.Toolbox.More",
+        };
     }
 
-    return toolId
-        .replace(/Tool$/, "")
-        .replace(/([A-Z])/g, " $1")
-        .trim()
-        .replace(/^./, (c) => c.toUpperCase());
+    const toolIdUpper =
+        normalizedToolId[0].toUpperCase() +
+        normalizedToolId.substring(1, normalizedToolId.length);
+    const englishBaseLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim();
+    const endsWithVisualizer = normalizedToolId.endsWith("Visualizer");
+
+    return {
+        englishLabel: endsWithVisualizer
+            ? englishBaseLabel
+            : `${englishBaseLabel} Tool`,
+        l10nKey: endsWithVisualizer
+            ? `EditTab.Toolbox.${toolIdUpper}`
+            : `EditTab.Toolbox.${toolIdUpper}Tool`,
+    };
 };
 
 const sortToolIdsAlphabetically = (toolIds: string[]): string[] => {
     return [...toolIds].sort((a, b) =>
-        makeLabelFromToolId(a).localeCompare(
-            makeLabelFromToolId(b),
+        getToolboxLabelInfo(a).englishLabel.localeCompare(
+            getToolboxLabelInfo(b).englishLabel,
             undefined,
             {
                 sensitivity: "base",
@@ -135,9 +152,11 @@ const sortToolIdsAlphabetically = (toolIds: string[]): string[] => {
 };
 
 const makeSectionFromToolId = (toolId: string): ToolboxSection => {
+    const labelInfo = getToolboxLabelInfo(toolId);
     return {
         id: toolId,
-        label: makeLabelFromToolId(toolId),
+        englishLabel: labelInfo.englishLabel,
+        l10nKey: labelInfo.l10nKey,
         legacyToolHtmlSubPath: legacyToolSubPathByToolId[toolId],
     };
 };
@@ -151,7 +170,7 @@ const sortSectionsAlphabeticallyWithSettingsLast = (
     const nonSettingsSections = sections
         .filter((section) => section.id !== "settings")
         .sort((a, b) =>
-            a.label.localeCompare(b.label, undefined, {
+            a.englishLabel.localeCompare(b.englishLabel, undefined, {
                 sensitivity: "base",
             }),
         );
@@ -364,7 +383,8 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             try {
                 const legacyToolBodyHtml = await loadLegacyToolBodyHtml({
                     id: toolId,
-                    label: "",
+                    englishLabel: "",
+                    l10nKey: "",
                     legacyToolHtmlSubPath,
                 });
                 setSections((previousSections) =>
@@ -825,7 +845,9 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                         flex-grow: 1;
                                     `}
                                 >
-                                    {section.label}
+                                    <LocalizedString l10nKey={section.l10nKey}>
+                                        {section.englishLabel}
+                                    </LocalizedString>
                                 </Typography>
                                 {subscriptionToolIds.has(section.id) && (
                                     <span className="subscription-badge"></span>
@@ -893,7 +915,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                         ></div>
                                     ) : (
                                         <Typography>
-                                            Loading {section.label}...
+                                            Loading {section.englishLabel}...
                                         </Typography>
                                     )}
                                 </div>

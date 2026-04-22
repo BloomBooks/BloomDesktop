@@ -23,10 +23,6 @@ namespace BloomTests.Publish.Rab
     public class RabRealBuildTests : BookTestsBase
     {
         private const string kRunManualRabBuildEnvVar = "BLOOM_RUN_RAB_MANUAL_TESTS";
-        private const string kRabLauncherPath =
-            @"C:\Program Files (x86)\SIL\Reading App Builder\rab.bat";
-        private const string kRabKeytoolPath =
-            @"C:\Program Files (x86)\SIL\Reading App Builder\runtime\bin\keytool.exe";
 
         private static string GetManualWorkRoot([CallerFilePath] string currentFilePath = "")
         {
@@ -58,15 +54,19 @@ namespace BloomTests.Publish.Rab
                 );
             }
 
+            var paths = new RabWorkspacePaths(GetManualWorkRoot());
+            var rabLauncherPath = RealRabProjectService.FindInstalledRabLauncherPath(paths);
+            var rabKeytoolPath = RealRabProjectService.FindInstalledRabKeytoolPath(paths);
+
             Assert.That(
-                RobustFile.Exists(kRabLauncherPath),
+                !string.IsNullOrWhiteSpace(rabLauncherPath) && RobustFile.Exists(rabLauncherPath),
                 Is.True,
-                $"Install Reading App Builder before running this test. Expected {kRabLauncherPath}."
+                $"Install Reading App Builder before running this test. Expected launcher discovered by Bloom's RAB path logic."
             );
             Assert.That(
-                RobustFile.Exists(kRabKeytoolPath),
+                !string.IsNullOrWhiteSpace(rabKeytoolPath) && RobustFile.Exists(rabKeytoolPath),
                 Is.True,
-                $"Reading App Builder runtime keytool is missing. Expected {kRabKeytoolPath}."
+                $"Reading App Builder runtime keytool is missing. Expected keytool discovered by Bloom's RAB path logic."
             );
 
             var sourceBloomPubPath = GetRepoBloomPubPath();
@@ -87,7 +87,7 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(manualWorkRoot);
             TestContext.Progress.WriteLine($"RAB manual work root: {manualWorkRoot}");
 
-            var paths = new RabWorkspacePaths(manualWorkRoot);
+            paths = new RabWorkspacePaths(manualWorkRoot);
             Directory.CreateDirectory(paths.ProjectAssetsRoot);
             Directory.CreateDirectory(paths.LauncherIconRoot);
             RobustFile.WriteAllText(
@@ -101,7 +101,8 @@ namespace BloomTests.Publish.Rab
                 sourceBloomPubPath,
                 bookTitle,
                 paths.AboutTextPath,
-                iconPaths
+                iconPaths,
+                rabLauncherPath
             );
 
             await service.PrepareAsync();
@@ -161,13 +162,15 @@ namespace BloomTests.Publish.Rab
             private readonly string _aboutTextPath;
             private readonly string[] _iconPaths;
             private readonly string _commandLogPath;
+            private readonly string _rabLauncherPath;
 
             public RealRabProjectService(
                 RabWorkspacePaths paths,
                 string sourceBloomPubPath,
                 string bookTitle,
                 string aboutTextPath,
-                string[] iconPaths
+                string[] iconPaths,
+                string rabLauncherPath
             )
                 : base(null, null, null, null, null)
             {
@@ -177,6 +180,33 @@ namespace BloomTests.Publish.Rab
                 _aboutTextPath = aboutTextPath;
                 _iconPaths = iconPaths;
                 _commandLogPath = Path.Combine(_paths.RabRoot, "rab-command.log");
+                _rabLauncherPath = rabLauncherPath;
+            }
+
+            internal static string FindInstalledRabLauncherPath(RabWorkspacePaths paths)
+            {
+                return new RealRabProjectService(
+                    paths,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                ).FindRabLauncherPath();
+            }
+
+            internal static string FindInstalledRabKeytoolPath(RabWorkspacePaths paths)
+            {
+                var rabLauncherPath = FindInstalledRabLauncherPath(paths);
+                if (string.IsNullOrWhiteSpace(rabLauncherPath))
+                    return null;
+
+                return Path.Combine(
+                    Path.GetDirectoryName(rabLauncherPath),
+                    "runtime",
+                    "bin",
+                    "keytool.exe"
+                );
             }
 
             internal override RabWorkspacePaths GetPaths()
@@ -227,7 +257,7 @@ namespace BloomTests.Publish.Rab
                     process.StartInfo = new ProcessStartInfo()
                     {
                         FileName = "cmd.exe",
-                        Arguments = $"/d /c \"\"{kRabLauncherPath}\" {rabArguments}\"",
+                        Arguments = $"/d /c \"\"{_rabLauncherPath}\" {rabArguments}\"",
                         WorkingDirectory = workingDirectory,
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
@@ -250,7 +280,7 @@ namespace BloomTests.Publish.Rab
                             Environment.NewLine,
                             new[]
                             {
-                                $"> {kRabLauncherPath} {rabArguments}",
+                                $"> {_rabLauncherPath} {rabArguments}",
                                 "--- stdout ---",
                                 output,
                                 "--- stderr ---",
