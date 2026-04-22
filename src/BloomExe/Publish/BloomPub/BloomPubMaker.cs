@@ -928,6 +928,22 @@ namespace Bloom.Publish.BloomPub
                 // the img? But we'd still need duplicate rules.
                 if ((img.GetAttribute("class") ?? "").Contains("bloom-imageObjectFit-cover"))
                     classesToAdd += " bloom-imageObjectFit-cover";
+                else
+                {
+                    // See BL-16173 for this additional special case.
+                    for (
+                        var parent = imgContainer;
+                        parent != null;
+                        parent = parent.ParentNode as SafeXmlElement
+                    )
+                    {
+                        if ((parent.GetAttribute("class") ?? "").Contains("bloom-customLayout"))
+                        {
+                            classesToAdd += " bloom-imageObjectFit-cover";
+                            break;
+                        }
+                    }
+                }
 
                 imgContainer.SetAttribute(
                     "class",
