@@ -189,6 +189,23 @@ namespace BloomTests.Publish.BloomPub
         }
 
         [Test]
+        public void OrderPublicationLanguages_UsesBookContentLanguagePriority()
+        {
+            var testBook = CreateBookWithPhysicalFile(
+                kMinimumValidBookBodyContent,
+                bringBookUpToDate: true
+            );
+            testBook.SetMultilingualContentLanguages("xyz", "en", "fr");
+
+            var orderedLanguages = BloomPubMaker.OrderPublicationLanguages(
+                testBook,
+                new[] { "fr", "xyz", "en" }
+            );
+
+            CollectionAssert.AreEqual(new[] { "xyz", "en", "fr" }, orderedLanguages);
+        }
+
+        [Test]
         public void CompressBookForDevice_IncludesWantedFiles()
         {
             var wantedFiles = new List<string>()
