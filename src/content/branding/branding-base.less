@@ -116,8 +116,9 @@ Rules that format the branding go in branding-base.less, or in the branding.less
 
 // Allow all custom back cover pages to use text canvas elements, even when the branding
 // prevents customized text in the normal places by hiding the .bloom-translationGroup. (BL-16106)
+// (But, we don't want to force any image description to be visible!)
 .outsideBackCover.bloom-customLayout[data-custom-layout-id="customOutsideBackCover"]
     .marginBox
-    .bloom-translationGroup {
+    .bloom-translationGroup:not(.bloom-imageDescription) {
     display: flex !important; // flex is the default set in basePage.less for .bloom-translationGroup
 }
