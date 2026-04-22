@@ -43,10 +43,11 @@ textarea,
     flex-direction: column;
 }
 
-// Centers the img in the container making it as large as possible while preserving aspect ratio
-// (for any obsolete xmatter pages which use a background image)
+// Centers the img in the container making it large enough to cover the page with possible cropping.
+// The image has likely already been cropped physically to almost the right size so there should be
+// minimal additional cropping.
 .bloom-background-image-in-style-attr {
-    background-size: contain;
+    background-size: cover; // contain can leave space and allow background color to show (BL-16173)
     background-repeat: no-repeat;
     background-position: center;
 }
