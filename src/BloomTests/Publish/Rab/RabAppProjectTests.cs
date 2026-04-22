@@ -1987,7 +1987,7 @@ namespace BloomTests.Publish.Rab
                 status
                     .PrepareSteps.Single(step => step.Id == "installer-available")
                     .CompleteTooltip,
-                Does.Contain("Reading-App-Builder-For-Bloom-6-4-Setup.exe")
+                Does.Contain(RabProjectService.kRabSetupInstallerFileName)
             );
             Assert.That(
                 status.PrepareSteps.Single(step => step.Id == "rab-installed").IncompleteTooltip,
@@ -2058,7 +2058,7 @@ namespace BloomTests.Publish.Rab
             var paths = new RabWorkspacePaths(tempFolder.Path);
             var installerPath = Path.Combine(
                 tempFolder.Path,
-                "Reading-App-Builder-For-Bloom-6-4-Setup.exe"
+                RabProjectService.kRabSetupInstallerFileName
             );
             RobustFile.WriteAllText(installerPath, "installer");
             var trackedBooks = new List<RabBookPublishInfo>
@@ -2103,7 +2103,7 @@ namespace BloomTests.Publish.Rab
             var paths = new RabWorkspacePaths(tempFolder.Path);
             var installerPath = Path.Combine(
                 tempFolder.Path,
-                "Reading-App-Builder-For-Bloom-6-4-Setup.exe"
+                RabProjectService.kRabSetupInstallerFileName
             );
             RobustFile.WriteAllText(installerPath, "installer");
 
@@ -2140,7 +2140,7 @@ namespace BloomTests.Publish.Rab
             var paths = new RabWorkspacePaths(tempFolder.Path);
             var installerPath = Path.Combine(
                 tempFolder.Path,
-                "Reading-App-Builder-For-Bloom-6-4-Setup.exe"
+                RabProjectService.kRabSetupInstallerFileName
             );
             RobustFile.WriteAllText(installerPath, "installer");
             RobustFile.WriteAllText(
@@ -2227,7 +2227,10 @@ namespace BloomTests.Publish.Rab
             );
         }
 
-        [TestCase(@"C:\Users\tester\Downloads\Reading-App-Builder-For-Bloom-6-4-Setup.exe", true)]
+        [TestCase(
+            @"C:\Users\tester\Downloads\" + RabProjectService.kRabSetupInstallerFileName,
+            true
+        )]
         [TestCase("https://example.org/installer", false)]
         [TestCase(@"C:\Users\tester\Downloads\notes.txt", false)]
         public void IsExternalExecutablePath_MatchesExecutableFilesOnly(
@@ -2241,9 +2244,9 @@ namespace BloomTests.Publish.Rab
             );
         }
 
-        [TestCase("Reading-App-Builder-For-Bloom-6-4-Setup.exe", true)]
-        [TestCase("reading-app-builder-for-bloom-6-4-setup.exe", true)]
-        [TestCase("Reading-App-Builder-For-Bloom-6-4-Bloom.exe", false)]
+        [TestCase("Reading-App-Builder-For-Bloom-14-0-prerelease-Setup.exe", true)]
+        [TestCase("reading-app-builder-for-bloom-14-0-prerelease-setup.exe", true)]
+        [TestCase("Reading-App-Builder-For-Bloom-14-0-prerelease-Bloom.exe", false)]
         [TestCase("Reading-App-Builder-14.0-Setup.exe", false)]
         public void IsRabSetupInstallerFileName_MatchesExpectedVariants(
             string fileName,
@@ -2257,13 +2260,40 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void FindRabSetupInstallerPath_PrefersExactCurrentInstallerOverOlderCachedOne()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var downloadsFolder = Path.Combine(tempFolder.Path, "downloads");
+            var installerCacheFolder = Path.Combine(tempFolder.Path, "installer-cache");
+            Directory.CreateDirectory(downloadsFolder);
+            Directory.CreateDirectory(installerCacheFolder);
+
+            RobustFile.WriteAllText(
+                Path.Combine(downloadsFolder, "Reading-App-Builder-13.0-Setup.exe"),
+                "older installer"
+            );
+            var exactInstallerPath = Path.Combine(
+                installerCacheFolder,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            RobustFile.WriteAllText(exactInstallerPath, "current installer");
+
+            var service = new InstallerSearchRabProjectService(
+                downloadsFolder,
+                installerCacheFolder
+            );
+
+            Assert.That(service.FindRabSetupInstallerPath(), Is.EqualTo(exactInstallerPath));
+        }
+
+        [Test]
         public async Task PrepareAsync_DownloadsInstaller_WhenRegistryInstallAndInstallerAreMissing()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var paths = new RabWorkspacePaths(tempFolder.Path);
             var downloadedInstallerPath = Path.Combine(
                 tempFolder.Path,
-                "Reading-App-Builder-For-Bloom-6-4-Setup.exe"
+                RabProjectService.kRabSetupInstallerFileName
             );
 
             var service = new TestRabProjectService(
@@ -2412,7 +2442,7 @@ namespace BloomTests.Publish.Rab
             public string RabLauncherPathToReturn { get; set; } =
                 @"C:\Program Files (x86)\SIL\Reading App Builder\rab.bat";
             public string RabSetupInstallerPathToReturn { get; set; } =
-                @"C:\Users\tester\Downloads\Reading-App-Builder-For-Bloom-6-4-Setup.exe";
+                @"C:\Users\tester\Downloads\" + kRabSetupInstallerFileName;
             public string RabSetupInstallerDownloadPathToReturn { get; set; }
             public string UserDownloadsDirectoryToReturn { get; set; } =
                 @"C:\Users\tester\Downloads";
@@ -3171,6 +3201,32 @@ namespace BloomTests.Publish.Rab
             internal override string GetBundledIconRoot()
             {
                 return BundledIconRootToReturn;
+            }
+        }
+
+        private class InstallerSearchRabProjectService : RabProjectService
+        {
+            private readonly string _userDownloadsDirectory;
+            private readonly string _installerDownloadDirectory;
+
+            public InstallerSearchRabProjectService(
+                string userDownloadsDirectory,
+                string installerDownloadDirectory
+            )
+                : base(null, null, null, null, null)
+            {
+                _userDownloadsDirectory = userDownloadsDirectory;
+                _installerDownloadDirectory = installerDownloadDirectory;
+            }
+
+            internal override string GetUserDownloadsDirectory()
+            {
+                return _userDownloadsDirectory;
+            }
+
+            internal override string GetRabInstallerDownloadDirectory()
+            {
+                return _installerDownloadDirectory;
             }
         }
     }
