@@ -80,6 +80,7 @@ namespace Bloom.Edit
         public bool IsDisposed => _mainBrowser?.IsDisposed ?? false;
         public bool IsHandleCreated => _mainBrowser?.IsHandleCreated ?? false;
         public bool InvokeRequired => _mainBrowser?.InvokeRequired ?? false;
+        internal PageListApi PageListApi => _pageListApi;
 
         public object Invoke(Delegate method)
         {

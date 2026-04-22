@@ -1675,6 +1675,10 @@ namespace Bloom.Edit
                         try
                         {
                             _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+                            // Changing the cover image updates the current page thumbnail, but the
+                            // Collection tab reads a separate cached book thumbnail. Refresh both
+                            // here so switching back to Collections shows the new cover immediately.
+                            _view.PageListApi.RefreshCollectionThumbnailForSelectedBook();
 
                             Logger.WriteMinorEvent(
                                 "Finished ChangePicture with save {0}",

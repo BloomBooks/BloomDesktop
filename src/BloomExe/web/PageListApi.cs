@@ -35,6 +35,14 @@ namespace Bloom.web
             _collectionModel = collectionModel;
         }
 
+        // Otherwise the Collection tab was showing a stale cached thumbnail after a cover image changes, BL-16199
+        public void RefreshCollectionThumbnailForSelectedBook()
+        {
+            var selectedBook = _bookSelection.CurrentSelection;
+            if (selectedBook?.IsSaveable == true)
+                _collectionModel.UpdateThumbnailAsync(selectedBook);
+        }
+
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler
