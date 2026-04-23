@@ -101,6 +101,60 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void DoesNodeGetCopiedToDataDiv_NodeInCustomLayoutPage_ReturnsTrue()
+        {
+            var dom = new HtmlDom(
+                @"<html><body>
+                    <div class='bloom-page bloom-customLayout'>
+                        <div class='marginBox'>
+                            <div class='audio-sentence' id='seg1'>text</div>
+                        </div>
+                    </div>
+                </body></html>"
+            );
+
+            var node = dom.RawDom.SelectSingleNode("//div[@id='seg1']");
+
+            Assert.That(HtmlDom.DoesNodeGetCopiedToDataDiv(node), Is.True);
+        }
+
+        [Test]
+        public void DoesNodeGetCopiedToDataDiv_NodeWithOnlyCustomLayoutIdAttribute_ReturnsFalse()
+        {
+            var dom = new HtmlDom(
+                @"<html><body>
+                    <div class='bloom-page' data-custom-layout-id='customOutsideBackCover'>
+                        <div class='marginBox'>
+                            <div class='audio-sentence' id='seg1a'>text</div>
+                        </div>
+                    </div>
+                </body></html>"
+            );
+
+            var node = dom.RawDom.SelectSingleNode("//div[@id='seg1a']");
+
+            Assert.That(HtmlDom.DoesNodeGetCopiedToDataDiv(node), Is.False);
+        }
+
+        [Test]
+        public void DoesNodeGetCopiedToDataDiv_NodeWithoutDataContext_ReturnsFalse()
+        {
+            var dom = new HtmlDom(
+                @"<html><body>
+                    <div class='bloom-page'>
+                        <div class='marginBox'>
+                            <div class='audio-sentence' id='seg2'>text</div>
+                        </div>
+                    </div>
+                </body></html>"
+            );
+
+            var node = dom.RawDom.SelectSingleNode("//div[@id='seg2']");
+
+            Assert.That(HtmlDom.DoesNodeGetCopiedToDataDiv(node), Is.False);
+        }
+
+        [Test]
         public void BaseForRelativePaths_NoHead_NoLongerThrows()
         {
             var dom = new HtmlDom(@"<html></html>");

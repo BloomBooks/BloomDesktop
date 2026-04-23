@@ -1045,7 +1045,7 @@ namespace Bloom.Edit
                         continue;
                     }
 
-                    if (HtmlDom.IsNodePartOfDataBookOrDataCollection(node))
+                    if (HtmlDom.DoesNodeGetCopiedToDataDiv(node))
                     {
                         continue;
                     }
