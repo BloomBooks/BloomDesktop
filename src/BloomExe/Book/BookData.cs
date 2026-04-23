@@ -2220,9 +2220,8 @@ namespace Bloom.Book
         {
             if (activeAttributeName.StartsWith("data-"))
                 return $"{activeAttributeName}-inactive";
-            // For example, id-inactive is not valid HTML currently; it's remotely possible
-            // that some future version of HTML would give it a meaning, and a validator would
-            // complain.
+            // We don't want to make bad HTML by creating invalid non-data attributes like "id-inactive",
+            // so if the attribute we want to make inactive doesn't already start with data- we'll add that.
             return $"data-{activeAttributeName}-inactive";
         }
 

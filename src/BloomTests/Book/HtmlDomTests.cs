@@ -101,7 +101,7 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void IsNodePartOfDataBookOrDataCollection_NodeInCustomLayoutPage_ReturnsTrue()
+        public void DoesNodeGetCopiedToDataDiv_NodeInCustomLayoutPage_ReturnsTrue()
         {
             var dom = new HtmlDom(
                 @"<html><body>
@@ -115,11 +115,11 @@ namespace BloomTests.Book
 
             var node = dom.RawDom.SelectSingleNode("//div[@id='seg1']");
 
-            Assert.That(HtmlDom.IsNodePartOfDataBookOrDataCollection(node), Is.True);
+            Assert.That(HtmlDom.DoesNodeGetCopiedToDataDiv(node), Is.True);
         }
 
         [Test]
-        public void IsNodePartOfDataBookOrDataCollection_NodeWithOnlyCustomLayoutIdAttribute_ReturnsFalse()
+        public void DoesNodeGetCopiedToDataDiv_NodeWithOnlyCustomLayoutIdAttribute_ReturnsFalse()
         {
             var dom = new HtmlDom(
                 @"<html><body>
@@ -133,11 +133,11 @@ namespace BloomTests.Book
 
             var node = dom.RawDom.SelectSingleNode("//div[@id='seg1a']");
 
-            Assert.That(HtmlDom.IsNodePartOfDataBookOrDataCollection(node), Is.False);
+            Assert.That(HtmlDom.DoesNodeGetCopiedToDataDiv(node), Is.False);
         }
 
         [Test]
-        public void IsNodePartOfDataBookOrDataCollection_NodeWithoutDataContext_ReturnsFalse()
+        public void DoesNodeGetCopiedToDataDiv_NodeWithoutDataContext_ReturnsFalse()
         {
             var dom = new HtmlDom(
                 @"<html><body>
@@ -151,7 +151,7 @@ namespace BloomTests.Book
 
             var node = dom.RawDom.SelectSingleNode("//div[@id='seg2']");
 
-            Assert.That(HtmlDom.IsNodePartOfDataBookOrDataCollection(node), Is.False);
+            Assert.That(HtmlDom.DoesNodeGetCopiedToDataDiv(node), Is.False);
         }
 
         [Test]
