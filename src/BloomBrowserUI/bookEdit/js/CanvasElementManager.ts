@@ -3968,6 +3968,7 @@ export class CanvasElementManager {
         const deltaY = event.clientY - this.clientYAtMouseDown;
         if (
             event.buttons === 1 &&
+            !this.gotAMoveWhileMouseDown &&
             Math.sqrt(deltaX * deltaX + deltaY * deltaY) > 3
         ) {
             this.gotAMoveWhileMouseDown = true;
