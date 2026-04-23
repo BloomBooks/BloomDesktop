@@ -2241,10 +2241,10 @@ namespace BloomTests.Publish.Rab
             );
         }
 
-        [TestCase("Reading-App-Builder-14.0-Setup.exe", true)]
         [TestCase("Reading-App-Builder-For-Bloom-6-4-Setup.exe", true)]
-        [TestCase("Reading-App-Builder-14.0-Bloom.exe", false)]
-        [TestCase("Reading-App-Builder-13.0-Setup.exe", false)]
+        [TestCase("reading-app-builder-for-bloom-6-4-setup.exe", true)]
+        [TestCase("Reading-App-Builder-For-Bloom-6-4-Bloom.exe", false)]
+        [TestCase("Reading-App-Builder-14.0-Setup.exe", false)]
         public void IsRabSetupInstallerFileName_MatchesExpectedVariants(
             string fileName,
             bool expectedMatch

@@ -1379,7 +1379,7 @@ namespace Bloom.Book
                     var id = node.GetOptionalStringAttribute("id", null);
                     if (id == null)
                         continue;
-                    if (HtmlDom.IsNodePartOfDataBookOrDataCollection(node))
+                    if (HtmlDom.DoesNodeGetCopiedToDataDiv(node))
                         continue;
                     var isNewlyAdded = idSet.Add(id);
                     if (!isNewlyAdded)
