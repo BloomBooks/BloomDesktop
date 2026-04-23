@@ -610,6 +610,11 @@ namespace BloomTests.Publish.Rab
             Assert.That(environmentVariables["ANDROID_SDK_ROOT"], Is.EqualTo(string.Empty));
             Assert.That(environmentVariables["JAVA_HOME"], Is.EqualTo(string.Empty));
             Assert.That(environmentVariables["JDK_HOME"], Is.EqualTo(string.Empty));
+            // Daemon disabled so no background JVM lingers and locks the collection folder after a build.
+            Assert.That(
+                environmentVariables["GRADLE_OPTS"],
+                Does.Contain("-Dorg.gradle.daemon=false")
+            );
         }
 
         [Test]
@@ -1006,6 +1011,42 @@ namespace BloomTests.Publish.Rab
                 RabProjectService.GetBuildProgressPercentFromOutput("> Task :packageRelease"),
                 Is.EqualTo(95)
             );
+        }
+
+        [Test]
+        public void ResolveBloomPubPath_RewritesStaleDirectoryToCurrentBloomPubRoot()
+        {
+            var currentBloomPubRoot =
+                @"C:\Users\tester\Documents\Collection Renamed\Bloom App Data\bloompubs";
+            var staleBloomPubPath =
+                @"C:\Users\tester\Documents\Collection Old\Bloom App Data\bloompubs\Book One.bloompub";
+
+            var resolvedPath = RabProjectService.ResolveBloomPubPath(
+                currentBloomPubRoot,
+                "fallback.bloompub",
+                staleBloomPubPath
+            );
+
+            Assert.That(
+                resolvedPath,
+                Is.EqualTo(Path.Combine(currentBloomPubRoot, "Book One.bloompub"))
+            );
+        }
+
+        [Test]
+        public void ResolveBloomPubPath_KeepsExistingPathWhenAlreadyInCurrentRoot()
+        {
+            var currentBloomPubRoot =
+                @"C:\Users\tester\Documents\Collection\Bloom App Data\bloompubs";
+            var existingPath = Path.Combine(currentBloomPubRoot, "Book One.bloompub");
+
+            var resolvedPath = RabProjectService.ResolveBloomPubPath(
+                currentBloomPubRoot,
+                "fallback.bloompub",
+                existingPath
+            );
+
+            Assert.That(resolvedPath, Is.EqualTo(existingPath));
         }
 
         [Test]
