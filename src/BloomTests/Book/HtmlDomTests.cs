@@ -115,7 +115,7 @@ namespace BloomTests.Book
 
             var node = dom.RawDom.SelectSingleNode("//div[@id='seg1']");
 
-            Assert.That(HtmlDom.IsNodePartOfDataBookOrDataCollection(node), Is.True);
+            Assert.That(HtmlDom.DoesNodeGetCopiedToDataDiv(node), Is.True);
         }
 
         [Test]
@@ -133,7 +133,7 @@ namespace BloomTests.Book
 
             var node = dom.RawDom.SelectSingleNode("//div[@id='seg1a']");
 
-            Assert.That(HtmlDom.IsNodePartOfDataBookOrDataCollection(node), Is.False);
+            Assert.That(HtmlDom.DoesNodeGetCopiedToDataDiv(node), Is.False);
         }
 
         [Test]
@@ -151,7 +151,7 @@ namespace BloomTests.Book
 
             var node = dom.RawDom.SelectSingleNode("//div[@id='seg2']");
 
-            Assert.That(HtmlDom.IsNodePartOfDataBookOrDataCollection(node), Is.False);
+            Assert.That(HtmlDom.DoesNodeGetCopiedToDataDiv(node), Is.False);
         }
 
         [Test]
