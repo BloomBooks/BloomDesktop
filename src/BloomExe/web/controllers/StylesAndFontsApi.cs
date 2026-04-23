@@ -153,11 +153,13 @@ namespace Bloom.web.controllers
                                 .Value.Where(lang => collectionLanguages.Contains(lang))
                                 .ToList();
                             if (currentlyUsed.Count == 0)
-                                continue; // This font is not actually used in the book, so skip it.
+                                continue; // This font is not used by the book's current languages, so skip it.
                             if (currentlyUsed.Count == 1)
                                 languageTag = currentlyUsed.First();
+                            else if (currentlyUsed.Count == collectionLanguages.Count)
+                                languageTag = "*";
                             else
-                                languageTag = "*"; // Enhance: list tags, and eventually list language names for display?
+                                languageTag = string.Join(",", currentlyUsed);
                         }
                         else
                         {
@@ -165,11 +167,11 @@ namespace Bloom.web.controllers
                                 .Value.Where(lang => !collectionLanguages.Contains(lang))
                                 .ToList();
                             if (currentlyUnused.Count == 0)
-                                continue; // This font is used in the book, so skip it.
+                                continue; // This font is used only by the book's current languages, so skip it.
                             if (currentlyUnused.Count == 1)
                                 languageTag = currentlyUnused.First();
                             else
-                                languageTag = "*"; // Enhance: list tags, and eventually list language names for display?
+                                languageTag = string.Join(",", currentlyUnused);
                         }
                         var styleAndFont = new StyleAndFont();
                         styleAndFont.style = style;
@@ -226,7 +228,15 @@ namespace Bloom.web.controllers
             {
                 if (
                     !stylesAndFonts.Exists(s =>
-                        s.style == styleAndFont.style && s.languageTag == styleAndFont.languageTag
+                        s.style == styleAndFont.style
+                        && (
+                            s.languageTag == styleAndFont.languageTag
+                            || (
+                                s.languageTag == "*"
+                                && collectionLanguages.Contains(styleAndFont.languageTag)
+                            )
+                            || s.languageTag.Split(",").Contains(styleAndFont.languageTag)
+                        )
                     )
                 )
                 {
@@ -542,6 +552,12 @@ namespace Bloom.web.controllers
                 return language.Name;
             if (langTag == settings.SignLanguageTag)
                 return settings.SignLanguage.Name;
+            if (langTag.Contains(","))
+            {
+                var tags = langTag.Split(",");
+                var names = tags.Select(t => GetLanguageName(t)).ToList();
+                return string.Join(", ", names);
+            }
             var ws = new Collection.WritingSystem(() => settings.Language2Tag);
             ws.Tag = langTag;
             return ws.GetNameInLanguage(settings.Language2Tag);
