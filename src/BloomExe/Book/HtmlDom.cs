@@ -3699,6 +3699,12 @@ namespace Bloom.Book
                     {
                         return true;
                     }
+                    else if (n is SafeXmlElement element && element.HasClass("bloom-customLayout"))
+                    {
+                        // Custom-layout page content can intentionally duplicate ids that also
+                        // appear in separately persisted data-book/data-derived entries.
+                        return true;
+                    }
 
                     return false;
                 }
