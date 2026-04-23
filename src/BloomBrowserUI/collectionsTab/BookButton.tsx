@@ -126,8 +126,23 @@ export const BookButton: React.FunctionComponent<{
         props.collection.isEditableCollection,
     );
 
-    const [reload, setReload] = useState(0);
-    // Force a reload when our book's thumbnail image changed
+    // BL-16199
+    // Starting in 6.4, the Collection Tab no longer existing in the background when we
+    // are in the Edit tab, so the BookButton mounts when we switch to the Collection Tab,
+    // so the "reload" web socket broadcast is firing before we are subscribed below.
+    // And even though we thought we had set the book folder to not cache, the browser
+    // appears to be caching thumbnail images. So upon entering the Collection Tab, for the
+    // selected book (which could have just had its cover image changed in Edit tab), we
+    // use Date.now() to cache bust the reload parameter in the image src.
+    // For non-selected books we still start at 0, thinking it might unnecessarily slow
+    // things to force a reload of every thumbnail every time the user enters Collection tab.
+    const [reload, setReload] = useState(() =>
+        props.manager.getSelectedBookInfo()?.id === props.book.id
+            ? Date.now()
+            : 0,
+    );
+
+    // This is currently only needed and useful for the "Update Thumbnail" menu item
     useSubscribeToWebSocketForEvent("bookImage", "reload", (args) => {
         if (args.message === props.book.id) {
             setReload((old) => old + 1);
@@ -638,7 +653,7 @@ export const BookButtonPlaceHolder: React.FunctionComponent<{
     // Force a reload when the placeholder's book thumbnail image changed
     useSubscribeToWebSocketForEvent("bookImage", "reload", (args) => {
         if (args.message === props.book.id) {
-            setReload(reload + 1);
+            setReload((old) => old + 1);
             props.reload(props.book.id);
         }
     });

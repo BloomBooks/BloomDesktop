@@ -145,6 +145,14 @@ export function useIsSelected(
     // violates the expectation that each client will be using a fixed manager and bookId.
     useEffect(() => {
         manager.registerForSelectedBookChanged(bookId, setSelected);
+        // Devin+Claude Sonnet 4.6: Re-sync in case the manager's selected book changed between our useState
+        // initializer (render phase) and this effect (post-paint). In React, a
+        // macro-task such as the fetch response from BookSelectionManager.initialize()
+        // can fire in that window, calling notify() before any callback is registered
+        // and leaving our initial state permanently stale.
+        // Calling setSelected with the same value is a no-op (React bails out), so
+        // this never causes a spurious re-render.
+        setSelected(bookId === manager.getSelectedBookInfo()?.id);
         return () =>
             manager.unregisterForSelectedBookChanged(bookId, setSelected);
     }, [manager, bookId]);
