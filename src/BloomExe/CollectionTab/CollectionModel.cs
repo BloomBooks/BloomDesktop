@@ -736,11 +736,12 @@ namespace Bloom.CollectionTab
             );
         }
 
+        // This is currently only actually needed and useful if the thumbnail update was
+        // triggered by the "Update Thumbnail" menu item;
+        // If we are entering the Collection tab then the listener is probably not mounted yet
+        // and will rely on other cache busting instead (BL-16199)
         private void RefreshOneThumbnail(Book.BookInfo bookInfo, Image image)
         {
-            // The arguments here are not currently used (method signature is legacy),
-            // but may be useful if we optimize.
-            // optimize: I think this will reload all of them
             _webSocketServer.SendString("bookImage", "reload", bookInfo.Id);
         }
 
