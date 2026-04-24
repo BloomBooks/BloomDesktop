@@ -19,6 +19,7 @@ import {
 } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { DialogCloseButton } from "../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../react_components/l10nHooks";
+import { ensureFieldFitsOnCustomPage } from "../toolbox/canvas/derivedFieldFitting";
 import {
     FormControl,
     FormControlLabel,
@@ -69,12 +70,23 @@ export const TopicChooserDialog: React.FunctionComponent<
         setCurrentTopic(newTopicKey === "No Topic" ? undefined : newTopicKey);
     };
 
-    const handleClose = () => {
+    const handleClose = async () => {
         const topicKey = currentTopic ? currentTopic : "<NONE>";
         if (props.dialogEnvironment?.mode === Mode.Edit) {
-            postString("editView/setTopic", topicKey);
+            await postString("editView/setTopic", topicKey);
+            const currentPage = document.getElementsByClassName(
+                "bloom-page",
+            )[0] as HTMLElement;
+            if (currentPage) {
+                const derivedTopicFields = Array.from(
+                    currentPage.querySelectorAll("div[data-derived='topic']"),
+                ) as HTMLElement[];
+                derivedTopicFields.forEach((derivedTopicField) => {
+                    ensureFieldFitsOnCustomPage(derivedTopicField);
+                });
+            }
         } else if (props.dialogEnvironment?.mode === Mode.Publish)
-            postString("libraryPublish/topic", topicKey);
+            await postString("libraryPublish/topic", topicKey);
         closeDialog();
     };
 

@@ -75,7 +75,9 @@ import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetCh
 import {
     kBloomButtonClass,
     kBloomCanvasSelector,
+    kCanvasElementClass,
 } from "../toolbox/canvas/canvasElementUtils";
+import { ensureFieldFitsOnCustomPage } from "../toolbox/canvas/derivedFieldFitting";
 import { wrapWithRequestPageContentDelay } from "./bloomEditing";
 import { get, post, useApiObject } from "../../utils/bloomApi";
 import { ILanguageNameValues } from "../bookAndPageSettings/FieldVisibilityGroup";
@@ -992,10 +994,20 @@ const CanvasElementContextControls: React.FunctionComponent<{
 // The canvas elements that are actually on the page should be visible. We could copy it to some other attribute.
 // But that would only work for the fields that were originally on the page. We want to be able to add new data-book fields.
 // And there are certain clauses we need to add to such fields to give them the standard appearance.
-// So until I get a better idea, I'm just putting in a hard-coded list.
+// So until I get a better idea, I'm just putting in a hard-coded list.xx
 const fieldsControlledByAppearanceSystem = ["bookTitle"];
 
 function adjustAutoSizeForVisibleEditableInTranslationGroup(tg: HTMLElement) {
+    const containingCanvasElement = tg.closest(
+        `.${kCanvasElementClass}`,
+    ) as HTMLElement;
+    const derivedElement = containingCanvasElement?.querySelector(
+        "div[data-derived]",
+    ) as HTMLElement;
+    if (derivedElement) {
+        ensureFieldFitsOnCustomPage(derivedElement);
+    }
+
     const visibleEditable = tg.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement;
@@ -1407,6 +1419,7 @@ function makeFieldTypeMenuItem(
                     readOnlyDiv.classList.add(...fieldType.classes);
                     tg.parentElement!.insertBefore(readOnlyDiv, tg);
                     tg.remove();
+                    ensureFieldFitsOnCustomPage(readOnlyDiv);
                     // Reload the page to get the derived content loaded.
                     post("common/saveChangesAndRethinkPageEvent", () => {});
                 } else {
@@ -1695,8 +1708,8 @@ function addVideoMenuItems(
     );
 }
 
-function hasRealImage(img) {
-    return (
+function hasRealImage(img: Element | undefined): boolean {
+    return !!(
         img &&
         !isPlaceHolderImage(img.getAttribute("src")) &&
         !img.classList.contains("bloom-imageLoadError") &&
