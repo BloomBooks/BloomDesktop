@@ -1009,6 +1009,18 @@ window.showWorkspaceInitializationFailure = function(message) {
         {
             ApplyUiLanguageChange(langTag);
             FinishUiLanguageMenuItemClick();
+
+            // In the single-browser architecture, many UI surfaces don't fully refresh their
+            // localized strings without a full workspace reload. Reopening the current project
+            // gives us behavior similar to collection switching and guarantees consistency.
+            Application.Idle -= ReopenProjectAfterUiLanguageChange;
+            Application.Idle += ReopenProjectAfterUiLanguageChange;
+        }
+
+        private void ReopenProjectAfterUiLanguageChange(object sender, EventArgs e)
+        {
+            Application.Idle -= ReopenProjectAfterUiLanguageChange;
+            Invoke(ReopenCurrentProject);
         }
 
         private void FinishUiLanguageMenuItemClick()
