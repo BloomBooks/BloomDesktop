@@ -59,16 +59,10 @@ export function ensureFieldFitsOnCustomPage(
     const scale = EditableDivUtils.getPageScale() || 1;
     const getRenderedHeight = (): number =>
         Math.ceil(elementToAdjust.getBoundingClientRect().height / scale);
-    const getIntrinsicNoWrapWidth = (): number =>
-        Math.ceil(
-            Math.max(
-                elementToAdjust.scrollWidth + 1,
-                ...Array.from(elementToAdjust.children).map(
-                    (child) => (child as HTMLElement).scrollWidth,
-                ),
-            ),
-        );
-    const getEffectiveScrollWidth = (): number =>
+    // Returns the narrowest width that fits all content without wrapping,
+    // checking both the element and its direct children (since a constrained
+    // container clips getBoundingClientRect but children still have their full scrollWidth).
+    const getScrollWidth = (): number =>
         Math.ceil(
             Math.max(
                 elementToAdjust.scrollWidth + 1,
@@ -89,7 +83,7 @@ export function ensureFieldFitsOnCustomPage(
             canvasElement.style.width,
             canvasElement.clientWidth,
         );
-        return getEffectiveScrollWidth() > containerWidth + 1;
+        return getScrollWidth() > containerWidth + 1;
     };
     const hasOverflow = (): boolean =>
         overflowsVertically() || overflowsHorizontally();
@@ -99,11 +93,11 @@ export function ensureFieldFitsOnCustomPage(
     if (!wrapsByWhiteSpace()) {
         // No wrapping allowed: width must fit all content on one line.
         elementToAdjust.style.whiteSpace = "nowrap";
-        fittedWidth = getIntrinsicNoWrapWidth();
+        fittedWidth = getScrollWidth();
         elementToAdjust.style.whiteSpace = oldWhiteSpace;
     } else {
         elementToAdjust.style.whiteSpace = "nowrap";
-        const noWrapWidth = getIntrinsicNoWrapWidth();
+        const noWrapWidth = getScrollWidth();
         elementToAdjust.style.whiteSpace = oldWhiteSpace;
 
         canvasElement.style.width = `${noWrapWidth}px`;

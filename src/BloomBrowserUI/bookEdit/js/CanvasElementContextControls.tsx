@@ -994,7 +994,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
 // The canvas elements that are actually on the page should be visible. We could copy it to some other attribute.
 // But that would only work for the fields that were originally on the page. We want to be able to add new data-book fields.
 // And there are certain clauses we need to add to such fields to give them the standard appearance.
-// So until I get a better idea, I'm just putting in a hard-coded list.xx
+// So until I get a better idea, I'm just putting in a hard-coded list.
 const fieldsControlledByAppearanceSystem = ["bookTitle"];
 
 function adjustAutoSizeForVisibleEditableInTranslationGroup(tg: HTMLElement) {
@@ -1419,7 +1419,13 @@ function makeFieldTypeMenuItem(
                     readOnlyDiv.classList.add(...fieldType.classes);
                     tg.parentElement!.insertBefore(readOnlyDiv, tg);
                     tg.remove();
-                    ensureFieldFitsOnCustomPage(readOnlyDiv);
+                    // Tempting to do this here, but we're going to reload the page,
+                    // and it's only after the reload that the div we just created will have
+                    // its content. Another call to this function will happen after the reload,
+                    // and that can do a better job of fixing it. Doing it now would just
+                    // reduce the height to its minimum, forcing the new content to be shown on
+                    // one line.
+                    //ensureFieldFitsOnCustomPage(readOnlyDiv);
                     // Reload the page to get the derived content loaded.
                     post("common/saveChangesAndRethinkPageEvent", () => {});
                 } else {
