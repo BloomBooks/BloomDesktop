@@ -3826,7 +3826,7 @@
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
-        <note>Link to find Bloom Reader on Google Play Store</note>
+        <note>Link to a page on bloomlibrary.org about Bloom Reader</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true">
         <source xml:lang="en">Motion Book</source>
