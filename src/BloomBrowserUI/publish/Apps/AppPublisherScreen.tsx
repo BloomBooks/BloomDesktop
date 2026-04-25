@@ -48,7 +48,7 @@ const apkToPhoneIconUrl = new URL(
 
 // Keep this URL in sync with kRabSetupDownloadUrl in BloomExe/Publish/Rab/RabProjectService.cs.
 export const rabInstallerDownloadUrl =
-    "https://bloomlibrary.org/RAB/installers/Reading-App-Builder-For-Bloom-14-0-prerelease-Setup.exe";
+    "https://bloomlibrary.org/RAB/installers/Reading-App-Builder-For-Bloom-14-0-Setup.exe";
 
 const AppActionButton: React.FunctionComponent<{
     enabled: boolean;

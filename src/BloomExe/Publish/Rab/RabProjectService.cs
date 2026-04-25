@@ -43,7 +43,7 @@ namespace Bloom.Publish.Rab
             @"Software\SIL\Reading App Builder for Bloom";
         private const int kUserCanceledShellLaunchErrorCode = 1223;
         private const string kRabSetupInstallerPrefix = "Reading-App-Builder-For-Bloom-";
-        private const string kRabInstallerVersion = "14-0-prerelease";
+        private const string kRabInstallerVersion = "14-0";
         private const string kRabSetupInstallerSuffix = "-Setup.exe";
         internal const string kRabSetupInstallerFileName =
             kRabSetupInstallerPrefix + kRabInstallerVersion + kRabSetupInstallerSuffix;
