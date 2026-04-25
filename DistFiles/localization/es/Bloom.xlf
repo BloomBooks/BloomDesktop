@@ -596,37 +596,37 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES" state="final">Armenio (Alto)</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Program" translate="no">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Program">
         <source xml:lang="en">Program</source>
         <target xml:lang="es-ES" state="needs-translation">Program</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Program</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodes" translate="no">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodes">
         <source xml:lang="en">QR Codes</source>
         <target xml:lang="es-ES" state="needs-translation">QR Codes</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodes</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes" translate="no">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes">
         <source xml:lang="en">Show QR Codes</source>
         <target xml:lang="es-ES" state="needs-translation">Show QR Codes</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.ShowQrCodes</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description" translate="no">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description">
         <source xml:lang="en">Scanning the code or clicking the badge will take the user to the collection of books in this collection's primary language. Note, if you want to use this but your branding does not show it, contact us.</source>
         <target xml:lang="es-ES" state="needs-translation">Scanning the code or clicking the badge will take the user to the collection of books in this collection's primary language. Note, if you want to use this but your branding does not show it, contact us.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption" translate="no">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption">
         <source xml:lang="en">Caption</source>
         <target xml:lang="es-ES" state="needs-translation">Caption</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description" translate="no">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description">
         <source xml:lang="en">If your caption contains "{0}", Bloom will fill this in with the name of the language.</source>
         <target xml:lang="es-ES" state="needs-translation">If your caption contains "{0}", Bloom will fill this in with the name of the language.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption.Description</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText" translate="no">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText">
         <source xml:lang="en">Get more books in the {0} language on BloomLibrary.org.</source>
         <target xml:lang="es-ES" state="needs-translation">Get more books in the {0} language on BloomLibrary.org.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText</note>
@@ -1061,7 +1061,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES" state="final">Nuevo...</target>
         <note>ID: ColorPicker.New</note>
       </trans-unit>
-      <trans-unit id="ColorPicker.SampleColor" sil:dynamic="true" translate="no">
+      <trans-unit id="ColorPicker.SampleColor" sil:dynamic="true">
         <source xml:lang="en">Sample Color</source>
         <target xml:lang="es-ES" state="needs-translation">Sample Color</target>
         <note>ID: ColorPicker.SampleColor</note>
@@ -1585,22 +1585,22 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES" state="final">Copiar página</target>
         <note>ID: EditTab.CopyPage</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.Standard" translate="no">
+      <trans-unit id="EditTab.CustomCover.Standard">
         <source xml:lang="en">Standard</source>
         <target xml:lang="es-ES" state="needs-translation">Standard</target>
         <note>ID: EditTab.CustomCover.Standard</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.StandardLayout" translate="no">
+      <trans-unit id="EditTab.CustomCover.StandardLayout">
         <source xml:lang="en">Standard Layout</source>
         <target xml:lang="es-ES" state="needs-translation">Standard Layout</target>
         <note>ID: EditTab.CustomCover.StandardLayout</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.Custom" translate="no">
+      <trans-unit id="EditTab.CustomCover.Custom">
         <source xml:lang="en">Custom</source>
         <target xml:lang="es-ES" state="needs-translation">Custom</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.CustomLayout" translate="no">
+      <trans-unit id="EditTab.CustomCover.CustomLayout">
         <source xml:lang="en">Custom Layout</source>
         <target xml:lang="es-ES" state="needs-translation">Custom Layout</target>
         <note>ID: EditTab.CustomCover.CustomLayout</note>
@@ -2166,7 +2166,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Haga clic para elegir el tema</target>
         <note>ID: EditTab.FrontMatter.TopicPrompt</note>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.TopicPrompt2" translate="no">
+      <trans-unit id="EditTab.FrontMatter.TopicPrompt2">
         <source xml:lang="en">Choose topic</source>
         <target xml:lang="es-ES" state="needs-translation">Choose topic</target>
         <note>ID: EditTab.FrontMatter.TopicPrompt2</note>
@@ -2571,7 +2571,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Encaje antiguo</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BecomeBackground" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BecomeBackground">
         <source xml:lang="en">Become background</source>
         <target xml:lang="es-ES" state="needs-translation">Become background</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BecomeBackground</note>
@@ -2586,7 +2586,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="translated">Copiar texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail" sil:dynamic="true">
         <source xml:lang="en">Use for book thumbnail</source>
         <target xml:lang="es-ES" state="needs-translation">Use for book thumbnail</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail</note>
@@ -2596,17 +2596,17 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Duplicar</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FieldType" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FieldType">
         <source xml:lang="en">Field Type:</source>
         <target xml:lang="es-ES" state="needs-translation">Field Type:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FieldType</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true">
         <source xml:lang="en">Fill Background</source>
         <target xml:lang="es-ES" state="needs-translation">Fill Background</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FillBackground</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillSpace" sil:dynamic="true">
         <source xml:lang="en">Expand image to fill space</source>
         <target xml:lang="es-ES" state="translated">Ampliar imagen para llenar espacio</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FillSpace</note>
@@ -2626,7 +2626,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Color de contorno exterior</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
         <source xml:lang="en">Language:</source>
         <target xml:lang="es-ES" state="needs-translation">Language:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
@@ -2721,7 +2721,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Color del texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextOutlineColor" sil:dynamic="true" translate="no">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextOutlineColor" sil:dynamic="true">
         <source xml:lang="en">Text Outline Color</source>
         <target xml:lang="es-ES" state="needs-translation">Text Outline Color</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextOutlineColor</note>
@@ -4938,7 +4938,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="needs-translation">Exclude print bleed around page edges</target>
         <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.IncludeBackgroundColors" translate="no">
+      <trans-unit id="PublishTab.PdfMaker.IncludeBackgroundColors">
         <source xml:lang="en">Include background colors</source>
         <target xml:lang="es-ES" state="needs-translation">Include background colors</target>
         <note>ID: PublishTab.PdfMaker.IncludeBackgroundColors</note>
