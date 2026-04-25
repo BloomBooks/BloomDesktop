@@ -42,15 +42,16 @@ namespace Bloom.Publish.Rab
         private const string kBloomRabRegistrySubKey =
             @"Software\SIL\Reading App Builder for Bloom";
         private const int kUserCanceledShellLaunchErrorCode = 1223;
-        private const string kRabSetupInstallerPrefix = "Reading-App-Builder-For-Bloom-6-4";
+        private const string kRabSetupInstallerPrefix = "Reading-App-Builder-For-Bloom-";
+        private const string kRabInstallerVersion = "14-0";
         private const string kRabSetupInstallerSuffix = "-Setup.exe";
-        private const string kRabSetupInstallerFileName =
-            kRabSetupInstallerPrefix + kRabSetupInstallerSuffix;
+        internal const string kRabSetupInstallerFileName =
+            kRabSetupInstallerPrefix + kRabInstallerVersion + kRabSetupInstallerSuffix;
         private const string kDefaultBundledIconId = "bloom-app-icon-52";
 
         // Keep this URL in sync with rabInstallerDownloadUrl in BloomBrowserUI/publish/Apps/AppPublisherScreen.tsx.
         private const string kRabSetupDownloadUrl =
-            "https://bloomlibrary.org/installers/" + kRabSetupInstallerFileName;
+            "https://bloomlibrary.org/RAB/installers/" + kRabSetupInstallerFileName;
         private const string kRabSetupLanguage = "en";
         private const int kRabLaunchPollIntervalMs = 250;
         private const int kRabLaunchTimeoutMs = 60000;
@@ -2101,12 +2102,8 @@ namespace Bloom.Publish.Rab
                 if (!Directory.Exists(directory))
                     continue;
 
-                var installerPath = Directory
-                    .GetFiles(directory, "Reading-App-Builder*.exe", SearchOption.TopDirectoryOnly)
-                    .Where(path => IsRabSetupInstallerFileName(Path.GetFileName(path)))
-                    .OrderBy(path => path.Length)
-                    .FirstOrDefault();
-                if (!string.IsNullOrWhiteSpace(installerPath))
+                var installerPath = Path.Combine(directory, kRabSetupInstallerFileName);
+                if (RobustFile.Exists(installerPath))
                     return installerPath;
             }
 
@@ -2265,24 +2262,6 @@ namespace Bloom.Publish.Rab
         internal virtual IReadOnlyList<string> GetRabRegistrySubKeys()
         {
             return new[] { kBloomRabRegistrySubKey, kRabRegistrySubKey };
-        }
-
-        internal static bool IsRabSetupInstallerFileName(string fileName)
-        {
-            if (string.IsNullOrWhiteSpace(fileName))
-                return false;
-
-            if (
-                string.Equals(
-                    fileName,
-                    kRabSetupInstallerFileName,
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
-                return true;
-
-            return fileName.StartsWith(kRabSetupInstallerPrefix, StringComparison.OrdinalIgnoreCase)
-                && fileName.EndsWith(kRabSetupInstallerSuffix, StringComparison.OrdinalIgnoreCase);
         }
 
         internal static bool IsUserCanceledShellLaunch(Win32Exception error)
@@ -2527,7 +2506,12 @@ namespace Bloom.Publish.Rab
 
         internal virtual string GetRabSettingsFilePath()
         {
-            return Path.Combine(GetRabAppDataFolder(), "SIL", "App Builder", "rab-settings.xml");
+            return Path.Combine(
+                GetRabAppDataFolder(),
+                "SIL",
+                "App Builder for Bloom",
+                "rab-settings.xml"
+            );
         }
 
         internal virtual void SeedRabSettingsToOpenProject(string appDefPath)
