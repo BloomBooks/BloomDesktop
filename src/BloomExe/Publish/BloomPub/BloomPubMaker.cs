@@ -890,9 +890,7 @@ namespace Bloom.Publish.BloomPub
         /// - delete the img element
         /// (See oldImg and newImg in unit test CompressBookForDevice_ImgInImgContainer_ConvertedToBackground for an example).
         /// </summary>
-        /// <param name="wholeBookHtml"></param>
-        /// <returns></returns>
-        private static void ConvertImagesToBackground(SafeXmlDocument dom)
+        internal static void ConvertImagesToBackground(SafeXmlDocument dom)
         {
             foreach (
                 var imgContainer in dom.SafeSelectNodes(
