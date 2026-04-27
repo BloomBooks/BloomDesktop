@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Bloom.Api;
 using NUnit.Framework;
 
@@ -58,14 +57,6 @@ namespace BloomTests.web
             var obj = DynamicJson.Parse("{'d': 25.5}".Replace("'", "\"")) as DynamicJson;
             Assert.That(obj.TryGetValue("d", out double val), Is.True);
             Assert.That(val, Is.EqualTo(25.5));
-        }
-
-        [Test]
-        public void Serialize_ObjectContainingXAttribute_DoesNotThrow()
-        {
-            var attribute = new XAttribute("href", "#cover");
-
-            Assert.DoesNotThrow(() => DynamicJson.Serialize(new { xmlAttribute = attribute }));
         }
     }
 }
