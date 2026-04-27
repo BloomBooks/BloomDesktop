@@ -77,6 +77,9 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                     background-color: white;
                     display: flex;
                     flex-direction: column;
+                    flex: 1 1 auto;
+                    min-height: 0;
+                    min-width: 0;
                     padding-left: ${kDialogSidePadding};
                     padding-right: ${kDialogSidePadding};
                     padding-bottom: ${kDialogBottomPadding};
@@ -213,6 +216,11 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                                     // Note that we want to restrict this to just this top-level paper thing, not *all* off them
                                     .MuiDialog-container > .MuiPaper-root {
                                         margin: 0 !important;
+                                        display: flex;
+                                        flex-direction: column;
+                                        box-sizing: border-box;
+                                        max-width: calc(100vw - 16px);
+                                        max-height: calc(100vh - 16px);
                                     }
                                 `}
                                 ref={ref}
