@@ -1057,7 +1057,8 @@ namespace Bloom.Book
                 && !FeatureStatus
                     .GetFeatureStatus(
                         CollectionSettings.Subscription,
-                        FeatureName.CustomXMatterPage
+                        FeatureName.CustomXMatterPage,
+                        this
                     )
                     .Enabled
             )

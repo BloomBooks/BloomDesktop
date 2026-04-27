@@ -2461,6 +2461,44 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void BringBookUpToDate_CustomLayoutPageInPlayground_PreservesCustomLayoutClassWithoutSubscription()
+        {
+            _bookDom = new HtmlDom(
+                @"
+                <html>
+                    <head>
+                        <meta name='xmatter' content='Factory' />
+                    </head>
+                    <body>
+                        <div id='bloomDataDiv'></div>
+                        <div class='bloom-page cover coverColor bloom-frontMatter frontCover bloom-customLayout A5Portrait side-right'
+                            data-page='required singleton'
+                            data-export='front-matter-cover'
+                            data-xmatter-page='frontCover'
+                            data-custom-layout-id='customOutsideFrontCover'
+                            id='frontCover-id'>
+                            <div class='marginBox'>
+                                <div class='bloom-canvas'></div>
+                            </div>
+                        </div>
+                    </body>
+                </html>"
+            );
+
+            var book = CreateBook();
+            book.BookInfo.BookLineage = "aeb176bc-76fa-44e2-bb9d-6350698fce47";
+
+            book.BringBookUpToDate(new NullProgress());
+
+            AssertThatXmlIn
+                .Dom(book.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class, 'bloom-page') and @data-custom-layout-id='customOutsideFrontCover' and contains(concat(' ', normalize-space(@class), ' '), ' bloom-customLayout ')]",
+                    1
+                );
+        }
+
+        [Test]
         public void BringBookUpToDate_Level14Migration_SavesCustomOutsideFrontCoverToDataDiv()
         {
             // Must use CreateBookWithPhysicalFile, not CreateBook, lest we get a mock BookStorage
