@@ -120,6 +120,11 @@ namespace Bloom.Publish.Rab
 
     internal class RabWorkspacePaths
     {
+        internal static string GetAsciiWorkRoot()
+        {
+            return Path.Combine(Path.GetTempPath(), "Bloom");
+        }
+
         public RabWorkspacePaths(string collectionRoot, string bloomOwnedRabRoot = null)
         {
             CollectionRoot = collectionRoot;
@@ -127,6 +132,14 @@ namespace Bloom.Publish.Rab
             BloomPubRoot = Path.Combine(RabRoot, "bloompubs");
             BuildRoot = Path.Combine(RabRoot, "build");
             ApkRoot = Path.Combine(RabRoot, "apk");
+            // Work around RAB mishandling non-ASCII apk.output paths by staging the APK in a
+            // Bloom-owned ASCII-only temp folder, then moving it back into the collection after build.
+            // See https://github.com/sillsdev/app-builders/issues/2186.
+            AsciiApkOutputRoot = Path.Combine(
+                GetAsciiWorkRoot(),
+                "RabApkOutput",
+                Guid.NewGuid().ToString("N")
+            );
             BloomOwnedRabRoot = string.IsNullOrWhiteSpace(bloomOwnedRabRoot)
                 ? RabRoot
                 : bloomOwnedRabRoot;
@@ -144,6 +157,7 @@ namespace Bloom.Publish.Rab
         public string BloomPubRoot { get; }
         public string BuildRoot { get; }
         public string ApkRoot { get; }
+        public string AsciiApkOutputRoot { get; }
         public string BloomOwnedRabRoot { get; }
         public string KeystoreRoot { get; }
         public string SharedKeystorePath { get; }

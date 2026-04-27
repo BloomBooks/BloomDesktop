@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
@@ -23,10 +22,17 @@ namespace BloomTests.Publish.Rab
     public class RabRealBuildTests : BookTestsBase
     {
         private const string kRunManualRabBuildEnvVar = "BLOOM_RUN_RAB_MANUAL_TESTS";
+        private const string kManualCollectionFolderName = "Kasɩm Books";
+        private const string kManualBloomOwnedRabFolderName = "ReadingAppBuilder";
 
         private static string GetManualWorkRoot([CallerFilePath] string currentFilePath = "")
         {
             return Path.Combine(Path.GetDirectoryName(currentFilePath), "ManualWork");
+        }
+
+        private static string GetManualBloomOwnedRabRoot(string manualWorkRoot)
+        {
+            return Path.Combine(manualWorkRoot, "BloomAppData", kManualBloomOwnedRabFolderName);
         }
 
         private static string GetRepoBloomPubPath([CallerFilePath] string currentFilePath = "")
@@ -36,11 +42,6 @@ namespace BloomTests.Publish.Rab
                 "TestData",
                 "Book4.bloompub"
             );
-        }
-
-        public override void Setup()
-        {
-            base.Setup();
         }
 
         [Test]
@@ -54,7 +55,11 @@ namespace BloomTests.Publish.Rab
                 );
             }
 
-            var paths = new RabWorkspacePaths(GetManualWorkRoot());
+            var initialManualWorkRoot = GetManualWorkRoot();
+            var paths = new RabWorkspacePaths(
+                Path.Combine(initialManualWorkRoot, kManualCollectionFolderName),
+                GetManualBloomOwnedRabRoot(initialManualWorkRoot)
+            );
             var rabLauncherPath = RealRabProjectService.FindInstalledRabLauncherPath(paths);
             var rabKeytoolPath = RealRabProjectService.FindInstalledRabKeytoolPath(paths);
 
@@ -87,7 +92,11 @@ namespace BloomTests.Publish.Rab
             Directory.CreateDirectory(manualWorkRoot);
             TestContext.Progress.WriteLine($"RAB manual work root: {manualWorkRoot}");
 
-            paths = new RabWorkspacePaths(manualWorkRoot);
+            var manualCollectionRoot = Path.Combine(manualWorkRoot, kManualCollectionFolderName);
+            var manualBloomOwnedRabRoot = GetManualBloomOwnedRabRoot(manualWorkRoot);
+            paths = new RabWorkspacePaths(manualCollectionRoot, manualBloomOwnedRabRoot);
+            Directory.CreateDirectory(manualCollectionRoot);
+            Directory.CreateDirectory(manualBloomOwnedRabRoot);
             Directory.CreateDirectory(paths.ProjectAssetsRoot);
             Directory.CreateDirectory(paths.LauncherIconRoot);
             RobustFile.WriteAllText(
@@ -101,8 +110,7 @@ namespace BloomTests.Publish.Rab
                 sourceBloomPubPath,
                 bookTitle,
                 paths.AboutTextPath,
-                iconPaths,
-                rabLauncherPath
+                iconPaths
             );
 
             await service.PrepareAsync();
@@ -161,16 +169,13 @@ namespace BloomTests.Publish.Rab
             private readonly string _bookTitle;
             private readonly string _aboutTextPath;
             private readonly string[] _iconPaths;
-            private readonly string _commandLogPath;
-            private readonly string _rabLauncherPath;
 
             public RealRabProjectService(
                 RabWorkspacePaths paths,
                 string sourceBloomPubPath,
                 string bookTitle,
                 string aboutTextPath,
-                string[] iconPaths,
-                string rabLauncherPath
+                string[] iconPaths
             )
                 : base(null, null, null, null, null)
             {
@@ -179,15 +184,12 @@ namespace BloomTests.Publish.Rab
                 _bookTitle = bookTitle;
                 _aboutTextPath = aboutTextPath;
                 _iconPaths = iconPaths;
-                _commandLogPath = Path.Combine(_paths.RabRoot, "rab-command.log");
-                _rabLauncherPath = rabLauncherPath;
             }
 
             internal static string FindInstalledRabLauncherPath(RabWorkspacePaths paths)
             {
                 return new RealRabProjectService(
                     paths,
-                    null,
                     null,
                     null,
                     null,
@@ -246,57 +248,6 @@ namespace BloomTests.Publish.Rab
                     AboutTextPath = _aboutTextPath,
                     LauncherIconPaths = _iconPaths,
                 };
-            }
-
-            internal override void RunRabCommand(string rabArguments, string workingDirectory)
-            {
-                Directory.CreateDirectory(_paths.RabRoot);
-
-                using (var process = new Process())
-                {
-                    process.StartInfo = new ProcessStartInfo()
-                    {
-                        FileName = "cmd.exe",
-                        Arguments = $"/d /c \"\"{_rabLauncherPath}\" {rabArguments}\"",
-                        WorkingDirectory = workingDirectory,
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true,
-                    };
-
-                    if (!process.Start())
-                        throw new ApplicationException(
-                            "Bloom could not start Reading App Builder."
-                        );
-
-                    var output = process.StandardOutput.ReadToEnd();
-                    var error = process.StandardError.ReadToEnd();
-                    process.WaitForExit();
-
-                    RobustFile.WriteAllText(
-                        _commandLogPath,
-                        string.Join(
-                            Environment.NewLine,
-                            new[]
-                            {
-                                $"> {_rabLauncherPath} {rabArguments}",
-                                "--- stdout ---",
-                                output,
-                                "--- stderr ---",
-                                error,
-                                $"--- exit code: {process.ExitCode} ---",
-                            }
-                        )
-                    );
-
-                    if (process.ExitCode != 0)
-                    {
-                        throw new ApplicationException(
-                            $"Reading App Builder exited with code {process.ExitCode}. See {_commandLogPath}."
-                        );
-                    }
-                }
             }
 
             private List<RabBookPublishInfo> ExportBooks(
