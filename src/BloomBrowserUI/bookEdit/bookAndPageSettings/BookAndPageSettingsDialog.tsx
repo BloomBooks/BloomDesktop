@@ -427,8 +427,6 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                 .MuiDialog-paper {
                     width: ${kBookSettingsDialogWidthPx}px;
                     height: ${kBookSettingsDialogHeightPx}px;
-                    max-width: none;
-                    max-height: none;
                 }
             `}
             ref={dialogRef}
