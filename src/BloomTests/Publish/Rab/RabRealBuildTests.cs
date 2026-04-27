@@ -248,16 +248,20 @@ namespace BloomTests.Publish.Rab
                 };
             }
 
-            internal override void RunRabCommand(string rabArguments, string workingDirectory)
+            internal override void RunRabCommand(
+                IReadOnlyList<string> rabArguments,
+                string workingDirectory
+            )
             {
                 Directory.CreateDirectory(_paths.RabRoot);
+                var flattenedArguments = string.Join(" ", rabArguments.Select(QuoteForCmd));
 
                 using (var process = new Process())
                 {
                     process.StartInfo = new ProcessStartInfo()
                     {
                         FileName = "cmd.exe",
-                        Arguments = $"/d /c \"\"{_rabLauncherPath}\" {rabArguments}\"",
+                        Arguments = $"/d /c \"\"{_rabLauncherPath}\" {flattenedArguments}\"",
                         WorkingDirectory = workingDirectory,
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
@@ -280,7 +284,7 @@ namespace BloomTests.Publish.Rab
                             Environment.NewLine,
                             new[]
                             {
-                                $"> {_rabLauncherPath} {rabArguments}",
+                                $"> {_rabLauncherPath} {flattenedArguments}",
                                 "--- stdout ---",
                                 output,
                                 "--- stderr ---",
@@ -297,6 +301,11 @@ namespace BloomTests.Publish.Rab
                         );
                     }
                 }
+            }
+
+            private static string QuoteForCmd(string value)
+            {
+                return "\"" + (value ?? string.Empty).Replace("\"", "\\\"") + "\"";
             }
 
             private List<RabBookPublishInfo> ExportBooks(

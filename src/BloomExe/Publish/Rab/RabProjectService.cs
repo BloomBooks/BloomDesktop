@@ -10,6 +10,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Security;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -1695,7 +1696,7 @@ namespace Bloom.Publish.Rab
             }
         }
 
-        private string BuildRabArgsForNewProject(
+        private IReadOnlyList<string> BuildRabArgsForNewProject(
             RabWorkspacePaths paths,
             RabAppSettings settings,
             IEnumerable<RabBookPublishInfo> books,
@@ -1707,15 +1708,15 @@ namespace Bloom.Publish.Rab
             {
                 "-new",
                 "-n",
-                QuoteArgument(settings?.AppName ?? GetAppName()),
+                settings?.AppName ?? GetAppName(),
                 "-p",
-                QuoteArgument(settings?.PackageName ?? GetPackageName()),
+                settings?.PackageName ?? GetPackageName(),
                 "-fp",
-                QuoteArgument($"app.def={paths.RabRoot}"),
+                $"app.def={paths.RabRoot}",
                 "-fp",
-                QuoteArgument($"build={paths.BuildRoot}"),
+                $"build={paths.BuildRoot}",
                 "-fp",
-                QuoteArgument($"apk.output={paths.ApkRoot}"),
+                $"apk.output={paths.ApkRoot}",
             };
 
             AddProjectConfigurationArguments(arguments, state, supportFiles);
@@ -1723,13 +1724,13 @@ namespace Bloom.Publish.Rab
             foreach (var book in books)
             {
                 arguments.Add("-b");
-                arguments.Add(QuoteArgument(book.BloomPubPath));
+                arguments.Add(book.BloomPubPath);
             }
 
-            return string.Join(" ", arguments);
+            return arguments;
         }
 
-        private string BuildRabArgsForProjectUpdate(
+        private IReadOnlyList<string> BuildRabArgsForProjectUpdate(
             RabWorkspacePaths paths,
             RabPrepareState state,
             IEnumerable<RabBookPublishInfo> books,
@@ -1737,38 +1738,35 @@ namespace Bloom.Publish.Rab
             bool buildProject
         )
         {
-            var arguments = new List<string> { "-load", QuoteArgument(state.AppDefPath) };
+            var arguments = new List<string> { "-load", state.AppDefPath };
             arguments.Add("-fp");
-            arguments.Add(QuoteArgument($"build={paths.BuildRoot}"));
+            arguments.Add($"build={paths.BuildRoot}");
             arguments.Add("-fp");
-            arguments.Add(QuoteArgument($"apk.output={paths.ApkRoot}"));
+            arguments.Add($"apk.output={paths.ApkRoot}");
             AddProjectConfigurationArguments(arguments, state, supportFiles);
 
             foreach (var book in books)
             {
                 arguments.Add("-b");
-                arguments.Add(QuoteArgument(book.BloomPubPath));
+                arguments.Add(book.BloomPubPath);
             }
 
             if (buildProject)
                 arguments.Add("-build");
 
-            return string.Join(" ", arguments);
+            return arguments;
         }
 
-        private string BuildRabArgsForInstallingSdks()
+        private IReadOnlyList<string> BuildRabArgsForInstallingSdks()
         {
-            return string.Join(
-                " ",
-                new[]
-                {
-                    "-install-sdks-if-needed",
-                    "-jdk-install-folder",
-                    QuoteArgument(GetRabJdkInstallFolder()),
-                    "-android-sdk-install-folder",
-                    QuoteArgument(GetRabAndroidSdkInstallFolder()),
-                }
-            );
+            return new[]
+            {
+                "-install-sdks-if-needed",
+                "-jdk-install-folder",
+                GetRabJdkInstallFolder(),
+                "-android-sdk-install-folder",
+                GetRabAndroidSdkInstallFolder(),
+            };
         }
 
         private string RedactSensitiveProcessArguments(string arguments)
@@ -1800,53 +1798,94 @@ namespace Bloom.Publish.Rab
             if (!string.IsNullOrWhiteSpace(supportFiles?.AboutTextPath))
             {
                 arguments.Add("-a");
-                arguments.Add(QuoteArgument(supportFiles.AboutTextPath));
+                arguments.Add(supportFiles.AboutTextPath);
             }
 
             foreach (var iconPath in supportFiles?.LauncherIconPaths ?? Array.Empty<string>())
             {
                 arguments.Add("-ic");
-                arguments.Add(QuoteArgument(iconPath));
+                arguments.Add(iconPath);
             }
 
             if (!string.IsNullOrWhiteSpace(state?.KeystorePath))
             {
                 arguments.Add("-ks");
-                arguments.Add(QuoteArgument(state.KeystorePath));
+                arguments.Add(state.KeystorePath);
             }
 
             if (!string.IsNullOrWhiteSpace(state?.KeystorePassword))
             {
                 arguments.Add("-ksp");
-                arguments.Add(QuoteArgument(state.KeystorePassword));
+                arguments.Add(state.KeystorePassword);
             }
 
             if (!string.IsNullOrWhiteSpace(state?.KeyAlias))
             {
                 arguments.Add("-ka");
-                arguments.Add(QuoteArgument(state.KeyAlias));
+                arguments.Add(state.KeyAlias);
             }
 
             if (!string.IsNullOrWhiteSpace(state?.AliasPassword))
             {
                 arguments.Add("-kap");
-                arguments.Add(QuoteArgument(state.AliasPassword));
+                arguments.Add(state.AliasPassword);
             }
         }
 
-        internal virtual void RunRabCommand(string rabArguments, string workingDirectory)
+        internal virtual void RunRabCommand(
+            IReadOnlyList<string> rabArguments,
+            string workingDirectory
+        )
         {
             var rabLauncher = FindRabLauncherPath();
             if (string.IsNullOrEmpty(rabLauncher))
                 throw new ApplicationException(GetRabNotFoundMessage());
 
-            var command = $"\"{rabLauncher}\" {rabArguments}";
-            RunProcess(
-                "cmd.exe",
-                $"/d /c \"{command}\"",
-                workingDirectory,
-                GetRabProcessEnvironmentVariables()
+            var argumentFilePath = CreateRabArgumentFile(rabArguments);
+            try
+            {
+                var command = $"\"{rabLauncher}\" -i {QuoteArgument(argumentFilePath)}";
+                RunProcess(
+                    "cmd.exe",
+                    $"/d /c \"{command}\"",
+                    workingDirectory,
+                    GetRabProcessEnvironmentVariables()
+                );
+            }
+            finally
+            {
+                try
+                {
+                    RobustFile.Delete(argumentFilePath);
+                }
+                catch (Exception) { }
+            }
+        }
+
+        private static string CreateRabArgumentFile(IReadOnlyList<string> rabArguments)
+        {
+            var argumentDirectory = Path.Combine(Path.GetTempPath(), "Bloom", "RabArgs");
+            Directory.CreateDirectory(argumentDirectory);
+
+            var argumentFilePath = Path.Combine(
+                argumentDirectory,
+                $"rab-args-{Guid.NewGuid():N}.txt"
             );
+
+            var argumentFileContents = string.Join(
+                Environment.NewLine,
+                (rabArguments ?? Array.Empty<string>()).Select(FormatRabArgumentFileLine)
+            );
+            RobustFile.WriteAllText(argumentFilePath, argumentFileContents, new UTF8Encoding(true));
+            return argumentFilePath;
+        }
+
+        private static string FormatRabArgumentFileLine(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return "\"\"";
+
+            return value.StartsWith("-", StringComparison.Ordinal) ? value : QuoteArgument(value);
         }
 
         internal virtual IReadOnlyDictionary<string, string> GetRabProcessEnvironmentVariables()

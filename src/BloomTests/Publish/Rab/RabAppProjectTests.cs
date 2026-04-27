@@ -541,10 +541,51 @@ namespace BloomTests.Publish.Rab
             );
 
             var error = Assert.Throws<ApplicationException>(() =>
-                service.RunRabCommand("-help", tempFolder.Path)
+                service.RunRabCommand(new[] { "-help" }, tempFolder.Path)
             );
 
             Assert.That(error.Message, Does.Contain("registry reports version 15.2"));
+        }
+
+        [Test]
+        public void RunRabCommand_WritesUtf8ArgumentFile_AndInvokesRabWithDashI()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var service = new ArgumentFileCapturingRabProjectService();
+
+            service.RunRabCommand(
+                new[]
+                {
+                    "-new",
+                    "-n",
+                    "Kasɩm Books",
+                    "-fp",
+                    @"app.def=C:\Users\Polk\Documents\Bloom\Kasɩm Books\Bloom App Data",
+                },
+                tempFolder.Path
+            );
+
+            Assert.That(service.CapturedFileName, Is.EqualTo("cmd.exe"));
+            Assert.That(service.CapturedArguments, Does.Contain(" -i \""));
+            Assert.That(Path.IsPathRooted(service.CapturedArgumentFileReference), Is.True);
+            Assert.That(
+                service.CapturedArgumentFileContents,
+                Is.EqualTo(
+                    new[]
+                    {
+                        "-new",
+                        "-n",
+                        "\"Kasɩm Books\"",
+                        "-fp",
+                        @"""app.def=C:\Users\Polk\Documents\Bloom\Kasɩm Books\Bloom App Data""",
+                    }
+                )
+            );
+            Assert.That(
+                service.CapturedArgumentFileBytes.Take(3),
+                Is.EqualTo(new byte[] { 0xEF, 0xBB, 0xBF })
+            );
+            Assert.That(service.ArgumentFileExistsAfterRun, Is.False);
         }
 
         [Test]
@@ -2537,10 +2578,13 @@ namespace BloomTests.Publish.Rab
                 RobustFile.WriteAllText(keystorePath, password);
             }
 
-            internal override void RunRabCommand(string rabArguments, string workingDirectory)
+            internal override void RunRabCommand(
+                IReadOnlyList<string> rabArguments,
+                string workingDirectory
+            )
             {
-                Commands.Add(rabArguments);
-                var tokens = TokenizeArguments(rabArguments);
+                Commands.Add(string.Join(" ", rabArguments));
+                var tokens = rabArguments.ToList();
 
                 if (tokens.Contains("-install-sdks-if-needed"))
                 {
@@ -2576,7 +2620,7 @@ namespace BloomTests.Publish.Rab
 
                 if (tokens.Contains("-load") && tokens.Contains("-build"))
                 {
-                    EmitSimulatedBuildOutput(rabArguments);
+                    EmitSimulatedBuildOutput(string.Join(" ", rabArguments));
                     CreateApk(tokens);
                 }
             }
@@ -3103,6 +3147,66 @@ namespace BloomTests.Publish.Rab
                 }
 
                 return values;
+            }
+        }
+
+        private class ArgumentFileCapturingRabProjectService : RabProjectService
+        {
+            public string CapturedFileName { get; private set; }
+            public string CapturedArguments { get; private set; }
+            public string CapturedArgumentFileReference { get; private set; }
+            public string[] CapturedArgumentFileContents { get; private set; }
+            public byte[] CapturedArgumentFileBytes { get; private set; }
+            public bool ArgumentFileExistsAfterRun { get; private set; }
+
+            public ArgumentFileCapturingRabProjectService()
+                : base(null, null, null, null, null) { }
+
+            internal override string FindRabLauncherPath()
+            {
+                return @"C:\Program Files\SIL\Reading App Builder\rab.bat";
+            }
+
+            internal override IReadOnlyDictionary<
+                string,
+                string
+            > GetRabProcessEnvironmentVariables()
+            {
+                return new Dictionary<string, string>();
+            }
+
+            internal override void RunProcess(
+                string fileName,
+                string arguments,
+                string workingDirectory,
+                IReadOnlyDictionary<string, string> environmentVariables = null
+            )
+            {
+                CapturedFileName = fileName;
+                CapturedArguments = arguments;
+
+                var match = Regex.Match(arguments, "-i \\\"([^\\\"]+)\\\"");
+                Assert.That(
+                    match.Success,
+                    Is.True,
+                    "Expected RunRabCommand() to launch rab.bat with -i <args file>."
+                );
+
+                CapturedArgumentFileReference = match.Groups[1].Value;
+                var argumentFilePath = CapturedArgumentFileReference;
+                CapturedArgumentFileBytes = File.ReadAllBytes(argumentFilePath);
+                CapturedArgumentFileContents = File.ReadAllLines(argumentFilePath, Encoding.UTF8);
+            }
+
+            internal override void RunRabCommand(
+                IReadOnlyList<string> rabArguments,
+                string workingDirectory
+            )
+            {
+                base.RunRabCommand(rabArguments, workingDirectory);
+
+                var argumentFilePath = CapturedArgumentFileReference;
+                ArgumentFileExistsAfterRun = RobustFile.Exists(argumentFilePath);
             }
         }
 
