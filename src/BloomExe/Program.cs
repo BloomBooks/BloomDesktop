@@ -335,6 +335,8 @@ namespace Bloom
                 // Migrate from old monolithic experimental features setting.
                 ExperimentalFeatures.MigrateFromOldSettings();
 
+                NormalizeWorkingDirectory();
+
                 if (!InstallerSupport.HandleVelopackStartup(args)) // may exit program itself
                     return 0; // or may conclude that we need to abort starting up.
 
@@ -1224,6 +1226,28 @@ namespace Bloom
 
         public static string BloomExePath => Application.ExecutablePath;
 
+        /// <summary>
+        /// Ensure Bloom does not inherit a stale shell working directory from a shortcut from when we were using Squirrel.
+        /// This keeps BrowserRoot-relative paths anchored to the installed app instead
+        /// of whatever obsolete Start In value the shell supplied.
+        /// </summary>
+        private static void NormalizeWorkingDirectory()
+        {
+            var executableFolder = Path.GetDirectoryName(BloomExePath);
+            var a = Directory.GetCurrentDirectory();
+            if (
+                !string.Equals(
+                    Directory.GetCurrentDirectory(),
+                    executableFolder,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            {
+                Directory.SetCurrentDirectory(executableFolder);
+            }
+            var b = Directory.GetCurrentDirectory();
+        }
+
         public static void RestartBloom(bool hardExit, string args = null)
         {
             try
@@ -2103,6 +2127,7 @@ namespace Bloom
 
         private static bool _errorHandlingHasBeenSetUp;
         private static IDisposable _sentry;
+
         // Only the token owner may release it and run Bloom's global temp cleanup on exit.
         private static bool _ownsSingleInstanceToken;
 
