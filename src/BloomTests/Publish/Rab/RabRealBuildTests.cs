@@ -248,7 +248,12 @@ namespace BloomTests.Publish.Rab
                 };
             }
 
-            internal override void RunRabCommand(string rabArguments, string workingDirectory)
+            internal override void RunProcess(
+                string fileName,
+                string arguments,
+                string workingDirectory,
+                IReadOnlyDictionary<string, string> environmentVariables = null
+            )
             {
                 Directory.CreateDirectory(_paths.RabRoot);
 
@@ -256,8 +261,8 @@ namespace BloomTests.Publish.Rab
                 {
                     process.StartInfo = new ProcessStartInfo()
                     {
-                        FileName = "cmd.exe",
-                        Arguments = $"/d /c \"\"{_rabLauncherPath}\" {rabArguments}\"",
+                        FileName = fileName,
+                        Arguments = arguments,
                         WorkingDirectory = workingDirectory,
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
@@ -265,10 +270,15 @@ namespace BloomTests.Publish.Rab
                         CreateNoWindow = true,
                     };
 
+                    if (environmentVariables != null)
+                    {
+                        foreach (var pair in environmentVariables)
+                            process.StartInfo.EnvironmentVariables[pair.Key] =
+                                pair.Value ?? string.Empty;
+                    }
+
                     if (!process.Start())
-                        throw new ApplicationException(
-                            "Bloom could not start Reading App Builder."
-                        );
+                        throw new ApplicationException($"Bloom could not start {fileName}.");
 
                     var output = process.StandardOutput.ReadToEnd();
                     var error = process.StandardError.ReadToEnd();
@@ -280,7 +290,7 @@ namespace BloomTests.Publish.Rab
                             Environment.NewLine,
                             new[]
                             {
-                                $"> {_rabLauncherPath} {rabArguments}",
+                                $"> {fileName} {arguments}",
                                 "--- stdout ---",
                                 output,
                                 "--- stderr ---",
@@ -293,7 +303,7 @@ namespace BloomTests.Publish.Rab
                     if (process.ExitCode != 0)
                     {
                         throw new ApplicationException(
-                            $"Reading App Builder exited with code {process.ExitCode}. See {_commandLogPath}."
+                            $"{Path.GetFileName(fileName)} exited with code {process.ExitCode}. See {_commandLogPath}."
                         );
                     }
                 }
