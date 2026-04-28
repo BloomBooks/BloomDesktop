@@ -484,7 +484,7 @@ describe("SourceBubbles", () => {
         });
     });
 
-    it("AI source bubble tabs are not remembered as the default source language", () => {
+    it("AI source bubble tabs are remembered as the default source language", () => {
         const aiLanguageTag = "id-x-ai-deepl";
         const sourceText = "Tok Pisin text";
         const fingerprint = (
@@ -516,9 +516,56 @@ describe("SourceBubbles", () => {
         expect(aiTab.length).toBe(1);
         aiTab.get(0)?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-        expect(mockedPostString).not.toHaveBeenCalledWith(
+        expect(mockedPostString).toHaveBeenCalledWith(
             "editView/sourceTextTab",
             aiLanguageTag,
+        );
+    });
+
+    it("styled dropdown handles clicks on the dropdown list item", () => {
+        const qtipId = "qtip-0";
+        const groupHtml = $(
+            [
+                `<div id='testTarget' class='bloom-translationGroup' aria-describedby='${qtipId}'>`,
+                "   <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>",
+                "   <div class='bloom-editable' lang='fr'>French text</div>",
+                "   <div class='bloom-editable' lang='es'>Spanish text</div>",
+                "</div>",
+            ].join("\n"),
+        );
+        const qtip = $(`<div id='${qtipId}' class='qtip'></div>`);
+        const divForBubble = BloomSourceBubbles.CreateDropdownIfNecessary(
+            $(
+                [
+                    "<div class='bloom-translationGroup'>",
+                    "   <nav>",
+                    "     <ul>",
+                    "       <li id='tpi'><a class='sourceTextTab' href='#tpi'>Tok Pisin</a></li>",
+                    "       <li id='fr'><a class='sourceTextTab' href='#fr'>français</a></li>",
+                    "       <li id='es'><a class='sourceTextTab' href='#es'>español</a></li>",
+                    "    </ul>",
+                    "   </nav>",
+                    "   <div class='source-text' lang='es'>Spanish text</div>",
+                    "   <div class='source-text' lang='fr'>French text</div>",
+                    "   <div class='source-text' lang='tpi'>Tok Pisin text</div>",
+                    "</div>",
+                ].join("\n"),
+            ),
+        );
+        qtip.append(divForBubble);
+        $("body").append(groupHtml);
+        $("body").append(qtip);
+        const dropdownItem = divForBubble.find(".dropdown-list li[lang='es']");
+
+        expect(dropdownItem.length).toBe(1);
+
+        dropdownItem
+            .get(0)
+            ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+        expect(mockedPostString).toHaveBeenCalledWith(
+            "editView/sourceTextTab",
+            "es",
         );
     });
 

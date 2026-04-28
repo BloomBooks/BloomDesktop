@@ -2,7 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Globalization;
+using System.Net;
+using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using Bloom.AiSourceBubbles;
 using Bloom.Api;
 using Bloom.Book;
@@ -81,11 +85,26 @@ namespace Bloom.web.controllers
                         var dialog = DialogBeingEdited;
                         if (dialog != null)
                         {
-                            StoreAdvancedSettingsData(request, dialog);
+                            StoreAdvancedSettingsData(
+                                JObject.Parse(request.RequiredPostJson()),
+                                dialog
+                            );
                         }
                         request.PostSucceeded();
                     }
                 },
+                true
+            );
+            apiHandler.RegisterAsyncEndpointHandler(
+                kApiUrlPart + "validateAiSourceBubbles",
+                HandleValidateAiSourceBubblesAsync,
+                false,
+                true
+            );
+            apiHandler.RegisterAsyncEndpointHandler(
+                kApiUrlPart + "aiSourceBubblesSupportedLanguages",
+                HandleGetAiSourceBubblesSupportedLanguagesAsync,
+                false,
                 true
             );
             apiHandler.RegisterBooleanEndpointHandler(
@@ -303,6 +322,7 @@ namespace Bloom.web.controllers
             var isAutoUpdateSupported =
                 dialog?.ShowAutomaticallyUpdateOption
                 ?? CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform;
+            var aiSourceBubblesValidation = GetAiSourceBubblesValidationState(dialog);
             return new
             {
                 values = new
@@ -344,55 +364,220 @@ namespace Bloom.web.controllers
                 showExperimentalBookSourcesOption = dialog?.ShowExperimentalBookSourcesOption
                     ?? false,
                 allowTeamCollectionEnabled = dialog?.AllowTeamCollectionOptionEnabled ?? true,
-                aiSourceBubblesKnownTargetLanguages = GetAiSourceBubblesKnownTargetLanguages(
-                    dialog
-                ),
+                aiSourceBubblesValidation,
             };
         }
 
-        private List<object> GetAiSourceBubblesKnownTargetLanguages(CollectionSettingsDialog dialog)
+        private object GetAiSourceBubblesValidationState(CollectionSettingsDialog dialog)
         {
-            var pendingOrCurrentWritingSystems = new[]
+            var currentSettings = GetAiSourceBubblesSettings(dialog);
+            var currentFingerprint = AiSourceBubblesService.GetConfigurationFingerprint(
+                currentSettings
+            );
+            var validatedFingerprint =
+                dialog?.PendingAiSourceBubblesValidatedConfigurationFingerprint
+                ?? _collectionSettings.AiSourceBubblesValidatedConfigurationFingerprint;
+            var succeeded =
+                dialog?.PendingAiSourceBubblesLastValidationSucceeded
+                ?? _collectionSettings.AiSourceBubblesLastValidationSucceeded;
+            var message =
+                dialog?.PendingAiSourceBubblesLastValidationMessage
+                ?? _collectionSettings.AiSourceBubblesLastValidationMessage;
+            var isCurrent = String.Equals(
+                currentFingerprint,
+                validatedFingerprint,
+                StringComparison.Ordinal
+            );
+
+            return new
             {
-                dialog?.PendingLanguage1 ?? _collectionSettings.Language1,
-                dialog?.PendingLanguage2 ?? _collectionSettings.Language2,
-                dialog?.PendingLanguage3 ?? _collectionSettings.Language3,
+                currentFingerprint,
+                validatedFingerprint = isCurrent ? validatedFingerprint : String.Empty,
+                succeeded = isCurrent && succeeded,
+                message = isCurrent ? message : String.Empty,
             };
+        }
 
-            var knownLanguages = new List<object>();
-            var seenLanguageTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            for (var i = 0; i < pendingOrCurrentWritingSystems.Length; i++)
+        private CollectionSettings GetAiSourceBubblesSettings(CollectionSettingsDialog dialog)
+        {
+            return new CollectionSettings
             {
-                var writingSystem = pendingOrCurrentWritingSystems[i];
-                if (writingSystem == null || string.IsNullOrWhiteSpace(writingSystem.Tag))
-                {
-                    continue;
-                }
+                Subscription = _collectionSettings.Subscription,
+                AiSourceBubblesProviderId =
+                    dialog?.PendingAiSourceBubblesProviderId
+                    ?? _collectionSettings.AiSourceBubblesProviderId,
+                AiSourceBubblesTargetLanguageTag =
+                    dialog?.PendingAiSourceBubblesTargetLanguageTag
+                    ?? _collectionSettings.AiSourceBubblesTargetLanguageTag,
+                AiSourceBubblesDeepLApiKey =
+                    dialog?.PendingAiSourceBubblesDeepLApiKey
+                    ?? _collectionSettings.AiSourceBubblesDeepLApiKey,
+                AiSourceBubblesGoogleServiceAccountEmail =
+                    dialog?.PendingAiSourceBubblesGoogleServiceAccountEmail
+                    ?? _collectionSettings.AiSourceBubblesGoogleServiceAccountEmail,
+                AiSourceBubblesGooglePrivateKey =
+                    dialog?.PendingAiSourceBubblesGooglePrivateKey
+                    ?? _collectionSettings.AiSourceBubblesGooglePrivateKey,
+            };
+        }
 
-                if (!seenLanguageTags.Add(writingSystem.Tag))
-                {
-                    continue;
-                }
-
-                var displayName = string.IsNullOrWhiteSpace(writingSystem.Name)
-                    ? writingSystem.Tag
-                    : writingSystem.Name;
-                knownLanguages.Add(
-                    new
-                    {
-                        value = writingSystem.Tag,
-                        label = $"L{i + 1}: {displayName} ({writingSystem.Tag})",
-                    }
-                );
+        private static void InvalidateAiSourceBubblesValidation(CollectionSettingsDialog dialog)
+        {
+            var pendingSettings = new CollectionSettings
+            {
+                AiSourceBubblesProviderId = dialog.PendingAiSourceBubblesProviderId,
+                AiSourceBubblesTargetLanguageTag = dialog.PendingAiSourceBubblesTargetLanguageTag,
+                AiSourceBubblesDeepLApiKey = dialog.PendingAiSourceBubblesDeepLApiKey,
+                AiSourceBubblesGoogleServiceAccountEmail =
+                    dialog.PendingAiSourceBubblesGoogleServiceAccountEmail,
+                AiSourceBubblesGooglePrivateKey = dialog.PendingAiSourceBubblesGooglePrivateKey,
+            };
+            var currentFingerprint = AiSourceBubblesService.GetConfigurationFingerprint(
+                pendingSettings
+            );
+            if (
+                String.Equals(
+                    dialog.PendingAiSourceBubblesValidatedConfigurationFingerprint,
+                    currentFingerprint,
+                    StringComparison.Ordinal
+                )
+            )
+            {
+                return;
             }
 
-            return knownLanguages;
+            dialog.PendingAiSourceBubblesValidatedConfigurationFingerprint = String.Empty;
+            dialog.PendingAiSourceBubblesLastValidationSucceeded = false;
+            dialog.PendingAiSourceBubblesLastValidationMessage = String.Empty;
         }
 
-        private void StoreAdvancedSettingsData(ApiRequest request, CollectionSettingsDialog dialog)
+        /// <summary>
+        /// Validates the AI Source Bubbles configuration currently being edited in Collection Settings.
+        /// </summary>
+        private async Task HandleValidateAiSourceBubblesAsync(ApiRequest request)
         {
-            var data = JObject.Parse(request.RequiredPostJson());
+            if (request.HttpMethod != HttpMethods.Post)
+            {
+                request.Failed(HttpStatusCode.MethodNotAllowed, "Only POST is supported.");
+                return;
+            }
+
+            var dialog = DialogBeingEdited;
+            var requestJson = request.RequiredPostJson();
+            if (dialog != null && !String.IsNullOrWhiteSpace(requestJson))
+            {
+                StoreAdvancedSettingsData(JObject.Parse(requestJson), dialog);
+            }
+
+            var settings = GetAiSourceBubblesSettings(dialog);
+            var validationResult = new AiSourceBubblesValidationResult
+            {
+                ConfigurationFingerprint = AiSourceBubblesService.GetConfigurationFingerprint(
+                    settings
+                ),
+                Succeeded = false,
+                Message = String.Empty,
+            };
+
+            try
+            {
+                validationResult = await new AiSourceBubblesService(
+                    settings
+                ).ValidateConfigurationAsync();
+            }
+            catch (ArgumentException e)
+            {
+                validationResult.Message = e.Message;
+            }
+            catch (InvalidOperationException e)
+            {
+                validationResult.Message = e.Message;
+            }
+            catch (HttpRequestException e)
+            {
+                validationResult.Message = e.Message;
+            }
+            catch (CryptographicException e)
+            {
+                validationResult.Message = e.Message;
+            }
+            catch (JsonException e)
+            {
+                validationResult.Message = e.Message;
+            }
+
+            if (dialog != null)
+            {
+                dialog.PendingAiSourceBubblesValidatedConfigurationFingerprint =
+                    validationResult.ConfigurationFingerprint;
+                dialog.PendingAiSourceBubblesLastValidationSucceeded = validationResult.Succeeded;
+                dialog.PendingAiSourceBubblesLastValidationMessage = validationResult.Message;
+            }
+
+            request.ReplyWithJson(validationResult);
+        }
+
+        /// <summary>
+        /// Gets the provider-backed list of target languages for the AI Source Bubbles settings currently being edited.
+        /// </summary>
+        private async Task HandleGetAiSourceBubblesSupportedLanguagesAsync(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Post)
+            {
+                request.Failed(HttpStatusCode.MethodNotAllowed, "Only POST is supported.");
+                return;
+            }
+
+            var dialog = DialogBeingEdited;
+            var requestJson = request.RequiredPostJson();
+            if (dialog != null && !String.IsNullOrWhiteSpace(requestJson))
+            {
+                StoreAdvancedSettingsData(JObject.Parse(requestJson), dialog);
+            }
+
+            var settings = GetAiSourceBubblesSettings(dialog);
+            try
+            {
+                var languages = await new AiSourceBubblesService(
+                    settings
+                ).GetSupportedTargetLanguagesAsync();
+                request.ReplyWithJson(new { languages, message = String.Empty });
+            }
+            catch (ArgumentException e)
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = e.Message }
+                );
+            }
+            catch (InvalidOperationException e)
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = e.Message }
+                );
+            }
+            catch (HttpRequestException e)
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = e.Message }
+                );
+            }
+            catch (CryptographicException e)
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = e.Message }
+                );
+            }
+            catch (JsonException e)
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = e.Message }
+                );
+            }
+        }
+
+        private void StoreAdvancedSettingsData(JObject data, CollectionSettingsDialog dialog)
+        {
+            var aiSourceBubblesConfigurationChanged = false;
 
             var autoUpdateToken = data["autoUpdate"];
             if (autoUpdateToken != null)
@@ -430,40 +615,70 @@ namespace Bloom.web.controllers
             var aiSourceBubblesProviderToken = data["aiSourceBubblesProvider"];
             if (aiSourceBubblesProviderToken != null)
             {
-                dialog.PendingAiSourceBubblesProviderId =
-                    AiSourceBubblesService.NormalizeProviderId(
-                        aiSourceBubblesProviderToken.Value<string>()
-                    );
+                var providerId = AiSourceBubblesService.NormalizeProviderId(
+                    aiSourceBubblesProviderToken.Value<string>()
+                );
+                aiSourceBubblesConfigurationChanged |= !String.Equals(
+                    dialog.PendingAiSourceBubblesProviderId,
+                    providerId,
+                    StringComparison.OrdinalIgnoreCase
+                );
+                dialog.PendingAiSourceBubblesProviderId = providerId;
             }
 
             var aiSourceBubblesTargetLanguageTagToken = data["aiSourceBubblesTargetLanguageTag"];
             if (aiSourceBubblesTargetLanguageTagToken != null)
             {
-                dialog.PendingAiSourceBubblesTargetLanguageTag =
-                    aiSourceBubblesTargetLanguageTagToken.Value<string>();
+                var targetLanguageTag = aiSourceBubblesTargetLanguageTagToken.Value<string>();
+                aiSourceBubblesConfigurationChanged |= !String.Equals(
+                    dialog.PendingAiSourceBubblesTargetLanguageTag,
+                    targetLanguageTag,
+                    StringComparison.Ordinal
+                );
+                dialog.PendingAiSourceBubblesTargetLanguageTag = targetLanguageTag;
             }
 
             var aiSourceBubblesDeepLApiKeyToken = data["aiSourceBubblesDeepLApiKey"];
             if (aiSourceBubblesDeepLApiKeyToken != null)
             {
-                dialog.PendingAiSourceBubblesDeepLApiKey =
-                    aiSourceBubblesDeepLApiKeyToken.Value<string>();
+                var deepLApiKey = aiSourceBubblesDeepLApiKeyToken.Value<string>();
+                aiSourceBubblesConfigurationChanged |= !String.Equals(
+                    dialog.PendingAiSourceBubblesDeepLApiKey,
+                    deepLApiKey,
+                    StringComparison.Ordinal
+                );
+                dialog.PendingAiSourceBubblesDeepLApiKey = deepLApiKey;
             }
-
             var aiSourceBubblesGoogleServiceAccountEmailToken = data[
                 "aiSourceBubblesGoogleServiceAccountEmail"
             ];
             if (aiSourceBubblesGoogleServiceAccountEmailToken != null)
             {
-                dialog.PendingAiSourceBubblesGoogleServiceAccountEmail =
+                var googleServiceAccountEmail =
                     aiSourceBubblesGoogleServiceAccountEmailToken.Value<string>();
+                aiSourceBubblesConfigurationChanged |= !String.Equals(
+                    dialog.PendingAiSourceBubblesGoogleServiceAccountEmail,
+                    googleServiceAccountEmail,
+                    StringComparison.Ordinal
+                );
+                dialog.PendingAiSourceBubblesGoogleServiceAccountEmail = googleServiceAccountEmail;
             }
 
             var aiSourceBubblesGooglePrivateKeyToken = data["aiSourceBubblesGooglePrivateKey"];
             if (aiSourceBubblesGooglePrivateKeyToken != null)
             {
-                dialog.PendingAiSourceBubblesGooglePrivateKey =
-                    aiSourceBubblesGooglePrivateKeyToken.Value<string>();
+                var googlePrivateKey = aiSourceBubblesGooglePrivateKeyToken.Value<string>();
+                aiSourceBubblesConfigurationChanged |= !String.Equals(
+                    dialog.PendingAiSourceBubblesGooglePrivateKey,
+                    googlePrivateKey,
+                    StringComparison.Ordinal
+                );
+                dialog.PendingAiSourceBubblesGooglePrivateKey = googlePrivateKey;
+            }
+
+            if (aiSourceBubblesConfigurationChanged)
+            {
+                InvalidateAiSourceBubblesValidation(dialog);
             }
 
             var showQrCodeToken = data["showQrCode"];

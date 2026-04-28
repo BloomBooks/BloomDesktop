@@ -77,6 +77,9 @@ namespace Bloom.Collection
         public string AiSourceBubblesDeepLApiKey = "";
         public string AiSourceBubblesGoogleServiceAccountEmail = "";
         public string AiSourceBubblesGooglePrivateKey = "";
+        public string AiSourceBubblesValidatedConfigurationFingerprint = "";
+        public bool AiSourceBubblesLastValidationSucceeded = false;
+        public string AiSourceBubblesLastValidationMessage = "";
 
         public static readonly Dictionary<string, string> CssNumberStylesToCultureOrDigits =
             new Dictionary<string, string>()
@@ -428,6 +431,24 @@ namespace Bloom.Collection
             xml.Add(
                 new XElement("AiSourceBubblesGooglePrivateKey", AiSourceBubblesGooglePrivateKey)
             );
+            xml.Add(
+                new XElement(
+                    "AiSourceBubblesValidatedConfigurationFingerprint",
+                    AiSourceBubblesValidatedConfigurationFingerprint
+                )
+            );
+            xml.Add(
+                new XElement(
+                    "AiSourceBubblesLastValidationSucceeded",
+                    AiSourceBubblesLastValidationSucceeded
+                )
+            );
+            xml.Add(
+                new XElement(
+                    "AiSourceBubblesLastValidationMessage",
+                    AiSourceBubblesLastValidationMessage
+                )
+            );
             RobustIO.SaveXElement(xml, SettingsFilePath);
 
             // Color palette settings are stored in a separate Json file
@@ -720,6 +741,21 @@ namespace Bloom.Collection
                 AiSourceBubblesGooglePrivateKey = ReadString(
                     xml,
                     "AiSourceBubblesGooglePrivateKey",
+                    ""
+                );
+                AiSourceBubblesValidatedConfigurationFingerprint = ReadString(
+                    xml,
+                    "AiSourceBubblesValidatedConfigurationFingerprint",
+                    ""
+                );
+                AiSourceBubblesLastValidationSucceeded = ReadBoolean(
+                    xml,
+                    "AiSourceBubblesLastValidationSucceeded",
+                    false
+                );
+                AiSourceBubblesLastValidationMessage = ReadString(
+                    xml,
+                    "AiSourceBubblesLastValidationMessage",
                     ""
                 );
 

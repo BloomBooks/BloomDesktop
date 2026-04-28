@@ -1,5 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Bloom;
 using Bloom.AiSourceBubbles;
@@ -51,6 +56,61 @@ namespace BloomTests.AiSourceBubbles
         }
 
         [Test]
+        public void GetGoogleProjectIdFromServiceAccountEmail_ParsesProjectId()
+        {
+            Assert.That(
+                AiSourceBubblesService.GetGoogleProjectIdFromServiceAccountEmail(
+                    "translator@test-project-123.iam.gserviceaccount.com"
+                ),
+                Is.EqualTo("test-project-123")
+            );
+        }
+
+        [Test]
+        public void GetConfigurationFingerprint_ChangesWhenRelevantSettingsChange()
+        {
+            var settings = MakeCollectionSettings("deepl");
+            settings.AiSourceBubblesDeepLApiKey = "first-key";
+
+            var originalFingerprint = AiSourceBubblesService.GetConfigurationFingerprint(settings);
+
+            settings.AiSourceBubblesDeepLApiKey = "second-key";
+
+            Assert.That(
+                AiSourceBubblesService.GetConfigurationFingerprint(settings),
+                Is.Not.EqualTo(originalFingerprint)
+            );
+        }
+
+        [Test]
+        public void GetConfigurationFingerprint_IgnoresUnusedProviderCredentials()
+        {
+            var settings = MakeCollectionSettings("deepl");
+            settings.AiSourceBubblesDeepLApiKey = "deepl-key";
+            settings.AiSourceBubblesGoogleServiceAccountEmail = "first@example.com";
+            settings.AiSourceBubblesGooglePrivateKey = "first-private-key";
+
+            var originalFingerprint = AiSourceBubblesService.GetConfigurationFingerprint(settings);
+
+            settings.AiSourceBubblesGoogleServiceAccountEmail = "second@example.com";
+            settings.AiSourceBubblesGooglePrivateKey = "second-private-key";
+
+            Assert.That(
+                AiSourceBubblesService.GetConfigurationFingerprint(settings),
+                Is.EqualTo(originalFingerprint)
+            );
+        }
+
+        [Test]
+        public void NormalizeProviderId_Alpha2Alias_ReturnsEmpty()
+        {
+            Assert.That(
+                AiSourceBubblesService.NormalizeProviderId("alpha2"),
+                Is.EqualTo(string.Empty)
+            );
+        }
+
+        [Test]
         public void TranslateAsync_WithoutTargetLanguageTag_ThrowsHelpfulError()
         {
             var collectionSettings = MakeCollectionSettings("deepl");
@@ -70,6 +130,105 @@ namespace BloomTests.AiSourceBubbles
             Assert.That(exception.Message, Does.Contain("target language tag"));
         }
 
+        [Test]
+        public async Task TranslateAsync_WritesRequestAndResponseToConsole()
+        {
+            var collectionSettings = MakeCollectionSettings("deepl");
+            var fakeProvider = new FakeAiSourceBubblesTranslationProvider(
+                "deepl",
+                "Bonjour le monde."
+            );
+            var service = new AiSourceBubblesService(
+                collectionSettings,
+                new Dictionary<string, IAiSourceBubblesTranslationProvider>
+                {
+                    { "deepl", fakeProvider },
+                }
+            );
+            var originalConsoleOut = Console.Out;
+            using (var output = new StringWriter())
+            {
+                Console.SetOut(output);
+
+                try
+                {
+                    var result = await service.TranslateAsync(
+                        new AiSourceBubblesTranslateRequest
+                        {
+                            SourceText = "Hello world.",
+                            SourceLanguageTag = "en",
+                        }
+                    );
+
+                    Assert.That(result.Text, Is.EqualTo("Bonjour le monde."));
+                }
+                finally
+                {
+                    Console.SetOut(originalConsoleOut);
+                }
+
+                var log = output.ToString();
+                Assert.That(log, Does.Contain("[AiSourceBubbles][request]"));
+                Assert.That(log, Does.Contain("[AiSourceBubbles][response]"));
+                Assert.That(log, Does.Contain("provider=deepl"));
+                Assert.That(log, Does.Contain("sourceLanguage=en"));
+                Assert.That(log, Does.Contain("targetLanguage=fr"));
+                Assert.That(log, Does.Contain("input=\"Hello world.\""));
+                Assert.That(log, Does.Contain("output=\"Bonjour le monde.\""));
+                Assert.That(log, Does.Contain("elapsedMs="));
+                Assert.That(log, Does.Contain("time="));
+            }
+        }
+
+        [Test]
+        public void TranslateAsync_WhenProviderThrows_WritesFailureToConsole()
+        {
+            var collectionSettings = MakeCollectionSettings("deepl");
+            var fakeProvider = new FakeAiSourceBubblesTranslationProvider(
+                "deepl",
+                exceptionToThrow: new InvalidOperationException("boom")
+            );
+            var service = new AiSourceBubblesService(
+                collectionSettings,
+                new Dictionary<string, IAiSourceBubblesTranslationProvider>
+                {
+                    { "deepl", fakeProvider },
+                }
+            );
+            var originalConsoleOut = Console.Out;
+            using (var output = new StringWriter())
+            {
+                Console.SetOut(output);
+
+                try
+                {
+                    var exception = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                        await service.TranslateAsync(
+                            new AiSourceBubblesTranslateRequest
+                            {
+                                SourceText = "Hello world.",
+                                SourceLanguageTag = "en",
+                            }
+                        )
+                    );
+
+                    Assert.That(exception.Message, Is.EqualTo("boom"));
+                }
+                finally
+                {
+                    Console.SetOut(originalConsoleOut);
+                }
+
+                var log = output.ToString();
+                Assert.That(log, Does.Contain("[AiSourceBubbles][request]"));
+                Assert.That(log, Does.Contain("[AiSourceBubbles][response]"));
+                Assert.That(log, Does.Contain("error=\"boom\""));
+                Assert.That(log, Does.Contain("input=\"Hello world.\""));
+                Assert.That(log, Does.Contain("elapsedMs="));
+                Assert.That(log, Does.Contain("time="));
+            }
+        }
+
         private static CollectionSettings MakeCollectionSettings(string providerId)
         {
             var collectionSettings = new CollectionSettings
@@ -79,6 +238,50 @@ namespace BloomTests.AiSourceBubbles
                 AiSourceBubblesTargetLanguageTag = "fr",
             };
             return collectionSettings;
+        }
+
+        private sealed class FakeAiSourceBubblesTranslationProvider
+            : IAiSourceBubblesTranslationProvider
+        {
+            private readonly string _translatedText;
+            private readonly Exception _exceptionToThrow;
+
+            public FakeAiSourceBubblesTranslationProvider(
+                string providerId,
+                string translatedText = null,
+                Exception exceptionToThrow = null
+            )
+            {
+                ProviderId = providerId;
+                _translatedText = translatedText;
+                _exceptionToThrow = exceptionToThrow;
+            }
+
+            public string ProviderId { get; }
+
+            public Task<List<AiSourceBubblesTargetLanguageOption>> GetSupportedTargetLanguagesAsync(
+                CollectionSettings collectionSettings,
+                HttpClient httpClient
+            )
+            {
+                return Task.FromResult(new List<AiSourceBubblesTargetLanguageOption>());
+            }
+
+            public Task<string> TranslateAsync(
+                CollectionSettings collectionSettings,
+                string sourceText,
+                string sourceLanguageTag,
+                string targetLanguageTag,
+                HttpClient httpClient
+            )
+            {
+                if (_exceptionToThrow != null)
+                {
+                    throw _exceptionToThrow;
+                }
+
+                return Task.FromResult(_translatedText);
+            }
         }
     }
 

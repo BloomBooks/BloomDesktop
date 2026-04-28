@@ -57,6 +57,9 @@ namespace Bloom.Collection
         internal string PendingAiSourceBubblesDeepLApiKey;
         internal string PendingAiSourceBubblesGoogleServiceAccountEmail;
         internal string PendingAiSourceBubblesGooglePrivateKey;
+        internal string PendingAiSourceBubblesValidatedConfigurationFingerprint;
+        internal bool PendingAiSourceBubblesLastValidationSucceeded;
+        internal string PendingAiSourceBubblesLastValidationMessage;
         internal bool AllowTeamCollectionOptionEnabled = false;
 
         // "Internal" so CollectionSettingsApi can update these.
@@ -140,6 +143,12 @@ namespace Bloom.Collection
                 _collectionSettings.AiSourceBubblesGoogleServiceAccountEmail;
             PendingAiSourceBubblesGooglePrivateKey =
                 _collectionSettings.AiSourceBubblesGooglePrivateKey;
+            PendingAiSourceBubblesValidatedConfigurationFingerprint =
+                _collectionSettings.AiSourceBubblesValidatedConfigurationFingerprint;
+            PendingAiSourceBubblesLastValidationSucceeded =
+                _collectionSettings.AiSourceBubblesLastValidationSucceeded;
+            PendingAiSourceBubblesLastValidationMessage =
+                _collectionSettings.AiSourceBubblesLastValidationMessage;
 
             if (
                 !ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
@@ -440,6 +449,12 @@ namespace Bloom.Collection
                 PendingAiSourceBubblesGoogleServiceAccountEmail;
             _collectionSettings.AiSourceBubblesGooglePrivateKey =
                 PendingAiSourceBubblesGooglePrivateKey;
+            _collectionSettings.AiSourceBubblesValidatedConfigurationFingerprint =
+                PendingAiSourceBubblesValidatedConfigurationFingerprint;
+            _collectionSettings.AiSourceBubblesLastValidationSucceeded =
+                PendingAiSourceBubblesLastValidationSucceeded;
+            _collectionSettings.AiSourceBubblesLastValidationMessage =
+                PendingAiSourceBubblesLastValidationMessage;
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
