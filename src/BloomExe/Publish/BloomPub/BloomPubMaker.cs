@@ -450,7 +450,8 @@ namespace Bloom.Publish.BloomPub
                 FeatureStatus
                     .GetFeatureStatus(
                         modifiedBook.CollectionSettings.Subscription,
-                        FeatureName.Game
+                        FeatureName.Game,
+                        modifiedBook
                     )
                     .Enabled
             )

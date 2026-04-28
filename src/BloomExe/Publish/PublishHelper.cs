@@ -752,7 +752,11 @@ namespace Bloom.Publish
             {
                 if (
                     !FeatureStatus
-                        .GetFeatureStatus(book.CollectionSettings.Subscription, FeatureName.Game)
+                        .GetFeatureStatus(
+                            book.CollectionSettings.Subscription,
+                            FeatureName.Game,
+                            book
+                        )
                         .Enabled
                 )
                     RobustFile.Delete(Path.Combine(book.FolderPath, "simpleComprehensionQuiz.js"));
