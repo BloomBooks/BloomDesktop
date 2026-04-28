@@ -707,11 +707,12 @@ namespace Bloom.TeamCollection
                     var dirty = false;
                     foreach (var key in repoColorPalettes.Keys)
                     {
+                        localColorPalettes.TryGetValue(key, out var localValues);
                         var mergedValues = MergeColorPaletteValues(
                             repoColorPalettes[key],
-                            localColorPalettes[key]
+                            localValues
                         );
-                        if (mergedValues != localColorPalettes[key])
+                        if (mergedValues != localValues)
                         {
                             localColorPalettes[key] = mergedValues;
                             dirty = true;
