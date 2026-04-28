@@ -6144,12 +6144,14 @@ namespace Bloom.Book
 
         public void AITranslate()
         {
-            var groups = this.Storage.Dom.RawDom.SelectNodes(
-                "//div[contains(@class, 'bloom-translationGroup')]"
-            );
+            var groups = this
+                .Storage.Dom.RawDom.SafeSelectNodes(
+                    "//div[contains(@class, 'bloom-translationGroup')]"
+                )
+                .Cast<SafeXmlElement>();
             var sourceLang = "en";
             var targetLang = "es";
-            foreach (XmlNode group in groups)
+            foreach (var group in groups)
             {
                 var node = group.SelectSingleNode($"div[@lang = '{targetLang}-x-ai']");
                 if (node != null)
@@ -6200,7 +6202,6 @@ namespace Bloom.Book
 
             //    var response = client.SendAsync(request).Result;
             //    // wait for the response
-
 
             //    response.EnsureSuccessStatusCode();
 

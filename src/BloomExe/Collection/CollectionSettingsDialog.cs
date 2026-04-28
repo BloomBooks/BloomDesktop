@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
+using Bloom.AiSourceBubbles;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Properties;
@@ -51,6 +52,12 @@ namespace Bloom.Collection
 
         internal bool PendingAllowTeamCollection;
         internal bool PendingAllowAppBuilder;
+        internal bool PendingAllowAiSourceBubbles;
+        internal string PendingAiSourceBubblesProviderId;
+        internal string PendingAiSourceBubblesTargetLanguageTag;
+        internal string PendingAiSourceBubblesDeepLApiKey;
+        internal string PendingAiSourceBubblesGoogleServiceAccountEmail;
+        internal string PendingAiSourceBubblesGooglePrivateKey;
         internal bool AllowTeamCollectionOptionEnabled = false;
 
         // "Internal" so CollectionSettingsApi can update these.
@@ -121,6 +128,19 @@ namespace Bloom.Collection
             PendingAllowAppBuilder = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kAppBuilder
             );
+            PendingAllowAiSourceBubbles = ExperimentalFeatures.IsFeatureEnabled(
+                ExperimentalFeatures.kAiSourceBubbles
+            );
+            PendingAiSourceBubblesProviderId = AiSourceBubblesService.NormalizeProviderId(
+                _collectionSettings.AiSourceBubblesProviderId
+            );
+            PendingAiSourceBubblesTargetLanguageTag =
+                _collectionSettings.AiSourceBubblesTargetLanguageTag;
+            PendingAiSourceBubblesDeepLApiKey = _collectionSettings.AiSourceBubblesDeepLApiKey;
+            PendingAiSourceBubblesGoogleServiceAccountEmail =
+                _collectionSettings.AiSourceBubblesGoogleServiceAccountEmail;
+            PendingAiSourceBubblesGooglePrivateKey =
+                _collectionSettings.AiSourceBubblesGooglePrivateKey;
 
             if (
                 !ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
@@ -410,6 +430,16 @@ namespace Bloom.Collection
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
             UpdateAppBuilderAllowed();
+            UpdateAiSourceBubblesAllowed();
+            _collectionSettings.AiSourceBubblesProviderId =
+                AiSourceBubblesService.NormalizeProviderId(PendingAiSourceBubblesProviderId);
+            _collectionSettings.AiSourceBubblesTargetLanguageTag =
+                PendingAiSourceBubblesTargetLanguageTag;
+            _collectionSettings.AiSourceBubblesDeepLApiKey = PendingAiSourceBubblesDeepLApiKey;
+            _collectionSettings.AiSourceBubblesGoogleServiceAccountEmail =
+                PendingAiSourceBubblesGoogleServiceAccountEmail;
+            _collectionSettings.AiSourceBubblesGooglePrivateKey =
+                PendingAiSourceBubblesGooglePrivateKey;
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -828,6 +858,15 @@ namespace Bloom.Collection
         {
             // NB: This change does not require a restart.
             ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, PendingAllowAppBuilder);
+        }
+
+        private void UpdateAiSourceBubblesAllowed()
+        {
+            // NB: This change does not require a restart.
+            ExperimentalFeatures.SetValue(
+                ExperimentalFeatures.kAiSourceBubbles,
+                PendingAllowAiSourceBubbles
+            );
         }
     }
 }
