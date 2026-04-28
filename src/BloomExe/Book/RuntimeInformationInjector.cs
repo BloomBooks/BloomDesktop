@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using Bloom.AiSourceBubbles;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.IO;
@@ -459,7 +461,7 @@ namespace Bloom.Book
             var element = pageDom.RawDom.CreateElement("script");
             element.SetAttribute("type", "text/javascript");
             element.SetAttribute("id", "ui-settings");
-            var d = new Dictionary<string, string>();
+            var d = new Dictionary<string, object>();
 
             //d.Add("urlOfUIFiles", "file:///" + fileLocator.LocateDirectory("ui", "ui files directory"));
             if (!String.IsNullOrEmpty(Settings.Default.LastSourceLanguageViewed))
@@ -488,6 +490,30 @@ namespace Bloom.Book
                 FileLocationUtilities
                     .GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot)
                     .ToLocalhost()
+            );
+
+            var aiSourceBubblesFeatureStatus = FeatureStatus.GetFeatureStatus(
+                bookData.CollectionSettings.Subscription,
+                FeatureName.AiSourceBubbles
+            );
+            var aiSourceBubblesProviderId = AiSourceBubblesService.NormalizeProviderId(
+                bookData.CollectionSettings.AiSourceBubblesProviderId
+            );
+            var aiSourceBubblesTargetLanguageTag = AiSourceBubblesService.NormalizeBloomLanguageTag(
+                bookData.CollectionSettings.AiSourceBubblesTargetLanguageTag
+            );
+            d.Add(
+                "allowAiSourceBubbles",
+                aiSourceBubblesFeatureStatus.Visible && aiSourceBubblesFeatureStatus.Enabled
+            );
+            d.Add("aiSourceBubblesProvider", aiSourceBubblesProviderId);
+            d.Add("aiSourceBubblesTargetLanguageTag", aiSourceBubblesTargetLanguageTag);
+            d.Add(
+                "aiSourceBubblesLanguageTag",
+                AiSourceBubblesService.GetAiLanguageTag(
+                    aiSourceBubblesTargetLanguageTag,
+                    aiSourceBubblesProviderId
+                )
             );
 
             element.InnerText = String.Format(

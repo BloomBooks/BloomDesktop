@@ -29,6 +29,7 @@ namespace Bloom.SubscriptionAndFeatures
         BulkBloomPub,
         Bookshelf,
         AppBuilder,
+        AiSourceBubbles,
     }
 
     public static class FeatureRegistry
@@ -193,6 +194,12 @@ namespace Bloom.SubscriptionAndFeatures
                 Feature = FeatureName.AppBuilder,
                 SubscriptionTier = SubscriptionTier.Pro,
                 ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kAppBuilder,
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.AiSourceBubbles,
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kAiSourceBubbles,
             },
             // ----------------------------------------
             // Enterprise Tier Features

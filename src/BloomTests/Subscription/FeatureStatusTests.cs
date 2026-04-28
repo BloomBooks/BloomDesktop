@@ -135,6 +135,52 @@ namespace BloomTests.FeatureStatusTests
         }
 
         [Test]
+        public void GetFeatureStatus_AiSourceBubblesHiddenUnlessEnabled()
+        {
+            var subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Pro);
+
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAiSourceBubbles, false);
+            var hiddenStatus = FeatureStatus.GetFeatureStatus(
+                subscription,
+                FeatureName.AiSourceBubbles
+            );
+
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAiSourceBubbles, true);
+            var visibleStatus = FeatureStatus.GetFeatureStatus(
+                subscription,
+                FeatureName.AiSourceBubbles
+            );
+
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAiSourceBubbles, false);
+
+            Assert.That(hiddenStatus.Visible, Is.False);
+            Assert.That(hiddenStatus.Enabled, Is.True);
+            Assert.That(visibleStatus.Visible, Is.True);
+            Assert.That(visibleStatus.Enabled, Is.True);
+        }
+
+        [TestCase(SubscriptionTier.Basic, false)]
+        [TestCase(SubscriptionTier.Pro, true)]
+        [TestCase(SubscriptionTier.LocalCommunity, true)]
+        [TestCase(SubscriptionTier.Enterprise, true)]
+        public void GetFeatureStatus_AiSourceBubblesRequiresProOrHigher(
+            SubscriptionTier tier,
+            bool expectedEnabled
+        )
+        {
+            var subscription = Subscription.CreateTempSubscriptionForTier(tier);
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAiSourceBubbles, true);
+
+            var status = FeatureStatus.GetFeatureStatus(subscription, FeatureName.AiSourceBubbles);
+
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAiSourceBubbles, false);
+
+            Assert.That(status.Visible, Is.True);
+            Assert.That(status.Enabled, Is.EqualTo(expectedEnabled));
+            Assert.That(status.SubscriptionTier, Is.EqualTo(SubscriptionTier.Pro));
+        }
+
+        [Test]
         public void ForSerialization_ReturnsValidObject()
         {
             // Arrange

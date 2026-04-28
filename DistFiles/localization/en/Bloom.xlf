@@ -344,6 +344,42 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport</note>
         <note>This is the label of a checkbox which, if enabled, allows a menu command to be used that can import Bloom books from an Excel spreadsheet or to an Excel spreadsheet.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AiSourceBubbles" translate="no">
+        <source xml:lang="en">AI Source Bubbles</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AiSourceBubbles</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.SectionLabel" translate="no">
+        <source xml:lang="en">AI Source Bubbles</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.SectionLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.ProviderLabel" translate="no">
+        <source xml:lang="en">Provider</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.ProviderLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageLabel" translate="no">
+        <source xml:lang="en">Target Language</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageDescription" translate="no">
+        <source xml:lang="en">Choose one of this collection's languages, or Other... to select another language.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageDescription</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.OtherLanguageLabel" translate="no">
+        <source xml:lang="en">Other...</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.OtherLanguageLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLApiKeyLabel" translate="no">
+        <source xml:lang="en">DeepL API key</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLApiKeyLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleServiceAccountEmailLabel" translate="no">
+        <source xml:lang="en">Google service account email</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleServiceAccountEmailLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GooglePrivateKeyLabel" translate="no">
+        <source xml:lang="en">Google private key</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GooglePrivateKeyLabel</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>

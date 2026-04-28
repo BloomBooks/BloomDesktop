@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Globalization;
 using System.Text;
+using Bloom.AiSourceBubbles;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -318,6 +319,22 @@ namespace Bloom.web.controllers
                         ),
                     allowAppBuilder = dialog?.PendingAllowAppBuilder
                         ?? ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kAppBuilder),
+                    allowAiSourceBubbles = dialog?.PendingAllowAiSourceBubbles
+                        ?? ExperimentalFeatures.IsFeatureEnabled(
+                            ExperimentalFeatures.kAiSourceBubbles
+                        ),
+                    aiSourceBubblesProvider = AiSourceBubblesService.NormalizeProviderId(
+                        dialog?.PendingAiSourceBubblesProviderId
+                            ?? _collectionSettings.AiSourceBubblesProviderId
+                    ),
+                    aiSourceBubblesTargetLanguageTag = dialog?.PendingAiSourceBubblesTargetLanguageTag
+                        ?? _collectionSettings.AiSourceBubblesTargetLanguageTag,
+                    aiSourceBubblesDeepLApiKey = dialog?.PendingAiSourceBubblesDeepLApiKey
+                        ?? _collectionSettings.AiSourceBubblesDeepLApiKey,
+                    aiSourceBubblesGoogleServiceAccountEmail = dialog?.PendingAiSourceBubblesGoogleServiceAccountEmail
+                        ?? _collectionSettings.AiSourceBubblesGoogleServiceAccountEmail,
+                    aiSourceBubblesGooglePrivateKey = dialog?.PendingAiSourceBubblesGooglePrivateKey
+                        ?? _collectionSettings.AiSourceBubblesGooglePrivateKey,
                     showQrCode = dialog?.PendingShowQrCode
                         ?? _collectionSettings.ShowBlorgLanguageQrCode,
                     qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
@@ -327,7 +344,50 @@ namespace Bloom.web.controllers
                 showExperimentalBookSourcesOption = dialog?.ShowExperimentalBookSourcesOption
                     ?? false,
                 allowTeamCollectionEnabled = dialog?.AllowTeamCollectionOptionEnabled ?? true,
+                aiSourceBubblesKnownTargetLanguages = GetAiSourceBubblesKnownTargetLanguages(
+                    dialog
+                ),
             };
+        }
+
+        private List<object> GetAiSourceBubblesKnownTargetLanguages(CollectionSettingsDialog dialog)
+        {
+            var pendingOrCurrentWritingSystems = new[]
+            {
+                dialog?.PendingLanguage1 ?? _collectionSettings.Language1,
+                dialog?.PendingLanguage2 ?? _collectionSettings.Language2,
+                dialog?.PendingLanguage3 ?? _collectionSettings.Language3,
+            };
+
+            var knownLanguages = new List<object>();
+            var seenLanguageTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            for (var i = 0; i < pendingOrCurrentWritingSystems.Length; i++)
+            {
+                var writingSystem = pendingOrCurrentWritingSystems[i];
+                if (writingSystem == null || string.IsNullOrWhiteSpace(writingSystem.Tag))
+                {
+                    continue;
+                }
+
+                if (!seenLanguageTags.Add(writingSystem.Tag))
+                {
+                    continue;
+                }
+
+                var displayName = string.IsNullOrWhiteSpace(writingSystem.Name)
+                    ? writingSystem.Tag
+                    : writingSystem.Name;
+                knownLanguages.Add(
+                    new
+                    {
+                        value = writingSystem.Tag,
+                        label = $"L{i + 1}: {displayName} ({writingSystem.Tag})",
+                    }
+                );
+            }
+
+            return knownLanguages;
         }
 
         private void StoreAdvancedSettingsData(ApiRequest request, CollectionSettingsDialog dialog)
@@ -358,6 +418,52 @@ namespace Bloom.web.controllers
             {
                 var allowAppBuilder = allowAppBuilderToken.Value<bool>();
                 dialog.PendingAllowAppBuilder = allowAppBuilder;
+            }
+
+            var allowAiSourceBubblesToken = data["allowAiSourceBubbles"];
+            if (allowAiSourceBubblesToken != null)
+            {
+                var allowAiSourceBubbles = allowAiSourceBubblesToken.Value<bool>();
+                dialog.PendingAllowAiSourceBubbles = allowAiSourceBubbles;
+            }
+
+            var aiSourceBubblesProviderToken = data["aiSourceBubblesProvider"];
+            if (aiSourceBubblesProviderToken != null)
+            {
+                dialog.PendingAiSourceBubblesProviderId =
+                    AiSourceBubblesService.NormalizeProviderId(
+                        aiSourceBubblesProviderToken.Value<string>()
+                    );
+            }
+
+            var aiSourceBubblesTargetLanguageTagToken = data["aiSourceBubblesTargetLanguageTag"];
+            if (aiSourceBubblesTargetLanguageTagToken != null)
+            {
+                dialog.PendingAiSourceBubblesTargetLanguageTag =
+                    aiSourceBubblesTargetLanguageTagToken.Value<string>();
+            }
+
+            var aiSourceBubblesDeepLApiKeyToken = data["aiSourceBubblesDeepLApiKey"];
+            if (aiSourceBubblesDeepLApiKeyToken != null)
+            {
+                dialog.PendingAiSourceBubblesDeepLApiKey =
+                    aiSourceBubblesDeepLApiKeyToken.Value<string>();
+            }
+
+            var aiSourceBubblesGoogleServiceAccountEmailToken = data[
+                "aiSourceBubblesGoogleServiceAccountEmail"
+            ];
+            if (aiSourceBubblesGoogleServiceAccountEmailToken != null)
+            {
+                dialog.PendingAiSourceBubblesGoogleServiceAccountEmail =
+                    aiSourceBubblesGoogleServiceAccountEmailToken.Value<string>();
+            }
+
+            var aiSourceBubblesGooglePrivateKeyToken = data["aiSourceBubblesGooglePrivateKey"];
+            if (aiSourceBubblesGooglePrivateKeyToken != null)
+            {
+                dialog.PendingAiSourceBubblesGooglePrivateKey =
+                    aiSourceBubblesGooglePrivateKeyToken.Value<string>();
             }
 
             var showQrCodeToken = data["showQrCode"];

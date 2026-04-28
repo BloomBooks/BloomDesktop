@@ -72,6 +72,12 @@ namespace Bloom.Collection
         // if this is null, relevant code uses the default, so we don't have to initialize it here
         public string BadgeQrCodeLabel;
 
+        public string AiSourceBubblesProviderId = "deepl";
+        public string AiSourceBubblesTargetLanguageTag = "";
+        public string AiSourceBubblesDeepLApiKey = "";
+        public string AiSourceBubblesGoogleServiceAccountEmail = "";
+        public string AiSourceBubblesGooglePrivateKey = "";
+
         public static readonly Dictionary<string, string> CssNumberStylesToCultureOrDigits =
             new Dictionary<string, string>()
             {
@@ -408,6 +414,20 @@ namespace Bloom.Collection
             xml.Add(BulkPublishBloomPubSettings.ToXElement());
             xml.Add(new XElement("ShowBlorgLanguageQrCode", ShowBlorgLanguageQrCode));
             xml.Add(new XElement("BadgeQrCodeLabel", BadgeQrCodeLabel));
+            xml.Add(new XElement("AiSourceBubblesProviderId", AiSourceBubblesProviderId));
+            xml.Add(
+                new XElement("AiSourceBubblesTargetLanguageTag", AiSourceBubblesTargetLanguageTag)
+            );
+            xml.Add(new XElement("AiSourceBubblesDeepLApiKey", AiSourceBubblesDeepLApiKey));
+            xml.Add(
+                new XElement(
+                    "AiSourceBubblesGoogleServiceAccountEmail",
+                    AiSourceBubblesGoogleServiceAccountEmail
+                )
+            );
+            xml.Add(
+                new XElement("AiSourceBubblesGooglePrivateKey", AiSourceBubblesGooglePrivateKey)
+            );
             RobustIO.SaveXElement(xml, SettingsFilePath);
 
             // Color palette settings are stored in a separate Json file
@@ -685,6 +705,23 @@ namespace Bloom.Collection
 
                 ShowBlorgLanguageQrCode = ReadBoolean(xml, "ShowBlorgLanguageQrCode", true);
                 BadgeQrCodeLabel = ReadString(xml, "BadgeQrCodeLabel", "");
+                AiSourceBubblesProviderId = ReadString(xml, "AiSourceBubblesProviderId", "deepl");
+                AiSourceBubblesTargetLanguageTag = ReadString(
+                    xml,
+                    "AiSourceBubblesTargetLanguageTag",
+                    ""
+                );
+                AiSourceBubblesDeepLApiKey = ReadString(xml, "AiSourceBubblesDeepLApiKey", "");
+                AiSourceBubblesGoogleServiceAccountEmail = ReadString(
+                    xml,
+                    "AiSourceBubblesGoogleServiceAccountEmail",
+                    ""
+                );
+                AiSourceBubblesGooglePrivateKey = ReadString(
+                    xml,
+                    "AiSourceBubblesGooglePrivateKey",
+                    ""
+                );
 
                 LoadDictionary(xml, "Palette", ColorPalettes);
             }

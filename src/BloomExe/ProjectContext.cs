@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Autofac;
+using Bloom.AiSourceBubbles;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -161,6 +162,8 @@ namespace Bloom
                                 typeof(RabPublishApi),
                                 typeof(AccessibilityCheckApi),
                                 typeof(CollectionSettingsApi),
+                                typeof(AiSourceBubblesApi),
+                                typeof(AiSourceBubblesService),
                                 typeof(SubscriptionSettingsEditorApi),
                                 typeof(FeatureStatusApi),
                                 typeof(CollectionApi),
@@ -402,6 +405,7 @@ namespace Bloom
             _scope.Resolve<PublishEpubApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<AccessibilityCheckApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<AiSourceBubblesApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope
                 .Resolve<SubscriptionSettingsEditorApi>()
                 .RegisterWithApiHandler(server.ApiHandler);
