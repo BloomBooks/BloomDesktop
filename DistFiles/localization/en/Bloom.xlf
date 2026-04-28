@@ -407,6 +407,10 @@
         <source xml:lang="en">DeepL API key</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLApiKeyLabel</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2ApiKeyLabel" translate="no">
+        <source xml:lang="en">Alpha2 API key</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2ApiKeyLabel</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleServiceAccountEmailLabel" translate="no">
         <source xml:lang="en">Google service account email</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleServiceAccountEmailLabel</note>

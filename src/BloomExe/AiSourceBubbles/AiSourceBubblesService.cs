@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -36,24 +38,57 @@ namespace Bloom.AiSourceBubbles
     }
 
     /// <summary>
+    /// Result of validating the current AI Source Bubbles configuration.
+    /// </summary>
+    public class AiSourceBubblesValidationResult
+    {
+        public bool Succeeded { get; set; }
+        public string ConfigurationFingerprint { get; set; }
+        public string Message { get; set; }
+    }
+
+    /// <summary>
+    /// Option surfaced to the Collection Settings target-language picker.
+    /// </summary>
+    public class AiSourceBubblesTargetLanguageOption
+    {
+        [JsonProperty("value")]
+        public string Value { get; set; }
+
+        [JsonProperty("label")]
+        public string Label { get; set; }
+    }
+
+    /// <summary>
     /// Coordinates collection-backed AI Source Bubbles translation.
     /// </summary>
     public class AiSourceBubblesService
     {
+        public const string kValidationProbeText = "Today a reader, tomorrow a leader.";
+        public const string kValidationProbeSourceLanguageTag = "en";
+
         private static readonly HttpClient _httpClient = new HttpClient();
         private readonly CollectionSettings _collectionSettings;
         private readonly Dictionary<string, IAiSourceBubblesTranslationProvider> _providers;
 
         public AiSourceBubblesService(CollectionSettings collectionSettings)
+            : this(collectionSettings, null) { }
+
+        internal AiSourceBubblesService(
+            CollectionSettings collectionSettings,
+            Dictionary<string, IAiSourceBubblesTranslationProvider> providers
+        )
         {
             _collectionSettings = collectionSettings;
-            _providers = new Dictionary<string, IAiSourceBubblesTranslationProvider>(
-                StringComparer.OrdinalIgnoreCase
-            )
-            {
-                { "deepl", new DeepLAiSourceBubblesTranslationProvider() },
-                { "google", new GoogleAiSourceBubblesTranslationProvider() },
-            };
+            _providers =
+                providers
+                ?? new Dictionary<string, IAiSourceBubblesTranslationProvider>(
+                    StringComparer.OrdinalIgnoreCase
+                )
+                {
+                    { "deepl", new DeepLAiSourceBubblesTranslationProvider() },
+                    { "google", new GoogleAiSourceBubblesTranslationProvider() },
+                };
         }
 
         /// <summary>
@@ -63,20 +98,67 @@ namespace Bloom.AiSourceBubbles
             AiSourceBubblesTranslateRequest request
         )
         {
+            return await TranslateAsync(request, true);
+        }
+
+        /// <summary>
+        /// Validates the configured provider, credentials, and target language with a probe translation.
+        /// </summary>
+        public async Task<AiSourceBubblesValidationResult> ValidateConfigurationAsync()
+        {
+            var response = await TranslateAsync(
+                new AiSourceBubblesTranslateRequest
+                {
+                    SourceText = kValidationProbeText,
+                    SourceLanguageTag = kValidationProbeSourceLanguageTag,
+                },
+                false
+            );
+
+            return new AiSourceBubblesValidationResult
+            {
+                Succeeded = true,
+                ConfigurationFingerprint = GetConfigurationFingerprint(_collectionSettings),
+                Message = response.Text,
+            };
+        }
+
+        /// <summary>
+        /// Gets the target languages currently supported by the configured provider.
+        /// </summary>
+        public async Task<
+            List<AiSourceBubblesTargetLanguageOption>
+        > GetSupportedTargetLanguagesAsync()
+        {
+            var provider = GetSelectedProvider();
+            return await provider.GetSupportedTargetLanguagesAsync(
+                _collectionSettings,
+                _httpClient
+            );
+        }
+
+        private async Task<AiSourceBubblesTranslateResponse> TranslateAsync(
+            AiSourceBubblesTranslateRequest request,
+            bool requireFeatureEnabled
+        )
+        {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
             if (string.IsNullOrWhiteSpace(request.SourceText))
                 throw new ArgumentException("Source text is required.", nameof(request));
 
-            var featureStatus = FeatureStatus.GetFeatureStatus(
-                _collectionSettings.Subscription,
-                FeatureName.AiSourceBubbles
-            );
-            if (!featureStatus.Visible || !featureStatus.Enabled)
+            if (requireFeatureEnabled)
             {
-                throw new InvalidOperationException(
-                    "AI Source Bubbles is not enabled for this collection."
+                var featureStatus = FeatureStatus.GetFeatureStatus(
+                    _collectionSettings.Subscription,
+                    FeatureName.AiSourceBubbles
                 );
+                if (!featureStatus.Visible || !featureStatus.Enabled)
+                {
+                    throw new InvalidOperationException(
+                        "AI Source Bubbles is not enabled for this collection."
+                    );
+                }
             }
 
             var provider = GetSelectedProvider();
@@ -90,21 +172,81 @@ namespace Bloom.AiSourceBubbles
                 );
             }
 
-            var translatedText = await provider.TranslateAsync(
-                _collectionSettings,
-                request.SourceText,
+            var startedAt = DateTimeOffset.Now;
+            var stopwatch = Stopwatch.StartNew();
+            WriteTranslationActivity(
+                "request",
+                startedAt,
+                provider.ProviderId,
                 request.SourceLanguageTag,
                 targetLanguageTag,
-                _httpClient
+                request.SourceText
             );
 
-            return new AiSourceBubblesTranslateResponse
+            try
             {
-                ProviderId = provider.ProviderId,
-                TargetLanguageTag = targetLanguageTag,
-                AiLanguageTag = GetAiLanguageTag(targetLanguageTag, provider.ProviderId),
-                Text = translatedText,
-            };
+                var translatedText = await provider.TranslateAsync(
+                    _collectionSettings,
+                    request.SourceText,
+                    request.SourceLanguageTag,
+                    targetLanguageTag,
+                    _httpClient
+                );
+                stopwatch.Stop();
+                WriteTranslationActivity(
+                    "response",
+                    DateTimeOffset.Now,
+                    provider.ProviderId,
+                    request.SourceLanguageTag,
+                    targetLanguageTag,
+                    request.SourceText,
+                    translatedText,
+                    stopwatch.Elapsed
+                );
+
+                return new AiSourceBubblesTranslateResponse
+                {
+                    ProviderId = provider.ProviderId,
+                    TargetLanguageTag = targetLanguageTag,
+                    AiLanguageTag = GetAiLanguageTag(targetLanguageTag, provider.ProviderId),
+                    Text = translatedText,
+                };
+            }
+            catch (Exception exception)
+            {
+                stopwatch.Stop();
+                Console.WriteLine(
+                    $"[AiSourceBubbles][response] time={DateTimeOffset.Now:O} provider={provider.ProviderId} sourceLanguage={request.SourceLanguageTag} targetLanguage={targetLanguageTag} elapsedMs={stopwatch.ElapsedMilliseconds} input={JsonConvert.ToString(request.SourceText)} error={JsonConvert.ToString(exception.Message)}"
+                );
+                throw;
+            }
+        }
+
+        private static void WriteTranslationActivity(
+            string stage,
+            DateTimeOffset time,
+            string providerId,
+            string sourceLanguageTag,
+            string targetLanguageTag,
+            string sourceText,
+            string translatedText = null,
+            TimeSpan? elapsed = null
+        )
+        {
+            var logLine =
+                $"[AiSourceBubbles][{stage}] time={time:O} provider={providerId} sourceLanguage={sourceLanguageTag} targetLanguage={targetLanguageTag} input={JsonConvert.ToString(sourceText)}";
+
+            if (translatedText != null)
+            {
+                logLine += $" output={JsonConvert.ToString(translatedText)}";
+            }
+
+            if (elapsed.HasValue)
+            {
+                logLine += $" elapsedMs={elapsed.Value.TotalMilliseconds:F0}";
+            }
+
+            Console.WriteLine(logLine);
         }
 
         /// <summary>
@@ -134,7 +276,13 @@ namespace Bloom.AiSourceBubbles
                 return string.Empty;
 
             var normalized = providerId.Trim().ToLowerInvariant();
-            return normalized == "googletranslate" ? "google" : normalized;
+            return normalized switch
+            {
+                "alpha-2" => string.Empty,
+                "alpha2" => string.Empty,
+                "googletranslate" => "google",
+                _ => normalized,
+            };
         }
 
         /// <summary>
@@ -175,6 +323,88 @@ namespace Bloom.AiSourceBubbles
             return language;
         }
 
+        /// <summary>
+        /// Extracts the Google Cloud project id from a service account email.
+        /// </summary>
+        public static string GetGoogleProjectIdFromServiceAccountEmail(string serviceAccountEmail)
+        {
+            if (string.IsNullOrWhiteSpace(serviceAccountEmail))
+            {
+                throw new InvalidOperationException(
+                    "Set a Google service account email in Collection Settings > AI Source Bubbles."
+                );
+            }
+
+            var trimmedEmail = serviceAccountEmail.Trim();
+            var atIndex = trimmedEmail.IndexOf('@');
+            if (atIndex < 0 || atIndex == trimmedEmail.Length - 1)
+            {
+                throw new InvalidOperationException(
+                    "Google service account email is not in the expected format."
+                );
+            }
+
+            var domain = trimmedEmail.Substring(atIndex + 1);
+            const string kExpectedSuffix = ".iam.gserviceaccount.com";
+            if (!domain.EndsWith(kExpectedSuffix, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    "Google service account email must end with .iam.gserviceaccount.com."
+                );
+            }
+
+            var projectId = domain.Substring(0, domain.Length - kExpectedSuffix.Length);
+            if (string.IsNullOrWhiteSpace(projectId))
+            {
+                throw new InvalidOperationException(
+                    "Google service account email does not contain a project id."
+                );
+            }
+
+            return projectId;
+        }
+
+        /// <summary>
+        /// Builds a stable fingerprint of the AI Source Bubbles configuration without storing raw secrets.
+        /// </summary>
+        public static string GetConfigurationFingerprint(CollectionSettings collectionSettings)
+        {
+            if (collectionSettings == null)
+                throw new ArgumentNullException(nameof(collectionSettings));
+
+            return GetConfigurationFingerprint(
+                collectionSettings.AiSourceBubblesProviderId,
+                collectionSettings.AiSourceBubblesTargetLanguageTag,
+                collectionSettings.AiSourceBubblesDeepLApiKey,
+                collectionSettings.AiSourceBubblesGoogleServiceAccountEmail,
+                collectionSettings.AiSourceBubblesGooglePrivateKey
+            );
+        }
+
+        /// <summary>
+        /// Builds a stable fingerprint of provider, target language, and provider-specific credentials.
+        /// </summary>
+        public static string GetConfigurationFingerprint(
+            string providerId,
+            string targetLanguageTag,
+            string deepLApiKey,
+            string googleServiceAccountEmail,
+            string googlePrivateKey
+        )
+        {
+            var normalizedProvider = NormalizeProviderId(providerId);
+            var normalizedTargetLanguageTag = NormalizeBloomLanguageTag(targetLanguageTag);
+            var credentialKey = normalizedProvider switch
+            {
+                "google" =>
+                    $"{googleServiceAccountEmail?.Trim()}\n{AiSourceBubblesProviderHelpers.NormalizeGooglePrivateKey(googlePrivateKey)}",
+                _ => deepLApiKey?.Trim() ?? string.Empty,
+            };
+            var fingerprintInput =
+                $"{normalizedProvider}\n{normalizedTargetLanguageTag}\n{credentialKey}";
+            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprintInput)));
+        }
+
         private IAiSourceBubblesTranslationProvider GetSelectedProvider()
         {
             var providerId = NormalizeProviderId(_collectionSettings.AiSourceBubblesProviderId);
@@ -198,6 +428,11 @@ namespace Bloom.AiSourceBubbles
     {
         string ProviderId { get; }
 
+        Task<List<AiSourceBubblesTargetLanguageOption>> GetSupportedTargetLanguagesAsync(
+            CollectionSettings collectionSettings,
+            HttpClient httpClient
+        );
+
         Task<string> TranslateAsync(
             CollectionSettings collectionSettings,
             string sourceText,
@@ -211,6 +446,64 @@ namespace Bloom.AiSourceBubbles
         : IAiSourceBubblesTranslationProvider
     {
         public string ProviderId => "deepl";
+
+        public async Task<
+            List<AiSourceBubblesTargetLanguageOption>
+        > GetSupportedTargetLanguagesAsync(
+            CollectionSettings collectionSettings,
+            HttpClient httpClient
+        )
+        {
+            if (string.IsNullOrWhiteSpace(collectionSettings.AiSourceBubblesDeepLApiKey))
+            {
+                throw new InvalidOperationException(
+                    "Set a DeepL API key in Collection Settings > AI Source Bubbles."
+                );
+            }
+
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                GetApiBaseUrl(collectionSettings.AiSourceBubblesDeepLApiKey)
+                    + "/v2/languages?type=target"
+            );
+            request.Headers.Authorization = new AuthenticationHeaderValue(
+                "DeepL-Auth-Key",
+                collectionSettings.AiSourceBubblesDeepLApiKey.Trim()
+            );
+
+            using var response = await httpClient.SendAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            AiSourceBubblesProviderHelpers.EnsureSuccess(response, responseContent, "DeepL");
+
+            var languages = JArray.Parse(responseContent);
+            var options = new List<AiSourceBubblesTargetLanguageOption>();
+            foreach (var languageToken in languages)
+            {
+                var languageCode = languageToken["language"]?.Value<string>();
+                if (string.IsNullOrWhiteSpace(languageCode))
+                {
+                    continue;
+                }
+
+                var normalizedLanguageCode = AiSourceBubblesService.NormalizeBloomLanguageTag(
+                    languageCode
+                );
+                var name = languageToken["name"]?.Value<string>() ?? normalizedLanguageCode;
+                options.Add(
+                    new AiSourceBubblesTargetLanguageOption
+                    {
+                        Value = normalizedLanguageCode,
+                        Label = name,
+                    }
+                );
+            }
+
+            options.Sort(
+                (first, second) =>
+                    StringComparer.CurrentCultureIgnoreCase.Compare(first.Label, second.Label)
+            );
+            return options;
+        }
 
         public async Task<string> TranslateAsync(
             CollectionSettings collectionSettings,
@@ -264,9 +557,14 @@ namespace Bloom.AiSourceBubbles
 
         private static string GetEndpoint(string apiKey)
         {
+            return GetApiBaseUrl(apiKey) + "/v2/translate";
+        }
+
+        private static string GetApiBaseUrl(string apiKey)
+        {
             return apiKey.Trim().EndsWith(":fx", StringComparison.OrdinalIgnoreCase)
-                ? "https://api-free.deepl.com/v2/translate"
-                : "https://api.deepl.com/v2/translate";
+                ? "https://api-free.deepl.com"
+                : "https://api.deepl.com";
         }
 
         private static string NormalizeDeepLLanguageTag(string languageTag)
@@ -285,8 +583,80 @@ namespace Bloom.AiSourceBubbles
         private const string kTokenEndpoint = "https://oauth2.googleapis.com/token";
         private const string kTranslateEndpoint =
             "https://translation.googleapis.com/language/translate/v2";
+        private const string kSupportedLanguagesEndpointTemplate =
+            "https://translation.googleapis.com/v3/projects/{0}/locations/global/supportedLanguages?display_language_code=en";
 
         public string ProviderId => "google";
+
+        public async Task<
+            List<AiSourceBubblesTargetLanguageOption>
+        > GetSupportedTargetLanguagesAsync(
+            CollectionSettings collectionSettings,
+            HttpClient httpClient
+        )
+        {
+            EnsureGoogleCredentials(collectionSettings);
+
+            var accessToken = await GetAccessTokenAsync(collectionSettings, httpClient);
+            var projectId = AiSourceBubblesService.GetGoogleProjectIdFromServiceAccountEmail(
+                collectionSettings.AiSourceBubblesGoogleServiceAccountEmail
+            );
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                string.Format(kSupportedLanguagesEndpointTemplate, Uri.EscapeDataString(projectId))
+            );
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            using var response = await httpClient.SendAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            AiSourceBubblesProviderHelpers.EnsureSuccess(
+                response,
+                responseContent,
+                "Google Translate"
+            );
+
+            var responseJson = JObject.Parse(responseContent);
+            var languages = responseJson["languages"] as JArray;
+            var options = new List<AiSourceBubblesTargetLanguageOption>();
+            if (languages == null)
+            {
+                return options;
+            }
+
+            foreach (var languageToken in languages)
+            {
+                var supportsTarget = languageToken["supportTarget"]?.Value<bool>() ?? false;
+                if (!supportsTarget)
+                {
+                    continue;
+                }
+
+                var languageCode = languageToken["languageCode"]?.Value<string>();
+                if (string.IsNullOrWhiteSpace(languageCode))
+                {
+                    continue;
+                }
+
+                var normalizedLanguageCode = AiSourceBubblesService.NormalizeBloomLanguageTag(
+                    languageCode
+                );
+                var displayName =
+                    languageToken["displayName"]?.Value<string>() ?? normalizedLanguageCode;
+                options.Add(
+                    new AiSourceBubblesTargetLanguageOption
+                    {
+                        Value = normalizedLanguageCode,
+                        Label = displayName,
+                    }
+                );
+            }
+
+            options.Sort(
+                (first, second) =>
+                    StringComparer.CurrentCultureIgnoreCase.Compare(first.Label, second.Label)
+            );
+            return options;
+        }
 
         public async Task<string> TranslateAsync(
             CollectionSettings collectionSettings,
@@ -296,22 +666,7 @@ namespace Bloom.AiSourceBubbles
             HttpClient httpClient
         )
         {
-            if (
-                string.IsNullOrWhiteSpace(
-                    collectionSettings.AiSourceBubblesGoogleServiceAccountEmail
-                )
-            )
-            {
-                throw new InvalidOperationException(
-                    "Set a Google service account email in Collection Settings > AI Source Bubbles."
-                );
-            }
-            if (string.IsNullOrWhiteSpace(collectionSettings.AiSourceBubblesGooglePrivateKey))
-            {
-                throw new InvalidOperationException(
-                    "Set a Google service account private key in Collection Settings > AI Source Bubbles."
-                );
-            }
+            EnsureGoogleCredentials(collectionSettings);
 
             var accessToken = await GetAccessTokenAsync(collectionSettings, httpClient);
             var fields = new List<KeyValuePair<string, string>>
@@ -353,6 +708,26 @@ namespace Bloom.AiSourceBubbles
             }
 
             return WebUtility.HtmlDecode(translatedText);
+        }
+
+        private static void EnsureGoogleCredentials(CollectionSettings collectionSettings)
+        {
+            if (
+                string.IsNullOrWhiteSpace(
+                    collectionSettings.AiSourceBubblesGoogleServiceAccountEmail
+                )
+            )
+            {
+                throw new InvalidOperationException(
+                    "Set a Google service account email in Collection Settings > AI Source Bubbles."
+                );
+            }
+            if (string.IsNullOrWhiteSpace(collectionSettings.AiSourceBubblesGooglePrivateKey))
+            {
+                throw new InvalidOperationException(
+                    "Set a Google service account private key in Collection Settings > AI Source Bubbles."
+                );
+            }
         }
 
         private static async Task<string> GetAccessTokenAsync(
@@ -419,7 +794,9 @@ namespace Bloom.AiSourceBubbles
         private static string SignJwt(string signingInput, string privateKey)
         {
             using var rsa = RSA.Create();
-            rsa.ImportFromPem(NormalizePrivateKey(privateKey).ToCharArray());
+            rsa.ImportFromPem(
+                AiSourceBubblesProviderHelpers.NormalizeGooglePrivateKey(privateKey).ToCharArray()
+            );
             var signature = rsa.SignData(
                 Encoding.UTF8.GetBytes(signingInput),
                 HashAlgorithmName.SHA256,
@@ -427,15 +804,15 @@ namespace Bloom.AiSourceBubbles
             );
             return AiSourceBubblesProviderHelpers.Base64UrlEncode(signature);
         }
-
-        private static string NormalizePrivateKey(string privateKey)
-        {
-            return privateKey.Replace("\\r", "").Replace("\\n", "\n").Trim();
-        }
     }
 
     internal static class AiSourceBubblesProviderHelpers
     {
+        internal static string NormalizeGooglePrivateKey(string privateKey)
+        {
+            return (privateKey ?? string.Empty).Replace("\\r", "").Replace("\\n", "\n").Trim();
+        }
+
         internal static void EnsureSuccess(
             HttpResponseMessage response,
             string responseContent,
@@ -453,6 +830,7 @@ namespace Bloom.AiSourceBubbles
                     json["message"]?.Value<string>()
                     ?? json["error"]?.Value<string>()
                     ?? json["error"]?["message"]?.Value<string>()
+                    ?? json["detail"]?[0]?["msg"]?.Value<string>()
                     ?? responseContent;
             }
             catch

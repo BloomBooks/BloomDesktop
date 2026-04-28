@@ -207,11 +207,40 @@ export default class BloomSourceBubbles {
         });
     }
 
-    private static maybeRememberSourceBubbleLanguage(langTag: string): void {
-        if (BloomSourceBubbles.isAiLanguageTag(langTag)) {
+    private static refreshVisibleAiSourceBubble(group: HTMLElement): void {
+        const qtipId = group.getAttribute("aria-describedby");
+        if (!qtipId) {
             return;
         }
 
+        const tooltip = group.ownerDocument.querySelector<HTMLElement>(
+            `#${qtipId}`,
+        );
+        if (!tooltip || tooltip.getAttribute("aria-hidden") === "true") {
+            return;
+        }
+
+        const selectedTab = tooltip.querySelector<HTMLAnchorElement>(
+            "a.sourceTextTab.active",
+        );
+        const selectedLangTag = selectedTab?.getAttribute("href")?.substring(1);
+        const refreshedBubble = BloomSourceBubbles.MakeSourceTextDivForGroup(
+            group,
+            selectedLangTag,
+        );
+        if (refreshedBubble.length === 0) {
+            return;
+        }
+
+        BloomSourceBubbles.removeSourceBubbles(group);
+        BloomSourceBubbles.MakeSourceBubblesIntoQtips(
+            group,
+            refreshedBubble,
+            selectedLangTag,
+        );
+    }
+
+    private static maybeRememberSourceBubbleLanguage(langTag: string): void {
         postString("editView/sourceTextTab", langTag);
     }
 
@@ -403,6 +432,7 @@ export default class BloomSourceBubbles {
                             group,
                             aiDiv,
                         );
+                        BloomSourceBubbles.refreshVisibleAiSourceBubble(group);
                     }
                 }
             },
@@ -560,9 +590,9 @@ export default class BloomSourceBubbles {
     ): JQuery {
         if (group.classList.contains("bloom-no-source-bubble")) return $();
         const liveGroup = $(group);
-        const sourceDiv = BloomSourceBubbles.getPreferredSourceDiv(liveGroup);
         const aiSourceBubbleLangTag =
             BloomSourceBubbles.getAiSourceBubbleLangTag();
+        const sourceDiv = BloomSourceBubbles.getPreferredSourceDiv(liveGroup);
         const sourceLanguageTag = sourceDiv.attr("lang");
         if (
             aiSourceBubbleLangTag &&
@@ -920,7 +950,23 @@ export default class BloomSourceBubbles {
     }
 
     private static styledSelectChangeHandler(event) {
-        const newLangTag = event.target.href.split("#")[1];
+        const anchor =
+            event.target instanceof Element
+                ? event.target.closest("a.sourceTextTab")
+                : undefined;
+        const currentTarget =
+            event.currentTarget instanceof Element
+                ? event.currentTarget
+                : undefined;
+        const href =
+            anchor?.getAttribute("href") ??
+            currentTarget
+                ?.querySelector("a.sourceTextTab")
+                ?.getAttribute("href");
+        if (!href) {
+            return;
+        }
+        const newLangTag = href.split("#")[1];
 
         // Figure out which qtip we're in and go find the associated bloom-translationGroup
         const qtip = $(event.target).closest(".qtip").attr("id");

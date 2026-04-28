@@ -502,9 +502,20 @@ namespace Bloom.Book
             var aiSourceBubblesTargetLanguageTag = AiSourceBubblesService.NormalizeBloomLanguageTag(
                 bookData.CollectionSettings.AiSourceBubblesTargetLanguageTag
             );
+            var aiSourceBubblesConfigurationFingerprint =
+                AiSourceBubblesService.GetConfigurationFingerprint(bookData.CollectionSettings);
+            var aiSourceBubblesConfigurationValid =
+                bookData.CollectionSettings.AiSourceBubblesLastValidationSucceeded
+                && String.Equals(
+                    bookData.CollectionSettings.AiSourceBubblesValidatedConfigurationFingerprint,
+                    aiSourceBubblesConfigurationFingerprint,
+                    StringComparison.Ordinal
+                );
             d.Add(
                 "allowAiSourceBubbles",
-                aiSourceBubblesFeatureStatus.Visible && aiSourceBubblesFeatureStatus.Enabled
+                aiSourceBubblesFeatureStatus.Visible
+                    && aiSourceBubblesFeatureStatus.Enabled
+                    && aiSourceBubblesConfigurationValid
             );
             d.Add("aiSourceBubblesProvider", aiSourceBubblesProviderId);
             d.Add("aiSourceBubblesTargetLanguageTag", aiSourceBubblesTargetLanguageTag);

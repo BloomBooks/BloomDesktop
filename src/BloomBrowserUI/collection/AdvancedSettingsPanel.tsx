@@ -2,69 +2,39 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import {
     ConfigrBoolean,
-    ConfigrCustomObjectInput,
     ConfigrGroup,
     ConfigrInput,
     ConfigrPage,
     ConfigrPane,
-    ConfigrSelect,
 } from "@sillsdev/config-r";
-import {
-    defaultDisplayName,
-    parseLangtagFromLangChooser,
-} from "@ethnolib/language-chooser-react-mui";
-import { MenuItem, TextField } from "@mui/material";
 import { get, postJson } from "../utils/bloomApi";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { tabMargins } from "./commonTabSettings";
-import {
-    ILanguageData,
-    showLanguageChooserDialog,
-} from "./LanguageChooserDialog";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
-import { BloomSubscriptionIndicatorIconAndText } from "../react_components/requiresSubscription";
 import { useGetFeatureStatus } from "../react_components/featureStatus";
+import { BloomSubscriptionIndicatorIconAndText } from "../react_components/requiresSubscription";
 import { useL10n } from "../react_components/l10nHooks";
-
-const kOtherTargetLanguageValue = "__other__";
-
-interface ITargetLanguageOption {
-    value: string;
-    label: string;
-}
+import {
+    IAiSourceBubblesSettings,
+    IAiSourceBubblesValidationState,
+    useAiSourceBubblesSettingsGroup,
+} from "./AiSourceBubblesSettingsGroup";
 
 interface IAdvancedSettingsApiData {
     values: IAdvancedSettings;
     showAutoUpdate?: boolean;
     showExperimentalBookSourcesOption?: boolean;
     allowTeamCollectionEnabled?: boolean;
-    aiSourceBubblesKnownTargetLanguages?: ITargetLanguageOption[];
+    aiSourceBubblesValidation?: IAiSourceBubblesValidationState;
 }
 
-interface IAdvancedSettings {
+interface IAdvancedSettings extends IAiSourceBubblesSettings {
     autoUpdate?: boolean;
     showExperimentalBookSources?: boolean;
     allowTeamCollection?: boolean;
     allowAppBuilder?: boolean;
-    allowAiSourceBubbles?: boolean;
-    aiSourceBubblesProvider?: string;
-    aiSourceBubblesTargetLanguageTag?: string;
-    aiSourceBubblesDeepLApiKey?: string;
-    aiSourceBubblesGoogleServiceAccountEmail?: string;
-    aiSourceBubblesGooglePrivateKey?: string;
     showQrCode?: boolean;
     qrcodeCaption?: string;
-}
-
-function getLanguageOptionLabel(languageTag: string): string {
-    const parsedLanguage = parseLangtagFromLangChooser(languageTag);
-    const nameInScript = parsedLanguage?.script?.languageNameInScript;
-    const defaultName =
-        nameInScript ||
-        (parsedLanguage?.language
-            ? defaultDisplayName(parsedLanguage.language)
-            : undefined);
-    return defaultName || languageTag;
 }
 
 export const AdvancedSettingsPanel: React.FunctionComponent = () => {
@@ -75,17 +45,11 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const [allowTeamCollectionEnabled, setAllowTeamCollectionEnabled] =
         React.useState<boolean>(false);
     const [
-        aiSourceBubblesKnownTargetLanguages,
-        setAiSourceBubblesKnownTargetLanguages,
-    ] = React.useState<ITargetLanguageOption[]>([]);
-    const [
-        aiSourceBubblesCustomTargetLanguage,
-        setAiSourceBubblesCustomTargetLanguage,
-    ] = React.useState<ITargetLanguageOption>();
-    const [
         showExperimentalBookSourcesOption,
         setShowExperimentalBookSourcesOption,
     ] = React.useState<boolean>(false);
+    const [aiSourceBubblesValidation, setAiSourceBubblesValidation] =
+        React.useState<IAiSourceBubblesValidationState>();
 
     const advancedProgramSettingsLabel = useL10n(
         "Advanced Program Settings",
@@ -131,14 +95,6 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "Target Language",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageLabel",
     );
-    const aiSourceBubblesTargetLanguageDescription = useL10n(
-        "Choose one of this collection's languages, or Other... to select another language.",
-        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageDescription",
-    );
-    const aiSourceBubblesOtherLanguageLabel = useL10n(
-        "Other...",
-        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.OtherLanguageLabel",
-    );
     const aiSourceBubblesDeepLApiKeyLabel = useL10n(
         "DeepL API Key",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLApiKeyLabel",
@@ -150,6 +106,10 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const aiSourceBubblesGooglePrivateKeyLabel = useL10n(
         "Google Service Account Private Key",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GooglePrivateKeyLabel",
+    );
+    const aiSourceBubblesTranslationTestLabel = useL10n(
+        "Translation Test",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TranslationTestLabel",
     );
     const qrCodesLabel = useL10n(
         "QR Codes",
@@ -202,102 +162,6 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         [],
     );
 
-    const makeCustomTargetLanguageOption = React.useCallback(
-        (languageTag: string, displayName?: string): ITargetLanguageOption => {
-            const label = displayName || getLanguageOptionLabel(languageTag);
-            return {
-                value: languageTag,
-                label: `${label} (${languageTag})`,
-            };
-        },
-        [],
-    );
-
-    const getAiSourceBubblesTargetLanguageOptions = React.useCallback(() => {
-        const options = [...aiSourceBubblesKnownTargetLanguages];
-        const selectedTargetLanguageTag =
-            settings?.aiSourceBubblesTargetLanguageTag?.trim();
-        if (
-            selectedTargetLanguageTag &&
-            !options.some(
-                (option) => option.value === selectedTargetLanguageTag,
-            )
-        ) {
-            const customOption =
-                aiSourceBubblesCustomTargetLanguage?.value ===
-                selectedTargetLanguageTag
-                    ? aiSourceBubblesCustomTargetLanguage
-                    : makeCustomTargetLanguageOption(selectedTargetLanguageTag);
-            options.push(customOption);
-        }
-
-        options.push({
-            value: kOtherTargetLanguageValue,
-            label: aiSourceBubblesOtherLanguageLabel,
-        });
-
-        return options;
-    }, [
-        aiSourceBubblesCustomTargetLanguage,
-        aiSourceBubblesKnownTargetLanguages,
-        aiSourceBubblesOtherLanguageLabel,
-        makeCustomTargetLanguageOption,
-        settings?.aiSourceBubblesTargetLanguageTag,
-    ]);
-
-    const AiSourceBubblesTargetLanguageControl: React.FunctionComponent<{
-        value: string;
-        disabled?: boolean;
-        onChange: (value: string) => void;
-    }> = (props) => {
-        return (
-            <TextField
-                select={true}
-                fullWidth={true}
-                size="small"
-                value={props.value || ""}
-                disabled={props.disabled}
-                onChange={(event) => {
-                    const nextValue = event.target.value;
-                    if (nextValue === kOtherTargetLanguageValue) {
-                        const selectedTargetLanguageTag =
-                            props.value || undefined;
-                        showLanguageChooserDialog(
-                            selectedTargetLanguageTag,
-                            undefined,
-                            (languageData: ILanguageData) => {
-                                if (!languageData.LanguageTag) {
-                                    return;
-                                }
-
-                                setAiSourceBubblesCustomTargetLanguage(
-                                    makeCustomTargetLanguageOption(
-                                        languageData.LanguageTag,
-                                        languageData.DesiredName ||
-                                            languageData.DefaultName ||
-                                            undefined,
-                                    ),
-                                );
-                                props.onChange(languageData.LanguageTag);
-                            },
-                        );
-                        return;
-                    }
-
-                    props.onChange(nextValue);
-                }}
-            >
-                <MenuItem value={""}></MenuItem>
-                {getAiSourceBubblesTargetLanguageOptions().map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                    </MenuItem>
-                ))}
-            </TextField>
-        );
-    };
-
-    // Load current advanced settings from the host dialog so Config-r starts with matching values.
     React.useEffect(() => {
         get("settings/advancedProgramSettings", (result) => {
             if (!result || !result.data || result.data === "{}") {
@@ -308,8 +172,7 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                 data = JSON.parse(result.data);
             }
             const advancedSettingsData = data as IAdvancedSettingsApiData;
-            const loadedSettings = advancedSettingsData.values;
-            setSettings(loadedSettings);
+            setSettings(advancedSettingsData.values);
             setShowAutoUpdate(advancedSettingsData.showAutoUpdate ?? false);
             setAllowTeamCollectionEnabled(
                 advancedSettingsData.allowTeamCollectionEnabled ?? false,
@@ -317,28 +180,24 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
             setShowExperimentalBookSourcesOption(
                 advancedSettingsData.showExperimentalBookSourcesOption ?? false,
             );
-            setAiSourceBubblesKnownTargetLanguages(
-                advancedSettingsData.aiSourceBubblesKnownTargetLanguages ?? [],
+            setAiSourceBubblesValidation(
+                advancedSettingsData.aiSourceBubblesValidation,
             );
-            if (
-                loadedSettings?.aiSourceBubblesTargetLanguageTag &&
-                !(
-                    advancedSettingsData.aiSourceBubblesKnownTargetLanguages ??
-                    []
-                ).some(
-                    (option) =>
-                        option.value ===
-                        loadedSettings.aiSourceBubblesTargetLanguageTag,
-                )
-            ) {
-                setAiSourceBubblesCustomTargetLanguage(
-                    makeCustomTargetLanguageOption(
-                        loadedSettings.aiSourceBubblesTargetLanguageTag,
-                    ),
-                );
-            }
         });
-    }, [makeCustomTargetLanguageOption]);
+    }, []);
+
+    const aiSourceBubblesSettingsGroup = useAiSourceBubblesSettingsGroup({
+        settings,
+        initialValidation: aiSourceBubblesValidation,
+        groupLabel: aiSourceBubblesSectionLabel,
+        providerLabel: aiSourceBubblesProviderLabel,
+        targetLanguageLabel: aiSourceBubblesTargetLanguageLabel,
+        deepLApiKeyLabel: aiSourceBubblesDeepLApiKeyLabel,
+        googleServiceAccountEmailLabel:
+            aiSourceBubblesGoogleServiceAccountEmailLabel,
+        googlePrivateKeyLabel: aiSourceBubblesGooglePrivateKeyLabel,
+        translationTestLabel: aiSourceBubblesTranslationTestLabel,
+    });
 
     return (
         <div
@@ -414,9 +273,6 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                             <div
                                 css={css`
                                     .Mui-disabled {
-                                        // The color already sets opacity to 0.26.  We don't
-                                        // want to get any lighter, but MUI defaults to an
-                                        // additional "opacity: 0.38" for disabled elements.
                                         opacity: 1;
                                     }
                                 `}
@@ -502,57 +358,8 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                 </div>
                             </div>
                         </ConfigrGroup>
-                        {settings.allowAiSourceBubbles && (
-                            <ConfigrGroup label={aiSourceBubblesSectionLabel}>
-                                <ConfigrSelect
-                                    label={aiSourceBubblesProviderLabel}
-                                    path="aiSourceBubblesProvider"
-                                    options={[
-                                        { label: "DeepL", value: "deepl" },
-                                        {
-                                            label: "Google Translate",
-                                            value: "google",
-                                        },
-                                    ]}
-                                />
-                                <ConfigrCustomObjectInput<string>
-                                    path="aiSourceBubblesTargetLanguageTag"
-                                    control={
-                                        AiSourceBubblesTargetLanguageControl
-                                    }
-                                    label={aiSourceBubblesTargetLanguageLabel}
-                                    description={
-                                        aiSourceBubblesTargetLanguageDescription
-                                    }
-                                />
-                                {settings.aiSourceBubblesProvider ===
-                                    "deepl" && (
-                                    <ConfigrInput
-                                        path="aiSourceBubblesDeepLApiKey"
-                                        label={aiSourceBubblesDeepLApiKeyLabel}
-                                    />
-                                )}
-                                {settings.aiSourceBubblesProvider ===
-                                    "google" && (
-                                    <>
-                                        <ConfigrInput
-                                            path="aiSourceBubblesGoogleServiceAccountEmail"
-                                            label={
-                                                aiSourceBubblesGoogleServiceAccountEmailLabel
-                                            }
-                                        />
-                                        <ConfigrInput
-                                            path="aiSourceBubblesGooglePrivateKey"
-                                            label={
-                                                aiSourceBubblesGooglePrivateKeyLabel
-                                            }
-                                            allowNewLines={true}
-                                            maxLines={6}
-                                        />
-                                    </>
-                                )}
-                            </ConfigrGroup>
-                        )}
+                        {settings.allowAiSourceBubbles &&
+                            aiSourceBubblesSettingsGroup}
                     </ConfigrPage>
                 </ConfigrPane>
             )}
