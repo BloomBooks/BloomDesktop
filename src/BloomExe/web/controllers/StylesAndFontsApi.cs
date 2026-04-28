@@ -37,12 +37,35 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Return true iff there are languages in the book data (including defaultLanguages.css) that
-        /// do not appear in the current collection settings.
+        /// do not appear in the current collection settings, but that have been assigned a font.
         /// </summary>
         private bool DoesUnusedLanguageDataExist()
         {
-            InitializeFontAndLanguageData(out _, out _, out var unusedLanguages);
-            return unusedLanguages.Count > 0;
+            // Get all the languages used in the book and their default fonts.
+            InitializeFontAndLanguageData(
+                out var langToDefaultFont,
+                out _,
+                out var unusedLanguages
+            );
+            // Get all the user-modified styles that set a font for the style.
+            var modifiedStylesAndFonts = GetUserModifiedStylesAndFonts(
+                _bookSelection.CurrentSelection.OurHtmlDom
+            );
+            foreach (var unusedLang in unusedLanguages)
+            {
+                if (langToDefaultFont.ContainsKey(unusedLang))
+                    return true;
+                foreach (var modifiedStyle in modifiedStylesAndFonts)
+                {
+                    if (modifiedStyle.languageTag == unusedLang || modifiedStyle.languageTag == "*")
+                    {
+                        return true;
+                    }
+                }
+            }
+            // Data may exist in unused languages, but if so they've never been assigned a font,
+            // so there's no data to show for them in the Fonts tab of the Book Settings dialog.
+            return false;
         }
 
         private void InitializeFontAndLanguageData(
