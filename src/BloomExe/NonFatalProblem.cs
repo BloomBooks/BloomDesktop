@@ -130,7 +130,7 @@ namespace Bloom
                 {
                     try
                     {
-                        if (showSendReport)
+                        if (showSendReport && !FatalExceptionHandler.UseFallback)
                         {
                             // N.B.: We should be more careful than ever about when we want 'showSendReport' to be 'true',
                             // since this new "nonfatal" UI doesn't have a "Cancel" button.
@@ -199,7 +199,25 @@ namespace Bloom
         )
         {
             if (formForSynchronizing == null)
-                return; // could be on wrong thread
+            {
+                var uiControl = FatalExceptionHandler.ControlOnUIThread;
+                if (uiControl == null || uiControl.IsDisposed)
+                    return; // can't safely show a dialog
+
+                if (FatalExceptionHandler.InvokeRequired)
+                {
+                    uiControl.BeginInvoke(
+                        new Action(() =>
+                        {
+                            ShowProblemInMessageBox(fullDetailedMessage, null);
+                        })
+                    );
+                    return;
+                }
+
+                MessageBox.Show(fullDetailedMessage, string.Empty, MessageBoxButtons.OK);
+                return;
+            }
 
             if (formForSynchronizing.InvokeRequired)
             {
