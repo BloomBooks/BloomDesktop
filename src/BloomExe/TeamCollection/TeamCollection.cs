@@ -271,6 +271,9 @@ namespace Bloom.TeamCollection
                 // later.) It's also possible that the backend can better optimize the data transfer
                 // if it can recognize that the PutBook is overwriting an existing file.
                 RenameBookInRepo(bookFolderName, oldName);
+                // Once we've handled cleanup for the previous repo name, stop tracking it locally.
+                // This is essential for the case when oldName is missing. See BL-16226.
+                status = status.WithOldName(null);
             }
             PutBookInRepo(folderPath, status, inLostAndFound, progressCallback);
             // If this is true, we're about to delete or overwrite the book, so no point
@@ -280,13 +283,14 @@ namespace Bloom.TeamCollection
             // We want the local status to reflect the latest repo status.
             // In particular, it should have the correct checksum, and if
             // we've renamed the book, we should no longer record the old name.
-            // For one thing, we're about to delete that repo file, so we don't need
-            // its name any more. For another, if someone creates a book by the old name,
+            // For one thing, we've already handled any cleanup needed for that old repo name,
+            // so we don't need to track it any more. For another, if someone creates a book by the old name,
             // we don't want it to get deleted the next time this one is checked in.
             // For a third, if we rename this book again, we need to record the
             // current repo name as the thing to clean up, not something it once was.
-            // All this is achieved by writing the new repo status to local, since we just
-            // gave it the right checksum, and the repo status never has oldName.
+            // We achieve this by writing the updated status to local. Usually that status came
+            // from the repo and therefore has no oldName; in the BL-16226 path we also clear
+            // oldName explicitly after handling cleanup for the previous repo name.
             WriteLocalStatus(bookFolderName, status);
             UpdateBookStatus(bookFolderName, true);
             return status;
