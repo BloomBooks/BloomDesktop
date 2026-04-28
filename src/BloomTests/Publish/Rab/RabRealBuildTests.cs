@@ -30,9 +30,12 @@ namespace BloomTests.Publish.Rab
             return Path.Combine(Path.GetDirectoryName(currentFilePath), "ManualWork");
         }
 
-        private static string GetManualBloomOwnedRabRoot(string manualWorkRoot)
+        private static string GetBloomOwnedRabRoot()
         {
-            return Path.Combine(manualWorkRoot, "BloomAppData", kManualBloomOwnedRabFolderName);
+            return Path.Combine(
+                Bloom.ProjectContext.GetBloomAppDataFolder(),
+                kManualBloomOwnedRabFolderName
+            );
         }
 
         private static string GetRepoBloomPubPath([CallerFilePath] string currentFilePath = "")
@@ -55,11 +58,18 @@ namespace BloomTests.Publish.Rab
                 );
             }
 
-            var initialManualWorkRoot = GetManualWorkRoot();
-            var paths = new RabWorkspacePaths(
-                Path.Combine(initialManualWorkRoot, kManualCollectionFolderName),
-                GetManualBloomOwnedRabRoot(initialManualWorkRoot)
-            );
+            var manualWorkRoot = GetManualWorkRoot();
+
+            if (Directory.Exists(manualWorkRoot))
+                Directory.Delete(manualWorkRoot, true);
+
+            Directory.CreateDirectory(manualWorkRoot);
+            TestContext.Progress.WriteLine($"RAB manual work root: {manualWorkRoot}");
+
+            var manualCollectionRoot = Path.Combine(manualWorkRoot, kManualCollectionFolderName);
+            Directory.CreateDirectory(manualCollectionRoot);
+
+            var paths = new RabWorkspacePaths(manualCollectionRoot, GetBloomOwnedRabRoot());
             var rabLauncherPath = RealRabProjectService.FindInstalledRabLauncherPath(paths);
             var rabKeytoolPath = RealRabProjectService.FindInstalledRabKeytoolPath(paths);
 
@@ -83,20 +93,6 @@ namespace BloomTests.Publish.Rab
             );
 
             var bookTitle = Path.GetFileNameWithoutExtension(sourceBloomPubPath);
-
-            var manualWorkRoot = GetManualWorkRoot();
-
-            if (Directory.Exists(manualWorkRoot))
-                Directory.Delete(manualWorkRoot, true);
-
-            Directory.CreateDirectory(manualWorkRoot);
-            TestContext.Progress.WriteLine($"RAB manual work root: {manualWorkRoot}");
-
-            var manualCollectionRoot = Path.Combine(manualWorkRoot, kManualCollectionFolderName);
-            var manualBloomOwnedRabRoot = GetManualBloomOwnedRabRoot(manualWorkRoot);
-            paths = new RabWorkspacePaths(manualCollectionRoot, manualBloomOwnedRabRoot);
-            Directory.CreateDirectory(manualCollectionRoot);
-            Directory.CreateDirectory(manualBloomOwnedRabRoot);
             Directory.CreateDirectory(paths.ProjectAssetsRoot);
             Directory.CreateDirectory(paths.LauncherIconRoot);
             RobustFile.WriteAllText(

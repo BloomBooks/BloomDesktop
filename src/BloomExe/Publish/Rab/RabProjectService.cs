@@ -684,7 +684,7 @@ namespace Bloom.Publish.Rab
                     "Building the Android app with Reading App Builder...",
                     ProgressKind.Heading
                 );
-                Directory.CreateDirectory(paths.AsciiApkOutputRoot);
+                Directory.CreateDirectory(paths.SafeApkRoot);
                 RunRabCommand(
                     BuildRabArgsForProjectUpdate(
                         paths,
@@ -698,18 +698,13 @@ namespace Bloom.Publish.Rab
 
                 ReportProgressStage("finalizing-apk", 98);
 
-                // See comment on AsciiApkOutputRoot
-                var stagedApkPath = FindStagedApkPath(paths);
-                if (!string.IsNullOrEmpty(stagedApkPath))
-                    MoveBuiltApkToCollectionOutput(paths, stagedApkPath);
-
                 var apkPath = FindLatestApkPath(paths);
                 if (string.IsNullOrEmpty(apkPath))
                 {
                     var searchRoots = new[]
                     {
                         paths.ApkRoot,
-                        paths.AsciiApkOutputRoot,
+                        paths.SafeApkRoot,
                         paths.BuildRoot,
                         paths.RabRoot,
                     }
@@ -743,13 +738,6 @@ namespace Bloom.Publish.Rab
             }
             finally
             {
-                try
-                {
-                    if (Directory.Exists(paths.AsciiApkOutputRoot))
-                        RobustIO.DeleteDirectory(paths.AsciiApkOutputRoot, true);
-                }
-                catch (Exception) { }
-
                 _activeProgressAction = null;
             }
         }
@@ -1734,7 +1722,7 @@ namespace Bloom.Publish.Rab
                 "-fp",
                 $"build={paths.BuildRoot}",
                 "-fp",
-                $"apk.output={paths.AsciiApkOutputRoot}",
+                $"apk.output={paths.SafeApkRoot}",
             };
 
             AddProjectConfigurationArguments(arguments, state, supportFiles);
@@ -1760,7 +1748,7 @@ namespace Bloom.Publish.Rab
             arguments.Add("-fp");
             arguments.Add($"build={paths.BuildRoot}");
             arguments.Add("-fp");
-            arguments.Add($"apk.output={paths.AsciiApkOutputRoot}");
+            arguments.Add($"apk.output={paths.SafeApkRoot}");
             AddProjectConfigurationArguments(arguments, state, supportFiles);
 
             foreach (var book in books)
@@ -1880,9 +1868,9 @@ namespace Bloom.Publish.Rab
             }
         }
 
-        private static string CreateRabArgumentFile(IReadOnlyList<string> rabArguments)
+        private string CreateRabArgumentFile(IReadOnlyList<string> rabArguments)
         {
-            var argumentDirectory = Path.Combine(RabWorkspacePaths.GetAsciiWorkRoot(), "RabArgs");
+            var argumentDirectory = GetRabArgumentFileDirectory();
             Directory.CreateDirectory(argumentDirectory);
 
             var argumentFilePath = Path.Combine(
@@ -1896,6 +1884,11 @@ namespace Bloom.Publish.Rab
             );
             RobustFile.WriteAllText(argumentFilePath, argumentFileContents, new UTF8Encoding(true));
             return argumentFilePath;
+        }
+
+        internal virtual string GetRabArgumentFileDirectory()
+        {
+            return Path.Combine(GetPaths().SafeWorkRoot, "RabArgs");
         }
 
         internal virtual IReadOnlyDictionary<string, string> GetRabProcessEnvironmentVariables()
@@ -3412,44 +3405,6 @@ namespace Bloom.Publish.Rab
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderByDescending(RobustFile.GetLastWriteTime)
                 .FirstOrDefault();
-        }
-
-        internal virtual string FindStagedApkPath(RabWorkspacePaths paths)
-        {
-            // The GUID-backed staging directory is unique per workspace instance, so we only need to
-            // inspect that directory tree to find the APK produced for this build workaround.
-            if (
-                string.IsNullOrWhiteSpace(paths?.AsciiApkOutputRoot)
-                || !Directory.Exists(paths.AsciiApkOutputRoot)
-            )
-                return null;
-
-            return Directory
-                .GetFiles(paths.AsciiApkOutputRoot, "*.apk", SearchOption.AllDirectories)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderByDescending(RobustFile.GetLastWriteTime)
-                .FirstOrDefault();
-        }
-
-        private void MoveBuiltApkToCollectionOutput(RabWorkspacePaths paths, string stagedApkPath)
-        {
-            Directory.CreateDirectory(paths.ApkRoot);
-
-            var destinationPath = Path.Combine(paths.ApkRoot, Path.GetFileName(stagedApkPath));
-            if (string.Equals(stagedApkPath, destinationPath, StringComparison.OrdinalIgnoreCase))
-                return;
-
-            if (RobustFile.Exists(destinationPath))
-                RobustFile.Delete(destinationPath);
-
-            RobustFile.Move(stagedApkPath, destinationPath);
-
-            try
-            {
-                if (Directory.Exists(paths.AsciiApkOutputRoot))
-                    RobustIO.DeleteDirectory(paths.AsciiApkOutputRoot, true);
-            }
-            catch (Exception) { }
         }
 
         internal virtual string FindRabLauncherPath()

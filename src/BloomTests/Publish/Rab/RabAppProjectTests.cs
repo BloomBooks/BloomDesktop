@@ -602,7 +602,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public async Task BuildAsync_UsesAsciiApkOutputPath_AndMovesBuiltApkBackToCollection()
+        public async Task BuildAsync_UsesSafeApkPathWithinCollectionAlias()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
             var collectionRoot = Path.Combine(tempFolder.Path, "Kasɩm Books");
@@ -624,10 +624,8 @@ namespace BloomTests.Publish.Rab
             await service.BuildAsync();
 
             var buildCommand = service.Commands.Last(command => command.Contains("-build"));
-            var apkOutputMatch = Regex.Match(buildCommand, @"apk\.output=(?<path>[^\s]+)");
-            Assert.That(apkOutputMatch.Success, Is.True);
-            Assert.That(apkOutputMatch.Groups["path"].Value, Is.EqualTo(paths.AsciiApkOutputRoot));
-            Assert.That(apkOutputMatch.Groups["path"].Value.Any(ch => ch > 0x7F), Is.False);
+            Assert.That(buildCommand, Does.Contain($"apk.output={paths.SafeApkRoot}"));
+            Assert.That(paths.SafeApkRoot.Any(ch => ch > 0x7F), Is.False);
 
             var status = service.GetStatus();
             Assert.That(status.ApkPath, Is.Not.Null);
@@ -636,7 +634,32 @@ namespace BloomTests.Publish.Rab
                 Is.True
             );
             Assert.That(RobustFile.Exists(status.ApkPath), Is.True);
-            Assert.That(Directory.Exists(paths.AsciiApkOutputRoot), Is.False);
+            Assert.That(paths.SafeApkRoot, Is.EqualTo(Path.Combine(paths.SafeRabRoot, "apk")));
+        }
+
+        [Test]
+        public void GetCollectionWorkRoot_UsesCollectionBloomAppDataWhenCollectionPathIsAscii()
+        {
+            var collectionRoot = @"C:\Collections\Sample";
+
+            Assert.That(
+                RabSafePathPolicy.GetCollectionWorkRoot(collectionRoot),
+                Is.EqualTo(Path.Combine(collectionRoot, "Bloom App Data", "RabWork"))
+            );
+        }
+
+        [Test]
+        public void GetCollectionWorkRoot_UsesShortPathWhenCollectionPathIsNotAscii()
+        {
+            var collectionRoot = @"C:\Users\Polk\Documents\Kasɩm Books";
+
+            Assert.That(
+                RabSafePathPolicy.GetCollectionWorkRoot(
+                    collectionRoot,
+                    _ => @"C:\Users\POLK~1\Documents\KASIM~1"
+                ),
+                Is.EqualTo(@"C:\Users\POLK~1\Documents\KASIM~1\Bloom App Data\RabWork")
+            );
         }
 
         [Test]
@@ -672,6 +695,14 @@ namespace BloomTests.Publish.Rab
             var paths = service.ReadPaths();
 
             Assert.That(paths.RabRoot, Is.EqualTo(Path.Combine(tempFolder.Path, "Bloom App Data")));
+            Assert.That(
+                paths.SafeWorkRoot,
+                Is.EqualTo(Path.Combine(tempFolder.Path, "Bloom App Data", "RabWork"))
+            );
+            Assert.That(
+                paths.SafeApkRoot,
+                Is.EqualTo(Path.Combine(tempFolder.Path, "Bloom App Data", "apk"))
+            );
             Assert.That(
                 paths.KeystoreRoot,
                 Is.EqualTo(
@@ -3238,6 +3269,11 @@ namespace BloomTests.Publish.Rab
             > GetRabProcessEnvironmentVariables()
             {
                 return new Dictionary<string, string>();
+            }
+
+            internal override string GetRabArgumentFileDirectory()
+            {
+                return Path.Combine(AppContext.BaseDirectory, "RabArgs");
             }
 
             internal override void RunProcess(
