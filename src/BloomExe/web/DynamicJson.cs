@@ -191,12 +191,33 @@ namespace Bloom.Api
         {
             return obj.GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Select(pi => new { Name = pi.Name, Value = pi.GetValue(obj, null) })
+                .Where(pi => pi.CanRead && pi.GetIndexParameters().Length == 0)
+                .Select(pi => TryGetSerializablePropertyValue(pi, obj))
+                .Where(a => a != null)
                 .Select(a => new XStreamingElement(
                     a.Name,
                     CreateTypeAttr(GetJsonType(a.Value)),
                     CreateJsonNode(a.Value)
                 ));
+        }
+
+        private static dynamic TryGetSerializablePropertyValue(
+            PropertyInfo propertyInfo,
+            object obj
+        )
+        {
+            try
+            {
+                return new { Name = propertyInfo.Name, Value = propertyInfo.GetValue(obj, null) };
+            }
+            catch (TargetInvocationException)
+            {
+                return null;
+            }
+            catch (InvalidCastException)
+            {
+                return null;
+            }
         }
 
         private static string CreateJsonString(XStreamingElement element)
