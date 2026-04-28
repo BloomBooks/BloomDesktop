@@ -179,6 +179,7 @@ namespace Bloom.Api
             if (_bookSelection.CurrentSelection == null)
             {
                 request.Failed("No book selected");
+                return;
             }
 
             if (Book.Book.CollectionKind(_bookSelection.CurrentSelection) != "main")
@@ -187,6 +188,15 @@ namespace Bloom.Api
                 HandleMakeFromSelectedBook(request);
                 return;
             }
+
+            // This can happen if the UI briefly has stale selectedBookInfo and leaves Edit enabled.
+            // In that case, do nothing rather than trying to enter edit mode for a non-saveable book.
+            if (!_bookSelection.CurrentSelection.IsSaveable)
+            {
+                request.PostSucceeded();
+                return;
+            }
+
             _editBookCommand.Raise(_bookSelection.CurrentSelection);
             request.PostSucceeded();
         }
