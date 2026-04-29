@@ -2,13 +2,13 @@
 // The actual function is injected by C#.
 /// <reference path="../../js/collectionSettings.d.ts"/>
 import {
-    CanvasElementManager,
     kBackgroundImageClass,
     showCanvasTool,
     theOneCanvasElementManager,
 } from "../../js/CanvasElementManager";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { kBloomCanvasClass, kCanvasElementClass } from "./canvasElementUtils";
+import { ensureFieldFitsOnCustomPage } from "./derivedFieldFitting";
 import { getAsync, postData, postString } from "../../../utils/bloomApi";
 import { Bubble, BubbleSpec } from "comicaljs";
 import {
@@ -464,19 +464,6 @@ function finishReactivatingPage(page: HTMLElement): void {
     showCanvasTool();
 }
 
-// This function tries to make sure that all derived-field canvas elements fit on the page.
-// We're trying to fix really nasty-looking messes, like changing topic from "Math" to
-// "Animal stories" and finding that all but the first few letters are off the page.
-// On the other hand, we don't want to mess with anything that MIGHT be just how the
-// user wants it. The constraints applied here are my best guess of what might be helpful:
-// - don't change the height
-// - don't make it smaller
-// - don't make it wider than necessary to fit the content
-// - in particular, if it's already high enough for multiple lines of text, take
-//   advantage of that and don't make it wider than necessary to fit the text when
-//   nicely wrapped to however many lines fit.
-// Once we have determined a size, move it minimally so that, if possible, the whole
-// thing is on the page, or as much as possible.
 function ensureDerivedFieldsFitOnCustomPage(page: HTMLElement): void {
     if (!page.classList.contains("bloom-customLayout")) {
         return;
@@ -492,104 +479,9 @@ function ensureDerivedFieldsFitOnCustomPage(page: HTMLElement): void {
     const derivedElements = Array.from(
         bloomCanvas.querySelectorAll("div[data-derived]"),
     ) as HTMLElement[];
-    const scale = EditableDivUtils.getPageScale() || 1;
     for (const derivedElement of derivedElements) {
-        const canvasElement = derivedElement.closest(
-            `.${kCanvasElementClass}`,
-        ) as HTMLElement;
-        if (!canvasElement) {
-            continue;
-        }
-
-        const currentWidth = CanvasElementManager.pxToNumber(
-            canvasElement.style.width,
-        );
-        const currentHeight = CanvasElementManager.pxToNumber(
-            canvasElement.style.height,
-        );
-        if (currentWidth <= 0 || currentHeight <= 0) {
-            continue;
-        }
-
-        const getRenderedHeight = (): number =>
-            Math.ceil(derivedElement.getBoundingClientRect().height / scale);
-        const getRenderedWidth = (): number =>
-            Math.ceil(
-                Math.max(
-                    derivedElement.getBoundingClientRect().width / scale,
-                    derivedElement.offsetWidth,
-                ),
-            );
-
-        const overflowsVertically = (): boolean =>
-            getRenderedHeight() > currentHeight + 1;
-        const overflowsHorizontally = (): boolean => {
-            const containerWidth = CanvasElementManager.pxToNumber(
-                canvasElement.style.width,
-                canvasElement.clientWidth,
-            );
-            return getRenderedWidth() > containerWidth + 1;
-        };
-        const hasOverflow = (): boolean =>
-            overflowsVertically() || overflowsHorizontally();
-
-        const oldWhiteSpace = derivedElement.style.whiteSpace;
-        derivedElement.style.whiteSpace = "normal";
-
-        let fittedWidth = currentWidth;
-        if (hasOverflow()) {
-            derivedElement.style.whiteSpace = "nowrap";
-            const noWrapWidth = Math.max(currentWidth, getRenderedWidth());
-            derivedElement.style.whiteSpace = "normal";
-
-            canvasElement.style.width = `${noWrapWidth}px`;
-            if (hasOverflow()) {
-                fittedWidth = noWrapWidth;
-            } else {
-                let low = currentWidth;
-                let high = noWrapWidth;
-                while (high - low > 1) {
-                    const mid = Math.floor((low + high) / 2);
-                    canvasElement.style.width = `${mid}px`;
-                    if (hasOverflow()) {
-                        low = mid;
-                    } else {
-                        high = mid;
-                    }
-                }
-                fittedWidth = high;
-            }
-        }
-        derivedElement.style.whiteSpace = oldWhiteSpace;
-
-        if (fittedWidth > currentWidth) {
-            canvasElement.style.width = `${fittedWidth}px`;
-        } else {
-            canvasElement.style.width = `${currentWidth}px`;
-        }
-
-        const finalWidth = Math.max(currentWidth, fittedWidth);
-        const maxLeft = Math.max(0, bloomCanvas.clientWidth - finalWidth);
-        const maxTop = Math.max(0, bloomCanvas.clientHeight - currentHeight);
-        const clampedLeft = Math.max(
-            0,
-            Math.min(canvasElement.offsetLeft, maxLeft),
-        );
-        const clampedTop = Math.max(
-            0,
-            Math.min(canvasElement.offsetTop, maxTop),
-        );
-        if (clampedLeft !== canvasElement.offsetLeft) {
-            canvasElement.style.left = `${clampedLeft}px`;
-        }
-        if (clampedTop !== canvasElement.offsetTop) {
-            canvasElement.style.top = `${clampedTop}px`;
-        }
+        ensureFieldFitsOnCustomPage(derivedElement);
     }
-
-    theOneCanvasElementManager?.ensureCanvasElementsIntersectParent(
-        bloomCanvas,
-    );
 }
 
 export function setupPageLayoutMenu(): void {

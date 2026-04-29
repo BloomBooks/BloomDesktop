@@ -69,12 +69,13 @@ export const TopicChooserDialog: React.FunctionComponent<
         setCurrentTopic(newTopicKey === "No Topic" ? undefined : newTopicKey);
     };
 
-    const handleClose = () => {
+    const handleClose = async () => {
         const topicKey = currentTopic ? currentTopic : "<NONE>";
         if (props.dialogEnvironment?.mode === Mode.Edit) {
-            postString("editView/setTopic", topicKey);
+            // setTopic triggers a page reload; nothing done after this post will persist.
+            await postString("editView/setTopic", topicKey);
         } else if (props.dialogEnvironment?.mode === Mode.Publish)
-            postString("libraryPublish/topic", topicKey);
+            await postString("libraryPublish/topic", topicKey);
         closeDialog();
     };
 
