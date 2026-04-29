@@ -159,7 +159,7 @@ namespace Bloom.Book
             var path = Path.Combine(folderPath, imageFilePath);
             try
             {
-                return PalasoImage.FromFileRobustly(path);
+                return ImageUtils.FromFileRobustly(path);
             }
             catch (Exception e)
             {
