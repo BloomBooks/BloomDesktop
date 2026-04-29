@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using SIL.IO;
 
 namespace Bloom.Publish.Rab
 {
@@ -118,15 +122,128 @@ namespace Bloom.Publish.Rab
         public string IconPath { get; set; }
     }
 
+    /// <summary>
+    /// Reading App Builder still has trouble with some non-ASCII paths on Windows, including
+    /// paths rooted under a collection folder whose name or parent folders contain characters
+    /// outside basic ASCII. This helper centralizes Bloom's workaround for that limitation by
+    /// resolving an ASCII-safe alias for a collection path when possible and then deriving the
+    /// RAB work/output folders from that safe path.
+    /// </summary>
+    internal static class RabSafePathPolicy
+    {
+#if !__MonoCS__
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern int GetShortPathName(
+            string longPath,
+            StringBuilder shortPath,
+            int shortPathBufferLength
+        );
+#endif
+
+        internal static bool IsAscii(string path)
+        {
+            return !string.IsNullOrWhiteSpace(path) && path.All(ch => ch <= 0x7F);
+        }
+
+        internal static string GetCollectionWorkRoot(
+            string collectionRoot,
+            Func<string, string> shortPathResolver = null
+        )
+        {
+            var safeCollectionRoot = ResolveSafePathOrNull(collectionRoot, shortPathResolver);
+            if (string.IsNullOrWhiteSpace(safeCollectionRoot))
+                throw new ApplicationException(
+                    $"The path '{collectionRoot}' contains non-standard characters. Rename the collection to only include standard characters."
+                );
+
+            return Path.Combine(safeCollectionRoot, "Bloom App Data", "RabWork");
+        }
+
+        internal static string ResolveSafePathOrNull(
+            string path,
+            Func<string, string> shortPathResolver = null
+        )
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return path;
+
+            var fullPath = Path.GetFullPath(path);
+            if (IsAscii(fullPath))
+                return fullPath;
+
+            shortPathResolver ??= TryGetShortPath;
+            var shortPath = shortPathResolver(fullPath);
+            return !string.IsNullOrWhiteSpace(shortPath) && IsAscii(shortPath) ? shortPath : null;
+        }
+
+        private static string TryGetShortPath(string path)
+        {
+            if (!OperatingSystem.IsWindows())
+                return null;
+
+            var fullPath = Path.GetFullPath(path);
+            var existingPath = fullPath;
+            var suffixSegments = new Stack<string>();
+
+            while (!string.IsNullOrWhiteSpace(existingPath))
+            {
+                if (Directory.Exists(existingPath) || RobustFile.Exists(existingPath))
+                    break;
+
+                var parent = Path.GetDirectoryName(existingPath);
+                if (
+                    string.IsNullOrWhiteSpace(parent)
+                    || string.Equals(parent, existingPath, StringComparison.Ordinal)
+                )
+                    // Abort if path reduction stops making progress before we find an existing
+                    // ancestor that can be converted to a short path.
+                    return null;
+
+                suffixSegments.Push(Path.GetFileName(existingPath));
+                existingPath = parent;
+            }
+
+#if !__MonoCS__
+            var buffer = new StringBuilder(512);
+            var resultLength = GetShortPathName(existingPath, buffer, buffer.Capacity);
+            if (resultLength > buffer.Capacity)
+            {
+                buffer = new StringBuilder(resultLength);
+                resultLength = GetShortPathName(existingPath, buffer, buffer.Capacity);
+            }
+
+            if (resultLength <= 0 || resultLength >= buffer.Capacity)
+                return null;
+
+            var shortPath = buffer.ToString();
+            while (suffixSegments.Count > 0)
+                shortPath = Path.Combine(shortPath, suffixSegments.Pop());
+
+            return shortPath;
+#else
+            return null;
+#endif
+        }
+    }
+
     internal class RabWorkspacePaths
     {
+        internal static string GetSafeWorkRoot(string collectionRoot)
+        {
+            return RabSafePathPolicy.GetCollectionWorkRoot(collectionRoot);
+        }
+
         public RabWorkspacePaths(string collectionRoot, string bloomOwnedRabRoot = null)
         {
             CollectionRoot = collectionRoot;
+            SafeCollectionRoot = RabSafePathPolicy.ResolveSafePathOrNull(collectionRoot);
+            SafeWorkRoot = GetSafeWorkRoot(collectionRoot);
             RabRoot = Path.Combine(collectionRoot, "Bloom App Data");
+            SafeRabRoot = Path.Combine(SafeCollectionRoot, "Bloom App Data");
             BloomPubRoot = Path.Combine(RabRoot, "bloompubs");
             BuildRoot = Path.Combine(RabRoot, "build");
             ApkRoot = Path.Combine(RabRoot, "apk");
+            SafeApkRoot = Path.Combine(SafeRabRoot, "apk");
             BloomOwnedRabRoot = string.IsNullOrWhiteSpace(bloomOwnedRabRoot)
                 ? RabRoot
                 : bloomOwnedRabRoot;
@@ -140,10 +257,14 @@ namespace Bloom.Publish.Rab
         }
 
         public string CollectionRoot { get; }
+        public string SafeCollectionRoot { get; }
+        public string SafeWorkRoot { get; }
         public string RabRoot { get; }
+        public string SafeRabRoot { get; }
         public string BloomPubRoot { get; }
         public string BuildRoot { get; }
         public string ApkRoot { get; }
+        public string SafeApkRoot { get; }
         public string BloomOwnedRabRoot { get; }
         public string KeystoreRoot { get; }
         public string SharedKeystorePath { get; }
