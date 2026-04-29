@@ -963,6 +963,9 @@ namespace Bloom.Book
             // Preview may need fullBleed markup to show pages correctly.
             InsertFullBleedMarkup(previewDom.Body);
 
+            // #bloomDataDiv may cause duplicate id's inside a store svg element. (BL-16239)
+            RemoveDataDiv(previewDom);
+
             _previewDom = previewDom;
             return previewDom;
         }
@@ -4479,7 +4482,18 @@ namespace Bloom.Book
             if (!FullBleed && !UserPrefs.IncludeBackgroundColors)
                 SetBackwardsCompatibleCoverBackgroundColor(printingDom.RawDom, "white", true);
             AddPreviewJavascript(printingDom);
+            // #bloomDataDiv may cause duplicate id's inside a store svg element. (BL-16239)
+            RemoveDataDiv(printingDom);
             return printingDom;
+        }
+
+        private void RemoveDataDiv(HtmlDom printingDom)
+        {
+            var dataDiv = printingDom.RawDom.SelectSingleNode("/html/body/div[@id='bloomDataDiv']");
+            if (dataDiv != null)
+            {
+                dataDiv.ParentNode.RemoveChild(dataDiv);
+            }
         }
 
         /// <summary>
