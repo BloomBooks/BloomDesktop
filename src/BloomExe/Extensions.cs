@@ -253,5 +253,49 @@ namespace Bloom
                 exceptionTypesToRetry
             );
         }
+
+        /// <summary>
+        /// A re-implementation of PalasoImage.FromFileRobustly, but with configurable parameters.
+        /// </summary>
+        /// <remarks>This is here because it's a lower risk way to introduce this change.
+        /// Longer-term, it'd make more sense to modify PalasoImage.FromFileRobustly to provide this extra capability instead
+        /// </remarks>
+        public static SIL.Windows.Forms.ImageToolbox.PalasoImage FromFileRobustly(
+            string path,
+            HashSet<Type> exceptionTypesToRetry = null,
+            int maxRetryAttempts = RetryUtility.kDefaultMaxRetryAttempts,
+            int retryDelay = RetryUtility.kDefaultRetryDelay
+        )
+        {
+            exceptionTypesToRetry ??= new HashSet<Type>
+            {
+                // As of April 2026, these three exception types are the ones in PalasoImage.FromFileRobustly.
+                typeof(System.IO.IOException),
+                typeof(System.OutOfMemoryException),
+                typeof(TagLib.CorruptFileException),
+                // We add ApplicationException which we have also seen. (BL-16221)
+                typeof(ApplicationException),
+            };
+
+            try
+            {
+                return RetryUtility.Retry(
+                    () => SIL.Windows.Forms.ImageToolbox.PalasoImage.FromFile(path),
+                    maxRetryAttempts,
+                    retryDelay,
+                    exceptionTypesToRetry
+                );
+            }
+            catch (Exception e)
+            {
+                // In case something else goes wrong, at least some errors we've seen from here
+                // (including TagLib.CorruptFileException) don't tell us WHICH FILE has the
+                // problem, so wrap in another layer that does.
+                throw new ApplicationException(
+                    "Could not make PalasoImage from " + path + " because " + e.Message,
+                    e
+                );
+            }
+        }
     }
 }

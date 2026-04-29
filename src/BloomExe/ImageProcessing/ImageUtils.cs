@@ -995,7 +995,7 @@ namespace Bloom.ImageProcessing
                     ++completed;
                     continue;
                 }
-                using (var pi = PalasoImage.FromFileRobustly(path))
+                using (var pi = Extensions.FromFileRobustly(path))
                 {
                     // If the image isn't jpeg (which it shouldn't be), and we can't be sure it's already
                     // opaque, change the image to be opaque.  As explained above, some PDF viewers don't
@@ -1082,7 +1082,7 @@ namespace Bloom.ImageProcessing
             {
                 try
                 {
-                    using (var originalImage = PalasoImage.FromFileRobustly(path))
+                    using (var originalImage = Extensions.FromFileRobustly(path))
                     {
                         makeTransparent = ShouldMakeBackgroundTransparent(originalImage);
                     }

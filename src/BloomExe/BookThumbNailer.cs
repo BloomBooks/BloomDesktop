@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -282,7 +282,7 @@ namespace Bloom
                     )
                 )
                     imageSrc = transparentImageFile;
-                using (var coverImage = PalasoImage.FromFileRobustly(imageSrc))
+                using (var coverImage = Extensions.FromFileRobustly(imageSrc))
                 {
                     if (
                         imageSrc == transparentImageFile
