@@ -2,6 +2,50 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Create terminals",
+            "dependsOn": ["BloomBrowserUI", "content"],
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
+        },
+        {
+            "label": "BloomBrowserUI",
+            "type": "shell",
+            "command": "bash",
+            "options": {
+                "cwd": "${workspaceFolder}/src/BloomBrowserUI"
+            },
+            // Mark as a background task to avoid the spinner animation on the terminal tab
+            "isBackground": true,
+            // Create the tasks in a terminal group (split)
+            "presentation": {
+                "group": "my-group"
+            }
+        },
+        {
+            "label": "content",
+            "type": "shell",
+            "command": "bash",
+            "options": {
+                "cwd": "${workspaceFolder}/src/content"
+            },
+            "isBackground": true,
+            "presentation": {
+                "group": "my-group"
+            }
+        },
+        {
+            "label": "Ensure Development Environment Initialized",
+            "type": "shell",
+            "command": "bash build/ensure-initialized.sh",
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
             "label": "build",
             "command": "dotnet",
             "type": "process",
