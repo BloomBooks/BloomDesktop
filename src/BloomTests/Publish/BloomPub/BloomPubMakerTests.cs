@@ -2144,6 +2144,92 @@ namespace BloomTests.Publish.BloomPub
             }
         }
 
+        private static SafeXmlDocument MakeDom(string bodyInnerXml)
+        {
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml($"<html><body>{bodyInnerXml}</body></html>");
+            return doc;
+        }
+
+        [Test]
+        public void ConvertImagesToBackground_BasicImgInBloomCanvas_ConvertedToBackgroundStyle()
+        {
+            var dom = MakeDom("<div class='bloom-canvas'><img src='image.png'/></div>");
+            BloomPubMaker.ConvertImagesToBackground(dom);
+            var div = dom.SafeSelectNodes("//div[@class]").Cast<SafeXmlElement>().First();
+            Assert.That(div.GetAttribute("style"), Is.EqualTo("background-image:url('image.png')"));
+            Assert.That(
+                div.GetAttribute("class"),
+                Does.Contain("bloom-background-image-in-style-attr")
+            );
+            Assert.That(dom.SafeSelectNodes("//img").Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ConvertImagesToBackground_ImgWithDataAttributes_DataAttrsCopiedToDiv()
+        {
+            var dom = MakeDom(
+                "<div class='bloom-canvas'><img src='image.png' data-creator='Test' data-license='cc-by'/></div>"
+            );
+            BloomPubMaker.ConvertImagesToBackground(dom);
+            var div = dom.SafeSelectNodes("//div[@class]").Cast<SafeXmlElement>().First();
+            Assert.That(div.GetAttribute("data-creator"), Is.EqualTo("Test"));
+            Assert.That(div.GetAttribute("data-license"), Is.EqualTo("cc-by"));
+            Assert.That(dom.SafeSelectNodes("//img").Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ConvertImagesToBackground_ImgWithNoSrc_NotConverted()
+        {
+            var dom = MakeDom("<div class='bloom-canvas'><img/></div>");
+            BloomPubMaker.ConvertImagesToBackground(dom);
+            // img with no src should be left alone
+            Assert.That(dom.SafeSelectNodes("//img").Length, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ConvertImagesToBackground_ImgWithCoverClass_CoverClassCopiedToDiv()
+        {
+            var dom = MakeDom(
+                "<div class='bloom-canvas'><img src='cover.png' class='bloom-imageObjectFit-cover'/></div>"
+            );
+            BloomPubMaker.ConvertImagesToBackground(dom);
+            var div = dom.SafeSelectNodes("//div[@class]").Cast<SafeXmlElement>().First();
+            Assert.That(div.GetAttribute("class"), Does.Contain("bloom-imageObjectFit-cover"));
+            Assert.That(dom.SafeSelectNodes("//img").Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ConvertImagesToBackground_ImgInBloomCustomLayoutAncestor_CoverClassAddedToDiv()
+        {
+            // BL-16173: an img inside a bloom-customLayout ancestor should get bloom-imageObjectFit-cover
+            var dom = MakeDom(
+                "<div class='bloom-page coverColor bloom-customLayout'>"
+                    + "<div class='bloom-canvas'>"
+                    + "<img src='image.png'/>"
+                    + "</div>"
+                    + "</div>"
+            );
+            BloomPubMaker.ConvertImagesToBackground(dom);
+            var div = dom.SafeSelectNodes("//div[contains(@class,'bloom-canvas')]")
+                .Cast<SafeXmlElement>()
+                .First();
+            Assert.That(div.GetAttribute("class"), Does.Contain("bloom-imageObjectFit-cover"));
+            Assert.That(dom.SafeSelectNodes("//img").Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ConvertImagesToBackground_UrlEncodedSrc_PreservedInStyle()
+        {
+            var dom = MakeDom("<div class='bloom-canvas'><img src=\"HL00%2714%201.svg\"/></div>");
+            BloomPubMaker.ConvertImagesToBackground(dom);
+            var div = dom.SafeSelectNodes("//div[@class]").Cast<SafeXmlElement>().First();
+            Assert.That(
+                div.GetAttribute("style"),
+                Is.EqualTo("background-image:url('HL00%2714%201.svg')")
+            );
+        }
+
         private class ZipHtmlObj
         {
             internal ZipHtmlObj(ZipFile zip, string html)
