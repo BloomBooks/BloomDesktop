@@ -75,7 +75,9 @@ import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetCh
 import {
     kBloomButtonClass,
     kBloomCanvasSelector,
+    kCanvasElementClass,
 } from "../toolbox/canvas/canvasElementUtils";
+import { ensureFieldFitsOnCustomPage } from "../toolbox/canvas/derivedFieldFitting";
 import { wrapWithRequestPageContentDelay } from "./bloomEditing";
 import { get, post, useApiObject } from "../../utils/bloomApi";
 import { ILanguageNameValues } from "../bookAndPageSettings/FieldVisibilityGroup";
@@ -996,6 +998,16 @@ const CanvasElementContextControls: React.FunctionComponent<{
 const fieldsControlledByAppearanceSystem = ["bookTitle"];
 
 function adjustAutoSizeForVisibleEditableInTranslationGroup(tg: HTMLElement) {
+    const containingCanvasElement = tg.closest(
+        `.${kCanvasElementClass}`,
+    ) as HTMLElement;
+    const derivedElement = containingCanvasElement?.querySelector(
+        "div[data-derived]",
+    ) as HTMLElement;
+    if (derivedElement) {
+        ensureFieldFitsOnCustomPage(derivedElement);
+    }
+
     const visibleEditable = tg.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement;
@@ -1407,6 +1419,13 @@ function makeFieldTypeMenuItem(
                     readOnlyDiv.classList.add(...fieldType.classes);
                     tg.parentElement!.insertBefore(readOnlyDiv, tg);
                     tg.remove();
+                    // Tempting to do this here, but we're going to reload the page,
+                    // and it's only after the reload that the div we just created will have
+                    // its content. Another call to this function will happen after the reload,
+                    // and that can do a better job of fixing it. Doing it now would just
+                    // reduce the height to its minimum, forcing the new content to be shown on
+                    // one line.
+                    //ensureFieldFitsOnCustomPage(readOnlyDiv);
                     // Reload the page to get the derived content loaded.
                     post("common/saveChangesAndRethinkPageEvent", () => {});
                 } else {
@@ -1695,8 +1714,8 @@ function addVideoMenuItems(
     );
 }
 
-function hasRealImage(img) {
-    return (
+function hasRealImage(img: Element | undefined): boolean {
+    return !!(
         img &&
         !isPlaceHolderImage(img.getAttribute("src")) &&
         !img.classList.contains("bloom-imageLoadError") &&
