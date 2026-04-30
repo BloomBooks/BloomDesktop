@@ -327,9 +327,10 @@ namespace Bloom.TeamCollection
             var localCollectionLinkPath = GetTcLinkPathFromLcPath(_localCollectionFolder);
             if (RobustFile.Exists(localCollectionLinkPath))
             {
+                string repoFolderPath = null;
                 try
                 {
-                    var repoFolderPath = RepoFolderPathFromLinkPath(localCollectionLinkPath);
+                    repoFolderPath = RepoFolderPathFromLinkPath(localCollectionLinkPath);
                     CurrentCollection = new FolderTeamCollection(
                         this,
                         _localCollectionFolder,
@@ -372,7 +373,37 @@ namespace Bloom.TeamCollection
                         true
                     );
                     CurrentCollection = null;
-                    CurrentCollectionEvenIfDisconnected = null;
+                    // Create a DisconnectedTeamCollection so we still have a TC object that prevents
+                    // undesirable operations like editing un-checked-out books. This handles cases where
+                    // the TC initialization fails, not just connection problems.
+                    if (repoFolderPath != null)
+                    {
+                        var disconnectedTC = new DisconnectedTeamCollection(
+                            this,
+                            _localCollectionFolder,
+                            repoFolderPath
+                        );
+                        disconnectedTC.SocketServer = SocketServer;
+                        disconnectedTC.TCManager = this;
+                        disconnectedTC.MessageLog.WriteMessage(
+                            MessageAndMilestoneType.Error,
+                            // MessageLog requires this API, but because TC is experimental, I haven't actually
+                            // created this item in the XLF yet..not even with 'translate=no', since we
+                            // expect this to be still experimental in the next release.
+                            "TeamCollection.InitializationFailure",
+                            "Bloom could not initialize the Team Collection. Some Team Collection operations will not be available.",
+                            null,
+                            null
+                        );
+                        disconnectedTC.MessageLog.NextTeamCollectionDialogShouldForceReloadButton =
+                            true;
+                        disconnectedTC.DisconnectedBecauseOfInitializationFailure = true;
+                        CurrentCollectionEvenIfDisconnected = disconnectedTC;
+                    }
+                    else
+                    {
+                        CurrentCollectionEvenIfDisconnected = null;
+                    }
                 }
             }
         }
