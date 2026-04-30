@@ -458,7 +458,7 @@ namespace Bloom.Book
             var maxHeight = imagePublishSettings.MaxHeight;
 
             var originalBytes = RobustFile.ReadAllBytes(filePath);
-            using (var originalImage = PalasoImage.FromFileRobustly(filePath))
+            using (var originalImage = ImageUtils.FromFileRobustly(filePath))
             {
                 var image = originalImage.Image;
                 int originalWidth = image.Width;
