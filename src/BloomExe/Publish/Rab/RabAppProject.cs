@@ -946,7 +946,13 @@ namespace Bloom.Publish.Rab
         {
             var safeName = new string(
                 (appName ?? string.Empty)
-                    .Select(ch => char.IsLetterOrDigit(ch) ? ch : '_')
+                    .Select(ch =>
+                        (ch >= 'A' && ch <= 'Z')
+                        || (ch >= 'a' && ch <= 'z')
+                        || (ch >= '0' && ch <= '9')
+                            ? ch
+                            : '_'
+                    )
                     .ToArray()
             ).Trim('_');
             if (string.IsNullOrWhiteSpace(safeName))

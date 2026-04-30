@@ -16,6 +16,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using BloomTemp;
 using L10NSharp;
+using SIL.Code;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -995,7 +996,7 @@ namespace Bloom.ImageProcessing
                     ++completed;
                     continue;
                 }
-                using (var pi = PalasoImage.FromFileRobustly(path))
+                using (var pi = FromFileRobustly(path))
                 {
                     // If the image isn't jpeg (which it shouldn't be), and we can't be sure it's already
                     // opaque, change the image to be opaque.  As explained above, some PDF viewers don't
@@ -1082,7 +1083,7 @@ namespace Bloom.ImageProcessing
             {
                 try
                 {
-                    using (var originalImage = PalasoImage.FromFileRobustly(path))
+                    using (var originalImage = FromFileRobustly(path))
                     {
                         makeTransparent = ShouldMakeBackgroundTransparent(originalImage);
                     }
@@ -2758,6 +2759,53 @@ namespace Bloom.ImageProcessing
             catch
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// A re-implementation of PalasoImage.FromFileRobustly, but with configurable parameters.
+        /// </summary>
+        /// <remarks>This is here (not libpalaso)because it's a lower risk way to introduce this change.
+        /// Longer-term, it'd make more sense to modify PalasoImage.FromFileRobustly to provide this extra capability instead
+        /// </remarks>
+        public static PalasoImage FromFileRobustly(
+            string path,
+            HashSet<Type> exceptionTypesToRetry = null,
+            int maxRetryAttempts = RetryUtility.kDefaultMaxRetryAttempts,
+            int retryDelay = RetryUtility.kDefaultRetryDelay
+        )
+        {
+            exceptionTypesToRetry ??= new HashSet<Type>
+            {
+                // As of April 2026, these three exception types are the ones in PalasoImage.FromFileRobustly.
+                typeof(System.IO.IOException),
+                typeof(System.OutOfMemoryException),
+                typeof(TagLib.CorruptFileException),
+                // We add System.Collections.Generic.KeyNotFoundException which we have also seen. (BL-16221)
+                typeof(System.Collections.Generic.KeyNotFoundException),
+                // BookThumbnailer.kExceptionsToRetryWhenSavingImage includes System.ApplicationException,
+                // so that seems worth including, too.
+                typeof(System.ApplicationException),
+            };
+
+            try
+            {
+                return RetryUtility.Retry(
+                    () => PalasoImage.FromFile(path),
+                    maxRetryAttempts,
+                    retryDelay,
+                    exceptionTypesToRetry
+                );
+            }
+            catch (Exception e)
+            {
+                // In case something else goes wrong, at least some errors we've seen from here
+                // (including TagLib.CorruptFileException) don't tell us WHICH FILE has the
+                // problem, so wrap in another layer that does.
+                throw new ApplicationException(
+                    "Could not make PalasoImage from " + path + " because " + e.Message,
+                    e
+                );
             }
         }
     }
