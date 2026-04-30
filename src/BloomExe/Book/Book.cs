@@ -1057,7 +1057,8 @@ namespace Bloom.Book
                 && !FeatureStatus
                     .GetFeatureStatus(
                         CollectionSettings.Subscription,
-                        FeatureName.CustomXMatterPage
+                        FeatureName.CustomXMatterPage,
+                        this
                     )
                     .Enabled
             )
@@ -5675,7 +5676,7 @@ namespace Bloom.Book
             // (That is, check if the languages in the book have non-empty text for part of the quiz section)
             BookInfo.MetaData.Feature_Quiz =
                 FeatureStatus
-                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game, this)
                     .Enabled && HasQuizPages;
         }
 
@@ -5683,7 +5684,7 @@ namespace Bloom.Book
         {
             BookInfo.MetaData.Feature_SimpleDomChoice =
                 FeatureStatus
-                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game, this)
                     .Enabled && OurHtmlDom.HasSimpleDomChoicePages();
         }
 
@@ -5691,7 +5692,7 @@ namespace Bloom.Book
         {
             BookInfo.MetaData.Feature_DragGame =
                 FeatureStatus
-                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game, this)
                     .Enabled && OurHtmlDom.HasDragGamePages();
         }
 
