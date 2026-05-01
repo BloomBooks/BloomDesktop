@@ -963,6 +963,9 @@ namespace Bloom.Book
             // Preview may need fullBleed markup to show pages correctly.
             InsertFullBleedMarkup(previewDom.Body);
 
+            // #bloomDataDiv may cause duplicate id's inside a store svg element. (BL-16239)
+            RemoveDataDiv(previewDom);
+
             _previewDom = previewDom;
             return previewDom;
         }
@@ -4479,7 +4482,25 @@ namespace Bloom.Book
             if (!FullBleed && !UserPrefs.IncludeBackgroundColors)
                 SetBackwardsCompatibleCoverBackgroundColor(printingDom.RawDom, "white", true);
             AddPreviewJavascript(printingDom);
+            // #bloomDataDiv may cause duplicate id's inside a store svg element. (BL-16239)
+            RemoveDataDiv(printingDom);
             return printingDom;
+        }
+
+        /// <summary>
+        /// Directly using the DOM for displaying the HTML in a browser can have problems with an
+        /// svg element stored in the #bloomDataDiv.  This can cause duplicate id's inside the
+        /// duplicate svg elements, which can cause problems with the browser.  Displaying the HTML
+        /// never needs the #bloomDataDiv once the xmatter pages have been populated, so we remove
+        /// it here.  (BL-16239)
+        /// </summary>
+        private void RemoveDataDiv(HtmlDom displayDom)
+        {
+            var dataDiv = displayDom.RawDom.SelectSingleNode("/html/body/div[@id='bloomDataDiv']");
+            if (dataDiv != null)
+            {
+                dataDiv.ParentNode.RemoveChild(dataDiv);
+            }
         }
 
         /// <summary>
