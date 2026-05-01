@@ -1,13 +1,11 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { useState } from "react";
 import { lightTheme } from "../../../bloomMaterialUITheme";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { ZoomControl } from "./ZoomControl";
 import { UiLanguageMenu } from "./UiLanguageMenu";
 import { HelpMenu } from "./HelpMenu";
 import { kTextOnPurple } from "../../../bloomMaterialUITheme";
-import { useSubscribeToWebSocketForStringMessage } from "../../../utils/WebSocketManager";
 
 export const WorkspaceTopRightControls: React.FunctionComponent = () => {
     const lightThemeOverride = React.useMemo(
@@ -34,16 +32,9 @@ export const WorkspaceTopRightControls: React.FunctionComponent = () => {
         [],
     );
 
-    // Forces a refresh. Currently used for localization changes.
-    const [generation, setGeneration] = useState(0);
-    useSubscribeToWebSocketForStringMessage("app", "uiLanguageChanged", () => {
-        setGeneration((current) => current + 1);
-    });
-
     return (
         <ThemeProvider theme={lightThemeOverride}>
             <div
-                key={`workspace-top-right-controls-${generation}`}
                 css={css`
                     display: flex;
                     flex-direction: column;

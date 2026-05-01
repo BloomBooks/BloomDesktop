@@ -707,11 +707,12 @@ namespace Bloom.TeamCollection
                     var dirty = false;
                     foreach (var key in repoColorPalettes.Keys)
                     {
+                        localColorPalettes.TryGetValue(key, out var localValues);
                         var mergedValues = MergeColorPaletteValues(
                             repoColorPalettes[key],
-                            localColorPalettes[key]
+                            localValues
                         );
-                        if (mergedValues != localColorPalettes[key])
+                        if (mergedValues != localValues)
                         {
                             localColorPalettes[key] = mergedValues;
                             dirty = true;
@@ -995,6 +996,9 @@ namespace Bloom.TeamCollection
             var oldLocalPath = Path.Combine(Path.GetDirectoryName(newBookFolderPath), oldName);
             var pathToOldBookFileInRepo = GetPathToBookFileInRepo(oldLocalPath);
             var pathToNewBookFileInRepo = GetPathToBookFileInRepo(newBookFolderPath);
+            // If the old repo file is already gone, check-in should continue by writing the new one. See BL-16226.
+            if (!RobustFile.Exists(pathToOldBookFileInRepo))
+                return;
             // There is probably some pathological case where pathToNewBookFileInRepo already exists,
             // but I can't think of a decent way to handle it, so just let it fail.
             RobustFile.Move(pathToOldBookFileInRepo, pathToNewBookFileInRepo);

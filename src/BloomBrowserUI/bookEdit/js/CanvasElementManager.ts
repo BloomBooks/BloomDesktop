@@ -3791,22 +3791,6 @@ export class CanvasElementManager {
             return;
         }
         this.gotAMoveWhileMouseDown = false;
-        this.mouseIsDown = true;
-        this.clientXAtMouseDown = event.clientX;
-        this.clientYAtMouseDown = event.clientY;
-        this.mouseDownContainer = bloomCanvas;
-        // Adding this to document rather than the container makes it much less likely that we'll miss
-        // the mouse up. Also, we only add it at all if the mouse down happened on an appropriate target.
-        // Mouse up also wants to be limited to appropriate targets, but when dragging (especially
-        // a jquery resize of a motion rectangle) it's easy for the mouse up to be outside the
-        // thing originally clicked on. Addding it here means that the test for whether it's a click
-        // this set of functions should handle is not needed in onMouseUp; only if we decide here that it's
-        // ours to handle will the mouse up handler even be added.
-        // (I think we can do the same now with mouse move, but it feels slightly risky for a stabilization
-        // phase.)
-        document.addEventListener("mouseup", this.onMouseUp, {
-            capture: true,
-        });
 
         // These coordinates need to be relative to the canvas (which is the same as relative to the bloomCanvas).
         const coordinates = this.getPointRelativeToCanvas(event, bloomCanvas);
@@ -3854,6 +3838,16 @@ export class CanvasElementManager {
         const startDraggingBubble = (bubble: Bubble) => {
             // Note: at this point we do NOT want to focus it. Only if we decide in mouse up that we want to text-edit it.
             this.setActiveElement(bubble.content);
+
+            this.mouseIsDown = true;
+            this.clientXAtMouseDown = event.clientX;
+            this.clientYAtMouseDown = event.clientY;
+            this.mouseDownContainer = bloomCanvas;
+            // Adding this to document rather than the container makes it much less likely that we'll miss
+            // the mouse up. Also, we only add it when we begin handling a bubble gesture.
+            document.addEventListener("mouseup", this.onBubbleDragMouseUp, {
+                capture: true,
+            });
 
             // Possible move action started
             this.bubbleToDrag = bubble;
@@ -3954,7 +3948,7 @@ export class CanvasElementManager {
         if (event.buttons === 0 && this.mouseIsDown) {
             // we missed the mouse up...maybe because we're debugging? In any case, we don't want to go
             // on doing drag-type things; best to simulate the mouse up we missed.
-            this.onMouseUp(event);
+            this.onBubbleDragMouseUp(event);
             return;
         }
         // If we're not dragging a canvas element, don't do anything else.
@@ -3968,6 +3962,7 @@ export class CanvasElementManager {
         const deltaY = event.clientY - this.clientYAtMouseDown;
         if (
             event.buttons === 1 &&
+            !this.gotAMoveWhileMouseDown &&
             Math.sqrt(deltaX * deltaX + deltaY * deltaY) > 3
         ) {
             this.gotAMoveWhileMouseDown = true;
@@ -4027,7 +4022,7 @@ export class CanvasElementManager {
         if (event.buttons === 0) {
             // we missed the mouse up...maybe because we're debugging? In any case, we need to
             // get out of that mode.
-            this.onMouseUp(event);
+            this.onBubbleDragMouseUp(event);
             return;
         }
         if (this.activeElement) {
@@ -4176,11 +4171,11 @@ export class CanvasElementManager {
 
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
-    private onMouseUp = (event: MouseEvent) => {
+    private onBubbleDragMouseUp = (event: MouseEvent) => {
         this.mouseIsDown = false;
         this.snapProvider.endDrag();
         this.guideProvider.endDrag();
-        document.removeEventListener("mouseup", this.onMouseUp, {
+        document.removeEventListener("mouseup", this.onBubbleDragMouseUp, {
             capture: true,
         });
         if (CanvasElementManager.inPlayMode(this.mouseDownContainer)) {

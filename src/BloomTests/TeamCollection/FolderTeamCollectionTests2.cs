@@ -633,6 +633,54 @@ namespace BloomTests.TeamCollection
         }
 
         [Test]
+        public void Checkin_RenamedBook_MissingOriginalRepoFile_StillSucceeds()
+        {
+            using (
+                var collectionFolder = new TemporaryFolder(
+                    "Checkin_RenamedBook_MissingOriginalRepoFile_Collection"
+                )
+            )
+            {
+                using (
+                    var repoFolder = new TemporaryFolder(
+                        "Checkin_RenamedBook_MissingOriginalRepoFile_Shared"
+                    )
+                )
+                {
+                    var mockTcManager = new Mock<ITeamCollectionManager>();
+                    TeamCollectionManager.ForceCurrentUserForTests("me@somewhere.org");
+                    var tc = new FolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    tc.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
+                    var oldFolderPath = SyncAtStartupTests.MakeFakeBook(
+                        collectionFolder.FolderPath,
+                        "old name",
+                        "book content"
+                    );
+                    tc.PutBook(oldFolderPath);
+                    tc.AttemptLock("old name");
+                    SyncAtStartupTests.SimulateRename(tc, "old name", "new name");
+                    RobustFile.Delete(tc.GetPathToBookFileInRepo("old name"));
+
+                    Assert.DoesNotThrow(() =>
+                        tc.PutBook(Path.Combine(collectionFolder.FolderPath, "new name"), true)
+                    );
+                    Assert.That(File.Exists(tc.GetPathToBookFileInRepo("new name")), Is.True);
+                    Assert.That(
+                        File.Exists(tc.GetPathToBookFileInRepo("old name")),
+                        Is.False,
+                        "old repo file should remain absent"
+                    );
+                    Assert.That(tc.GetLocalStatus("new name").oldName, Is.Null);
+                    TeamCollectionManager.ForceCurrentUserForTests(null);
+                }
+            }
+        }
+
+        [Test]
         public void OkToCheckIn_GivesCorrectResults()
         {
             using (

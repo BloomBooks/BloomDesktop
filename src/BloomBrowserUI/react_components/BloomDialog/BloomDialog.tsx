@@ -77,6 +77,13 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                     background-color: white;
                     display: flex;
                     flex-direction: column;
+                    flex: 1 1 auto;
+                    min-height: 0;
+                    min-width: 0;
+                    ${props.dialogFrameProvidedExternally
+                        ? ""
+                        : "max-width: calc(100vw - 16px); max-height: calc(100vh - 16px);"}
+                    box-sizing: border-box;
                     padding-left: ${kDialogSidePadding};
                     padding-right: ${kDialogSidePadding};
                     padding-bottom: ${kDialogBottomPadding};
@@ -207,6 +214,9 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                                     flex-grow: 1; // see note on the display property on PaperComponent
                                     [role="dialog"] {
                                         overflow: hidden; // only the middle should scroll. The DialogTitle and DialogBottomButtons should not.
+                                    }
+                                    .MuiDialog-paperScrollPaper {
+                                        max-height: calc(100vh - 16px);
                                     }
                                     // without this, you can't get the dialog close to the edge
                                     // because there is a huge invisible margin around the dialog

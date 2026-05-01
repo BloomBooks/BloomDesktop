@@ -2160,22 +2160,108 @@ namespace Bloom.Book
 
                 foreach (var activeAttributeName in _attributesToInactivate)
                 {
-                    var inactiveAttributeName = $"{activeAttributeName}-inactive";
-                    var sourceAttributeName = toInactive
-                        ? activeAttributeName
-                        : inactiveAttributeName;
-                    var destinationAttributeName = toInactive
-                        ? inactiveAttributeName
-                        : activeAttributeName;
-
-                    if (!element.HasAttribute(sourceAttributeName))
+                    // Only inactivate ids in parts of the saved marginBox clone that are also
+                    // persisted separately via data-book/data-derived. This prevents our duplicate-id
+                    // code from de-duplicating them. But we must not do it for pure custom-only content
+                    // because, when the book is in standard layout, the data-div element may be the
+                    // only thing indicating that an audio file is in use. (There are various reasons
+                    // we keep the custom-layout data when switching to standard layout, including
+                    // opening the book in an earlier version of Bloom). If we inactivate the id,
+                    // then code that cleans up unused audio files will get rid of ones we may still
+                    // want if we switch back to the custom layout.
+                    // (This feels complicated and fragile. If we only had to think about 6.4, it might
+                    // be better to just have the is-audio-file-in-use code also look for id-inactive.
+                    // But then we would have to do something special to prevent older Blooms from
+                    // getting rid of the audio files.)
+                    if (
+                        toInactive
+                        && activeAttributeName == "id"
+                        && !ElementIsInDuplicatedCustomLayoutDataSubtree(element)
+                    )
+                    {
                         continue;
+                    }
 
-                    var attributeValue = element.GetAttribute(sourceAttributeName);
-                    element.RemoveAttribute(sourceAttributeName);
-                    element.SetAttribute(destinationAttributeName, attributeValue);
+                    var inactiveAttributeName = GetInactiveAttributeName(activeAttributeName);
+                    if (toInactive)
+                    {
+                        if (!element.HasAttribute(activeAttributeName))
+                            continue;
+
+                        var attributeValue = element.GetAttribute(activeAttributeName);
+                        element.RemoveAttribute(activeAttributeName);
+                        element.SetAttribute(inactiveAttributeName, attributeValue);
+                    }
+                    else
+                    {
+                        var sourceAttributeNames = GetInactiveAttributeNamesToRestore(
+                            activeAttributeName
+                        );
+                        var sourceAttributeName = sourceAttributeNames.FirstOrDefault(
+                            element.HasAttribute
+                        );
+                        if (sourceAttributeName == null)
+                            continue;
+
+                        var attributeValue = element.GetAttribute(sourceAttributeName);
+                        foreach (var sourceName in sourceAttributeNames)
+                        {
+                            if (element.HasAttribute(sourceName))
+                                element.RemoveAttribute(sourceName);
+                        }
+
+                        element.SetAttribute(activeAttributeName, attributeValue);
+                    }
                 }
             }
+        }
+
+        internal static string GetInactiveAttributeName(string activeAttributeName)
+        {
+            if (activeAttributeName.StartsWith("data-"))
+                return $"{activeAttributeName}-inactive";
+            // We don't want to make bad HTML by creating invalid non-data attributes like "id-inactive",
+            // so if the attribute we want to make inactive doesn't already start with data- we'll add that.
+            return $"data-{activeAttributeName}-inactive";
+        }
+
+        internal static string[] GetInactiveAttributeNamesToRestore(string activeAttributeName)
+        {
+            var preferredInactiveName = GetInactiveAttributeName(activeAttributeName);
+
+            // In the very early days of inactivating attributes in custom-page data, we used "id-inactive"
+            // instead of "data-id-inactive", but that's not valid HTML. For now, we are checking for both
+            // when restoring, to allow books with the old version of the data to be restored
+            // properly. We may decide to stop doing that, since we didn't ship any versions that
+            // used id-inactive.
+            if (activeAttributeName == "id")
+            {
+                return new[] { preferredInactiveName, "id-inactive" };
+            }
+
+            return new[] { preferredInactiveName };
+        }
+
+        private static bool ElementIsInDuplicatedCustomLayoutDataSubtree(SafeXmlElement element)
+        {
+            for (
+                var current = element;
+                current != null;
+                current = current.ParentNode as SafeXmlElement
+            )
+            {
+                if (
+                    current.HasAttribute("data-book")
+                    || current.HasAttribute("data-derived")
+                    || current.HasAttribute("data-book-inactive")
+                    || current.HasAttribute("data-derived-inactive")
+                )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void SwapNestedClasses(SafeXmlElement element, bool toInactive)

@@ -126,8 +126,23 @@ export const BookButton: React.FunctionComponent<{
         props.collection.isEditableCollection,
     );
 
-    const [reload, setReload] = useState(0);
-    // Force a reload when our book's thumbnail image changed
+    // BL-16199
+    // Starting in 6.4, the Collection Tab no longer existing in the background when we
+    // are in the Edit tab, so the BookButton mounts when we switch to the Collection Tab,
+    // so the "reload" web socket broadcast is firing before we are subscribed below.
+    // And even though we thought we had set the book folder to not cache, the browser
+    // appears to be caching thumbnail images. So upon entering the Collection Tab, for the
+    // selected book (which could have just had its cover image changed in Edit tab), we
+    // use Date.now() to cache bust the reload parameter in the image src.
+    // For non-selected books we still start at 0, thinking it might unnecessarily slow
+    // things to force a reload of every thumbnail every time the user enters Collection tab.
+    // There's a theoretically possible race condition here - if `selected` has not yet been
+    // set to true (since it comes async) we could be not cache-busting when we should. I have
+    // not seen this in practice and Devin thinks its unlikely to occur. If it becomes a problem,
+    // we could always cache bust in a useEffect depending on `selected` (like the one above)
+    const [reload, setReload] = useState(() => (selected ? Date.now() : 0));
+
+    // This is currently only needed and useful for the "Update Thumbnail" menu item
     useSubscribeToWebSocketForEvent("bookImage", "reload", (args) => {
         if (args.message === props.book.id) {
             setReload((old) => old + 1);
@@ -634,11 +649,9 @@ export const BookButtonPlaceHolder: React.FunctionComponent<{
     book: IBookInfo;
     reload: (id: string) => void;
 }> = (props) => {
-    const [reload, setReload] = useState(0);
     // Force a reload when the placeholder's book thumbnail image changed
     useSubscribeToWebSocketForEvent("bookImage", "reload", (args) => {
         if (args.message === props.book.id) {
-            setReload(reload + 1);
             props.reload(props.book.id);
         }
     });
