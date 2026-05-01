@@ -267,7 +267,7 @@
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.CustomGameInstructions">
         <source>Put instructions here</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.CustomGameInstructions</note>
-        <note>Obsolete as of Bloom 6.4, though we might reinstate it</note>
+        <note>Obsolete as of Bloom 6.3, though we might reinstate it</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool">
         <source xml:lang="en">Game Tool</source>
