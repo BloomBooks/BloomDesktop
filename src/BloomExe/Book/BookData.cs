@@ -1052,7 +1052,7 @@ namespace Bloom.Book
 
         /// <summary>
         /// Somehow Bloom sometimes gets an extra div in the editable content, which should only contain p elements
-        /// (BL-16065). CkEditor may be implicated. Whe bookdata round-trips them, somehow things were getting
+        /// (BL-16065). CkEditor may be implicated. When bookdata round-trips them, somehow things were getting
         /// messed up so that an extra div containing just a br was visible as an extra line. CoPilot came up
         /// with this patch. It may be doing more than is strictly necessary to prevent BL-16065.
         /// </summary>
@@ -1064,6 +1064,7 @@ namespace Bloom.Book
             }
 
             var doc = SafeXmlDocument.Create();
+            doc.PreserveWhitespace = true;
             doc.LoadXml("<wrapper>" + xml + "</wrapper>");
             var wrapper = doc.DocumentElement;
 
