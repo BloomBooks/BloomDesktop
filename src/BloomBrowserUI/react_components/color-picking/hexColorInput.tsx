@@ -1,19 +1,20 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import tinycolor from "tinycolor2";
 import { IColorInfo } from "./colorSwatch";
 
 interface IHexColorInputProps {
     initial: IColorInfo;
     // Called when the user completes a valid hex color entry.
-    // fromBlankOpacity is true if the entry was a 7-character hex code (implying full opacity).
+    // fromBlankOpacity is true if the entry was a 6-digit hex code (implying full opacity).
     onChangeComplete: (newValue: IColorInfo, fromBlankOpacity: boolean) => void;
     includeOpacityChannel?: boolean;
-    // If true, omit the FF opacity suffix when displaying a fully opaque color.
+    // If true, include the FF opacity suffix when displaying a fully opaque color.
+    // Defaults to true when omitted.
     // The client controls this based on whether the last color change came from
-    // a 7-character hex entry (user typing) or from an external source (swatch, eyedropper, etc.).
-    displayOpaqueAsBlank?: boolean;
+    // a 6-digit hex entry (user typing) or from an external source (swatch, eyedropper, etc.).
+    includeAlphaInHexValue?: boolean;
 }
 
 const hashChar = "#";
@@ -38,7 +39,7 @@ const massageColorInput = (
 const getHexColorValueFromColorInfo = (
     colorInfo: IColorInfo,
     includeOpacityChannel?: boolean,
-    displayOpaqueAsBlank?: boolean,
+    includeAlphaInHexValue?: boolean,
 ): string => {
     // First, our hex value will be empty, if we're dealing with a gradient.
     // The massage method below will add a hash character...
@@ -50,7 +51,8 @@ const getHexColorValueFromColorInfo = (
         return hexColor;
     }
 
-    if (displayOpaqueAsBlank && colorInfo.opacity === 1) {
+    const shouldIncludeAlphaInHexValue = includeAlphaInHexValue ?? true;
+    if (!shouldIncludeAlphaInHexValue && colorInfo.opacity === 1) {
         return hexColor;
     }
 
@@ -89,18 +91,28 @@ export const getColorInfoFromHexCodeChange = (
     };
 };
 
-interface IHexColorInputEditorProps {
-    initialHexValue: string;
-    includeOpacityChannel?: boolean;
-    onChangeComplete: (newValue: IColorInfo, fromBlankOpacity: boolean) => void;
-}
-
-const HexColorInputEditor: React.FunctionComponent<
-    IHexColorInputEditorProps
-> = (props) => {
-    const [currentColor, setCurrentColor] = useState(
-        () => props.initialHexValue,
+export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = (
+    props,
+) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const initialHexValue = massageColorInput(
+        getHexColorValueFromColorInfo(
+            props.initial,
+            props.includeOpacityChannel,
+            props.includeAlphaInHexValue,
+        ),
+        props.includeOpacityChannel,
     );
+
+    const [currentColor, setCurrentColor] = useState(() => initialHexValue);
+
+    // Made several attempts to avoid useEffect, but it came back in other forms.
+    // To get rid of it here we can do something like using a key to force a remount,
+    // but then we have to hoist the selection/focus state into the new parent,
+    // and end up needing a much more complex useEffect to restore the selection.
+    useEffect(() => {
+        setCurrentColor(initialHexValue);
+    }, [initialHexValue]);
 
     const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (
         e,
@@ -111,9 +123,13 @@ const HexColorInputEditor: React.FunctionComponent<
         );
         setCurrentColor(result);
         if (isCompleteHexColorInput(result, props.includeOpacityChannel)) {
-            // fromBlankOpacity is true if a 7-character hex was entered with opacity enabled
+            // fromBlankOpacity is true if a 6-digit hex was entered with opacity enabled
             const fromBlankOpacity =
                 !!props.includeOpacityChannel && result.length === 7;
+            const shouldRestoreFocus =
+                document.activeElement === inputRef.current;
+            const selectionStart = e.target.selectionStart;
+            const selectionEnd = e.target.selectionEnd;
             props.onChangeComplete(
                 getColorInfoFromHexCodeChange(
                     result,
@@ -121,6 +137,28 @@ const HexColorInputEditor: React.FunctionComponent<
                 ),
                 fromBlankOpacity,
             );
+            if (shouldRestoreFocus) {
+                // A valid color update can trigger external focus changes; keep typing seamless.
+                requestAnimationFrame(() => {
+                    const input = inputRef.current;
+                    if (!input) {
+                        return;
+                    }
+
+                    input.focus();
+
+                    const maxIndex = input.value.length;
+                    const restoredStart = Math.min(
+                        selectionStart ?? maxIndex,
+                        maxIndex,
+                    );
+                    const restoredEnd = Math.min(
+                        selectionEnd ?? restoredStart,
+                        maxIndex,
+                    );
+                    input.setSelectionRange(restoredStart, restoredEnd);
+                });
+            }
         }
     };
 
@@ -149,34 +187,10 @@ const HexColorInputEditor: React.FunctionComponent<
                     }
                 `}
                 type="text"
+                ref={inputRef}
                 value={currentColor}
                 onChange={handleInputChange}
             />
         </div>
-    );
-};
-
-// This component wraps the original, renamed HexColorInput so that it can be
-// re-mounted with a new initialHexValue (by key change) whenever the initial
-// color changes from an external source. This lets us avoid a useEffect.
-export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = (
-    props,
-) => {
-    const initialHexValue = massageColorInput(
-        getHexColorValueFromColorInfo(
-            props.initial,
-            props.includeOpacityChannel,
-            props.displayOpaqueAsBlank,
-        ),
-        props.includeOpacityChannel,
-    );
-
-    return (
-        <HexColorInputEditor
-            key={initialHexValue}
-            initialHexValue={initialHexValue}
-            includeOpacityChannel={props.includeOpacityChannel}
-            onChangeComplete={props.onChangeComplete}
-        />
     );
 };

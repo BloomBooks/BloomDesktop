@@ -91,8 +91,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
     props,
 ) => {
     const [eyedropperActive, setEyedropperActive] = useState(false);
-    const [displayOpaqueAsBlankInHex, setDisplayOpaqueAsBlankInHex] =
-        useState(false);
+    const [includeAlphaInHexValue, setIncludeAlphaInHexValue] = useState(true);
     const mountedRef = useRef(true);
     const backdropSelector =
         props.eyedropperBackdropSelector ?? defaultEyedropperBackdropSelector;
@@ -127,9 +126,9 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
         options?: { complete?: boolean; fromBlankOpacity?: boolean },
     ) => {
         if (options?.fromBlankOpacity) {
-            setDisplayOpaqueAsBlankInHex(true);
+            setIncludeAlphaInHexValue(false);
         } else {
-            setDisplayOpaqueAsBlankInHex(false);
+            setIncludeAlphaInHexValue(true);
         }
         const clonedColor = cloneColor(swatchColor);
         props.onChange(clonedColor);
@@ -302,7 +301,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
                     initial={props.currentColor}
                     onChangeComplete={handleHexCodeChange}
                     includeOpacityChannel={!!props.transparency}
-                    displayOpaqueAsBlank={displayOpaqueAsBlankInHex}
+                    includeAlphaInHexValue={includeAlphaInHexValue}
                 />
                 <ColorSwatch
                     colors={props.currentColor.colors}
