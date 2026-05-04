@@ -82,21 +82,6 @@ namespace Bloom.Edit
 
         public delegate EditingModel Factory(); //autofac uses this
 
-        /// <summary>
-        /// If this is set, the model may call it (passing false) to prevent switching to and from the Edit tab.
-        /// It should then be called (passing true) when it's OK to switch tabs again.
-        /// We use this so that
-        /// (a) when we are in the process of completing a Save for some command in the edit tab, we can't leave that
-        /// tab (until the save is complete), and
-        /// (b) when are doing the Save that is part of leaving the Edit tab, we can't switch back to Edit tab
-        /// until the save is complete and we're in the expected state for entering the tab.
-        /// Without these restrictions, it is hard to reason about the possible states of the system
-        /// as we execute commands and then rapidly switch tabs.
-        /// Probably only testers will switch tabs so frequently as to run into such problems, and even
-        /// they may not notice the brief disabling of the tabs.
-        /// </summary>
-        public Action<bool> EnableSwitchingTabs;
-
         private EditingStateMachine _stateMachine;
 
         public EditingStateMachine StateMachine => _stateMachine;
@@ -159,7 +144,7 @@ namespace Bloom.Edit
                         _view.OnHideEditTab();
                     }
                 },
-                enableStateTransitions: (enabled) => EnableSwitchingTabs?.Invoke(enabled)
+                enableStateTransitions: (enabled) => _view?.WorkspaceView?.SetTabsEnabled(enabled)
             );
 
             bookSelection.SelectionChanged += OnBookSelectionChanged;
