@@ -624,7 +624,7 @@ export const _HexColorInput = () =>
                 <HexColorInput
                     initial={currentColor}
                     onChangeComplete={(newValue) => {
-                        setCurrentColor(getColorInfoFromString(newValue));
+                        setCurrentColor(newValue);
                     }}
                 />
                 <div
