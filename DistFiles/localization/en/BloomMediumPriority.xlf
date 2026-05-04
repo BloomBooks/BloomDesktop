@@ -239,10 +239,20 @@
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions">
         <source>Drag the pictures where they go</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions</note>
+        <note>Obsolete as of Bloom 6.4</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragImagesInstructions">
+        <source>Drag the images where they go</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragImagesInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions">
         <source>Drag the pictures to their shadows</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions</note>
+        <note>Obsolete as of Bloom 6.4</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragImagesToShadowsInstructions">
+        <source>Drag the images to their shadows</source>
+        <note>ID: EditTab.Toolbox.Games.Placeholder.DragImagesToShadowsInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions">
         <source>Match sounds with their words</source>
@@ -288,6 +298,11 @@
       <trans-unit id="EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions">
         <source xml:lang="en">Place the correct image in the highlighted button, put other pictures in the other buttons. When it is time to play, Bloom will shuffle the order of buttons.</source>
         <note>ID: EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions</note>
+        <note>Obsolete as of Bloom 6.4</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions.V2">
+        <source xml:lang="en">Place the correct image in the highlighted button, put other images in the other buttons. When it is time to play, Bloom will shuffle the order of buttons.</source>
+        <note>ID: EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions.V2</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool.ChooseWordFromImageHeading">
         <source xml:lang="en">Choose Word from Image</source>
@@ -936,7 +951,7 @@
       <trans-unit id="BookSettings.Resolution" sil:dynamic="true">
         <source xml:lang="en">Resolution</source>
         <note>BookSettings.Resolution</note>
-        <note>This term tries to briefly describe the native size of the picture in pixel dimensions.</note>
+        <note>This term tries to briefly describe the native size of the image in pixel dimensions.</note>
       </trans-unit>
       <trans-unit id="BookSettings.DeleteCustomBookStyles" sil:dynamic="true">
         <source xml:lang="en">Delete {0}</source>

@@ -502,7 +502,7 @@ namespace Bloom.ImageProcessing
                     if (megs > 2)
                     {
                         var msg = String.Format(
-                            "Bloom was not able to prepare that picture for including in the book. \r\nThis is a rather large image to be adding to a book --{0} Megs--.",
+                            "Bloom was not able to prepare that image for including in the book. \r\nThis is a rather large image to be adding to a book --{0} Megs--.",
                             megs
                         );
                         if (isEncodedAsJpeg)
@@ -515,7 +515,7 @@ namespace Bloom.ImageProcessing
                 }
 
                 throw new ApplicationException(
-                    "Bloom was not able to prepare that picture for including in the book. We'd like to investigate, so if possible, would you please email it to issues@bloomlibrary.org?"
+                    "Bloom was not able to prepare that image for including in the book. We'd like to investigate, so if possible, would you please email it to issues@bloomlibrary.org?"
                         + Environment.NewLine
                         + imageInfo.FileName,
                     error

@@ -821,7 +821,7 @@ function SetAlternateTextOnImages(element) {
         }
         //don't show this on the empty license image when we don't know the license yet
         const englishText =
-            "This picture, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText
+            "This image, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText
         const nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
         const decodedName = decodeURI(nameWithoutQueryString);
         // show English to start with in case localization never returns even a failure
@@ -831,9 +831,9 @@ function SetAlternateTextOnImages(element) {
         );
         theOneLocalizationManager
             .asyncGetText(
-                "EditTab.Image.AltMsg",
+                "EditTab.Image.AltMsg.V2",
                 englishText,
-                "message displayed when the picture image cannot be displayed",
+                "message displayed when the image cannot be displayed",
                 decodedName,
             )
             .done((translation) => {

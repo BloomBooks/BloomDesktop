@@ -1478,8 +1478,8 @@ namespace Bloom.Book
                 coverImgElt.InnerText = filename;
                 coverImgElt.SetAttribute("src", filename);
                 var localizedFormatString = LocalizationManager.GetString(
-                    "EditTab.Image.AltMsg",
-                    "This picture, {0}, is missing or was loading too slowly."
+                    "EditTab.Image.AltMsg.V2",
+                    "This image, {0}, is missing or was loading too slowly."
                 );
                 var altValue = String.Format(localizedFormatString, filename);
                 coverImgElt.SetAttribute("alt", altValue);
@@ -1558,12 +1558,12 @@ namespace Bloom.Book
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383",
                         Path = "Basic Book/Basic Book.html",
-                    }; // Picture in Middle
+                    }; // Image in Middle
                     _pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398384"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384",
                         Path = "Basic Book/Basic Book.html",
-                    }; // Picture on Bottom
+                    }; // Image on Bottom
                     _pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398385"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
@@ -1578,7 +1578,7 @@ namespace Bloom.Book
                     {
                         Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27",
                         Path = "Basic Book/Basic Book.html",
-                    }; // Picture & Word
+                    }; // Image & Word
                     // Big book [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
                     _pageMigrations["AF708725-E961-44AA-9149-ADF66084A04F"] = new GuidAndPath()
                     {
@@ -1600,12 +1600,12 @@ namespace Bloom.Book
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383",
                         Path = "Decodable Reader/Decodable Reader.html",
-                    }; // Picture in Middle
+                    }; // Image in Middle
                     _pageMigrations["f99b252a-26b1-40c8-b543-dbe0b05f08a5"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384",
                         Path = "Decodable Reader/Decodable Reader.html",
-                    }; // Picture on Bottom
+                    }; // Image on Bottom
                     _pageMigrations["c506f278-cb9f-4053-9e29-f7a9bdf64445"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
@@ -1620,7 +1620,7 @@ namespace Bloom.Book
                     {
                         Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27",
                         Path = "Decodable Reader/Decodable Reader.html",
-                    }; // Picture & Word
+                    }; // Image & Word
                     // Leveled reader [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
                     _pageMigrations["e9f2142b-f135-4bcd-9123-5a2623f5302f"] = new GuidAndPath()
                     {
@@ -1631,12 +1631,12 @@ namespace Bloom.Book
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383",
                         Path = "Leveled Reader/Leveled Reader.html",
-                    }; // Picture in Middle
+                    }; // Image in Middle
                     _pageMigrations["a1f437fe-c002-4548-af02-fe84d048b8fc"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384",
                         Path = "Leveled Reader/Leveled Reader.html",
-                    }; // Picture on Bottom
+                    }; // Image on Bottom
                     _pageMigrations["d7599aa7-f35c-4029-8aa2-9afda870bcfa"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
@@ -1651,7 +1651,7 @@ namespace Bloom.Book
                     {
                         Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27",
                         Path = "Leveled Reader/Leveled Reader.html",
-                    }; // Picture & Word
+                    }; // Image & Word
                 }
                 return _pageMigrations;
             }
@@ -2700,8 +2700,8 @@ namespace Bloom.Book
                 node.InnerText = text;
                 node.SetAttribute("src", text);
                 var localizedFormatString = LocalizationManager.GetString(
-                    "EditTab.Image.AltMsg",
-                    "This picture, {0}, is missing or was loading too slowly."
+                    "EditTab.Image.AltMsg.V2",
+                    "This image, {0}, is missing or was loading too slowly."
                 );
                 var altValue = String.Format(localizedFormatString, text);
                 node.SetAttribute("alt", altValue);
@@ -3504,8 +3504,8 @@ namespace Bloom.Book
                     )
                     {
                         var localizedFormatString = LocalizationManager.GetString(
-                            "EditTab.Image.AltMsg",
-                            "This picture, {0}, is missing or was loading too slowly."
+                            "EditTab.Image.AltMsg.V2",
+                            "This image, {0}, is missing or was loading too slowly."
                         );
                         var altValue = String.Format(localizedFormatString, src);
                         img.SetAttribute("alt", altValue);

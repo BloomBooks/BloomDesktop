@@ -45,7 +45,7 @@ const GameIntroText: React.FunctionComponent<{
         case GameType.ChooseImageFromWord:
             gameDetails = {
                 instructionsL10nKey:
-                    "EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions",
+                    "EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions.V2",
                 headingL10nKey:
                     "EditTab.Toolbox.GameTool.ChooseImageFromWordHeading",
             };

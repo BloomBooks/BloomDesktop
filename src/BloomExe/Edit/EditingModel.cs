@@ -1632,8 +1632,8 @@ namespace Bloom.Edit
             catch (Exception e)
             {
                 var msg = LocalizationManager.GetString(
-                    "Errors.ProblemImportingPicture",
-                    "Bloom had a problem importing this picture."
+                    "Errors.ProblemImportingImage",
+                    "Bloom had a problem importing this image."
                 );
                 e.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
                 ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
@@ -1680,8 +1680,8 @@ namespace Bloom.Edit
                         catch (Exception e)
                         {
                             var msg = LocalizationManager.GetString(
-                                "Errors.ProblemImportingPicture",
-                                "Bloom had a problem importing this picture."
+                                "Errors.ProblemImportingImage",
+                                "Bloom had a problem importing this image."
                             );
                             e.Data["ProblemImagePath"] = args.src;
                             ErrorReport.NotifyUserOfProblem(
