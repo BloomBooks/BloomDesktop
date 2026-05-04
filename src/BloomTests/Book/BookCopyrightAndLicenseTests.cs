@@ -342,7 +342,7 @@ namespace BloomTests.Book
         {
             TestSetLicenseMetdataEffectOnDataDiv(
                 new Metadata() { CopyrightNotice = "foo", License = new CustomLicense() },
-                startingPageContent: "<img data-derived='licenseImage' lang='*' alt='This picture, license.png, is missing or was loading too slowly.'>license.png</img>",
+                startingPageContent: "<img data-derived='licenseImage' lang='*' alt='This image, license.png, is missing or was loading too slowly.'>license.png</img>",
                 xpath: "//img[@data-derived='licenseImage' and (not(@alt) or @alt='') and @src='']",
                 expectedCount: 1
             );

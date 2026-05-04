@@ -81,7 +81,7 @@ namespace BloomTests.Book
 </div>
 <div class=""A5Portrait bloom-page numberedPage customPage"">
   <div class=""marginBox"">
-      <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just a Picture"">Just a Picture</div>
+      <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just an Image"">Just an Image</div>
       <div class=""pageDescription"" lang=""en""></div>
   </div>
 </div>
@@ -131,22 +131,22 @@ namespace BloomTests.Book
                 @"
 <html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body>
     <div class=""A5Portrait bloom-page numberedPage customPage"" data-page=""extra"" id=""adcd48df-e9ab-4a07-afd4-6a24d0398385"">
-      <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just a Picture"">Just a Picture</div>
+      <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just an Image"">Just an Image</div>
       <div class=""pageDescription"" lang=""en""></div>
       <div class=""marginBox"">
         <div class=""split-pane-component-inner"">
-          <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
+          <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This image, placeHolder.png, is missing or was loading too slowly.""/>
           </div>
         </div>
       </div>
     </div>
 	<div class=""A5Portrait bloom-page numberedPage customPage"" data-page=""extra"" id=""adcd48df-e9ab-4a07-afd4-6a24d0398385"">
-	  <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just a Picture"">Just a Picture</div>
+	  <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just an Image"">Just an Image</div>
 	  <div class=""pageDescription"" lang=""en""></div>
 	  <div>
 		  <div class=""marginBox"">
 		    <div class=""split-pane-component-inner"">
-		      <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
+		      <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This image, placeHolder.png, is missing or was loading too slowly.""/>
 		      </div>
 		    </div>
 		  </div>
@@ -2817,7 +2817,7 @@ These are similar but already have game-theme classes
               <div tabindex=""0"" class=""bloom-imageContainer"" title=""""><img src=""smiling-flowers.gif"" alt="""" data-copyright=""Copyright � 2025, Ilona Spaeder"" data-creator=""Ilona Spaeder"" data-license=""Custom License"" /></div>
             </div>
             <div class=""bloom-canvas-element bloom-passive-element"" data-bubble=""{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:16,`backgroundColors`:[`transparent`],`shadowOffset`:0}"" style=""height: 35.5px;"" data-bloom-active=""true"">
-              <div class=""bloom-translationGroup bloom-leadingElement"" data-default-languages=""V"" data-hasqtip=""true"" data-eager-placeholder-l10n-id=""EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions"" style=""font-size: 21.3333px;"" aria-describedby=""qtip-0"">
+              <div class=""bloom-translationGroup bloom-leadingElement"" data-default-languages=""V"" data-hasqtip=""true"" data-eager-placeholder-l10n-id=""EditTab.Toolbox.Games.Placeholder.DragImagesToShadowsInstructions"" style=""font-size: 21.3333px;"" aria-describedby=""qtip-0"">
                 <div class=""bloom-editable GameHeader-style"" lang=""z"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" style=""min-height: 32.01px;"" contenteditable=""true"">
                   <p></p>
                 </div>

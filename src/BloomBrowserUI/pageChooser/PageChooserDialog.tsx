@@ -59,7 +59,6 @@ export const getTemplatePageImageSource = (
     pageLabel: string,
     orientation: string,
 ): string => {
-    const label = pageLabel.replace("&", "+"); //ampersands confuse the url system (if you don't handle them), so the template files were originally named with "+" instead of "&"
     // The result may actually be a png file or an svg, and there may be some delay while the png is generated.
 
     const urlPrefix = getBloomApiPrefix();
@@ -70,7 +69,7 @@ export const getTemplatePageImageSource = (
         `${urlPrefix}pageTemplateThumbnail?path=` +
         encodeURIComponent(templateBookFolderUrl) +
         "/template/" +
-        encodeURIComponent(label) +
+        encodeURIComponent(pageLabel) +
         // Previously, we checked for a square size and sent "-square" here.
         // But we don't actually have any square thumbnails we ship,
         // so that caused all the thumbnails to be generated.
