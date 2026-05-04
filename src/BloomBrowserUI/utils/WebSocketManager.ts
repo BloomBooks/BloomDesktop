@@ -383,6 +383,7 @@ export default class WebSocketManager {
             "collections",
             "bookImage",
             "book", // via useWatchString
+            "workspace", // top-level workspace UI has multiple valid watchers
             "bookTeamCollectionStatus", // via useTColBookStatus
             "bookCollection", // one BookOnBlorgBadge per book subscribes here
             // each book collection subscribes to this
