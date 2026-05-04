@@ -36,7 +36,7 @@ namespace BloomTests.Spreadsheet
 <body data-l1=""es"" data-l2="""" data-l3="""">
 	<div id=""bloomDataDiv"">
 		
-		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, cover.png, is missing or was loading too slowly."">
+		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This image, cover.png, is missing or was loading too slowly."">
 			cover.png
 		</div>
 		<div data-book=""coverImageDescription"" lang=""akl"" class="" bloom-editable"" contenteditable=""true"" data-audiorecordingmode=""Sentence"">
@@ -45,8 +45,8 @@ namespace BloomTests.Spreadsheet
 	</div>
     
 	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""703ed5fc-ef1e-4699-b151-a6a46c1059ef"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""3"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>
@@ -77,8 +77,8 @@ namespace BloomTests.Spreadsheet
          </div>
     </div>
 	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""703ed5fc-ef1e-4699-b151-a6a46c1059ef"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""3"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>

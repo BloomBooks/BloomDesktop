@@ -1141,7 +1141,7 @@ namespace BloomTests.Publish.Epub
         public void InvisibleAndUnwantedContentRemoved()
         {
             var book = SetupBookLong(
-                "Page with a picture on top and a large, centered word below.",
+                "Page with an image on top and a large, centered word below.",
                 "en",
                 extraContent: @"<div class='bloom-editable' lang='xyz'><label class='bubble'>Book title in {lang} should be removed</label>vernacular text should always display</div>
 					<div class='bloom-editable' lang='fr'>French text should only display if configured</div>

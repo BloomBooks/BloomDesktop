@@ -78,7 +78,7 @@ namespace BloomTests.web
     </div>
     <!-- skip over page with no bloom-content1 content apart from image descriptions -->
 	<div class='bloom-page numberedPage' id='a2ecb8be-5c7f-440d-9ef5-d503476211cd' data-page-number='1' lang=''>
-        <div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Just a Picture' lang='en'>Just a Picture</div>
+        <div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Just an Image' lang='en'>Just an Image</div>
         <div class='marginBox'>
             <div class='split-pane-component-inner'>
                 <div class='bloom-canvas' title='Name: aor_acc034m.png'>
@@ -94,7 +94,7 @@ namespace BloomTests.web
     </div>
     <!-- include content page with bloom-content1 content, ignoring image description -->
     <div class='bloom-page numberedPage' id='85a320a4-b73f-4149-87a1-9a1297ef04b0' data-page-number='2' lang=''>
-        <div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Picture' lang='en'>Basic Text &amp; Picture</div>
+        <div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Image' lang='en'>Basic Text &amp; Image</div>
         <div class='marginBox'>
             <div class='split-pane horizontal-percent'>
                 <div class='split-pane-component position-top'>
@@ -124,7 +124,7 @@ namespace BloomTests.web
     </div>
     <!-- include content page with empty bloom-content1 content, ignoring image description -->
     <div class='bloom-page numberedPage' id='d46e4259-2a99-4197-b21d-bf97a992b7d0' data-page-number='3' lang=''>
-        <div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Picture' lang='en'>Basic Text &amp; Picture</div>
+        <div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Image' lang='en'>Basic Text &amp; Image</div>
         <div class='marginBox'>
             <div class='split-pane horizontal-percent'>
                 <div class='split-pane-component position-top'>

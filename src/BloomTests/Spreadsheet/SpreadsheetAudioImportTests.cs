@@ -826,8 +826,8 @@ namespace BloomTests.Spreadsheet
         {
             return string.Format(
                 @"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>

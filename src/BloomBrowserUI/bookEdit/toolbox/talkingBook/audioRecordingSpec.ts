@@ -1609,7 +1609,7 @@ describe("audio recording tests", () => {
 
         elem = document.createElement("div");
         document.body.appendChild(elem);
-        elem.appendChild(document.createTextNode("Layout: Basic Picture"));
+        elem.appendChild(document.createTextNode("Layout: Basic Image"));
         expect(
             recording.isRecordableDiv(elem),
             "Case 3: not recordable (no bloom-editable class)",

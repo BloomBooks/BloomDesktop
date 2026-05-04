@@ -35,8 +35,8 @@ namespace BloomTests.Spreadsheet
         </div>
 	</div>
     <div class=""bloom-page numberedPage customPage bloom-combinedPage side-right Device16x9Landscape bloom-monolingual"" data-page="""" id=""958a4d5c-053a-456d-996d-5fe779397ed5"" data-tool-id=""signLanguage"" data-pagelineage=""08422e7b-9406-4d11-8c71-02005b1b8095"" data-page-number=""1"" lang="""">
-        <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"">
+            Basic Text &amp; Image
         </div>
         <div class=""pageDescription"" lang=""en""></div>
         <div class=""marginBox"">
