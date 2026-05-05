@@ -151,11 +151,6 @@ namespace Bloom.Workspace
             //
             this._editingView = editingViewFactory();
             this._editingView.WorkspaceView = this;
-            this._editingView.Model.EnableSwitchingTabs = (enabled) =>
-            {
-                _tabsEnabled = enabled;
-                SendTopBarState();
-            };
 
             if (!Program.RunningHarvesterMode)
             {

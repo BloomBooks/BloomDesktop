@@ -323,8 +323,7 @@ export function useWatchApiObject<T>(
 ): T {
     const [val, setVal] = useState<T>(defaultValue);
 
-    useEffect(() => {
-        setVal(defaultValue);
+    const refreshFromApi = React.useCallback(() => {
         get(urlSuffix, (result) => {
             if (typeof result.data === "string") {
                 setVal(JSON.parse(result.data) as T);
@@ -332,12 +331,26 @@ export function useWatchApiObject<T>(
                 setVal(result.data as T);
             }
         });
+    }, [urlSuffix]);
+
+    useEffect(() => {
+        setVal(defaultValue);
+        refreshFromApi();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [urlSuffix, JSON.stringify(defaultValue)]);
+    }, [refreshFromApi, JSON.stringify(defaultValue)]);
 
     useSubscribeToWebSocketForObject<T>(clientContext, eventId, (message) => {
         setVal(message);
     });
+
+    // If the websocket reconnects, refresh from API in case we missed an event while disconnected.
+    useSubscribeToWebSocketForEvent(
+        clientContext,
+        `websocket/open/${clientContext}`,
+        () => {
+            refreshFromApi();
+        },
+    );
 
     return val;
 }

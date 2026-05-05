@@ -270,19 +270,27 @@ public class EditingStateMachine
             throw;
         }
 
-        if (_saveActionHandlesSaveBook)
+        try
         {
-            _saveActionHandlesSaveBook = false;
+            if (_saveActionHandlesSaveBook)
+            {
+                _saveActionHandlesSaveBook = false;
+            }
+            else
+            {
+                _saveBook();
+            }
         }
-        else
+        // I'm not sure what should happen if we get an exception in _saveBook,
+        // but we definitely don't want to get stuck in the SavedAndStripped state,
+        // so for now we'll do whatever we were planning to do if it succeeded.
+        finally
         {
-            _saveBook();
+            if (pageId != null)
+                ToNavigating(pageId);
+            else
+                ToNoPage();
         }
-
-        if (pageId != null)
-            ToNavigating(pageId);
-        else
-            ToNoPage();
     }
 
     /// <summary>

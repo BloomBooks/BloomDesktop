@@ -7,7 +7,6 @@ import "./signLanguage.less";
 import {
     get,
     getWithConfig,
-    post,
     postDataWithConfig,
     postJson,
 } from "../../../utils/bloomApi";
@@ -18,12 +17,15 @@ import theOneLocalizationManager from "../../../lib/localizationManager/localiza
 import calculateAspectRatio from "calculate-aspect-ratio";
 import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 import { updateVideoInContainer } from "../../js/bloomVideo";
+import { chooseAndProcessVideo } from "../../js/ChooseAndProcessVideo";
 import { selectVideoContainer } from "../../js/videoUtils";
 import {
     getCanvasElementManager,
     kCanvasElementSelector,
 } from "../canvas/canvasElementUtils";
 import $ from "jquery";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 
 // The recording process can be in one of these states:
 // idle...the initial state, returned to when stopped; red record button shows; stop button and all labels hidden
@@ -51,6 +53,8 @@ interface IComponentState {
         fileSize: string;
         frameSize: string;
         framesPerSecond: string;
+        megabitsPerSecond: string;
+        hasAudio: string;
         fileFormat: string;
         startSeconds: string;
         endSeconds: string;
@@ -75,6 +79,8 @@ const emptyVideoStatistics = {
     fileSize: "",
     frameSize: "",
     framesPerSecond: "",
+    megabitsPerSecond: "",
+    hasAudio: "",
     fileFormat: "",
     startSeconds: UNTRIMMED_TIMING,
     endSeconds: UNTRIMMED_TIMING,
@@ -207,11 +213,11 @@ export class SignLanguageToolControls extends React.Component<
                         {this.getTrimSlider()}
                     </div>
                 </div>
-                <div style={{ height: "210px" }}>
+                <div style={{ height: "240px" }}>
                     <Expandable
                         l10nKey="Common.Advanced"
                         headingText="Advanced"
-                        expandedHeight="210px"
+                        expandedHeight="240px"
                         alwaysExpanded={false}
                     >
                         <div
@@ -395,6 +401,14 @@ export class SignLanguageToolControls extends React.Component<
                             : "")}
                 </div>
                 <div>{this.state.videoStatistics.framesPerSecond}</div>
+                <div>{this.state.videoStatistics.megabitsPerSecond}</div>
+                <div>
+                    {this.state.videoStatistics.hasAudio === "true" ? (
+                        <VolumeUpIcon />
+                    ) : (
+                        <VolumeOffIcon />
+                    )}
+                </div>
                 <div>{this.state.videoStatistics.fileFormat}</div>
             </div>
         );
@@ -571,8 +585,12 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private importRecording() {
-        post("signLanguage/importVideo", (result) => {
-            this.updateVideo(result.data);
+        chooseAndProcessVideo((importedPath) => {
+            if (!importedPath) {
+                return;
+            }
+
+            this.updateVideo(importedPath);
             this.refreshAfterVideoChange();
         });
     }

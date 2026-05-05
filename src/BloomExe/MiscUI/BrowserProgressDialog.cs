@@ -266,6 +266,7 @@ namespace Bloom.MiscUI
             _doWhenProgressDialogCloses?.Invoke();
 
             _progress = null;
+            _doWhenProgressDialogCloses = null;
 
             ProgressDialogApi.SetCancelHandler(null);
             request.PostSucceeded();
