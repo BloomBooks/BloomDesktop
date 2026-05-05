@@ -135,6 +135,16 @@ namespace Bloom
             // needs it.
             Registration.Registration.Default.EnsureLoaded();
 
+            // This needs to be done before we create any WebView2s, so they will inherit
+            // our DPI awareness and render fonts better.
+            // Even though BloomExe.csproj sets ApplicationHighDpiMode=PerMonitorV2,
+            // that alone was not sufficient in Bloom's custom startup path. One likely
+            // reason is that Bloom does not use the standard generated WinForms startup
+            // initialization path that newer templates rely on. In testing, Bloom and
+            // its root WebView2 still came up as only System DPI aware until we made
+            // the explicit WinForms call here.
+            Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+
             // Initializing localization can pop up a dialog if the system language
             // is not one of our supported languages. The following calls must be done
             // before any UI windows are displayed, so we do them here before we call
