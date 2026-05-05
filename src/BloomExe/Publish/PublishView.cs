@@ -101,6 +101,9 @@ namespace Bloom.Publish
 
         private void Activate()
         {
+            // Safety net: any Edit-tab save lock must be complete before we reach Publish,
+            // so ensure tab switching is enabled in case the re-enable callback was missed.
+            WorkspaceView?.SetTabsEnabled(true);
             PublishHelper.InPublishTab = true;
             var hostForm = GetHostControlForInvoke() as Form;
             BloomPubMaker.ControlForInvoke = hostForm;
