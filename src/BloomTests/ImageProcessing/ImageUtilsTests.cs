@@ -1440,5 +1440,110 @@ namespace BloomTests.ImageProcessing
                 );
             }
         }
+
+        [Test]
+        public void ReallyCropImages_DefaultMode_RemovesCropStyle()
+        {
+            using (var folder = new TemporaryFolder("DefaultCropStyleRemoval"))
+            {
+                var imagePath = Path.Combine(folder.Path, "cover.png");
+                using (var bitmap = new Bitmap(333, 221))
+                {
+                    bitmap.Save(imagePath, ImageFormat.Png);
+                }
+
+                var dom = new HtmlDom(
+                    @"<html><head></head><body>
+                    <div class=""bloom-page"">
+                        <div class=""marginBox"">
+                            <div class=""bloom-canvas"">"
+                        + MakeImageCanvasElement(
+                            "cropped",
+                            "cover.png",
+                            "height: 99px; left: 0px; top: 0px; width: 100px;",
+                            "width: 230px; left: -55px; top: -35px"
+                        )
+                        + @"</div>
+                        </div>
+                    </div>
+                </body></html>"
+                );
+
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path);
+
+                var croppedImg = dom.SelectSingleNode("//img[@id='cropped']");
+                Assert.That(
+                    croppedImg.HasAttribute("style"),
+                    Is.False,
+                    "Default crop mode should remove crop styling"
+                );
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_UploadMode_KeepsAdjustedCropStyleToFillContainer()
+        {
+            using (var folder = new TemporaryFolder("UploadCropStylePreserved"))
+            {
+                var imagePath = Path.Combine(folder.Path, "cover.png");
+                using (var bitmap = new Bitmap(333, 221))
+                {
+                    bitmap.Save(imagePath, ImageFormat.Png);
+                }
+
+                const double canvasWidth = 100;
+                const double canvasHeight = 99;
+
+                var dom = new HtmlDom(
+                    @"<html><head></head><body>
+                    <div class=""bloom-page"">
+                        <div class=""marginBox"">
+                            <div class=""bloom-canvas"">"
+                        + MakeImageCanvasElement(
+                            "cropped",
+                            "cover.png",
+                            "height: 99px; left: 0px; top: 0px; width: 100px;",
+                            "width: 230px; left: -55px; top: -35px"
+                        )
+                        + @"</div>
+                        </div>
+                    </div>
+                </body></html>"
+                );
+
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path, false, true);
+
+                var croppedImg = dom.SelectSingleNode("//img[@id='cropped']");
+                var updatedStyle = croppedImg.GetAttribute("style");
+
+                Assert.That(
+                    string.IsNullOrWhiteSpace(updatedStyle),
+                    Is.False,
+                    "Upload crop mode should preserve style attributes"
+                );
+
+                var styledWidth = ImageUtils.GetNumberFromPx("width", updatedStyle);
+                var styledLeft = ImageUtils.GetNumberFromPx("left", updatedStyle);
+                var styledTop = ImageUtils.GetNumberFromPx("top", updatedStyle);
+
+                Assert.That(styledWidth, Is.GreaterThanOrEqualTo(canvasWidth));
+                Assert.That(styledLeft, Is.LessThanOrEqualTo(0.001));
+                Assert.That(styledTop, Is.LessThanOrEqualTo(0.001));
+
+                var src = croppedImg.GetAttribute("src");
+                var finalImagePath = UrlPathString.GetFullyDecodedPath(folder.Path, ref src);
+                Assert.That(
+                    ImageUtils.TryGetImageSize(finalImagePath, out var finalImageSize),
+                    Is.True
+                );
+
+                var displayedHeight = styledWidth * finalImageSize.Height / finalImageSize.Width;
+                Assert.That(
+                    displayedHeight,
+                    Is.GreaterThanOrEqualTo(canvasHeight - 0.01),
+                    "Adjusted style should ensure the cropped image still fills the canvas height"
+                );
+            }
+        }
     }
 }

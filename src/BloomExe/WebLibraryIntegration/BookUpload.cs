@@ -559,9 +559,14 @@ namespace Bloom.WebLibraryIntegration
                 xmlDomFromHtmlFile,
                 stagingDirectory,
                 stagingDirectory,
+                true,
                 true
             );
-            PublishHelper.SimplifyBackgroundImages(xmlDomFromHtmlFile); // after really cropping
+            // Don't do this; even the 'really cropped' images may have a pixel or two of cropping
+            // to make sure they cover their container, which otherwise would not be guaranteed
+            // since 'really crop' has to procuce whole numbers of pixels and object-fit:contain
+            // will try to shrink it so one dimension is perfect and the other possibly too small.
+            //PublishHelper.SimplifyBackgroundImages(xmlDomFromHtmlFile); // after really cropping
 
             XmlHtmlConverter.SaveDOMAsHtml5(xmlDomFromHtmlFile, htmlFile);
         }
