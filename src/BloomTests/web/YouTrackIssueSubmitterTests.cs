@@ -158,11 +158,11 @@ How much: 1 (It happens sometimes)
 Error Report from Anonymous, Person (somewhere/org somebody) on 4/21/2020 7:24:45 PM UTC
 
 #### Exception Details
-Bloom had a problem importing this picture.
-Bloom was not able to prepare that picture for including in the book. We'd like to investigate, so if possible, would you please email it to issues@bloomlibrary.org?
+Bloom had a problem importing this image.
+Bloom was not able to prepare that image for including in the book. We'd like to investigate, so if possible, would you please email it to issues@bloomlibrary.org?
 Fight the Virus all_Page_22.png
 
-Msg: Bloom was not able to prepare that picture for including in the book. We'd like to investigate, so if possible, would you please email it to issues@bloomlibrary.org?
+Msg: Bloom was not able to prepare that image for including in the book. We'd like to investigate, so if possible, would you please email it to issues@bloomlibrary.org?
 Fight the Virus all_Page_22.png
 Class: System.ApplicationException
 Source: Bloom
