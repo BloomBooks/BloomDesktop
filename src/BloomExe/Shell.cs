@@ -157,6 +157,9 @@ namespace Bloom
         protected override void OnDpiChanged(DpiChangedEventArgs e)
         {
             base.OnDpiChanged(e);
+            if (AppIsShuttingDown || Disposing || IsDisposed)
+                return;
+
             Logger.WriteMinorEvent($"Shell DPI changed from {e.DeviceDpiOld} to {e.DeviceDpiNew}");
             NotifyDpiChanged();
         }
@@ -166,9 +169,12 @@ namespace Bloom
         /// </summary>
         private void NotifyDpiChanged()
         {
+            if (_workspaceView == null || _workspaceView.Disposing || _workspaceView.IsDisposed)
+                return;
+
             BloomWebSocketServer.Instance?.SendEvent("recordVideo", "dpiChanged");
-            _workspaceView?.PerformLayout();
-            _workspaceView?.Invalidate(true);
+            _workspaceView.PerformLayout();
+            _workspaceView.Invalidate(true);
         }
 
         public bool AppIsShuttingDown => _startedClosingEvent || _finishedClosingEvent;

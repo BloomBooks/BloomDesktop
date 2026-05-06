@@ -354,6 +354,7 @@ namespace Bloom
                 // by the user.
                 if (!Settings.Default.LicenseAccepted)
                 {
+                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                     using (var dlg = new LicenseDialog("license.htm"))
                         if (dlg.ShowDialog() != DialogResult.OK)
                             return 1;
@@ -1783,6 +1784,7 @@ namespace Bloom
                 // We normally start listening when setting up the project context. However, this dialog might
                 // get run at startup when we don't have a chosen project from which to make a ProjectContext
                 _applicationContainer.BloomServer.EnsureListening();
+                using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                 using (var dlg = _applicationContainer.OpenAndCreateCollectionDialog())
                 {
                     if (formToClose == null) // otherwise default position on same screen is fine

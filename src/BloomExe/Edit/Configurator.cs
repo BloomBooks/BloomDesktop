@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.SafeXml;
 using Bloom.ToPalaso.Experimental;
+using Bloom.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SIL.Code;
@@ -50,6 +51,7 @@ namespace Bloom.Edit
 
         public DialogResult ShowConfigurationDialog(string folderPath)
         {
+            using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
             using (
                 var dlg = new ConfigurationDialog(
                     Path.Combine(folderPath, "configuration.html"),
@@ -141,7 +143,7 @@ namespace Bloom.Edit
             /* setup jquery in chrome console (first open a local file):
                  * script = document.createElement("script");
                     script.setAttribute("src", "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js");
-    
+
                  *
                  * Other snippets
                  *

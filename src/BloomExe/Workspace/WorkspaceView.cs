@@ -1198,6 +1198,7 @@ window.showWorkspaceInitializationFailure = function(message) {
                 else
                 {
                     _collectionSettingsApi.PrepareToShowDialog();
+                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                     using (var dlg = _settingsDialogFactory())
                     {
                         dlg.FixingEnterpriseSubscriptionCode = forFixingEnterpriseSubscription;
