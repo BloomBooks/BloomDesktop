@@ -1030,9 +1030,9 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
                             >
                                 Motion Books are Bloom Reader books with two
                                 modes. Normally, they are Talking Books. When
-                                you turn the phone sideways, the picture fills
-                                the screen. It pans and zooms from rectangle "1"
-                                to rectangle "2".
+                                you turn the phone sideways, the image fills the
+                                screen. It pans and zooms from rectangle "1" to
+                                rectangle "2".
                             </Div>
                             <span
                                 css={css`

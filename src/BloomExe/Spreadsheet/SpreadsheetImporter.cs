@@ -285,7 +285,7 @@ namespace Bloom.Spreadsheet
                 bool extraRow = false;
                 string pageType = null;
                 if (pageTypeIndex >= 0)
-                    pageType = currentRow.GetCell(pageTypeIndex).Content.Trim();
+                    pageType = NormalizePageLabel(currentRow.GetCell(pageTypeIndex).Content.Trim());
 
                 if (rowTypeLabel == InternalSpreadsheet.PageContentRowLabel)
                 {
@@ -489,9 +489,41 @@ namespace Bloom.Spreadsheet
         public List<string> BookTemplatePaths;
         private List<string> _bookTemplatePaths;
 
+        // Spreadsheet page-type values and stored template page labels historically used the older
+        // English "Picture..." names as identifiers. Normalize those legacy values to the current
+        // "Image..." labels before matching layouts so older spreadsheets and books still import.
+        private static readonly Dictionary<string, string> _legacyPageLabelMap = new Dictionary<
+            string,
+            string
+        >(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Basic Text & Picture", "Basic Text & Image" },
+            { "Just a Picture", "Just an Image" },
+            { "Picture in Middle", "Image in Middle" },
+            { "Bilingual & Picture in Middle", "Bilingual & Image in Middle" },
+            { "Picture on Bottom", "Image on Bottom" },
+            { "Image On Bottom", "Image on Bottom" },
+            { "Picture on Left", "Image on Left" },
+            { "Picture on Right", "Image on Right" },
+            { "Picture & Word", "Image & Word" },
+            { "Picture & Video", "Image & Video" },
+            { "Big Picture Diglot", "Big Image Diglot" },
+            { "Big Picture Diglot Text Over Video", "Big Image Diglot Text Over Video" },
+            { "Choose Picture from Word", "Choose Image from Word" },
+            { "Choose Word from Picture", "Choose Word from Image" },
+        };
+
         // Books from which we've already used a page, and therefore, have imported any
         // special stylesheets it uses.
         HashSet<string> _importedBooks = new HashSet<string>();
+
+        private static string NormalizePageLabel(string label)
+        {
+            if (String.IsNullOrEmpty(label))
+                return label;
+
+            return _legacyPageLabelMap.TryGetValue(label, out var normalized) ? normalized : label;
+        }
 
         public static string GetLabelFromPage(SafeXmlElement page)
         {
@@ -507,9 +539,9 @@ namespace Bloom.Spreadsheet
                         .FirstOrDefault();
             if (labelElt != null)
             {
-                // Note that while the file may show something like "Basic Text &amp; Picture",
-                // the InnerText property already converts this to "Basic Text & Picture".
-                return labelElt.InnerText.Trim();
+                // Note that while the file may show something like "Basic Text &amp; Image",
+                // the InnerText property already converts this to "Basic Text & Image".
+                return NormalizePageLabel(labelElt.InnerText.Trim());
             }
 
             return null;
@@ -522,7 +554,7 @@ namespace Bloom.Spreadsheet
         /// </summary>
         private SafeXmlElement GetPageForLabel(string label1)
         {
-            var label = label1.ToLowerInvariant();
+            var label = NormalizePageLabel(label1)?.ToLowerInvariant();
             if (_bookTemplatePaths == null)
             {
                 if (BookTemplatePaths == null)
@@ -560,7 +592,7 @@ namespace Bloom.Spreadsheet
                 var pages = SafeSelectNodesByClassName(dom, "//div", "bloom-page");
                 foreach (SafeXmlElement page in pages)
                 {
-                    var pageLabel = GetLabelFromPage(page).ToLowerInvariant();
+                    var pageLabel = GetLabelFromPage(page)?.ToLowerInvariant();
                     // If we already found a page with this label, keep using the one we found first.
                     // This is so that if some random template contains a page with an unchanged
                     // label from one of our built-in templates, we will use the original on import.
@@ -1221,11 +1253,7 @@ namespace Bloom.Spreadsheet
                         // Activity folder is the only one that might require us to copy a stylesheet
                         ImportStylesheetsIfNeeded(_activityTemplatePath);
                     }
-                    var pageLabel =
-                        SafeSelectNodesByClassName(templatePage, ".//div", "pageLabel")
-                            .FirstOrDefault()
-                            ?.InnerText
-                        ?? "";
+                    var pageLabel = GetLabelFromPage(templatePage) ?? "";
                     Progress($"Adding page {PageNumberToReport} using a {pageLabel} layout");
                     return;
                 }

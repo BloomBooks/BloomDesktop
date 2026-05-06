@@ -3494,7 +3494,7 @@ namespace Bloom.Book
 
         /// <summary>
         /// Check if the alt text looks like Bloom Editor placeholder alt text (which we don't want in the published version)
-        /// Looks like: "The picture, {0}, is missing or was loading too slowly"
+        /// Looks like: "The image, {0}, is missing or was loading too slowly"
         /// </summary>
         /// <param name="altText"></param>
         /// <returns>True if it appears to be some sort of placeholder alt text, false otherwise</returns>
@@ -3518,7 +3518,7 @@ namespace Bloom.Book
             // Check for an exact match on localized string.
             string localizedFormatString = LocalizationManager.GetString(
                 "EditTab.Image.AltMsg",
-                "This picture, {0}, is missing or was loading too slowly."
+                "This image, {0}, is missing or was loading too slowly."
             );
             string localizedString = String.Format(
                 localizedFormatString,

@@ -137,8 +137,8 @@ namespace BloomTests.Spreadsheet
 	        </div>
 	    </div>
 	    <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""7403192b-f306-4653-b7b1-0acf7163f4b9"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang="""">
-	        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-	            Basic Text &amp; Picture
+	        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+	            Basic Text &amp; Image
 	        </div>
 	        <div class=""pageDescription"" lang=""en""></div>
 
@@ -194,8 +194,8 @@ namespace BloomTests.Spreadsheet
 	        </div>
 	    </div>
 		<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""7403192b-f306-4653-b7b1-0acf7163f4b9"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""2"" lang="""">
-	        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-	            Basic Text &amp; Picture
+	        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+	            Basic Text &amp; Image
 	        </div>
 	        <div class=""pageDescription"" lang=""en""></div>
 
@@ -485,12 +485,12 @@ namespace BloomTests.Spreadsheet
 
             Assert.That(
                 _pageContentRows[0].GetCell(pageTypeIndex).Content,
-                Is.EqualTo("Basic Text & Picture")
+                Is.EqualTo("Basic Text & Image")
             );
             Assert.That(_pageContentRows[1].GetCell(pageTypeIndex).Content, Is.EqualTo(""));
             Assert.That(
                 _pageContentRows[2].GetCell(pageTypeIndex).Content,
-                Is.EqualTo("Basic Text & Picture")
+                Is.EqualTo("Basic Text & Image")
             );
             Assert.That(
                 _pageContentRows[3].GetCell(pageTypeIndex).Content,

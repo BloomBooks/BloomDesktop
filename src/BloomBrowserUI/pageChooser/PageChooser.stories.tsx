@@ -113,7 +113,7 @@ export default {
 export const NormalPreview = () => {
     const templateFolderUrl =
         "c:\\github\\bloomdesktop\\output\\browser\\templates\\template books\\basic book";
-    const pageLabel = "Picture on Left";
+    const pageLabel = "Image on Left";
     const orientation = "portrait";
     return (
         <PreviewFrame>
@@ -142,7 +142,7 @@ NormalPreview.story = {
 export const PreviewRequiresEnterprise = () => {
     const templateFolderUrl =
         "c:\\github\\bloomdesktop\\output\\browser\\templates\\template books\\activity";
-    const pageLabel = "Choose Picture from Word";
+    const pageLabel = "Choose Image from Word";
     const orientation = "landscape";
     return (
         <PreviewFrame>
@@ -322,7 +322,7 @@ export const _PageThumbnail = () => (
         <PageThumbnail
             imageSource={getTemplatePageImageSource(
                 "c:/bloomdesktop/output/browser/templates/template books/basic book",
-                "Basic Text & Picture",
+                "Basic Text & Image",
                 "landscape",
             )}
             isLandscape={true}

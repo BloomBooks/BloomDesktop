@@ -178,7 +178,7 @@ namespace Bloom.Spreadsheet
                     {
                         addedCells.nameCell.Comment = LocalizationManager.GetString(
                             "Spreadsheet.ImageThumbnailComment",
-                            "This is usually just so you can see what the picture is. Import is based on the path in a hidden column next to this one."
+                            "This is usually just so you can see what the image is. Import is based on the path in a hidden column next to this one."
                         );
                     }
                 }

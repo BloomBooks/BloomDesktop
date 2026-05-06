@@ -27,7 +27,7 @@ namespace BloomTests.Publish
         <div class=""bloom-canvas-element bloom-backgroundImage"">
             <div class=""bloom-imageContainer"">
                 <img data-book=""coverImage"" src=""Duck-billed_platypus.jpg"" data-copyright=""Charles J Sharp""
-                    data-creator=""Charles J Sharp"" data-license=""cc-by"" alt=""This picture, Duck-billed_platypus.jpg, is missing or was loading too slowly.""/>
+                    data-creator=""Charles J Sharp"" data-license=""cc-by"" alt=""This image, Duck-billed_platypus.jpg, is missing or was loading too slowly.""/>
             </div>
         </div>
     </div>
@@ -62,13 +62,13 @@ namespace BloomTests.Publish
         <div class=""bloom-canvas-element bloom-backgroundImage"">
             <div class=""bloom-imageContainer"">
                 <img data-book=""coverImage"" src=""Duck-billed_platypus.jpg"" data-copyright=""Charles J Sharp""
-                    data-creator=""Charles J Sharp"" data-license=""cc-by"" alt=""This picture, Duck-billed_platypus.jpg, is missing or was loading too slowly.""/>
+                    data-creator=""Charles J Sharp"" data-license=""cc-by"" alt=""This image, Duck-billed_platypus.jpg, is missing or was loading too slowly.""/>
             </div>
         </div>
         <div class=""bloom-canvas-element"">
              <div class=""bloom-imageContainer"">
                  <img data-book=""coverImage"" src=""Duck-billed_platypus.jpg"" data-copyright=""Charles J Sharp""
-                     data-creator=""Charles J Sharp"" data-license=""cc-by"" alt=""This picture, Duck-billed_platypus.jpg, is missing or was loading too slowly.""/>
+                     data-creator=""Charles J Sharp"" data-license=""cc-by"" alt=""This image, Duck-billed_platypus.jpg, is missing or was loading too slowly.""/>
              </div>
         </div>
     </div>
