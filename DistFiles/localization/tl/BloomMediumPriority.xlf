@@ -273,13 +273,13 @@
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragLettersInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions">
-        <source>Drag the pictures where they go</source>
-        <target xml:lang="tl" state="needs-translation">Drag the pictures where they go</target>
+        <source>Drag the images where they go</source>
+        <target xml:lang="tl" state="needs-translation">Drag the images where they go</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions">
-        <source>Drag the pictures to their shadows</source>
-        <target xml:lang="tl" state="needs-translation">Drag the pictures to their shadows</target>
+        <source>Drag the images to their shadows</source>
+        <target xml:lang="tl" state="needs-translation">Drag the images to their shadows</target>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragPicturesToShadowsInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.MatchSoundsToWordsInstructions">
@@ -333,8 +333,8 @@
         <note>ID: EditTab.Toolbox.GameTool.ChooseImageFromWordHeading</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions">
-        <source xml:lang="en">Place the correct image in the highlighted button, put other pictures in the other buttons. When it is time to play, Bloom will shuffle the order of buttons.</source>
-        <target xml:lang="tl" state="needs-translation">Place the correct image in the highlighted button, put other pictures in the other buttons. When it is time to play, Bloom will shuffle the order of buttons.</target>
+        <source xml:lang="en">Place the correct image in the highlighted button, put other images in the other buttons. When it is time to play, Bloom will shuffle the order of buttons.</source>
+        <target xml:lang="tl" state="needs-translation">Place the correct image in the highlighted button, put other images in the other buttons. When it is time to play, Bloom will shuffle the order of buttons.</target>
         <note>ID: EditTab.Toolbox.GameTool.ChooseImageFromWordInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.GameTool.ChooseWordFromImageHeading">
