@@ -303,7 +303,7 @@
         <note>ID: BookMetadata.level</note>
       </trans-unit>
       <trans-unit id="BookMetadata.metapicture" approved="yes">
-        <source xml:lang="en">Picture</source>
+        <source xml:lang="en">Image</source>
         <target xml:lang="fr" state="final">Image</target>
         <note>ID: BookMetadata.metapicture</note>
       </trans-unit>
@@ -1575,7 +1575,7 @@
         <note>ID: EditTab.CopyButton.ToolTipWhenDisabled</note>
       </trans-unit>
       <trans-unit id="EditTab.CopyImageIPMetadataQuestion" approved="yes">
-        <source xml:lang="en">Copy this information to all other pictures in this book?</source>
+        <source xml:lang="en">Copy this information to all other images in this book?</source>
         <target xml:lang="fr" state="final">Voulez-vous copier ces données sur toutes les autres images du livre ?</target>
         <note>ID: EditTab.CopyImageIPMetadataQuestion</note>
       </trans-unit>
@@ -2185,7 +2185,7 @@
         <note>ID: EditTab.HyperlinkPasteFailure</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.AltMsg" approved="yes">
-        <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
+        <source xml:lang="en">This image, {0}, is missing or was loading too slowly.</source>
         <target xml:lang="fr" state="final">Cette image, {0}, est manquante ou son téléchargement a été trop lent.</target>
         <note>ID: EditTab.Image.AltMsg</note>
       </trans-unit>
@@ -2510,7 +2510,7 @@
         <note>ID: EditTab.TextBoxProperties.WhatToPut</note>
       </trans-unit>
       <trans-unit id="EditTab.TitleOfCopyIPToWholeBooksDialog" approved="yes">
-        <source xml:lang="en">Picture Intellectual Property Information</source>
+        <source xml:lang="en">Image Intellectual Property Information</source>
         <target xml:lang="fr" state="final">Informations sur la propriété intellectuelle de l'image</target>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
@@ -2765,7 +2765,7 @@
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.RedGreen</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
+        <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the image fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
         <target xml:lang="fr" state="final">Les Livres avec Motion sont des livres Bloom Reader avec deux modes. Ce sont normalement des Livres Audio. Lorsqu'on tourne le portable sur le côté, l’image occupe tout l’écran. Il effectue un panoramique et un zoom à partir du rectangle "1" au rectangle "2".</target>
         <note>ID: EditTab.Toolbox.Motion.Intro</note>
       </trans-unit>
@@ -3003,11 +3003,6 @@
         <source xml:lang="en">poet.diagramcenter.org</source>
         <target xml:lang="fr" state="final">poet.diagramcenter.org</target>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.PoetDiagram</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Write your image description on the left, in the box next to the picture.</source>
-        <target xml:lang="fr" state="final">Ecrivez votre description de l'image à gauche, dans la case à côté de l'image.</target>
-        <note>ID: EditTab.Toolbox.ImageDescriptionTool.WriteYours</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader Tool</source>
@@ -3515,7 +3510,7 @@
         <note>ID: Errors.ProblemDeletingFile</note>
       </trans-unit>
       <trans-unit id="Errors.ProblemImportingPicture" approved="yes">
-        <source xml:lang="en">Bloom had a problem importing this picture.</source>
+        <source xml:lang="en">Bloom had a problem importing this image.</source>
         <target xml:lang="fr" state="final">Bloom a rencontré un problème pour importer cette image.</target>
         <note>ID: Errors.ProblemImportingPicture</note>
       </trans-unit>
@@ -6690,6 +6685,11 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="needs-translation">A page with one language above the image and another below it.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Bilingual &amp; Image in Middle" sil:dynamic="true">
+        <source xml:lang="en">A page with one language above the image and another below it.</source>
+        <target xml:lang="fr" state="needs-translation">A page with one language above the image and another below it.</target>
+        <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Image in Middle</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true">
         <source xml:lang="en">A page with an empty canvas that you can add to.</source>
         <target xml:lang="fr" state="translated">Une page avec une toile vide que vous pouvez exploiter.</target>
@@ -6725,10 +6725,25 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">Page comportant un mot de grande taille en son centre et une illustration dans sa partie supérieure.</target>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true">
+        <source xml:lang="en">Page with an image on top and a large, centered word below.</source>
+        <target xml:lang="fr" state="needs-translation">Page with an image on top and a large, centered word below.</target>
+        <note>ID: TemplateBooks.PageDescription.Image &amp; Word</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For use with Landscape orientation.</source>
         <target xml:lang="fr" state="final">À employer avec le format paysage.</target>
         <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Image on Left" sil:dynamic="true">
+        <source xml:lang="en">For use with Landscape orientation.</source>
+        <target xml:lang="fr" state="needs-translation">For use with Landscape orientation.</target>
+        <note>ID: TemplateBooks.PageDescription.Image on Left</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Image on Right" sil:dynamic="true">
+        <source xml:lang="en">For use with Landscape orientation.</source>
+        <target xml:lang="fr" state="needs-translation">For use with Landscape orientation.</target>
+        <note>ID: TemplateBooks.PageDescription.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true" approved="yes">
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
@@ -6741,7 +6756,7 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TemplateBooks.PageDescription.Choose Image from Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Readers see one image and three words. They pick the word that matches the picture. The word order changes each time the game is played.</source>
+        <source xml:lang="en">Readers see one image and three words. They pick the word that matches the image. The word order changes each time the game is played.</source>
         <target xml:lang="fr" state="final">Les lecteurs voient une image et trois mots. Ils choisissent le mot qui correspond à l'image. L'ordre des mots change chaque fois qu'on joue.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
       </trans-unit>
@@ -7015,10 +7030,20 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">Grande Image, Texte Diglot en haut de la Vidéo</target>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot Text Over Video</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot Text Over Video" sil:dynamic="true">
+        <source xml:lang="en">Big Image Diglot Text Over Video</source>
+        <target xml:lang="fr" state="needs-translation">Big Image Diglot Text Over Video</target>
+        <note>ID: TemplateBooks.PageLabel.Big Image Diglot Text Over Video</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Picture Diglot</source>
         <target xml:lang="fr" state="final">Grande Image bilingue</target>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Image Diglot</source>
+        <target xml:lang="fr" state="needs-translation">Big Image Diglot</target>
+        <note>ID: TemplateBooks.PageLabel.Big Image Diglot</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Text Diglot" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Text Diglot</source>
@@ -7150,10 +7175,25 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">Image en bas de page</target>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true">
+        <source xml:lang="en">Image on Bottom</source>
+        <target xml:lang="fr" state="needs-translation">Image on Bottom</target>
+        <note>ID: TemplateBooks.PageLabel.Image on Bottom</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image in Middle</source>
         <target xml:lang="fr" state="final">Image en milieu de page</target>
         <note>ID: TemplateBooks.PageLabel.Image in Middle</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image on Left" sil:dynamic="true">
+        <source xml:lang="en">Image on Left</source>
+        <target xml:lang="fr" state="needs-translation">Image on Left</target>
+        <note>ID: TemplateBooks.PageLabel.Image on Left</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image on Right" sil:dynamic="true">
+        <source xml:lang="en">Image on Right</source>
+        <target xml:lang="fr" state="needs-translation">Image on Right</target>
+        <note>ID: TemplateBooks.PageLabel.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Inside Back Cover</source>
@@ -7210,10 +7250,20 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">Image &amp; Vidéo</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Video</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Video" sil:dynamic="true">
+        <source xml:lang="en">Image &amp; Video</source>
+        <target xml:lang="fr" state="needs-translation">Image &amp; Video</target>
+        <note>ID: TemplateBooks.PageLabel.Image &amp; Video</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture &amp; Word</source>
         <target xml:lang="fr" state="final">Image &amp; Mot</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Word</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true">
+        <source xml:lang="en">Image &amp; Word</source>
+        <target xml:lang="fr" state="needs-translation">Image &amp; Word</target>
+        <note>ID: TemplateBooks.PageLabel.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture in Middle</source>
@@ -7224,6 +7274,11 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Bilingual &amp; Picture in Middle</source>
         <target xml:lang="fr" state="needs-translation">Bilingual &amp; Picture in Middle</target>
         <note>ID: TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Bilingual &amp; Image in Middle" sil:dynamic="true">
+        <source xml:lang="en">Bilingual &amp; Image in Middle</source>
+        <target xml:lang="fr" state="needs-translation">Bilingual &amp; Image in Middle</target>
+        <note>ID: TemplateBooks.PageLabel.Bilingual &amp; Image in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture on Bottom</source>
