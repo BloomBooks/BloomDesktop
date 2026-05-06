@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Bloom.Utils;
 
 namespace Bloom.Edit
 {
@@ -67,6 +68,7 @@ namespace Bloom.Edit
 
         public static bool Confirm()
         {
+            using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
             using (var dlg = new ConfirmRemovePageDialog())
             {
                 return DialogResult.OK == dlg.ShowDialog();

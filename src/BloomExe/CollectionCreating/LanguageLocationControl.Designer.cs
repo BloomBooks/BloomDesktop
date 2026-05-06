@@ -2,12 +2,12 @@
 {
 	partial class LanguageLocationControl
 	{
-		/// <summary> 
+		/// <summary>
 		/// Required designer variable.
 		/// </summary>
 		private System.ComponentModel.IContainer components = null;
 
-		/// <summary> 
+		/// <summary>
 		/// Clean up any resources being used.
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -22,8 +22,8 @@
 
 		#region Component Designer generated code
 
-		/// <summary> 
-		/// Required method for Designer support - do not modify 
+		/// <summary>
+		/// Required method for Designer support - do not modify
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent()
@@ -39,9 +39,9 @@
             this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
-            // 
+            //
             // _districtText
-            // 
+            //
             this._districtText.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._L10NSharpExtender.SetLocalizableToolTip(this._districtText, null);
             this._L10NSharpExtender.SetLocalizationComment(this._districtText, null);
@@ -51,9 +51,9 @@
             this._districtText.Name = "_districtText";
             this._districtText.Size = new System.Drawing.Size(214, 25);
             this._districtText.TabIndex = 2;
-            // 
+            //
             // _provinceText
-            // 
+            //
             this._provinceText.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._L10NSharpExtender.SetLocalizableToolTip(this._provinceText, null);
             this._L10NSharpExtender.SetLocalizationComment(this._provinceText, null);
@@ -63,9 +63,9 @@
             this._provinceText.Name = "_provinceText";
             this._provinceText.Size = new System.Drawing.Size(214, 25);
             this._provinceText.TabIndex = 1;
-            // 
+            //
             // _countryText
-            // 
+            //
             this._countryText.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._L10NSharpExtender.SetLocalizableToolTip(this._countryText, null);
             this._L10NSharpExtender.SetLocalizationComment(this._countryText, null);
@@ -75,9 +75,9 @@
             this._countryText.Name = "_countryText";
             this._countryText.Size = new System.Drawing.Size(214, 25);
             this._countryText.TabIndex = 0;
-            // 
+            //
             // _countryLabel
-            // 
+            //
             this._countryLabel.AutoSize = true;
             this._countryLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._L10NSharpExtender.SetLocalizableToolTip(this._countryLabel, null);
@@ -88,9 +88,9 @@
             this._countryLabel.Size = new System.Drawing.Size(59, 19);
             this._countryLabel.TabIndex = 8;
             this._countryLabel.Text = "Country";
-            // 
+            //
             // _districtLabel
-            // 
+            //
             this._districtLabel.AutoSize = true;
             this._districtLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._L10NSharpExtender.SetLocalizableToolTip(this._districtLabel, null);
@@ -101,9 +101,9 @@
             this._districtLabel.Size = new System.Drawing.Size(55, 19);
             this._districtLabel.TabIndex = 7;
             this._districtLabel.Text = "District";
-            // 
+            //
             // _provinceLabel
-            // 
+            //
             this._provinceLabel.AutoSize = true;
             this._provinceLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._L10NSharpExtender.SetLocalizableToolTip(this._provinceLabel, null);
@@ -114,10 +114,10 @@
             this._provinceLabel.Size = new System.Drawing.Size(63, 19);
             this._provinceLabel.TabIndex = 6;
             this._provinceLabel.Text = "Province";
-            // 
+            //
             // betterLabel1
-            // 
-            this.betterLabel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            //
+            this.betterLabel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.betterLabel1.BackColor = System.Drawing.SystemColors.Control;
             this.betterLabel1.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -136,16 +136,16 @@
             this.betterLabel1.TabStop = false;
             this.betterLabel1.Text = "These are optional. Bloom will place them in the right places on title page of bo" +
     "oks you create.";
-            // 
+            //
             // _L10NSharpExtender
-            // 
+            //
             this._L10NSharpExtender.LocalizationManagerId = "Bloom";
             this._L10NSharpExtender.PrefixForNewItems = "NewCollectionWizard.LocationPage";
-            // 
+            //
             // LanguageLocationControl
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            //
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.Color.White;
             this.Controls.Add(this.betterLabel1);
             this.Controls.Add(this._districtText);

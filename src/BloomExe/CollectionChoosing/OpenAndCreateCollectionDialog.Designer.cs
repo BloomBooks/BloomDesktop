@@ -34,16 +34,16 @@
 			this._openAndCreateControl = new Bloom.CollectionChoosing.OpenCreateCloneControl();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
-			// 
+			//
 			// _L10NSharpExtender
-			// 
+			//
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = "OpenCreateNewCollectionsDialog";
-			// 
+			//
 			// _openAndCreateControl
-			// 
-			this._openAndCreateControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+			//
+			this._openAndCreateControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this._openAndCreateControl.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this._openAndCreateControl.BackColor = System.Drawing.Color.White;
@@ -56,12 +56,12 @@
             this._openAndCreateControl.Name = "_openAndCreateControl";
             this._openAndCreateControl.Size = new System.Drawing.Size(796, 348);
             this._openAndCreateControl.TabIndex = 0;
-            // 
+            //
             // OpenAndCreateCollectionDialog
-            // 
+            //
 			this.AllowDrop = true;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(820, 383);
             this.Controls.Add(this._openAndCreateControl);

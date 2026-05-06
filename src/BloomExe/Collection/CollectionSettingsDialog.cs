@@ -7,6 +7,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.TeamCollection;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
@@ -28,6 +29,7 @@ namespace Bloom.Collection
         private bool _restartRequired;
         private bool _loaded;
         private bool _currentCollectionIsTeamCollection;
+        private int _lastKnownDialogDpi;
 
         // Pending values edited through the CollectionSettingsApi
         private string _pendingBookshelf;
@@ -79,6 +81,7 @@ namespace Bloom.Collection
             _queueRenameOfCollection = queueRenameOfCollection;
             _xmatterPackFinder = xmatterPackFinder;
             InitializeComponent();
+            _lastKnownDialogDpi = DeviceDpi;
 
             _language1Name.UseMnemonic = false; // Allow & to be part of the language display names.
             _language2Name.UseMnemonic = false; // This may be unlikely, but can't be ruled out.
@@ -173,6 +176,75 @@ namespace Bloom.Collection
             {
                 _bloomCollectionName.Enabled = false;
             }
+
+            ApplyDialogLayoutForCurrentClientSize();
+        }
+
+        protected override void OnDpiChanged(DpiChangedEventArgs e)
+        {
+            base.OnDpiChanged(e);
+            _lastKnownDialogDpi = e.DeviceDpiNew;
+            ApplyDialogLayoutForCurrentClientSize();
+        }
+
+        protected override void OnMove(EventArgs e)
+        {
+            base.OnMove(e);
+
+            // Some Windows/WinForms combinations fail to raise OnDpiChanged consistently for dialogs.
+            // When that happens we still need to re-apply the intended fixed margins.
+            if (DeviceDpi != _lastKnownDialogDpi)
+            {
+                _lastKnownDialogDpi = DeviceDpi;
+                ApplyDialogLayoutForCurrentClientSize();
+            }
+        }
+
+        /// <summary>
+        /// Keep the form's key controls at their intended designer margins.
+        /// This prevents cumulative inward drift of anchored controls after monitor DPI transitions.
+        /// </summary>
+        private void ApplyDialogLayoutForCurrentClientSize()
+        {
+            SuspendLayout();
+
+            const int tabLeft = 1;
+            const int tabTop = 2;
+            const int tabRightMargin = 1;
+            const int tabBottomMargin = 88;
+
+            var tabWidth = Math.Max(100, ClientSize.Width - tabLeft - tabRightMargin);
+            var tabHeight = Math.Max(100, ClientSize.Height - tabTop - tabBottomMargin);
+            _tab.SetBounds(tabLeft, tabTop, tabWidth, tabHeight);
+
+            const int cancelRightMargin = 12;
+            const int buttonsBottomMargin = 15;
+            const int helpLeftMargin = 13;
+            const int restartRightMargin = 3;
+            const int restartBottomMargin = 45;
+
+            _cancelButton.Location = new System.Drawing.Point(
+                Math.Max(0, ClientSize.Width - cancelRightMargin - _cancelButton.Width),
+                Math.Max(0, ClientSize.Height - buttonsBottomMargin - _cancelButton.Height)
+            );
+
+            const int okToCancelGap = 20;
+            _okButton.Location = new System.Drawing.Point(
+                Math.Max(0, _cancelButton.Left - okToCancelGap - _okButton.Width),
+                _cancelButton.Top
+            );
+
+            _helpButton.Location = new System.Drawing.Point(
+                helpLeftMargin,
+                Math.Max(0, ClientSize.Height - buttonsBottomMargin - _helpButton.Height)
+            );
+
+            _restartReminder.Location = new System.Drawing.Point(
+                Math.Max(0, ClientSize.Width - restartRightMargin - _restartReminder.Width),
+                Math.Max(0, ClientSize.Height - restartBottomMargin - _restartReminder.Height)
+            );
+
+            ResumeLayout();
         }
 
         /// <summary>
@@ -770,6 +842,7 @@ namespace Bloom.Collection
         public bool FontSettingsLinkClicked(int zeroBasedLanguageNumber)
         {
             var pendingLanguage = PendingLanguages[zeroBasedLanguageNumber];
+            using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
             using (var frm = new ScriptSettingsDialog())
             {
                 frm.LanguageName = pendingLanguage.Name;
@@ -777,7 +850,7 @@ namespace Bloom.Collection
                 frm.LanguageLineSpacing = pendingLanguage.LineHeight;
                 frm.UIFontSize = pendingLanguage.BaseUIFontSizeInPoints;
                 frm.BreakLinesOnlyAtSpaces = pendingLanguage.BreaksLinesOnlyAtSpaces;
-                frm.ShowDialog();
+                frm.ShowDialog(this);
 
                 // get the changes
 

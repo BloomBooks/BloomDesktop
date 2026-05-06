@@ -928,7 +928,11 @@ namespace Bloom.Edit
                     }
                 )
                 {
-                    var result = dlg.ShowDialog();
+                    DialogResult result;
+                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
+                    {
+                        result = dlg.ShowDialog();
+                    }
                     if (result == DialogResult.OK)
                         SetGifImage(imageId, imageSrc, dlg.FileName);
                 }
@@ -999,6 +1003,7 @@ namespace Bloom.Edit
             var performanceMeasureForShowingDialog = PerformanceMeasurement.Global.Measure(
                 "Show ImageToolbox Dialog"
             );
+            using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
             using (
                 var dlg = new ImageToolboxDialog(
                     imageInfo,
@@ -1046,7 +1051,7 @@ namespace Bloom.Edit
                 DialogResult result;
                 try
                 {
-                    result = dlg.ShowDialog();
+                    result = dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());
                 }
                 finally
                 {
@@ -1394,6 +1399,7 @@ namespace Bloom.Edit
                 && JpegWarningDialog.ShouldWarnAboutJpeg(imageInfo.Image)
             )
             {
+                using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                 using (var jpegDialog = new JpegWarningDialog())
                 {
                     return jpegDialog.ShowDialog() == DialogResult.Cancel;
