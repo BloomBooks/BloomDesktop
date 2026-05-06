@@ -312,7 +312,7 @@ namespace BloomTests.Book
 					<div data-book='title-page-branding-bottom-html'>
 						<div class='marginBox'>
 							<img src='imageWithCustomAlt.svg' type='image/svg' alt='Custom Alt'></img>
-							<img src='title-page.svg' type='image/svg' alt='This picture, title-page.svg,  is missing or was loading too slowly'></img>
+							<img src='title-page.svg' type='image/svg' alt='This image, title-page.svg,  is missing or was loading too slowly'></img>
 						</div>
 					</div>
 					<div class='bloom-page numberedPage customPage A5Portrait'>
@@ -321,7 +321,7 @@ namespace BloomTests.Book
 							<img src='rubbish'></img>
 							<div style='min-height: 42px;' class='split-pane horizontal-percent'>
 								<div title='aor_1B-E1.png' data-hasqtip='true' class='bloom-canvas bloom-leadingElement'>
-									 <img data-license='cc-by-sa' data-creator='Susan Rose' data-copyright='Copyright SIL International 2009' src='aor_1B-E1.png' alt='This picture, aor_1B-E1.png, is missing or was loading too slowly.'></img>
+									 <img data-license='cc-by-sa' data-creator='Susan Rose' data-copyright='Copyright SIL International 2009' src='aor_1B-E1.png' alt='This image, aor_1B-E1.png, is missing or was loading too slowly.'></img>
 								</div>
 							</div>
 						</div>
@@ -360,7 +360,7 @@ namespace BloomTests.Book
 						<div class='marginBox'>
 							<div style='min-height: 42px;' class='split-pane horizontal-percent'>
 								<div title='aor_1B-E1.png' data-hasqtip='true' class='bloom-canvas'>
-									 <img data-license='cc-by-sa' data-creator='Susan Rose' data-copyright='Copyright SIL International 2009' src='aor_1B-E1.png' alt='This picture, aor_1B-E1.png, is missing or was loading too slowly.'></img>
+									 <img data-license='cc-by-sa' data-creator='Susan Rose' data-copyright='Copyright SIL International 2009' src='aor_1B-E1.png' alt='This image, aor_1B-E1.png, is missing or was loading too slowly.'></img>
 									<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement normal-style'>
 										<div class='bloom-editable normal-style cke_focus bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
 											<p>Bird with wings stretched wide</p>
@@ -4792,7 +4792,7 @@ namespace BloomTests.Book
 					</div>
 					<div class='bloom-page' id='guid3'>
 						<!-- proper pageLabel, preserve it -->
-						<div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Picture' lang='en'>
+						<div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Image' lang='en'>
 							Possibly already translated text
 						</div>
 						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
@@ -4850,7 +4850,7 @@ namespace BloomTests.Book
             AssertThatXmlIn
                 .Dom(book.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[@id='guid3']/div[@data-i18n='TemplateBooks.PageLabel.Basic Text & Picture']",
+                    "//div[@id='guid3']/div[@data-i18n='TemplateBooks.PageLabel.Basic Text & Image']",
                     1
                 );
             AssertThatXmlIn
@@ -4920,7 +4920,7 @@ namespace BloomTests.Book
             AssertThatXmlIn
                 .Dom(book.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[@id='guid3']/div[@data-i18n='TemplateBooks.PageLabel.Basic Text & Picture']",
+                    "//div[@id='guid3']/div[@data-i18n='TemplateBooks.PageLabel.Basic Text & Image']",
                     1
                 );
             AssertThatXmlIn

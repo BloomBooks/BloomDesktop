@@ -1618,7 +1618,7 @@ namespace Bloom.Edit
             {
                 var msg = LocalizationManager.GetString(
                     "Errors.ProblemImportingPicture",
-                    "Bloom had a problem importing this picture."
+                    "Bloom had a problem importing this image."
                 );
                 e.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
                 ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
@@ -1666,7 +1666,7 @@ namespace Bloom.Edit
                         {
                             var msg = LocalizationManager.GetString(
                                 "Errors.ProblemImportingPicture",
-                                "Bloom had a problem importing this picture."
+                                "Bloom had a problem importing this image."
                             );
                             e.Data["ProblemImagePath"] = args.src;
                             ErrorReport.NotifyUserOfProblem(
