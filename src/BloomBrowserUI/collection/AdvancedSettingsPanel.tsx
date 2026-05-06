@@ -189,6 +189,9 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                 path="qrcodeCaption"
                                 label={captionLabel}
                                 description={captionDescription}
+                                charactersWide={45}
+                                allowNewLines={true}
+                                maxLinesToShowBeforeScrolling={4}
                                 disabled={!settings.showQrCode}
                             />
                         </ConfigrGroup>
