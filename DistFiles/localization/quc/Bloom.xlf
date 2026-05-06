@@ -304,7 +304,7 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <note>ID: BookMetadata.level</note>
       </trans-unit>
       <trans-unit id="BookMetadata.metapicture" approved="yes">
-        <source xml:lang="en">Picture</source>
+        <source xml:lang="en">Image</source>
         <target xml:lang="quc" state="final">Wachib'al</target>
         <note>ID: BookMetadata.metapicture</note>
       </trans-unit>
@@ -1576,7 +1576,7 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <note>ID: EditTab.CopyButton.ToolTipWhenDisabled</note>
       </trans-unit>
       <trans-unit id="EditTab.CopyImageIPMetadataQuestion" approved="yes">
-        <source xml:lang="en">Copy this information to all other pictures in this book?</source>
+        <source xml:lang="en">Copy this information to all other images in this book?</source>
         <target xml:lang="quc" state="final">¿Resaxik uwach we q'alajisanem tzij chi kech konojel ri nik'aj taq wachib'al rech we no'jwuj ri'?</target>
         <note>ID: EditTab.CopyImageIPMetadataQuestion</note>
       </trans-unit>
@@ -2187,7 +2187,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <note>ID: EditTab.HyperlinkPasteFailure</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.AltMsg" approved="yes">
-        <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
+        <source xml:lang="en">This image, {0}, is missing or was loading too slowly.</source>
         <target xml:lang="quc" state="final">Kraj na le wachib'al {0} te'qne sib'alaj nojim katajin kupaqab'a'.</target>
         <note>ID: EditTab.Image.AltMsg</note>
       </trans-unit>
@@ -2512,7 +2512,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <note>ID: EditTab.TextBoxProperties.WhatToPut</note>
       </trans-unit>
       <trans-unit id="EditTab.TitleOfCopyIPToWholeBooksDialog" approved="yes">
-        <source xml:lang="en">Picture Intellectual Property Information</source>
+        <source xml:lang="en">Image Intellectual Property Information</source>
         <target xml:lang="quc" state="final">Q'alajisanem rech ub'antajik k'astalik rech le wachib'al</target>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
@@ -2767,7 +2767,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <note>ID: EditTab.Toolbox.ImpairmentVisualizer.RedGreen</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Intro" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the picture fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
+        <source xml:lang="en">Motion Books are Bloom Reader books with two modes. Normally, they are Talking Books. When you turn the phone sideways, the image fills the screen. It pans and zooms from rectangle "1" to rectangle "2".</source>
         <target xml:lang="quc" state="final">No'jwuj ruk' silob'em e no'jwuj rech Bloom Reader ruk' keb' taq ub'anik. chi konojel e ta'omno'wuj. Are taq ksutin ri k'olwiqkem chakub'al te'qne le ch'awab'al, le wachib'al kunojisaj ri k'utb'al wach. Ksolob' pa rab'arik kajxukut "1"xuquje' karilij le rab'arik kajxukut "2".</target>
         <note>ID: EditTab.Toolbox.Motion.Intro</note>
       </trans-unit>
@@ -3005,11 +3005,6 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <source xml:lang="en">poet.diagramcenter.org</source>
         <target xml:lang="quc" state="final">poet.diagramcenter.org</target>
         <note>ID: EditTab.Toolbox.ImageDescriptionTool.PoetDiagram</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ImageDescriptionTool.WriteYours" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Write your image description on the left, in the box next to the picture.</source>
-        <target xml:lang="quc" state="final">Chatz'ib'aj ri ub'ixik ub'antajik ri wachib'al pa moxq'ab', pa ri kajxukut chi utzal ri wachib'al.</target>
-        <note>ID: EditTab.Toolbox.ImageDescriptionTool.WriteYours</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Leveled Reader Tool</source>
@@ -3517,7 +3512,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <note>ID: Errors.ProblemDeletingFile</note>
       </trans-unit>
       <trans-unit id="Errors.ProblemImportingPicture" approved="yes">
-        <source xml:lang="en">Bloom had a problem importing this picture.</source>
+        <source xml:lang="en">Bloom had a problem importing this image.</source>
         <target xml:lang="quc" state="final">Bloom xuriq jun k'axk'olil are taq' xub'an ujik'ik we wachib'al ri'.</target>
         <note>ID: Errors.ProblemImportingPicture</note>
       </trans-unit>
@@ -6691,6 +6686,11 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="quc" state="needs-translation">A page with one language above the image and another below it.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Bilingual &amp; Image in Middle" sil:dynamic="true">
+        <source xml:lang="en">A page with one language above the image and another below it.</source>
+        <target xml:lang="quc" state="needs-translation">A page with one language above the image and another below it.</target>
+        <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Image in Middle</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true">
         <source xml:lang="en">A page with an empty canvas that you can add to.</source>
         <target xml:lang="quc" state="needs-translation">A page with an empty canvas that you can add to.</target>
@@ -6727,10 +6727,25 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="quc" state="final">Uxaq ruk' jun wachib'al ajisik xuquje' jun nim tzij, ya'om pa unik'ajil chi uxe'.</target>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true">
+        <source xml:lang="en">Page with an image on top and a large, centered word below.</source>
+        <target xml:lang="quc" state="needs-translation">Page with an image on top and a large, centered word below.</target>
+        <note>ID: TemplateBooks.PageDescription.Image &amp; Word</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For use with Landscape orientation.</source>
         <target xml:lang="quc" state="final">Rech ukojij ruk' q'e'lik ub'eyal.</target>
         <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Image on Left" sil:dynamic="true">
+        <source xml:lang="en">For use with Landscape orientation.</source>
+        <target xml:lang="quc" state="needs-translation">For use with Landscape orientation.</target>
+        <note>ID: TemplateBooks.PageDescription.Image on Left</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageDescription.Image on Right" sil:dynamic="true">
+        <source xml:lang="en">For use with Landscape orientation.</source>
+        <target xml:lang="quc" state="needs-translation">For use with Landscape orientation.</target>
+        <note>ID: TemplateBooks.PageDescription.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
         <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
@@ -6743,8 +6758,8 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TemplateBooks.PageDescription.Choose Image from Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true">
-        <source xml:lang="en">Readers see one image and three words. They pick the word that matches the picture. The word order changes each time the game is played.</source>
-        <target xml:lang="quc" state="needs-translation">Readers see one image and three words. They pick the word that matches the picture. The word order changes each time the game is played.</target>
+        <source xml:lang="en">Readers see one image and three words. They pick the word that matches the image. The word order changes each time the game is played.</source>
+        <target xml:lang="quc" state="needs-translation">Readers see one image and three words. They pick the word that matches the image. The word order changes each time the game is played.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true">
@@ -7017,10 +7032,20 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="quc" state="needs-translation">Big Picture Diglot Text Over Video</target>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot Text Over Video</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot Text Over Video" sil:dynamic="true">
+        <source xml:lang="en">Big Image Diglot Text Over Video</source>
+        <target xml:lang="quc" state="needs-translation">Big Image Diglot Text Over Video</target>
+        <note>ID: TemplateBooks.PageLabel.Big Image Diglot Text Over Video</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Picture Diglot</source>
         <target xml:lang="quc" state="final">Nim wachib'al pa keb' tzijob'al</target>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot" sil:dynamic="true">
+        <source xml:lang="en">Big Image Diglot</source>
+        <target xml:lang="quc" state="needs-translation">Big Image Diglot</target>
+        <note>ID: TemplateBooks.PageLabel.Big Image Diglot</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Text Diglot" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Text Diglot</source>
@@ -7152,10 +7177,25 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="quc" state="final">Wachib'al k'o pa raqan</target>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true">
+        <source xml:lang="en">Image on Bottom</source>
+        <target xml:lang="quc" state="needs-translation">Image on Bottom</target>
+        <note>ID: TemplateBooks.PageLabel.Image on Bottom</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image in Middle</source>
         <target xml:lang="quc" state="final">Wachib'al pa unik'ajal</target>
         <note>ID: TemplateBooks.PageLabel.Image in Middle</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image on Left" sil:dynamic="true">
+        <source xml:lang="en">Image on Left</source>
+        <target xml:lang="quc" state="needs-translation">Image on Left</target>
+        <note>ID: TemplateBooks.PageLabel.Image on Left</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image on Right" sil:dynamic="true">
+        <source xml:lang="en">Image on Right</source>
+        <target xml:lang="quc" state="needs-translation">Image on Right</target>
+        <note>ID: TemplateBooks.PageLabel.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Inside Back Cover</source>
@@ -7212,10 +7252,20 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="quc" state="final">Wachib'al &amp; Silob'wachib'al</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Video</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Video" sil:dynamic="true">
+        <source xml:lang="en">Image &amp; Video</source>
+        <target xml:lang="quc" state="needs-translation">Image &amp; Video</target>
+        <note>ID: TemplateBooks.PageLabel.Image &amp; Video</note>
+      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture &amp; Word</source>
         <target xml:lang="quc" state="final">Wachib'al &amp; tzij</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Word</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true">
+        <source xml:lang="en">Image &amp; Word</source>
+        <target xml:lang="quc" state="needs-translation">Image &amp; Word</target>
+        <note>ID: TemplateBooks.PageLabel.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture in Middle</source>
@@ -7226,6 +7276,11 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Bilingual &amp; Picture in Middle</source>
         <target xml:lang="quc" state="needs-translation">Bilingual &amp; Picture in Middle</target>
         <note>ID: TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle</note>
+      </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Bilingual &amp; Image in Middle" sil:dynamic="true">
+        <source xml:lang="en">Bilingual &amp; Image in Middle</source>
+        <target xml:lang="quc" state="needs-translation">Bilingual &amp; Image in Middle</target>
+        <note>ID: TemplateBooks.PageLabel.Bilingual &amp; Image in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Picture on Bottom</source>
