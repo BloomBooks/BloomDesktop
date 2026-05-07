@@ -6725,9 +6725,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="sw" state="final">Ukurasa ulio na picha juu na jina kubwa lilioandikwa katikati hapa chini.</target>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page with an image on top and a large, centered word below.</source>
-        <target xml:lang="sw" state="needs-translation">Page with an image on top and a large, centered word below.</target>
+        <target xml:lang="sw" state="final">Ukurasa ulio na picha juu na jina kubwa lilioandikwa katikati hapa chini.</target>
         <note>ID: TemplateBooks.PageDescription.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true" approved="yes">
@@ -6752,12 +6752,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true">
         <source xml:lang="en">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</source>
-        <target xml:lang="sw" state="needs-translation">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</target>
+        <target xml:lang="sw" state="translated">Ukurasa wa maingiliano wenye maandishi na baadhi ya vitufe vya picha.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Image from Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true">
         <source xml:lang="en">Readers see one image and three words. They pick the word that matches the image. The word order changes each time the game is played.</source>
-        <target xml:lang="sw" state="needs-translation">Readers see one image and three words. They pick the word that matches the image. The word order changes each time the game is played.</target>
+        <target xml:lang="sw" state="translated">Ukurasa wa maingiliano wenye picha na baadhi ya vitufe vya maandishi.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true">
@@ -7030,9 +7030,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="sw" state="final">Picha kubwa kwa maandishi ya lugha mbili juu ya video</target>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot Text Over Video</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot Text Over Video" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot Text Over Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Image Diglot Text Over Video</source>
-        <target xml:lang="sw" state="needs-translation">Big Image Diglot Text Over Video</target>
+        <target xml:lang="sw" state="final">Picha kubwa kwa maandishi ya lugha mbili juu ya video</target>
         <note>ID: TemplateBooks.PageLabel.Big Image Diglot Text Over Video</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true" approved="yes">
@@ -7040,9 +7040,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="sw" state="final">Picha kubwa kwa lugha mbili</target>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Image Diglot</source>
-        <target xml:lang="sw" state="needs-translation">Big Image Diglot</target>
+        <target xml:lang="sw" state="final">Picha kubwa kwa lugha mbili</target>
         <note>ID: TemplateBooks.PageLabel.Big Image Diglot</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Text Diglot" sil:dynamic="true" approved="yes">
@@ -7175,9 +7175,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="sw" state="final">Picha upande wa Chini</target>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image on Bottom</source>
-        <target xml:lang="sw" state="needs-translation">Image on Bottom</target>
+        <target xml:lang="sw" state="final">Picha upande wa Chini</target>
         <note>ID: TemplateBooks.PageLabel.Image on Bottom</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
@@ -7185,9 +7185,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="sw" state="final">Picha Katikati</target>
         <note>ID: TemplateBooks.PageLabel.Image in Middle</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image on Left" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image on Left" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image on Left</source>
-        <target xml:lang="sw" state="needs-translation">Image on Left</target>
+        <target xml:lang="sw" state="final">Picha upande wa Kushoto</target>
         <note>ID: TemplateBooks.PageLabel.Image on Left</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image on Right" sil:dynamic="true">
@@ -7250,9 +7250,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="sw" state="final">Picha&amp; Video</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Video</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Video" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image &amp; Video</source>
-        <target xml:lang="sw" state="needs-translation">Image &amp; Video</target>
+        <target xml:lang="sw" state="final">Picha&amp; Video</target>
         <note>ID: TemplateBooks.PageLabel.Image &amp; Video</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
@@ -7260,9 +7260,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="sw" state="final">Picha na neno</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image &amp; Word</source>
-        <target xml:lang="sw" state="needs-translation">Image &amp; Word</target>
+        <target xml:lang="sw" state="final">Picha na neno</target>
         <note>ID: TemplateBooks.PageLabel.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true" approved="yes">
