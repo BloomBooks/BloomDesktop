@@ -1616,6 +1616,21 @@ window.showWorkspaceInitializationFailure = function(message) {
         {
             _tabsEnabled = enable;
             SendTopBarState();
+            // Display a log message to track down who called this method with what value and when. (BL-16290)
+            // Trim the stack trace to remove the top two redundant lines and limit the number of lines shown to 5.
+            // The further down the stack trace, the less relevant it is to figure out what called this method.
+            // (The top two lines are always this method and a stracktrace method.)
+            var stackLines = Environment.StackTrace.Split(Environment.NewLine);
+            var stackList = new List<string>();
+            for (int i = 2; i < Math.Min(7, stackLines.Length); i++)
+                stackList.Add(stackLines[i]);
+            var stackTop = string.Join(Environment.NewLine, stackList);
+            var msg =
+                $"WorkSpaceView.SetTabsEnabled({enable}) - {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff")}"
+                + Environment.NewLine
+                + stackTop;
+            Logger.WriteMinorEvent(msg);
+            Debug.WriteLine(msg);
         }
 
         private void ShowTrainingVideos()
