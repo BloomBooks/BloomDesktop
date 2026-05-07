@@ -6724,9 +6724,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="mam" state="final">T-xaq u'j tuk'il jun tilb'ilal tib'aj ex jun matij yol at tuj tmij tjaq'xix.</target>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page with an image on top and a large, centered word below.</source>
-        <target xml:lang="mam" state="needs-translation">Page with an image on top and a large, centered word below.</target>
+        <target xml:lang="mam" state="final">T-xaq u'j tuk'il jun tilb'ilal tib'aj ex jun matij yol at tuj tmij tjaq'xix.</target>
         <note>ID: TemplateBooks.PageDescription.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true" approved="yes">
@@ -7039,9 +7039,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="mam" state="final">Matij tilb'ilal tuj kab'yol</target>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Image Diglot</source>
-        <target xml:lang="mam" state="needs-translation">Big Image Diglot</target>
+        <target xml:lang="mam" state="final">Matij tilb'ilal tuj kab'yol</target>
         <note>ID: TemplateBooks.PageLabel.Big Image Diglot</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Text Diglot" sil:dynamic="true" approved="yes">
@@ -7174,9 +7174,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="mam" state="final">Tilb'ilal at te kub'ni</target>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image on Bottom</source>
-        <target xml:lang="mam" state="needs-translation">Image on Bottom</target>
+        <target xml:lang="mam" state="final">Tilb'ilal at toj kub'ni</target>
         <note>ID: TemplateBooks.PageLabel.Image on Bottom</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
@@ -7184,9 +7184,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="mam" state="final">Tuj tmij tilb'ilal</target>
         <note>ID: TemplateBooks.PageLabel.Image in Middle</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image on Left" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image on Left" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image on Left</source>
-        <target xml:lang="mam" state="needs-translation">Image on Left</target>
+        <target xml:lang="mam" state="final">Tilb'ilal tuj ẍna'yaj</target>
         <note>ID: TemplateBooks.PageLabel.Image on Left</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image on Right" sil:dynamic="true">
@@ -7249,9 +7249,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="mam" state="final">Tilb'ilal &amp; ka'yb'itz</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Video</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Video" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image &amp; Video</source>
-        <target xml:lang="mam" state="needs-translation">Image &amp; Video</target>
+        <target xml:lang="mam" state="final">Tilb'ilal &amp; ka'yb'itz</target>
         <note>ID: TemplateBooks.PageLabel.Image &amp; Video</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
@@ -7259,9 +7259,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="mam" state="final">Tilb'ilal ex yol</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image &amp; Word</source>
-        <target xml:lang="mam" state="needs-translation">Image &amp; Word</target>
+        <target xml:lang="mam" state="final">Tilb'ilal ex yol</target>
         <note>ID: TemplateBooks.PageLabel.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true" approved="yes">
