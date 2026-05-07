@@ -6726,9 +6726,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="az" state="final">Yuxarıda təsvir və böyük hərflər mərkəzləşdirilmiş söz olan səhifədir.</target>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page with an image on top and a large, centered word below.</source>
-        <target xml:lang="az" state="needs-translation">Page with an image on top and a large, centered word below.</target>
+        <target xml:lang="az" state="final">Yuxarıda təsvir və böyük hərflər mərkəzləşdirilmiş söz olan səhifədir.</target>
         <note>ID: TemplateBooks.PageDescription.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true">
@@ -6753,12 +6753,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true">
         <source xml:lang="en">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</source>
-        <target xml:lang="az" state="needs-translation">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</target>
+        <target xml:lang="az" state="translated">Mətn və bir neçə təsvir düymələridən ibarət olan qarşılıqlı səhifə.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Image from Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true">
         <source xml:lang="en">Readers see one image and three words. They pick the word that matches the image. The word order changes each time the game is played.</source>
-        <target xml:lang="az" state="needs-translation">Readers see one image and three words. They pick the word that matches the image. The word order changes each time the game is played.</target>
+        <target xml:lang="az" state="translated">Təsvir və bir neçə mətn düymələridən ibarət olan qarşılıqlı səhifə.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true">
@@ -7176,9 +7176,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="az" state="final">Təsvir Aşağıda Olsun</target>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image on Bottom</source>
-        <target xml:lang="az" state="needs-translation">Image on Bottom</target>
+        <target xml:lang="az" state="final">Aşağısında Şəkil</target>
         <note>ID: TemplateBooks.PageLabel.Image on Bottom</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
@@ -7261,9 +7261,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="az" state="final">Şəkil və Söz</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image &amp; Word</source>
-        <target xml:lang="az" state="needs-translation">Image &amp; Word</target>
+        <target xml:lang="az" state="final">Şəkil və Söz</target>
         <note>ID: TemplateBooks.PageLabel.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true" approved="yes">
