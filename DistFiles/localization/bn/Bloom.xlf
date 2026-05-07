@@ -1116,7 +1116,7 @@
       </trans-unit>
       <trans-unit id="Common.Colors.Black">
         <source xml:lang="en">Black</source>
-        <target xml:lang="bn" state="translated">কালো </target>
+        <target xml:lang="bn" state="translated">কালো</target>
         <note>ID: Common.Colors.Black</note>
       </trans-unit>
       <trans-unit id="Common.Colors.Crimson">
@@ -1126,12 +1126,12 @@
       </trans-unit>
       <trans-unit id="Common.Colors.White">
         <source xml:lang="en">White</source>
-        <target xml:lang="bn" state="translated">সাদা </target>
+        <target xml:lang="bn" state="translated">সাদা</target>
         <note>ID: Common.Colors.White</note>
       </trans-unit>
       <trans-unit id="Common.Colors.Yellow">
         <source xml:lang="en">Yellow</source>
-        <target xml:lang="bn" state="translated">হলুদ </target>
+        <target xml:lang="bn" state="translated">হলুদ</target>
         <note>ID: Common.Colors.Yellow</note>
       </trans-unit>
       <trans-unit id="Common.Continue">
@@ -1206,7 +1206,7 @@
       </trans-unit>
       <trans-unit id="Common.LearnMore" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Learn More</source>
-        <target xml:lang="bn" state="final">আরও শিখুন </target>
+        <target xml:lang="bn" state="final">আরও শিখুন</target>
         <note>ID: Common.LearnMore</note>
       </trans-unit>
       <trans-unit id="Common.License" sil:dynamic="true" approved="yes">
@@ -1996,7 +1996,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.TextColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Color</source>
-        <target xml:lang="bn" state="final">লেখার রং </target>
+        <target xml:lang="bn" state="final">লেখার রং</target>
         <note>ID: EditTab.FormatDialog.TextColor</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.VisitEachPage" sil:dynamic="true">
@@ -2551,8 +2551,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AddChildBubble" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Add child bubble</source>
-        <target xml:lang="bn" state="final">
-চাইল্ড বুদ্বুদ যুক্ত করুন</target>
+        <target xml:lang="bn" state="final">চাইল্ড বুদ্বুদ যুক্ত করুন</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.AddChildBubble</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.AutoHeight" sil:dynamic="true">
@@ -2562,13 +2561,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Background Color</source>
-        <target xml:lang="bn" state="final">পেছনের রং </target>
+        <target xml:lang="bn" state="final">পেছনের রং</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Old Lace</source>
-        <target xml:lang="bn" state="final">
-ওল্ড লেইস</target>
+        <target xml:lang="bn" state="final">ওল্ড লেইস</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BecomeBackground">
@@ -2623,7 +2621,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Outer Outline Color</source>
-        <target xml:lang="bn" state="final">বাইরের রেখার রং </target>
+        <target xml:lang="bn" state="final">বাইরের রেখার রং</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
@@ -2693,7 +2691,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Exclamation" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Exclamation</source>
-        <target xml:lang="bn" state="final">চিৎকার </target>
+        <target xml:lang="bn" state="final">চিৎকার</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Exclamation</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.JustText" sil:dynamic="true" approved="yes">
@@ -2713,12 +2711,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Thought" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Thought</source>
-        <target xml:lang="bn" state="final">ভাবনা </target>
+        <target xml:lang="bn" state="final">ভাবনা</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style.Thought</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Color</source>
-        <target xml:lang="bn" state="final">লেখার রং </target>
+        <target xml:lang="bn" state="final">লেখার রং</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextOutlineColor" sil:dynamic="true">
@@ -6726,9 +6724,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="bn" state="final">উপরে ছবি এবং বড় নীচে মধ্যবর্তী শব্দসহ পৃষ্ঠা।</target>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page with an image on top and a large, centered word below.</source>
-        <target xml:lang="bn" state="needs-translation">Page with an image on top and a large, centered word below.</target>
+        <target xml:lang="bn" state="final">উপরে ছবি এবং বড় নীচে মধ্যবর্তী শব্দসহ পৃষ্ঠা।</target>
         <note>ID: TemplateBooks.PageDescription.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true" approved="yes">
@@ -7031,9 +7029,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="bn" state="final">ভিডিওতে বড় চিত্র এ দ্বিভাষিক পাঠ্য</target>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot Text Over Video</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot Text Over Video" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot Text Over Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Image Diglot Text Over Video</source>
-        <target xml:lang="bn" state="needs-translation">Big Image Diglot Text Over Video</target>
+        <target xml:lang="bn" state="final">ভিডিওতে বড় চিত্র এ দ্বিভাষিক পাঠ্য</target>
         <note>ID: TemplateBooks.PageLabel.Big Image Diglot Text Over Video</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true" approved="yes">
@@ -7041,9 +7039,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="bn" state="final">বড় ছবি দ্বিভাষিক</target>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Image Diglot</source>
-        <target xml:lang="bn" state="needs-translation">Big Image Diglot</target>
+        <target xml:lang="bn" state="final">বড় ছবি দ্বিভাষিক</target>
         <note>ID: TemplateBooks.PageLabel.Big Image Diglot</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Text Diglot" sil:dynamic="true" approved="yes">
@@ -7176,9 +7174,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="bn" state="final">নীচের ইমেজ</target>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image on Bottom</source>
-        <target xml:lang="bn" state="needs-translation">Image on Bottom</target>
+        <target xml:lang="bn" state="final">নীচের ছবি</target>
         <note>ID: TemplateBooks.PageLabel.Image on Bottom</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
@@ -7186,9 +7184,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="bn" state="final">মধ্যবর্তী ইমেজ</target>
         <note>ID: TemplateBooks.PageLabel.Image in Middle</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image on Left" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image on Left" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image on Left</source>
-        <target xml:lang="bn" state="needs-translation">Image on Left</target>
+        <target xml:lang="bn" state="final">বাঁদিকে ছবি</target>
         <note>ID: TemplateBooks.PageLabel.Image on Left</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image on Right" sil:dynamic="true">
@@ -7251,9 +7249,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="bn" state="final">ছবি &amp; ভিডিও</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Video</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Video" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image &amp; Video</source>
-        <target xml:lang="bn" state="needs-translation">Image &amp; Video</target>
+        <target xml:lang="bn" state="final">ছবি &amp; ভিডিও</target>
         <note>ID: TemplateBooks.PageLabel.Image &amp; Video</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
@@ -7261,9 +7259,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="bn" state="final">ছবি ও &amp; শব্দ</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image &amp; Word</source>
-        <target xml:lang="bn" state="needs-translation">Image &amp; Word</target>
+        <target xml:lang="bn" state="final">ছবি ও শব্দ</target>
         <note>ID: TemplateBooks.PageLabel.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true" approved="yes">
