@@ -6726,9 +6726,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="es-ES" state="final">Página con una imagen en la parte superior y una palabra grande, centrada debajo.</target>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page with an image on top and a large, centered word below.</source>
-        <target xml:lang="es-ES" state="needs-translation">Page with an image on top and a large, centered word below.</target>
+        <target xml:lang="es-ES" state="final">Página con una imagen en la parte superior y una palabra grande, centrada debajo.</target>
         <note>ID: TemplateBooks.PageDescription.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true" approved="yes">
@@ -6751,14 +6751,14 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="es-ES" state="final">Una página interactiva con una pregunta y algunas respuestas. Funciona en la web y Bloom Reader. Cuando se utiliza con Bloom Reader, el panel de control de su proyecto puede mostrar las puntuaciones de comprensión agregadas.</target>
         <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</source>
-        <target xml:lang="es-ES" state="needs-translation">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</target>
+        <target xml:lang="es-ES" state="final">Una página interactiva con texto y algunos botones de imágenes.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Image from Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Readers see one image and three words. They pick the word that matches the image. The word order changes each time the game is played.</source>
-        <target xml:lang="es-ES" state="needs-translation">Readers see one image and three words. They pick the word that matches the image. The word order changes each time the game is played.</target>
+        <target xml:lang="es-ES" state="final">Una página interactiva con una imagen y algunos botones de texto.</target>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true" approved="yes">
@@ -7031,9 +7031,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="es-ES" state="final">Imagen grande, bilingüe, texto encima del video</target>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot Text Over Video</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot Text Over Video" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot Text Over Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Image Diglot Text Over Video</source>
-        <target xml:lang="es-ES" state="needs-translation">Big Image Diglot Text Over Video</target>
+        <target xml:lang="es-ES" state="final">Imagen grande, bilingüe, texto encima del video</target>
         <note>ID: TemplateBooks.PageLabel.Big Image Diglot Text Over Video</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Picture Diglot" sil:dynamic="true" approved="yes">
@@ -7041,9 +7041,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="es-ES" state="final">Imagen grande, bilingüe</target>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Image Diglot</source>
-        <target xml:lang="es-ES" state="needs-translation">Big Image Diglot</target>
+        <target xml:lang="es-ES" state="final">Imagen grande, bilingüe</target>
         <note>ID: TemplateBooks.PageLabel.Big Image Diglot</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Text Diglot" sil:dynamic="true" approved="yes">
@@ -7066,14 +7066,14 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="es-ES" state="final">Página del widget cautivo</target>
         <note>ID: TemplateBooks.PageLabel.Captive Widget Page</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Choose Image from Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Choose Image from Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose Image from Word</source>
-        <target xml:lang="es-ES" state="needs-translation">Choose Image from Word</target>
+        <target xml:lang="es-ES" state="final">Elegir imagen de la palabra</target>
         <note>ID: TemplateBooks.PageLabel.Choose Image from Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Choose Word from Image" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Choose Word from Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose Word from Image</source>
-        <target xml:lang="es-ES" state="needs-translation">Choose Word from Image</target>
+        <target xml:lang="es-ES" state="final">Elegir palabra de la imagen</target>
         <note>ID: TemplateBooks.PageLabel.Choose Word from Image</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Choose Picture from Word" sil:dynamic="true" approved="yes">
@@ -7176,9 +7176,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="es-ES" state="final">Imagen en parte inferior</target>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image on Bottom</source>
-        <target xml:lang="es-ES" state="needs-translation">Image on Bottom</target>
+        <target xml:lang="es-ES" state="final">Imagen en la parte inferior</target>
         <note>ID: TemplateBooks.PageLabel.Image on Bottom</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
