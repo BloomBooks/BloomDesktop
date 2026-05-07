@@ -1596,7 +1596,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom">
         <source xml:lang="en">Custom</source>
-        <target xml:lang="ha" state="needs-translation">Custom</target>
+        <target xml:lang="ha" state="needs-review-translation" state-qualifier="leveraged-tm">Al'ada</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
@@ -2531,7 +2531,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
         <source xml:lang="en">Crop</source>
-        <target xml:lang="ha" state="needs-translation">Crop</target>
+        <target xml:lang="ha" state="needs-review-translation" state-qualifier="leveraged-tm">Datse</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
@@ -2626,7 +2626,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
         <source xml:lang="en">Language:</source>
-        <target xml:lang="ha" state="needs-translation">Language:</target>
+        <target xml:lang="ha" state="needs-review-translation" state-qualifier="leveraged-tm">Harshe:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
@@ -6567,7 +6567,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
         <source xml:lang="en">Arithmetic</source>
-        <target xml:lang="ha" state="needs-translation">Arithmetic</target>
+        <target xml:lang="ha" state="needs-review-translation" state-qualifier="leveraged-tm">Lissafi</target>
         <note>ID: TemplateBooks.BookName.Arithmetic</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic Pages" sil:dynamic="true">
