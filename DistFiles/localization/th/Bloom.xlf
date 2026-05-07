@@ -1596,7 +1596,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom">
         <source xml:lang="en">Custom</source>
-        <target xml:lang="th" state="needs-translation">Custom</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">ประเพณี</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
@@ -1641,7 +1641,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Video" sil:dynamic="true">
         <source xml:lang="en">Video</source>
-        <target xml:lang="th" state="needs-translation">Video</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">วิดีโอ</target>
         <note>ID: EditTab.CustomPage.Video</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true" approved="yes">
@@ -2626,12 +2626,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
         <source xml:lang="en">Language:</source>
-        <target xml:lang="th" state="needs-translation">Language:</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">ภาษา:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
-        <target xml:lang="th" state="needs-translation">None</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">ไม่มี</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true">
@@ -2771,7 +2771,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Preview" sil:dynamic="true">
         <source xml:lang="en">Preview</source>
-        <target xml:lang="th" state="needs-translation">Preview</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">ดูตัวอย่าง</target>
         <note>ID: EditTab.Toolbox.Motion.Preview</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Motion.Preview.Motion" sil:dynamic="true">
@@ -2801,7 +2801,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.Choose" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
-        <target xml:lang="th" state="needs-translation">Choose...</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">เลือก...</target>
         <note>ID: EditTab.Toolbox.Music.Choose</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Music.ContinueMusic" sil:dynamic="true">
@@ -3166,7 +3166,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.DeleteVideo" sil:dynamic="true">
         <source xml:lang="en">Delete</source>
-        <target xml:lang="th" state="needs-translation">Delete</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">ลบ</target>
         <note>ID: EditTab.Toolbox.SignLanguage.DeleteVideo</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.EditOutside" sil:dynamic="true">
@@ -3296,7 +3296,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckLabel" sil:dynamic="true">
         <source xml:lang="en">Check</source>
-        <target xml:lang="th" state="needs-translation">Check</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">ตรวจสอบ</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckLabel</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel" sil:dynamic="true">
@@ -4370,7 +4370,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Android.Preview" sil:dynamic="true">
         <source xml:lang="en">Preview</source>
-        <target xml:lang="th" state="needs-translation">Preview</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">ดูตัวอย่าง</target>
         <note>ID: PublishTab.Android.Preview</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Publish" sil:dynamic="true" approved="yes">
@@ -4670,7 +4670,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Done">
         <source xml:lang="en">Done</source>
-        <target xml:lang="th" state="needs-translation">Done</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">เสร็จสิ้น</target>
         <note>ID: PublishTab.Epub.Done</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Help.AboutEpubs">
@@ -4945,7 +4945,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.None">
         <source xml:lang="en">None</source>
-        <target xml:lang="th" state="needs-translation">None</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">ไม่มี</target>
         <note>ID: PublishTab.PdfMaker.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.OutOfMemory">
@@ -5513,7 +5513,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage">
         <source xml:lang="en">Sign Language</source>
-        <target xml:lang="th" state="needs-translation">Sign Language</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">ภาษามือ</target>
         <note>ID: PublishTab.Upload.SignLanguage</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignIn">
@@ -5740,7 +5740,7 @@
       </trans-unit>
       <trans-unit id="ReaderSetup.ChooseAllowedWordsFile" sil:dynamic="true">
         <source xml:lang="en">Choose...</source>
-        <target xml:lang="th" state="needs-translation">Choose...</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">เลือก...</target>
         <note>ID: ReaderSetup.ChooseAllowedWordsFile</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.ClickLetter" sil:dynamic="true" approved="yes">
@@ -6290,7 +6290,7 @@
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.ScriptSettingsWindowTitle">
         <source xml:lang="en">Special Script Settings...</source>
-        <target xml:lang="th" state="needs-translation">Special Script Settings...</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">การตั้งค่าตัวอักษรพิเศษ...</target>
         <note>ID: ScriptSettingsDialog.ScriptSettingsWindowTitle</note>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.TallerLinesCheckBox">
@@ -6637,7 +6637,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Sign Language" sil:dynamic="true">
         <source xml:lang="en">Sign Language</source>
-        <target xml:lang="th" state="needs-translation">Sign Language</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">ภาษามือ</target>
         <note>ID: TemplateBooks.BookName.Sign Language</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Sign Language Pages" sil:dynamic="true">
@@ -7243,7 +7243,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Paper Saver</source>
-        <target xml:lang="th" state="needs-translation">Paper Saver</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">ประหยัดกระดาษ</target>
         <note>ID: TemplateBooks.PageLabel.Paper Saver</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Video" sil:dynamic="true">
@@ -7308,7 +7308,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Super Paper Saver" sil:dynamic="true">
         <source xml:lang="en">Super Paper Saver</source>
-        <target xml:lang="th" state="needs-translation">Super Paper Saver</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">ประหยัดกระดาษขั้นสุด</target>
         <note>ID: TemplateBooks.PageLabel.Super Paper Saver</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Text Over Video" sil:dynamic="true">
@@ -7333,7 +7333,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Traditional" sil:dynamic="true">
         <source xml:lang="en">Traditional</source>
-        <target xml:lang="th" state="needs-translation">Traditional</target>
+        <target xml:lang="th" state="needs-review-translation" state-qualifier="leveraged-tm">แบบดั้งเดิม</target>
         <note>ID: TemplateBooks.PageLabel.Traditional</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Translation Instructions" sil:dynamic="true">
