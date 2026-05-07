@@ -7188,12 +7188,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image on Left" sil:dynamic="true">
         <source xml:lang="en">Image on Left</source>
-        <target xml:lang="es-ES" state="needs-translation">Image on Left</target>
+        <target xml:lang="es-ES" state="translated">Imagen a la izquierda</target>
         <note>ID: TemplateBooks.PageLabel.Image on Left</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image on Right" sil:dynamic="true">
         <source xml:lang="en">Image on Right</source>
-        <target xml:lang="es-ES" state="needs-translation">Image on Right</target>
+        <target xml:lang="es-ES" state="translated">Imagen a la derecha</target>
         <note>ID: TemplateBooks.PageLabel.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true" approved="yes">
@@ -7253,7 +7253,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image &amp; Video" sil:dynamic="true">
         <source xml:lang="en">Image &amp; Video</source>
-        <target xml:lang="es-ES" state="needs-translation">Image &amp; Video</target>
+        <target xml:lang="es-ES" state="translated">Imagen &amp; Video</target>
         <note>ID: TemplateBooks.PageLabel.Image &amp; Video</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
@@ -7263,7 +7263,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true">
         <source xml:lang="en">Image &amp; Word</source>
-        <target xml:lang="es-ES" state="needs-translation">Image &amp; Word</target>
+        <target xml:lang="es-ES" state="translated">Imagen &amp; Palabra</target>
         <note>ID: TemplateBooks.PageLabel.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true" approved="yes">
@@ -7278,7 +7278,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Bilingual &amp; Image in Middle" sil:dynamic="true">
         <source xml:lang="en">Bilingual &amp; Image in Middle</source>
-        <target xml:lang="es-ES" state="needs-translation">Bilingual &amp; Image in Middle</target>
+        <target xml:lang="es-ES" state="translated">Bilingüe &amp; Imagen en el centro</target>
         <note>ID: TemplateBooks.PageLabel.Bilingual &amp; Image in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true" approved="yes">
