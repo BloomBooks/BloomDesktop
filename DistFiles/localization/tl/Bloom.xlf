@@ -3301,7 +3301,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel" sil:dynamic="true">
         <source xml:lang="en">Check that you are recording into the correct device and that these levels are showing blue:</source>
-        <target xml:lang="tl" state="needs-translation">Check that you are recording into the correct device and that these levels are showing blue:</target>
+        <target xml:lang="tl" state="needs-review-translation" state-qualifier="leveraged-tm">Tiyakin na gamit ang tamang device sa pagrecord at kulay blue ang mga level na ito:</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true">
@@ -3316,7 +3316,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true">
         <source xml:lang="en">Look at the highlighted text</source>
-        <target xml:lang="tl" state="needs-translation">Look at the highlighted text</target>
+        <target xml:lang="tl" state="needs-review-translation" state-qualifier="leveraged-tm">Tingnan ang mga nakahilight na text</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneProblem" sil:dynamic="true">
@@ -6562,7 +6562,7 @@ is mostly status, which shows on the Collection Tab -->
 -->
       <trans-unit id="TemplateBooks.BookName.Activity" sil:dynamic="true">
         <source xml:lang="en">Activity</source>
-        <target xml:lang="tl" state="needs-translation">Activity</target>
+        <target xml:lang="tl" state="needs-review-translation" state-qualifier="leveraged-tm">Aktibidad</target>
         <note>ID: TemplateBooks.BookName.Activity</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
