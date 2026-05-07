@@ -30,6 +30,7 @@ import {
 import { PageThumbnail } from "./PageThumbnail";
 import LazyLoad, { forceCheck } from "react-lazyload";
 import { useL10n } from "../../react_components/l10nHooks";
+import { callOnBlur } from "../../utils/menuCloseOnBlur";
 
 // We're using the Responsive version of react-grid-layout because
 // (1) the previous version of the page thumbnails, which this replaces,
@@ -468,7 +469,6 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
     const [contextMenuItems, setContextMenuItems] = useState<IPageMenuItem[]>(
         [],
     );
-    const contextMenuTriggerRef = React.useRef<HTMLElement>();
 
     const [selectedPageId, setSelectedPageId] = useState("");
     const bookAttributesThatMayAffectDisplay = useApiData<any>(
@@ -685,15 +685,12 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
         openContextMenuCount.current = 0;
         setContextMenuPoint(undefined);
         setContextMenuItems([]);
-        contextMenuTriggerRef.current?.focus();
-        contextMenuTriggerRef.current = undefined;
     };
 
     const openContextMenuNearElement = (
         pageId: string,
         element: HTMLElement,
     ) => {
-        contextMenuTriggerRef.current = element;
         const rect = element.getBoundingClientRect();
         openContextMenu(pageId, rect.left, rect.bottom);
     };
@@ -743,6 +740,8 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
                 mouseY: (hostFrameRect?.top ?? 0) + y - 4,
                 pageId,
             });
+            // Close the menu if the user clicks outside Bloom altogether.
+            callOnBlur(closeContextMenu);
         });
     };
 
