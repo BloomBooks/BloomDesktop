@@ -30,7 +30,6 @@ import {
 import { PageThumbnail } from "./PageThumbnail";
 import LazyLoad, { forceCheck } from "react-lazyload";
 import { useL10n } from "../../react_components/l10nHooks";
-import { callOnBlur } from "../../utils/menuCloseOnBlur";
 
 // We're using the Responsive version of react-grid-layout because
 // (1) the previous version of the page thumbnails, which this replaces,
@@ -469,6 +468,8 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
     const [contextMenuItems, setContextMenuItems] = useState<IPageMenuItem[]>(
         [],
     );
+    const closeContextMenuOnBlurCleanupRef = React.useRef<() => void>();
+    const contextMenuTriggerRef = React.useRef<HTMLElement>();
 
     const [selectedPageId, setSelectedPageId] = useState("");
     const bookAttributesThatMayAffectDisplay = useApiData<any>(
@@ -683,14 +684,44 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
 
     const closeContextMenu = () => {
         openContextMenuCount.current = 0;
+        closeContextMenuOnBlurCleanupRef.current?.();
+        closeContextMenuOnBlurCleanupRef.current = undefined;
         setContextMenuPoint(undefined);
         setContextMenuItems([]);
+        // Restore focus to the button that opened the menu so keyboard users don't
+        // lose their place (standard ARIA menu button pattern).
+        // This is typically only important if the menu opened using the keyboard
+        // and was closed using escape. It might then be possible that the user wants
+        // to go on using the keyboard to navigate to another page or something similar.
+        // (Though I don't think that is implemented currently.)
+        // Most of the commands in the menu cause a page change, which will cause focus
+        // to be moved to somewhere in the new page. I don't think this can be a race,
+        // with this code stealing focus from the new page, because there is a delay on
+        // the C# side before the page-changing code is executed. If we remove that or
+        // implement more of the behavior in typescript, we might need to revisit this
+        // and only restore focus if the menu closes without an item being chosen.
+        contextMenuTriggerRef.current?.focus();
+        contextMenuTriggerRef.current = undefined;
+    };
+
+    const registerCloseContextMenuOnExternalBlur = () => {
+        closeContextMenuOnBlurCleanupRef.current?.();
+        const hostWindow =
+            window.parent && window.parent !== window ? window.parent : window;
+        const handleBlur = () => {
+            closeContextMenu();
+        };
+        hostWindow.addEventListener("blur", handleBlur, { once: true });
+        closeContextMenuOnBlurCleanupRef.current = () => {
+            hostWindow.removeEventListener("blur", handleBlur);
+        };
     };
 
     const openContextMenuNearElement = (
         pageId: string,
         element: HTMLElement,
     ) => {
+        contextMenuTriggerRef.current = element;
         const rect = element.getBoundingClientRect();
         openContextMenu(pageId, rect.left, rect.bottom);
     };
@@ -741,12 +772,19 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
                 pageId,
             });
             // Close the menu if the user clicks outside Bloom altogether.
-            callOnBlur(closeContextMenu);
+            registerCloseContextMenuOnExternalBlur();
         });
     };
 
     const onContextMenuItemClick = (commandId: string) => {
         if (!contextMenuPoint) return;
+
+        // This would get cleaned up by closeContextMenu anyway, but there's a
+        // possible race condition if the blur happens at just the wrong moment.
+        // We are going to close the menu almost immediately, so we no longer need
+        // to hide it if the user clicks again outside Bloom.
+        closeContextMenuOnBlurCleanupRef.current?.();
+        closeContextMenuOnBlurCleanupRef.current = undefined;
 
         postJson("pageList/contextMenuItemClicked", {
             pageId: contextMenuPoint.pageId,
