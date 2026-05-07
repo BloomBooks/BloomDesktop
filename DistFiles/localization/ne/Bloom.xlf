@@ -1596,7 +1596,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom">
         <source xml:lang="en">Custom</source>
-        <target xml:lang="ne-NP" state="needs-translation">Custom</target>
+        <target xml:lang="ne-NP" state="needs-review-translation" state-qualifier="leveraged-tm">कस्टम</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
@@ -2531,7 +2531,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
         <source xml:lang="en">Crop</source>
-        <target xml:lang="ne-NP" state="needs-translation">Crop</target>
+        <target xml:lang="ne-NP" state="needs-review-translation" state-qualifier="leveraged-tm">काटछाँट गर्नुहोस्</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
