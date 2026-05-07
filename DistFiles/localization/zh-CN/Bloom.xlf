@@ -1596,7 +1596,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom">
         <source xml:lang="en">Custom</source>
-        <target xml:lang="zh-CN" state="needs-translation">Custom</target>
+        <target xml:lang="zh-CN" state="needs-review-translation" state-qualifier="leveraged-tm">自定义</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
@@ -2531,7 +2531,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
         <source xml:lang="en">Crop</source>
-        <target xml:lang="zh-CN" state="needs-translation">Crop</target>
+        <target xml:lang="zh-CN" state="needs-review-translation" state-qualifier="leveraged-tm">剪裁</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
@@ -2626,7 +2626,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
         <source xml:lang="en">Language:</source>
-        <target xml:lang="zh-CN" state="needs-translation">Language:</target>
+        <target xml:lang="zh-CN" state="needs-review-translation" state-qualifier="leveraged-tm">语言:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true" approved="yes">
@@ -6738,12 +6738,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Left" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="zh-CN" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="zh-CN" state="needs-review-translation" state-qualifier="leveraged-tm">用于横向页面</target>
         <note>ID: TemplateBooks.PageDescription.Image on Left</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Right" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="zh-CN" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="zh-CN" state="needs-review-translation" state-qualifier="leveraged-tm">用于横向页面</target>
         <note>ID: TemplateBooks.PageDescription.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
@@ -7433,7 +7433,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="Topics.Bible" sil:dynamic="true">
         <source xml:lang="en">Bible</source>
-        <target xml:lang="zh-CN" state="needs-translation">Bible</target>
+        <target xml:lang="zh-CN" state="needs-review-translation" state-qualifier="leveraged-tm">圣经</target>
         <note>ID: Topics.Bible</note>
       </trans-unit>
       <trans-unit id="Topics.Business" sil:dynamic="true" approved="yes">
