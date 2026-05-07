@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="Installer.InstallationInProgress" approved="yes">
         <source xml:lang="en">Installing...</source>
-        <target xml:lang="pt-PT" state="final">A instalar... </target>
+        <target xml:lang="pt-PT" state="final">A instalar...</target>
         <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
       </trans-unit>
       <trans-unit id="Errors.CorruptImageFile" approved="yes">
