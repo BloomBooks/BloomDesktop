@@ -617,7 +617,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption">
         <source xml:lang="en">Caption</source>
-        <target xml:lang="fr" state="needs-translation">Caption</target>
+        <target xml:lang="fr" state="needs-review-translation" state-qualifier="leveraged-tm">Légende</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description">
@@ -1596,7 +1596,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom">
         <source xml:lang="en">Custom</source>
-        <target xml:lang="fr" state="needs-translation">Custom</target>
+        <target xml:lang="fr" state="needs-review-translation" state-qualifier="leveraged-tm">Personnalisation</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
@@ -1631,7 +1631,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true">
         <source xml:lang="en">Canvas</source>
-        <target xml:lang="fr" state="needs-translation">Canvas</target>
+        <target xml:lang="fr" state="needs-review-translation" state-qualifier="leveraged-tm">Toile</target>
         <note>ID: EditTab.CustomPage.Canvas</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Text" sil:dynamic="true" approved="yes">
@@ -2626,7 +2626,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
         <source xml:lang="en">Language:</source>
-        <target xml:lang="fr" state="needs-translation">Language:</target>
+        <target xml:lang="fr" state="needs-review-translation" state-qualifier="leveraged-tm">Langue:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true" approved="yes">
@@ -6737,12 +6737,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Left" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="fr" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="fr" state="needs-review-translation" state-qualifier="leveraged-tm">À employer avec le format paysage.</target>
         <note>ID: TemplateBooks.PageDescription.Image on Left</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Right" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="fr" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="fr" state="needs-review-translation" state-qualifier="leveraged-tm">À employer avec le format paysage.</target>
         <note>ID: TemplateBooks.PageDescription.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true" approved="yes">
