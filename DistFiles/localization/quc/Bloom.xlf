@@ -2328,7 +2328,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
       </trans-unit>
       <trans-unit id="EditTab.NoValidImageFoundOnClipboard">
         <source xml:lang="en">Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else.</source>
-        <target xml:lang="quc" state="translated">Bloom ma xuch’ob’ ta ub’e ri k’o chi upam ri k’olwuj pacha’ ri jun wachib’al. Kaj ne are jun k’ol chak k’o uyab’, o xa sib’alaj nim. Jun mul chik chwesaj uwach jun wachib’al chik.   </target>
+        <target xml:lang="quc" state="translated">Bloom ma xuch’ob’ ta ub’e ri k’o chi upam ri k’olwuj pacha’ ri jun wachib’al. Kaj ne are jun k’ol chak k’o uyab’, o xa sib’alaj nim. Jun mul chik chwesaj uwach jun wachib’al chik.</target>
         <note>ID: EditTab.NoValidImageFoundOnClipboard</note>
       </trans-unit>
       <trans-unit id="EditTab.NoOtherLayouts" approved="yes">
@@ -2633,7 +2633,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
-        <target xml:lang="quc" state="translated">Maj un. </target>
+        <target xml:lang="quc" state="translated">Maj un.</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.PasteText" sil:dynamic="true">
@@ -3773,7 +3773,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
       </trans-unit>
       <trans-unit id="LayoutChoices.B5Portrait" sil:dynamic="true">
         <source xml:lang="en">B5 Portrait</source>
-        <target xml:lang="quc" state="translated">B5Tak'alik </target>
+        <target xml:lang="quc" state="translated">B5Tak'alik</target>
         <note>ID: LayoutChoices.B5Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.Cm13Landscape" sil:dynamic="true">
@@ -4946,7 +4946,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.None" approved="yes">
         <source xml:lang="en">None</source>
-        <target xml:lang="quc" state="final">Maj un. </target>
+        <target xml:lang="quc" state="final">Maj un.</target>
         <note>ID: PublishTab.PdfMaker.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.OutOfMemory" approved="yes">
@@ -6727,9 +6727,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="quc" state="final">Uxaq ruk' jun wachib'al ajisik xuquje' jun nim tzij, ya'om pa unik'ajil chi uxe'.</target>
         <note>ID: TemplateBooks.PageDescription.Picture &amp; Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page with an image on top and a large, centered word below.</source>
-        <target xml:lang="quc" state="needs-translation">Page with an image on top and a large, centered word below.</target>
+        <target xml:lang="quc" state="final">Uxaq ruk' jun wachib'al ajisik xuquje' jun nim tzij, ya'om pa unik'ajil chi uxe'.</target>
         <note>ID: TemplateBooks.PageDescription.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true" approved="yes">
@@ -7042,9 +7042,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="quc" state="final">Nim wachib'al pa keb' tzijob'al</target>
         <note>ID: TemplateBooks.PageLabel.Big Picture Diglot</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Big Image Diglot" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Big Image Diglot</source>
-        <target xml:lang="quc" state="needs-translation">Big Image Diglot</target>
+        <target xml:lang="quc" state="final">Nim wachib'al pa keb' tzijob'al</target>
         <note>ID: TemplateBooks.PageLabel.Big Image Diglot</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Big Text Diglot" sil:dynamic="true" approved="yes">
@@ -7177,9 +7177,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="quc" state="final">Wachib'al k'o pa raqan</target>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image on Bottom</source>
-        <target xml:lang="quc" state="needs-translation">Image on Bottom</target>
+        <target xml:lang="quc" state="final">Wachib'al k'o pa raqan</target>
         <note>ID: TemplateBooks.PageLabel.Image on Bottom</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
@@ -7187,9 +7187,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="quc" state="final">Wachib'al pa unik'ajal</target>
         <note>ID: TemplateBooks.PageLabel.Image in Middle</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image on Left" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image on Left" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image on Left</source>
-        <target xml:lang="quc" state="needs-translation">Image on Left</target>
+        <target xml:lang="quc" state="final">Wachib'al pa moxq'ab'</target>
         <note>ID: TemplateBooks.PageLabel.Image on Left</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image on Right" sil:dynamic="true">
@@ -7252,9 +7252,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="quc" state="final">Wachib'al &amp; Silob'wachib'al</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Video</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Video" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Video" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image &amp; Video</source>
-        <target xml:lang="quc" state="needs-translation">Image &amp; Video</target>
+        <target xml:lang="quc" state="final">Wachib'al &amp; Silob'wachib'al</target>
         <note>ID: TemplateBooks.PageLabel.Image &amp; Video</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture &amp; Word" sil:dynamic="true" approved="yes">
@@ -7262,9 +7262,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="quc" state="final">Wachib'al &amp; tzij</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image &amp; Word</source>
-        <target xml:lang="quc" state="needs-translation">Image &amp; Word</target>
+        <target xml:lang="quc" state="final">Wachib'al &amp; tzij</target>
         <note>ID: TemplateBooks.PageLabel.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true" approved="yes">
