@@ -6728,7 +6728,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image &amp; Word" sil:dynamic="true">
         <source xml:lang="en">Page with an image on top and a large, centered word below.</source>
-        <target xml:lang="tr" state="needs-translation">Page with an image on top and a large, centered word below.</target>
+        <target xml:lang="tr" state="translated">Üstte resim ve altta büyük, ortalanmış kelime ile sayfa.</target>
         <note>ID: TemplateBooks.PageDescription.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Picture on Left" sil:dynamic="true">
@@ -7178,7 +7178,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true">
         <source xml:lang="en">Image on Bottom</source>
-        <target xml:lang="tr" state="needs-translation">Image on Bottom</target>
+        <target xml:lang="tr" state="translated">Alttaki resim</target>
         <note>ID: TemplateBooks.PageLabel.Image on Bottom</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true">
@@ -7263,7 +7263,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true">
         <source xml:lang="en">Image &amp; Word</source>
-        <target xml:lang="tr" state="needs-translation">Image &amp; Word</target>
+        <target xml:lang="tr" state="translated">Resim &amp; Kelime</target>
         <note>ID: TemplateBooks.PageLabel.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true">
