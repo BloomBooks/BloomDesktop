@@ -2626,7 +2626,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
         <source xml:lang="en">Language:</source>
-        <target xml:lang="kw" state="needs-translation">Language:</target>
+        <target xml:lang="kw" state="needs-review-translation" state-qualifier="leveraged-tm">Yeth:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
