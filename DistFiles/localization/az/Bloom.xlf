@@ -617,7 +617,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption">
         <source xml:lang="en">Caption</source>
-        <target xml:lang="az" state="needs-translation">Caption</target>
+        <target xml:lang="az" state="needs-review-translation" state-qualifier="leveraged-tm">Şəkilaltı mövzu</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description">
@@ -1596,7 +1596,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom">
         <source xml:lang="en">Custom</source>
-        <target xml:lang="az" state="needs-translation">Custom</target>
+        <target xml:lang="az" state="needs-review-translation" state-qualifier="leveraged-tm">Seçkin Maket</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
@@ -2531,7 +2531,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
         <source xml:lang="en">Crop</source>
-        <target xml:lang="az" state="needs-translation">Crop</target>
+        <target xml:lang="az" state="needs-review-translation" state-qualifier="leveraged-tm">Təsvir kəsmək</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
@@ -2626,7 +2626,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
         <source xml:lang="en">Language:</source>
-        <target xml:lang="az" state="needs-translation">Language:</target>
+        <target xml:lang="az" state="needs-review-translation" state-qualifier="leveraged-tm">Dil:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
@@ -6562,7 +6562,7 @@ is mostly status, which shows on the Collection Tab -->
 -->
       <trans-unit id="TemplateBooks.BookName.Activity" sil:dynamic="true">
         <source xml:lang="en">Activity</source>
-        <target xml:lang="az" state="needs-translation">Activity</target>
+        <target xml:lang="az" state="needs-review-translation" state-qualifier="leveraged-tm">Fəaliyyat</target>
         <note>ID: TemplateBooks.BookName.Activity</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
