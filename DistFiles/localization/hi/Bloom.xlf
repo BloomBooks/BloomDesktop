@@ -1597,7 +1597,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom">
         <source xml:lang="en">Custom</source>
-        <target xml:lang="hi" state="needs-translation">Custom</target>
+        <target xml:lang="hi" state="needs-review-translation" state-qualifier="leveraged-tm">कस्टम</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
@@ -2532,7 +2532,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
         <source xml:lang="en">Crop</source>
-        <target xml:lang="hi" state="needs-translation">Crop</target>
+        <target xml:lang="hi" state="needs-review-translation" state-qualifier="leveraged-tm">क्रॉप करें</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
@@ -6739,12 +6739,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Left" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="hi" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="hi" state="needs-review-translation" state-qualifier="leveraged-tm">लैंडस्केप ओरिएंटेशन के साथ उपयोग के लिए।</target>
         <note>ID: TemplateBooks.PageDescription.Image on Left</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Right" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="hi" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="hi" state="needs-review-translation" state-qualifier="leveraged-tm">लैंडस्केप ओरिएंटेशन के साथ उपयोग के लिए।</target>
         <note>ID: TemplateBooks.PageDescription.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
