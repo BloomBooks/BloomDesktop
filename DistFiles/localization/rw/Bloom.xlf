@@ -7176,9 +7176,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="rw" state="final">Ishusho hasi</target>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image on Bottom</source>
-        <target xml:lang="rw" state="needs-translation">Image on Bottom</target>
+        <target xml:lang="rw" state="final">Ifoto hasi</target>
         <note>ID: TemplateBooks.PageLabel.Image on Bottom</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
@@ -7261,9 +7261,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="rw" state="final">Ifoto &amp; Ijambo</target>
         <note>ID: TemplateBooks.PageLabel.Picture &amp; Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image &amp; Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image &amp; Word</source>
-        <target xml:lang="rw" state="needs-translation">Image &amp; Word</target>
+        <target xml:lang="rw" state="final">Ifoto &amp; Ijambo</target>
         <note>ID: TemplateBooks.PageLabel.Image &amp; Word</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture in Middle" sil:dynamic="true" approved="yes">
