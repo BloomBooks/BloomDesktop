@@ -387,36 +387,42 @@ namespace Bloom.web.controllers
             try
             {
                 var seconds = (int)duration.TotalSeconds;
-                var start = DateTime.Now;
-                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
-                    FfmpegProgram,
+                var succeeded = ReencodeVideo(
+                    videoFilePath,
+                    progress,
+                    duration,
                     parameters,
-                    null,
-                    "",
-                    seconds + 60,
-                    new NullProgress(),
-                    (line) => ReportProgressAction(line, duration, progress)
+                    seconds
                 );
-                var finish = DateTime.Now;
-                lock (_cancelLock)
+                if (!succeeded)
+                    return; // leave original in place if cancelled or failed.
+                // Sanity check to ensure that the output file is not larger than the original.
+                var infoOld = new FileInfo(videoFilePath);
+                var infoNew = new FileInfo(tempPath);
+                if (infoOld.Length < infoNew.Length)
                 {
-                    if (_importCancelled)
+                    // Processing increased the size.  This is bad.
+                    if (hasSignLanguage && hasAudio)
                     {
-                        RobustFile.Delete(tempPath);
-                        return;
+                        // We still need to strip the audio regardless.  That shouldn't make the file larger since we're
+                        // just copying the video stream and removing the audio stream.
+                        parameters =
+                            $"-hide_banner -y -i \"{videoFilePath}\" -progress pipe:1 -c copy -an \"{tempPath}\"";
+                        var succeeded2 = ReencodeVideo(
+                            videoFilePath,
+                            progress,
+                            duration,
+                            parameters,
+                            seconds
+                        );
+                        if (!succeeded2)
+                            return; // keep original file if failed or cancelled.
                     }
-                }
-                Debug.WriteLine(
-                    $"ffmpeg re-encoding video took {(finish - start)}; timeout was set to {seconds + 60} seconds"
-                );
-
-                if (result.DidTimeOut || result.ExitCode != 0)
-                {
-                    Logger.WriteEvent(
-                        $"ReencodeVideoIfNeeded: ffmpeg issue for {videoFilePath}: exit code={result.ExitCode}; stderr= {result.StandardError}"
-                    );
-                    progress.SendPercent(100);
-                    return; // leave original in place
+                    else
+                    {
+                        progress.SendPercent(100);
+                        return; // keep original file, since the re-encoded version is bigger than the original.
+                    }
                 }
                 RobustFile.Copy(tempPath, videoFilePath, true);
                 progress.SendPercent(100);
@@ -426,6 +432,50 @@ namespace Bloom.web.controllers
                 if (RobustFile.Exists(tempPath))
                     RobustFile.Delete(tempPath);
             }
+        }
+
+        /// <summary>
+        /// Re-encode a video file using ffmpeg with the given parameters.
+        /// </summary>
+        /// <returns>false if the process fails or is cancelled, true if it succeeds</returns>
+        private bool ReencodeVideo(
+            string videoFilePath,
+            WebSocketProgress progress,
+            TimeSpan duration,
+            string parameters,
+            int seconds
+        )
+        {
+            var start = DateTime.Now;
+            var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                FfmpegProgram,
+                parameters,
+                null,
+                "",
+                seconds + 60,
+                new NullProgress(),
+                (line) => ReportProgressAction(line, duration, progress)
+            );
+            var finish = DateTime.Now;
+            lock (_cancelLock)
+            {
+                if (_importCancelled)
+                {
+                    return false; // leave original in place
+                }
+            }
+            Debug.WriteLine(
+                $"ffmpeg re-encoding video took {(finish - start)}; timeout was set to {seconds + 60} seconds"
+            );
+            if (result.DidTimeOut || result.ExitCode != 0)
+            {
+                Logger.WriteEvent(
+                    $"ReencodeVideoIfNeeded: ffmpeg issue for {videoFilePath}: exit code={result.ExitCode}; stderr= {result.StandardError}"
+                );
+                progress.SendPercent(100);
+                return false; // leave original in place
+            }
+            return true;
         }
 
         private static bool IsRotated90Degrees(string ffmpegOutput)
