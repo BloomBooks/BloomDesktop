@@ -1,6 +1,6 @@
 # About the Sign Language Template {i18n="sign.language.template.title"}
 
-This template provides a collection of pages that can hold a video in addition to text and pictures. {i18n="sign.language.template.provides"}
+This template provides a collection of pages that can hold a video in addition to text and images. {i18n="sign.language.template.provides"}
 
 Using the Sign Language Tool, you can record a video of a person signing the message to be communicated for each page using the sign language of your choice, or you can import a pre-recorded sign language video. {i18n="sign.language.template.tool"}
 
