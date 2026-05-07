@@ -405,8 +405,17 @@ export default class WebSocketManager {
         listener: (messageEvent: T) => void,
     ): void {
         const onceListener = (messageEvent: T) => {
-            listener(messageEvent);
-            WebSocketManager.removeListener(clientContext, onceListener);
+            // Ignore a message with id = websocket/open/${clientContext} because that
+            // is not a real message from the server, but an internal message we use to
+            // trigger re-querying of server state when a socket opens (or re-opens after
+            // a disconnect).  If we didn't ignore it, then any "once" listener that
+            // happened to be subscribed at the moment a socket opened would get triggered
+            // by this internal message and then never get triggered again, which would be
+            // wrong.  See BL-16284.
+            if (messageEvent.id !== `websocket/open/${clientContext}`) {
+                listener(messageEvent);
+                WebSocketManager.removeListener(clientContext, onceListener);
+            }
         };
         WebSocketManager.addListener(clientContext, onceListener);
     }
