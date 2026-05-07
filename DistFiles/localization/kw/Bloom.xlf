@@ -6015,7 +6015,7 @@
       </trans-unit>
       <trans-unit id="ReaderSetup.StageLabel" sil:dynamic="true">
         <source xml:lang="en">Stage </source>
-        <target xml:lang="kw" state="translated">Kamm </target>
+        <target xml:lang="kw" state="translated">Kamm</target>
         <note>ID: ReaderSetup.StageLabel</note>
       </trans-unit>
       <trans-unit id="ReaderSetup.Stages" sil:dynamic="true">
