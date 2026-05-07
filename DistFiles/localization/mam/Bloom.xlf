@@ -1151,7 +1151,7 @@
       </trans-unit>
       <trans-unit id="Common.Default">
         <source xml:lang="en">Default</source>
-        <target xml:lang="mam" state="needs-translation">Default</target>
+        <target xml:lang="mam" state="needs-review-translation" state-qualifier="leveraged-tm">B'incha'nmaj</target>
         <note>ID: Common.Default</note>
       </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
@@ -1596,7 +1596,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom">
         <source xml:lang="en">Custom</source>
-        <target xml:lang="mam" state="needs-translation">Custom</target>
+        <target xml:lang="mam" state="needs-review-translation" state-qualifier="leveraged-tm">Ttenxix</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
@@ -2531,7 +2531,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
         <source xml:lang="en">Crop</source>
-        <target xml:lang="mam" state="needs-translation">Crop</target>
+        <target xml:lang="mam" state="needs-review-translation" state-qualifier="leveraged-tm">K-elel</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
@@ -2626,7 +2626,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
         <source xml:lang="en">Language:</source>
-        <target xml:lang="mam" state="needs-translation">Language:</target>
+        <target xml:lang="mam" state="needs-review-translation" state-qualifier="leveraged-tm">Yol:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true" approved="yes">
@@ -6565,7 +6565,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
         <source xml:lang="en">Arithmetic</source>
-        <target xml:lang="mam" state="needs-translation">Arithmetic</target>
+        <target xml:lang="mam" state="needs-review-translation" state-qualifier="leveraged-tm">Kyxilen qe ajla'b'il</target>
         <note>ID: TemplateBooks.BookName.Arithmetic</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic Pages" sil:dynamic="true">
@@ -6736,12 +6736,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Left" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="mam" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="mam" state="needs-review-translation" state-qualifier="leveraged-tm">Tu'n tajb'en tuj q'eli.</target>
         <note>ID: TemplateBooks.PageDescription.Image on Left</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Right" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="mam" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="mam" state="needs-review-translation" state-qualifier="leveraged-tm">Tu'n tajb'en tuj q'eli.</target>
         <note>ID: TemplateBooks.PageDescription.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true" approved="yes">
