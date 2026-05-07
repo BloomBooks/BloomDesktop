@@ -618,7 +618,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption">
         <source xml:lang="en">Caption</source>
-        <target xml:lang="sw" state="needs-translation">Caption</target>
+        <target xml:lang="sw" state="needs-review-translation" state-qualifier="leveraged-tm">Maelezo mafupi</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description">
@@ -1152,7 +1152,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       </trans-unit>
       <trans-unit id="Common.Default">
         <source xml:lang="en">Default</source>
-        <target xml:lang="sw" state="needs-translation">Default</target>
+        <target xml:lang="sw" state="needs-review-translation" state-qualifier="leveraged-tm">Chaguo-msingi</target>
         <note>ID: Common.Default</note>
       </trans-unit>
       <trans-unit id="Common.Delete" approved="yes">
@@ -1597,7 +1597,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom">
         <source xml:lang="en">Custom</source>
-        <target xml:lang="sw" state="needs-translation">Custom</target>
+        <target xml:lang="sw" state="needs-review-translation" state-qualifier="leveraged-tm">Kaida</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
@@ -2532,7 +2532,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
         <source xml:lang="en">Crop</source>
-        <target xml:lang="sw" state="needs-translation">Crop</target>
+        <target xml:lang="sw" state="needs-review-translation" state-qualifier="leveraged-tm">Ongeza/Punguza ukubwa wa Picha</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
@@ -2627,7 +2627,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
         <source xml:lang="en">Language:</source>
-        <target xml:lang="sw" state="needs-translation">Language:</target>
+        <target xml:lang="sw" state="needs-review-translation" state-qualifier="leveraged-tm">Lugha:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true" approved="yes">
@@ -6561,7 +6561,7 @@ is mostly status, which shows on the Collection Tab -->
 -->
       <trans-unit id="TemplateBooks.BookName.Activity" sil:dynamic="true">
         <source xml:lang="en">Activity</source>
-        <target xml:lang="sw" state="needs-translation">Activity</target>
+        <target xml:lang="sw" state="needs-review-translation" state-qualifier="leveraged-tm">Shughuli</target>
         <note>ID: TemplateBooks.BookName.Activity</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
@@ -6737,12 +6737,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Left" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="sw" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="sw" state="needs-review-translation" state-qualifier="leveraged-tm">Kwa matumizi na mwelekeo wa ukurasa mlalo.</target>
         <note>ID: TemplateBooks.PageDescription.Image on Left</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Right" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="sw" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="sw" state="needs-review-translation" state-qualifier="leveraged-tm">Kwa matumizi na mwelekeo wa ukurasa mlalo.</target>
         <note>ID: TemplateBooks.PageDescription.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true" approved="yes">
