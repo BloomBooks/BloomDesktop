@@ -618,7 +618,7 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption">
         <source xml:lang="en">Caption</source>
-        <target xml:lang="quc" state="needs-translation">Caption</target>
+        <target xml:lang="quc" state="needs-review-translation" state-qualifier="leveraged-tm">B'i'aj wuj</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description">
@@ -1152,7 +1152,7 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
       </trans-unit>
       <trans-unit id="Common.Default">
         <source xml:lang="en">Default</source>
-        <target xml:lang="quc" state="needs-translation">Default</target>
+        <target xml:lang="quc" state="needs-review-translation" state-qualifier="leveraged-tm">Ya'om chik uloq chech</target>
         <note>ID: Common.Default</note>
       </trans-unit>
       <trans-unit id="Common.Delete">
@@ -1597,7 +1597,7 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom">
         <source xml:lang="en">Custom</source>
-        <target xml:lang="quc" state="needs-translation">Custom</target>
+        <target xml:lang="quc" state="needs-review-translation" state-qualifier="leveraged-tm">Winaqirisam</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
@@ -2533,7 +2533,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Crop" sil:dynamic="true">
         <source xml:lang="en">Crop</source>
-        <target xml:lang="quc" state="needs-translation">Crop</target>
+        <target xml:lang="quc" state="needs-review-translation" state-qualifier="leveraged-tm">Uramik</target>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Crop</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Fill" sil:dynamic="true">
@@ -2628,7 +2628,7 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
         <source xml:lang="en">Language:</source>
-        <target xml:lang="quc" state="needs-translation">Language:</target>
+        <target xml:lang="quc" state="needs-review-translation" state-qualifier="leveraged-tm">Tzijob'al:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
@@ -6739,12 +6739,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Left" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="quc" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="quc" state="needs-review-translation" state-qualifier="leveraged-tm">Rech ukojij ruk' q'e'lik ub'eyal.</target>
         <note>ID: TemplateBooks.PageDescription.Image on Left</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Right" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="quc" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="quc" state="needs-review-translation" state-qualifier="leveraged-tm">Rech ukojij ruk' q'e'lik ub'eyal.</target>
         <note>ID: TemplateBooks.PageDescription.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
