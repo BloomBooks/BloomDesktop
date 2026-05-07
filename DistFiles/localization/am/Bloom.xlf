@@ -7176,9 +7176,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="am" state="final">ምስል በግርጌ</target>
         <note>ID: TemplateBooks.PageLabel.Image On Bottom</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image on Bottom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image on Bottom</source>
-        <target xml:lang="am" state="needs-translation">Image on Bottom</target>
+        <target xml:lang="am" state="final">ስዕል በግርጌ</target>
         <note>ID: TemplateBooks.PageLabel.Image on Bottom</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Image in Middle" sil:dynamic="true" approved="yes">
