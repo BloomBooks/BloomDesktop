@@ -1596,7 +1596,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom">
         <source xml:lang="en">Custom</source>
-        <target xml:lang="lo" state="needs-translation">Custom</target>
+        <target xml:lang="lo" state="needs-review-translation" state-qualifier="leveraged-tm">ປະເພນີ</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
@@ -2626,7 +2626,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
         <source xml:lang="en">Language:</source>
-        <target xml:lang="lo" state="needs-translation">Language:</target>
+        <target xml:lang="lo" state="needs-review-translation" state-qualifier="leveraged-tm">ພາສາ:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true">
