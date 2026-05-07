@@ -618,7 +618,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption">
         <source xml:lang="en">Caption</source>
-        <target xml:lang="es-ES" state="needs-translation">Caption</target>
+        <target xml:lang="es-ES" state="needs-review-translation" state-qualifier="leveraged-tm">Título</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description">
@@ -1597,7 +1597,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom">
         <source xml:lang="en">Custom</source>
-        <target xml:lang="es-ES" state="needs-translation">Custom</target>
+        <target xml:lang="es-ES" state="needs-review-translation" state-qualifier="leveraged-tm">Personalizado</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
@@ -2628,7 +2628,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
         <source xml:lang="en">Language:</source>
-        <target xml:lang="es-ES" state="needs-translation">Language:</target>
+        <target xml:lang="es-ES" state="needs-review-translation" state-qualifier="leveraged-tm">Idioma:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true" approved="yes">
@@ -6687,7 +6687,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Bilingual &amp; Image in Middle" sil:dynamic="true">
         <source xml:lang="en">A page with one language above the image and another below it.</source>
-        <target xml:lang="es-ES" state="needs-translation">A page with one language above the image and another below it.</target>
+        <target xml:lang="es-ES" state="needs-review-translation" state-qualifier="leveraged-tm">Una página con un idioma encima de la imagen y otro debajo de ella.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Image in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true">
@@ -6738,12 +6738,12 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Left" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="es-ES" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="es-ES" state="needs-review-translation" state-qualifier="leveraged-tm">Para uso con orientación horizontal.</target>
         <note>ID: TemplateBooks.PageDescription.Image on Left</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Image on Right" sil:dynamic="true">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="es-ES" state="needs-translation">For use with Landscape orientation.</target>
+        <target xml:lang="es-ES" state="needs-review-translation" state-qualifier="leveraged-tm">Para uso con orientación horizontal.</target>
         <note>ID: TemplateBooks.PageDescription.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true" approved="yes">
