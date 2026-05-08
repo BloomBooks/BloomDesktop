@@ -7,6 +7,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.TeamCollection;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
@@ -770,6 +771,7 @@ namespace Bloom.Collection
         public bool FontSettingsLinkClicked(int zeroBasedLanguageNumber)
         {
             var pendingLanguage = PendingLanguages[zeroBasedLanguageNumber];
+            using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
             using (var frm = new ScriptSettingsDialog())
             {
                 frm.LanguageName = pendingLanguage.Name;
@@ -777,7 +779,7 @@ namespace Bloom.Collection
                 frm.LanguageLineSpacing = pendingLanguage.LineHeight;
                 frm.UIFontSize = pendingLanguage.BaseUIFontSizeInPoints;
                 frm.BreakLinesOnlyAtSpaces = pendingLanguage.BreaksLinesOnlyAtSpaces;
-                frm.ShowDialog();
+                frm.ShowDialog(this);
 
                 // get the changes
 
