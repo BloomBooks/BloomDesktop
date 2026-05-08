@@ -91,9 +91,9 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"PodcastUtilities.PortableDevices.dll"=>"lib/dotnet", "PodcastUtilities.PortableDevices.pdb"=>"lib/dotnet", "Interop.PortableDeviceApiLib.dll"=>"lib/dotnet", "Interop.PortableDeviceTypesLib.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/PodcastUtilities.git [refs/heads/master]
-# [2] build: Bloom Help 6.4 (Bloom_Help_BloomHelp64)
+# [2] build: Bloom Help 6.5 (Bloom_Help_BloomHelp65)
 #     project: Help
-#     URL: https://build.palaso.org/buildConfiguration/Bloom_Help_BloomHelp64?mode=builds
+#     URL: https://build.palaso.org/buildConfiguration/Bloom_Help_BloomHelp65?mode=builds
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
@@ -127,7 +127,7 @@ copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableD
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/PodcastUtilities.PortableDevices.pdb ../lib/dotnet/PodcastUtilities.PortableDevices.pdb
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/Interop.PortableDeviceApiLib.dll ../lib/dotnet/Interop.PortableDeviceApiLib.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_PortableDevicesFromPodcastUtitlies/latest.lastSuccessful/Interop.PortableDeviceTypesLib.dll ../lib/dotnet/Interop.PortableDeviceTypesLib.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp64/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp65/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.exe ../lib/dotnet/HtmlXliff.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlXliff.pdb ../lib/dotnet/HtmlXliff.pdb
 copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_WindowsMasterContinuous/latest.lastSuccessful/HtmlAgilityPack.dll ../lib/dotnet/HtmlAgilityPack.dll
