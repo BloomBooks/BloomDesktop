@@ -1431,7 +1431,14 @@ namespace Bloom
 
             Sldr.Cleanup();
             Logger.WriteMinorEvent("shutting down logger, about to dispose project context");
+            // Force the log file to include the minor events.  I don't know why this isn't the default. (BL-16290)
+            var logText = Logger.LogText;
+            var logPath = Logger.LogPath;
             Logger.ShutDown();
+            if (string.IsNullOrWhiteSpace(logPath))
+                logPath = Path.Combine(Path.GetTempPath(), "SIL", "Bloom", "Log.txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+            RobustFile.WriteAllText(logPath, logText);
 
             if (_projectContext != null)
                 _projectContext.Dispose();
