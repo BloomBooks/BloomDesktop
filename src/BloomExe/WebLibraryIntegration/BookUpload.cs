@@ -545,10 +545,16 @@ namespace Bloom.WebLibraryIntegration
                 controlToInvokeOn
             );
 
-            // Really crop images, which allows us to simplify the representation of background images,
-            // so the new structure with the background canvas elements doesn't get uploaded.
-            // We think it's better if Blorg books don't have this structure until we can migrate all pages
-            // to it.
+            // Really crop images, but leave in place the HTML structures that indicates they are cropped.
+            // Really cropping them will typically reduce the space needed, and may also have value in
+            // protecting privacy in case the cropped parts were not meant to be seen. Earlier verions
+            // removed the HTML cropping structure altogether, which was nice for older Bloom versions
+            // that don't understand it, and could help images automatically adjust to changing page
+            // sizes. But all shipping versions of Bloom now understand cropping, and removing the
+            // cropping structure can cause an imperfect filling of the space, particularly letting
+            // one pixel of a cover show along the edge of an image that should fill it. So we decided
+            // to keep the cropping structure, just adjust it to suit an image that is reduce to as near
+            // the right size as we can get.
             // Since this is a temp directory and a book that's already up-to-date, I think it's safe to
             // just load a DOM from the file, modify it, and write it out again, without all the
             // overhead of creating a book object.
