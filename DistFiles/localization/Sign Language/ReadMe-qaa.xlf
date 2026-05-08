@@ -8,8 +8,8 @@
         <note>ID: sign.language.template.title</note>
       </trans-unit>
       <trans-unit id="sign.language.template.provides">
-        <source xml:lang="en">This template provides a collection of pages that can hold a video in addition to text and pictures.</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">This template provides a collection of pages that can hold a video in addition to text and pictures.</target>
+        <source xml:lang="en">This template provides a collection of pages that can hold a video in addition to text and images.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">This template provides a collection of pages that can hold a video in addition to text and images.</target>
         <note>ID: sign.language.template.provides</note>
       </trans-unit>
       <trans-unit id="sign.language.template.tool">
