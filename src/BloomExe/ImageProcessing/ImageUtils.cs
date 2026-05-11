@@ -1555,7 +1555,7 @@ namespace Bloom.ImageProcessing
                                 argsBldr.Append(" -background white -extent 0x0 +matte");
                             else if (options.MakeTransparent)
                                 argsBldr.Append(
-                                    " -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\""
+                                    " -matte -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\""
                                 );
                             if (options.cropRectangle != Rectangle.Empty)
                             {
