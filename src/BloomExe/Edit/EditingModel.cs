@@ -82,21 +82,6 @@ namespace Bloom.Edit
 
         public delegate EditingModel Factory(); //autofac uses this
 
-        /// <summary>
-        /// If this is set, the model may call it (passing false) to prevent switching to and from the Edit tab.
-        /// It should then be called (passing true) when it's OK to switch tabs again.
-        /// We use this so that
-        /// (a) when we are in the process of completing a Save for some command in the edit tab, we can't leave that
-        /// tab (until the save is complete), and
-        /// (b) when are doing the Save that is part of leaving the Edit tab, we can't switch back to Edit tab
-        /// until the save is complete and we're in the expected state for entering the tab.
-        /// Without these restrictions, it is hard to reason about the possible states of the system
-        /// as we execute commands and then rapidly switch tabs.
-        /// Probably only testers will switch tabs so frequently as to run into such problems, and even
-        /// they may not notice the brief disabling of the tabs.
-        /// </summary>
-        public Action<bool> EnableSwitchingTabs;
-
         private EditingStateMachine _stateMachine;
 
         public EditingStateMachine StateMachine => _stateMachine;
@@ -159,7 +144,7 @@ namespace Bloom.Edit
                         _view.OnHideEditTab();
                     }
                 },
-                enableStateTransitions: (enabled) => EnableSwitchingTabs?.Invoke(enabled)
+                enableStateTransitions: (enabled) => _view?.WorkspaceView?.SetTabsEnabled(enabled)
             );
 
             bookSelection.SelectionChanged += OnBookSelectionChanged;
@@ -1045,7 +1030,7 @@ namespace Bloom.Edit
                         continue;
                     }
 
-                    if (HtmlDom.IsNodePartOfDataBookOrDataCollection(node))
+                    if (HtmlDom.DoesNodeGetCopiedToDataDiv(node))
                     {
                         continue;
                     }
@@ -1633,7 +1618,7 @@ namespace Bloom.Edit
             {
                 var msg = LocalizationManager.GetString(
                     "Errors.ProblemImportingPicture",
-                    "Bloom had a problem importing this picture."
+                    "Bloom had a problem importing this image."
                 );
                 e.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
                 ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
@@ -1643,9 +1628,9 @@ namespace Bloom.Edit
         public void UpdateImageInBrowser(PageEditingModel.ImageInfoForJavascript args)
         {
             // We generally don't need to wait. Even if we decide to save, its call to RunJavascriptAsync() will come in after ours.
-            // But be careful about depending on that (or any subsequent running Javascript) on pages that might have canvas elements:
-            // updating the image on a canvas page can involve async code that adjusts things after the image is loaded
-            // enough to get its dimensions, and that adjustment might not complete before the next Javascript is run from C#
+            // changeImage() itself is synchronous. The one async path (adjustBackgroundImageSize) is wrapped with
+            // wrapWithRequestPageContentDelay, which ensures any C#-triggered request for page content waits until
+            // those async DOM adjustments settle before retrieving the page HTML.
             GetEditingBrowser()
                 .RunJavascriptFireAndForget(
                     $"workspaceBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
@@ -1654,18 +1639,12 @@ namespace Bloom.Edit
             /* We're Saving to the DOM here only if it's a cover page, because that lets us make the image transparent if it should be:
              *        Cause: Until we have Saved the page, the in-memory DOM doesn't have this as the cover image,
              *        so the check to see if we need to make it transparent says "no".
-             *        This could probably be done in a smarter way that isn't occuring to me at the moment.
              *  [JT idea: we could update our version of the DOM, just setting the src of the image. Or, we could
              *  talk directly to the BloomServer and tell it that image needs transparency.]
              * Another possible reason to Save is that it is needed if we're going to update the thumbnail, but we decided
              * we can live without this...probably we can get that behavior back once the page list is in the same browser.
-             * And as noted above, a reason not to save is that it's a problem to run the Javascript that gets the page
-             * content before any async consequences of running the changeImage above (that affect the saved DOM content)
-             * have completed.
-             * For now, it's OK to Save on the cover, because we don't support canvas elements there, and canvas elements
-             * are the only known case where the async consequences of the changeImage might affect the saved DOM.
-             * But this is more fragile than I like. Hope we can soon find a better way to get the cover image transparency
-             * and maybe even update the thumbnails without forcing a save.
+             * Note: although changeImage() is synchronous, the async background-image-size adjustment it triggers is wrapped
+             * with wrapWithRequestPageContentDelay, so any save below will correctly wait for DOM adjustments to settle.
              */
             if (CurrentPage.IsCoverPage)
             {
@@ -1687,7 +1666,7 @@ namespace Bloom.Edit
                         {
                             var msg = LocalizationManager.GetString(
                                 "Errors.ProblemImportingPicture",
-                                "Bloom had a problem importing this picture."
+                                "Bloom had a problem importing this image."
                             );
                             e.Data["ProblemImagePath"] = args.src;
                             ErrorReport.NotifyUserOfProblem(

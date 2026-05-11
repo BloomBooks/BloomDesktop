@@ -3309,6 +3309,65 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void GatherDataItemsFromXElement_BloomEditableAudioSpans_PreservesSpaceBetweenAdjacentSpans()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+                <div class='bloom-page'>
+                     <div class='bloom-editable bloom-visibility-code-on audio-sentence bloom-postAudioSplit' data-book='coverImageDescription' lang='en' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='6.200 12.080'><p><span class='bloom-highlightSegment'>Gentle waves on a beach.</span> <span class='bloom-highlightSegment'>Large rocks, houses and trees are seen in the distance.</span></p></div>
+                </div>
+                </body></html>",
+                true
+            );
+            var dataSet = new DataSet();
+            var bookData = new BookData(
+                new HtmlDom("<html><body></body></html>"),
+                _collectionSettings,
+                null
+            );
+
+            bookData.GatherDataItemsFromXElement(dataSet, dom.RawDom.DocumentElement);
+
+            var storedForm = dataSet
+                .TextVariables["coverImageDescription"]
+                .TextAlternatives.GetExactAlternative("en");
+            Assert.That(
+                storedForm,
+                Does.Contain(
+                    "</span> <span class=\"bloom-highlightSegment\">Large rocks, houses and trees are seen in the distance."
+                )
+            );
+        }
+
+        [Test]
+        public void SynchronizeDataItemsThroughoutDOM_BloomEditableAudioSpans_PreservesSpaceBetweenAdjacentSpans()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+                <div id='bloomDataDiv'>
+                     <div data-book='coverImageDescription' lang='en' class='bloom-editable audio-sentence bloom-postAudioSplit' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='6.200 12.080'><p><span class='bloom-highlightSegment'>Gentle waves on a beach.</span> <span class='bloom-highlightSegment'>Large rocks, houses and trees are seen in the distance.</span></p></div>
+                </div>
+                <div class='bloom-page'>
+                     <div findMe='target' class='bloom-editable bloom-visibility-code-on audio-sentence bloom-postAudioSplit' data-book='coverImageDescription' lang='en' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='6.200 12.080'><p/></div>
+                </div>
+                </body></html>",
+                true
+            );
+
+            var data = new BookData(dom, _collectionSettings, null);
+            data.SynchronizeDataItemsThroughoutDOM();
+
+            var target = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='target']");
+            Assert.That(
+                target.InnerXml,
+                Does.Contain(
+                    "</span> <span class=\"bloom-highlightSegment\">Large rocks, houses and trees are seen in the distance."
+                )
+            );
+        }
+
+        [Test]
         public void GatherDataItemsFromXElement_OmitsDataPageNumber()
         {
             var dom = new HtmlDom(
@@ -3560,6 +3619,8 @@ namespace BloomTests.Book
                         <div class='bloom-translationGroup'>
                             <div class='bloom-editable bloom-visibility-code-on audio-sentence' data-book='bookTitle' lang='en' id='i6a720491' data-audiorecordingmode='TextBox' recordingmd5='5b5efdab7f705554614a6383ae6d9469' data-duration='5.839433'><p>My Title</p></div>
 						</div>
+                        <div data-book='customNote' lang='en'><p><span class='audio-sentence' id='nestedSentenceId'>Nested sentence</span></p></div>
+                        <p><span class='audio-sentence' id='plainSentenceId'>Unbound sentence</span></p>
 					</div>
 				</div>
 			</body></html>"
@@ -3573,6 +3634,44 @@ namespace BloomTests.Book
                     "//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and @id='i6a720491' and @data-audiorecordingmode='TextBox' and @recordingmd5='5b5efdab7f705554614a6383ae6d9469' and @data-duration='5.839433']",
                     1
                 );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//*[@data-book-inactive='bookTitle' and @data-id-inactive='i6a720491' and not(@id) and not(@id-inactive)]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//span[contains(@class,'audio-sentence') and @id='plainSentenceId' and not(@data-id-inactive) and not(@id-inactive)]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//div[@data-book-inactive='customNote']//span[contains(@class,'audio-sentence') and @data-id-inactive='nestedSentenceId' and not(@id) and not(@id-inactive)]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//span[contains(@class,'audio-sentence') and @id='plainSentenceId']",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover']//span[contains(@class,'audio-sentence') and @id='nestedSentenceId']",
+                    1
+                );
+        }
+
+        [Test]
+        public void GetInactiveAttributeNamesToRestore_Id_IncludesLegacyName()
+        {
+            var names = BookData.GetInactiveAttributeNamesToRestore("id");
+
+            Assert.That(names, Is.EqualTo(new[] { "data-id-inactive", "id-inactive" }));
         }
 
         [Test]

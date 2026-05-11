@@ -68,7 +68,7 @@ namespace BloomTests.Spreadsheet
             <p>English Microwave</p>
         </div>
 
-        <div data-book=""coverImage"" lang=""*"" src=""wrongImage.png"" alt=""This picture, microwave1.png, is missing or was loading too slowly."" data-copyright="""" data-creator="""" data-license="""">
+        <div data-book=""coverImage"" lang=""*"" src=""wrongImage.png"" alt=""This image, microwave1.png, is missing or was loading too slowly."" data-copyright="""" data-creator="""" data-license="""">
             microwave1.png
         </div>
 

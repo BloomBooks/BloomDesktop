@@ -91,6 +91,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
     props,
 ) => {
     const [eyedropperActive, setEyedropperActive] = useState(false);
+    const [includeAlphaInHexValue, setIncludeAlphaInHexValue] = useState(true);
     const mountedRef = useRef(true);
     const backdropSelector =
         props.eyedropperBackdropSelector ?? defaultEyedropperBackdropSelector;
@@ -122,8 +123,13 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
 
     const changeColor = (
         swatchColor: IColorInfo,
-        options?: { complete?: boolean },
+        options?: { complete?: boolean; fromBlankOpacity?: boolean },
     ) => {
+        if (options?.fromBlankOpacity) {
+            setIncludeAlphaInHexValue(false);
+        } else {
+            setIncludeAlphaInHexValue(true);
+        }
         const clonedColor = cloneColor(swatchColor);
         props.onChange(clonedColor);
         if (options?.complete) {
@@ -148,20 +154,11 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
     };
 
     // Handler for when the user changes the hex code value (including pasting).
-    const handleHexCodeChange = (hexColor: string) => {
-        let colorOnly = hexColor;
-        let newOpacity = props.currentColor.opacity;
-
-        if (props.transparency && /^#[0-9A-Fa-f]{8}$/.test(hexColor)) {
-            colorOnly = hexColor.substring(0, 7);
-            newOpacity = parseInt(hexColor.substring(7, 9), 16) / 255;
-        }
-
-        const newColor = {
-            colors: [colorOnly],
-            opacity: newOpacity,
-        };
-        changeColor(newColor, { complete: true });
+    const handleHexCodeChange = (
+        newColor: IColorInfo,
+        fromBlankOpacity: boolean,
+    ) => {
+        changeColor(newColor, { complete: true, fromBlankOpacity });
     };
 
     const getColorInfoFromColorResult = (
@@ -304,6 +301,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = (
                     initial={props.currentColor}
                     onChangeComplete={handleHexCodeChange}
                     includeOpacityChannel={!!props.transparency}
+                    includeAlphaInHexValue={includeAlphaInHexValue}
                 />
                 <ColorSwatch
                     colors={props.currentColor.colors}

@@ -8,7 +8,7 @@
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use">
-        <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
+        <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with an image and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
         <target />
         <note>ID: wall.calendar.use</note>
       </trans-unit>

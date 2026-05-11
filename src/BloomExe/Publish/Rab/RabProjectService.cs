@@ -10,6 +10,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Security;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -42,13 +43,16 @@ namespace Bloom.Publish.Rab
         private const string kBloomRabRegistrySubKey =
             @"Software\SIL\Reading App Builder for Bloom";
         private const int kUserCanceledShellLaunchErrorCode = 1223;
-        private const string kRabSetupInstallerPrefix = "Reading-App-Builder-14.0";
+        private const string kRabSetupInstallerPrefix = "Reading-App-Builder-For-Bloom-";
+        private const string kRabInstallerVersion = "14-0";
         private const string kRabSetupInstallerSuffix = "-Setup.exe";
-        private const string kRabSetupInstallerFileName =
-            "Reading-App-Builder-For-Bloom-6-4-Setup.exe";
+        internal const string kRabSetupInstallerFileName =
+            kRabSetupInstallerPrefix + kRabInstallerVersion + kRabSetupInstallerSuffix;
         private const string kDefaultBundledIconId = "bloom-app-icon-52";
+
+        // Keep this URL in sync with rabInstallerDownloadUrl in BloomBrowserUI/publish/Apps/AppPublisherScreen.tsx.
         private const string kRabSetupDownloadUrl =
-            "https://bloomlibrary.org/installers/Reading-App-Builder-For-Bloom-6-4-Setup.exe";
+            "https://bloomlibrary.org/RAB/installers/" + kRabSetupInstallerFileName;
         private const string kRabSetupLanguage = "en";
         private const int kRabLaunchPollIntervalMs = 250;
         private const int kRabLaunchTimeoutMs = 60000;
@@ -680,6 +684,7 @@ namespace Bloom.Publish.Rab
                     "Building the Android app with Reading App Builder...",
                     ProgressKind.Heading
                 );
+                Directory.CreateDirectory(paths.SafeApkRoot);
                 RunRabCommand(
                     BuildRabArgsForProjectUpdate(
                         paths,
@@ -692,10 +697,17 @@ namespace Bloom.Publish.Rab
                 );
 
                 ReportProgressStage("finalizing-apk", 98);
+
                 var apkPath = FindLatestApkPath(paths);
                 if (string.IsNullOrEmpty(apkPath))
                 {
-                    var searchRoots = new[] { paths.ApkRoot, paths.BuildRoot, paths.RabRoot }
+                    var searchRoots = new[]
+                    {
+                        paths.ApkRoot,
+                        paths.SafeApkRoot,
+                        paths.BuildRoot,
+                        paths.RabRoot,
+                    }
                         .Where(Directory.Exists)
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                         .ToArray();
@@ -721,6 +733,7 @@ namespace Bloom.Publish.Rab
                     GetEffectiveAppSettings(paths),
                     trackedBooks
                 );
+                state.LastBuiltApkPath = apkPath;
                 SaveState(paths, state);
             }
             finally
@@ -1014,29 +1027,39 @@ namespace Bloom.Publish.Rab
                 return ExportPrepareBooks(paths);
 
             var bookInfos = new List<BookInfo>();
+            var normalizedTrackedBooks = new List<RabBookPublishInfo>();
             foreach (var trackedBook in state.Books)
             {
-                var matchingBook = _collectionModel
-                    .TheOneEditableCollection.GetBookInfos()
-                    .FirstOrDefault(info =>
-                        string.Equals(
-                            info.FolderPath,
-                            trackedBook.FolderPath,
-                            StringComparison.OrdinalIgnoreCase
-                        )
-                    );
-                if (matchingBook == null)
-                    throw new ApplicationException(
-                        $"Bloom could not find the tracked book '{trackedBook.Title}' in this collection anymore."
-                    );
+                var matchingBook = FindTrackedBookInfo(
+                    new RabTrackedBookInfo
+                    {
+                        BookId = trackedBook.BookId,
+                        FolderPath = trackedBook.FolderPath,
+                        Title = trackedBook.Title,
+                    }
+                );
 
                 bookInfos.Add(matchingBook);
+                normalizedTrackedBooks.Add(
+                    new RabBookPublishInfo
+                    {
+                        BookId = string.IsNullOrWhiteSpace(trackedBook.BookId)
+                            ? matchingBook.Id
+                            : trackedBook.BookId,
+                        FolderPath = matchingBook.FolderPath,
+                        Title = matchingBook.Title,
+                        BloomPubPath = trackedBook.BloomPubPath,
+                        ThumbnailFileName = trackedBook.ThumbnailFileName,
+                    }
+                );
             }
 
             return ExportBookInfos(
                 paths,
                 bookInfos,
-                state.Books.ToDictionary(book => book.FolderPath, StringComparer.OrdinalIgnoreCase)
+                normalizedTrackedBooks
+                    .Where(book => !string.IsNullOrWhiteSpace(book.FolderPath))
+                    .ToDictionary(book => book.FolderPath, StringComparer.OrdinalIgnoreCase)
             );
         }
 
@@ -1057,12 +1080,11 @@ namespace Bloom.Publish.Rab
                     && existingByFolder.TryGetValue(bookInfo.FolderPath, out var found)
                         ? found
                         : null;
-                var bloomPubPath =
+                var bloomPubPath = ResolveBloomPubPath(
+                    paths.BloomPubRoot,
+                    bookInfo.FolderName + BloomPubMaker.BloomPubExtensionWithDot,
                     existing?.BloomPubPath
-                    ?? Path.Combine(
-                        paths.BloomPubRoot,
-                        bookInfo.FolderName + BloomPubMaker.BloomPubExtensionWithDot
-                    );
+                );
 
                 if (
                     !string.IsNullOrWhiteSpace(bloomPubPath)
@@ -1087,12 +1109,11 @@ namespace Bloom.Publish.Rab
                         ? found
                         : null;
                 var bookTitle = GetBookTitleForRab(book, bookInfo);
-                var bloomPubPath =
+                var bloomPubPath = ResolveBloomPubPath(
+                    paths.BloomPubRoot,
+                    bookInfo.FolderName + BloomPubMaker.BloomPubExtensionWithDot,
                     existing?.BloomPubPath
-                    ?? Path.Combine(
-                        paths.BloomPubRoot,
-                        bookInfo.FolderName + BloomPubMaker.BloomPubExtensionWithDot
-                    );
+                );
 
                 if (RobustFile.Exists(bloomPubPath))
                 {
@@ -1133,6 +1154,33 @@ namespace Bloom.Publish.Rab
             }
 
             return exportedBooks;
+        }
+
+        internal static string ResolveBloomPubPath(
+            string bloomPubRoot,
+            string defaultFileName,
+            string existingBloomPubPath
+        )
+        {
+            var fileName = defaultFileName;
+            if (!string.IsNullOrWhiteSpace(existingBloomPubPath))
+            {
+                var existingFileName = Path.GetFileName(existingBloomPubPath);
+                if (!string.IsNullOrWhiteSpace(existingFileName))
+                    fileName = existingFileName;
+
+                var existingDirectory = Path.GetDirectoryName(existingBloomPubPath);
+                if (
+                    string.Equals(
+                        existingDirectory,
+                        bloomPubRoot,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                    return existingBloomPubPath;
+            }
+
+            return Path.Combine(bloomPubRoot, fileName);
         }
 
         private static void DeleteStaleBloomPubExports(
@@ -1387,14 +1435,13 @@ namespace Bloom.Publish.Rab
 
         internal void ReportProcessOutputLine(
             string line,
-            ProgressKind kind = ProgressKind.Progress,
-            string commandArguments = null
+            ProgressKind kind = ProgressKind.Progress
         )
         {
             if (string.IsNullOrWhiteSpace(line))
                 return;
 
-            TryAdvanceBuildProgressFromOutput(line, commandArguments);
+            TryAdvanceBuildProgressFromOutput(line);
             _progress.MessageWithoutLocalizing(FormatTimestampedLogLine(line), kind);
         }
 
@@ -1403,12 +1450,9 @@ namespace Bloom.Publish.Rab
             return $"[{DateTime.Now:HH:mm:ss.fff}] {line}";
         }
 
-        private void TryAdvanceBuildProgressFromOutput(string line, string commandArguments)
+        private void TryAdvanceBuildProgressFromOutput(string line)
         {
             if (_activeProgressAction != "build")
-                return;
-
-            if (string.IsNullOrWhiteSpace(commandArguments) || !commandArguments.Contains("-build"))
                 return;
 
             var progressPercent = GetBuildProgressPercentFromOutput(line);
@@ -1657,7 +1701,7 @@ namespace Bloom.Publish.Rab
             }
         }
 
-        private string BuildRabArgsForNewProject(
+        private IReadOnlyList<string> BuildRabArgsForNewProject(
             RabWorkspacePaths paths,
             RabAppSettings settings,
             IEnumerable<RabBookPublishInfo> books,
@@ -1669,15 +1713,15 @@ namespace Bloom.Publish.Rab
             {
                 "-new",
                 "-n",
-                QuoteArgument(settings?.AppName ?? GetAppName()),
+                settings?.AppName ?? GetAppName(),
                 "-p",
-                QuoteArgument(settings?.PackageName ?? GetPackageName()),
+                settings?.PackageName ?? GetPackageName(),
                 "-fp",
-                QuoteArgument($"app.def={paths.RabRoot}"),
+                $"app.def={paths.RabRoot}",
                 "-fp",
-                QuoteArgument($"build={paths.BuildRoot}"),
+                $"build={paths.BuildRoot}",
                 "-fp",
-                QuoteArgument($"apk.output={paths.ApkRoot}"),
+                $"apk.output={paths.SafeApkRoot}",
             };
 
             AddProjectConfigurationArguments(arguments, state, supportFiles);
@@ -1685,13 +1729,13 @@ namespace Bloom.Publish.Rab
             foreach (var book in books)
             {
                 arguments.Add("-b");
-                arguments.Add(QuoteArgument(book.BloomPubPath));
+                arguments.Add(book.BloomPubPath);
             }
 
-            return string.Join(" ", arguments);
+            return arguments;
         }
 
-        private string BuildRabArgsForProjectUpdate(
+        private IReadOnlyList<string> BuildRabArgsForProjectUpdate(
             RabWorkspacePaths paths,
             RabPrepareState state,
             IEnumerable<RabBookPublishInfo> books,
@@ -1699,38 +1743,35 @@ namespace Bloom.Publish.Rab
             bool buildProject
         )
         {
-            var arguments = new List<string> { "-load", QuoteArgument(state.AppDefPath) };
+            var arguments = new List<string> { "-load", state.AppDefPath };
             arguments.Add("-fp");
-            arguments.Add(QuoteArgument($"build={paths.BuildRoot}"));
+            arguments.Add($"build={paths.BuildRoot}");
             arguments.Add("-fp");
-            arguments.Add(QuoteArgument($"apk.output={paths.ApkRoot}"));
+            arguments.Add($"apk.output={paths.SafeApkRoot}");
             AddProjectConfigurationArguments(arguments, state, supportFiles);
 
             foreach (var book in books)
             {
                 arguments.Add("-b");
-                arguments.Add(QuoteArgument(book.BloomPubPath));
+                arguments.Add(book.BloomPubPath);
             }
 
             if (buildProject)
                 arguments.Add("-build");
 
-            return string.Join(" ", arguments);
+            return arguments;
         }
 
-        private string BuildRabArgsForInstallingSdks()
+        private IReadOnlyList<string> BuildRabArgsForInstallingSdks()
         {
-            return string.Join(
-                " ",
-                new[]
-                {
-                    "-install-sdks-if-needed",
-                    "-jdk-install-folder",
-                    QuoteArgument(GetRabJdkInstallFolder()),
-                    "-android-sdk-install-folder",
-                    QuoteArgument(GetRabAndroidSdkInstallFolder()),
-                }
-            );
+            return new[]
+            {
+                "-install-sdks-if-needed",
+                "-jdk-install-folder",
+                GetRabJdkInstallFolder(),
+                "-android-sdk-install-folder",
+                GetRabAndroidSdkInstallFolder(),
+            };
         }
 
         private string RedactSensitiveProcessArguments(string arguments)
@@ -1762,53 +1803,91 @@ namespace Bloom.Publish.Rab
             if (!string.IsNullOrWhiteSpace(supportFiles?.AboutTextPath))
             {
                 arguments.Add("-a");
-                arguments.Add(QuoteArgument(supportFiles.AboutTextPath));
+                arguments.Add(supportFiles.AboutTextPath);
             }
 
             foreach (var iconPath in supportFiles?.LauncherIconPaths ?? Array.Empty<string>())
             {
                 arguments.Add("-ic");
-                arguments.Add(QuoteArgument(iconPath));
+                arguments.Add(iconPath);
             }
 
             if (!string.IsNullOrWhiteSpace(state?.KeystorePath))
             {
                 arguments.Add("-ks");
-                arguments.Add(QuoteArgument(state.KeystorePath));
+                arguments.Add(state.KeystorePath);
             }
 
             if (!string.IsNullOrWhiteSpace(state?.KeystorePassword))
             {
                 arguments.Add("-ksp");
-                arguments.Add(QuoteArgument(state.KeystorePassword));
+                arguments.Add(state.KeystorePassword);
             }
 
             if (!string.IsNullOrWhiteSpace(state?.KeyAlias))
             {
                 arguments.Add("-ka");
-                arguments.Add(QuoteArgument(state.KeyAlias));
+                arguments.Add(state.KeyAlias);
             }
 
             if (!string.IsNullOrWhiteSpace(state?.AliasPassword))
             {
                 arguments.Add("-kap");
-                arguments.Add(QuoteArgument(state.AliasPassword));
+                arguments.Add(state.AliasPassword);
             }
         }
 
-        internal virtual void RunRabCommand(string rabArguments, string workingDirectory)
+        internal virtual void RunRabCommand(
+            IReadOnlyList<string> rabArguments,
+            string workingDirectory
+        )
         {
             var rabLauncher = FindRabLauncherPath();
             if (string.IsNullOrEmpty(rabLauncher))
                 throw new ApplicationException(GetRabNotFoundMessage());
 
-            var command = $"\"{rabLauncher}\" {rabArguments}";
-            RunProcess(
-                "cmd.exe",
-                $"/d /c \"{command}\"",
-                workingDirectory,
-                GetRabProcessEnvironmentVariables()
+            var argumentFilePath = CreateRabArgumentFile(rabArguments);
+            try
+            {
+                var command = $"\"{rabLauncher}\" -i {QuoteArgument(argumentFilePath)}";
+                RunProcess(
+                    "cmd.exe",
+                    $"/d /c \"{command}\"",
+                    workingDirectory,
+                    GetRabProcessEnvironmentVariables()
+                );
+            }
+            finally
+            {
+                try
+                {
+                    RobustFile.Delete(argumentFilePath);
+                }
+                catch (Exception) { }
+            }
+        }
+
+        private string CreateRabArgumentFile(IReadOnlyList<string> rabArguments)
+        {
+            var argumentDirectory = GetRabArgumentFileDirectory();
+            Directory.CreateDirectory(argumentDirectory);
+
+            var argumentFilePath = Path.Combine(
+                argumentDirectory,
+                $"rab-args-{Guid.NewGuid():N}.txt"
             );
+
+            var argumentFileContents = string.Join(
+                Environment.NewLine,
+                (rabArguments ?? Array.Empty<string>()).Select(QuoteArgument)
+            );
+            RobustFile.WriteAllText(argumentFilePath, argumentFileContents, new UTF8Encoding(true));
+            return argumentFilePath;
+        }
+
+        internal virtual string GetRabArgumentFileDirectory()
+        {
+            return Path.Combine(GetPaths().SafeWorkRoot, "RabArgs");
         }
 
         internal virtual IReadOnlyDictionary<string, string> GetRabProcessEnvironmentVariables()
@@ -1820,6 +1899,10 @@ namespace Bloom.Publish.Rab
                 ["ANDROID_SDK_ROOT"] = string.Empty,
                 ["JAVA_HOME"] = string.Empty,
                 ["JDK_HOME"] = string.Empty,
+                // Disable the Gradle daemon so no background JVM process lingers after the build.
+                // A persistent Gradle daemon would hold file handles inside the collection's
+                // "Bloom App Data/build" folder, preventing the collection from being renamed.
+                ["GRADLE_OPTS"] = "-Dorg.gradle.daemon=false",
             };
         }
 
@@ -1857,12 +1940,12 @@ namespace Bloom.Publish.Rab
                 process.OutputDataReceived += (sender, args) =>
                 {
                     if (!string.IsNullOrWhiteSpace(args.Data))
-                        ReportProcessOutputLine(args.Data, ProgressKind.Progress, arguments);
+                        ReportProcessOutputLine(args.Data, ProgressKind.Progress);
                 };
                 process.ErrorDataReceived += (sender, args) =>
                 {
                     if (!string.IsNullOrWhiteSpace(args.Data))
-                        ReportProcessOutputLine(args.Data, ProgressKind.Warning, arguments);
+                        ReportProcessOutputLine(args.Data, ProgressKind.Warning);
                 };
 
                 if (!process.Start())
@@ -1949,7 +2032,7 @@ namespace Bloom.Publish.Rab
                     lock (syncRoot)
                         outputLines.Add(args.Data);
 
-                    ReportProcessOutputLine(args.Data, ProgressKind.Progress, arguments);
+                    ReportProcessOutputLine(args.Data, ProgressKind.Progress);
                 };
                 process.ErrorDataReceived += (sender, args) =>
                 {
@@ -1959,7 +2042,7 @@ namespace Bloom.Publish.Rab
                     lock (syncRoot)
                         outputLines.Add(args.Data);
 
-                    ReportProcessOutputLine(args.Data, ProgressKind.Warning, arguments);
+                    ReportProcessOutputLine(args.Data, ProgressKind.Warning);
                 };
 
                 if (!process.Start())
@@ -2060,12 +2143,8 @@ namespace Bloom.Publish.Rab
                 if (!Directory.Exists(directory))
                     continue;
 
-                var installerPath = Directory
-                    .GetFiles(directory, "Reading-App-Builder*.exe", SearchOption.TopDirectoryOnly)
-                    .Where(path => IsRabSetupInstallerFileName(Path.GetFileName(path)))
-                    .OrderBy(path => path.Length)
-                    .FirstOrDefault();
-                if (!string.IsNullOrWhiteSpace(installerPath))
+                var installerPath = Path.Combine(directory, kRabSetupInstallerFileName);
+                if (RobustFile.Exists(installerPath))
                     return installerPath;
             }
 
@@ -2224,24 +2303,6 @@ namespace Bloom.Publish.Rab
         internal virtual IReadOnlyList<string> GetRabRegistrySubKeys()
         {
             return new[] { kBloomRabRegistrySubKey, kRabRegistrySubKey };
-        }
-
-        internal static bool IsRabSetupInstallerFileName(string fileName)
-        {
-            if (string.IsNullOrWhiteSpace(fileName))
-                return false;
-
-            if (
-                string.Equals(
-                    fileName,
-                    kRabSetupInstallerFileName,
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
-                return true;
-
-            return fileName.StartsWith(kRabSetupInstallerPrefix, StringComparison.OrdinalIgnoreCase)
-                && fileName.EndsWith(kRabSetupInstallerSuffix, StringComparison.OrdinalIgnoreCase);
         }
 
         internal static bool IsUserCanceledShellLaunch(Win32Exception error)
@@ -2486,7 +2547,12 @@ namespace Bloom.Publish.Rab
 
         internal virtual string GetRabSettingsFilePath()
         {
-            return Path.Combine(GetRabAppDataFolder(), "SIL", "App Builder", "rab-settings.xml");
+            return Path.Combine(
+                GetRabAppDataFolder(),
+                "SIL",
+                "App Builder for Bloom",
+                "rab-settings.xml"
+            );
         }
 
         internal virtual void SeedRabSettingsToOpenProject(string appDefPath)
@@ -2789,6 +2855,47 @@ namespace Bloom.Publish.Rab
                         StringComparison.OrdinalIgnoreCase
                     )
                 );
+
+                // These fallbacks may be helpful where things have changed since the last build,
+                // especially when the collection has been renamed.
+                if (matchingBookInfo == null)
+                {
+                    var trackedFolderName = Path.GetFileName(
+                        trackedBook.FolderPath.TrimEnd(
+                            Path.DirectorySeparatorChar,
+                            Path.AltDirectorySeparatorChar
+                        )
+                    );
+                    if (!string.IsNullOrWhiteSpace(trackedFolderName))
+                    {
+                        var folderNameMatches = bookInfos
+                            .Where(info =>
+                                string.Equals(
+                                    info.FolderName,
+                                    trackedFolderName,
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            )
+                            .ToList();
+                        if (folderNameMatches.Count == 1)
+                            matchingBookInfo = folderNameMatches[0];
+                    }
+                }
+            }
+
+            if (matchingBookInfo == null && !string.IsNullOrWhiteSpace(trackedBook.Title))
+            {
+                var titleMatches = bookInfos
+                    .Where(info =>
+                        string.Equals(
+                            info.Title,
+                            trackedBook.Title,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                    .ToList();
+                if (titleMatches.Count == 1)
+                    matchingBookInfo = titleMatches[0];
             }
 
             if (matchingBookInfo == null)
@@ -2824,6 +2931,10 @@ namespace Bloom.Publish.Rab
         {
             appDefPath = string.IsNullOrWhiteSpace(appDefPath) ? state?.AppDefPath : appDefPath;
             appDefPath = string.IsNullOrWhiteSpace(appDefPath) ? FindAppDefPath(paths) : appDefPath;
+            // The stored path may be stale (e.g. after the collection folder was renamed).
+            // Fall back to searching the current workspace so the project is still found.
+            if (!string.IsNullOrWhiteSpace(appDefPath) && !RobustFile.Exists(appDefPath))
+                appDefPath = FindAppDefPath(paths);
             if (string.IsNullOrWhiteSpace(appDefPath) || !RobustFile.Exists(appDefPath))
                 return state;
 
@@ -3280,7 +3391,13 @@ namespace Bloom.Publish.Rab
 
         internal virtual string FindLatestApkPath(RabWorkspacePaths paths)
         {
-            var searchRoots = new[] { paths.ApkRoot, paths.BuildRoot, paths.RabRoot }
+            var searchRoots = new[]
+            {
+                paths.ApkRoot,
+                paths.SafeApkRoot,
+                paths.BuildRoot,
+                paths.RabRoot,
+            }
                 .Where(Directory.Exists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();

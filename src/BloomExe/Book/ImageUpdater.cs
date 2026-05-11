@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml;
 using Bloom.ErrorReporter;
+using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
@@ -12,7 +12,6 @@ using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
-using TagLib;
 
 namespace Bloom.Book
 {
@@ -159,7 +158,7 @@ namespace Bloom.Book
             var path = Path.Combine(folderPath, imageFilePath);
             try
             {
-                return PalasoImage.FromFileRobustly(path);
+                return ImageUtils.FromFileRobustly(path);
             }
             catch (Exception e)
             {

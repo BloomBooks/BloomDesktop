@@ -82,7 +82,7 @@ namespace BloomTests.web.controllers
 	</div>
 	<div class='bloom-page numberedPage' lang='' data-page-number='2'>
 		<div data-after-content='' class='pageLabel' lang='en'>
-			Basic Text &amp; Picture
+			Basic Text &amp; Image
 		</div >
 		<div class='marginBox'>
 <!-- extra 'split-pane' div layers removed here and elsewhere -->
@@ -138,7 +138,7 @@ namespace BloomTests.web.controllers
 	 but we aren't actually testing the code that creates the numbers here, so we should be fine. -->
 	<div class='bloom-page numberedPage' lang='' data-page-number='10'>
 		<div data-after-content='' class='pageLabel' lang='en'>
-			Basic Text &amp; Picture
+			Basic Text &amp; Image
 		</div >
 		<div class='marginBox'>
 			<div class='bloom-translationGroup'></div>
@@ -256,7 +256,7 @@ namespace BloomTests.web.controllers
 	</div>
 	<div class=""bloom-page numberedPage"" lang="""" data-page-number=""১"">
 		<div data-after-content="""" class=""pageLabel"" lang=""en"">
-			Basic Text &amp; Picture
+			Basic Text &amp; Image
 		</div >
 		<div class=""marginBox"">
 <!-- extra 'split-pane' div layers removed here and elsewhere -->
@@ -273,7 +273,7 @@ namespace BloomTests.web.controllers
 	</div>
 	<div class=""bloom-page numberedPage"" lang="""" data-page-number=""২"">
 		<div data-after-content="""" class=""pageLabel"" lang=""en"">
-			Basic Text &amp; Picture
+			Basic Text &amp; Image
 		</div >
 		<div class=""marginBox"">
 			<div title=""The Moon and The Cap_Page 041.jpg 105.32 KB 1500 x 1236 357 DPI (should be 300-600) Bit Depth: 24"" class=""bloom-canvas"">
@@ -284,7 +284,7 @@ namespace BloomTests.web.controllers
 	</div>
 	<div class=""bloom-page numberedPage"" lang="""" data-page-number=""৩"">
 		<div data-after-content="""" class=""pageLabel"" lang=""en"">
-			Basic Text &amp; Picture
+			Basic Text &amp; Image
 		</div >
 		<div class=""marginBox"">
 			<div class=""bloom-translationGroup""></div>
@@ -303,7 +303,7 @@ namespace BloomTests.web.controllers
 	</div>
 	<div class=""bloom-page numberedPage"" lang="""" data-page-number=""৪"">
 		<div data-after-content="""" class=""pageLabel"" lang=""en"">
-			Basic Text &amp; Picture
+			Basic Text &amp; Image
 		</div >
 		<div class=""marginBox"">
 			<div class=""bloom-translationGroup""></div>

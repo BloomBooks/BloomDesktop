@@ -37,12 +37,40 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Return true iff there are languages in the book data (including defaultLanguages.css) that
-        /// do not appear in the current collection settings.
+        /// do not appear in the current collection settings, but that have been assigned a font.
         /// </summary>
         private bool DoesUnusedLanguageDataExist()
         {
-            InitializeFontAndLanguageData(out _, out _, out var unusedLanguages);
-            return unusedLanguages.Count > 0;
+            // Get all the languages used in the book and their default fonts.
+            InitializeFontAndLanguageData(
+                out var langToDefaultFont,
+                out _,
+                out var unusedLanguages
+            );
+            // Get all the user-modified styles that set a font for the style.
+            var modifiedStylesAndFonts = GetUserModifiedStylesAndFonts(
+                _bookSelection.CurrentSelection.OurHtmlDom
+            );
+            foreach (var unusedLang in unusedLanguages)
+            {
+                if (langToDefaultFont.ContainsKey(unusedLang))
+                    return true;
+                foreach (var modifiedStyle in modifiedStylesAndFonts)
+                {
+                    // Don't bother with the case where languageTag == "*".  Unless there's actual
+                    // data in the book for the unused language, it won't be shown in the Fonts tab of
+                    // the Book Settings dialog, so we don't need to worry about it here.  The most
+                    // important thing is that the font information has already been displayed so the
+                    // user can see if there are any license issues with the font.
+                    if (modifiedStyle.languageTag == unusedLang)
+                    {
+                        return true;
+                    }
+                }
+            }
+            // Data may exist in unused languages, but if so they've never been assigned a font,
+            // so there's no data to show for them in the Fonts tab of the Book Settings dialog.
+            return false;
         }
 
         private void InitializeFontAndLanguageData(
@@ -153,11 +181,13 @@ namespace Bloom.web.controllers
                                 .Value.Where(lang => collectionLanguages.Contains(lang))
                                 .ToList();
                             if (currentlyUsed.Count == 0)
-                                continue; // This font is not actually used in the book, so skip it.
+                                continue; // This font is not used by the book's current languages, so skip it.
                             if (currentlyUsed.Count == 1)
                                 languageTag = currentlyUsed.First();
+                            else if (currentlyUsed.Count == collectionLanguages.Count)
+                                languageTag = "*";
                             else
-                                languageTag = "*"; // Enhance: list tags, and eventually list language names for display?
+                                languageTag = string.Join(",", currentlyUsed);
                         }
                         else
                         {
@@ -165,11 +195,11 @@ namespace Bloom.web.controllers
                                 .Value.Where(lang => !collectionLanguages.Contains(lang))
                                 .ToList();
                             if (currentlyUnused.Count == 0)
-                                continue; // This font is used in the book, so skip it.
+                                continue; // This font is used only by the book's current languages, so skip it.
                             if (currentlyUnused.Count == 1)
                                 languageTag = currentlyUnused.First();
                             else
-                                languageTag = "*"; // Enhance: list tags, and eventually list language names for display?
+                                languageTag = string.Join(",", currentlyUnused);
                         }
                         var styleAndFont = new StyleAndFont();
                         styleAndFont.style = style;
@@ -226,7 +256,15 @@ namespace Bloom.web.controllers
             {
                 if (
                     !stylesAndFonts.Exists(s =>
-                        s.style == styleAndFont.style && s.languageTag == styleAndFont.languageTag
+                        s.style == styleAndFont.style
+                        && (
+                            s.languageTag == styleAndFont.languageTag
+                            || (
+                                s.languageTag == "*"
+                                && collectionLanguages.Contains(styleAndFont.languageTag)
+                            )
+                            || s.languageTag.Split(",").Contains(styleAndFont.languageTag)
+                        )
                     )
                 )
                 {
@@ -542,6 +580,12 @@ namespace Bloom.web.controllers
                 return language.Name;
             if (langTag == settings.SignLanguageTag)
                 return settings.SignLanguage.Name;
+            if (langTag.Contains(","))
+            {
+                var tags = langTag.Split(",");
+                var names = tags.Select(t => GetLanguageName(t)).ToList();
+                return string.Join(", ", names);
+            }
             var ws = new Collection.WritingSystem(() => settings.Language2Tag);
             ws.Tag = langTag;
             return ws.GetNameInLanguage(settings.Language2Tag);

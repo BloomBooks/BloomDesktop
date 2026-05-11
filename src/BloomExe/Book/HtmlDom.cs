@@ -3494,7 +3494,7 @@ namespace Bloom.Book
 
         /// <summary>
         /// Check if the alt text looks like Bloom Editor placeholder alt text (which we don't want in the published version)
-        /// Looks like: "The picture, {0}, is missing or was loading too slowly"
+        /// Looks like: "The image, {0}, is missing or was loading too slowly"
         /// </summary>
         /// <param name="altText"></param>
         /// <returns>True if it appears to be some sort of placeholder alt text, false otherwise</returns>
@@ -3518,7 +3518,7 @@ namespace Bloom.Book
             // Check for an exact match on localized string.
             string localizedFormatString = LocalizationManager.GetString(
                 "EditTab.Image.AltMsg",
-                "This picture, {0}, is missing or was loading too slowly."
+                "This image, {0}, is missing or was loading too slowly."
             );
             string localizedString = String.Format(
                 localizedFormatString,
@@ -3681,7 +3681,13 @@ namespace Bloom.Book
             return xClass.Substring(idx);
         }
 
-        public static bool IsNodePartOfDataBookOrDataCollection(SafeXmlNode node)
+        /// <summary>
+        /// Returns true if the node is part of something that would cause it to be copied to the bloomDataDiv.
+        /// Such nodes are allowed to contain duplicate audio ids, because for one thing they are duplicated in the
+        /// bloomDataDiv itself, and for another, they may (like title on the cover and title page) be deliberately
+        /// duplicated in actual pages.
+        /// </summary>
+        public static bool DoesNodeGetCopiedToDataDiv(SafeXmlNode node)
         {
             bool isMatch = DoesSelfOrAncestorMatchCondition(
                 node,
@@ -3697,6 +3703,12 @@ namespace Bloom.Book
                     }
                     else if (n.GetOptionalStringAttribute("data-collection", null) != null)
                     {
+                        return true;
+                    }
+                    else if (n is SafeXmlElement element && element.HasClass("bloom-customLayout"))
+                    {
+                        // Custom-layout page content can intentionally duplicate ids that also
+                        // appear in separately persisted data-book/data-derived entries.
                         return true;
                     }
 

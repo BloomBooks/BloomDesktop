@@ -32,8 +32,8 @@ namespace BloomTests.Spreadsheet
         <div data-book=""outside-back-cover-bottom-html"" lang=""*""><img class=""branding"" src=""BloomWithTaglineAgainstLight.svg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
 	</div>
     <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""bdf2acc2-1ea1-4f70-9e36-6bcee3613752"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398384"" data-page-number=""1"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Picture on Bottom"" lang=""en"">
-            Picture on Bottom
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Image on Bottom"" lang=""en"">
+            Image on Bottom
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>
@@ -100,8 +100,8 @@ namespace BloomTests.Spreadsheet
         </div>
     </div>
 <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""f3262bcc-ccea-458c-857c-24ddc15462f7"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""2"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>
@@ -148,8 +148,8 @@ namespace BloomTests.Spreadsheet
         </div>
     </div>
 	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""f3262bcc-ccea-458c-857c-24ddc15462f7"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""2"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>
@@ -167,8 +167,8 @@ namespace BloomTests.Spreadsheet
         </div>
     </div>
 	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""f3262bcc-ccea-458c-857c-24ddc15462f7"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""2"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
         </div>
         <div class=""pageDescription"" lang=""en""></div>
         <div class=""marginBox"">
@@ -189,8 +189,8 @@ namespace BloomTests.Spreadsheet
         </div>
     </div>
     <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""b6dcaece-11a0-49d3-80c7-a83b7a8d9b6f"" data-pagelineage=""eabed994-4cdf-4dd5-aa40-196528c2bc55"" data-page-number=""3"" lang="""">
-        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+            Basic Text &amp; Image
         </div>
         <div class=""pageDescription"" lang=""en""></div>
         <div class=""marginBox"">

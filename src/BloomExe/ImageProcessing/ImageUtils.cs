@@ -16,6 +16,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using BloomTemp;
 using L10NSharp;
+using SIL.Code;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -501,7 +502,7 @@ namespace Bloom.ImageProcessing
                     if (megs > 2)
                     {
                         var msg = String.Format(
-                            "Bloom was not able to prepare that picture for including in the book. \r\nThis is a rather large image to be adding to a book --{0} Megs--.",
+                            "Bloom was not able to prepare that image for including in the book. \r\nThis is a rather large image to be adding to a book --{0} Megs--.",
                             megs
                         );
                         if (isEncodedAsJpeg)
@@ -514,7 +515,7 @@ namespace Bloom.ImageProcessing
                 }
 
                 throw new ApplicationException(
-                    "Bloom was not able to prepare that picture for including in the book. We'd like to investigate, so if possible, would you please email it to issues@bloomlibrary.org?"
+                    "Bloom was not able to prepare that image for including in the book. We'd like to investigate, so if possible, would you please email it to issues@bloomlibrary.org?"
                         + Environment.NewLine
                         + imageInfo.FileName,
                     error
@@ -995,7 +996,7 @@ namespace Bloom.ImageProcessing
                     ++completed;
                     continue;
                 }
-                using (var pi = PalasoImage.FromFileRobustly(path))
+                using (var pi = FromFileRobustly(path))
                 {
                     // If the image isn't jpeg (which it shouldn't be), and we can't be sure it's already
                     // opaque, change the image to be opaque.  As explained above, some PDF viewers don't
@@ -1082,7 +1083,7 @@ namespace Bloom.ImageProcessing
             {
                 try
                 {
-                    using (var originalImage = PalasoImage.FromFileRobustly(path))
+                    using (var originalImage = FromFileRobustly(path))
                     {
                         makeTransparent = ShouldMakeBackgroundTransparent(originalImage);
                     }
@@ -1554,7 +1555,7 @@ namespace Bloom.ImageProcessing
                                 argsBldr.Append(" -background white -extent 0x0 +matte");
                             else if (options.MakeTransparent)
                                 argsBldr.Append(
-                                    " -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\""
+                                    " -matte -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\""
                                 );
                             if (options.cropRectangle != Rectangle.Empty)
                             {
@@ -2169,7 +2170,8 @@ namespace Bloom.ImageProcessing
             SafeXmlDocument bookDom,
             string imageSourceFolder,
             string imageDestFolder,
-            bool alsoTrimMetadataForUncroppedImages = false
+            bool alsoTrimMetadataForUncroppedImages = false,
+            bool preserveCropStyleForUpload = false
         )
         {
             var images = bookDom.SafeSelectElements("//img").ToList();
@@ -2239,6 +2241,7 @@ namespace Bloom.ImageProcessing
                         cropped,
                         srcUsageCount,
                         replacedOriginals,
+                        preserveCropStyleForUpload,
                         img,
                         src,
                         style,
@@ -2278,6 +2281,7 @@ namespace Bloom.ImageProcessing
             Dictionary<string, string> cropped,
             Dictionary<string, int> srcUsageCount,
             HashSet<string> replacedOriginals,
+            bool preserveCropStyleForUpload,
             SafeXmlElement img,
             string src,
             string style,
@@ -2293,9 +2297,12 @@ namespace Bloom.ImageProcessing
             {
                 // This is a duplicate. We can use the same cropped image file.
                 SetImageSrcAndSyncDataDiv(img, fileName, bloomDataDivEntriesByDataBook);
-                // With that src, it's already cropped, so remove the style to avoid
-                // applying the cropping again to the already-cropped image.
-                img.RemoveAttribute("style");
+                UpdateCropStyleForAlreadyCroppedImage(
+                    img,
+                    imageDestFolder,
+                    fileName,
+                    preserveCropStyleForUpload
+                );
                 return;
             }
 
@@ -2306,6 +2313,7 @@ namespace Bloom.ImageProcessing
                 imageSourceFolder,
                 imageDestFolder,
                 needNewName,
+                preserveCropStyleForUpload,
                 bloomDataDivEntriesByDataBook
             );
 
@@ -2315,6 +2323,39 @@ namespace Bloom.ImageProcessing
                 replacedOriginals.Add(src);
             }
             cropped[key] = croppedFileName;
+        }
+
+        private static void UpdateCropStyleForAlreadyCroppedImage(
+            SafeXmlElement img,
+            string imageDestFolder,
+            string src,
+            bool preserveCropStyleForUpload
+        )
+        {
+            if (!preserveCropStyleForUpload)
+            {
+                // With that src, it's already cropped, so remove the style to avoid
+                // applying the cropping again to the already-cropped image.
+                img.RemoveAttribute("style");
+                return;
+            }
+
+            var cropMetadata = TryGetCropMetadata(img);
+            if (cropMetadata == null)
+            {
+                img.RemoveAttribute("style");
+                return;
+            }
+
+            var decodedSrc = src;
+            var croppedPath = UrlPathString.GetFullyDecodedPath(imageDestFolder, ref decodedSrc);
+            if (!TryGetImageSize(croppedPath, out var croppedImageSize))
+            {
+                img.RemoveAttribute("style");
+                return;
+            }
+
+            UpdateStyleToCoverCanvasElement(img, cropMetadata, croppedImageSize);
         }
 
         private static void DeleteOrphanedImageFiles(
@@ -2477,9 +2518,11 @@ namespace Bloom.ImageProcessing
             string imageSourceFolder,
             string imageDestFolder,
             bool useNewName,
+            bool preserveCropStyleForUpload,
             Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
         )
         {
+            var cropMetadata = preserveCropStyleForUpload ? TryGetCropMetadata(img) : null;
             var croppedImagePath = MakeCroppedImage(img, imageSourceFolder, imageDestFolder);
             var src = img.GetAttribute("src");
             // a good default if we can't produce a cropped image for any reason.
@@ -2492,6 +2535,7 @@ namespace Bloom.ImageProcessing
             // removing some url encoding to find the actual file). And if we're not
             // using a new name, we want to exactly overwrite the original image file.
             UrlPathString.GetFullyDecodedPath(imageSourceFolder, ref src);
+            var finalCroppedImagePath = string.Empty;
             if (croppedImagePath != null)
             {
                 if (useNewName)
@@ -2506,6 +2550,7 @@ namespace Bloom.ImageProcessing
                     result = Path.GetFileName(croppedImagePath);
                     // Including the current image
                     SetImageSrcAndSyncDataDiv(img, result, bloomDataDivEntriesByDataBook);
+                    finalCroppedImagePath = croppedImagePath;
                 }
                 else
                 {
@@ -2513,10 +2558,124 @@ namespace Bloom.ImageProcessing
                     RobustFile.Move(croppedImagePath, destPath, true);
                     // If it failed, it should have already logged the reason. I think all we can do
                     // is leave the image alone.
+                    finalCroppedImagePath = destPath;
                 }
             }
-            img.RemoveAttribute("style"); // so nothing can possibly think it needs more cropping
+
+            if (
+                preserveCropStyleForUpload
+                && cropMetadata != null
+                && !string.IsNullOrEmpty(finalCroppedImagePath)
+                && TryGetImageSize(finalCroppedImagePath, out var croppedImageSize)
+            )
+            {
+                UpdateStyleToCoverCanvasElement(img, cropMetadata, croppedImageSize);
+            }
+            else
+            {
+                // so nothing can possibly think it needs more cropping
+                img.RemoveAttribute("style");
+            }
+
             return result;
+        }
+
+        // It's tempting to just remove the style, or at least the cropping-related
+        // parts of it, since we've made the image fit almost exactly. And for publishing
+        // (Bloompub, etc) we actually do that, though code elsewhere adds a class that
+        // makes it use object-fit:cover instead of object-fit:contain, which is
+        // important when trying to cover an entire page without a stray pixel.
+        // For upload, where further editing is expected, it is better to keep the
+        // structure of the cropped canvas element, but adjust it so there is no
+        // actual cropping. This also prevents stray lines of uncovered background,
+        // but does not put the book into a special state that might complicate
+        // continued editing.
+        private static void UpdateStyleToCoverCanvasElement(
+            SafeXmlElement img,
+            CropMetadata cropMetadata,
+            Size croppedImageSize
+        )
+        {
+            if (
+                cropMetadata.CanvasElementWidth <= 0
+                || cropMetadata.CanvasElementHeight <= 0
+                || croppedImageSize.Width <= 0
+                || croppedImageSize.Height <= 0
+            )
+            {
+                img.RemoveAttribute("style");
+                return;
+            }
+
+            var coverScale = Math.Max(
+                cropMetadata.CanvasElementWidth / croppedImageSize.Width,
+                cropMetadata.CanvasElementHeight / croppedImageSize.Height
+            );
+            var scaledWidth = croppedImageSize.Width * coverScale;
+            var scaledHeight = croppedImageSize.Height * coverScale;
+
+            var left = (cropMetadata.CanvasElementWidth - scaledWidth) / 2;
+            var top = (cropMetadata.CanvasElementHeight - scaledHeight) / 2;
+
+            // It's particularly important that we keep a width, because that's what
+            // our CSS looks for to suppress the old object-fit:contain rule.
+            var updatedStyle = ReplaceOrAppendPxStyle(
+                img.GetAttribute("style"),
+                "width",
+                scaledWidth
+            );
+            updatedStyle = ReplaceOrAppendPxStyle(updatedStyle, "left", left);
+            updatedStyle = ReplaceOrAppendPxStyle(updatedStyle, "top", top);
+            img.SetAttribute("style", updatedStyle);
+        }
+
+        private static string ReplaceOrAppendPxStyle(
+            string style,
+            string propertyName,
+            double value
+        )
+        {
+            var cleanValue = Math.Abs(value) < 0.0005 ? 0 : value;
+            var valueText = $"{cleanValue.ToString("0.###", CultureInfo.InvariantCulture)}px";
+            if (string.IsNullOrWhiteSpace(style))
+            {
+                return $"{propertyName}: {valueText};";
+            }
+
+            var styleParts = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+
+            var outputParts = new List<string>();
+            var found = false;
+            foreach (var part in styleParts)
+            {
+                var separatorIndex = part.IndexOf(':');
+                if (separatorIndex < 0)
+                {
+                    outputParts.Add(part);
+                    continue;
+                }
+
+                var key = part.Substring(0, separatorIndex).Trim();
+                var currentValue = part.Substring(separatorIndex + 1).Trim();
+                if (key.Equals(propertyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    outputParts.Add($"{propertyName}: {valueText}");
+                    found = true;
+                }
+                else
+                {
+                    outputParts.Add($"{key}: {currentValue}");
+                }
+            }
+
+            if (!found)
+                outputParts.Add($"{propertyName}: {valueText}");
+
+            return string.Join("; ", outputParts) + ";";
         }
 
         private static void SetImageSrcAndSyncDataDiv(
@@ -2758,6 +2917,53 @@ namespace Bloom.ImageProcessing
             catch
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// A re-implementation of PalasoImage.FromFileRobustly, but with configurable parameters.
+        /// </summary>
+        /// <remarks>This is here (not libpalaso)because it's a lower risk way to introduce this change.
+        /// Longer-term, it'd make more sense to modify PalasoImage.FromFileRobustly to provide this extra capability instead
+        /// </remarks>
+        public static PalasoImage FromFileRobustly(
+            string path,
+            HashSet<Type> exceptionTypesToRetry = null,
+            int maxRetryAttempts = RetryUtility.kDefaultMaxRetryAttempts,
+            int retryDelay = RetryUtility.kDefaultRetryDelay
+        )
+        {
+            exceptionTypesToRetry ??= new HashSet<Type>
+            {
+                // As of April 2026, these three exception types are the ones in PalasoImage.FromFileRobustly.
+                typeof(System.IO.IOException),
+                typeof(System.OutOfMemoryException),
+                typeof(TagLib.CorruptFileException),
+                // We add System.Collections.Generic.KeyNotFoundException which we have also seen. (BL-16221)
+                typeof(System.Collections.Generic.KeyNotFoundException),
+                // BookThumbnailer.kExceptionsToRetryWhenSavingImage includes System.ApplicationException,
+                // so that seems worth including, too.
+                typeof(System.ApplicationException),
+            };
+
+            try
+            {
+                return RetryUtility.Retry(
+                    () => PalasoImage.FromFile(path),
+                    maxRetryAttempts,
+                    retryDelay,
+                    exceptionTypesToRetry
+                );
+            }
+            catch (Exception e)
+            {
+                // In case something else goes wrong, at least some errors we've seen from here
+                // (including TagLib.CorruptFileException) don't tell us WHICH FILE has the
+                // problem, so wrap in another layer that does.
+                throw new ApplicationException(
+                    "Could not make PalasoImage from " + path + " because " + e.Message,
+                    e
+                );
             }
         }
     }
