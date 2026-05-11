@@ -509,7 +509,7 @@ namespace BloomTests.Book
       <div class='pageLabel' lang='en' data-i18n='TemplateBooks.PageLabel.Front Cover'>Front Cover</div>
     </div>
     <div class='bloom-page numberedPage customPage bloom-combinedPage side-right A5Portrait bloom-monolingual' data-page='' id='002627bd-4853-487d-986a-88ea67e0f31c' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398382' data-page-number='1' lang=''>
-      <div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Picture' lang='en'>Basic Text &amp; Picture</div>
+      <div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Image' lang='en'>Basic Text &amp; Image</div>
       <div class='marginBox'>
         <div style='min-height: 42px;' class='split-pane horizontal-percent'>
           <div class='split-pane-component position-top' style='bottom: 50%'>
@@ -531,7 +531,7 @@ namespace BloomTests.Book
       </div>
     </div>
     <div class='bloom-page numberedPage customPage bloom-combinedPage side-left A5Portrait bloom-monolingual' data-page='' id='1e8377b3-f8b3-4fc6-976b-dc3262463880' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398382' data-page-number='2' lang=''>
-      <div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Picture' lang='en'>Basic Text &amp; Picture</div>
+      <div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Image' lang='en'>Basic Text &amp; Image</div>
       <div class='marginBox'>
         <div style='min-height: 42px;' class='split-pane horizontal-percent'>
           <div class='split-pane-component position-top' style='bottom: 50%'>
@@ -569,7 +569,7 @@ namespace BloomTests.Book
   </head>
   <body>
     <div class='bloom-page numberedPage customPage bloom-combinedPage A5Portrait bloom-monolingual side-left' data-page='' id='5a72f533-cd59-4e8d-9da5-2fa052144621' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398382' data-page-number='1' lang=''>
-      <div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Picture' lang='en'>Basic Text &amp; Picture</div>
+      <div class='pageLabel' data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Image' lang='en'>Basic Text &amp; Image</div>
       <div class='marginBox'>
         <div style='min-height: 42px;' class='split-pane horizontal-percent'>
           <div class='split-pane-component position-top' style='bottom: 50%'>

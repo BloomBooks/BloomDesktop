@@ -3309,6 +3309,65 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void GatherDataItemsFromXElement_BloomEditableAudioSpans_PreservesSpaceBetweenAdjacentSpans()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+                <div class='bloom-page'>
+                     <div class='bloom-editable bloom-visibility-code-on audio-sentence bloom-postAudioSplit' data-book='coverImageDescription' lang='en' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='6.200 12.080'><p><span class='bloom-highlightSegment'>Gentle waves on a beach.</span> <span class='bloom-highlightSegment'>Large rocks, houses and trees are seen in the distance.</span></p></div>
+                </div>
+                </body></html>",
+                true
+            );
+            var dataSet = new DataSet();
+            var bookData = new BookData(
+                new HtmlDom("<html><body></body></html>"),
+                _collectionSettings,
+                null
+            );
+
+            bookData.GatherDataItemsFromXElement(dataSet, dom.RawDom.DocumentElement);
+
+            var storedForm = dataSet
+                .TextVariables["coverImageDescription"]
+                .TextAlternatives.GetExactAlternative("en");
+            Assert.That(
+                storedForm,
+                Does.Contain(
+                    "</span> <span class=\"bloom-highlightSegment\">Large rocks, houses and trees are seen in the distance."
+                )
+            );
+        }
+
+        [Test]
+        public void SynchronizeDataItemsThroughoutDOM_BloomEditableAudioSpans_PreservesSpaceBetweenAdjacentSpans()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+                <div id='bloomDataDiv'>
+                     <div data-book='coverImageDescription' lang='en' class='bloom-editable audio-sentence bloom-postAudioSplit' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='6.200 12.080'><p><span class='bloom-highlightSegment'>Gentle waves on a beach.</span> <span class='bloom-highlightSegment'>Large rocks, houses and trees are seen in the distance.</span></p></div>
+                </div>
+                <div class='bloom-page'>
+                     <div findMe='target' class='bloom-editable bloom-visibility-code-on audio-sentence bloom-postAudioSplit' data-book='coverImageDescription' lang='en' data-audiorecordingmode='TextBox' data-audiorecordingendtimes='6.200 12.080'><p/></div>
+                </div>
+                </body></html>",
+                true
+            );
+
+            var data = new BookData(dom, _collectionSettings, null);
+            data.SynchronizeDataItemsThroughoutDOM();
+
+            var target = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='target']");
+            Assert.That(
+                target.InnerXml,
+                Does.Contain(
+                    "</span> <span class=\"bloom-highlightSegment\">Large rocks, houses and trees are seen in the distance."
+                )
+            );
+        }
+
+        [Test]
         public void GatherDataItemsFromXElement_OmitsDataPageNumber()
         {
             var dom = new HtmlDom(

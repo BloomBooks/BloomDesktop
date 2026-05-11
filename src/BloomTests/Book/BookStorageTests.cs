@@ -81,7 +81,7 @@ namespace BloomTests.Book
 </div>
 <div class=""A5Portrait bloom-page numberedPage customPage"">
   <div class=""marginBox"">
-      <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just a Picture"">Just a Picture</div>
+      <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just an Image"">Just an Image</div>
       <div class=""pageDescription"" lang=""en""></div>
   </div>
 </div>
@@ -131,22 +131,22 @@ namespace BloomTests.Book
                 @"
 <html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body>
     <div class=""A5Portrait bloom-page numberedPage customPage"" data-page=""extra"" id=""adcd48df-e9ab-4a07-afd4-6a24d0398385"">
-      <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just a Picture"">Just a Picture</div>
+      <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just an Image"">Just an Image</div>
       <div class=""pageDescription"" lang=""en""></div>
       <div class=""marginBox"">
         <div class=""split-pane-component-inner"">
-          <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
+          <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This image, placeHolder.png, is missing or was loading too slowly.""/>
           </div>
         </div>
       </div>
     </div>
 	<div class=""A5Portrait bloom-page numberedPage customPage"" data-page=""extra"" id=""adcd48df-e9ab-4a07-afd4-6a24d0398385"">
-	  <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just a Picture"">Just a Picture</div>
+	  <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just an Image"">Just an Image</div>
 	  <div class=""pageDescription"" lang=""en""></div>
 	  <div>
 		  <div class=""marginBox"">
 		    <div class=""split-pane-component-inner"">
-		      <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly.""/>
+		      <div class=""bloom-canvas""><img src=""placeHolder.png"" alt=""This image, placeHolder.png, is missing or was loading too slowly.""/>
 		      </div>
 		    </div>
 		  </div>

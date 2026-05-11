@@ -1428,9 +1428,8 @@ namespace Bloom.Publish
         /// represented as a canvas element to our pre-6.2 approach where it was a direct child of the bloom canvas.
         /// The canvas element div is removed, and the img that was in it is moved to an appropriate position
         /// as a direct child of the bloom-canvas.
-        /// We also do this when publishing to BloomLibrary; this saves the harvester needing to worry about
-        /// the background image canvas elements, and also saves our future code having to worry about blorg
-        /// books that have a mixture of old and new background images.
+        /// We don't do this when publishing to BloomLibrary, because really cropping images and then
+        /// switching to content-fit:contain can leave a pixel of the cover visible.
         /// </summary>
         public static void SimplifyBackgroundImages(SafeXmlDocument dom)
         {

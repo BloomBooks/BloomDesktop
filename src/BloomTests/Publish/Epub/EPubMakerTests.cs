@@ -14,7 +14,7 @@ namespace BloomTests.Publish.Epub
         public void HandleImageDescriptions_LicenseAlt_SetToDefault()
         {
             string inputImageHtml =
-                "<img class=\"licenseImage\" src=\"a.png\" alt=\"This picture, a.png, is missing or was loading too slowly.\" />";
+                "<img class=\"licenseImage\" src=\"a.png\" alt=\"This image, a.png, is missing or was loading too slowly.\" />";
             var htmlDom = new HtmlDom(
                 $"<html><body><div data-book=\"outside-back-cover-branding-bottom-html\">{inputImageHtml}</div></body></html>"
             );
@@ -55,7 +55,7 @@ namespace BloomTests.Publish.Epub
         public void HandleImageDescriptions_BrandingAlt_Placeholder_SetToDefault()
         {
             string inputImageHtml =
-                "<img src=\"a.png\" alt=\"This picture, a.png, is missing or was loading too slowly.\" />";
+                "<img src=\"a.png\" alt=\"This image, a.png, is missing or was loading too slowly.\" />";
             var htmlDom = new HtmlDom(
                 $"<html><body><div data-book=\"outside-back-cover-branding-bottom-html\">{inputImageHtml}</div></body></html>"
             );

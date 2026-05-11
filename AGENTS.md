@@ -51,6 +51,7 @@ It is vital that you not run `yarn build` unless instructed to. If there is alre
 - Mark new XLF entries translate="no"
 - When adding a new string, do not add it to all of the various language files. Just the one in the "en" subdirectory.
 - Don't change the content or ID of an existing XLF entry unless it is new (marked translate="no"). Instead, mark the old one with a note saying it is "obsolete as of <current Bloom version>" and make a new entry with a different ID.
+- It's OK not to make XLF entries for strings only used in experimental features, as long as there is fallback English in the code that will be used.
 
 # Commenting
 All public methods should have a comment. So should most private ones!

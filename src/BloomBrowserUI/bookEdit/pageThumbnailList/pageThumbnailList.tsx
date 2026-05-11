@@ -8,7 +8,8 @@
 
 import $ from "jquery";
 import { css } from "@emotion/react";
-import { Menu } from "@mui/material";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 
 import * as React from "react";
 import { useState, useEffect } from "react";
@@ -28,7 +29,7 @@ import {
 } from "../../utils/bloomApi";
 import { PageThumbnail } from "./PageThumbnail";
 import LazyLoad, { forceCheck } from "react-lazyload";
-import { LocalizableMenuItem } from "../../react_components/localizableMenuItem";
+import { useL10n } from "../../react_components/l10nHooks";
 
 // We're using the Responsive version of react-grid-layout because
 // (1) the previous version of the page thumbnails, which this replaces,
@@ -51,11 +52,20 @@ import { LocalizableMenuItem } from "../../react_components/localizableMenuItem"
 // horizontal scroll bar.
 
 const kWebsocketContext = "pageThumbnailList";
+const kDeletePageMenuIconPath =
+    "/bloom/bookEdit/pageThumbnailList/pageControls/deletePage.svg";
 
 // A function configured once to listen for events coming from C# over the websocket.
 let webSocketListenerFunction;
 
 const rowHeight = 105; // px
+const kPageThumbnailMenuIconSize = 16; // px
+const pageThumbnailMenuIconStyle: React.CSSProperties = {
+    width: kPageThumbnailMenuIconSize,
+    height: kPageThumbnailMenuIconSize,
+    color: "#000",
+    flex: "0 0 auto",
+};
 
 // the objects we get from C#. Typically content is an empty string,
 // and we later retrieve the real content.
@@ -70,6 +80,9 @@ interface IPageMenuItem {
     label: string;
     l10nId: string;
     enabled?: boolean;
+    icon?: React.ReactNode;
+    isDivider?: boolean;
+    addEllipsis?: boolean;
 }
 
 interface IContextMenuPoint {
@@ -77,6 +90,343 @@ interface IContextMenuPoint {
     mouseY: number;
     pageId: string;
 }
+
+// The page thumbnail list runs inside its own iframe. A normal popup rendered inside that iframe
+// is clipped by the narrow sidebar, so this menu is portaled into the parent document instead.
+// A portal means React still owns the component, but its DOM is mounted somewhere else.
+const DeletePageMenuIcon: React.FunctionComponent = () => (
+    <span
+        style={{
+            width: kPageThumbnailMenuIconSize,
+            height: kPageThumbnailMenuIconSize,
+            display: "inline-block",
+            backgroundColor: "#000",
+            WebkitMaskImage: `url(${kDeletePageMenuIconPath})`,
+            maskImage: `url(${kDeletePageMenuIconPath})`,
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+            WebkitMaskSize: "contain",
+            maskSize: "contain",
+            flex: "0 0 auto",
+        }}
+    />
+);
+
+const PageThumbnailContextMenuItem: React.FunctionComponent<{
+    item: IPageMenuItem;
+    onItemClick: (commandId: string) => void;
+    isActive: boolean;
+    onActivate: (commandId: string) => void;
+    onDeactivate: () => void;
+    buttonRef: (element: HTMLButtonElement | null) => void;
+}> = (props) => {
+    const localizedLabel = useL10n(props.item.label, props.item.l10nId);
+    const label = props.item.addEllipsis
+        ? `${localizedLabel}...`
+        : localizedLabel;
+    const isDisabled = !props.item.enabled;
+    const backgroundColor =
+        props.isActive && !isDisabled ? "rgba(0, 0, 0, 0.08)" : "transparent";
+
+    return (
+        <button
+            type="button"
+            disabled={isDisabled}
+            onClick={() => props.onItemClick(props.item.id)}
+            onMouseEnter={() => props.onActivate(props.item.id)}
+            onMouseLeave={props.onDeactivate}
+            onFocus={() => props.onActivate(props.item.id)}
+            onBlur={props.onDeactivate}
+            ref={props.buttonRef}
+            role="menuitem"
+            aria-disabled={isDisabled}
+            tabIndex={props.isActive && !isDisabled ? 0 : -1}
+            style={{
+                appearance: "none",
+                WebkitAppearance: "none",
+                display: "flex",
+                alignItems: "center",
+                boxSizing: "border-box",
+                width: "100%",
+                minHeight: "24px",
+                padding: "4px 8px",
+                border: "none",
+                borderRadius: 0,
+                background: backgroundColor,
+                color: isDisabled ? "rgba(0, 0, 0, 0.38)" : "#000",
+                fontSize: "10pt",
+                lineHeight: "normal",
+                textAlign: "left",
+                cursor: isDisabled ? "default" : "pointer",
+                outline: "none",
+                boxShadow: "none",
+                fontFamily: "inherit",
+            }}
+        >
+            <span
+                style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    width: "28px",
+                    minWidth: "28px",
+                    opacity: isDisabled ? 0.38 : 1,
+                }}
+            >
+                {props.item.icon}
+            </span>
+            <span
+                style={{
+                    display: "block",
+                    flex: "1 1 auto",
+                    whiteSpace: "normal",
+                }}
+            >
+                {label}
+            </span>
+        </button>
+    );
+};
+
+const PageThumbnailContextMenu: React.FunctionComponent<{
+    contextMenuPoint: IContextMenuPoint;
+    contextMenuItems: IPageMenuItem[];
+    onClose: () => void;
+    onItemClick: (commandId: string) => void;
+}> = (props) => {
+    const menuRef = React.useRef<HTMLDivElement>(null);
+    const menuButtonRefs = React.useRef<
+        Record<string, HTMLButtonElement | null>
+    >({});
+    const [activeItemId, setActiveItemId] = useState<string>();
+    // Render into the parent document so the menu can extend beyond the page-list iframe.
+    const portalDocument =
+        window.parent && window.parent !== window
+            ? window.parent.document
+            : document;
+    const portalWindow = portalDocument.defaultView ?? window;
+    const enabledMenuItems = React.useMemo(
+        () =>
+            props.contextMenuItems.filter(
+                (item) => !item.isDivider && item.enabled !== false,
+            ),
+        [props.contextMenuItems],
+    );
+    const menuMinWidth = 220;
+    const menuMaxWidth = Math.min(360, portalWindow.innerWidth - 16);
+    const estimatedMenuHeight = props.contextMenuItems.reduce(
+        (total, item) => total + (item.isDivider ? 9 : 32),
+        8,
+    );
+    const left = Math.max(
+        8,
+        Math.min(
+            props.contextMenuPoint.mouseX,
+            portalWindow.innerWidth - menuMinWidth - 8,
+        ),
+    );
+    const top = Math.max(
+        8,
+        Math.min(
+            props.contextMenuPoint.mouseY,
+            portalWindow.innerHeight - estimatedMenuHeight - 8,
+        ),
+    );
+
+    // This effect is necessary because the menu is portaled into the parent document,
+    // so closing it depends on document-level events outside this iframe's normal React tree.
+    // We listen in the parent document and same-origin Bloom iframes so clicks on pages,
+    // thumbnails, or top-level tabs all dismiss the menu.
+    useEffect(() => {
+        // The menu can be dismissed from several different same-origin documents: this iframe,
+        // the parent workspace document where the portal is rendered, and sibling Bloom iframes
+        // such as the main page frame. Collect them once so we can wire the same close behavior
+        // everywhere a click or Escape key might happen.
+        const documentsThatCanDismissTheMenu = Array.from(
+            new Set([
+                document,
+                portalDocument,
+                ...Array.from(portalDocument.querySelectorAll("iframe"))
+                    .map((iframeElement) => iframeElement.contentDocument)
+                    .filter(
+                        (iframeDocument): iframeDocument is Document =>
+                            !!iframeDocument,
+                    ),
+            ]),
+        );
+
+        // Handle any pointer or click that lands outside the menu itself. We use capture-phase
+        // pointerdown plus a click fallback because focus changes, iframe boundaries, and tab
+        // switches can otherwise prevent a normal bubbling click handler from running reliably.
+        const handlePointerDown = (event: Event) => {
+            const target = event.target;
+            if (!target || !("nodeType" in target)) {
+                return;
+            }
+
+            if (!menuRef.current?.contains(target as Node)) {
+                props.onClose();
+            }
+        };
+
+        // Escape should dismiss the menu no matter which same-origin Bloom document currently has focus.
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                props.onClose();
+            }
+        };
+
+        documentsThatCanDismissTheMenu.forEach((currentDocument) => {
+            currentDocument.addEventListener(
+                "pointerdown",
+                handlePointerDown,
+                true,
+            );
+            currentDocument.addEventListener("click", handlePointerDown, true);
+            currentDocument.addEventListener("keydown", handleKeyDown);
+        });
+
+        return () => {
+            documentsThatCanDismissTheMenu.forEach((currentDocument) => {
+                currentDocument.removeEventListener(
+                    "pointerdown",
+                    handlePointerDown,
+                    true,
+                );
+                currentDocument.removeEventListener(
+                    "click",
+                    handlePointerDown,
+                    true,
+                );
+                currentDocument.removeEventListener("keydown", handleKeyDown);
+            });
+        };
+    }, [props, portalDocument]);
+
+    // This effect is necessary because the menu is portaled into the parent document,
+    // so React does not move keyboard focus into the external overlay unless we do it explicitly.
+    useEffect(() => {
+        if (enabledMenuItems.length === 0) {
+            setActiveItemId(undefined);
+            return;
+        }
+
+        setActiveItemId((currentActiveItemId) => {
+            if (
+                currentActiveItemId &&
+                enabledMenuItems.some((item) => item.id === currentActiveItemId)
+            ) {
+                return currentActiveItemId;
+            }
+
+            return enabledMenuItems[0].id;
+        });
+    }, [enabledMenuItems]);
+
+    // This effect is necessary because keyboard navigation updates React state,
+    // but the browser focus itself must still be synchronized to the active menu item element.
+    useEffect(() => {
+        if (!activeItemId) {
+            return;
+        }
+
+        menuButtonRefs.current[activeItemId]?.focus();
+    }, [activeItemId]);
+
+    const handleMenuKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (enabledMenuItems.length === 0) {
+            return;
+        }
+
+        const currentIndex = enabledMenuItems.findIndex(
+            (item) => item.id === activeItemId,
+        );
+        const normalizedIndex = currentIndex >= 0 ? currentIndex : 0;
+
+        switch (event.key) {
+            case "ArrowDown":
+                event.preventDefault();
+                setActiveItemId(
+                    enabledMenuItems[
+                        (normalizedIndex + 1) % enabledMenuItems.length
+                    ].id,
+                );
+                break;
+            case "ArrowUp":
+                event.preventDefault();
+                setActiveItemId(
+                    enabledMenuItems[
+                        (normalizedIndex - 1 + enabledMenuItems.length) %
+                            enabledMenuItems.length
+                    ].id,
+                );
+                break;
+            case "Home":
+                event.preventDefault();
+                setActiveItemId(enabledMenuItems[0].id);
+                break;
+            case "End":
+                event.preventDefault();
+                setActiveItemId(
+                    enabledMenuItems[enabledMenuItems.length - 1].id,
+                );
+                break;
+            case "Tab":
+                props.onClose();
+                break;
+        }
+    };
+
+    return ReactDOM.createPortal(
+        <div
+            ref={menuRef}
+            role="menu"
+            aria-orientation="vertical"
+            onKeyDown={handleMenuKeyDown}
+            style={{
+                position: "fixed",
+                top: `${top}px`,
+                left: `${left}px`,
+                width: "max-content",
+                minWidth: `${menuMinWidth}px`,
+                maxWidth: `${menuMaxWidth}px`,
+                padding: "6px 0",
+                background: "#fff",
+                borderRadius: "4px",
+                boxShadow: "0 3px 16px rgba(0, 0, 0, 0.24)",
+                zIndex: 1500,
+            }}
+        >
+            {props.contextMenuItems.map((item) =>
+                item.isDivider ? (
+                    <div
+                        key={item.id}
+                        role="separator"
+                        style={{
+                            height: "1px",
+                            margin: "4px 0",
+                            background: "rgba(0, 0, 0, 0.12)",
+                        }}
+                    />
+                ) : (
+                    <PageThumbnailContextMenuItem
+                        key={item.id}
+                        item={item}
+                        onItemClick={props.onItemClick}
+                        isActive={activeItemId === item.id}
+                        onActivate={setActiveItemId}
+                        onDeactivate={() => setActiveItemId(undefined)}
+                        buttonRef={(element) => {
+                            menuButtonRefs.current[item.id] = element;
+                        }}
+                    />
+                ),
+            )}
+        </div>,
+        portalDocument.body,
+    );
+};
 
 // Thumbnails render only the page div, but many Bloom layout rules are written against
 // body[data-*] selectors. Copy the book body's data-* attributes onto a wrapper here so
@@ -118,6 +468,8 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
     const [contextMenuItems, setContextMenuItems] = useState<IPageMenuItem[]>(
         [],
     );
+    const closeContextMenuOnBlurCleanupRef = React.useRef<() => void>();
+    const contextMenuTriggerRef = React.useRef<HTMLElement>();
 
     const [selectedPageId, setSelectedPageId] = useState("");
     const bookAttributesThatMayAffectDisplay = useApiData<any>(
@@ -132,6 +484,18 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
 
     const pageMenuDefinition: IPageMenuItem[] = [
         {
+            id: "copyPage",
+            label: "Copy Page",
+            l10nId: "EditTab.CopyPage",
+            icon: <ContentCopyIcon style={pageThumbnailMenuIconStyle} />,
+        },
+        {
+            id: "pastePage",
+            label: "Paste Page",
+            l10nId: "EditTab.PastePage",
+            icon: <ContentPasteIcon style={pageThumbnailMenuIconStyle} />,
+        },
+        {
             id: "duplicatePage",
             label: "Duplicate Page",
             l10nId: "EditTab.DuplicatePageButton",
@@ -141,17 +505,29 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
             label: "Duplicate Page Many Times...",
             l10nId: "EditTab.DuplicatePageMultiple",
         },
-        { id: "copyPage", label: "Copy Page", l10nId: "EditTab.CopyPage" },
-        { id: "pastePage", label: "Paste Page", l10nId: "EditTab.PastePage" },
         {
-            id: "removePage",
-            label: "Remove Page",
-            l10nId: "EditTab.DeletePageButton",
+            id: "dividerBeforeChooseDifferentLayout",
+            label: "",
+            l10nId: "-",
+            isDivider: true,
         },
         {
             id: "chooseDifferentLayout",
             label: "Choose Different Layout",
             l10nId: "EditTab.ChooseLayoutButton",
+            addEllipsis: true,
+        },
+        {
+            id: "dividerBeforeRemovePage",
+            label: "",
+            l10nId: "-",
+            isDivider: true,
+        },
+        {
+            id: "removePage",
+            label: "Remove Page",
+            l10nId: "EditTab.DeletePageButton",
+            icon: <DeletePageMenuIcon />,
         },
     ];
 
@@ -308,8 +684,46 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
 
     const closeContextMenu = () => {
         openContextMenuCount.current = 0;
+        closeContextMenuOnBlurCleanupRef.current?.();
+        closeContextMenuOnBlurCleanupRef.current = undefined;
         setContextMenuPoint(undefined);
         setContextMenuItems([]);
+        // Restore focus to the button that opened the menu so keyboard users don't
+        // lose their place (standard ARIA menu button pattern).
+        // This is typically only important if the menu opened using the keyboard
+        // and was closed using escape. It might then be possible that the user wants
+        // to go on using the keyboard to navigate to another page or something similar.
+        // (Though I don't think that is implemented currently.)
+        // Most of the commands in the menu cause a page change, which will cause focus
+        // to be moved to somewhere in the new page. I don't think this can be a race,
+        // with this code stealing focus from the new page, because there is a delay on
+        // the C# side before the page-changing code is executed. If we remove that or
+        // implement more of the behavior in typescript, we might need to revisit this
+        // and only restore focus if the menu closes without an item being chosen.
+        contextMenuTriggerRef.current?.focus();
+        contextMenuTriggerRef.current = undefined;
+    };
+
+    const registerCloseContextMenuOnExternalBlur = () => {
+        closeContextMenuOnBlurCleanupRef.current?.();
+        const hostWindow =
+            window.parent && window.parent !== window ? window.parent : window;
+        const handleBlur = () => {
+            closeContextMenu();
+        };
+        hostWindow.addEventListener("blur", handleBlur, { once: true });
+        closeContextMenuOnBlurCleanupRef.current = () => {
+            hostWindow.removeEventListener("blur", handleBlur);
+        };
+    };
+
+    const openContextMenuNearElement = (
+        pageId: string,
+        element: HTMLElement,
+    ) => {
+        contextMenuTriggerRef.current = element;
+        const rect = element.getBoundingClientRect();
+        openContextMenu(pageId, rect.left, rect.bottom);
     };
 
     const openContextMenu = (pageId: string, x: number, y: number) => {
@@ -324,6 +738,9 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
 
         Promise.all(
             pageMenuDefinition.map(async (item) => {
+                if (item.isDivider) {
+                    return item;
+                }
                 const response = await getAsync(
                     `pageList/contextMenuItemEnabled?commandId=${encodeURIComponent(item.id)}&pageId=${encodeURIComponent(pageId)}`,
                 );
@@ -332,6 +749,9 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
                     label: item.label,
                     l10nId: item.l10nId,
                     enabled: !!response.data,
+                    icon: item.icon,
+                    isDivider: item.isDivider,
+                    addEllipsis: item.addEllipsis,
                 };
             }),
         ).then((menuItems) => {
@@ -340,17 +760,31 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
                 // call was made, so ignore the results.
                 return;
             }
+            // Mouse coordinates are reported relative to this iframe. Convert them to the parent
+            // document's coordinate space because the menu itself is rendered in the parent document.
+            const hostFrameRect = (
+                window.frameElement as HTMLElement | null
+            )?.getBoundingClientRect();
             setContextMenuItems(menuItems);
             setContextMenuPoint({
-                mouseX: x - 2,
-                mouseY: y - 4,
+                mouseX: (hostFrameRect?.left ?? 0) + x - 2,
+                mouseY: (hostFrameRect?.top ?? 0) + y - 4,
                 pageId,
             });
+            // Close the menu if the user clicks outside Bloom altogether.
+            registerCloseContextMenuOnExternalBlur();
         });
     };
 
     const onContextMenuItemClick = (commandId: string) => {
         if (!contextMenuPoint) return;
+
+        // This would get cleaned up by closeContextMenu anyway, but there's a
+        // possible race condition if the blur happens at just the wrong moment.
+        // We are going to close the menu almost immediately, so we no longer need
+        // to hide it if the user clicks again outside Bloom.
+        closeContextMenuOnBlurCleanupRef.current?.();
+        closeContextMenuOnBlurCleanupRef.current = undefined;
 
         postJson("pageList/contextMenuItemClicked", {
             pageId: contextMenuPoint.pageId,
@@ -415,25 +849,50 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
                         onContextMenu={handleContextMenu}
                     />
                     {selectedPageId === pageContent.key && (
-                        <div id="menuIconHolder" className="menuHolder">
+                        <button
+                            id="menuIconHolder"
+                            type="button"
+                            className="menuHolder"
+                            aria-label="Page options"
+                            aria-haspopup="menu"
+                            aria-expanded={!!contextMenuPoint}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                openContextMenuNearElement(
+                                    pageContent.key,
+                                    e.currentTarget,
+                                );
+                            }}
+                            onKeyDown={(e) => {
+                                if (
+                                    e.key === "ArrowDown" ||
+                                    e.key === "ContextMenu"
+                                ) {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    openContextMenuNearElement(
+                                        pageContent.key,
+                                        e.currentTarget,
+                                    );
+                                }
+                            }}
+                            css={css`
+                                border: none;
+                                padding: 0;
+                                background: transparent;
+                                cursor: pointer;
+                            `}
+                        >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="18"
                                 height="18"
                                 viewBox="0 0 18 18"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    openContextMenu(
-                                        pageContent.key,
-                                        e.clientX,
-                                        e.clientY,
-                                    );
-                                }}
                             >
                                 <path d="M5 8l4 4 4-4z" fill="white" />
                             </svg>
-                        </div>
+                        </button>
                     )}
                 </LazyLoad>
             </div>
@@ -518,40 +977,12 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
                 {pages}
             </Responsive>
             {contextMenuPoint && (
-                <Menu
-                    keepMounted={true}
-                    open={!!contextMenuPoint}
+                <PageThumbnailContextMenu
+                    contextMenuPoint={contextMenuPoint}
+                    contextMenuItems={contextMenuItems}
                     onClose={closeContextMenu}
-                    anchorReference="anchorPosition"
-                    anchorPosition={{
-                        top: contextMenuPoint.mouseY,
-                        left: contextMenuPoint.mouseX,
-                    }}
-                    disableAutoFocusItem={true} // don't automatically focus the first item
-                >
-                    {contextMenuItems.map((item) => (
-                        <LocalizableMenuItem
-                            key={item.id}
-                            english={item.label}
-                            l10nId={item.l10nId}
-                            disabled={!item.enabled}
-                            onClick={() => onContextMenuItemClick(item.id)}
-                            hasLeadingIconSpace={false}
-                            css={css`
-                                display: block !important;
-                                min-height: 24px !important;
-                                padding: 3px 8px !important;
-                            `}
-                            labelCss={css`
-                                font-size: 10pt !important;
-                                white-space: normal !important;
-                                line-height: normal !important;
-                            `}
-                        >
-                            {item.label}
-                        </LocalizableMenuItem>
-                    ))}
-                </Menu>
+                    onItemClick={onContextMenuItemClick}
+                />
             )}
         </div>
     );
