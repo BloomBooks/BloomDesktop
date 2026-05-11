@@ -163,6 +163,7 @@ namespace Bloom
                                 typeof(CollectionSettingsApi),
                                 typeof(SubscriptionSettingsEditorApi),
                                 typeof(FeatureStatusApi),
+                                typeof(CollectionTabView),
                                 typeof(CollectionApi),
                                 typeof(RegistrationApi),
                                 typeof(PageControlsApi),
