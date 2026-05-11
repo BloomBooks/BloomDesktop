@@ -27,6 +27,7 @@ namespace Bloom.CollectionTab
         private bool _isDisposed;
         private bool _bookChangesPending = false; // bookchanged event while tab not visible
         private Book.Book _bookForPendingLabelUpdate = null; // book needing label update when UI ready
+        private Book.Book _bookSubscribedForContentsChanged;
 
         internal WorkspaceView WorkspaceView { get; set; }
 
@@ -93,21 +94,44 @@ namespace Bloom.CollectionTab
 
         private void BookSelectionChanged(Book.Book book)
         {
+            DetachBookContentsChangedHandler();
+
             if (book == null)
                 return;
             if (book.IsSaveable)
                 _model.UpdateThumbnailAsync(book);
-            book.ContentsChanged += (sender, args) =>
+
+            _bookSubscribedForContentsChanged = book;
+            book.ContentsChanged += HandleBookContentsChanged;
+        }
+
+        private void HandleBookContentsChanged(object sender, EventArgs args)
+        {
+            var book = sender as Book.Book;
+            if (book == null)
             {
-                if (_tabSelection.ActiveTab == WorkspaceTab.collection)
-                {
-                    UpdateForBookChanges(book);
-                }
-                else
-                {
-                    _bookChangesPending = true;
-                }
-            };
+                return;
+            }
+
+            if (_tabSelection.ActiveTab == WorkspaceTab.collection)
+            {
+                UpdateForBookChanges(book);
+            }
+            else
+            {
+                _bookChangesPending = true;
+            }
+        }
+
+        private void DetachBookContentsChangedHandler()
+        {
+            if (_bookSubscribedForContentsChanged == null)
+            {
+                return;
+            }
+
+            _bookSubscribedForContentsChanged.ContentsChanged -= HandleBookContentsChanged;
+            _bookSubscribedForContentsChanged = null;
         }
 
         /// <summary>
@@ -364,6 +388,7 @@ namespace Bloom.CollectionTab
                 return;
 
             _isDisposed = true;
+            DetachBookContentsChangedHandler();
             BookCollection.CollectionCreated -= OnBookCollectionCreated;
 
             try
