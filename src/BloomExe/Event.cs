@@ -38,6 +38,11 @@ namespace Bloom
             }
         }
 
+        public void Unsubscribe(Action<TPayload> action)
+        {
+            _subscribers.Remove(action);
+        }
+
         public virtual void Raise(TPayload descriptor)
         {
             SIL.Reporting.Logger.WriteMinorEvent("Event: " + _nameForLogging);

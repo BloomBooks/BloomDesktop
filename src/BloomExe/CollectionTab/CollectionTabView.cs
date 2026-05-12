@@ -24,6 +24,8 @@ namespace Bloom.CollectionTab
         private BookSelection _bookSelection;
         private BloomWebSocketServer _webSocketServer;
         private TeamCollectionManager _tcManager;
+        private SelectedTabChangedEvent _selectedTabChangedEvent;
+        private LocalizationChangedEvent _localizationChangedEvent;
         private bool _isDisposed;
 
         // If we get a book changed event while this tab is not visible (we can only get it for the selected book),
@@ -42,6 +44,10 @@ namespace Bloom.CollectionTab
 
         public delegate CollectionTabView Factory(); //autofac uses this
 
+        // Event handler delegates stored for unsubscription in Dispose
+        private EventHandler _tcStatusChangedHandler;
+        private EventHandler<BookSelectionChangedEventArgs> _bookSelectionChangedHandler;
+
         public CollectionTabView(
             CollectionModel model,
             SelectedTabChangedEvent selectedTabChangedEvent,
@@ -58,6 +64,8 @@ namespace Bloom.CollectionTab
             _bookSelection = bookSelection;
             _webSocketServer = webSocketServer;
             _tcManager = tcManager;
+            _selectedTabChangedEvent = selectedTabChangedEvent;
+            _localizationChangedEvent = localizationChangedEvent;
 
             // Commented out because of BL-12890, while we think about that.
             //bookRefreshEvent.Subscribe(book => {
@@ -68,24 +76,14 @@ namespace Bloom.CollectionTab
 
             BookCollection.CollectionCreated += OnBookCollectionCreated;
 
-            localizationChangedEvent.Subscribe(unused =>
-            {
-                _webSocketServer.SendEvent("collection", "reload");
-            });
+            _localizationChangedEvent.Subscribe(OnLocalizationChanged);
 
             //TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 
-            selectedTabChangedEvent.Subscribe(c =>
-            {
-                if (_tabSelection.ActiveTab == WorkspaceTab.collection)
-                {
-                    Logger.WriteEvent("Entered Collections Tab");
-                    if (_bookForPendingChanges != null)
-                        UpdateForBookChanges(_bookForPendingChanges);
-                }
-            });
+            _selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
+
             SetTeamCollectionStatus(tcManager);
-            TeamCollectionManager.TeamCollectionStatusChanged += (sender, args) =>
+            _tcStatusChangedHandler = (sender, args) =>
             {
                 if (WorkspaceView != null && !_isDisposed)
                 {
@@ -97,8 +95,26 @@ namespace Bloom.CollectionTab
                     );
                 }
             };
-            bookSelection.SelectionChanged += (sender, e) =>
+            TeamCollectionManager.TeamCollectionStatusChanged += _tcStatusChangedHandler;
+
+            _bookSelectionChangedHandler = (sender, e) =>
                 BookSelectionChanged(bookSelection.CurrentSelection);
+            bookSelection.SelectionChanged += _bookSelectionChangedHandler;
+        }
+
+        private void OnLocalizationChanged(object unused)
+        {
+            _webSocketServer.SendEvent("collection", "reload");
+        }
+
+        private void OnSelectedTabChanged(object obj)
+        {
+            if (_tabSelection.ActiveTab == WorkspaceTab.collection)
+            {
+                Logger.WriteEvent("Entered Collections Tab");
+                if (_bookForPendingChanges != null)
+                    UpdateForBookChanges(_bookForPendingChanges);
+            }
         }
 
         private void BookSelectionChanged(Book.Book book)
@@ -399,6 +415,19 @@ namespace Bloom.CollectionTab
             _isDisposed = true;
             DetachBookContentsChangedHandler();
             BookCollection.CollectionCreated -= OnBookCollectionCreated;
+            _localizationChangedEvent.Unsubscribe(OnLocalizationChanged);
+            _selectedTabChangedEvent.Unsubscribe(OnSelectedTabChanged);
+
+            // Unsubscribe from standard C# events
+            if (_tcStatusChangedHandler != null)
+            {
+                TeamCollectionManager.TeamCollectionStatusChanged -= _tcStatusChangedHandler;
+            }
+
+            if (_bookSelectionChangedHandler != null && _bookSelection != null)
+            {
+                _bookSelection.SelectionChanged -= _bookSelectionChangedHandler;
+            }
 
             try
             {
