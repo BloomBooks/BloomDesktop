@@ -19,6 +19,11 @@ namespace Bloom.Book
         {
             if (_currentSelection == book)
                 return;
+            // If the previously selected book has a pending "Created" history event, record it now
+            // before we switch away. This gives the event the book's final title (whatever the user
+            // typed while editing – or empty if they didn't type anything).
+            _currentSelection?.RecordPendingCreatedHistoryEvent();
+
             // We don't need to reload the collection just because we make changes bringing the book up to date.
             if (book != null)
                 BookCollection.TemporariliyIgnoreChangesToFolder(book.FolderPath);
