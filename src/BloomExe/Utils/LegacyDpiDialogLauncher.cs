@@ -6,7 +6,9 @@ namespace Bloom.Utils
 {
     internal static class LegacyDpiDialogLauncher
     {
-        private static readonly IntPtr DpiAwarenessContextUnaware = new IntPtr(-1);
+        // SYSTEM_AWARE more closely matches Bloom's pre-PerMonitorV2 behavior.
+        // Using UNAWARE can cause apparent double-scaling when the primary monitor is scaled.
+        private static readonly IntPtr LegacyDialogDpiContext = new IntPtr(-2);
 
         [DllImport("user32.dll")]
         private static extern IntPtr SetThreadDpiAwarenessContext(IntPtr dpiContext);
@@ -31,7 +33,7 @@ namespace Bloom.Utils
         /// </summary>
         public static IDisposable EnterLegacyDpiScope()
         {
-            var previousContext = SetThreadDpiAwarenessContext(DpiAwarenessContextUnaware);
+            var previousContext = SetThreadDpiAwarenessContext(LegacyDialogDpiContext);
             return new DpiAwarenessScope(previousContext);
         }
 
