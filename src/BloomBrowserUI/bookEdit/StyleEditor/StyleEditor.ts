@@ -29,6 +29,7 @@ import "../../lib/jquery.alphanum";
 import axios from "axios";
 import { get, wrapAxios } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
+import { ensureFieldFitsOnCustomPage } from "../toolbox/canvas/derivedFieldFitting";
 import * as ReactDOM from "react-dom";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
 import * as React from "react";
@@ -2268,7 +2269,30 @@ export default class StyleEditor {
         if (!styleName) {
             return; // bizarre, since we put up the dialog
         }
-        OverflowChecker.AdjustSizeOrMarkOverflow(editable, doNotShrink);
+
+        // When a style is changed, resize every element on the page with that style class
+        // except invisible ones. (Well, ones set not to auto-adjust won't, either).
+        const page = $(editable).closest(".bloom-page")[0];
+        if (page) {
+            const allElementsWithStyle = $(page)
+                .find("." + styleName)
+                .toArray()
+                .filter((el: HTMLElement) => {
+                    return !el.classList.contains("bloom-visibility-code-off");
+                }) as HTMLElement[];
+
+            allElementsWithStyle.forEach((styledElement: HTMLElement) => {
+                if (styledElement.classList.contains("bloom-editable")) {
+                    OverflowChecker.AdjustSizeOrMarkOverflow(
+                        styledElement,
+                        doNotShrink,
+                    );
+                } else {
+                    ensureFieldFitsOnCustomPage(styledElement);
+                }
+            });
+        }
+
         this.updateLabelsWithStyleName();
         this.getParagraphTabDescription();
 
