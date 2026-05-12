@@ -189,7 +189,7 @@ namespace Bloom.Workspace
             this._publishView = publishViewFactory();
             this._publishView.WorkspaceView = this;
 
-            ApplyTabAreaSelection(_collectionTabView);
+            ChangeTab(_collectionTabView);
 
             SetupZoomModel();
             SendZoomInfo();
@@ -1247,7 +1247,18 @@ window.showWorkspaceInitializationFailure = function(message) {
             return null;
         }
 
-        private void ApplyTabAreaSelection(IBloomTabArea view)
+        /// <summary>
+        /// Changes the active tab in the workspace.
+        /// Todo: we can probably merge the two ChangeTab methods, but I want to wait for 6.5 to
+        /// attempt this, also merging the comments with some care. I'm not sure whether we should keep
+        /// the argument as an IBloomTabArea of a WorkspaceTab value. If the latter, _previouslySelectedTabArea
+        /// probably wants to change too, and perhaps other things.
+        /// Note that we don't want to make any actual changes of state until the PostponedWork callback runs
+        /// after we raise _selectedTabAboutToChangeEvent. The allows the current tab to shut down cleanly,
+        /// before any changes that might do things like cleaning out its iframe. In particular, we have to wait
+        /// until any changes are saved if we are leaving the edit tab.
+        /// </summary>
+        private void ChangeTab(IBloomTabArea view)
         {
             // Already on the desired tab: nothing to do.  And possible problems if we do do something.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-8382.
@@ -1256,8 +1267,6 @@ window.showWorkspaceInitializationFailure = function(message) {
 
             var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
             var currentTab = GetWorkspaceTab(view);
-
-            CurrentTabView = view;
             // Warn the user if we're starting to use too much memory.
             //MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
 
@@ -1278,6 +1287,15 @@ window.showWorkspaceInitializationFailure = function(message) {
                     ToTab = currentTab,
                     PostponedWork = () =>
                     {
+                        CurrentTabView = view;
+
+                        // Mark the tab active only when postponed work actually runs.
+                        // When leaving Edit this is delayed until pending save completes.
+                        if (currentTab.HasValue)
+                        {
+                            _tabSelection.ActiveTab = currentTab.Value;
+                        }
+
                         _selectedTabChangedEvent.Raise(
                             new TabChangedDetails() { FromTab = previousTab, ToTab = currentTab }
                         );
@@ -1292,6 +1310,10 @@ window.showWorkspaceInitializationFailure = function(message) {
                         }
                         SendZoomInfo();
                         SendTopBarState();
+                        if (currentTab == WorkspaceTab.collection)
+                        {
+                            ApplyPostCollectionTabBehavior();
+                        }
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
                     },
                 }
@@ -1344,13 +1366,7 @@ window.showWorkspaceInitializationFailure = function(message) {
         /// <param name="newTab">The tab to activate.</param>
         public void ChangeTab(WorkspaceTab newTab)
         {
-            _tabSelection.ActiveTab = newTab;
-            ApplyTabAreaSelection(GetTabArea(newTab));
-
-            if (newTab == WorkspaceTab.collection)
-            {
-                ApplyPostCollectionTabBehavior();
-            }
+            ChangeTab(GetTabArea(newTab));
         }
 
         // Currently not used, but I'm leaving the method in case we want to put it
