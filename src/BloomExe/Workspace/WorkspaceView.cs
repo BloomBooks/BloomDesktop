@@ -1248,7 +1248,7 @@ window.showWorkspaceInitializationFailure = function(message) {
 
         /// <summary>
         /// Changes the active tab in the workspace.
-        /// Todo: we can probably merge the two ChangeTab methods, but I want to be wait for 6.5 to
+        /// Todo: we can probably merge the two ChangeTab methods, but I want to wait for 6.5 to
         /// attempt this, also merging the comments with some care. I'm not sure whether we should keep
         /// the argument as an IBloomTabArea of a WorkspaceTab value. If the latter, _previouslySelectedTabArea
         /// probably wants to change too, and perhaps other things.
