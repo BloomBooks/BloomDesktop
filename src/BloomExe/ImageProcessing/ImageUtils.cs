@@ -2966,5 +2966,30 @@ namespace Bloom.ImageProcessing
                 );
             }
         }
+
+        internal static bool MakeTransparentBackgroundIfNeeded(
+            string sourcePath,
+            string destinationPath
+        )
+        {
+            using (var imageInfo = FromFileRobustly(sourcePath))
+            {
+                if (ShouldMakeBackgroundTransparent(imageInfo))
+                {
+                    var options = new GraphicsMagickOptions
+                    {
+                        Size = new Size(0, 0),
+                        MakeOpaque = false,
+                        MakeTransparent = true,
+                        cropRectangle = Rectangle.Empty,
+                        JpegQuality = 0, // ignored for PNG output, which transparency requires
+                        ProfilesToStrip = null,
+                    };
+                    var result = RunGraphicsMagick(sourcePath, destinationPath, options);
+                    return result.ExitCode == 0;
+                }
+            }
+            return false;
+        }
     }
 }
