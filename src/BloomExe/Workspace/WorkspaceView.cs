@@ -1367,7 +1367,6 @@ window.showWorkspaceInitializationFailure = function(message) {
         private void WorkspaceView_Load(object sender, EventArgs e)
         {
             _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
-            CheckDPISettings();
             ShowAutoUpdateDialogIfNeeded();
             ShowForumInvitationDialogIfNeeded();
             // Check whether the last Velopack update attempt actually succeeded. Shows a toast if not.
@@ -1470,29 +1469,6 @@ window.showWorkspaceInitializationFailure = function(message) {
                     waitForMilestone: "collectionButtonsDrawn",
                     maxTickWaitForMilestone: 100
                 );
-            }
-        }
-
-        private void CheckDPISettings()
-        {
-            Graphics g = this.CreateGraphics();
-            try
-            {
-                var dx = g.DpiX;
-                DPIOfThisAccount = dx;
-                var dy = g.DpiY;
-                if (dx != 96 || dy != 96)
-                {
-                    ErrorReport.NotifyUserOfProblem(
-                        new ShowOncePerSessionBasedOnExactMessagePolicy(),
-                        "The \"text size (DPI)\" or \"Screen Magnification\" of the display on this computer is set to a special value, {0}. With that setting, some thing won't look right in Bloom. Possibly books won't lay out correctly. If this is a problem, change the DPI back to 96 (the default on most computers), using the 'Display' Control Panel.",
-                        dx
-                    );
-                }
-            }
-            finally
-            {
-                g.Dispose();
             }
         }
 
