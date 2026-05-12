@@ -934,6 +934,29 @@ namespace Bloom.Api
                     // we were accidentally finding license.png in a template book. See BL-4290.
                     return false;
                 }
+
+                if (
+                    CurrentBook.UserPrefs.IncludeBackgroundColors
+                    && info.GetQueryParameters()["transparent"] == "yes"
+                )
+                {
+                    if (ImageUtils.IsPngFile(imageFile))
+                    {
+                        using (var tempFile = TempFile.WithExtension(".png"))
+                        {
+                            if (
+                                ImageUtils.MakeTransparentBackgroundIfNeeded(
+                                    imageFile,
+                                    tempFile.Path
+                                )
+                            )
+                            {
+                                info.ReplyWithImage(tempFile.Path);
+                                return true;
+                            }
+                        }
+                    }
+                }
                 info.ReplyWithImage(imageFile);
                 return true;
             }

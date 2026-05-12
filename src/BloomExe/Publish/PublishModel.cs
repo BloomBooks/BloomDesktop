@@ -440,10 +440,33 @@ namespace Bloom.Publish
             // use the body element instead.
             dom.Body.AddClass("drag-activity-play");
 
+            MarkCoverImageForTransparency(dom);
+
             return BloomServer.MakeInMemoryHtmlFileInBookFolder(
                 dom,
                 source: InMemoryHtmlFileSource.Pub
             );
+        }
+
+        private void MarkCoverImageForTransparency(HtmlDom dom)
+        {
+            // If the user doesn't want to include background colors on the pages, then there's
+            // no need to make black and white pictures transparent.
+            if (!CurrentBook.UserPrefs.IncludeBackgroundColors)
+                return;
+            var coverImgNodes = dom.SafeSelectNodes("//img[@data-book='coverImage']");
+            foreach (var img in coverImgNodes)
+            {
+                var src = img.GetAttribute("src");
+                if (!string.IsNullOrEmpty(src))
+                {
+                    if (src.Contains("?"))
+                        src = src + "&transparent=yes";
+                    else
+                        src = src + "?transparent=yes";
+                    img.SetAttribute("src", src);
+                }
+            }
         }
 
         private void AddStylesheetClasses(SafeXmlDocument dom)
