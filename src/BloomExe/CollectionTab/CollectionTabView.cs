@@ -25,8 +25,17 @@ namespace Bloom.CollectionTab
         private BloomWebSocketServer _webSocketServer;
         private TeamCollectionManager _tcManager;
         private bool _isDisposed;
-        private bool _bookChangesPending = false; // bookchanged event while tab not visible
+
+        // If we get a book changed event while this tab is not visible (we can only get it for the selected book),
+        // this variable keeps track of the book for which we got it, so we can be quite sure to update
+        // our data about that book in various ways when we are the active tab again.
+        private Book.Book _bookForPendingChanges = null;
         private Book.Book _bookForPendingLabelUpdate = null; // book needing label update when UI ready
+
+        // This is normally (via code in BookSelectionChanged) the same as BookSelection.CurrentSelection.
+        // We distinguish it so as to unambiguously identify the (at most) one book which currently
+        // has HandleBookContentsChanged() attached to its BookChanged event. This lets us reliably
+        // remove that handler when the selection changes or this is disposed.
         private Book.Book _bookSubscribedForContentsChanged;
 
         internal WorkspaceView WorkspaceView { get; set; }
@@ -71,8 +80,8 @@ namespace Bloom.CollectionTab
                 if (_tabSelection.ActiveTab == WorkspaceTab.collection)
                 {
                     Logger.WriteEvent("Entered Collections Tab");
-                    if (_bookChangesPending && _bookSelection.CurrentSelection != null)
-                        UpdateForBookChanges(_bookSelection.CurrentSelection);
+                    if (_bookForPendingChanges != null)
+                        UpdateForBookChanges(_bookForPendingChanges);
                 }
             });
             SetTeamCollectionStatus(tcManager);
@@ -119,7 +128,7 @@ namespace Bloom.CollectionTab
             }
             else
             {
-                _bookChangesPending = true;
+                _bookForPendingChanges = book;
             }
         }
 
@@ -184,7 +193,7 @@ namespace Bloom.CollectionTab
 
             // This message causes the preview to update.
             _webSocketServer.SendEvent("bookContent", "reload");
-            _bookChangesPending = false;
+            _bookForPendingChanges = null;
         }
 
         private void OnBookCollectionCreated(object collection, EventArgs args)
