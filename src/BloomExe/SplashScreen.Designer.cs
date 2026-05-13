@@ -75,7 +75,7 @@
             //
             // _feedbackStatusLabel
             //
-            this._feedbackStatusLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this._feedbackStatusLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this._feedbackStatusLabel.AutoSize = true;
             this._feedbackStatusLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
             this._feedbackStatusLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(161)))), ((int)(((byte)(255)))));
