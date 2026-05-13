@@ -318,8 +318,11 @@ namespace Bloom.Api
                     info.WriteError(404, $"Server could not process {localPath}");
                     return true; // we sort of handled it.
                 }
-                // otherwise it's a programmer error we want to know about.
-                ReportMissingApiEndpoint(info, localPath);
+                if (ShouldReportMissingApiEndpoint(endpointPath))
+                {
+                    // otherwise it's a programmer error we want to know about.
+                    ReportMissingApiEndpoint(info, localPath);
+                }
                 // If the user continues from there, we need to pretend to have handled
                 // the request. Otherwise the caller will keep trying to handle it in
                 // other ways.
@@ -327,6 +330,16 @@ namespace Bloom.Api
                 return true;
             }
             return false;
+        }
+
+        private static bool ShouldReportMissingApiEndpoint(string endpointPath)
+        {
+            // There are older books out in the wild in which the src for branding images included
+            // this endpoint. We now handle getting branding images differently.
+            // Note that this will eventually result in a 404. That's ok because
+            // the docs in the wild have `onerror="this.style.display='none'"`,
+            // so we don't get the missing image indicator in the preview. See BL-16300.
+            return endpointPath != "branding/image";
         }
 
         private static void ReportMissingApiEndpoint(IRequestInfo info, string localPath)
