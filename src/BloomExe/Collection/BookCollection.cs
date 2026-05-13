@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
 using SIL.IO;
 using SIL.Reporting;
@@ -249,7 +250,10 @@ namespace Bloom.Collection
         {
             lock (_bookInfoLock)
             {
-                var infoToDelete = _bookInfos.FirstOrDefault(b => b.FolderPath == folderPath);
+                var normalizedFolderPath = BookStorage.GetNormalizedPathForOS(folderPath);
+                var infoToDelete = _bookInfos.FirstOrDefault(b =>
+                    BookStorage.GetNormalizedPathForOS(b.FolderPath) == normalizedFolderPath
+                );
                 //Debug.Assert(_bookInfos.Contains(bookInfo)); this will occur if we delete a book from the BloomLibrary section
                 if (infoToDelete != null) // for paranoia. We shouldn't be trying to delete a book that isn't there.
                     _bookInfos.Remove(infoToDelete);
@@ -329,6 +333,8 @@ namespace Bloom.Collection
                     }
                 }
 
+                _bookInfos = _bookInfos.Where(b => Directory.Exists(b.FolderPath)).ToList();
+
                 return _bookInfos;
             }
         }
@@ -401,6 +407,8 @@ namespace Bloom.Collection
 
         private void AddBookInfo(string folderPath)
         {
+            if (!Directory.Exists(folderPath))
+                return;
             try
             {
                 //this is handy when windows explorer won't let go of the thumbs.db file, but we want to delete the folder
@@ -439,6 +447,10 @@ namespace Bloom.Collection
             }
             catch (Exception e)
             {
+                // A folder may disappear while rescanning (for example, immediately after delete).
+                // In that case, do not create an ErrorBookInfo placeholder entry.
+                if (!Directory.Exists(folderPath))
+                    return;
                 if (e.InnerException != null)
                 {
                     e = e.InnerException;
