@@ -26,6 +26,13 @@ const isMissingTheme = (themeName: string): boolean => {
     return missingTheme === themeName;
 };
 
+function getThemeLabel(themeName: string): string {
+    return themeName
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+}
+
 export const ThemeChooser: React.FunctionComponent<{
     pageGeneration: number; // to force re-render when the page changes
 }> = (props) => {
@@ -213,8 +220,8 @@ export const ThemeChooser: React.FunctionComponent<{
                     <MenuItem value={theme} key={theme} disabled={false}>
                         <Div l10nKey={`EditTab.Toolbox.Games.Themes.${theme}`}>
                             {isMissingTheme(theme)
-                                ? `(Missing) ${theme}`
-                                : theme}
+                                ? `(Missing) ${getThemeLabel(theme)}`
+                                : getThemeLabel(theme)}
                         </Div>
                     </MenuItem>
                 ))}

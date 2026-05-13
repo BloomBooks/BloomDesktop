@@ -6,6 +6,7 @@ import {
 } from "./canvasElementUtils";
 
 const kDefaultMinimumRightMarginDistance = 10;
+const kDefaultMinimumBottomMarginDistance = 10;
 
 function pxToNumber(dimension: string, defaultValue = 0): number {
     if (!dimension) {
@@ -129,22 +130,29 @@ export function ensureFieldFitsOnCustomPage(
 
     const minimumTextBoxHeightPx =
         getCanvasElementManager()?.minTextBoxHeightPx ?? 30;
-    const finalHeight = Math.max(
-        minimumTextBoxHeightPx,
-        Math.min(currentHeight, getRenderedHeight()),
-    );
+    const finalHeight = Math.max(minimumTextBoxHeightPx, getRenderedHeight());
     canvasElement.style.height = `${finalHeight}px`;
 
     const minimumRightMarginDistance = Math.min(
         kDefaultMinimumRightMarginDistance,
         previousRightMarginDistance,
     );
+    const previousBottomMarginDistance = Math.max(
+        0,
+        bloomCanvas.clientHeight - (canvasElement.offsetTop + currentHeight),
+    );
+    const minimumBottomMarginDistance = Math.min(
+        kDefaultMinimumBottomMarginDistance,
+        previousBottomMarginDistance,
+    );
     const preferredMaxLeft =
         bloomCanvas.clientWidth - finalWidth - minimumRightMarginDistance;
     // If preserving the margin would push the box off the left edge,
     // prioritize keeping the box on-page.
     const maxLeft = Math.max(0, preferredMaxLeft);
-    const maxTop = Math.max(0, bloomCanvas.clientHeight - finalHeight);
+    const preferredMaxTop =
+        bloomCanvas.clientHeight - finalHeight - minimumBottomMarginDistance;
+    const maxTop = Math.max(0, preferredMaxTop);
     const clampedLeft = Math.max(
         0,
         Math.min(canvasElement.offsetLeft, maxLeft),
@@ -155,5 +163,10 @@ export function ensureFieldFitsOnCustomPage(
     }
     if (clampedTop !== canvasElement.offsetTop) {
         canvasElement.style.top = `${clampedTop}px`;
+    }
+
+    const canvasElementManager = getCanvasElementManager();
+    if (canvasElementManager?.getActiveElement() === canvasElement) {
+        canvasElementManager.setupControlFrame();
     }
 }
