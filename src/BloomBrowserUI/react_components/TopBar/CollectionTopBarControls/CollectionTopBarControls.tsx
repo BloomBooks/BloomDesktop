@@ -67,13 +67,11 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                     backgroundColor={mainButtonBackground}
                     textColor={mainButtonTextColor}
                     cssOverrides={css`
-                        width: 88px;
                         white-space: normal;
                         line-height: 1.15;
 
                         span {
                             display: inline-block;
-                            max-width: 64px;
                             text-align: center;
                         }
                     `}

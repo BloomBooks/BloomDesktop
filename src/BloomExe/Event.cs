@@ -29,17 +29,35 @@ namespace Bloom
         }
 
         private readonly List<Action<TPayload>> _subscribers = new List<Action<TPayload>>();
+        private readonly object _subscriberLock = new object();
 
         public void Subscribe(Action<TPayload> action)
         {
-            if (!_subscribers.Contains(action))
+            lock (_subscriberLock)
             {
-                _subscribers.Add(action);
+                if (!_subscribers.Contains(action))
+                {
+                    _subscribers.Add(action);
+                }
+            }
+        }
+
+        public void Unsubscribe(Action<TPayload> action)
+        {
+            lock (_subscriberLock)
+            {
+                _subscribers.Remove(action);
             }
         }
 
         public virtual void Raise(TPayload descriptor)
         {
+            Action<TPayload>[] subscribers;
+            lock (_subscriberLock)
+            {
+                subscribers = _subscribers.ToArray();
+            }
+
             SIL.Reporting.Logger.WriteMinorEvent("Event: " + _nameForLogging);
             using (
                 PerformanceMeasurement.Global?.MeasureMaybe(
@@ -48,7 +66,7 @@ namespace Bloom
                 )
             )
             {
-                foreach (Action<TPayload> subscriber in _subscribers)
+                foreach (Action<TPayload> subscriber in subscribers)
                 {
                     ((Action<TPayload>)subscriber)(descriptor);
                 }
@@ -57,7 +75,13 @@ namespace Bloom
 
         public bool HasSubscribers
         {
-            get { return _subscribers.Count > 0; }
+            get
+            {
+                lock (_subscriberLock)
+                {
+                    return _subscribers.Count > 0;
+                }
+            }
         }
     }
 
