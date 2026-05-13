@@ -2283,7 +2283,7 @@ export default class StyleEditor {
 
             allElementsWithStyle.forEach((styledElement: HTMLElement) => {
                 if (styledElement.classList.contains("bloom-editable")) {
-                    OverflowChecker.AdjustSizeOrMarkOverflow(
+                    OverflowChecker.AdjustSizeAndMarkSelfOverflow(
                         styledElement,
                         doNotShrink,
                     );
@@ -2292,6 +2292,9 @@ export default class StyleEditor {
                 }
             });
         }
+        // Do the page-level ancestor-overflow check once after all elements have been resized,
+        // rather than redundantly once per element.
+        OverflowChecker.CheckPageAncestorOverflow(editable);
 
         this.updateLabelsWithStyleName();
         this.getParagraphTabDescription();
