@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Bloom;
 using Bloom.Api;
 using Bloom.Book;
@@ -223,6 +224,58 @@ namespace BloomTests.web
 
                 // Verify
                 Assert.That(transaction.ReplyContents, Is.EqualTo("Did It!"));
+            }
+        }
+
+        [Test]
+        public async Task MissingLegacyBrandingApiEndpoint_DoesNotReportNonFatalProblem()
+        {
+            using (var server = CreateBloomServer())
+            {
+                server.ApiHandler.RegisterEndpointHandler(
+                    "existingProjectEndpoint",
+                    request => request.ReplyWithText("ok"),
+                    true
+                );
+                NonFatalProblem.LastNonFatalProblemReported = null;
+                var transaction = new PretendRequestInfo(
+                    BloomServer.ServerUrlWithBloomPrefixEndingInSlash
+                        + "api/branding/image?id=back-cover-outside.png"
+                );
+
+                await server.ApiHandler.ProcessRequestAsync(transaction, "api/branding/image");
+
+                Assert.That(transaction.StatusCode, Is.EqualTo(404));
+                Assert.That(transaction.StatusDescription, Is.EqualTo("API endpoint not found"));
+                Assert.That(NonFatalProblem.LastNonFatalProblemReported, Is.Null);
+            }
+        }
+
+        [Test]
+        public async Task MissingNonLegacyApiEndpoint_ReportsNonFatalProblem()
+        {
+            using (var server = CreateBloomServer())
+            {
+                server.ApiHandler.RegisterEndpointHandler(
+                    "existingProjectEndpoint",
+                    request => request.ReplyWithText("ok"),
+                    true
+                );
+                NonFatalProblem.LastNonFatalProblemReported = null;
+                var transaction = new PretendRequestInfo(
+                    BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/notARealEndpoint"
+                );
+
+                await server.ApiHandler.ProcessRequestAsync(transaction, "api/notARealEndpoint");
+
+                Assert.That(transaction.StatusCode, Is.EqualTo(404));
+                Assert.That(transaction.StatusDescription, Is.EqualTo("API endpoint not found"));
+                Assert.That(
+                    NonFatalProblem.LastNonFatalProblemReported,
+                    Does.Contain(
+                        "Server could not find an API endpoint for /bloom/api/notARealEndpoint"
+                    )
+                );
             }
         }
 
