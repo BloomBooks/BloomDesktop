@@ -1555,6 +1555,16 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
 
 async function pasteImpl(imageAvailable: boolean) {
     const canvasElementManager = theOneCanvasElementManager;
+    const activeCanvasElement = canvasElementManager?.getActiveElement();
+    if (imageAvailable) {
+        const activeCanvasImage = activeCanvasElement?.querySelector(
+            ".bloom-imageContainer img",
+        );
+        if (activeCanvasImage instanceof HTMLImageElement) {
+            doImageCommand(activeCanvasImage, "paste");
+            return;
+        }
+    }
     if (
         imageAvailable &&
         canvasElementManager &&
@@ -1564,10 +1574,10 @@ async function pasteImpl(imageAvailable: boolean) {
     }
     // Enhance: might there be a case where text should be pasted as a new canvas element?
     // Enhance: we'd like to be able to copy and paste entire canvas overlays (including target if any).
-    const activeElement = canvasElementManager?.getActiveElement();
-    const activeCanvasElementEditable = activeElement?.getElementsByClassName(
-        "bloom-editable bloom-visibility-code-on",
-    )[0] as HTMLElement;
+    const activeCanvasElementEditable =
+        activeCanvasElement?.getElementsByClassName(
+            "bloom-editable bloom-visibility-code-on",
+        )[0] as HTMLElement;
 
     const textToPaste = await navigator.clipboard.readText();
     if (!textToPaste) {
@@ -1575,7 +1585,8 @@ async function pasteImpl(imageAvailable: boolean) {
     }
     if (
         activeCanvasElementEditable &&
-        activeElement !== canvasElementManager.theCanvasElementWeAreTextEditing
+        activeCanvasElement !==
+            canvasElementManager.theCanvasElementWeAreTextEditing
     ) {
         // We've issued a paste command on a canvas element that isn't active for editing.
         // Replace its entire content with what's on the clipboard.
