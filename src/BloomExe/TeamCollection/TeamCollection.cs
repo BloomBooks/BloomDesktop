@@ -2473,6 +2473,22 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
+        /// Get the local path we expect to use for the specified book id based on the current repo state.
+        /// This helps restore selection after a remote rename before the local folder has been renamed.
+        /// </summary>
+        public string GetLikelyLocalPathForBookId(string bookId)
+        {
+            if (string.IsNullOrWhiteSpace(bookId))
+                return null;
+
+            var repoBooksById = GetRepoBooksByIdMap();
+            if (!repoBooksById.TryGetValue(bookId, out var repoBookInfo))
+                return null;
+
+            return Path.Combine(_localCollectionFolder, repoBookInfo.Item1);
+        }
+
+        /// <summary>
         /// Return a dictionary of all books in the repo which do not correspond to a local book folder.
         /// key: book GUID; value: (book name in repo (without extension), haveCorrespondingLocalBook).
         /// </summary>

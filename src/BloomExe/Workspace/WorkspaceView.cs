@@ -119,6 +119,7 @@ namespace Bloom.Workspace
             // the CommonApi may be needed itself by the WorkspaceView.
             commonApi.ReloadProjectAction = () =>
             {
+                UpdateCurrentBookPathForTeamCollectionReload();
                 Invoke(ReopenCurrentProject);
             };
 
@@ -259,6 +260,25 @@ namespace Bloom.Workspace
         internal void ReloadWorkspaceRootDocument()
         {
             _workspaceReactControl?.Reload();
+        }
+
+        /// <summary>
+        /// If the selected Team Collection book was renamed remotely, update the saved current path
+        /// to the repo's current name before reloading the project.
+        /// </summary>
+        private void UpdateCurrentBookPathForTeamCollectionReload()
+        {
+            var selectedBook = _bookSelection.CurrentSelection;
+            var teamCollection = _tcManager?.CurrentCollectionEvenIfDisconnected;
+            if (selectedBook == null || teamCollection == null)
+                return;
+
+            var resolvedPath = teamCollection.GetLikelyLocalPathForBookId(selectedBook.ID);
+            if (string.IsNullOrEmpty(resolvedPath))
+                return;
+
+            Settings.Default.CurrentBookPath = resolvedPath;
+            Settings.Default.Save();
         }
 
         private static ReactControlAdditionalHtml GetWorkspaceAdditionalHtml()
