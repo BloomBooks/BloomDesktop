@@ -3261,7 +3261,10 @@ export class CanvasElementManager {
         // (Makes the font look bolder.)
         // So we need to set it only when we are actually applying an outline color.
         // This will also save us data migration if we one day want to give the user control
-        // over the outline width or (much less likely) paint order
+        // over the outline width or (much less likely) paint order.
+        // Keep the paragraph/linebreak marker override in editMode.less in sync with these
+        // inherited outline properties. The edit-only helper glyphs are pseudo-elements and
+        // will pick up changes here unless that LESS rule is updated too.
         const outlineWidthProperty = "-webkit-text-stroke-width";
         const paintOrderProperty = "paint-order";
         const applyOutlineProperties = (target: HTMLElement) => {
