@@ -208,6 +208,7 @@ namespace Bloom.Edit
                             // to try again. If we do try again and the same page fails again, the state machine will
                             // call this action anyway. So, finally PostponedWork will get called and we can close the collection.
                             CurrentBook.Save();
+                            CurrentBook.RecordPendingCreatedHistoryEvent();
                             args.PostponedWork();
                             return null;
                         },

@@ -959,6 +959,11 @@ namespace Bloom.TeamCollection
 
                     var book = _collectionModel.GetBookFromBookInfo(bookInfo);
                     var message = BookHistory.GetPendingCheckinMessage(book);
+                    // Before recording the check-in, make sure any pending "Created" entry is
+                    // written first. This is a hard requirement: once a book is checked in the
+                    // local copy is locked, so it will be too late to update history. Also,
+                    // we want the 'created' event to be before the first 'checked in' event.
+                    book.RecordPendingCreatedHistoryEvent();
                     BookHistory.AddEvent(book, BookHistoryEventType.CheckIn, message);
                     BookHistory.SetPendingCheckinMessage(book, "");
                     try
