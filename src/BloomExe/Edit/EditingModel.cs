@@ -1611,7 +1611,8 @@ namespace Bloom.Edit
                     CurrentBook.FolderPath,
                     imageId,
                     priorImageSrc,
-                    imageInfo
+                    imageInfo,
+                    undoable: true // All image changes made here are undoable.
                 );
                 UpdateImageInBrowser(args);
             }
