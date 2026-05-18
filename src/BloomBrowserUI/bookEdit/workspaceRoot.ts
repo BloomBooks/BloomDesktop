@@ -97,12 +97,18 @@ export function handleUndo(): void {
     const contentWindow = getEditablePageBundleExports();
     if (contentWindow && contentWindow.origamiCanUndo()) {
         contentWindow.origamiUndo();
+        return;
     }
     // Undoing changes made by commands and dialogs in the toolbox can't be undone using
     // ckeditor, and has its own mechanism. Look next to see whether we know about any Undos there.
     const toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow && toolboxWindow.canUndo()) {
         toolboxWindow.undo();
+        return;
+    }
+    if (contentWindow && contentWindow.imagePasteCanUndo()) {
+        contentWindow.imagePasteUndo();
+        return;
     } else if (contentWindow && contentWindow.ckeditorCanUndo()) {
         contentWindow.ckeditorUndo();
     }
@@ -238,6 +244,9 @@ export function canUndo(): string {
     }
     const toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow && toolboxWindow.canUndo && toolboxWindow.canUndo()) {
+        return "yes";
+    }
+    if (contentWindow && contentWindow.imagePasteCanUndo()) {
         return "yes";
     }
     if (contentWindow && contentWindow.ckeditorCanUndo()) {

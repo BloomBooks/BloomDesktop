@@ -409,6 +409,7 @@ export interface IImageInfo {
     copyright: string;
     creator: string;
     license: string;
+    undoable: string;
 }
 
 export const kMakeNewCanvasElement = "makeNewCanvasElement";
@@ -420,6 +421,7 @@ export function notifyToolOfChangedImage(img?: HTMLImageElement) {
 
 // called by c# so be careful about changing the signature, including names of parameters
 export function changeImage(imageInfo: IImageInfo) {
+    console.log(`DEBUG changeImage: ${JSON.stringify(imageInfo)}`);
     if (imageInfo.imageId === kMakeNewCanvasElement) {
         theOneCanvasElementManager.finishPasteImageFromClipboard(imageInfo);
         // like to do this here, but the image overlay isn't always really created yet.
@@ -432,13 +434,30 @@ export function changeImage(imageInfo: IImageInfo) {
             `changeImage: imageOrImageContainerId: "${imageInfo.imageId}" not found`,
         );
     }
+    if (imageInfo.undoable === "true") {
+        theOneCanvasElementManager.prepareUndoForImageOperation(
+            imgOrImageContainer,
+        );
+    }
     changeImageInfo(imgOrImageContainer, imageInfo);
     // id is just a temporary expedient to find the right image easily in this method.
     imgOrImageContainer.removeAttribute("id");
     theOneCanvasElementManager.updateCanvasElementForChangedImage(
         imgOrImageContainer,
     );
+    theOneCanvasElementManager.commitPendingImageOperationUndo(
+        imgOrImageContainer,
+    );
     notifyToolOfChangedImage();
+}
+
+export function imagePasteCanUndo(): boolean {
+    return theOneCanvasElementManager.canUndoImageOperation();
+}
+
+export function imagePasteUndo(): boolean {
+    const didUndo = theOneCanvasElementManager.undoImageOperation();
+    return didUndo;
 }
 
 export function changeImageInfo(

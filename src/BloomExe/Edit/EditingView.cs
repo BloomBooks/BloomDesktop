@@ -694,6 +694,7 @@ namespace Bloom.Edit
                             );
                             return;
                         }
+                        // TODO: undoable?
                         SetGifImage(imageId, priorImageSrc, path);
                         return;
                     }
@@ -735,7 +736,7 @@ namespace Bloom.Edit
                             "[Paste Image] Pasting jpeg image {0}",
                             clipboardImage.OriginalFilePath
                         );
-                        _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
+                        _model.ChangePicture(imageId, priorImageSrc, clipboardImage, true);
                         pictureChanged = true;
                     }
                     else
@@ -759,7 +760,7 @@ namespace Bloom.Edit
                                 "[Paste Image] Pasting png file {0}",
                                 clipboardImage.OriginalFilePath
                             );
-                            _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
+                            _model.ChangePicture(imageId, priorImageSrc, clipboardImage, true);
                             pictureChanged = true;
                         }
                         else // they pasted a path to some other bitmap format
@@ -789,7 +790,7 @@ namespace Bloom.Edit
 
                                 using (var palasoImage = ImageUtils.FromFileRobustly(temp.Path))
                                 {
-                                    _model.ChangePicture(imageId, priorImageSrc, palasoImage);
+                                    _model.ChangePicture(imageId, priorImageSrc, palasoImage, true);
                                     pictureChanged = true;
                                 }
                             }
