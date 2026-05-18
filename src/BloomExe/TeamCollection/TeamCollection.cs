@@ -2547,7 +2547,9 @@ namespace Bloom.TeamCollection
             BrowserProgressDialog.DoWorkWithProgressDialog(
                 SocketServer,
                 () =>
-                    new ReactDialog(
+                {
+                    var owner = Shell.GetShellOrOtherOpenForm();
+                    var dlg = new ReactDialog(
                         "progressDialogBundle",
                         // props to send to the react component
                         // N.B. BloomExe\TeamCollection has a difference "casing" than BloomBrowserUI\teamCollection !
@@ -2560,14 +2562,13 @@ namespace Bloom.TeamCollection
                             showReportButton = "never",
                         },
                         "Sync Team Collection"
-                    )
-                    // winforms dialog properties
-                    {
-                        Width = 620,
-                        Height = 550,
-                    },
+                    );
+                    dlg.SetScaledSize(620, 550);
+                    return dlg;
+                },
                 doWhat,
-                doWhenMainActionFalse
+                doWhenMainActionFalse,
+                Shell.GetShellOrOtherOpenForm()
             );
         }
 

@@ -375,10 +375,9 @@ namespace Bloom.Collection
                 )
             )
             {
-                dlg.Width = 1000;
-                dlg.Height = 580;
-
-                dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());
+                var owner = Shell.GetShellOrOtherOpenForm();
+                dlg.SetScaledSize(1000, 580);
+                dlg.ShowDialog(owner);
             }
         }
 

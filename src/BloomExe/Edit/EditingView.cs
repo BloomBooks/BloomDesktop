@@ -619,8 +619,7 @@ namespace Bloom.Edit
                 )
             )
             {
-                dlg.Width = 500;
-                dlg.Height = 700;
+                dlg.SetScaledSize(500, 700);
 
                 dlg.ShowDialog(_workspaceView);
             }

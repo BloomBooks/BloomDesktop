@@ -1318,8 +1318,7 @@ namespace Bloom.TeamCollection
                 )
             )
             {
-                dlg.Width = 560;
-                dlg.Height = 400;
+                dlg.SetScaledSize(560, 400);
                 // This dialog is neater without a title bar. We don't need to be able to
                 // drag it around. There's nothing left to give it one if we don't set a title
                 // and remove the control box.
