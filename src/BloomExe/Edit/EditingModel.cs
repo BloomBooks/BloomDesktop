@@ -1603,6 +1603,7 @@ namespace Bloom.Edit
             string pageBackgroundColor = null
         )
         {
+            bool undoable = true; // All image changes made here are undoable.
             try
             {
                 Logger.WriteMinorEvent("Starting ChangePicture {0}...", (object)imageInfo.FileName);
@@ -1613,7 +1614,8 @@ namespace Bloom.Edit
                     imageId,
                     priorImageSrc,
                     imageInfo,
-                    pageBackgroundColor
+                    pageBackgroundColor,
+                    undoable
                 );
                 UpdateImageInBrowser(args);
             }

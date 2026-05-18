@@ -29,6 +29,13 @@ import {
     theOneCanvasElementManager,
 } from "./CanvasElementManager";
 import {
+    canUndoImageOperation,
+    clearImageOperationUndoState,
+    commitPendingImageOperationUndo,
+    prepareUndoForImageOperation,
+    undoImageOperation,
+} from "./ImageUndoManager";
+import {
     getCanvasElementManager,
     kCanvasElementClass,
     kCanvasElementSelector,
@@ -409,6 +416,7 @@ export interface IImageInfo {
     copyright: string;
     creator: string;
     license: string;
+    undoable: string;
 }
 
 export const kMakeNewCanvasElement = "makeNewCanvasElement";
@@ -420,6 +428,9 @@ export function notifyToolOfChangedImage(img?: HTMLImageElement) {
 
 // called by c# so be careful about changing the signature, including names of parameters
 export function changeImage(imageInfo: IImageInfo) {
+    if (imageInfo.undoable !== "true") {
+        clearImageOperationUndoState();
+    }
     if (imageInfo.imageId === kMakeNewCanvasElement) {
         theOneCanvasElementManager.finishPasteImageFromClipboard(imageInfo);
         // like to do this here, but the image overlay isn't always really created yet.
@@ -432,19 +443,38 @@ export function changeImage(imageInfo: IImageInfo) {
             `changeImage: imageOrImageContainerId: "${imageInfo.imageId}" not found`,
         );
     }
+    if (imageInfo.undoable === "true") {
+        prepareUndoForImageOperation(imgOrImageContainer);
+    }
     changeImageInfo(imgOrImageContainer, imageInfo);
     // id is just a temporary expedient to find the right image easily in this method.
     imgOrImageContainer.removeAttribute("id");
     theOneCanvasElementManager.updateCanvasElementForChangedImage(
         imgOrImageContainer,
     );
+    commitPendingImageOperationUndo(imgOrImageContainer);
     notifyToolOfChangedImage();
+}
+
+export function imageOperationCanUndo(): boolean {
+    return canUndoImageOperation();
+}
+
+export function imageOperationUndo(): boolean {
+    const didUndo = undoImageOperation();
+    return didUndo;
 }
 
 export function changeImageInfo(
     imgOrImageContainer: HTMLElement,
     imageInfo: IImageInfo,
 ) {
+    console.log(
+        `changeImageInfo: imageId=${imageInfo.imageId}, src=${imageInfo.src}, copyright=${imageInfo.copyright}, creator=${imageInfo.creator}, license=${imageInfo.license}, undoable=${imageInfo.undoable}`,
+    );
+    console.log(
+        `changeImageInfo: before imgOrImageContainer=${imgOrImageContainer.outerHTML}`,
+    );
     // I can't remember why, but what this is doing is saying that if the imageContainer
     // ...or just possibly bloom-canvas in legacy or publication mode?...
     // has an <img> element, we're setting the src on that. But if it does not, we're
@@ -480,6 +510,9 @@ export function changeImageInfo(
     if (page) {
         normalizeCoverImageDesignation(page);
     }
+    console.log(
+        `changeImageInfo: after imgOrImageContainer=${imgOrImageContainer.outerHTML}`,
+    );
 }
 
 // This origami checking business is related BL-13120

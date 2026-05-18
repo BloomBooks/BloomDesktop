@@ -699,6 +699,7 @@ namespace Bloom.Edit
                             );
                             return;
                         }
+                        // TODO: undoable?
                         SetGifImage(imageId, priorImageSrc, path);
                         return;
                     }
