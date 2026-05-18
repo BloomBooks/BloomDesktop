@@ -119,6 +119,17 @@ export function getAllDraggables(page: HTMLElement | Document) {
     return Array.from(page.querySelectorAll(`[${kDraggableIdAttribute}]`));
 }
 
+type ImageOperationUndoItem =
+    | {
+          kind: "restoreImage";
+          element: HTMLElement;
+          imageInfo: IImageInfo;
+      }
+    | {
+          kind: "removeElement";
+          element: HTMLElement;
+      };
+
 // Canvas elements are the movable items that can be placed over images (or empty image containers).
 // Some of them are associated with ComicalJs bubbles. Earlier in Bloom's history, they were variously
 // called TextOverPicture boxes, TOPs, Overlays, OverPictures, and Bubbles. We have attempted to clean up all such
@@ -139,6 +150,10 @@ export class CanvasElementManager {
         id: string;
         handler: (x: Bubble | undefined) => void;
     }[] = [];
+
+    private imageOperationUndoStack: ImageOperationUndoItem[] = [];
+    private pendingImageOperationUndo: ImageOperationUndoItem | undefined;
+    private pageForImageOperationUndo: HTMLElement | undefined;
 
     // These variables are used by the canvas element's onmouse* event handlers
     private bubbleToDrag: Bubble | undefined; // Use Undefined to indicate that there is no active drag in progress
@@ -172,6 +187,124 @@ export class CanvasElementManager {
         page?.addEventListener("splitterDoubleClick", () => {
             this.adjustAfterOrigamiDoubleClick();
         });
+    }
+
+    /** Record the state needed to undo either a pasted or deleted image. */
+    public prepareUndoForImageOperation(imageOrContainer: HTMLElement): void {
+        this.pendingImageOperationUndo = {
+            kind: "restoreImage",
+            element: imageOrContainer,
+            imageInfo: this.getCurrentImageInfo(imageOrContainer),
+        };
+    }
+
+    /** Clear all pending/recorded image operation undo state. */
+    public clearImageOperationUndoState(): void {
+        this.imageOperationUndoStack = [];
+        this.pendingImageOperationUndo = undefined;
+    }
+
+    private clearImageOperationUndoOnPageChange(): void {
+        const currentPage = document.getElementsByClassName("bloom-page")[0] as
+            | HTMLElement
+            | undefined;
+        if (this.pageForImageOperationUndo !== currentPage) {
+            this.clearImageOperationUndoState();
+            this.pageForImageOperationUndo = currentPage;
+        }
+    }
+
+    /** Commit the pending image operation undo after the replacement has actually happened. */
+    public commitPendingImageOperationUndo(
+        imageOrContainer: HTMLElement,
+    ): void {
+        if (
+            this.pendingImageOperationUndo &&
+            this.pendingImageOperationUndo.kind === "restoreImage" &&
+            this.pendingImageOperationUndo.element === imageOrContainer
+        ) {
+            this.imageOperationUndoStack.push(this.pendingImageOperationUndo);
+            this.pendingImageOperationUndo = undefined;
+        }
+    }
+
+    /** Record a new canvas element that can be removed by Undo. */
+    public pushUndoForNewPastedImage(newElement: HTMLElement): void {
+        this.imageOperationUndoStack.push({
+            kind: "removeElement",
+            element: newElement,
+        });
+    }
+
+    /** Tell the root undo command whether a pasted or deleted image can be undone. */
+    public canUndoImageOperation(): boolean {
+        return this.imageOperationUndoStack.length > 0;
+    }
+
+    /** Undo the most recent image operation, if there is one. */
+    public undoImageOperation(): boolean {
+        const undoItem = this.imageOperationUndoStack.pop();
+        if (!undoItem) {
+            return false;
+        }
+
+        switch (undoItem.kind) {
+            case "restoreImage": {
+                changeImageInfo(undoItem.element, undoItem.imageInfo);
+                this.updateCanvasElementForChangedImage(undoItem.element);
+                const page = undoItem.element.closest(
+                    ".bloom-page",
+                ) as HTMLElement | null;
+                if (page) {
+                    normalizeCoverImageDesignation(page);
+                }
+                const img =
+                    undoItem.element.tagName === "IMG"
+                        ? (undoItem.element as HTMLImageElement)
+                        : (undoItem.element.getElementsByTagName("img")[0] ??
+                          undefined);
+                notifyToolOfChangedImage(img);
+                return true;
+            }
+            case "removeElement": {
+                const parent = undoItem.element.parentElement;
+                const activeWasRemoved =
+                    this.activeElement === undoItem.element ||
+                    !!this.activeElement?.contains(undoItem.element);
+                undoItem.element.remove();
+                this.removeDetachedTargets();
+                if (parent) {
+                    updateCanvasElementClass(parent);
+                    const page = parent.closest(
+                        ".bloom-page",
+                    ) as HTMLElement | null;
+                    if (page) {
+                        normalizeCoverImageDesignation(page);
+                    }
+                }
+                if (activeWasRemoved) {
+                    this.setActiveElement(undefined);
+                }
+                notifyToolOfChangedImage();
+                return true;
+            }
+        }
+    }
+
+    private getCurrentImageInfo(imageOrContainer: HTMLElement): IImageInfo {
+        const image =
+            imageOrContainer.tagName === "IMG"
+                ? (imageOrContainer as HTMLImageElement)
+                : (imageOrContainer.getElementsByTagName("img")[0] ??
+                  undefined);
+        return {
+            imageId: "",
+            src: image?.getAttribute("src") ?? "",
+            copyright: imageOrContainer.getAttribute("data-copyright") ?? "",
+            creator: imageOrContainer.getAttribute("data-creator") ?? "",
+            license: imageOrContainer.getAttribute("data-license") ?? "",
+            undoable: "false", // we're not trying to undo something we've undone.
+        };
     }
 
     public moveActiveCanvasElement(
@@ -1170,6 +1303,14 @@ export class CanvasElementManager {
         // the motion tool was activated.)
         if (element && shouldHideToolsOverImages()) {
             return;
+        }
+        if (
+            this.activeElement !== element &&
+            element &&
+            (element.classList.contains(kBackgroundImageClass) ||
+                element.getElementsByClassName(kImageContainerClass).length > 0)
+        ) {
+            this.clearImageOperationUndoState();
         }
         // Seems it should be sufficient to remove this from the old active element if any.
         // But there's at least one case where code that adds a new canvas element sets it as
@@ -5354,7 +5495,7 @@ export class CanvasElementManager {
                     PointScaling.Scaled,
                     "pasteImageFromClipboard",
                 );
-                this.addPictureCanvasElement(
+                const newCanvasElement = this.addPictureCanvasElement(
                     positionInBloomCanvas,
                     $(bloomCanvas),
                     undefined,
@@ -5389,6 +5530,7 @@ export class CanvasElementManager {
                         }
                     },
                 );
+                this.pushUndoForNewPastedImage(newCanvasElement);
                 notifyToolOfChangedImage();
             } else {
                 // If the feature is not enabled, we need to show the subscription dialog.
@@ -5937,6 +6079,7 @@ export class CanvasElementManager {
             // just revert it to a placeholder
             const img = getImageFromCanvasElement(textOverPicDiv);
             if (img) {
+                this.prepareUndoForImageOperation(img);
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
@@ -5944,6 +6087,7 @@ export class CanvasElementManager {
                     normalizeCoverImageDesignation(page);
                 }
                 this.updateCanvasElementForChangedImage(img);
+                this.commitPendingImageOperationUndo(img);
                 notifyToolOfChangedImage(img);
             }
             return;
@@ -6625,6 +6769,8 @@ export class CanvasElementManager {
     };
 
     public initializeCanvasElementEditing(): void {
+        this.clearImageOperationUndoOnPageChange();
+
         // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
         // load, so that canvas element editing works even when the Canvas element tool is not active. So it definitely
         // needs to be called there when we're calling SetupElements during page load. It's possible

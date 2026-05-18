@@ -409,6 +409,7 @@ export interface IImageInfo {
     copyright: string;
     creator: string;
     license: string;
+    undoable: string;
 }
 
 export const kMakeNewCanvasElement = "makeNewCanvasElement";
@@ -420,6 +421,10 @@ export function notifyToolOfChangedImage(img?: HTMLImageElement) {
 
 // called by c# so be careful about changing the signature, including names of parameters
 export function changeImage(imageInfo: IImageInfo) {
+    if (imageInfo.undoable !== "true") {
+        // Explicit image selection starts a new image-edit session; old image undo history should not carry over.
+        theOneCanvasElementManager.clearImageOperationUndoState();
+    }
     if (imageInfo.imageId === kMakeNewCanvasElement) {
         theOneCanvasElementManager.finishPasteImageFromClipboard(imageInfo);
         // like to do this here, but the image overlay isn't always really created yet.
@@ -432,13 +437,30 @@ export function changeImage(imageInfo: IImageInfo) {
             `changeImage: imageOrImageContainerId: "${imageInfo.imageId}" not found`,
         );
     }
+    if (imageInfo.undoable === "true") {
+        theOneCanvasElementManager.prepareUndoForImageOperation(
+            imgOrImageContainer,
+        );
+    }
     changeImageInfo(imgOrImageContainer, imageInfo);
     // id is just a temporary expedient to find the right image easily in this method.
     imgOrImageContainer.removeAttribute("id");
     theOneCanvasElementManager.updateCanvasElementForChangedImage(
         imgOrImageContainer,
     );
+    theOneCanvasElementManager.commitPendingImageOperationUndo(
+        imgOrImageContainer,
+    );
     notifyToolOfChangedImage();
+}
+
+export function imageOperationCanUndo(): boolean {
+    return theOneCanvasElementManager.canUndoImageOperation();
+}
+
+export function imageOperationUndo(): boolean {
+    const didUndo = theOneCanvasElementManager.undoImageOperation();
+    return didUndo;
 }
 
 export function changeImageInfo(
@@ -1555,6 +1577,7 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
 
 async function pasteImpl(imageAvailable: boolean) {
     const canvasElementManager = theOneCanvasElementManager;
+    //console.log(`DEBUG: pasteImpl(${imageAvailable}) called with canvasElementManager=${canvasElementManager}`);
     if (
         imageAvailable &&
         canvasElementManager &&

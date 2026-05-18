@@ -91,18 +91,23 @@ export { showAdjustTimingsDialog as showAdjustTimingsDialogFromWorkspaceRoot };
 // Local alias so we have an in-scope identifier for legacy global exposure typing.
 const showAdjustTimingsDialogFromWorkspaceRoot = showAdjustTimingsDialog;
 
-//Called by c# using workspaceBundle.handleUndo()
 export function handleUndo(): void {
     // First see if origami is active and knows about something we can undo.
     const contentWindow = getEditablePageBundleExports();
     if (contentWindow && contentWindow.origamiCanUndo()) {
         contentWindow.origamiUndo();
+        return;
     }
     // Undoing changes made by commands and dialogs in the toolbox can't be undone using
     // ckeditor, and has its own mechanism. Look next to see whether we know about any Undos there.
     const toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow && toolboxWindow.canUndo()) {
         toolboxWindow.undo();
+        return;
+    }
+    if (contentWindow && contentWindow.imageOperationCanUndo()) {
+        contentWindow.imageOperationUndo();
+        return;
     } else if (contentWindow && contentWindow.ckeditorCanUndo()) {
         contentWindow.ckeditorUndo();
     }
@@ -238,6 +243,9 @@ export function canUndo(): string {
     }
     const toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow && toolboxWindow.canUndo && toolboxWindow.canUndo()) {
+        return "yes";
+    }
+    if (contentWindow && contentWindow.imageOperationCanUndo()) {
         return "yes";
     }
     if (contentWindow && contentWindow.ckeditorCanUndo()) {
