@@ -92,6 +92,12 @@ import {
     doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
 } from "./workspaceFrames";
+import {
+    clearImageOperationUndoState,
+    commitPendingImageOperationUndo,
+    initializeImageUndoManager,
+    prepareUndoForImageOperation,
+} from "./ImageUndoManager";
 
 export interface ITextColorInfo {
     color: string;
@@ -153,6 +159,18 @@ export class CanvasElementManager {
     private snapProvider: CanvasSnapProvider;
 
     public constructor() {
+        initializeImageUndoManager({
+            getCurrentPage: () =>
+                document.getElementsByClassName("bloom-page")[0] as
+                    | HTMLElement
+                    | undefined,
+            updateCanvasElementForChangedImage:
+                this.updateCanvasElementForChangedImage.bind(this),
+            getActiveElement: this.getActiveElement.bind(this),
+            setActiveElement: this.setActiveElement.bind(this),
+            removeDetachedTargets: this.removeDetachedTargets.bind(this),
+            updateCanvasElementClass,
+        });
         this.snapProvider = new CanvasSnapProvider();
         this.guideProvider = new CanvasGuideProvider();
         this.keyboardProvider = new CanvasElementKeyboardProvider(
@@ -5961,6 +5979,7 @@ export class CanvasElementManager {
             // just revert it to a placeholder
             const img = getImageFromCanvasElement(textOverPicDiv);
             if (img) {
+                prepareUndoForImageOperation(img);
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
@@ -5968,6 +5987,7 @@ export class CanvasElementManager {
                     normalizeCoverImageDesignation(page);
                 }
                 this.updateCanvasElementForChangedImage(img);
+                commitPendingImageOperationUndo(img);
                 notifyToolOfChangedImage(img);
             }
             return;
@@ -6649,6 +6669,8 @@ export class CanvasElementManager {
     };
 
     public initializeCanvasElementEditing(): void {
+        clearImageOperationUndoState();
+
         // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
         // load, so that canvas element editing works even when the Canvas element tool is not active. So it definitely
         // needs to be called there when we're calling SetupElements during page load. It's possible
