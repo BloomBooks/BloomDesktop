@@ -720,15 +720,15 @@ namespace Bloom.web.controllers
                             dlg.ControlBox = true; // Add controls like the X button back to the top bar
                             dlg.Text = ""; // Remove the title from the WinForms top bar
 
-                            dlg.Width = 731;
-                            dlg.Height = height;
+                            var owner = GetParentFormForErrorDialogs();
+                            dlg.SetScaledSize(731, height, owner);
 
                             // ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
                             BloomServer._theOneInstance.RegisterThreadBlocking();
                             try
                             {
                                 // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
-                                dlg.ShowDialog(GetParentFormForErrorDialogs());
+                                dlg.ShowDialog(owner);
                             }
                             finally
                             {

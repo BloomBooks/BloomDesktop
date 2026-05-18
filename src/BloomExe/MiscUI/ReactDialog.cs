@@ -41,6 +41,31 @@ namespace Bloom.MiscUI
             Icon = global::Bloom.Properties.Resources.BloomIcon;
         }
 
+        public void SetScaledSize(int logicalWidth, int logicalHeight, IWin32Window owner = null)
+        {
+            // Store the desired size to apply it in OnLoad, after the dialog is positioned
+            // on its actual target monitor
+            _desiredLogicalWidth = logicalWidth;
+            _desiredLogicalHeight = logicalHeight;
+        }
+
+        private int _desiredLogicalWidth = 0;
+        private int _desiredLogicalHeight = 0;
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            // Apply the desired size during load, after positioning on the target monitor.
+            // Scale the logical dimensions based on the actual DPI of the monitor we're on.
+            if (_desiredLogicalWidth > 0 || _desiredLogicalHeight > 0)
+            {
+                int scaledWidth = (int)Math.Round(_desiredLogicalWidth * DeviceDpi / 96.0);
+                int scaledHeight = (int)Math.Round(_desiredLogicalHeight * DeviceDpi / 96.0);
+                Size = new System.Drawing.Size(scaledWidth, scaledHeight);
+            }
+        }
+
         public static void CloseCurrentModal(string labelOfUiElementUsedToCloseTheDialog = null)
         {
             Debug.Assert(
@@ -105,8 +130,7 @@ namespace Bloom.MiscUI
             {
                 using (var dlg = new ReactDialog(reactComponentName, props, taskBarTitle))
                 {
-                    dlg.Width = width;
-                    dlg.Height = height;
+                    dlg.SetScaledSize(width, height);
 
                     initialize?.Invoke();
 

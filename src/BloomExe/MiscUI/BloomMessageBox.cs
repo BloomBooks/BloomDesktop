@@ -42,8 +42,7 @@ namespace Bloom.MiscUI
                 )
             )
             {
-                dlg.Width = 500;
-                dlg.Height = 200;
+                dlg.SetScaledSize(500, 200, owner);
                 // This dialog is neater without a task bar. We don't need to be able to
                 // drag it around. There's nothing left to give it one if we don't set a title
                 // and remove the control box.

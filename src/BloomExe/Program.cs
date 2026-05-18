@@ -1791,6 +1791,7 @@ namespace Bloom
                 // We normally start listening when setting up the project context. However, this dialog might
                 // get run at startup when we don't have a chosen project from which to make a ProjectContext
                 _applicationContainer.BloomServer.EnsureListening();
+                string selectedPath = null;
                 using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                 using (var dlg = _applicationContainer.OpenAndCreateCollectionDialog())
                 {
@@ -1821,8 +1822,7 @@ namespace Bloom
                             return true;
                         }
 
-                        if (OpenCollection(dlg.SelectedPath))
-                            return true;
+                        selectedPath = dlg.SelectedPath;
                     }
                     catch (Exception error)
                     {
@@ -1839,6 +1839,26 @@ namespace Bloom
                         {
                             throw;
                         }
+                    }
+                }
+
+                // Important: keep legacy DPI context scoped only to the chooser dialog itself.
+                // The main shell and startup dialogs (including Team Collection sync progress)
+                // should be created in normal PerMonitorV2 context.
+                try
+                {
+                    if (OpenCollection(selectedPath))
+                        return true;
+                }
+                catch (Exception error)
+                {
+                    if (LongPathAware.ShouldConvertToPathTooLongException(error, out string path))
+                    {
+                        throw new Utils.PathTooLongException(path);
+                    }
+                    else
+                    {
+                        throw;
                     }
                 }
             }
