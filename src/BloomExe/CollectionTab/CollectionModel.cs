@@ -1041,13 +1041,16 @@ namespace Bloom.CollectionTab
                 // to select an item before it is present in the collection to select.)
                 // We know this is a new book object, so there's no point in using EnsureUpToDate.
                 // When we later select it, that code uses EnsureUpToDate and will not do it again.
+                // Set before BringBookUpToDate so that title-change events fired during that call
+                // are suppressed (no spurious Renamed entries). The Created event will be recorded
+                // when the user enters a title (or various events if no title is entered earlier).
+                newBook.PendingCreationSource = Path.GetFileName(sourceBook.FolderPath);
                 newBook.BringBookUpToDate(new NullProgress(), false);
 
                 TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
 
                 if (_bookSelection != null)
                 {
-                    Book.Book.SourceToReportForNextRename = Path.GetFileName(sourceBook.FolderPath);
                     _bookSelection.SelectBook(newBook, aboutToEdit: true);
                 }
                 //enhance: would be nice to know if this is a new shell
@@ -1063,8 +1066,6 @@ namespace Bloom.CollectionTab
                         }
                     );
                 }
-                // Better reported in Book_BookTitleChanged as a side effect of selecting it.
-                // BookHistory.AddEvent(newBook, BookHistoryEventType.Created, "New book created");
                 _editBookCommand.Raise(newBook);
             }
             catch (Exception e)
