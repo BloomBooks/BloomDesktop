@@ -642,7 +642,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Title">
         <source xml:lang="en">Collection Settings</source>
-        <target xml:lang="pt-PT" state="needs-translation">Collection Settings</target>
+        <target xml:lang="pt-PT" state="translated">Configurações da coleção</target>
         <note>ID: CollectionSettingsDialog.Title</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink" approved="yes">
@@ -1586,7 +1586,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Standard">
         <source xml:lang="en">Standard</source>
-        <target xml:lang="pt-PT" state="needs-translation">Standard</target>
+        <target xml:lang="pt-PT" state="translated">Padrão</target>
         <note>ID: EditTab.CustomCover.Standard</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.StandardLayout">
@@ -1626,7 +1626,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Image" sil:dynamic="true">
         <source xml:lang="en">Image</source>
-        <target xml:lang="pt-PT" state="needs-translation">Image</target>
+        <target xml:lang="pt-PT" state="translated">Imagem</target>
         <note>ID: EditTab.CustomPage.Image</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true" approved="yes">
