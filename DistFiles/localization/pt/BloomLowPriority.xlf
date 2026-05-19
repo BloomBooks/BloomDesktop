@@ -63,9 +63,9 @@
         <target xml:lang="pt-PT" state="final">Escolher o Alvo do Link</target>
         <note>ID: LinkTargetChooser.Dialog.Title</note>
       </trans-unit>
-      <trans-unit id="LinkTargetChooser.BookList.Heading">
+      <trans-unit id="LinkTargetChooser.BookList.Heading" approved="yes">
         <source xml:lang="en">Books in this Collection</source>
-        <target xml:lang="pt-PT" state="translated">Livros nesta Coleção</target>
+        <target xml:lang="pt-PT" state="final">Livros nesta Coleção</target>
         <note>ID: LinkTargetChooser.BookList.Heading</note>
       </trans-unit>
       <trans-unit id="LinkTargetChooser.PageList.Heading" approved="yes">
