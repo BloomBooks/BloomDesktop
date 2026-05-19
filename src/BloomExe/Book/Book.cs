@@ -233,7 +233,7 @@ namespace Bloom.Book
         public string PendingCreationSource { get; set; }
 
         /// <summary>
-        /// Snapshot of the source book's title captured when the new book is created.
+        /// Snapshot of the source book's title (in L1, usually empty) captured when the new book is created.
         /// This lets us distinguish true user title edits from automatic recalculation.
         /// </summary>
         public string PendingCreationSourceTitle { get; set; }
