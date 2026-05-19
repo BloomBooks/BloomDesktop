@@ -430,9 +430,9 @@
         <target xml:lang="pt-PT" state="final">Fonte padrão para {0}</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack" approved="yes">
         <source xml:lang="en">Front/Back Matter Pack</source>
-        <target xml:lang="pt-PT" state="translated">Pacote de elementos Pré- e Pós-Textuais</target>
+        <target xml:lang="pt-PT" state="final">Pacote de elementos Pré- e Pós-Textuais</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Device" sil:dynamic="true" approved="yes">
@@ -615,9 +615,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Scanning the code or clicking the badge will take the user to the collection of books in this collection's primary language. Note, if you want to use this but your branding does not show it, contact us.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption" approved="yes">
         <source xml:lang="en">Caption</source>
-        <target xml:lang="pt-PT" state="needs-review-translation" state-qualifier="leveraged-tm">Legenda</target>
+        <target xml:lang="pt-PT" state="final">Legenda</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description">
@@ -910,9 +910,9 @@
         <target xml:lang="pt-PT" state="final">Editar este livro</target>
         <note>ID: CollectionTab.EditBookButton</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.GetABetterBloom">
+      <trans-unit id="CollectionTab.GetABetterBloom" approved="yes">
         <source xml:lang="en">Click to get a better Bloom!</source>
-        <target xml:lang="pt-PT" state="translated">Clique aqui para obter um Bloom melhor!</target>
+        <target xml:lang="pt-PT" state="final">Clique aqui para obter um Bloom melhor!</target>
         <note>ID: CollectionTab.GetABetterBloom</note>
       </trans-unit>
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations" approved="yes">
@@ -1000,9 +1000,9 @@
         <target xml:lang="pt-PT" state="final">Falta o título</target>
         <note>ID: CollectionTab.TitleMissing</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate">
+      <trans-unit id="CollectionTab.UILanguageMenu.HelpTranslate" approved="yes">
         <source xml:lang="en">Help us translate Bloom (web)</source>
-        <target xml:lang="pt-PT" state="translated">Ajude-nos a traduzir Bloom (link)</target>
+        <target xml:lang="pt-PT" state="final">Ajude-nos a traduzir Bloom (link)</target>
         <note>ID: CollectionTab.UILanguageMenu.HelpTranslate</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UILanguageMenu.ItemTooltip" approved="yes">
@@ -1429,9 +1429,9 @@
         <target xml:lang="pt-PT" state="final">Link da biblioteca Bloom</target>
         <note>ID: Download.FromBloomLibrary</note>
       </trans-unit>
-      <trans-unit id="Download.GenericNetworkProblemNotice">
+      <trans-unit id="Download.GenericNetworkProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
-        <target xml:lang="pt-PT" state="translated">Houve um problema ao baixar o livro. Pode tentar novamente depois ou escrever para issues@bloomlibrary.org caso não consiga fazer o download da sua localização.</target>
+        <target xml:lang="pt-PT" state="final">Houve um problema ao baixar o livro. Pode tentar novamente depois ou escrever para issues@bloomlibrary.org caso não consiga fazer o download da sua localização.</target>
         <note>ID: Download.GenericNetworkProblemNotice</note>
       </trans-unit>
       <trans-unit id="Download.OldVersion" approved="yes">
@@ -1444,9 +1444,9 @@
         <target xml:lang="pt-PT" state="final">Houve um problema baixando o seu livro. Reinicie o Bloom ou obtenha ajuda técnica.</target>
         <note>ID: Download.ProblemNotice</note>
       </trans-unit>
-      <trans-unit id="Download.TimeoutProblemNotice">
+      <trans-unit id="Download.TimeoutProblemNotice" approved="yes">
         <source xml:lang="en">There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</source>
-        <target xml:lang="pt-PT" state="translated">Houve um problema ao baixar o livro: algo demorou muito tempo. Pode tentar novamente depois, ou escrever para issues@bloomlibrary.org caso não consiga fazer o download da sua localização.</target>
+        <target xml:lang="pt-PT" state="final">Houve um problema ao baixar o livro: algo demorou muito tempo. Pode tentar novamente depois, ou escrever para issues@bloomlibrary.org caso não consiga fazer o download da sua localização.</target>
         <note>ID: Download.TimeoutProblemNotice</note>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.AddPageButton" sil:dynamic="true" approved="yes">
@@ -1594,9 +1594,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Standard Layout</target>
         <note>ID: EditTab.CustomCover.StandardLayout</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.Custom">
+      <trans-unit id="EditTab.CustomCover.Custom" approved="yes">
         <source xml:lang="en">Custom</source>
-        <target xml:lang="pt-PT" state="needs-review-translation" state-qualifier="leveraged-tm">Personalizado</target>
+        <target xml:lang="pt-PT" state="final">Personalizado</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
@@ -1629,9 +1629,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Image</target>
         <note>ID: EditTab.CustomPage.Image</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true">
+      <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Canvas</source>
-        <target xml:lang="pt-PT" state="needs-review-translation" state-qualifier="leveraged-tm">Tela</target>
+        <target xml:lang="pt-PT" state="final">Tela</target>
         <note>ID: EditTab.CustomPage.Canvas</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Text" sil:dynamic="true" approved="yes">
@@ -1954,9 +1954,9 @@
         <target xml:lang="pt-PT" state="final">Novo estilo</target>
         <note>ID: EditTab.FormatDialog.NewStyle</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Canvas" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.Canvas" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Canvas Text</source>
-        <target xml:lang="pt-PT" state="translated">Texto na Tela</target>
+        <target xml:lang="pt-PT" state="final">Texto na Tela</target>
         <note>ID: EditTab.FormatDialog.Canvas</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Padding" sil:dynamic="true" approved="yes">
@@ -2249,9 +2249,9 @@
         <target xml:lang="pt-PT" state="final">Créditos da imagem, Direitos Autorais, &amp; Licença</target>
         <note>ID: EditTab.Image.EditMetadataOverlayMore</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true">
+      <trans-unit id="EditTab.Image.PlayWhenTouched" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This sound will play when the item is touched.</source>
-        <target xml:lang="pt-PT" state="translated">Este áudio tocará quando o item for tocado.</target>
+        <target xml:lang="pt-PT" state="final">Este áudio tocará quando o item for tocado.</target>
         <note>ID: EditTab.Image.PlayWhenTouched</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.MissingInfo" sil:dynamic="true" approved="yes">
@@ -2344,9 +2344,9 @@
         <target xml:lang="pt-PT" state="final">Um recipiente nesta página está transbordando</target>
         <note>ID: EditTab.OverflowContainer</note>
       </trans-unit>
-      <trans-unit id="EditTab.PageList.CantMoveXMatter">
+      <trans-unit id="EditTab.PageList.CantMoveXMatter" approved="yes">
         <source xml:lang="en">That change is not allowed. Front matter and back matter pages must remain where they are.</source>
-        <target xml:lang="pt-PT" state="translated">Essa mudança não é permitida. Páginas de elementos pré-textuais e pós-textuais devem permanecer onde estão.</target>
+        <target xml:lang="pt-PT" state="final">Essa mudança não é permitida. Páginas de elementos pré-textuais e pós-textuais devem permanecer onde estão.</target>
         <note>ID: EditTab.PageList.CantMoveXMatter</note>
       </trans-unit>
       <trans-unit id="EditTab.PageList.Heading" approved="yes">
@@ -2514,14 +2514,14 @@
         <target xml:lang="pt-PT" state="final">Informação de propriedade intelectual da imagem</target>
         <note>ID: EditTab.TitleOfCopyIPToWholeBooksDialog</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Canvas Tool</source>
-        <target xml:lang="pt-PT" state="translated">Ferramenta de Tela</target>
+        <target xml:lang="pt-PT" state="final">Ferramenta de Tela</target>
         <note>ID: EditTab.Toolbox.CanvasTool</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Drag any of these elements onto the image:</source>
-        <target xml:lang="pt-PT" state="translated">Arraste qualquer uma desses objetos para a imagem:</target>
+        <target xml:lang="pt-PT" state="final">Arraste qualquer uma desses objetos para a imagem:</target>
         <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true" approved="yes">
@@ -2614,9 +2614,9 @@
         <target xml:lang="pt-PT" state="final">Formatar Texto...</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Format</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ImageSelected" sil:dynamic="true" approved="yes">
         <source xml:lang="en">There are no options for this kind of canvas element</source>
-        <target xml:lang="pt-PT" state="translated">Não há opções para este tipo de sobreposição</target>
+        <target xml:lang="pt-PT" state="final">Não há opções para este tipo de sobreposição</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ImageSelected</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor" sil:dynamic="true" approved="yes">
@@ -2624,9 +2624,9 @@
         <target xml:lang="pt-PT" state="final">Cor do contorno externo</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.OuterOutlineColor</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Language" approved="yes">
         <source xml:lang="en">Language:</source>
-        <target xml:lang="pt-PT" state="needs-review-translation" state-qualifier="leveraged-tm">Idioma:</target>
+        <target xml:lang="pt-PT" state="final">Língua:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Language</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor.None" sil:dynamic="true" approved="yes">
@@ -3304,9 +3304,9 @@
         <target xml:lang="pt-PT" state="final">Verifique que está gravando no dispositivo correto e que esses níveis estão mostrando azul:</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Clear" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Clear</source>
-        <target xml:lang="pt-PT" state="translated">Limpar</target>
+        <target xml:lang="pt-PT" state="final">Limpar</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true" approved="yes">
