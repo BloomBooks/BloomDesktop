@@ -108,9 +108,9 @@ namespace Bloom.ImageProcessing
         /// </summary>
         public static bool ShouldMakeBackgroundTransparent(PalasoImage imageInfo)
         {
-            // We want to make the white background of black and white pictures transparent.
-            // JPEG pictures generally never meet that criteria and cannot be made transparent anyway.
-            if (!AppearsToBePng(imageInfo))
+            // We want to make the white background of line-art pictures transparent.
+            // We support PNG and JPEG input; other formats (BMP, TIFF, etc.) are not line art.
+            if (!AppearsToBePng(imageInfo) && !AppearsToBeJpeg(imageInfo))
                 return false;
 
             if ((imageInfo.Image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
@@ -660,15 +660,20 @@ namespace Bloom.ImageProcessing
                     bookFolderPath,
                     GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, true)
                 );
-                // Don't convert line-art PNGs to JPEG even when JPEG would save space:
-                // line art (e.g. an ink drawing with anti-aliased edges) compresses well as JPEG
-                // because most of the image is solid background, but converting it strips the
-                // lossless edges AND removes the chance to make the background transparent later
-                // (BL-16336). JPEG is only the right choice for photographic content.
+                // Compute once; the result drives both the JPEG→PNG conversion below and the
+                // PNG→JPEG guard in convertedToJpeg. Running GraphicsMagick twice would be wasteful.
+                var isLineArt = ShouldMakeBackgroundTransparent(imageInfo);
+                // Convert JPEG line art to PNG on insert: JPEGs can't carry transparency, so a
+                // line-art JPEG would never get its background made transparent when shown on a
+                // colored page background. Saving as PNG fixes that at the cost of slightly larger
+                // files, which is worth it for images that will be composited (BL-16336).
+                if (isEncodedAsJpeg && isLineArt)
+                    isEncodedAsJpeg = false;
+                // Don't convert line-art PNGs to JPEG: JPEG is only right for photographic content.
                 var convertedToJpeg =
                     !isEncodedAsJpeg
                     && !HasTransparency(imageInfo.Image)
-                    && !ShouldMakeBackgroundTransparent(imageInfo)
+                    && !isLineArt
                     && TryChangeFormatToJpegIfHelpful(imageInfo, jpegFilePath);
                 if (convertedToJpeg)
                     return Path.GetFileName(jpegFilePath);
