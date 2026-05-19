@@ -5343,7 +5343,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.EnterpriseShelfRequiredTooltip" approved="yes">
         <source xml:lang="en">This feature requires an Enterprise subscription and a destination shelf selected in Collection Settings.</source>
-        <target xml:lang="pt-PT" state="final">Este recurso requer uma assinatura Empresarial e um destino selecionada nas Configurações da Coleção.</target>
+        <target xml:lang="pt-PT" state="final">Este recurso requer uma assinatura de Enterprise e um destino selecionada nas Configurações da Coleção.</target>
         <note>ID: PublishTab.Upload.EnterpriseShelfRequiredTooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ErrorUploading" approved="yes">
@@ -6342,7 +6342,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="SubscriptionStatus.ProTeamCollectionNotSupported" approved="yes">
         <source xml:lang="en">Pro subscriptions are not supported for Team Collections. Please use a Local Community or Enterprise subscription.</source>
-        <target xml:lang="pt-PT" state="final">Assinaturas Pro não são suportadas para Coleções de Equipe. Por favor, use uma assinatura Local Comunidade ou Empresarial.</target>
+        <target xml:lang="pt-PT" state="final">Assinaturas Pro não são suportadas para Coleções de Equipe. Por favor, use uma assinatura de Comunidade Local ou de Enterprise.</target>
         <note>ID: SubscriptionStatus.ProTeamCollectionNotSupported</note>
       </trans-unit>
       <trans-unit id="SubscriptionStatus.UsingProSubscription" approved="yes">
@@ -6784,64 +6784,64 @@ is mostly status, which shows on the Collection Tab -->
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Shadows</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Targets" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Targets" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Readers drag images to the correct target areas on the screen.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="pt-PT" state="translated">
+        <target xml:lang="pt-PT" state="final">
           Os leitores arrastam imagens até as áreas corretas na tela. 
           Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Targets</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Words" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Drag Images to Words" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Readers match each image to the correct word.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="pt-PT" state="translated">
+        <target xml:lang="pt-PT" state="final">
           Os leitores arrastam cada imagem até a palavra correta na tela. 
           Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Images to Words</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Drag Sound to Word" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Drag Sound to Word" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Readers listen to several sound recordings and choose the one that matches a word.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="pt-PT" state="translated">
+        <target xml:lang="pt-PT" state="final">
           Os leitores ouvem vários áudios e escolhem o que corresponde a uma palavra.
           Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Sound to Word</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Drag Sounds to Words" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Drag Sounds to Words" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Readers match several sound recordings to the correct words.
           This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="pt-PT" state="translated">
+        <target xml:lang="pt-PT" state="final">
           Os leitores arrastam os áudios até as palavras corretas.
           Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Drag Sounds to Words</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Match Word with Image" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Match Word with Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Readers see an image and drag one of several words to match. This game can be customized in many ways using the Game Tool.
         </source>
-        <target xml:lang="pt-PT" state="translated">
+        <target xml:lang="pt-PT" state="final">
           Apresentados com uma imagem e várias palavras, os leitores escolham a palavra correta e arrastam até a imagem. Este jogo pode ser personalizado de várias maneiras usando a Ferramenta de Jogos.
         </target>
         <note>ID: TemplateBooks.PageDescription.Match Word with Image</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Order Words" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Order Words" sil:dynamic="true" approved="yes">
         <source xml:lang="en">
           Readers see a clue (an image, GIF, or Sign Language video) and must arrange scrambled words into a complete sentence.
         </source>
-        <target xml:lang="pt-PT" state="translated">
+        <target xml:lang="pt-PT" state="final">
           Os leitores observam uma dica (uma imagem, GIF ou vídeo de língua de sinais), e organizam as palavras para formar uma frase.
         </target>
         <note>ID: TemplateBooks.PageDescription.Order Words</note>
@@ -6851,9 +6851,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Uma página de instruções para os tradutores que aparece somente na aba Editar.</target>
         <note>ID: TemplateBooks.PageDescription.Translation Instructions</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Page with Simple Book Grid" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Page with Simple Book Grid" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A simple Table of Contents page for use in Bloom Apps.</source>
-        <target xml:lang="pt-PT" state="translated">Uma página de Índice simples para uso nos Apps Bloom.</target>
+        <target xml:lang="pt-PT" state="final">Uma página de Índice simples para uso nos aplicativos de Bloom.</target>
         <note>ID: TemplateBooks.PageDescription.Page with Simple Book Grid</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comic" sil:dynamic="true" approved="yes">
@@ -7341,9 +7341,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Instruções de tradução</target>
         <note>ID: TemplateBooks.PageLabel.Translation Instructions</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Page with Simple Book Grid" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Page with Simple Book Grid" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page with Simple Book Grid</source>
-        <target xml:lang="pt-PT" state="translated">Página com Grade de Livro Simples</target>
+        <target xml:lang="pt-PT" state="final">Página com Tabela de Livro Simples</target>
         <note>ID: TemplateBooks.PageLabel.Page with Simple Book Grid</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true" approved="yes">
