@@ -1045,6 +1045,9 @@ namespace Bloom.CollectionTab
                 // are suppressed (no spurious Renamed entries). The Created event will be recorded
                 // when the user enters a title (or various events if no title is entered earlier).
                 newBook.PendingCreationSource = Path.GetFileName(sourceBook.FolderPath);
+                var l1Lang = sourceBook.BookData.Language1Tag;
+                var sourceL1Title = sourceBook.BookInfo.GetTitleForLanguage(l1Lang);
+                newBook.PendingCreationSourceTitle = sourceL1Title;
                 newBook.BringBookUpToDate(new NullProgress(), false);
 
                 TheOneEditableCollection.AddBookInfo(newBook.BookInfo);

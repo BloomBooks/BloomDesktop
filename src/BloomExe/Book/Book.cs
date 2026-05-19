@@ -233,6 +233,12 @@ namespace Bloom.Book
         public string PendingCreationSource { get; set; }
 
         /// <summary>
+        /// Snapshot of the source book's title captured when the new book is created.
+        /// This lets us distinguish true user title edits from automatic recalculation.
+        /// </summary>
+        public string PendingCreationSourceTitle { get; set; }
+
+        /// <summary>
         /// If there is a pending "Created" history event (set during book creation), record it now
         /// using the book's current title.
         /// </summary>
@@ -244,14 +250,27 @@ namespace Bloom.Book
         {
             if (PendingCreationSource == null)
                 return;
-            if (onlyIfTitleChanged && Storage.Dom.Title == PendingCreationSource)
-                return;
+            if (onlyIfTitleChanged)
+            {
+                // Compare L1 titles to detect if the user has actually changed the title.
+                // Extract the current book's L1 title using its BookData language.
+                var sourceTitle = PendingCreationSourceTitle ?? string.Empty;
+                var currentL1Title = string.Empty;
+                if (BookInfo != null && BookData != null)
+                {
+                    currentL1Title =
+                        BookInfo.GetTitleForLanguage(BookData.Language1Tag) ?? string.Empty;
+                }
+                if (sourceTitle == currentL1Title)
+                    return;
+            }
             BookHistory.AddEvent(
                 this,
                 BookHistoryEventType.Created,
                 $"Created a new book \"{Storage.Dom.Title}\" from a source book \"{PendingCreationSource}\""
             );
             PendingCreationSource = null;
+            PendingCreationSourceTitle = null;
         }
 
         public void UpdateBookInfoFromDisk()
