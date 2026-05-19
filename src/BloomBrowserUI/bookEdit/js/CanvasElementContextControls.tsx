@@ -1758,6 +1758,9 @@ function addImageMenuOptions(
         false;
 
     const realImagePresent = hasRealImage(img);
+    const isBackgroundImage = canvasElement.classList.contains(
+        kBackgroundImageClass,
+    );
     const imageMenuOptions: IMenuItemWithSubmenu[] = [
         // If the image doesn't exist, we still show the menu item for editing metadata,
         // but disable it.  Menu items are often disabled instead of hidden when they
@@ -1872,7 +1875,11 @@ function addImageMenuOptions(
                 );
             },
         });
-        if (realImagePresent && pageAllowsCanvasElements) {
+        if (
+            realImagePresent &&
+            pageAllowsCanvasElements &&
+            !isBackgroundImage
+        ) {
             imageMenuOptions.push({
                 l10nId: "EditTab.Toolbox.ComicTool.Options.BecomeBackground",
                 english: "Become Background",
@@ -1921,7 +1928,9 @@ function addImageMenuOptions(
                         );
                     }
 
-                    bgImg.src = currentImgSrce;
+                    // Keep a book-relative path in the attribute. Assigning .src can
+                    // expand to an absolute URL, which later file tracking may not resolve.
+                    bgImg.setAttribute("src", currentImgSrce);
                     bgImg.setAttribute(
                         "data-copyright",
                         currentCopyright || "",
