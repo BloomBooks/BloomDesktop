@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using SIL.IO;
 using SIL.Reporting;
@@ -31,8 +32,6 @@ namespace Bloom.ImageProcessing
 
         private string _cacheFolder;
 
-        private static ImageAttributes _convertWhiteToTransparent;
-
         public RuntimeImageProcessor(BookRenamedEvent bookRenamedEvent)
         {
             _bookRenamedEvent = bookRenamedEvent;
@@ -40,22 +39,6 @@ namespace Bloom.ImageProcessing
             _imageFilesToReturnUnprocessed = new ConcurrentDictionary<string, bool>();
             _cacheFolder = Path.Combine(Path.GetTempPath(), "Bloom");
             _bookRenamedEvent.Subscribe(OnBookRenamed);
-        }
-
-        private static ImageAttributes ConvertWhiteToTransparent
-        {
-            get
-            {
-                if (_convertWhiteToTransparent == null)
-                {
-                    _convertWhiteToTransparent = new ImageAttributes();
-                    _convertWhiteToTransparent.SetColorKey(
-                        Color.FromArgb(253, 253, 253),
-                        Color.White
-                    );
-                }
-                return _convertWhiteToTransparent;
-            }
         }
 
         private void OnBookRenamed(KeyValuePair<string, string> fromPathAndToPath)
@@ -345,25 +328,36 @@ namespace Bloom.ImageProcessing
                 {
                     g.FillRectangle(brush, backgroundAndBorderRect);
 
-                    lock (ConvertWhiteToTransparent)
+                    var shouldMakeTransparent =
+                        !appearsToBeJpeg && ImageUtils.ShouldMakeBackgroundTransparent(coverImage);
+                    if (shouldMakeTransparent)
                     {
-                        var imageAttributes =
-                            (
-                                appearsToBeJpeg
-                                || !ImageUtils.ShouldMakeBackgroundTransparent(coverImage)
-                            )
-                                ? null
-                                : ConvertWhiteToTransparent;
+                        using (
+                            var transparentImage = (Bitmap)MakePngBackgroundTransparent(coverImage)
+                        )
+                        {
+                            g.DrawImage(
+                                transparentImage,
+                                destRect,
+                                0,
+                                0,
+                                transparentImage.Width,
+                                transparentImage.Height,
+                                GraphicsUnit.Pixel
+                            );
+                        }
+                    }
+                    else
+                    {
                         g.DrawImage(
-                            coverImage.Image, // finally, draw the cover image
-                            destRect, // with a scaled and centered destination
+                            coverImage.Image,
+                            destRect,
                             0,
                             0,
                             coverImageWidth,
-                            coverImageHeight, // from the entire cover image,
-                            GraphicsUnit.Pixel,
-                            imageAttributes
-                        ); // changing white to transparent if a B&W/greyscale png
+                            coverImageHeight,
+                            GraphicsUnit.Pixel
+                        );
                     }
                     if (!appearsToBeJpeg || Path.GetExtension(pathToProcessedImage) == ".png")
                         ImageUtils.SaveOrDeletePngImageToPath(thumbnail, pathToProcessedImage);
@@ -411,32 +405,78 @@ namespace Bloom.ImageProcessing
                 revisedBitmap.Palette = GivePaletteTransparentBackground(revisedBitmap);
                 return revisedBitmap;
             }
-            //impose a maximum size because in BL-2871 "Opposites" had about 6k x 6k and we got an ArgumentException
-            //from the new BitMap()
+            // impose a maximum size (BL-2871: "Opposites" had ~6k x 6k and caused ArgumentException)
             var destinationWidth = Math.Min(1000, originalImage.Image.Width);
             var destinationHeight = (int)(
                 (float)originalImage.Image.Height
                 * ((float)destinationWidth / (float)originalImage.Image.Width)
             );
-            var processedBitmap = new Bitmap(destinationWidth, destinationHeight);
-            using (var g = Graphics.FromImage(processedBitmap))
+            using (
+                var scaledSource = new Bitmap(
+                    destinationWidth,
+                    destinationHeight,
+                    PixelFormat.Format32bppArgb
+                )
+            )
+            using (var g = Graphics.FromImage(scaledSource))
             {
-                var destRect = new Rectangle(0, 0, destinationWidth, destinationHeight);
-                lock (ConvertWhiteToTransparent)
+                g.DrawImage(originalImage.Image, 0, 0, destinationWidth, destinationHeight);
+                return RemoveWhiteBackground(scaledSource);
+            }
+        }
+
+        /// <summary>
+        /// Converts a white-background bitmap to one with a transparent background using per-pixel
+        /// alpha unmixing. Anti-aliased edge pixels get partial alpha rather than being left as
+        /// opaque white, eliminating the white fringe visible against colored page backgrounds.
+        /// </summary>
+        private static Image RemoveWhiteBackground(Bitmap source)
+        {
+            var width = source.Width;
+            var height = source.Height;
+            var result = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+            var rect = new Rectangle(0, 0, width, height);
+            var srcData = source.LockBits(
+                rect,
+                ImageLockMode.ReadOnly,
+                PixelFormat.Format32bppArgb
+            );
+            var dstData = result.LockBits(
+                rect,
+                ImageLockMode.WriteOnly,
+                PixelFormat.Format32bppArgb
+            );
+            var stride = Math.Abs(srcData.Stride);
+            var pixels = new byte[stride * height];
+            Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
+            source.UnlockBits(srcData);
+            var output = new byte[stride * height];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
                 {
-                    g.DrawImage(
-                        originalImage.Image,
-                        destRect,
-                        0,
-                        0,
-                        originalImage.Image.Width,
-                        originalImage.Image.Height,
-                        GraphicsUnit.Pixel,
-                        ConvertWhiteToTransparent
-                    );
+                    int idx = y * stride + x * 4;
+                    byte b = pixels[idx];
+                    byte gn = pixels[idx + 1];
+                    byte r = pixels[idx + 2];
+                    // pixels[idx + 3] is source alpha, always 255 for opaque input
+                    byte minChannel = Math.Min(r, Math.Min(gn, b));
+                    // alpha = 0 for pure white, 255 for pure black/ink
+                    byte newAlpha = (byte)(255 - minChannel);
+                    output[idx + 3] = newAlpha;
+                    if (newAlpha > 0)
+                    {
+                        // Unmix ink from white background: ink = (pixel - minChannel) * 255 / newAlpha
+                        int alpha = newAlpha;
+                        output[idx] = (byte)Math.Min(255, (b - minChannel) * 255 / alpha);
+                        output[idx + 1] = (byte)Math.Min(255, (gn - minChannel) * 255 / alpha);
+                        output[idx + 2] = (byte)Math.Min(255, (r - minChannel) * 255 / alpha);
+                    }
                 }
             }
-            return processedBitmap;
+            Marshal.Copy(output, 0, dstData.Scan0, output.Length);
+            result.UnlockBits(dstData);
+            return result;
         }
 
         private static ColorPalette GivePaletteTransparentBackground(Image bitmap)
