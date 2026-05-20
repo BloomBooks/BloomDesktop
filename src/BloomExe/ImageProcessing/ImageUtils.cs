@@ -332,28 +332,28 @@ namespace Bloom.ImageProcessing
             if (!RobustFile.Exists(graphicsMagickPath))
                 return null;
 
-            string sourcePath = imageInfo.GetCurrentFilePath();
-            string tempSource = null;
-            if (string.IsNullOrEmpty(sourcePath) || !RobustFile.Exists(sourcePath))
-            {
-                // We have an in-memory image but no file on disk; save a temp copy for GM.
-                tempSource = TempFileUtils.GetTempFilepathWithExtension(".png");
-                try
-                {
-                    imageInfo.Image.Save(tempSource, ImageFormat.Png);
-                    sourcePath = tempSource;
-                }
-                catch (Exception e)
-                {
-                    MiscUtils.SuppressUnusedExceptionVarWarning(e);
-                    SafeDelete(tempSource);
-                    return null;
-                }
-            }
+            var sourcePath = imageInfo.GetCurrentFilePath();
+            var needTempSource = string.IsNullOrEmpty(sourcePath) || !RobustFile.Exists(sourcePath);
 
-            var quantizedPath = TempFileUtils.GetTempFilepathWithExtension(".png");
-            try
+            using (var tempSource = needTempSource ? TempFile.WithExtension(".png") : null)
+            using (var quantizedFile = TempFile.WithExtension(".png"))
             {
+                if (needTempSource)
+                {
+                    // We have an in-memory image but no file on disk; save a temp copy for GM.
+                    try
+                    {
+                        imageInfo.Image.Save(tempSource.Path, ImageFormat.Png);
+                        sourcePath = tempSource.Path;
+                    }
+                    catch (Exception e)
+                    {
+                        MiscUtils.SuppressUnusedExceptionVarWarning(e);
+                        return null;
+                    }
+                }
+
+                var quantizedPath = quantizedFile.Path;
                 return WithSafeFilePath(
                     sourcePath,
                     safeSource =>
@@ -364,7 +364,7 @@ namespace Bloom.ImageProcessing
                             {
                                 var args = string.Format(
                                     CultureInfo.InvariantCulture,
-                                    "convert \"{0}\" -colors {1} +dither -depth 8 \"{2}\"",
+                                    "convert \"{0}\" -colors {1} +dither -type Palette -depth 8 \"{2}\"",
                                     safeSource,
                                     QuantizedColorCount,
                                     safeDest
@@ -396,32 +396,11 @@ namespace Bloom.ImageProcessing
                     }
                 );
             }
-            finally
-            {
-                SafeDelete(quantizedPath);
-                if (tempSource != null)
-                    SafeDelete(tempSource);
-            }
-        }
-
-        private static void SafeDelete(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-                return;
-            try
-            {
-                if (RobustFile.Exists(path))
-                    RobustFile.Delete(path);
-            }
-            catch (Exception e)
-            {
-                MiscUtils.SuppressUnusedExceptionVarWarning(e);
-            }
         }
 
         /// <summary>
-        /// Read the distinct opaque colors out of a GraphicsMagick-quantized image. Since the
-        /// image was reduced to a tiny palette, a coarse stride finds every color quickly.
+        /// Read distinct colors from a GraphicsMagick-quantized image. Prefer palette entries
+        /// when the image is indexed; otherwise fall back to coarse pixel sampling.
         /// </summary>
         private static Color[] ReadDistinctColorsFromQuantizedImage(string path)
         {
@@ -429,7 +408,19 @@ namespace Bloom.ImageProcessing
             {
                 var seen = new HashSet<int>();
                 var colors = new List<Color>();
-                // Step a 32x32 sample grid through the image — plenty for a 4-color quantization.
+
+                if ((img.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
+                {
+                    foreach (var c in img.Palette.Entries)
+                    {
+                        int key = (c.A << 24) | (c.R << 16) | (c.G << 8) | c.B;
+                        if (seen.Add(key))
+                            colors.Add(c);
+                    }
+                    return colors.ToArray();
+                }
+
+                // Fallback for unexpected direct-color output.
                 int step = Math.Max(Math.Min(img.Width, img.Height) / 32, 1);
                 for (int y = 0; y < img.Height; y += step)
                 {

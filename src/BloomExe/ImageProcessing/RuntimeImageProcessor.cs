@@ -450,7 +450,6 @@ namespace Bloom.ImageProcessing
             var pixels = new byte[stride * height];
             Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
             source.UnlockBits(srcData);
-            var output = new byte[stride * height];
 
             // 1. Find the lightest color in the image (max R+G+B sum)
             int maxR = 0,
@@ -494,7 +493,8 @@ namespace Bloom.ImageProcessing
                 }
             }
 
-            // 3. For each pixel, set alpha based on distance from the lightest color
+            // 3. For each pixel, set alpha based on distance from the lightest color.
+            // Keep this pass after the two read-only analysis passes above: we mutate pixels in place.
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
@@ -509,27 +509,27 @@ namespace Bloom.ImageProcessing
                     );
                     // alpha = 0 for lightest color, 255 for farthest from it
                     byte newAlpha = (byte)(255.0 * dist / maxDist);
-                    output[idx + 3] = newAlpha;
+                    pixels[idx + 3] = newAlpha;
                     if (newAlpha > 0)
                     {
                         // Unmix ink from background: ink = (pixel - bg) * 255 / alpha
                         int alpha = newAlpha;
-                        output[idx] = (byte)Math.Min(255, Math.Max(0, (b - maxB) * 255 / alpha));
-                        output[idx + 1] = (byte)
+                        pixels[idx] = (byte)Math.Min(255, Math.Max(0, (b - maxB) * 255 / alpha));
+                        pixels[idx + 1] = (byte)
                             Math.Min(255, Math.Max(0, (g - maxG) * 255 / alpha));
-                        output[idx + 2] = (byte)
+                        pixels[idx + 2] = (byte)
                             Math.Min(255, Math.Max(0, (r - maxR) * 255 / alpha));
                     }
                     else
                     {
                         // If fully transparent, set color to 0
-                        output[idx] = 0;
-                        output[idx + 1] = 0;
-                        output[idx + 2] = 0;
+                        pixels[idx] = 0;
+                        pixels[idx + 1] = 0;
+                        pixels[idx + 2] = 0;
                     }
                 }
             }
-            Marshal.Copy(output, 0, dstData.Scan0, output.Length);
+            Marshal.Copy(pixels, 0, dstData.Scan0, pixels.Length);
             result.UnlockBits(dstData);
             return result;
         }
