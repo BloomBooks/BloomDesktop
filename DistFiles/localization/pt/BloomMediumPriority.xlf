@@ -544,24 +544,24 @@
         <target xml:lang="pt-PT" state="needs-translation">Image Fit</target>
         <note>ID: EditTab.Toolbox.CanvasTool.ImageFit</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Margin" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Margin" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Fit with Margin</source>
-        <target xml:lang="pt-PT" state="needs-translation">Fit with Margin</target>
+        <target xml:lang="pt-PT" state="final">Ajustar com margem</target>
         <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.Margin</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Fit to Edge</source>
-        <target xml:lang="pt-PT" state="needs-translation">Fit to Edge</target>
+        <target xml:lang="pt-PT" state="final">Ajustar à borda</target>
         <note>ID: EditTab.Toolbox.CanvasTool.ImageFit.FitToEdge</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Fill" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Fill" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Fill</source>
-        <target xml:lang="pt-PT" state="needs-translation">Fill</target>
+        <target xml:lang="pt-PT" state="final">Preencher</target>
         <note>Fill up the button with the image, leaving no margin, cropping if necessary</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose books...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose books...</target>
+        <target xml:lang="pt-PT" state="final">Selecionar Livros...</target>
         <note>ID: EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.NavButtons" sil:dynamic="true">
@@ -569,9 +569,9 @@
         <target xml:lang="pt-PT" state="needs-translation">A button that jumps you to a page or book in your app</target>
         <note>ID: EditTab.Toolbox.OverlayTool.NavButtons</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.Navigation" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Navigation" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Navigation</source>
-        <target xml:lang="pt-PT" state="needs-translation">Navigation</target>
+        <target xml:lang="pt-PT" state="final">Navegação</target>
         <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText" sil:dynamic="true">
@@ -579,9 +579,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Go Somewhere</target>
         <note>ID: EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Set Destination</source>
-        <target xml:lang="pt-PT" state="needs-translation">Set Destination</target>
+        <target xml:lang="pt-PT" state="final">Definir destino</target>
         <note>ID: EditTab.Toolbox.OverlayTool.SetDest</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true" approved="yes">
@@ -814,34 +814,34 @@
         <target xml:lang="pt-PT" state="final">Configurações do livro</target>
         <note>BookSettings.Title</note>
       </trans-unit>
-      <trans-unit id="BookAndPageSettings.Title" sil:dynamic="true">
+      <trans-unit id="BookAndPageSettings.Title" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book and Page Settings</source>
-        <target xml:lang="pt-PT" state="needs-translation">Book and Page Settings</target>
+        <target xml:lang="pt-PT" state="final">Configurações de Livro e Página</target>
         <note>ID: BookAndPageSettings.Title</note>
       </trans-unit>
-      <trans-unit id="BookAndPageSettings.BookArea" sil:dynamic="true">
+      <trans-unit id="BookAndPageSettings.BookArea" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book</source>
-        <target xml:lang="pt-PT" state="needs-translation">Book</target>
+        <target xml:lang="pt-PT" state="final">Livro</target>
         <note>ID: BookAndPageSettings.BookArea</note>
       </trans-unit>
-      <trans-unit id="BookAndPageSettings.BookArea.Description" sil:dynamic="true">
+      <trans-unit id="BookAndPageSettings.BookArea.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Book settings apply to all of the pages of the current book.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Book settings apply to all of the pages of the current book.</target>
+        <target xml:lang="pt-PT" state="final">As configurações de livro se aplicam a todas as páginas do livro atual.</target>
         <note>ID: BookAndPageSettings.BookArea.Description</note>
       </trans-unit>
-      <trans-unit id="BookAndPageSettings.PageArea" sil:dynamic="true">
+      <trans-unit id="BookAndPageSettings.PageArea" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Current Page</source>
-        <target xml:lang="pt-PT" state="needs-translation">Current Page</target>
+        <target xml:lang="pt-PT" state="final">Página atual</target>
         <note>ID: BookAndPageSettings.PageArea</note>
       </trans-unit>
-      <trans-unit id="BookAndPageSettings.PageArea.Description" sil:dynamic="true">
+      <trans-unit id="BookAndPageSettings.PageArea.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page settings apply to the current page.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Page settings apply to the current page.</target>
+        <target xml:lang="pt-PT" state="final">As configurações de página se aplicam à página atual.</target>
         <note>ID: BookAndPageSettings.PageArea.Description</note>
       </trans-unit>
-      <trans-unit id="BookAndPageSettings.Colors" sil:dynamic="true">
+      <trans-unit id="BookAndPageSettings.Colors" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Colors</source>
-        <target xml:lang="pt-PT" state="needs-translation">Colors</target>
+        <target xml:lang="pt-PT" state="final">Cores</target>
         <note>ID: BookAndPageSettings.Colors</note>
       </trans-unit>
       <trans-unit id="BookSettings.eBook.Image.MaxResolution" sil:dynamic="true" approved="yes">
@@ -914,9 +914,9 @@
         <target xml:lang="pt-PT" state="needs-translation">Theme &amp; Layout</target>
         <note>ID: BookSettings.ThemeAndLayoutGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.LanguagesGroupLabel" sil:dynamic="true">
+      <trans-unit id="BookSettings.LanguagesGroupLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Languages</source>
-        <target xml:lang="pt-PT" state="needs-translation">Languages</target>
+        <target xml:lang="pt-PT" state="final">Línguas</target>
         <note>ID: BookSettings.LanguagesGroupLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.PrintPublishingGroupLabel" sil:dynamic="true">
@@ -1118,9 +1118,9 @@
         <target xml:lang="pt-PT" state="final">Quando você publica um livro na web ou como um ebook, Bloom irá sinalizar qualquer fonte problemática. Por exemplo, não podemos acolher legalmente a maior parte das fontes da Microsoft na BloomLibrary.org.</target>
         <note>ID: BookSettings.Fonts.Problematic</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.OtherLanguages">
+      <trans-unit id="BookSettings.Fonts.OtherLanguages" approved="yes">
         <source xml:lang="en">Other Languages</source>
-        <target xml:lang="pt-PT" state="needs-translation">Other Languages</target>
+        <target xml:lang="pt-PT" state="final">Outras línguas</target>
         <note>ID: BookSettings.Fonts.OtherLanguages</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.MaybeProblematic">
@@ -1158,9 +1158,9 @@
         <target xml:lang="pt-PT" state="final">Página não numerada</target>
         <note>ID: BookSettings.Fonts.UnnumberedPage</note>
       </trans-unit>
-      <trans-unit id="PageLayout.CustomXMatterPage">
+      <trans-unit id="PageLayout.CustomXMatterPage" approved="yes">
         <source xml:lang="en">Customized Front and Back Matter Page Layout</source>
-        <target xml:lang="pt-PT" state="needs-translation">Customized Front and Back Matter Page Layout</target>
+        <target xml:lang="pt-PT" state="final">Layout customizado da página inicial e anterior</target>
         <note>ID: PageLayout.CustomXMatterPage</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.default" sil:dynamic="true" approved="yes">
