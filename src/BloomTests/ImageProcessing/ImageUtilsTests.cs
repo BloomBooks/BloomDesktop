@@ -171,6 +171,42 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
+        public void ProcessAndSaveImageIntoFolder_LineArtOnColoredPage_MakesSavedPngTransparent()
+        {
+            using (var sourceFolder = new TemporaryFolder("LineArtOnColoredPage_Source"))
+            using (var destinationFolder = new TemporaryFolder("LineArtOnColoredPage_Dest"))
+            {
+                var sourcePath = sourceFolder.Combine("line-art.png");
+                using (var bitmap = new Bitmap(40, 40))
+                using (var graphics = Graphics.FromImage(bitmap))
+                using (var pen = new Pen(Color.Black, 3))
+                {
+                    graphics.Clear(Color.White);
+                    graphics.DrawLine(pen, 5, 20, 35, 20);
+                    bitmap.Save(sourcePath, ImageFormat.Png);
+                }
+
+                using (var image = PalasoImage.FromFileRobustly(sourcePath))
+                {
+                    var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(
+                        image,
+                        destinationFolder.Path,
+                        false,
+                        "#2E2E2E"
+                    );
+
+                    Assert.AreEqual(".png", Path.GetExtension(fileName));
+                    var outputPath = destinationFolder.Combine(fileName);
+                    using (var result = (Bitmap)Image.FromFile(outputPath))
+                    {
+                        Assert.That(result.GetPixel(0, 0).A, Is.EqualTo(0));
+                        Assert.That(result.GetPixel(20, 20).A, Is.EqualTo(255));
+                    }
+                }
+            }
+        }
+
+        [Test]
         [TestCase("box", "box1")]
         [TestCase("box1", "box2")]
         [TestCase("12311", "12312")]

@@ -161,7 +161,8 @@ namespace Bloom.ImageProcessing
                 if (!seen.Add(key))
                     continue;
                 totalDistinct++;
-                if (IsLineArtBackground(c, out bool borderline))
+                bool borderline;
+                if (IsLineArtBackground(c, out borderline))
                 {
                     whiteFound = true;
                 }
@@ -560,6 +561,29 @@ namespace Bloom.ImageProcessing
             return color.R == color.G && color.G == color.B;
         }
 
+        internal static bool ShouldMakeTransparentForPageBackground(string pageBackgroundColor)
+        {
+            if (string.IsNullOrWhiteSpace(pageBackgroundColor))
+                return false;
+
+            if (!TryCssColorFromString(pageBackgroundColor, out var color))
+                return false;
+
+            return !IsNearWhite(color);
+        }
+
+        private static void MakeSavedImageBackgroundTransparent(string destinationPath)
+        {
+            if (!IsPngFile(destinationPath))
+                return;
+
+            using (var tempFile = TempFile.WithExtension(".png"))
+            {
+                if (MakeTransparentBackgroundIfNeeded(destinationPath, tempFile.Path))
+                    RobustFile.Copy(tempFile.Path, destinationPath, true);
+            }
+        }
+
         public static bool IsJpegFile(string path)
         {
             if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
@@ -661,7 +685,8 @@ namespace Bloom.ImageProcessing
         public static string ProcessAndSaveImageIntoFolder(
             PalasoImage imageInfo,
             string bookFolderPath,
-            bool isSameFile
+            bool isSameFile,
+            string pageBackgroundColor = null
         )
         {
             //LogMemoryUsage();
@@ -713,6 +738,8 @@ namespace Bloom.ImageProcessing
                 // Compute once; the result drives both the JPEG→PNG conversion below and the
                 // PNG→JPEG guard in convertedToJpeg. Running GraphicsMagick twice would be wasteful.
                 var isLineArt = ShouldMakeBackgroundTransparent(imageInfo);
+                var shouldMakeTransparentForPageBackground =
+                    isLineArt && ShouldMakeTransparentForPageBackground(pageBackgroundColor);
                 // Convert JPEG line art to PNG on insert: JPEGs can't carry transparency, so a
                 // line-art JPEG would never get its background made transparent when shown on a
                 // colored page background. Saving as PNG fixes that at the cost of slightly larger
@@ -784,6 +811,8 @@ namespace Bloom.ImageProcessing
                 {
                     imageInfo.Image.Save(destinationPath, ImageFormat.Png); // destinationPath already has .png extension
                 }
+                if (shouldMakeTransparentForPageBackground)
+                    MakeSavedImageBackgroundTransparent(destinationPath);
                 if (_createdTempImageFile != null)
                 {
                     if (RobustFile.Exists(_createdTempImageFile))
@@ -1865,9 +1894,11 @@ namespace Bloom.ImageProcessing
                             if (options.MakeOpaque)
                                 argsBldr.Append(" -background white -extent 0x0 +matte");
                             else if (options.MakeTransparent)
-                                argsBldr.Append(
-                                    " -matte -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\""
-                                );
+                            {
+                                // We intentionally do not rely on GraphicsMagick's -transparent options.
+                                // After the conversion we apply Bloom's RemoveWhiteBackground semantics
+                                // so anti-aliased edges get proper alpha instead of white fringes.
+                            }
                             if (options.cropRectangle != Rectangle.Empty)
                             {
                                 argsBldr.AppendFormat(
@@ -1929,6 +1960,9 @@ namespace Bloom.ImageProcessing
                                 new NullProgress()
                             );
 
+                            if (result.ExitCode == 0 && options.MakeTransparent)
+                                ApplyBloomTransparencyToGraphicsMagickOutput(safeDestPath);
+
                             if (result.ExitCode == 0 && destPath != safeDestPath)
                                 RobustFile.Copy(safeDestPath, destPath, true);
                             return result;
@@ -1937,6 +1971,22 @@ namespace Bloom.ImageProcessing
                     );
                 }
             );
+        }
+
+        private static void ApplyBloomTransparencyToGraphicsMagickOutput(string imagePath)
+        {
+            if (!imagePath.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
+                return;
+
+            using (var imageInfo = FromFileRobustly(imagePath))
+            using (
+                var transparentImage = RuntimeImageProcessor.MakePngBackgroundTransparent(imageInfo)
+            )
+            using (var tempFile = TempFile.WithExtension(".png"))
+            {
+                RobustImageIO.SaveImage(transparentImage, tempFile.Path, ImageFormat.Png);
+                RobustFile.Copy(tempFile.Path, imagePath, true);
+            }
         }
 
         /// <summary>
