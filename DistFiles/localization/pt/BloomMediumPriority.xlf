@@ -529,14 +529,14 @@
         <target xml:lang="pt-PT" state="needs-translation">A grid of buttons that jump you to books in your app</target>
         <note>ID: EditTab.Toolbox.CanvasTool.BookGrid</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose link target</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose link target</target>
+        <target xml:lang="pt-PT" state="final">Escolher o Alvo do Link</target>
         <note>ID: EditTab.Toolbox.CanvasTool.ClickToSetLinkDest</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.DragInstructions" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.DragInstructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Drag any of these onto a canvas:</source>
-        <target xml:lang="pt-PT" state="needs-translation">Drag any of these onto a canvas:</target>
+        <target xml:lang="pt-PT" state="final">Arraste qualquer um destes para uma tela:</target>
         <note>ID: EditTab.Toolbox.CanvasTool.DragInstructions2</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit" sil:dynamic="true">
