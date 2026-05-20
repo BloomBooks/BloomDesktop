@@ -668,7 +668,12 @@ namespace Bloom.Edit
             CopyImageToClipboard(imageSrc, _model.CurrentBook.FolderPath, imageIsGif);
         }
 
-        public void OnPasteImage(string imageId, UrlPathString priorImageSrc, bool imageIsGif)
+        public void OnPasteImage(
+            string imageId,
+            UrlPathString priorImageSrc,
+            bool imageIsGif,
+            string pageBackgroundColor
+        )
         {
             var pictureChanged = false;
             using (var measure = PerformanceMeasurement.Global.Measure("Paste Image"))
@@ -735,7 +740,12 @@ namespace Bloom.Edit
                             "[Paste Image] Pasting jpeg image {0}",
                             clipboardImage.OriginalFilePath
                         );
-                        _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
+                        _model.ChangePicture(
+                            imageId,
+                            priorImageSrc,
+                            clipboardImage,
+                            pageBackgroundColor
+                        );
                         pictureChanged = true;
                     }
                     else
@@ -746,7 +756,12 @@ namespace Bloom.Edit
                             Logger.WriteMinorEvent(
                                 "[Paste Image] Pasting image directly from clipboard (e.g. screenshot)"
                             );
-                            _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
+                            _model.ChangePicture(
+                                imageId,
+                                priorImageSrc,
+                                clipboardImage,
+                                pageBackgroundColor
+                            );
                             pictureChanged = true;
                         }
                         //they pasted a path to a png
@@ -759,7 +774,12 @@ namespace Bloom.Edit
                                 "[Paste Image] Pasting png file {0}",
                                 clipboardImage.OriginalFilePath
                             );
-                            _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
+                            _model.ChangePicture(
+                                imageId,
+                                priorImageSrc,
+                                clipboardImage,
+                                pageBackgroundColor
+                            );
                             pictureChanged = true;
                         }
                         else // they pasted a path to some other bitmap format
@@ -789,7 +809,12 @@ namespace Bloom.Edit
 
                                 using (var palasoImage = ImageUtils.FromFileRobustly(temp.Path))
                                 {
-                                    _model.ChangePicture(imageId, priorImageSrc, palasoImage);
+                                    _model.ChangePicture(
+                                        imageId,
+                                        priorImageSrc,
+                                        palasoImage,
+                                        pageBackgroundColor
+                                    );
                                     pictureChanged = true;
                                 }
                             }
@@ -910,7 +935,12 @@ namespace Bloom.Edit
 
         private string _gifDirectory; // Todo: worth saving this as a UserPrefs? Or can/should we use the same one as for images?
 
-        public void OnChangeImage(string imageId, UrlPathString imageSrc, bool imageIsGif)
+        public void OnChangeImage(
+            string imageId,
+            UrlPathString imageSrc,
+            bool imageIsGif,
+            string pageBackgroundColor
+        )
         {
             Cursor = Cursors.WaitCursor;
 
@@ -1138,7 +1168,13 @@ namespace Bloom.Edit
                                 dlg.ImageInfo.Save(newImagePath);
                             }
                             dlg.ImageInfo.SetCurrentFilePath(newImagePath);
-                            SaveChangedImage(imageId, imageSrc, dlg.ImageInfo, exceptionMsg);
+                            SaveChangedImage(
+                                imageId,
+                                imageSrc,
+                                dlg.ImageInfo,
+                                exceptionMsg,
+                                pageBackgroundColor
+                            );
                             imageChanged = true;
                         }
                         catch (Exception error)
@@ -1342,7 +1378,8 @@ namespace Bloom.Edit
             string imageId,
             UrlPathString priorImageSrc,
             PalasoImage imageInfo,
-            string exceptionMsg
+            string exceptionMsg,
+            string pageBackgroundColor
         )
         {
             var imageChanged = false;
@@ -1350,7 +1387,7 @@ namespace Bloom.Edit
             {
                 if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
                     return;
-                _model.ChangePicture(imageId, priorImageSrc, imageInfo);
+                _model.ChangePicture(imageId, priorImageSrc, imageInfo, pageBackgroundColor);
                 imageChanged = true;
             }
             catch (System.IO.IOException error)

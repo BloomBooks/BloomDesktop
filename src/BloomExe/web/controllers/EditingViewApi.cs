@@ -347,10 +347,12 @@ namespace Bloom.web.controllers
         private void HandlePasteImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            ((DynamicJson)data).TryGetValue("pageBackgroundColor", out string pageBackgroundColor);
             View.OnPasteImage(
                 data.imageId,
                 UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
-                data.imageIsGif
+                data.imageIsGif,
+                pageBackgroundColor
             );
             request.PostSucceeded();
         }
@@ -434,13 +436,15 @@ namespace Bloom.web.controllers
         private void HandleChangeImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            ((DynamicJson)data).TryGetValue("pageBackgroundColor", out string pageBackgroundColor);
             // We don't want to tie up server locks etc. while the dialog displays.
             MiscUtils.DoOnceOnIdle(() =>
             {
                 View.OnChangeImage(
                     data.imageId,
                     UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
-                    data.imageIsGif
+                    data.imageIsGif,
+                    pageBackgroundColor
                 );
             });
             request.PostSucceeded();
