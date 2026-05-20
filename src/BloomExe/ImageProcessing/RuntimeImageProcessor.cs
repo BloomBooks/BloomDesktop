@@ -451,26 +451,81 @@ namespace Bloom.ImageProcessing
             Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
             source.UnlockBits(srcData);
             var output = new byte[stride * height];
+
+            // 1. Find the lightest color in the image (max R+G+B sum)
+            int maxR = 0,
+                maxG = 0,
+                maxB = 0;
+            int maxSum = 0;
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
                     int idx = y * stride + x * 4;
-                    byte b = pixels[idx];
-                    byte gn = pixels[idx + 1];
-                    byte r = pixels[idx + 2];
+                    int b = pixels[idx];
+                    int g = pixels[idx + 1];
+                    int r = pixels[idx + 2];
+                    int sum = r + g + b;
+                    if (sum > maxSum)
+                    {
+                        maxSum = sum;
+                        maxR = r;
+                        maxG = g;
+                        maxB = b;
+                    }
+                }
+            }
+
+            // 2. Compute the max distance from the lightest color (for normalization)
+            double maxDist = 1.0; // avoid divide by zero
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int idx = y * stride + x * 4;
+                    int b = pixels[idx];
+                    int g = pixels[idx + 1];
+                    int r = pixels[idx + 2];
+                    double dist = Math.Sqrt(
+                        (r - maxR) * (r - maxR) + (g - maxG) * (g - maxG) + (b - maxB) * (b - maxB)
+                    );
+                    if (dist > maxDist)
+                        maxDist = dist;
+                }
+            }
+
+            // 3. For each pixel, set alpha based on distance from the lightest color
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int idx = y * stride + x * 4;
+                    int b = pixels[idx];
+                    int g = pixels[idx + 1];
+                    int r = pixels[idx + 2];
                     // pixels[idx + 3] is source alpha, always 255 for opaque input
-                    byte minChannel = Math.Min(r, Math.Min(gn, b));
-                    // alpha = 0 for pure white, 255 for pure black/ink
-                    byte newAlpha = (byte)(255 - minChannel);
+                    double dist = Math.Sqrt(
+                        (r - maxR) * (r - maxR) + (g - maxG) * (g - maxG) + (b - maxB) * (b - maxB)
+                    );
+                    // alpha = 0 for lightest color, 255 for farthest from it
+                    byte newAlpha = (byte)(255.0 * dist / maxDist);
                     output[idx + 3] = newAlpha;
                     if (newAlpha > 0)
                     {
-                        // Unmix ink from white background: ink = (pixel - minChannel) * 255 / newAlpha
+                        // Unmix ink from background: ink = (pixel - bg) * 255 / alpha
                         int alpha = newAlpha;
-                        output[idx] = (byte)Math.Min(255, (b - minChannel) * 255 / alpha);
-                        output[idx + 1] = (byte)Math.Min(255, (gn - minChannel) * 255 / alpha);
-                        output[idx + 2] = (byte)Math.Min(255, (r - minChannel) * 255 / alpha);
+                        output[idx] = (byte)Math.Min(255, Math.Max(0, (b - maxB) * 255 / alpha));
+                        output[idx + 1] = (byte)
+                            Math.Min(255, Math.Max(0, (g - maxG) * 255 / alpha));
+                        output[idx + 2] = (byte)
+                            Math.Min(255, Math.Max(0, (r - maxR) * 255 / alpha));
+                    }
+                    else
+                    {
+                        // If fully transparent, set color to 0
+                        output[idx] = 0;
+                        output[idx + 1] = 0;
+                        output[idx + 2] = 0;
                     }
                 }
             }

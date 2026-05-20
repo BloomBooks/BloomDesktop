@@ -110,7 +110,9 @@ namespace Bloom.ImageProcessing
         {
             // We want to make the white background of line-art pictures transparent.
             // We support PNG and JPEG input; other formats (BMP, TIFF, etc.) are not line art.
-            if (!AppearsToBePng(imageInfo) && !AppearsToBeJpeg(imageInfo))
+            var appearsToBePng = AppearsToBePng(imageInfo);
+            var appearsToBeJpeg = AppearsToBeJpeg(imageInfo);
+            if (!appearsToBePng && !appearsToBeJpeg)
                 return false;
 
             if ((imageInfo.Image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
@@ -159,10 +161,17 @@ namespace Bloom.ImageProcessing
                 if (!seen.Add(key))
                     continue;
                 totalDistinct++;
-                if (IsLineArtBackground(c))
+                if (IsLineArtBackground(c, out bool borderline))
+                {
                     whiteFound = true;
+                }
                 else
+                {
                     inks.Add(c);
+                    // borderline colors are close enough to count as a background if they have a
+                    // similar hue to other colors. We check this by leaving them in inks.
+                    whiteFound |= borderline;
+                }
             }
             if (!whiteFound || totalDistinct < 2)
                 return false;
@@ -177,45 +186,86 @@ namespace Bloom.ImageProcessing
         /// </summary>
         private static bool InksShareConsistentHue(List<Color> inks)
         {
-            float refR = 0,
-                refG = 0,
-                refB = 0;
-            bool hueRefSet = false;
+            // Use 2D hue/brightness geometry:
+            // - angle: hue
+            // - radius: 1 - brightness (black=1, white=0)
+            // Then compare each point to the line through the origin and reference point.
+            Color referenceColor = default;
+            int maxChroma = -1;
             foreach (var c in inks)
             {
                 int max = Math.Max(c.R, Math.Max(c.G, c.B));
                 int min = Math.Min(c.R, Math.Min(c.G, c.B));
-                if (max - min <= LineArtInkGrayscaleChromaThreshold)
-                    continue; // grayscale ink — compatible with any hue
-                float total = (c.R - min) + (c.G - min) + (c.B - min);
-                if (total <= 0)
-                    continue;
-                float r = (c.R - min) / total;
-                float g = (c.G - min) / total;
-                float b = (c.B - min) / total;
-                if (!hueRefSet)
+                int chroma = max - min;
+                if (chroma > maxChroma)
                 {
-                    refR = r;
-                    refG = g;
-                    refB = b;
-                    hueRefSet = true;
-                    continue;
+                    maxChroma = chroma;
+                    referenceColor = c;
                 }
-                if (
-                    Math.Abs(r - refR) > LineArtInkHueTolerance
-                    || Math.Abs(g - refG) > LineArtInkHueTolerance
-                    || Math.Abs(b - refB) > LineArtInkHueTolerance
-                )
+            }
+
+            if (!TryGetHueBrightnessPoint(referenceColor, out var refX, out var refY))
+                return true;
+
+            float refLenSq = (refX * refX) + (refY * refY);
+            if (refLenSq <= 0)
+                return true;
+
+            // Distance equivalent to 15 degrees at radius 1.
+            float threshold = (float)Math.Sin(Math.PI / 12.0);
+
+            foreach (var c in inks)
+            {
+                if (!TryGetHueBrightnessPoint(c, out var x, out var y))
+                    continue; // grayscale ink — compatible with any hue
+
+                float dot = (x * refX) + (y * refY);
+                float distance;
+                if (dot > 0)
+                {
+                    // Same side as reference: perpendicular distance to origin-reference line.
+                    float cross = (x * refY) - (y * refX);
+                    distance = Math.Abs(cross) / (float)Math.Sqrt(refLenSq);
+                }
+                else
+                {
+                    // Opposite side: measure distance to origin instead.
+                    distance = (float)Math.Sqrt((x * x) + (y * y));
+                }
+
+                if (distance > threshold)
                     return false;
             }
+
             return true;
+
+            bool TryGetHueBrightnessPoint(Color color, out float x, out float y)
+            {
+                int max = Math.Max(color.R, Math.Max(color.G, color.B));
+                int min = Math.Min(color.R, Math.Min(color.G, color.B));
+                if (max - min <= LineArtInkGrayscaleChromaThreshold)
+                {
+                    x = y = 0;
+                    return false;
+                }
+
+                float hueRadians = (float)(color.GetHue() * Math.PI / 180.0);
+                float brightness = color.GetBrightness();
+                float radius = 1f - brightness;
+                x = radius * (float)Math.Cos(hueRadians);
+                y = radius * (float)Math.Sin(hueRadians);
+                return true;
+            }
         }
 
-        private static bool IsLineArtBackground(Color c)
+        private static bool IsLineArtBackground(Color c, out bool borderline)
         {
-            int max = Math.Max(c.R, Math.Max(c.G, c.B));
-            int min = Math.Min(c.R, Math.Min(c.G, c.B));
-            return min >= LineArtBackgroundMinChannel && (max - min) <= LineArtBackgroundMaxChroma;
+            // Perceptual brightness formula: 0.299*R + 0.587*G + 0.114*B
+            // Threshold: all channels 235 => brightness = 0.299*235 + 0.587*235 + 0.114*235 = 235
+            // So threshold is 235
+            double brightness = 0.299 * c.R + 0.587 * c.G + 0.114 * c.B;
+            borderline = brightness >= 220;
+            return brightness >= 235.0;
         }
 
         private static bool HasAnyTransparentSampledPixel(Bitmap bitmap)
