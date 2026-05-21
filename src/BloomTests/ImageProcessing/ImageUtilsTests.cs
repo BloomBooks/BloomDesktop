@@ -207,6 +207,42 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
+        public void ProcessAndSaveImageIntoFolder_LineArtJpegSameFileOnColoredPage_UsesPngFilenameAndData()
+        {
+            using (var folder = new TemporaryFolder("LineArtJpegSameFile"))
+            {
+                var sourcePath = folder.Combine("line-art.jpg");
+                using (var bitmap = new Bitmap(40, 40))
+                using (var graphics = Graphics.FromImage(bitmap))
+                using (var pen = new Pen(Color.Black, 3))
+                {
+                    graphics.Clear(Color.White);
+                    graphics.DrawLine(pen, 5, 20, 35, 20);
+                    bitmap.Save(sourcePath, ImageFormat.Jpeg);
+                }
+
+                using (var image = PalasoImage.FromFileRobustly(sourcePath))
+                {
+                    var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(
+                        image,
+                        folder.Path,
+                        true,
+                        "#2E2E2E"
+                    );
+
+                    Assert.AreEqual(".png", Path.GetExtension(fileName));
+                    var outputPath = folder.Combine(fileName);
+                    using (var result = (Bitmap)Image.FromFile(outputPath))
+                    {
+                        Assert.AreEqual(ImageFormat.Png, result.RawFormat);
+                        Assert.That(result.GetPixel(0, 0).A, Is.EqualTo(0));
+                        Assert.That(result.GetPixel(20, 20).A, Is.EqualTo(255));
+                    }
+                }
+            }
+        }
+
+        [Test]
         [TestCase("box", "box1")]
         [TestCase("box1", "box2")]
         [TestCase("12311", "12312")]

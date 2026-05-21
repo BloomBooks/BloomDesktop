@@ -475,8 +475,9 @@ namespace Bloom.ImageProcessing
                 }
             }
 
-            // 2. Compute the max distance from the lightest color (for normalization)
-            double maxDist = 1.0; // avoid divide by zero
+            // 2. Compute the largest channel deficit from the lightest color (for normalization)
+            // This maps the palest color to alpha=0 while keeping strong saturated colors opaque.
+            int maxDeficit = 1; // avoid divide by zero
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
@@ -485,11 +486,9 @@ namespace Bloom.ImageProcessing
                     int b = pixels[idx];
                     int g = pixels[idx + 1];
                     int r = pixels[idx + 2];
-                    double dist = Math.Sqrt(
-                        (r - maxR) * (r - maxR) + (g - maxG) * (g - maxG) + (b - maxB) * (b - maxB)
-                    );
-                    if (dist > maxDist)
-                        maxDist = dist;
+                    int deficit = Math.Max(maxR - r, Math.Max(maxG - g, maxB - b));
+                    if (deficit > maxDeficit)
+                        maxDeficit = deficit;
                 }
             }
 
@@ -503,30 +502,13 @@ namespace Bloom.ImageProcessing
                     int b = pixels[idx];
                     int g = pixels[idx + 1];
                     int r = pixels[idx + 2];
-                    // pixels[idx + 3] is source alpha, always 255 for opaque input
-                    double dist = Math.Sqrt(
-                        (r - maxR) * (r - maxR) + (g - maxG) * (g - maxG) + (b - maxB) * (b - maxB)
-                    );
-                    // alpha = 0 for lightest color, 255 for farthest from it
-                    byte newAlpha = (byte)(255.0 * dist / maxDist);
+                    // pixels[idx + 3] is source alpha, always 255 for opaque input.
+                    // Use the strongest per-channel deficit from the background candidate.
+                    int deficit = Math.Max(maxR - r, Math.Max(maxG - g, maxB - b));
+                    // alpha = 0 for lightest color, 255 for largest deficit from it
+                    byte newAlpha = (byte)(255.0 * deficit / maxDeficit);
                     pixels[idx + 3] = newAlpha;
-                    if (newAlpha > 0)
-                    {
-                        // Unmix ink from background: ink = (pixel - bg) * 255 / alpha
-                        int alpha = newAlpha;
-                        pixels[idx] = (byte)Math.Min(255, Math.Max(0, (b - maxB) * 255 / alpha));
-                        pixels[idx + 1] = (byte)
-                            Math.Min(255, Math.Max(0, (g - maxG) * 255 / alpha));
-                        pixels[idx + 2] = (byte)
-                            Math.Min(255, Math.Max(0, (r - maxR) * 255 / alpha));
-                    }
-                    else
-                    {
-                        // If fully transparent, set color to 0
-                        pixels[idx] = 0;
-                        pixels[idx + 1] = 0;
-                        pixels[idx + 2] = 0;
-                    }
+                    // Keep RGB as-is to preserve color intensity (e.g. pure red stays red).
                 }
             }
             Marshal.Copy(pixels, 0, dstData.Scan0, pixels.Length);

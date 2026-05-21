@@ -80,9 +80,16 @@ namespace Bloom.ImageProcessing
         }
 
         // Tolerances used by the quantize-based line-art palette check.
-        // The background color must be uniformly bright (all channels at least this high)
-        // and approximately neutral (no channel differing by more than the chroma tolerance).
-        private const int LineArtBackgroundMinChannel = 235;
+        // To be unambiguously a line-art background, a color must have a perceptual brightness
+        // of at least LineArtBackgroundMinBrightness and a chroma (max-min channel) of at
+        // most LineArtBackgroundMaxChroma.
+        // If its brightness is below LineArtBackgroundMinBrightness or its chroma is
+        // above LineArtBackgroundMaxChroma, but its brightness is above LineArtBackgroundBorderlineBrightness,
+        // the color is considered borderline: it counts as a background if all other colors are compatible
+        // with its hue.
+        // Otherwise the color is not considered a line-art background at all.
+        private const double LineArtBackgroundMinBrightness = 235.0;
+        private const double LineArtBackgroundBorderlineBrightness = 220.0;
         private const int LineArtBackgroundMaxChroma = 6;
 
         // An "ink" palette entry whose chroma (max-min channel) is at or below this counts as
@@ -215,6 +222,8 @@ namespace Bloom.ImageProcessing
             // Distance equivalent to 15 degrees at radius 1.
             float threshold = (float)Math.Sin(Math.PI / 12.0);
 
+            string debug = string.Join(", ", inks.Select(c => "#" + c.Name));
+
             foreach (var c in inks)
             {
                 if (!TryGetHueBrightnessPoint(c, out var x, out var y))
@@ -259,14 +268,27 @@ namespace Bloom.ImageProcessing
             }
         }
 
+        /// <summary>
+        /// Returns true if the color is bright enough (and free of significant hue)
+        /// to be considered unambiguously a line art background.
+        /// If it is not quite that light, or has perceptible hue, but is light enough
+        /// to consider a background IFF the hue is acceptable, we return false but
+        /// set borderline to true.
+        /// If both results are false, the color is definitely not line art background.
+        /// </summary>
         private static bool IsLineArtBackground(Color c, out bool borderline)
         {
             // Perceptual brightness formula: 0.299*R + 0.587*G + 0.114*B
             // Threshold: all channels 235 => brightness = 0.299*235 + 0.587*235 + 0.114*235 = 235
             // So threshold is 235
             double brightness = 0.299 * c.R + 0.587 * c.G + 0.114 * c.B;
-            borderline = brightness >= 220;
-            return brightness >= 235.0;
+            int max = Math.Max(c.R, Math.Max(c.G, c.B));
+            int min = Math.Min(c.R, Math.Min(c.G, c.B));
+            // deliberately ignore hue for borderline; we'll check later that any hue it has
+            // is compatible with other colors.
+            borderline = brightness >= LineArtBackgroundBorderlineBrightness;
+            return brightness >= LineArtBackgroundMinBrightness
+                && (max - min) <= LineArtBackgroundMaxChroma;
         }
 
         private static bool HasAnyTransparentSampledPixel(Bitmap bitmap)
@@ -720,7 +742,7 @@ namespace Bloom.ImageProcessing
                 var needToStripMetadata = imageInfo.Metadata.ExceptionCaughtWhileLoading != null;
 
                 isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
-                bool isEncodedAsPng = !isEncodedAsJpeg && AppearsToBePng(imageInfo);
+                var saveAsJpeg = isEncodedAsJpeg;
 
                 string jpegFilePath = Path.Combine(
                     bookFolderPath,
@@ -735,11 +757,11 @@ namespace Bloom.ImageProcessing
                 // line-art JPEG would never get its background made transparent when shown on a
                 // colored page background. Saving as PNG fixes that at the cost of slightly larger
                 // files, which is worth it for images that will be composited (BL-16336).
-                if (isEncodedAsJpeg && isLineArt)
-                    isEncodedAsJpeg = false;
+                if (saveAsJpeg && isLineArt)
+                    saveAsJpeg = false;
                 // Don't convert line-art PNGs to JPEG: JPEG is only right for photographic content.
                 var convertedToJpeg =
-                    !isEncodedAsJpeg
+                    !saveAsJpeg
                     && !HasTransparency(imageInfo.Image)
                     && !isLineArt
                     && TryChangeFormatToJpegIfHelpful(imageInfo, jpegFilePath);
@@ -748,12 +770,22 @@ namespace Bloom.ImageProcessing
 
                 string imageFileName;
                 if (isSameFile)
-                    imageFileName = imageInfo.FileName;
+                {
+                    var expectedExtension = saveAsJpeg ? ".jpg" : ".png";
+                    var hasExpectedExtension = string.Equals(
+                        Path.GetExtension(imageInfo.FileName),
+                        expectedExtension,
+                        StringComparison.InvariantCultureIgnoreCase
+                    );
+                    imageFileName = hasExpectedExtension
+                        ? imageInfo.FileName
+                        : GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, saveAsJpeg);
+                }
                 else
                     imageFileName = GetFileNameToUseForSavingImage(
                         bookFolderPath,
                         imageInfo,
-                        isEncodedAsJpeg
+                        saveAsJpeg
                     );
                 var sourcePath = imageInfo.GetCurrentFilePath();
                 if (imageRemade & sourcePath == originalCurrentPath)
@@ -764,43 +796,37 @@ namespace Bloom.ImageProcessing
                     sourcePath = null;
                 }
                 var destinationPath = Path.Combine(bookFolderPath, imageFileName);
-                if (isEncodedAsJpeg || isEncodedAsPng)
+                var reusingSameFilename =
+                    isSameFile
+                    && imageInfo.FileName.Equals(
+                        imageFileName,
+                        StringComparison.InvariantCultureIgnoreCase
+                    );
+                var sourceEncodingMatchesDestination = isEncodedAsJpeg == saveAsJpeg;
+                if (needToStripMetadata)
                 {
-                    if (needToStripMetadata)
-                    {
-                        if (
-                            !TryStripMetadataWithGraphicsMagick(
-                                imageInfo,
-                                sourcePath,
-                                destinationPath
-                            )
-                        )
-                            imageInfo.Image.Save(
-                                destinationPath,
-                                isEncodedAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
-                            );
-                    }
-                    // I _think_ isSameFile is true only when we copy an image and paste it back in the same place.
-                    // In that case, we don't need to save it again. I checked that when we
-                    // use the old cropping tool to create a different image, it doesn't take this path.
-                    // As far as I can tell isSameFile is only true if we are copying the file on top of
-                    // itself, and that can't ever be useful.
-                    else if (!isSameFile)
-                    {
-                        // Pasting an image can result in sourcePath being null.
-                        // So can graphicsmagick failures where we had to remake the image. (BL-15708)
-                        if (sourcePath == null)
-                            imageInfo.Image.Save(
-                                destinationPath,
-                                isEncodedAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
-                            );
-                        else
-                            RobustFile.Copy(sourcePath, destinationPath);
-                    }
+                    if (!TryStripMetadataWithGraphicsMagick(imageInfo, sourcePath, destinationPath))
+                        imageInfo.Image.Save(
+                            destinationPath,
+                            saveAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
+                        );
                 }
-                else
+                // I _think_ isSameFile is true only when we copy an image and paste it back in the same place.
+                // In that case, we don't need to save it again. I checked that when we
+                // use the old cropping tool to create a different image, it doesn't take this path.
+                // As far as I can tell isSameFile is only true if we are copying the file on top of
+                // itself, and that can't ever be useful.
+                else if (!reusingSameFilename)
                 {
-                    imageInfo.Image.Save(destinationPath, ImageFormat.Png); // destinationPath already has .png extension
+                    // Pasting an image can result in sourcePath being null.
+                    // So can graphicsmagick failures where we had to remake the image. (BL-15708)
+                    if (sourcePath == null || !sourceEncodingMatchesDestination)
+                        imageInfo.Image.Save(
+                            destinationPath,
+                            saveAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
+                        );
+                    else
+                        RobustFile.Copy(sourcePath, destinationPath);
                 }
                 if (shouldMakeTransparentForPageBackground)
                     MakeSavedImageBackgroundTransparent(destinationPath);
