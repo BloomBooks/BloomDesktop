@@ -281,36 +281,124 @@ function getOwningPageBackgroundColor(element: HTMLElement): string {
     }
 
     const marginBox = page.querySelector(".marginBox") as HTMLElement | null;
-    const pageSurface = marginBox ?? page;
+    const pageColor = parseCssColorToRgba(
+        getComputedStyle(page).backgroundColor,
+    );
+
+    if (!marginBox) {
+        return normalizeCssColorToHexOrEmpty(pageColor);
+    }
+
+    const marginColor = parseCssColorToRgba(
+        getComputedStyle(marginBox).backgroundColor,
+    );
+
+    if (!marginColor || marginColor.a === 0) {
+        return normalizeCssColorToHexOrEmpty(pageColor);
+    }
+
+    if (!pageColor || pageColor.a === 0 || marginColor.a >= 1) {
+        return normalizeCssColorToHexOrEmpty(marginColor);
+    }
+
     return normalizeCssColorToHexOrEmpty(
-        getComputedStyle(pageSurface).backgroundColor,
+        compositeRgbaOverBackground(marginColor, pageColor),
     );
 }
 
-function normalizeCssColorToHexOrEmpty(color: string): string {
+type RgbaColor = { r: number; g: number; b: number; a: number };
+
+function parseCssColorToRgba(color: string): RgbaColor | undefined {
     const trimmed = color.trim();
-    if (
-        !trimmed ||
-        trimmed === "transparent" ||
-        trimmed === "rgba(0, 0, 0, 0)"
-    ) {
-        return "";
+    if (!trimmed || trimmed === "transparent") {
+        return undefined;
     }
 
-    const match = trimmed.match(
+    const rgbMatch = trimmed.match(
         /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/,
     );
-    if (!match) {
-        return trimmed;
+    if (rgbMatch) {
+        return {
+            r: clampRgb(Number(rgbMatch[1])),
+            g: clampRgb(Number(rgbMatch[2])),
+            b: clampRgb(Number(rgbMatch[3])),
+            a: clampAlpha(rgbMatch[4] ? Number(rgbMatch[4]) : 1),
+        };
     }
 
-    if (match[4] && Number(match[4]) === 0) {
+    const hexMatch = trimmed.match(/^#([\da-f]{3}|[\da-f]{6})$/i);
+    if (hexMatch) {
+        const hex = hexMatch[1];
+        if (hex.length === 3) {
+            return {
+                r: Number.parseInt(hex[0] + hex[0], 16),
+                g: Number.parseInt(hex[1] + hex[1], 16),
+                b: Number.parseInt(hex[2] + hex[2], 16),
+                a: 1,
+            };
+        }
+
+        return {
+            r: Number.parseInt(hex.slice(0, 2), 16),
+            g: Number.parseInt(hex.slice(2, 4), 16),
+            b: Number.parseInt(hex.slice(4, 6), 16),
+            a: 1,
+        };
+    }
+
+    return undefined;
+}
+
+function normalizeCssColorToHexOrEmpty(color: RgbaColor | undefined): string {
+    if (!color || color.a === 0) {
         return "";
     }
 
-    return `#${[match[1], match[2], match[3]]
-        .map((component) => Number(component).toString(16).padStart(2, "0"))
+    if (color.a < 1) {
+        const alpha = Math.round(clampAlpha(color.a) * 1000) / 1000;
+        return `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
+    }
+
+    return `#${[color.r, color.g, color.b]
+        .map((component) => component.toString(16).padStart(2, "0"))
         .join("")}`.toUpperCase();
+}
+
+function compositeRgbaOverBackground(
+    foreground: RgbaColor,
+    background: RgbaColor,
+): RgbaColor {
+    const outAlpha = foreground.a + background.a * (1 - foreground.a);
+    if (outAlpha <= 0) {
+        return { r: 0, g: 0, b: 0, a: 0 };
+    }
+
+    return {
+        r: Math.round(
+            (foreground.r * foreground.a +
+                background.r * background.a * (1 - foreground.a)) /
+                outAlpha,
+        ),
+        g: Math.round(
+            (foreground.g * foreground.a +
+                background.g * background.a * (1 - foreground.a)) /
+                outAlpha,
+        ),
+        b: Math.round(
+            (foreground.b * foreground.a +
+                background.b * background.a * (1 - foreground.a)) /
+                outAlpha,
+        ),
+        a: outAlpha,
+    };
+}
+
+function clampRgb(value: number): number {
+    return Math.max(0, Math.min(255, Math.round(value)));
+}
+
+function clampAlpha(value: number): number {
+    return Math.max(0, Math.min(1, value));
 }
 
 export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {
