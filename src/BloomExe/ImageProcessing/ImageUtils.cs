@@ -756,8 +756,8 @@ namespace Bloom.ImageProcessing
                 // Convert JPEG line art to PNG on insert: JPEGs can't carry transparency, so a
                 // line-art JPEG would never get its background made transparent when shown on a
                 // colored page background. Saving as PNG fixes that at the cost of slightly larger
-                // files, which is worth it for images that will be composited (BL-16336).
-                if (saveAsJpeg && isLineArt)
+                // files, which is worth it for images that we want to make transparent (BL-16336).
+                if (saveAsJpeg && shouldMakeTransparentForPageBackground)
                     saveAsJpeg = false;
                 // Don't convert line-art PNGs to JPEG: JPEG is only right for photographic content.
                 var convertedToJpeg =
