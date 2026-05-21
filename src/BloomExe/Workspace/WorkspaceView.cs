@@ -1532,8 +1532,7 @@ window.showWorkspaceInitializationFailure = function(message) {
                             var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle", "Auto Update")
                         )
                         {
-                            dlg.Height = 250;
-                            dlg.Width = 500;
+                            dlg.SetScaledSize(500, 250);
                             dlg.ShowDialog(this);
                         }
                     },
