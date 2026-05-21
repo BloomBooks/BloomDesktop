@@ -61,6 +61,33 @@ namespace BloomTests.TeamCollection
         }
 
         [Test]
+        public void GetLikelyLocalPathForBookId_RemotelyRenamedBook_ReturnsPathWithNewName()
+        {
+            const string oldName = "My old name";
+            const string newName = "My new name";
+
+            var bookFolderPath = new BookFolderBuilder()
+                .WithRootFolder(_collectionFolder.FolderPath)
+                .WithTitle(oldName)
+                .Build()
+                .BuiltBookFolderPath;
+            _collection.PutBook(bookFolderPath);
+
+            var oldRepoPath = Path.Combine(_sharedFolder.FolderPath, "Books", oldName + ".bloom");
+            var newRepoPath = Path.Combine(_sharedFolder.FolderPath, "Books", newName + ".bloom");
+            RobustFile.Move(oldRepoPath, newRepoPath);
+
+            var bookId = BookMetaData.FromFolder(bookFolderPath)?.Id;
+            Assert.That(bookId, Is.Not.Null.And.Not.Empty);
+
+            var resolvedPath = _collection.GetLikelyLocalPathForBookId(bookId);
+            Assert.That(
+                resolvedPath,
+                Is.EqualTo(Path.Combine(_collectionFolder.FolderPath, newName))
+            );
+        }
+
+        [Test]
         public void HandleNewBook_CreatesNewStuffMessage()
         {
             var bookBuilder = new BookFolderBuilder()

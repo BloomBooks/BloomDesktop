@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using SIL.IO;
 using SIL.Reporting;
@@ -31,8 +32,6 @@ namespace Bloom.ImageProcessing
 
         private string _cacheFolder;
 
-        private static ImageAttributes _convertWhiteToTransparent;
-
         public RuntimeImageProcessor(BookRenamedEvent bookRenamedEvent)
         {
             _bookRenamedEvent = bookRenamedEvent;
@@ -40,22 +39,6 @@ namespace Bloom.ImageProcessing
             _imageFilesToReturnUnprocessed = new ConcurrentDictionary<string, bool>();
             _cacheFolder = Path.Combine(Path.GetTempPath(), "Bloom");
             _bookRenamedEvent.Subscribe(OnBookRenamed);
-        }
-
-        private static ImageAttributes ConvertWhiteToTransparent
-        {
-            get
-            {
-                if (_convertWhiteToTransparent == null)
-                {
-                    _convertWhiteToTransparent = new ImageAttributes();
-                    _convertWhiteToTransparent.SetColorKey(
-                        Color.FromArgb(253, 253, 253),
-                        Color.White
-                    );
-                }
-                return _convertWhiteToTransparent;
-            }
         }
 
         private void OnBookRenamed(KeyValuePair<string, string> fromPathAndToPath)
@@ -345,25 +328,36 @@ namespace Bloom.ImageProcessing
                 {
                     g.FillRectangle(brush, backgroundAndBorderRect);
 
-                    lock (ConvertWhiteToTransparent)
+                    var shouldMakeTransparent =
+                        !appearsToBeJpeg && ImageUtils.ShouldMakeBackgroundTransparent(coverImage);
+                    if (shouldMakeTransparent)
                     {
-                        var imageAttributes =
-                            (
-                                appearsToBeJpeg
-                                || !ImageUtils.ShouldMakeBackgroundTransparent(coverImage)
-                            )
-                                ? null
-                                : ConvertWhiteToTransparent;
+                        using (
+                            var transparentImage = (Bitmap)MakePngBackgroundTransparent(coverImage)
+                        )
+                        {
+                            g.DrawImage(
+                                transparentImage,
+                                destRect,
+                                0,
+                                0,
+                                transparentImage.Width,
+                                transparentImage.Height,
+                                GraphicsUnit.Pixel
+                            );
+                        }
+                    }
+                    else
+                    {
                         g.DrawImage(
-                            coverImage.Image, // finally, draw the cover image
-                            destRect, // with a scaled and centered destination
+                            coverImage.Image,
+                            destRect,
                             0,
                             0,
                             coverImageWidth,
-                            coverImageHeight, // from the entire cover image,
-                            GraphicsUnit.Pixel,
-                            imageAttributes
-                        ); // changing white to transparent if a B&W/greyscale png
+                            coverImageHeight,
+                            GraphicsUnit.Pixel
+                        );
                     }
                     if (!appearsToBeJpeg || Path.GetExtension(pathToProcessedImage) == ".png")
                         ImageUtils.SaveOrDeletePngImageToPath(thumbnail, pathToProcessedImage);
@@ -411,32 +405,115 @@ namespace Bloom.ImageProcessing
                 revisedBitmap.Palette = GivePaletteTransparentBackground(revisedBitmap);
                 return revisedBitmap;
             }
-            //impose a maximum size because in BL-2871 "Opposites" had about 6k x 6k and we got an ArgumentException
-            //from the new BitMap()
+            // impose a maximum size (BL-2871: "Opposites" had ~6k x 6k and caused ArgumentException)
             var destinationWidth = Math.Min(1000, originalImage.Image.Width);
             var destinationHeight = (int)(
                 (float)originalImage.Image.Height
                 * ((float)destinationWidth / (float)originalImage.Image.Width)
             );
-            var processedBitmap = new Bitmap(destinationWidth, destinationHeight);
-            using (var g = Graphics.FromImage(processedBitmap))
+            using (
+                var scaledSource = new Bitmap(
+                    destinationWidth,
+                    destinationHeight,
+                    PixelFormat.Format32bppArgb
+                )
+            )
+            using (var g = Graphics.FromImage(scaledSource))
             {
-                var destRect = new Rectangle(0, 0, destinationWidth, destinationHeight);
-                lock (ConvertWhiteToTransparent)
+                g.DrawImage(originalImage.Image, 0, 0, destinationWidth, destinationHeight);
+                return RemoveWhiteBackground(scaledSource);
+            }
+        }
+
+        /// <summary>
+        /// Converts a white-background bitmap to one with a transparent background using per-pixel
+        /// alpha unmixing. Anti-aliased edge pixels get partial alpha rather than being left as
+        /// opaque white, eliminating the white fringe visible against colored page backgrounds.
+        /// </summary>
+        private static Image RemoveWhiteBackground(Bitmap source)
+        {
+            var width = source.Width;
+            var height = source.Height;
+            var result = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+            var rect = new Rectangle(0, 0, width, height);
+            var srcData = source.LockBits(
+                rect,
+                ImageLockMode.ReadOnly,
+                PixelFormat.Format32bppArgb
+            );
+            var dstData = result.LockBits(
+                rect,
+                ImageLockMode.WriteOnly,
+                PixelFormat.Format32bppArgb
+            );
+            var stride = Math.Abs(srcData.Stride);
+            var pixels = new byte[stride * height];
+            Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
+            source.UnlockBits(srcData);
+
+            // 1. Find the lightest color in the image (max R+G+B sum)
+            int maxR = 0,
+                maxG = 0,
+                maxB = 0;
+            int maxSum = 0;
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
                 {
-                    g.DrawImage(
-                        originalImage.Image,
-                        destRect,
-                        0,
-                        0,
-                        originalImage.Image.Width,
-                        originalImage.Image.Height,
-                        GraphicsUnit.Pixel,
-                        ConvertWhiteToTransparent
-                    );
+                    int idx = y * stride + x * 4;
+                    int b = pixels[idx];
+                    int g = pixels[idx + 1];
+                    int r = pixels[idx + 2];
+                    int sum = r + g + b;
+                    if (sum > maxSum)
+                    {
+                        maxSum = sum;
+                        maxR = r;
+                        maxG = g;
+                        maxB = b;
+                    }
                 }
             }
-            return processedBitmap;
+
+            // 2. Compute the largest channel deficit from the lightest color (for normalization)
+            // This maps the palest color to alpha=0 while keeping strong saturated colors opaque.
+            int maxDeficit = 1; // avoid divide by zero
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int idx = y * stride + x * 4;
+                    int b = pixels[idx];
+                    int g = pixels[idx + 1];
+                    int r = pixels[idx + 2];
+                    int deficit = Math.Max(maxR - r, Math.Max(maxG - g, maxB - b));
+                    if (deficit > maxDeficit)
+                        maxDeficit = deficit;
+                }
+            }
+
+            // 3. For each pixel, set alpha based on distance from the lightest color.
+            // Keep this pass after the two read-only analysis passes above: we mutate pixels in place.
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int idx = y * stride + x * 4;
+                    int b = pixels[idx];
+                    int g = pixels[idx + 1];
+                    int r = pixels[idx + 2];
+                    // pixels[idx + 3] is source alpha, always 255 for opaque input.
+                    // Use the strongest per-channel deficit from the background candidate.
+                    int deficit = Math.Max(maxR - r, Math.Max(maxG - g, maxB - b));
+                    // alpha = 0 for lightest color, 255 for largest deficit from it
+                    byte newAlpha = (byte)(255.0 * deficit / maxDeficit);
+                    pixels[idx + 3] = newAlpha;
+                    // Keep RGB as-is to preserve color intensity (e.g. pure red stays red).
+                }
+            }
+            Marshal.Copy(pixels, 0, dstData.Scan0, pixels.Length);
+            result.UnlockBits(dstData);
+            return result;
         }
 
         private static ColorPalette GivePaletteTransparentBackground(Image bitmap)

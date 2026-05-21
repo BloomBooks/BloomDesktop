@@ -261,6 +261,108 @@ namespace Bloom.Workspace
             _workspaceReactControl?.Reload();
         }
 
+        /// <summary>
+        /// If the selected Team Collection book was renamed remotely, update the saved current path
+        /// to the repo's current name before reloading the project.
+        /// </summary>
+        private void UpdateCurrentBookPathForTeamCollectionReload()
+        {
+            var selectedBook = _bookSelection.CurrentSelection;
+            var teamCollection = _tcManager?.CurrentCollectionEvenIfDisconnected;
+            if (selectedBook == null || teamCollection == null)
+                return;
+
+            var currentBookPath = Settings.Default.CurrentBookPath;
+            if (!ShouldConsiderUpdatingCurrentBookPath(selectedBook.ID, currentBookPath))
+                return;
+
+            try
+            {
+                var resolvedPath = teamCollection.GetLikelyLocalPathForBookId(selectedBook.ID);
+                if (string.IsNullOrEmpty(resolvedPath))
+                {
+                    ClearCurrentBookPathIfMissing();
+                    return;
+                }
+
+                if (!Directory.Exists(resolvedPath))
+                {
+                    ClearCurrentBookPathIfMissing();
+                    return;
+                }
+
+                if (
+                    !TryGetBookIdFromFolder(resolvedPath, out var resolvedId)
+                    || resolvedId != selectedBook.ID
+                )
+                {
+                    ClearCurrentBookPathIfMissing();
+                    return;
+                }
+
+                Settings.Default.CurrentBookPath = resolvedPath;
+                Settings.Default.Save();
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                Logger.WriteError(
+                    "Unable to update current book path while reloading Team Collection.",
+                    e
+                );
+                ClearCurrentBookPathIfMissing();
+            }
+        }
+
+        private static bool ShouldConsiderUpdatingCurrentBookPath(
+            string selectedBookId,
+            string currentBookPath
+        )
+        {
+            if (string.IsNullOrEmpty(currentBookPath) || !Directory.Exists(currentBookPath))
+                return true;
+
+            if (!TryGetBookIdFromFolder(currentBookPath, out var currentBookId))
+                return true;
+
+            return currentBookId != selectedBookId;
+        }
+
+        private static bool TryGetBookIdFromFolder(string folderPath, out string bookId)
+        {
+            bookId = null;
+            try
+            {
+                bookId = BookMetaData.FromFolder(folderPath)?.Id;
+                return !string.IsNullOrEmpty(bookId);
+            }
+            catch (Exception e)
+                when (e is IOException || e is UnauthorizedAccessException || e is FileException)
+            {
+                Logger.WriteError(
+                    "Unable to read book metadata while checking current book path.",
+                    e
+                );
+                return false;
+            }
+        }
+
+        private static void ClearCurrentBookPathIfMissing()
+        {
+            var currentBookPath = Settings.Default.CurrentBookPath;
+            if (string.IsNullOrEmpty(currentBookPath) || Directory.Exists(currentBookPath))
+                return;
+
+            try
+            {
+                Settings.Default.CurrentBookPath = null;
+                Settings.Default.Save();
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                Logger.WriteError("Unable to clear stale current book path.", e);
+            }
+        }
+
         private static ReactControlAdditionalHtml GetWorkspaceAdditionalHtml()
         {
             const string workspaceCssLinks =
@@ -390,6 +492,20 @@ window.showWorkspaceInitializationFailure = function(message) {
         {
             try
             {
+                // This runs after Team Collection sync has completed, so any remote rename should
+                // already be reflected in the local collection. In case the selected book has been
+                // remotely renamed, this will attempt to update the selected book path so that the
+                // same book stays selected. Minimally, it makes sure that we are not left with
+                // a selected book record pointing at something that doesn't exist, which can cause
+                // problems (e.g. BL-16327).
+                // It's a bit questionable that this method makes use of the current _bookselection,
+                // which as the next comment notes, may be obsolete. However, this method only makes
+                // use of the bookId from the current selection, and only updates the current book
+                // path if there's a problem with leaving it the way it is AND we can find a book
+                // in the current repo (and hence the current collection) with the right ID. That
+                // should not be a problem.
+                UpdateCurrentBookPathForTeamCollectionReload();
+
                 // Now that _bookSelection is an application-level object, it's possible that it retains a
                 // value from a previous collection when we switch collections while Bloom is running.
                 // In such situations, we're restarting almost everything else, so we don't need notifications

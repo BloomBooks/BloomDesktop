@@ -372,8 +372,8 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = (props) => {
                     css={css`
                         z-index: 60001; // dialogZIndexPlusOne (yuck!)
                         .MuiBackdrop-root {
-                            // We want the overlay barely visible so it doesn't interfere with picking colors.
-                            background-color: rgba(0, 0, 0, 0.05) !important;
+                            // Keep the backdrop transparent so native eyedropper sampling sees the real page color.
+                            background-color: transparent !important;
                         }
                         .MuiDialog-paperScrollPaper {
                             max-height: unset;
