@@ -602,12 +602,12 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodes">
         <source xml:lang="en">QR Codes</source>
-        <target xml:lang="pt-PT" state="needs-translation">QR Codes</target>
+        <target xml:lang="pt-PT" state="translated">QR Codes</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodes</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes">
         <source xml:lang="en">Show QR Codes</source>
-        <target xml:lang="pt-PT" state="needs-translation">Show QR Codes</target>
+        <target xml:lang="pt-PT" state="translated">Exibir os QR Codes</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.ShowQrCodes</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description">
@@ -1062,7 +1062,7 @@
       </trans-unit>
       <trans-unit id="ColorPicker.SampleColor" sil:dynamic="true">
         <source xml:lang="en">Sample Color</source>
-        <target xml:lang="pt-PT" state="needs-translation">Sample Color</target>
+        <target xml:lang="pt-PT" state="translated">Cor de Amostra</target>
         <note>ID: ColorPicker.SampleColor</note>
       </trans-unit>
       <trans-unit id="Common.BookSettings" approved="yes">
@@ -4184,14 +4184,14 @@
         <target xml:lang="pt-PT" state="final">Publicando</target>
         <note>This is shown while Bloom is sharing a book over wifi, over a usb cable, or uploading. </note>
       </trans-unit>
-      <trans-unit id="BookGridSetupDialog.Title" approved="yes">
+      <trans-unit id="BookGridSetupDialog.Title">
         <source xml:lang="en">Book Grid Setup</source>
-        <target xml:lang="pt-PT" state="final">Configuração do quadro de livros</target>
+        <target xml:lang="pt-PT" state="translated">Configuração do quadro de livros</target>
         <note>ID: BookGridSetupDialog.Title</note>
       </trans-unit>
       <trans-unit id="BookGridSetup.BooksInCollection" approved="yes">
         <source xml:lang="en">Books in this Collection</source>
-        <target xml:lang="pt-PT" state="final">Livros nesta Colceção</target>
+        <target xml:lang="pt-PT" state="final">Livros nesta Coleção</target>
         <note>ID: BookGridSetup.BooksInCollection</note>
       </trans-unit>
       <trans-unit id="BookGridSetup.AddBook" approved="yes">
