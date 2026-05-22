@@ -89,7 +89,10 @@ namespace Bloom.ImageProcessing
         // with its hue.
         // Otherwise the color is not considered a line-art background at all.
         private const double LineArtBackgroundMinBrightness = 235.0;
-        private const double LineArtBackgroundBorderlineBrightness = 220.0;
+
+        // Keep this lower than pure white so lightly tinted paper backgrounds can still be
+        // recognized as line-art backgrounds after palette quantization.
+        private const double LineArtBackgroundBorderlineBrightness = 205.0;
         private const int LineArtBackgroundMaxChroma = 6;
 
         // An "ink" palette entry whose chroma (max-min channel) is at or below this counts as
@@ -158,7 +161,9 @@ namespace Bloom.ImageProcessing
         {
             var seen = new HashSet<int>();
             var inks = new List<Color>();
+            var distinctColors = new List<Color>();
             bool whiteFound = false;
+            int unambiguousBackgroundCount = 0;
             int totalDistinct = 0;
             foreach (var c in paletteEntries)
             {
@@ -167,11 +172,13 @@ namespace Bloom.ImageProcessing
                 int key = (c.R << 16) | (c.G << 8) | c.B;
                 if (!seen.Add(key))
                     continue;
+                distinctColors.Add(c);
                 totalDistinct++;
                 bool borderline;
                 if (IsLineArtBackground(c, out borderline))
                 {
                     whiteFound = true;
+                    unambiguousBackgroundCount++;
                 }
                 else
                 {
@@ -183,7 +190,42 @@ namespace Bloom.ImageProcessing
             }
             if (!whiteFound || totalDistinct < 2)
                 return false;
+            // Photo-like scenes frequently quantize into a mix of neutral and chromatic
+            // midtones. True line art tends to be mostly one or the other.
+            if (LooksLikePhotoByMixedMidtones(distinctColors, unambiguousBackgroundCount))
+                return false;
             return InksShareConsistentHue(inks);
+        }
+
+        private static bool LooksLikePhotoByMixedMidtones(
+            IEnumerable<Color> distinctColors,
+            int unambiguousBackgroundCount
+        )
+        {
+            // If we have several truly white background entries, this is likely anti-aliased
+            // line art and we should not apply this guard.
+            if (unambiguousBackgroundCount >= 2)
+                return false;
+
+            int neutralMidtones = 0;
+            int chromaticMidtones = 0;
+            foreach (var c in distinctColors)
+            {
+                double brightness = 0.299 * c.R + 0.587 * c.G + 0.114 * c.B;
+                // Focus on broad surface/detail tones (not near-white background, not dark ink).
+                if (brightness < 90 || brightness >= 230)
+                    continue;
+
+                int max = Math.Max(c.R, Math.Max(c.G, c.B));
+                int min = Math.Min(c.R, Math.Min(c.G, c.B));
+                int chroma = max - min;
+                if (chroma <= 8)
+                    neutralMidtones++;
+                else if (chroma >= 20)
+                    chromaticMidtones++;
+            }
+
+            return neutralMidtones >= 2 && chromaticMidtones >= 2;
         }
 
         /// <summary>

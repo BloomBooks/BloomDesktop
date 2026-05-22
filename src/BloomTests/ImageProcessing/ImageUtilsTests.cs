@@ -456,6 +456,58 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
+        public void ShouldMakeBackgroundTransparent_LineArtOnLightChromaBackground_ReturnsTrue()
+        {
+            using (var folder = new TemporaryFolder("LineArtLightChromaBackground"))
+            {
+                var path = folder.Combine("line-art-light-chroma-bg.png");
+                using (var bitmap = new Bitmap(120, 80))
+                using (var graphics = Graphics.FromImage(bitmap))
+                using (var pen = new Pen(Color.FromArgb(40, 40, 40), 4))
+                {
+                    graphics.Clear(Color.FromArgb(228, 210, 170));
+                    graphics.DrawLine(pen, 8, 40, 112, 40);
+                    bitmap.Save(path, ImageFormat.Png);
+                }
+
+                using (var image = PalasoImage.FromFileRobustly(path))
+                {
+                    Assert.That(ImageUtils.ShouldMakeBackgroundTransparent(image), Is.True);
+                }
+            }
+        }
+
+        [Test]
+        public void ShouldMakeBackgroundTransparent_PhotoLikeMixedNeutralAndChromaticMidtones_ReturnsFalse()
+        {
+            using (var folder = new TemporaryFolder("LineArtPhotoLikeMixedMidtones"))
+            {
+                var path = folder.Combine("photo-like-mixed-midtones.jpg");
+                using (var bitmap = new Bitmap(280, 180))
+                using (var graphics = Graphics.FromImage(bitmap))
+                {
+                    graphics.Clear(Color.FromArgb(232, 230, 226));
+                    using (var brush = new SolidBrush(Color.FromArgb(214, 201, 174)))
+                        graphics.FillRectangle(brush, 0, 0, 280, 90);
+                    using (var brush = new SolidBrush(Color.FromArgb(180, 177, 171)))
+                        graphics.FillRectangle(brush, 0, 90, 280, 90);
+                    using (var pen = new Pen(Color.FromArgb(40, 35, 30), 5))
+                    {
+                        graphics.DrawLine(pen, 20, 55, 260, 55);
+                        graphics.DrawLine(pen, 30, 130, 250, 130);
+                    }
+
+                    bitmap.Save(path, ImageFormat.Jpeg);
+                }
+
+                using (var image = PalasoImage.FromFileRobustly(path))
+                {
+                    Assert.That(ImageUtils.ShouldMakeBackgroundTransparent(image), Is.False);
+                }
+            }
+        }
+
+        [Test]
         public void StripMetadataFromImageFile()
         {
             var imagePath = FileLocationUtilities.GetFileDistributedWithApplication(
