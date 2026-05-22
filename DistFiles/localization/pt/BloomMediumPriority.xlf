@@ -526,7 +526,7 @@
       <!-- Canvas (was Overlay) -->
       <trans-unit id="EditTab.Toolbox.CanvasTool.BookGrid" sil:dynamic="true">
         <source xml:lang="en">A grid of buttons that jump you to books in your app</source>
-        <target xml:lang="pt-PT" state="needs-translation">A grid of buttons that jump you to books in your app</target>
+        <target xml:lang="pt-PT" state="translated">Uma grade de botões que te leva aos livros no seu aplicativo</target>
         <note>ID: EditTab.Toolbox.CanvasTool.BookGrid</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest" sil:dynamic="true" approved="yes">
@@ -911,7 +911,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Theme &amp; Layout</source>
-        <target xml:lang="pt-PT" state="needs-translation">Theme &amp; Layout</target>
+        <target xml:lang="pt-PT" state="translated">Tema &amp; Layout</target>
         <note>ID: BookSettings.ThemeAndLayoutGroupLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.LanguagesGroupLabel" sil:dynamic="true" approved="yes">
@@ -1075,7 +1075,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.AdvancedLayoutLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Advanced Layout</source>
-        <target xml:lang="pt-PT" state="final">Layout avançado</target>
+        <target xml:lang="pt-PT" state="final">Layout (configuração) Avançado</target>
         <note>BookSettings.AdvancedLayoutLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.Gutter.DefaultLabel" sil:dynamic="true" approved="yes">
@@ -1160,7 +1160,7 @@
       </trans-unit>
       <trans-unit id="PageLayout.CustomXMatterPage" approved="yes">
         <source xml:lang="en">Customized Front and Back Matter Page Layout</source>
-        <target xml:lang="pt-PT" state="final">Layout customizado da página inicial e anterior</target>
+        <target xml:lang="pt-PT" state="final">Layout com a página inicial e final personalizadas</target>
         <note>ID: PageLayout.CustomXMatterPage</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.default" sil:dynamic="true" approved="yes">
@@ -1219,17 +1219,17 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.CustomizeButton" translate="no">
         <source xml:lang="en">Customize...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Customize...</target>
+        <target xml:lang="pt-PT" state="translated">Personalizar...</target>
         <note>ID: PublishTab.Apps.CustomizeButton</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.CustomizeButton.ValidationMessage" translate="no">
         <source xml:lang="en">Required or invalid settings: %0.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Required or invalid settings: %0.</target>
+        <target xml:lang="pt-PT" state="translated">Configurações obrigatórias faltando ou inválidas: %0.</target>
         <note>ID: PublishTab.Apps.CustomizeButton.ValidationMessage</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareButton" translate="no">
         <source xml:lang="en">Prepare</source>
-        <target xml:lang="pt-PT" state="needs-translation">Prepare</target>
+        <target xml:lang="pt-PT" state="translated">Preparar</target>
         <note>ID: PublishTab.Apps.PrepareButton</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareStepper.BuildToolsInstalled" translate="no">
@@ -1324,7 +1324,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.About" translate="no">
         <source xml:lang="en">About</source>
-        <target xml:lang="pt-PT" state="needs-translation">About</target>
+        <target xml:lang="pt-PT" state="translated">Sobre</target>
         <note>ID: PublishTab.Apps.SettingsDialog.About</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.IconReset" translate="no">
@@ -1344,7 +1344,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Required" translate="no">
         <source xml:lang="en">Package name is required.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Package name is required.</target>
+        <target xml:lang="pt-PT" state="translated">O nome do pacote é obrigatório.</target>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName.Required</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Invalid" translate="no">
@@ -1359,7 +1359,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.MoreSettings" translate="no">
         <source xml:lang="en">More Settings</source>
-        <target xml:lang="pt-PT" state="needs-translation">More Settings</target>
+        <target xml:lang="pt-PT" state="translated">Mais Configurações</target>
         <note>ID: PublishTab.Apps.SettingsDialog.MoreSettings</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.StartingReadingAppBuilder" translate="no">
@@ -1384,7 +1384,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps" translate="no">
         <source xml:lang="en">Apps</source>
-        <target xml:lang="pt-PT" state="needs-translation">Apps</target>
+        <target xml:lang="pt-PT" state="translated">Aplicativos</target>
         <note>ID: PublishTab.Apps</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps-tooltip" translate="no" sil:dynamic="true">
@@ -1479,7 +1479,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareRequiredTooltip" translate="no">
         <source xml:lang="en">Run Prepare before using this step.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Run Prepare before using this step.</target>
+        <target xml:lang="pt-PT" state="translated">Executar "Preparar" antes de seguir para esta etapa.</target>
         <note>ID: PublishTab.Apps.PrepareRequiredTooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Prepare.DoneTooltip" translate="no">
@@ -1494,7 +1494,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.TryOnPhone" translate="no">
         <source xml:lang="en">Try on phone</source>
-        <target xml:lang="pt-PT" state="needs-translation">Try on phone</target>
+        <target xml:lang="pt-PT" state="translated">Experimentar no celular</target>
         <note>ID: PublishTab.Apps.TryOnPhone</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.TryOnPhone.Tooltip" translate="no">
@@ -1504,7 +1504,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.ApkSize.Text" translate="no">
         <source xml:lang="en">Actual app size is %0.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Actual app size is %0.</target>
+        <target xml:lang="pt-PT" state="translated">Tamanho real do aplicativo é %0.</target>
         <note>ID: PublishTab.Apps.ApkSize.Text</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SizeEstimate.OverheadLabel" translate="no">
