@@ -891,17 +891,17 @@
       </trans-unit>
       <trans-unit id="BookSettings.CoverIsImage.Description.V2" sil:dynamic="true">
         <source xml:lang="en">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</target>
+        <target xml:lang="pt-PT" state="translated">Substitua o conteúdo da capa por uma imagem única de sangria total. Veja [Imagens de Capa completa](https://docs.bloomlibrary.org/full-page-cover-images) para entender como ajustar o tamanho da sua imagem para caber.</target>
         <note>BookSettings.CoverIsImage.Description.V2</note>
       </trans-unit>
       <trans-unit id="BookSettings.FullBleed" sil:dynamic="true">
         <source xml:lang="en">Use full bleed page layout</source>
-        <target xml:lang="pt-PT" state="needs-translation">Use full bleed page layout</target>
+        <target xml:lang="pt-PT" state="translated">Usar layout de página de sangria total</target>
         <note>BookSettings.FullBleed</note>
       </trans-unit>
       <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true">
         <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</target>
+        <target xml:lang="pt-PT" state="translated">Ativar o layout de sangria total para impressão. Esta opção ativa os indicadores de [Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) em layouts impressos. Veja [Layout de Sangria Total](https://docs.bloomlibrary.org/full-bleed) para obter mais informações.</target>
         <note>BookSettings.FullBleed.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true" approved="yes">
@@ -921,7 +921,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.PrintPublishingGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Print Publishing</source>
-        <target xml:lang="pt-PT" state="needs-translation">Print Publishing</target>
+        <target xml:lang="pt-PT" state="translated">Publicação impressa</target>
         <note>ID: BookSettings.PrintPublishingGroupLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.NormalTextBoxLangsLabel" sil:dynamic="true" approved="yes">
@@ -1429,7 +1429,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.Complete" translate="no">
         <source xml:lang="en">Done</source>
-        <target xml:lang="pt-PT" state="needs-translation">Done</target>
+        <target xml:lang="pt-PT" state="translated">Concluído</target>
         <note>ID: PublishTab.Apps.Progress.Complete</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Progress.CreatingProject" translate="no">
