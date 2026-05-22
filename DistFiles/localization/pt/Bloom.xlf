@@ -2596,7 +2596,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FieldType">
         <source xml:lang="en">Field Type:</source>
-        <target xml:lang="pt-PT" state="needs-translation">Field Type:</target>
+        <target xml:lang="pt-PT" state="translated">Tipo de Campo:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FieldType</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" approved="yes">
@@ -2671,7 +2671,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ElementType" sil:dynamic="true">
         <source xml:lang="en">Element Type</source>
-        <target xml:lang="pt-PT" state="needs-translation">Element Type</target>
+        <target xml:lang="pt-PT" state="translated">Tipo de Elemento</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ElementType</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Caption" sil:dynamic="true" approved="yes">
@@ -4925,12 +4925,12 @@
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed" approved="yes">
         <source xml:lang="en">This is disabled because this book is not set up to be full bleed.</source>
-        <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque este livro não está configurado para impressão sem margens.</target>
+        <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque este livro não está configurado para impressão de sangria total (sem margens).</target>
         <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.ExcludePrintBleed">
         <source xml:lang="en">Exclude print bleed around page edges</source>
-        <target xml:lang="pt-PT" state="translated">Excluir a sangria nas ordas das páginas</target>
+        <target xml:lang="pt-PT" state="translated">Excluir a sangria total nas bordas das páginas</target>
         <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.IncludeBackgroundColors">
