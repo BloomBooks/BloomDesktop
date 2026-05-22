@@ -597,7 +597,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Program">
         <source xml:lang="en">Program</source>
-        <target xml:lang="pt-PT" state="needs-translation">Program</target>
+        <target xml:lang="pt-PT" state="translated">Programa</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Program</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodes">
