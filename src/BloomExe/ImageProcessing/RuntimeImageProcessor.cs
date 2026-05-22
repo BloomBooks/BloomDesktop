@@ -548,7 +548,18 @@ namespace Bloom.ImageProcessing
                         );
                     }
                     pixels[idx + 3] = newAlpha;
-                    // Keep RGB as-is to preserve color intensity (e.g. pure red stays red).
+                    if (newAlpha > 0 && newAlpha < 255)
+                    {
+                        var maxChannel = Math.Max(r, Math.Max(g, b));
+                        var minChannel = Math.Min(r, Math.Min(g, b));
+                        if (maxChannel - minChannel <= 6)
+                        {
+                            var luma = (byte)Math.Round(brightness);
+                            pixels[idx] = luma;
+                            pixels[idx + 1] = luma;
+                            pixels[idx + 2] = luma;
+                        }
+                    }
                 }
             }
             var phase3Elapsed = totalStopwatch.Elapsed;

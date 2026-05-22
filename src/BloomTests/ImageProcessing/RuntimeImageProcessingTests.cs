@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Reflection;
 using Bloom;
 using Bloom.ImageProcessing;
 using NUnit.Framework;
@@ -77,6 +78,40 @@ namespace BloomTests.RuntimeImageProcessing
                 )
                 {
                     Assert.AreEqual(10, img.Width);
+                }
+            }
+        }
+
+        [Test]
+        public void RemoveWhiteBackground_GraysLowChromaPartialAlphaPixels()
+        {
+            using (var source = new Bitmap(3, 1, PixelFormat.Format32bppArgb))
+            {
+                source.SetPixel(0, 0, Color.White);
+                source.SetPixel(1, 0, Color.FromArgb(201, 200, 199));
+                source.SetPixel(2, 0, Color.FromArgb(255, 170, 110));
+
+                var method = typeof(RuntimeImageProcessor).GetMethod(
+                    "RemoveWhiteBackground",
+                    BindingFlags.NonPublic | BindingFlags.Static
+                );
+                Assert.IsNotNull(method);
+
+                using (var result = (Bitmap)method.Invoke(null, new object[] { source }))
+                {
+                    var transparentPixel = result.GetPixel(0, 0);
+                    Assert.AreEqual(0, transparentPixel.A);
+
+                    var lowChromaPixel = result.GetPixel(1, 0);
+                    Assert.That(lowChromaPixel.A, Is.GreaterThan(0).And.LessThan(255));
+                    Assert.AreEqual(lowChromaPixel.R, lowChromaPixel.G);
+                    Assert.AreEqual(lowChromaPixel.G, lowChromaPixel.B);
+                    Assert.AreEqual(200, lowChromaPixel.R);
+
+                    var coloredPixel = result.GetPixel(2, 0);
+                    Assert.That(coloredPixel.A, Is.GreaterThan(0).And.LessThan(255));
+                    Assert.AreNotEqual(coloredPixel.R, coloredPixel.G);
+                    Assert.AreNotEqual(coloredPixel.G, coloredPixel.B);
                 }
             }
         }
