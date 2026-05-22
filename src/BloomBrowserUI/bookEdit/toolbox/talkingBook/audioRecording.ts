@@ -1720,6 +1720,14 @@ export default class AudioRecording implements IAudioRecorder {
 
     private async playEndedAsync(): Promise<void> {
         this.clearSubElementHighlightTimeout();
+
+        if (!this.doesCurrentToolPlayAudio()) {
+            this.elementsToPlayConsecutivelyStack = [];
+            this.subElementsWithTimings = [];
+            this.listening = false;
+            return;
+        }
+
         if (
             this.elementsToPlayConsecutivelyStack &&
             this.elementsToPlayConsecutivelyStack.length > 0
