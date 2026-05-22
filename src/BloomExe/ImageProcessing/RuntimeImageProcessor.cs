@@ -405,12 +405,9 @@ namespace Bloom.ImageProcessing
                 revisedBitmap.Palette = GivePaletteTransparentBackground(revisedBitmap);
                 return revisedBitmap;
             }
-            // impose a maximum size (BL-2871: "Opposites" had ~6k x 6k and caused ArgumentException)
-            var destinationWidth = Math.Min(1000, originalImage.Image.Width);
-            var destinationHeight = (int)(
-                (float)originalImage.Image.Height
-                * ((float)destinationWidth / (float)originalImage.Image.Width)
-            );
+            // Keep full resolution for alpha extraction so line-art edges are not softened by pre-scaling.
+            var destinationWidth = originalImage.Image.Width;
+            var destinationHeight = originalImage.Image.Height;
             using (
                 var scaledSource = new Bitmap(
                     destinationWidth,
@@ -421,7 +418,28 @@ namespace Bloom.ImageProcessing
             using (var g = Graphics.FromImage(scaledSource))
             {
                 g.DrawImage(originalImage.Image, 0, 0, destinationWidth, destinationHeight);
-                return RemoveWhiteBackground(scaledSource);
+                var transparentImage = RemoveWhiteBackground(scaledSource);
+
+                // Keep the old maximum-size behavior (BL-2871), but scale after alpha extraction.
+                var scaledWidth = Math.Min(1000, transparentImage.Width);
+                if (scaledWidth >= transparentImage.Width)
+                    return transparentImage;
+
+                var scaledHeight = (int)(
+                    (float)transparentImage.Height
+                    * ((float)scaledWidth / (float)transparentImage.Width)
+                );
+                var scaledTransparentImage = new Bitmap(
+                    scaledWidth,
+                    scaledHeight,
+                    PixelFormat.Format32bppArgb
+                );
+                using (var gScaled = Graphics.FromImage(scaledTransparentImage))
+                {
+                    gScaled.DrawImage(transparentImage, 0, 0, scaledWidth, scaledHeight);
+                }
+                transparentImage.Dispose();
+                return scaledTransparentImage;
             }
         }
 
@@ -450,6 +468,7 @@ namespace Bloom.ImageProcessing
             var pixels = new byte[stride * height];
             Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
             source.UnlockBits(srcData);
+            var totalStopwatch = Stopwatch.StartNew();
 
             // 1. Find the lightest color in the image (max R+G+B sum)
             int maxR = 0,
@@ -474,25 +493,32 @@ namespace Bloom.ImageProcessing
                     }
                 }
             }
+            var phase1Elapsed = totalStopwatch.Elapsed;
+            Debug.WriteLine(
+                $"RuntimeImageProcessor.RemoveWhiteBackground {width}x{height} phase1={phase1Elapsed.TotalMilliseconds:0.###}ms"
+            );
 
-            // 2. Compute the largest channel deficit from the lightest color (for normalization)
-            // This maps the palest color to alpha=0 while keeping strong saturated colors opaque.
-            int maxDeficit = 1; // avoid divide by zero
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int idx = y * stride + x * 4;
-                    int b = pixels[idx];
-                    int g = pixels[idx + 1];
-                    int r = pixels[idx + 2];
-                    int deficit = Math.Max(maxR - r, Math.Max(maxG - g, maxB - b));
-                    if (deficit > maxDeficit)
-                        maxDeficit = deficit;
-                }
-            }
+            // 2. Build brightness thresholds for a transparency ramp.
+            // t0: pixels at/above this brightness become fully transparent.
+            // t1: pixels at/below this brightness stay fully opaque.
+            // Values between t1..t0 get linearly ramped alpha.
+            const double kTransparentBrightnessThreshold = 220.0;
+            const double kOpaqueBrightnessThreshold = 180.0;
+            var detectedBackgroundBrightness = 0.299 * maxR + 0.587 * maxG + 0.114 * maxB;
+            var transparentBrightnessThreshold = Math.Min(
+                kTransparentBrightnessThreshold,
+                detectedBackgroundBrightness
+            );
+            var opaqueBrightnessThreshold = Math.Min(
+                kOpaqueBrightnessThreshold,
+                transparentBrightnessThreshold - 1.0
+            );
+            var phase2Elapsed = totalStopwatch.Elapsed;
+            Debug.WriteLine(
+                $"RuntimeImageProcessor.RemoveWhiteBackground {width}x{height} phase2={(phase2Elapsed - phase1Elapsed).TotalMilliseconds:0.###}ms bg={detectedBackgroundBrightness:0.###} t0={transparentBrightnessThreshold:0.###} t1={opaqueBrightnessThreshold:0.###}"
+            );
 
-            // 3. For each pixel, set alpha based on distance from the lightest color.
+            // 3. For each pixel, set alpha from perceptual brightness using t0/t1 ramp.
             // Keep this pass after the two read-only analysis passes above: we mutate pixels in place.
             for (int y = 0; y < height; y++)
             {
@@ -503,16 +529,37 @@ namespace Bloom.ImageProcessing
                     int g = pixels[idx + 1];
                     int r = pixels[idx + 2];
                     // pixels[idx + 3] is source alpha, always 255 for opaque input.
-                    // Use the strongest per-channel deficit from the background candidate.
-                    int deficit = Math.Max(maxR - r, Math.Max(maxG - g, maxB - b));
-                    // alpha = 0 for lightest color, 255 for largest deficit from it
-                    byte newAlpha = (byte)(255.0 * deficit / maxDeficit);
+                    var brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+                    byte newAlpha;
+                    if (brightness >= transparentBrightnessThreshold)
+                    {
+                        newAlpha = 0;
+                    }
+                    else if (brightness <= opaqueBrightnessThreshold)
+                    {
+                        newAlpha = 255;
+                    }
+                    else
+                    {
+                        newAlpha = (byte)(
+                            255.0
+                            * (transparentBrightnessThreshold - brightness)
+                            / (transparentBrightnessThreshold - opaqueBrightnessThreshold)
+                        );
+                    }
                     pixels[idx + 3] = newAlpha;
                     // Keep RGB as-is to preserve color intensity (e.g. pure red stays red).
                 }
             }
+            var phase3Elapsed = totalStopwatch.Elapsed;
+            Debug.WriteLine(
+                $"RuntimeImageProcessor.RemoveWhiteBackground {width}x{height} phase3={(phase3Elapsed - phase2Elapsed).TotalMilliseconds:0.###}ms"
+            );
             Marshal.Copy(pixels, 0, dstData.Scan0, pixels.Length);
             result.UnlockBits(dstData);
+            Debug.WriteLine(
+                $"RuntimeImageProcessor.RemoveWhiteBackground {width}x{height} total={totalStopwatch.Elapsed.TotalMilliseconds:0.###}ms"
+            );
             return result;
         }
 
