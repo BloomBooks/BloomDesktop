@@ -936,7 +936,7 @@ export default class AudioRecording implements IAudioRecorder {
         return (
             activeToolId === "talkingBook" ||
             activeToolId === "motion" ||
-            !activeToolId
+            (!activeToolId && this.isShowing)
         );
     }
 
@@ -971,6 +971,12 @@ export default class AudioRecording implements IAudioRecorder {
         oldElement, // Optional. Provides some minor optimization if set.
         forceRedisplay,
     }: ISetHighlightParams): Promise<void> {
+        // This is a last-ditch defense against something async turning the hightlight on
+        // after we have switched to a different tool.
+        if (!this.doesCurrentToolPlayAudio()) {
+            return;
+        }
+
         if (!oldElement) {
             oldElement = this.getCurrentHighlight();
         }
@@ -2761,6 +2767,9 @@ export default class AudioRecording implements IAudioRecorder {
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
     public handleToolHiding() {
         this.isShowing = false;
+        // This ensures that no in-progress playback gets resumed by a timeout or end-play handler
+        // after the tool closes.
+        ++this.currentAudioSessionNum;
         this.stopListeningForLevels();
         // In case this initialize loop is still going, stop it. Passing an invalid value won't hurt.
         this.clearTimeouts();
