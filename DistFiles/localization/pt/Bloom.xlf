@@ -612,7 +612,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description">
         <source xml:lang="en">Scanning the code or clicking the badge will take the user to the collection of books in this collection's primary language. Note, if you want to use this but your branding does not show it, contact us.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Scanning the code or clicking the badge will take the user to the collection of books in this collection's primary language. Note, if you want to use this but your branding does not show it, contact us.</target>
+        <target xml:lang="pt-PT" state="translated">Ao escanear o código ou clicar no ícone, o usuário será direcionado à coleção de livros na língua principal desta coleção. Observação: caso queira usar esse recurso, mas a sua marca não está sendo exibido, entre em contato conosco.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption" approved="yes">
@@ -1461,7 +1461,7 @@
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutButton" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use This Layout</source>
-        <target xml:lang="pt-PT" state="final">Usar este Layout</target>
+        <target xml:lang="pt-PT" state="final">Usar este Layout (configuração)</target>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutButton</note>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutContinueCheckbox" sil:dynamic="true" approved="yes">
@@ -1476,12 +1476,12 @@
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutTitle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Choose Different Layout...</source>
-        <target xml:lang="pt-PT" state="final">Escolha uma configuração diferente...</target>
+        <target xml:lang="pt-PT" state="final">Escolha um layout (configuração) diferente...</target>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutTitle</note>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.ChooseLayoutWillLoseData" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Converting to this layout will cause some content to be lost.</source>
-        <target xml:lang="pt-PT" state="final">Converter para esta configuração irá causar a perda de conteúdo.</target>
+        <target xml:lang="pt-PT" state="final">Converter para este layout (configuração) irá causar a perda de conteúdo.</target>
         <note>ID: EditTab.AddPageDialog.ChooseLayoutWillLoseData</note>
       </trans-unit>
       <trans-unit id="EditTab.AddPageDialog.DigitalPage" sil:dynamic="true" approved="yes">
@@ -1591,7 +1591,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.StandardLayout">
         <source xml:lang="en">Standard Layout</source>
-        <target xml:lang="pt-PT" state="needs-translation">Standard Layout</target>
+        <target xml:lang="pt-PT" state="translated">Layout (configuração) Padrão</target>
         <note>ID: EditTab.CustomCover.StandardLayout</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom" approved="yes">
@@ -1606,7 +1606,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change Layout</source>
-        <target xml:lang="pt-PT" state="final">Alterar Cofiguração (layout)</target>
+        <target xml:lang="pt-PT" state="final">Alterar Layout (configuração)</target>
         <note>ID: EditTab.CustomPage.ChangeLayout</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.HtmlWidget" sil:dynamic="true" approved="yes">
@@ -4184,9 +4184,9 @@
         <target xml:lang="pt-PT" state="final">Publicando</target>
         <note>This is shown while Bloom is sharing a book over wifi, over a usb cable, or uploading. </note>
       </trans-unit>
-      <trans-unit id="BookGridSetupDialog.Title">
+      <trans-unit id="BookGridSetupDialog.Title" approved="yes">
         <source xml:lang="en">Book Grid Setup</source>
-        <target xml:lang="pt-PT" state="translated">Configuração do quadro de livros</target>
+        <target xml:lang="pt-PT" state="final">Configuração da Grade de Livros</target>
         <note>ID: BookGridSetupDialog.Title</note>
       </trans-unit>
       <trans-unit id="BookGridSetup.BooksInCollection" approved="yes">
@@ -4815,12 +4815,12 @@
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Portrait" approved="yes">
         <source xml:lang="en">1. Layout: Portrait</source>
-        <target xml:lang="pt-PT" state="final">1. Disposição: Retrato (vertical)</target>
+        <target xml:lang="pt-PT" state="final">1. Orientação: Retrato (vertical)</target>
         <note>ID: PublishTab.PDF.Booklet.PageLayout.Portrait</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Landscape" approved="yes">
         <source xml:lang="en">1. Layout: Landscape</source>
-        <target xml:lang="pt-PT" state="final">1. Disposição: Paisagem (horizontal)</target>
+        <target xml:lang="pt-PT" state="final">1. Orientação: Paisagem (horizontal)</target>
         <note>ID: PublishTab.PDF.Booklet.PageLayout.Landscape</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge" approved="yes">
@@ -4930,7 +4930,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.ExcludePrintBleed">
         <source xml:lang="en">Exclude print bleed around page edges</source>
-        <target xml:lang="pt-PT" state="needs-translation">Exclude print bleed around page edges</target>
+        <target xml:lang="pt-PT" state="translated">Excluir a sangria nas ordas das páginas</target>
         <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.IncludeBackgroundColors">
@@ -7343,7 +7343,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Page with Simple Book Grid" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page with Simple Book Grid</source>
-        <target xml:lang="pt-PT" state="final">Página com Tabela de Livro Simples</target>
+        <target xml:lang="pt-PT" state="final">Página com Grade de Livro Simples</target>
         <note>ID: TemplateBooks.PageLabel.Page with Simple Book Grid</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true" approved="yes">
