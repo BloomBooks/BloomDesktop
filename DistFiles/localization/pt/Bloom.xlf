@@ -595,24 +595,24 @@
         <target xml:lang="pt-PT" state="final">Armênio Superior</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Program">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Program" approved="yes">
         <source xml:lang="en">Program</source>
-        <target xml:lang="pt-PT" state="translated">Programa</target>
+        <target xml:lang="pt-PT" state="final">Programa</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Program</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodes">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodes" approved="yes">
         <source xml:lang="en">QR Codes</source>
-        <target xml:lang="pt-PT" state="translated">QR Codes</target>
+        <target xml:lang="pt-PT" state="final">QR Codes</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodes</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes" approved="yes">
         <source xml:lang="en">Show QR Codes</source>
-        <target xml:lang="pt-PT" state="translated">Exibir os QR Codes</target>
+        <target xml:lang="pt-PT" state="final">Exibir os QR Codes</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.ShowQrCodes</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description" approved="yes">
         <source xml:lang="en">Scanning the code or clicking the badge will take the user to the collection of books in this collection's primary language. Note, if you want to use this but your branding does not show it, contact us.</source>
-        <target xml:lang="pt-PT" state="translated">Ao escanear o código ou clicar no ícone, o usuário será direcionado à coleção de livros na língua principal desta coleção. Observação: caso queira usar esse recurso, mas a sua marca não está sendo exibido, entre em contato conosco.</target>
+        <target xml:lang="pt-PT" state="final">Ao escanear o código ou clicar no ícone, o usuário será direcionado à coleção de livros na língua principal desta coleção. Observação: caso queira usar esse recurso, mas a sua marca não está sendo exibido, entre em contato conosco.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption" approved="yes">
@@ -620,14 +620,14 @@
         <target xml:lang="pt-PT" state="final">Legenda</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description" approved="yes">
         <source xml:lang="en">If your caption contains "{0}", Bloom will fill this in with the name of the language.</source>
-        <target xml:lang="pt-PT" state="translated">Se a legenda contem "{0}", o Bloom vai preencher com o nome da língua.</target>
+        <target xml:lang="pt-PT" state="final">Se a legenda contem "{0}", o Bloom vai preencher com o nome da língua.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption.Description</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText">
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText" approved="yes">
         <source xml:lang="en">Get more books in the {0} language on BloomLibrary.org.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Get more books in the {0} language on BloomLibrary.org.</target>
+        <target xml:lang="pt-PT" state="final">Encontre mais livros na língua {0} no site BloomLibrary.org.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink" approved="yes">
@@ -640,9 +640,9 @@
         <target xml:lang="pt-PT" state="final">Configurações</target>
         <note>ID: CollectionSettingsDialog.CollectionSettingsWindowTitle</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.Title">
+      <trans-unit id="CollectionSettingsDialog.Title" approved="yes">
         <source xml:lang="en">Collection Settings</source>
-        <target xml:lang="pt-PT" state="translated">Configurações da coleção</target>
+        <target xml:lang="pt-PT" state="final">Configurações da coleção</target>
         <note>ID: CollectionSettingsDialog.Title</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink" approved="yes">
@@ -1060,9 +1060,9 @@
         <target xml:lang="pt-PT" state="final">Novo...</target>
         <note>ID: ColorPicker.New</note>
       </trans-unit>
-      <trans-unit id="ColorPicker.SampleColor" sil:dynamic="true">
+      <trans-unit id="ColorPicker.SampleColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sample Color</source>
-        <target xml:lang="pt-PT" state="translated">Cor de Amostra</target>
+        <target xml:lang="pt-PT" state="final">Cor de Amostra</target>
         <note>ID: ColorPicker.SampleColor</note>
       </trans-unit>
       <trans-unit id="Common.BookSettings" approved="yes">
@@ -1584,14 +1584,14 @@
         <target xml:lang="pt-PT" state="final">Copie a Página</target>
         <note>ID: EditTab.CopyPage</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.Standard">
+      <trans-unit id="EditTab.CustomCover.Standard" approved="yes">
         <source xml:lang="en">Standard</source>
-        <target xml:lang="pt-PT" state="translated">Padrão</target>
+        <target xml:lang="pt-PT" state="final">Padrão</target>
         <note>ID: EditTab.CustomCover.Standard</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.StandardLayout">
+      <trans-unit id="EditTab.CustomCover.StandardLayout" approved="yes">
         <source xml:lang="en">Standard Layout</source>
-        <target xml:lang="pt-PT" state="translated">Layout (configuração) Padrão</target>
+        <target xml:lang="pt-PT" state="final">Layout (configuração) Padrão</target>
         <note>ID: EditTab.CustomCover.StandardLayout</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom" approved="yes">
@@ -1599,9 +1599,9 @@
         <target xml:lang="pt-PT" state="final">Personalizado</target>
         <note>ID: EditTab.CustomCover.Custom</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.CustomLayout">
+      <trans-unit id="EditTab.CustomCover.CustomLayout" approved="yes">
         <source xml:lang="en">Custom Layout</source>
-        <target xml:lang="pt-PT" state="translated">Layout (configuração) Personalizado</target>
+        <target xml:lang="pt-PT" state="final">Layout (configuração) Personalizado</target>
         <note>ID: EditTab.CustomCover.CustomLayout</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true" approved="yes">
@@ -1624,9 +1624,9 @@
         <target xml:lang="pt-PT" state="final">Imagem</target>
         <note>ID: EditTab.CustomPage.Picture</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomPage.Image" sil:dynamic="true">
+      <trans-unit id="EditTab.CustomPage.Image" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image</source>
-        <target xml:lang="pt-PT" state="translated">Imagem</target>
+        <target xml:lang="pt-PT" state="final">Imagem</target>
         <note>ID: EditTab.CustomPage.Image</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Canvas" sil:dynamic="true" approved="yes">
@@ -1884,14 +1884,14 @@
         <target xml:lang="pt-PT" state="final">Título na folha de rosto</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Title-On-Title-Page-style</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Navigation Button Label</source>
-        <target xml:lang="pt-PT" state="translated">Rótulo do Botão de Navegação</target>
+        <target xml:lang="pt-PT" state="final">Rótulo do Botão de Navegação</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style" sil:dynamic="true">
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Navigation Button With Image Label</source>
-        <target xml:lang="pt-PT" state="translated">Botão de Navegação com Rótulo de Imagem</target>
+        <target xml:lang="pt-PT" state="final">Botão de Navegação com Rótulo de Imagem</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true" approved="yes">
@@ -2164,9 +2164,9 @@
         <target xml:lang="pt-PT" state="final">Clique para escolher o tema</target>
         <note>ID: EditTab.FrontMatter.TopicPrompt</note>
       </trans-unit>
-      <trans-unit id="EditTab.FrontMatter.TopicPrompt2">
+      <trans-unit id="EditTab.FrontMatter.TopicPrompt2" approved="yes">
         <source xml:lang="en">Choose topic</source>
-        <target xml:lang="pt-PT" state="translated">Escolha o tema</target>
+        <target xml:lang="pt-PT" state="final">Escolha o tema</target>
         <note>ID: EditTab.FrontMatter.TopicPrompt2</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
@@ -2569,9 +2569,9 @@
         <target xml:lang="pt-PT" state="final">Creme</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BackgroundColor.OldLace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BecomeBackground">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.BecomeBackground" approved="yes">
         <source xml:lang="en">Become background</source>
-        <target xml:lang="pt-PT" state="translated">Tornar-se o fundo</target>
+        <target xml:lang="pt-PT" state="final">Tornar-se o fundo</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BecomeBackground</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true" approved="yes">
@@ -2584,9 +2584,9 @@
         <target xml:lang="pt-PT" state="final">Copiar Texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.CopyText</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use for book thumbnail</source>
-        <target xml:lang="pt-PT" state="needs-translation">Use for book thumbnail</target>
+        <target xml:lang="pt-PT" state="final">Usar como miniatura do livro</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Duplicate" sil:dynamic="true" approved="yes">
@@ -2594,9 +2594,9 @@
         <target xml:lang="pt-PT" state="final">Duplicar</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Duplicate</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FieldType">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.FieldType" approved="yes">
         <source xml:lang="en">Field Type:</source>
-        <target xml:lang="pt-PT" state="translated">Tipo de Campo:</target>
+        <target xml:lang="pt-PT" state="final">Tipo de Campo:</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.FieldType</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.FillBackground" sil:dynamic="true" approved="yes">
@@ -2669,9 +2669,9 @@
         <target xml:lang="pt-PT" state="final">Estilo</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ElementType" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.ElementType" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Element Type</source>
-        <target xml:lang="pt-PT" state="translated">Tipo de Elemento</target>
+        <target xml:lang="pt-PT" state="final">Tipo de Elemento</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ElementType</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style.Caption" sil:dynamic="true" approved="yes">
@@ -2719,9 +2719,9 @@
         <target xml:lang="pt-PT" state="final">Cor do Texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextColor</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextOutlineColor" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextOutlineColor" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Text Outline Color</source>
-        <target xml:lang="pt-PT" state="translated">Cor do contorno do texto</target>
+        <target xml:lang="pt-PT" state="final">Cor do contorno do texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextOutlineColor</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true" approved="yes">
@@ -3404,9 +3404,9 @@
         <target xml:lang="pt-PT" state="final">Por favor, dê um nome mais curto à sua coleção ou mude a sua coleção para mais perto da raiz do seu disco rígido e tente novamente. Bloom tentou usar um arquivo com um caminho que era muito longo. Isso é geralmente causado por uma dessas duas coisas: 1) a coleção tem um nome muito grande, ou 2) a coleção está profundamente aninhada em muitas pastas no seu disco rígido.</target>
         <note>ID: Errors.PathTooLong</note>
       </trans-unit>
-      <trans-unit id="Errors.PathTooLong2">
+      <trans-unit id="Errors.PathTooLong2" approved="yes">
         <source xml:lang="en">A file Bloom was working with had a path that was too long. You may need to give it a shorter name, or give your collection a shorter name, or move your collection closer to the root of your hard drive.</source>
-        <target xml:lang="pt-PT" state="translated">Um arquivo com o qual o Bloom estava trabalhando tem um caminho muito cumprido. Talvez seja necessário dar um nome mais curto ao arquivo, dar um nome mais curto à sua coleção ou mover a coleção para um local mais próximo da raiz do disco rígido.</target>
+        <target xml:lang="pt-PT" state="final">Um arquivo com o qual o Bloom estava trabalhando tem um caminho muito cumprido. Talvez seja necessário dar um nome mais curto ao arquivo, dar um nome mais curto à sua coleção ou mover a coleção para um local mais próximo da raiz do disco rígido.</target>
         <note>ID: Errors.PathTooLong2</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
@@ -4186,7 +4186,7 @@
       </trans-unit>
       <trans-unit id="BookGridSetupDialog.Title" approved="yes">
         <source xml:lang="en">Book Grid Setup</source>
-        <target xml:lang="pt-PT" state="final">Configuração da Grade de Livros</target>
+        <target xml:lang="pt-PT" state="final">Configuração da Tabela de Livros</target>
         <note>ID: BookGridSetupDialog.Title</note>
       </trans-unit>
       <trans-unit id="BookGridSetup.BooksInCollection" approved="yes">
@@ -4206,7 +4206,7 @@
       </trans-unit>
       <trans-unit id="BookGridSetup.LinksInGrid" approved="yes">
         <source xml:lang="en">Links in Grid (%0)</source>
-        <target xml:lang="pt-PT" state="final">Links na Grade (%0)</target>
+        <target xml:lang="pt-PT" state="final">Links na Tabela (%0)</target>
         <note>ID: BookGridSetup.LinksInGrid</note>
       </trans-unit>
       <trans-unit id="BookGridSetup.BooksInApp" translate="no">
@@ -4928,14 +4928,14 @@
         <target xml:lang="pt-PT" state="final">Esta opção está desabilitada porque este livro não está configurado para impressão de sangria total (sem margens).</target>
         <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.ExcludePrintBleed">
+      <trans-unit id="PublishTab.PdfMaker.ExcludePrintBleed" approved="yes">
         <source xml:lang="en">Exclude print bleed around page edges</source>
-        <target xml:lang="pt-PT" state="translated">Excluir a sangria total nas bordas das páginas</target>
+        <target xml:lang="pt-PT" state="final">Excluir a sangria total nas bordas das páginas</target>
         <note>ID: PublishTab.PdfMaker.ExcludePrintBleed</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.IncludeBackgroundColors">
+      <trans-unit id="PublishTab.PdfMaker.IncludeBackgroundColors" approved="yes">
         <source xml:lang="en">Include background colors</source>
-        <target xml:lang="pt-PT" state="translated">Incluir cores de fundo</target>
+        <target xml:lang="pt-PT" state="final">Incluir cores de fundo</target>
         <note>ID: PublishTab.PdfMaker.IncludeBackgroundColors</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml" approved="yes">
@@ -5215,7 +5215,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ScreenTooSmall" approved="yes">
         <source xml:lang="en">Ideally, this video target should be {0}. However that is larger than your screen, so Bloom will produce a video that is {1}.</source>
-        <target xml:lang="pt-PT" state="final">Embora o ideal seja produzir este vídeo em {0}, isto seria maior do que a sua tela, então Bloom irá produzir um vídeo que é {1}.</target>
+        <target xml:lang="pt-PT" state="final">O ideal seria produzir este vídeo em {0}. No entanto, como esse valor é maior que a sua tela, o Bloom produzirá um vídeo com tamanho {1}.</target>
         <note>ID: PublishTab.RecordVideo.ScreenTooSmall</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.VideoFile" approved="yes">
@@ -6690,9 +6690,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="pt-PT" state="final">Uma página com uma língua acima da imagem e outra língua em baixo dela.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Image in Middle</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page with an empty canvas that you can add to.</source>
-        <target xml:lang="pt-PT" state="translated">Uma página com uma tela em branco que pode usar</target>
+        <target xml:lang="pt-PT" state="final">Uma página com uma tela em branco que pode usar</target>
         <note>ID: TemplateBooks.PageDescription.Canvas</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true" approved="yes">
@@ -7343,7 +7343,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Page with Simple Book Grid" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Page with Simple Book Grid</source>
-        <target xml:lang="pt-PT" state="final">Página com Grade de Livro Simples</target>
+        <target xml:lang="pt-PT" state="final">Página com uma Tabela Simples de Livros</target>
         <note>ID: TemplateBooks.PageLabel.Page with Simple Book Grid</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Video Over Text" sil:dynamic="true" approved="yes">
