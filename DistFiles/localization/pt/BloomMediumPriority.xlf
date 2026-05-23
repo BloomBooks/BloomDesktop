@@ -143,9 +143,9 @@
         <target xml:lang="pt-PT" state="final">Desmarque este item se não fizer parte da resposta correta</target>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2">
+      <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2" approved="yes">
         <source xml:lang="en">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</source>
-        <target xml:lang="pt-PT" state="translated">Este item vem com um “alvo” para o qual deve ser arrastado. Se você quiser ter mais itens do que alvos, desative essa opção para alguns deles.</target>
+        <target xml:lang="pt-PT" state="final">Este item vem com um “alvo” para o qual deve ser arrastado. Se você quiser ter mais itens do que alvos, desative essa opção para alguns deles.</target>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2</note>
       </trans-unit>
       <!--trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled">
@@ -524,9 +524,9 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions</note>
       </trans-unit>
       <!-- Canvas (was Overlay) -->
-      <trans-unit id="EditTab.Toolbox.CanvasTool.BookGrid" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.BookGrid" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A grid of buttons that jump you to books in your app</source>
-        <target xml:lang="pt-PT" state="translated">Uma grade de botões que te leva aos livros no seu aplicativo</target>
+        <target xml:lang="pt-PT" state="final">Uma tabela de botões que te leva diretamente aos livros no seu aplicativo</target>
         <note>ID: EditTab.Toolbox.CanvasTool.BookGrid</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.ClickToSetLinkDest" sil:dynamic="true" approved="yes">
@@ -539,9 +539,9 @@
         <target xml:lang="pt-PT" state="final">Arraste qualquer um destes para uma tela:</target>
         <note>ID: EditTab.Toolbox.CanvasTool.DragInstructions2</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image Fit</source>
-        <target xml:lang="pt-PT" state="needs-translation">Image Fit</target>
+        <target xml:lang="pt-PT" state="final">Ajustar Imagem</target>
         <note>ID: EditTab.Toolbox.CanvasTool.ImageFit</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.ImageFit.Margin" sil:dynamic="true" approved="yes">
@@ -564,9 +564,9 @@
         <target xml:lang="pt-PT" state="final">Selecionar Livros...</target>
         <note>ID: EditTab.Toolbox.CanvasTool.LinkGrid.ChooseBooks</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.NavButtons" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.NavButtons" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A button that jumps you to a page or book in your app</source>
-        <target xml:lang="pt-PT" state="translated">Um botão que te leva diretamente para uma página ou um livro no seu aplicativo</target>
+        <target xml:lang="pt-PT" state="final">Um botão que te leva diretamente para uma página ou um livro no seu aplicativo</target>
         <note>ID: EditTab.Toolbox.OverlayTool.NavButtons</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.Navigation" sil:dynamic="true" approved="yes">
@@ -574,9 +574,9 @@
         <target xml:lang="pt-PT" state="final">Navegação</target>
         <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Go Somewhere</source>
-        <target xml:lang="pt-PT" state="needs-translation">Go Somewhere</target>
+        <target xml:lang="pt-PT" state="final">Ir para algum lugar</target>
         <note>ID: EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true" approved="yes">
@@ -889,19 +889,19 @@
         <target xml:lang="pt-PT" state="final">Usar esta opção para ativar os indicadores de [Imprimir Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) na diagramação para impressão. Veja [Imagens de Capa Completa](https://docs.bloomlibrary.org/full-page-cover-images) para entender como ajustar o tamanho da sua imagem para caber.</target>
         <note>BookSettings.CoverIsImage.Description</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage.Description.V2" sil:dynamic="true">
+      <trans-unit id="BookSettings.CoverIsImage.Description.V2" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
-        <target xml:lang="pt-PT" state="translated">Substitua o conteúdo da capa por uma imagem única de sangria total. Veja [Imagens de Capa completa](https://docs.bloomlibrary.org/full-page-cover-images) para entender como ajustar o tamanho da sua imagem para caber.</target>
+        <target xml:lang="pt-PT" state="final">Substitua o conteúdo da capa por uma imagem única de sangria total. Veja [Imagens de Capa completa](https://docs.bloomlibrary.org/full-page-cover-images) para entender como ajustar o tamanho da sua imagem para caber.</target>
         <note>BookSettings.CoverIsImage.Description.V2</note>
       </trans-unit>
-      <trans-unit id="BookSettings.FullBleed" sil:dynamic="true">
+      <trans-unit id="BookSettings.FullBleed" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Use full bleed page layout</source>
-        <target xml:lang="pt-PT" state="translated">Usar layout de página de sangria total</target>
+        <target xml:lang="pt-PT" state="final">Usar layout de página de sangria total</target>
         <note>BookSettings.FullBleed</note>
       </trans-unit>
-      <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true">
+      <trans-unit id="BookSettings.FullBleed.Description" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
-        <target xml:lang="pt-PT" state="translated">Ativar o layout de sangria total para impressão. Esta opção ativa os indicadores de [Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) em layouts impressos. Veja [Layout de Sangria Total](https://docs.bloomlibrary.org/full-bleed) para obter mais informações.</target>
+        <target xml:lang="pt-PT" state="final">Ativar o layout de sangria total para impressão. Esta opção ativa os indicadores de [Sangria](https://en.wikipedia.org/wiki/Bleed_%28printing%29) em layouts impressos. Veja [Layout de Sangria Total](https://docs.bloomlibrary.org/full-bleed) para obter mais informações.</target>
         <note>BookSettings.FullBleed.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true" approved="yes">
@@ -909,9 +909,9 @@
         <target xml:lang="pt-PT" state="final">Páginas de conteúdo</target>
         <note>BookSettings.ContentPagesGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true">
+      <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Theme &amp; Layout</source>
-        <target xml:lang="pt-PT" state="translated">Tema &amp; Layout</target>
+        <target xml:lang="pt-PT" state="final">Tema &amp; Layout</target>
         <note>ID: BookSettings.ThemeAndLayoutGroupLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.LanguagesGroupLabel" sil:dynamic="true" approved="yes">
@@ -919,9 +919,9 @@
         <target xml:lang="pt-PT" state="final">Línguas</target>
         <note>ID: BookSettings.LanguagesGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.PrintPublishingGroupLabel" sil:dynamic="true">
+      <trans-unit id="BookSettings.PrintPublishingGroupLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Print Publishing</source>
-        <target xml:lang="pt-PT" state="translated">Publicação impressa</target>
+        <target xml:lang="pt-PT" state="final">Publicação impressa</target>
         <note>ID: BookSettings.PrintPublishingGroupLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.NormalTextBoxLangsLabel" sil:dynamic="true" approved="yes">
@@ -1009,9 +1009,9 @@
         <target xml:lang="pt-PT" state="final">Oculto</target>
         <note>BookSettings.PageNumbers.Hidden</note>
       </trans-unit>
-      <trans-unit id="BookSettings.PageNumberLocationNote" sil:dynamic="true">
+      <trans-unit id="BookSettings.PageNumberLocationNote" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Note: some Page Themes may not know how to change the location of the Page Number.</source>
-        <target xml:lang="pt-PT" state="translated">Observação: alguns temas de página podem não permitir alterar a localização do número da página.</target>
+        <target xml:lang="pt-PT" state="final">Observação: alguns temas de página podem não permitir alterar a localização do número da página.</target>
         <note>BookSettings.PageNumberLocationNote</note>
       </trans-unit>
       <trans-unit id="BookSettings.FrontAndBackMatter" sil:dynamic="true" approved="yes">
@@ -1063,14 +1063,14 @@
         <target xml:lang="pt-PT" state="final">O tema de página selecionado não suporta as seguintes configurações.</target>
         <note>BookSettings.ThemeDisablesOptionsNotice</note>
       </trans-unit>
-      <trans-unit id="BookSettings.ThemeDisablesOptionsNoticeWithLink" sil:dynamic="true">
+      <trans-unit id="BookSettings.ThemeDisablesOptionsNoticeWithLink" sil:dynamic="true" approved="yes">
         <source xml:lang="en">The selected [Page Theme] does not support the following settings.</source>
-        <target xml:lang="pt-PT" state="translated">O [Tema da Página] selecionado não suporta as seguintes configurações.</target>
+        <target xml:lang="pt-PT" state="final">O [Tema da Página] selecionado não suporta as seguintes configurações.</target>
         <note>BookSettings.ThemeDisablesOptionsNoticeWithLink</note>
       </trans-unit>
-      <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" sil:dynamic="true">
+      <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This feature requires a newer [Page Theme].</source>
-        <target xml:lang="pt-PT" state="translated">Este recurso requer uma versão mais recente do [Tema de Página].</target>
+        <target xml:lang="pt-PT" state="final">Este recurso requer uma versão mais recente do [Tema de Página].</target>
         <note>ID: EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message</note>
       </trans-unit>
       <trans-unit id="BookSettings.AdvancedLayoutLabel" sil:dynamic="true" approved="yes">
@@ -1123,9 +1123,9 @@
         <target xml:lang="pt-PT" state="final">Outras línguas</target>
         <note>ID: BookSettings.Fonts.OtherLanguages</note>
       </trans-unit>
-      <trans-unit id="BookSettings.Fonts.MaybeProblematic">
+      <trans-unit id="BookSettings.Fonts.MaybeProblematic" approved="yes">
         <source xml:lang="en">The Bloom file for this book also has some text in other languages. Please ignore any warnings here unless you plan to publish the book with these languages.</source>
-        <target xml:lang="pt-PT" state="translated">O arquivo Bloom deste livro também contém texto em outras línguas. Por favor, ignore quaisquer avisos aqui, a menos que pretenda publicar o livro com essas línguas.</target>
+        <target xml:lang="pt-PT" state="final">O arquivo Bloom deste livro também contém texto em outras línguas. Por favor, ignore quaisquer avisos aqui, a menos que pretenda publicar o livro com essas línguas.</target>
         <note>ID: BookSettings.Fonts.MaybeProblematic</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.TableDescription" sil:dynamic="true" approved="yes">
