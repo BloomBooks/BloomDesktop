@@ -1601,7 +1601,7 @@
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.CustomLayout">
         <source xml:lang="en">Custom Layout</source>
-        <target xml:lang="pt-PT" state="needs-translation">Custom Layout</target>
+        <target xml:lang="pt-PT" state="translated">Layout (configuração) Personalizado</target>
         <note>ID: EditTab.CustomCover.CustomLayout</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.ChangeLayout" sil:dynamic="true" approved="yes">
@@ -2166,7 +2166,7 @@
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TopicPrompt2">
         <source xml:lang="en">Choose topic</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose topic</target>
+        <target xml:lang="pt-PT" state="translated">Escolha o tema</target>
         <note>ID: EditTab.FrontMatter.TopicPrompt2</note>
       </trans-unit>
       <trans-unit id="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt" sil:dynamic="true" approved="yes">
@@ -2721,7 +2721,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.TextOutlineColor" sil:dynamic="true">
         <source xml:lang="en">Text Outline Color</source>
-        <target xml:lang="pt-PT" state="needs-translation">Text Outline Color</target>
+        <target xml:lang="pt-PT" state="translated">Cor do contorno do texto</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.TextOutlineColor</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.TextBlock" sil:dynamic="true" approved="yes">
@@ -4211,7 +4211,7 @@
       </trans-unit>
       <trans-unit id="BookGridSetup.BooksInApp" translate="no">
         <source xml:lang="en">Books in App (%0)</source>
-        <target xml:lang="pt-PT" state="needs-translation">Books in App (%0)</target>
+        <target xml:lang="pt-PT" state="translated">Livros no Aplicativo (%0)</target>
         <note>ID: BookGridSetup.BooksInApp</note>
       </trans-unit>
       <trans-unit id="PublishTab.Common.StopPublishing" approved="yes">
@@ -4935,7 +4935,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.IncludeBackgroundColors">
         <source xml:lang="en">Include background colors</source>
-        <target xml:lang="pt-PT" state="needs-translation">Include background colors</target>
+        <target xml:lang="pt-PT" state="translated">Incluir cores de fundo</target>
         <note>ID: PublishTab.PdfMaker.IncludeBackgroundColors</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml" approved="yes">
