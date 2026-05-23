@@ -145,7 +145,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2">
         <source xml:lang="en">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</source>
-        <target xml:lang="pt-PT" state="needs-translation">This item comes with a “target” to which it must be dragged. If you want to have more items than targets, turn this off for some of them.</target>
+        <target xml:lang="pt-PT" state="translated">Este item vem com um “alvo” para o qual deve ser arrastado. Se você quiser ter mais itens do que alvos, desative essa opção para alguns deles.</target>
         <note>ID: EditTab.Toolbox.DragActivity.PartOfRightAnswerMore.v2</note>
       </trans-unit>
       <!--trans-unit id="EditTab.Toolbox.DragActivity.PartOfRightAnswerDisabled">
@@ -566,7 +566,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.NavButtons" sil:dynamic="true">
         <source xml:lang="en">A button that jumps you to a page or book in your app</source>
-        <target xml:lang="pt-PT" state="needs-translation">A button that jumps you to a page or book in your app</target>
+        <target xml:lang="pt-PT" state="translated">Um botão que te leva diretamente para uma página ou um livro no seu aplicativo</target>
         <note>ID: EditTab.Toolbox.OverlayTool.NavButtons</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.Navigation" sil:dynamic="true" approved="yes">
@@ -1011,7 +1011,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.PageNumberLocationNote" sil:dynamic="true">
         <source xml:lang="en">Note: some Page Themes may not know how to change the location of the Page Number.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Note: some Page Themes may not know how to change the location of the Page Number.</target>
+        <target xml:lang="pt-PT" state="translated">Observação: alguns temas de página podem não permitir alterar a localização do número da página.</target>
         <note>BookSettings.PageNumberLocationNote</note>
       </trans-unit>
       <trans-unit id="BookSettings.FrontAndBackMatter" sil:dynamic="true" approved="yes">
@@ -1065,12 +1065,12 @@
       </trans-unit>
       <trans-unit id="BookSettings.ThemeDisablesOptionsNoticeWithLink" sil:dynamic="true">
         <source xml:lang="en">The selected [Page Theme] does not support the following settings.</source>
-        <target xml:lang="pt-PT" state="needs-translation">The selected [Page Theme] does not support the following settings.</target>
+        <target xml:lang="pt-PT" state="translated">O [Tema da Página] selecionado não suporta as seguintes configurações.</target>
         <note>BookSettings.ThemeDisablesOptionsNoticeWithLink</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message" sil:dynamic="true">
         <source xml:lang="en">This feature requires a newer [Page Theme].</source>
-        <target xml:lang="pt-PT" state="needs-translation">This feature requires a newer [Page Theme].</target>
+        <target xml:lang="pt-PT" state="translated">Este recurso requer uma versão mais recente do [Tema de Página].</target>
         <note>ID: EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message</note>
       </trans-unit>
       <trans-unit id="BookSettings.AdvancedLayoutLabel" sil:dynamic="true" approved="yes">
@@ -1125,7 +1125,7 @@
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.MaybeProblematic">
         <source xml:lang="en">The Bloom file for this book also has some text in other languages. Please ignore any warnings here unless you plan to publish the book with these languages.</source>
-        <target xml:lang="pt-PT" state="needs-translation">The Bloom file for this book also has some text in other languages. Please ignore any warnings here unless you plan to publish the book with these languages.</target>
+        <target xml:lang="pt-PT" state="translated">O arquivo Bloom deste livro também contém texto em outras línguas. Por favor, ignore quaisquer avisos aqui, a menos que pretenda publicar o livro com essas línguas.</target>
         <note>ID: BookSettings.Fonts.MaybeProblematic</note>
       </trans-unit>
       <trans-unit id="BookSettings.Fonts.TableDescription" sil:dynamic="true" approved="yes">
@@ -1214,7 +1214,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.ChooseBooksDialog.Title" translate="no">
         <source xml:lang="en">Choose Books</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose Books</target>
+        <target xml:lang="pt-PT" state="translated">Selecionar Livros</target>
         <note>ID: PublishTab.Apps.ChooseBooksDialog.Title</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.CustomizeButton" translate="no">
@@ -1244,7 +1244,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareStepper.ProjectCreated" translate="no">
         <source xml:lang="en">Create project</source>
-        <target xml:lang="pt-PT" state="needs-translation">Create project</target>
+        <target xml:lang="pt-PT" state="translated">Criar projeto</target>
         <note>ID: PublishTab.Apps.PrepareStepper.ProjectCreated</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PrepareStepper.RabInstalled" translate="no">
@@ -1274,7 +1274,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.Title" translate="no">
         <source xml:lang="en">App Settings</source>
-        <target xml:lang="pt-PT" state="needs-translation">App Settings</target>
+        <target xml:lang="pt-PT" state="translated">Configurações do aplicativo</target>
         <note>ID: PublishTab.Apps.SettingsDialog.Title</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.BasicsGroup" translate="no">
@@ -1289,12 +1289,12 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.AppName" translate="no">
         <source xml:lang="en">App Name</source>
-        <target xml:lang="pt-PT" state="needs-translation">App Name</target>
+        <target xml:lang="pt-PT" state="translated">Nome do Aplicativo</target>
         <note>ID: PublishTab.Apps.SettingsDialog.AppName</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.MainColor" translate="no">
         <source xml:lang="en">Main Color</source>
-        <target xml:lang="pt-PT" state="needs-translation">Main Color</target>
+        <target xml:lang="pt-PT" state="translated">Cor Principal</target>
         <note>ID: PublishTab.Apps.SettingsDialog.MainColor</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.ColorScheme" translate="no">
@@ -1304,7 +1304,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName" translate="no">
         <source xml:lang="en">Package Name</source>
-        <target xml:lang="pt-PT" state="needs-translation">Package Name</target>
+        <target xml:lang="pt-PT" state="translated">Nome do Pacote</target>
         <note>ID: PublishTab.Apps.SettingsDialog.PackageName</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.Icon" translate="no">
@@ -1334,7 +1334,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.IconChooseTitle" translate="no">
         <source xml:lang="en">Choose App Icon</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose App Icon</target>
+        <target xml:lang="pt-PT" state="translated">Escolher Ícone do Aplicativo</target>
         <note>ID: PublishTab.Apps.SettingsDialog.IconChooseTitle</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.PackageName.Description" translate="no">
@@ -1394,7 +1394,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build" translate="no">
         <source xml:lang="en">Build</source>
-        <target xml:lang="pt-PT" state="needs-translation">Build</target>
+        <target xml:lang="pt-PT" state="translated">Compilar</target>
         <note>ID: PublishTab.Apps.Build</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build.DoneTooltip" translate="no">
@@ -1404,7 +1404,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build.NeedsPrepareTooltip" translate="no">
         <source xml:lang="en">Run Prepare before building the app.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Run Prepare before building the app.</target>
+        <target xml:lang="pt-PT" state="translated">Executar "Preparar" antes de compilar o aplicativo.</target>
         <note>ID: PublishTab.Apps.Build.NeedsPrepareTooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build.Tooltip" translate="no">
@@ -1414,7 +1414,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Apps.ChooseBooks" translate="no">
         <source xml:lang="en">Choose Books...</source>
-        <target xml:lang="pt-PT" state="needs-translation">Choose Books...</target>
+        <target xml:lang="pt-PT" state="translated">Selecionar Livros...</target>
         <note>ID: PublishTab.Apps.ChooseBooks</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.ChooseBooks.Tooltip" translate="no">
