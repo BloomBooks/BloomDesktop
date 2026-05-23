@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="CollectionTab.VelopackUpdateFailed">
         <source xml:lang="en">Bloom failed to update from version {0} to version {1}. If this continues to happen, try restarting your computer. If it still happens, please Report a Problem.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom failed to update from version {0} to version {1}. If this continues to happen, try restarting your computer. If it still happens, please Report a Problem.</target>
+        <target xml:lang="pt-PT" state="translated">O Bloom não conseguiu atualizar da versão {0} para a versão {1}. Se isso continuar ocorrendo, tente reiniciar o computador. Se o problema persistir, por favor, reporte o problema.</target>
         <note>ID: CollectionTab.VelopackUpdateFailed</note>
       </trans-unit>
       <trans-unit id="Installer.InstallationInProgress" approved="yes">
