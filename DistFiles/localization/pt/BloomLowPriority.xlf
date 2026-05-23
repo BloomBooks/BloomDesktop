@@ -2,9 +2,9 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="pt-PT">
     <body>
-      <trans-unit id="CollectionTab.VelopackUpdateFailed">
+      <trans-unit id="CollectionTab.VelopackUpdateFailed" approved="yes">
         <source xml:lang="en">Bloom failed to update from version {0} to version {1}. If this continues to happen, try restarting your computer. If it still happens, please Report a Problem.</source>
-        <target xml:lang="pt-PT" state="translated">O Bloom não conseguiu atualizar da versão {0} para a versão {1}. Se isso continuar ocorrendo, tente reiniciar o computador. Se o problema persistir, por favor, reporte o problema.</target>
+        <target xml:lang="pt-PT" state="final">O Bloom não conseguiu atualizar da versão {0} para a versão {1}. Se isso continuar ocorrendo, tente reiniciar o computador. Se o problema persistir, por favor, reporte o problema.</target>
         <note>ID: CollectionTab.VelopackUpdateFailed</note>
       </trans-unit>
       <trans-unit id="Installer.InstallationInProgress" approved="yes">
