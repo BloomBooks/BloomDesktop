@@ -354,7 +354,7 @@
       </trans-unit>
       <trans-unit id="BookStorage.CorruptBook" approved="yes">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please report the problem to us.</source>
-        <target xml:lang="pt-PT" state="final">Bloom tinha um problema ao ler este livro e se recuperou restaurando um backup recente. Por favor verifique os alterações recentes neste livro. Se isso acontece sem nenhum motivo aparente, por favor clique em detalhes abaixo e informe-nos.</target>
+        <target xml:lang="pt-PT" state="final">Bloom encontrou um problema ao ler este livro e se recuperou (restaurando de um backup recente). Por favor, verifique as alterações recentes neste livro. Se isso ocorrer sem motivo aparente, por favor, reporte o problema.</target>
         <note>ID: BookStorage.CorruptBook</note>
       </trans-unit>
       <trans-unit id="BookStorage.FolderMoved" approved="yes">
@@ -622,7 +622,7 @@
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description">
         <source xml:lang="en">If your caption contains "{0}", Bloom will fill this in with the name of the language.</source>
-        <target xml:lang="pt-PT" state="needs-translation">If your caption contains "{0}", Bloom will fill this in with the name of the language.</target>
+        <target xml:lang="pt-PT" state="translated">Se a legenda contem "{0}", o Bloom vai preencher com o nome da língua.</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption.Description</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText">
@@ -1886,12 +1886,12 @@
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style" sil:dynamic="true">
         <source xml:lang="en">Navigation Button Label</source>
-        <target xml:lang="pt-PT" state="needs-translation">Navigation Button Label</target>
+        <target xml:lang="pt-PT" state="translated">Rótulo do Botão de Navegação</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-Label-style</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style" sil:dynamic="true">
         <source xml:lang="en">Navigation Button With Image Label</source>
-        <target xml:lang="pt-PT" state="needs-translation">Navigation Button With Image Label</target>
+        <target xml:lang="pt-PT" state="translated">Botão de Navegação com Rótulo de Imagem</target>
         <note>ID: EditTab.FormatDialog.DefaultStyles.Navigation-Button-With-Image-Label-style</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DontSeeNeed" sil:dynamic="true" approved="yes">
@@ -2571,7 +2571,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.BecomeBackground">
         <source xml:lang="en">Become background</source>
-        <target xml:lang="pt-PT" state="needs-translation">Become background</target>
+        <target xml:lang="pt-PT" state="translated">Tornar-se o fundo</target>
         <note>ID: EditTab.Toolbox.ComicTool.Options.BecomeBackground</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ChooseVideo" sil:dynamic="true" approved="yes">
@@ -3406,7 +3406,7 @@
       </trans-unit>
       <trans-unit id="Errors.PathTooLong2">
         <source xml:lang="en">A file Bloom was working with had a path that was too long. You may need to give it a shorter name, or give your collection a shorter name, or move your collection closer to the root of your hard drive.</source>
-        <target xml:lang="pt-PT" state="needs-translation">A file Bloom was working with had a path that was too long. You may need to give it a shorter name, or give your collection a shorter name, or move your collection closer to the root of your hard drive.</target>
+        <target xml:lang="pt-PT" state="translated">Um arquivo com o qual o Bloom estava trabalhando tem um caminho muito cumprido. Talvez seja necessário dar um nome mais curto ao arquivo, dar um nome mais curto à sua coleção ou mover a coleção para um local mais próximo da raiz do disco rígido.</target>
         <note>ID: Errors.PathTooLong2</note>
       </trans-unit>
       <trans-unit id="Errors.BookProblem" approved="yes">
@@ -3441,7 +3441,7 @@
       </trans-unit>
       <trans-unit id="Errors.CouldNotSavePage" approved="yes">
         <source xml:lang="en">Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>
-        <target xml:lang="pt-PT" state="final">Bloom teve dificuldade em salvar a página. Clique nos Detalhes abaixo e informe-nos. Então, saia Bloom, reinicie-o e descubra se a página que você acabou de editar está faltando qualquer coisa. Pedimos desculpas!</target>
+        <target xml:lang="pt-PT" state="final">Bloom teve dificuldade em salvar a página. Por favor, informe-nos sobre o problema. Em seguida, feche o Bloom, reinicie, e verifique se falta alguma coisa na página que estava editando. Pedimos desculpas!</target>
         <note>ID: Errors.CouldNotSavePage</note>
       </trans-unit>
       <trans-unit id="Errors.CurrentRunningVersion" approved="yes">
@@ -6692,7 +6692,7 @@ is mostly status, which shows on the Collection Tab -->
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true">
         <source xml:lang="en">A page with an empty canvas that you can add to.</source>
-        <target xml:lang="pt-PT" state="needs-translation">A page with an empty canvas that you can add to.</target>
+        <target xml:lang="pt-PT" state="translated">Uma página com uma tela em branco que pode usar</target>
         <note>ID: TemplateBooks.PageDescription.Canvas</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Comprehension Quiz" sil:dynamic="true" approved="yes">
