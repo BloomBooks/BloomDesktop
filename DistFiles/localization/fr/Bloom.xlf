@@ -6685,9 +6685,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="needs-translation">A page with one language above the image and another below it.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Bilingual &amp; Image in Middle" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Bilingual &amp; Image in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">A page with one language above the image and another below it.</source>
-        <target xml:lang="fr" state="needs-translation">A page with one language above the image and another below it.</target>
+        <target xml:lang="fr" state="final">Une page avec une langue au-dessus de l'image et une autre au-dessous.</target>
         <note>ID: TemplateBooks.PageDescription.Bilingual &amp; Image in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Canvas" sil:dynamic="true">
@@ -6735,14 +6735,14 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">À employer avec le format paysage.</target>
         <note>ID: TemplateBooks.PageDescription.Picture on Left</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Image on Left" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Image on Left" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="fr" state="needs-review-translation" state-qualifier="leveraged-tm">À employer avec le format paysage.</target>
+        <target xml:lang="fr" state="final">À employer avec un format Paysage.</target>
         <note>ID: TemplateBooks.PageDescription.Image on Left</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Image on Right" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageDescription.Image on Right" sil:dynamic="true" approved="yes">
         <source xml:lang="en">For use with Landscape orientation.</source>
-        <target xml:lang="fr" state="needs-review-translation" state-qualifier="leveraged-tm">À employer avec le format paysage.</target>
+        <target xml:lang="fr" state="final">À employer avec le format paysage.</target>
         <note>ID: TemplateBooks.PageDescription.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true" approved="yes">
@@ -7190,9 +7190,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">Image à gauche</target>
         <note>ID: TemplateBooks.PageLabel.Image on Left</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Image on Right" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Image on Right" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Image on Right</source>
-        <target xml:lang="fr" state="needs-translation">Image on Right</target>
+        <target xml:lang="fr" state="final">Image à Droite</target>
         <note>ID: TemplateBooks.PageLabel.Image on Right</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Inside Back Cover" sil:dynamic="true" approved="yes">
@@ -7275,9 +7275,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="needs-translation">Bilingual &amp; Picture in Middle</target>
         <note>ID: TemplateBooks.PageLabel.Bilingual &amp; Picture in Middle</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Bilingual &amp; Image in Middle" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.PageLabel.Bilingual &amp; Image in Middle" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bilingual &amp; Image in Middle</source>
-        <target xml:lang="fr" state="needs-translation">Bilingual &amp; Image in Middle</target>
+        <target xml:lang="fr" state="final">Bilingue &amp; Image au Milieu</target>
         <note>ID: TemplateBooks.PageLabel.Bilingual &amp; Image in Middle</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Picture on Bottom" sil:dynamic="true" approved="yes">
