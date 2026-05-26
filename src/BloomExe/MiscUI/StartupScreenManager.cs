@@ -96,10 +96,44 @@ namespace Bloom.MiscUI
         }
 
         private static HashSet<string> _milestones = new HashSet<string>();
+        private static readonly object _milestoneLock = new object();
 
         public static void StartupMilestoneReached(string what)
         {
-            _milestones.Add(what);
+            lock (_milestoneLock)
+            {
+                _milestones.Add(what);
+                EnsureDependentMilestonesAreSet();
+            }
+        }
+
+        public static void ClearStartupMilestone(string what)
+        {
+            lock (_milestoneLock)
+            {
+                _milestones.Remove(what);
+                if (what == "teamSyncCompleted" || what == "collectionButtonsDrawn")
+                    _milestones.Remove("startupBookSelectionReady");
+            }
+        }
+
+        private static void EnsureDependentMilestonesAreSet()
+        {
+            if (
+                _milestones.Contains("teamSyncCompleted")
+                && _milestones.Contains("collectionButtonsDrawn")
+            )
+            {
+                _milestones.Add("startupBookSelectionReady");
+            }
+        }
+
+        public static bool StartupMilestoneHasBeenReached(string what)
+        {
+            lock (_milestoneLock)
+            {
+                return _milestones.Contains(what);
+            }
         }
 
         /// <summary>
@@ -171,7 +205,7 @@ namespace Bloom.MiscUI
 
             if (
                 _current.WaitForMilestone != null
-                && !_milestones.Contains(_current.WaitForMilestone)
+                && !StartupMilestoneHasBeenReached(_current.WaitForMilestone)
             )
             {
                 // If the caller has specified a possible delay, we'll wait that long before giving up
