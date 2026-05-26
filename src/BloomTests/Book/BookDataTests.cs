@@ -3402,6 +3402,62 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void SuckInDataFromEditedDom_CustomLayoutTextStyle_DoesNotTransferToStandardField()
+        {
+            var bookDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'>
+                    <div data-book='contentLanguage1' lang='*'>en</div>
+                    <div data-book='bookTitle' lang='en'><p>Standard Title</p></div>
+                </div>
+				<div class='bloom-page' id='titlePage'>
+                    <div class='bloom-editable Title-On-Title-Page-style' data-book='bookTitle' lang='en'><p/></div>
+				</div>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+                    <div class='marginBox'></div>
+				</div>
+			</body></html>"
+            );
+            var data = new BookData(bookDom, _collectionSettings, null);
+
+            var editedPageDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+					<div class='marginBox'>
+                        <div class='bloom-editable Title-On-Cover-style bloom-visibility-code-on' data-book='bookTitle' lang='en' data-audiorecordingmode='TextBox' style='color: red; -webkit-text-stroke-color: rgb(0, 0, 0); -webkit-text-stroke-width: 2px; paint-order: stroke;'><p>Custom Title</p></div>
+					</div>
+				</div>
+			</body></html>"
+            );
+
+            data.SuckInDataFromEditedDom(editedPageDom);
+
+            var standardTitle = (SafeXmlElement)
+                bookDom.SelectSingleNodeHonoringDefaultNS(
+                    "//*[@id='titlePage']//*[@data-book='bookTitle' and @lang='en']"
+                );
+            var savedTitle = (SafeXmlElement)
+                bookDom.SelectSingleNodeHonoringDefaultNS(
+                    "//*[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en']"
+                );
+            var customTitle = (SafeXmlElement)
+                bookDom.SelectSingleNodeHonoringDefaultNS(
+                    "//*[@id='customCover1']//*[@data-book='bookTitle' and @lang='en']"
+                );
+
+            Assert.That(standardTitle.HasAttribute("style"), Is.False);
+            Assert.That(savedTitle.HasAttribute("style"), Is.False);
+            Assert.That(
+                standardTitle.GetAttribute("data-audiorecordingmode"),
+                Is.EqualTo("TextBox")
+            );
+            Assert.That(
+                customTitle.GetAttribute("style"),
+                Does.Contain("-webkit-text-stroke-color")
+            );
+        }
+
+        [Test]
         public void SuckInDataFromEditedDom_CustomLayoutPage_InactivatesNestedDataAndClassesInDataDiv_ButRestoresInLiveDom()
         {
             var bookDom = new HtmlDom(

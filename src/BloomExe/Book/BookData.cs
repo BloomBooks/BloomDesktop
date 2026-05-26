@@ -1742,7 +1742,8 @@ namespace Bloom.Book
         private List<Tuple<string, XmlString>> GetAttributesToSave(SafeXmlElement node)
         {
             var result = new List<Tuple<string, XmlString>>();
-            if (node.Name == "img" && HtmlDom.IsInCustomLayoutPage(node))
+            var isInCustomLayoutPage = HtmlDom.IsInCustomLayoutPage(node);
+            if (node.Name == "img" && isInCustomLayoutPage)
             {
                 // We don't want to transfer most image attribute values or classes from the custom page
                 // layout to the standard one. It's likely that special styling or image cropping
@@ -1762,7 +1763,7 @@ namespace Bloom.Book
             // Margin box doesn't have any of the properties that would normally make it one of the nodes
             // passed to this method. However, it is the node that gets passed for a custom page. It would
             // probably be harmless to process it normally, but it would result in the data-div node for
-            // the custom page content having the class marignBox. That might cause something unexpected,
+            // the custom page content having the class marginBox. That might cause something unexpected,
             // and the marginBox doesn't have any classes or attributes we need to preserve, so just skip it.
             if (node.HasClass("marginBox"))
                 return result;
@@ -1770,6 +1771,13 @@ namespace Bloom.Book
             {
                 if (_attributesNotToCopy.Contains(attr.Name))
                     continue;
+                if (attr.Name == "style" && isInCustomLayoutPage)
+                {
+                    // We don't want custom canvas element formatting, like text outline and color,
+                    // to get copied to other places in the book, like from front cover title to title page title.
+                    // See BL-16357.
+                    continue;
+                }
                 if (attr.Name == "class")
                 {
                     var classes = attr.Value.Split().ToList();
