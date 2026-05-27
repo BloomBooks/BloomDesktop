@@ -1053,7 +1053,7 @@ namespace Bloom.web.controllers
         /// content such as WebView2. Used only when another process is in the foreground, to avoid
         /// unnecessary re-rendering (and the risk of re-triggering any paint-related bugs).
         /// </summary>
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", SetLastError = true)]
         private static extern bool PrintWindow(IntPtr hwnd, IntPtr hdcBlt, uint nFlags);
 
         private const uint PW_RENDERFULLCONTENT = 0x00000002;
@@ -1113,17 +1113,29 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            var screenshot = new Bitmap(form.Width, form.Height);
+            using var screenshot = new Bitmap(form.Width, form.Height);
             using (var g = Graphics.FromImage(screenshot))
             {
                 var hdc = g.GetHdc();
+                bool printWindowSucceeded;
                 try
                 {
-                    PrintWindow(form.Handle, hdc, PW_RENDERFULLCONTENT);
+                    printWindowSucceeded = PrintWindow(form.Handle, hdc, PW_RENDERFULLCONTENT);
                 }
                 finally
                 {
                     g.ReleaseHdc(hdc);
+                }
+
+                if (!printWindowSucceeded)
+                {
+                    var errorCode = Marshal.GetLastWin32Error();
+                    Logger.WriteEvent(
+                        "Bloom was unable to create a screenshot: PrintWindow failed with Win32 error "
+                            + errorCode
+                            + "."
+                    );
+                    return;
                 }
             }
 
