@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -1050,6 +1051,104 @@ namespace Bloom.web.controllers
         // it doesn't seem safe to assume that this is always the case. So we use a locking mechanism that works across threads.
         private static SemaphoreSlim _takingScreenshotLock = new SemaphoreSlim(1, 1);
 
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        private static bool IsForegroundWindow(Form form)
+        {
+            return form?.Handle != IntPtr.Zero && GetForegroundWindow() == form.Handle;
+        }
+
+        private static bool TryCaptureUsingCopyFromScreen(
+            Control controlForScreenshotting,
+            out Bitmap screenshot
+        )
+        {
+#if !__MonoCS__
+            var scaledBounds =
+                WindowsMonitorScaling.GetRectangleFromControlScaledToMonitorResolution(
+                    controlForScreenshotting
+                );
+#else
+            var scaledBounds = controlForScreenshotting.Bounds;
+#endif
+
+            if (scaledBounds.Width <= 0 || scaledBounds.Height <= 0)
+            {
+                screenshot = null;
+                return false;
+            }
+
+            screenshot = new Bitmap(scaledBounds.Width, scaledBounds.Height);
+            using (var g = Graphics.FromImage(screenshot))
+            {
+                if (controlForScreenshotting.Parent == null)
+                    g.CopyFromScreen(scaledBounds.Left, scaledBounds.Top, 0, 0, scaledBounds.Size); // bounds already in screen coords
+                else
+                    g.CopyFromScreen(
+                        controlForScreenshotting.PointToScreen(
+                            new Point(scaledBounds.Left, scaledBounds.Top)
+                        ),
+                        Point.Empty,
+                        scaledBounds.Size
+                    );
+            }
+
+            return true;
+        }
+
+        private static bool TryCaptureUsingWindowsGraphicsCapture(
+            Control controlForScreenshotting,
+            out Bitmap screenshot
+        )
+        {
+            return WindowsGraphicsCaptureScreenshot.TryCapture(
+                controlForScreenshotting,
+                out screenshot
+            );
+        }
+
+        private static void CaptureScreenshot(Control controlForScreenshotting)
+        {
+            // I got tired of landing here in the debugger so I'm avoiding the exception
+            if (controlForScreenshotting.Bounds.Width == 0)
+            {
+                ResetScreenshotFile();
+                return;
+            }
+
+            Bitmap screenshot = null;
+            var form = controlForScreenshotting.FindForm();
+            var captured = false;
+            // IsForegroundWindow(form)
+            // && TryCaptureUsingCopyFromScreen(controlForScreenshotting, out screenshot);
+            if (!captured)
+                captured = TryCaptureUsingWindowsGraphicsCapture(
+                    controlForScreenshotting,
+                    out screenshot
+                );
+
+            if (!captured || screenshot == null)
+            {
+                ResetScreenshotFile();
+                return;
+            }
+
+            try
+            {
+                _reportInfo.ScreenshotTempFile = TempFile.WithFilename(ScreenshotName);
+                SIL.IO.RobustImageIO.SaveImage(
+                    screenshot,
+                    _reportInfo.ScreenshotTempFile.Path,
+                    ImageFormat.Png
+                );
+            }
+            finally
+            {
+                screenshot.Dispose();
+            }
+        }
+
         private static void TryGetScreenshot(Control controlForScreenshotting)
         {
             if (controlForScreenshotting == null)
@@ -1072,54 +1171,7 @@ namespace Bloom.web.controllers
                     {
                         try
                         {
-                            // I got tired of landing here in the debugger so I'm avoiding the exception
-                            if (controlForScreenshotting.Bounds.Width == 0)
-                            {
-                                ResetScreenshotFile();
-                            }
-                            else
-                            {
-#if !__MonoCS__
-                                var scaledBounds =
-                                    WindowsMonitorScaling.GetRectangleFromControlScaledToMonitorResolution(
-                                        controlForScreenshotting
-                                    );
-#else
-                                var scaledBounds = controlForScreenshotting.Bounds;
-#endif
-                                var screenshot = new Bitmap(
-                                    scaledBounds.Width,
-                                    scaledBounds.Height
-                                );
-                                using (var g = Graphics.FromImage(screenshot))
-                                {
-                                    if (controlForScreenshotting.Parent == null)
-                                        g.CopyFromScreen(
-                                            scaledBounds.Left,
-                                            scaledBounds.Top,
-                                            0,
-                                            0,
-                                            scaledBounds.Size
-                                        ); // bounds already in screen coords
-                                    else
-                                        g.CopyFromScreen(
-                                            controlForScreenshotting.PointToScreen(
-                                                new Point(scaledBounds.Left, scaledBounds.Top)
-                                            ),
-                                            Point.Empty,
-                                            scaledBounds.Size
-                                        );
-                                }
-
-                                _reportInfo.ScreenshotTempFile = TempFile.WithFilename(
-                                    ScreenshotName
-                                );
-                                SIL.IO.RobustImageIO.SaveImage(
-                                    screenshot,
-                                    _reportInfo.ScreenshotTempFile.Path,
-                                    ImageFormat.Png
-                                );
-                            }
+                            CaptureScreenshot(controlForScreenshotting);
                         }
                         catch (Exception e)
                         {
