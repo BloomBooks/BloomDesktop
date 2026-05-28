@@ -717,6 +717,10 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                 height: 100%;
                 display: flex;
                 flex-direction: column;
+                // This overrides a font-size: x-small that is set on div.toolboxRoot
+                // (it replaces something that we somehow inherited from a jquery stylesheet
+                // in earlier versions of Bloom)
+                font-size: 11px;
             `}
         >
             <ThemeProvider theme={toolboxTheme}>
