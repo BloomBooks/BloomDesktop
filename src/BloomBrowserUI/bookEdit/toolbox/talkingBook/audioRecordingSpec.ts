@@ -1250,21 +1250,13 @@ describe("audio recording tests", () => {
     */
 
     describe("startRecordCurrentAsync", () => {
-        beforeEach(() => {
-            vi.useFakeTimers();
-        });
-
-        afterEach(() => {
-            vi.useRealTimers();
-        });
-
-        it("cancels the delayed active state when mouseup ends recording early", async () => {
+        const setupRecordButtonHtml = () => {
             SetupIFrameFromHtml(
                 `<div id="page1"><div class="bloom-editable ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox"><p><span id="1.1" class="audio-sentence">Sentence 1.1.</span></p></div></div>`,
             );
+        };
 
-            vi.spyOn(axios, "post").mockResolvedValue({ data: {} } as never);
-
+        const createMockedRecordingForStartRecord = () => {
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
             recording.setEnabledOrExpecting("record", "record");
@@ -1292,6 +1284,24 @@ describe("audio recording tests", () => {
             vi.spyOn(recording as any, "updateDisplay").mockImplementation(
                 () => undefined,
             );
+
+            return recording;
+        };
+
+        beforeEach(() => {
+            vi.useFakeTimers();
+        });
+
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it("cancels the delayed active state when mouseup ends recording early", async () => {
+            setupRecordButtonHtml();
+
+            vi.spyOn(axios, "post").mockResolvedValue({ data: {} } as never);
+
+            const recording = createMockedRecordingForStartRecord();
 
             await recording.startRecordCurrentAsync();
             await recording.endRecordCurrentAsync();
@@ -1305,9 +1315,7 @@ describe("audio recording tests", () => {
         });
 
         it("cancels delayed active state when mouseup happens before startRecord resolves", async () => {
-            SetupIFrameFromHtml(
-                `<div id="page1"><div class="bloom-editable ui-audioCurrent" id="div1" data-audiorecordingmode="TextBox"><p><span id="1.1" class="audio-sentence">Sentence 1.1.</span></p></div></div>`,
-            );
+            setupRecordButtonHtml();
 
             let resolveStartRecord: () => void;
             const startRecordPromise = new Promise((resolve) => {
@@ -1321,33 +1329,7 @@ describe("audio recording tests", () => {
                 return Promise.resolve({ data: {} }) as never;
             });
 
-            const recording = new AudioRecording();
-            recording.recordingMode = RecordingMode.TextBox;
-            recording.setEnabledOrExpecting("record", "record");
-
-            vi.spyOn(recording as any, "resetAudioIfPaused").mockImplementation(
-                () => undefined,
-            );
-            vi.spyOn(recording as any, "setHighlightToAsync").mockResolvedValue(
-                undefined,
-            );
-            vi.spyOn(recording as any, "clearAudioSplit").mockImplementation(
-                () => undefined,
-            );
-            vi.spyOn(recording as any, "getCurrentAudioId").mockReturnValue(
-                "div1",
-            );
-            vi.spyOn(
-                recording as any,
-                "updateInputDeviceDisplay",
-            ).mockImplementation(() => undefined);
-            vi.spyOn(
-                recording as any,
-                "finishNewRecordingOrImportAsync",
-            ).mockResolvedValue(undefined);
-            vi.spyOn(recording as any, "updateDisplay").mockImplementation(
-                () => undefined,
-            );
+            const recording = createMockedRecordingForStartRecord();
 
             const startRecordCall = recording.startRecordCurrentAsync();
             await Promise.resolve();
