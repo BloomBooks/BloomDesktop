@@ -15,6 +15,7 @@ using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.Workspace;
+using Microsoft.Win32;
 using SIL.Extensions;
 using SIL.Reporting;
 using SIL.Windows.Forms.PortableSettingsProvider;
@@ -122,6 +123,8 @@ namespace Bloom
 
             this.Controls.Add(this._workspaceView);
 
+            SubscribeToSystemWindowEvents();
+
             SetWindowText(null);
         }
 
@@ -136,6 +139,12 @@ namespace Bloom
 
             // BL-552, BL-779: a bug in Mono requires us to wait to set Icon until handle created.
             this.Icon = global::Bloom.Properties.Resources.BloomIcon;
+        }
+
+        protected override void OnHandleDestroyed(EventArgs e)
+        {
+            UnsubscribeFromSystemWindowEvents();
+            base.OnHandleDestroyed(e);
         }
 
         protected override void OnActivated(EventArgs e)
@@ -407,15 +416,11 @@ namespace Bloom
                 {
                     // BL-1036: save and restore un-maximized settings
                     var savedBounds = Settings.Default.RestoreBounds;
-                    if (
-                        (savedBounds.Width > 200)
-                        && (savedBounds.Height > 200)
-                        && (IsOnScreen(savedBounds))
-                    )
+                    if (TryGetClampedSavedBounds(savedBounds, out var clampedSavedBounds))
                     {
                         StartPosition = FormStartPosition.Manual;
                         WindowState = FormWindowState.Normal;
-                        Bounds = savedBounds;
+                        Bounds = clampedSavedBounds;
                     }
                     else
                     {
@@ -426,6 +431,8 @@ namespace Bloom
 
                     UpdatePerformanceMeasurementStatus();
                 }
+
+                EnsureWindowFitsCurrentScreen();
 
                 // We may be opening on a different collection.  Meddle with that collection if
                 // file meddling is enabled.  (Don't stop meddling with the previous collection.)
@@ -469,9 +476,156 @@ namespace Bloom
         private static bool IsOnScreen(Rectangle rect)
         {
             var screens = Screen.AllScreens;
-            var formTopLeft = new Rectangle(rect.Left, rect.Top, 100, 100);
+            var minimumVisibleArea = new Rectangle(rect.Left, rect.Top, 100, 100);
 
-            return screens.Any(screen => screen.WorkingArea.Contains(formTopLeft));
+            return screens.Any(screen =>
+                Rectangle.Intersect(screen.WorkingArea, minimumVisibleArea).Width > 0
+                && Rectangle.Intersect(screen.WorkingArea, minimumVisibleArea).Height > 0
+            );
+        }
+
+        /// <summary>
+        /// Repositions or resizes the main window if monitor geometry changed while Bloom was running
+        /// (for example after sleep/hibernate, DPI changes, or monitor disconnect/reconnect).
+        /// </summary>
+        private void EnsureWindowFitsCurrentScreen()
+        {
+            if (
+                IsDisposed
+                || !IsHandleCreated
+                || !Visible
+                || WindowState == FormWindowState.Minimized
+            )
+                return;
+
+            if (WindowState == FormWindowState.Normal)
+            {
+                var clampedBounds = ClampBoundsToNearestWorkingArea(Bounds);
+                if (clampedBounds != Bounds)
+                {
+                    Bounds = clampedBounds;
+                    Settings.Default.RestoreBounds = clampedBounds;
+                    Settings.Default.Save();
+                }
+                return;
+            }
+
+            if (WindowState == FormWindowState.Maximized && IsMaximizedBoundsOutOfRange())
+            {
+                var fallbackBounds = TryGetClampedSavedBounds(
+                    Settings.Default.RestoreBounds,
+                    out var clampedSavedBounds
+                )
+                    ? clampedSavedBounds
+                    : ClampBoundsToNearestWorkingArea(new Rectangle(Location, Size));
+
+                WindowState = FormWindowState.Normal;
+                Bounds = fallbackBounds;
+                WindowState = FormWindowState.Maximized;
+            }
+        }
+
+        private bool TryGetClampedSavedBounds(Rectangle savedBounds, out Rectangle clampedBounds)
+        {
+            clampedBounds = Rectangle.Empty;
+
+            if (savedBounds.Width <= 200 || savedBounds.Height <= 200 || !IsOnScreen(savedBounds))
+                return false;
+
+            clampedBounds = ClampBoundsToNearestWorkingArea(savedBounds);
+            return true;
+        }
+
+        private Rectangle ClampBoundsToNearestWorkingArea(Rectangle requestedBounds)
+        {
+            var targetScreen = GetNearestScreen(requestedBounds);
+            var workingArea = targetScreen.WorkingArea;
+            var minimumWidth = Math.Min(
+                workingArea.Width,
+                Math.Max(200, MinimumSize.Width > 0 ? MinimumSize.Width : 200)
+            );
+            var minimumHeight = Math.Min(
+                workingArea.Height,
+                Math.Max(200, MinimumSize.Height > 0 ? MinimumSize.Height : 200)
+            );
+
+            var width = Math.Min(Math.Max(requestedBounds.Width, minimumWidth), workingArea.Width);
+            var height = Math.Min(
+                Math.Max(requestedBounds.Height, minimumHeight),
+                workingArea.Height
+            );
+
+            var x = requestedBounds.X;
+            var y = requestedBounds.Y;
+
+            if (x < workingArea.Left)
+                x = workingArea.Left;
+            if (y < workingArea.Top)
+                y = workingArea.Top;
+            if (x + width > workingArea.Right)
+                x = workingArea.Right - width;
+            if (y + height > workingArea.Bottom)
+                y = workingArea.Bottom - height;
+
+            return new Rectangle(x, y, width, height);
+        }
+
+        private static Screen GetNearestScreen(Rectangle bounds)
+        {
+            var centerPoint = new Point(
+                bounds.Left + bounds.Width / 2,
+                bounds.Top + bounds.Height / 2
+            );
+            return Screen.FromPoint(centerPoint);
+        }
+
+        private bool IsMaximizedBoundsOutOfRange()
+        {
+            var currentWorkingArea = Screen.FromControl(this).WorkingArea;
+            var tolerance = 32;
+            var bounds = Bounds;
+
+            return bounds.Left < currentWorkingArea.Left - tolerance
+                || bounds.Top < currentWorkingArea.Top - tolerance
+                || bounds.Right > currentWorkingArea.Right + tolerance
+                || bounds.Bottom > currentWorkingArea.Bottom + tolerance;
+        }
+
+        private void SubscribeToSystemWindowEvents()
+        {
+            SystemEvents.DisplaySettingsChanged += HandleSystemWindowGeometryChange;
+            SystemEvents.PowerModeChanged += HandlePowerModeChanged;
+        }
+
+        private void UnsubscribeFromSystemWindowEvents()
+        {
+            SystemEvents.DisplaySettingsChanged -= HandleSystemWindowGeometryChange;
+            SystemEvents.PowerModeChanged -= HandlePowerModeChanged;
+        }
+
+        private void HandleSystemWindowGeometryChange(object sender, EventArgs e)
+        {
+            EnsureWindowFitsCurrentScreenOnUiThread();
+        }
+
+        private void HandlePowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            if (e.Mode == PowerModes.Resume)
+                EnsureWindowFitsCurrentScreenOnUiThread();
+        }
+
+        private void EnsureWindowFitsCurrentScreenOnUiThread()
+        {
+            if (IsDisposed)
+                return;
+
+            if (InvokeRequired)
+            {
+                BeginInvoke((Action)EnsureWindowFitsCurrentScreen);
+                return;
+            }
+
+            EnsureWindowFitsCurrentScreen();
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
