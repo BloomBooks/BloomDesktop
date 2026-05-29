@@ -613,6 +613,72 @@ namespace BloomTests.TeamCollection
         }
 
         [Test]
+        public void DeleteBookFromRepo_StaleStatusFromAnotherCollection_IgnoresOldName()
+        {
+            const string currentBookName = "Current Book";
+            const string wrongOldName = "Wrong Old Name";
+
+            var currentBookBuilder = new BookFolderBuilder()
+                .WithRootFolder(_collectionFolder.FolderPath)
+                .WithTitle(currentBookName)
+                .WithHtm("<html><body>This is just a dummy</body></html>")
+                .Build();
+            var currentBookFolderPath = currentBookBuilder.BuiltBookFolderPath;
+
+            var wrongBookBuilder = new BookFolderBuilder()
+                .WithRootFolder(_collectionFolder.FolderPath)
+                .WithTitle(wrongOldName)
+                .WithHtm("<html><body>This is just a dummy</body></html>")
+                .Build();
+            var wrongBookFolderPath = wrongBookBuilder.BuiltBookFolderPath;
+
+            _collection.PutBook(currentBookFolderPath);
+            _collection.PutBook(wrongBookFolderPath);
+
+            _collection.WriteLocalStatus(
+                currentBookName,
+                new BookStatus().WithOldName(wrongOldName),
+                collectionId: "not-this-collection"
+            );
+
+            var currentRepoPath = Path.Combine(
+                _sharedFolder.FolderPath,
+                "Books",
+                currentBookName + ".bloom"
+            );
+            var wrongRepoPath = Path.Combine(
+                _sharedFolder.FolderPath,
+                "Books",
+                wrongOldName + ".bloom"
+            );
+            Assert.That(
+                File.Exists(currentRepoPath),
+                Is.True,
+                "current repo book should exist before delete"
+            );
+            Assert.That(
+                File.Exists(wrongRepoPath),
+                Is.True,
+                "wrong repo book should exist before delete"
+            );
+
+            _collection.DeleteBookFromRepo(currentBookFolderPath);
+
+            Assert.That(
+                File.Exists(currentRepoPath),
+                Is.False,
+                "current repo book should be deleted"
+            );
+            Assert.That(
+                File.Exists(wrongRepoPath),
+                Is.True,
+                "stale oldName must not delete a different repo book"
+            );
+            Assert.That(_collection.KnownToHaveBeenDeleted(currentBookName), Is.True);
+            Assert.That(_collection.KnownToHaveBeenDeleted(wrongOldName), Is.False);
+        }
+
+        [Test]
         public void HandleDeletedFile_BookNotDeleted_DoesNothing()
         {
             // Simulate that a book was reported as deleted in the repo, but actually, it's still there
