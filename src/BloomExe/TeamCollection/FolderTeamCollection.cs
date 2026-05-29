@@ -973,9 +973,11 @@ namespace Bloom.TeamCollection
         {
             var currentBookFolderName = Path.GetFileName(bookFolderPath);
             var localStatus = GetLocalStatus(currentBookFolderName);
-            var bookFolderNameToDeleteInRepo = string.IsNullOrEmpty(localStatus.oldName)
-                ? currentBookFolderName
-                : localStatus.oldName;
+            var bookFolderNameToDeleteInRepo =
+                localStatus.collectionId == CollectionId
+                && !string.IsNullOrEmpty(localStatus.oldName)
+                    ? localStatus.oldName
+                    : currentBookFolderName;
             var pathToBookFileInRepo = GetPathToBookFileInRepo(bookFolderNameToDeleteInRepo);
             // The test here is mostly unnecessary, since Delete won't throw if the file doesn't exist
             // (as indeed it might not, even after the test, in a rare race condition with someone else
