@@ -971,7 +971,12 @@ namespace Bloom.TeamCollection
         /// those are now handled using RenameBookInRepo, so currently we never pass false.</param>
         public override void DeleteBookFromRepo(string bookFolderPath, bool makeTombstone = true)
         {
-            var pathToBookFileInRepo = GetPathToBookFileInRepo(Path.GetFileName(bookFolderPath));
+            var currentBookFolderName = Path.GetFileName(bookFolderPath);
+            var localStatus = GetLocalStatus(currentBookFolderName);
+            var bookFolderNameToDeleteInRepo = string.IsNullOrEmpty(localStatus.oldName)
+                ? currentBookFolderName
+                : localStatus.oldName;
+            var pathToBookFileInRepo = GetPathToBookFileInRepo(bookFolderNameToDeleteInRepo);
             // The test here is mostly unnecessary, since Delete won't throw if the file doesn't exist
             // (as indeed it might not, even after the test, in a rare race condition with someone else
             // deleting it, or if this is called as part of MoveBookToCollection). It does serve to make sure at least the containing folder exists, which
@@ -980,7 +985,7 @@ namespace Bloom.TeamCollection
                 RobustFile.Delete(pathToBookFileInRepo);
             if (makeTombstone)
             {
-                var pathForTombstone = GetPathForTombstone(Path.GetFileName(bookFolderPath));
+                var pathForTombstone = GetPathForTombstone(currentBookFolderName);
                 if (pathForTombstone != null)
                 {
                     RobustFile.WriteAllText(
