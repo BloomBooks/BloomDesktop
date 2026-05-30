@@ -392,11 +392,19 @@ namespace Bloom
             // e.g. (window as any).chrome.webview.postMessage("browser-clicked");
             _webview.WebMessageReceived += (o, e) =>
             {
-                // for now the only thing we're using this for is to close the page thumbnail list context menu when the user clicks outside it
-                if (e.TryGetWebMessageAsString() == "browser-clicked")
+                // Plain-string messages use TryGetWebMessageAsString; JSON-object messages throw there.
+                try
                 {
-                    RaiseBrowserClick(null, null);
+                    if (e.TryGetWebMessageAsString() == "browser-clicked")
+                    {
+                        RaiseBrowserClick(null, null);
+                        return;
+                    }
                 }
+                catch (InvalidOperationException) { /* message was sent as JSON, not a plain string */ }
+
+                // Raise the general event so other hosts (e.g. AiImageEditorWindow) can handle JSON messages.
+                WebMessageReceived?.Invoke(this, e.WebMessageAsJson);
             };
 
             // Now do the same thing for any iframes. When an iframe is created...
@@ -410,10 +418,18 @@ namespace Bloom
                 // and thus tell us when it regained it.
                 e.Frame.WebMessageReceived += (a, b) =>
                 {
-                    if (b.TryGetWebMessageAsString() == "browser-clicked")
+                    try
                     {
-                        RaiseBrowserClick(null, null);
+                        if (b.TryGetWebMessageAsString() == "browser-clicked")
+                        {
+                            RaiseBrowserClick(null, null);
+                            return;
+                        }
                     }
+                    catch (InvalidOperationException) { }
+
+                    // Forward JSON messages from iframes (e.g. AI editor iframe).
+                    FrameWebMessageReceived?.Invoke(this, (e.Frame, b.WebMessageAsJson));
                 };
             };
 
@@ -688,6 +704,37 @@ namespace Bloom
         public override async Task RunJavascriptAsync(string script)
         {
             await _webview.ExecuteScriptAsync(script);
+        }
+
+        /// <summary>
+        /// Fired for every main-frame web message that is not the built-in "browser-clicked" string.
+        /// The event argument is the raw JSON payload (e.WebMessageAsJson).
+        /// </summary>
+        public event Action<object, string> WebMessageReceived;
+
+        /// <summary>
+        /// Fired for every iframe web message that is not "browser-clicked".
+        /// Carries the originating CoreWebView2Frame so the handler can post back to it.
+        /// Used by AiImageEditorApi to communicate with the editor iframe.
+        /// </summary>
+        public event Action<object, (CoreWebView2Frame Frame, string Json)> FrameWebMessageReceived;
+
+        /// <summary>
+        /// Post a JSON message to the hosted main-frame web content.
+        /// On the JS side it arrives via window.chrome.webview.addEventListener("message", ...).
+        /// </summary>
+        public void PostWebMessageAsJson(string json)
+        {
+            _webview?.CoreWebView2?.PostWebMessageAsJson(json);
+        }
+
+        /// <summary>
+        /// Post a JSON message to a specific iframe.
+        /// On the JS side inside that iframe it arrives via window.chrome.webview.addEventListener("message", ...).
+        /// </summary>
+        public void PostWebMessageAsJsonToFrame(CoreWebView2Frame frame, string json)
+        {
+            frame?.PostWebMessageAsJson(json);
         }
 
         /// <summary>

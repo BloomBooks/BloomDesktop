@@ -111,6 +111,9 @@ namespace Bloom.Api
             response.AppendHeader("Access-Control-Allow-Origin", "*");
             // Allows bloomlibrary.org to call the external endpoints.
             response.AppendHeader("Access-Control-Allow-Headers", "*");
+            // Required for CORS preflights: allow all standard methods including DELETE (used by
+            // the AI image editor's persistence layer when clearing session data).
+            response.AppendHeader("Access-Control-Allow-Methods", "*");
             Stream output = response.OutputStream;
             try
             {
@@ -430,6 +433,10 @@ namespace Bloom.Api
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-7900.
             if (LocalPathWithoutQuery.ToLowerInvariant().EndsWith(".json"))
                 _actualContext.Response.ContentType = "application/json";
+            // Consistent with WriteCompleteOutput and ReplyWithFileContent: error responses
+            // also need CORS headers so cross-origin callers can read the status code.
+            _actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
+            _actualContext.Response.AppendHeader("Access-Control-Allow-Headers", "*");
             _actualContext.Response.Close();
             HaveFullyProcessedRequest = true;
         }

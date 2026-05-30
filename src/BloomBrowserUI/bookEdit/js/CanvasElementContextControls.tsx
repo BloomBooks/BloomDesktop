@@ -78,8 +78,14 @@ import {
     kCanvasElementClass,
 } from "../toolbox/canvas/canvasElementUtils";
 import { ensureFieldFitsOnCustomPage } from "../toolbox/canvas/derivedFieldFitting";
-import { wrapWithRequestPageContentDelay } from "./bloomEditing";
-import { get, post, useApiObject } from "../../utils/bloomApi";
+import { changeImage, wrapWithRequestPageContentDelay } from "./bloomEditing";
+import {
+    get,
+    post,
+    postJson,
+    postString,
+    useApiObject,
+} from "../../utils/bloomApi";
 import { ILanguageNameValues } from "../bookAndPageSettings/FieldVisibilityGroup";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -1812,6 +1818,362 @@ function addImageMenuOptions(
             ),
         },
     ];
+    imageMenuOptions.push({
+        l10nId: "EditTab.Image.EditWithAI",
+        english: "Edit with AI...",
+        onClick: () => {
+            post("aiImageEditor/launch", (r) => {
+                const launchData = r.data as {
+                    editorUrl: string;
+                    httpBase: string;
+                    sessionToken: string;
+                    book: { id: string; title: string };
+                    bookImages?: Array<{
+                        id: string;
+                        src: string;
+                        pageLabel?: string;
+                        width?: number;
+                        height?: number;
+                        isPlaceholder?: boolean;
+                    }>;
+                    references?: Array<{
+                        id: string;
+                        src: string;
+                        name?: string;
+                    }>;
+                    apiKey?: string | null;
+                    openRouterUser?: string | null;
+                };
+                const hostWindow = (window.top ?? window) as Window & {
+                    __bloomAiImageEditorCleanup?: () => void;
+                };
+                const hostDocument = hostWindow.document;
+                const iframeUrl = new URL(
+                    launchData.editorUrl,
+                    hostWindow.location.href,
+                );
+                iframeUrl.searchParams.set("mode", "bloom-iframe");
+                // Bloom (C#) enumerates every user-changeable image in the whole book
+                // and supplies them as `launchData.bookImages`, each with a stable
+                // "{pageId}:{ordinal}" id the editor echoes back on commit. The host
+                // applies replacements book-wide in C#, so there is no per-image DOM
+                // id wrangling here anymore.
+
+                // Identify the image the user actually right-clicked so the editor can
+                // open with it already in the "Image to Edit" slot. We match by page +
+                // filename rather than DOM ordinal, because the live page has extra
+                // injected UI images that would throw positional indices off.
+                const fileNameOf = (url?: string | null) => {
+                    try {
+                        return decodeURIComponent(
+                            (url ?? "").split("?")[0].split("/").pop() ?? "",
+                        );
+                    } catch {
+                        return "";
+                    }
+                };
+                const clickedUrl = imgContainer
+                    ? getImageUrlFromImageContainer(imgContainer as HTMLElement)
+                    : (img as HTMLImageElement)?.getAttribute("src");
+                const clickedPageId = canvasElement
+                    .closest(".bloom-page")
+                    ?.getAttribute("id");
+                const clickedFile = fileNameOf(clickedUrl);
+                const clickedMatch =
+                    clickedPageId && clickedFile
+                        ? (launchData.bookImages ?? []).find(
+                              (bi) =>
+                                  bi.id.startsWith(clickedPageId + ":") &&
+                                  fileNameOf(bi.src) === clickedFile,
+                          )
+                        : undefined;
+                // Don't preload an empty placeholder slot into the edit target — there's
+                // nothing to edit, and its placeholder graphic isn't a real raster image.
+                const selectedBookImageId = clickedMatch?.isPlaceholder
+                    ? undefined
+                    : clickedMatch?.id;
+
+                const initPayload = {
+                    ...launchData,
+                    bookImages: launchData.bookImages ?? [],
+                    references: launchData.references ?? [],
+                    apiKey: launchData.apiKey ?? null,
+                    selectedBookImageId,
+                };
+
+                hostWindow.__bloomAiImageEditorCleanup?.();
+
+                const cleanup = () => {
+                    hostWindow.removeEventListener("message", handleMessage);
+                    hostDocument.getElementById("ai-editor-overlay")?.remove();
+                    delete hostWindow.__bloomAiImageEditorCleanup;
+                };
+
+                const overlay = hostDocument.createElement("div");
+                overlay.id = "ai-editor-overlay";
+                Object.assign(overlay.style, {
+                    position: "fixed",
+                    inset: "8px",
+                    zIndex: "10000",
+                    background: "#1a1a2e",
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                    boxShadow: "0 18px 48px rgba(0, 0, 0, 0.45)",
+                });
+
+                const closeBtn = hostDocument.createElement("button");
+                closeBtn.textContent = "✕";
+                Object.assign(closeBtn.style, {
+                    position: "absolute",
+                    top: "8px",
+                    right: "12px",
+                    zIndex: "10001",
+                    background: "transparent",
+                    border: "none",
+                    color: "#fff",
+                    fontSize: "20px",
+                    cursor: "pointer",
+                    opacity: "0.6",
+                });
+                closeBtn.onclick = cleanup;
+                overlay.appendChild(closeBtn);
+
+                const iframe = hostDocument.createElement("iframe");
+                iframe.src = iframeUrl.toString();
+                iframe.setAttribute("allow", "clipboard-read; clipboard-write");
+                Object.assign(iframe.style, {
+                    width: "100%",
+                    height: "100%",
+                    border: "none",
+                });
+                overlay.appendChild(iframe);
+
+                // Apply replacements the host flagged as being on the currently-edited
+                // page. The host can't change that page itself (the live browser owns
+                // it), so it returns oldSrc/newSrc and we use Bloom's changeImage() on
+                // the live DOM. We match by oldSrc rather than index because the live
+                // page has extra UI images that would throw off positional ordinals.
+                const applyCurrentPageReplacements = (
+                    results?: Array<{
+                        ok?: boolean;
+                        isCurrentPage?: boolean;
+                        oldSrc?: string;
+                        newSrc?: string;
+                    }>,
+                ) => {
+                    if (!results) return;
+                    const pageDoc = img.ownerDocument;
+                    const pageRoot =
+                        (pageDoc.querySelector(".bloom-page") as HTMLElement) ||
+                        pageDoc;
+                    const decode = (s?: string | null) => {
+                        if (!s) return "";
+                        try {
+                            return decodeURIComponent(s);
+                        } catch {
+                            return s;
+                        }
+                    };
+                    const srcOf = (el: Element) => {
+                        if (el.tagName === "IMG")
+                            return el.getAttribute("src") || "";
+                        const m = (el.getAttribute("style") || "").match(
+                            /url\(['"]?([^'")]+)/,
+                        );
+                        return m ? m[1] : "";
+                    };
+                    // A page can have several slots sharing the same source (e.g. multiple
+                    // empty placeholders). Consume each matched element once so distinct
+                    // replacements land on distinct elements instead of collapsing onto the
+                    // first match.
+                    const usedElements = new Set<Element>();
+                    results
+                        .filter(
+                            (r) =>
+                                r &&
+                                r.ok &&
+                                r.isCurrentPage &&
+                                r.newSrc &&
+                                r.oldSrc,
+                        )
+                        .forEach((r) => {
+                            const target = Array.from(
+                                pageRoot.querySelectorAll(
+                                    'img, [style*="background-image"]',
+                                ),
+                            ).find(
+                                (el) =>
+                                    !usedElements.has(el) &&
+                                    decode(srcOf(el)) === decode(r.oldSrc),
+                            ) as HTMLElement | undefined;
+                            if (!target) return;
+                            usedElements.add(target);
+                            if (!target.id) {
+                                target.id =
+                                    "bloom-ai-" +
+                                    Math.random().toString(36).slice(2, 10);
+                            }
+                            const creator =
+                                target.getAttribute("data-creator") || "";
+                            const newCreator = /Edited with AI/i.test(creator)
+                                ? creator
+                                : creator
+                                  ? creator + ", Edited with AI"
+                                  : "Edited with AI";
+                            changeImage({
+                                imageId: target.id,
+                                src: r.newSrc as string,
+                                creator: newCreator,
+                                copyright:
+                                    target.getAttribute("data-copyright") || "",
+                                license:
+                                    target.getAttribute("data-license") || "",
+                            });
+                        });
+                };
+
+                const handleMessage = (event: MessageEvent) => {
+                    if (event.source !== iframe.contentWindow) {
+                        return;
+                    }
+
+                    const data = event.data as
+                        | {
+                              channel?: string;
+                              type?: string;
+                              requestId?: string;
+                              payload?: {
+                                  level?: string;
+                                  message?: string;
+                                  url?: string;
+                                  replacements?: Array<{
+                                      incomingId?: string;
+                                      resultId?: string;
+                                  }>;
+                              };
+                          }
+                        | undefined;
+
+                    if (data?.channel !== "bloom-ai-image-tools") {
+                        return;
+                    }
+
+                    switch (data.type) {
+                        case "ready":
+                            iframe.contentWindow?.postMessage(
+                                {
+                                    channel: "bloom-ai-image-tools",
+                                    type: "init",
+                                    payload: initPayload,
+                                },
+                                iframeUrl.origin,
+                            );
+                            break;
+                        case "cancel":
+                            cleanup();
+                            break;
+                        case "commit": {
+                            // Replacements can target images on any page of the book.
+                            // The host (AiImageEditorApi.HandleCommit) applies changes to
+                            // NON-current pages directly against the whole-book DOM and
+                            // saves. It cannot touch the page currently open for editing
+                            // (the live browser owns it), so for those it returns
+                            // {isCurrentPage, oldSrc, newSrc} and we apply them here via
+                            // Bloom's own changeImage() against the live page DOM.
+                            const requestId = data.requestId;
+                            const ackEditor = (ok: boolean, error?: string) => {
+                                iframe.contentWindow?.postMessage(
+                                    {
+                                        channel: "bloom-ai-image-tools",
+                                        type: "ack",
+                                        requestId,
+                                        ok,
+                                        error,
+                                    },
+                                    iframeUrl.origin,
+                                );
+                            };
+
+                            const replacements =
+                                data.payload?.replacements ?? [];
+                            if (replacements.length === 0) {
+                                ackEditor(false, "No replacements to apply.");
+                                break;
+                            }
+
+                            postJson(
+                                "aiImageEditor/commit?session=" +
+                                    encodeURIComponent(launchData.sessionToken),
+                                { replacements },
+                                (response) => {
+                                    const result = response?.data as
+                                        | {
+                                              ok?: boolean;
+                                              appliedCount?: number;
+                                              results?: Array<{
+                                                  ok?: boolean;
+                                                  isCurrentPage?: boolean;
+                                                  oldSrc?: string;
+                                                  newSrc?: string;
+                                              }>;
+                                          }
+                                        | undefined;
+                                    applyCurrentPageReplacements(
+                                        result?.results,
+                                    );
+                                    const ok = result?.ok !== false;
+                                    ackEditor(
+                                        ok,
+                                        ok
+                                            ? undefined
+                                            : "Some images could not be replaced.",
+                                    );
+                                    if (ok) {
+                                        cleanup();
+                                    }
+                                },
+                                () => {
+                                    ackEditor(
+                                        false,
+                                        "Failed to apply replacements.",
+                                    );
+                                },
+                            );
+                            break;
+                        }
+                        case "log":
+                            console.log(
+                                "[AI Image Editor:" +
+                                    (data.payload?.level ?? "info") +
+                                    "] " +
+                                    (data.payload?.message ?? ""),
+                            );
+                            break;
+                        case "open-external":
+                            // The editor wants a URL (OpenRouter OAuth) opened in the
+                            // user's real default browser, not navigated inside the
+                            // WebView. Bloom shells out to the OS default browser.
+                            if (data.payload?.url) {
+                                postString(
+                                    "aiImageEditor/openExternal?session=" +
+                                        encodeURIComponent(
+                                            launchData.sessionToken,
+                                        ),
+                                    data.payload.url,
+                                );
+                            }
+                            break;
+                    }
+                };
+
+                hostWindow.addEventListener("message", handleMessage);
+                hostWindow.__bloomAiImageEditorCleanup = cleanup;
+                hostDocument.body.appendChild(overlay);
+            });
+            setMenuOpen(false, true);
+        },
+        icon: <img src="/bloom/images/ai-edit.svg" css={getMenuIconCss()} />,
+    });
 
     if (
         // Don't include the Set Up Hyperlink item for navigation buttons

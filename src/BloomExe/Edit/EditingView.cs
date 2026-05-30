@@ -52,6 +52,9 @@ namespace Bloom.Edit
         private PageListApi _pageListApi;
         private Timer _editButtonsUpdateTimer;
         private Browser _mainBrowser => WorkspaceView?.MainBrowser;
+
+        /// <summary>Exposes the main browser so API handlers can inject JS or hook iframe messages.</summary>
+        public Browser MainBrowser => _mainBrowser;
         private WorkspaceView _workspaceView;
         private Form _hostFormForEvents;
 
@@ -107,6 +110,7 @@ namespace Bloom.Edit
             SignLanguageApi signLanguageApi,
             CommonApi commonApi,
             EditingViewApi editingViewApi,
+            AiImageEditorApi aiImageEditorApi,
             PageListApi pageListApi,
             BookRenamedEvent bookRenamedEvent,
             CopyrightAndLicenseApi copyrightAndLicenseApi,
@@ -133,6 +137,7 @@ namespace Bloom.Edit
             signLanguageApi.Model = _model;
             signLanguageApi.View = this;
             editingViewApi.View = this;
+            aiImageEditorApi.View = this;
             commonApi.Model = _model;
             _copyrightAndLicenseApi = copyrightAndLicenseApi;
             copyrightAndLicenseApi.Model = _model;

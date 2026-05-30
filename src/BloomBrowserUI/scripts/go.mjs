@@ -15,9 +15,12 @@ process.env.feedback = "off";
 const startupQuietMs = 1500;
 const viteHealthTimeoutMs = 15000;
 const viteHealthPollMs = 250;
+const viteClientProbeTimeoutMs = 1500;
 const maxRandomVitePortAttempts = 10;
 const gracefulShutdownMs = 1500;
 const toViteOrigin = (port) => `http://localhost:${port}`;
+const toViteIpv6LoopbackOrigin = (port) => `http://[::1]:${port}`;
+const toViteLoopbackOrigin = (port) => `http://127.0.0.1:${port}`;
 
 const parsePositiveInteger = (value) => {
     const parsed = Number.parseInt(value, 10);
@@ -216,14 +219,26 @@ const pickRandomAvailablePort = () =>
     });
 
 const isViteClientReachable = async (port) => {
-    try {
-        const response = await fetch(`${toViteOrigin(port)}/@vite/client`, {
-            signal: AbortSignal.timeout(500),
-        });
-        return response.ok;
-    } catch {
-        return false;
+    const origins = [
+        toViteOrigin(port),
+        toViteIpv6LoopbackOrigin(port),
+        toViteLoopbackOrigin(port),
+    ];
+
+    for (const origin of origins) {
+        try {
+            const response = await fetch(`${origin}/@vite/client`, {
+                signal: AbortSignal.timeout(viteClientProbeTimeoutMs),
+            });
+            if (response.ok) {
+                return true;
+            }
+        } catch {
+            // Try the next loopback address before treating this poll as failed.
+        }
     }
+
+    return false;
 };
 
 const waitForViteClient = async (port, timeoutMs) => {

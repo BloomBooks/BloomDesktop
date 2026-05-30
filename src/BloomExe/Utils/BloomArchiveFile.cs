@@ -160,6 +160,10 @@ namespace Bloom.Utils
                     if (dirName == null)
                         continue; // Don't want to bundle these up
 
+                    // Skip hidden/metadata folders (e.g. .ai-image-editor, .git).
+                    if (dirName.StartsWith(".", StringComparison.Ordinal))
+                        continue;
+
                     count += AddDirectory(folder, dirNameOffest, extensionsToExclude, justCount);
                 }
             }
