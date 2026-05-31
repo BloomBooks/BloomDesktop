@@ -1818,6 +1818,26 @@ function addImageMenuOptions(
             ),
         },
     ];
+    // "Edit with AI…" — the entry point for the AI Image Editor integration.
+    //
+    // This is the front-end half of a feature whose C# half is AiImageEditorApi.cs
+    // (read that file's header for the full picture). The editor is a SEPARATE web app
+    // (the `bloom-ai-image-tools` package); we do not import it — we load it into an
+    // <iframe> overlay. The flow:
+    //   1. POST aiImageEditor/launch -> C# mints a session, makes the per-book
+    //      .ai-image-editor folder, and returns the editor URL + the whole-book image
+    //      list + enumerated history + httpBase/sessionToken.
+    //   2. Build a fixed overlay <div id="ai-editor-overlay"> holding an <iframe> at
+    //      that URL with ?mode=bloom-iframe.
+    //   3. Handshake over window.postMessage on channel "bloom-ai-image-tools": the
+    //      editor posts `ready`; we post `init` (the launch reply + the right-clicked
+    //      image as selectedBookImageId). Image bytes never ride postMessage — they go
+    //      over HTTP via aiImageEditor/file; the editor references results by id.
+    //   4. On `commit` we POST aiImageEditor/commit; C# applies replacements to all
+    //      non-current pages and returns {oldSrc,newSrc} for any on the live page, which
+    //      we apply here via Bloom's changeImage(). `cancel`/close just tear the overlay
+    //      down. (There is intentionally no C#->iframe message channel; init flows from
+    //      here, the overlay JS, because only the browser can postMessage to the iframe.)
     imageMenuOptions.push({
         l10nId: "EditTab.Image.EditWithAI",
         english: "Edit with AI...",
@@ -1840,6 +1860,13 @@ function addImageMenuOptions(
                         id: string;
                         src: string;
                         name?: string;
+                    }>;
+                    // Enumerated by C# from the per-book history folder; rides through
+                    // the `...launchData` spread into the editor's init payload.
+                    history?: Array<{
+                        id: string;
+                        url: string;
+                        metadata?: Record<string, unknown> | null;
                     }>;
                     apiKey?: string | null;
                     openRouterUser?: string | null;

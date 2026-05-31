@@ -401,9 +401,11 @@ namespace Bloom
                         return;
                     }
                 }
-                catch (InvalidOperationException) { /* message was sent as JSON, not a plain string */ }
+                catch (InvalidOperationException)
+                { /* message was sent as JSON, not a plain string */
+                }
 
-                // Raise the general event so other hosts (e.g. AiImageEditorWindow) can handle JSON messages.
+                // Raise the general event so listeners (e.g. Bloom's React UI) can handle JSON messages.
                 WebMessageReceived?.Invoke(this, e.WebMessageAsJson);
             };
 
@@ -427,9 +429,6 @@ namespace Bloom
                         }
                     }
                     catch (InvalidOperationException) { }
-
-                    // Forward JSON messages from iframes (e.g. AI editor iframe).
-                    FrameWebMessageReceived?.Invoke(this, (e.Frame, b.WebMessageAsJson));
                 };
             };
 
@@ -713,28 +712,12 @@ namespace Bloom
         public event Action<object, string> WebMessageReceived;
 
         /// <summary>
-        /// Fired for every iframe web message that is not "browser-clicked".
-        /// Carries the originating CoreWebView2Frame so the handler can post back to it.
-        /// Used by AiImageEditorApi to communicate with the editor iframe.
-        /// </summary>
-        public event Action<object, (CoreWebView2Frame Frame, string Json)> FrameWebMessageReceived;
-
-        /// <summary>
         /// Post a JSON message to the hosted main-frame web content.
         /// On the JS side it arrives via window.chrome.webview.addEventListener("message", ...).
         /// </summary>
         public void PostWebMessageAsJson(string json)
         {
             _webview?.CoreWebView2?.PostWebMessageAsJson(json);
-        }
-
-        /// <summary>
-        /// Post a JSON message to a specific iframe.
-        /// On the JS side inside that iframe it arrives via window.chrome.webview.addEventListener("message", ...).
-        /// </summary>
-        public void PostWebMessageAsJsonToFrame(CoreWebView2Frame frame, string json)
-        {
-            frame?.PostWebMessageAsJson(json);
         }
 
         /// <summary>

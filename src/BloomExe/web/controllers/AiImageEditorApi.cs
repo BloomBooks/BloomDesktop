@@ -11,38 +11,83 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Bloom.ToPalaso;
-using Microsoft.Web.WebView2.Core;
 using Newtonsoft.Json;
 using SIL.IO;
 
 namespace Bloom.web.controllers
 {
     /// <summary>
-    /// Handles the AI Image Editor integration: launching the editor as an iframe
-    /// overlay within the existing Bloom WebView2 and serving per-book file I/O
-    /// from the .ai-image-editor folder.
+    /// AI Image Editor integration — host (Bloom) side.
+    ///
+    /// WHAT THIS IS
+    ///   "Edit with AI…" (the image context menu) opens a separate web app — the
+    ///   `bloom-ai-image-tools` editor — as an IFRAME OVERLAY inside Bloom's existing
+    ///   edit-tab WebView2. It is NOT a separate window, and Bloom does NOT import the
+    ///   editor's code: the editor is a self-contained web app loaded by URL. There is
+    ///   no npm/bundler dependency between the two projects.
+    ///
+    /// WHERE THE EDITOR COMES FROM  (see GetEditorUrl)
+    ///   DEBUG  : http://localhost:3000/  — the editor repo's Vite dev server (HMR).
+    ///   RELEASE: {ServerUrl}/bloom/aiImageEditor/index.html — the editor's built app
+    ///            ("dist-app"), served same-origin by BloomServer so there's no CORS.
+    ///   NOTE: the RELEASE path is not fully wired yet. A build step must copy the
+    ///   editor package's `dist-app/` into output/browser/aiImageEditor/ (mirroring the
+    ///   existing `bp-to-output` copy for bloom-player), and Bloom must take a dependency
+    ///   on the published `bloom-ai-image-tools` package as the source.
+    ///
+    /// TWO COMMUNICATION PLANES
+    ///   1. HTTP, editor/front-end JS -> this controller, over Bloom's own local server:
+    ///        aiImageEditor/launch        mint session, make folders, enumerate book
+    ///                                    images + history, return the launch payload.
+    ///        aiImageEditor/file          GET/POST/DELETE files under .ai-image-editor/.
+    ///        aiImageEditor/commit        apply the chosen replacements to the book.
+    ///        aiImageEditor/openExternal  open an OpenRouter OAuth URL in the real browser.
+    ///        aiImageEditor/oauth-*       OAuth callback + result polling.
+    ///   2. window.postMessage on channel "bloom-ai-image-tools", between the overlay JS
+    ///      (CanvasElementContextControls.tsx) and the editor iframe: ready / init /
+    ///      commit / cancel / log / open-external / ack. The overlay JS — NOT this class —
+    ///      sends `init` (built from the launch reply) and tears the overlay down. Image
+    ///      BYTES never cross postMessage; they move only as files via aiImageEditor/file.
+    ///
+    /// DATA ON DISK
+    ///   Per-book folder `<book>/.ai-image-editor/` with `history/<id>.png` images and
+    ///   `history/<id>.json` sidecars. The history folder is the source of truth.
+    ///
+    /// SECURITY
+    ///   A per-launch session token (query param) gates /file, /commit, /oauth-result.
+    ///   File names are allow-listed; page/result ids are charset-restricted; reused
+    ///   source URLs must resolve inside the book folder (no path traversal); openExternal
+    ///   is restricted to https openrouter.ai.
+    ///
+    /// COMMIT SPLIT
+    ///   Off-page images are edited directly in the whole-book DOM here and saved. The
+    ///   currently-open page is owned by the live browser, so those replacements are
+    ///   returned as {oldSrc,newSrc} for the overlay JS to apply via Bloom's changeImage().
+    ///
+    /// EDITOR REPO: bloom-ai-image-tools — App.tsx (mode=bloom-iframe),
+    ///   services/host/BloomHostBridge.ts (createIframeBloomHostBridge),
+    ///   components/BloomEmbeddedShell.tsx.
     /// </summary>
     public class AiImageEditorApi
     {
         private readonly BookSelection _bookSelection;
 
-        /// <summary>Set by EditingView constructor — gives access to the main browser.</summary>
+        /// <summary>Set by the EditingView constructor — used at commit time to detect the
+        /// currently-open page (which the live browser owns) so we don't edit it from here.</summary>
         public EditingView View { get; set; }
 
-        // Minted at launch; invalidated when the editor sends `cancel`.
+        // Minted at launch; torn down on the next launch (see EndSession). The editor's
+        // `cancel`/`commit` are handled in the overlay JS, which removes the overlay.
         private string _sessionToken;
-
-        // The CoreWebView2Frame for the active editor iframe (set when editor sends `ready`).
-        private CoreWebView2Frame _editorFrame;
-
-        // Stored so we can unsubscribe when the session ends.
-        private Action<object, (CoreWebView2Frame Frame, string Json)> _frameMessageHandler;
 
         private string _pendingOAuthCode;
         private string _pendingOAuthError;
 
+        // Files the /file endpoint may read/write/delete: the two top-level json files,
+        // history image bytes (any supported raster extension), and the per-image
+        // history sidecars (history/<id>.json) that travel with each image.
         private static readonly Regex AllowedFileName = new Regex(
-            @"^(state\.json|connection\.json|history/[a-zA-Z0-9_\-]+\.png)$",
+            @"^(state\.json|connection\.json|history/[a-zA-Z0-9_\-]+\.(png|jpe?g|gif|webp|bmp|tiff?|svg|json))$",
             RegexOptions.Compiled | RegexOptions.IgnoreCase
         );
 
@@ -128,21 +173,12 @@ namespace Bloom.web.controllers
             var editorFolder = GetEditorFolderPath();
             Directory.CreateDirectory(Path.Combine(editorFolder, "history"));
 
-            var httpBase =
-                $"{BloomServer.ServerUrlWithBloomPrefixEndingInSlash}api/aiImageEditor";
+            var httpBase = $"{BloomServer.ServerUrlWithBloomPrefixEndingInSlash}api/aiImageEditor";
 
-            // Subscribe to iframe messages so we can send `init` when the editor is ready.
-            var mainBrowser = View?.MainBrowser as WebView2Browser;
-            if (mainBrowser != null)
-            {
-                _frameMessageHandler = OnEditorFrameMessage;
-                mainBrowser.FrameWebMessageReceived += _frameMessageHandler;
-            }
-
-            // Return the data the JS needs to create the iframe overlay. The editor
-            // runs in iframe mode and gets its `init` from the overlay JS, which builds
-            // it from this reply (it does NOT receive the WebView2 frame message that
-            // SendInit posts). So the whole-book image list must travel here.
+            // Return the data the JS needs to create the iframe overlay. The editor runs
+            // in iframe mode and gets its `init` from the overlay JS (which builds it from
+            // this reply and posts it to the iframe), so the whole-book image list must
+            // travel here rather than over any C#->iframe channel.
             request.ReplyWithJson(
                 new
                 {
@@ -151,49 +187,13 @@ namespace Bloom.web.controllers
                     sessionToken = _sessionToken,
                     book = new { id = book.BookInfo.Id, title = book.BookInfo.Title },
                     bookImages = EnumerateBookImages(book),
+                    // The history folder is the source of truth; enumerate it so images
+                    // (and their sidecars) appear even when state.json doesn't list them.
+                    history = EnumerateHistoryImages(book),
                     references = Array.Empty<object>(),
                     apiKey = (string)null,
                 }
             );
-        }
-
-        private void OnEditorFrameMessage(
-            object sender,
-            (CoreWebView2Frame Frame, string Json) args
-        )
-        {
-            try
-            {
-                dynamic message = JsonConvert.DeserializeObject(args.Json);
-                string type = (string)message?.type;
-
-                switch (type)
-                {
-                    case "ready":
-                        _editorFrame = args.Frame;
-                        SendInit(args.Frame);
-                        break;
-
-                    case "cancel":
-                        RemoveOverlay();
-                        EndSession();
-                        break;
-
-                    case "log":
-                        var level = (string)message?.payload?.level ?? "info";
-                        var text = (string)message?.payload?.message ?? "";
-                        Debug.WriteLine($"[AiImageEditor:{level}] {text}");
-                        break;
-
-                    case "open-external":
-                        OpenExternalUrl((string)message?.payload?.url);
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"AiImageEditorApi frame message error: {ex.Message}");
-            }
         }
 
         private void HandleOpenExternal(ApiRequest request)
@@ -227,51 +227,13 @@ namespace Bloom.web.controllers
             ProcessExtra.SafeStartInFront(uri.AbsoluteUri);
         }
 
-        private void SendInit(CoreWebView2Frame frame)
-        {
-            var book = _bookSelection.CurrentSelection;
-            if (book == null || _sessionToken == null)
-                return;
-
-            var httpBase =
-                $"{BloomServer.ServerUrlWithBloomPrefixEndingInSlash}api/aiImageEditor";
-            var initPayload = new
-            {
-                book = new { id = book.BookInfo.Id, title = book.BookInfo.Title },
-                httpBase,
-                sessionToken = _sessionToken,
-                // The iframe editor receives its real init (incl. bookImages) from the
-                // overlay JS built off the launch reply; it does not consume this WebView2
-                // frame message, so there's no need to enumerate the whole book again here.
-                bookImages = Array.Empty<object>(),
-                references = Array.Empty<object>(),
-                apiKey = (string)null,
-            };
-            var json = JsonConvert.SerializeObject(new { type = "init", payload = initPayload });
-            (View?.MainBrowser as WebView2Browser)?.PostWebMessageAsJsonToFrame(frame, json);
-        }
-
-        private void RemoveOverlay()
-        {
-            var mainBrowser = View?.MainBrowser as WebView2Browser;
-            mainBrowser?.RunJavascriptFireAndForget(
-                "document.getElementById('ai-editor-overlay')?.remove();"
-            );
-        }
-
+        // Invalidates the current session. Called at the start of each launch to tear down
+        // any prior session; the overlay itself is created and removed by the overlay JS.
         private void EndSession()
         {
             _sessionToken = null;
-            _editorFrame = null;
             _pendingOAuthCode = null;
             _pendingOAuthError = null;
-
-            var mainBrowser = View?.MainBrowser as WebView2Browser;
-            if (mainBrowser != null && _frameMessageHandler != null)
-            {
-                mainBrowser.FrameWebMessageReceived -= _frameMessageHandler;
-                _frameMessageHandler = null;
-            }
         }
 
         private bool HasValidSession(ApiRequest request)
@@ -301,7 +263,9 @@ namespace Bloom.web.controllers
 
             if (!string.IsNullOrEmpty(error))
             {
-                request.ReplyWithText($"OpenRouter sign-in failed: {error}. You can return to Bloom.");
+                request.ReplyWithText(
+                    $"OpenRouter sign-in failed: {error}. You can return to Bloom."
+                );
                 return;
             }
 
@@ -357,7 +321,7 @@ namespace Bloom.web.controllers
                         request.Failed(System.Net.HttpStatusCode.NotFound, "Not found");
                         return;
                     }
-                    if (name.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                    if (IsImageFileName(name))
                         request.ReplyWithImage(fullPath);
                     else
                         request.ReplyWithFileContent(fullPath);
@@ -421,6 +385,9 @@ namespace Bloom.web.controllers
             ".tif",
             ".tiff",
         };
+
+        private static bool IsImageFileName(string name) =>
+            AllowedImageExtensions.Contains(Path.GetExtension(name));
 
         private class CommitRequest
         {
@@ -494,6 +461,83 @@ namespace Bloom.web.controllers
             }
 
             return images;
+        }
+
+        /// <summary>
+        /// Enumerates the per-book history folder so the editor can rebuild its history
+        /// from the files on disk — the folder is the source of truth. Each image is
+        /// returned as a reference (id + servable book-folder URL) plus the parsed
+        /// contents of its sibling &lt;id&gt;.json sidecar, when present. Bytes are fetched
+        /// lazily by URL, never inlined. Images with no sidecar (e.g. dropped in by hand)
+        /// are still returned; the editor recovers them. Empty placeholder files and
+        /// non-image files (including the sidecars themselves) are skipped.
+        /// </summary>
+        private List<object> EnumerateHistoryImages(Bloom.Book.Book book)
+        {
+            var result = new List<object>();
+            var editorFolder = GetEditorFolderPath();
+            if (editorFolder == null)
+                return result;
+            var historyFolder = Path.Combine(editorFolder, "history");
+            if (!Directory.Exists(historyFolder))
+                return result;
+
+            var folderAsUrlPrefix = book.FolderPath.Replace("\\", "/");
+
+            foreach (var imagePath in Directory.EnumerateFiles(historyFolder))
+            {
+                var fileName = Path.GetFileName(imagePath);
+                if (!IsImageFileName(fileName))
+                    continue; // skip the .json sidecars and anything that isn't an image
+
+                // The id is echoed back on commit and interpolated into paths, so keep it safe.
+                var id = Path.GetFileNameWithoutExtension(fileName);
+                if (string.IsNullOrEmpty(id) || !SafeId.IsMatch(id))
+                    continue;
+
+                // Skip empty placeholder files (e.g. book-image slots written with no bytes).
+                try
+                {
+                    if (new FileInfo(imagePath).Length == 0)
+                        continue;
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                object metadata = null;
+                var sidecarPath = Path.Combine(historyFolder, id + ".json");
+                if (RobustFile.Exists(sidecarPath))
+                {
+                    try
+                    {
+                        metadata = JsonConvert.DeserializeObject(
+                            RobustFile.ReadAllText(sidecarPath)
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(
+                            $"AiImageEditor: ignoring malformed sidecar {sidecarPath}: {ex.Message}"
+                        );
+                    }
+                }
+
+                var url = (
+                    folderAsUrlPrefix + "/.ai-image-editor/history/" + fileName
+                ).ToLocalhost();
+                result.Add(
+                    new
+                    {
+                        id,
+                        url,
+                        metadata,
+                    }
+                );
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -688,7 +732,11 @@ namespace Bloom.web.controllers
                     error = "Invalid resultId";
                     return false;
                 }
-                sourceBytesPath = Path.Combine(editorFolder, "history", replacement.resultId + ".png");
+                sourceBytesPath = Path.Combine(
+                    editorFolder,
+                    "history",
+                    replacement.resultId + ".png"
+                );
                 if (!RobustFile.Exists(sourceBytesPath))
                 {
                     error = "Result image not found";
@@ -724,7 +772,10 @@ namespace Bloom.web.controllers
                 return true;
             }
 
-            HtmlDom.SetImageElementUrl(element, UrlPathString.CreateFromUnencodedString(newFileName));
+            HtmlDom.SetImageElementUrl(
+                element,
+                UrlPathString.CreateFromUnencodedString(newFileName)
+            );
 
             // Keep existing copyright/license; mark the illustrator as AI-edited (once).
             AppendEditedWithAiCredit(element);
@@ -764,7 +815,11 @@ namespace Bloom.web.controllers
                     return false;
                 if (!RobustFile.Exists(fullCandidate))
                     return false;
-                if (!AllowedImageExtensions.Contains(Path.GetExtension(fullCandidate).ToLowerInvariant()))
+                if (
+                    !AllowedImageExtensions.Contains(
+                        Path.GetExtension(fullCandidate).ToLowerInvariant()
+                    )
+                )
                     return false;
                 fsPath = fullCandidate;
                 return true;
