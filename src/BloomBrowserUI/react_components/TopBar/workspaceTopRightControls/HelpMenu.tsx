@@ -79,6 +79,7 @@ export const HelpMenu: React.FunctionComponent = () => {
         helpText === "?" || ["en", "fr", "de", "es"].includes(uiLanguage);
     const [anchorEl, setAnchorEl] = React.useState<HTMLElement>();
     const [suppressTooltip, setSuppressTooltip] = React.useState(false);
+    const pendingMenuCloseActionRef = React.useRef<(() => void) | undefined>();
 
     const showRegistrationDialogFromWorkspaceRoot = React.useCallback(() => {
         (
@@ -274,17 +275,36 @@ export const HelpMenu: React.FunctionComponent = () => {
             if (!item.onClick || item.enabled === false) {
                 return;
             }
-            item.onClick();
             onClose();
+            // For reporting a problem, we want to wait until the menu has fully closed
+            // before opening the problem report dialog, because that dialog needs to take
+            // a screenshot of the Bloom window, and we don't want the menu in that
+            // screenshot. So instead of calling the click handler directly, we save it
+            // in a ref and call it from the onMenuExited handler for the menu.
+            if (item.id === "reportProblem") {
+                pendingMenuCloseActionRef.current = item.onClick;
+                return;
+            }
+            item.onClick();
         },
         [onClose],
     );
+
+    const onMenuExited = React.useCallback(() => {
+        if (!pendingMenuCloseActionRef.current) {
+            return;
+        }
+        const pendingAction = pendingMenuCloseActionRef.current;
+        pendingMenuCloseActionRef.current = undefined;
+        pendingAction();
+    }, []);
 
     const menu = (
         <Menu
             open={Boolean(anchorEl)}
             anchorEl={anchorEl}
             onClose={onClose}
+            TransitionProps={{ onExited: onMenuExited }}
             disablePortal={false}
             keepMounted={false}
             anchorOrigin={{
