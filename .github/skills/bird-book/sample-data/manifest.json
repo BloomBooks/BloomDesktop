@@ -1,0 +1,618 @@
+[
+    {
+        "row": 2,
+        "file": "b001.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 3,
+        "file": "b002.jpg",
+        "ok": true,
+        "w": 943,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 4,
+        "file": "b003.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 900,
+        "err": ""
+    },
+    {
+        "row": 5,
+        "file": "b004.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 743,
+        "err": ""
+    },
+    {
+        "row": 6,
+        "file": "b005.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 900,
+        "err": ""
+    },
+    {
+        "row": 7,
+        "file": "b006.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 900,
+        "err": ""
+    },
+    {
+        "row": 8,
+        "file": "b007.jpg",
+        "ok": true,
+        "w": 1125,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 9,
+        "file": "b008.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 847,
+        "err": ""
+    },
+    {
+        "row": 10,
+        "file": "b009.jpg",
+        "ok": true,
+        "w": 961,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 11,
+        "file": "b010.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 12,
+        "file": "b011.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 900,
+        "err": ""
+    },
+    {
+        "row": 13,
+        "file": "b012.jpg",
+        "ok": true,
+        "w": 900,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 14,
+        "file": "b013.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 15,
+        "file": "b014.jpg",
+        "ok": true,
+        "w": 504,
+        "h": 353,
+        "err": ""
+    },
+    {
+        "row": 16,
+        "file": "b015.jpg",
+        "ok": true,
+        "w": 467,
+        "h": 387,
+        "err": ""
+    },
+    {
+        "row": 17,
+        "file": "b016.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 900,
+        "err": ""
+    },
+    {
+        "row": 18,
+        "file": "b017.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 900,
+        "err": ""
+    },
+    {
+        "row": 19,
+        "file": "b018.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 1120,
+        "err": ""
+    },
+    {
+        "row": 20,
+        "file": "b019.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 799,
+        "err": ""
+    },
+    {
+        "row": 21,
+        "file": "b020.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 22,
+        "file": "b021.jpg",
+        "ok": true,
+        "w": 800,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 23,
+        "file": "b022.jpg",
+        "ok": true,
+        "w": 600,
+        "h": 464,
+        "err": ""
+    },
+    {
+        "row": 24,
+        "file": "b023.jpg",
+        "ok": true,
+        "w": 800,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 25,
+        "file": "b024.jpg",
+        "ok": true,
+        "w": 872,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 26,
+        "file": "b025.jpg",
+        "ok": true,
+        "w": 1027,
+        "h": 720,
+        "err": ""
+    },
+    {
+        "row": 27,
+        "file": "b026.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 675,
+        "err": ""
+    },
+    {
+        "row": 28,
+        "file": "b027.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 29,
+        "file": "b028.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 30,
+        "file": "b029.jpg",
+        "ok": true,
+        "w": 1024,
+        "h": 696,
+        "err": ""
+    },
+    {
+        "row": 31,
+        "file": "b030.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 900,
+        "err": ""
+    },
+    {
+        "row": 32,
+        "file": "b031.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 33,
+        "file": "b032.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 34,
+        "file": "b033.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 35,
+        "file": "b034.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 36,
+        "file": "b035.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 900,
+        "err": ""
+    },
+    {
+        "row": 37,
+        "file": "b036.jpg",
+        "ok": true,
+        "w": 862,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 38,
+        "file": "b037.jpg",
+        "ok": true,
+        "w": 800,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 39,
+        "file": "b038.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 1086,
+        "err": ""
+    },
+    {
+        "row": 40,
+        "file": "b039.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 654,
+        "err": ""
+    },
+    {
+        "row": 41,
+        "file": "b040.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 42,
+        "file": "b041.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 43,
+        "file": "b042.jpg",
+        "ok": true,
+        "w": 469,
+        "h": 619,
+        "err": ""
+    },
+    {
+        "row": 44,
+        "file": "b043.jpg",
+        "ok": true,
+        "w": 1024,
+        "h": 852,
+        "err": ""
+    },
+    {
+        "row": 45,
+        "file": "b044.jpg",
+        "ok": true,
+        "w": 800,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 46,
+        "file": "b045.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 900,
+        "err": ""
+    },
+    {
+        "row": 47,
+        "file": "b046.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 989,
+        "err": ""
+    },
+    {
+        "row": 48,
+        "file": "b047.jpg",
+        "ok": true,
+        "w": 800,
+        "h": 640,
+        "err": ""
+    },
+    {
+        "row": 49,
+        "file": "b048.jpg",
+        "ok": true,
+        "w": 960,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 50,
+        "file": "b049.jpg",
+        "ok": true,
+        "w": 480,
+        "h": 524,
+        "err": ""
+    },
+    {
+        "row": 51,
+        "file": "b050.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 960,
+        "err": ""
+    },
+    {
+        "row": 52,
+        "file": "b051.jpg",
+        "ok": true,
+        "w": 760,
+        "h": 1140,
+        "err": ""
+    },
+    {
+        "row": 53,
+        "file": "b052.jpg",
+        "ok": true,
+        "w": 800,
+        "h": 640,
+        "err": ""
+    },
+    {
+        "row": 54,
+        "file": "b053.jpg",
+        "ok": true,
+        "w": 552,
+        "h": 525,
+        "err": ""
+    },
+    {
+        "row": 55,
+        "file": "b054.jpg",
+        "ok": true,
+        "w": 1157,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 56,
+        "file": "b055.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 57,
+        "file": "b056.jpg",
+        "ok": true,
+        "w": 432,
+        "h": 645,
+        "err": ""
+    },
+    {
+        "row": 58,
+        "file": "b057.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 59,
+        "file": "b058.jpg",
+        "ok": true,
+        "w": 1142,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 60,
+        "file": "b059.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 61,
+        "file": "b060.jpg",
+        "ok": true,
+        "w": 936,
+        "h": 786,
+        "err": ""
+    },
+    {
+        "row": 62,
+        "file": "b061.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 63,
+        "file": "b062.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 64,
+        "file": "b063.jpg",
+        "ok": true,
+        "w": 588,
+        "h": 495,
+        "err": ""
+    },
+    {
+        "row": 65,
+        "file": "b064.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 960,
+        "err": ""
+    },
+    {
+        "row": 66,
+        "file": "b065.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 960,
+        "err": ""
+    },
+    {
+        "row": 67,
+        "file": "b066.jpg",
+        "ok": true,
+        "w": 795,
+        "h": 658,
+        "err": ""
+    },
+    {
+        "row": 68,
+        "file": "b067.jpg",
+        "ok": true,
+        "w": 777,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 69,
+        "file": "b068.jpg",
+        "ok": true,
+        "w": 582,
+        "h": 704,
+        "err": ""
+    },
+    {
+        "row": 70,
+        "file": "b069.jpg",
+        "ok": true,
+        "w": 823,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 71,
+        "file": "b070.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 1161,
+        "err": ""
+    },
+    {
+        "row": 72,
+        "file": "b071.jpg",
+        "ok": true,
+        "w": 1080,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 73,
+        "file": "b072.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    },
+    {
+        "row": 74,
+        "file": "b073.jpg",
+        "ok": true,
+        "w": 1005,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 75,
+        "file": "b074.jpg",
+        "ok": false,
+        "w": 0,
+        "h": 0,
+        "err": "no url"
+    },
+    {
+        "row": 76,
+        "file": "b075.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 933,
+        "err": ""
+    },
+    {
+        "row": 77,
+        "file": "b076.jpg",
+        "ok": true,
+        "w": 1010,
+        "h": 1200,
+        "err": ""
+    },
+    {
+        "row": 78,
+        "file": "b077.jpg",
+        "ok": true,
+        "w": 1200,
+        "h": 800,
+        "err": ""
+    }
+]

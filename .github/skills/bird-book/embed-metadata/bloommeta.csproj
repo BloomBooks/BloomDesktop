@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Builds a net8.0-windows console tool that references Bloom's own built DLLs.
+       The source is checked in as BloomMeta.cs.txt (not *.cs) so it is excluded from
+       Bloom's C# pre-commit hooks (RobustFile / csharpier checks) -- this is a one-shot
+       helper, not product code. It is compiled via the explicit <Compile> item below.
+       Adjust the HintPath base if your Bloom output folder differs.
+       Build:  dotnet build bloommeta.csproj -c Release
+       Then copy bin\Release\bloommeta.dll + bloommeta.runtimeconfig.json into the
+       Bloom output folder (e.g. D:\bloom\output\Debug\AnyCPU) and run from there so
+       transitive deps (TagLibSharp, icu.net, SIL.WritingSystems, ...) resolve:
+         dotnet <outputFolder>\bloommeta.dll <book> <birds.json> <manifest.json> <results.json> [--test]
+       (Do NOT copy bloommeta.deps.json alongside it — omitting it lets the host probe
+        the folder for every colocated dependency.) -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>bloommeta</AssemblyName>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="BloomMeta.cs.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="SIL.Windows.Forms"><HintPath>D:\bloom\output\Debug\AnyCPU\SIL.Windows.Forms.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="SIL.Core"><HintPath>D:\bloom\output\Debug\AnyCPU\SIL.Core.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="SIL.Core.Desktop"><HintPath>D:\bloom\output\Debug\AnyCPU\SIL.Core.Desktop.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Newtonsoft.Json"><HintPath>D:\bloom\output\Debug\AnyCPU\Newtonsoft.Json.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

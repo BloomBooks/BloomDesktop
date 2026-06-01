@@ -1,0 +1,120 @@
+// BloomMeta — embed copyright/creator/license metadata into image FILES using
+// Bloom's own libpalaso ClearShare API, so Bloom reads it back identically.
+//
+// WHY THIS EXISTS:
+//   Bloom treats each image file's embedded metadata (XMP/EXIF) as the source of
+//   truth. On load/save it runs ImageUpdater.UpdateImgMetadataAttributesToMatchImage(),
+//   which READS metadata from the file and REWRITES the <img> data-copyright /
+//   data-creator / data-license attributes from it (removing them when the file has
+//   none). So setting those HTML attributes alone does NOT stick — you must write the
+//   metadata into the image files. This tool does that with the exact same library
+//   Bloom uses, guaranteeing a clean round-trip.
+//
+// BUILD/RUN: see ../SKILL.md. Target net8.0-windows; run from Bloom's
+//   output/Debug/AnyCPU folder so transitive dependencies resolve.
+//
+// Args: <bookFolder> <birds.json> <manifest.json> <out-results.json> [--test]
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json.Linq;
+using SIL.Core.ClearShare;
+using SIL.Windows.Forms.ClearShare;
+
+class BloomMeta
+{
+    static string ExtractVersion(string s)
+    {
+        var m = Regex.Match(s ?? "", @"(\d+\.\d+)");
+        return m.Success ? m.Value : null;
+    }
+
+    static LicenseInfo MakeLicense(string raw)
+    {
+        var s = (raw ?? "").Trim();
+        var low = s.ToLowerInvariant();
+        try
+        {
+            if (low.StartsWith("cc by-sa") || low.StartsWith("cc-by-sa"))
+                return CreativeCommonsLicense.FromLicenseUrl("http://creativecommons.org/licenses/by-sa/" + (ExtractVersion(s) ?? "4.0") + "/");
+            if (low.StartsWith("cc by") || low.StartsWith("cc-by"))
+                return CreativeCommonsLicense.FromLicenseUrl("http://creativecommons.org/licenses/by/" + (ExtractVersion(s) ?? "4.0") + "/");
+            if (low == "cc0" || low.Contains("public domain"))
+                return CreativeCommonsLicense.FromLicenseUrl("http://creativecommons.org/publicdomain/zero/1.0/");
+        }
+        catch { }
+        if (!string.IsNullOrEmpty(s))
+            return new CustomLicense() { RightsStatement = s };
+        return new SIL.Core.ClearShare.NullLicense();
+    }
+
+    static void WriteOne(string path, string copyright, string creator, string licenseRaw)
+    {
+        var m = new Metadata();
+        m.CopyrightNotice = copyright ?? "";
+        m.Creator = creator ?? "";
+        m.License = MakeLicense(licenseRaw);
+        m.WriteIntellectualPropertyOnly(path); // writes IP into the existing image file
+    }
+
+    static int Main(string[] args)
+    {
+        string book = args[0], birdsPath = args[1], manifestPath = args[2], outPath = args[3];
+        bool test = args.Length > 4 && args[4] == "--test";
+
+        var birds = JArray.Parse(File.ReadAllText(birdsPath));
+        var manifest = JArray.Parse(File.ReadAllText(manifestPath));
+        var okRows = new HashSet<int>(manifest.Where(m => (bool)m["ok"]).Select(m => (int)m["row"]));
+
+        if (test)
+        {
+            var b = birds.First(x => okRows.Contains((int)x["row"]));
+            int row = (int)b["row"];
+            string file = "b" + (row - 1).ToString("D3") + ".jpg";
+            string tmp = Path.Combine(Path.GetTempPath(), "meta_rt.jpg");
+            File.Copy(Path.Combine(book, file), tmp, true);
+            WriteOne(tmp, (string)b["copyright"], (string)b["photographer"], (string)b["licenseRaw"]);
+            var r = Metadata.FromFile(tmp);
+            Console.WriteLine("TEST file: " + file);
+            Console.WriteLine("  copyright: " + r.CopyrightNotice);
+            Console.WriteLine("  creator:   " + r.Creator);
+            Console.WriteLine("  license.ToString(): " + (r.License == null ? "<null>" : r.License.ToString()));
+            Console.WriteLine("  IsEmpty: " + r.IsEmpty);
+            return 0;
+        }
+
+        var results = new JArray();
+        int done = 0, failed = 0;
+        foreach (var b in birds)
+        {
+            int row = (int)b["row"];
+            if (!okRows.Contains(row)) continue;
+            string file = "b" + (row - 1).ToString("D3") + ".jpg";
+            string path = Path.Combine(book, file);
+            if (!File.Exists(path)) continue;
+            try
+            {
+                WriteOne(path, (string)b["copyright"], (string)b["photographer"], (string)b["licenseRaw"]);
+                var r = Metadata.FromFile(path);
+                var jo = new JObject();
+                jo["file"] = file;
+                jo["copyright"] = r.CopyrightNotice ?? "";
+                jo["creator"] = r.Creator ?? "";
+                jo["license"] = r.License == null ? "" : r.License.ToString();
+                results.Add(jo);
+                done++;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("FAIL " + file + ": " + e.Message);
+                failed++;
+            }
+        }
+        File.WriteAllText(outPath, results.ToString());
+        Console.WriteLine("Embedded metadata into " + done + " images, " + failed + " failed. Results -> " + outPath);
+        return 0;
+    }
+}
