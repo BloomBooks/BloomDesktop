@@ -530,6 +530,26 @@ export const ToolboxRoot: React.FunctionComponent = () => {
         const intervalId = window.setInterval(() => {
             sections.forEach((section) => {
                 if (
+                    section.liveToolBodyElement &&
+                    !section.liveToolBodyElement.isConnected
+                ) {
+                    hydratedToolIds.current.delete(section.id);
+                    setSections((previousSections) =>
+                        previousSections.map((previousSection) => {
+                            if (previousSection.id !== section.id) {
+                                return previousSection;
+                            }
+
+                            return {
+                                ...previousSection,
+                                liveToolBodyElement: undefined,
+                            };
+                        }),
+                    );
+                    return;
+                }
+
+                if (
                     section.legacyToolBodyHtml &&
                     !section.liveToolBodyElement
                 ) {
