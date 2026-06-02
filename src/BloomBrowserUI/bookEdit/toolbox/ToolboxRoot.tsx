@@ -238,6 +238,23 @@ const getLiveToolBodyElement = (toolId: string): HTMLDivElement | undefined => {
     return getExistingToolboxContentElement(toolId);
 };
 
+// This is part of the mess that Copilot made to allow the root of the toolbox to be
+// rendered in React while still supporting several tools that have not yet been
+// migrated to React. It was one of my first big refactors using CoPilot, and I should
+// not have been so quick to just be glad it seemed to work. For some reason, its
+// solution was to maintain an old jquery accordion in parallel with a new React
+// implementation. Somehow, across these two versions of the toolbox that exist in
+// parallel, a React tool can think it has a root element to render into, but it
+// doesn't actually exist. Then we get stuck in a state where the tool's content
+// is permanently replaced by a loading message. This function detects this
+// situation and adjusts things so that the root element for the tool content
+// gets created when needed.
+// I don't think there's any good reason not to use the normal function declaration
+// syntax except that Copilot seems to have done everything else in this file this way.
+// I don't want to put a lot of effort into cleaning it up because I hope sometime soon
+// we rework the remaining few non-React tools and can then get rid of the duplication
+// and manage everything in normal React. I expect most of the code in this file to
+// go away.
 const ensureReactToolBodyElement = (
     toolId: string,
 ): HTMLDivElement | undefined => {
@@ -247,6 +264,12 @@ const ensureReactToolBodyElement = (
     }
 
     const normalizedToolId = normalizeToolId(toolId);
+    // Do not create elements for legacy tools; they load their content from
+    // legacyToolHtmlSubPath and their makeRootElement() implementations throw
+    // "Method not implemented." if called directly.
+    if (legacyToolSubPathByToolId[normalizedToolId]) {
+        return undefined;
+    }
     const tool = getMasterToolList().find((candidate) => {
         return candidate.id() === normalizedToolId;
     });
