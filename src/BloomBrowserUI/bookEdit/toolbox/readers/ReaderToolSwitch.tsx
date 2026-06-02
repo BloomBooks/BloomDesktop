@@ -5,6 +5,7 @@ import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import { ToolBox, applyToolboxStateToUpdatedPage } from "../toolbox";
 import { BloomSwitch } from "../../../react_components/BloomSwitch";
 import { postBoolean } from "../../../utils/bloomApi";
+import { isReaderToolEnabledOnCurrentPage } from "./readerToolPageState";
 
 export const ReaderToolSwitch: React.FunctionComponent<{
     isForLeveled: boolean;
@@ -14,12 +15,23 @@ export const ReaderToolSwitch: React.FunctionComponent<{
     // The page body will have a copy of the classes from the book's body.
     // So that is our record of whether the book is a reader.
     // Note, we could ask the server, but thankfully we don't need to.
-    const checked = ToolBox.getPage()?.classList.contains(`${prefix}-reader`);
-    if (checked) {
+    const [checked, setChecked] = React.useState<boolean>(() =>
+        isReaderToolEnabledOnCurrentPage(props.isForLeveled),
+    );
+    const isFirstContentSync = React.useRef(true);
+
+    // This component must update a non-React toolbox pane element, so we need an effect to keep
+    // that external DOM synchronized whenever the controlled switch state changes.
+    React.useEffect(() => {
+        if (isFirstContentSync.current) {
+            isFirstContentSync.current = false;
+            return;
+        }
+
         document
             .getElementById(prefix + "-reader-tool-content")
-            ?.classList.remove("turned-off");
-    }
+            ?.classList.toggle("turned-off", !checked);
+    }, [prefix, checked]);
 
     return (
         <ThemeProvider theme={toolboxTheme}>
@@ -38,17 +50,17 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                         ? "EditTab.Toolbox.LeveledReaderTool.BookIsLeveled"
                         : "EditTab.Toolbox.DecodableReaderTool.BookIsDecodable"
                 }
-                // We're not making a controlled component, but we do want to control the initial state.
-                defaultChecked={checked}
+                // Keep this controlled so rerenders can sync state without forcing an unmount/remount.
+                checked={checked}
                 onChange={(_, checked) => {
-                    // Toggle the display of the reader tool UI.
-                    document
-                        .getElementById(prefix + "-reader-tool-content")
-                        ?.classList.toggle("turned-off");
+                    setChecked(checked);
 
                     // Set the class on the page we are currently working with in edit mode.
                     // This just ensures our display is correct while editing. Persisting the value is done below.
-                    ToolBox.getPage()?.classList.toggle(`${prefix}-reader`);
+                    ToolBox.getPage()?.classList.toggle(
+                        `${prefix}-reader`,
+                        checked,
+                    );
 
                     // If we toggle the reader tool, we need to update the markup.
                     applyToolboxStateToUpdatedPage();

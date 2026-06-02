@@ -26,7 +26,6 @@ import { ToolBox } from "../toolbox";
 import {
     adjustDraggablesForLanguage,
     classSetter,
-    copyContentToTarget,
     getTarget,
     playInitialElements,
     prepareActivity,
@@ -60,6 +59,7 @@ import {
 } from "../canvas/canvasElementDraggables";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
+import { copyContentToTargetAndCleanup } from "../../js/dragActivityRuntimeUtils";
 import { ThemeChooser } from "./ThemeChooser";
 import { SoundSelect } from "./SoundSelect";
 import GameIntroText, { Instructions } from "./GameIntroText";
@@ -686,9 +686,12 @@ const updateTabClass = (tabIndex: number) => {
         // doesn't have a tab, but used in Play when showing the correct answer.
         "drag-activity-solution",
     ];
+    const isDragActivityPage = (
+        page.getAttribute("data-activity") ?? ""
+    ).startsWith("drag-");
     for (let i = 0; i < classes.length; i++) {
         const className = classes[i];
-        classSetter(page, className, i === tabIndex);
+        classSetter(page, className, isDragActivityPage && i === tabIndex);
     }
 };
 
@@ -929,20 +932,35 @@ const DragActivityControls: React.FunctionComponent<{
             currentCanvasElement &&
             currentDraggableTarget
         ) {
-            draggableToTargetObserver.current = new MutationObserver((_) => {
-                // if it's no longer current, we just haven't removed the observer yet,
-                // don't do it.
+            draggableToTargetObserver.current = new MutationObserver(() => {
+                // Skip if it's no longer current (observer hasn't been removed yet)
                 if (
-                    currentCanvasElement ===
+                    currentCanvasElement !==
                     getCanvasElementManager()?.getActiveElement()
                 ) {
-                    copyContentToTarget(currentCanvasElement);
+                    return;
                 }
+                // copyContentToTarget diffs the result against the current target
+                // innerHTML before making any DOM change, so it's safe to call even
+                // when the mutation doesn't actually affect the copy (e.g. position
+                // changes during a canvas element drag).
+                copyContentToTargetAndCleanup(currentCanvasElement);
             });
             draggableToTargetObserver.current.observe(currentCanvasElement, {
                 childList: true,
                 subtree: true,
-                attributes: true, // e.g., cropping of image
+                // It's not obvious that we need to observe attribute changes, since
+                // copyContentToTargetAndCleanup() mainly copies content. However, it does
+                // pay attention to the size of the container, and uses it to create a cropping
+                // container inside the target in some cases. Especially when moving the
+                // right and bottom crop handles, the attributes of the img don't change at all,
+                // but the size of the cropping container needs to.
+                // There are lots of possible attribute changes on the canvas element
+                // that we don't care about, but rather than making a complex filter,
+                // I decided to just leave it to copyContentToTargetAndCleanup to ignore
+                // irrelevant ones, by means of a test that doesn't replace the content
+                // if the innerHTML of the target isn't actually going to change.
+                attributes: true,
             });
         }
     }, [currentCanvasElement, currentDraggableTarget, props.activeTab]);
@@ -1897,6 +1915,18 @@ export function getActiveDragActivityTab(): number {
     return window.top!["dragActivityPage"] ?? 0;
 }
 
+function removeBloomSelectedFromTargets(page: HTMLElement): void {
+    page.querySelectorAll("[data-target-of] .bloom-selected").forEach((el) => {
+        el.classList.remove("bloom-selected");
+    });
+}
+
+function scheduleRemoveBloomSelectedFromTargets(page: HTMLElement): void {
+    // Some drag-activity runtime operations can copy content asynchronously after
+    // tab setup, so run cleanup again on the next tick.
+    setTimeout(() => removeBloomSelectedFromTargets(page), 0);
+}
+
 // The top-level function to get everything into the right state for the specified tab
 // (Start, Correct, Wrong, Play).
 // Note: the games code is currently pulled into the page bundle, but this function
@@ -1906,7 +1936,6 @@ export function getActiveDragActivityTab(): number {
 // getToolboxBundleExports()?.setActiveDragActivityTab(), which works in any bundle.
 // Even in this file, a calling function could be running in the page bundle.
 export function setActiveDragActivityTab(tab: number) {
-    window.top!["dragActivityPage"] = tab;
     const page = GameTool.getBloomPage();
     const pageFrameExports = getEditablePageBundleExports();
     if (!page || !pageFrameExports) {
@@ -1926,21 +1955,29 @@ export function setActiveDragActivityTab(tab: number) {
         console.error("No parent for page");
         return;
     }
-    updateTabClass(tab);
-    pageFrameExports.renderDragActivityTabControl(tab);
+    const isDragActivityPage = (
+        page.getAttribute("data-activity") ?? ""
+    ).startsWith("drag-");
+    // Non-drag games can still pass through this API during page setup. Force Start mode there
+    // so drag-only positioning logic (for Correct/Wrong/Play) cannot mutate their canvas elements.
+    const effectiveTab = isDragActivityPage ? tab : startTabIndex;
+    window.top!["dragActivityPage"] = effectiveTab;
+
+    updateTabClass(effectiveTab);
+    pageFrameExports.renderDragActivityTabControl(effectiveTab);
     // Update the toolbox.
     /// Review: might it not exist yet? Do we need a timeout if so?
     // I think we're OK, if for no other reason, because both the dragActivityTool code and the
     // code here agree that we start in the Start tab after switching pages.
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
-    toolbox?.getTheOneGameTool()?.setActiveTab(tab);
+    toolbox?.getTheOneGameTool()?.setActiveTab(effectiveTab);
 
     //Slider: const wrapper = page.getElementsByClassName(
     //     "bloom-activity-slider"
     // )[0] as HTMLElement;
 
     const canvasElementManager = getCanvasElementManager();
-    if (tab === playTabIndex) {
+    if (effectiveTab === playTabIndex) {
         canvasElementManager!.suspendComicEditing("forGamePlayMode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
@@ -1989,18 +2026,26 @@ export function setActiveDragActivityTab(tab: number) {
         canvasElementManager?.checkActiveElementIsVisible();
         //Slider: wrapper?.addEventListener("click", designTimeClickOnSlider);
     }
-    if (tab === correctTabIndex || tab === wrongTabIndex) {
+    if (
+        isDragActivityPage &&
+        (effectiveTab === correctTabIndex || effectiveTab === wrongTabIndex)
+    ) {
         // We can't currently do this for hidden canvas elements, and selecting one of these tabs
         // may cause some previously hidden canvas elements to become visible.
         canvasElementManager?.ensureCanvasElementsIntersectParent(page);
     }
-    if (tab === startTabIndex) {
+    if (effectiveTab === startTabIndex) {
         enableDraggingTargets(page);
         pageFrameExports.showGamePromptDialog(true);
     } else {
         disableDraggingTargets(page);
         hideGamePromptDialog(page);
     }
+
+    // Defensive cleanup: copies of draggables in targets should never carry video
+    // selection state, even if copied by external runtime code paths.
+    removeBloomSelectedFromTargets(page);
+    scheduleRemoveBloomSelectedFromTargets(page);
 }
 
 // Replace the origami control with the Game tab control if the page is a game.

@@ -65,6 +65,8 @@ namespace Bloom.web
     public interface IWebSocketProgress
     {
         void MessageWithoutLocalizing(string message, ProgressKind kind = ProgressKind.Progress);
+        void SendPercent(int percent);
+        void SendStage(string stage);
         void Message(
             string idSuffix,
             string comment,
@@ -173,6 +175,11 @@ namespace Bloom.web
             dynamic messageBundle = new DynamicJson();
             messageBundle.percent = percent;
             _bloomWebSocketServer?.SendBundle(_clientContext, "percent", messageBundle);
+        }
+
+        public void SendStage(string stage)
+        {
+            _bloomWebSocketServer?.SendString(_clientContext, "stage", stage);
         }
 
         public virtual void ShowButtons()

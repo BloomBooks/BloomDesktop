@@ -2940,10 +2940,10 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.52.5.tgz#1657f56326bbe0ac80eedc9f9c18fc1ddd24e107"
   integrity sha512-TAcgQh2sSkykPRWLrdyy2AiceMckNf5loITqXxFI5VuQjS5tSuw3WlwdN8qv8vzjLAUTvYaH/mVjSFpbkFbpTg==
 
-"@sillsdev/config-r@1.0.0-alpha.23":
-  version "1.0.0-alpha.23"
-  resolved "https://registry.yarnpkg.com/@sillsdev/config-r/-/config-r-1.0.0-alpha.23.tgz#70805e49e6dd8bb197eb2b110999a3501f80e98b"
-  integrity sha512-8s6+frggiRi7YUzF8J1wBAVEHXE1BucxEyKoqymyYSokqwzc107GokTIDr7YJO39rIOcrhI3ojWNGTUeeHfQjQ==
+"@sillsdev/config-r@1.0.0-alpha.26":
+  version "1.0.0-alpha.26"
+  resolved "https://registry.yarnpkg.com/@sillsdev/config-r/-/config-r-1.0.0-alpha.26.tgz#793377c854965479959843c38cd7c2645af25892"
+  integrity sha512-p4w5/35WwTwQP3/8QLNgksc+fPKqyZmemj+8HZXnWHiNwv1PVUfiwzb1/2bU22kuIefolZ0716oY3OsSJ/PtiQ==
   dependencies:
     "@textea/json-viewer" "^2.13.1"
     formik "^2.2.9"
@@ -4211,9 +4211,9 @@ bindings@^1.5.0:
     file-uri-to-path "1.0.0"
 
 bloom-player@^2.19.4:
-  version "2.19.4"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.19.4.tgz#669ebcc8788b45d5b0d8072ee07a49c81f8f7b2a"
-  integrity sha512-VF03Ukz8OW0/9Bw/SRTS+v7RICIFVgrPPf1XW9/6OyWxUn7DV94dnyPYiuTW26HQCMbWnRRer3zwFmOPX3NTcA==
+  version "2.19.8"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.19.8.tgz#d4976f563a90ea57eeb5b710da769230ea334364"
+  integrity sha512-iAMz9g9AsxosiQs9Mfyc8KUJZ6vQkJu7BjSP0m1uROkXM/JJ9y0rjZsJBe/1DXsz+AxP9Hsi34YFhUpUxqRSug==
 
 boom@2.x.x:
   version "2.10.1"

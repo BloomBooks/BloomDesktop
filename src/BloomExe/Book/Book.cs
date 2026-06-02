@@ -224,11 +224,35 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// This gets set when a new book is created by copying a source book.
-        /// It is the folder name (without path) of the source book.
-        /// Setting this allows the code which renames the new book to make a more helpful history report.
+        /// If set, this book was newly created from the named source book and has a pending "Created"
+        /// history event. The event will be recorded (with whatever title the book has at that point)
+        /// when the book is deselected. In the meantime, title-change events are suppressed so they
+        /// don't produce spurious Renamed entries before the Created entry is written.
+        /// The value is the folder name (without path) of the source book.
         /// </summary>
-        public static string SourceToReportForNextRename;
+        public string PendingCreationSource { get; set; }
+
+        /// <summary>
+        /// If there is a pending "Created" history event (set during book creation), record it now
+        /// using the book's current title.
+        /// </summary>
+        /// <param name="onlyIfTitleChanged">If true, skip recording if the book title is still
+        /// the same as the source book name (i.e. the user has not yet given the book its own title).
+        /// Pass false when flushing at deselection or shutdown or checkin so we always get at least
+        /// one entry.</param>
+        public void RecordPendingCreatedHistoryEvent(bool onlyIfTitleChanged = false)
+        {
+            if (PendingCreationSource == null)
+                return;
+            if (onlyIfTitleChanged && Storage.Dom.Title == PendingCreationSource)
+                return;
+            BookHistory.AddEvent(
+                this,
+                BookHistoryEventType.Created,
+                $"Created a new book \"{Storage.Dom.Title}\" from a source book \"{PendingCreationSource}\""
+            );
+            PendingCreationSource = null;
+        }
 
         public void UpdateBookInfoFromDisk()
         {
@@ -249,26 +273,17 @@ namespace Bloom.Book
             }
             else
             {
-                var folderName = Path.GetFileName(FolderPath);
-                if (SourceToReportForNextRename == null)
+                if (PendingCreationSource == null)
                 {
+                    // Normal rename: the user changed the book title
                     BookHistory.AddEvent(
                         this,
                         BookHistoryEventType.Renamed,
                         $"Book title changed to \"{Storage.Dom.Title}\""
                     );
                 }
-                else
-                {
-                    // On this path we don't think the folder name will be significantly different from the title
-                    // (added number to disambiguate, illegal characters removed). So don't need two versions.
-                    BookHistory.AddEvent(
-                        this,
-                        BookHistoryEventType.Created,
-                        $"Created a new book \"{Storage.Dom.Title}\" from a source book \"{SourceToReportForNextRename}\""
-                    );
-                    SourceToReportForNextRename = null;
-                }
+                // else: this book is newly created and its Created event is pending deselection;
+                // suppress this title-change so we don't get spurious Renamed entries before Created.
             }
             // Ensure proper path for any new book title and embedded CSS that is now invalid.
             SettingsUpdated();
@@ -963,6 +978,9 @@ namespace Bloom.Book
             // Preview may need fullBleed markup to show pages correctly.
             InsertFullBleedMarkup(previewDom.Body);
 
+            // #bloomDataDiv may cause duplicate id's inside a store svg element. (BL-16239)
+            RemoveDataDiv(previewDom);
+
             _previewDom = previewDom;
             return previewDom;
         }
@@ -1057,7 +1075,8 @@ namespace Bloom.Book
                 && !FeatureStatus
                     .GetFeatureStatus(
                         CollectionSettings.Subscription,
-                        FeatureName.CustomXMatterPage
+                        FeatureName.CustomXMatterPage,
+                        this
                     )
                     .Enabled
             )
@@ -1379,7 +1398,7 @@ namespace Bloom.Book
                     var id = node.GetOptionalStringAttribute("id", null);
                     if (id == null)
                         continue;
-                    if (HtmlDom.IsNodePartOfDataBookOrDataCollection(node))
+                    if (HtmlDom.DoesNodeGetCopiedToDataDiv(node))
                         continue;
                     var isNewlyAdded = idSet.Add(id);
                     if (!isNewlyAdded)
@@ -1478,7 +1497,7 @@ namespace Bloom.Book
                 coverImgElt.SetAttribute("src", filename);
                 var localizedFormatString = LocalizationManager.GetString(
                     "EditTab.Image.AltMsg",
-                    "This picture, {0}, is missing or was loading too slowly."
+                    "This image, {0}, is missing or was loading too slowly."
                 );
                 var altValue = String.Format(localizedFormatString, filename);
                 coverImgElt.SetAttribute("alt", altValue);
@@ -1557,12 +1576,12 @@ namespace Bloom.Book
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383",
                         Path = "Basic Book/Basic Book.html",
-                    }; // Picture in Middle
+                    }; // Image in Middle
                     _pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398384"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384",
                         Path = "Basic Book/Basic Book.html",
-                    }; // Picture on Bottom
+                    }; // Image on Bottom
                     _pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398385"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
@@ -1577,7 +1596,7 @@ namespace Bloom.Book
                     {
                         Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27",
                         Path = "Basic Book/Basic Book.html",
-                    }; // Picture & Word
+                    }; // Image & Word
                     // Big book [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
                     _pageMigrations["AF708725-E961-44AA-9149-ADF66084A04F"] = new GuidAndPath()
                     {
@@ -1599,12 +1618,12 @@ namespace Bloom.Book
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383",
                         Path = "Decodable Reader/Decodable Reader.html",
-                    }; // Picture in Middle
+                    }; // Image in Middle
                     _pageMigrations["f99b252a-26b1-40c8-b543-dbe0b05f08a5"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384",
                         Path = "Decodable Reader/Decodable Reader.html",
-                    }; // Picture on Bottom
+                    }; // Image on Bottom
                     _pageMigrations["c506f278-cb9f-4053-9e29-f7a9bdf64445"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
@@ -1619,7 +1638,7 @@ namespace Bloom.Book
                     {
                         Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27",
                         Path = "Decodable Reader/Decodable Reader.html",
-                    }; // Picture & Word
+                    }; // Image & Word
                     // Leveled reader [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
                     _pageMigrations["e9f2142b-f135-4bcd-9123-5a2623f5302f"] = new GuidAndPath()
                     {
@@ -1630,12 +1649,12 @@ namespace Bloom.Book
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383",
                         Path = "Leveled Reader/Leveled Reader.html",
-                    }; // Picture in Middle
+                    }; // Image in Middle
                     _pageMigrations["a1f437fe-c002-4548-af02-fe84d048b8fc"] = new GuidAndPath()
                     {
                         Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384",
                         Path = "Leveled Reader/Leveled Reader.html",
-                    }; // Picture on Bottom
+                    }; // Image on Bottom
                     _pageMigrations["d7599aa7-f35c-4029-8aa2-9afda870bcfa"] = new GuidAndPath()
                     {
                         Guid = JustPictureGuid,
@@ -1650,7 +1669,7 @@ namespace Bloom.Book
                     {
                         Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27",
                         Path = "Leveled Reader/Leveled Reader.html",
-                    }; // Picture & Word
+                    }; // Image & Word
                 }
                 return _pageMigrations;
             }
@@ -2700,7 +2719,7 @@ namespace Bloom.Book
                 node.SetAttribute("src", text);
                 var localizedFormatString = LocalizationManager.GetString(
                     "EditTab.Image.AltMsg",
-                    "This picture, {0}, is missing or was loading too slowly."
+                    "This image, {0}, is missing or was loading too slowly."
                 );
                 var altValue = String.Format(localizedFormatString, text);
                 node.SetAttribute("alt", altValue);
@@ -3504,7 +3523,7 @@ namespace Bloom.Book
                     {
                         var localizedFormatString = LocalizationManager.GetString(
                             "EditTab.Image.AltMsg",
-                            "This picture, {0}, is missing or was loading too slowly."
+                            "This image, {0}, is missing or was loading too slowly."
                         );
                         var altValue = String.Format(localizedFormatString, src);
                         img.SetAttribute("alt", altValue);
@@ -4478,7 +4497,25 @@ namespace Bloom.Book
             if (!FullBleed && !UserPrefs.IncludeBackgroundColors)
                 SetBackwardsCompatibleCoverBackgroundColor(printingDom.RawDom, "white", true);
             AddPreviewJavascript(printingDom);
+            // #bloomDataDiv may cause duplicate id's inside a store svg element. (BL-16239)
+            RemoveDataDiv(printingDom);
             return printingDom;
+        }
+
+        /// <summary>
+        /// Directly using the DOM for displaying the HTML in a browser can have problems with an
+        /// svg element stored in the #bloomDataDiv.  This can cause duplicate id's inside the
+        /// duplicate svg elements, which can cause problems with the browser.  Displaying the HTML
+        /// never needs the #bloomDataDiv once the xmatter pages have been populated, so we remove
+        /// it here.  (BL-16239)
+        /// </summary>
+        private void RemoveDataDiv(HtmlDom displayDom)
+        {
+            var dataDiv = displayDom.RawDom.SelectSingleNode("/html/body/div[@id='bloomDataDiv']");
+            if (dataDiv != null)
+            {
+                dataDiv.ParentNode.RemoveChild(dataDiv);
+            }
         }
 
         /// <summary>
@@ -4842,7 +4879,10 @@ namespace Bloom.Book
                 BookStorage.ShowAccessDeniedErrorReport(e);
                 return;
             }
-
+            // If the user has given the book its own title, record the Created entry now so
+            // any further renames are reported normally. (If the title is still just the source
+            // book name, we defer until deselection or shutdown.)
+            RecordPendingCreatedHistoryEvent(onlyIfTitleChanged: true);
             DoPostSaveTasks();
         }
 
@@ -4863,6 +4903,8 @@ namespace Bloom.Book
             Guard.Against(HasFatalError, "Save failed: " + FatalErrorDescription);
             Guard.Against(!IsSaveable, "Tried to save a non-editable book.");
             Storage.SaveForPageChanged(pageId, modifiedPage);
+            // Same as Save(): eagerly record the Created entry once the user has given the book a title.
+            RecordPendingCreatedHistoryEvent(onlyIfTitleChanged: true);
             DoPostSaveTasks();
         }
 
@@ -5675,7 +5717,7 @@ namespace Bloom.Book
             // (That is, check if the languages in the book have non-empty text for part of the quiz section)
             BookInfo.MetaData.Feature_Quiz =
                 FeatureStatus
-                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game, this)
                     .Enabled && HasQuizPages;
         }
 
@@ -5683,7 +5725,7 @@ namespace Bloom.Book
         {
             BookInfo.MetaData.Feature_SimpleDomChoice =
                 FeatureStatus
-                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game, this)
                     .Enabled && OurHtmlDom.HasSimpleDomChoicePages();
         }
 
@@ -5691,7 +5733,7 @@ namespace Bloom.Book
         {
             BookInfo.MetaData.Feature_DragGame =
                 FeatureStatus
-                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game)
+                    .GetFeatureStatus(CollectionSettings.Subscription, FeatureName.Game, this)
                     .Enabled && OurHtmlDom.HasDragGamePages();
         }
 

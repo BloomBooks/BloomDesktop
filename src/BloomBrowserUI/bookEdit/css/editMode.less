@@ -758,6 +758,12 @@ button.moveButton {
         // I haven't figured out why this is. See some of the later comments in BL-11606.
         overflow: hidden;
         z-index: -1; // go under any text that reach the end of the line (I don't know why, but 0 doesn't work)
+
+        // Canvas text outlines are applied on the editable/container and would otherwise
+        // be inherited by these edit-only paragraph and linebreak markers.
+        // Keep this override in sync with the outline setup in CanvasElementManager.ts.
+        -webkit-text-stroke-width: 0;
+        paint-order: normal;
     }
 
     p::after {

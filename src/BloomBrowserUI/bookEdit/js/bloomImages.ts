@@ -40,6 +40,64 @@ export function isPlaceHolderImage(url: string | null | undefined): boolean {
     return url.toLowerCase().includes("placeholder.png");
 }
 
+function isCustomLayoutOutsideFrontCoverPage(
+    page: Element | null,
+): page is HTMLElement {
+    return (
+        page instanceof HTMLElement &&
+        page.classList.contains("bloom-customLayout") &&
+        page.classList.contains("outsideFrontCover")
+    );
+}
+
+function getNonUiImages(page: HTMLElement): HTMLImageElement[] {
+    return Array.from(page.querySelectorAll("img")).filter(
+        (img) => !img.closest(".bloom-ui"),
+    );
+}
+
+function getFirstNonPlaceholderImage(
+    candidates: HTMLElement[],
+): HTMLElement | undefined {
+    return candidates.find((img) => !isPlaceHolderImage(GetRawImageUrl(img)));
+}
+
+// This is called when we add or remove images on a page. If it is the outside front
+// cover and has a custom layout, we want to make sure that
+// - there is at most one image marked as the cover image,
+// - if there is a real (non-placeholder) background image, it is marked as the cover image
+// - otherwise, the first real image is marked as the cover image
+// If the page is not a custom layout outside front cover or has no real image,
+// this function does nothing.
+export function normalizeCoverImageDesignation(page: HTMLElement): void {
+    if (!isCustomLayoutOutsideFrontCoverPage(page)) {
+        return;
+    }
+
+    const nonUiImages = getNonUiImages(page);
+    const markedImages = Array.from(
+        page.querySelectorAll('[data-book="coverImage"]'),
+    ) as HTMLElement[];
+
+    const backgroundImage = getFirstNonPlaceholderImage(
+        nonUiImages.filter((img) => img.closest(`.${kBackgroundImageClass}`)),
+    );
+    const markedRealImage = getFirstNonPlaceholderImage(markedImages);
+    const firstRealImage = getFirstNonPlaceholderImage(nonUiImages);
+
+    // The one we want to be marked as the cover image
+    const chosenElement =
+        backgroundImage ?? markedRealImage ?? firstRealImage ?? markedImages[0];
+
+    for (const markedElement of markedImages) {
+        if (markedElement !== chosenElement) {
+            markedElement.removeAttribute("data-book");
+        }
+    }
+
+    chosenElement?.setAttribute("data-book", "coverImage");
+}
+
 export function cleanupImages() {
     $(".bloom-imageContainer").css("opacity", ""); //comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing
     $(".bloom-imageContainer").css("overflow", ""); //review: also comes form myimgscale; is it a problem?
@@ -264,12 +322,14 @@ export function doImageCommand(
     // other imgs. (For example, currently, they can only be cut/copied as file
     // paths, we don't support metadata, they can't be cropped,...)
     const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
+    const pageBackgroundColor = getOwningPageBackgroundColor(img);
 
     const endpoint = "editView/" + command + "Image";
     const payload = {
         imageId,
         imageSrc,
         imageIsGif,
+        pageBackgroundColor,
     };
 
     if (command === "paste") {
@@ -278,6 +338,56 @@ export function doImageCommand(
     }
 
     postJson(endpoint, payload);
+}
+
+function getOwningPageBackgroundColor(element: HTMLElement): string {
+    const page = element.closest(".bloom-page") as HTMLElement | null;
+    if (!page) {
+        return "";
+    }
+
+    const marginBox = page.querySelector(".marginBox") as HTMLElement | null;
+    const pageSurface = marginBox ?? page;
+    // Enhance: I think we only have two cases: marginBox is often transparent on the cover,
+    // while it has an opaque color if a content page has color. So returning one or the
+    // other is enough. If we start using marginBoxes which are partly transparent, we may
+    // need to get smarter.
+    const result = normalizeCssColorToHexOrEmpty(
+        getComputedStyle(pageSurface).backgroundColor,
+    );
+    if (!result && marginBox) {
+        // If the marginBox has no background color, check the page itself.
+        return normalizeCssColorToHexOrEmpty(
+            getComputedStyle(page).backgroundColor,
+        );
+    }
+    return result;
+}
+
+function normalizeCssColorToHexOrEmpty(color: string): string {
+    const trimmed = color.trim();
+    if (
+        !trimmed ||
+        trimmed === "transparent" ||
+        trimmed === "rgba(0, 0, 0, 0)"
+    ) {
+        return "";
+    }
+
+    const match = trimmed.match(
+        /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/,
+    );
+    if (!match) {
+        return trimmed;
+    }
+
+    if (match[4] && Number(match[4]) === 0) {
+        return "";
+    }
+
+    return `#${[match[1], match[2], match[3]]
+        .map((component) => Number(component).toString(16).padStart(2, "0"))
+        .join("")}`.toUpperCase();
 }
 
 export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {
@@ -829,7 +939,7 @@ function SetAlternateTextOnImages(element) {
         }
         //don't show this on the empty license image when we don't know the license yet
         const englishText =
-            "This picture, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText
+            "This image, {0}, is missing or was loading too slowly."; // Also update HtmlDom.cs::IsPlaceholderImageAltText
         const nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
         const decodedName = decodeURI(nameWithoutQueryString);
         // show English to start with in case localization never returns even a failure
@@ -841,7 +951,7 @@ function SetAlternateTextOnImages(element) {
             .asyncGetText(
                 "EditTab.Image.AltMsg",
                 englishText,
-                "message displayed when the picture image cannot be displayed",
+                "message displayed when the image cannot be displayed",
                 decodedName,
             )
             .done((translation) => {

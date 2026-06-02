@@ -242,6 +242,7 @@ export class LocalizableElement<
     }
 
     public componentWillUnmount() {
+        this.isComponentMounted = false;
         //todo: we ought to have a way of cancelling this, using axios's CancelToken.
         // we can then get rid of the isMounted antipattern. But we would need to add
         // a parameter to pass that token to the theOneLocalizationManager.asyncGetText()

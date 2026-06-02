@@ -17,12 +17,17 @@ export interface IWorkspaceExports {
         options: JQueryUI.DialogOptions,
     ): JQuery;
     closeDialog(id: string): void;
+    setToolboxEnabled(enabled: boolean): void;
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
         task: (toolboxFrameExports: IToolboxFrameExports) => unknown,
-    );
+    ): void;
     getModalDialogContainer(): HTMLElement | null;
     ShowEditViewDialog(dialog: FunctionComponentElement<unknown>): void;
+    processVideoAndShowProgressDialog(
+        sourcePath: string,
+        onImported: (importedPath?: string) => void,
+    ): void;
     showConfirmDialog(props: IConfirmDialogProps): void;
     showColorPickerDialog(props: IColorPickerDialogProps): void;
     hideColorPickerDialog(): void;
@@ -37,7 +42,7 @@ export interface IWorkspaceExports {
             timingsFilePath?: string,
         ) => Promise<string | undefined>,
         closing: (canceled: boolean) => void,
-    );
+    ): void;
     showRequiresSubscriptionDialog(featureName: string): void;
     showRegistrationDialogFromWorkspaceRoot(
         mayChangeEmail?: boolean,
@@ -81,6 +86,7 @@ import { ToastDebugInput, toastDebugEvents } from "../toast/toastUtils";
 import { showAdjustTimingsDialog } from "./toolbox/talkingBook/AdjustTimingsDialog";
 import { getPageIframeBody } from "../utils/shared";
 import { showRequiresSubscriptionDialogInEditView } from "../react_components/requiresSubscription";
+import { processVideoAndShowProgressDialog } from "./ProcessVideoProgressDialog";
 export { showAdjustTimingsDialog as showAdjustTimingsDialogFromWorkspaceRoot };
 // Local alias so we have an in-scope identifier for legacy global exposure typing.
 const showAdjustTimingsDialogFromWorkspaceRoot = showAdjustTimingsDialog;
@@ -186,6 +192,25 @@ export function toolboxIsShowing() {
         | HTMLInputElement
         | undefined;
     return checkbox ? checkbox.checked : true;
+}
+
+// The toolbox should be disabled whenever we are in Change Layout mode (BL-16069)
+let toolboxEnabled = true;
+let toolboxEnabledHandler: ((enabled: boolean) => void) | undefined;
+
+// Registers a handler that will be called whenever we want to enable/disable the toolbox
+// We will use this handler to hide/show the toolbox and enable/disable its opening
+export function setToolboxEnabledHandler(
+    handler: ((enabled: boolean) => void) | undefined,
+): void {
+    toolboxEnabledHandler = handler;
+    toolboxEnabledHandler?.(toolboxEnabled);
+}
+
+// Enables or disables the toolbox toggle; used to hide the toolbox during Change Layout mode (BL-16069)
+export function setToolboxEnabled(enabled: boolean): void {
+    toolboxEnabled = enabled;
+    toolboxEnabledHandler?.(enabled);
 }
 
 // Do this task when the toolbox is loaded. If it isn't already, we set a timeout and do it when we can.
@@ -332,7 +357,7 @@ export function setZoom(zoom: number): void {
         "page-scaling-container",
     );
     if (container) {
-        container.style.transform = `scale(${zoom.toString()}`;
+        container.style.transform = `scale(${zoom.toString()})`;
         // This produces something like calc((100% - 5px) / 0.8)
         const newWidth = `calc((100% - 5px) / ${zoom.toString()})`;
         // But if you read it back it will be something like calc(125% - 6.25px)
@@ -359,11 +384,13 @@ interface WorkspaceBundleApi {
     switchContentPage: typeof switchContentPage;
     showDialog: typeof showDialog;
     closeDialog: typeof closeDialog;
+    setToolboxEnabled: typeof setToolboxEnabled;
     toolboxIsShowing: typeof toolboxIsShowing;
     doWhenToolboxLoaded: typeof doWhenToolboxLoaded;
     canUndo: typeof canUndo;
     getModalDialogContainer: typeof getModalDialogContainer;
     ShowEditViewDialog: typeof ShowEditViewDialog;
+    processVideoAndShowProgressDialog: typeof processVideoAndShowProgressDialog;
     showConfirmDialog: typeof showConfirmDialog;
     showColorPickerDialog: typeof showColorPickerDialog;
     hideColorPickerDialog: typeof hideColorPickerDialog;
@@ -399,11 +426,13 @@ window.workspaceBundle = {
     switchContentPage,
     showDialog,
     closeDialog,
+    setToolboxEnabled,
     toolboxIsShowing,
     doWhenToolboxLoaded,
     canUndo,
     getModalDialogContainer,
     ShowEditViewDialog,
+    processVideoAndShowProgressDialog: processVideoAndShowProgressDialog,
     showConfirmDialog,
     showColorPickerDialog,
     hideColorPickerDialog,

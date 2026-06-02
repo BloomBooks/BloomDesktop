@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -751,7 +752,11 @@ namespace Bloom.Publish
             {
                 if (
                     !FeatureStatus
-                        .GetFeatureStatus(book.CollectionSettings.Subscription, FeatureName.Game)
+                        .GetFeatureStatus(
+                            book.CollectionSettings.Subscription,
+                            FeatureName.Game,
+                            book
+                        )
                         .Enabled
                 )
                     RobustFile.Delete(Path.Combine(book.FolderPath, "simpleComprehensionQuiz.js"));
@@ -1084,6 +1089,322 @@ namespace Bloom.Publish
             return modifiedBook;
         }
 
+        private sealed class MediaReference
+        {
+            public string RelativePath;
+            public Action<string> RewriteReference;
+        }
+
+        internal static void DeDuplicateMediaFiles(SafeXmlDocument dom, string folderPath)
+        {
+            DeDuplicateReferencedMedia(GetImageMediaReferences(dom), folderPath);
+            DeDuplicateReferencedMedia(GetVideoMediaReferences(dom), folderPath);
+            // Narration files are tied to specific spans, so keep those one-to-one file names stable.
+            var talkingBookAudioFileNames = GetTalkingBookAudioFileNames(dom);
+            DeDuplicateReferencedMedia(
+                GetNonTalkingAudioMediaReferences(dom, talkingBookAudioFileNames),
+                folderPath
+            );
+        }
+
+        private static void DeDuplicateReferencedMedia(
+            IEnumerable<MediaReference> references,
+            string folderPath
+        )
+        {
+            var referencesByPath = new Dictionary<string, List<MediaReference>>();
+            var firstRelativePathByNormalizedPath = new Dictionary<string, string>();
+            var fullPathByNormalizedPath = new Dictionary<string, string>();
+            var normalizedPathsInEncounterOrder = new List<string>();
+
+            foreach (var reference in references)
+            {
+                if (string.IsNullOrWhiteSpace(reference.RelativePath))
+                    continue;
+
+                var relativePath = NormalizeSlashes(reference.RelativePath);
+                var caseNormalizedRelativePath = BookStorage.GetNormalizedPathForOS(relativePath); // for comparison
+                if (!referencesByPath.TryGetValue(caseNormalizedRelativePath, out var refsForPath))
+                {
+                    refsForPath = new List<MediaReference>();
+                    referencesByPath[caseNormalizedRelativePath] = refsForPath;
+                    firstRelativePathByNormalizedPath[caseNormalizedRelativePath] = relativePath;
+                    fullPathByNormalizedPath[caseNormalizedRelativePath] = ResolveMediaFilePath(
+                        folderPath,
+                        relativePath
+                    );
+                    normalizedPathsInEncounterOrder.Add(caseNormalizedRelativePath);
+                }
+
+                refsForPath.Add(reference);
+            }
+
+            var hashToCanonicalRelativePath = new Dictionary<string, string>();
+            var normalizedPathsToDelete = new HashSet<string>();
+            foreach (var normalizedRelativePath in normalizedPathsInEncounterOrder)
+            {
+                var filePath = fullPathByNormalizedPath[normalizedRelativePath];
+                if (!RobustFile.Exists(filePath))
+                    continue;
+
+                var hashString = ComputeFileHash(filePath);
+                if (
+                    hashToCanonicalRelativePath.TryGetValue(
+                        hashString,
+                        out var canonicalRelativePath
+                    )
+                )
+                {
+                    // Rewrite all references before deleting any duplicate file so later references to
+                    // the same duplicate path can still be resolved during this pass.
+                    foreach (var reference in referencesByPath[normalizedRelativePath])
+                    {
+                        reference.RewriteReference(canonicalRelativePath);
+                    }
+
+                    normalizedPathsToDelete.Add(normalizedRelativePath);
+                }
+                else
+                {
+                    hashToCanonicalRelativePath[hashString] = firstRelativePathByNormalizedPath[
+                        normalizedRelativePath
+                    ];
+                }
+            }
+
+            foreach (var normalizedRelativePath in normalizedPathsToDelete)
+            {
+                RobustFile.Delete(fullPathByNormalizedPath[normalizedRelativePath]);
+            }
+        }
+
+        private static IEnumerable<MediaReference> GetImageMediaReferences(SafeXmlDocument dom)
+        {
+            foreach (
+                var imageElement in HtmlDom
+                    .SelectChildImgAndBackgroundImageElements(dom.DocumentElement)
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var relativePath = HtmlDom.GetImageElementUrl(imageElement).PathOnly.NotEncoded;
+                if (
+                    string.IsNullOrWhiteSpace(relativePath)
+                    || ImageUtils.IsPlaceholderImageFilename(relativePath)
+                )
+                {
+                    continue;
+                }
+
+                yield return new MediaReference
+                {
+                    RelativePath = relativePath,
+                    RewriteReference = canonicalRelativePath =>
+                        HtmlDom.SetImageElementUrl(
+                            imageElement,
+                            UrlPathString.CreateFromUnencodedString(canonicalRelativePath)
+                        ),
+                };
+            }
+
+            foreach (
+                var bookSetting in dom.SafeSelectNodes(
+                        "//div[@id='bloomDataDiv']/div[@data-book='coverImage' or @data-book='licenseImage']"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var relativePath = UrlPathString
+                    .CreateFromUrlEncodedString(bookSetting.InnerText.Trim())
+                    .PathOnly.NotEncoded;
+                if (
+                    string.IsNullOrWhiteSpace(relativePath)
+                    || ImageUtils.IsPlaceholderImageFilename(relativePath)
+                )
+                {
+                    continue;
+                }
+
+                yield return new MediaReference
+                {
+                    RelativePath = relativePath,
+                    RewriteReference = canonicalRelativePath =>
+                    {
+                        bookSetting.InnerText = canonicalRelativePath;
+                        if (bookSetting.GetAttribute("data-book") == "coverImage")
+                        {
+                            bookSetting.SetAttribute("src", canonicalRelativePath);
+                        }
+                    },
+                };
+            }
+        }
+
+        private static IEnumerable<MediaReference> GetVideoMediaReferences(SafeXmlDocument dom)
+        {
+            foreach (
+                var videoContainer in HtmlDom
+                    .SelectChildVideoElements(dom.DocumentElement)
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var relativePath = HtmlDom.GetVideoElementUrl(videoContainer).PathOnly.NotEncoded;
+                if (string.IsNullOrWhiteSpace(relativePath))
+                    continue;
+
+                yield return new MediaReference
+                {
+                    RelativePath = relativePath,
+                    RewriteReference = canonicalRelativePath =>
+                        HtmlDom.SetVideoElementUrl(
+                            videoContainer,
+                            UrlPathString.CreateFromUnencodedString(canonicalRelativePath)
+                        ),
+                };
+            }
+        }
+
+        private static IEnumerable<MediaReference> GetNonTalkingAudioMediaReferences(
+            SafeXmlDocument dom,
+            HashSet<string> talkingBookAudioFileNames
+        )
+        {
+            foreach (
+                var pageWithBackgroundMusic in HtmlDom
+                    .SelectChildBackgroundMusicElements(dom.DocumentElement)
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var reference = MakeAudioAttributeReference(
+                    pageWithBackgroundMusic,
+                    HtmlDom.musicAttrName,
+                    talkingBookAudioFileNames
+                );
+                if (reference != null)
+                    yield return reference;
+            }
+
+            foreach (
+                var soundElement in dom.SafeSelectNodes(".//*[@data-sound]").Cast<SafeXmlElement>()
+            )
+            {
+                var reference = MakeAudioAttributeReference(
+                    soundElement,
+                    "data-sound",
+                    talkingBookAudioFileNames
+                );
+                if (reference != null)
+                    yield return reference;
+            }
+
+            foreach (
+                var elementWithCorrectSound in dom.SafeSelectNodes(".//*[@data-correct-sound]")
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var reference = MakeAudioAttributeReference(
+                    elementWithCorrectSound,
+                    "data-correct-sound",
+                    talkingBookAudioFileNames
+                );
+                if (reference != null)
+                    yield return reference;
+            }
+
+            foreach (
+                var elementWithWrongSound in dom.SafeSelectNodes(".//*[@data-wrong-sound]")
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var reference = MakeAudioAttributeReference(
+                    elementWithWrongSound,
+                    "data-wrong-sound",
+                    talkingBookAudioFileNames
+                );
+                if (reference != null)
+                    yield return reference;
+            }
+        }
+
+        private static MediaReference MakeAudioAttributeReference(
+            SafeXmlElement element,
+            string attributeName,
+            HashSet<string> talkingBookAudioFileNames
+        )
+        {
+            var rawValue = element.GetAttribute(attributeName);
+            if (string.IsNullOrWhiteSpace(rawValue) || rawValue == "none")
+                return null;
+
+            var fileName = UrlPathString.CreateFromUrlEncodedString(rawValue).PathOnly.NotEncoded;
+            var normalizedFileName = BookStorage.GetNormalizedPathForOS(fileName);
+            if (talkingBookAudioFileNames.Contains(normalizedFileName))
+                return null;
+
+            return new MediaReference
+            {
+                RelativePath = MakeRelativePath("audio", fileName),
+                RewriteReference = canonicalRelativePath =>
+                    element.SetAttribute(attributeName, Path.GetFileName(canonicalRelativePath)),
+            };
+        }
+
+        private static HashSet<string> GetTalkingBookAudioFileNames(SafeXmlDocument dom)
+        {
+            // Match Bloom's narration selector so we skip exactly the files publish already treats as
+            // talking-book audio, including split TextBox recordings.
+            var fileNames = new HashSet<string>();
+            foreach (
+                var narrationElement in HtmlDom
+                    .SelectChildNarrationAudioElements(
+                        dom.DocumentElement,
+                        includeSplitTextBoxAudio: true,
+                        langsToExclude: null
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var narrationId = narrationElement.GetOptionalStringAttribute("id", null);
+                if (string.IsNullOrWhiteSpace(narrationId))
+                    continue;
+
+                foreach (var fileName in BookStorage.GetNarrationAudioFileNames(narrationId, true))
+                {
+                    fileNames.Add(BookStorage.GetNormalizedPathForOS(fileName));
+                }
+            }
+
+            return fileNames;
+        }
+
+        private static string ComputeFileHash(string filePath)
+        {
+            using (var stream = RobustFile.OpenRead(filePath))
+            {
+                return Convert.ToHexString(SHA256.HashData(stream));
+            }
+        }
+
+        private static string ResolveMediaFilePath(string folderPath, string relativePath)
+        {
+            var path = relativePath.Replace('/', Path.DirectorySeparatorChar);
+            return BookStorage.GetNormalizedPathForOS(Path.Combine(folderPath, path));
+        }
+
+        private static string NormalizeSlashes(string relativePath)
+        {
+            return relativePath.Replace('\\', '/');
+        }
+
+        private static string MakeRelativePath(params string[] parts)
+        {
+            return string.Join(
+                "/",
+                parts
+                    .Where(part => !string.IsNullOrWhiteSpace(part))
+                    .Select(part => part.Trim('/', '\\'))
+            );
+        }
+
         /// <summary>
         /// Once we have really cropped any images that need it, we no longer need the "canvas element-like"
         /// HTML structure that supports cropping background images. So we get rid of the extra structure
@@ -1107,9 +1428,8 @@ namespace Bloom.Publish
         /// represented as a canvas element to our pre-6.2 approach where it was a direct child of the bloom canvas.
         /// The canvas element div is removed, and the img that was in it is moved to an appropriate position
         /// as a direct child of the bloom-canvas.
-        /// We also do this when publishing to BloomLibrary; this saves the harvester needing to worry about
-        /// the background image canvas elements, and also saves our future code having to worry about blorg
-        /// books that have a mixture of old and new background images.
+        /// We don't do this when publishing to BloomLibrary, because really cropping images and then
+        /// switching to content-fit:contain can leave a pixel of the cover visible.
         /// </summary>
         public static void SimplifyBackgroundImages(SafeXmlDocument dom)
         {

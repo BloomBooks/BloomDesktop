@@ -416,6 +416,15 @@ namespace Bloom.Book
             UpdateVariablesAndDataDiv(dom.RawDom, info);
         }
 
+        /// <summary>
+        /// Create or update the data div with all the data-book values in the specified page element.
+        /// </summary>
+        /// <param name="pageElement">This is a page div that we just edited and want to read from.</param>
+        public void SuckInDataFromEditedDom(SafeXmlElement pageElement, BookInfo info = null)
+        {
+            UpdateVariablesAndDataDiv(pageElement, info);
+        }
+
         public void SynchronizeDataItemsThroughoutDOM()
         {
             var itemsToDelete = new HashSet<Tuple<string, string>>();
@@ -1043,7 +1052,7 @@ namespace Bloom.Book
 
         /// <summary>
         /// Somehow Bloom sometimes gets an extra div in the editable content, which should only contain p elements
-        /// (BL-16065). CkEditor may be implicated. Whe bookdata round-trips them, somehow things were getting
+        /// (BL-16065). CkEditor may be implicated. When bookdata round-trips them, somehow things were getting
         /// messed up so that an extra div containing just a br was visible as an extra line. CoPilot came up
         /// with this patch. It may be doing more than is strictly necessary to prevent BL-16065.
         /// </summary>
@@ -1055,6 +1064,7 @@ namespace Bloom.Book
             }
 
             var doc = SafeXmlDocument.Create();
+            doc.PreserveWhitespace = true;
             doc.LoadXml("<wrapper>" + xml + "</wrapper>");
             var wrapper = doc.DocumentElement;
 
@@ -1457,7 +1467,7 @@ namespace Bloom.Book
             try
             {
                 string query =
-                    $".//{elementName}[(@data-book or @data-library or @data-collection or @{kDataXmatterPage} or @data-custom-layout-id) and not(contains(@class,'bloom-writeOnly'))]";
+                    $"self::{elementName}[(@data-book or @data-library or @data-collection or @{kDataXmatterPage} or @data-custom-layout-id) and not(contains(@class,'bloom-writeOnly'))] | .//{elementName}[(@data-book or @data-library or @data-collection or @{kDataXmatterPage} or @data-custom-layout-id) and not(contains(@class,'bloom-writeOnly'))]";
 
                 var nodesOfInterest = sourceElement.SafeSelectNodes(query);
 
@@ -1732,25 +1742,42 @@ namespace Bloom.Book
         private List<Tuple<string, XmlString>> GetAttributesToSave(SafeXmlElement node)
         {
             var result = new List<Tuple<string, XmlString>>();
-            if (HtmlDom.IsInCustomLayoutPage(node))
+            var isInCustomLayoutPage = HtmlDom.IsInCustomLayoutPage(node);
+            if (node.Name == "img" && isInCustomLayoutPage)
             {
-                // We don't want to transfer attribute values or classes from the custom page
+                // We don't want to transfer most image attribute values or classes from the custom page
                 // layout to the standard one. It's likely that special styling or image cropping
                 // or anything similar  will have the wrong effect there. The one exception is the
                 // src of an image: we allow changing the cover image in one place to change it in
                 // the other, just as changing the text of a title in one place changes it in both.
                 // We don't need to worry about re-creating attribute values inside the custom margin
                 // box, because its whole content is saved.
-                if (node.Name == "img" && !string.IsNullOrWhiteSpace(node.GetAttribute("src")))
+                // We do want to transfer data normally for text elements; for example, talking book
+                // recordings should transfer (and also survive the book being opened in 6.3).
+                if (!string.IsNullOrWhiteSpace(node.GetAttribute("src")))
                     result.Add(
                         Tuple.Create("src", XmlString.FromUnencoded(node.GetAttribute("src")))
                     );
                 return result;
             }
+            // Margin box doesn't have any of the properties that would normally make it one of the nodes
+            // passed to this method. However, it is the node that gets passed for a custom page. It would
+            // probably be harmless to process it normally, but it would result in the data-div node for
+            // the custom page content having the class marginBox. That might cause something unexpected,
+            // and the marginBox doesn't have any classes or attributes we need to preserve, so just skip it.
+            if (node.HasClass("marginBox"))
+                return result;
             foreach (var attr in node.AttributePairs)
             {
                 if (_attributesNotToCopy.Contains(attr.Name))
                     continue;
+                if (attr.Name == "style" && isInCustomLayoutPage)
+                {
+                    // We don't want custom canvas element formatting, like text outline and color,
+                    // to get copied to other places in the book, like from front cover title to title page title.
+                    // See BL-16357.
+                    continue;
+                }
                 if (attr.Name == "class")
                 {
                     var classes = attr.Value.Split().ToList();
@@ -2142,22 +2169,108 @@ namespace Bloom.Book
 
                 foreach (var activeAttributeName in _attributesToInactivate)
                 {
-                    var inactiveAttributeName = $"{activeAttributeName}-inactive";
-                    var sourceAttributeName = toInactive
-                        ? activeAttributeName
-                        : inactiveAttributeName;
-                    var destinationAttributeName = toInactive
-                        ? inactiveAttributeName
-                        : activeAttributeName;
-
-                    if (!element.HasAttribute(sourceAttributeName))
+                    // Only inactivate ids in parts of the saved marginBox clone that are also
+                    // persisted separately via data-book/data-derived. This prevents our duplicate-id
+                    // code from de-duplicating them. But we must not do it for pure custom-only content
+                    // because, when the book is in standard layout, the data-div element may be the
+                    // only thing indicating that an audio file is in use. (There are various reasons
+                    // we keep the custom-layout data when switching to standard layout, including
+                    // opening the book in an earlier version of Bloom). If we inactivate the id,
+                    // then code that cleans up unused audio files will get rid of ones we may still
+                    // want if we switch back to the custom layout.
+                    // (This feels complicated and fragile. If we only had to think about 6.4, it might
+                    // be better to just have the is-audio-file-in-use code also look for id-inactive.
+                    // But then we would have to do something special to prevent older Blooms from
+                    // getting rid of the audio files.)
+                    if (
+                        toInactive
+                        && activeAttributeName == "id"
+                        && !ElementIsInDuplicatedCustomLayoutDataSubtree(element)
+                    )
+                    {
                         continue;
+                    }
 
-                    var attributeValue = element.GetAttribute(sourceAttributeName);
-                    element.RemoveAttribute(sourceAttributeName);
-                    element.SetAttribute(destinationAttributeName, attributeValue);
+                    var inactiveAttributeName = GetInactiveAttributeName(activeAttributeName);
+                    if (toInactive)
+                    {
+                        if (!element.HasAttribute(activeAttributeName))
+                            continue;
+
+                        var attributeValue = element.GetAttribute(activeAttributeName);
+                        element.RemoveAttribute(activeAttributeName);
+                        element.SetAttribute(inactiveAttributeName, attributeValue);
+                    }
+                    else
+                    {
+                        var sourceAttributeNames = GetInactiveAttributeNamesToRestore(
+                            activeAttributeName
+                        );
+                        var sourceAttributeName = sourceAttributeNames.FirstOrDefault(
+                            element.HasAttribute
+                        );
+                        if (sourceAttributeName == null)
+                            continue;
+
+                        var attributeValue = element.GetAttribute(sourceAttributeName);
+                        foreach (var sourceName in sourceAttributeNames)
+                        {
+                            if (element.HasAttribute(sourceName))
+                                element.RemoveAttribute(sourceName);
+                        }
+
+                        element.SetAttribute(activeAttributeName, attributeValue);
+                    }
                 }
             }
+        }
+
+        internal static string GetInactiveAttributeName(string activeAttributeName)
+        {
+            if (activeAttributeName.StartsWith("data-"))
+                return $"{activeAttributeName}-inactive";
+            // We don't want to make bad HTML by creating invalid non-data attributes like "id-inactive",
+            // so if the attribute we want to make inactive doesn't already start with data- we'll add that.
+            return $"data-{activeAttributeName}-inactive";
+        }
+
+        internal static string[] GetInactiveAttributeNamesToRestore(string activeAttributeName)
+        {
+            var preferredInactiveName = GetInactiveAttributeName(activeAttributeName);
+
+            // In the very early days of inactivating attributes in custom-page data, we used "id-inactive"
+            // instead of "data-id-inactive", but that's not valid HTML. For now, we are checking for both
+            // when restoring, to allow books with the old version of the data to be restored
+            // properly. We may decide to stop doing that, since we didn't ship any versions that
+            // used id-inactive.
+            if (activeAttributeName == "id")
+            {
+                return new[] { preferredInactiveName, "id-inactive" };
+            }
+
+            return new[] { preferredInactiveName };
+        }
+
+        private static bool ElementIsInDuplicatedCustomLayoutDataSubtree(SafeXmlElement element)
+        {
+            for (
+                var current = element;
+                current != null;
+                current = current.ParentNode as SafeXmlElement
+            )
+            {
+                if (
+                    current.HasAttribute("data-book")
+                    || current.HasAttribute("data-derived")
+                    || current.HasAttribute("data-book-inactive")
+                    || current.HasAttribute("data-derived-inactive")
+                )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void SwapNestedClasses(SafeXmlElement element, bool toInactive)

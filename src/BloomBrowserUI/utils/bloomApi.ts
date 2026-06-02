@@ -240,15 +240,25 @@ export function useApiObject<T>(
 ): T {
     const [value, setValue] = useState<T>(defaultValue);
     useEffect(() => {
+        let isCancelled = false;
+
         if (skipQuery) {
             setValue(defaultValue);
         } else {
             get(urlSuffix, (c) => {
+                if (isCancelled) {
+                    return;
+                }
+
                 if (typeof c.data === "string") {
                     setValue(JSON.parse(c.data as string));
                 } else setValue(c.data);
             });
         }
+
+        return () => {
+            isCancelled = true;
+        };
         // This is a compromise/kludge. Typically, the caller passes defaultValue as what appears to be
         // an object constant, like { foo: "bar" }. Every render of the caller will create a new instance
         // of { foo: "bar" }, which will cause this effect to run again, and the API call to be made again,
@@ -313,8 +323,7 @@ export function useWatchApiObject<T>(
 ): T {
     const [val, setVal] = useState<T>(defaultValue);
 
-    useEffect(() => {
-        setVal(defaultValue);
+    const refreshFromApi = React.useCallback(() => {
         get(urlSuffix, (result) => {
             if (typeof result.data === "string") {
                 setVal(JSON.parse(result.data) as T);
@@ -322,12 +331,26 @@ export function useWatchApiObject<T>(
                 setVal(result.data as T);
             }
         });
+    }, [urlSuffix]);
+
+    useEffect(() => {
+        setVal(defaultValue);
+        refreshFromApi();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [urlSuffix, JSON.stringify(defaultValue)]);
+    }, [refreshFromApi, JSON.stringify(defaultValue)]);
 
     useSubscribeToWebSocketForObject<T>(clientContext, eventId, (message) => {
         setVal(message);
     });
+
+    // If the websocket reconnects, refresh from API in case we missed an event while disconnected.
+    useSubscribeToWebSocketForEvent(
+        clientContext,
+        `websocket/open/${clientContext}`,
+        () => {
+            refreshFromApi();
+        },
+    );
 
     return val;
 }

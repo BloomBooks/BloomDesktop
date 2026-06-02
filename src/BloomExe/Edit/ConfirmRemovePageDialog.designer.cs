@@ -39,9 +39,9 @@
 			((System.ComponentModel.ISupportInitialize)(this.pictureRecycleBin)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
-			// 
+			//
 			// tableLayout
-			// 
+			//
 			this.tableLayout.AutoSize = true;
 			this.tableLayout.BackColor = System.Drawing.Color.Transparent;
 			this.tableLayout.ColumnCount = 3;
@@ -59,10 +59,10 @@
 			this.tableLayout.Size = new System.Drawing.Size(359, 35);
 			this.tableLayout.TabIndex = 1;
 			this.tableLayout.SizeChanged += new System.EventHandler(this.HandleTableLayoutSizeChanged);
-			// 
+			//
 			// _messageLabel
-			// 
-			this._messageLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			//
+			this._messageLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._messageLabel.AutoSize = true;
 			this.tableLayout.SetColumnSpan(this._messageLabel, 2);
@@ -76,9 +76,9 @@
 			this._messageLabel.Size = new System.Drawing.Size(315, 19);
 			this._messageLabel.TabIndex = 2;
 			this._messageLabel.Text = "This page will be permanently removed.";
-			// 
+			//
 			// pictureRecycleBin
-			// 
+			//
 			this.pictureRecycleBin.Image = global::Bloom.Properties.Resources.DeleteMessageBoxImage;
 			this._L10NSharpExtender.SetLocalizableToolTip(this.pictureRecycleBin, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.pictureRecycleBin, null);
@@ -90,9 +90,9 @@
 			this.pictureRecycleBin.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
 			this.pictureRecycleBin.TabIndex = 1;
 			this.pictureRecycleBin.TabStop = false;
-			// 
+			//
 			// cancelBtn
-			// 
+			//
 			this.cancelBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.cancelBtn.AutoSize = true;
 			this.cancelBtn.DialogResult = System.Windows.Forms.DialogResult.Cancel;
@@ -107,9 +107,9 @@
 			this.cancelBtn.Text = "&Cancel";
 			this.cancelBtn.UseVisualStyleBackColor = true;
 			this.cancelBtn.Click += new System.EventHandler(this.cancelBtn_Click);
-			// 
+			//
 			// deleteBtn
-			// 
+			//
 			this.deleteBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.deleteBtn.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this.deleteBtn, null);
@@ -124,16 +124,16 @@
 			this.deleteBtn.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.deleteBtn.UseVisualStyleBackColor = true;
 			this.deleteBtn.Click += new System.EventHandler(this.deleteBtn_Click);
-			// 
+			//
 			// _L10NSharpExtender
-			// 
+			//
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
-			// 
+			//
 			// ConfirmRemovePageDialog
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			//
+			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.BackColor = System.Drawing.SystemColors.Window;
 			this.CancelButton = this.cancelBtn;
 			this.ClientSize = new System.Drawing.Size(394, 113);

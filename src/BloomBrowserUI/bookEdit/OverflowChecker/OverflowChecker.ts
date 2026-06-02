@@ -408,8 +408,23 @@ export default class OverflowChecker {
         // doesn't overflow internally (i.e. has too much stuff to fit in itself).
         // 2-We also need to check that this element and any OTHER elements on the page
         // haven't been pushed outside the margins
+        OverflowChecker.AdjustSizeAndMarkSelfOverflow(
+            editable,
+            doNotShrink,
+            growAsMuchAsPossible,
+        );
+        OverflowChecker.CheckPageAncestorOverflow(editable);
+    } // end AdjustSizeOrMarkOverflow
 
-        // Type 1 Overflow
+    // Type 1 overflow handling: checks/resizes the element's containing canvas element and
+    // marks whether the element overflows its own box. This is the per-element part of
+    // overflow handling and can be called in a loop over multiple elements before calling
+    // CheckPageAncestorOverflow once at the end.
+    public static AdjustSizeAndMarkSelfOverflow(
+        editable: HTMLElement,
+        doNotShrink?: boolean,
+        growAsMuchAsPossible?: boolean,
+    ) {
         const $editable = $(editable);
         if ($editable.hasClass("overflow")) {
             OverflowChecker.RemoveOverflowQtip($editable);
@@ -472,7 +487,6 @@ export default class OverflowChecker {
             overflowY = 0;
         }
 
-        let skipType2Overflow = false;
         if (isInDragActivity(editable)) {
             // We decided that overflow was just causing too many problems as we tried to wrap
             // up drag activities. So for now, we are just turning off overflow reporting completely
@@ -481,7 +495,6 @@ export default class OverflowChecker {
             // point, it is integrated with the code which resizes the canvas element.
             // That's also why we can't just filter out these elements in getElementsThatCanOverflowOrNeedToBeResized.
             overflowY = 0;
-            skipType2Overflow = true;
         }
 
         if (overflowY > 0 || overflowX > 0) {
@@ -524,9 +537,22 @@ export default class OverflowChecker {
                 OverflowChecker.fixScrollBarsSoon(page[0]);
             }
         }
+    }
 
-        if (skipType2Overflow) return;
+    // Type 2 overflow handling: scans all editable elements on the page (within the same
+    // marginBox as `editable`) and marks any that overflow past their ancestor containers.
+    // This is the page-level part of overflow handling. When processing multiple elements
+    // (e.g. in a style-change loop) call AdjustSizeAndMarkSelfOverflow for each element
+    // first, then call this once at the end.
+    public static CheckPageAncestorOverflow(editable: HTMLElement) {
+        if (isInDragActivity(editable)) {
+            // We decided that overflow was just causing too many problems as we tried to wrap
+            // up drag activities. So for now, we are just turning off overflow reporting completely
+            // in drag activities. See BL-14783.
+            return;
+        }
 
+        const $editable = $(editable);
         const container = $editable.closest(".marginBox");
         const quizPage = $(container).closest(".simple-comprehension-quiz");
         const editablePageElements = $(
@@ -616,7 +642,7 @@ export default class OverflowChecker {
             }
         });
         OverflowChecker.UpdatePageOverflow(container.closest(".bloom-page"));
-    } // end AdjustSizeOrMarkOverflow
+    }
 
     // Fix the NiceScroll scrollbars after a short delay to prevent flickering
     // as the mouse drags the size of the element.

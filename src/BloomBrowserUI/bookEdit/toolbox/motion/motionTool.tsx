@@ -37,6 +37,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private rootControl: MotionControl;
     private narrationPlayer: AudioRecording;
     private stopPreviewTimeout: number;
+    private scrollXBeforePreview = 0;
+    private scrollYBeforePreview = 0;
+    private hadSavedPreviewScrollPosition = false;
     private animationPreviewAspectRatio = 16 / 9; // width divided by height of desired simulated device screen
 
     public makeRootElement(): HTMLDivElement {
@@ -704,6 +707,12 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (!page || !page.documentElement) return; // paranoid
         const contentWindow = this.getPageFrame().contentWindow;
         if (!contentWindow) return; // paranoid
+        this.scrollXBeforePreview = contentWindow.scrollX;
+        this.scrollYBeforePreview = contentWindow.scrollY;
+        this.hadSavedPreviewScrollPosition = true;
+        // Motion preview is drawn at the top of the document. If the page is scrolled, the
+        // preview container can end up off-screen as soon as we hide normal page content.
+        contentWindow.scrollTo(0, 0);
         const bloomPage = page.getElementsByClassName(
             "bloom-page",
         )[0] as HTMLElement;
@@ -853,6 +862,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private cleanupAnimation() {
         const page = this.getPage();
         if (!page) return;
+        const contentWindow = this.getPageFrame().contentWindow;
 
         // stop the animation by removing any elements it added to the page.
         const animationElements = Array.from(
@@ -869,6 +879,14 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
         const editorBody = bloomPage.closest("body")!;
         editorBody.classList.remove(this.hiddenStyleName);
+
+        if (this.hadSavedPreviewScrollPosition && contentWindow) {
+            contentWindow.scrollTo(
+                this.scrollXBeforePreview,
+                this.scrollYBeforePreview,
+            );
+        }
+        this.hadSavedPreviewScrollPosition = false;
 
         //show the "change layout" toggle again
         const layoutToggle = page.querySelector(
@@ -1028,9 +1046,9 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
                             >
                                 Motion Books are Bloom Reader books with two
                                 modes. Normally, they are Talking Books. When
-                                you turn the phone sideways, the picture fills
-                                the screen. It pans and zooms from rectangle "1"
-                                to rectangle "2".
+                                you turn the phone sideways, the image fills the
+                                screen. It pans and zooms from rectangle "1" to
+                                rectangle "2".
                             </Div>
                             <span
                                 css={css`

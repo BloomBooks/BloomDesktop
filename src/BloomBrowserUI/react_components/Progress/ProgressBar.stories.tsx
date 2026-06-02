@@ -32,6 +32,13 @@ _100.story = {
     name: "100%",
 };
 
+export const _45Animated = () =>
+    barFrame(<ProgressBar percentage={45} animateWhileInProgress={true} />);
+
+_45Animated.story = {
+    name: "45% animated",
+};
+
 export const _0 = () => barFrame(<ProgressBar percentage={0} />);
 
 _0.story = {

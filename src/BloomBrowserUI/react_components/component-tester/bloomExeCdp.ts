@@ -88,6 +88,7 @@ export const clickWorkspaceTab = async (
 export const getWorkspaceTabs = async (): Promise<{
     tabStates: Record<WorkspaceTabId, string>;
 }> => {
+    // The WinForms shell still owns top-level tab state, so tests ask Bloom's API instead of inferring it from the DOM.
     const response = await fetch(workspaceTabsUrl);
     if (!response.ok) {
         throw new Error(

@@ -279,14 +279,11 @@ namespace Bloom.web.controllers
                                         caption.Length - "-square".Length
                                     );
 
-                                // The Replace of & with + corresponds to a replacement made in PageChooserDialog.tsx method getTemplatePageImageSource().
                                 // The Trim is needed because template may now be created by users editing the pageLabel div, and those
                                 // labels typically include a trailing newline.
                                 IPage templatePage = templateBook
                                     .GetPages()
-                                    .FirstOrDefault(page =>
-                                        page.Caption.Replace("&", "+").Trim() == caption
-                                    );
+                                    .FirstOrDefault(page => page.Caption.Trim() == caption);
                                 if (templatePage == null)
                                     templatePage = templateBook.GetPages().FirstOrDefault(); // may get something useful?? or throw??
 

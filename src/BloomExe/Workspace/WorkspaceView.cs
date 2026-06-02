@@ -151,11 +151,6 @@ namespace Bloom.Workspace
             //
             this._editingView = editingViewFactory();
             this._editingView.WorkspaceView = this;
-            this._editingView.Model.EnableSwitchingTabs = (enabled) =>
-            {
-                _tabsEnabled = enabled;
-                SendTopBarState();
-            };
 
             if (!Program.RunningHarvesterMode)
             {
@@ -194,7 +189,7 @@ namespace Bloom.Workspace
             this._publishView = publishViewFactory();
             this._publishView.WorkspaceView = this;
 
-            ApplyTabAreaSelection(_collectionTabView);
+            ChangeTab(_collectionTabView);
 
             SetupZoomModel();
             SendZoomInfo();
@@ -264,6 +259,108 @@ namespace Bloom.Workspace
         internal void ReloadWorkspaceRootDocument()
         {
             _workspaceReactControl?.Reload();
+        }
+
+        /// <summary>
+        /// If the selected Team Collection book was renamed remotely, update the saved current path
+        /// to the repo's current name before reloading the project.
+        /// </summary>
+        private void UpdateCurrentBookPathForTeamCollectionReload()
+        {
+            var selectedBook = _bookSelection.CurrentSelection;
+            var teamCollection = _tcManager?.CurrentCollectionEvenIfDisconnected;
+            if (selectedBook == null || teamCollection == null)
+                return;
+
+            var currentBookPath = Settings.Default.CurrentBookPath;
+            if (!ShouldConsiderUpdatingCurrentBookPath(selectedBook.ID, currentBookPath))
+                return;
+
+            try
+            {
+                var resolvedPath = teamCollection.GetLikelyLocalPathForBookId(selectedBook.ID);
+                if (string.IsNullOrEmpty(resolvedPath))
+                {
+                    ClearCurrentBookPathIfMissing();
+                    return;
+                }
+
+                if (!Directory.Exists(resolvedPath))
+                {
+                    ClearCurrentBookPathIfMissing();
+                    return;
+                }
+
+                if (
+                    !TryGetBookIdFromFolder(resolvedPath, out var resolvedId)
+                    || resolvedId != selectedBook.ID
+                )
+                {
+                    ClearCurrentBookPathIfMissing();
+                    return;
+                }
+
+                Settings.Default.CurrentBookPath = resolvedPath;
+                Settings.Default.Save();
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                Logger.WriteError(
+                    "Unable to update current book path while reloading Team Collection.",
+                    e
+                );
+                ClearCurrentBookPathIfMissing();
+            }
+        }
+
+        private static bool ShouldConsiderUpdatingCurrentBookPath(
+            string selectedBookId,
+            string currentBookPath
+        )
+        {
+            if (string.IsNullOrEmpty(currentBookPath) || !Directory.Exists(currentBookPath))
+                return true;
+
+            if (!TryGetBookIdFromFolder(currentBookPath, out var currentBookId))
+                return true;
+
+            return currentBookId != selectedBookId;
+        }
+
+        private static bool TryGetBookIdFromFolder(string folderPath, out string bookId)
+        {
+            bookId = null;
+            try
+            {
+                bookId = BookMetaData.FromFolder(folderPath)?.Id;
+                return !string.IsNullOrEmpty(bookId);
+            }
+            catch (Exception e)
+                when (e is IOException || e is UnauthorizedAccessException || e is FileException)
+            {
+                Logger.WriteError(
+                    "Unable to read book metadata while checking current book path.",
+                    e
+                );
+                return false;
+            }
+        }
+
+        private static void ClearCurrentBookPathIfMissing()
+        {
+            var currentBookPath = Settings.Default.CurrentBookPath;
+            if (string.IsNullOrEmpty(currentBookPath) || Directory.Exists(currentBookPath))
+                return;
+
+            try
+            {
+                Settings.Default.CurrentBookPath = null;
+                Settings.Default.Save();
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                Logger.WriteError("Unable to clear stale current book path.", e);
+            }
         }
 
         private static ReactControlAdditionalHtml GetWorkspaceAdditionalHtml()
@@ -395,6 +492,20 @@ window.showWorkspaceInitializationFailure = function(message) {
         {
             try
             {
+                // This runs after Team Collection sync has completed, so any remote rename should
+                // already be reflected in the local collection. In case the selected book has been
+                // remotely renamed, this will attempt to update the selected book path so that the
+                // same book stays selected. Minimally, it makes sure that we are not left with
+                // a selected book record pointing at something that doesn't exist, which can cause
+                // problems (e.g. BL-16327).
+                // It's a bit questionable that this method makes use of the current _bookselection,
+                // which as the next comment notes, may be obsolete. However, this method only makes
+                // use of the bookId from the current selection, and only updates the current book
+                // path if there's a problem with leaving it the way it is AND we can find a book
+                // in the current repo (and hence the current collection) with the right ID. That
+                // should not be a problem.
+                UpdateCurrentBookPathForTeamCollectionReload();
+
                 // Now that _bookSelection is an application-level object, it's possible that it retains a
                 // value from a previous collection when we switch collections while Bloom is running.
                 // In such situations, we're restarting almost everything else, so we don't need notifications
@@ -1008,7 +1119,18 @@ window.showWorkspaceInitializationFailure = function(message) {
         public void SetUiLanguage(string langTag)
         {
             ApplyUiLanguageChange(langTag);
-            FinishUiLanguageMenuItemClick();
+
+            // In the single-browser architecture, many UI surfaces don't fully refresh their
+            // localized strings without a full workspace reload. Reopening the current project
+            // gives us behavior similar to collection switching and guarantees consistency.
+            Application.Idle -= ReopenProjectAfterUiLanguageChange;
+            Application.Idle += ReopenProjectAfterUiLanguageChange;
+        }
+
+        private void ReopenProjectAfterUiLanguageChange(object sender, EventArgs e)
+        {
+            Application.Idle -= ReopenProjectAfterUiLanguageChange;
+            Invoke(ReopenCurrentProject);
         }
 
         private void FinishUiLanguageMenuItemClick()
@@ -1192,6 +1314,7 @@ window.showWorkspaceInitializationFailure = function(message) {
                 else
                 {
                     _collectionSettingsApi.PrepareToShowDialog();
+                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                     using (var dlg = _settingsDialogFactory())
                     {
                         dlg.FixingEnterpriseSubscriptionCode = forFixingEnterpriseSubscription;
@@ -1240,7 +1363,18 @@ window.showWorkspaceInitializationFailure = function(message) {
             return null;
         }
 
-        private void ApplyTabAreaSelection(IBloomTabArea view)
+        /// <summary>
+        /// Changes the active tab in the workspace.
+        /// Todo: we can probably merge the two ChangeTab methods, but I want to wait for 6.5 to
+        /// attempt this, also merging the comments with some care. I'm not sure whether we should keep
+        /// the argument as an IBloomTabArea of a WorkspaceTab value. If the latter, _previouslySelectedTabArea
+        /// probably wants to change too, and perhaps other things.
+        /// Note that we don't want to make any actual changes of state until the PostponedWork callback runs
+        /// after we raise _selectedTabAboutToChangeEvent. The allows the current tab to shut down cleanly,
+        /// before any changes that might do things like cleaning out its iframe. In particular, we have to wait
+        /// until any changes are saved if we are leaving the edit tab.
+        /// </summary>
+        private void ChangeTab(IBloomTabArea view)
         {
             // Already on the desired tab: nothing to do.  And possible problems if we do do something.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-8382.
@@ -1249,8 +1383,6 @@ window.showWorkspaceInitializationFailure = function(message) {
 
             var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
             var currentTab = GetWorkspaceTab(view);
-
-            CurrentTabView = view;
             // Warn the user if we're starting to use too much memory.
             //MemoryManagement.CheckMemory(false, "switched tab in workspace", true);
 
@@ -1271,6 +1403,15 @@ window.showWorkspaceInitializationFailure = function(message) {
                     ToTab = currentTab,
                     PostponedWork = () =>
                     {
+                        CurrentTabView = view;
+
+                        // Mark the tab active only when postponed work actually runs.
+                        // When leaving Edit this is delayed until pending save completes.
+                        if (currentTab.HasValue)
+                        {
+                            _tabSelection.ActiveTab = currentTab.Value;
+                        }
+
                         _selectedTabChangedEvent.Raise(
                             new TabChangedDetails() { FromTab = previousTab, ToTab = currentTab }
                         );
@@ -1285,6 +1426,10 @@ window.showWorkspaceInitializationFailure = function(message) {
                         }
                         SendZoomInfo();
                         SendTopBarState();
+                        if (currentTab == WorkspaceTab.collection)
+                        {
+                            ApplyPostCollectionTabBehavior();
+                        }
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
                     },
                 }
@@ -1337,13 +1482,7 @@ window.showWorkspaceInitializationFailure = function(message) {
         /// <param name="newTab">The tab to activate.</param>
         public void ChangeTab(WorkspaceTab newTab)
         {
-            _tabSelection.ActiveTab = newTab;
-            ApplyTabAreaSelection(GetTabArea(newTab));
-
-            if (newTab == WorkspaceTab.collection)
-            {
-                ApplyPostCollectionTabBehavior();
-            }
+            ChangeTab(GetTabArea(newTab));
         }
 
         // Currently not used, but I'm leaving the method in case we want to put it
@@ -1360,9 +1499,14 @@ window.showWorkspaceInitializationFailure = function(message) {
         private void WorkspaceView_Load(object sender, EventArgs e)
         {
             _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
-            CheckDPISettings();
             ShowAutoUpdateDialogIfNeeded();
             ShowForumInvitationDialogIfNeeded();
+            // Check whether the last Velopack update attempt actually succeeded. Shows a toast if not.
+            StartupScreenManager.AddStartupAction(
+                () => ApplicationUpdateSupport.CheckForFailedUpdate(),
+                shouldHideSplashScreen: false,
+                lowPriority: true
+            );
             // Whether we showed the dialog or not we'll check for a new version in 1 minute.
             _applicationUpdateCheckTimer.Enabled = true;
             SendTopBarState();
@@ -1388,8 +1532,7 @@ window.showWorkspaceInitializationFailure = function(message) {
                             var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle", "Auto Update")
                         )
                         {
-                            dlg.Height = 250;
-                            dlg.Width = 500;
+                            dlg.SetScaledSize(500, 250);
                             dlg.ShowDialog(this);
                         }
                     },
@@ -1457,29 +1600,6 @@ window.showWorkspaceInitializationFailure = function(message) {
                     waitForMilestone: "collectionButtonsDrawn",
                     maxTickWaitForMilestone: 100
                 );
-            }
-        }
-
-        private void CheckDPISettings()
-        {
-            Graphics g = this.CreateGraphics();
-            try
-            {
-                var dx = g.DpiX;
-                DPIOfThisAccount = dx;
-                var dy = g.DpiY;
-                if (dx != 96 || dy != 96)
-                {
-                    ErrorReport.NotifyUserOfProblem(
-                        new ShowOncePerSessionBasedOnExactMessagePolicy(),
-                        "The \"text size (DPI)\" or \"Screen Magnification\" of the display on this computer is set to a special value, {0}. With that setting, some thing won't look right in Bloom. Possibly books won't lay out correctly. If this is a problem, change the DPI back to 96 (the default on most computers), using the 'Display' Control Panel.",
-                        dx
-                    );
-                }
-            }
-            finally
-            {
-                g.Dispose();
             }
         }
 
@@ -1604,6 +1724,21 @@ window.showWorkspaceInitializationFailure = function(message) {
         {
             _tabsEnabled = enable;
             SendTopBarState();
+            // Display a log message to track down who called this method with what value and when. (BL-16290)
+            // Trim the stack trace to remove the top two redundant lines and limit the number of lines shown to 5.
+            // The further down the stack trace, the less relevant it is to figure out what called this method.
+            // (The top two lines are always this method and a stracktrace method.)
+            var stackLines = Environment.StackTrace.Split(Environment.NewLine);
+            var stackList = new List<string>();
+            for (int i = 2; i < Math.Min(7, stackLines.Length); i++)
+                stackList.Add(stackLines[i]);
+            var stackTop = string.Join(Environment.NewLine, stackList);
+            var msg =
+                $"WorkSpaceView.SetTabsEnabled({enable}) - {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff")}"
+                + Environment.NewLine
+                + stackTop;
+            Logger.WriteMinorEvent(msg);
+            Debug.WriteLine(msg);
         }
 
         private void ShowTrainingVideos()

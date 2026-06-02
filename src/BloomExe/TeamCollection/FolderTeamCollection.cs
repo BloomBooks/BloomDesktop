@@ -707,11 +707,12 @@ namespace Bloom.TeamCollection
                     var dirty = false;
                     foreach (var key in repoColorPalettes.Keys)
                     {
+                        localColorPalettes.TryGetValue(key, out var localValues);
                         var mergedValues = MergeColorPaletteValues(
                             repoColorPalettes[key],
-                            localColorPalettes[key]
+                            localValues
                         );
-                        if (mergedValues != localColorPalettes[key])
+                        if (mergedValues != localValues)
                         {
                             localColorPalettes[key] = mergedValues;
                             dirty = true;
@@ -970,7 +971,14 @@ namespace Bloom.TeamCollection
         /// those are now handled using RenameBookInRepo, so currently we never pass false.</param>
         public override void DeleteBookFromRepo(string bookFolderPath, bool makeTombstone = true)
         {
-            var pathToBookFileInRepo = GetPathToBookFileInRepo(Path.GetFileName(bookFolderPath));
+            var currentBookFolderName = Path.GetFileName(bookFolderPath);
+            var localStatus = GetLocalStatus(currentBookFolderName);
+            var bookFolderNameToDeleteInRepo =
+                localStatus.collectionId == CollectionId
+                && !string.IsNullOrEmpty(localStatus.oldName)
+                    ? localStatus.oldName
+                    : currentBookFolderName;
+            var pathToBookFileInRepo = GetPathToBookFileInRepo(bookFolderNameToDeleteInRepo);
             // The test here is mostly unnecessary, since Delete won't throw if the file doesn't exist
             // (as indeed it might not, even after the test, in a rare race condition with someone else
             // deleting it, or if this is called as part of MoveBookToCollection). It does serve to make sure at least the containing folder exists, which
@@ -979,7 +987,7 @@ namespace Bloom.TeamCollection
                 RobustFile.Delete(pathToBookFileInRepo);
             if (makeTombstone)
             {
-                var pathForTombstone = GetPathForTombstone(Path.GetFileName(bookFolderPath));
+                var pathForTombstone = GetPathForTombstone(currentBookFolderName);
                 if (pathForTombstone != null)
                 {
                     RobustFile.WriteAllText(
@@ -995,6 +1003,9 @@ namespace Bloom.TeamCollection
             var oldLocalPath = Path.Combine(Path.GetDirectoryName(newBookFolderPath), oldName);
             var pathToOldBookFileInRepo = GetPathToBookFileInRepo(oldLocalPath);
             var pathToNewBookFileInRepo = GetPathToBookFileInRepo(newBookFolderPath);
+            // If the old repo file is already gone, check-in should continue by writing the new one. See BL-16226.
+            if (!RobustFile.Exists(pathToOldBookFileInRepo))
+                return;
             // There is probably some pathological case where pathToNewBookFileInRepo already exists,
             // but I can't think of a decent way to handle it, so just let it fail.
             RobustFile.Move(pathToOldBookFileInRepo, pathToNewBookFileInRepo);
@@ -1314,8 +1325,7 @@ namespace Bloom.TeamCollection
                 )
             )
             {
-                dlg.Width = 560;
-                dlg.Height = 400;
+                dlg.SetScaledSize(560, 400);
                 // This dialog is neater without a title bar. We don't need to be able to
                 // drag it around. There's nothing left to give it one if we don't set a title
                 // and remove the control box.

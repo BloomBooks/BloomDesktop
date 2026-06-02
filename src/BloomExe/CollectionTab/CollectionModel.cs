@@ -736,11 +736,12 @@ namespace Bloom.CollectionTab
             );
         }
 
+        // This is currently only actually needed and useful if the thumbnail update was
+        // triggered by the "Update Thumbnail" menu item;
+        // If we are entering the Collection tab then the listener is probably not mounted yet
+        // and will rely on other cache busting instead (BL-16199)
         private void RefreshOneThumbnail(Book.BookInfo bookInfo, Image image)
         {
-            // The arguments here are not currently used (method signature is legacy),
-            // but may be useful if we optimize.
-            // optimize: I think this will reload all of them
             _webSocketServer.SendString("bookImage", "reload", bookInfo.Id);
         }
 
@@ -1040,13 +1041,16 @@ namespace Bloom.CollectionTab
                 // to select an item before it is present in the collection to select.)
                 // We know this is a new book object, so there's no point in using EnsureUpToDate.
                 // When we later select it, that code uses EnsureUpToDate and will not do it again.
+                // Set before BringBookUpToDate so that title-change events fired during that call
+                // are suppressed (no spurious Renamed entries). The Created event will be recorded
+                // when the user enters a title (or various events if no title is entered earlier).
+                newBook.PendingCreationSource = Path.GetFileName(sourceBook.FolderPath);
                 newBook.BringBookUpToDate(new NullProgress(), false);
 
                 TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
 
                 if (_bookSelection != null)
                 {
-                    Book.Book.SourceToReportForNextRename = Path.GetFileName(sourceBook.FolderPath);
                     _bookSelection.SelectBook(newBook, aboutToEdit: true);
                 }
                 //enhance: would be nice to know if this is a new shell
@@ -1062,8 +1066,6 @@ namespace Bloom.CollectionTab
                         }
                     );
                 }
-                // Better reported in Book_BookTitleChanged as a side effect of selecting it.
-                // BookHistory.AddEvent(newBook, BookHistoryEventType.Created, "New book created");
                 _editBookCommand.Raise(newBook);
             }
             catch (Exception e)

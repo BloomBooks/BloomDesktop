@@ -189,6 +189,23 @@ namespace BloomTests.Publish.BloomPub
         }
 
         [Test]
+        public void OrderPublicationLanguages_UsesBookContentLanguagePriority()
+        {
+            var testBook = CreateBookWithPhysicalFile(
+                kMinimumValidBookBodyContent,
+                bringBookUpToDate: true
+            );
+            testBook.SetMultilingualContentLanguages("xyz", "en", "fr");
+
+            var orderedLanguages = BloomPubMaker.OrderPublicationLanguages(
+                testBook,
+                new[] { "fr", "xyz", "en" }
+            );
+
+            CollectionAssert.AreEqual(new[] { "xyz", "en", "fr" }, orderedLanguages);
+        }
+
+        [Test]
         public void CompressBookForDevice_IncludesWantedFiles()
         {
             var wantedFiles = new List<string>()
@@ -1228,6 +1245,265 @@ namespace BloomTests.Publish.BloomPub
             );
         }
 
+        [Test]
+        public void CompressBookForDevice_DeduplicatesDuplicateImages()
+        {
+            const string bodyContent =
+                @"
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='image-dedupe'>
+							<div class='marginBox'>
+								<img src='duplicate-a.png' alt='first'/>
+								<img src='duplicate-b.png' alt='second'/>
+							</div>
+						</div>
+";
+
+            TestHtmlAfterCompression(
+                bodyContent,
+                bookHeadContent: kMinimumValidBookHeadContent,
+                actionsOnFolderBeforeCompressing: folderPath =>
+                {
+                    File.Copy(
+                        FileLocationUtilities.GetFileDistributedWithApplication(
+                            _pathToTestImages,
+                            "shirt.png"
+                        ),
+                        Path.Combine(folderPath, "duplicate-a.png")
+                    );
+                    File.Copy(
+                        FileLocationUtilities.GetFileDistributedWithApplication(
+                            _pathToTestImages,
+                            "shirt.png"
+                        ),
+                        Path.Combine(folderPath, "duplicate-b.png")
+                    );
+                },
+                assertionsOnZipArchive: paramObj =>
+                {
+                    var zip = paramObj.ZipFile;
+                    Assert.AreNotEqual(-1, zip.FindEntry("duplicate-a.png", false));
+                    Assert.AreEqual(-1, zip.FindEntry("duplicate-b.png", false));
+                },
+                assertionsOnResultingHtmlString: html =>
+                {
+                    var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+                    AssertThatXmlIn
+                        .Dom(htmlDom)
+                        .HasSpecifiedNumberOfMatchesForXpath("//img[@src='duplicate-a.png']", 2);
+                    AssertThatXmlIn
+                        .Dom(htmlDom)
+                        .HasNoMatchForXpath("//img[@src='duplicate-b.png']");
+                }
+            );
+        }
+
+        [Test]
+        public void DeDuplicateMediaFiles_UpdatesCoverImageDataDivSrcAttribute()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(
+                @"
+<html>
+    <body>
+        <div id='bloomDataDiv'>
+            <div data-book='coverImage' lang='*' src='duplicate-b.png'>duplicate-b.png</div>
+        </div>
+        <div class='bloom-page A5Portrait' data-page='required singleton' id='image-dedupe'>
+            <div class='marginBox'>
+                <img src='duplicate-a.png' alt='first'/>
+            </div>
+        </div>
+    </body>
+</html>"
+            );
+
+            using (var folder = new TemporaryFolder("DeDuplicateMediaFiles_CoverImageSrc"))
+            {
+                File.Copy(
+                    FileLocationUtilities.GetFileDistributedWithApplication(
+                        _pathToTestImages,
+                        "shirt.png"
+                    ),
+                    Path.Combine(folder.Path, "duplicate-a.png")
+                );
+                File.Copy(
+                    FileLocationUtilities.GetFileDistributedWithApplication(
+                        _pathToTestImages,
+                        "shirt.png"
+                    ),
+                    Path.Combine(folder.Path, "duplicate-b.png")
+                );
+
+                PublishHelper.DeDuplicateMediaFiles(dom, folder.Path);
+
+                AssertThatXmlIn
+                    .Dom(dom)
+                    .HasSpecifiedNumberOfMatchesForXpath(
+                        "//div[@id='bloomDataDiv']/div[@data-book='coverImage' and @src='duplicate-a.png' and text()='duplicate-a.png']",
+                        1
+                    );
+                Assert.That(
+                    RobustFile.Exists(Path.Combine(folder.Path, "duplicate-a.png")),
+                    Is.True
+                );
+                Assert.That(
+                    RobustFile.Exists(Path.Combine(folder.Path, "duplicate-b.png")),
+                    Is.False
+                );
+            }
+        }
+
+        [Test]
+        public void CompressBookForDevice_DeduplicatesDuplicateVideos()
+        {
+            const string bodyContent =
+                @"
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='video-dedupe'>
+							<div class='marginBox'>
+								<div class='bloom-videoContainer'><video><source src='video/DuplicateA.mp4'></source></video></div>
+								<div class='bloom-videoContainer'><video><source src='video/DuplicateB.mp4'></source></video></div>
+							</div>
+						</div>
+";
+
+            TestHtmlAfterCompression(
+                bodyContent,
+                bookHeadContent: kMinimumValidBookHeadContent,
+                actionsOnFolderBeforeCompressing: folderPath =>
+                {
+                    var videoFolderPath = Path.Combine(folderPath, "video");
+                    Directory.CreateDirectory(videoFolderPath);
+                    RobustFile.Copy(
+                        FileLocationUtilities.GetFileDistributedWithApplication(
+                            kPathToTestVideos,
+                            "Five count.mp4"
+                        ),
+                        Path.Combine(videoFolderPath, "DuplicateA.mp4")
+                    );
+                    RobustFile.Copy(
+                        FileLocationUtilities.GetFileDistributedWithApplication(
+                            kPathToTestVideos,
+                            "Five count.mp4"
+                        ),
+                        Path.Combine(videoFolderPath, "DuplicateB.mp4")
+                    );
+                },
+                assertionsOnZipArchive: paramObj =>
+                {
+                    var zip = paramObj.ZipFile;
+                    Assert.AreNotEqual(-1, zip.FindEntry("video/DuplicateA.mp4", false));
+                    Assert.AreEqual(-1, zip.FindEntry("video/DuplicateB.mp4", false));
+                },
+                assertionsOnResultingHtmlString: html =>
+                {
+                    var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+                    AssertThatXmlIn
+                        .Dom(htmlDom)
+                        .HasSpecifiedNumberOfMatchesForXpath(
+                            "//source[@src='video/DuplicateA.mp4']",
+                            2
+                        );
+                    AssertThatXmlIn
+                        .Dom(htmlDom)
+                        .HasNoMatchForXpath("//source[@src='video/DuplicateB.mp4']");
+                }
+            );
+        }
+
+        [Test]
+        public void CompressBookForDevice_DeduplicatesDuplicateNonTalkingAudio()
+        {
+            const string bodyContent =
+                @"
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='audio-page-1' data-backgroundaudio='duplicate-a.mp3'>
+							<div class='marginBox'><div class='bloom-editable bloom-content1' lang='en'>one</div></div>
+						</div>
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='audio-page-2' data-backgroundaudio='duplicate-b.mp3'>
+							<div class='marginBox'><div class='bloom-editable bloom-content1' lang='en'>two</div></div>
+						</div>
+";
+
+            var testBook = CreateBookWithPhysicalFile(
+                bodyContent,
+                kMinimumValidBookHeadContent,
+                bringBookUpToDate: true
+            );
+            testBook.CollectionSettings.Subscription = Subscription.CreateTempSubscriptionForTier(
+                SubscriptionTier.Pro
+            );
+            BookStorageTests.MakeSampleAudioFiles(testBook.FolderPath, "duplicate-a", ".mp3");
+            BookStorageTests.MakeSampleAudioFiles(testBook.FolderPath, "duplicate-b", ".mp3");
+
+            PublishHelper.DeDuplicateMediaFiles(testBook.RawDom, testBook.FolderPath);
+
+            AssertThatXmlIn
+                .Dom(testBook.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@data-backgroundaudio='duplicate-a.mp3']",
+                    2
+                );
+            AssertThatXmlIn
+                .Dom(testBook.RawDom)
+                .HasNoMatchForXpath("//div[@data-backgroundaudio='duplicate-b.mp3']");
+            Assert.That(
+                RobustFile.Exists(Path.Combine(testBook.FolderPath, "audio", "duplicate-a.mp3")),
+                Is.True
+            );
+            Assert.That(
+                RobustFile.Exists(Path.Combine(testBook.FolderPath, "audio", "duplicate-b.mp3")),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void CompressBookForDevice_DoesNotDeduplicateTalkingBookAudio()
+        {
+            const string bodyContent =
+                @"
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='talking-audio-page'>
+							<div class='marginBox'>
+								<div class='bloom-translationGroup'>
+                                    <div class='bloom-editable bloom-content1 bloom-visibility-code-on' data-audiorecordingmode='Sentence' lang='en'>
+                                        <p><span class='audio-sentence' data-duration='1.0' id='audio-id-1' recordingmd5='undefined'>one</span></p>
+                                        <p><span class='audio-sentence' data-duration='1.0' id='audio-id-2' recordingmd5='undefined'>two</span></p>
+									</div>
+								</div>
+							</div>
+						</div>
+";
+
+            var testBook = CreateBookWithPhysicalFile(
+                bodyContent,
+                kMinimumValidBookHeadContent,
+                bringBookUpToDate: true
+            );
+            BookStorageTests.MakeSampleAudioFiles(testBook.FolderPath, "audio-id-1", ".mp3");
+            BookStorageTests.MakeSampleAudioFiles(testBook.FolderPath, "audio-id-2", ".mp3");
+
+            PublishHelper.DeDuplicateMediaFiles(testBook.RawDom, testBook.FolderPath);
+
+            AssertThatXmlIn
+                .Dom(testBook.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//span[@id='audio-id-1' and contains(@class,'audio-sentence')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(testBook.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//span[@id='audio-id-2' and contains(@class,'audio-sentence')]",
+                    1
+                );
+            Assert.That(
+                RobustFile.Exists(Path.Combine(testBook.FolderPath, "audio", "audio-id-1.mp3")),
+                Is.True
+            );
+            Assert.That(
+                RobustFile.Exists(Path.Combine(testBook.FolderPath, "audio", "audio-id-2.mp3")),
+                Is.True
+            );
+        }
+
         private Stream GetEntryContentsStream(ZipFile zip, string name, bool exact = false)
         {
             Func<ZipEntry, bool> predicate;
@@ -1866,6 +2142,92 @@ namespace BloomTests.Publish.BloomPub
                     "NotAllowed reference replaced with Andika"
                 );
             }
+        }
+
+        private static SafeXmlDocument MakeDom(string bodyInnerXml)
+        {
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml($"<html><body>{bodyInnerXml}</body></html>");
+            return doc;
+        }
+
+        [Test]
+        public void ConvertImagesToBackground_BasicImgInBloomCanvas_ConvertedToBackgroundStyle()
+        {
+            var dom = MakeDom("<div class='bloom-canvas'><img src='image.png'/></div>");
+            BloomPubMaker.ConvertImagesToBackground(dom);
+            var div = dom.SafeSelectNodes("//div[@class]").Cast<SafeXmlElement>().First();
+            Assert.That(div.GetAttribute("style"), Is.EqualTo("background-image:url('image.png')"));
+            Assert.That(
+                div.GetAttribute("class"),
+                Does.Contain("bloom-background-image-in-style-attr")
+            );
+            Assert.That(dom.SafeSelectNodes("//img").Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ConvertImagesToBackground_ImgWithDataAttributes_DataAttrsCopiedToDiv()
+        {
+            var dom = MakeDom(
+                "<div class='bloom-canvas'><img src='image.png' data-creator='Test' data-license='cc-by'/></div>"
+            );
+            BloomPubMaker.ConvertImagesToBackground(dom);
+            var div = dom.SafeSelectNodes("//div[@class]").Cast<SafeXmlElement>().First();
+            Assert.That(div.GetAttribute("data-creator"), Is.EqualTo("Test"));
+            Assert.That(div.GetAttribute("data-license"), Is.EqualTo("cc-by"));
+            Assert.That(dom.SafeSelectNodes("//img").Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ConvertImagesToBackground_ImgWithNoSrc_NotConverted()
+        {
+            var dom = MakeDom("<div class='bloom-canvas'><img/></div>");
+            BloomPubMaker.ConvertImagesToBackground(dom);
+            // img with no src should be left alone
+            Assert.That(dom.SafeSelectNodes("//img").Length, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ConvertImagesToBackground_ImgWithCoverClass_CoverClassCopiedToDiv()
+        {
+            var dom = MakeDom(
+                "<div class='bloom-canvas'><img src='cover.png' class='bloom-imageObjectFit-cover'/></div>"
+            );
+            BloomPubMaker.ConvertImagesToBackground(dom);
+            var div = dom.SafeSelectNodes("//div[@class]").Cast<SafeXmlElement>().First();
+            Assert.That(div.GetAttribute("class"), Does.Contain("bloom-imageObjectFit-cover"));
+            Assert.That(dom.SafeSelectNodes("//img").Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ConvertImagesToBackground_ImgInBloomCustomLayoutAncestor_CoverClassAddedToDiv()
+        {
+            // BL-16173: an img inside a bloom-customLayout ancestor should get bloom-imageObjectFit-cover
+            var dom = MakeDom(
+                "<div class='bloom-page coverColor bloom-customLayout'>"
+                    + "<div class='bloom-canvas'>"
+                    + "<img src='image.png'/>"
+                    + "</div>"
+                    + "</div>"
+            );
+            BloomPubMaker.ConvertImagesToBackground(dom);
+            var div = dom.SafeSelectNodes("//div[contains(@class,'bloom-canvas')]")
+                .Cast<SafeXmlElement>()
+                .First();
+            Assert.That(div.GetAttribute("class"), Does.Contain("bloom-imageObjectFit-cover"));
+            Assert.That(dom.SafeSelectNodes("//img").Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ConvertImagesToBackground_UrlEncodedSrc_PreservedInStyle()
+        {
+            var dom = MakeDom("<div class='bloom-canvas'><img src=\"HL00%2714%201.svg\"/></div>");
+            BloomPubMaker.ConvertImagesToBackground(dom);
+            var div = dom.SafeSelectNodes("//div[@class]").Cast<SafeXmlElement>().First();
+            Assert.That(
+                div.GetAttribute("style"),
+                Is.EqualTo("background-image:url('HL00%2714%201.svg')")
+            );
         }
 
         private class ZipHtmlObj

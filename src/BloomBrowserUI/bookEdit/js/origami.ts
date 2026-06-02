@@ -10,6 +10,8 @@ import "../../lib/jquery.i18n.custom";
 import { splitPane } from "../../lib/split-pane/split-pane";
 import { kCanvasToolId } from "../toolbox/toolIds";
 import { updateAbovePageControls } from "./AbovePageControls";
+import { getWorkspaceBundleExports } from "./workspaceFrames";
+import { isInDragActivity } from "../toolbox/games/GameInfo";
 
 $(() => {
     splitPane($("div.split-pane"));
@@ -32,15 +34,21 @@ export function setupOrigami() {
             )[0] as HTMLElement | undefined;
             if (bloomPage) {
                 const showChangeLayoutModeControls = customPages.length > 0;
+                const isChangeLayoutMode = $(".marginBox").hasClass(
+                    "origami-layout-mode",
+                );
                 updateAbovePageControls({
-                    isGamePage:
-                        bloomPage?.getAttribute("data-tool-id") === "game",
+                    isDragGamePage:
+                        bloomPage?.getAttribute("data-tool-id") === "game" &&
+                        isInDragActivity(bloomPage),
+
                     showChangeLayoutModeToggle: showChangeLayoutModeControls,
-                    isChangeLayoutMode: $(".marginBox").hasClass(
-                        "origami-layout-mode",
-                    ),
+                    isChangeLayoutMode,
                     onChangeLayoutModeToggle: handleChangeLayoutModeToggle,
                 });
+                getWorkspaceBundleExports().setToolboxEnabled(
+                    !isChangeLayoutMode,
+                );
             }
             // I'm not clear why the rest of this needs to wait until we have
             // the two results, but none of the controls shows up if we leave it all
@@ -189,9 +197,11 @@ function changeLayoutModeToggleClickHandler() {
 
 function handleChangeLayoutModeToggle() {
     changeLayoutModeToggleClickHandler();
+    const isChangeLayoutMode = $(".marginBox").hasClass("origami-layout-mode");
     updateAbovePageControls({
-        isChangeLayoutMode: $(".marginBox").hasClass("origami-layout-mode"),
+        isChangeLayoutMode,
     });
+    getWorkspaceBundleExports().setToolboxEnabled(!isChangeLayoutMode);
 }
 
 function GetTextBoxPropertiesDialog() {

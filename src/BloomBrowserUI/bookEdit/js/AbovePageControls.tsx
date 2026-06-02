@@ -11,7 +11,7 @@ import { CogIcon } from "./CogIcon";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
 
 interface IAbovePageControlsState {
-    isGamePage: boolean;
+    isDragGamePage: boolean;
     activeGameTab: number;
     showChangeLayoutModeToggle: boolean;
     isChangeLayoutMode: boolean;
@@ -26,7 +26,7 @@ interface IAbovePageControlsState {
 }
 
 const defaultState: IAbovePageControlsState = {
-    isGamePage: false,
+    isDragGamePage: false,
     activeGameTab: 0,
     showChangeLayoutModeToggle: false,
     isChangeLayoutMode: false,
@@ -49,6 +49,7 @@ export function updateAbovePageControls(
 
 export function resetAbovePageControls(): void {
     currentState = defaultState;
+    getWorkspaceBundleExports().setToolboxEnabled(true);
 
     const container = document.getElementsByClassName(
         "above-page-control-container",
@@ -65,7 +66,7 @@ export function renderDragActivityTabControl(currentTab: number): void {
         activeGameTab: currentTab,
     };
 
-    if (currentState.isGamePage) {
+    if (currentState.isDragGamePage) {
         renderAbovePageControls();
     }
 }
@@ -85,7 +86,7 @@ function renderAbovePageControls(): void {
 
     ReactDOM.render(
         <AbovePageControls
-            isGamePage={currentState.isGamePage}
+            isDragGamePage={currentState.isDragGamePage}
             activeGameTab={currentState.activeGameTab}
             showChangeLayoutModeToggle={currentState.showChangeLayoutModeToggle}
             isChangeLayoutMode={currentState.isChangeLayoutMode}
@@ -131,7 +132,7 @@ function getOrCreateAbovePageControlContainer(
 const AbovePageControls: React.FunctionComponent<IAbovePageControlsState> = (
     props,
 ) => {
-    if (props.isGamePage) {
+    if (props.isDragGamePage) {
         return (
             <div
                 css={css`

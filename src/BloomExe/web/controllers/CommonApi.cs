@@ -242,6 +242,8 @@ namespace Bloom.web.controllers
             if (request.HttpMethod != HttpMethods.Get)
                 throw new ArgumentException("common/instanceInfo only supports GET");
 
+            // Give automation one stable discovery payload for the running Bloom instance instead of making
+            // scripts scrape window titles, ports, or process command lines.
             var executablePath = Application.ExecutablePath;
             var cdpPort = Bloom.WebView2Browser.RemoteDebuggingPort;
             int? vitePort = ReactControl.TryGetActiveViteDevPort(out var activeVitePort)
@@ -701,42 +703,51 @@ namespace Bloom.web.controllers
                     preliminaryJavascriptError = request.RequiredPostJson();
                 }
 
-                var form = Application.OpenForms.Cast<Form>().Last();
-                // If we don't have an active Bloom form, I think we can afford to discard this report.
-                if (form != null)
+                var form = Application.OpenForms.Cast<Form>().LastOrDefault();
+                // If we don't have an active Bloom form, discard this report and clear it,
+                // so that future preliminary reports are not blocked indefinitely.
+                // This is likely to happen when we are reloading the collection.
+                if (form == null || form.IsDisposed)
                 {
-                    form.BeginInvoke(
-                        (Action)(
-                            () =>
-                            {
-                                // Arrange to report the error if we don't get a better report of it in 200ms.
-                                jsErrorTimer?.Stop(); // probably redundant
-                                jsErrorTimer?.Dispose(); // left over from previous report that had follow-up?
-                                jsErrorTimer = new Timer { Interval = 200 };
-                                jsErrorTimer.Tick += (sender, args) =>
-                                {
-                                    jsErrorTimer.Stop(); // probably redundant?
-                                    // not well documented but found some evidence this is OK inside event handler.
-                                    jsErrorTimer.Dispose();
-                                    jsErrorTimer = null;
-
-                                    dynamic temp;
-                                    lock (lockJsError)
-                                    {
-                                        temp = preliminaryJavascriptError;
-                                        preliminaryJavascriptError = null;
-                                    }
-
-                                    if (temp != null)
-                                    {
-                                        ReportJavascriptError(temp);
-                                    }
-                                };
-                                jsErrorTimer.Start();
-                            }
-                        )
-                    );
+                    lock (lockJsError)
+                    {
+                        preliminaryJavascriptError = null;
+                    }
+                    request.PostSucceeded();
+                    return;
                 }
+
+                form.BeginInvoke(
+                    (Action)(
+                        () =>
+                        {
+                            // Arrange to report the error if we don't get a better report of it in 200ms.
+                            jsErrorTimer?.Stop(); // probably redundant
+                            jsErrorTimer?.Dispose(); // left over from previous report that had follow-up?
+                            jsErrorTimer = new Timer { Interval = 200 };
+                            jsErrorTimer.Tick += (sender, args) =>
+                            {
+                                jsErrorTimer.Stop(); // probably redundant?
+                                // not well documented but found some evidence this is OK inside event handler.
+                                jsErrorTimer.Dispose();
+                                jsErrorTimer = null;
+
+                                dynamic temp;
+                                lock (lockJsError)
+                                {
+                                    temp = preliminaryJavascriptError;
+                                    preliminaryJavascriptError = null;
+                                }
+
+                                if (temp != null)
+                                {
+                                    ReportJavascriptError(temp);
+                                }
+                            };
+                            jsErrorTimer.Start();
+                        }
+                    )
+                );
                 request.PostSucceeded();
             }
         }

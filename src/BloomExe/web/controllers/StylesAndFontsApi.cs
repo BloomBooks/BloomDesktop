@@ -27,6 +27,81 @@ namespace Bloom.web.controllers
                 HandleGetDataRows,
                 false
             );
+            apiHandler.RegisterBooleanEndpointHandler(
+                "stylesAndFonts/unusedLanguageDataExists",
+                request => DoesUnusedLanguageDataExist(),
+                null,
+                false
+            );
+        }
+
+        /// <summary>
+        /// Return true iff there are languages in the book data (including defaultLanguages.css) that
+        /// do not appear in the current collection settings, but that have been assigned a font.
+        /// </summary>
+        private bool DoesUnusedLanguageDataExist()
+        {
+            // Get all the languages used in the book and their default fonts.
+            InitializeFontAndLanguageData(
+                out var langToDefaultFont,
+                out _,
+                out var unusedLanguages
+            );
+            // Get all the user-modified styles that set a font for the style.
+            var modifiedStylesAndFonts = GetUserModifiedStylesAndFonts(
+                _bookSelection.CurrentSelection.OurHtmlDom
+            );
+            foreach (var unusedLang in unusedLanguages)
+            {
+                if (langToDefaultFont.ContainsKey(unusedLang))
+                    return true;
+                foreach (var modifiedStyle in modifiedStylesAndFonts)
+                {
+                    // Don't bother with the case where languageTag == "*".  Unless there's actual
+                    // data in the book for the unused language, it won't be shown in the Fonts tab of
+                    // the Book Settings dialog, so we don't need to worry about it here.  The most
+                    // important thing is that the font information has already been displayed so the
+                    // user can see if there are any license issues with the font.
+                    if (modifiedStyle.languageTag == unusedLang)
+                    {
+                        return true;
+                    }
+                }
+            }
+            // Data may exist in unused languages, but if so they've never been assigned a font,
+            // so there's no data to show for them in the Fonts tab of the Book Settings dialog.
+            return false;
+        }
+
+        private void InitializeFontAndLanguageData(
+            out Dictionary<string, string> langToDefaultFont,
+            out Dictionary<string, List<string>> fontToLangs,
+            out HashSet<string> unusedLanguages
+        )
+        {
+            var book = _bookSelection.CurrentSelection;
+            fontToLangs = new Dictionary<string, List<string>>();
+            langToDefaultFont = GetLanguagesAndDefaultFonts(fontToLangs, book, book.OurHtmlDom);
+
+            var collectionLanguages = GetCurrentLanguageSet();
+            unusedLanguages = new HashSet<string>();
+            foreach (var key in langToDefaultFont.Keys)
+            {
+                if (!collectionLanguages.Contains(key))
+                    unusedLanguages.Add(key);
+            }
+            // There may be languages that have data in the book, but don't have default fonts assigned
+            // in defaultLangauges.css.  They may still have fonts assigned in style overrides.  So we
+            // also check for any languages that have data in the book at all, even if they don't have
+            // a default font.
+            var allLanguages = book.AllPublishableLanguages(
+                includeLangsOccurringOnlyInXmatter: false
+            );
+            foreach (var key in allLanguages.Keys)
+            {
+                if (!collectionLanguages.Contains(key))
+                    unusedLanguages.Add(key);
+            }
         }
 
         // This class must be kept in sync with the IStyleAndFont interface in StyleAndFontTable.tsx.
@@ -53,18 +128,45 @@ namespace Bloom.web.controllers
             public string description;
         }
 
+        HashSet<string> _currentLanguageSet = null;
+
+        private HashSet<string> GetCurrentLanguageSet()
+        {
+            if (_currentLanguageSet != null)
+                return _currentLanguageSet;
+
+            var book = _bookSelection.CurrentSelection;
+            _currentLanguageSet = new HashSet<string>
+            {
+                book.CollectionSettings.Language1Tag,
+                book.CollectionSettings.Language2Tag,
+            };
+            if (!string.IsNullOrEmpty(book.CollectionSettings.Language3Tag))
+                _currentLanguageSet.Add(book.CollectionSettings.Language3Tag);
+            if (!string.IsNullOrEmpty(book.CollectionSettings.SignLanguageTag))
+                _currentLanguageSet.Add(book.CollectionSettings.SignLanguageTag);
+            return _currentLanguageSet;
+        }
+
         private void HandleGetDataRows(ApiRequest request)
         {
             var book = _bookSelection.CurrentSelection;
+            var languagesSelection = request.GetParamOrNull("languages");
             // Get all the styles used in the book.
             var stylesInBook = GetStylesUsedInBook(book.OurHtmlDom, book.FolderPath);
             // Get all the languages used in the book and their default fonts.
-            var fontToLangs = new Dictionary<string, List<string>>();
-            var langToFont = GetLanguagesAndDefaultFonts(fontToLangs, book, book.OurHtmlDom);
+            InitializeFontAndLanguageData(
+                out var langToDefaultFont,
+                out var fontToLangs,
+                out var unusedLanguages
+            );
             // Get all the user-modified styles that set a font for the style.
             var modifiedStylesAndFonts = GetUserModifiedStylesAndFonts(book.OurHtmlDom);
             // Add the styles that are in the book but not covered by the user-modified styles.
             var stylesAndFonts = new List<StyleAndFont>();
+            var collectionLanguages = GetCurrentLanguageSet();
+            var allLanguagesInBook = new HashSet<string>(langToDefaultFont.Keys);
+            allLanguagesInBook.UnionWith(unusedLanguages);
             foreach (var style in stylesInBook.Keys)
             {
                 var modified = modifiedStylesAndFonts.FindAll(s => s.style == style).ToArray();
@@ -72,12 +174,36 @@ namespace Bloom.web.controllers
                 {
                     foreach (var kvp in fontToLangs)
                     {
+                        string languageTag = null;
+                        if (languagesSelection == "current")
+                        {
+                            var currentlyUsed = kvp
+                                .Value.Where(lang => collectionLanguages.Contains(lang))
+                                .ToList();
+                            if (currentlyUsed.Count == 0)
+                                continue; // This font is not used by the book's current languages, so skip it.
+                            if (currentlyUsed.Count == 1)
+                                languageTag = currentlyUsed.First();
+                            else if (currentlyUsed.Count == collectionLanguages.Count)
+                                languageTag = "*";
+                            else
+                                languageTag = string.Join(",", currentlyUsed);
+                        }
+                        else
+                        {
+                            var currentlyUnused = kvp
+                                .Value.Where(lang => !collectionLanguages.Contains(lang))
+                                .ToList();
+                            if (currentlyUnused.Count == 0)
+                                continue; // This font is used only by the book's current languages, so skip it.
+                            if (currentlyUnused.Count == 1)
+                                languageTag = currentlyUnused.First();
+                            else
+                                languageTag = string.Join(",", currentlyUnused);
+                        }
                         var styleAndFont = new StyleAndFont();
                         styleAndFont.style = style;
-                        if (kvp.Value.Count == 1)
-                            styleAndFont.languageTag = kvp.Value.First();
-                        else
-                            styleAndFont.languageTag = "*";
+                        styleAndFont.languageTag = languageTag;
                         styleAndFont.fontName = kvp.Key;
                         styleAndFont.pageId = stylesInBook[style].id;
                         styleAndFont.pageDescription = stylesInBook[style].description;
@@ -86,16 +212,18 @@ namespace Bloom.web.controllers
                 }
                 else
                 {
-                    foreach (var tag in langToFont.Keys)
+                    foreach (var tag in allLanguagesInBook)
                     {
-                        var styleAndFont = new StyleAndFont();
-                        styleAndFont.style = style;
-                        styleAndFont.languageTag = tag;
+                        if (languagesSelection == "current" && !collectionLanguages.Contains(tag))
+                            continue; // This language is not actually used in the book, so skip it.
+                        else if (languagesSelection == "other" && collectionLanguages.Contains(tag))
+                            continue; // This language is used in the book, so skip it.
+                        string fontName = null;
                         var modifiedForLang = modified.FirstOrDefault(s =>
                             s.languageTag == tag && !string.IsNullOrEmpty(s.fontName)
                         );
                         if (modifiedForLang != null)
-                            styleAndFont.fontName = modifiedForLang.fontName;
+                            fontName = modifiedForLang.fontName;
                         else
                         {
                             // I don't think we normally have user-modified styles that apply to all languages,
@@ -107,10 +235,16 @@ namespace Bloom.web.controllers
                                 s.languageTag == "*" && !string.IsNullOrEmpty(s.fontName)
                             );
                             if (modifiedForAll != null)
-                                styleAndFont.fontName = modifiedForAll.fontName;
+                                fontName = modifiedForAll.fontName;
+                            else if (langToDefaultFont.ContainsKey(tag))
+                                fontName = langToDefaultFont[tag];
                             else
-                                styleAndFont.fontName = langToFont[tag];
+                                continue; // No font is specified for this language, so skip it.
                         }
+                        var styleAndFont = new StyleAndFont();
+                        styleAndFont.style = style;
+                        styleAndFont.languageTag = tag;
+                        styleAndFont.fontName = fontName;
                         styleAndFont.pageId = stylesInBook[style].id;
                         styleAndFont.pageDescription = stylesInBook[style].description;
                         stylesAndFonts.Add(styleAndFont);
@@ -122,10 +256,34 @@ namespace Bloom.web.controllers
             {
                 if (
                     !stylesAndFonts.Exists(s =>
-                        s.style == styleAndFont.style && s.languageTag == styleAndFont.languageTag
+                        s.style == styleAndFont.style
+                        && (
+                            s.languageTag == styleAndFont.languageTag
+                            || (
+                                s.languageTag == "*"
+                                && collectionLanguages.Contains(styleAndFont.languageTag)
+                            )
+                            || s.languageTag.Split(",").Contains(styleAndFont.languageTag)
+                        )
                     )
                 )
                 {
+                    // I'm not sure if languageTag can ever == "*" here, but Devin was worried about it,
+                    // and if it does happen, we may as well always include it.  All of these entries are
+                    // likely to be skipped by TS code anyway because of the empty pageId.
+                    if (styleAndFont.languageTag != "*")
+                    {
+                        if (
+                            languagesSelection == "current"
+                            && !collectionLanguages.Contains(styleAndFont.languageTag)
+                        )
+                            continue; // This language is not actually used in the book, so skip it.
+                        else if (
+                            languagesSelection == "other"
+                            && collectionLanguages.Contains(styleAndFont.languageTag)
+                        )
+                            continue; // This language is used in the book, so skip it.
+                    }
                     styleAndFont.pageId = "";
                     styleAndFont.pageDescription = "";
                     stylesAndFonts.Add(styleAndFont);
@@ -160,41 +318,51 @@ namespace Bloom.web.controllers
             );
 
             // Ensure every collection-level default font is included in the list
-            var collectionLevelFonts = new HashSet<(string fontName, string languageTag)>
+            // (only relevant when showing "current" languages, not "other" languages)
+            if (languagesSelection == "current")
             {
-                (book.CollectionSettings.Language1.FontName, book.CollectionSettings.Language1Tag),
-                (book.CollectionSettings.Language2.FontName, book.CollectionSettings.Language2Tag),
-            };
-            if (!String.IsNullOrEmpty(book.CollectionSettings.Language3Tag))
-            {
-                collectionLevelFonts.Add(
-                    (
-                        book.CollectionSettings.Language3.FontName,
-                        book.CollectionSettings.Language3Tag
-                    )
-                );
-            }
-            foreach (var font in collectionLevelFonts.Reverse()) // reverse because we're inserting at the beginning each time
-            {
-                if (!stylesAndFonts.Exists(s => s.fontName == font.fontName))
+                var collectionLevelFonts = new HashSet<(string fontName, string languageTag)>
                 {
-                    var languageName = GetLanguageName(font.languageTag);
-                    stylesAndFonts.Insert(
-                        0,
-                        new StyleAndFont
-                        {
-                            styleName = string.Format(
-                                LocalizationManager.GetString(
-                                    "CollectionSettingsDialog.BookMakingTab.DefaultFontFor",
-                                    "Default Font for {0}",
-                                    "{0} is a language name."
-                                ),
-                                languageName
-                            ),
-                            languageName = languageName,
-                            fontName = font.fontName,
-                        }
+                    (
+                        book.CollectionSettings.Language1.FontName,
+                        book.CollectionSettings.Language1Tag
+                    ),
+                    (
+                        book.CollectionSettings.Language2.FontName,
+                        book.CollectionSettings.Language2Tag
+                    ),
+                };
+                if (!String.IsNullOrEmpty(book.CollectionSettings.Language3Tag))
+                {
+                    collectionLevelFonts.Add(
+                        (
+                            book.CollectionSettings.Language3.FontName,
+                            book.CollectionSettings.Language3Tag
+                        )
                     );
+                }
+                foreach (var font in collectionLevelFonts.Reverse()) // reverse because we're inserting at the beginning each time
+                {
+                    if (!stylesAndFonts.Exists(s => s.fontName == font.fontName))
+                    {
+                        var languageName = GetLanguageName(font.languageTag);
+                        stylesAndFonts.Insert(
+                            0,
+                            new StyleAndFont
+                            {
+                                styleName = string.Format(
+                                    LocalizationManager.GetString(
+                                        "CollectionSettingsDialog.BookMakingTab.DefaultFontFor",
+                                        "Default Font for {0}",
+                                        "{0} is a language name."
+                                    ),
+                                    languageName
+                                ),
+                                languageName = languageName,
+                                fontName = font.fontName,
+                            }
+                        );
+                    }
                 }
             }
             var jsonData = JsonConvert.SerializeObject(stylesAndFonts.ToArray());
@@ -412,6 +580,12 @@ namespace Bloom.web.controllers
                 return language.Name;
             if (langTag == settings.SignLanguageTag)
                 return settings.SignLanguage.Name;
+            if (langTag.Contains(","))
+            {
+                var tags = langTag.Split(",");
+                var names = tags.Select(t => GetLanguageName(t)).ToList();
+                return string.Join(", ", names);
+            }
             var ws = new Collection.WritingSystem(() => settings.Language2Tag);
             ws.Tag = langTag;
             return ws.GetNameInLanguage(settings.Language2Tag);

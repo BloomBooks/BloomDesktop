@@ -15,6 +15,29 @@ import {
 } from "./test-helpers";
 
 test.describe("BookGridSetup - Initial Setup", () => {
+    test("Default mode shows links-in-grid heading", async ({ page }) => {
+        await setupBookGridSetupComponent(page, {
+            sourceBooks: [],
+            links: [],
+        });
+
+        await expect(
+            page.getByRole("heading", { name: /links in grid/i }),
+        ).toBeVisible();
+    });
+
+    test("Books-in-app mode shows app-builder heading", async ({ page }) => {
+        await setupBookGridSetupComponent(page, {
+            sourceBooks: [],
+            links: [],
+            targetLabel: "books-in-app",
+        });
+
+        await expect(
+            page.getByRole("heading", { name: /book in app/i }),
+        ).toBeVisible();
+    });
+
     test("Component renders with source books", async ({ page }) => {
         const testBooks = [
             createTestBook("book1", "The Moon Book"),

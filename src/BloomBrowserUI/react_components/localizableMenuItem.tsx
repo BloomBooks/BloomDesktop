@@ -148,7 +148,9 @@ export const LocalizableMenuItem: React.FunctionComponent<
     ) : (
         <div
             css={css`
+                flex: 0 0 ${kIconCheckboxAffordance}px;
                 width: ${kIconCheckboxAffordance}px !important;
+                min-width: ${kIconCheckboxAffordance}px;
             `}
         />
     );

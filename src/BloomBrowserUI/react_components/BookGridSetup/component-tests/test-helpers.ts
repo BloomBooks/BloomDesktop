@@ -26,6 +26,7 @@ export async function setupBookGridSetupComponent(
         links: props?.links || [],
         onLinksChanged:
             props?.onLinksChanged || "testapi/bookGridSetup/linksChanged",
+        targetLabel: props?.targetLabel || "links-in-grid",
     };
 
     await setTestComponent<IBookGridSetupProps>(
@@ -124,7 +125,9 @@ export async function expectTargetBookNotVisible(page: Page, bookId: string) {
  * Gets the count of books in the target list from the header
  */
 export async function getTargetCount(page: Page): Promise<number> {
-    const header = page.getByRole("heading", { name: /links in grid/i });
+    const header = page.getByRole("heading", {
+        name: /links in grid|book in app/i,
+    });
     const text = await header.textContent();
     const match = text?.match(/\((\d+)\)/);
     return match ? parseInt(match[1], 10) : 0;

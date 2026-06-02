@@ -170,6 +170,9 @@ namespace Bloom.Publish.BloomPub
                     .Cast<SafeXmlElement>(),
                 modifiedBook.FolderPath
             );
+            // BL-15848 Deduplication to save space. After publish-time media transforms so we compare the actual bloompub payload,
+            // not source files that may still be resized, trimmed, or rewritten later in the pipeline.
+            PublishHelper.DeDuplicateMediaFiles(modifiedBook.RawDom, modifiedBook.FolderPath);
             var newContent = XmlHtmlConverter.ConvertDomToHtml5(modifiedBook.RawDom);
 
             var originalBookHtmlPath = BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath);
@@ -447,7 +450,8 @@ namespace Bloom.Publish.BloomPub
                 FeatureStatus
                     .GetFeatureStatus(
                         modifiedBook.CollectionSettings.Subscription,
-                        FeatureName.Game
+                        FeatureName.Game,
+                        modifiedBook
                     )
                     .Enabled
             )
@@ -626,10 +630,7 @@ namespace Bloom.Publish.BloomPub
             IEnumerable<string> languagesToInclude
         )
         {
-            var languages = languagesToInclude
-                .Where(tag => !string.IsNullOrWhiteSpace(tag))
-                .Distinct()
-                .ToArray();
+            var languages = OrderPublicationLanguages(modifiedBook, languagesToInclude);
             if (!languages.Any())
                 return;
 
@@ -658,6 +659,31 @@ namespace Bloom.Publish.BloomPub
                 "contentLanguage3",
                 languages.Length > 2 ? languages[2] : ""
             );
+        }
+
+        internal static string[] OrderPublicationLanguages(
+            Book.Book modifiedBook,
+            IEnumerable<string> languagesToInclude
+        )
+        {
+            var includedLanguages = languagesToInclude
+                .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Distinct()
+                .ToArray();
+            if (!includedLanguages.Any())
+                return includedLanguages;
+
+            var includedLanguageSet = new HashSet<string>(includedLanguages);
+            var preferredLanguages = modifiedBook.BookData.GetAllBookLanguageCodes();
+            var orderedLanguages = preferredLanguages
+                .Where(includedLanguageSet.Contains)
+                .Concat(
+                    includedLanguages
+                        .Where(tag => !preferredLanguages.Contains(tag))
+                        .OrderBy(tag => tag, StringComparer.Ordinal)
+                )
+                .ToArray();
+            return orderedLanguages;
         }
 
         private static void SetDataBookValueInDataDiv(
@@ -865,9 +891,7 @@ namespace Bloom.Publish.BloomPub
         /// - delete the img element
         /// (See oldImg and newImg in unit test CompressBookForDevice_ImgInImgContainer_ConvertedToBackground for an example).
         /// </summary>
-        /// <param name="wholeBookHtml"></param>
-        /// <returns></returns>
-        private static void ConvertImagesToBackground(SafeXmlDocument dom)
+        internal static void ConvertImagesToBackground(SafeXmlDocument dom)
         {
             foreach (
                 var imgContainer in dom.SafeSelectNodes(
@@ -903,6 +927,38 @@ namespace Bloom.Publish.BloomPub
                 // the img? But we'd still need duplicate rules.
                 if ((img.GetAttribute("class") ?? "").Contains("bloom-imageObjectFit-cover"))
                     classesToAdd += " bloom-imageObjectFit-cover";
+                else
+                {
+                    // See BL-16173 for this additional special case which may be even nastier.
+                    // If the image is hosted in a bloom-canvas instead of a bloom-imageContainer,
+                    // double-check that it is also in a bloom-page with coverColor and bloom-customLayout.
+                    // If so, we need to add the same class to the imgContainer div to ensure that the
+                    // image will cover the whole canvas.
+                    var classes = imgContainer.GetClasses();
+                    if (
+                        classes.Contains("bloom-canvas")
+                        && !classes.Contains("bloom-imageContainer")
+                    )
+                    {
+                        for (
+                            var parent = imgContainer.ParentElement;
+                            parent != null;
+                            parent = parent.ParentElement
+                        )
+                        {
+                            var parentClasses = parent.GetClasses();
+                            if (parentClasses.Contains("bloom-page"))
+                            {
+                                if (
+                                    parentClasses.Contains("coverColor")
+                                    && parentClasses.Contains("bloom-customLayout")
+                                )
+                                    classesToAdd += " bloom-imageObjectFit-cover";
+                                break; // no reason to go any higher than the page
+                            }
+                        }
+                    }
+                }
 
                 imgContainer.SetAttribute(
                     "class",

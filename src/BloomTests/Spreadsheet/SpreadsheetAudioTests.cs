@@ -78,7 +78,7 @@ namespace BloomTests.Spreadsheet
             French
         </div>
 
-        <div data-book=""coverImage"" lang=""*"" src=""placeHolder.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly."">
+        <div data-book=""coverImage"" lang=""*"" src=""placeHolder.png"" alt=""This image, placeHolder.png, is missing or was loading too slowly."">
             placeHolder.png
         </div>
 
@@ -182,8 +182,8 @@ namespace BloomTests.Spreadsheet
             // a page from a real book where audio was recorded in text mode and not split.
             var page =
                 @"    <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""26383607-a382-4201-bd09-ba32d177a594"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""3"" lang="""">
-        <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>
@@ -313,8 +313,8 @@ namespace BloomTests.Spreadsheet
             // a page from a real book where audio was recorded in text mode and split.
             var page =
                 @"<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""b658affd-69c8-4308-951c-ed7c8e6b99b2"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""2"" lang="""">
-        <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>
@@ -425,8 +425,8 @@ namespace BloomTests.Spreadsheet
             // A page from a real book recorded in sentence mode (and slightly edited)
             var page =
                 @"<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""b85c96d3-7207-47c1-9ed7-36fec82aa59b"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang="""">
-        <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"">
-            Basic Text &amp; Picture
+        <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"">
+            Basic Text &amp; Image
         </div>
 
         <div class=""pageDescription"" lang=""en""></div>
@@ -614,7 +614,7 @@ namespace BloomTests.Spreadsheet
         <div data-book=""topic"" lang=""en"">
             Health
 		</div>
-		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, cover.png, is missing or was loading too slowly."">
+		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This image, cover.png, is missing or was loading too slowly."">
 			cover.png
 		</div>
 		<div data-book=""licenseImage"" lang= ""*"" >

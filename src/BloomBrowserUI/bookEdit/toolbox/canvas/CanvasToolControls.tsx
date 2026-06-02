@@ -50,6 +50,7 @@ import {
     kImageFitModeContainValue,
     kImageFitModeCoverValue,
 } from "./canvasElementPageBridge";
+import { getPersistedCanvasColor } from "./canvasColorUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
 import { ToolBox } from "../toolbox";
 import BloomSelect from "../../../react_components/bloomSelect";
@@ -541,7 +542,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     // We come into this from chooser change
     const updateTextColor = (newColor: IColorInfo) => {
-        const color = newColor.colors[0]; // text color is always monochrome
+        const color = getPersistedCanvasColor(newColor);
         const canvasElementManager = getCanvasElementManager();
         if (canvasElementManager) {
             // Update the toolbox controls
@@ -564,7 +565,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
 
     // We come into this from chooser change
     const updateTextOutlineColor = (newColor: IColorInfo) => {
-        const color = newColor.colors[0];
+        const color = getPersistedCanvasColor(newColor);
         const canvasElementManager = getCanvasElementManager();
         if (canvasElementManager) {
             setTextOutlineColorIsDefault(false);

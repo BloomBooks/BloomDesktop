@@ -1,4 +1,4 @@
-import { post, postThatMightNavigate } from "../../utils/bloomApi";
+import { postThatMightNavigate } from "../../utils/bloomApi";
 
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).
 // It sets things up for the button (plural eventually) to appear when hovering over the video.
@@ -16,60 +16,64 @@ import { getPlayIcon } from "../img/playIcon";
 import { getPauseIcon } from "../img/pauseIcon";
 import { getReplayIcon } from "../img/replayIcon";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementPageBridge";
+import { chooseAndProcessVideo } from "./ChooseAndProcessVideo";
 import $ from "jquery";
 
-export function SetupVideoEditing(container) {
+const kBloomVideoTransientTimestampParam = "bloomVideoTransientTimestamp";
+const initializedVideos = new WeakSet<HTMLVideoElement>();
+
+export function SetupVideoEditing(container: HTMLElement) {
     $(container)
         .find(".bloom-videoContainer")
         .each((index, vc) => {
             SetupVideoContainer(vc);
         });
-    Array.from(container.getElementsByTagName("video")).forEach(
-        (videoElement: HTMLVideoElement) => {
-            videoElement.removeAttribute("controls");
-            // I don't think we need to do this in normal operation, but it's useful when
-            // debugging, and just might prevent a problem in normal operation.
-            videoElement.parentElement?.classList.remove("playing");
-            videoElement.parentElement?.classList.remove("paused");
-            videoElement.addEventListener("click", handleVideoClick);
-            const playButton = wrapVideoIcon(
-                videoElement,
-                // Alternatively, we could import the Material UI icon, make this file a TSX, and use
-                // ReactDom.render to render the icon into the div. But just creating the SVG
-                // ourselves (as these methods do) seems more natural to me. We would not be using
-                // React for anything except to make use of an image which unfortunately is only
-                // available by default as a component.
-                getPlayIcon("#ffffff", videoElement),
-                "bloom-videoPlayIcon",
-            );
-            playButton.addEventListener("click", handlePlayClick);
-            const pauseButton = wrapVideoIcon(
-                videoElement,
-                getPauseIcon("#ffffff", videoElement),
-                "bloom-videoPauseIcon",
-            );
-            pauseButton.addEventListener("click", handlePauseClick);
-            const replayButton = wrapVideoIcon(
-                videoElement,
-                getReplayIcon("#ffffff", videoElement),
-                "bloom-videoReplayIcon",
-            );
-            replayButton.addEventListener("click", handleReplayClick);
-        },
-    );
 }
 
 function SetupVideoContainer(videoContainerDiv: Element) {
     const videoElts = videoContainerDiv.getElementsByTagName("video");
     for (let i = 0; i < videoElts.length; i++) {
-        const video = videoElts[i] as HTMLVideoElement;
-        // Early sign language code included this; now we do it only on hover.
-        video.removeAttribute("controls");
-        video.addEventListener("playing", (e) => videoPlayingEventHandler(e));
-        video.addEventListener("ended", (e) => videoEndedEventHandler(e));
+        setupVideoElement(videoElts[i] as HTMLVideoElement);
     }
 
     SetupClickToShowSignLanguageTool(videoContainerDiv);
+}
+
+function setupVideoElement(videoElement: HTMLVideoElement) {
+    if (initializedVideos.has(videoElement)) {
+        return;
+    }
+
+    // Early sign language code included this; now we do it only on hover.
+    videoElement.removeAttribute("controls");
+    // I don't think we need to do this in normal operation, but it's useful when
+    // debugging, and just might prevent a problem in normal operation.
+    videoElement.parentElement?.classList.remove("playing");
+    videoElement.parentElement?.classList.remove("paused");
+    videoElement.addEventListener("playing", (e) =>
+        videoPlayingEventHandler(e),
+    );
+    videoElement.addEventListener("ended", (e) => videoEndedEventHandler(e));
+    videoElement.addEventListener("click", handleVideoClick);
+    const playButton = wrapVideoIcon(
+        videoElement,
+        getPlayIcon("#ffffff", videoElement),
+        "bloom-videoPlayIcon",
+    );
+    playButton.addEventListener("click", handlePlayClick);
+    const pauseButton = wrapVideoIcon(
+        videoElement,
+        getPauseIcon("#ffffff", videoElement),
+        "bloom-videoPauseIcon",
+    );
+    pauseButton.addEventListener("click", handlePauseClick);
+    const replayButton = wrapVideoIcon(
+        videoElement,
+        getReplayIcon("#ffffff", videoElement),
+        "bloom-videoReplayIcon",
+    );
+    replayButton.addEventListener("click", handleReplayClick);
+    initializedVideos.add(videoElement);
 }
 
 function videoEndedEventHandler(e: Event) {
@@ -186,9 +190,9 @@ export function doVideoCommand(
     command: "choose" | "record" | "playEarlier" | "playLater",
 ) {
     if (command === "choose" && videoContainer) {
-        post("signLanguage/importVideo", (result) => {
-            if (result.data) {
-                updateVideoInContainer(videoContainer, result.data);
+        chooseAndProcessVideo((importedPath) => {
+            if (importedPath) {
+                updateVideoInContainer(videoContainer, importedPath);
                 // Makes sure the page gets saved with a reference to the new video,
                 // and incidentally that everything gets updated to be consistent with the
                 // new state of things.
@@ -292,10 +296,57 @@ export function updateVideoInContainer(container: Element, url: string): void {
             video.appendChild(source);
         }
         if (source) {
-            source.setAttribute("src", url);
+            source.setAttribute("src", addTransientVideoTimestampParam(url));
+            video.load();
+            setupVideoElement(video);
             // Transparent background videos allow the placeholder to show.  See BL-13918.
             container.classList.remove("bloom-noVideoSelected");
         }
+    }
+}
+
+function addTransientVideoTimestampParam(url: string): string {
+    const hashIndex = url.indexOf("#");
+    const hash = hashIndex >= 0 ? url.substring(hashIndex) : "";
+    const beforeHash = hashIndex >= 0 ? url.substring(0, hashIndex) : url;
+    const queryIndex = beforeHash.indexOf("?");
+    const baseUrl =
+        queryIndex >= 0 ? beforeHash.substring(0, queryIndex) : beforeHash;
+    const query = queryIndex >= 0 ? beforeHash.substring(queryIndex + 1) : "";
+    const searchParams = new URLSearchParams(query);
+    searchParams.set(kBloomVideoTransientTimestampParam, Date.now().toString());
+    const search = searchParams.toString();
+
+    return `${baseUrl}${search ? `?${search}` : ""}${hash}`;
+}
+
+export function stripTransientVideoTimestampParam(url: string): string {
+    const hashIndex = url.indexOf("#");
+    const hash = hashIndex >= 0 ? url.substring(hashIndex) : "";
+    const beforeHash = hashIndex >= 0 ? url.substring(0, hashIndex) : url;
+    const queryIndex = beforeHash.indexOf("?");
+    if (queryIndex < 0) {
+        return url;
+    }
+
+    const baseUrl = beforeHash.substring(0, queryIndex);
+    const query = beforeHash.substring(queryIndex + 1);
+    const searchParams = new URLSearchParams(query);
+    searchParams.delete(kBloomVideoTransientTimestampParam);
+    const search = searchParams.toString();
+
+    return `${baseUrl}${search ? `?${search}` : ""}${hash}`;
+}
+
+export function removeTransientVideoTimestampParams(root: ParentNode): void {
+    for (const element of Array.from(
+        root.querySelectorAll<HTMLElement>("video[src], video source[src]"),
+    )) {
+        const src = element.getAttribute("src");
+        if (!src) {
+            continue;
+        }
+        element.setAttribute("src", stripTransientVideoTimestampParam(src));
     }
 }
 

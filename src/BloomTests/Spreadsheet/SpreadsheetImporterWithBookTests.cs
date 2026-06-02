@@ -122,7 +122,7 @@ namespace BloomTests.Spreadsheet
         <div data-book=""topic"" lang=""en"">
             Health
 		</div>
-		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, placeHolder.png, is missing or was loading too slowly."">
+		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This image, placeHolder.png, is missing or was loading too slowly."">
 			cover.png
 		</div>
 		<div data-book=""licenseImage"" lang= ""*"" >
@@ -187,8 +187,8 @@ namespace BloomTests.Spreadsheet
 
         public static string pageWithJustText =
             @"<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang="""">
-			<div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
-				Basic Text &amp; Picture
+			<div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Image"" lang=""en"">
+				Basic Text &amp; Image
 			</div>
 
 			<div class=""pageDescription"" lang=""en""></div>

@@ -489,6 +489,13 @@ namespace Bloom.Edit
             }
             _pageListApi.ClearPagesCache();
             _pageListView.SetBook(_model.CurrentBook);
+            if (emptyThumbnailCache && _model.CurrentBook != null)
+            {
+                var pageListUrl = _model.GetUrlForPageListFile();
+                _mainBrowser.RunJavascriptFireAndForget(
+                    "workspaceBundle.switchThumbnailPage('" + pageListUrl + "');"
+                );
+            }
         }
 
         internal async Task<string> GetStringFromJavascriptAsync(string script)
@@ -621,8 +628,7 @@ namespace Bloom.Edit
                 )
             )
             {
-                dlg.Width = 500;
-                dlg.Height = 700;
+                dlg.SetScaledSize(500, 700);
 
                 dlg.ShowDialog(_workspaceView);
             }
@@ -633,12 +639,12 @@ namespace Bloom.Edit
             var answer = MessageBox.Show(
                 LocalizationManager.GetString(
                     "EditTab.CopyImageIPMetadataQuestion",
-                    "Copy this information to all other pictures in this book?",
+                    "Copy this information to all other images in this book?",
                     "get this after you edit the metadata of an image"
                 ),
                 LocalizationManager.GetString(
                     "EditTab.TitleOfCopyIPToWholeBooksDialog",
-                    "Picture Intellectual Property Information"
+                    "Image Intellectual Property Information"
                 ),
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question,
@@ -670,7 +676,12 @@ namespace Bloom.Edit
             CopyImageToClipboard(imageSrc, _model.CurrentBook.FolderPath, imageIsGif);
         }
 
-        public void OnPasteImage(string imageId, UrlPathString priorImageSrc, bool imageIsGif)
+        public void OnPasteImage(
+            string imageId,
+            UrlPathString priorImageSrc,
+            bool imageIsGif,
+            string pageBackgroundColor
+        )
         {
             var pictureChanged = false;
             using (var measure = PerformanceMeasurement.Global.Measure("Paste Image"))
@@ -734,7 +745,12 @@ namespace Bloom.Edit
                             "[Paste Image] Pasting jpeg image {0}",
                             clipboardImage.OriginalFilePath
                         );
-                        _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
+                        _model.ChangePicture(
+                            imageId,
+                            priorImageSrc,
+                            clipboardImage,
+                            pageBackgroundColor
+                        );
                         pictureChanged = true;
                     }
                     else
@@ -745,7 +761,12 @@ namespace Bloom.Edit
                             Logger.WriteMinorEvent(
                                 "[Paste Image] Pasting image directly from clipboard (e.g. screenshot)"
                             );
-                            _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
+                            _model.ChangePicture(
+                                imageId,
+                                priorImageSrc,
+                                clipboardImage,
+                                pageBackgroundColor
+                            );
                             pictureChanged = true;
                         }
                         //they pasted a path to a png
@@ -758,7 +779,12 @@ namespace Bloom.Edit
                                 "[Paste Image] Pasting png file {0}",
                                 clipboardImage.OriginalFilePath
                             );
-                            _model.ChangePicture(imageId, priorImageSrc, clipboardImage);
+                            _model.ChangePicture(
+                                imageId,
+                                priorImageSrc,
+                                clipboardImage,
+                                pageBackgroundColor
+                            );
                             pictureChanged = true;
                         }
                         else // they pasted a path to some other bitmap format
@@ -786,9 +812,14 @@ namespace Bloom.Edit
                                     ImageFormat.Png
                                 );
 
-                                using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
+                                using (var palasoImage = ImageUtils.FromFileRobustly(temp.Path))
                                 {
-                                    _model.ChangePicture(imageId, priorImageSrc, palasoImage);
+                                    _model.ChangePicture(
+                                        imageId,
+                                        priorImageSrc,
+                                        palasoImage,
+                                        pageBackgroundColor
+                                    );
                                     pictureChanged = true;
                                 }
                             }
@@ -840,7 +871,7 @@ namespace Bloom.Edit
                     PortableClipboard.SetText(path);
                     return true;
                 }
-                using (var image = PalasoImage.FromFileRobustly(path))
+                using (var image = ImageUtils.FromFileRobustly(path))
                 {
                     PortableClipboard.CopyImageToClipboard(image);
                 }
@@ -913,7 +944,12 @@ namespace Bloom.Edit
 
         private string _gifDirectory; // Todo: worth saving this as a UserPrefs? Or can/should we use the same one as for images?
 
-        public void OnChangeImage(string imageId, UrlPathString imageSrc, bool imageIsGif)
+        public void OnChangeImage(
+            string imageId,
+            UrlPathString imageSrc,
+            bool imageIsGif,
+            string pageBackgroundColor
+        )
         {
             Cursor = Cursors.WaitCursor;
 
@@ -931,7 +967,11 @@ namespace Bloom.Edit
                     }
                 )
                 {
-                    var result = dlg.ShowDialog();
+                    DialogResult result;
+                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
+                    {
+                        result = dlg.ShowDialog();
+                    }
                     if (result == DialogResult.OK)
                         SetGifImage(imageId, imageSrc, dlg.FileName);
                 }
@@ -969,7 +1009,7 @@ namespace Bloom.Edit
                     RobustFile.Copy(existingImagePath, newImagePath);
                     Debug.WriteLine("Created image copy: " + newImagePath);
                     Logger.WriteEvent("Created image copy: " + newImagePath);
-                    imageInfo = PalasoImage.FromFileRobustly(newImagePath);
+                    imageInfo = ImageUtils.FromFileRobustly(newImagePath);
                     oldSize = imageInfo.Image.Size;
                     oldImage = imageInfo.Image;
                 }
@@ -1002,6 +1042,7 @@ namespace Bloom.Edit
             var performanceMeasureForShowingDialog = PerformanceMeasurement.Global.Measure(
                 "Show ImageToolbox Dialog"
             );
+            using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
             using (
                 var dlg = new ImageToolboxDialog(
                     imageInfo,
@@ -1049,7 +1090,7 @@ namespace Bloom.Edit
                 DialogResult result;
                 try
                 {
-                    result = dlg.ShowDialog();
+                    result = dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());
                 }
                 finally
                 {
@@ -1141,7 +1182,13 @@ namespace Bloom.Edit
                                 dlg.ImageInfo.Save(newImagePath);
                             }
                             dlg.ImageInfo.SetCurrentFilePath(newImagePath);
-                            SaveChangedImage(imageId, imageSrc, dlg.ImageInfo, exceptionMsg);
+                            SaveChangedImage(
+                                imageId,
+                                imageSrc,
+                                dlg.ImageInfo,
+                                exceptionMsg,
+                                pageBackgroundColor
+                            );
                             imageChanged = true;
                         }
                         catch (Exception error)
@@ -1345,7 +1392,8 @@ namespace Bloom.Edit
             string imageId,
             UrlPathString priorImageSrc,
             PalasoImage imageInfo,
-            string exceptionMsg
+            string exceptionMsg,
+            string pageBackgroundColor
         )
         {
             var imageChanged = false;
@@ -1353,7 +1401,7 @@ namespace Bloom.Edit
             {
                 if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
                     return;
-                _model.ChangePicture(imageId, priorImageSrc, imageInfo);
+                _model.ChangePicture(imageId, priorImageSrc, imageInfo, pageBackgroundColor);
                 imageChanged = true;
             }
             catch (System.IO.IOException error)
@@ -1397,6 +1445,7 @@ namespace Bloom.Edit
                 && JpegWarningDialog.ShouldWarnAboutJpeg(imageInfo.Image)
             )
             {
+                using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                 using (var jpegDialog = new JpegWarningDialog())
                 {
                     return jpegDialog.ShowDialog() == DialogResult.Cancel;

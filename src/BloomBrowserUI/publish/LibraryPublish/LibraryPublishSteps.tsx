@@ -266,6 +266,10 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     };
 
     const [isCanceling, setIsCanceling] = useState<boolean>(false);
+    const handleUploadError = React.useCallback(() => {
+        setIsUploading(false);
+    }, []);
+
     useSubscribeToWebSocketForEvent(
         kWebSocketContext,
         kWebSocketEventId_uploadCanceled,
@@ -638,9 +642,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                             <ProgressBox
                                 ref={progressBoxRef}
                                 webSocketContext={kWebSocketContext}
-                                onGotErrorMessage={() => {
-                                    setIsUploading(false);
-                                }}
+                                onGotErrorMessage={handleUploadError}
                                 css={css`
                                     height: 200px;
                                 `}

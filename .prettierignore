@@ -2,3 +2,6 @@
 ThemaData.json
 *.xlf
 csharpier.json
+
+# prettier fails on this file and causes the pre-commit hook to fail
+src/BloomVisualRegressionTests/collections/basic/A5 Portrait/A5 Portrait.htm

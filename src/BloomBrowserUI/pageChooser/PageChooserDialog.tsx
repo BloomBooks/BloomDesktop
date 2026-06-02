@@ -59,7 +59,6 @@ export const getTemplatePageImageSource = (
     pageLabel: string,
     orientation: string,
 ): string => {
-    const label = pageLabel.replace("&", "+"); //ampersands confuse the url system (if you don't handle them), so the template files were originally named with "+" instead of "&"
     // The result may actually be a png file or an svg, and there may be some delay while the png is generated.
 
     const urlPrefix = getBloomApiPrefix();
@@ -70,7 +69,7 @@ export const getTemplatePageImageSource = (
         `${urlPrefix}pageTemplateThumbnail?path=` +
         encodeURIComponent(templateBookFolderUrl) +
         "/template/" +
-        encodeURIComponent(label) +
+        encodeURIComponent(pageLabel) +
         // Previously, we checked for a square size and sent "-square" here.
         // But we don't actually have any square thumbnails we ship,
         // so that caused all the thumbnails to be generated.
@@ -324,9 +323,30 @@ export const PageChooserDialog: React.FunctionComponent<
     }, [templateBooks]);
 
     const getToolId = (templatePageDiv: HTMLDivElement | undefined): string => {
-        return templatePageDiv
-            ? getAttributeStringSafely(templatePageDiv, "data-tool-id")
-            : "";
+        if (templatePageDiv) {
+            const pageToolId = getAttributeStringSafely(
+                templatePageDiv,
+                "data-tool-id",
+            );
+            if (pageToolId) {
+                return pageToolId;
+            }
+            const featureName = getAttributeStringSafely(
+                templatePageDiv,
+                "data-feature",
+            );
+            if (featureName === "canvas") {
+                const canvas =
+                    templatePageDiv.querySelector(kBloomCanvasSelector);
+                const canvasToolId = (canvas as Element)?.getAttribute(
+                    "data-tool-id",
+                );
+                if (canvasToolId) {
+                    return canvasToolId;
+                }
+            }
+        }
+        return "";
     };
 
     // "Safely" from a type-checking point of view. The calling code is responsible
@@ -409,7 +429,7 @@ export const PageChooserDialog: React.FunctionComponent<
             willLoseData(selectedPageDiv),
             convertWholeBookCheckbox ? convertWholeBookCheckbox.checked : false,
             props.forChooseLayout ? -1 : 1,
-            selectedPageDiv.getAttribute("data-tool-id") ?? "",
+            getToolId(selectedPageDiv),
             getToolId(selectedPageDiv),
         );
     }
@@ -706,11 +726,7 @@ export const PageChooserDialog: React.FunctionComponent<
                             learnMoreLink={learnMoreLink}
                             requiredTool={getToolId(selectedTemplatePageDiv)}
                             onSubmit={handleAddPageOrChooseLayoutButtonClick}
-                            dataToolId={
-                                selectedTemplatePageDiv.getAttribute(
-                                    "data-tool-id",
-                                ) ?? ""
-                            }
+                            dataToolId={getToolId(selectedTemplatePageDiv)}
                         />
                     )}
                 </div>

@@ -10,6 +10,7 @@ namespace Bloom
     {
         public const string kExperimentalSourceBooks = "experimental-source-books";
         public const string kTeamCollections = "team-collections";
+        public const string kAppBuilder = "app-builder";
 
         public static string TokensOfEnabledFeatures =>
             Settings.Default.EnabledExperimentalFeatures;

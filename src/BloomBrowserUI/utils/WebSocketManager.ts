@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export interface IBloomWebSocketEvent {
     clientContext: string;
@@ -21,9 +21,43 @@ export function useWebSocketListener(
     clientContext: string,
     listener: (messageEvent: IBloomWebSocketEvent) => void,
 ) {
+    // This hook intentionally uses an effect because a websocket subscription is
+    // synchronization with an external system, not derived render state.
+    // We need to subscribe when the component starts listening and unsubscribe
+    // when it stops or switches to a different clientContext.
+
+    // Keep track of the most recent callback without forcing the websocket
+    // subscription itself to be torn down and recreated on every render.
+    // Many callers pass an inline listener that closes over current props/state,
+    // so its identity changes often even though it still wants the same socket.
+    const latestListener = useRef(listener);
+    latestListener.current = listener;
+
     useEffect(() => {
-        WebSocketManager.addListener(clientContext, listener);
-    }, []);
+        // The websocket manager needs a stable function reference so we can later
+        // remove exactly the listener we added.
+        const listenerWrapper = (messageEvent: IBloomWebSocketEvent) => {
+            // When a websocket message arrives, forward it to whatever listener
+            // the component most recently rendered with.
+            //
+            // If we subscribed once with the original listener and never updated it,
+            // things would get messy. If that
+            // listener captured state from the first render, later websocket
+            // messages would keep using stale values. For example:
+            // - a dialog listener might keep using the old selected book or tab
+            // - a progress handler might append to stale local state
+            // - a callback replaced after a prop change would never be called
+            latestListener.current(messageEvent);
+        };
+
+        // Subscribe only when the clientContext changes. Re-subscribing on every
+        // render would be unnecessary churn for the same websocket channel.
+        WebSocketManager.addListener(clientContext, listenerWrapper);
+        return () => {
+            // Cleanup to prevent orphaned listeners and memory leaks.
+            WebSocketManager.removeListener(clientContext, listenerWrapper);
+        };
+    }, [clientContext]);
 }
 
 // avoid making this public, so that we can have more freedom to make changes to the signature
@@ -34,16 +68,26 @@ function useWebSocketListenerInnerWithMessage<T>(
     processEvent: (e: IBloomWebSocketEvent) => T,
     filter?: (e: IBloomWebSocketEvent) => boolean,
 ) {
+    const latestListener = useRef(listener);
+    const latestProcessEvent = useRef(processEvent);
+    const latestFilter = useRef(filter);
+    latestListener.current = listener;
+    latestProcessEvent.current = processEvent;
+    latestFilter.current = filter;
+
     useEffect(() => {
         const l = (e: IBloomWebSocketEvent) => {
-            if (e.id === eventId && (!filter || filter(e))) {
-                listener(processEvent(e));
+            if (
+                e.id === eventId &&
+                (!latestFilter.current || latestFilter.current(e))
+            ) {
+                latestListener.current(latestProcessEvent.current(e));
             }
         };
         WebSocketManager.addListener(clientContext, l);
-        // Clean up when we are unmounted or this useEffect runs again (i.e. if the props.webSocketContext were to change)
+        // This effect is required because the websocket is an external system that must be subscribed and unsubscribed explicitly.
         return () => WebSocketManager.removeListener(clientContext, l);
-    }, []);
+    }, [clientContext, eventId]);
 }
 
 export function useSubscribeToWebSocketForEvent(
@@ -233,6 +277,19 @@ export default class WebSocketManager {
             if (!WebSocketManager.clientContextCallbacks[clientContext]) {
                 WebSocketManager.clientContextCallbacks[clientContext] = [];
             }
+
+            // Notify listeners when a socket (re)opens so callers that mirror server state
+            // can re-query APIs and recover from any missed websocket messages.
+            ws.addEventListener("open", () => {
+                const e: IBloomWebSocketEvent = {
+                    clientContext,
+                    id: `websocket/open/${clientContext}`,
+                };
+                WebSocketManager.clientContextCallbacks[clientContext]?.forEach(
+                    (callback) => callback(e),
+                );
+            });
+
             // the following is a refactored holdover from a situation where we were having trouble
             // getting the web ui to properly close its own listeners and socket, so we had to
             // revert to have c# send a message that would close this down. It may or may not be
@@ -326,9 +383,14 @@ export default class WebSocketManager {
             "collections",
             "bookImage",
             "book", // via useWatchString
+            "workspace", // top-level workspace UI has multiple valid watchers
             "bookTeamCollectionStatus", // via useTColBookStatus
+            "bookCollection", // one BookOnBlorgBadge per book subscribes here
             // each book collection subscribes to this
             "editableCollectionList",
+            // dialog launchers and app builder screens legitimately keep several listeners mounted
+            "LaunchDialog",
+            "publish-rab",
         ];
 
         // in the case of the progressDialog, we expect to have 2: one for the dialog, which is listening, and one for the ProgressBox.
@@ -343,8 +405,17 @@ export default class WebSocketManager {
         listener: (messageEvent: T) => void,
     ): void {
         const onceListener = (messageEvent: T) => {
-            listener(messageEvent);
-            WebSocketManager.removeListener(clientContext, onceListener);
+            // Ignore a message with id = websocket/open/${clientContext} because that
+            // is not a real message from the server, but an internal message we use to
+            // trigger re-querying of server state when a socket opens (or re-opens after
+            // a disconnect).  If we didn't ignore it, then any "once" listener that
+            // happened to be subscribed at the moment a socket opened would get triggered
+            // by this internal message and then never get triggered again, which would be
+            // wrong.  See BL-16284.
+            if (messageEvent.id !== `websocket/open/${clientContext}`) {
+                listener(messageEvent);
+                WebSocketManager.removeListener(clientContext, onceListener);
+            }
         };
         WebSocketManager.addListener(clientContext, onceListener);
     }

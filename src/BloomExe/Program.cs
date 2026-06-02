@@ -135,6 +135,16 @@ namespace Bloom
             // needs it.
             Registration.Registration.Default.EnsureLoaded();
 
+            // This needs to be done before we create any WebView2s, so they will inherit
+            // our DPI awareness and render fonts better.
+            // Even though BloomExe.csproj sets ApplicationHighDpiMode=PerMonitorV2,
+            // that alone was not sufficient in Bloom's custom startup path. One likely
+            // reason is that Bloom does not use the standard generated WinForms startup
+            // initialization path that newer templates rely on. In testing, Bloom and
+            // its root WebView2 still came up as only System DPI aware until we made
+            // the explicit WinForms call here.
+            Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+
             // Initializing localization can pop up a dialog if the system language
             // is not one of our supported languages. The following calls must be done
             // before any UI windows are displayed, so we do them here before we call
@@ -335,6 +345,8 @@ namespace Bloom
                 // Migrate from old monolithic experimental features setting.
                 ExperimentalFeatures.MigrateFromOldSettings();
 
+                NormalizeWorkingDirectory();
+
                 if (!InstallerSupport.HandleVelopackStartup(args)) // may exit program itself
                     return 0; // or may conclude that we need to abort starting up.
 
@@ -342,6 +354,7 @@ namespace Bloom
                 // by the user.
                 if (!Settings.Default.LicenseAccepted)
                 {
+                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                     using (var dlg = new LicenseDialog("license.htm"))
                         if (dlg.ShowDialog() != DialogResult.OK)
                             return 1;
@@ -1224,6 +1237,30 @@ namespace Bloom
 
         public static string BloomExePath => Application.ExecutablePath;
 
+        /// <summary>
+        /// BL-16230 - Bloom taskbar shortcuts were getting stuck with a stale "Start-in" value (from Squirrel days) which
+        /// was giving Bloom a bad CWD. Bloom wouldn't load properly unless I manually went in and deleted the stale
+        /// "Start in" value. I never pinned down exactly where in the code things were going wrong, but hopefully this will guard against it.
+        ///
+        /// Ensure Bloom does not inherit a stale shell working directory from a shortcut from when we were using Squirrel.
+        /// This keeps BrowserRoot-relative paths anchored to the installed app instead
+        /// of whatever obsolete Start In value the shell supplied.
+        /// </summary>
+        private static void NormalizeWorkingDirectory()
+        {
+            var executableFolder = Path.GetDirectoryName(BloomExePath);
+            if (
+                !string.Equals(
+                    Directory.GetCurrentDirectory(),
+                    executableFolder,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            {
+                Directory.SetCurrentDirectory(executableFolder);
+            }
+        }
+
         public static void RestartBloom(bool hardExit, string args = null)
         {
             try
@@ -1394,7 +1431,14 @@ namespace Bloom
 
             Sldr.Cleanup();
             Logger.WriteMinorEvent("shutting down logger, about to dispose project context");
+            // Force the log file to include the minor events.  I don't know why this isn't the default. (BL-16290)
+            var logText = Logger.LogText;
+            var logPath = Logger.LogPath;
             Logger.ShutDown();
+            if (string.IsNullOrWhiteSpace(logPath))
+                logPath = Path.Combine(Path.GetTempPath(), "SIL", "Bloom", "Log.txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+            RobustFile.WriteAllText(logPath, logText);
 
             if (_projectContext != null)
                 _projectContext.Dispose();
@@ -1747,6 +1791,8 @@ namespace Bloom
                 // We normally start listening when setting up the project context. However, this dialog might
                 // get run at startup when we don't have a chosen project from which to make a ProjectContext
                 _applicationContainer.BloomServer.EnsureListening();
+                string selectedPath = null;
+                using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                 using (var dlg = _applicationContainer.OpenAndCreateCollectionDialog())
                 {
                     if (formToClose == null) // otherwise default position on same screen is fine
@@ -1776,8 +1822,7 @@ namespace Bloom
                             return true;
                         }
 
-                        if (OpenCollection(dlg.SelectedPath))
-                            return true;
+                        selectedPath = dlg.SelectedPath;
                     }
                     catch (Exception error)
                     {
@@ -1794,6 +1839,26 @@ namespace Bloom
                         {
                             throw;
                         }
+                    }
+                }
+
+                // Important: keep legacy DPI context scoped only to the chooser dialog itself.
+                // The main shell and startup dialogs (including Team Collection sync progress)
+                // should be created in normal PerMonitorV2 context.
+                try
+                {
+                    if (OpenCollection(selectedPath))
+                        return true;
+                }
+                catch (Exception error)
+                {
+                    if (LongPathAware.ShouldConvertToPathTooLongException(error, out string path))
+                    {
+                        throw new Utils.PathTooLongException(path);
+                    }
+                    else
+                    {
+                        throw;
                     }
                 }
             }
@@ -2103,6 +2168,7 @@ namespace Bloom
 
         private static bool _errorHandlingHasBeenSetUp;
         private static IDisposable _sentry;
+
         // Only the token owner may release it and run Bloom's global temp cleanup on exit.
         private static bool _ownsSingleInstanceToken;
 

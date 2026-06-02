@@ -637,8 +637,15 @@ export class ToolBox {
             // if it was an actual "input" element, we would just check for "checked",
             // but it's actually a div with possibly a checkmark character inside,
             // so just check string length.
+            // An earlier version of this code simulated a click on the checkbox,
+            // but that failed when it was already active, toggling it to inactive,
+            // where here we want to ensure it is active AND selected.
             if (checkBox.innerText.length === 0) {
-                checkBox.click(); // will also activate
+                turnOnToolFromCheckbox(
+                    checkBox,
+                    ToolBox.addToolToString(toolId),
+                    true,
+                );
             } else {
                 setCurrentTool(toolId);
             }
@@ -658,6 +665,10 @@ export class ToolBox {
 
     public getCurrentTool() {
         return currentTool;
+    }
+
+    public setCurrentTool(toolId: string): void {
+        setCurrentTool(toolId);
     }
 }
 
@@ -742,24 +753,41 @@ export function showOrHideTool_click(chkbox) {
     const tool = $(chkbox).data("tool");
     const turnOn = chkbox.innerHTML === "";
     if (turnOn) {
-        chkbox.innerHTML = checkMarkString;
-        postString(
-            "editView/saveToolboxSetting",
-            "active\t" + chkbox.id + "\t1",
-        );
+        turnOnToolFromCheckbox(chkbox, tool, true);
     } else {
-        chkbox.innerHTML = "";
-        postString(
-            "editView/saveToolboxSetting",
-            "active\t" + chkbox.id + "\t0",
-        );
+        setToolCheckboxEnabledState(chkbox, false);
+        showOrHideTool(chkbox.id, tool, false);
     }
-    showOrHideTool(chkbox.id, tool, turnOn);
 }
 
-function showOrHideTool(chkboxId: string, tool: string, turnOn: boolean) {
+function setToolCheckboxEnabledState(
+    chkbox: HTMLDivElement,
+    turnOn: boolean,
+): void {
+    chkbox.innerHTML = turnOn ? checkMarkString : "";
+    postString(
+        "editView/saveToolboxSetting",
+        "active\t" + chkbox.id + "\t" + (turnOn ? "1" : "0"),
+    );
+}
+
+function turnOnToolFromCheckbox(
+    chkbox: HTMLDivElement,
+    tool: string,
+    openTool: boolean,
+): void {
+    setToolCheckboxEnabledState(chkbox, true);
+    showOrHideTool(chkbox.id, tool, true, openTool);
+}
+
+function showOrHideTool(
+    chkboxId: string,
+    tool: string,
+    turnOn: boolean,
+    openTool: boolean = true,
+) {
     if (turnOn) {
-        beginAddTool(chkboxId, tool, true);
+        beginAddTool(chkboxId, tool, openTool);
     } else {
         $("*[data-toolId]")
             .filter(function () {
@@ -1141,7 +1169,6 @@ function setCurrentTool(toolID: string) {
 
         if (toolID) {
             adapter.setActiveToolByToolId(toolID);
-            switchTool(toolID);
         }
         return;
     }
@@ -1268,6 +1295,22 @@ function beginAddTool(
             );
             return;
         }
+
+        if (isToolInitialized(tool)) {
+            if (openTool && toolbox.toolboxIsShowing()) {
+                const toolName = ToolBox.addToolToString(tool.id());
+                const adapter = getToolboxReactAdapter();
+                if (adapter) {
+                    adapter.setActiveToolByToolId(toolName);
+                }
+            }
+
+            if (whenLoaded) {
+                whenLoaded();
+            }
+            return;
+        }
+
         const content = $(tool.makeRootElement());
         const toolName = ToolBox.addToolToString(tool.id());
         // const parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
@@ -1832,7 +1875,6 @@ function loadToolboxTool(
             const toolId = header.attr("data-toolId");
             if (toolId) {
                 adapter.setActiveToolByToolId(toolId);
-                switchTool(toolId);
             }
         } else {
             toolboxElt.accordion("refresh");
@@ -1887,6 +1929,7 @@ function showToolboxChanged(wasShowing: boolean): void {
         const adapter = getToolboxReactAdapter();
         if (adapter) {
             adapter.setActiveToolByToolId(newToolName);
+            return;
         }
         switchTool(newToolName);
     }

@@ -1,6 +1,5 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { useState } from "react";
 import { TopBarButton } from "../../TopBarButton";
 import { TeamCollectionButton } from "./TeamCollectionButton";
 import { TeamCollectionStatus } from "../../../teamCollection/TeamCollectionStatus";
@@ -9,7 +8,6 @@ import {
     post,
     useWatchApiData,
 } from "../../../utils/bloomApi";
-import { useSubscribeToWebSocketForStringMessage } from "../../../utils/WebSocketManager";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
 const bloomApiPrefix = getBloomApiPrefix(false);
 
@@ -24,12 +22,6 @@ const mainButtonBackground = kBloomBlue;
 const mainButtonTextColor = "rgb(60, 60, 60)";
 
 export const CollectionTopBarControls: React.FunctionComponent = () => {
-    // Forces a refresh. Currently used for localization changes.
-    const [generation, setGeneration] = useState(0);
-    useSubscribeToWebSocketForStringMessage("app", "uiLanguageChanged", () => {
-        setGeneration((current) => current + 1);
-    });
-
     const teamCollectionStatus = useWatchApiData<TeamCollectionStatus>(
         "teamCollection/tcStatus",
         "None",
@@ -51,7 +43,6 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
         /* The result of the two sets of flex divs is we get the TC button
            on the left and the other buttons on the right */
         <div
-            key={`collection-topbar-${generation}`}
             css={css`
                 display: flex;
                 align-items: flex-start;
@@ -76,13 +67,11 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                     backgroundColor={mainButtonBackground}
                     textColor={mainButtonTextColor}
                     cssOverrides={css`
-                        width: 88px;
                         white-space: normal;
                         line-height: 1.15;
 
                         span {
                             display: inline-block;
-                            max-width: 64px;
                             text-align: center;
                         }
                     `}
