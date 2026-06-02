@@ -57,7 +57,6 @@ export class CanvasElementPointerInteractions {
     private gotAMoveWhileMouseDown = false;
 
     private animationFrame: number;
-    private lastMoveEvent: MouseEvent;
 
     public constructor(
         host: ICanvasElementPointerInteractionsHost,
@@ -169,16 +168,6 @@ export class CanvasElementPointerInteractions {
             return;
         }
         this.gotAMoveWhileMouseDown = false;
-        this.mouseIsDown = true;
-        this.clientXAtMouseDown = event.clientX;
-        this.clientYAtMouseDown = event.clientY;
-        this.mouseDownContainer = bloomCanvas;
-
-        // Listen on document (capture phase) so we still detect mouseup if the drag
-        // ends outside the bloom-canvas element.
-        document.addEventListener("mouseup", this.onMouseUp, {
-            capture: true,
-        });
 
         const coordinates = this.getPointRelativeToCanvas(event, bloomCanvas);
         if (!coordinates) {
@@ -221,6 +210,16 @@ export class CanvasElementPointerInteractions {
         const startDraggingBubble = (bubbleToStart: Bubble) => {
             // Note: at this point we do NOT want to focus it. Only if we decide in mouse up that we want to text-edit it.
             this.host.setActiveElement(bubbleToStart.content);
+
+            this.mouseIsDown = true;
+            this.clientXAtMouseDown = event.clientX;
+            this.clientYAtMouseDown = event.clientY;
+            this.mouseDownContainer = bloomCanvas;
+            // Listen on document (capture phase) so we still detect mouseup if the drag
+            // ends outside the bloom-canvas element.
+            document.addEventListener("mouseup", this.onBubbleDragMouseUp, {
+                capture: true,
+            });
 
             // Possible move action started
             this.bubbleToDrag = bubbleToStart;
@@ -302,14 +301,17 @@ export class CanvasElementPointerInteractions {
             return;
         }
         if (event.buttons === 0 && this.mouseIsDown) {
-            this.onMouseUp(event);
+            this.onBubbleDragMouseUp(event);
             return;
         }
-        this.lastMoveEvent = event;
+        if (!this.bubbleToDrag) {
+            return;
+        }
         const deltaX = event.clientX - this.clientXAtMouseDown;
         const deltaY = event.clientY - this.clientYAtMouseDown;
         if (
             event.buttons === 1 &&
+            !this.gotAMoveWhileMouseDown &&
             Math.sqrt(deltaX * deltaX + deltaY * deltaY) > 3
         ) {
             this.gotAMoveWhileMouseDown = true;
@@ -320,53 +322,15 @@ export class CanvasElementPointerInteractions {
         }
 
         const container = event.currentTarget as HTMLElement;
-
-        if (!this.bubbleToDrag) {
-            this.handleMouseMoveHover(event, container);
-        } else {
-            this.handleMouseMoveDragCanvasElement(event, container);
-        }
+        this.handleMouseMoveDragCanvasElement(event, container);
     };
-
-    private handleMouseMoveHover(event: MouseEvent, container: HTMLElement) {
-        if (this.isMouseEventAlreadyHandled(event)) {
-            return;
-        }
-
-        let hoveredBubble = this.getBubbleUnderMouse(event, container);
-        const activeElement = this.host.getActiveElement();
-
-        if (hoveredBubble && hoveredBubble.content !== activeElement) {
-            if (this.host.isPictureCanvasElement(hoveredBubble.content)) {
-                hoveredBubble = null;
-            }
-        }
-    }
-
-    private getBubbleUnderMouse(
-        event: MouseEvent,
-        container: HTMLElement,
-    ): Bubble | null {
-        const coordinates = this.getPointRelativeToCanvas(event, container);
-        if (!coordinates) {
-            return null;
-        }
-
-        return (
-            Comical.getBubbleHit(
-                container,
-                coordinates.getUnscaledX(),
-                coordinates.getUnscaledY(),
-            ) ?? null
-        );
-    }
 
     private handleMouseMoveDragCanvasElement(
         event: MouseEvent,
         container: HTMLElement,
     ) {
         if (event.buttons === 0) {
-            this.onMouseUp(event);
+            this.onBubbleDragMouseUp(event);
             return;
         }
         const activeElement = this.host.getActiveElement();
@@ -446,11 +410,11 @@ export class CanvasElementPointerInteractions {
         });
     }
 
-    private onMouseUp = (event: MouseEvent) => {
+    private onBubbleDragMouseUp = (event: MouseEvent) => {
         this.mouseIsDown = false;
         this.snapProvider.endDrag();
         this.guideProvider.endDrag();
-        document.removeEventListener("mouseup", this.onMouseUp, {
+        document.removeEventListener("mouseup", this.onBubbleDragMouseUp, {
             capture: true,
         });
         if (this.mouseDownContainer && inPlayMode(this.mouseDownContainer)) {
@@ -531,7 +495,7 @@ export class CanvasElementPointerInteractions {
         if (targetElement.closest("#canvas-element-control-frame")) {
             return true;
         }
-        if (targetElement.closest("[data-target-of")) {
+        if (targetElement.closest("[data-target-of]")) {
             return true;
         }
         if (

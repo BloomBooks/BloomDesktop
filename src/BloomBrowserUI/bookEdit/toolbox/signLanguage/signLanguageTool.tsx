@@ -19,10 +19,8 @@ import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 import { updateVideoInContainer } from "../../js/bloomVideo";
 import { chooseAndProcessVideo } from "../../js/ChooseAndProcessVideo";
 import { selectVideoContainer } from "../../js/videoUtils";
-import {
-    getCanvasElementManager,
-    kCanvasElementSelector,
-} from "../canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
+import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
 import $ from "jquery";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";

@@ -88,7 +88,8 @@ namespace BloomTests.web.controllers
             protected override void PasteImage(
                 string imageId,
                 UrlPathString priorImageSrc,
-                bool imageIsGif
+                bool imageIsGif,
+                string backgroundColor
             )
             {
                 PasteImageAction?.Invoke(imageId, priorImageSrc, imageIsGif);

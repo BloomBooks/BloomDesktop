@@ -29,11 +29,18 @@ export interface ICanvasElementSelectionUiCallbacks {
     startMoveCrop: (event: MouseEvent) => void;
 }
 
+let pendingRemoveControlFrameTimeout: number | undefined;
+
 // Remove the canvas element control frame if it exists (when no canvas element is active)
 // Also remove the menu if it's still open.  See BL-13852.
 export function removeControlFrame(
     activeElement: HTMLElement | undefined,
 ): void {
+    if (pendingRemoveControlFrameTimeout !== undefined) {
+        window.clearTimeout(pendingRemoveControlFrameTimeout);
+        pendingRemoveControlFrameTimeout = undefined;
+    }
+
     const controlFrame = document.getElementById(
         "canvas-element-control-frame",
     );
@@ -45,11 +52,12 @@ export function removeControlFrame(
             renderCanvasElementContextControls(activeElement, false);
         }
         // Reschedule so that the rerender can finish before removing the control frame.
-        setTimeout(() => {
+        pendingRemoveControlFrameTimeout = window.setTimeout(() => {
             controlFrame.remove();
             document
                 .getElementById("canvas-element-context-controls")
                 ?.remove();
+            pendingRemoveControlFrameTimeout = undefined;
         }, 0);
     }
 }
@@ -71,6 +79,11 @@ export function checkActiveElementIsVisible(
 export function setupControlFrame(
     callbacks: ICanvasElementSelectionUiCallbacks,
 ): void {
+    if (pendingRemoveControlFrameTimeout !== undefined) {
+        window.clearTimeout(pendingRemoveControlFrameTimeout);
+        pendingRemoveControlFrameTimeout = undefined;
+    }
+
     // If the active element isn't visible, it isn't really active.  See BL-14439.
     checkActiveElementIsVisible(
         callbacks.getActiveElement(),

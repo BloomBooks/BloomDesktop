@@ -51,11 +51,19 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
             ctx.isCustomPage && ctx.hasImage && !ctx.isNavigationButton,
     },
     becomeBackground: {
-        visible: (ctx) =>
-            ctx.hasImage &&
-            ctx.hasRealImage &&
-            !ctx.isNavigationButton &&
-            !ctx.isBackgroundImage,
+        visible: (ctx) => {
+            const isXmatterPage =
+                !!ctx.page?.classList.contains("bloom-frontMatter") ||
+                !!ctx.page?.classList.contains("bloom-backMatter");
+            const pageAllowsCanvasElements = !isXmatterPage || ctx.isCustomPage;
+            return (
+                ctx.hasImage &&
+                ctx.hasRealImage &&
+                !ctx.isNavigationButton &&
+                !ctx.isBackgroundImage &&
+                pageAllowsCanvasElements
+            );
+        },
     },
 };
 
@@ -143,7 +151,7 @@ export const textAvailabilityRules: AvailabilityRulesMap = {
 
 export const bubbleAvailabilityRules: AvailabilityRulesMap = {
     addChildBubble: {
-        visible: (ctx) => ctx.hasText && !ctx.isInDraggableGame,
+        visible: (ctx) => ctx.canHaveChildBubbles && !ctx.isInDraggableGame,
     },
 };
 

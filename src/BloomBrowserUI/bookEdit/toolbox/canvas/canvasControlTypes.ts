@@ -136,6 +136,7 @@ export interface IControlContext {
     canToggleDraggability: boolean;
     hasDraggableId: boolean;
     hasDraggableTarget: boolean;
+    canHaveChildBubbles: boolean;
     textHasAudio: boolean | undefined;
     hasClipboardText: boolean;
     isCustomPage: boolean;

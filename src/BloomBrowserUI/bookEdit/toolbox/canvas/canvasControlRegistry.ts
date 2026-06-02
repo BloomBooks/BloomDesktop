@@ -507,8 +507,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     imageFieldType: {
         kind: "command",
         id: "imageFieldType",
-        l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
-        englishLabel: "Field:",
+        l10nId: "EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail",
+        englishLabel: "Use for book thumbnail",
         action: () => {},
         menu: {
             buildMenuItem: (ctx) => {
@@ -518,53 +518,40 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
 
                 return {
                     id: "imageFieldType",
-                    l10nId: "EditTab.Toolbox.ComicTool.Options.FieldType",
-                    englishLabel: "Field:",
-                    onSelect: () => {},
-                    subMenuItems: [
-                        {
-                            id: "imageFieldType",
-                            l10nId: "EditTab.Toolbox.ComicTool.Options.CoverImage",
-                            englishLabel: "Cover Image",
-                            icon: isCoverImage
-                                ? React.createElement(CheckIcon, null)
-                                : undefined,
-                            onSelect: (rowCtx) => {
-                                const rowImage = getImage(rowCtx);
-                                if (!rowImage) {
-                                    return;
-                                }
+                    l10nId: "EditTab.Toolbox.ComicTool.Options.UseForBookThumbnail",
+                    englishLabel: "Use for book thumbnail",
+                    icon: isCoverImage
+                        ? React.createElement(CheckIcon, null)
+                        : undefined,
+                    onSelect: (rowCtx) => {
+                        const rowImage = getImage(rowCtx);
+                        if (!rowImage) {
+                            return;
+                        }
 
-                                if (isCoverImage) {
-                                    rowImage.removeAttribute("data-book");
-                                    return;
-                                }
+                        if (isCoverImage) {
+                            rowImage.removeAttribute("data-book");
+                            return;
+                        }
 
-                                const page = rowCtx.canvasElement.closest(
-                                    ".bloom-page",
-                                ) as HTMLElement | null;
-                                if (!page) {
-                                    return;
-                                }
+                        const page = rowCtx.canvasElement.closest(
+                            ".bloom-page",
+                        ) as HTMLElement | null;
+                        if (!page) {
+                            return;
+                        }
 
-                                Array.from(
-                                    page.querySelectorAll(
-                                        'img[data-book="coverImage"]',
-                                    ),
-                                ).forEach((existingCoverImage) => {
-                                    if (existingCoverImage !== rowImage) {
-                                        existingCoverImage.removeAttribute(
-                                            "data-book",
-                                        );
-                                    }
-                                });
-                                rowImage.setAttribute(
-                                    "data-book",
-                                    "coverImage",
-                                );
-                            },
-                        },
-                    ],
+                        Array.from(
+                            page.querySelectorAll(
+                                'img[data-book="coverImage"]',
+                            ),
+                        ).forEach((existingCoverImage) => {
+                            if (existingCoverImage !== rowImage) {
+                                existingCoverImage.removeAttribute("data-book");
+                            }
+                        });
+                        rowImage.setAttribute("data-book", "coverImage");
+                    },
                 };
             },
         },
@@ -638,13 +625,16 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 } else {
                     img.removeAttribute("data-book");
                 }
+                img.classList.remove("bloom-imageObjectFit-cover");
                 canvasElementManager.updateCanvasElementForChangedImage(img);
             }
 
-            bgImg.src = currentImageSource;
+            // Keep the stored value book-relative; assigning .src can expand to an absolute URL.
+            bgImg.setAttribute("src", currentImageSource);
             bgImg.setAttribute("data-copyright", currentCopyright || "");
             bgImg.setAttribute("data-creator", currentCreator || "");
             bgImg.setAttribute("data-license", currentLicense || "");
+            bgImg.classList.add("bloom-imageObjectFit-cover");
             if (currentDataBook) {
                 if (currentDataBook === "coverImage" && ctx.page) {
                     Array.from(
@@ -657,8 +647,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                         }
                     });
                 }
-                bgImg.setAttribute("data-book", currentDataBook);
                 img.removeAttribute("data-book");
+                // Order matters when img === bgImg: remove old value first, then set desired value.
+                bgImg.setAttribute("data-book", currentDataBook);
             }
 
             if (!haveRealBgImage) {
@@ -666,6 +657,13 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             }
 
             canvasElementManager.updateCanvasElementForChangedImage(bgImg);
+            if (!haveRealBgImage) {
+                // Wait until selection settles after conversion, then ensure background fills.
+                setTimeout(() => {
+                    canvasElementManager.setActiveElement(bgImageCe);
+                    canvasElementManager.expandImageToFillSpace();
+                });
+            }
         },
     },
     imageFillMode: {

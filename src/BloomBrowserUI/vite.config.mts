@@ -203,6 +203,14 @@ function postBuildPlugin(): Plugin {
             const manifestPath = path.join(outputDir, ".vite/manifest.json");
 
             try {
+                if (!fs.existsSync(manifestPath)) {
+                    console.warn(
+                        `[post-build] Skipping manifest processing because ${manifestPath} does not exist. ` +
+                            "An earlier build error likely prevented manifest generation.",
+                    );
+                    return;
+                }
+
                 // Read the manifest file
                 const manifestContent = await fs.promises.readFile(
                     manifestPath,

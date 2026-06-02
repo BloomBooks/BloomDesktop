@@ -434,6 +434,9 @@ export class CanvasElementDuplication {
 
         // Cleanup this node
         this.safelyRemoveAttribute(element, "id");
+        if (element.nodeName === "IMG") {
+            this.safelyRemoveAttribute(element, "data-book");
+        }
         // Picture over picture elements need the tabindex (="0") in order to be focusable.
         // But for text-based canvas elements we need to delete positive tabindex, so we don't do weird
         // things to talking book playback order when we duplicate a family of canvas elements.

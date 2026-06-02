@@ -44,10 +44,14 @@ export function showCanvasTool() {
         toolboxIsShowing: () => boolean;
         activateToolFromId: (toolId: string) => void;
         ensureToolEnabled?: (toolId: string) => void;
+        setCurrentTool?: (toolId: string) => void;
     }) => {
         if (toolbox.toolboxIsShowing()) {
             if (typeof toolbox.ensureToolEnabled === "function") {
                 toolbox.ensureToolEnabled(kCanvasToolId);
+            }
+            if (typeof toolbox.setCurrentTool === "function") {
+                toolbox.setCurrentTool(kCanvasToolId);
             }
         } else {
             toolbox.activateToolFromId(kCanvasToolId);

@@ -1,18 +1,18 @@
 import { describe, expect, test } from "vitest";
 
-import { CanvasElementManager } from "./CanvasElementManager";
+import { CanvasElementDuplication } from "./CanvasElementDuplication";
 
-describe("CanvasElementManager clone cleanup", () => {
+describe("CanvasElementDuplication clone cleanup", () => {
     test("removes data-book from duplicated images", () => {
-        const manager = Object.create(
-            CanvasElementManager.prototype,
-        ) as CanvasElementManager;
+        const duplication = Object.create(
+            CanvasElementDuplication.prototype,
+        ) as CanvasElementDuplication;
         const sourceCanvasElement = document.createElement("div");
         sourceCanvasElement.innerHTML =
             '<div class="bloom-imageContainer"><img data-book="coverImage" id="source-image" src="cover.png" /></div>';
 
         const clonedHtml = (
-            manager as unknown as {
+            duplication as unknown as {
                 safelyCloneHtmlStructure: (element: HTMLElement) => string;
             }
         ).safelyCloneHtmlStructure(sourceCanvasElement);
@@ -28,15 +28,15 @@ describe("CanvasElementManager clone cleanup", () => {
     });
 
     test("keeps data-book on non-image cloned nodes", () => {
-        const manager = Object.create(
-            CanvasElementManager.prototype,
-        ) as CanvasElementManager;
+        const duplication = Object.create(
+            CanvasElementDuplication.prototype,
+        ) as CanvasElementDuplication;
         const sourceCanvasElement = document.createElement("div");
         sourceCanvasElement.innerHTML =
             '<div class="bloom-editable" data-book="bookTitle">Title</div>';
 
         const clonedHtml = (
-            manager as unknown as {
+            duplication as unknown as {
                 safelyCloneHtmlStructure: (element: HTMLElement) => string;
             }
         ).safelyCloneHtmlStructure(sourceCanvasElement);

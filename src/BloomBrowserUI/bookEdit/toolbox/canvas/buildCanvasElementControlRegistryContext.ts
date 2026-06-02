@@ -96,6 +96,18 @@ export const buildCanvasElementControlRegistryContext = (
         canvasElement.hasAttribute("data-derived") ||
         canvasElement.querySelector("[data-derived]") !== null;
     const hasText = hasEditableText || hasDerivedText;
+    let canHaveChildBubbles = hasText;
+    if (hasText) {
+        const dataBubble = canvasElement.getAttribute("data-bubble");
+        if (dataBubble) {
+            if (
+                dataBubble.includes("`style`:`caption`") ||
+                dataBubble.includes("`style`:`none`")
+            ) {
+                canHaveChildBubbles = false;
+            }
+        }
+    }
     const hasFormatTarget =
         canvasElement.getElementsByClassName(
             "bloom-editable bloom-visibility-code-on",
@@ -192,6 +204,7 @@ export const buildCanvasElementControlRegistryContext = (
         hasDraggableTarget:
             !!currentDraggableId &&
             !!page?.querySelector(`[data-target-of=\"${currentDraggableId}\"]`),
+        canHaveChildBubbles,
         textHasAudio: false,
         hasClipboardText: false,
         isCustomPage: page?.classList.contains("bloom-customLayout") ?? false,
