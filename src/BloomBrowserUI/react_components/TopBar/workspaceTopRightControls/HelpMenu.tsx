@@ -252,6 +252,9 @@ export const HelpMenu: React.FunctionComponent = () => {
     }, []);
 
     const onOpen = React.useCallback(() => {
+        // Clear any stale pending action so a previous 'Report a Problem' click
+        // that never got an onExited callback can't fire on the next menu close.
+        pendingMenuCloseActionRef.current = undefined;
         const button = document.getElementById(
             "helpMenuButton",
         ) as HTMLElement | null;
