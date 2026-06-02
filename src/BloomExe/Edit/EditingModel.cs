@@ -913,6 +913,58 @@ namespace Bloom.Edit
         }
 
         /// <summary>
+        /// Reload the currently-selected book from disk, deliberately throwing away any unsaved edits
+        /// to the page the user might be working on. This is used when an external process (e.g. the
+        /// book-conversion utility) has just re-imported/overwritten the book on disk and we want the
+        /// running Bloom to show the new version. The caller is responsible for making sure this really
+        /// is the book that was changed; we only ever discard edits for the current selection.
+        /// </summary>
+        public void ReloadCurrentBookDiscardingEdits()
+        {
+            var book = CurrentBook;
+            if (book == null)
+                return;
+
+            // Make sure we do NOT save the page the user might be editing; we are intentionally
+            // discarding those edits in favor of what is now on disk. This is the same flag the
+            // normal book-switch path clears to avoid saving the outgoing page (see OnBookSelectionChanged).
+            _havePageToSave = false;
+
+            if (!Visible)
+            {
+                // The Edit tab isn't showing, so the book isn't live in the browser and there's no
+                // editing state to unwind. Just reload from disk; OnBecomeVisible will display the
+                // fresh version when the user next switches to the Edit tab.
+                book.ReloadFromDisk(null);
+                _currentlyDisplayedBook = null;
+                return;
+            }
+
+            // The Edit tab is showing, so the page may be in the Editing state, from which the state
+            // machine forbids a direct re-navigation. Go through the normal save path to unwind that
+            // state, but pass skipSaveToDisk so nothing is persisted; then in the post-save action we
+            // reload from disk (discarding the page content that was just gathered into the in-memory
+            // DOM) and return a page of the freshly-loaded book to navigate to.
+            SaveThen(
+                doAfterSaving: () =>
+                {
+                    book.ReloadFromDisk(null);
+                    _currentlyDisplayedBook = book;
+                    var page = book.GetPageByIndex(book.UserPrefs.MostRecentPage) ?? book.FirstPage;
+                    return page?.Id;
+                },
+                doIfNotInRightStateToSave: () =>
+                {
+                    // We weren't in a state the save path could handle (e.g. mid-navigation). Reload
+                    // anyway and let OnBecomeVisible re-display when things settle.
+                    book.ReloadFromDisk(null);
+                    _currentlyDisplayedBook = null;
+                },
+                skipSaveToDisk: true
+            );
+        }
+
+        /// <summary>
         /// The code invoked by the state machine to actually start the editable page browser navigating
         /// to a particular page. Anything that needs saving on the current page should already have been saved.
         /// </summary>

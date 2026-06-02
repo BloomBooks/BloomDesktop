@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.MiscUI;
 using Bloom.web;
@@ -32,6 +33,12 @@ namespace Bloom.web.controllers
         // Needed so we can implement CheckForUpdates. Set by the WorkspaceView in its constructor, since
         // Autofac was not able to pass us one.
         public static WorkspaceView WorkspaceView { get; set; }
+
+        // The collection settings of the currently-open project, or null if no project is open.
+        // CommonApi is an application-level handler (created before any project is open and reused
+        // across projects), so it must NOT take CollectionSettings as a constructor dependency.
+        // Instead the project scope sets this when it opens a collection (see ProjectContext).
+        public static CollectionSettings CurrentCollectionSettings { get; set; }
 
         // Called by autofac, which creates the one instance and registers it with the server.
         public CommonApi(BookSelection bookSelection)
@@ -251,6 +258,11 @@ namespace Bloom.web.controllers
                     executableDirectory = Path.GetDirectoryName(executablePath),
                     httpPort = BloomServer.portForHttp,
                     webSocketPort = BloomServer.WebSocketPort,
+                    // The folder of the editable collection this instance has open. An external tool that
+                    // has written/updated a book folder can find the right Bloom (when several are running)
+                    // by matching the parent of its book folder against this path.
+                    editableCollectionFolder = CurrentCollectionSettings?.FolderPath,
+                    collectionName = CurrentCollectionSettings?.CollectionName,
                     serverUrl = BloomServer.ServerUrl,
                     serverUrlWithBloomPrefix = BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
                     workspaceTabsUrl = BloomServer.ServerUrlWithBloomPrefixEndingInSlash

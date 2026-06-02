@@ -381,7 +381,12 @@ namespace Bloom
             }
 
             var server = parentContainer.Resolve<BloomServer>();
-            server.SetCollectionSettingsDuringInitialization(_scope.Resolve<CollectionSettings>());
+            var collectionSettings = _scope.Resolve<CollectionSettings>();
+            server.SetCollectionSettingsDuringInitialization(collectionSettings);
+            // Let the application-level CommonApi (which can't take a project dependency in its
+            // constructor) report this collection's folder via common/instanceInfo, so external tools
+            // can pick the right running Bloom when several are open.
+            web.controllers.CommonApi.CurrentCollectionSettings = collectionSettings;
             server.EnsureListening();
 
             // A few APIs are now registered in the constructor of ApplicationContainer
