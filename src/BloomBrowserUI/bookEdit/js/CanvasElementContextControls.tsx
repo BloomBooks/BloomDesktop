@@ -1017,22 +1017,26 @@ function adjustAutoSizeForVisibleEditableInTranslationGroup(tg: HTMLElement) {
     OverflowChecker.AdjustSizeOrMarkOverflow(visibleEditable);
 }
 
-function setEditableContentFromKnownDataBookValueIfAny(
+async function setEditableContentFromKnownDataBookValueIfAny(
     editable: HTMLElement,
     dataBook: string | null,
     tg: HTMLElement,
 ) {
     if (!dataBook) {
-        return;
+        return true;
     }
-    wrapWithRequestPageContentDelay(
+    return wrapWithRequestPageContentDelay(
         () =>
-            new Promise<void>((resolve, reject) => {
+            new Promise<boolean>((resolve, reject) => {
                 get(
                     `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${dataBook}`,
                     (result) => {
                         try {
-                            const content = result.data;
+                            const response =
+                                typeof result.data === "string"
+                                    ? { content: result.data }
+                                    : result.data;
+                            const content = response.content;
                             // content comes from a source that looked empty, we don't want to overwrite something the user may
                             // already have typed here.
                             // But it may well have something in it, because we usually have an empty paragraph to start with.
@@ -1043,13 +1047,19 @@ function setEditableContentFromKnownDataBookValueIfAny(
                             // the user can always correct it back to what he just typed.
                             const temp = document.createElement("div");
                             temp.innerHTML = content || "";
-                            if (temp.textContent.trim() !== "") {
+                            const keptExistingContent =
+                                temp.textContent.trim() === "";
+                            if (!keptExistingContent) {
                                 editable.innerHTML = content;
+                                applyEditableAudioIdentityFromDataBookValue(
+                                    editable,
+                                    response,
+                                );
                             }
                             adjustAutoSizeForVisibleEditableInTranslationGroup(
                                 tg,
                             );
-                            resolve();
+                            resolve(keptExistingContent);
                         } catch (error) {
                             reject(error);
                         }
@@ -1061,6 +1071,53 @@ function setEditableContentFromKnownDataBookValueIfAny(
             }),
         "setCanvasFieldValueFromDataBook",
     );
+}
+
+function applyEditableAudioIdentityFromDataBookValue(
+    editable: HTMLElement,
+    dataBookValue: {
+        id?: string;
+        dataAudioRecordingMode?: string;
+        dataDuration?: string;
+        dataAudioRecordingEndTimes?: string;
+        recordingMd5?: string;
+        hasAudioSentenceClass?: boolean;
+        hasBloomPostAudioSplitClass?: boolean;
+    },
+) {
+    const syncAttribute = (attributeName: string, value?: string) => {
+        if (value) {
+            editable.setAttribute(attributeName, value);
+        } else {
+            editable.removeAttribute(attributeName);
+        }
+    };
+
+    if (dataBookValue.id) {
+        editable.setAttribute("id", dataBookValue.id);
+    }
+
+    syncAttribute(
+        "data-audiorecordingmode",
+        dataBookValue.dataAudioRecordingMode,
+    );
+    syncAttribute("data-duration", dataBookValue.dataDuration);
+    syncAttribute(
+        "data-audiorecordingendtimes",
+        dataBookValue.dataAudioRecordingEndTimes,
+    );
+    syncAttribute("recordingmd5", dataBookValue.recordingMd5);
+
+    if (dataBookValue.hasAudioSentenceClass) {
+        editable.classList.add("audio-sentence");
+    } else {
+        editable.classList.remove("audio-sentence");
+    }
+    if (dataBookValue.hasBloomPostAudioSplitClass) {
+        editable.classList.add("bloom-postAudioSplit");
+    } else {
+        editable.classList.remove("bloom-postAudioSplit");
+    }
 }
 
 function applyAppearanceClassForEditable(editable: HTMLElement) {
@@ -1153,7 +1210,7 @@ function makeLanguageMenuItem(
             }
         }
 
-        setEditableContentFromKnownDataBookValueIfAny(
+        void setEditableContentFromKnownDataBookValueIfAny(
             editableInLang,
             dataBookValue,
             tg,
@@ -1369,25 +1426,30 @@ function makeFieldTypeMenuItem(
             l10nId: null,
             english: noneLabel,
             onClick: () => {
-                clearFieldTypeClasses();
-                for (const editable of Array.from(
-                    tg.getElementsByClassName("bloom-editable"),
-                ) as HTMLElement[]) {
-                    editable.removeAttribute("data-book");
-                    // There's a bit of guess-work involved in what would be most helpful here.
-                    // clearFieldTypeClasses removes any field-type-specific style class,
-                    // and we generally expect a bloom-editable to have some style class.
-                    // Should it be Normal-style or Bubble-style? Bubble-style is the default
-                    // for canvas elements, so I decided to go with that.
-                    const hasStyleClass = Array.from(editable.classList).some(
-                        (className) => className.endsWith("-style"),
-                    );
-                    if (!hasStyleClass) {
-                        editable.classList.add("Bubble-style");
+                void wrapWithRequestPageContentDelay(async () => {
+                    clearFieldTypeClasses();
+                    for (const editable of Array.from(
+                        tg.getElementsByClassName("bloom-editable"),
+                    ) as HTMLElement[]) {
+                        theOneCanvasElementManager?.makeEditableAudioIndependent(
+                            editable,
+                        );
+                        editable.removeAttribute("data-book");
+                        // There's a bit of guess-work involved in what would be most helpful here.
+                        // clearFieldTypeClasses removes any field-type-specific style class,
+                        // and we generally expect a bloom-editable to have some style class.
+                        // Should it be Normal-style or Bubble-style? Bubble-style is the default
+                        // for canvas elements, so I decided to go with that.
+                        const hasStyleClass = Array.from(
+                            editable.classList,
+                        ).some((className) => className.endsWith("-style"));
+                        if (!hasStyleClass) {
+                            editable.classList.add("Bubble-style");
+                        }
                     }
-                }
-                adjustAutoSizeForVisibleEditableInTranslationGroup(tg);
-                setMenuOpen(false);
+                    adjustAutoSizeForVisibleEditableInTranslationGroup(tg);
+                    setMenuOpen(false);
+                }, "setCanvasFieldTypeToNone");
             },
             icon: !activeType && <CheckIcon css={getMenuIconCss()} />,
         },
@@ -1397,71 +1459,90 @@ function makeFieldTypeMenuItem(
             l10nId: null,
             english: fieldType.label,
             onClick: () => {
-                clearFieldTypeClasses();
-                const editables = Array.from(
-                    tg.getElementsByClassName("bloom-editable"),
-                ) as HTMLElement[];
-                if (fieldType.readOnly) {
-                    const readOnlyDiv = document.createElement("div");
-                    readOnlyDiv.setAttribute(
-                        "data-derived",
-                        fieldType.dataDerived,
-                    );
-                    if (fieldType.hint) {
-                        readOnlyDiv.setAttribute("data-hint", fieldType.hint);
-                    }
-                    if (fieldType.functionOnHintClick) {
+                void wrapWithRequestPageContentDelay(async () => {
+                    clearFieldTypeClasses();
+                    const editables = Array.from(
+                        tg.getElementsByClassName("bloom-editable"),
+                    ) as HTMLElement[];
+                    if (fieldType.readOnly) {
+                        const readOnlyDiv = document.createElement("div");
                         readOnlyDiv.setAttribute(
-                            "data-functiononhintclick",
-                            fieldType.functionOnHintClick,
+                            "data-derived",
+                            fieldType.dataDerived,
                         );
-                    }
-                    readOnlyDiv.classList.add(...fieldType.classes);
-                    tg.parentElement!.insertBefore(readOnlyDiv, tg);
-                    tg.remove();
-                    // Tempting to do this here, but we're going to reload the page,
-                    // and it's only after the reload that the div we just created will have
-                    // its content. Another call to this function will happen after the reload,
-                    // and that can do a better job of fixing it. Doing it now would just
-                    // reduce the height to its minimum, forcing the new content to be shown on
-                    // one line.
-                    //ensureFieldFitsOnCustomPage(readOnlyDiv);
-                    // Reload the page to get the derived content loaded.
-                    post("common/saveChangesAndRethinkPageEvent", () => {});
-                } else {
-                    removeConflictingStyleClasses(fieldType, editables);
-                    tg.classList.add(...fieldType.classes);
-                    for (const editable of editables) {
-                        editable.classList.add(...fieldType.editableClasses);
-                        editable.setAttribute("data-book", fieldType.dataBook);
-                        if (
-                            fieldsControlledByAppearanceSystem.includes(
-                                fieldType.dataBook,
-                            )
-                        ) {
-                            applyAppearanceClassForEditable(editable);
-                        } else {
-                            editable.classList.remove(
-                                "bloom-contentFirst",
-                                "bloom-contentSecond",
-                                "bloom-contentThird",
+                        if (fieldType.hint) {
+                            readOnlyDiv.setAttribute(
+                                "data-hint",
+                                fieldType.hint,
                             );
                         }
-                        if (
-                            editable.classList.contains(
-                                "bloom-visibility-code-on",
-                            )
-                        ) {
-                            setEditableContentFromKnownDataBookValueIfAny(
-                                editable,
-                                fieldType.dataBook,
-                                tg,
+                        if (fieldType.functionOnHintClick) {
+                            readOnlyDiv.setAttribute(
+                                "data-functiononhintclick",
+                                fieldType.functionOnHintClick,
                             );
                         }
+                        readOnlyDiv.classList.add(...fieldType.classes);
+                        tg.parentElement!.insertBefore(readOnlyDiv, tg);
+                        tg.remove();
+                        // Tempting to do this here, but we're going to reload the page,
+                        // and it's only after the reload that the div we just created will have
+                        // its content. Another call to this function will happen after the reload,
+                        // and that can do a better job of fixing it. Doing it now would just
+                        // reduce the height to its minimum, forcing the new content to be shown on
+                        // one line.
+                        //ensureFieldFitsOnCustomPage(readOnlyDiv);
+                        // Reload the page to get the derived content loaded.
+                        post("common/saveChangesAndRethinkPageEvent", () => {});
+                    } else {
+                        const fieldTypeChanged =
+                            activeType !== fieldType.dataBook;
+                        removeConflictingStyleClasses(fieldType, editables);
+                        tg.classList.add(...fieldType.classes);
+                        for (const editable of editables) {
+                            editable.classList.add(
+                                ...fieldType.editableClasses,
+                            );
+                            editable.setAttribute(
+                                "data-book",
+                                fieldType.dataBook,
+                            );
+                            if (
+                                fieldsControlledByAppearanceSystem.includes(
+                                    fieldType.dataBook,
+                                )
+                            ) {
+                                applyAppearanceClassForEditable(editable);
+                            } else {
+                                editable.classList.remove(
+                                    "bloom-contentFirst",
+                                    "bloom-contentSecond",
+                                    "bloom-contentThird",
+                                );
+                            }
+                            let keptExistingContent = false;
+                            if (
+                                editable.classList.contains(
+                                    "bloom-visibility-code-on",
+                                )
+                            ) {
+                                keptExistingContent =
+                                    await setEditableContentFromKnownDataBookValueIfAny(
+                                        editable,
+                                        fieldType.dataBook,
+                                        tg,
+                                    );
+                            }
+                            if (fieldTypeChanged && keptExistingContent) {
+                                theOneCanvasElementManager?.makeEditableAudioIndependent(
+                                    editable,
+                                );
+                            }
+                        }
+                        adjustAutoSizeForVisibleEditableInTranslationGroup(tg);
                     }
-                    adjustAutoSizeForVisibleEditableInTranslationGroup(tg);
-                }
-                setMenuOpen(false);
+                    setMenuOpen(false);
+                }, "setCanvasFieldType");
             },
             icon: activeType === fieldType.dataBook && (
                 <CheckIcon css={getMenuIconCss()} />

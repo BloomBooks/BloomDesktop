@@ -6183,7 +6183,10 @@ export class CanvasElementManager {
         return patriarchDuplicateElement;
     }
 
-    private copyAnySoundFileAndAttributesForEditable(
+    /// <summary>
+    /// Copies any audio-related ids and files from one editable canvas field to another.
+    /// </summary>
+    public copyAnySoundFileAndAttributesForEditable(
         sourceElement: HTMLElement,
         copiedElement: HTMLElement,
     ): void {
@@ -6223,6 +6226,36 @@ export class CanvasElementManager {
                 });
             }
         }
+    }
+
+    /// <summary>
+    /// Makes audio-sentence ids in the editable independent by assigning new ids and copying
+    /// any corresponding audio files when they exist.
+    /// </summary>
+    public makeEditableAudioIndependent(editable: HTMLElement): void {
+        if (!editable) {
+            return;
+        }
+
+        const audioElements: Element[] = [];
+        if (
+            editable.classList.contains("audio-sentence") &&
+            editable.getAttribute("id")
+        ) {
+            audioElements.push(editable);
+        }
+
+        audioElements.push(
+            ...Array.from(editable.querySelectorAll(".audio-sentence[id]")),
+        );
+
+        audioElements.forEach((audioElement) => {
+            const oldId = audioElement.getAttribute("id");
+            if (!oldId) {
+                return;
+            }
+            this.copySoundFileAndAttributes(audioElement, oldId, audioElement);
+        });
     }
 
     private copySoundFileAndAttributes(

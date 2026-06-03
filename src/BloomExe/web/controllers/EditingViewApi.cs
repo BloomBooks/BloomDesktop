@@ -157,7 +157,32 @@ namespace Bloom.web.controllers
             var dataBook = request.RequiredParam("dataBook");
             var multiText = View.Model.CurrentBook.BookData.GetMultiTextVariableOrEmpty(dataBook);
             var value = multiText.GetExactAlternative(lang) ?? "";
-            request.ReplyWithText(value);
+            var matchingDataDivElement =
+                View.Model.CurrentBook.RawDom.SelectSingleNode(
+                    $"//div[@id='bloomDataDiv']/div[@data-book='{dataBook}' and @lang='{lang}']"
+                ) as SafeXmlElement;
+
+            request.ReplyWithJson(
+                new
+                {
+                    content = value,
+                    id = matchingDataDivElement?.GetAttribute("id"),
+                    dataAudioRecordingMode = matchingDataDivElement?.GetAttribute(
+                        "data-audiorecordingmode"
+                    ),
+                    dataDuration = matchingDataDivElement?.GetAttribute("data-duration"),
+                    dataAudioRecordingEndTimes = matchingDataDivElement?.GetAttribute(
+                        "data-audiorecordingendtimes"
+                    ),
+                    recordingMd5 = matchingDataDivElement?.GetAttribute("recordingmd5"),
+                    hasAudioSentenceClass = matchingDataDivElement
+                        ?.GetAttribute("class")
+                        ?.Contains("audio-sentence") == true,
+                    hasBloomPostAudioSplitClass = matchingDataDivElement
+                        ?.GetAttribute("class")
+                        ?.Contains("bloom-postAudioSplit") == true,
+                }
+            );
         }
 
         /// <summary>
