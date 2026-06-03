@@ -7,6 +7,7 @@ import {
 } from "../../toolbox/canvas/canvasElementConstants";
 import AudioRecording from "../../toolbox/talkingBook/audioRecording";
 import { postData, postJson } from "../../../utils/bloomApi";
+import { cloneCanvasElementHtmlStructure } from "./canvasElementCloneCleanup";
 
 const kComicalGeneratedClass: string = "comical-generated";
 
@@ -417,10 +418,7 @@ export class CanvasElementDuplication {
     }
 
     private safelyCloneHtmlStructure(elementToClone: HTMLElement): string {
-        // eliminate .bloom-ui and ?
-        const clonedElement = elementToClone.cloneNode(true) as HTMLElement;
-        this.cleanClonedNode(clonedElement);
-        return clonedElement.innerHTML;
+        return cloneCanvasElementHtmlStructure(elementToClone);
     }
 
     private cleanClonedNode(element: Element): void {

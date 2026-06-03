@@ -219,6 +219,7 @@
         "@typescript-eslint/parser": "^8.39.0",
         "@vitejs/plugin-react": "^5.0.4",
         "@vitest/browser-playwright": "^4.0.8",
+        "@vitest/ui": "4.0.8",
         "chokidar": "^3.6.0",
         "cpx": "^1.5.0",
         "del": "^6.0.0",

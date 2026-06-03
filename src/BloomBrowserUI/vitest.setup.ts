@@ -1,6 +1,40 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
+// Reduce test-runner stderr spam from intentional assertions in legacy code.
+const originalConsoleAssert = console.assert.bind(console);
+console.assert = (condition?: boolean, ...data: unknown[]) => {
+    if (condition) {
+        return;
+    }
+    if (process.env.VITEST_VERBOSE_ASSERTS === "1") {
+        originalConsoleAssert(condition, ...data);
+    }
+};
+
+const originalConsoleError = console.error.bind(console);
+console.error = (...args: unknown[]) => {
+    const serialized = args
+        .map((arg) => {
+            if (arg instanceof Error) {
+                return `${arg.name}: ${arg.message}\n${arg.stack || ""}`;
+            }
+            return String(arg);
+        })
+        .join("\n");
+
+    const isJsdomXhrAggregateError =
+        serialized.includes("AggregateError") &&
+        serialized.includes("jsdom") &&
+        serialized.includes("XMLHttpRequest-impl.js");
+
+    if (isJsdomXhrAggregateError) {
+        return;
+    }
+
+    originalConsoleError(...args);
+};
+
 // =============================================================================
 // VITEST SETUP FILE
 // This file runs before each test file to configure the test environment.
@@ -184,6 +218,23 @@ HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
     if (proto === HTMLElement.prototype || proto === Element.prototype) {
         applyScrollIntoViewMock(proto);
     }
+});
+
+// jsdom does not implement media playback; mock to prevent repetitive stderr noise.
+Object.defineProperty(HTMLMediaElement.prototype, "play", {
+    configurable: true,
+    writable: true,
+    value: vi.fn(async () => undefined),
+});
+Object.defineProperty(HTMLMediaElement.prototype, "pause", {
+    configurable: true,
+    writable: true,
+    value: vi.fn(),
+});
+Object.defineProperty(HTMLMediaElement.prototype, "load", {
+    configurable: true,
+    writable: true,
+    value: vi.fn(),
 });
 
 // -----------------------------------------------------------------------------

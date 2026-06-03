@@ -775,7 +775,7 @@ export default defineConfig(async ({ command }) => {
                 ? ["default", "junit"]
                 : ["default"],
             outputFile: "./bloombrowserui-test-results.xml",
-            includeConsoleOutput: true,
+            includeConsoleOutput: false,
             // Uncomment to run only specific test files during development:
             // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
             exclude: [
@@ -807,9 +807,7 @@ export default defineConfig(async ({ command }) => {
                 ],
             },
             environmentOptions: {
-                jsdom: {
-                    resources: "usable", // Allow jsdom to load external resources
-                },
+                jsdom: {},
             },
         },
 

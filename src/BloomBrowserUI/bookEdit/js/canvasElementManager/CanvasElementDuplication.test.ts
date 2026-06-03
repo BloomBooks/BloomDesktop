@@ -1,21 +1,14 @@
 import { describe, expect, test } from "vitest";
 
-import { CanvasElementDuplication } from "./CanvasElementDuplication";
+import { cloneCanvasElementHtmlStructure } from "./canvasElementCloneCleanup";
 
 describe("CanvasElementDuplication clone cleanup", () => {
     test("removes data-book from duplicated images", () => {
-        const duplication = Object.create(
-            CanvasElementDuplication.prototype,
-        ) as CanvasElementDuplication;
         const sourceCanvasElement = document.createElement("div");
         sourceCanvasElement.innerHTML =
             '<div class="bloom-imageContainer"><img data-book="coverImage" id="source-image" src="cover.png" /></div>';
 
-        const clonedHtml = (
-            duplication as unknown as {
-                safelyCloneHtmlStructure: (element: HTMLElement) => string;
-            }
-        ).safelyCloneHtmlStructure(sourceCanvasElement);
+        const clonedHtml = cloneCanvasElementHtmlStructure(sourceCanvasElement);
         const wrapper = document.createElement("div");
         wrapper.innerHTML = clonedHtml;
         const clonedImage = wrapper.querySelector("img");
@@ -28,18 +21,11 @@ describe("CanvasElementDuplication clone cleanup", () => {
     });
 
     test("keeps data-book on non-image cloned nodes", () => {
-        const duplication = Object.create(
-            CanvasElementDuplication.prototype,
-        ) as CanvasElementDuplication;
         const sourceCanvasElement = document.createElement("div");
         sourceCanvasElement.innerHTML =
             '<div class="bloom-editable" data-book="bookTitle">Title</div>';
 
-        const clonedHtml = (
-            duplication as unknown as {
-                safelyCloneHtmlStructure: (element: HTMLElement) => string;
-            }
-        ).safelyCloneHtmlStructure(sourceCanvasElement);
+        const clonedHtml = cloneCanvasElementHtmlStructure(sourceCanvasElement);
         const wrapper = document.createElement("div");
         wrapper.innerHTML = clonedHtml;
         const clonedEditable = wrapper.querySelector(".bloom-editable");
