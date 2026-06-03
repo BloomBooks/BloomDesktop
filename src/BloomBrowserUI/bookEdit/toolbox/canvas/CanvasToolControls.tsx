@@ -10,7 +10,7 @@ import {
     CanvasElementManager,
     ITextColorInfo,
     ITextOutlineColorInfo,
-} from "../../js/CanvasElementManager";
+} from "../../js/canvasElementManager/CanvasElementManager";
 import { Bubble, BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import FormControl from "@mui/material/FormControl";
@@ -49,10 +49,9 @@ import {
     kImageFitModeAttribute,
     kImageFitModeContainValue,
     kImageFitModeCoverValue,
-} from "./canvasElementUtils";
+} from "./canvasElementPageBridge";
 import { getPersistedCanvasColor } from "./canvasColorUtils";
 import { deselectVideoContainers } from "../../js/videoUtils";
-import { CanvasElementKeyHints } from "./CanvasElementKeyHints";
 import { ToolBox } from "../toolbox";
 import BloomSelect from "../../../react_components/bloomSelect";
 import {
@@ -1269,7 +1268,6 @@ const CanvasToolControls: React.FunctionComponent = () => {
                                 </div>
                                 <div id="canvasToolControlFillerRegion" />
                                 <div id={"canvasToolControlFooterRegion"}>
-                                    <CanvasElementKeyHints />
                                     <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Canvas_Tool/Canvas_Tool_overview.htm" />
                                 </div>
                             </div>

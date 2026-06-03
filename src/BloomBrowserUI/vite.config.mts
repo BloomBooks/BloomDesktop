@@ -203,6 +203,14 @@ function postBuildPlugin(): Plugin {
             const manifestPath = path.join(outputDir, ".vite/manifest.json");
 
             try {
+                if (!fs.existsSync(manifestPath)) {
+                    console.warn(
+                        `[post-build] Skipping manifest processing because ${manifestPath} does not exist. ` +
+                            "An earlier build error likely prevented manifest generation.",
+                    );
+                    return;
+                }
+
                 // Read the manifest file
                 const manifestContent = await fs.promises.readFile(
                     manifestPath,
@@ -622,6 +630,9 @@ export default defineConfig(async ({ command }) => {
                                       "!**/*.bat",
                                       "!**/node_modules/**/*.*",
                                       "!**/tsconfig.json",
+                                      "!**/test-results/**/*",
+                                      "!**/playwright-report/**/*",
+                                      "!**/.playwright-artifacts-*/**/*",
                                   ],
                                   dest: ".",
                               },
@@ -764,7 +775,7 @@ export default defineConfig(async ({ command }) => {
                 ? ["default", "junit"]
                 : ["default"],
             outputFile: "./bloombrowserui-test-results.xml",
-            includeConsoleOutput: true,
+            includeConsoleOutput: false,
             // Uncomment to run only specific test files during development:
             // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
             exclude: [
@@ -773,6 +784,7 @@ export default defineConfig(async ({ command }) => {
                 "**/cypress/**",
                 "**/.{idea,git,cache,output,temp}/**",
                 "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+                "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via yarn e2e canvas)
                 "**/react_components/component-tester/**", // Exclude playwright component tests
                 "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
             ],
@@ -802,9 +814,7 @@ export default defineConfig(async ({ command }) => {
                 ],
             },
             environmentOptions: {
-                jsdom: {
-                    resources: "usable", // Allow jsdom to load external resources
-                },
+                jsdom: {},
             },
         },
 

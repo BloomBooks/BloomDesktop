@@ -22,7 +22,7 @@ export default class BloomHintBubbles {
     public static addHintBubbles(
         container: HTMLElement,
         divsThatHaveSourceBubbles: Array<Element>,
-        contentOfBubbleDivs: Array<Element>,
+        contentOfBubbleDivs: JQuery[],
     ): void {
         //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a
         //bloom-translationGroup (those should have a single <label> for the whole group).
@@ -266,14 +266,14 @@ export default class BloomHintBubbles {
         targetElement: JQuery,
         elementWithBubbleAttributes: JQuery,
         divsThatHaveSourceBubbles: Array<Element>,
-        contentOfBubbleDivs: Array<Element>,
+        contentOfBubbleDivs: JQuery[],
     ) {
         // If the element we want to put a hint on IS one of the groups that has source bubbles, add it to that
         // group's source bubble.
         const index = divsThatHaveSourceBubbles.indexOf(targetElement.get(0));
         if (index >= 0) {
             this.InsertHintIntoBubbleDiv(
-                $(contentOfBubbleDivs[index]),
+                contentOfBubbleDivs[index],
                 targetElement,
                 elementWithBubbleAttributes,
             );
@@ -287,7 +287,7 @@ export default class BloomHintBubbles {
                 divsThatHaveSourceBubbles[i].parentNode === targetElement.get(0)
             ) {
                 this.InsertHintIntoBubbleDiv(
-                    $(contentOfBubbleDivs[i]),
+                    contentOfBubbleDivs[i],
                     targetElement,
                     elementWithBubbleAttributes,
                 );
@@ -309,7 +309,7 @@ export default class BloomHintBubbles {
                     .get(0);
                 if (firstVisible === targetElement.get(0)) {
                     this.InsertHintIntoBubbleDiv(
-                        $(contentOfBubbleDivs[i]),
+                        contentOfBubbleDivs[i],
                         targetElement,
                         elementWithBubbleAttributes,
                     );
