@@ -355,7 +355,6 @@ const CanvasElementContextControls: React.FunctionComponent<{
                     generatedSubLabel: row.helpRowEnglish,
                     onClick: () => {},
                     disabled: true,
-                    dontGiveAffordanceForCheckbox: true,
                 });
             }
         });
@@ -604,67 +603,84 @@ const CanvasElementContextControls: React.FunctionComponent<{
                         disableAutoFocus={true}
                         disableEnforceFocus={true}
                     >
-                        {menuOptions.map((option, index) => {
-                            if (option.l10nId === "-") {
-                                return (
-                                    <Divider
-                                        key={index}
-                                        variant="middle"
-                                        component="li"
-                                    />
-                                );
-                            }
-                            if (option.subMenu) {
-                                return (
-                                    <LocalizableNestedMenuItem
-                                        {...option}
-                                        key={option.l10nId}
-                                        truncateMainLabel={true}
-                                    >
-                                        {option.subMenu.map(
-                                            (subOption, subIndex) => {
-                                                if (subOption.l10nId === "-") {
+                        {(() => {
+                            const menuHasShortcuts = menuOptions.some(
+                                (o) => !!o.shortcutDisplay,
+                            );
+                            return menuOptions.map((option, index) => {
+                                if (option.l10nId === "-") {
+                                    return (
+                                        <Divider
+                                            key={index}
+                                            variant="middle"
+                                            component="li"
+                                        />
+                                    );
+                                }
+                                if (option.subMenu) {
+                                    const subMenuHasShortcuts =
+                                        option.subMenu.some(
+                                            (o) => !!o.shortcutDisplay,
+                                        );
+                                    return (
+                                        <LocalizableNestedMenuItem
+                                            {...option}
+                                            key={option.l10nId}
+                                            truncateMainLabel={true}
+                                        >
+                                            {option.subMenu.map(
+                                                (subOption, subIndex) => {
+                                                    if (
+                                                        subOption.l10nId === "-"
+                                                    ) {
+                                                        return (
+                                                            <Divider
+                                                                key={subIndex}
+                                                                variant="middle"
+                                                                component="li"
+                                                            />
+                                                        );
+                                                    }
                                                     return (
-                                                        <Divider
-                                                            key={subIndex}
-                                                            variant="middle"
-                                                            component="li"
+                                                        <LocalizableMenuItem
+                                                            key={
+                                                                subOption.l10nId
+                                                            }
+                                                            {...subOption}
+                                                            onClick={
+                                                                subOption.onClick
+                                                            }
+                                                            leaveSpaceForShortcut={
+                                                                subMenuHasShortcuts
+                                                            }
+                                                            css={css`
+                                                                max-width: ${maxMenuWidth}px;
+                                                                white-space: wrap;
+                                                                // Styles for subLabels
+                                                                p {
+                                                                    // Determined empirically...
+                                                                    // Styling in NestedMenuItem is impossibly difficult.
+                                                                    left: -8px;
+                                                                }
+                                                            `}
                                                         />
                                                     );
-                                                }
-                                                return (
-                                                    <LocalizableMenuItem
-                                                        key={subOption.l10nId}
-                                                        {...subOption}
-                                                        onClick={
-                                                            subOption.onClick
-                                                        }
-                                                        css={css`
-                                                            max-width: ${maxMenuWidth}px;
-                                                            white-space: wrap;
-                                                            // Styles for subLabels
-                                                            p {
-                                                                // Determined empirically...
-                                                                // Styling in NestedMenuItem is impossibly difficult.
-                                                                left: -8px;
-                                                            }
-                                                        `}
-                                                    />
-                                                );
-                                            },
-                                        )}
-                                    </LocalizableNestedMenuItem>
+                                                },
+                                            )}
+                                        </LocalizableNestedMenuItem>
+                                    );
+                                }
+                                return (
+                                    <LocalizableMenuItem
+                                        key={option.l10nId}
+                                        {...option}
+                                        onClick={option.onClick}
+                                        variant="body1"
+                                        leaveSpaceForShortcut={menuHasShortcuts}
+                                    />
                                 );
-                            }
-                            return (
-                                <LocalizableMenuItem
-                                    key={option.l10nId}
-                                    {...option}
-                                    onClick={option.onClick}
-                                    variant="body1"
-                                />
-                            );
-                        })}
+                            });
+                        })()}
                     </Menu>
                 </div>
                 {langName && (

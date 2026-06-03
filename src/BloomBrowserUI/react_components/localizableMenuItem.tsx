@@ -61,6 +61,7 @@ export interface ILocalizableMenuItemProps
     icon?: ReactNode;
     addEllipsis?: boolean;
     hasLeadingIconSpace?: boolean; // defaults true. Should be true if any item in the menu has an icon.
+    leaveSpaceForShortcut?: boolean; // Pass true if any item in this menu has a shortcutDisplay, so all items stay aligned.
     subscriptionTooltipOverride?: string;
     className?: string;
     isDivider?: boolean;
@@ -196,14 +197,14 @@ export const LocalizableMenuItem: React.FunctionComponent<
         >
             {props.shortcutDisplay}
         </Typography>
-    ) : (
+    ) : props.leaveSpaceForShortcut ? (
         <div
             css={css`
                 min-width: ${kShortcutAffordance}px;
                 margin-left: 10px;
             `}
         />
-    );
+    ) : null;
 
     const localizedSubLabel = useL10n("", props.subLabelL10nId ?? null);
     const subLabel =
