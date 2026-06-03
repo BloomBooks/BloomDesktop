@@ -11,6 +11,7 @@ import {
 import { renderCanvasElementContextControls } from "./CanvasElementContextControls";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
+import { getHandleTitlesAsync } from "./CanvasElementSelectionUi";
 
 export interface ICanvasElementHandleDragInteractionsHost {
     getActiveElement: () => HTMLElement | undefined;
@@ -34,14 +35,6 @@ export interface ICanvasElementHandleDragInteractionsHost {
         activeElement: HTMLElement,
         img: HTMLImageElement | undefined,
     ) => void;
-
-    getHandleTitlesAsync: (
-        controlFrame: HTMLElement,
-        className: string,
-        l10nId: string,
-        force?: boolean,
-        attribute?: string,
-    ) => Promise<void>;
 
     startMoving: () => void;
     stopMoving: () => void;
@@ -765,7 +758,7 @@ export class CanvasElementHandleDragInteractions {
             "canvas-element-control-frame",
         ) as HTMLElement;
         if (Math.abs(backgroundSnapDelta - delta) < snapDelta) {
-            void this.host.getHandleTitlesAsync(
+            void getHandleTitlesAsync(
                 controlFrame,
                 "bloom-ui-canvas-element-side-handle-" + side,
                 "Fill",
@@ -774,7 +767,7 @@ export class CanvasElementHandleDragInteractions {
             );
             return backgroundSnapDelta;
         }
-        void this.host.getHandleTitlesAsync(
+        void getHandleTitlesAsync(
             controlFrame,
             "bloom-ui-canvas-element-side-handle-" + side,
             "Crop",

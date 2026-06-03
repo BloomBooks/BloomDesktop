@@ -34,10 +34,6 @@ import theOneLocalizationManager from "../../../lib/localizationManager/localiza
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 
 export interface ICanvasElementClipboardHost {
-    snapProvider: CanvasSnapProvider;
-    minWidth: number;
-    minHeight: number;
-
     getActiveOrFirstBloomCanvasOnPage: () => HTMLElement | null;
     getActiveElement: () => HTMLElement | undefined;
 
@@ -72,9 +68,20 @@ export interface ICanvasElementClipboardHost {
 
 export class CanvasElementClipboard {
     private host: ICanvasElementClipboardHost;
+    private snapProvider: CanvasSnapProvider;
+    private minWidth: number;
+    private minHeight: number;
 
-    public constructor(host: ICanvasElementClipboardHost) {
+    public constructor(
+        host: ICanvasElementClipboardHost,
+        snapProvider: CanvasSnapProvider,
+        minWidth: number,
+        minHeight: number,
+    ) {
         this.host = host;
+        this.snapProvider = snapProvider;
+        this.minWidth = minWidth;
+        this.minHeight = minHeight;
     }
 
     private static getPasteImageApiErrorMessage(
@@ -254,18 +261,18 @@ export class CanvasElementClipboard {
                             if (features.enabled) {
                                 // If the feature is enabled, we can proceed with adding the canvas element.
                                 const width = Math.max(
-                                    this.host.snapProvider.getSnappedX(
+                                    this.snapProvider.getSnappedX(
                                         bloomCanvas.offsetWidth / 3,
                                         undefined,
                                     ),
-                                    this.host.minWidth,
+                                    this.minWidth,
                                 );
                                 const height = Math.max(
-                                    this.host.snapProvider.getSnappedY(
+                                    this.snapProvider.getSnappedY(
                                         bloomCanvas.offsetHeight / 3,
                                         undefined,
                                     ),
-                                    this.host.minHeight,
+                                    this.minHeight,
                                 );
                                 if (
                                     width > bloomCanvas.offsetWidth ||
@@ -288,7 +295,7 @@ export class CanvasElementClipboard {
                                     positionY = positionY / 2;
                                 }
                                 const { x: adjustedX, y: adjustedY } =
-                                    this.host.snapProvider.getPosition(
+                                    this.snapProvider.getPosition(
                                         undefined,
                                         positionX,
                                         positionY,

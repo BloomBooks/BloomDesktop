@@ -44,8 +44,6 @@ export interface IFinishAddingCanvasElementOptions {
 }
 
 export interface ICanvasElementFactoriesHost {
-    snapProvider: CanvasSnapProvider;
-
     getBloomCanvasFromMouse: (mouseX: number, mouseY: number) => JQuery;
 
     getActiveElement: () => HTMLElement | undefined;
@@ -69,9 +67,14 @@ export interface ICanvasElementFactoriesHost {
 
 export class CanvasElementFactories {
     private host: ICanvasElementFactoriesHost;
+    private snapProvider: CanvasSnapProvider;
 
-    public constructor(host: ICanvasElementFactoriesHost) {
+    public constructor(
+        host: ICanvasElementFactoriesHost,
+        snapProvider: CanvasSnapProvider,
+    ) {
         this.host = host;
+        this.snapProvider = snapProvider;
     }
 
     // Adds a new canvas element as a child of the specified {parentElement}
@@ -409,7 +412,7 @@ export class CanvasElementFactories {
             PointScaling.Scaled,
             "Scaled Viewport coordinates",
         );
-        const positionInBloomCanvas = this.host.snapProvider.getSnappedPoint(
+        const positionInBloomCanvas = this.snapProvider.getSnappedPoint(
             this.adjustRelativePointToBloomCanvas(
                 bloomCanvas,
                 positionInViewport,
@@ -993,7 +996,7 @@ export class CanvasElementFactories {
             // It's conceivable that somewhere in the call stack there's an event we could use to see
             // whether the ctrl key is down, but initial placement of new elements is so inexact that
             // I don't see any point in allowing it to be unsnapped.
-            const { x, y } = this.host.snapProvider.getPosition(
+            const { x, y } = this.snapProvider.getPosition(
                 undefined,
                 xOffset,
                 yOffset,

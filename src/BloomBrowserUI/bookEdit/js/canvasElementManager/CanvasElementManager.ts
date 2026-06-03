@@ -80,7 +80,6 @@ import {
     adjustMoveCropHandleVisibility,
     adjustContextControlPosition as adjustCanvasElementContextControlPosition,
     checkActiveElementIsVisible as ensureActiveCanvasElementIsVisible,
-    getHandleTitlesAsync,
     removeControlFrame as removeCanvasElementControlFrame,
     restoreFocus as restoreCanvasElementFocus,
     setupControlFrame as setupCanvasElementControlFrame,
@@ -167,39 +166,47 @@ export class CanvasElementManager {
                 this.turnOnCanvasElementEditing.bind(this),
             setupControlFrame: this.setupControlFrame.bind(this),
         });
-        this.factories = new CanvasElementFactories({
-            snapProvider: this.snapProvider,
-            getBloomCanvasFromMouse: this.getBloomCanvasFromMouse.bind(this),
-            getActiveElement: () => this.activeElement,
-            setActiveElementDirect: (canvasElement) => {
-                this.activeElement = canvasElement;
+        this.factories = new CanvasElementFactories(
+            {
+                getBloomCanvasFromMouse:
+                    this.getBloomCanvasFromMouse.bind(this),
+                getActiveElement: () => this.activeElement,
+                setActiveElementDirect: (canvasElement) => {
+                    this.activeElement = canvasElement;
+                },
+                doNotifyChange: this.doNotifyChange.bind(this),
+                showCorrespondingTextBox:
+                    this.showCorrespondingTextBox.bind(this),
+                handleResizeAdjustments:
+                    this.handleResizeAdjustments.bind(this),
+                refreshCanvasElementEditing:
+                    this.refreshCanvasElementEditing.bind(this),
+                setActiveElement: this.setActiveElement.bind(this),
+                getTextColorInformation:
+                    this.getTextColorInformation.bind(this),
+                setTextColorInternal: this.setTextColorInternal.bind(this),
             },
-            doNotifyChange: this.doNotifyChange.bind(this),
-            showCorrespondingTextBox: this.showCorrespondingTextBox.bind(this),
-            handleResizeAdjustments: this.handleResizeAdjustments.bind(this),
-            refreshCanvasElementEditing:
-                this.refreshCanvasElementEditing.bind(this),
-            setActiveElement: this.setActiveElement.bind(this),
-            getTextColorInformation: this.getTextColorInformation.bind(this),
-            setTextColorInternal: this.setTextColorInternal.bind(this),
-        });
-        this.clipboard = new CanvasElementClipboard({
-            snapProvider: this.snapProvider,
-            minWidth: this.minWidth,
-            minHeight: this.minHeight,
-            getActiveOrFirstBloomCanvasOnPage:
-                this.getActiveOrFirstBloomCanvasOnPage.bind(this),
-            getActiveElement: () => this.activeElement,
-            adjustBackgroundImageSize:
-                this.adjustBackgroundImageSize.bind(this),
-            adjustContainerAspectRatio:
-                this.adjustContainerAspectRatio.bind(this),
-            addPictureCanvasElement:
-                this.factories.addPictureCanvasElement.bind(this.factories),
-            setDoAfterNewImageAdjusted: (callback) => {
-                this.doAfterNewImageAdjusted = callback;
+            this.snapProvider,
+        );
+        this.clipboard = new CanvasElementClipboard(
+            {
+                getActiveOrFirstBloomCanvasOnPage:
+                    this.getActiveOrFirstBloomCanvasOnPage.bind(this),
+                getActiveElement: () => this.activeElement,
+                adjustBackgroundImageSize:
+                    this.adjustBackgroundImageSize.bind(this),
+                adjustContainerAspectRatio:
+                    this.adjustContainerAspectRatio.bind(this),
+                addPictureCanvasElement:
+                    this.factories.addPictureCanvasElement.bind(this.factories),
+                setDoAfterNewImageAdjusted: (callback) => {
+                    this.doAfterNewImageAdjusted = callback;
+                },
             },
-        });
+            this.snapProvider,
+            this.minWidth,
+            this.minHeight,
+        );
         this.duplication = new CanvasElementDuplication({
             getPatriarchBubbleOfActiveElement:
                 this.getPatriarchBubbleOfActiveElement.bind(this),
@@ -245,7 +252,6 @@ export class CanvasElementManager {
                     ),
                 adjustStuffRelatedToImage:
                     this.adjustStuffRelatedToImage.bind(this),
-                getHandleTitlesAsync,
                 startMoving: this.startMoving.bind(this),
                 stopMoving: this.stopMoving.bind(this),
             },
