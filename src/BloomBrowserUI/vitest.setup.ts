@@ -397,6 +397,22 @@ globalThis.jQuery = jQuery;
 });
 
 // -----------------------------------------------------------------------------
+// WEBSOCKET SUPPRESSION
+// -----------------------------------------------------------------------------
+
+// Prevent WebSocketManager from creating real WebSocket connections in tests.
+// Without this, code that calls WebSocketManager.addListener (e.g. the Talking
+// Book tool's setupForRecordingAsync) will open a WebSocket to ws://127.0.0.1:3001
+// (Bloom's backend port + 1). On Windows the TCP handshake for a closed port can
+// hang for many seconds rather than failing immediately. More critically,
+// WebSocketManager.continuouslyCheckForClosedSockets starts an infinite
+// setTimeout(looper, 2000) loop after a 10s initial delay. Both effects keep
+// worker-thread event loops alive after a test file finishes, preventing vitest
+// from assigning those workers to the remaining test files.
+// WebSocketManager already honours this flag for Storybook and Playwright tests.
+(window as any)._SKIP_WEBSOCKET_CREATION_ = true;
+
+// -----------------------------------------------------------------------------
 // C# INTEROP MOCKS
 // -----------------------------------------------------------------------------
 

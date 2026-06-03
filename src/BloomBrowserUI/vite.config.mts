@@ -779,6 +779,20 @@ export default defineConfig(async ({ command }) => {
             environment: "jsdom", // Use jsdom to simulate browser DOM in Node
             globals: false, // Don't inject global test functions (use imports instead)
             testTimeout: 30000, // 30 second timeout for async operations
+            teardownTimeout: 10000, // 10s max for after-test cleanup; prevents hung workers from blocking the pool
+            // Cap parallel workers. On Windows, running too many jsdom workers simultaneously
+            // may exhaust system resources (TCP connections to localhost, libuv thread pool), causing
+            // workers to stall indefinitely. This may slightly slow things down on some computers
+            // but reduces the change of the tests hanging altogether.
+            maxWorkers: "70%",
+            minWorkers: 2,
+            poolOptions: {
+                threads: {
+                    // Keeps memory isolated and prevents thread deadlocks on Windows
+                    singleThread: false,
+                    isolate: true,
+                },
+            },
             sourcemap: true, // Enable source maps for debugging test code
             deps: {
                 inline: ["vitest-canvas-mock"], // Force this dep to be bundled (not externalized)
