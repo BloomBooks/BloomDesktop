@@ -340,7 +340,7 @@ export function doImageCommand(
     postJson(endpoint, payload);
 }
 
-function getOwningPageBackgroundColor(element: HTMLElement): string {
+export function getOwningPageBackgroundColor(element: HTMLElement): string {
     const page = element.closest(".bloom-page") as HTMLElement | null;
     if (!page) {
         return "";
@@ -362,6 +362,93 @@ function getOwningPageBackgroundColor(element: HTMLElement): string {
         );
     }
     return result;
+}
+
+// Transparency mode for a single img, mirroring the C# ImageTransparencyMode enum.
+// "none"  = no transparent param (bloom-opaque, or white page)
+// "auto"  = transparent=yes (auto-detect line art)
+// "force" = transparent=force (bloom-transparent: always apply, skip line-art check)
+type TransparencyMode = "none" | "auto" | "force";
+
+// Returns the transparency mode for an img element given whether the owning page
+// has a colored background. bloom-transparent/bloom-opaque are explicit user overrides
+// that take precedence over the page-background gate.
+export function getImageTransparencyMode(
+    img: HTMLElement,
+    pageNeedsTransparent: boolean,
+): TransparencyMode {
+    // bloom-opaque: explicit "never transparent" override.
+    if (img.classList.contains("bloom-opaque")) return "none";
+    // bloom-transparent: explicit "always force transparent" override, even on images
+    // that don't look (at least to our algorithm) like line art.
+    // This can also 'erase' very light-colored parts of an image, even on a white page.
+    if (img.classList.contains("bloom-transparent")) return "force";
+    if (!pageNeedsTransparent) return "none";
+    return "auto";
+}
+
+// Set (or remove) the transparent query param on a single img's src.
+// "none"  → remove any existing transparent param
+// "auto"  → transparent=yes
+// "force" → transparent=force (bypasses line-art detection on the server)
+// We add these params so that when bloom-server is asked for the image, it can apply
+// the appropriate transparency transform. Other information it needs can be obtained
+// from the image itself, but it doesn't have access to the img element whose src caused
+// the retrieval, so it can't check for itself whether the image has bloom-transparent
+// or bloom-opaque classes, or whether the page background is colored.
+// The downside of this approach is that if the raw HTML file in the book folder is
+// simply opened, images will not have transparent backgrounds. We think it is worth
+// the price to have the original image around, and maybe do a better job of making
+// the background transparent wth a better future algorithm, or if the page background
+// changes. For actual publications (BloomPubs, epubs, videos) we export files with
+// real transparent backgrounds. PDFs, of course, capture what the BloomServer returns.
+export function setImgTransparentParam(
+    img: HTMLElement,
+    mode: TransparencyMode,
+): void {
+    const src = img.getAttribute("src");
+    if (!src) return;
+
+    const qIndex = src.indexOf("?");
+    const path = qIndex < 0 ? src : src.substring(0, qIndex);
+    const params =
+        qIndex < 0
+            ? []
+            : src
+                  .substring(qIndex + 1)
+                  .split("&")
+                  .filter((p) => !p.startsWith("transparent="));
+
+    if (mode !== "none") {
+        params.push(`transparent=${mode === "force" ? "force" : "yes"}`);
+    }
+
+    const newSrc = params.length > 0 ? `${path}?${params.join("&")}` : path;
+    if (newSrc !== src) img.setAttribute("src", newSrc);
+}
+
+// Update img src attributes on `page` to add or remove the transparent query
+// parameter. Pass the raw CSS color string just applied (empty when clearing).
+// Call immediately after changing --page-background-color so the browser
+// re-fetches images with the correct transparency setting.
+export function updateImageTransparencyForPage(
+    page: HTMLElement,
+    newColor: string,
+): void {
+    const pageNeedsTransparent = !!newColor;
+    for (const img of Array.from(page.querySelectorAll("img"))) {
+        const imgEl = img as HTMLElement;
+        const classAttr = imgEl.className ?? "";
+        if (
+            classAttr.includes("branding") ||
+            classAttr.includes("bloom-qrcode")
+        )
+            continue;
+        setImgTransparentParam(
+            imgEl,
+            getImageTransparencyMode(imgEl, pageNeedsTransparent),
+        );
+    }
 }
 
 function normalizeCssColorToHexOrEmpty(color: string): string {

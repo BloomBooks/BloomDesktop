@@ -54,5 +54,22 @@ namespace Bloom
         {
             return RetryUtility.Retry(() => TagLib.File.Create(path));
         }
+
+        /// <summary>
+        /// Attempts to delete a directory once. Returns false if an exception prevents deletion,
+        /// rather than retrying or throwing — suitable for best-effort cleanup during shutdown.
+        /// </summary>
+        public static bool TryDeleteDirectory(string path, bool recursive = false)
+        {
+            try
+            {
+                Directory.Delete(path, recursive);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }
