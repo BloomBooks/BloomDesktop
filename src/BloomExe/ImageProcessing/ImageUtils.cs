@@ -80,16 +80,10 @@ namespace Bloom.ImageProcessing
         }
 
         // Tolerances used by the quantize-based line-art palette check.
-        // To be unambiguously a line-art background, a color must have a perceptual brightness
+        // To be a line-art background, a color must have a perceptual brightness
         // of at least LineArtBackgroundMinBrightness and a chroma (max-min channel) of at
         // most LineArtBackgroundMaxChroma.
-        // If its brightness is below LineArtBackgroundMinBrightness or its chroma is
-        // above LineArtBackgroundMaxChroma, but its brightness is above LineArtBackgroundBorderlineBrightness,
-        // the color is considered borderline: it counts as a background if all other colors are compatible
-        // with its hue.
-        // Otherwise the color is not considered a line-art background at all.
         private const double LineArtBackgroundMinBrightness = 235.0;
-        private const double LineArtBackgroundBorderlineBrightness = 220.0;
         private const int LineArtBackgroundMaxChroma = 6;
 
         // An "ink" palette entry whose chroma (max-min channel) is at or below this counts as
@@ -168,17 +162,13 @@ namespace Bloom.ImageProcessing
                 if (!seen.Add(key))
                     continue;
                 totalDistinct++;
-                bool borderline;
-                if (IsLineArtBackground(c, out borderline))
+                if (IsLineArtBackground(c))
                 {
                     whiteFound = true;
                 }
                 else
                 {
                     inks.Add(c);
-                    // borderline colors are close enough to count as a background if they have a
-                    // similar hue to other colors. We check this by leaving them in inks.
-                    whiteFound |= borderline;
                 }
             }
             if (!whiteFound || totalDistinct < 2)
@@ -270,13 +260,9 @@ namespace Bloom.ImageProcessing
 
         /// <summary>
         /// Returns true if the color is bright enough (and free of significant hue)
-        /// to be considered unambiguously a line art background.
-        /// If it is not quite that light, or has perceptible hue, but is light enough
-        /// to consider a background IFF the hue is acceptable, we return false but
-        /// set borderline to true.
-        /// If both results are false, the color is definitely not line art background.
+        /// to be considered a line art background.
         /// </summary>
-        private static bool IsLineArtBackground(Color c, out bool borderline)
+        private static bool IsLineArtBackground(Color c)
         {
             // Perceptual brightness formula: 0.299*R + 0.587*G + 0.114*B
             // Threshold: all channels 235 => brightness = 0.299*235 + 0.587*235 + 0.114*235 = 235
@@ -284,9 +270,6 @@ namespace Bloom.ImageProcessing
             double brightness = 0.299 * c.R + 0.587 * c.G + 0.114 * c.B;
             int max = Math.Max(c.R, Math.Max(c.G, c.B));
             int min = Math.Min(c.R, Math.Min(c.G, c.B));
-            // deliberately ignore hue for borderline; we'll check later that any hue it has
-            // is compatible with other colors.
-            borderline = brightness >= LineArtBackgroundBorderlineBrightness;
             return brightness >= LineArtBackgroundMinBrightness
                 && (max - min) <= LineArtBackgroundMaxChroma;
         }
