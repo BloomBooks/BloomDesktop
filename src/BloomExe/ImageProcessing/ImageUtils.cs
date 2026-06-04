@@ -812,7 +812,7 @@ namespace Bloom.ImageProcessing
                         RobustFile.Copy(sourcePath, destinationPath);
                 }
                 if (shouldMakeTransparentForPageBackground)
-                    MakeSavedImageBackgroundTransparent(destinationPath);
+                    ApplyBloomTransparencyToFile(destinationPath);
                 if (_createdTempImageFile != null)
                 {
                     if (RobustFile.Exists(_createdTempImageFile))
@@ -893,7 +893,6 @@ namespace Bloom.ImageProcessing
                 {
                     Size = new Size(0, 0),
                     MakeOpaque = false,
-                    MakeTransparent = false,
                     JpegQuality = 0,
                     ProfilesToStrip = profiles,
                 };
@@ -1443,7 +1442,6 @@ namespace Bloom.ImageProcessing
                 {
                     Size = size,
                     MakeOpaque = makeOpaque,
-                    MakeTransparent = makeTransparent,
                     JpegQuality = 0,
                     ProfilesToStrip = null,
                 };
@@ -1451,6 +1449,8 @@ namespace Bloom.ImageProcessing
                 if (result.ExitCode == 0)
                 {
                     RobustFile.Copy(tempCopy, path, true);
+                    if (makeTransparent)
+                        ApplyBloomTransparencyToFile(path);
                     // Copy metadata from older file to the new one.  GraphicsMagick does a poor job on metadata.
                     var newMeta = RobustFileIO.CreateTaglibFile(path);
                     CopyTags(oldMetaData, newMeta);
@@ -1686,7 +1686,6 @@ namespace Bloom.ImageProcessing
                     {
                         Size = size,
                         MakeOpaque = makeOpaque,
-                        MakeTransparent = false,
                         JpegQuality = 0,
                         ProfilesToStrip = null,
                     };
@@ -1793,7 +1792,6 @@ namespace Bloom.ImageProcessing
         {
             internal Size Size; // if (0,0), don't resize
             internal bool MakeOpaque;
-            internal bool MakeTransparent;
             internal int JpegQuality; // 0 means use input jpeg's quality
             internal string ProfilesToStrip; // null means don't strip any profiles
             internal Rectangle cropRectangle;
@@ -1855,7 +1853,6 @@ namespace Bloom.ImageProcessing
             {
                 Size = new Size(0, 0), // preserve current size (no scaling)
                 MakeOpaque = false,
-                MakeTransparent = false,
                 JpegQuality = 0, // same as input
                 ProfilesToStrip = null,
                 cropRectangle = cropRectangle,
@@ -1876,11 +1873,6 @@ namespace Bloom.ImageProcessing
             GraphicsMagickOptions options
         )
         {
-            Debug.Assert(
-                !(options.MakeOpaque && options.MakeTransparent),
-                "makeOpaque and makeTransparent cannot both be true."
-            );
-
             return WithSafeFilePath(
                 sourcePath,
                 safeSourcePath =>
@@ -1893,12 +1885,6 @@ namespace Bloom.ImageProcessing
                             argsBldr.AppendFormat("convert \"{0}\"", safeSourcePath);
                             if (options.MakeOpaque)
                                 argsBldr.Append(" -background white -extent 0x0 +matte");
-                            else if (options.MakeTransparent)
-                            {
-                                // We intentionally do not rely on GraphicsMagick's -transparent options.
-                                // After the conversion we apply Bloom's RemoveWhiteBackground semantics
-                                // so anti-aliased edges get proper alpha instead of white fringes.
-                            }
                             if (options.cropRectangle != Rectangle.Empty)
                             {
                                 argsBldr.AppendFormat(
@@ -1960,9 +1946,6 @@ namespace Bloom.ImageProcessing
                                 new NullProgress()
                             );
 
-                            if (result.ExitCode == 0 && options.MakeTransparent)
-                                ApplyBloomTransparencyToGraphicsMagickOutput(safeDestPath);
-
                             if (result.ExitCode == 0 && destPath != safeDestPath)
                                 RobustFile.Copy(safeDestPath, destPath, true);
                             return result;
@@ -1973,7 +1956,7 @@ namespace Bloom.ImageProcessing
             );
         }
 
-        private static void ApplyBloomTransparencyToGraphicsMagickOutput(string imagePath)
+        private static void ApplyBloomTransparencyToFile(string imagePath)
         {
             if (!imagePath.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
                 return;
@@ -2060,7 +2043,6 @@ namespace Bloom.ImageProcessing
                     {
                         Size = new Size(0, 0), // preserve current size (no scaling)
                         MakeOpaque = false,
-                        MakeTransparent = false,
                         JpegQuality = 92, // High quality (but not extreme)
                         ProfilesToStrip = null,
                     };
@@ -3337,17 +3319,9 @@ namespace Bloom.ImageProcessing
             {
                 if (ShouldMakeBackgroundTransparent(imageInfo))
                 {
-                    var options = new GraphicsMagickOptions
-                    {
-                        Size = new Size(0, 0),
-                        MakeOpaque = false,
-                        MakeTransparent = true,
-                        cropRectangle = Rectangle.Empty,
-                        JpegQuality = 0, // ignored for PNG output, which transparency requires
-                        ProfilesToStrip = null,
-                    };
-                    var result = RunGraphicsMagick(sourcePath, destinationPath, options);
-                    return result.ExitCode == 0;
+                    RobustFile.Copy(sourcePath, destinationPath, true);
+                    ApplyBloomTransparencyToFile(destinationPath);
+                    return true;
                 }
             }
             return false;
