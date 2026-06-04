@@ -194,7 +194,9 @@ export const buildCanvasElementControlRegistryContext = (
             !!img &&
             !img.getAttribute("data-copyright"),
         isInDraggableGame,
-        canChooseAudioForElement: isInDraggableGame && (hasImage || hasText),
+        canChooseAudioForElement:
+            elementType === "sound" ||
+            (isInDraggableGame && (hasImage || hasText)),
         hasCurrentImageSound,
         currentImageSoundLabel: hasCurrentImageSound
             ? dataSound.replace(/\.mp3$/, "")
