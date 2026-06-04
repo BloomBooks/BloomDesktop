@@ -40,8 +40,7 @@ namespace Bloom.Edit
             var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(
                 imageInfo,
                 bookFolderPath,
-                isSameFile,
-                pageBackgroundColor
+                isSameFile
             );
             try
             {

@@ -721,6 +721,7 @@ namespace Bloom.web.controllers
                 settings.ImagePublishSettings,
                 modifiedBook.RawDom
             );
+            modifiedBook.Save(true);
             progress.Message(
                 "Common.Done",
                 "Shown in a list of messages when Bloom has completed a task.",
