@@ -1405,6 +1405,8 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
+            // Simulate the tool being visible so doesCurrentToolPlayAudio() returns true.
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
 
             // System under test
             await recording.handleNewPageReady();
