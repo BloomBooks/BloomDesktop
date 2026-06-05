@@ -194,7 +194,7 @@ namespace Bloom.ImageProcessing
             Color backColor
         )
         {
-            using (var originalImage = ImageUtils.FromFileRobustly(originalPath))
+            using (var originalImage = PalasoImage.FromFileRobustly(originalPath))
             {
                 // check if it needs resized
                 if (originalImage.Image.Width <= newWidth)
@@ -259,7 +259,7 @@ namespace Bloom.ImageProcessing
             {
                 coverImagePath = BloomFileLocator.GetFileFromDistFiles("Blank.png");
             }
-            using (var coverImage = ImageUtils.FromFileRobustly(coverImagePath))
+            using (var coverImage = PalasoImage.FromFileRobustly(coverImagePath))
             {
                 var coverImageWidth = coverImage.Image.Width;
                 var coverImageHeight = coverImage.Image.Height;
@@ -549,7 +549,7 @@ namespace Bloom.ImageProcessing
                 if (ImageUtils.HasJpegExtension(originalPath))
                     return false;
 
-                using (var originalImage = ImageUtils.FromFileRobustly(originalPath))
+                using (var originalImage = PalasoImage.FromFileRobustly(originalPath))
                 {
                     // double check whether the file extension was misleading us...
                     if (ImageUtils.AppearsToBeJpeg(originalImage))
