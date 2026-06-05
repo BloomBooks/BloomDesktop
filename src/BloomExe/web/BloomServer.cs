@@ -446,7 +446,16 @@ namespace Bloom.Api
                 ReplaceAnyVideoElementsWithPlaceholder(dom);
             }
             dom.Title = InMemoryHtmlFile.GetTitleForProcessExplorer(source) + " (InMemoryHtmlFile)"; // makes this show up in Windows Process Explorer WebView2 listing
-            var html5String = dom.getHtmlStringDisplayOnly();
+            var transparencyModifications = HtmlDom.AddTransparencyParamToImages(dom);
+            string html5String;
+            try
+            {
+                html5String = dom.getHtmlStringDisplayOnly();
+            }
+            finally
+            {
+                HtmlDom.RestoreImageSrcs(transparencyModifications);
+            }
             lock (_theOneInstance._queue)
             {
                 foreach (var item in _theOneInstance._idleTasks)
@@ -625,9 +634,19 @@ namespace Bloom.Api
                 if (localPath == "book-preview/index.htm")
                 {
                     request.ResponseContentType = "text/html";
-                    var html = CurrentBook
-                        .GetPreviewHtmlFileForWholeBook()
-                        .getHtmlStringDisplayOnly();
+                    var previewDom = CurrentBook.GetPreviewHtmlFileForWholeBook();
+                    var transparencyModifications = HtmlDom.AddTransparencyParamToImages(
+                        previewDom
+                    );
+                    string html;
+                    try
+                    {
+                        html = previewDom.getHtmlStringDisplayOnly();
+                    }
+                    finally
+                    {
+                        HtmlDom.RestoreImageSrcs(transparencyModifications);
+                    }
                     request.WriteCompleteOutput(html);
                     return true;
                 }
@@ -1041,28 +1060,19 @@ namespace Bloom.Api
                 //          want them. Running them through _cache.GetPathToAdjustedImage() is not necessary, and in PNG files
                 //          it converts all white areas to transparent. This is resulting in icons which only contain white
                 //          (because they are rendered on a dark background) becoming completely invisible.
-                // But things in the book folder should possibly be processed. The code below will still investigate
-                // whether it is really necessary; currently we're not resizing images except for thumbnails,
-                // and otherwise, only the cover image needs adjusting (to possibly provide a transparent background).
+                // Things in the book folder are processed on demand: resized, format-converted, and optionally
+                // made transparent, with results cached by GetPathToAdjustedImage / AdjustImageForDisplay.
                 processImage = sourceDir == CurrentBook?.FolderPath;
             }
 
             var originalImageFile = imageFile;
             // Currently _useCache is always true. It appears likely that the intent
             // is not so much about caching, but whether we want image processing.
-            // If we go back to allowing this to be turned off, we may need to make
-            // use of a check like CurrentBook?.ImageFileIsForBookCover() to make sure
-            // it is not disabled there, where it is important for transparency as
-            // well as performance.
             if (processImage && _useCache)
             {
-                // thumbnail requests have the thumbnail parameter set in the query string
                 var thumb = info.GetQueryParameters()["thumbnail"] != null;
-                var isForCover = CurrentBook?.ImageFileIsForBookCover(imageFile) ?? false;
-                if (thumb || isForCover)
-                {
-                    imageFile = _cache.GetPathToAdjustedImage(imageFile, thumb, isForCover);
-                }
+                var transparent = info.GetQueryParameters()["transparent"] == "yes";
+                imageFile = _cache.GetPathToAdjustedImage(imageFile, thumb, transparent);
 
                 if (String.IsNullOrEmpty(imageFile))
                     return false;

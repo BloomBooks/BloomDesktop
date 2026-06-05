@@ -64,9 +64,27 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
-        public void ProcessAndSaveImageIntoFolder_PhotoButPNGFile_SavesAsJpeg()
+        public void ProcessAndSaveImageIntoFolder_PhotoButPNGFile_SavesAsPng()
         {
-            ProcessAndSaveImageIntoFolder_AndTestResults("man.png", ImageFormat.Jpeg);
+            // Import no longer converts formats; PNG is preserved as-is.
+            ProcessAndSaveImageIntoFolder_AndTestResults("man.png", ImageFormat.Png);
+        }
+
+        [Test]
+        public void AdjustImageForDisplay_PhotoButPNGFile_ConvertsToJpeg()
+        {
+            var inputPath = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "man.png"
+            );
+            using (var destFolder = new TemporaryFolder("AdjustImageForDisplay_PhotoPng"))
+            {
+                var result = ImageUtils.AdjustImageForDisplay(inputPath, destFolder.Path);
+                Assert.IsNotNull(result, "Expected a processed version to be created");
+                Assert.AreEqual(".jpg", Path.GetExtension(result));
+                using (var img = Image.FromFile(result))
+                    Assert.AreEqual(ImageFormat.Jpeg, img.RawFormat);
+            }
         }
 
         [Test]
@@ -171,10 +189,10 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
-        public void ProcessAndSaveImageIntoFolder_LineArtOnColoredPage_MakesSavedPngTransparent()
+        public void AdjustImageForDisplay_LineArtPngWithTransparent_MakesBackgroundTransparent()
         {
-            using (var sourceFolder = new TemporaryFolder("LineArtOnColoredPage_Source"))
-            using (var destinationFolder = new TemporaryFolder("LineArtOnColoredPage_Dest"))
+            using (var sourceFolder = new TemporaryFolder("AdjustImageForDisplay_LineArt_Source"))
+            using (var destFolder = new TemporaryFolder("AdjustImageForDisplay_LineArt_Dest"))
             {
                 var sourcePath = sourceFolder.Combine("line-art.png");
                 using (var bitmap = new Bitmap(40, 40))
@@ -186,32 +204,31 @@ namespace BloomTests.ImageProcessing
                     bitmap.Save(sourcePath, ImageFormat.Png);
                 }
 
-                using (var image = PalasoImage.FromFileRobustly(sourcePath))
-                {
-                    var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(
-                        image,
-                        destinationFolder.Path,
-                        false,
-                        "#2E2E2E"
-                    );
+                var result = ImageUtils.AdjustImageForDisplay(
+                    sourcePath,
+                    destFolder.Path,
+                    transparent: true
+                );
 
-                    Assert.AreEqual(".png", Path.GetExtension(fileName));
-                    var outputPath = destinationFolder.Combine(fileName);
-                    using (var result = (Bitmap)Image.FromFile(outputPath))
-                    {
-                        Assert.That(result.GetPixel(0, 0).A, Is.EqualTo(0));
-                        Assert.That(result.GetPixel(20, 20).A, Is.EqualTo(255));
-                    }
+                Assert.IsNotNull(result);
+                Assert.AreEqual(".png", Path.GetExtension(result));
+                using (var resultBitmap = (Bitmap)Image.FromFile(result))
+                {
+                    Assert.That(resultBitmap.GetPixel(0, 0).A, Is.EqualTo(0));
+                    Assert.That(resultBitmap.GetPixel(20, 20).A, Is.EqualTo(255));
                 }
             }
         }
 
         [Test]
-        public void ProcessAndSaveImageIntoFolder_LineArtJpegSameFileOnColoredPage_UsesPngFilenameAndData()
+        public void AdjustImageForDisplay_LineArtJpegWithTransparent_ConvertsToPngAndMakesTransparent()
         {
-            using (var folder = new TemporaryFolder("LineArtJpegSameFile"))
+            using (
+                var sourceFolder = new TemporaryFolder("AdjustImageForDisplay_LineArtJpeg_Source")
+            )
+            using (var destFolder = new TemporaryFolder("AdjustImageForDisplay_LineArtJpeg_Dest"))
             {
-                var sourcePath = folder.Combine("line-art.jpg");
+                var sourcePath = sourceFolder.Combine("line-art.jpg");
                 using (var bitmap = new Bitmap(40, 40))
                 using (var graphics = Graphics.FromImage(bitmap))
                 using (var pen = new Pen(Color.Black, 3))
@@ -221,23 +238,19 @@ namespace BloomTests.ImageProcessing
                     bitmap.Save(sourcePath, ImageFormat.Jpeg);
                 }
 
-                using (var image = PalasoImage.FromFileRobustly(sourcePath))
-                {
-                    var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(
-                        image,
-                        folder.Path,
-                        true,
-                        "#2E2E2E"
-                    );
+                var result = ImageUtils.AdjustImageForDisplay(
+                    sourcePath,
+                    destFolder.Path,
+                    transparent: true
+                );
 
-                    Assert.AreEqual(".png", Path.GetExtension(fileName));
-                    var outputPath = folder.Combine(fileName);
-                    using (var result = (Bitmap)Image.FromFile(outputPath))
-                    {
-                        Assert.AreEqual(ImageFormat.Png, result.RawFormat);
-                        Assert.That(result.GetPixel(0, 0).A, Is.EqualTo(0));
-                        Assert.That(result.GetPixel(20, 20).A, Is.EqualTo(255));
-                    }
+                Assert.IsNotNull(result);
+                Assert.AreEqual(".png", Path.GetExtension(result));
+                using (var resultBitmap = (Bitmap)Image.FromFile(result))
+                {
+                    Assert.AreEqual(ImageFormat.Png, resultBitmap.RawFormat);
+                    Assert.That(resultBitmap.GetPixel(0, 0).A, Is.EqualTo(0));
+                    Assert.That(resultBitmap.GetPixel(20, 20).A, Is.EqualTo(255));
                 }
             }
         }

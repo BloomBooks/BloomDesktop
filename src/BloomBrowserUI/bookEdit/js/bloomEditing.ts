@@ -4,6 +4,7 @@ import $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
+    getOwningPageBackgroundColor,
     HandleImageError,
     normalizeCoverImageDesignation,
     SetupMetadataButton,
@@ -456,7 +457,13 @@ export function changeImageInfo(
             "bloom-imageLoadError",
         );
         (imgOrImageContainer as HTMLImageElement).onerror = HandleImageError;
-        (imgOrImageContainer as HTMLImageElement).src = imageInfo.src;
+        const bgColor = getOwningPageBackgroundColor(imgOrImageContainer);
+        const src = bgColor
+            ? imageInfo.src +
+              (imageInfo.src.includes("?") ? "&" : "?") +
+              "transparent=yes"
+            : imageInfo.src;
+        (imgOrImageContainer as HTMLImageElement).src = src;
     }
     // else if it has class bloom-imageContainer or bloom-canvas, we need to set the background-image on the container
     else if (

@@ -91,19 +91,21 @@ namespace Bloom.ImageProcessing
         public string GetPathToAdjustedImage(
             string originalPath,
             bool getThumbnail = false,
-            bool isForCover = false
+            bool transparent = false
         )
         {
             //don't mess with Bloom UI images
             if (new[] { "/img/", "placeHolder", "Button" }.Any(s => originalPath.Contains(s)))
                 return originalPath;
 
+            // Each combination of processing flags needs its own cache entry.
             var cacheFileName = originalPath;
-
-            if (getThumbnail)
-            {
+            if (getThumbnail && transparent)
+                cacheFileName = "transparent_thumbnail_" + cacheFileName;
+            else if (getThumbnail)
                 cacheFileName = "thumbnail_" + cacheFileName;
-            }
+            else if (transparent)
+                cacheFileName = "transparent_" + cacheFileName;
 
             // check if this image is in the do-not-process list
             bool test;
@@ -135,42 +137,57 @@ namespace Bloom.ImageProcessing
                     _originalPathToProcessedVersionPath.TryRemove(cacheFileName, out valueRemoved);
                 }
 
-                // there is not a cached version, try to make one
-                var pathToProcessedImage = Path.Combine(
-                    _cacheFolder,
-                    Path.GetRandomFileName() + Path.GetExtension(originalPath)
-                );
-
-                if (!Directory.Exists(Path.GetDirectoryName(pathToProcessedImage)))
-                    Directory.CreateDirectory(Path.GetDirectoryName(pathToProcessedImage));
-
-                // BL-1112: images not loading in page thumbnails
-                var success = true;
-                var wantOriginal = !getThumbnail && !isForCover;
+                // No cached version — try to make one.
+                string processedPath;
                 if (getThumbnail)
                 {
+                    // BL-1112: images not loading in page thumbnails
                     // The HTML div that contains the thumbnails is 80 pixels wide, so make the thumbnails 80 pixels wide
-                    success = GenerateThumbnail(originalPath, pathToProcessedImage, 80);
+                    var pathToProcessedImage = Path.Combine(
+                        _cacheFolder,
+                        Path.GetRandomFileName() + Path.GetExtension(originalPath)
+                    );
+                    if (!Directory.Exists(Path.GetDirectoryName(pathToProcessedImage)))
+                        Directory.CreateDirectory(Path.GetDirectoryName(pathToProcessedImage));
+                    if (!GenerateThumbnail(originalPath, pathToProcessedImage, 80))
+                    {
+                        processedPath = null;
+                    }
+                    else
+                    {
+                        if (transparent && ImageUtils.IsPngFile(pathToProcessedImage))
+                        {
+                            // Apply transparency to the PNG thumbnail in-place.
+                            using var tempFile = TempFile.WithExtension(".png");
+                            if (
+                                ImageUtils.MakeTransparentBackgroundIfNeeded(
+                                    pathToProcessedImage,
+                                    tempFile.Path
+                                )
+                            )
+                                RobustFile.Copy(tempFile.Path, pathToProcessedImage, true);
+                        }
+                        processedPath = pathToProcessedImage;
+                    }
                 }
-                else if (isForCover)
+                else
                 {
-                    success = MakePngBackgroundTransparentIfDesirable(
+                    processedPath = ImageUtils.AdjustImageForDisplay(
                         originalPath,
-                        pathToProcessedImage
+                        _cacheFolder,
+                        transparent
                     );
                 }
 
-                if (wantOriginal || !success)
+                if (processedPath == null)
                 {
-                    // add this image to the do-not-process list so we don't waste time doing this again
-                    if (!success)
-                        _imageFilesToReturnUnprocessed.TryAdd(cacheFileName, true);
+                    _imageFilesToReturnUnprocessed.TryAdd(cacheFileName, true);
                     return originalPath;
                 }
 
-                _originalPathToProcessedVersionPath.TryAdd(cacheFileName, pathToProcessedImage); //remember it so we can reuse if they show it again, and later delete
+                _originalPathToProcessedVersionPath.TryAdd(cacheFileName, processedPath); //remember it so we can reuse if they show it again, and later delete
 
-                return pathToProcessedImage;
+                return processedPath;
             }
         }
 

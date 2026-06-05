@@ -2033,6 +2033,75 @@ namespace Bloom.Book
             return "#FFFFFF";
         }
 
+        /// <summary>
+        /// For each image on a page that needs transparent images (per
+        /// <see cref="PageNeedsTransparentImages"/>), append <c>?transparent=yes</c> (or
+        /// <c>&amp;transparent=yes</c>) to the img src. Returns a list of modified
+        /// (element, original-src) pairs so the caller can restore them with
+        /// <see cref="RestoreImageSrcs"/>.
+        /// </summary>
+        internal static List<(SafeXmlElement img, string src)> AddTransparencyParamToImages(
+            HtmlDom dom
+        )
+        {
+            var modified = new List<(SafeXmlElement, string)>();
+            foreach (
+                SafeXmlElement pageDiv in dom.SafeSelectNodes(
+                        "//div[contains(@class,'bloom-page')]"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                if (!PageNeedsTransparentImages(pageDiv))
+                    continue;
+                foreach (
+                    SafeXmlElement img in pageDiv
+                        .SafeSelectNodes(".//img[@src]")
+                        .Cast<SafeXmlElement>()
+                )
+                {
+                    var classAttr = img.GetAttribute("class") ?? "";
+                    if (classAttr.Contains("branding") || classAttr.Contains("bloom-qrcode"))
+                        continue;
+                    var src = img.GetAttribute("src");
+                    if (string.IsNullOrEmpty(src))
+                        continue;
+                    modified.Add((img, src));
+                    img.SetAttribute(
+                        "src",
+                        src.Contains('?') ? src + "&transparent=yes" : src + "?transparent=yes"
+                    );
+                }
+            }
+            return modified;
+        }
+
+        /// <summary>Restore image srcs saved by <see cref="AddTransparencyParamToImages"/>.</summary>
+        internal static void RestoreImageSrcs(List<(SafeXmlElement img, string src)> modifications)
+        {
+            foreach (var (img, src) in modifications)
+                img.SetAttribute("src", src);
+        }
+
+        /// <summary>
+        /// Remove any <c>transparent=yes</c> query parameter from img srcs in
+        /// <paramref name="pageDiv"/>. Call this when page content is received back from
+        /// the browser before saving it permanently to the book DOM.
+        /// </summary>
+        internal static void RemoveTransparencyParamFromImages(SafeXmlElement pageDiv)
+        {
+            foreach (
+                SafeXmlElement img in pageDiv.SafeSelectNodes(".//img[@src]").Cast<SafeXmlElement>()
+            )
+            {
+                var src = img.GetAttribute("src");
+                if (src == null || !src.Contains("transparent=yes"))
+                    continue;
+                src = src.Replace("&transparent=yes", "").Replace("?transparent=yes", "");
+                img.SetAttribute("src", src);
+            }
+        }
+
         private static void RemoveStyleProperties(
             SafeXmlElement element,
             params string[] propertyNames
@@ -2090,6 +2159,7 @@ namespace Bloom.Book
                 node.ParentNode.RemoveChild(node);
             RemoveTemplateEditingMarkup(edittedPageDiv);
             RemoveCkEditorMarkup(edittedPageDiv);
+            RemoveTransparencyParamFromImages(edittedPageDiv);
 
             destinationPageDiv.InnerXml = edittedPageDiv.InnerXml;
 

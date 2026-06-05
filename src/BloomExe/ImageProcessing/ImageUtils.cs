@@ -669,10 +669,11 @@ namespace Bloom.ImageProcessing
         }
 
         /// <summary>
-        /// Ensure the image does not exceed the maximum size we've set with MaxLength and MaxBreadth.
-        /// Ensure that non-jpeg files have an opaque background.
-        /// Make the image a png if it's not a jpeg.  Make large png images into jpeg images to save space.
-        /// Save the processed image in the book's folder.
+        /// Save a copy of the image into the book's folder without processing it.
+        /// Non-web formats (BMP, TIFF, etc.) are converted to PNG so browsers can display them;
+        /// JPEG and PNG files are copied unchanged.
+        /// All other processing (resizing, format optimization, transparency) is deferred to
+        /// display time via <see cref="AdjustImageForDisplay"/>.
         ///
         /// If the image has a filename, that name is used in creating any new files.
         /// WARNING: imageInfo.Image could be replaced (causing the original to be disposed)
@@ -681,15 +682,11 @@ namespace Bloom.ImageProcessing
         public static string ProcessAndSaveImageIntoFolder(
             PalasoImage imageInfo,
             string bookFolderPath,
-            bool isSameFile,
-            string pageBackgroundColor = null
+            bool isSameFile
         )
         {
-            //LogMemoryUsage();
-            var pageNeedsTransparency = ShouldMakeTransparentForPageBackground(pageBackgroundColor);
-
             // As of BL-15441, we aren't using real placeHolder image files anymore. But if one is there,
-            // don't go through all the processing and saving machinations for it.
+            // don't go through all the saving machinations for it.
             if (
                 !string.IsNullOrEmpty(imageInfo.OriginalFilePath)
                 && IsPlaceholderImageFilename(imageInfo.OriginalFilePath)
@@ -698,58 +695,15 @@ namespace Bloom.ImageProcessing
                 return Path.GetFileName(imageInfo.OriginalFilePath);
             }
             if (!Directory.Exists(bookFolderPath))
-                throw new DirectoryNotFoundException(bookFolderPath + " does not exist"); // may as well check this early
+                throw new DirectoryNotFoundException(bookFolderPath + " does not exist");
             bool isEncodedAsJpeg = false;
             try
             {
-                var originalCurrentPath = imageInfo.GetCurrentFilePath();
-                var imageRemade = false;
-                var size = GetDesiredImageSize(imageInfo.Image.Width, imageInfo.Image.Height);
-
-                if (
-                    size.Width < imageInfo.Image.Width
-                    || size.Height < imageInfo.Image.Height
-                    || !(AppearsToBeJpeg(imageInfo) || AppearsToBePng(imageInfo))
-                )
-                {
-                    // Either need to shrink the image since it's larger than our maximum allowed size,
-                    // or need to convert from a BMP or TIFF file to a PNG file (or both).
-                    // NB: the original imageInfo.Image is disposed of in the setter below.
-                    // As of now (9/2016) this is safe because there are no other references to it higher in the stack.
-                    var img = TryResizeImageWithGraphicsMagick(imageInfo, size);
-                    if (img != null)
-                    {
-                        imageInfo.Image = img;
-                        imageRemade = true;
-                    }
-                }
-                var needToStripMetadata = imageInfo.Metadata.ExceptionCaughtWhileLoading != null;
-
                 isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
+                var isPng = AppearsToBePng(imageInfo);
+                var isWebFormat = isEncodedAsJpeg || isPng;
+                // Non-web formats get saved as PNG so browsers can display them
                 var saveAsJpeg = isEncodedAsJpeg;
-
-                string jpegFilePath = Path.Combine(
-                    bookFolderPath,
-                    GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, true)
-                );
-                // Compute once; the result drives both the JPEG→PNG conversion below and the
-                // PNG→JPEG guard in convertedToJpeg. Running GraphicsMagick twice would be wasteful.
-                var isLineArt = ShouldMakeBackgroundTransparent(imageInfo);
-                var shouldMakeImageTransparent = isLineArt && pageNeedsTransparency;
-                // Convert JPEG line art to PNG on insert: JPEGs can't carry transparency, so a
-                // line-art JPEG would never get its background made transparent when shown on a
-                // colored page background. Saving as PNG fixes that at the cost of slightly larger
-                // files, which is worth it for images that we want to make transparent (BL-16336).
-                if (saveAsJpeg && shouldMakeImageTransparent)
-                    saveAsJpeg = false;
-                // Don't convert line-art PNGs to JPEG: JPEG is only right for photographic content.
-                var convertedToJpeg =
-                    !saveAsJpeg
-                    && !HasTransparency(imageInfo.Image)
-                    && !isLineArt
-                    && TryChangeFormatToJpegIfHelpful(imageInfo, jpegFilePath);
-                if (convertedToJpeg)
-                    return Path.GetFileName(jpegFilePath);
 
                 string imageFileName;
                 if (isSameFile)
@@ -770,14 +724,8 @@ namespace Bloom.ImageProcessing
                         imageInfo,
                         saveAsJpeg
                     );
+
                 var sourcePath = imageInfo.GetCurrentFilePath();
-                if (imageRemade & sourcePath == originalCurrentPath)
-                {
-                    // We don't want to copy the original file if we have remade the image.  (BL-15708)
-                    // If graphicsmagick succeeds, it produces a temp file with a random name and changes
-                    // the current path setting.
-                    sourcePath = null;
-                }
                 var destinationPath = Path.Combine(bookFolderPath, imageFileName);
                 var reusingSameFilename =
                     isSameFile
@@ -785,34 +733,40 @@ namespace Bloom.ImageProcessing
                         imageFileName,
                         StringComparison.InvariantCultureIgnoreCase
                     );
-                var sourceEncodingMatchesDestination = isEncodedAsJpeg == saveAsJpeg;
-                if (needToStripMetadata)
-                {
-                    if (!TryStripMetadataWithGraphicsMagick(imageInfo, sourcePath, destinationPath))
-                        imageInfo.Image.Save(
-                            destinationPath,
-                            saveAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
-                        );
-                }
+                var needToStripMetadata = imageInfo.Metadata.ExceptionCaughtWhileLoading != null;
+
                 // I _think_ isSameFile is true only when we copy an image and paste it back in the same place.
-                // In that case, we don't need to save it again. I checked that when we
-                // use the old cropping tool to create a different image, it doesn't take this path.
-                // As far as I can tell isSameFile is only true if we are copying the file on top of
-                // itself, and that can't ever be useful.
-                else if (!reusingSameFilename)
+                // In that case, we don't need to save it again.
+                if (!reusingSameFilename)
                 {
-                    // Pasting an image can result in sourcePath being null.
-                    // So can graphicsmagick failures where we had to remake the image. (BL-15708)
-                    if (sourcePath == null || !sourceEncodingMatchesDestination)
+                    if (needToStripMetadata)
+                    {
+                        if (
+                            !TryStripMetadataWithGraphicsMagick(
+                                imageInfo,
+                                sourcePath,
+                                destinationPath
+                            )
+                        )
+                            imageInfo.Image.Save(
+                                destinationPath,
+                                saveAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
+                            );
+                    }
+                    else if (sourcePath != null && isWebFormat)
+                    {
+                        // Copy the original file unchanged to preserve full quality
+                        RobustFile.Copy(sourcePath, destinationPath);
+                    }
+                    else
+                    {
+                        // Clipboard paste (no source file) or non-web format: save from image data
                         imageInfo.Image.Save(
                             destinationPath,
                             saveAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
                         );
-                    else
-                        RobustFile.Copy(sourcePath, destinationPath);
+                    }
                 }
-                if (shouldMakeImageTransparent)
-                    ApplyBloomTransparencyToFile(destinationPath);
                 if (_createdTempImageFile != null)
                 {
                     if (RobustFile.Exists(_createdTempImageFile))
@@ -825,23 +779,17 @@ namespace Bloom.ImageProcessing
             {
                 throw; //these are informative on their own
             }
-            /* No. OutOfMemory is almost meaningless when it comes to image errors. Better not to confuse people
-         * catch (OutOfMemoryException error)
-        {
-            //Enhance: it would be great if we could bring up that problem dialog ourselves, and offer this picture as an attachment
-            throw new ApplicationException("Bloom ran out of memory while trying to import the picture. We suggest that you quit Bloom, run it again, and then try importing this picture again. If that fails, please go to the Help menu and choose 'Report a Problem'", error);
-        }*/
             catch (Exception error)
             {
                 if (
-                    !String.IsNullOrEmpty(imageInfo.FileName)
+                    !string.IsNullOrEmpty(imageInfo.FileName)
                     && RobustFile.Exists(imageInfo.OriginalFilePath)
                 )
                 {
                     var megs = new FileInfo(imageInfo.OriginalFilePath).Length / (1024 * 1000);
                     if (megs > 2)
                     {
-                        var msg = String.Format(
+                        var msg = string.Format(
                             "Bloom was not able to prepare that image for including in the book. \r\nThis is a rather large image to be adding to a book --{0} Megs--.",
                             megs
                         );
@@ -860,6 +808,98 @@ namespace Bloom.ImageProcessing
                         + imageInfo.FileName,
                     error
                 );
+            }
+        }
+
+        /// <summary>
+        /// Create a display-ready processed version of an image in <paramref name="destDir"/>:
+        /// resize if too large, convert format if beneficial (JPEG→PNG for transparent line art,
+        /// PNG→JPEG for photographic content), and optionally make line-art backgrounds transparent.
+        /// This contains the processing that was formerly done at import time by
+        /// <see cref="ProcessAndSaveImageIntoFolder"/>; it is now applied at display time so that
+        /// the book folder always stores the original/unmodified file.
+        /// </summary>
+        /// <param name="sourcePath">Path to the image file in the book folder.</param>
+        /// <param name="destDir">Directory in which to write the processed copy.</param>
+        /// <param name="transparent">
+        /// If true and the image is line art, make its white background transparent.
+        /// </param>
+        /// <returns>
+        /// Path of the processed image inside <paramref name="destDir"/>, or <c>null</c> if the
+        /// original can be served as-is or if processing failed.
+        /// </returns>
+        public static string AdjustImageForDisplay(
+            string sourcePath,
+            string destDir,
+            bool transparent = false
+        )
+        {
+            try
+            {
+                using var imageInfo = PalasoImage.FromFileRobustly(sourcePath);
+                var size = GetDesiredImageSize(imageInfo.Image.Width, imageInfo.Image.Height);
+                var needsResize =
+                    size.Width < imageInfo.Image.Width || size.Height < imageInfo.Image.Height;
+                var isJpeg = AppearsToBeJpeg(imageInfo);
+                var isPng = AppearsToBePng(imageInfo);
+                var isWebFormat = isJpeg || isPng;
+                var isLineArt = ShouldMakeBackgroundTransparent(imageInfo);
+                var shouldMakeTransparent = transparent && isLineArt;
+                // Would a PNG→JPEG size-saving conversion be worth trying?
+                var tryJpegConversion =
+                    !shouldMakeTransparent && !isLineArt && !HasTransparency(imageInfo.Image);
+
+                // If only a JPEG conversion is being considered (no resize, already web format,
+                // no transparency), attempt it and bail out either way — no point copying a file
+                // that is already optimal.
+                if (!needsResize && isWebFormat && !shouldMakeTransparent && tryJpegConversion)
+                {
+                    if (!Directory.Exists(destDir))
+                        Directory.CreateDirectory(destDir);
+                    var jpegOnlyPath = Path.Combine(destDir, Path.GetRandomFileName() + ".jpg");
+                    return TryChangeFormatToJpegIfHelpful(imageInfo, jpegOnlyPath)
+                        ? jpegOnlyPath
+                        : null;
+                }
+
+                // If nothing needs changing, serve the original.
+                if (!needsResize && isWebFormat && !shouldMakeTransparent)
+                    return null;
+
+                // Resize if needed, or convert from non-web format (BMP, TIFF, …)
+                if (needsResize || !isWebFormat)
+                {
+                    var resized = TryResizeImageWithGraphicsMagick(imageInfo, size);
+                    if (resized != null)
+                        imageInfo.Image = resized;
+                }
+
+                // JPEG cannot carry transparency; switch to PNG for transparent line art
+                var saveAsJpeg = isJpeg && !shouldMakeTransparent;
+
+                if (!Directory.Exists(destDir))
+                    Directory.CreateDirectory(destDir);
+
+                // Try PNG→JPEG for photographic content that doesn't need transparency
+                if (tryJpegConversion)
+                {
+                    var jpegPath = Path.Combine(destDir, Path.GetRandomFileName() + ".jpg");
+                    if (TryChangeFormatToJpegIfHelpful(imageInfo, jpegPath))
+                        return jpegPath;
+                }
+
+                var ext = saveAsJpeg ? ".jpg" : ".png";
+                var destPath = Path.Combine(destDir, Path.GetRandomFileName() + ext);
+                imageInfo.Image.Save(destPath, saveAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
+
+                if (shouldMakeTransparent)
+                    ApplyBloomTransparencyToFile(destPath);
+
+                return destPath;
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 

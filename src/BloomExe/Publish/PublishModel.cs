@@ -424,7 +424,7 @@ namespace Bloom.Publish
             PageLayout.UpdatePageSplitMode(dom.RawDom);
 
             XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
-            dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
+            dom.UseOriginalImages = true; // don't want low-res images in PDF.
             var pages = dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
                 .Cast<SafeXmlElement>()
                 .ToList();
@@ -440,43 +440,10 @@ namespace Bloom.Publish
             // use the body element instead.
             dom.Body.AddClass("drag-activity-play");
 
-            MarkImagesForTransparency(dom);
-
             return BloomServer.MakeInMemoryHtmlFileInBookFolder(
                 dom,
                 source: InMemoryHtmlFileSource.Pub
             );
-        }
-
-        private void MarkImagesForTransparency(HtmlDom dom)
-        {
-            // If the user doesn't want to include background colors on the pages, then there's
-            // no need to make black and white pictures transparent.
-            if (_currentlyLoadedBook?.UserPrefs.IncludeBackgroundColors != true)
-                return;
-            foreach (
-                SafeXmlElement pageDiv in dom.SafeSelectNodes(
-                    "//div[contains(@class,'bloom-page')]"
-                )
-            )
-            {
-                if (!HtmlDom.PageNeedsTransparentImages(pageDiv))
-                    continue;
-                foreach (SafeXmlElement img in pageDiv.SafeSelectNodes(".//img[@src]"))
-                {
-                    var classAttr = img.GetAttribute("class");
-                    if (classAttr.Contains("branding") || classAttr.Contains("bloom-qrcode"))
-                        continue;
-                    var src = img.GetAttribute("src");
-                    if (!string.IsNullOrEmpty(src))
-                    {
-                        src = src.Contains("?")
-                            ? src + "&transparent=yes"
-                            : src + "?transparent=yes";
-                        img.SetAttribute("src", src);
-                    }
-                }
-            }
         }
 
         private void AddStylesheetClasses(SafeXmlDocument dom)
