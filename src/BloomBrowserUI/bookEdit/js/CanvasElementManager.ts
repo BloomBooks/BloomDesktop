@@ -23,10 +23,12 @@ import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import {
     IImageInfo,
     SetupElements,
+    addRequestPageContentDelay,
     attachToCkEditor,
     changeImageInfo,
     kMakeNewCanvasElement,
     notifyToolOfChangedImage,
+    removeRequestPageContentDelay,
     wrapWithRequestPageContentDelay,
 } from "./bloomEditing";
 import { addSkeletonIfEmpty } from "./linkGrid";
@@ -104,6 +106,8 @@ export interface ITextOutlineColorInfo {
 }
 
 const kComicalGeneratedClass: string = "comical-generated";
+const kAdjustContainerAspectRatioDelayId =
+    "adjustContainerAspectRatioImageLoad";
 
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 export const kBackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
@@ -2818,30 +2822,13 @@ export class CanvasElementManager {
                 return;
             }
             if (imgHeight === 0 || useSizeOfNewImage) {
-                // image not ready yet, try again later.
-                const handle = setTimeout(
-                    () =>
-                        this.adjustContainerAspectRatio(
-                            canvasElement,
-                            false, // if we've got dimensions just use them
-                            0,
-                        ), // if we get this call we don't have a timeout to cancel
-                    // I think this is long enough that we won't be seeing obsolete data (from a previous src).
-                    // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
-                    // If by any chance this happens when the image really isn't loaded enough to
-                    // have naturalHeight/Width, the zero checks above will force another iteration.
-                    100,
-                    // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
-                ) as unknown as number;
-                imgOrVideo.addEventListener(
-                    "load",
-                    () =>
-                        this.adjustContainerAspectRatio(
-                            canvasElement,
-                            false, // it's loaded, we don't want to wait again
-                            handle,
-                        ), // if we get this call we can cancel the timeout above.
-                    { once: true },
+                // A newly changed image often needs an async retry before the browser reports
+                // natural dimensions. That retry will later write width/height/left/top, so it
+                // must participate in requestPageContent delay bookkeeping or saves can capture
+                // stale geometry.
+                this.waitForImageAndAdjustContainerAspectRatio(
+                    canvasElement,
+                    imgOrVideo,
                 );
                 return; // control frame will be aligned when the image is loaded
             }
@@ -2927,6 +2914,47 @@ export class CanvasElementManager {
             this.doAfterNewImageAdjusted = undefined;
         }
         copyContentToTargetAndCleanup(canvasElement);
+    }
+
+    private waitForImageAndAdjustContainerAspectRatio(
+        canvasElement: HTMLElement,
+        image: HTMLImageElement,
+    ): void {
+        // This delay is separate from the wrapper around the "add a new canvas element" paste path.
+        // That wrapper only covers the async feature-status request before an element is added.
+        // This one covers the later async wait for the image itself to finish loading so our final
+        // geometry updates become part of any saved page content.
+        addRequestPageContentDelay(kAdjustContainerAspectRatioDelayId);
+        let adjustmentResumed = false;
+        const resumeAdjustment = (timeoutHandler: number) => {
+            if (adjustmentResumed) {
+                return;
+            }
+            adjustmentResumed = true;
+            try {
+                this.adjustContainerAspectRatio(
+                    canvasElement,
+                    false, // if we've got dimensions just use them
+                    timeoutHandler,
+                );
+            } finally {
+                removeRequestPageContentDelay(
+                    kAdjustContainerAspectRatioDelayId,
+                );
+            }
+        };
+        const handle = setTimeout(
+            () => resumeAdjustment(0),
+            // I think this is long enough that we won't be seeing obsolete data (from a previous src).
+            // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
+            // If by any chance this happens when the image really isn't loaded enough to
+            // have naturalHeight/Width, the zero checks above will force another iteration.
+            100,
+            // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
+        ) as unknown as number;
+        image.addEventListener("load", () => resumeAdjustment(handle), {
+            once: true,
+        });
     }
 
     // When the image is changed in a canvas element (e.g., choose or paste image),
@@ -5308,9 +5336,10 @@ export class CanvasElementManager {
             }
         }
         // otherwise we will add a new canvas element...but only if subscription allows it.
-        // This branch has an extra async feature-status request before the DOM changes happen.
-        // Keep requestPageContent delayed until that callback has either added the element or
-        // decided not to, otherwise the page can be saved before the pasted element exists.
+        // Keep this wrapper even though adjustContainerAspectRatio now manages its own image-load delay.
+        // This branch still has a separate async feature-status request before we even know whether a
+        // new element will be created. Without this wrapper, requestPageContent can run before the
+        // callback adds the pasted element or decides to show the subscription dialog instead.
         wrapWithRequestPageContentDelay(
             () =>
                 new Promise<void>((resolve) => {

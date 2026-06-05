@@ -1631,8 +1631,8 @@ namespace Bloom.Edit
         public void UpdateImageInBrowser(PageEditingModel.ImageInfoForJavascript args)
         {
             // We generally don't need to wait. Even if we decide to save, its call to RunJavascriptAsync() will come in after ours.
-            // changeImage() itself is synchronous. The one async path (adjustBackgroundImageSize) is wrapped with
-            // wrapWithRequestPageContentDelay, which ensures any C#-triggered request for page content waits until
+            // changeImage() itself is synchronous. When it triggers async image-resize work in the editable page,
+            // that code registers requestPageContent delays so any C#-triggered request for page content waits until
             // those async DOM adjustments settle before retrieving the page HTML.
             GetEditingBrowser()
                 .RunJavascriptFireAndForget(
@@ -1646,8 +1646,8 @@ namespace Bloom.Edit
              *  talk directly to the BloomServer and tell it that image needs transparency.]
              * Another possible reason to Save is that it is needed if we're going to update the thumbnail, but we decided
              * we can live without this...probably we can get that behavior back once the page list is in the same browser.
-             * Note: although changeImage() is synchronous, the async background-image-size adjustment it triggers is wrapped
-             * with wrapWithRequestPageContentDelay, so any save below will correctly wait for DOM adjustments to settle.
+             * Note: although changeImage() is synchronous, any async image-resize adjustments it triggers in the editable
+             * page register requestPageContent delays, so any save below will correctly wait for DOM adjustments to settle.
              */
             if (CurrentPage.IsCoverPage)
             {
