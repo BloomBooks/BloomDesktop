@@ -936,7 +936,7 @@ export default class AudioRecording implements IAudioRecorder {
         return (
             activeToolId === "talkingBook" ||
             activeToolId === "motion" ||
-            !activeToolId
+            (!activeToolId && this.isShowing)
         );
     }
 
@@ -971,6 +971,12 @@ export default class AudioRecording implements IAudioRecorder {
         oldElement, // Optional. Provides some minor optimization if set.
         forceRedisplay,
     }: ISetHighlightParams): Promise<void> {
+        // This is a last-ditch defense against something async turning the hightlight on
+        // after we have switched to a different tool.
+        if (!this.doesCurrentToolPlayAudio()) {
+            return;
+        }
+
         if (!oldElement) {
             oldElement = this.getCurrentHighlight();
         }
@@ -1186,12 +1192,23 @@ export default class AudioRecording implements IAudioRecorder {
         return axios
             .post("/bloom/api/audio/startRecord?id=" + id)
             .then(() => {
-                setTimeout(() => {
+                this.startRecordTimeoutToken = setTimeout(() => {
+                    if (!this.recording) {
+                        this.startRecordTimeoutToken = undefined;
+                        return;
+                    }
                     // C# has a 300ms delay before it really starts recording. I think this is to prevent
                     // capturing any part of the click. We don't want the visual indication that we are
                     // recording to show before we really are recording.
                     this.setStatus("record", Status.Active);
+                    this.startRecordTimeoutToken = undefined;
                 }, 300);
+
+                // Mouseup can be processed before this promise resolves.
+                // If recording already ended, cancel the delayed visual activation immediately.
+                if (!this.recording) {
+                    this.clearStartRecordTimeout();
+                }
 
                 // The active device MIGHT have changed, if the user unplugged since we
                 // chose it.
@@ -1224,6 +1241,8 @@ export default class AudioRecording implements IAudioRecorder {
     }
 
     public async endRecordCurrentAsync(): Promise<void> {
+        this.clearStartRecordTimeout();
+
         if (!this.recording) {
             // will trigger if the button wasn't enabled, so the recording never started
             return;
@@ -1714,6 +1733,14 @@ export default class AudioRecording implements IAudioRecorder {
 
     private async playEndedAsync(): Promise<void> {
         this.clearSubElementHighlightTimeout();
+
+        if (!this.doesCurrentToolPlayAudio()) {
+            this.elementsToPlayConsecutivelyStack = [];
+            this.subElementsWithTimings = [];
+            this.listening = false;
+            return;
+        }
+
         if (
             this.elementsToPlayConsecutivelyStack &&
             this.elementsToPlayConsecutivelyStack.length > 0
@@ -2718,6 +2745,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     private ensureHighlightToken?: ReturnType<typeof setTimeout>;
     private subElementHighlightTimeoutToken?: ReturnType<typeof setTimeout>;
+    private startRecordTimeoutToken?: ReturnType<typeof setTimeout>;
 
     // This is a monumentally ugly workaround for BL-10471, a problem where a page has an image description
     // recorded in sentence mode that comes before a main body recorded in text mode. Somehow, things happen
@@ -2756,11 +2784,20 @@ export default class AudioRecording implements IAudioRecorder {
         this.clearSubElementHighlightTimeout();
         clearTimeout(this.ensureHighlightToken);
         this.ensureHighlightToken = undefined;
+        this.clearStartRecordTimeout();
+    }
+
+    private clearStartRecordTimeout() {
+        clearTimeout(this.startRecordTimeoutToken);
+        this.startRecordTimeoutToken = undefined;
     }
 
     // Should be called when whatever tool uses this is about to be hidden (e.g., changing tools or closing toolbox)
     public handleToolHiding() {
         this.isShowing = false;
+        // This ensures that no in-progress playback gets resumed by a timeout or end-play handler
+        // after the tool closes.
+        ++this.currentAudioSessionNum;
         this.stopListeningForLevels();
         // In case this initialize loop is still going, stop it. Passing an invalid value won't hurt.
         this.clearTimeouts();
