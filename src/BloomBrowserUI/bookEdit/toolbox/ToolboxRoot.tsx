@@ -57,6 +57,7 @@ const subscriptionToolIds = new Set<string>(["canvas", "motion", "music"]);
 const toolIconPathByToolId: Record<string, string> = {
     talkingBook: "/bloom/images/microphone-white.svg",
     decodableReader: "/bloom/images/keys-white.png",
+    decodableReaderNew: "/bloom/images/keys-white.png",
     leveledReader: "/bloom/images/steps-white.png",
     signLanguage: "/bloom/bookEdit/toolbox/signLanguage/signLanguageTool.svg",
     music: "/bloom/bookEdit/toolbox/music/music-notes-white.svg",

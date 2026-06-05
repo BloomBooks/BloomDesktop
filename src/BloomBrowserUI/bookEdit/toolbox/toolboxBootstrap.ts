@@ -79,6 +79,7 @@ import {
     initializeReaderSetupDialog,
     closeSetupDialog,
 } from "./readers/readerSetup/readerSetupDialog";
+import { DecodableReaderTool } from "./readers/decodableReader/decodableReaderTool";
 
 export function canUndo(): boolean {
     const readerToolsModel = getTheOneReaderToolsModel();
@@ -122,6 +123,7 @@ $(document).ready(() => {
 // The imports we need to make these calls possible also serve to ensure that each
 // toolbox's code is made part of the bundle.
 ToolBox.registerTool(new DecodableReaderToolboxTool());
+ToolBox.registerTool(new DecodableReaderTool());
 ToolBox.registerTool(new LeveledReaderToolboxTool());
 ToolBox.registerTool(new MusicToolAdaptor());
 ToolBox.registerTool(new ImpairmentVisualizerAdaptor());
