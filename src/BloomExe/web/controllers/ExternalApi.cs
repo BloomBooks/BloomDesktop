@@ -5,6 +5,7 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 using SIL.Reporting;
 
 namespace Bloom.web.controllers
@@ -19,17 +20,20 @@ namespace Bloom.web.controllers
         private BloomLibraryBookApiClient _bloomLibraryBookApiClient;
         private readonly CollectionModel _collectionModel;
         private readonly EditingModel _editingModel;
+        private readonly WorkspaceTabSelection _tabSelection;
 
         // Called by autofac, which creates the one instance and registers it with the server.
         public ExternalApi(
             BloomLibraryBookApiClient bloomLibraryBookApiClient,
             CollectionModel collectionModel,
-            EditingModel editingModel
+            EditingModel editingModel,
+            WorkspaceTabSelection tabSelection
         )
         {
             _bloomLibraryBookApiClient = bloomLibraryBookApiClient;
             _collectionModel = collectionModel;
             _editingModel = editingModel;
+            _tabSelection = tabSelection;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -67,7 +71,7 @@ namespace Bloom.web.controllers
                 false
             );
 
-            // This is called from bloomlibrary.org after a successful logout.
+            // This is called from outside Bloom (e.g. bloomlibrary.org) to bring the Bloom window to the front.
             apiHandler.RegisterEndpointHandler(
                 "external/bringToFront",
                 request =>
@@ -99,6 +103,85 @@ namespace Bloom.web.controllers
                 HandleUpdateBook,
                 handleOnUiThread: true
             );
+
+            // Called by an external utility to make the running Bloom select a particular book in the
+            // collection (the one whose 'id' is supplied). This changes the current selection just as if
+            // the user had clicked the book in the collection list.
+            //
+            // We only honor this when the Collection tab is active. Changing the selection while the user
+            // is mid-edit would silently discard their unsaved page edits (EditingModel.OnBookSelectionChanged
+            // clears _havePageToSave and tears down the live editor) and could leave the Edit tab in a bad
+            // state. So if we're not on the Collection tab, we ignore the request rather than risk havoc.
+            //
+            // This must run on the UI thread because changing the selection updates the UI.
+            apiHandler.RegisterEndpointHandler(
+                "external/selectBook",
+                HandleSelectBook,
+                handleOnUiThread: true
+            );
+        }
+
+        private void HandleSelectBook(ApiRequest request)
+        {
+            if (request.HttpMethod == HttpMethods.Options)
+            {
+                // Allow a CORS preflight request to succeed (as the other external endpoints do).
+                request.PostSucceeded();
+                return;
+            }
+            if (request.HttpMethod != HttpMethods.Post)
+            {
+                request.Failed("external/selectBook only supports POST");
+                return;
+            }
+
+            string id = null;
+            try
+            {
+                // Parse with Newtonsoft rather than Bloom's DynamicJson for consistency with updateBook
+                // (DynamicJson's JSON->XML conversion can choke on Windows paths and other content).
+                var data = Newtonsoft.Json.Linq.JObject.Parse(request.RequiredPostJson());
+                id = (string)data["id"];
+                if (string.IsNullOrEmpty(id))
+                {
+                    request.Failed("external/selectBook requires a book 'id'");
+                    return;
+                }
+
+                // Only change the selection when the Collection tab is active. If the user is editing
+                // or publishing, quietly ignore the request rather than discard their work or disrupt
+                // their current tab. We still report success so the caller isn't treated as an error.
+                if (_tabSelection.ActiveTab != WorkspaceTab.collection)
+                {
+                    Logger.WriteEvent(
+                        "external/selectBook ignored for book id "
+                            + id
+                            + " because the Collection tab is not active (ActiveTab="
+                            + _tabSelection.ActiveTab
+                            + ")"
+                    );
+                    request.PostSucceeded();
+                    return;
+                }
+
+                var editableCollection = _collectionModel.TheOneEditableCollection;
+                var collectionPath = editableCollection.PathToDirectory;
+                var bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+                if (bookInfo == null)
+                {
+                    request.Failed("external/selectBook could not find a book with id " + id);
+                    return;
+                }
+
+                _collectionModel.SelectBook(_collectionModel.GetBookFromBookInfo(bookInfo));
+
+                request.PostSucceeded();
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("external/selectBook failed for book id " + id, e);
+                request.Failed("external/selectBook failed: " + e.Message);
+            }
         }
 
         private void HandleUpdateBook(ApiRequest request)
