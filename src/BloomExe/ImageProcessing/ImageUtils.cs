@@ -686,6 +686,7 @@ namespace Bloom.ImageProcessing
         )
         {
             //LogMemoryUsage();
+            var pageNeedsTransparency = ShouldMakeTransparentForPageBackground(pageBackgroundColor);
 
             // As of BL-15441, we aren't using real placeHolder image files anymore. But if one is there,
             // don't go through all the processing and saving machinations for it.
@@ -734,13 +735,12 @@ namespace Bloom.ImageProcessing
                 // Compute once; the result drives both the JPEG→PNG conversion below and the
                 // PNG→JPEG guard in convertedToJpeg. Running GraphicsMagick twice would be wasteful.
                 var isLineArt = ShouldMakeBackgroundTransparent(imageInfo);
-                var shouldMakeTransparentForPageBackground =
-                    isLineArt && ShouldMakeTransparentForPageBackground(pageBackgroundColor);
+                var shouldMakeImageTransparent = isLineArt && pageNeedsTransparency;
                 // Convert JPEG line art to PNG on insert: JPEGs can't carry transparency, so a
                 // line-art JPEG would never get its background made transparent when shown on a
                 // colored page background. Saving as PNG fixes that at the cost of slightly larger
                 // files, which is worth it for images that we want to make transparent (BL-16336).
-                if (saveAsJpeg && shouldMakeTransparentForPageBackground)
+                if (saveAsJpeg && shouldMakeImageTransparent)
                     saveAsJpeg = false;
                 // Don't convert line-art PNGs to JPEG: JPEG is only right for photographic content.
                 var convertedToJpeg =
@@ -811,7 +811,7 @@ namespace Bloom.ImageProcessing
                     else
                         RobustFile.Copy(sourcePath, destinationPath);
                 }
-                if (shouldMakeTransparentForPageBackground)
+                if (shouldMakeImageTransparent)
                     ApplyBloomTransparencyToFile(destinationPath);
                 if (_createdTempImageFile != null)
                 {

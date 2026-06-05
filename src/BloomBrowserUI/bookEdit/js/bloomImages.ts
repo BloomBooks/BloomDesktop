@@ -274,7 +274,7 @@ export function doImageCommand(
     });
 }
 
-function getOwningPageBackgroundColor(element: HTMLElement): string {
+export function getOwningPageBackgroundColor(element: HTMLElement): string {
     const page = element.closest(".bloom-page") as HTMLElement | null;
     if (!page) {
         return "";

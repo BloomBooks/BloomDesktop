@@ -440,7 +440,7 @@ namespace Bloom.Publish
             // use the body element instead.
             dom.Body.AddClass("drag-activity-play");
 
-            MarkCoverImageForTransparency(dom);
+            MarkImagesForTransparency(dom);
 
             return BloomServer.MakeInMemoryHtmlFileInBookFolder(
                 dom,
@@ -448,28 +448,33 @@ namespace Bloom.Publish
             );
         }
 
-        private void MarkCoverImageForTransparency(HtmlDom dom)
+        private void MarkImagesForTransparency(HtmlDom dom)
         {
             // If the user doesn't want to include background colors on the pages, then there's
             // no need to make black and white pictures transparent.
             if (_currentlyLoadedBook?.UserPrefs.IncludeBackgroundColors != true)
                 return;
-            var coverImgNodes = dom.SafeSelectNodes(
-                "//div[contains(@class,'bloom-page') and contains(@class,'coverColor')]//img[@src]"
-            );
-            foreach (var img in coverImgNodes)
+            foreach (
+                SafeXmlElement pageDiv in dom.SafeSelectNodes(
+                    "//div[contains(@class,'bloom-page')]"
+                )
+            )
             {
-                var classAttr = img.GetAttribute("class");
-                if (classAttr.Contains("branding") || classAttr.Contains("bloom-qrcode"))
+                if (!HtmlDom.PageNeedsTransparentImages(pageDiv))
                     continue;
-                var src = img.GetAttribute("src");
-                if (!string.IsNullOrEmpty(src))
+                foreach (SafeXmlElement img in pageDiv.SafeSelectNodes(".//img[@src]"))
                 {
-                    if (src.Contains("?"))
-                        src = src + "&transparent=yes";
-                    else
-                        src = src + "?transparent=yes";
-                    img.SetAttribute("src", src);
+                    var classAttr = img.GetAttribute("class");
+                    if (classAttr.Contains("branding") || classAttr.Contains("bloom-qrcode"))
+                        continue;
+                    var src = img.GetAttribute("src");
+                    if (!string.IsNullOrEmpty(src))
+                    {
+                        src = src.Contains("?")
+                            ? src + "&transparent=yes"
+                            : src + "?transparent=yes";
+                        img.SetAttribute("src", src);
+                    }
                 }
             }
         }

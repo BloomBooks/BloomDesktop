@@ -235,7 +235,7 @@ namespace Bloom.Publish.BloomPub
             }
             else
             {
-                coverImages = FindCoverImages(dom);
+                coverImages = FindImagesOnColoredBackgrounds(dom);
             }
             imagesToPreserveResolution = FindImagesToPreserveResolution(dom);
 
@@ -293,31 +293,42 @@ namespace Bloom.Publish.BloomPub
 
         private const string kBackgroundImage = "background-image:url('"; // must match format string in HtmlDom.SetImageElementUrl()
 
-        private static List<string> FindCoverImages(SafeXmlDocument xmlDom)
+        private static List<string> FindImagesOnColoredBackgrounds(SafeXmlDocument xmlDom)
         {
             var transparentImageFiles = new List<string>();
             foreach (
-                var div in xmlDom
-                    .SafeSelectNodes(
-                        "//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-background-image-in-style-attr')]"
-                    )
+                SafeXmlElement pageDiv in xmlDom
+                    .SafeSelectNodes("//div[contains(@class,'bloom-page')]")
                     .Cast<SafeXmlElement>()
             )
             {
-                var style = div.GetAttribute("style");
-                if (!String.IsNullOrEmpty(style) && style.Contains("background-image:url"))
+                if (!HtmlDom.PageNeedsTransparentImages(pageDiv))
+                    continue;
+                foreach (
+                    var div in pageDiv
+                        .SafeSelectNodes(
+                            ".//div[contains(@class,'bloom-background-image-in-style-attr')]"
+                        )
+                        .Cast<SafeXmlElement>()
+                )
                 {
-                    // extract filename from the background-image style
-                    transparentImageFiles.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
-                }
-                else
-                {
-                    // extract filename from child img element
-                    var img = div.SelectSingleNode("//img[@src]");
-                    if (img != null)
+                    var style = div.GetAttribute("style");
+                    if (!String.IsNullOrEmpty(style) && style.Contains("background-image:url"))
+                    {
+                        // extract filename from the background-image style
                         transparentImageFiles.Add(
-                            System.Web.HttpUtility.UrlDecode(img.GetAttribute("src"))
+                            ExtractFilenameFromBackgroundImageStyleUrl(style)
                         );
+                    }
+                    else
+                    {
+                        // extract filename from child img element
+                        var img = div.SelectSingleNode("//img[@src]");
+                        if (img != null)
+                            transparentImageFiles.Add(
+                                System.Web.HttpUtility.UrlDecode(img.GetAttribute("src"))
+                            );
+                    }
                 }
             }
             return transparentImageFiles;

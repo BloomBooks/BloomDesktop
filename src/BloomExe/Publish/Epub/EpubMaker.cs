@@ -2199,16 +2199,17 @@ namespace Bloom.Publish.Epub
                 }
                 else
                 {
-                    var isCoverImage =
-                        img.SafeSelectNodes(
-                                "ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]"
-                            )
-                            .Cast<SafeXmlElement>()
-                            .Count() != 0;
+                    var owningPage = img.SafeSelectNodes(
+                            "ancestor::div[contains(@class,'bloom-page')]"
+                        )
+                        .Cast<SafeXmlElement>()
+                        .LastOrDefault(); // last ancestor = nearest page div
+                    var isOnColoredBackground =
+                        owningPage != null && HtmlDom.PageNeedsTransparentImages(owningPage);
                     var dstPath = CopyFileToEpub(
                         srcPath,
                         limitImageDimensions: true,
-                        forUseOnColoredBackground: isCoverImage,
+                        forUseOnColoredBackground: isOnColoredBackground,
                         subfolder: kImagesFolder,
                         imageSettings: imageSettings
                     );
