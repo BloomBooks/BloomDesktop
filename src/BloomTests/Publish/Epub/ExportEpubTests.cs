@@ -2995,7 +2995,8 @@ namespace BloomTests.Publish.Epub
             string dstPath,
             ImagePublishSettings imagePublishSettings,
             bool reduceImageIfPossible = false,
-            bool makeTransparentifAppropriate = false
+            bool makeTransparentifAppropriate = false,
+            bool forceTransparent = false
         )
         {
             if (srcPath.Contains("notareallocation"))

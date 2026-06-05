@@ -1988,6 +1988,26 @@
         <note>ID: EditTab.Image.Reset</note>
         <note>Removes cropping from image</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.Background" translate="no">
+        <source xml:lang="en">Background</source>
+        <note>ID: EditTab.Image.Background</note>
+        <note>Submenu for controlling whether the image background is made transparent</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Background.Auto" translate="no">
+        <source xml:lang="en">Auto</source>
+        <note>ID: EditTab.Image.Background.Auto</note>
+        <note>Image background transparency is automatic: transparent when the page has a colored background</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Background.Transparent" translate="no">
+        <source xml:lang="en">Transparent</source>
+        <note>ID: EditTab.Image.Background.Transparent</note>
+        <note>Always make the image background transparent regardless of page color</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Background.Opaque" translate="no">
+        <source xml:lang="en">Opaque</source>
+        <note>ID: EditTab.Image.Background.Opaque</note>
+        <note>Never make the image background transparent</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
         <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
         <note>ID: EditTab.Image.TooLarge</note>

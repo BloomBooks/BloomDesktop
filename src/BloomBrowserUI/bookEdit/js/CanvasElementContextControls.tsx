@@ -20,9 +20,12 @@ import { LinkIcon } from "./LinkIcon";
 import { showCopyrightAndLicenseDialog } from "../workspaceRoot";
 import {
     doImageCommand,
+    getImageTransparencyMode,
     getImageUrlFromImageContainer,
+    getOwningPageBackgroundColor,
     kImageContainerClass,
     isPlaceHolderImage,
+    setImgTransparentParam,
 } from "./bloomImages";
 import {
     doVideoCommand,
@@ -1810,6 +1813,68 @@ function addImageMenuOptions(
                     css={getMenuIconCss(1, "left: -1px; width: 22px;")}
                 />
             ),
+        },
+        {
+            l10nId: "EditTab.Image.Background",
+            english: "Background",
+            onClick: () => {},
+            disabled: !realImagePresent,
+            subMenu: [
+                {
+                    l10nId: "EditTab.Image.Background.Auto",
+                    english: "Auto",
+                    icon:
+                        !img.classList.contains("bloom-transparent") &&
+                        !img.classList.contains("bloom-opaque") ? (
+                            <CheckIcon css={getMenuIconCss()} />
+                        ) : undefined,
+                    onClick: () => {
+                        img.classList.remove(
+                            "bloom-transparent",
+                            "bloom-opaque",
+                        );
+                        const bgColor = getOwningPageBackgroundColor(img);
+                        // After removing classes, getImageTransparencyMode returns "auto" or "none".
+                        setImgTransparentParam(
+                            img,
+                            getImageTransparencyMode(img, !!bgColor),
+                        );
+                        setMenuOpen(false);
+                    },
+                },
+                {
+                    l10nId: "EditTab.Image.Background.Transparent",
+                    english: "Transparent",
+                    icon: img.classList.contains("bloom-transparent") ? (
+                        <CheckIcon css={getMenuIconCss()} />
+                    ) : undefined,
+                    onClick: () => {
+                        img.classList.add("bloom-transparent");
+                        img.classList.remove("bloom-opaque");
+                        const bgColor = getOwningPageBackgroundColor(img);
+                        // After adding bloom-transparent, getImageTransparencyMode returns "force" or "none".
+                        setImgTransparentParam(
+                            img,
+                            getImageTransparencyMode(img, !!bgColor),
+                        );
+                        setMenuOpen(false);
+                    },
+                },
+                {
+                    l10nId: "EditTab.Image.Background.Opaque",
+                    english: "Opaque",
+                    icon: img.classList.contains("bloom-opaque") ? (
+                        <CheckIcon css={getMenuIconCss()} />
+                    ) : undefined,
+                    onClick: () => {
+                        img.classList.add("bloom-opaque");
+                        img.classList.remove("bloom-transparent");
+                        // bloom-opaque always means "none" regardless of page background.
+                        setImgTransparentParam(img, "none");
+                        setMenuOpen(false);
+                    },
+                },
+            ],
         },
     ];
 

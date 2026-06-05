@@ -832,6 +832,9 @@ namespace Bloom.ImageProcessing
             string sourcePath,
             string destDir,
             bool transparent = false,
+            // True means we want to make the background transparent even if the image doesn't look like line art.
+            // (It won't force it to be made transparent if the page has a white background, though.)
+            bool forceTransparent = false,
             int maxShortSide = 0,
             int maxLongSide = 0
         )
@@ -853,11 +856,11 @@ namespace Bloom.ImageProcessing
                 var isJpeg = AppearsToBeJpeg(imageInfo);
                 var isPng = AppearsToBePng(imageInfo);
                 var isWebFormat = isJpeg || isPng;
-                var isLineArt = ShouldMakeBackgroundTransparent(imageInfo);
-                var shouldMakeTransparent = transparent && isLineArt;
+                var imageCanBeMadeTransparent = forceTransparent ||ShouldMakeBackgroundTransparent(imageInfo);
+                var shouldMakeTransparent = transparent && imageCanBeMadeTransparent;
                 // Would a PNG→JPEG size-saving conversion be worth trying?
                 var tryJpegConversion =
-                    !shouldMakeTransparent && !isLineArt && !HasTransparency(imageInfo.Image);
+                    !shouldMakeTransparent && !imageCanBeMadeTransparent && !HasTransparency(imageInfo.Image);
 
                 // If only a JPEG conversion is being considered (no resize, already web format,
                 // no transparency), attempt it and bail out either way — no point copying a file
@@ -3375,6 +3378,18 @@ namespace Bloom.ImageProcessing
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// Like <see cref="MakeTransparentBackgroundIfNeeded"/> but always applies the
+        /// transparency algorithm, bypassing the line-art detection check.
+        /// Used when an image has the <c>bloom-transparent</c> class (<c>transparent=force</c>).
+        /// </summary>
+        internal static bool MakeTransparentBackground(string sourcePath, string destinationPath)
+        {
+            RobustFile.Copy(sourcePath, destinationPath, true);
+            ApplyBloomTransparencyToFile(destinationPath);
+            return true;
         }
     }
 }

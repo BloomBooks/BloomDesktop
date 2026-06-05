@@ -37,16 +37,35 @@ namespace Bloom.ImageProcessing
             _bookRenamedEvent = bookRenamedEvent;
             _originalPathToProcessedVersionPath = new ConcurrentDictionary<string, string>();
             _imageFilesToReturnUnprocessed = new ConcurrentDictionary<string, bool>();
-            _cacheFolder = Path.Combine(Path.GetTempPath(), "Bloom");
+            // Use a dedicated subfolder so we can safely delete the whole folder on cleanup.
+            _cacheFolder = Path.Combine(Path.GetTempPath(), "Bloom", "ImageCache");
             _bookRenamedEvent.Subscribe(OnBookRenamed);
         }
 
         private void OnBookRenamed(KeyValuePair<string, string> fromPathAndToPath)
         {
-            //Note, we don't pay attention to what the change was, we just purge the whole cache
+            // Don't pay attention to what the change was; just purge the whole cache.
+            ClearAll();
+        }
 
+        /// <summary>
+        /// Clear all cached image data and delete the cached files. Call when switching books
+        /// or renaming a book so the next requests use fresh processing.
+        /// </summary>
+        public void ClearAll()
+        {
             TryToDeleteCachedImages();
             _originalPathToProcessedVersionPath = new ConcurrentDictionary<string, string>();
+            _imageFilesToReturnUnprocessed = new ConcurrentDictionary<string, bool>();
+        }
+
+        /// <summary>
+        /// Clear only the "no-processing-needed" skip list, leaving cached files intact.
+        /// Call when page appearance changes (e.g., background color) so images are
+        /// re-evaluated for transparency on the next request.
+        /// </summary>
+        public void ClearUnprocessedList()
+        {
             _imageFilesToReturnUnprocessed = new ConcurrentDictionary<string, bool>();
         }
 
@@ -58,9 +77,19 @@ namespace Bloom.ImageProcessing
             TryToDeleteCachedImages();
             _originalPathToProcessedVersionPath = null;
 
-            //NB: this turns out to be dangerous. Without it, we still delete all we can, leave some files around
-            //each time, and then deleting them on the next run
-            //			_cacheFolder.Dispose();
+            // Try to delete the entire cache folder (catches files from previous sessions
+            // that weren't tracked in _originalPathToProcessedVersionPath).
+            // This is deliberately NOT using a Robust method. We don't want to delay things
+            // if we can't clean up the temp files right now.
+            try
+            {
+                if (Directory.Exists(_cacheFolder))
+                    Directory.Delete(_cacheFolder, recursive: true);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("RuntimeImageProcessor Dispose() folder delete: " + e.Message);
+            }
 
             GC.SuppressFinalize(this);
         }
@@ -91,7 +120,8 @@ namespace Bloom.ImageProcessing
         public string GetPathToAdjustedImage(
             string originalPath,
             bool getThumbnail = false,
-            bool transparent = false
+            bool transparent = false,
+            bool forceTransparent = false
         )
         {
             //don't mess with Bloom UI images
@@ -100,10 +130,14 @@ namespace Bloom.ImageProcessing
 
             // Each combination of processing flags needs its own cache entry.
             var cacheFileName = originalPath;
-            if (getThumbnail && transparent)
+            if (getThumbnail && forceTransparent)
+                cacheFileName = "force_thumbnail_" + cacheFileName;
+            else if (getThumbnail && transparent)
                 cacheFileName = "transparent_thumbnail_" + cacheFileName;
             else if (getThumbnail)
                 cacheFileName = "thumbnail_" + cacheFileName;
+            else if (forceTransparent)
+                cacheFileName = "force_" + cacheFileName;
             else if (transparent)
                 cacheFileName = "transparent_" + cacheFileName;
 
@@ -155,16 +189,23 @@ namespace Bloom.ImageProcessing
                     }
                     else
                     {
-                        if (transparent && ImageUtils.IsPngFile(pathToProcessedImage))
+                        if ((transparent || forceTransparent) && ImageUtils.IsPngFile(pathToProcessedImage))
                         {
                             // Apply transparency to the PNG thumbnail in-place.
+                            // forceTransparent: always apply; transparent: apply only if line art.
                             using var tempFile = TempFile.WithExtension(".png");
-                            if (
-                                ImageUtils.MakeTransparentBackgroundIfNeeded(
+                            bool applied;
+                            if (forceTransparent)
+                                applied = ImageUtils.MakeTransparentBackground(
                                     pathToProcessedImage,
                                     tempFile.Path
-                                )
-                            )
+                                );
+                            else
+                                applied = ImageUtils.MakeTransparentBackgroundIfNeeded(
+                                    pathToProcessedImage,
+                                    tempFile.Path
+                                );
+                            if (applied)
                                 RobustFile.Copy(tempFile.Path, pathToProcessedImage, true);
                         }
                         processedPath = pathToProcessedImage;
@@ -175,7 +216,8 @@ namespace Bloom.ImageProcessing
                     processedPath = ImageUtils.AdjustImageForDisplay(
                         originalPath,
                         _cacheFolder,
-                        transparent
+                        transparent,
+                        forceTransparent
                     );
                 }
 

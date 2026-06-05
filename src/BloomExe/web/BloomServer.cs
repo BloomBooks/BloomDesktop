@@ -200,6 +200,8 @@ namespace Bloom.Api
             _useCache = Settings.Default.ImageHandler != "off";
             ApiHandler = new BloomApiHandler(bookSelection);
             _theOneInstance = this;
+            _bookSelection.SelectionChanged += (_, _) => _cache?.ClearAll();
+            HtmlDom.PageBackgroundChangedCallback = () => _cache?.ClearUnprocessedList();
         }
 
 #if DEBUG
@@ -1071,8 +1073,10 @@ namespace Bloom.Api
             if (processImage && _useCache)
             {
                 var thumb = info.GetQueryParameters()["thumbnail"] != null;
-                var transparent = info.GetQueryParameters()["transparent"] == "yes";
-                imageFile = _cache.GetPathToAdjustedImage(imageFile, thumb, transparent);
+                var transparentParam = info.GetQueryParameters()["transparent"];
+                var transparent = transparentParam == "yes" || transparentParam == "force";
+                var forceTransparent = transparentParam == "force";
+                imageFile = _cache.GetPathToAdjustedImage(imageFile, thumb, transparent, forceTransparent);
 
                 if (String.IsNullOrEmpty(imageFile))
                     return false;

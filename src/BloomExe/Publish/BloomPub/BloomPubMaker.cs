@@ -216,7 +216,8 @@ namespace Bloom.Publish.BloomPub
         )
         {
             List<string> imagesToPreserveResolution;
-            List<string> coverImages;
+            // Maps filename → forceTransparent (true = bloom-transparent, false = auto line-art check)
+            Dictionary<string, bool> coverImages;
 
             var fullScreenAttr = dom.GetElementsByTagName("body")
                 .Cast<SafeXmlElement>()
@@ -230,8 +231,8 @@ namespace Bloom.Publish.BloomPub
                 // This feature (currently used for motion books in landscape mode) triggers an all-black background,
                 // due to a rule in bookFeatures.less.
                 // Making white pixels transparent on an all-black background makes line-art disappear,
-                // which is bad (BL-6564), so just make an empty list in this case.
-                coverImages = new List<string>();
+                // which is bad (BL-6564), so just make an empty dict in this case.
+                coverImages = new Dictionary<string, bool>();
             }
             else
             {
@@ -257,11 +258,14 @@ namespace Bloom.Publish.BloomPub
                     var fileName = Path.GetFileName(filePath);
                     if (imagesToPreserveResolution.Contains(fileName))
                         continue;
-                    var transparent = coverImages.Contains(fileName);
+                    if (!coverImages.TryGetValue(fileName, out var forceTransparent))
+                        forceTransparent = false;
+                    var transparent = coverImages.ContainsKey(fileName);
                     var adjustedPath = ImageUtils.AdjustImageForDisplay(
                         filePath,
                         tempDir.FolderPath,
                         transparent,
+                        forceTransparent,
                         maxShortSide,
                         maxLongSide
                     );
@@ -326,45 +330,76 @@ namespace Bloom.Publish.BloomPub
 
         private const string kBackgroundImage = "background-image:url('"; // must match format string in HtmlDom.SetImageElementUrl()
 
-        private static List<string> FindImagesOnColoredBackgrounds(SafeXmlDocument xmlDom)
+        // Returns a dictionary mapping image filename → forceTransparent.
+        // forceTransparent=true means the bloom-transparent class was present (always apply
+        // transparency); false means auto-detect (apply only if image is line art).
+        // Images not in the dictionary should not have transparency applied.
+        // When a filename appears with both true and false (from different elements),
+        // the Force setting wins.
+        private static Dictionary<string, bool> FindImagesOnColoredBackgrounds(
+            SafeXmlDocument xmlDom
+        )
         {
-            var transparentImageFiles = new List<string>();
+            var result = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
             foreach (
                 SafeXmlElement pageDiv in xmlDom
                     .SafeSelectNodes("//div[contains(@class,'bloom-page')]")
                     .Cast<SafeXmlElement>()
             )
             {
-                if (!HtmlDom.PageNeedsTransparentImages(pageDiv))
-                    continue;
+                var pageNeedsTransparent = HtmlDom.PageNeedsTransparentImages(pageDiv);
+
+                // Background-image style divs: page-level check only (no img class to check).
+                if (pageNeedsTransparent)
+                {
+                    foreach (
+                        var div in pageDiv
+                            .SafeSelectNodes(
+                                ".//div[contains(@class,'bloom-background-image-in-style-attr')]"
+                            )
+                            .Cast<SafeXmlElement>()
+                    )
+                    {
+                        string filename = null;
+                        var style = div.GetAttribute("style");
+                        if (!String.IsNullOrEmpty(style) && style.Contains("background-image:url"))
+                            filename = ExtractFilenameFromBackgroundImageStyleUrl(style);
+                        else
+                        {
+                            var img = div.SelectSingleNode("//img[@src]");
+                            if (img != null)
+                                filename = System.Web.HttpUtility.UrlDecode(
+                                    img.GetAttribute("src")
+                                );
+                        }
+                        if (!string.IsNullOrEmpty(filename))
+                            result.TryAdd(filename, false); // auto; don't downgrade an existing Force
+                    }
+                }
+
+                // Regular img elements: per-image class check.
                 foreach (
-                    var div in pageDiv
-                        .SafeSelectNodes(
-                            ".//div[contains(@class,'bloom-background-image-in-style-attr')]"
-                        )
+                    SafeXmlElement img in pageDiv
+                        .SafeSelectNodes(".//img[@src]")
                         .Cast<SafeXmlElement>()
                 )
                 {
-                    var style = div.GetAttribute("style");
-                    if (!String.IsNullOrEmpty(style) && style.Contains("background-image:url"))
-                    {
-                        // extract filename from the background-image style
-                        transparentImageFiles.Add(
-                            ExtractFilenameFromBackgroundImageStyleUrl(style)
-                        );
-                    }
-                    else
-                    {
-                        // extract filename from child img element
-                        var img = div.SelectSingleNode("//img[@src]");
-                        if (img != null)
-                            transparentImageFiles.Add(
-                                System.Web.HttpUtility.UrlDecode(img.GetAttribute("src"))
-                            );
-                    }
+                    var classAttr = img.GetAttribute("class") ?? "";
+                    if (classAttr.Contains("branding") || classAttr.Contains("bloom-qrcode"))
+                        continue;
+                    var mode = HtmlDom.GetImageTransparencyMode(classAttr, pageNeedsTransparent);
+                    if (mode == HtmlDom.ImageTransparencyMode.None)
+                        continue;
+                    var filename = System.Web.HttpUtility.UrlDecode(img.GetAttribute("src"));
+                    if (string.IsNullOrEmpty(filename))
+                        continue;
+                    var force = mode == HtmlDom.ImageTransparencyMode.Force;
+                    // Force wins: once a file is marked Force it stays Force.
+                    if (!result.TryAdd(filename, force) && force)
+                        result[filename] = true;
                 }
             }
-            return transparentImageFiles;
+            return result;
         }
 
         private static List<string> FindImagesToPreserveResolution(SafeXmlDocument dom)

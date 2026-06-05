@@ -1951,6 +1951,45 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// Set by BloomServer; invoked when ProcessPageAfterEditing detects that a page's
+        /// background color changed, so the image cache can drop stale "no-processing-needed"
+        /// entries and re-evaluate transparency on the next request.
+        /// </summary>
+        private static Action _pageBackgroundChangedCallback;
+        public static Action PageBackgroundChangedCallback
+        {
+            get => _pageBackgroundChangedCallback;
+            set => _pageBackgroundChangedCallback = value;
+        }
+
+        private static readonly char[] kStyleSeparators = { ';' };
+
+        private static string GetPageBackgroundColorFromStyle(SafeXmlElement pageDiv)
+        {
+            var style = pageDiv.GetAttribute("style");
+            if (string.IsNullOrEmpty(style))
+                return string.Empty;
+            foreach (
+                var segment in style.Split(kStyleSeparators, StringSplitOptions.RemoveEmptyEntries)
+            )
+            {
+                var colonIndex = segment.IndexOf(':');
+                if (colonIndex <= 0)
+                    continue;
+                if (
+                    segment[..colonIndex]
+                        .Trim()
+                        .Equals(
+                            "--page-background-color",
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                )
+                    return segment[(colonIndex + 1)..].Trim();
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Returns true if the given bloom-page div has a non-white, non-transparent background
         /// color, meaning images on this page should have their backgrounds made transparent.
         /// Considers --page-background-color in the page's inline style (content pages set via
@@ -2034,9 +2073,42 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// For each image on a page that needs transparent images (per
-        /// <see cref="PageNeedsTransparentImages"/>), append <c>?transparent=yes</c> (or
-        /// <c>&amp;transparent=yes</c>) to the img src. Returns a list of modified
+        /// Transparency mode for a specific image element on a specific page.
+        /// </summary>
+        internal enum ImageTransparencyMode
+        {
+            /// <summary>Do not apply transparency (bloom-opaque class, or white/no page background).</summary>
+            None,
+            /// <summary>Apply transparency only if the image is detected as line art (transparent=yes).</summary>
+            Auto,
+            /// <summary>Always apply transparency, bypassing the line-art check (transparent=force).</summary>
+            Force,
+        }
+
+        /// <summary>
+        /// Returns the transparency mode for a specific image on a specific page, respecting
+        /// the bloom-transparent and bloom-opaque per-image class overrides.
+        /// The page background gate is applied first: if the page does not have a colored
+        /// background, this always returns <see cref="ImageTransparencyMode.None"/>.
+        /// </summary>
+        internal static ImageTransparencyMode GetImageTransparencyMode(
+            string imgClassAttr,
+            bool pageNeedsTransparent
+        )
+        {
+            if (imgClassAttr.Contains("bloom-opaque") || !pageNeedsTransparent)
+                return ImageTransparencyMode.None;
+            if (imgClassAttr.Contains("bloom-transparent"))
+                return ImageTransparencyMode.Force;
+            return ImageTransparencyMode.Auto;
+        }
+
+        /// <summary>
+        /// For each image that needs transparent rendering, append the appropriate
+        /// <c>transparent</c> query parameter to the img src:
+        /// <c>transparent=yes</c> for auto-detect mode, <c>transparent=force</c> to
+        /// bypass the line-art check (bloom-transparent class). Images with bloom-opaque
+        /// or on white pages receive no parameter. Returns a list of modified
         /// (element, original-src) pairs so the caller can restore them with
         /// <see cref="RestoreImageSrcs"/>.
         /// </summary>
@@ -2052,8 +2124,7 @@ namespace Bloom.Book
                     .Cast<SafeXmlElement>()
             )
             {
-                if (!PageNeedsTransparentImages(pageDiv))
-                    continue;
+                var pageNeedsTransparent = PageNeedsTransparentImages(pageDiv);
                 foreach (
                     SafeXmlElement img in pageDiv
                         .SafeSelectNodes(".//img[@src]")
@@ -2063,13 +2134,19 @@ namespace Bloom.Book
                     var classAttr = img.GetAttribute("class") ?? "";
                     if (classAttr.Contains("branding") || classAttr.Contains("bloom-qrcode"))
                         continue;
+                    var mode = GetImageTransparencyMode(classAttr, pageNeedsTransparent);
+                    if (mode == ImageTransparencyMode.None)
+                        continue;
                     var src = img.GetAttribute("src");
                     if (string.IsNullOrEmpty(src))
                         continue;
                     modified.Add((img, src));
+                    var paramValue = mode == ImageTransparencyMode.Force ? "force" : "yes";
                     img.SetAttribute(
                         "src",
-                        src.Contains('?') ? src + "&transparent=yes" : src + "?transparent=yes"
+                        src.Contains('?')
+                            ? $"{src}&transparent={paramValue}"
+                            : $"{src}?transparent={paramValue}"
                     );
                 }
             }
@@ -2084,9 +2161,9 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Remove any <c>transparent=yes</c> query parameter from img srcs in
-        /// <paramref name="pageDiv"/>. Call this when page content is received back from
-        /// the browser before saving it permanently to the book DOM.
+        /// Remove any <c>transparent=yes</c> or <c>transparent=force</c> query parameter
+        /// from img srcs in <paramref name="pageDiv"/>. Call this when page content is
+        /// received back from the browser before saving it permanently to the book DOM.
         /// </summary>
         internal static void RemoveTransparencyParamFromImages(SafeXmlElement pageDiv)
         {
@@ -2095,9 +2172,12 @@ namespace Bloom.Book
             )
             {
                 var src = img.GetAttribute("src");
-                if (src == null || !src.Contains("transparent=yes"))
+                if (src == null || !src.Contains("transparent="))
                     continue;
-                src = src.Replace("&transparent=yes", "").Replace("?transparent=yes", "");
+                src = src.Replace("&transparent=yes", "")
+                    .Replace("?transparent=yes", "")
+                    .Replace("&transparent=force", "")
+                    .Replace("?transparent=force", "");
                 img.SetAttribute("src", src);
             }
         }
@@ -2161,6 +2241,9 @@ namespace Bloom.Book
             RemoveCkEditorMarkup(edittedPageDiv);
             RemoveTransparencyParamFromImages(edittedPageDiv);
 
+            // Capture the old background color before we overwrite the style attribute.
+            var oldBackgroundColor = GetPageBackgroundColorFromStyle(destinationPageDiv);
+
             destinationPageDiv.InnerXml = edittedPageDiv.InnerXml;
 
             //Enhance: maybe we should just copy over all attributes?
@@ -2178,6 +2261,12 @@ namespace Bloom.Book
                 destinationPageDiv.RemoveAttribute("style");
             else
                 destinationPageDiv.SetAttribute("style", style);
+
+            // If the background color changed, notify the image cache so it can re-evaluate
+            // which images need transparency on the next request.
+            var newBackgroundColor = GetPageBackgroundColorFromStyle(destinationPageDiv);
+            if (!oldBackgroundColor.Equals(newBackgroundColor, StringComparison.OrdinalIgnoreCase))
+                PageBackgroundChangedCallback?.Invoke();
 
             // Copy the two background audio attributes which can be set using the music toolbox.
             // Ensuring that volume is missing unless the main attribute is non-empty is

@@ -12,6 +12,7 @@ import {
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import { useL10n } from "../../react_components/l10nHooks";
 import { getBloomPageElement } from "../../utils/shared";
+import { updateImageTransparencyForPage } from "../js/bloomImages";
 
 export type IPageSettings = {
     page: {
@@ -205,6 +206,10 @@ const setCurrentPageBackgroundColor = (color: string): void => {
     // color override for the same visible surface.
     setOrRemoveCustomProperty(page.style, "--page-background-color", color);
     page.style.removeProperty("--marginBox-background-color");
+
+    // Immediately update img srcs so the browser re-fetches with the correct
+    // transparency setting without waiting for a page save.
+    updateImageTransparencyForPage(page, color);
 };
 
 const getPageNumberColor = (): string => {

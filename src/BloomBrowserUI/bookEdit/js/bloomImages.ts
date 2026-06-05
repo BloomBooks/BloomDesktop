@@ -298,6 +298,78 @@ export function getOwningPageBackgroundColor(element: HTMLElement): string {
     return result;
 }
 
+// Transparency mode for a single img, mirroring the C# ImageTransparencyMode enum.
+// "none"  = no transparent param (bloom-opaque, or white page)
+// "auto"  = transparent=yes (auto-detect line art)
+// "force" = transparent=force (bloom-transparent: always apply, skip line-art check)
+type TransparencyMode = "none" | "auto" | "force";
+
+// Returns the transparency mode for an img element given whether the owning page
+// has a colored background. The page-background gate is applied first: if the page
+// does not have a colored background this always returns "none".
+export function getImageTransparencyMode(
+    img: HTMLElement,
+    pageNeedsTransparent: boolean,
+): TransparencyMode {
+    const cls = img.className ?? "";
+    if (cls.includes("bloom-opaque") || !pageNeedsTransparent) return "none";
+    if (cls.includes("bloom-transparent")) return "force";
+    return "auto";
+}
+
+// Set (or remove) the transparent query param on a single img's src.
+// "none"  → remove any existing transparent param
+// "auto"  → transparent=yes
+// "force" → transparent=force (bypasses line-art detection on the server)
+export function setImgTransparentParam(
+    img: HTMLElement,
+    mode: TransparencyMode,
+): void {
+    const src = img.getAttribute("src");
+    if (!src) return;
+    // Strip any existing transparent param before re-applying.
+    const cleanSrc = src
+        .replace("&transparent=yes", "")
+        .replace("?transparent=yes", "")
+        .replace("&transparent=force", "")
+        .replace("?transparent=force", "");
+    if (mode === "none") {
+        if (cleanSrc !== src) img.setAttribute("src", cleanSrc);
+        return;
+    }
+    const paramValue = mode === "force" ? "force" : "yes";
+    img.setAttribute(
+        "src",
+        cleanSrc.includes("?")
+            ? `${cleanSrc}&transparent=${paramValue}`
+            : `${cleanSrc}?transparent=${paramValue}`,
+    );
+}
+
+// Update img src attributes on `page` to add or remove the transparent query
+// parameter. Pass the raw CSS color string just applied (empty when clearing).
+// Call immediately after changing --page-background-color so the browser
+// re-fetches images with the correct transparency setting.
+export function updateImageTransparencyForPage(
+    page: HTMLElement,
+    newColor: string,
+): void {
+    const pageNeedsTransparent = !!newColor;
+    for (const img of Array.from(page.querySelectorAll("img"))) {
+        const imgEl = img as HTMLElement;
+        const classAttr = imgEl.className ?? "";
+        if (
+            classAttr.includes("branding") ||
+            classAttr.includes("bloom-qrcode")
+        )
+            continue;
+        setImgTransparentParam(
+            imgEl,
+            getImageTransparencyMode(imgEl, pageNeedsTransparent),
+        );
+    }
+}
+
 function normalizeCssColorToHexOrEmpty(color: string): string {
     const trimmed = color.trim();
     if (

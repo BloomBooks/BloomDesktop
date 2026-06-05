@@ -333,23 +333,29 @@ namespace Bloom.web
             }
 
             MarkImageNodesForThumbnail(pageElement);
-            if (HtmlDom.PageNeedsTransparentImages(pageElement))
+            var pageNeedsTransparent = HtmlDom.PageNeedsTransparentImages(pageElement);
+            foreach (
+                SafeXmlElement img in pageElement
+                    .SafeSelectNodes(".//img[@src]")
+                    .Cast<SafeXmlElement>()
+            )
             {
-                foreach (
-                    SafeXmlElement img in pageElement
-                        .SafeSelectNodes(".//img[@src]")
-                        .Cast<SafeXmlElement>()
-                )
+                var classAttr = img.GetAttribute("class") ?? "";
+                if (classAttr.Contains("branding") || classAttr.Contains("bloom-qrcode"))
+                    continue;
+                var mode = HtmlDom.GetImageTransparencyMode(classAttr, pageNeedsTransparent);
+                if (mode == HtmlDom.ImageTransparencyMode.None)
+                    continue;
+                var src = img.GetAttribute("src");
+                if (!string.IsNullOrEmpty(src))
                 {
-                    var classAttr = img.GetAttribute("class") ?? "";
-                    if (classAttr.Contains("branding") || classAttr.Contains("bloom-qrcode"))
-                        continue;
-                    var src = img.GetAttribute("src");
-                    if (!string.IsNullOrEmpty(src))
-                        img.SetAttribute(
-                            "src",
-                            src.Contains('?') ? src + "&transparent=yes" : src + "?transparent=yes"
-                        );
+                    var paramValue = mode == HtmlDom.ImageTransparencyMode.Force ? "force" : "yes";
+                    img.SetAttribute(
+                        "src",
+                        src.Contains('?')
+                            ? $"{src}&transparent={paramValue}"
+                            : $"{src}?transparent={paramValue}"
+                    );
                 }
             }
             // For WebView2, this prevents any interaction with elements in the page thumbnail.

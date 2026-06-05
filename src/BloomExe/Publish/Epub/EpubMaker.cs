@@ -538,7 +538,13 @@ namespace Bloom.Publish.Epub
             // Cover image file and therefore thumbnail file may be non-existent simply because no cover image was chosen/it was still the placeHolder, not a problem
             if (thumbnailFileExists)
             {
-                CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder, imageSettings);
+                CopyFileToEpub(
+                    epubThumbnailImagePath,
+                    limitImageDimensions: true,
+                    forUseOnColoredBackground: true,
+                    subfolder: kImagesFolder,
+                    imageSettings: imageSettings
+                );
             }
             var warnings = EmbedFonts(progress); // must call after copying stylesheets
             if (warnings.Any())
@@ -2204,12 +2210,17 @@ namespace Bloom.Publish.Epub
                         )
                         .Cast<SafeXmlElement>()
                         .LastOrDefault(); // last ancestor = nearest page div
-                    var isOnColoredBackground =
-                        owningPage != null && HtmlDom.PageNeedsTransparentImages(owningPage);
+                    var imgClassAttr = img.GetAttribute("class") ?? "";
+                    var transparencyMode = HtmlDom.GetImageTransparencyMode(
+                        imgClassAttr,
+                        owningPage != null && HtmlDom.PageNeedsTransparentImages(owningPage)
+                    );
                     var dstPath = CopyFileToEpub(
                         srcPath,
                         limitImageDimensions: true,
-                        forUseOnColoredBackground: isOnColoredBackground,
+                        forUseOnColoredBackground: transparencyMode
+                            != HtmlDom.ImageTransparencyMode.None,
+                        forceTransparent: transparencyMode == HtmlDom.ImageTransparencyMode.Force,
                         subfolder: kImagesFolder,
                         imageSettings: imageSettings
                     );
@@ -3360,6 +3371,7 @@ namespace Bloom.Publish.Epub
             string srcPath,
             bool limitImageDimensions = false,
             bool forUseOnColoredBackground = false,
+            bool forceTransparent = false,
             string subfolder = "",
             ImagePublishSettings imageSettings = null
         )
@@ -3399,7 +3411,8 @@ namespace Bloom.Publish.Epub
                 dstPath,
                 imageSettings,
                 limitImageDimensions,
-                forUseOnColoredBackground
+                forUseOnColoredBackground,
+                forceTransparent
             );
             // CopyFile may have changed the extension (e.g. PNG photo → JPEG).
             if (!actualDstPath.Equals(dstPath, StringComparison.OrdinalIgnoreCase))
@@ -3484,7 +3497,8 @@ namespace Bloom.Publish.Epub
             string dstPath,
             ImagePublishSettings imagePublishSettings,
             bool limitImageDimensions = false,
-            bool forUseOnColoredBackground = false
+            bool forUseOnColoredBackground = false,
+            bool forceTransparent = false
         )
         {
             if (
@@ -3501,6 +3515,7 @@ namespace Bloom.Publish.Epub
                     srcPath,
                     tempDir.FolderPath,
                     forUseOnColoredBackground,
+                    forceTransparent,
                     (int)imagePublishSettings.MaxHeight,
                     (int)imagePublishSettings.MaxWidth
                 );
