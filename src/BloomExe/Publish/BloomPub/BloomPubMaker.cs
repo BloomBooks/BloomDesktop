@@ -239,56 +239,89 @@ namespace Bloom.Publish.BloomPub
             }
             imagesToPreserveResolution = FindImagesToPreserveResolution(dom);
 
-            foreach (var filePath in Directory.GetFiles(modifiedBookFolderPath))
+            // ImagePublishSettings.MaxWidth/MaxHeight are in landscape orientation (width > height),
+            // but GetDesiredImageSize expects portrait orientation, so pass Height as maxShortSide.
+            var maxShortSide = (int)imagePublishSettings.MaxHeight;
+            var maxLongSide = (int)imagePublishSettings.MaxWidth;
+
+            using (var tempDir = new TemporaryFolder("BloomPubImageAdjust"))
             {
-                if (
-                    BookCompressor.CompressableImageFileExtensions.Contains(
-                        Path.GetExtension(filePath).ToLowerInvariant()
-                    )
-                )
+                foreach (var filePath in Directory.GetFiles(modifiedBookFolderPath))
                 {
+                    if (
+                        !BookCompressor.CompressableImageFileExtensions.Contains(
+                            Path.GetExtension(filePath).ToLowerInvariant()
+                        )
+                    )
+                        continue;
                     var fileName = Path.GetFileName(filePath);
                     if (imagesToPreserveResolution.Contains(fileName))
-                        continue; // don't compress these
-                    // Cover images should be transparent if possible.  Others don't need to be.
-                    var forUseOnColoredBackground = coverImages.Contains(fileName);
-                    GetNewImageIfNeeded(filePath, imagePublishSettings, forUseOnColoredBackground);
+                        continue;
+                    var transparent = coverImages.Contains(fileName);
+                    var adjustedPath = ImageUtils.AdjustImageForDisplay(
+                        filePath,
+                        tempDir.FolderPath,
+                        transparent,
+                        maxShortSide,
+                        maxLongSide
+                    );
+                    if (adjustedPath == null)
+                        continue; // no processing needed
+                    var adjustedExt = Path.GetExtension(adjustedPath).ToLowerInvariant();
+                    var originalExt = Path.GetExtension(filePath).ToLowerInvariant();
+                    if (adjustedExt == originalExt)
+                    {
+                        RobustFile.Copy(adjustedPath, filePath, true);
+                    }
+                    else
+                    {
+                        // Format changed (e.g. PNG photo → JPEG); rename file and patch DOM references.
+                        var newFilePath = Path.ChangeExtension(filePath, adjustedExt);
+                        RobustFile.Copy(adjustedPath, newFilePath);
+                        UpdateImageReferenceInDom(dom, fileName, Path.GetFileName(newFilePath));
+                        RobustFile.Delete(filePath);
+                    }
                 }
             }
         }
 
-        private static void GetNewImageIfNeeded(
-            string filePath,
-            ImagePublishSettings imagePublishSettings,
-            bool forUseOnColoredBackground
+        private static void UpdateImageReferenceInDom(
+            SafeXmlDocument dom,
+            string oldFileName,
+            string newFileName
         )
         {
-            using (var tagFile = RobustFileIO.CreateTaglibFile(filePath))
+            var oldEncoded = System.Web.HttpUtility.UrlPathEncode(oldFileName);
+            var newEncoded = System.Web.HttpUtility.UrlPathEncode(newFileName);
+            foreach (
+                SafeXmlElement img in dom.SafeSelectNodes("//img[@src]").Cast<SafeXmlElement>()
+            )
             {
-                var currentWidth = tagFile.Properties.PhotoWidth;
-                var currentHeight = tagFile.Properties.PhotoHeight;
-                // We want to make sure that the image is not larger than the maximum width or height.
-                // We don't know whether the image is portrait or landscape, so we have to check both
-                // orientations.  The publish settings are known to be in landscape orientation, and
-                // the image has to fit into those bounds, but we don't care whether the actual display
-                // is portrait or landscape.
-                if (
-                    imagePublishSettings.MaxWidth >= currentWidth
-                        && imagePublishSettings.MaxHeight >= currentHeight
-                    || imagePublishSettings.MaxWidth >= currentHeight
-                        && imagePublishSettings.MaxHeight >= currentWidth
-                )
-                {
-                    if (!forUseOnColoredBackground)
-                        return; // current file is okay as is: small enough and no need to make transparent.
-                }
+                var src = img.GetAttribute("src");
+                if (src == null)
+                    continue;
+                if (src.Contains(oldFileName) || src.Contains(oldEncoded))
+                    img.SetAttribute(
+                        "src",
+                        src.Replace(oldFileName, newFileName).Replace(oldEncoded, newEncoded)
+                    );
             }
-            BookCompressor.CopyResizedImageFile(
-                filePath,
-                filePath,
-                imagePublishSettings,
-                forUseOnColoredBackground
-            );
+            foreach (
+                SafeXmlElement elt in dom.SafeSelectNodes(
+                        "//*[contains(@style,'background-image')]"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var style = elt.GetAttribute("style");
+                if (style == null)
+                    continue;
+                if (style.Contains(oldFileName) || style.Contains(oldEncoded))
+                    elt.SetAttribute(
+                        "style",
+                        style.Replace(oldFileName, newFileName).Replace(oldEncoded, newEncoded)
+                    );
+            }
         }
 
         private const string kBackgroundImage = "background-image:url('"; // must match format string in HtmlDom.SetImageElementUrl()

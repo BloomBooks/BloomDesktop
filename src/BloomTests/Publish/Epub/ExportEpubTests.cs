@@ -2990,7 +2990,7 @@ namespace BloomTests.Publish.Epub
             Book = book;
         }
 
-        internal override void CopyFile(
+        internal override string CopyFile(
             string srcPath,
             string dstPath,
             ImagePublishSettings imagePublishSettings,
@@ -3001,9 +3001,9 @@ namespace BloomTests.Publish.Epub
             if (srcPath.Contains("notareallocation"))
             {
                 File.WriteAllText(dstPath, "This is a test fake");
-                return;
+                return dstPath;
             }
-            base.CopyFile(
+            return base.CopyFile(
                 srcPath,
                 dstPath,
                 imagePublishSettings,

@@ -831,13 +831,23 @@ namespace Bloom.ImageProcessing
         public static string AdjustImageForDisplay(
             string sourcePath,
             string destDir,
-            bool transparent = false
+            bool transparent = false,
+            int maxShortSide = 0,
+            int maxLongSide = 0
         )
         {
             try
             {
                 using var imageInfo = PalasoImage.FromFileRobustly(sourcePath);
-                var size = GetDesiredImageSize(imageInfo.Image.Width, imageInfo.Image.Height);
+                var size =
+                    maxShortSide > 0 && maxLongSide > 0
+                        ? GetDesiredImageSize(
+                            imageInfo.Image.Width,
+                            imageInfo.Image.Height,
+                            maxShortSide,
+                            maxLongSide
+                        )
+                        : GetDesiredImageSize(imageInfo.Image.Width, imageInfo.Image.Height);
                 var needsResize =
                     size.Width < imageInfo.Image.Width || size.Height < imageInfo.Image.Height;
                 var isJpeg = AppearsToBeJpeg(imageInfo);

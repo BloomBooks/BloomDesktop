@@ -3394,13 +3394,19 @@ namespace Bloom.Publish.Epub
             Directory.CreateDirectory(Path.GetDirectoryName(dstPath));
             if (imageSettings == null)
                 imageSettings = new ImagePublishSettings();
-            CopyFile(
+            var actualDstPath = CopyFile(
                 srcPath,
                 dstPath,
                 imageSettings,
                 limitImageDimensions,
                 forUseOnColoredBackground
             );
+            // CopyFile may have changed the extension (e.g. PNG photo → JPEG).
+            if (!actualDstPath.Equals(dstPath, StringComparison.OrdinalIgnoreCase))
+            {
+                fileName = Path.ChangeExtension(fileName, Path.GetExtension(actualDstPath));
+                dstPath = actualDstPath;
+            }
             _manifestItems.Add(SubfolderAdjustedName(subfolder, fileName));
             _mapSrcPathToDestFileName[srcPath] = dstPath;
             return dstPath;
@@ -3470,8 +3476,10 @@ namespace Bloom.Publish.Epub
 
         /// <summary>
         /// This supports testing without actually copying files.
+        /// Returns the actual destination path used, which may have a different extension than
+        /// <paramref name="dstPath"/> if image format conversion occurred.
         /// </summary>
-        internal virtual void CopyFile(
+        internal virtual string CopyFile(
             string srcPath,
             string dstPath,
             ImagePublishSettings imagePublishSettings,
@@ -3486,13 +3494,29 @@ namespace Bloom.Publish.Epub
                 )
             )
             {
-                BookCompressor.CopyResizedImageFile(
+                // ImagePublishSettings.MaxWidth/MaxHeight are in landscape orientation; pass Height
+                // as maxShortSide to match what GetDesiredImageSize expects.
+                using var tempDir = new TemporaryFolder("EpubImageAdjust");
+                var adjustedPath = ImageUtils.AdjustImageForDisplay(
                     srcPath,
-                    dstPath,
-                    imagePublishSettings,
-                    forUseOnColoredBackground
+                    tempDir.FolderPath,
+                    forUseOnColoredBackground,
+                    (int)imagePublishSettings.MaxHeight,
+                    (int)imagePublishSettings.MaxWidth
                 );
-                return;
+                if (adjustedPath != null)
+                {
+                    // Format may have changed (e.g. PNG photo → JPEG); update dstPath accordingly.
+                    var adjustedExt = Path.GetExtension(adjustedPath).ToLowerInvariant();
+                    var dstExt = Path.GetExtension(dstPath).ToLowerInvariant();
+                    if (adjustedExt != dstExt)
+                        dstPath = Path.ChangeExtension(dstPath, adjustedExt);
+                    RobustFile.Copy(adjustedPath, dstPath);
+                    return dstPath;
+                }
+                // AdjustImageForDisplay returned null: no processing needed, just copy.
+                RobustFile.Copy(srcPath, dstPath);
+                return dstPath;
             }
             if (dstPath.Contains(kCssFolder) && dstPath.EndsWith(".css"))
             {
@@ -3505,9 +3529,10 @@ namespace Bloom.Publish.Epub
                     RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                 );
                 RobustFile.WriteAllText(dstPath, outputText);
-                return;
+                return dstPath;
             }
             RobustFile.Copy(srcPath, dstPath);
+            return dstPath;
         }
 
         // The validator is (probably excessively) upset about IDs that start with numbers.
