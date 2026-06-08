@@ -1305,24 +1305,27 @@ export function requestPageContent() {
     }
 }
 
+// Run the load-time cleanup and return the page body + user stylesheet combined with the
+// <SPLIT-DATA> delimiter that C# splits on. Shared by the live save path (requestPageContentInternal)
+// and the off-screen capture path (captureContentForExternalProcessing) so the cleanup steps and the
+// delimiter can't drift between them.
+// (We tossed up whether to use a JSON object instead of a delimiter, but combining two strings is
+// simpler: HTML needs escaping to live in JSON, which we'd then have to undo in C#.)
+function buildSavePageContentString(): string {
+    // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports(). (Off-screen,
+    // e.g. process-book, there is no toolbox iframe, so this is a no-op there.)
+    getToolboxBundleExports()?.removeToolboxMarkup();
+    removeEditingDebris();
+    const content = getBodyContentForSavePage();
+    const userStylesheet = userStylesheetContent();
+    return content + "<SPLIT-DATA>" + userStylesheet;
+}
+
 function requestPageContentInternal() {
     clearTimeout(requestPageContentTimeout);
     requestPageContentTimeout = null;
     try {
-        // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports().
-        getToolboxBundleExports()?.removeToolboxMarkup();
-        removeEditingDebris(); // Enhance this makes a change when better it would only changed the
-
-        const content = getBodyContentForSavePage();
-        const userStylesheet = userStylesheetContent();
-        postString(
-            "editView/pageContent",
-            // We tossed up whether to use a JSON object here, but decided that it was simpler to just
-            // combine the two strings with a delimiter that we can split on in C#.
-            // For one thing, HTML requires some escaping to put in a JSON object, which would have
-            // to be done in Javascript, and then undone in C#.
-            content + "<SPLIT-DATA>" + userStylesheet,
-        );
+        postString("editView/pageContent", buildSavePageContentString());
     } catch (e) {
         postString(
             "editView/pageContent",
@@ -1386,25 +1389,21 @@ export function getBodyContentForSavePage() {
 }
 
 // Used by the off-screen "process whole book" path (C# BookProcessor, driven by the
-// external/process-book API). It gathers exactly the same page content that requestPageContent()
-// would save, but instead of posting it to the editView/pageContent API (which feeds the LIVE
-// EditingModel and would corrupt the live editor's state), it stashes the combined result on
-// window.__bloomExternalPageContent for the C# caller to poll. Like requestPageContent(), it first
-// waits for any in-flight async DOM work (activeDelays) to finish, up to kMaxWaitTimeMs, so that
-// browser-based measurements (image sizing, canvas-element layout, etc.) are complete before we
-// capture the page.
+// external/process-book API). It gathers the same page content that requestPageContent() would save
+// (via the shared buildSavePageContentString()), but instead of posting it to the editView/pageContent
+// API (which feeds the LIVE EditingModel and would corrupt the live editor's state), it stashes the
+// combined result on window.__bloomExternalPageContent for the C# caller to poll. Like
+// requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, up to
+// kMaxWaitTimeMs, so browser-based measurements (image sizing, canvas-element layout, etc.) are complete
+// before we capture the page.
 export function captureContentForExternalProcessing(): void {
-    (window as any).__bloomExternalPageContent = undefined;
+    window.__bloomExternalPageContent = undefined;
     const start = Date.now();
     const finish = () => {
         try {
-            removeEditingDebris();
-            const content = getBodyContentForSavePage();
-            const userStylesheet = userStylesheetContent();
-            (window as any).__bloomExternalPageContent =
-                content + "<SPLIT-DATA>" + userStylesheet;
+            window.__bloomExternalPageContent = buildSavePageContentString();
         } catch (e) {
-            (window as any).__bloomExternalPageContent =
+            window.__bloomExternalPageContent =
                 "ERROR: " + (e && e.message) + "\n" + (e && e.stack);
         }
     };

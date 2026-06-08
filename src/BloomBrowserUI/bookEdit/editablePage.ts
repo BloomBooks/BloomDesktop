@@ -209,7 +209,7 @@ $(document).ready(() => {
     // (image sizing, canvas-element layout, etc.) are in place. The off-screen book processor
     // (C# BookProcessor) polls for this before capturing the page; any remaining async work is
     // covered by the activeDelays wait inside captureContentForExternalProcessing.
-    (window as any).__bloomEditablePageReady = true;
+    window.__bloomEditablePageReady = true;
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message
@@ -257,6 +257,12 @@ interface EditablePageBundleApi {
 declare global {
     interface Window {
         editablePageBundle: EditablePageBundleApi;
+        // Set true once bootstrap() has run; polled by the off-screen book processor (C#) before it
+        // captures a page. See $(document).ready below and BookProcessor.
+        __bloomEditablePageReady?: boolean;
+        // Where captureContentForExternalProcessing() (in bloomEditing.ts) stashes the captured page
+        // for the C# caller to poll: the combined content string, or "ERROR: ..." on failure.
+        __bloomExternalPageContent?: string;
     }
 }
 

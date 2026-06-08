@@ -269,6 +269,11 @@ namespace Bloom
         // environment; the rest reuse it. Each browser still gets its own fresh CoreWebView2 control
         // (fresh renderer), so this does NOT reintroduce the single-control reuse-wedge. Used by
         // BookProcessor's off-screen per-page fix-up to avoid paying environment creation per page.
+        //
+        // These statics assume the batch is UI-thread-only (which it is: all browser construction is
+        // marshalled to the UI thread, and BookProcessor drives the batch there). If another browser
+        // happens to be created during the batch (e.g. a thumbnail), it harmlessly joins the shared
+        // environment. They are NOT a mechanism for concurrent batches.
         private static bool _useSharedEnvironment;
         private static CoreWebView2Environment _sharedEnvironment;
 

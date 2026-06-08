@@ -34,6 +34,10 @@ namespace Bloom.Book
         /// per-page browser fix-up over every page and save the result to disk. Returns the number
         /// of pages processed.
         ///
+        /// All-or-nothing: a failure on any page (capture error or timeout) throws, the save at the
+        /// end is skipped, and nothing is persisted. The caller (external/process-book) surfaces this
+        /// as an error so the converter can re-run, rather than leaving a half-processed book on disk.
+        ///
         /// Must be called on the UI thread: it creates and pumps a WebView2 browser.
         /// </summary>
         public static int ProcessBook(Book book)
@@ -190,10 +194,12 @@ namespace Bloom.Book
             // fully run and there are no pending sub-resources. Waiting for 'load' just burns the whole
             // timeout. Instead we fire the navigation and then poll for __bloomEditablePageReady, which
             // is the signal we actually care about (the load-time DOM fix-ups are in place).
-            // Split the wait into (a) how long the async CoreWebView2 environment init takes to become
-            // ready-to-navigate — this is the per-page cost a shared environment / reused browser would
-            // remove — vs (b) the actual navigation + page bootstrap. Navigate() blocks on readiness
-            // internally, so without this split that init cost is invisibly folded into nav time.
+            //
+            // Navigate() blocks internally until the control is ready to navigate, so we pre-wait here
+            // only to attribute that readiness cost to its own timer (init) instead of folding it into
+            // nav time. With the shared environment the heavy browser-process/cache warm-up is paid once
+            // for the batch, so after the first page this mostly measures the control's handle/CoreWebView2
+            // initialization.
             var initTimer = Stopwatch.StartNew();
             while (!browser.IsReadyToNavigate)
             {

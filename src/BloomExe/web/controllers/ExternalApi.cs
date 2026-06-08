@@ -198,11 +198,15 @@ namespace Bloom.web.controllers
                 var book = _bookServer.GetBookFromBookInfo(bookInfo);
                 var pageCount = BookProcessor.ProcessBook(book);
 
-                // If we just rewrote the book that is currently selected, refresh the collection's
-                // view of it (list metadata + thumbnail) so the UI reflects the new on-disk content.
+                // If we just rewrote the book that is currently selected, the in-memory selection now
+                // disagrees with disk (we processed a separate Book instance). Discard the stale in-memory
+                // copy and reload it from disk so a later trip through the Edit tab can't clobber what we
+                // just wrote, then refresh the collection's view of it (list metadata + thumbnail). This
+                // mirrors how external/updateBook handles re-import of the selected book.
                 var selected = _collectionModel.GetSelectedBookOrNull();
                 if (selected != null && selected.ID == id)
                 {
+                    _editingModel.ReloadCurrentBookDiscardingEdits();
                     _collectionModel.ReloadEditableCollection();
                     var refreshedInfo = _collectionModel.BookInfoFromCollectionAndId(
                         collectionPath,
