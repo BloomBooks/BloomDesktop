@@ -21,19 +21,22 @@ namespace Bloom.web.controllers
         private readonly CollectionModel _collectionModel;
         private readonly EditingModel _editingModel;
         private readonly WorkspaceTabSelection _tabSelection;
+        private readonly BookServer _bookServer;
 
         // Called by autofac, which creates the one instance and registers it with the server.
         public ExternalApi(
             BloomLibraryBookApiClient bloomLibraryBookApiClient,
             CollectionModel collectionModel,
             EditingModel editingModel,
-            WorkspaceTabSelection tabSelection
+            WorkspaceTabSelection tabSelection,
+            BookServer bookServer
         )
         {
             _bloomLibraryBookApiClient = bloomLibraryBookApiClient;
             _collectionModel = collectionModel;
             _editingModel = editingModel;
             _tabSelection = tabSelection;
+            _bookServer = bookServer;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -119,6 +122,105 @@ namespace Bloom.web.controllers
                 HandleSelectBook,
                 handleOnUiThread: true
             );
+
+            // Called by an external utility (e.g. the PDF→Bloom converter) to run the full "make it
+            // right" pass on a book in this collection (the one whose 'id' is supplied): bring it
+            // structurally up to date, then process every page off-screen in a real browser the same
+            // way visiting each page in the Edit tab does, and save it to disk. This is the step that
+            // applies the browser-only fix-ups (image sizing, canvas-element layout, etc.) that raw
+            // generated HTML is missing. The call blocks until processing is complete.
+            //
+            // This must run on the UI thread because it creates and pumps an off-screen WebView2.
+            apiHandler.RegisterEndpointHandler(
+                "external/process-book",
+                HandleProcessBook,
+                handleOnUiThread: true
+            );
+        }
+
+        private void HandleProcessBook(ApiRequest request)
+        {
+            if (request.HttpMethod == HttpMethods.Options)
+            {
+                // Allow a CORS preflight request to succeed (as the other external endpoints do).
+                request.PostSucceeded();
+                return;
+            }
+            if (request.HttpMethod != HttpMethods.Post)
+            {
+                request.Failed("external/process-book only supports POST");
+                return;
+            }
+
+            string id = null;
+            try
+            {
+                var data = Newtonsoft.Json.Linq.JObject.Parse(request.RequiredPostJson());
+                id = (string)data["id"];
+                if (string.IsNullOrEmpty(id))
+                {
+                    request.Failed("external/process-book requires a book 'id'");
+                    return;
+                }
+
+                // Processing rewrites the book on disk. Only do it from the Collection tab, so we
+                // never write a book out from under the live editor or fight its save/navigate state
+                // machine. (The converter should land here right after adding/selecting the book.)
+                if (_tabSelection.ActiveTab != WorkspaceTab.collection)
+                {
+                    request.Failed(
+                        "external/process-book is only allowed while the Collection tab is active"
+                    );
+                    return;
+                }
+
+                var editableCollection = _collectionModel.TheOneEditableCollection;
+                var collectionPath = editableCollection.PathToDirectory;
+                var bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+                if (bookInfo == null)
+                {
+                    // The converter has very likely just written this book to disk, and our in-memory
+                    // collection cache doesn't know about it yet (the cache only refreshes on an explicit
+                    // reload or a debounced file-watcher event, neither of which is guaranteed to have run
+                    // by the time we get here). Rescan the collection from disk and look again before
+                    // giving up, mirroring how external/updateBook handles a newly-appeared book.
+                    _collectionModel.ReloadEditableCollection();
+                    bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+                }
+                if (bookInfo == null)
+                {
+                    request.Failed("external/process-book could not find a book with id " + id);
+                    return;
+                }
+
+                // Process a fresh Book read from disk rather than any in-memory selection, so we
+                // don't disturb the state of the currently-selected book object.
+                var book = _bookServer.GetBookFromBookInfo(bookInfo);
+                var pageCount = BookProcessor.ProcessBook(book);
+
+                // If we just rewrote the book that is currently selected, refresh the collection's
+                // view of it (list metadata + thumbnail) so the UI reflects the new on-disk content.
+                var selected = _collectionModel.GetSelectedBookOrNull();
+                if (selected != null && selected.ID == id)
+                {
+                    _collectionModel.ReloadEditableCollection();
+                    var refreshedInfo = _collectionModel.BookInfoFromCollectionAndId(
+                        collectionPath,
+                        id
+                    );
+                    if (refreshedInfo != null)
+                        _collectionModel.UpdateThumbnailAsync(
+                            _collectionModel.GetBookFromBookInfo(refreshedInfo)
+                        );
+                }
+
+                request.ReplyWithJson(new { processed = pageCount });
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("external/process-book failed for book id " + id, e);
+                request.Failed("external/process-book failed: " + e.Message);
+            }
         }
 
         private void HandleSelectBook(ApiRequest request)

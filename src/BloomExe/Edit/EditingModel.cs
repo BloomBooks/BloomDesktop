@@ -41,6 +41,12 @@ namespace Bloom.Edit
         private readonly ITemplateFinder _sourceCollectionsList;
         private bool _havePageToSave;
 
+        // Set by ReloadCurrentBookDiscardingEdits when an external tool has overwritten the current
+        // book on disk while the Edit tab is live. It tells the leaving-Edit-tab logic in
+        // OnTabAboutToChange to reload the book from disk instead of saving, so the user's unsaved
+        // page is discarded in favor of the new on-disk content rather than clobbering it.
+        private bool _reloadFromDiskOnLeavingEditTab;
+
         public bool Visible;
         private Book.Book _currentlyDisplayedBook;
         private Book.Book _bookForToolboxContent;
@@ -291,7 +297,7 @@ namespace Bloom.Edit
         /// probably the Javascript method that retrieves the page content).
         /// (Nicer still if cleanup didn't leave the page in an invalid state, see BL-13502.)
         /// </summary>
-        private SafeXmlDocument GetCleanCurrentPageFromBodyAndCss(
+        internal static SafeXmlDocument GetCleanCurrentPageFromBodyAndCss(
             string bodyHtml,
             string userCssContent
         )
@@ -332,7 +338,29 @@ namespace Bloom.Edit
             return dom;
         }
 
-        private void SaveCustomizedCssRules(SafeXmlDocument dom, string userCssContent)
+        /// <summary>
+        /// Given the combined "body &lt;SPLIT-DATA&gt; userCss" string that the editable-page bundle
+        /// produces (see captureContentForExternalProcessing / requestPageContent in bloomEditing.ts),
+        /// build the edited-page HtmlDom ready to hand to Book.SavePage / Book.UpdateDomFromEditedPage.
+        /// This is the same parsing the live editor does in UpdateBookDomFromBrowserPageContent(string),
+        /// factored out so the off-screen book processor (external/process-book) can reuse it without
+        /// going through the live EditingModel/state machine.
+        /// </summary>
+        public static HtmlDom GetEditedPageDomFromBrowserContent(string pageContentData)
+        {
+            if (pageContentData == null)
+                throw new ApplicationException("page content was null");
+            var endHtml = pageContentData.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
+            if (endHtml < 0)
+                throw new ApplicationException(
+                    "page content was missing the <SPLIT-DATA> delimiter"
+                );
+            var bodyHtml = pageContentData.Substring(0, endHtml);
+            var userCssContent = pageContentData.Substring(endHtml + "<SPLIT-DATA>".Length);
+            return new HtmlDom(GetCleanCurrentPageFromBodyAndCss(bodyHtml, userCssContent));
+        }
+
+        private static void SaveCustomizedCssRules(SafeXmlDocument dom, string userCssContent)
         {
             // Yes, this wipes out everything else in the head. At this point, the only things
             // we need in _pageEditDom are the user defined style sheet and the bloom-page element in the body.
@@ -358,13 +386,29 @@ namespace Bloom.Edit
         {
             if (details.FromTab == Workspace.WorkspaceTab.edit)
             {
+                // When an external tool has overwritten the current book on disk (see
+                // ReloadCurrentBookDiscardingEdits), we are leaving the Edit tab specifically to
+                // discard the unsaved page. In that case reload from disk instead of saving, so the
+                // editor's normal save-on-leave doesn't clobber what the external tool just wrote.
+                var reloadFromDiskInsteadOfSaving = _reloadFromDiskOnLeavingEditTab;
+                _reloadFromDiskOnLeavingEditTab = false;
+
                 SaveThen(
                     () =>
                     {
                         // We are setting skipSaveToDisk true so that we can do it ourselves here BEFORE
                         // the postponed work, which is going to shut everything down and would prevent
                         // the normal automatic save-to-disk from working.
-                        CurrentBook?.Save(); // we need it all the way saved before doing the PostponedWork
+                        if (reloadFromDiskInsteadOfSaving)
+                        {
+                            // Discard the page content just gathered into the in-memory DOM; disk wins.
+                            CurrentBook?.ReloadFromDisk(null);
+                            // Force OnBecomeVisible to re-display from the freshly-loaded book if the
+                            // user returns to the Edit tab.
+                            _currentlyDisplayedBook = null;
+                        }
+                        else
+                            CurrentBook?.Save(); // we need it all the way saved before doing the PostponedWork
                         // This bizarre behavior prevents BL-2313 and related problems.
                         // For some reason I cannot discover, switching tabs when focus is in the Browser window
                         // causes Bloom to get deactivated, which prevents various controls from working.
@@ -390,6 +434,11 @@ namespace Bloom.Edit
                         if (StateMachine.Navigating)
                         {
                             StateMachine.ToNoPage();
+                        }
+                        if (reloadFromDiskInsteadOfSaving)
+                        {
+                            CurrentBook?.ReloadFromDisk(null);
+                            _currentlyDisplayedBook = null;
                         }
                         _oldActiveForm = Form.ActiveForm;
                         Application.Idle += ReactivateFormOnIdle;
@@ -918,6 +967,9 @@ namespace Bloom.Edit
         /// book-conversion utility) has just re-imported/overwritten the book on disk and we want the
         /// running Bloom to show the new version. The caller is responsible for making sure this really
         /// is the book that was changed; we only ever discard edits for the current selection.
+        /// If the Edit tab is live, rather than risk reloading the book under the editor mid-edit, we
+        /// kick the user back to the Collection tab (discarding edits and reloading from disk on the
+        /// way out); the fresh book is shown if/when they return to the Edit tab.
         /// </summary>
         public void ReloadCurrentBookDiscardingEdits()
         {
@@ -940,28 +992,16 @@ namespace Bloom.Edit
                 return;
             }
 
-            // The Edit tab is showing, so the page may be in the Editing state, from which the state
-            // machine forbids a direct re-navigation. Go through the normal save path to unwind that
-            // state, but pass skipSaveToDisk so nothing is persisted; then in the post-save action we
-            // reload from disk (discarding the page content that was just gathered into the in-memory
-            // DOM) and return a page of the freshly-loaded book to navigate to.
-            SaveThen(
-                doAfterSaving: () =>
-                {
-                    book.ReloadFromDisk(null);
-                    _currentlyDisplayedBook = book;
-                    var page = book.GetPageByIndex(book.UserPrefs.MostRecentPage) ?? book.FirstPage;
-                    return page?.Id;
-                },
-                doIfNotInRightStateToSave: () =>
-                {
-                    // We weren't in a state the save path could handle (e.g. mid-navigation). Reload
-                    // anyway and let OnBecomeVisible re-display when things settle.
-                    book.ReloadFromDisk(null);
-                    _currentlyDisplayedBook = null;
-                },
-                skipSaveToDisk: true
-            );
+            // The Edit tab is showing and the page is live in the browser, very possibly mid-edit.
+            // Trying to reload-and-renavigate the book in place while the editor is live proved
+            // fragile (the state machine forbids a direct re-navigation, and unwinding it under the
+            // user mid-edit could leave the editor in a bad state). The safe, predictable thing is to
+            // kick the user back to the Collection tab. We set _reloadFromDiskOnLeavingEditTab so the
+            // leaving-Edit-tab logic in OnTabAboutToChange reloads from disk instead of saving (which
+            // would clobber the external tool's content). When the user returns to the Edit tab,
+            // OnBecomeVisible will display the freshly-loaded book.
+            _reloadFromDiskOnLeavingEditTab = true;
+            _view.WorkspaceView.ChangeTab(Workspace.WorkspaceTab.collection);
         }
 
         /// <summary>

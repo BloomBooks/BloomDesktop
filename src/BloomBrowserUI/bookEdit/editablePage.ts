@@ -82,6 +82,7 @@ export interface IPageFrameExports {
 import {
     getBodyContentForSavePage,
     requestPageContent,
+    captureContentForExternalProcessing,
     userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
@@ -100,6 +101,7 @@ import { showGamePromptDialog } from "./toolbox/games/GameTool";
 export {
     getBodyContentForSavePage,
     requestPageContent,
+    captureContentForExternalProcessing,
     userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
@@ -203,6 +205,11 @@ window["PasteImageCredits"] = () => {
 $(document).ready(() => {
     $("body").find("*[data-i18n]").localize();
     bootstrap();
+    // Signal that bootstrap()/SetupElements() has run, so the synchronous load-time DOM fix-ups
+    // (image sizing, canvas-element layout, etc.) are in place. The off-screen book processor
+    // (C# BookProcessor) polls for this before capturing the page; any remaining async work is
+    // covered by the activeDelays wait inside captureContentForExternalProcessing.
+    (window as any).__bloomEditablePageReady = true;
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message
@@ -222,6 +229,7 @@ export function SayHello() {
 // NOTE: Keep this as a minimal curated surface: only expose functions intentionally callable cross-frame.
 interface EditablePageBundleApi {
     requestPageContent: typeof requestPageContent;
+    captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
     getBodyContentForSavePage: typeof getBodyContentForSavePage;
     userStylesheetContent: typeof userStylesheetContent;
     pageUnloading: typeof pageUnloading;
@@ -254,6 +262,7 @@ declare global {
 
 window.editablePageBundle = {
     requestPageContent,
+    captureContentForExternalProcessing,
     getBodyContentForSavePage,
     userStylesheetContent,
     pageUnloading,

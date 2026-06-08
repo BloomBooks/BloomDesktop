@@ -1385,6 +1385,39 @@ export function getBodyContentForSavePage() {
     return result;
 }
 
+// Used by the off-screen "process whole book" path (C# BookProcessor, driven by the
+// external/process-book API). It gathers exactly the same page content that requestPageContent()
+// would save, but instead of posting it to the editView/pageContent API (which feeds the LIVE
+// EditingModel and would corrupt the live editor's state), it stashes the combined result on
+// window.__bloomExternalPageContent for the C# caller to poll. Like requestPageContent(), it first
+// waits for any in-flight async DOM work (activeDelays) to finish, up to kMaxWaitTimeMs, so that
+// browser-based measurements (image sizing, canvas-element layout, etc.) are complete before we
+// capture the page.
+export function captureContentForExternalProcessing(): void {
+    (window as any).__bloomExternalPageContent = undefined;
+    const start = Date.now();
+    const finish = () => {
+        try {
+            removeEditingDebris();
+            const content = getBodyContentForSavePage();
+            const userStylesheet = userStylesheetContent();
+            (window as any).__bloomExternalPageContent =
+                content + "<SPLIT-DATA>" + userStylesheet;
+        } catch (e) {
+            (window as any).__bloomExternalPageContent =
+                "ERROR: " + (e && e.message) + "\n" + (e && e.stack);
+        }
+    };
+    const waitForDelaysThenFinish = () => {
+        if (activeDelays.length === 0 || Date.now() - start > kMaxWaitTimeMs) {
+            finish();
+        } else {
+            setTimeout(waitForDelaysThenFinish, 50);
+        }
+    };
+    waitForDelaysThenFinish();
+}
+
 // Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
 // workspaceBundle.getEditablePageBundleExports().
 export const userStylesheetContent = () => {
