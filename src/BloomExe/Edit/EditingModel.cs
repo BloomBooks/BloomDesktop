@@ -1599,8 +1599,7 @@ namespace Bloom.Edit
         public void ChangePicture(
             string imageId,
             UrlPathString priorImageSrc,
-            PalasoImage imageInfo,
-            string pageBackgroundColor = null
+            PalasoImage imageInfo
         )
         {
             try
@@ -1612,8 +1611,7 @@ namespace Bloom.Edit
                     CurrentBook.FolderPath,
                     imageId,
                     priorImageSrc,
-                    imageInfo,
-                    pageBackgroundColor
+                    imageInfo
                 );
                 UpdateImageInBrowser(args);
             }

@@ -32,16 +32,14 @@ namespace Bloom.Edit
             string bookFolderPath,
             string imageId,
             UrlPathString priorImageSrc,
-            PalasoImage imageInfo,
-            string pageBackgroundColor = null
+            PalasoImage imageInfo
         )
         {
             var isSameFile = IsSameFilePath(bookFolderPath, priorImageSrc, imageInfo);
             var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(
                 imageInfo,
                 bookFolderPath,
-                isSameFile,
-                pageBackgroundColor
+                isSameFile
             );
             try
             {

@@ -264,53 +264,12 @@ export function doImageCommand(
     // other imgs. (For example, currently, they can only be cut/copied as file
     // paths, we don't support metadata, they can't be cropped,...)
     const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
-    const pageBackgroundColor = getOwningPageBackgroundColor(img);
 
     postJson("editView/" + command + "Image", {
         imageId,
         imageSrc,
         imageIsGif,
-        pageBackgroundColor,
     });
-}
-
-function getOwningPageBackgroundColor(element: HTMLElement): string {
-    const page = element.closest(".bloom-page") as HTMLElement | null;
-    if (!page) {
-        return "";
-    }
-
-    const marginBox = page.querySelector(".marginBox") as HTMLElement | null;
-    const pageSurface = marginBox ?? page;
-    return normalizeCssColorToHexOrEmpty(
-        getComputedStyle(pageSurface).backgroundColor,
-    );
-}
-
-function normalizeCssColorToHexOrEmpty(color: string): string {
-    const trimmed = color.trim();
-    if (
-        !trimmed ||
-        trimmed === "transparent" ||
-        trimmed === "rgba(0, 0, 0, 0)"
-    ) {
-        return "";
-    }
-
-    const match = trimmed.match(
-        /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/,
-    );
-    if (!match) {
-        return trimmed;
-    }
-
-    if (match[4] && Number(match[4]) === 0) {
-        return "";
-    }
-
-    return `#${[match[1], match[2], match[3]]
-        .map((component) => Number(component).toString(16).padStart(2, "0"))
-        .join("")}`.toUpperCase();
 }
 
 export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {

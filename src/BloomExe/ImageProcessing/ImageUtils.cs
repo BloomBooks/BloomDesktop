@@ -79,385 +79,71 @@ namespace Bloom.ImageProcessing
             public bool isNearWhite;
         }
 
-        // Tolerances used by the quantize-based line-art palette check.
-        // To be unambiguously a line-art background, a color must have a perceptual brightness
-        // of at least LineArtBackgroundMinBrightness and a chroma (max-min channel) of at
-        // most LineArtBackgroundMaxChroma.
-        // If its brightness is below LineArtBackgroundMinBrightness or its chroma is
-        // above LineArtBackgroundMaxChroma, but its brightness is above LineArtBackgroundBorderlineBrightness,
-        // the color is considered borderline: it counts as a background if all other colors are compatible
-        // with its hue.
-        // Otherwise the color is not considered a line-art background at all.
-        private const double LineArtBackgroundMinBrightness = 235.0;
-        private const double LineArtBackgroundBorderlineBrightness = 220.0;
-        private const int LineArtBackgroundMaxChroma = 6;
-
-        // An "ink" palette entry whose chroma (max-min channel) is at or below this counts as
-        // grayscale ink, regardless of overall hue. Above this we additionally require that all
-        // non-grayscale ink entries share a single hue direction (so e.g. shades of dark green
-        // ink on white still qualify, but a mix of red and blue text does not).
-        private const int LineArtInkGrayscaleChromaThreshold = 6;
-        private const float LineArtInkHueTolerance = 0.15f;
-
-        // Number of colors to quantize the image to when summarizing its dominant palette.
-        // Eight gives the quantizer enough slots that distinct chromatic colors don't get
-        // averaged together (e.g. a red line and a blue line getting smeared into a single
-        // brown palette entry that would otherwise look like a single-hue ink), while still
-        // being small enough that anti-aliasing intermediates don't fill every slot.
-        private const int QuantizedColorCount = 8;
-
         /// <summary>
         /// Check whether we should try to make the background of this image transparent.
-        /// Returns true when the image looks like line art on a (near-)white background: that
-        /// is, every dominant color is either near-white or a grayscale ink, or every non-gray
-        /// ink shares a single hue (e.g., shades of one dark color).
-        /// Returns false if the image already has any transparent pixels.
+        /// Return true only if this is a two-color image with one of the colors being white.
+        /// (or a grayscale picture with one of the colors being white)
+        /// Return false also if any pixel encountered in scanning the picture is transparent
+        /// at all.
         /// </summary>
         public static bool ShouldMakeBackgroundTransparent(PalasoImage imageInfo)
         {
-            // We want to make the white background of line-art pictures transparent.
-            // We support PNG and JPEG input; other formats (BMP, TIFF, etc.) are not line art.
-            var appearsToBePng = AppearsToBePng(imageInfo);
-            var appearsToBeJpeg = AppearsToBeJpeg(imageInfo);
-            if (!appearsToBePng && !appearsToBeJpeg)
+            // We want to make the white background of Black and White pictures transparent.
+            // JPEG pictures generally never meet that criteria and cannot be made transparent anyway.
+            if (!AppearsToBePng(imageInfo))
                 return false;
-
+            var colors = new List<ColorInfo>();
             if ((imageInfo.Image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
             {
                 var palette = imageInfo.Image.Palette;
                 if (palette != null && palette.Entries != null)
-                    return IsLineArtPalette(palette.Entries);
+                {
+                    bool whiteFound = false;
+                    foreach (var color in palette.Entries)
+                    {
+                        if (color.A < 255)
+                            return false; // already have transparent pixels
+                        if (!IsThisColorForLineDrawing(color, colors, ref whiteFound))
+                            return false; // have a 3rd distinct non-gray color
+                    }
+                    return colors.Count == 2 && whiteFound;
+                }
             }
-
-            if (!(imageInfo.Image is Bitmap bitmapImage))
-                return false;
-
-            // If the image already has partially transparent pixels, leave it alone.
-            if (HasAnyTransparentSampledPixel(bitmapImage))
-                return false;
-
-            // Ask GraphicsMagick to summarize the image as a handful of dominant colors.
-            // This is much more reliable than per-pixel sampling because it averages out
-            // anti-aliasing artifacts and slight channel asymmetries that the legacy strict
-            // R==G==B check would mis-classify as a "third color".
-            var dominantColors = TryGetDominantColorsViaQuantize(imageInfo);
-            if (dominantColors != null)
-                return IsLineArtPalette(dominantColors);
-
-            // GraphicsMagick unavailable (shouldn't happen in normal Bloom installs): fall back
-            // to the legacy pixel-sampling algorithm so we still produce a defensible answer.
-            return CheckLineArtByLegacySampling(bitmapImage);
-        }
-
-        /// <summary>
-        /// Decide whether a small palette of dominant colors looks like line art on a near-white
-        /// background. Used both for indexed PNG palettes (read directly from the image) and for
-        /// the palette returned by GraphicsMagick quantization of direct-color images.
-        /// </summary>
-        private static bool IsLineArtPalette(IEnumerable<Color> paletteEntries)
-        {
-            var seen = new HashSet<int>();
-            var inks = new List<Color>();
-            bool whiteFound = false;
-            int totalDistinct = 0;
-            foreach (var c in paletteEntries)
+            // Harder to check if not indexed...
+            if (imageInfo.Image is Bitmap bitmapImage)
             {
-                if (c.A < 255)
-                    return false; // already has transparent pixels
-                int key = (c.R << 16) | (c.G << 8) | c.B;
-                if (!seen.Add(key))
-                    continue;
-                totalDistinct++;
-                bool borderline;
-                if (IsLineArtBackground(c, out borderline))
+                var whiteFound = false;
+                // Yes, this is as expensive as it looks.  But we only sample 100 pixels
+                // spread through the picture, stopping as soon as we hit either a
+                // transparent pixel or a 3rd distinct non-gray color.
+                int yDelta = Math.Max(bitmapImage.Height / 10, 2);
+                int xDelta = Math.Max(bitmapImage.Width / 10, 2);
+                var randomXFix = GenerateRandomAdjustments(271828182, xDelta);
+                var randomYFix = GenerateRandomAdjustments(271828182, yDelta);
+                for (int j = 0, y = yDelta / 2; y < bitmapImage.Height; y += yDelta, ++j)
                 {
-                    whiteFound = true;
+                    j = Math.Min(j, 9);
+                    for (int i = 0, x = xDelta / 2; x < bitmapImage.Width; x += xDelta, ++i)
+                    {
+                        i = Math.Min(i, 9);
+                        var y1 = y + randomYFix[j, i];
+                        var x1 = x + randomXFix[j, i];
+                        y1 = Math.Min(Math.Max(y1, 0), bitmapImage.Height - 1);
+                        x1 = Math.Min(Math.Max(x1, 0), bitmapImage.Width - 1);
+                        var color = bitmapImage.GetPixel(x1, y1);
+                        if (color.A < 255)
+                            return false; // already have transparent pixels
+                        if (!IsThisColorForLineDrawing(color, colors, ref whiteFound))
+                            return false; // have a 3rd distinct non-gray color
+                    }
                 }
-                else
-                {
-                    inks.Add(c);
-                    // borderline colors are close enough to count as a background if they have a
-                    // similar hue to other colors. We check this by leaving them in inks.
-                    whiteFound |= borderline;
-                }
+                // At least two colors encountered, likely black and white or greyscale in intent.
+                // But if none of the colors is white, return false. (Our code wouldn't make anything
+                // transparent anyway.)
+                return colors.Count == 2 && whiteFound;
             }
-            if (!whiteFound || totalDistinct < 2)
-                return false;
-            return InksShareConsistentHue(inks);
-        }
-
-        /// <summary>
-        /// Returns true if all non-background palette entries look like they belong to a single
-        /// line-art ink: every entry must either be grayscale (chroma at or below
-        /// <see cref="LineArtInkGrayscaleChromaThreshold"/>) or share the same hue direction as
-        /// the other non-grayscale entries.
-        /// </summary>
-        private static bool InksShareConsistentHue(List<Color> inks)
-        {
-            // Use 2D hue/brightness geometry:
-            // - angle: hue
-            // - radius: 1 - brightness (black=1, white=0)
-            // Then compare each point to the line through the origin and reference point.
-            Color referenceColor = default;
-            int maxChroma = -1;
-            foreach (var c in inks)
-            {
-                int max = Math.Max(c.R, Math.Max(c.G, c.B));
-                int min = Math.Min(c.R, Math.Min(c.G, c.B));
-                int chroma = max - min;
-                if (chroma > maxChroma)
-                {
-                    maxChroma = chroma;
-                    referenceColor = c;
-                }
-            }
-
-            if (!TryGetHueBrightnessPoint(referenceColor, out var refX, out var refY))
-                return true;
-
-            float refLenSq = (refX * refX) + (refY * refY);
-            if (refLenSq <= 0)
-                return true;
-
-            // Distance equivalent to 15 degrees at radius 1.
-            float threshold = (float)Math.Sin(Math.PI / 12.0);
-
-            string debug = string.Join(", ", inks.Select(c => "#" + c.Name));
-
-            foreach (var c in inks)
-            {
-                if (!TryGetHueBrightnessPoint(c, out var x, out var y))
-                    continue; // grayscale ink — compatible with any hue
-
-                float dot = (x * refX) + (y * refY);
-                float distance;
-                if (dot > 0)
-                {
-                    // Same side as reference: perpendicular distance to origin-reference line.
-                    float cross = (x * refY) - (y * refX);
-                    distance = Math.Abs(cross) / (float)Math.Sqrt(refLenSq);
-                }
-                else
-                {
-                    // Opposite side: measure distance to origin instead.
-                    distance = (float)Math.Sqrt((x * x) + (y * y));
-                }
-
-                if (distance > threshold)
-                    return false;
-            }
-
-            return true;
-
-            bool TryGetHueBrightnessPoint(Color color, out float x, out float y)
-            {
-                int max = Math.Max(color.R, Math.Max(color.G, color.B));
-                int min = Math.Min(color.R, Math.Min(color.G, color.B));
-                if (max - min <= LineArtInkGrayscaleChromaThreshold)
-                {
-                    x = y = 0;
-                    return false;
-                }
-
-                float hueRadians = (float)(color.GetHue() * Math.PI / 180.0);
-                float brightness = color.GetBrightness();
-                float radius = 1f - brightness;
-                x = radius * (float)Math.Cos(hueRadians);
-                y = radius * (float)Math.Sin(hueRadians);
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Returns true if the color is bright enough (and free of significant hue)
-        /// to be considered unambiguously a line art background.
-        /// If it is not quite that light, or has perceptible hue, but is light enough
-        /// to consider a background IFF the hue is acceptable, we return false but
-        /// set borderline to true.
-        /// If both results are false, the color is definitely not line art background.
-        /// </summary>
-        private static bool IsLineArtBackground(Color c, out bool borderline)
-        {
-            // Perceptual brightness formula: 0.299*R + 0.587*G + 0.114*B
-            // Threshold: all channels 235 => brightness = 0.299*235 + 0.587*235 + 0.114*235 = 235
-            // So threshold is 235
-            double brightness = 0.299 * c.R + 0.587 * c.G + 0.114 * c.B;
-            int max = Math.Max(c.R, Math.Max(c.G, c.B));
-            int min = Math.Min(c.R, Math.Min(c.G, c.B));
-            // deliberately ignore hue for borderline; we'll check later that any hue it has
-            // is compatible with other colors.
-            borderline = brightness >= LineArtBackgroundBorderlineBrightness;
-            return brightness >= LineArtBackgroundMinBrightness
-                && (max - min) <= LineArtBackgroundMaxChroma;
-        }
-
-        private static bool HasAnyTransparentSampledPixel(Bitmap bitmap)
-        {
-            int yDelta = Math.Max(bitmap.Height / 10, 2);
-            int xDelta = Math.Max(bitmap.Width / 10, 2);
-            var randomXFix = GenerateRandomAdjustments(271828182, xDelta);
-            var randomYFix = GenerateRandomAdjustments(271828182, yDelta);
-            for (int j = 0, y = yDelta / 2; y < bitmap.Height; y += yDelta, ++j)
-            {
-                j = Math.Min(j, 9);
-                for (int i = 0, x = xDelta / 2; x < bitmap.Width; x += xDelta, ++i)
-                {
-                    i = Math.Min(i, 9);
-                    var y1 = Math.Min(Math.Max(y + randomYFix[j, i], 0), bitmap.Height - 1);
-                    var x1 = Math.Min(Math.Max(x + randomXFix[j, i], 0), bitmap.Width - 1);
-                    if (bitmap.GetPixel(x1, y1).A < 255)
-                        return true;
-                }
-            }
+            // we can't tell, so err on the side of caution.
             return false;
-        }
-
-        /// <summary>
-        /// Legacy fallback: sample roughly 100 pixels and require the encountered colors to
-        /// all be near-white or grayscale. Preserved verbatim from the previous algorithm in
-        /// case GraphicsMagick is unavailable.
-        /// </summary>
-        private static bool CheckLineArtByLegacySampling(Bitmap bitmapImage)
-        {
-            var colors = new List<ColorInfo>();
-            var whiteFound = false;
-            int yDelta = Math.Max(bitmapImage.Height / 10, 2);
-            int xDelta = Math.Max(bitmapImage.Width / 10, 2);
-            var randomXFix = GenerateRandomAdjustments(271828182, xDelta);
-            var randomYFix = GenerateRandomAdjustments(271828182, yDelta);
-            for (int j = 0, y = yDelta / 2; y < bitmapImage.Height; y += yDelta, ++j)
-            {
-                j = Math.Min(j, 9);
-                for (int i = 0, x = xDelta / 2; x < bitmapImage.Width; x += xDelta, ++i)
-                {
-                    i = Math.Min(i, 9);
-                    var y1 = Math.Min(Math.Max(y + randomYFix[j, i], 0), bitmapImage.Height - 1);
-                    var x1 = Math.Min(Math.Max(x + randomXFix[j, i], 0), bitmapImage.Width - 1);
-                    var color = bitmapImage.GetPixel(x1, y1);
-                    if (color.A < 255)
-                        return false;
-                    if (!IsThisColorForLineDrawing(color, colors, ref whiteFound))
-                        return false;
-                }
-            }
-            return colors.Count == 2 && whiteFound;
-        }
-
-        /// <summary>
-        /// Use GraphicsMagick to reduce the image to <see cref="QuantizedColorCount"/> dominant
-        /// colors (no dithering), then read those colors back. Returns null if GraphicsMagick
-        /// is unavailable or the conversion fails.
-        /// </summary>
-        private static Color[] TryGetDominantColorsViaQuantize(PalasoImage imageInfo)
-        {
-            var graphicsMagickPath = GetGraphicsMagickPath();
-            if (!RobustFile.Exists(graphicsMagickPath))
-                return null;
-
-            var sourcePath = imageInfo.GetCurrentFilePath();
-            var needTempSource = string.IsNullOrEmpty(sourcePath) || !RobustFile.Exists(sourcePath);
-
-            using (var tempSource = needTempSource ? TempFile.WithExtension(".png") : null)
-            using (var quantizedFile = TempFile.WithExtension(".png"))
-            {
-                if (needTempSource)
-                {
-                    // We have an in-memory image but no file on disk; save a temp copy for GM.
-                    try
-                    {
-                        imageInfo.Image.Save(tempSource.Path, ImageFormat.Png);
-                        sourcePath = tempSource.Path;
-                    }
-                    catch (Exception e)
-                    {
-                        MiscUtils.SuppressUnusedExceptionVarWarning(e);
-                        return null;
-                    }
-                }
-
-                var quantizedPath = quantizedFile.Path;
-                return WithSafeFilePath(
-                    sourcePath,
-                    safeSource =>
-                    {
-                        return WithSafeFilePath(
-                            quantizedPath,
-                            safeDest =>
-                            {
-                                var args = string.Format(
-                                    CultureInfo.InvariantCulture,
-                                    "convert \"{0}\" -colors {1} +dither -type Palette -depth 8 \"{2}\"",
-                                    safeSource,
-                                    QuantizedColorCount,
-                                    safeDest
-                                );
-                                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
-                                    graphicsMagickPath,
-                                    args,
-                                    "",
-                                    120,
-                                    new NullProgress()
-                                );
-                                if (result.ExitCode != 0 || !RobustFile.Exists(safeDest))
-                                    return null;
-                                if (safeDest != quantizedPath)
-                                {
-                                    try
-                                    {
-                                        RobustFile.Copy(safeDest, quantizedPath, true);
-                                    }
-                                    catch (Exception)
-                                    {
-                                        return null;
-                                    }
-                                }
-                                return ReadDistinctColorsFromQuantizedImage(quantizedPath);
-                            },
-                            makeCopyIfNeeded: false
-                        );
-                    }
-                );
-            }
-        }
-
-        /// <summary>
-        /// Read distinct colors from a GraphicsMagick-quantized image. Prefer palette entries
-        /// when the image is indexed; otherwise fall back to coarse pixel sampling.
-        /// </summary>
-        private static Color[] ReadDistinctColorsFromQuantizedImage(string path)
-        {
-            using (var img = (Bitmap)Image.FromFile(path))
-            {
-                var seen = new HashSet<int>();
-                var colors = new List<Color>();
-
-                if ((img.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
-                {
-                    foreach (var c in img.Palette.Entries)
-                    {
-                        int key = (c.A << 24) | (c.R << 16) | (c.G << 8) | c.B;
-                        if (seen.Add(key))
-                            colors.Add(c);
-                    }
-                    return colors.ToArray();
-                }
-
-                // Fallback for unexpected direct-color output.
-                int step = Math.Max(Math.Min(img.Width, img.Height) / 32, 1);
-                for (int y = 0; y < img.Height; y += step)
-                {
-                    for (int x = 0; x < img.Width; x += step)
-                    {
-                        var c = img.GetPixel(x, y);
-                        int key = (c.A << 24) | (c.R << 16) | (c.G << 8) | c.B;
-                        if (seen.Add(key))
-                            colors.Add(c);
-                        if (colors.Count > QuantizedColorCount * 4)
-                            return colors.ToArray(); // safety: image somehow had more colors
-                    }
-                }
-                return colors.ToArray();
-            }
         }
 
         private static void ConfigureGraphicsForHighQualityScaling(Graphics g)
@@ -574,29 +260,6 @@ namespace Bloom.ImageProcessing
             return color.R == color.G && color.G == color.B;
         }
 
-        internal static bool ShouldMakeTransparentForPageBackground(string pageBackgroundColor)
-        {
-            if (string.IsNullOrWhiteSpace(pageBackgroundColor))
-                return false;
-
-            if (!TryCssColorFromString(pageBackgroundColor, out var color))
-                return false;
-
-            return !IsNearWhite(color);
-        }
-
-        private static void MakeSavedImageBackgroundTransparent(string destinationPath)
-        {
-            if (!IsPngFile(destinationPath))
-                return;
-
-            using (var tempFile = TempFile.WithExtension(".png"))
-            {
-                if (MakeTransparentBackgroundIfNeeded(destinationPath, tempFile.Path))
-                    RobustFile.Copy(tempFile.Path, destinationPath, true);
-            }
-        }
-
         public static bool IsJpegFile(string path)
         {
             if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
@@ -698,8 +361,7 @@ namespace Bloom.ImageProcessing
         public static string ProcessAndSaveImageIntoFolder(
             PalasoImage imageInfo,
             string bookFolderPath,
-            bool isSameFile,
-            string pageBackgroundColor = null
+            bool isSameFile
         )
         {
             //LogMemoryUsage();
@@ -742,50 +404,27 @@ namespace Bloom.ImageProcessing
                 var needToStripMetadata = imageInfo.Metadata.ExceptionCaughtWhileLoading != null;
 
                 isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
-                var saveAsJpeg = isEncodedAsJpeg;
+                bool isEncodedAsPng = !isEncodedAsJpeg && AppearsToBePng(imageInfo);
 
                 string jpegFilePath = Path.Combine(
                     bookFolderPath,
                     GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, true)
                 );
-                // Compute once; the result drives both the JPEG→PNG conversion below and the
-                // PNG→JPEG guard in convertedToJpeg. Running GraphicsMagick twice would be wasteful.
-                var isLineArt = ShouldMakeBackgroundTransparent(imageInfo);
-                var shouldMakeTransparentForPageBackground =
-                    isLineArt && ShouldMakeTransparentForPageBackground(pageBackgroundColor);
-                // Convert JPEG line art to PNG on insert: JPEGs can't carry transparency, so a
-                // line-art JPEG would never get its background made transparent when shown on a
-                // colored page background. Saving as PNG fixes that at the cost of slightly larger
-                // files, which is worth it for images that will be composited (BL-16336).
-                if (saveAsJpeg && isLineArt)
-                    saveAsJpeg = false;
-                // Don't convert line-art PNGs to JPEG: JPEG is only right for photographic content.
                 var convertedToJpeg =
-                    !saveAsJpeg
+                    !isEncodedAsJpeg
                     && !HasTransparency(imageInfo.Image)
-                    && !isLineArt
                     && TryChangeFormatToJpegIfHelpful(imageInfo, jpegFilePath);
                 if (convertedToJpeg)
                     return Path.GetFileName(jpegFilePath);
 
                 string imageFileName;
                 if (isSameFile)
-                {
-                    var expectedExtension = saveAsJpeg ? ".jpg" : ".png";
-                    var hasExpectedExtension = string.Equals(
-                        Path.GetExtension(imageInfo.FileName),
-                        expectedExtension,
-                        StringComparison.InvariantCultureIgnoreCase
-                    );
-                    imageFileName = hasExpectedExtension
-                        ? imageInfo.FileName
-                        : GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, saveAsJpeg);
-                }
+                    imageFileName = imageInfo.FileName;
                 else
                     imageFileName = GetFileNameToUseForSavingImage(
                         bookFolderPath,
                         imageInfo,
-                        saveAsJpeg
+                        isEncodedAsJpeg
                     );
                 var sourcePath = imageInfo.GetCurrentFilePath();
                 if (imageRemade & sourcePath == originalCurrentPath)
@@ -796,40 +435,44 @@ namespace Bloom.ImageProcessing
                     sourcePath = null;
                 }
                 var destinationPath = Path.Combine(bookFolderPath, imageFileName);
-                var reusingSameFilename =
-                    isSameFile
-                    && imageInfo.FileName.Equals(
-                        imageFileName,
-                        StringComparison.InvariantCultureIgnoreCase
-                    );
-                var sourceEncodingMatchesDestination = isEncodedAsJpeg == saveAsJpeg;
-                if (needToStripMetadata)
+                if (isEncodedAsJpeg || isEncodedAsPng)
                 {
-                    if (!TryStripMetadataWithGraphicsMagick(imageInfo, sourcePath, destinationPath))
-                        imageInfo.Image.Save(
-                            destinationPath,
-                            saveAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
-                        );
+                    if (needToStripMetadata)
+                    {
+                        if (
+                            !TryStripMetadataWithGraphicsMagick(
+                                imageInfo,
+                                sourcePath,
+                                destinationPath
+                            )
+                        )
+                            imageInfo.Image.Save(
+                                destinationPath,
+                                isEncodedAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
+                            );
+                    }
+                    // I _think_ isSameFile is true only when we copy an image and paste it back in the same place.
+                    // In that case, we don't need to save it again. I checked that when we
+                    // use the old cropping tool to create a different image, it doesn't take this path.
+                    // As far as I can tell isSameFile is only true if we are copying the file on top of
+                    // itself, and that can't ever be useful.
+                    else if (!isSameFile)
+                    {
+                        // Pasting an image can result in sourcePath being null.
+                        // So can graphicsmagick failures where we had to remake the image. (BL-15708)
+                        if (sourcePath == null)
+                            imageInfo.Image.Save(
+                                destinationPath,
+                                isEncodedAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
+                            );
+                        else
+                            RobustFile.Copy(sourcePath, destinationPath);
+                    }
                 }
-                // I _think_ isSameFile is true only when we copy an image and paste it back in the same place.
-                // In that case, we don't need to save it again. I checked that when we
-                // use the old cropping tool to create a different image, it doesn't take this path.
-                // As far as I can tell isSameFile is only true if we are copying the file on top of
-                // itself, and that can't ever be useful.
-                else if (!reusingSameFilename)
+                else
                 {
-                    // Pasting an image can result in sourcePath being null.
-                    // So can graphicsmagick failures where we had to remake the image. (BL-15708)
-                    if (sourcePath == null || !sourceEncodingMatchesDestination)
-                        imageInfo.Image.Save(
-                            destinationPath,
-                            saveAsJpeg ? ImageFormat.Jpeg : ImageFormat.Png
-                        );
-                    else
-                        RobustFile.Copy(sourcePath, destinationPath);
+                    imageInfo.Image.Save(destinationPath, ImageFormat.Png); // destinationPath already has .png extension
                 }
-                if (shouldMakeTransparentForPageBackground)
-                    MakeSavedImageBackgroundTransparent(destinationPath);
                 if (_createdTempImageFile != null)
                 {
                     if (RobustFile.Exists(_createdTempImageFile))
@@ -1911,11 +1554,9 @@ namespace Bloom.ImageProcessing
                             if (options.MakeOpaque)
                                 argsBldr.Append(" -background white -extent 0x0 +matte");
                             else if (options.MakeTransparent)
-                            {
-                                // We intentionally do not rely on GraphicsMagick's -transparent options.
-                                // After the conversion we apply Bloom's RemoveWhiteBackground semantics
-                                // so anti-aliased edges get proper alpha instead of white fringes.
-                            }
+                                argsBldr.Append(
+                                    " -matte -transparent \"#ffffff\" -transparent \"#fefefe\" -transparent \"#fdfdfd\""
+                                );
                             if (options.cropRectangle != Rectangle.Empty)
                             {
                                 argsBldr.AppendFormat(
@@ -1977,9 +1618,6 @@ namespace Bloom.ImageProcessing
                                 new NullProgress()
                             );
 
-                            if (result.ExitCode == 0 && options.MakeTransparent)
-                                ApplyBloomTransparencyToGraphicsMagickOutput(safeDestPath);
-
                             if (result.ExitCode == 0 && destPath != safeDestPath)
                                 RobustFile.Copy(safeDestPath, destPath, true);
                             return result;
@@ -1988,22 +1626,6 @@ namespace Bloom.ImageProcessing
                     );
                 }
             );
-        }
-
-        private static void ApplyBloomTransparencyToGraphicsMagickOutput(string imagePath)
-        {
-            if (!imagePath.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
-                return;
-
-            using (var imageInfo = FromFileRobustly(imagePath))
-            using (
-                var transparentImage = RuntimeImageProcessor.MakePngBackgroundTransparent(imageInfo)
-            )
-            using (var tempFile = TempFile.WithExtension(".png"))
-            {
-                RobustImageIO.SaveImage(transparentImage, tempFile.Path, ImageFormat.Png);
-                RobustFile.Copy(tempFile.Path, imagePath, true);
-            }
         }
 
         /// <summary>
