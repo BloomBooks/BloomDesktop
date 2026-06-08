@@ -175,12 +175,11 @@ namespace Bloom.web.controllers
                         "data-audiorecordingendtimes"
                     ),
                     recordingMd5 = matchingDataDivElement?.GetAttribute("recordingmd5"),
-                    hasAudioSentenceClass = matchingDataDivElement
-                        ?.GetAttribute("class")
-                        ?.Contains("audio-sentence") == true,
-                    hasBloomPostAudioSplitClass = matchingDataDivElement
-                        ?.GetAttribute("class")
-                        ?.Contains("bloom-postAudioSplit") == true,
+                    hasAudioSentenceClass = matchingDataDivElement?.HasClass("audio-sentence")
+                        ?? false,
+                    hasBloomPostAudioSplitClass = matchingDataDivElement?.HasClass(
+                        "bloom-postAudioSplit"
+                    ) ?? false,
                 }
             );
         }

@@ -1032,10 +1032,7 @@ async function setEditableContentFromKnownDataBookValueIfAny(
                     `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${dataBook}`,
                     (result) => {
                         try {
-                            const response =
-                                typeof result.data === "string"
-                                    ? { content: result.data }
-                                    : result.data;
+                            const response = result.data;
                             const content = response.content;
                             // content comes from a source that looked empty, we don't want to overwrite something the user may
                             // already have typed here.
