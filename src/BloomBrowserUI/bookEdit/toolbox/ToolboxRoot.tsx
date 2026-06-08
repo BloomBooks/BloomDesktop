@@ -847,6 +847,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                 <Typography
                                     css={css`
                                         flex-grow: 1;
+                                        font-size: 11px;
                                     `}
                                 >
                                     <LocalizedString l10nKey={section.l10nKey}>
