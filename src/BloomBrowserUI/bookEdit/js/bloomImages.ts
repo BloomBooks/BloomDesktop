@@ -282,20 +282,9 @@ function getOwningPageBackgroundColor(element: HTMLElement): string {
 
     const marginBox = page.querySelector(".marginBox") as HTMLElement | null;
     const pageSurface = marginBox ?? page;
-    // Enhance: I think we only have two cases: marginBox is often transparent on the cover,
-    // while it has an opaque color if a content page has color. So returning one or the
-    // other is enough. If we start using marginBoxes which are partly transparent, we may
-    // need to get smarter.
-    const result = normalizeCssColorToHexOrEmpty(
+    return normalizeCssColorToHexOrEmpty(
         getComputedStyle(pageSurface).backgroundColor,
     );
-    if (!result && marginBox) {
-        // If the marginBox has no background color, check the page itself.
-        return normalizeCssColorToHexOrEmpty(
-            getComputedStyle(page).backgroundColor,
-        );
-    }
-    return result;
 }
 
 function normalizeCssColorToHexOrEmpty(color: string): string {
