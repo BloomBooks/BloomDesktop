@@ -267,6 +267,31 @@
         <target xml:lang="am" state="needs-translation">Red on white</target>
         <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.pollinator">
+        <source xml:lang="en">Pollinator</source>
+        <target xml:lang="am" state="needs-translation">Pollinator</target>
+        <note>ID: EditTab.Toolbox.Games.Themes.pollinator</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.garden-path">
+        <source xml:lang="en">Garden Path</source>
+        <target xml:lang="am" state="needs-translation">Garden Path</target>
+        <note>ID: EditTab.Toolbox.Games.Themes.garden-path</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.cherry-blossom">
+        <source xml:lang="en">Cherry Blossom</source>
+        <target xml:lang="am" state="needs-translation">Cherry Blossom</target>
+        <note>ID: EditTab.Toolbox.Games.Themes.cherry-blossom</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.coral-reef">
+        <source xml:lang="en">Coral Reef</source>
+        <target xml:lang="am" state="needs-translation">Coral Reef</target>
+        <note>ID: EditTab.Toolbox.Games.Themes.coral-reef</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.arctic-dawn">
+        <source xml:lang="en">Arctic Dawn</source>
+        <target xml:lang="am" state="needs-translation">Arctic Dawn</target>
+        <note>ID: EditTab.Toolbox.Games.Themes.arctic-dawn</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragLettersInstructions">
         <source>Drag the letters where they go</source>
         <target xml:lang="am" state="needs-translation">Drag the letters where they go</target>
