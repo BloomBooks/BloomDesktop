@@ -35,6 +35,7 @@ namespace Bloom.ImageProcessing
     /// <summary>
     /// Controls whether (and how) a background-transparency pass is applied to an image.
     /// </summary>
+    /// <notes> Should be kept in sync with the definition of TransparencyMode in bloomImages.ts. </notes>
     public enum ImageTransparencyMode
     {
         /// <summary>Do not apply transparency (bloom-opaque class, or white/no page background).</summary>
@@ -754,7 +755,7 @@ namespace Bloom.ImageProcessing
                 // In that case, we don't need to save it again.
                 if (!reusingSameFilename)
                 {
-                    // Resize if the image would be more than 300dpi on an A4 page.
+                    // Resize if the image is larger than our limit.
                     var importSize = GetDesiredImageSize(
                         imageInfo.Image.Width,
                         imageInfo.Image.Height
@@ -867,7 +868,8 @@ namespace Bloom.ImageProcessing
             string destDir,
             ImageTransparencyMode transparencyMode = ImageTransparencyMode.None,
             int maxShortSide = 0,
-            int maxLongSide = 0
+            int maxLongSide = 0,
+            bool transparencyOnly = false
         )
         {
             try
@@ -882,8 +884,10 @@ namespace Bloom.ImageProcessing
                             maxLongSide
                         )
                         : GetDesiredImageSize(imageInfo.Image.Width, imageInfo.Image.Height);
+                // When transparencyOnly, we must not resize — we only want to apply transparency.
                 var needsResize =
-                    size.Width < imageInfo.Image.Width || size.Height < imageInfo.Image.Height;
+                    !transparencyOnly
+                    && (size.Width < imageInfo.Image.Width || size.Height < imageInfo.Image.Height);
                 var isJpeg = AppearsToBeJpeg(imageInfo);
                 var isPng = AppearsToBePng(imageInfo);
                 var isWebFormat = isJpeg || isPng;
@@ -891,10 +895,18 @@ namespace Bloom.ImageProcessing
                     transparencyMode == ImageTransparencyMode.Force
                     || transparencyMode == ImageTransparencyMode.Auto
                         && ShouldMakeBackgroundTransparent(imageInfo);
-                // Would a PNG→JPEG size-saving conversion be worth trying? Since JPEG can't do transparency,
-                // we only want to consider this if we don't need transparency and the image doesn't already
-                // have transparency.
-                var tryJpegConversion = !shouldMakeTransparent && !HasTransparency(imageInfo.Image);
+                // Would a PNG→JPEG size-saving conversion be worth trying? Skip when transparencyOnly
+                // because we're here only to apply transparency, not to optimize format.
+                var tryJpegConversion =
+                    !transparencyOnly
+                    && !shouldMakeTransparent
+                    && !HasTransparency(imageInfo.Image);
+
+                // When transparencyOnly, skip all processing for images that don't need transparency.
+                // The null return causes GetPathToAdjustedImage to cache this as a no-op, so
+                // subsequent requests for the same image return immediately without reloading it.
+                if (transparencyOnly && !shouldMakeTransparent)
+                    return null;
 
                 // If only a JPEG conversion is being considered (no resize, already web format,
                 // no transparency), attempt it and bail out either way — no point copying a file

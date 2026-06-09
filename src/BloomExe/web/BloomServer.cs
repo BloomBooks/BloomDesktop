@@ -200,7 +200,8 @@ namespace Bloom.Api
             _useCache = Settings.Default.ImageHandler != "off";
             ApiHandler = new BloomApiHandler(bookSelection);
             _theOneInstance = this;
-            _bookSelection.SelectionChanged += (_, _) => _cache?.ClearAll();
+            if (_bookSelection != null) // maybe null in some tests?
+                _bookSelection.SelectionChanged += (_, _) => _cache?.ClearAll();
         }
 
 #if DEBUG
@@ -388,7 +389,8 @@ namespace Bloom.Api
             HtmlDom dom,
             bool isCurrentPageContent = false,
             bool setAsCurrentPageForDebugging = false,
-            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Normal
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Normal,
+            bool suppressBackgroundColors = false
         )
         {
             var simulatedPageFileName = Path.ChangeExtension(
@@ -447,7 +449,10 @@ namespace Bloom.Api
                 ReplaceAnyVideoElementsWithPlaceholder(dom);
             }
             dom.Title = InMemoryHtmlFile.GetTitleForProcessExplorer(source) + " (InMemoryHtmlFile)"; // makes this show up in Windows Process Explorer WebView2 listing
-            var transparencyModifications = HtmlDom.AddTransparencyParamToImages(dom);
+            var transparencyModifications = HtmlDom.AddTransparencyParamToImages(
+                dom,
+                suppressBackgroundColors
+            );
             string html5String;
             try
             {
@@ -944,7 +949,6 @@ namespace Bloom.Api
 
             if (imageFile.StartsWith(OriginalImageMarker + "/"))
             {
-                processImage = false;
                 imageFile = imageFile.Substring((OriginalImageMarker + "/").Length);
 
                 if (!RobustFileExistsWithCaseCheck(imageFile))
@@ -955,28 +959,47 @@ namespace Bloom.Api
                     return false;
                 }
 
-                if (
-                    CurrentBook?.UserPrefs.IncludeBackgroundColors == true
-                    && info.GetQueryParameters()["transparent"] == "yes"
-                )
+                var transparentParam = info.GetQueryParameters()["transparent"];
+
+                // bloom-transparent (transparent=force) must always be honored, even when
+                // serving original images for PDF. Use the cache so format conversion
+                // (e.g. jpg → png) is handled correctly.
+                if (transparentParam == "force" && _useCache)
                 {
-                    if (ImageUtils.IsPngFile(imageFile))
+                    var forcedFile = _cache.GetPathToAdjustedImage(
+                        imageFile,
+                        false,
+                        ImageTransparencyMode.Force
+                    );
+                    if (!string.IsNullOrEmpty(forcedFile))
                     {
-                        using (var tempFile = TempFile.WithExtension(".png"))
-                        {
-                            if (
-                                ImageUtils.MakeTransparentBackgroundIfNeeded(
-                                    imageFile,
-                                    tempFile.Path
-                                )
-                            )
-                            {
-                                info.ReplyWithImage(tempFile.Path);
-                                return true;
-                            }
-                        }
+                        info.ReplyWithImage(forcedFile, imageFile);
+                        return true;
                     }
                 }
+
+                if (
+                    CurrentBook?.UserPrefs.IncludeBackgroundColors == true
+                    && transparentParam == "yes"
+                    && _useCache
+                )
+                {
+                    // Use transparencyOnly so AdjustImageForDisplay skips resize and JPEG
+                    // conversion and returns null (→ cached as a no-op) when the image isn't
+                    // line art, avoiding an expensive reload on every subsequent request.
+                    var autoFile = _cache.GetPathToAdjustedImage(
+                        imageFile,
+                        false,
+                        ImageTransparencyMode.Auto,
+                        transparencyOnly: true
+                    );
+                    // autoFile == imageFile means the cache confirmed this image is not line art;
+                    // either way we reply with whatever the cache decided is correct.
+                    info.ReplyWithImage(autoFile, imageFile);
+                    return true;
+                }
+                // IncludeBackgroundColors is off, or no transparent param — serve the original
+                // without any processing.
                 info.ReplyWithImage(imageFile);
                 return true;
             }
