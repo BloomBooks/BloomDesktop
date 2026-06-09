@@ -341,22 +341,16 @@ namespace Bloom.web
                     .Cast<SafeXmlElement>()
             )
             {
-                var classAttr = img.GetAttribute("class") ?? "";
-                if (classAttr.Contains("branding") || classAttr.Contains("bloom-qrcode"))
+                if (img.HasClass("branding") || img.HasClass("bloom-qrcode"))
                     continue;
-                var mode = HtmlDom.GetImageTransparencyMode(classAttr, pageNeedsTransparent);
+                var mode = HtmlDom.GetImageTransparencyMode(img, pageNeedsTransparent);
                 if (mode == ImageTransparencyMode.None)
                     continue;
                 var src = img.GetAttribute("src");
                 if (!string.IsNullOrEmpty(src))
                 {
                     var paramValue = mode == ImageTransparencyMode.Force ? "force" : "yes";
-                    img.SetAttribute(
-                        "src",
-                        src.Contains('?')
-                            ? $"{src}&transparent={paramValue}"
-                            : $"{src}?transparent={paramValue}"
-                    );
+                    img.SetAttribute("src", HtmlDom.GetSrcWithTransparencyParam(src, paramValue));
                 }
             }
             // For WebView2, this prevents any interaction with elements in the page thumbnail.

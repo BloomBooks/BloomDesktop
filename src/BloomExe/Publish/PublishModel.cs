@@ -442,7 +442,8 @@ namespace Bloom.Publish
 
             return BloomServer.MakeInMemoryHtmlFileInBookFolder(
                 dom,
-                source: InMemoryHtmlFileSource.Pub
+                source: InMemoryHtmlFileSource.Pub,
+                suppressBackgroundColors: !_currentlyLoadedBook.UserPrefs.IncludeBackgroundColors
             );
         }
 
