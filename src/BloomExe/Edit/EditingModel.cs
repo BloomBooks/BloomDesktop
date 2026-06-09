@@ -619,9 +619,26 @@ namespace Bloom.Edit
                         page as Page,
                         e.NumberToAdd
                     );
-                    _view.Browser.RunJavascriptAsync(
-                        "document.getElementById('pageList').contentWindow.location.reload(true);"
-                    );
+                    // We deliberately do NOT force the page-list iframe to reload here.
+                    // InsertPageAfter raises pageListChangedEvent (deferred until idle), which
+                    // leads to UpdatePageList(); that either sends pageListNeedsRefresh over the
+                    // websocket (a cheap, incremental update in the React page list) or, if the
+                    // new page brought new stylesheets, regenerates the page-list document and
+                    // navigates the iframe to it. We used to also do a hard location.reload of
+                    // the iframe here, but that repainted the entire thumbnail list on every
+                    // insert and raced with those deferred notifications: a websocket message
+                    // arriving while the iframe was mid-reload was silently dropped, leaving the
+                    // list permanently stale.
+                    //
+                    // The stylesheet-change path still navigates the iframe, which does repaint
+                    // the whole list and does have a brief window during load where websocket
+                    // messages are ignored. The difference is that this navigation is no longer a
+                    // blind reload racing a separate notification: it is triggered by the deferred
+                    // event itself and loads a freshly regenerated document that already contains
+                    // the new page (and its stylesheet), so it is correct on its own. And when the
+                    // reloaded iframe's socket opens, the React code re-fetches the page list (see
+                    // the websocket/open handler in pageThumbnailList.tsx), recovering anything
+                    // missed during the load. So no stale-list race remains.
                     //_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
                     //_pageSelection.SelectPage(newPage);
                     if (e.FromTemplate)
