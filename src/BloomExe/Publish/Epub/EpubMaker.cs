@@ -2211,9 +2211,8 @@ namespace Bloom.Publish.Epub
                         )
                         .Cast<SafeXmlElement>()
                         .LastOrDefault(); // last ancestor = nearest page div
-                    var imgClassAttr = img.GetAttribute("class") ?? "";
                     var transparencyMode = HtmlDom.GetImageTransparencyMode(
-                        imgClassAttr,
+                        img,
                         owningPage != null && HtmlDom.PageNeedsTransparentImages(owningPage)
                     );
                     var dstPath = CopyFileToEpub(
@@ -3413,10 +3412,15 @@ namespace Bloom.Publish.Epub
                 limitImageDimensions,
                 transparencyMode
             );
-            // CopyFile may have changed the extension (e.g. PNG photo → JPEG).
+            // CopyFile may have changed the path (e.g. PNG photo → JPEG, or collision rename).
+            // Reconstruct fileName by stripping the subfolder-aware content prefix so the
+            // manifest entry and the actual file on disk always agree.
             if (!actualDstPath.Equals(dstPath, StringComparison.OrdinalIgnoreCase))
             {
-                fileName = Path.ChangeExtension(fileName, Path.GetExtension(actualDstPath));
+                var contentPrefix = string.IsNullOrEmpty(subfolder)
+                    ? _contentFolder
+                    : Path.Combine(_contentFolder, subfolder);
+                fileName = actualDstPath[(contentPrefix.Length + 1)..].Replace('\\', '/');
                 dstPath = actualDstPath;
             }
             _manifestItems.Add(SubfolderAdjustedName(subfolder, fileName));
@@ -3522,7 +3526,18 @@ namespace Bloom.Publish.Epub
                     var adjustedExt = Path.GetExtension(adjustedPath).ToLowerInvariant();
                     var dstExt = Path.GetExtension(dstPath).ToLowerInvariant();
                     if (adjustedExt != dstExt)
-                        dstPath = Path.ChangeExtension(dstPath, adjustedExt);
+                    {
+                        // Re-check for collisions with the new extension — the earlier collision
+                        // loop only ran against the original extension.
+                        var basePath = Path.ChangeExtension(dstPath, adjustedExt);
+                        dstPath = basePath;
+                        var baseNoExt = Path.Combine(
+                            Path.GetDirectoryName(basePath),
+                            Path.GetFileNameWithoutExtension(basePath)
+                        );
+                        for (int fix = 1; RobustFile.Exists(dstPath); fix++)
+                            dstPath = baseNoExt + fix + adjustedExt;
+                    }
                     RobustFile.Copy(adjustedPath, dstPath);
                     return dstPath;
                 }
