@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Bloom.ImageProcessing;
 using SIL.Code;
@@ -66,8 +67,9 @@ namespace Bloom
                 Directory.Delete(path, recursive);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
                 return false;
             }
         }

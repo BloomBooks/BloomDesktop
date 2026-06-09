@@ -438,10 +438,9 @@ export function updateImageTransparencyForPage(
     const pageNeedsTransparent = !!newColor;
     for (const img of Array.from(page.querySelectorAll("img"))) {
         const imgEl = img as HTMLElement;
-        const classAttr = imgEl.className ?? "";
         if (
-            classAttr.includes("branding") ||
-            classAttr.includes("bloom-qrcode")
+            imgEl.classList.contains("branding") ||
+            imgEl.classList.contains("bloom-qrcode")
         )
             continue;
         setImgTransparentParam(

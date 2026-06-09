@@ -544,19 +544,25 @@ namespace Bloom.ImageProcessing
             // t0: pixels at/above this brightness become fully transparent.
             // t1: pixels at/below this brightness stay fully opaque.
             // Values between t1..t0 get linearly ramped alpha.
-            // The ramp is guaranteed at least kMinRampWidth units wide so that near-background
-            // pixels get a smooth gradient rather than a hard aliased edge.
+            //
+            // For a white background (detected ~255) t0=220, t1=180, giving the standard 40-unit ramp.
+            // For darker backgrounds t0 is pulled down to match, and t1 follows to keep the ramp
+            // kMinRampWidth wide — but t1 is never allowed below kMinOpaqueBrightnessThreshold so
+            // that dark content pixels stay fully opaque even on dark backgrounds.  This may produce
+            // a narrower ramp than kMinRampWidth on very dark images, which is the right trade-off.
+            // On extremely dark images, we may not make anything transparent.
             const double kTransparentBrightnessThreshold = 220.0;
             const double kOpaqueBrightnessThreshold = 180.0;
             const double kMinRampWidth = 40.0;
+            const double kMinOpaqueBrightnessThreshold = 60.0;
             var detectedBackgroundBrightness = 0.299 * maxR + 0.587 * maxG + 0.114 * maxB;
             var transparentBrightnessThreshold = Math.Min(
                 kTransparentBrightnessThreshold,
                 detectedBackgroundBrightness
             );
-            var opaqueBrightnessThreshold = Math.Min(
-                kOpaqueBrightnessThreshold,
-                transparentBrightnessThreshold - kMinRampWidth
+            var opaqueBrightnessThreshold = Math.Max(
+                kMinOpaqueBrightnessThreshold,
+                Math.Min(kOpaqueBrightnessThreshold, transparentBrightnessThreshold - kMinRampWidth)
             );
             var phase2Elapsed = totalStopwatch.Elapsed;
             Debug.WriteLine(

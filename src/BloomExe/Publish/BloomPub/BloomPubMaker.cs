@@ -277,7 +277,7 @@ namespace Bloom.Publish.BloomPub
                             continue;
 
                         var transparencyMode = GetElementTransparencyMode(
-                            div.GetAttribute("class") ?? "",
+                            div,
                             pageNeedsTransparent,
                             fullScreenBlack
                         );
@@ -316,7 +316,7 @@ namespace Bloom.Publish.BloomPub
         /// classes and whether its page has a colored background.
         /// </summary>
         private static ImageTransparencyMode GetElementTransparencyMode(
-            string classAttr,
+            SafeXmlElement element,
             bool pageNeedsTransparent,
             bool fullScreenBlack
         )
@@ -325,10 +325,10 @@ namespace Bloom.Publish.BloomPub
             if (fullScreenBlack)
                 return ImageTransparencyMode.None;
             // bloom-opaque: explicit user override "never make transparent".
-            if (classAttr.Contains("bloom-opaque"))
+            if (element.HasClass("bloom-opaque"))
                 return ImageTransparencyMode.None;
             // bloom-transparent: explicit user override "always force transparent".
-            if (classAttr.Contains("bloom-transparent"))
+            if (element.HasClass("bloom-transparent"))
                 return ImageTransparencyMode.Force;
             if (!pageNeedsTransparent)
                 return ImageTransparencyMode.None;
@@ -1018,9 +1018,10 @@ namespace Bloom.Publish.BloomPub
                     .ToArray()
             )
             {
-                var img = imgContainer.ChildNodes.FirstOrDefault(n =>
-                    n is SafeXmlElement && n.Name == "img"
-                );
+                var img =
+                    imgContainer.ChildNodes.FirstOrDefault(n =>
+                        n is SafeXmlElement && n.Name == "img"
+                    ) as SafeXmlElement;
                 if (img == null || string.IsNullOrEmpty(img.GetAttribute("src")))
                     continue;
                 // The filename should be already urlencoded since src is a url.
@@ -1035,13 +1036,12 @@ namespace Bloom.Publish.BloomPub
                         imgContainer.SetAttribute(attr.Name, attr.Value);
                 }
 
-                var imgClass = img.GetAttribute("class") ?? "";
                 var classesToAdd = " bloom-background-image-in-style-attr";
                 // Preserve the user's explicit transparency overrides so FindImagesNeedingTransparency
                 // can still read them after the img element is deleted below.
-                if (imgClass.Contains("bloom-transparent"))
+                if (img.HasClass("bloom-transparent"))
                     classesToAdd += " bloom-transparent";
-                else if (imgClass.Contains("bloom-opaque"))
+                else if (img.HasClass("bloom-opaque"))
                     classesToAdd += " bloom-opaque";
                 // This is a nasty special case; see BL-11712. This class causes images to grow to
                 // cover the container, so when we convert to a background image, somehow we need to
@@ -1049,7 +1049,7 @@ namespace Bloom.Publish.BloomPub
                 // and again have two equivalent rules. Maybe we can eventually get rid of converting
                 // to background image? Why did we want to, anyway?? Maybe we can copy all classes from
                 // the img? But we'd still need duplicate rules.
-                if (imgClass.Contains("bloom-imageObjectFit-cover"))
+                if (img.HasClass("bloom-imageObjectFit-cover"))
                     classesToAdd += " bloom-imageObjectFit-cover";
                 else
                 {

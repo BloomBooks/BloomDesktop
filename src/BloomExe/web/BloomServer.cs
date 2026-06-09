@@ -200,7 +200,8 @@ namespace Bloom.Api
             _useCache = Settings.Default.ImageHandler != "off";
             ApiHandler = new BloomApiHandler(bookSelection);
             _theOneInstance = this;
-            _bookSelection.SelectionChanged += (_, _) => _cache?.ClearAll();
+            if (_bookSelection != null) // maybe null in some tests?
+                _bookSelection.SelectionChanged += (_, _) => _cache?.ClearAll();
         }
 
 #if DEBUG

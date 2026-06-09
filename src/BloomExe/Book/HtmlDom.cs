@@ -1985,7 +1985,7 @@ namespace Bloom.Book
 
             // Cover pages: background comes from the CSS rule written into the document's <style>
             // element by SetBackwardsCompatibleCoverBackgroundColor.
-            if ((pageDiv.GetAttribute("class") ?? "").Contains("coverColor"))
+            if (pageDiv.HasClass("coverColor"))
                 return ImageUtils.ShouldMakeTransparentForPageBackground(
                     GetCoverBackgroundColorFromOldInlineStyle(pageDiv.OwnerDocument)
                 );
@@ -2041,17 +2041,17 @@ namespace Bloom.Book
         /// our algorithm to decide whether the image looks like line art.
         /// </summary>
         internal static ImageTransparencyMode GetImageTransparencyMode(
-            string imgClassAttr,
+            SafeXmlElement img,
             bool pageNeedsTransparent
         )
         {
             // bloom-opaque is an explicit user override: never apply transparency.
-            if (imgClassAttr.Contains("bloom-opaque"))
+            if (img.HasClass("bloom-opaque"))
                 return ImageTransparencyMode.None;
             // bloom-transparent is an explicit user override: always force transparency,
             // even for images that don't look (at least to our algorithm) like line art.
             // This can also 'erase' very light-colored parts of an image, even on a white page.
-            if (imgClassAttr.Contains("bloom-transparent"))
+            if (img.HasClass("bloom-transparent"))
                 return ImageTransparencyMode.Force;
             if (!pageNeedsTransparent)
                 return ImageTransparencyMode.None;
@@ -2087,10 +2087,9 @@ namespace Bloom.Book
                         .Cast<SafeXmlElement>()
                 )
                 {
-                    var classAttr = img.GetAttribute("class") ?? "";
-                    if (classAttr.Contains("branding") || classAttr.Contains("bloom-qrcode"))
+                    if (img.HasClass("branding") || img.HasClass("bloom-qrcode"))
                         continue;
-                    var mode = GetImageTransparencyMode(classAttr, pageNeedsTransparent);
+                    var mode = GetImageTransparencyMode(img, pageNeedsTransparent);
                     if (mode == ImageTransparencyMode.None)
                         continue;
                     var src = img.GetAttribute("src");
@@ -2098,12 +2097,7 @@ namespace Bloom.Book
                         continue;
                     modified.Add((img, src));
                     var paramValue = mode == ImageTransparencyMode.Force ? "force" : "yes";
-                    img.SetAttribute(
-                        "src",
-                        src.Contains('?')
-                            ? $"{src}&transparent={paramValue}"
-                            : $"{src}?transparent={paramValue}"
-                    );
+                    img.SetAttribute("src", WithTransparencyParam(src, paramValue));
                 }
             }
             return modified;
@@ -2114,6 +2108,30 @@ namespace Bloom.Book
         {
             foreach (var (img, src) in modifications)
                 img.SetAttribute("src", src);
+        }
+
+        /// <summary>
+        /// Returns <paramref name="src"/> with the <c>transparent</c> query parameter set to
+        /// <paramref name="paramValue"/> ("yes" or "force"), replacing any existing value.
+        /// When <paramref name="src"/> has no query string (the common case) this is a simple append.
+        /// </summary>
+        internal static string WithTransparencyParam(string src, string paramValue)
+        {
+            var qIndex = src.IndexOf('?');
+            if (qIndex < 0)
+                return $"{src}?transparent={paramValue}";
+
+            // Strip any pre-existing transparent= param, then append the new one.
+            var path = src[..qIndex];
+            var remaining = string.Join(
+                "&",
+                src[(qIndex + 1)..]
+                    .Split('&')
+                    .Where(p => !p.StartsWith("transparent=", StringComparison.OrdinalIgnoreCase))
+            );
+            return remaining.Length > 0
+                ? $"{path}?{remaining}&transparent={paramValue}"
+                : $"{path}?transparent={paramValue}";
         }
 
         /// <summary>
