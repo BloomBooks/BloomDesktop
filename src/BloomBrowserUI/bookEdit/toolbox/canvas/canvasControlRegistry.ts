@@ -49,6 +49,7 @@ import {
     getOwningPageBackgroundColor,
     isPlaceHolderImage,
     kImageContainerClass,
+    pageBackgroundNeedsTransparency,
     setImgTransparentParam,
 } from "../../js/bloomImages";
 import { doVideoCommand } from "../../js/bloomVideo";
@@ -697,7 +698,10 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                     const bgColor = getOwningPageBackgroundColor(img);
                     setImgTransparentParam(
                         img,
-                        getImageTransparencyMode(img, !!bgColor),
+                        getImageTransparencyMode(
+                            img,
+                            pageBackgroundNeedsTransparency(bgColor),
+                        ),
                     );
                 }
 
