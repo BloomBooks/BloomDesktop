@@ -60,3 +60,9 @@ All public methods should have a comment. So should most private ones!
 
 # Git Committing
 Always include a good description when creating a git commit.
+
+# Skills
+Reusable, task-specific procedures for this repo live in `.github/skills/<name>/SKILL.md`.
+When a request matches one of these, READ the matching `SKILL.md` and follow it as the
+authoritative procedure (it may have more files alongside it). These may not be auto-loaded
+for non-copilot agents, so you may have to open the file yourself.
