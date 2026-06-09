@@ -189,6 +189,146 @@ namespace Bloom.CollectionTab
             }
         }
 
+        /// <summary>
+        /// Copies a book folder from an arbitrary location on disk into the open editable collection,
+        /// reloads the collection, and selects the new book. Used by external automation (e.g. the
+        /// BloomBridge "keep this book" flow) to add a book it produced/processed elsewhere.
+        /// The book keeps its existing bookInstanceId. If a book with that same bookInstanceId is
+        /// already in the collection (e.g. this is a re-conversion of a book we imported before), the
+        /// existing folder is sent to the OS recycle bin and replaced by the incoming one. Otherwise,
+        /// only the destination folder name is made unique (and the main .htm renamed to match) if it
+        /// would collide with an unrelated existing book folder.
+        /// Returns the new Book, or null if it could not be located after the copy.
+        /// </summary>
+        public Book.Book AddBookFromFolder(string sourceBookFolderPath)
+        {
+            if (
+                string.IsNullOrEmpty(sourceBookFolderPath)
+                || !Directory.Exists(sourceBookFolderPath)
+            )
+                throw new ArgumentException(
+                    "No book folder at " + sourceBookFolderPath,
+                    nameof(sourceBookFolderPath)
+                );
+            // Trim any trailing separator so GetFileName/GetDirectoryName behave.
+            sourceBookFolderPath = sourceBookFolderPath.TrimEnd(
+                Path.DirectorySeparatorChar,
+                Path.AltDirectorySeparatorChar
+            );
+            if (!RobustFile.Exists(Path.Combine(sourceBookFolderPath, "meta.json")))
+                throw new ArgumentException(
+                    "Folder is not a Bloom book (no meta.json): " + sourceBookFolderPath,
+                    nameof(sourceBookFolderPath)
+                );
+
+            var collectionDir = TheOneEditableCollection.PathToDirectory;
+
+            // Don't try to copy a book that already lives in this collection onto itself.
+            if (
+                string.Equals(
+                    Path.GetDirectoryName(sourceBookFolderPath),
+                    collectionDir.TrimEnd(
+                        Path.DirectorySeparatorChar,
+                        Path.AltDirectorySeparatorChar
+                    ),
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+                throw new ArgumentException(
+                    "Book is already in the collection: " + sourceBookFolderPath,
+                    nameof(sourceBookFolderPath)
+                );
+
+            // If this is a re-import of a book we already have (same bookInstanceId), send the existing
+            // copy to the recycle bin so the incoming one replaces it rather than piling up beside it
+            // under a uniquified name. We match on id (not folder name) so a retitled re-conversion still
+            // replaces its predecessor. The recycle is recoverable from the OS trash if it was a mistake.
+            var incomingId = TryGetBookInstanceId(sourceBookFolderPath);
+            if (!string.IsNullOrEmpty(incomingId))
+            {
+                var existing = TheOneEditableCollection
+                    .GetBookInfos()
+                    .Where(info => info.Id == incomingId)
+                    .ToList();
+                foreach (var info in existing)
+                {
+                    // If the book we're about to replace is the current selection, drop the selection
+                    // first so we don't leave it pointing at a folder that's headed for the trash.
+                    if (_bookSelection.CurrentSelection?.FolderPath == info.FolderPath)
+                        _bookSelection.SelectBook(null);
+                    if (ConfirmRecycleDialog.Recycle(info.FolderPath))
+                        TheOneEditableCollection.HandleBookDeletedFromCollection(info.FolderPath);
+                }
+            }
+
+            var baseName = Path.GetFileName(sourceBookFolderPath);
+            // Keep the clean folder name when it's free; only fall back to a unique (TC-safe) name on
+            // collision, as DuplicateBook does. (After the recycle above, a re-import normally reclaims
+            // its original clean name.)
+            var newBookName = Directory.Exists(Path.Combine(collectionDir, baseName))
+                ? BookStorage.GetUniqueBookFolderName(collectionDir, baseName)
+                : baseName;
+            var newBookDir = Path.Combine(collectionDir, newBookName);
+
+            // Copy everything except the throwaway/derived files BookStorage.Duplicate also skips.
+            BookStorage.CopyDirectory(
+                sourceBookFolderPath,
+                newBookDir,
+                new[] { ".bak", ".bloombookorder", ".pdf", ".map" }
+            );
+
+            // If we had to uniquify the folder name, the main .htm inside still has the old name. Rename
+            // it to match the new folder so Bloom finds it cleanly (mirrors BookStorage.Duplicate).
+            if (!string.Equals(newBookName, baseName, StringComparison.Ordinal))
+            {
+                var oldHtm = Path.Combine(newBookDir, baseName + ".htm");
+                if (!RobustFile.Exists(oldHtm))
+                    // Fall back to whatever single book htm we copied.
+                    oldHtm = Directory
+                        .GetFiles(newBookDir, "*.htm")
+                        .FirstOrDefault(p => !Path.GetFileName(p).StartsWith("."));
+                if (oldHtm != null && RobustFile.Exists(oldHtm))
+                    RobustFile.Move(oldHtm, Path.Combine(newBookDir, newBookName + ".htm"));
+            }
+
+            // Strip any Team-Collection / local-only status copied from the source, so Bloom treats
+            // this as a normal local book.
+            BookStorage.RemoveLocalOnlyFiles(newBookDir);
+
+            ReloadEditableCollection();
+
+            var newInfo = TheOneEditableCollection
+                .GetBookInfos()
+                .FirstOrDefault(info => info.FolderPath == newBookDir);
+            if (newInfo == null)
+                return null;
+
+            var newBook = GetBookFromBookInfo(newInfo);
+            SelectBook(newBook);
+            BookHistory.AddEvent(
+                newBook,
+                BookHistoryEventType.Created,
+                $"Imported book from \"{sourceBookFolderPath}\""
+            );
+            return newBook;
+        }
+
+        /// <summary>
+        /// Reads just the bookInstanceId from a book folder's meta.json without the side effects of
+        /// constructing a full BookInfo. Returns null if the folder has no readable metadata.
+        /// </summary>
+        private static string TryGetBookInstanceId(string bookFolderPath)
+        {
+            try
+            {
+                return BookMetaData.FromFolder(bookFolderPath)?.Id;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public void moveBookIntoThisCollection(Book.Book origBook, BookCollection origCollection)
         {
             var possibleTCFilePath = TeamCollectionManager.GetTcLinkPathFromLcPath(

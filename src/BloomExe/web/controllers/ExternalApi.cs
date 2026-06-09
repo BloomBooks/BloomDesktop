@@ -1,6 +1,7 @@
 using System;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.web;
@@ -22,6 +23,7 @@ namespace Bloom.web.controllers
         private readonly EditingModel _editingModel;
         private readonly WorkspaceTabSelection _tabSelection;
         private readonly BookServer _bookServer;
+        private readonly CollectionSettings _collectionSettings;
 
         // Called by autofac, which creates the one instance and registers it with the server.
         public ExternalApi(
@@ -29,7 +31,8 @@ namespace Bloom.web.controllers
             CollectionModel collectionModel,
             EditingModel editingModel,
             WorkspaceTabSelection tabSelection,
-            BookServer bookServer
+            BookServer bookServer,
+            CollectionSettings collectionSettings
         )
         {
             _bloomLibraryBookApiClient = bloomLibraryBookApiClient;
@@ -37,6 +40,7 @@ namespace Bloom.web.controllers
             _editingModel = editingModel;
             _tabSelection = tabSelection;
             _bookServer = bookServer;
+            _collectionSettings = collectionSettings;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -94,7 +98,7 @@ namespace Bloom.web.controllers
                 false
             );
 
-            // Called by an external utility (e.g. a book-conversion tool) after it has written or
+            // Called by an external utility (e.g. BloomBridge) after it has written or
             // overwritten a book folder in this collection on disk. We make the running Bloom show the
             // current state of that book: a brand-new book is added to the collection list; a re-imported
             // existing book has its display refreshed. If the re-imported book happens to be the one open
@@ -123,7 +127,23 @@ namespace Bloom.web.controllers
                 handleOnUiThread: true
             );
 
-            // Called by an external utility (e.g. the PDF→Bloom converter) to run the full "make it
+            // Called by an external utility (e.g. BloomBridge's "keep this book" flow) to
+            // copy a book folder from an arbitrary location on disk into the open collection and select
+            // it. The source folder need NOT be in the collection; it is copied in (the source is left
+            // untouched), the collection list is reloaded so the new book appears, and it becomes the
+            // current selection. The reply includes the new book's 'id' so the caller can later target
+            // it with external/selectBook or external/updateBook.
+            //
+            // Like external/selectBook this reloads the collection and changes the selection, so we only
+            // honor it while the Collection tab is active (otherwise we'd risk discarding the user's
+            // unsaved edits). This must run on the UI thread because it updates the UI.
+            apiHandler.RegisterEndpointHandler(
+                "external/add-book",
+                HandleAddBook,
+                handleOnUiThread: true
+            );
+
+            // Called by an external utility (e.g. BloomBridge) to run the full "make it
             // right" pass on a book in this collection (the one whose 'id' is supplied): bring it
             // structurally up to date, then process every page off-screen in a real browser the same
             // way visiting each page in the Edit tab does, and save it to disk. This is the step that
@@ -135,6 +155,38 @@ namespace Bloom.web.controllers
                 "external/process-book",
                 HandleProcessBook,
                 handleOnUiThread: true
+            );
+
+            // Called by an external utility (e.g. BloomBridge) to discover which languages
+            // the open collection is set up for, so it can tag the book content it generates correctly.
+            // Returns the collection's L1/L2/L3 language tags; L3Code is null when the collection has no
+            // third language. This is read-only, so it does not need the UI thread.
+            apiHandler.RegisterEndpointHandler(
+                "external/collection-languages",
+                HandleCollectionLanguages,
+                handleOnUiThread: false
+            );
+        }
+
+        private void HandleCollectionLanguages(ApiRequest request)
+        {
+            if (request.HttpMethod == HttpMethods.Options)
+            {
+                // Allow a CORS preflight request to succeed (as the other external endpoints do).
+                request.PostSucceeded();
+                return;
+            }
+
+            // Language1/Language2 are always present; Language3 is optional.
+            request.ReplyWithJson(
+                new
+                {
+                    L1Code = _collectionSettings.Language1?.Tag,
+                    L2Code = _collectionSettings.Language2?.Tag,
+                    L3Code = string.IsNullOrEmpty(_collectionSettings.Language3?.Tag)
+                        ? null
+                        : _collectionSettings.Language3.Tag,
+                }
             );
         }
 
@@ -153,19 +205,23 @@ namespace Bloom.web.controllers
             }
 
             string id = null;
+            string folderPath = null;
             try
             {
                 var data = Newtonsoft.Json.Linq.JObject.Parse(request.RequiredPostJson());
                 id = (string)data["id"];
-                if (string.IsNullOrEmpty(id))
+                folderPath = (string)data["path"];
+                if (string.IsNullOrEmpty(id) && string.IsNullOrEmpty(folderPath))
                 {
-                    request.Failed("external/process-book requires a book 'id'");
+                    request.Failed(
+                        "external/process-book requires a book 'path' (preferred) or 'id'"
+                    );
                     return;
                 }
 
                 // Processing rewrites the book on disk. Only do it from the Collection tab, so we
                 // never write a book out from under the live editor or fight its save/navigate state
-                // machine. (The converter should land here right after adding/selecting the book.)
+                // machine.
                 if (_tabSelection.ActiveTab != WorkspaceTab.collection)
                 {
                     request.Failed(
@@ -174,56 +230,208 @@ namespace Bloom.web.controllers
                     return;
                 }
 
-                var editableCollection = _collectionModel.TheOneEditableCollection;
-                var collectionPath = editableCollection.PathToDirectory;
-                var bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
-                if (bookInfo == null)
+                // Let the user know Bloom is busy. ProcessBook runs synchronously on this (UI)
+                // thread but pumps the message loop via Application.DoEvents(), so the main WebView2
+                // keeps painting and this overlay (with its CSS spinner) stays visible/animated for
+                // the whole run. Pump a few events first so it actually appears before the heavy
+                // work (BringBookUpToDate) ties up the thread.
+                dynamic overlay = new DynamicJson();
+                overlay.message = "Bloom is processing a book for BloomBridge, please wait…";
+                BloomWebSocketServer.Instance?.SendBundle("externalProcessing", "show", overlay);
+                for (var i = 0; i < 10; i++)
                 {
-                    // The converter has very likely just written this book to disk, and our in-memory
-                    // collection cache doesn't know about it yet (the cache only refreshes on an explicit
-                    // reload or a debounced file-watcher event, neither of which is guaranteed to have run
-                    // by the time we get here). Rescan the collection from disk and look again before
-                    // giving up, mirroring how external/updateBook handles a newly-appeared book.
-                    _collectionModel.ReloadEditableCollection();
-                    bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+                    System.Windows.Forms.Application.DoEvents();
+                    System.Threading.Thread.Sleep(15);
                 }
-                if (bookInfo == null)
+                try
                 {
-                    request.Failed("external/process-book could not find a book with id " + id);
-                    return;
+                    if (!string.IsNullOrEmpty(folderPath))
+                    {
+                        HandleProcessBookByPath(request, folderPath);
+                        return;
+                    }
+
+                    HandleProcessBookById(request, id);
                 }
-
-                // Process a fresh Book read from disk rather than any in-memory selection, so we
-                // don't disturb the state of the currently-selected book object.
-                var book = _bookServer.GetBookFromBookInfo(bookInfo);
-                var pageCount = BookProcessor.ProcessBook(book);
-
-                // If we just rewrote the book that is currently selected, the in-memory selection now
-                // disagrees with disk (we processed a separate Book instance). Discard the stale in-memory
-                // copy and reload it from disk so a later trip through the Edit tab can't clobber what we
-                // just wrote, then refresh the collection's view of it (list metadata + thumbnail). This
-                // mirrors how external/updateBook handles re-import of the selected book.
-                var selected = _collectionModel.GetSelectedBookOrNull();
-                if (selected != null && selected.ID == id)
+                finally
                 {
-                    _editingModel.ReloadCurrentBookDiscardingEdits();
-                    _collectionModel.ReloadEditableCollection();
-                    var refreshedInfo = _collectionModel.BookInfoFromCollectionAndId(
-                        collectionPath,
-                        id
-                    );
-                    if (refreshedInfo != null)
-                        _collectionModel.UpdateThumbnailAsync(
-                            _collectionModel.GetBookFromBookInfo(refreshedInfo)
-                        );
+                    BloomWebSocketServer.Instance?.SendEvent("externalProcessing", "hide");
                 }
-
-                request.ReplyWithJson(new { processed = pageCount });
             }
             catch (Exception e)
             {
-                Logger.WriteError("external/process-book failed for book id " + id, e);
+                Logger.WriteError("external/process-book failed for book " + (folderPath ?? id), e);
                 request.Failed("external/process-book failed: " + e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Process a book given the path to its folder, which need NOT be a member of the open
+        /// collection. The book is processed in place (the fixed-up .htm is written back to the same
+        /// folder) using the running project's CollectionSettings (xmatter/branding/languages), and
+        /// nothing is added to the open collection. This is what BloomBridge uses, so its staging
+        /// books no longer have to be copied into the collection just to be processed.
+        /// </summary>
+        private void HandleProcessBookByPath(ApiRequest request, string folderPath)
+        {
+            if (
+                !System.IO.Directory.Exists(folderPath)
+                || !SIL.IO.RobustFile.Exists(System.IO.Path.Combine(folderPath, "meta.json"))
+            )
+            {
+                request.Failed(
+                    "external/process-book could not find a book folder (with meta.json) at "
+                        + folderPath
+                );
+                return;
+            }
+
+            // The book is processed off-screen and is never the selected book, so there is no live
+            // editor state to reconcile afterwards. isInEditableCollection:true + AlwaysEditSaveContext
+            // makes Book.IsSaveable true (Book.IsSaveable => IsInEditableCollection && BookInfo.IsSaveable),
+            // matching the semantics of the old flow where the book was first copied into the
+            // editable collection.
+            var bookInfo = new BookInfo(folderPath, true, new AlwaysEditSaveContext());
+            var book = _bookServer.GetBookFromBookInfo(bookInfo);
+            var pageCount = BookProcessor.ProcessBook(book);
+
+            // Saving may have renamed the folder to match the book's title, so report the final
+            // location the client should read its output from.
+            request.ReplyWithJson(
+                new
+                {
+                    processed = pageCount,
+                    bookFolderPath = book.FolderPath,
+                    htmPath = book.GetPathHtmlFile(),
+                }
+            );
+        }
+
+        /// <summary>
+        /// Legacy flow: process a book that is a member of the open editable collection, found by its
+        /// bookInstanceId.
+        /// </summary>
+        private void HandleProcessBookById(ApiRequest request, string id)
+        {
+            var editableCollection = _collectionModel.TheOneEditableCollection;
+            var collectionPath = editableCollection.PathToDirectory;
+            var bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+            if (bookInfo == null)
+            {
+                // The book may have just been written to disk and our in-memory collection cache
+                // doesn't know about it yet. Rescan from disk and look again before giving up.
+                _collectionModel.ReloadEditableCollection();
+                bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+            }
+            if (bookInfo == null)
+            {
+                request.Failed("external/process-book could not find a book with id " + id);
+                return;
+            }
+
+            // Process a fresh Book read from disk rather than any in-memory selection, so we
+            // don't disturb the state of the currently-selected book object.
+            var book = _bookServer.GetBookFromBookInfo(bookInfo);
+            var pageCount = BookProcessor.ProcessBook(book);
+
+            // If we just rewrote the book that is currently selected, the in-memory selection now
+            // disagrees with disk (we processed a separate Book instance). Discard the stale in-memory
+            // copy and reload it from disk so a later trip through the Edit tab can't clobber what we
+            // just wrote, then refresh the collection's view of it (list metadata + thumbnail). This
+            // mirrors how external/updateBook handles re-import of the selected book.
+            var selected = _collectionModel.GetSelectedBookOrNull();
+            if (selected != null && selected.ID == id)
+            {
+                _editingModel.ReloadCurrentBookDiscardingEdits();
+                _collectionModel.ReloadEditableCollection();
+                var refreshedInfo = _collectionModel.BookInfoFromCollectionAndId(
+                    collectionPath,
+                    id
+                );
+                if (refreshedInfo != null)
+                    _collectionModel.UpdateThumbnailAsync(
+                        _collectionModel.GetBookFromBookInfo(refreshedInfo)
+                    );
+            }
+
+            request.ReplyWithJson(
+                new
+                {
+                    processed = pageCount,
+                    bookFolderPath = book.FolderPath,
+                    htmPath = book.GetPathHtmlFile(),
+                }
+            );
+        }
+
+        private void HandleAddBook(ApiRequest request)
+        {
+            if (request.HttpMethod == HttpMethods.Options)
+            {
+                // Allow a CORS preflight request to succeed (as the other external endpoints do).
+                request.PostSucceeded();
+                return;
+            }
+            if (request.HttpMethod != HttpMethods.Post)
+            {
+                request.Failed("external/add-book only supports POST");
+                return;
+            }
+
+            string folderPath = null;
+            try
+            {
+                // Parse with Newtonsoft rather than Bloom's DynamicJson because the body contains a
+                // Windows path, and DynamicJson's JSON->XML conversion chokes on the backslashes.
+                var data = Newtonsoft.Json.Linq.JObject.Parse(request.RequiredPostJson());
+                folderPath = (string)data["path"];
+                if (string.IsNullOrEmpty(folderPath))
+                {
+                    request.Failed("external/add-book requires a book 'path'");
+                    return;
+                }
+
+                // Adding a book reloads the collection and changes the current selection, which would
+                // discard the user's unsaved edits if they were mid-edit. Only do it from the Collection
+                // tab, matching external/selectBook and external/process-book.
+                if (_tabSelection.ActiveTab != WorkspaceTab.collection)
+                {
+                    request.Failed(
+                        "external/add-book is only allowed while the Collection tab is active"
+                    );
+                    return;
+                }
+
+                var newBook = _collectionModel.AddBookFromFolder(folderPath);
+                if (newBook == null)
+                {
+                    request.Failed(
+                        "external/add-book copied the book but could not locate it in the collection afterward"
+                    );
+                    return;
+                }
+
+                // Intentionally NOT localized: operator-facing notification driven by an external tool.
+                var timestamp = DateTime.Now.ToString("h:mm:ss tt");
+                ToastService.ShowToast(
+                    text: $"Added book \"{newBook.Title}\" ({timestamp})",
+                    durationSeconds: 180
+                );
+
+                // Report the new book's id and final on-disk location so the caller can target it later.
+                request.ReplyWithJson(
+                    new
+                    {
+                        id = newBook.ID,
+                        bookFolderPath = newBook.FolderPath,
+                        htmPath = newBook.GetPathHtmlFile(),
+                    }
+                );
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("external/add-book failed for path " + folderPath, e);
+                request.Failed("external/add-book failed: " + e.Message);
             }
         }
 

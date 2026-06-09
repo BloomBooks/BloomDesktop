@@ -963,8 +963,8 @@ namespace Bloom.Edit
 
         /// <summary>
         /// Reload the currently-selected book from disk, deliberately throwing away any unsaved edits
-        /// to the page the user might be working on. This is used when an external process (e.g. the
-        /// book-conversion utility) has just re-imported/overwritten the book on disk and we want the
+        /// to the page the user might be working on. This is used when an external process (e.g.
+        /// BloomBridge) has just re-imported/overwritten the book on disk and we want the
         /// running Bloom to show the new version. The caller is responsible for making sure this really
         /// is the book that was changed; we only ever discard edits for the current selection.
         /// If the Edit tab is live, rather than risk reloading the book under the editor mid-edit, we
