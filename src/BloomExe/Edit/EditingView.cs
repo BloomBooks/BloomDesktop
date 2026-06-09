@@ -812,7 +812,7 @@ namespace Bloom.Edit
                                     ImageFormat.Png
                                 );
 
-                                using (var palasoImage = ImageUtils.FromFileRobustly(temp.Path))
+                                using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
                                 {
                                     _model.ChangePicture(
                                         imageId,
@@ -871,7 +871,7 @@ namespace Bloom.Edit
                     PortableClipboard.SetText(path);
                     return true;
                 }
-                using (var image = ImageUtils.FromFileRobustly(path))
+                using (var image = PalasoImage.FromFileRobustly(path))
                 {
                     PortableClipboard.CopyImageToClipboard(image);
                 }
@@ -1009,7 +1009,7 @@ namespace Bloom.Edit
                     RobustFile.Copy(existingImagePath, newImagePath);
                     Debug.WriteLine("Created image copy: " + newImagePath);
                     Logger.WriteEvent("Created image copy: " + newImagePath);
-                    imageInfo = ImageUtils.FromFileRobustly(newImagePath);
+                    imageInfo = PalasoImage.FromFileRobustly(newImagePath);
                     oldSize = imageInfo.Image.Size;
                     oldImage = imageInfo.Image;
                 }

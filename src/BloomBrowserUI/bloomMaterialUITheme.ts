@@ -336,6 +336,9 @@ export const toolboxTheme = createTheme({
                         },
                     },
                 },
+                sizeSmall: {
+                    fontSize: "11px",
+                },
             },
         },
         // Because of our dark background in the toolbox, disabled items need to be lighter
