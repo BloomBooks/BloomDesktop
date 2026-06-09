@@ -21,6 +21,7 @@ import { showCopyrightAndLicenseDialog } from "../workspaceRoot";
 import {
     doImageCommand,
     getImageUrlFromImageContainer,
+    HandleImageError,
     kImageContainerClass,
     isPlaceHolderImage,
 } from "./bloomImages";
@@ -1715,9 +1716,20 @@ function addVideoMenuItems(
 }
 
 function hasRealImage(img: Element | undefined): boolean {
+    if (!img || isPlaceHolderImage(img.getAttribute("src"))) {
+        return false;
+    }
+    // If the image actually rendered, it is a real image, even if a stale
+    // bloom-imageLoadError class is hanging around. Cover images get a persisted
+    // onerror that sets that class (BookData.cs), and their resource load can fail
+    // spuriously before bootstrap (see BL-14241); nothing clears the class on a
+    // later successful load. naturalWidth is the ground truth: a genuinely broken
+    // image has naturalWidth 0, so this still treats those as not-real. See BL-16416.
+    const htmlImg = img as HTMLImageElement;
+    if (htmlImg.complete && htmlImg.naturalWidth > 0) {
+        return true;
+    }
     return !!(
-        img &&
-        !isPlaceHolderImage(img.getAttribute("src")) &&
         !img.classList.contains("bloom-imageLoadError") &&
         img.parentElement &&
         !img.parentElement.classList.contains("bloom-imageLoadError")
@@ -1928,6 +1940,15 @@ function addImageMenuOptions(
                         );
                     }
 
+                    // Reset any stale load-error state before changing the src, matching
+                    // switchBackgroundToCanvasElement. Otherwise a leftover bloom-imageLoadError
+                    // class (e.g. from the cover image's spurious early-load failure) can make
+                    // the new background image look unreal and disable Delete. See BL-16416.
+                    // hasRealImage() checks the class on both the img and its container, so
+                    // clear both.
+                    bgImg.classList.remove("bloom-imageLoadError");
+                    bgImgContainer?.classList.remove("bloom-imageLoadError");
+                    bgImg.onerror = HandleImageError;
                     // Keep a book-relative path in the attribute. Assigning .src can
                     // expand to an absolute URL, which later file tracking may not resolve.
                     bgImg.setAttribute("src", currentImgSrce);
