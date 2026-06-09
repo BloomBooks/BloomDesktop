@@ -733,8 +733,18 @@ namespace Bloom.Book
             // Remember, Linux filenames are case sensitive!
             stylesheetsToIgnore.Add("basePage"); // will work for basePage.css, basePage-legacy-5-6.css, etc.
             stylesheetsToIgnore.Add("editMode.css");
+            // Like editMode.css, editPaneGlobal.css is an edit-time stylesheet, and
+            // RemoveModeStyleSheets strips it whenever a book is saved. If we treat it as a
+            // template stylesheet, AddStylesheetFromAnotherBook re-adds it on every page
+            // inserted from a template that links it (e.g. Basic Book), and so reports the
+            // book's stylesheet collection as changed on every insert, forcing a needless
+            // full reload of the page thumbnail list each time.
+            stylesheetsToIgnore.Add("editPaneGlobal.css");
             stylesheetsToIgnore.Add("previewMode.css");
             stylesheetsToIgnore.Add("XMatter");
+            // origami.css is one of BookStorage.CssFilesThatAreAlwaysWanted: storage links it
+            // into every stored book itself, so a template never needs to contribute it.
+            stylesheetsToIgnore.Add("origami.css");
             stylesheetsToIgnore.AddRange(BookStorage.CssFilesThatAreDynamicallyUpdated);
 
             foreach (var link in _dom.SafeSelectNodes("//link[@rel='stylesheet']"))

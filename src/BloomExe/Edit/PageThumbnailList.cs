@@ -189,6 +189,15 @@ namespace Bloom.Edit
             pageListDom = Model.CurrentBook.GetHtmlDomForPageList(pageListDom);
 
             _baseForRelativePaths = pageListDom.BaseForRelativePaths;
+
+            // Notify the browser side on this full-rebuild path too. Historically only the
+            // early-abort branch above sent this message, so a caller that reached this branch
+            // without also navigating the iframe to a regenerated document (e.g.
+            // UpdatePageList(false) after the Book object had been replaced) never triggered
+            // any repaint at all. When the caller *does* navigate the iframe
+            // (UpdatePageList(true)), this message is redundant but harmless: at worst the old
+            // document refreshes its list just before being replaced.
+            WebSocketServer.SendString("pageThumbnailList", "pageListNeedsRefresh", "");
             return result.ToList();
         }
 

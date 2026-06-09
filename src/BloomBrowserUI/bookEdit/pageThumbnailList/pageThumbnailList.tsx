@@ -533,10 +533,12 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
 
     // All the code in this useEffect is one-time initialization.
     useEffect(() => {
-        let localizedNotification = "";
+        // English fallback shown in the "saving" toast until the localized text arrives.
+        // The websocket listener must be registered immediately (see below), so it cannot
+        // wait for localization; in the worst case an early save shows this fallback.
+        let localizedNotification = "Saving...";
 
-        // This function will be hooked up (after we set localizedNotification properly)
-        // to be called when C# sends messages through the web socket.
+        // This function will be called when C# sends messages through the web socket.
         // We need a named function because it looks cleaner.
         webSocketListenerFunction = (event) => {
             switch (event.id) {
@@ -581,17 +583,32 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
                     // below that uses resetValue for something we don't care about.
                     setResetValue((oldResetValue) => oldResetValue + 1);
                     break;
+                case `websocket/open/${kWebsocketContext}`:
+                    // The socket just (re)opened. Any messages C# sent while we had no
+                    // connection (e.g. while this iframe was loading, or after a network
+                    // hiccup before the 2-second reconnect loop restored the socket) were
+                    // lost; the server does not queue them. Re-fetch the page list so we
+                    // are sure to be in sync. On the very first open this duplicates the
+                    // initial fetch, but it only retrieves the cheap skeleton list, and
+                    // page keys are stable so React does not rebuild the thumbnails.
+                    setReloadValue((oldReloadValue) => oldReloadValue + 1);
+                    break;
             }
         };
+
+        // Register the listener right away. This used to happen only inside the .done()
+        // of the localization request below, which left a window during load in which
+        // messages from C# (e.g. pageListNeedsRefresh after adding a page) were silently
+        // dropped, so the list never updated until something else forced a refresh.
+        WebSocketManager.addListener(
+            kWebsocketContext,
+            webSocketListenerFunction,
+        );
 
         theOneLocalizationManager
             .asyncGetText("EditTab.SavingNotification", "Saving...", "")
             .done((savingNotification) => {
                 localizedNotification = savingNotification;
-                WebSocketManager.addListener(
-                    kWebsocketContext,
-                    webSocketListenerFunction,
-                );
             });
         theOneLocalizationManager
             .asyncGetText("EditTab.PageList.Heading", "Pages", "")

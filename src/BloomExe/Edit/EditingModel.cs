@@ -619,9 +619,16 @@ namespace Bloom.Edit
                         page as Page,
                         e.NumberToAdd
                     );
-                    _view.Browser.RunJavascriptAsync(
-                        "document.getElementById('pageList').contentWindow.location.reload(true);"
-                    );
+                    // We deliberately do NOT force the page-list iframe to reload here.
+                    // InsertPageAfter raises pageListChangedEvent (deferred until idle), which
+                    // leads to UpdatePageList(); that either sends pageListNeedsRefresh over the
+                    // websocket (a cheap, incremental update in the React page list) or, if the
+                    // new page brought new stylesheets, regenerates the page-list document and
+                    // navigates the iframe to it. We used to also do a hard location.reload of
+                    // the iframe here, but that repainted the entire thumbnail list on every
+                    // insert and raced with those deferred notifications: a websocket message
+                    // arriving while the iframe was mid-reload was silently dropped, leaving the
+                    // list permanently stale.
                     //_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
                     //_pageSelection.SelectPage(newPage);
                     if (e.FromTemplate)
