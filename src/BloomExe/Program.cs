@@ -1957,7 +1957,6 @@ namespace Bloom
                     fakeLocalDir,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     //the parameters that follow are namespace beginnings:
                     new string[] { "Bloom" }
                 );
@@ -1977,7 +1976,6 @@ namespace Bloom
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     //the parameters that follow are namespace beginnings:
                     new string[] { "Bloom" }
                 );
@@ -2008,7 +2006,6 @@ namespace Bloom
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     new string[] { "SIL" }
                 );
 
@@ -2020,7 +2017,6 @@ namespace Bloom
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     new string[] { "Bloom" }
                 );
 
@@ -2032,7 +2028,6 @@ namespace Bloom
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     new string[] { "Bloom" }
                 );
 
@@ -2048,8 +2043,6 @@ namespace Bloom
                 {
                     LocalizationManager.FallbackLanguageIds = new[] { "es", "en" };
                 }
-
-                LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = false; // BL-5111
 
                 // It's now safe to read the localized strings.  See BL-13245.
                 HtmlErrorReporter.Instance.LocalizeDefaultReportLabel();

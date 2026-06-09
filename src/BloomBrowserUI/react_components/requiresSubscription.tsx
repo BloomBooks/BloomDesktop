@@ -145,6 +145,8 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
 
     return (
         <div
+            data-testid="requires-subscription-overlay-wrapper"
+            data-feature-name={memoizedFeatureName} // somehow used by tests
             css={css`
                 height: 100%;
                 box-sizing: border-box;

@@ -17,6 +17,10 @@ div.toolboxRoot {
     display: inline-block;
     background-color: @toolboxBackgroundColor;
     color: white;
+    // I think this is obsolete...React code makes the root of the toolbox 11px,
+    // while x-small works out to 10px...but for now I'm keeping it in case it
+    // still controls something we care about. (It was probably obsolete even
+    // under the old jquery toolbox, where some jquery stylesheet make the root 11px).
     font-size: x-small;
     position: fixed;
     top: 25px; // leaves room for pure-drawer control for showing and hiding toolbox
@@ -232,6 +236,12 @@ div.checkbox-and-label {
     height: @bloomEnterpriseBadgeSize;
     width: @bloomEnterpriseBadgeSize;
     flex-shrink: 0;
+}
+
+.toolbox-settings-content .subscription-badge {
+    position: relative;
+    // a tweak to make them look aligned.
+    top: -5px;
 }
 
 // Dialogs launched from the toolbox need to be in front of everything,

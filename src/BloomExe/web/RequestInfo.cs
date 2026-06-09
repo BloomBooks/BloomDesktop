@@ -140,8 +140,8 @@ namespace Bloom.Api
         // We intentionally do not use RobustFile.OpenRead() in this endpoint.
         // We need a read stream that permits concurrent overwrite/delete of the same file
         // while it is being served (notably for thumbnails and media), so we require
-        // FileShare.ReadWrite | FileShare.Delete. We still want robust retry behavior,
-        // so we wrap this open in RetryUtility.Retry().
+        // FileShare.ReadWrite | FileShare.Delete.
+        // robustfile-hook: allow FileStream
         private static FileStream OpenSharedReadStreamWithRetry(string path)
         {
             return RetryUtility.Retry(() =>

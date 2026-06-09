@@ -121,9 +121,7 @@ namespace BloomTests.Book
 
             Assert.That(
                 css,
-                Does.Contain(
-                    "[class*=\"Device\"].numberedPage:not(.bloom-interactive-page) {"
-                )
+                Does.Contain("[class*=\"Device\"].numberedPage:not(.bloom-interactive-page) {")
             );
             Assert.That(css, Does.Contain("--pageNumber-background-color: #ffffff;"));
             Assert.That(css, Does.Contain("--pageNumber-outline-color: white;"));

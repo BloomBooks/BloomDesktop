@@ -12,7 +12,7 @@ import {
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import { GifIcon } from "../../../react_components/icons/GifIcon";
 import { Point } from "../../js/point";
-import { getCanvasElementManager } from "./canvasElementUtils";
+import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { getTarget } from "bloom-player";
 import { doesContainingPageHaveSameSizeMode } from "../games/gameUtilities";
 import { AudioIcon } from "../../../react_components/icons/AudioIcon";
@@ -23,20 +23,10 @@ import {
 import {
     getAllDraggables,
     kDraggableIdAttribute,
-} from "../../js/CanvasElementManager";
+} from "./canvasElementDraggables";
+import { CanvasElementType } from "./canvasElementTypes";
 
-export type CanvasElementType =
-    | "image"
-    | "video"
-    | "sound"
-    | "rectangle"
-    | "speech"
-    | "caption"
-    | "book-link-grid"
-    | "navigation-image-button"
-    | "navigation-image-with-label-button"
-    | "navigation-label-button"
-    | "none";
+export type { CanvasElementType } from "./canvasElementTypes";
 
 const ondragstart = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
@@ -111,6 +101,7 @@ const ondragend = (
         rightTopOffset,
     );
     if (!canvasElement) return;
+    canvasElement.ownerDocument.defaultView?.focus();
     if (extraAction) {
         extraAction(canvasElement);
     }

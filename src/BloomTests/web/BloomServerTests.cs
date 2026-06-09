@@ -50,7 +50,6 @@ namespace BloomTests.web
                 localizationDirectory,
                 "SIL/Bloom",
                 null,
-                "",
                 new string[] { }
             );
 

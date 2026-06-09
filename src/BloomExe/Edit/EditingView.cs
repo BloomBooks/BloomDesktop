@@ -404,10 +404,11 @@ namespace Bloom.Edit
             _model.SaveStateForFullSaveDecision();
 
             var canReuseCurrentRoot = !_changingUiLanguage && !ShouldDoFullReload();
+            var pageUrl = _model.GetUrlForCurrentPage();
+            var pageListUrl = _model.GetUrlForPageListFile();
             if (_model.AreToolboxAndOuterFrameCurrent() && canReuseCurrentRoot && !ThemeChanged)
             {
                 // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
-                var pageUrl = _model.GetUrlForCurrentPage();
                 var urlFile = Path.GetFileName(pageUrl); // this actually works with a leading http://.
                 Logger.WriteEvent(
                     $"changing page via workspaceBundle.switchContentPage('{urlFile}')"
@@ -421,8 +422,6 @@ namespace Bloom.Edit
                 // The workspace root is always loaded (after initial startup),
                 // so don't navigate the top document again. Just initialize edit-frame content.
                 _model.SetupServerWithCurrentBookToolboxContents();
-                var pageListUrl = _model.GetUrlForPageListFile();
-                var pageUrl = _model.GetUrlForCurrentPage();
 
                 _mainBrowser.RunJavascriptFireAndForget(
                     "(function(){ const toolbox = document.getElementById('toolbox'); if (toolbox && toolbox.contentWindow) { toolbox.contentWindow.location.reload(); } })();"
@@ -527,6 +526,16 @@ namespace Bloom.Edit
             {
                 // Without a file name, we are coming from the palaso image toolbox
                 return _originalImageMetadataFromImageToolbox;
+            }
+
+            if (fileName.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    LocalizationManager.GetString(
+                        "EditTab.ImageMetadata.CannotEditEmbeddedImage",
+                        "Bloom can't edit image information for this image because it is embedded data, not a file image."
+                    )
+                );
             }
 
             // keep a reference to the fileName rather the image to avoid dispose issues
@@ -690,13 +699,12 @@ namespace Bloom.Edit
                             || Path.GetExtension(path).ToLowerInvariant() != ".gif"
                         )
                         {
-                            MessageBox.Show(
+                            throw new InvalidOperationException(
                                 LocalizationManager.GetString(
                                     "EditTab.NoGifOnClipboard",
                                     "To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element"
                                 )
                             );
-                            return;
                         }
                         SetGifImage(imageId, priorImageSrc, path);
                         return;
@@ -707,25 +715,23 @@ namespace Bloom.Edit
                     }
                     catch (Exception ex)
                     {
-                        Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
-                        MessageBox.Show(
+                        throw new InvalidOperationException(
                             LocalizationManager.GetString(
                                 "EditTab.NoValidImageFoundOnClipboard",
                                 "Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else."
-                            )
+                            ),
+                            ex
                         );
-                        return;
                     }
 
                     if (clipboardImage == null)
                     {
-                        MessageBox.Show(
+                        throw new InvalidOperationException(
                             LocalizationManager.GetString(
                                 "EditTab.NoImageFoundOnClipboard",
                                 "Before you can paste an image, copy one onto your 'clipboard', from another program."
                             )
                         );
-                        return;
                     }
 
                     Cursor = Cursors.WaitCursor;
@@ -806,7 +812,7 @@ namespace Bloom.Edit
                                     ImageFormat.Png
                                 );
 
-                                using (var palasoImage = ImageUtils.FromFileRobustly(temp.Path))
+                                using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
                                 {
                                     _model.ChangePicture(
                                         imageId,
@@ -819,6 +825,10 @@ namespace Bloom.Edit
                             }
                         }
                     }
+                }
+                catch (InvalidOperationException)
+                {
+                    throw;
                 }
                 catch (Exception error)
                 {
@@ -861,7 +871,7 @@ namespace Bloom.Edit
                     PortableClipboard.SetText(path);
                     return true;
                 }
-                using (var image = ImageUtils.FromFileRobustly(path))
+                using (var image = PalasoImage.FromFileRobustly(path))
                 {
                     PortableClipboard.CopyImageToClipboard(image);
                 }
@@ -999,7 +1009,7 @@ namespace Bloom.Edit
                     RobustFile.Copy(existingImagePath, newImagePath);
                     Debug.WriteLine("Created image copy: " + newImagePath);
                     Logger.WriteEvent("Created image copy: " + newImagePath);
-                    imageInfo = ImageUtils.FromFileRobustly(newImagePath);
+                    imageInfo = PalasoImage.FromFileRobustly(newImagePath);
                     oldSize = imageInfo.Image.Size;
                     oldImage = imageInfo.Image;
                 }

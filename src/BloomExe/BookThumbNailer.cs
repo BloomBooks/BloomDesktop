@@ -213,17 +213,6 @@ namespace Bloom
                 return true;
         }
 
-        private static readonly HashSet<Type> kExceptionsToRetryWhenSavingImage = new HashSet<Type>
-        {
-            Type.GetType("System.IO.IOException"),
-            Type.GetType("System.Runtime.InteropServices.ExternalException"),
-            // PalasoImage.SaveImageSafely can also throw ApplicationExceptions
-            // (See https://github.com/sillsdev/libpalaso/blob/f2482a5b3c6c75b50ec5672b1eb731b1a040a05a/SIL.Windows.Forms/ImageToolbox/PalasoImage.cs#L155)
-            // This very well may be temporary (if it's a different Bloom thread that has it locked) and retrying it would likely succeed.
-            // For ideas about more fundamental fixes, see https://issues.bloomlibrary.org/youtrack/issue/BL-12359/The-program-could-not-replace-the-image-C...Book-2thumbnail.png-perhaps-because-this-program-or-another-locked-it#focus=Comments-102-50093.0-0
-            Type.GetType("System.ApplicationException"),
-        };
-
         /// <summary>
         /// Creates a thumbnail of just the cover image (no title, language name, etc.)
         /// </summary>
@@ -287,7 +276,7 @@ namespace Bloom
                     )
                 )
                     imageSrc = transparentImageFile;
-                using (var coverImage = ImageUtils.FromFileRobustly(imageSrc))
+                using (var coverImage = PalasoImage.FromFileRobustly(imageSrc))
                 {
                     if (
                         imageSrc == transparentImageFile
@@ -314,10 +303,7 @@ namespace Bloom
                             ImageUtils.SaveAsTopQualityJpeg(coverImage.Image, destFilePath);
                             break;
                         default:
-                            coverImage.SaveImageRobustly(
-                                destFilePath,
-                                kExceptionsToRetryWhenSavingImage
-                            );
+                            PalasoImage.SaveImageRobustly(coverImage, destFilePath);
                             break;
                     }
                     if (callback != null)

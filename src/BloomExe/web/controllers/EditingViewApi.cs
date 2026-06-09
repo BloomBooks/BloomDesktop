@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -348,13 +349,31 @@ namespace Bloom.web.controllers
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
             ((DynamicJson)data).TryGetValue("pageBackgroundColor", out string pageBackgroundColor);
-            View.OnPasteImage(
-                data.imageId,
-                UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
-                data.imageIsGif,
-                pageBackgroundColor
-            );
+            try
+            {
+                PasteImage(
+                    data.imageId,
+                    UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
+                    data.imageIsGif,
+                    pageBackgroundColor
+                );
+            }
+            catch (InvalidOperationException e)
+            {
+                request.Failed(System.Net.HttpStatusCode.BadRequest, e.Message);
+                return;
+            }
             request.PostSucceeded();
+        }
+
+        protected virtual void PasteImage(
+            string imageId,
+            UrlPathString priorImageSrc,
+            bool imageIsGif,
+            string pageBackgroundColor
+        )
+        {
+            View.OnPasteImage(imageId, priorImageSrc, imageIsGif, pageBackgroundColor);
         }
 
         // Ctrl-V seems to be only possible to intercept in Javascript.
