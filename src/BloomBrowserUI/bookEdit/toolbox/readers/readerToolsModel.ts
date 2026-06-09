@@ -475,12 +475,12 @@ export class ReaderToolsModel {
     }
 
     public updateStageButtonsAvailability(): void {
-        this.updateDisabledStatus("decStage", this.stageNumber <= 1);
+        this.updateDisabledStatus("decStage1", this.stageNumber <= 1);
         if (!this.synphony) {
             return; // Synphony not loaded yet
         }
         this.updateDisabledStatus(
-            "incStage",
+            "incStage1",
             this.stageNumber >= this.synphony.getStages().length,
         );
     }
@@ -852,6 +852,28 @@ export class ReaderToolsModel {
 
         // compact to remove empty items if no graphemes are selected
         return _.compact(_.pluck(stages, "letters").join(" ").split(" "));
+    }
+
+    public getKnownGraphemesSorted(stageNumber: number): string[] {
+        if (!this.synphony) {
+            return []; // Synphony not loaded yet
+        }
+
+        if (this.stageNumber > 0) {
+            this.stageGraphemes = this.getKnownGraphemes(stageNumber);
+        }
+
+        // Letters up through current stage
+        const letters = this.stageGraphemes;
+
+        // All the letters in the order they were entered on the Letters tab in the set up dialog
+        const allLetters = this.synphony.source.letters.split(" ");
+
+        // Sort our letters based on the order they were entered
+        letters.sort((a, b) => {
+            return allLetters.indexOf(a) - allLetters.indexOf(b);
+        });
+        return letters;
     }
 
     /**

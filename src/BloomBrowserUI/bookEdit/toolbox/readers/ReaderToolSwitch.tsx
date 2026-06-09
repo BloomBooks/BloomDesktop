@@ -29,8 +29,8 @@ export const ReaderToolSwitch: React.FunctionComponent<{
         }
 
         document
-            .getElementById(prefix + "-reader-tool-content")
-            ?.classList.toggle("turned-off", !checked);
+            .getElementById(prefix + "-reader-tool-content1")
+            ?.classList.toggle("turned-off1", !checked);
     }, [prefix, checked]);
 
     return (
