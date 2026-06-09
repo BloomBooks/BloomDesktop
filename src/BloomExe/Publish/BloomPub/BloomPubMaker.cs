@@ -235,13 +235,14 @@ namespace Bloom.Publish.BloomPub
             // Cache: (lowercaseFilename, transparencyMode) → new filename, or null if unchanged.
             var processedImages = new Dictionary<(string, ImageTransparencyMode), string>();
 
-            // Tracks format changes (e.g. "photo.jpg" → "photo.png") so a second element
-            // referencing the same original file can locate the renamed file on disk.
-            var renamedFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            // Original files that have been format-converted (e.g. "photo.jpg" when it became
+            // "photo_t.png"). Deletion is deferred until after all elements are processed so
+            // that a second element with a different mode can still read the original.
+            var pendingDeletions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // Files on disk that are still referenced unchanged by an already-processed element.
-            // A later format-change (e.g. jpg → png) must not delete a claimed file, because
-            // the earlier element's style/src still points to it.
+            // A deferred deletion must not remove a claimed file, because the earlier element's
+            // style/src still points to it.
             var claimedFilenames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             using (var tempDir = new TemporaryFolder("BloomPubImageAdjust"))
@@ -277,7 +278,7 @@ namespace Bloom.Publish.BloomPub
                             continue;
 
                         var transparencyMode = GetElementTransparencyMode(
-                            div.GetAttribute("class") ?? "",
+                            div,
                             pageNeedsTransparent,
                             fullScreenBlack
                         );
@@ -289,7 +290,7 @@ namespace Bloom.Publish.BloomPub
                             maxShortSide,
                             maxLongSide,
                             processedImages,
-                            renamedFiles,
+                            pendingDeletions,
                             claimedFilenames
                         );
                         if (newFilename != null)
@@ -308,6 +309,19 @@ namespace Bloom.Publish.BloomPub
                     // handled by the loop above. Any remaining img elements (branding, qrcode)
                     // don't need transparency and are small enough not to require resizing here.
                 }
+
+                // Delete original files that were format-converted by some mode and are no
+                // longer referenced directly. Deletion is deferred to here so that a second
+                // element using a different mode can still read the original during processing.
+                foreach (var fileToDelete in pendingDeletions)
+                {
+                    if (!claimedFilenames.Contains(fileToDelete))
+                    {
+                        var pathToDelete = Path.Combine(modifiedBookFolderPath, fileToDelete);
+                        if (RobustFile.Exists(pathToDelete))
+                            RobustFile.Delete(pathToDelete);
+                    }
+                }
             }
         }
 
@@ -316,7 +330,7 @@ namespace Bloom.Publish.BloomPub
         /// classes and whether its page has a colored background.
         /// </summary>
         private static ImageTransparencyMode GetElementTransparencyMode(
-            string classAttr,
+            SafeXmlElement element,
             bool pageNeedsTransparent,
             bool fullScreenBlack
         )
@@ -325,10 +339,10 @@ namespace Bloom.Publish.BloomPub
             if (fullScreenBlack)
                 return ImageTransparencyMode.None;
             // bloom-opaque: explicit user override "never make transparent".
-            if (classAttr.Contains("bloom-opaque"))
+            if (element.HasClass("bloom-opaque"))
                 return ImageTransparencyMode.None;
             // bloom-transparent: explicit user override "always force transparent".
-            if (classAttr.Contains("bloom-transparent"))
+            if (element.HasClass("bloom-transparent"))
                 return ImageTransparencyMode.Force;
             if (!pageNeedsTransparent)
                 return ImageTransparencyMode.None;
@@ -339,8 +353,12 @@ namespace Bloom.Publish.BloomPub
         /// Compress/resize a single image file, applying transparency if needed. Returns the
         /// new filename when the file format changed (e.g. jpg → png), or null when the filename
         /// is unchanged. Results are cached by (filename, mode) so the same (file, processing)
-        /// pair is only handled once. If the file was already renamed by an earlier call with a
-        /// different mode, <paramref name="renamedFiles"/> is consulted to locate it on disk.
+        /// pair is only handled once. Each (filename, mode) pair always processes from the
+        /// original source file, so different modes never interfere with each other. When a
+        /// format change occurs (e.g. jpg → png), a mode-specific suffix is added to avoid
+        /// filename collisions between modes, and the original is added to
+        /// <paramref name="pendingDeletions"/> rather than deleted immediately (so that a
+        /// subsequent element with a different mode can still read the original).
         /// </summary>
         private static string ProcessImageFile(
             string filename,
@@ -350,7 +368,7 @@ namespace Bloom.Publish.BloomPub
             int maxShortSide,
             int maxLongSide,
             Dictionary<(string, ImageTransparencyMode), string> processedImages,
-            Dictionary<string, string> renamedFiles,
+            HashSet<string> pendingDeletions,
             HashSet<string> claimedFilenames
         )
         {
@@ -358,11 +376,10 @@ namespace Bloom.Publish.BloomPub
             if (processedImages.TryGetValue(cacheKey, out var cached))
                 return cached;
 
-            // A previous call may have renamed this file (different mode, same image).
-            var currentFilename = renamedFiles.TryGetValue(filename, out var renamed)
-                ? renamed
-                : filename;
-            var filePath = Path.Combine(bookFolderPath, currentFilename);
+            // Each (filename, mode) pair always works from the original source file.
+            // Different modes never follow each other's renames, so there is no cross-mode
+            // interference.
+            var filePath = Path.Combine(bookFolderPath, filename);
             if (
                 !RobustFile.Exists(filePath)
                 || !BookCompressor.CompressableImageFileExtensions.Contains(
@@ -370,16 +387,8 @@ namespace Bloom.Publish.BloomPub
                 )
             )
             {
-                // Propagate an earlier rename even if we can't process the file.
-                var fallback = string.Equals(
-                    currentFilename,
-                    filename,
-                    StringComparison.OrdinalIgnoreCase
-                )
-                    ? null
-                    : currentFilename;
-                processedImages[cacheKey] = fallback;
-                return fallback;
+                processedImages[cacheKey] = null;
+                return null;
             }
 
             var adjustedPath = ImageUtils.AdjustImageForDisplay(
@@ -393,43 +402,38 @@ namespace Bloom.Publish.BloomPub
             string result;
             if (adjustedPath == null)
             {
-                // No size/transparency change needed; the file stays at currentFilename.
-                claimedFilenames.Add(currentFilename);
-                result = string.Equals(
-                    currentFilename,
-                    filename,
-                    StringComparison.OrdinalIgnoreCase
-                )
-                    ? null
-                    : currentFilename;
+                // No size/transparency change needed; the original file is used as-is.
+                claimedFilenames.Add(filename);
+                result = null;
             }
             else
             {
                 var adjustedExt = Path.GetExtension(adjustedPath).ToLowerInvariant();
-                var currentExt = Path.GetExtension(currentFilename).ToLowerInvariant();
+                var currentExt = Path.GetExtension(filename).ToLowerInvariant();
                 if (adjustedExt == currentExt)
                 {
-                    // Same extension: overwrite in place; file stays at currentFilename.
+                    // Same extension: overwrite in place.
                     RobustFile.Copy(adjustedPath, filePath, overwrite: true);
-                    claimedFilenames.Add(currentFilename);
-                    result = string.Equals(
-                        currentFilename,
-                        filename,
-                        StringComparison.OrdinalIgnoreCase
-                    )
-                        ? null
-                        : currentFilename;
+                    claimedFilenames.Add(filename);
+                    result = null;
                 }
                 else
                 {
-                    // Format changed (e.g. jpg → png): create new file. Only delete the old
-                    // file if no earlier element still references it at its current name.
+                    // Format changed (e.g. jpg → png): create a new file with a mode-specific
+                    // suffix so that different modes for the same original never collide
+                    // (e.g. "photo_t.png" for Auto, "photo_tf.png" for Force).
+                    var modeSuffix = mode switch
+                    {
+                        ImageTransparencyMode.Auto => "_t",
+                        ImageTransparencyMode.Force => "_tf",
+                        _ => "",
+                    };
                     var newFilename =
-                        Path.GetFileNameWithoutExtension(currentFilename) + adjustedExt;
+                        Path.GetFileNameWithoutExtension(filename) + modeSuffix + adjustedExt;
                     RobustFile.Copy(adjustedPath, Path.Combine(bookFolderPath, newFilename));
-                    if (!claimedFilenames.Contains(currentFilename))
-                        RobustFile.Delete(filePath);
-                    renamedFiles[filename] = newFilename;
+                    // Defer deletion: a later element with a different mode may still need
+                    // the original. The actual delete happens after all elements are processed.
+                    pendingDeletions.Add(filename);
                     result = newFilename;
                 }
             }
@@ -1018,9 +1022,10 @@ namespace Bloom.Publish.BloomPub
                     .ToArray()
             )
             {
-                var img = imgContainer.ChildNodes.FirstOrDefault(n =>
-                    n is SafeXmlElement && n.Name == "img"
-                );
+                var img =
+                    imgContainer.ChildNodes.FirstOrDefault(n =>
+                        n is SafeXmlElement && n.Name == "img"
+                    ) as SafeXmlElement;
                 if (img == null || string.IsNullOrEmpty(img.GetAttribute("src")))
                     continue;
                 // The filename should be already urlencoded since src is a url.
@@ -1035,13 +1040,12 @@ namespace Bloom.Publish.BloomPub
                         imgContainer.SetAttribute(attr.Name, attr.Value);
                 }
 
-                var imgClass = img.GetAttribute("class") ?? "";
                 var classesToAdd = " bloom-background-image-in-style-attr";
                 // Preserve the user's explicit transparency overrides so FindImagesNeedingTransparency
                 // can still read them after the img element is deleted below.
-                if (imgClass.Contains("bloom-transparent"))
+                if (img.HasClass("bloom-transparent"))
                     classesToAdd += " bloom-transparent";
-                else if (imgClass.Contains("bloom-opaque"))
+                else if (img.HasClass("bloom-opaque"))
                     classesToAdd += " bloom-opaque";
                 // This is a nasty special case; see BL-11712. This class causes images to grow to
                 // cover the container, so when we convert to a background image, somehow we need to
@@ -1049,7 +1053,7 @@ namespace Bloom.Publish.BloomPub
                 // and again have two equivalent rules. Maybe we can eventually get rid of converting
                 // to background image? Why did we want to, anyway?? Maybe we can copy all classes from
                 // the img? But we'd still need duplicate rules.
-                if (imgClass.Contains("bloom-imageObjectFit-cover"))
+                if (img.HasClass("bloom-imageObjectFit-cover"))
                     classesToAdd += " bloom-imageObjectFit-cover";
                 else
                 {

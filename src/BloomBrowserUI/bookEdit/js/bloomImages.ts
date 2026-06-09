@@ -402,13 +402,12 @@ export function getImageTransparencyMode(
 // the background transparent wth a better future algorithm, or if the page background
 // changes. For actual publications (BloomPubs, epubs, videos) we export files with
 // real transparent backgrounds. PDFs, of course, capture what the BloomServer returns.
-export function setImgTransparentParam(
-    img: HTMLElement,
+// Returns `src` with the transparent query parameter set for `mode`, or removed
+// when mode is "none". All other existing query parameters are preserved.
+export function buildSrcWithTransparentParam(
+    src: string,
     mode: TransparencyMode,
-): void {
-    const src = img.getAttribute("src");
-    if (!src) return;
-
+): string {
     const qIndex = src.indexOf("?");
     const path = qIndex < 0 ? src : src.substring(0, qIndex);
     const params =
@@ -423,7 +422,18 @@ export function setImgTransparentParam(
         params.push(`transparent=${mode === "force" ? "force" : "yes"}`);
     }
 
-    const newSrc = params.length > 0 ? `${path}?${params.join("&")}` : path;
+    return params.length > 0 ? `${path}?${params.join("&")}` : path;
+}
+
+// Mark the given img element's src with an appropriate transparent query parameter
+// so BloomServer can apply the correct transparency transform when asked for the image.
+export function setImgTransparentParam(
+    img: HTMLElement,
+    mode: TransparencyMode,
+): void {
+    const src = img.getAttribute("src");
+    if (!src) return;
+    const newSrc = buildSrcWithTransparentParam(src, mode);
     if (newSrc !== src) img.setAttribute("src", newSrc);
 }
 
@@ -435,13 +445,12 @@ export function updateImageTransparencyForPage(
     page: HTMLElement,
     newColor: string,
 ): void {
-    const pageNeedsTransparent = !!newColor;
+    const pageNeedsTransparent = pageBackgroundNeedsTransparency(newColor);
     for (const img of Array.from(page.querySelectorAll("img"))) {
         const imgEl = img as HTMLElement;
-        const classAttr = imgEl.className ?? "";
         if (
-            classAttr.includes("branding") ||
-            classAttr.includes("bloom-qrcode")
+            imgEl.classList.contains("branding") ||
+            imgEl.classList.contains("bloom-qrcode")
         )
             continue;
         setImgTransparentParam(
@@ -475,6 +484,49 @@ function normalizeCssColorToHexOrEmpty(color: string): string {
     return `#${[match[1], match[2], match[3]]
         .map((component) => Number(component).toString(16).padStart(2, "0"))
         .join("")}`.toUpperCase();
+}
+
+// Returns true when `color` represents a near-white value (every channel ≥ 253/255),
+// matching the C# ImageUtils.ShouldMakeTransparentForPageBackground threshold so that
+// white or near-white page backgrounds do not trigger image transparency.
+function isNearWhite(color: string): boolean {
+    const normalized = normalizeCssColorToHexOrEmpty(color);
+    if (!normalized) return false;
+
+    // After normalizeCssColorToHexOrEmpty, rgb/rgba values become uppercase #RRGGBB.
+    const hexMatch = normalized.match(
+        /^#([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/,
+    );
+    if (hexMatch) {
+        const r = parseInt(hexMatch[1], 16);
+        const g = parseInt(hexMatch[2], 16);
+        const b = parseInt(hexMatch[3], 16);
+        return r >= 253 && g >= 253 && b >= 253;
+    }
+
+    // Short hex (#FFF → each channel 0xFF = 255). Only #FFF reaches ≥ 253 in this form.
+    const shortHexMatch = normalized.match(
+        /^#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$/,
+    );
+    if (shortHexMatch) {
+        const r = parseInt(shortHexMatch[1] + shortHexMatch[1], 16);
+        const g = parseInt(shortHexMatch[2] + shortHexMatch[2], 16);
+        const b = parseInt(shortHexMatch[3] + shortHexMatch[3], 16);
+        return r >= 253 && g >= 253 && b >= 253;
+    }
+
+    // "white" is the only CSS named color that passes the ≥ 253 threshold (#FFFFFF).
+    return normalized.toLowerCase() === "white";
+}
+
+// Returns true when `color` is a non-empty, non-transparent, non-near-white CSS color string
+// — i.e., when a page with this background color needs image transparency applied.
+// Matches the behavior of the C# ImageUtils.ShouldMakeTransparentForPageBackground.
+export function pageBackgroundNeedsTransparency(color: string): boolean {
+    if (!color) return false;
+    const normalized = normalizeCssColorToHexOrEmpty(color);
+    if (!normalized) return false; // transparent / zero-alpha / no background
+    return !isNearWhite(normalized);
 }
 
 export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {
