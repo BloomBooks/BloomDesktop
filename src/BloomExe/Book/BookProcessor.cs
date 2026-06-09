@@ -12,7 +12,7 @@ namespace Bloom.Book
     /// <summary>
     /// Runs, off-screen, the same per-page "fix-up" that a user gets by opening a book in the Edit
     /// tab and visiting every page, but without disturbing the live UI. It is driven by the
-    /// external/process-book API and used by the PDF→Bloom converter to finish a freshly-generated
+    /// external/process-book API and used by BloomBridge to finish a freshly-generated
     /// book whose raw HTML "isn't quite right" yet.
     ///
     /// Why a real browser is needed: when an editable page loads, the editing JavaScript
@@ -36,7 +36,7 @@ namespace Bloom.Book
         ///
         /// All-or-nothing: a failure on any page (capture error or timeout) throws, the save at the
         /// end is skipped, and nothing is persisted. The caller (external/process-book) surfaces this
-        /// as an error so the converter can re-run, rather than leaving a half-processed book on disk.
+        /// as an error so BloomBridge can re-run, rather than leaving a half-processed book on disk.
         ///
         /// Must be called on the UI thread: it creates and pumps a WebView2 browser.
         /// </summary>
@@ -48,9 +48,9 @@ namespace Bloom.Book
             );
 
             // 1. Structural "make it right" pass. Besides migrations, this ensures stylesheet links
-            //    (and, when we Save below, the actual CSS files) that the converter's raw HTML may
+            //    (and, when we Save below, the actual CSS files) that BloomBridge's raw HTML may
             //    be missing. See BookStorage.EnsureHasLinksToStylesheets.
-            // Log the book's identity so a developer can replay this exact run without the converter,
+            // Log the book's identity so a developer can replay this exact run without BloomBridge,
             // e.g.  POST http://localhost:<port>/bloom/api/external/process-book  {"id":"<id>"}
             // (Bloom must be on the Collection tab.) The id is the book's bookInstanceId.
             Log(
@@ -65,7 +65,7 @@ namespace Bloom.Book
 
             // 2. Per-page browser fix-up.
             var pages = book.GetPages().Where(p => p != null).ToList();
-            Log($"starting per-page fix-up of {pages.Count} pages");
+            Log($"starting per-page fix-up of {pages.Count} pages (ckeditor stripped off-screen)");
 
             // Per-phase timing accumulators, summed for the DONE line at the end (see Log calls below).
             long totalBrowserMs = 0,
@@ -182,6 +182,16 @@ namespace Bloom.Book
             var dom = book.GetEditableHtmlDomForPage(page);
             // So the page's relative links (images, css) resolve against the book folder.
             dom.BaseForRelativePaths = book.FolderPath;
+
+            // Off-screen processing never types into the page, so CKEditor (the rich-text editor
+            // that AddJavaScriptForEditing injects for the live editor) is pure dead weight here:
+            // ~346KB of script to download/parse into each fresh renderer, plus an editor instance
+            // attached to every editable field during bootstrap(). None of it affects the load-time
+            // DOM fix-ups we capture. Strip the ckeditor <script> so it never loads; bootstrap()'s
+            // existing `typeof CKEDITOR === "undefined"` guard then skips all the attachment work.
+            var ckeditorScripts = dom.SafeSelectNodes("//script[contains(@src,'ckeditor')]");
+            foreach (var script in ckeditorScripts)
+                script.ParentNode?.RemoveChild(script);
 
             // Frame == "Editing View is updating single displayed page": serves the page as-is.
             // (Unlike JustCheckingPage, it does not swap videos for placeholder images.)
