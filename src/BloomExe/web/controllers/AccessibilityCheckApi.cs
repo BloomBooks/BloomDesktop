@@ -280,7 +280,17 @@ namespace Bloom.web.controllers
                 var randomName = Guid.NewGuid().ToString();
                 var reportDirectory = Path.Combine(reportRootDirectory, randomName);
 
-                var arguments = $"ace.js --verbose -o \"{reportDirectory}\" \"{epubPath}\"";
+                string command = "node";
+                string arguments = $"ace.js --verbose -o \"{reportDirectory}\" \"{epubPath}\"";
+                string workingDirectory = daisyDirectory;
+
+                if (RobustFile.Exists(daisyDirectory))
+                {
+                    command = daisyDirectory;
+                    arguments = $"--verbose -o \"{reportDirectory}\" \"{epubPath}\"";
+                    workingDirectory = Path.GetDirectoryName(reportDirectory);
+                }
+
                 const int kSecondsBeforeTimeout = 60;
                 var progress = new NullProgress();
                 _webSocketProgress.MessageWithoutLocalizing("Running Ace by DAISY");
@@ -294,10 +304,10 @@ namespace Bloom.web.controllers
                     ldpath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH");
                     Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", null);
                     res = CommandLineRunnerExtra.RunWithInvariantCulture(
-                        "node",
+                        command,
                         arguments,
                         Encoding.UTF8,
-                        daisyDirectory,
+                        workingDirectory,
                         kSecondsBeforeTimeout,
                         progress,
                         (dummy) => { }
@@ -357,6 +367,32 @@ namespace Bloom.web.controllers
 
         private (string version, bool old) GetAceByDaisyVersion(string daisyDirectory)
         {
+            if (RobustFile.Exists(daisyDirectory))
+            {
+                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                    daisyDirectory,
+                    "--version",
+                    Encoding.ASCII,
+                    "",
+                    5,
+                    new NullProgress()
+                );
+                if (result.ExitCode == 0 && !string.IsNullOrWhiteSpace(result.StandardOutput))
+                {
+                    var versionString = result.StandardOutput.Trim();
+                    var match = new Regex(@"(\d+)\.(\d+)").Match(versionString);
+                    if (match.Success)
+                    {
+                        var old =
+                            int.Parse(match.Groups[1].Value) * 100
+                                + int.Parse(match.Groups[2].Value)
+                            < 102;
+                        return (versionString, old);
+                    }
+                    return (versionString, false);
+                }
+            }
+
             try
             {
                 // The path typically ends in something like \ace\bin\, at least on Windows.
@@ -403,6 +439,35 @@ namespace Bloom.web.controllers
         {
             _webSocketProgress.Message("FindingAce", "Finding Ace by DAISY on this computer...");
             var whereProgram = Platform.IsWindows ? "where" : "which";
+
+            var whereAceResult = CommandLineRunnerExtra.RunWithInvariantCulture(
+                whereProgram,
+                "ace",
+                Encoding.ASCII,
+                "",
+                2,
+                new NullProgress()
+            );
+            if (
+                string.IsNullOrEmpty(whereAceResult.StandardError)
+                && !string.IsNullOrEmpty(whereAceResult.StandardOutput)
+            )
+            {
+                var lines = whereAceResult.StandardOutput.Split(
+                    new[] { '\n', '\r' },
+                    StringSplitOptions.RemoveEmptyEntries
+                );
+                if (lines.Length > 0)
+                {
+                    var path = lines[0].Trim();
+                    if (RobustFile.Exists(path))
+                    {
+                        _webSocketProgress.Message("FoundAce", "Found.");
+                        return path;
+                    }
+                }
+            }
+
             var npmFileName = Platform.IsWindows ? "npm.cmd" : "npm";
             var whereResult = CommandLineRunnerExtra.RunWithInvariantCulture(
                 whereProgram,
