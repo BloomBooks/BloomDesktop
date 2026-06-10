@@ -215,14 +215,18 @@ namespace Bloom.Workspace
             // Convenient place to call this, after the workspace is installed in its parent form.
             _editingView?.HookupHostFormEvents();
 
+            StartupScreenManager.ClearStartupMilestone("collectionButtonsDrawn");
+            StartupScreenManager.ClearStartupMilestone("teamSyncCompleted");
+            StartupScreenManager.ClearStartupMilestone("startupBookSelectionReady");
+            if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
+            {
+                StartupScreenManager.StartupMilestoneReached("teamSyncCompleted");
+                _collectionTabView.ReadyToShowCollections();
+            }
             // If we're loading a team collection, we need to do that...with its progress dialog...
             // before anything else, and we'll need to close the splash screen to make room for
             // that dialog.
-            // Note, this not put into _startupActions...it should never be disabled.
-            if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
-            {
-                _collectionTabView.ReadyToShowCollections();
-            }
+            // Note, we don't save the result of AddStartupAction; this action should never be disabled.
             else
             {
                 StartupScreenManager.AddStartupAction(
@@ -243,15 +247,19 @@ namespace Bloom.Workspace
             // needs to be checked out before BringBookUpToDate renames it here.
             StartupScreenManager.AddStartupAction(
                 () => SelectBookAtStartup(),
-                // We want to delay this until the buttons get drawn,
+                // startupBookSelectionReady is set only after BOTH teamSyncCompleted and
+                // collectionButtonsDrawn are reached.
+                // We need to wait for the teamSyncCompleted because in the case of a remote rename,
+                // the book we want to show as selected may not have all its files until then.
+                // We also want to delay selecting the book until the buttons get drawn,
                 // since it ties up the UI thread for a while.
-                // Enhance: the code in CollectionsApi that raises this event is crude; it just
+                // Enhance: the code in CollectionApi that raises collectionButtonsDrawn is crude; it just
                 // looks for the first two button thumbnails to be requested. It would be better if
                 // we had some way of knowing when the collection panes were fully rendered.
-                // It would be better still if most of the work of SelectPreviouslySelectedBook could
+                // It would be better still if most of the work of SelectBookAtStartup could
                 // be done on a background thread so it could make progress as quickly as possible
                 // without holding up drawing the collection panes.
-                waitForMilestone: "collectionButtonsDrawn",
+                waitForMilestone: "startupBookSelectionReady",
                 shouldHideSplashScreen: true
             ); // possibility of error message boxes (BL-12155)
         }
