@@ -290,10 +290,16 @@ export function alignControlFrameWithActiveElement(
     // place the control frame, we can end up with a 1 pixel gap between the canvas element and
     // the control frame, which looks bad. In case we want to use some other unit (e.g., %) in a template
     // we use the offsetWidth as a fallback.
-    controlFrame.style.width =
-        pxToNumber(activeElement.style.width, activeElement.offsetWidth) +
-        2 * extraPadding +
-        "px";
+    if (activeElement.style.width?.endsWith("%")) {
+        controlFrame.style.width = hasText
+            ? `calc(${activeElement.style.width} - ${2 * extraPadding}px)`
+            : activeElement.style.width;
+    } else {
+        controlFrame.style.width =
+            pxToNumber(activeElement.style.width, activeElement.offsetWidth) +
+            2 * extraPadding +
+            "px";
+    }
     controlFrame.style.height = activeElement.style.height;
     controlFrame.style.left =
         pxToNumber(activeElement.style.left) - extraPadding + "px";
