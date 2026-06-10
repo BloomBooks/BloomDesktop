@@ -242,6 +242,10 @@ namespace Bloom.Book
             var initTimer = Stopwatch.StartNew();
             while (!browser.IsReadyToNavigate)
             {
+                if (initTimer.ElapsedMilliseconds >= kReadyTimeoutMs)
+                    throw new ApplicationException(
+                        $"process-book: timed out waiting for the browser to become ready to navigate on page {page.Id}."
+                    );
                 Application.DoEvents();
                 Thread.Sleep(5);
             }

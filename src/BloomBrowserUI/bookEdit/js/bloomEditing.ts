@@ -1315,7 +1315,14 @@ export function requestPageContent() {
 // delimiter can't drift between them.
 // (We tossed up whether to use a JSON object instead of a delimiter, but combining two strings is
 // simpler: HTML needs escaping to live in JSON, which we'd then have to undo in C#.)
-function buildSavePageContentString(): string {
+//
+// DESTRUCTIVE READ: this mutates the live DOM as a side effect (removeToolboxMarkup(),
+// removeEditingDebris(), and getBodyContentForSavePage() all strip classes, blur elements, turn off
+// canvas-element editing, and do CKEditor cleanup) and does NOT restore it afterward. Both current
+// callers tolerate this: the live editor re-navigates the page after saving, and the off-screen path
+// uses a fresh disposable browser per page. Don't call this from a context where the page must stay
+// live and editable afterward.
+function extractAndStripPageContentForSave(): string {
     // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports(). (Off-screen,
     // e.g. process-book, there is no toolbox iframe, so this is a no-op there.)
     getToolboxBundleExports()?.removeToolboxMarkup();
@@ -1331,7 +1338,7 @@ function requestPageContentInternal() {
     }
     requestPageContentTimeout = null;
     try {
-        postString("editView/pageContent", buildSavePageContentString());
+        postString("editView/pageContent", extractAndStripPageContentForSave());
     } catch (e) {
         postString(
             "editView/pageContent",
@@ -1396,7 +1403,7 @@ export function getBodyContentForSavePage() {
 
 // Used by the off-screen "process whole book" path (C# BookProcessor, driven by the
 // external/process-book API). It gathers the same page content that requestPageContent() would save
-// (via the shared buildSavePageContentString()), but instead of posting it to the editView/pageContent
+// (via the shared extractAndStripPageContentForSave()), but instead of posting it to the editView/pageContent
 // API (which feeds the LIVE EditingModel and would corrupt the live editor's state), it stashes the
 // combined result on window.__bloomExternalPageContent for the C# caller to poll. Like
 // requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, up to
@@ -1407,7 +1414,8 @@ export function captureContentForExternalProcessing(): void {
     const start = Date.now();
     const finish = () => {
         try {
-            window.__bloomExternalPageContent = buildSavePageContentString();
+            window.__bloomExternalPageContent =
+                extractAndStripPageContentForSave();
         } catch (e) {
             window.__bloomExternalPageContent =
                 "ERROR: " + (e && e.message) + "\n" + (e && e.stack);

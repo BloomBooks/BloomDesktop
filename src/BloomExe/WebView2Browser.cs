@@ -279,16 +279,32 @@ namespace Bloom
 
         public static void BeginSharedEnvironmentBatch()
         {
+            AssertSharedEnvironmentStaticsAreUiThreadOnly();
             _useSharedEnvironment = true;
             _sharedEnvironment = null;
         }
 
         public static void EndSharedEnvironmentBatch()
         {
+            AssertSharedEnvironmentStaticsAreUiThreadOnly();
             _useSharedEnvironment = false;
             // Drop our reference; the underlying browser process/profile is released once the last
             // CoreWebView2 using this environment is disposed. (CoreWebView2Environment is not IDisposable.)
             _sharedEnvironment = null;
+        }
+
+        // The shared-environment statics above have no synchronization; they are safe only because the
+        // batch is UI-thread-only (see the comment on _useSharedEnvironment). Assert that assumption so
+        // any future code that drives a batch off the UI thread trips here instead of silently corrupting
+        // state. Unit-test/console modes are exempt, as elsewhere in this file.
+        private static void AssertSharedEnvironmentStaticsAreUiThreadOnly()
+        {
+            Debug.Assert(
+                Program.RunningOnUiThread
+                    || Program.RunningUnitTests
+                    || Program.RunningInConsoleMode,
+                "Shared WebView2 environment batch must be driven on the UI thread (these statics are unsynchronized)"
+            );
         }
 
         private async Task InitWebView()

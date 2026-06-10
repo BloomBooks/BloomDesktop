@@ -8,7 +8,7 @@ import {
     kIdForDragActivityTabControl,
 } from "../toolbox/games/DragActivityTabControl";
 import { CogIcon } from "./CogIcon";
-import { getWorkspaceBundleExports } from "./workspaceFrames";
+import { tryGetWorkspaceBundleExports } from "./workspaceFrames";
 
 interface IAbovePageControlsState {
     isDragGamePage: boolean;
@@ -49,7 +49,9 @@ export function updateAbovePageControls(
 
 export function resetAbovePageControls(): void {
     currentState = defaultState;
-    getWorkspaceBundleExports().setToolboxEnabled(true);
+    // Off-screen (e.g. process-book) there is no workspace frame, so this is a no-op there.
+    // (Reached via removeEditingDebris() in the shared extractAndStripPageContentForSave() save path.)
+    tryGetWorkspaceBundleExports()?.setToolboxEnabled(true);
 
     const container = document.getElementsByClassName(
         "above-page-control-container",

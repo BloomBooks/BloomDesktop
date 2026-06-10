@@ -25,6 +25,17 @@ namespace Bloom.web.controllers
         private readonly BookServer _bookServer;
         private readonly CollectionSettings _collectionSettings;
 
+        // Re-entrancy guard for process-book. ProcessBook occupies the UI thread but pumps the
+        // Windows message loop via Application.DoEvents() (both the pre-loop below and the per-page
+        // waits in BookProcessor). Because external/* handlers are dispatched on the UI thread via
+        // message posts, a second process-book request that arrives mid-run could be delivered
+        // re-entrantly during one of those DoEvents pumps. The shared-environment statics in
+        // WebView2Browser (_useSharedEnvironment/_sharedEnvironment) are explicitly NOT designed for
+        // overlapping batches, so we reject the re-entrant call rather than let the two corrupt each
+        // other. A plain bool is sufficient: everything here is single-threaded on the UI thread, so
+        // there is no cross-thread race to lock against.
+        private bool _processBookInProgress;
+
         // Called by autofac, which creates the one instance and registers it with the server.
         public ExternalApi(
             BloomLibraryBookApiClient bloomLibraryBookApiClient,
@@ -204,8 +215,20 @@ namespace Bloom.web.controllers
                 return;
             }
 
+            // Reject a process-book that arrives while one is already running (see field comment).
+            // BloomBridge sends these sequentially so in practice this never trips, but it makes the
+            // re-entrancy contract explicit and protects the shared-environment statics if it ever does.
+            if (_processBookInProgress)
+            {
+                request.Failed(
+                    "external/process-book is already processing a book; try again later"
+                );
+                return;
+            }
+
             string id = null;
             string folderPath = null;
+            _processBookInProgress = true;
             try
             {
                 var data = Newtonsoft.Json.Linq.JObject.Parse(request.RequiredPostJson());
@@ -238,13 +261,17 @@ namespace Bloom.web.controllers
                 dynamic overlay = new DynamicJson();
                 overlay.message = "Bloom is processing a book for BloomBridge, please wait…";
                 BloomWebSocketServer.Instance?.SendBundle("externalProcessing", "show", overlay);
-                for (var i = 0; i < 10; i++)
-                {
-                    System.Windows.Forms.Application.DoEvents();
-                    System.Threading.Thread.Sleep(15);
-                }
+                // The 'show' and the DoEvents/Sleep loop are inside this try so that an exception
+                // anywhere after 'show' (e.g. ThreadInterruptedException from Sleep, or a re-entrant
+                // handler throwing during DoEvents) still runs the finally and sends 'hide';
+                // otherwise the modal overlay would be stuck opaque until the user navigates away.
                 try
                 {
+                    for (var i = 0; i < 10; i++)
+                    {
+                        System.Windows.Forms.Application.DoEvents();
+                        System.Threading.Thread.Sleep(15);
+                    }
                     if (!string.IsNullOrEmpty(folderPath))
                     {
                         HandleProcessBookByPath(request, folderPath);
@@ -262,6 +289,10 @@ namespace Bloom.web.controllers
             {
                 Logger.WriteError("external/process-book failed for book " + (folderPath ?? id), e);
                 request.Failed("external/process-book failed: " + e.Message);
+            }
+            finally
+            {
+                _processBookInProgress = false;
             }
         }
 
@@ -334,24 +365,40 @@ namespace Bloom.web.controllers
             var book = _bookServer.GetBookFromBookInfo(bookInfo);
             var pageCount = BookProcessor.ProcessBook(book);
 
-            // If we just rewrote the book that is currently selected, the in-memory selection now
-            // disagrees with disk (we processed a separate Book instance). Discard the stale in-memory
-            // copy and reload it from disk so a later trip through the Edit tab can't clobber what we
-            // just wrote, then refresh the collection's view of it (list metadata + thumbnail). This
-            // mirrors how external/update-book handles re-import of the selected book.
-            var selected = _collectionModel.GetSelectedBookOrNull();
-            if (selected != null && selected.ID == id)
+            // The book is now processed and saved on disk: the operation the caller asked for has
+            // succeeded. Everything below only reconciles in-memory UI state, so wrap it so a refresh
+            // failure is logged but does NOT turn into request.Failed() — otherwise we'd report failure
+            // for a book whose output is already correct on disk, and the caller would discard it.
+            try
             {
-                _editingModel.ReloadCurrentBookDiscardingEdits();
-                _collectionModel.ReloadEditableCollection();
-                var refreshedInfo = _collectionModel.BookInfoFromCollectionAndId(
-                    collectionPath,
-                    id
-                );
-                if (refreshedInfo != null)
-                    _collectionModel.UpdateThumbnailAsync(
-                        _collectionModel.GetBookFromBookInfo(refreshedInfo)
+                // If we just rewrote the book that is currently selected, the in-memory selection now
+                // disagrees with disk (we processed a separate Book instance). Discard the stale in-memory
+                // copy and reload it from disk so a later trip through the Edit tab can't clobber what we
+                // just wrote, then refresh the collection's view of it (list metadata + thumbnail). This
+                // mirrors how external/update-book handles re-import of the selected book.
+                var selected = _collectionModel.GetSelectedBookOrNull();
+                if (selected != null && selected.ID == id)
+                {
+                    _editingModel.ReloadCurrentBookDiscardingEdits();
+                    _collectionModel.ReloadEditableCollection();
+                    var refreshedInfo = _collectionModel.BookInfoFromCollectionAndId(
+                        collectionPath,
+                        id
                     );
+                    if (refreshedInfo != null)
+                        _collectionModel.UpdateThumbnailAsync(
+                            _collectionModel.GetBookFromBookInfo(refreshedInfo)
+                        );
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError(
+                    "external/process-book: book "
+                        + id
+                        + " was processed and saved, but the in-memory UI refresh afterward failed",
+                    e
+                );
             }
 
             request.ReplyWithJson(
@@ -548,6 +595,10 @@ namespace Bloom.web.controllers
                         // It's the book currently open in the Edit tab. Discard any unsaved edits to it
                         // and reload it from disk. We do NOT touch the editor for any other book, so a
                         // user editing an unrelated book never loses work.
+                        // Note: when the Edit tab is live this schedules an async tab-switch (the actual
+                        // switch completes via PostponedWork after the browser returns page content). The
+                        // collection reload below is safe to run immediately only because it doesn't read
+                        // tab/selection state.
                         _editingModel.ReloadCurrentBookDiscardingEdits();
                     }
                     // Re-read the collection so the list (titles, sort order) reflects the new content,
