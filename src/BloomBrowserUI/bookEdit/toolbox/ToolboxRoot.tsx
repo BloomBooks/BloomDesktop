@@ -238,6 +238,72 @@ const getLiveToolBodyElement = (toolId: string): HTMLDivElement | undefined => {
     return getExistingToolboxContentElement(toolId);
 };
 
+// This is part of the mess that Copilot made to allow the root of the toolbox to be
+// rendered in React while still supporting several tools that have not yet been
+// migrated to React. It was one of my first big refactors using CoPilot, and I should
+// not have been so quick to just be glad it seemed to work. For some reason, its
+// solution was to maintain an old jquery accordion in parallel with a new React
+// implementation. Somehow, across these two versions of the toolbox that exist in
+// parallel, a React tool can think it has a root element to render into, but it
+// doesn't actually exist. Then we get stuck in a state where the tool's content
+// is permanently replaced by a loading message. This function detects this
+// situation and adjusts things so that the root element for the tool content
+// gets created when needed.
+// I don't think there's any good reason not to use the normal function declaration
+// syntax except that Copilot seems to have done everything else in this file this way.
+// I don't want to put a lot of effort into cleaning it up because I hope sometime soon
+// we rework the remaining few non-React tools and can then get rid of the duplication
+// and manage everything in normal React. I expect most of the code in this file to
+// go away.
+const ensureReactToolBodyElement = (
+    toolId: string,
+): HTMLDivElement | undefined => {
+    const existing = getExistingToolboxContentElement(toolId);
+    if (existing) {
+        return existing;
+    }
+
+    const normalizedToolId = normalizeToolId(toolId);
+    // Do not create elements for legacy tools; they load their content from
+    // legacyToolHtmlSubPath and their makeRootElement() implementations throw
+    // "Method not implemented." if called directly.
+    if (legacyToolSubPathByToolId[normalizedToolId]) {
+        return undefined;
+    }
+    const tool = getMasterToolList().find((candidate) => {
+        return candidate.id() === normalizedToolId;
+    });
+    if (!tool || !tool.makeRootElement) {
+        return undefined;
+    }
+
+    const legacyToolboxRoot = document.getElementById("toolbox");
+    if (!legacyToolboxRoot) {
+        return undefined;
+    }
+
+    const fullToolId = toToolboxToolId(normalizedToolId);
+    const content = tool.makeRootElement();
+    content.setAttribute("data-toolId", fullToolId);
+
+    const existingHeader = Array.from(legacyToolboxRoot.children).find(
+        (child) => {
+            return (
+                child.tagName.toLowerCase() === "h3" &&
+                child.getAttribute("data-toolId") === fullToolId
+            );
+        },
+    ) as HTMLElement | undefined;
+    if (!existingHeader) {
+        const header = document.createElement("h3");
+        header.setAttribute("data-toolId", fullToolId);
+        legacyToolboxRoot.appendChild(header);
+    }
+
+    legacyToolboxRoot.appendChild(content);
+    return content;
+};
+
 const getLegacyCurrentToolId = (): string | undefined => {
     const toolbox = window.toolboxBundle?.getTheOneToolbox?.();
     const currentTool = toolbox?.getCurrentTool?.();
@@ -378,6 +444,22 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             return;
         }
 
+        const createdReactToolBodyElement = ensureReactToolBodyElement(toolId);
+        if (createdReactToolBodyElement) {
+            setSections((previousSections) =>
+                previousSections.map((section) => {
+                    if (section.id !== toolId) {
+                        return section;
+                    }
+                    return {
+                        ...section,
+                        liveToolBodyElement: createdReactToolBodyElement,
+                    };
+                }),
+            );
+            return;
+        }
+
         const legacyToolHtmlSubPath = legacyToolSubPathByToolId[toolId];
         if (legacyToolHtmlSubPath) {
             try {
@@ -496,9 +578,16 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             // Similar logic so that only if we actually find a newly disconnected element
             // do we return a different object and cause a re-render.
             const nextSections = previousSections.map((section) => {
+                // Only clear disconnected live elements for tools we can rebuild from legacy sources.
+                // React-only tools (like Canvas) may temporarily disconnect during host moves; if we clear
+                // their only live element reference, they can get stuck on "Loading ...".
+                const canRehydrateFromLegacySource =
+                    !!section.legacyToolHtmlSubPath ||
+                    !!section.legacyToolBodyHtml;
                 if (
                     !section.liveToolBodyElement ||
-                    section.liveToolBodyElement.isConnected
+                    section.liveToolBodyElement.isConnected ||
+                    !canRehydrateFromLegacySource
                 ) {
                     return section;
                 }
@@ -529,9 +618,27 @@ export const ToolboxRoot: React.FunctionComponent = () => {
     React.useEffect(() => {
         const intervalId = window.setInterval(() => {
             sections.forEach((section) => {
+                const hasConnectedLiveToolBodyElement =
+                    !!section.liveToolBodyElement &&
+                    section.liveToolBodyElement.isConnected;
+                const hasDisconnectedLiveToolBodyElement =
+                    !!section.liveToolBodyElement &&
+                    !section.liveToolBodyElement.isConnected;
+                const canRehydrateFromLegacySource =
+                    !!section.legacyToolHtmlSubPath ||
+                    !!section.legacyToolBodyHtml;
+
+                if (
+                    canRehydrateFromLegacySource &&
+                    hasDisconnectedLiveToolBodyElement &&
+                    hydratedToolIds.current.has(section.id)
+                ) {
+                    hydratedToolIds.current.delete(section.id);
+                }
+
                 if (
                     section.legacyToolBodyHtml &&
-                    !section.liveToolBodyElement
+                    !hasConnectedLiveToolBodyElement
                 ) {
                     const liveToolBodyElement = getLiveToolBodyElement(
                         section.id,
@@ -557,7 +664,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
 
                 const hasBodyContent =
                     !!section.legacyToolBodyHtml ||
-                    !!section.liveToolBodyElement;
+                    hasConnectedLiveToolBodyElement;
 
                 if (hasBodyContent) {
                     return;
@@ -570,7 +677,14 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                     hydratedToolIds.current.delete(section.id);
                 }
 
-                if (!hydratedToolIds.current.has(section.id)) {
+                const shouldForceHydrateRetryForReactTool =
+                    !section.legacyToolHtmlSubPath &&
+                    !section.legacyToolBodyHtml;
+
+                if (
+                    shouldForceHydrateRetryForReactTool ||
+                    !hydratedToolIds.current.has(section.id)
+                ) {
                     void hydrateToolBody(section.id);
                 }
             });
