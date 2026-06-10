@@ -29,6 +29,16 @@ const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
         return false;
     }
 
+    // If the image actually rendered, it is a real image, even if a stale
+    // bloom-imageLoadError class is hanging around. Cover images get a persisted
+    // onerror that sets that class (BookData.cs), and their resource load can fail
+    // spuriously before bootstrap (see BL-14241); nothing clears the class on a
+    // later successful load. naturalWidth is the ground truth: a genuinely broken
+    // image has naturalWidth 0, so this still treats those as not-real. See BL-16416.
+    if (img.complete && img.naturalWidth > 0) {
+        return true;
+    }
+
     if (img.classList.contains("bloom-imageLoadError")) {
         return false;
     }
