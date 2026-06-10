@@ -269,7 +269,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.pollinator">
         <source xml:lang="en">Pollinator</source>
-        <target xml:lang="es-ES" state="needs-translation">Pollinator</target>
+        <target xml:lang="es-ES" state="translated">Polinizador</target>
         <note>ID: EditTab.Toolbox.Games.Themes.pollinator</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.garden-path">
@@ -284,7 +284,7 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.coral-reef">
         <source xml:lang="en">Coral Reef</source>
-        <target xml:lang="es-ES" state="needs-translation">Coral Reef</target>
+        <target xml:lang="es-ES" state="translated">Arrecife de coral</target>
         <note>ID: EditTab.Toolbox.Games.Themes.coral-reef</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.arctic-dawn">
