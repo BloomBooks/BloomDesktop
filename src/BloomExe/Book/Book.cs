@@ -3434,43 +3434,8 @@ namespace Bloom.Book
             );
         }
 
-        // returns the active color, be it from Apppearance or the Legacy system
-        public String GetCoverColor()
-        {
-            if (BookInfo.AppearanceSettings.CssThemeName != "legacy-5-6")
-            {
-                var color = BookInfo.AppearanceSettings.GetStringPropertyValueOrDefault(
-                    "cover-background-color",
-                    null
-                );
-                if (color != null)
-                {
-                    return color;
-                }
-            }
-
-            return GetCoverBackgroundColorFromOldInlineStyle(RawDom);
-        }
-
-        internal static String GetCoverBackgroundColorFromOldInlineStyle(SafeXmlDocument dom)
-        {
-            foreach (SafeXmlElement stylesheet in dom.SafeSelectNodes("//style"))
-            {
-                var content = stylesheet.InnerText;
-                // Our XML representation of an HTML DOM doesn't seem to have any object structure we can
-                // work with. The Stylesheet content is just raw CDATA text.
-                // Regex updated to handle comments and lowercase 'div' in the cover color rule.
-                var match = new Regex(
-                    @".*\.bloom-page\.coverColor\s*{.*?background-color:\s*(#[0-9a-fA-F]*|[a-z]*)",
-                    RegexOptions.Singleline
-                ).Match(content);
-                if (match.Success)
-                {
-                    return match.Groups[1].Value;
-                }
-            }
-            return "#FFFFFF";
-        }
+        // returns the active color, be it from Appearance or the Legacy system
+        public String GetCoverColor() => OurHtmlDom.GetCoverColor(BookInfo.AppearanceSettings);
 
         public void SetCoverColor(string color)
         {

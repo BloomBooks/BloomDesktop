@@ -1126,7 +1126,16 @@ namespace Bloom.Edit
 
         public static string GetEditPageIframeContents(Book.Book book, IPage page)
         {
-            return GetEditPageIframeDom(book, page).getHtmlStringDisplayOnly();
+            var dom = GetEditPageIframeDom(book, page);
+            var transparencyModifications = HtmlDom.AddTransparencyParamToImages(dom);
+            try
+            {
+                return dom.getHtmlStringDisplayOnly();
+            }
+            finally
+            {
+                HtmlDom.RestoreImageSrcs(transparencyModifications);
+            }
         }
 
         public static HtmlDom GetEditPageIframeDom(Book.Book book, IPage page)

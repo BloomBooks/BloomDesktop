@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Bloom.Utils;
 using SIL.Reporting;
@@ -333,6 +334,25 @@ namespace Bloom.web
             }
 
             MarkImageNodesForThumbnail(pageElement);
+            var pageNeedsTransparent = HtmlDom.PageNeedsTransparentImages(pageElement);
+            foreach (
+                SafeXmlElement img in pageElement
+                    .SafeSelectNodes(".//img[@src]")
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                if (img.HasClass("branding") || img.HasClass("bloom-qrcode"))
+                    continue;
+                var mode = HtmlDom.GetImageTransparencyMode(img, pageNeedsTransparent);
+                if (mode == ImageTransparencyMode.None)
+                    continue;
+                var src = img.GetAttribute("src");
+                if (!string.IsNullOrEmpty(src))
+                {
+                    var paramValue = mode == ImageTransparencyMode.Force ? "force" : "yes";
+                    img.SetAttribute("src", HtmlDom.WithTransparencyParam(src, paramValue));
+                }
+            }
             // For WebView2, this prevents any interaction with elements in the page thumbnail.
             // We put an overlay over it to try to prevent such interaction, but this is more
             // reliable. Nothing in the page will ever get focus, be tabbed to, be read by

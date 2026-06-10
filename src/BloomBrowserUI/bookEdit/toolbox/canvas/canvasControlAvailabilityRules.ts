@@ -65,6 +65,10 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
             );
         },
     },
+    imageBackground: {
+        visible: (ctx) => ctx.hasImage,
+        enabled: (ctx) => ctx.hasRealImage,
+    },
 };
 
 export const videoAvailabilityRules: AvailabilityRulesMap = {

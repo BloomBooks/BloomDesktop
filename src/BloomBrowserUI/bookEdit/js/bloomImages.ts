@@ -340,7 +340,7 @@ export function doImageCommand(
     postJson(endpoint, payload);
 }
 
-function getOwningPageBackgroundColor(element: HTMLElement): string {
+export function getOwningPageBackgroundColor(element: HTMLElement): string {
     const page = element.closest(".bloom-page") as HTMLElement | null;
     if (!page) {
         return "";
@@ -362,6 +362,100 @@ function getOwningPageBackgroundColor(element: HTMLElement): string {
         );
     }
     return result;
+}
+
+// Transparency mode for a single img, mirroring the C# ImageTransparencyMode enum.
+// "none"  = no transparent param (bloom-opaque, or white page)
+// "auto"  = transparent=yes (auto-detect line art)
+// "force" = transparent=force (bloom-transparent: always apply, skip line-art check)
+type TransparencyMode = "none" | "auto" | "force";
+
+// Returns the transparency mode for an img element given whether the owning page
+// has a colored background. bloom-transparent/bloom-opaque are explicit user overrides
+// that take precedence over the page-background gate.
+export function getImageTransparencyMode(
+    img: HTMLElement,
+    pageNeedsTransparent: boolean,
+): TransparencyMode {
+    // bloom-opaque: explicit "never transparent" override.
+    if (img.classList.contains("bloom-opaque")) return "none";
+    // bloom-transparent: explicit "always force transparent" override, even on images
+    // that don't look (at least to our algorithm) like line art.
+    // This can also 'erase' very light-colored parts of an image, even on a white page.
+    if (img.classList.contains("bloom-transparent")) return "force";
+    if (!pageNeedsTransparent) return "none";
+    return "auto";
+}
+
+// Set (or remove) the transparent query param on a single img's src.
+// "none"  → remove any existing transparent param
+// "auto"  → transparent=yes
+// "force" → transparent=force (bypasses line-art detection on the server)
+// We add these params so that when bloom-server is asked for the image, it can apply
+// the appropriate transparency transform. Other information it needs can be obtained
+// from the image itself, but it doesn't have access to the img element whose src caused
+// the retrieval, so it can't check for itself whether the image has bloom-transparent
+// or bloom-opaque classes, or whether the page background is colored.
+// The downside of this approach is that if the raw HTML file in the book folder is
+// simply opened, images will not have transparent backgrounds. We think it is worth
+// the price to have the original image around, and maybe do a better job of making
+// the background transparent wth a better future algorithm, or if the page background
+// changes. For actual publications (BloomPubs, epubs, videos) we export files with
+// real transparent backgrounds. PDFs, of course, capture what the BloomServer returns.
+// Returns `src` with the transparent query parameter set for `mode`, or removed
+// when mode is "none". All other existing query parameters are preserved.
+export function buildSrcWithTransparentParam(
+    src: string,
+    mode: TransparencyMode,
+): string {
+    const qIndex = src.indexOf("?");
+    const path = qIndex < 0 ? src : src.substring(0, qIndex);
+    const params =
+        qIndex < 0
+            ? []
+            : src
+                  .substring(qIndex + 1)
+                  .split("&")
+                  .filter((p) => !p.startsWith("transparent="));
+
+    if (mode !== "none") {
+        params.push(`transparent=${mode === "force" ? "force" : "yes"}`);
+    }
+
+    return params.length > 0 ? `${path}?${params.join("&")}` : path;
+}
+
+export function setImgTransparentParam(
+    img: HTMLElement,
+    mode: TransparencyMode,
+): void {
+    const src = img.getAttribute("src");
+    if (!src) return;
+    const newSrc = buildSrcWithTransparentParam(src, mode);
+    if (newSrc !== src) img.setAttribute("src", newSrc);
+}
+
+// Update img src attributes on `page` to add or remove the transparent query
+// parameter. Pass the raw CSS color string just applied (empty when clearing).
+// Call immediately after changing --page-background-color so the browser
+// re-fetches images with the correct transparency setting.
+export function updateImageTransparencyForPage(
+    page: HTMLElement,
+    newColor: string,
+): void {
+    const pageNeedsTransparent = !!newColor && !isNearWhite(newColor);
+    for (const img of Array.from(page.querySelectorAll("img"))) {
+        const imgEl = img as HTMLElement;
+        if (
+            imgEl.classList.contains("branding") ||
+            imgEl.classList.contains("bloom-qrcode")
+        )
+            continue;
+        setImgTransparentParam(
+            imgEl,
+            getImageTransparencyMode(imgEl, pageNeedsTransparent),
+        );
+    }
 }
 
 function normalizeCssColorToHexOrEmpty(color: string): string {
@@ -388,6 +482,39 @@ function normalizeCssColorToHexOrEmpty(color: string): string {
     return `#${[match[1], match[2], match[3]]
         .map((component) => Number(component).toString(16).padStart(2, "0"))
         .join("")}`.toUpperCase();
+}
+
+// Returns true when `color` represents a near-white value (every channel ≥ 253/255),
+// matching the C# ImageUtils.ShouldMakeTransparentForPageBackground threshold so that
+// white or near-white page backgrounds do not trigger image transparency.
+function isNearWhite(color: string): boolean {
+    const normalized = normalizeCssColorToHexOrEmpty(color);
+    if (!normalized) return false;
+
+    // After normalizeCssColorToHexOrEmpty, rgb/rgba values become uppercase #RRGGBB.
+    const hexMatch = normalized.match(
+        /^#([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/,
+    );
+    if (hexMatch) {
+        const r = parseInt(hexMatch[1], 16);
+        const g = parseInt(hexMatch[2], 16);
+        const b = parseInt(hexMatch[3], 16);
+        return r >= 253 && g >= 253 && b >= 253;
+    }
+
+    // Short hex (#FFF → each channel 0xFF = 255). Only #FFF reaches ≥ 253 in this form.
+    const shortHexMatch = normalized.match(
+        /^#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$/,
+    );
+    if (shortHexMatch) {
+        const r = parseInt(shortHexMatch[1] + shortHexMatch[1], 16);
+        const g = parseInt(shortHexMatch[2] + shortHexMatch[2], 16);
+        const b = parseInt(shortHexMatch[3] + shortHexMatch[3], 16);
+        return r >= 253 && g >= 253 && b >= 253;
+    }
+
+    // "white" is the only CSS named color that passes the ≥ 253 threshold (#FFFFFF).
+    return normalized.toLowerCase() === "white";
 }
 
 export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {

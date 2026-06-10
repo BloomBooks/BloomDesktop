@@ -48,6 +48,7 @@ export type ControlId =
     | "expandToFillSpace"
     | "imageFieldType"
     | "becomeBackground"
+    | "imageBackground"
     | "imageFillMode"
     | "chooseVideo"
     | "recordVideo"

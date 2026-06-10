@@ -2187,7 +2187,7 @@ namespace BloomTests.Book
             document.LoadXml(xml);
 
             // SUT
-            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
+            var result = HtmlDom.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             Assert.AreEqual("#abcdef", result);
         }
@@ -2200,7 +2200,7 @@ namespace BloomTests.Book
             document.LoadXml(xml);
 
             // SUT
-            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
+            var result = HtmlDom.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             // should look like a hex color
             Assert.IsTrue(result.StartsWith("#"));
@@ -2225,7 +2225,7 @@ namespace BloomTests.Book
             document.LoadXml(xml);
 
             // SUT
-            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
+            var result = HtmlDom.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             Assert.AreEqual("black", result);
         }
@@ -2249,7 +2249,7 @@ namespace BloomTests.Book
             document.LoadXml(xml);
 
             // SUT
-            var result = Bloom.Book.Book.GetCoverBackgroundColorFromOldInlineStyle(document);
+            var result = HtmlDom.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             Assert.AreEqual("#ffd4d4", result);
         }
