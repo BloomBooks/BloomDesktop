@@ -267,29 +267,29 @@
         <target xml:lang="fr" state="final">Rouge sur blanc</target>
         <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.pollinator">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.pollinator" approved="yes">
         <source xml:lang="en">Pollinator</source>
-        <target xml:lang="fr" state="needs-translation">Pollinator</target>
+        <target xml:lang="fr" state="final">Pollinisateur</target>
         <note>ID: EditTab.Toolbox.Games.Themes.pollinator</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.garden-path">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.garden-path" approved="yes">
         <source xml:lang="en">Garden Path</source>
-        <target xml:lang="fr" state="needs-translation">Garden Path</target>
+        <target xml:lang="fr" state="final">Chemin de Jardin</target>
         <note>ID: EditTab.Toolbox.Games.Themes.garden-path</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.cherry-blossom">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.cherry-blossom" approved="yes">
         <source xml:lang="en">Cherry Blossom</source>
-        <target xml:lang="fr" state="needs-translation">Cherry Blossom</target>
+        <target xml:lang="fr" state="final">Fleur de cerisier</target>
         <note>ID: EditTab.Toolbox.Games.Themes.cherry-blossom</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.coral-reef">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.coral-reef" approved="yes">
         <source xml:lang="en">Coral Reef</source>
-        <target xml:lang="fr" state="needs-translation">Coral Reef</target>
+        <target xml:lang="fr" state="final">Récif Corallien</target>
         <note>ID: EditTab.Toolbox.Games.Themes.coral-reef</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.Games.Themes.arctic-dawn">
+      <trans-unit id="EditTab.Toolbox.Games.Themes.arctic-dawn" approved="yes">
         <source xml:lang="en">Arctic Dawn</source>
-        <target xml:lang="fr" state="needs-translation">Arctic Dawn</target>
+        <target xml:lang="fr" state="final">Aube Arctique</target>
         <note>ID: EditTab.Toolbox.Games.Themes.arctic-dawn</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragLettersInstructions" approved="yes">
