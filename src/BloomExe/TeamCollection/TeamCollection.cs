@@ -2659,6 +2659,10 @@ namespace Bloom.TeamCollection
                     }
                     AddHelpMessageIfProblems(progress);
 
+                    // Allow startup tasks that depend on team sync completion (such as
+                    // selecting and previewing a book) to proceed.
+                    StartupScreenManager.StartupMilestoneReached("teamSyncCompleted");
+
                     // The dialog may continue to show for a bit, but other idle-time startup tasks
                     // (possibly queued during whenDone()) may continue.
                     StartupScreenManager.ConsiderCurrentTaskDone();
