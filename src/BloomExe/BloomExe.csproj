@@ -309,7 +309,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="Resources\current-service-urls.json" />
-		<None Include="Resources\DeleteMessageBoxImage.png" />
 		<None Include="Resources\open.png" />
 		<None Include="Resources\edit.png" />
 		<None Include="Resources\Error70x70.png" />
