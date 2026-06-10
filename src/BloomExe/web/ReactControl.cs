@@ -324,6 +324,7 @@ namespace Bloom.web
                     "/publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx"
                 },
                 { "appBundle", "/app/App.entry.tsx" },
+                { "collectionChooserBundle", "/collection/CollectionChooserDialog.entry.tsx" },
             };
             string viteModulePath = null;
             var useViteDev = ShouldUseViteDev(() =>
