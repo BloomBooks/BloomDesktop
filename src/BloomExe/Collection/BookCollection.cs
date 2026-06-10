@@ -439,7 +439,7 @@ namespace Bloom.Collection
                     )
                         ? _bookSelection.CurrentSelection.BookInfo
                         : null;
-                // If an external tool (e.g. BloomBridge via external/updateBook +
+                // If an external tool (e.g. BloomBridge via external/update-book +
                 // process-book) has overwritten this folder on disk with a *different* book — one whose
                 // bookInstanceId no longer matches the selected book we have in memory — then reusing the
                 // selection's BookInfo would keep the stale id and hide the new book's identity from the

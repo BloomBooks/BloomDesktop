@@ -106,7 +106,7 @@ namespace Bloom.web.controllers
             //
             // This must run on the UI thread because it can reload the Edit tab's view.
             apiHandler.RegisterEndpointHandler(
-                "external/updateBook",
+                "external/update-book",
                 HandleUpdateBook,
                 handleOnUiThread: true
             );
@@ -122,7 +122,7 @@ namespace Bloom.web.controllers
             //
             // This must run on the UI thread because changing the selection updates the UI.
             apiHandler.RegisterEndpointHandler(
-                "external/selectBook",
+                "external/select-book",
                 HandleSelectBook,
                 handleOnUiThread: true
             );
@@ -132,9 +132,9 @@ namespace Bloom.web.controllers
             // it. The source folder need NOT be in the collection; it is copied in (the source is left
             // untouched), the collection list is reloaded so the new book appears, and it becomes the
             // current selection. The reply includes the new book's 'id' so the caller can later target
-            // it with external/selectBook or external/updateBook.
+            // it with external/select-book or external/update-book.
             //
-            // Like external/selectBook this reloads the collection and changes the selection, so we only
+            // Like external/select-book this reloads the collection and changes the selection, so we only
             // honor it while the Collection tab is active (otherwise we'd risk discarding the user's
             // unsaved edits). This must run on the UI thread because it updates the UI.
             apiHandler.RegisterEndpointHandler(
@@ -338,7 +338,7 @@ namespace Bloom.web.controllers
             // disagrees with disk (we processed a separate Book instance). Discard the stale in-memory
             // copy and reload it from disk so a later trip through the Edit tab can't clobber what we
             // just wrote, then refresh the collection's view of it (list metadata + thumbnail). This
-            // mirrors how external/updateBook handles re-import of the selected book.
+            // mirrors how external/update-book handles re-import of the selected book.
             var selected = _collectionModel.GetSelectedBookOrNull();
             if (selected != null && selected.ID == id)
             {
@@ -393,7 +393,7 @@ namespace Bloom.web.controllers
 
                 // Adding a book reloads the collection and changes the current selection, which would
                 // discard the user's unsaved edits if they were mid-edit. Only do it from the Collection
-                // tab, matching external/selectBook and external/process-book.
+                // tab, matching external/select-book and external/process-book.
                 if (_tabSelection.ActiveTab != WorkspaceTab.collection)
                 {
                     request.Failed(
@@ -445,7 +445,7 @@ namespace Bloom.web.controllers
             }
             if (request.HttpMethod != HttpMethods.Post)
             {
-                request.Failed("external/selectBook only supports POST");
+                request.Failed("external/select-book only supports POST");
                 return;
             }
 
@@ -458,7 +458,7 @@ namespace Bloom.web.controllers
                 id = (string)data["id"];
                 if (string.IsNullOrEmpty(id))
                 {
-                    request.Failed("external/selectBook requires a book 'id'");
+                    request.Failed("external/select-book requires a book 'id'");
                     return;
                 }
 
@@ -468,7 +468,7 @@ namespace Bloom.web.controllers
                 if (_tabSelection.ActiveTab != WorkspaceTab.collection)
                 {
                     Logger.WriteEvent(
-                        "external/selectBook ignored for book id "
+                        "external/select-book ignored for book id "
                             + id
                             + " because the Collection tab is not active (ActiveTab="
                             + _tabSelection.ActiveTab
@@ -483,7 +483,7 @@ namespace Bloom.web.controllers
                 var bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
                 if (bookInfo == null)
                 {
-                    request.Failed("external/selectBook could not find a book with id " + id);
+                    request.Failed("external/select-book could not find a book with id " + id);
                     return;
                 }
 
@@ -493,8 +493,8 @@ namespace Bloom.web.controllers
             }
             catch (Exception e)
             {
-                Logger.WriteError("external/selectBook failed for book id " + id, e);
-                request.Failed("external/selectBook failed: " + e.Message);
+                Logger.WriteError("external/select-book failed for book id " + id, e);
+                request.Failed("external/select-book failed: " + e.Message);
             }
         }
 
@@ -508,7 +508,7 @@ namespace Bloom.web.controllers
             }
             if (request.HttpMethod != HttpMethods.Post)
             {
-                request.Failed("external/updateBook only supports POST");
+                request.Failed("external/update-book only supports POST");
                 return;
             }
 
@@ -522,7 +522,7 @@ namespace Bloom.web.controllers
                 id = (string)data["id"];
                 if (string.IsNullOrEmpty(id))
                 {
-                    request.Failed("external/updateBook requires a book 'id'");
+                    request.Failed("external/update-book requires a book 'id'");
                     return;
                 }
 
@@ -579,8 +579,8 @@ namespace Bloom.web.controllers
             }
             catch (Exception e)
             {
-                Logger.WriteError("external/updateBook failed for book id " + id, e);
-                request.Failed("external/updateBook failed: " + e.Message);
+                Logger.WriteError("external/update-book failed for book id " + id, e);
+                request.Failed("external/update-book failed: " + e.Message);
             }
         }
     }

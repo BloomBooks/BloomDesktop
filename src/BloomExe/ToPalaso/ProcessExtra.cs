@@ -24,6 +24,9 @@ namespace Bloom.ToPalaso
         [DllImport("user32.dll")]
         public static extern bool SetForegroundWindow(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+
         /// <summary>
         /// Safely start the process when the program code merely supplies the URL (or a command).
         /// </summary>

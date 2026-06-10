@@ -5,6 +5,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Edit;
+using Bloom.ToPalaso;
 using SIL.Progress;
 
 namespace Bloom.Book
@@ -57,6 +58,13 @@ namespace Bloom.Book
                 $"book id={book.ID} folder=\"{book.FolderPath}\" title=\"{book.NameBestForUserDisplay}\""
             );
 
+            // Creating the off-screen WebView2 controls below can yank the OS foreground onto Bloom,
+            // popping it in front of whatever the user (or the external tool that invoked
+            // process-book, e.g. BloomBridge) was looking at. This is a background processing step, so
+            // it has no business stealing focus. Remember who held the foreground up front and hand it
+            // back whenever a browser steals it (see RestoreForeground in the per-page loop and below).
+            var priorForeground = ProcessExtra.GetForegroundWindow();
+
             var totalTimer = Stopwatch.StartNew();
             var upToDateTimer = Stopwatch.StartNew();
             book.BringBookUpToDate(new NullProgress());
@@ -108,6 +116,10 @@ namespace Bloom.Book
                         browser.CreateControl();
                         browserTimer.Stop();
 
+                        // If realizing the off-screen browser pulled Bloom to the front, put the
+                        // previous window back so we keep processing quietly in the background.
+                        RestoreForeground(priorForeground);
+
                         var timings = ProcessOnePage(book, browser, page);
 
                         totalBrowserMs += browserTimer.ElapsedMilliseconds;
@@ -141,6 +153,9 @@ namespace Bloom.Book
             finally
             {
                 WebView2Browser.EndSharedEnvironmentBatch();
+                // Final safety net: make sure we leave the foreground where we found it, even if a
+                // page threw partway through the batch.
+                RestoreForeground(priorForeground);
             }
 
             // 3. One full save now that every page's in-memory DOM has been updated.
@@ -157,6 +172,20 @@ namespace Bloom.Book
                     + $"capture={totalCaptureMs}ms update={totalUpdateMs}ms save={saveTimer.ElapsedMilliseconds}ms"
             );
             return pages.Count;
+        }
+
+        /// <summary>
+        /// Hand the OS foreground back to <paramref name="priorForeground"/> if it has moved away from
+        /// it (i.e. the off-screen browser stole it for Bloom). No-op if we never knew the prior window
+        /// or it still holds the foreground, so we don't gratuitously flip windows around. Restoring is
+        /// allowed here because, having just stolen it, Bloom is the current foreground process.
+        /// </summary>
+        private static void RestoreForeground(IntPtr priorForeground)
+        {
+            if (priorForeground == IntPtr.Zero)
+                return;
+            if (ProcessExtra.GetForegroundWindow() != priorForeground)
+                ProcessExtra.SetForegroundWindow(priorForeground);
         }
 
         /// <summary>Per-page phase timings (milliseconds), for the diagnostic logging in ProcessBook.</summary>

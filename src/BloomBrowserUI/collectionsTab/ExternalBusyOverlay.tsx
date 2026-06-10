@@ -1,23 +1,27 @@
 import { css } from "@emotion/react";
 import * as React from "react";
 import { useState } from "react";
-import { Backdrop, CircularProgress } from "@mui/material";
+import { Backdrop, CircularProgress, Paper } from "@mui/material";
 import {
     useSubscribeToWebSocketForEvent,
     useSubscribeToWebSocketForObject,
 } from "../utils/WebSocketManager";
-import { kBloomBlue } from "../bloomMaterialUITheme";
+import { kBloomBlue, kPanelBackground } from "../bloomMaterialUITheme";
 
-// A full-window "busy" curtain shown while Bloom is doing a long-running external operation
+// A modal "busy" dialog shown while Bloom is doing a long-running external operation
 // (currently external/process-book, which processes a book off-screen for ~20-30s). The C# side
 // drives it over the "externalProcessing" websocket context: a "show" bundle (carrying a message)
 // to raise it and a "hide" event to dismiss it.
 //
-// Why a websocket-driven overlay rather than a normal progress dialog: process-book runs
+// It is presented as a centered dialog box sitting on a FULLY OPAQUE backdrop, so the collection
+// behind is hidden and cannot be clicked while Bloom is busy (the work runs on the UI thread, so
+// interacting with the collection underneath would be a bad idea anyway).
+//
+// Why a websocket-driven curtain rather than a normal progress dialog: process-book runs
 // synchronously on the UI thread (it creates off-screen WebView2 controls, which must be on that
 // thread) and merely pumps the message loop with Application.DoEvents(). A BackgroundWorker-based
 // dialog therefore doesn't fit, but because the UI thread keeps pumping, the main WebView2 keeps
-// painting and this overlay's CSS spinner keeps animating (it runs in the renderer process) for
+// painting and this dialog's CSS spinner keeps animating (it runs in the renderer process) for
 // the whole run.
 export const ExternalBusyOverlay: React.FunctionComponent = () => {
     const [message, setMessage] = useState<string | undefined>();
@@ -36,28 +40,40 @@ export const ExternalBusyOverlay: React.FunctionComponent = () => {
     return (
         <Backdrop
             open={message !== undefined}
-            // Above everything else in the tab (MUI modals default to 1300).
             css={css`
+                // Above everything else in the tab (MUI modals default to 1300).
                 z-index: 5000;
-                color: white;
-                flex-direction: column;
+                // Fully opaque (not the default translucent scrim) so the user can neither see nor
+                // click the collection behind while Bloom is busy.
+                background-color: ${kPanelBackground};
             `}
         >
-            <CircularProgress
+            <Paper
+                elevation={8}
                 css={css`
-                    color: ${kBloomBlue};
-                `}
-            />
-            <div
-                css={css`
-                    margin-top: 20px;
-                    font-size: 16px;
-                    max-width: 400px;
-                    text-align: center;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    padding: 30px 40px;
+                    min-width: 280px;
+                    max-width: 420px;
                 `}
             >
-                {message}
-            </div>
+                <CircularProgress
+                    css={css`
+                        color: ${kBloomBlue};
+                    `}
+                />
+                <div
+                    css={css`
+                        margin-top: 20px;
+                        font-size: 16px;
+                        text-align: center;
+                    `}
+                >
+                    {message}
+                </div>
+            </Paper>
         </Backdrop>
     );
 };
