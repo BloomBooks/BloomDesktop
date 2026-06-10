@@ -288,15 +288,29 @@ export function alignControlFrameWithActiveElement(
     // using pxToNumber here because the position and size of the canvas element are often fractional.
     // OTOH, clientWidth etc are whole numbers. If we allow that rounding in to affect where to
     // place the control frame, we can end up with a 1 pixel gap between the canvas element and
-    // the control frame, which looks bad. In case we want to use some other unit (e.g., %) in a template
-    // we use the offsetWidth as a fallback.
-    controlFrame.style.width =
-        pxToNumber(activeElement.style.width, activeElement.offsetWidth) +
-        2 * extraPadding +
-        "px";
+    // the control frame, which looks bad.  The offsetWidth (and offsetLeft) are used as fallbacks
+    // in case the style values are not set.
+    if (activeElement.style.width?.endsWith("%")) {
+        controlFrame.style.width = hasText
+            ? `calc(${activeElement.style.width} + ${2 * extraPadding}px)`
+            : activeElement.style.width;
+    } else {
+        controlFrame.style.width =
+            pxToNumber(activeElement.style.width, activeElement.offsetWidth) +
+            2 * extraPadding +
+            "px";
+    }
     controlFrame.style.height = activeElement.style.height;
-    controlFrame.style.left =
-        pxToNumber(activeElement.style.left) - extraPadding + "px";
+    if (activeElement.style.left?.endsWith("%")) {
+        controlFrame.style.left = hasText
+            ? `calc(${activeElement.style.left}  ${extraPadding}px)`
+            : activeElement.style.left;
+    } else {
+        controlFrame.style.left =
+            pxToNumber(activeElement.style.left, activeElement.offsetLeft) -
+            extraPadding +
+            "px";
+    }
     controlFrame.style.top = activeElement.style.top;
     const tails = Bubble.getBubbleSpec(activeElement).tails;
     if (tails.length > 0) {
