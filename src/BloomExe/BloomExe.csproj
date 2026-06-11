@@ -1,10 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
 		<UseWindowsForms>true</UseWindowsForms>
 		<ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-		<UseWPF>false</UseWPF>
+		<!-- WPF is enabled because some code uses WPF assemblies (e.g.
+		     System.Printing and System.Windows.Media in font processing and PDF
+		     making). With Microsoft.NET.Sdk this makes those framework references
+		     implicit, so they no longer need bare <Reference> entries. -->
+		<UseWPF>true</UseWPF>
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
 		<OutputPath>..\..\output\$(Configuration)\$(Platform)\</OutputPath>
 		<Platform Condition=" '$(Platform)' == '' ">x64</Platform>
@@ -22,6 +26,10 @@
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<Platforms>x64;ARM64</Platforms>
 		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+		<!-- These packages only ship .NET Framework builds and are consumed via
+		     the NuGet compatibility shim. NU1701 just reports that expected
+		     situation, so silence it to keep the build output readable. -->
+		<NoWarn>$(NoWarn);NU1701</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
@@ -63,7 +71,6 @@
 		<CodeAnalysisLogFile>..\..\output\Debug\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
 		<CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
 		<CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
 		<CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
 		<CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
@@ -75,7 +82,6 @@
 		<CodeAnalysisLogFile>..\..\output\Release\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
 		<CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
 		<CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
 		<CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
 		<CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
 		<CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
@@ -280,21 +286,8 @@
 		<PackageReference Include="BloomBooks.Velopack" Version="$(VelopackVersion)" />
 	</ItemGroup>
 	<ItemGroup>
-		<Reference Include="PresentationCore" />
-		<Reference Include="System.ComponentModel.Composition" />
-		<Reference Include="System.Configuration" />
-		<Reference Include="System.Management" />
-		<Reference Include="System.Net" />
-		<Reference Include="System.Printing" />
-		<Reference Include="System.Web" />
-		<Reference Include="System.Web.Extensions" />
-		<Reference Include="System.Windows.Forms" />
-		<Reference Include="WindowsBase" />
 		<Reference Include="PodcastUtilities.PortableDevices">
 			<HintPath>..\..\lib\dotnet\PodcastUtilities.PortableDevices.dll</HintPath>
-		</Reference>
-		<Reference Include="Splat">
-			<HintPath>..\..\lib\dotnet\Splat.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 	<ItemGroup>
