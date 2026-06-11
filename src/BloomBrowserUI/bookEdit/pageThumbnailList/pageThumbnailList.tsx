@@ -30,6 +30,7 @@ import {
 import { PageThumbnail } from "./PageThumbnail";
 import LazyLoad, { forceCheck } from "react-lazyload";
 import { useL10n } from "../../react_components/l10nHooks";
+import { confirmRemovePage } from "./confirmRemovePage";
 
 // We're using the Responsive version of react-grid-layout because
 // (1) the previous version of the page thumbnails, which this replaces,
@@ -786,10 +787,17 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
         closeContextMenuOnBlurCleanupRef.current?.();
         closeContextMenuOnBlurCleanupRef.current = undefined;
 
-        postJson("pageList/contextMenuItemClicked", {
-            pageId: contextMenuPoint.pageId,
-            commandId,
-        });
+        const pageId = contextMenuPoint.pageId;
+        const postCommand = () =>
+            postJson("pageList/contextMenuItemClicked", {
+                pageId,
+                commandId,
+            });
+        if (commandId === "removePage") {
+            confirmRemovePage(postCommand);
+        } else {
+            postCommand();
+        }
         closeContextMenu();
     };
 

@@ -252,8 +252,8 @@ namespace Bloom.Edit
                     Model.PastePage(page);
                     break;
                 case "removePage":
-                    if (ConfirmRemovePageDialog.Confirm())
-                        Model.DeletePage(page);
+                    // The browser side has already confirmed with the user (BL-16421).
+                    Model.DeletePage(page);
                     break;
                 case "chooseDifferentLayout":
                     Model.GetEditingBrowser().Focus();
