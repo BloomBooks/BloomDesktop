@@ -1330,12 +1330,31 @@ namespace Bloom.Book
         /// <returns></returns>
         internal static List<string> GetImagePathsRelativeToBook(SafeXmlElement element)
         {
-            return (
+            var filenames = (
                 from SafeXmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
+                where HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded != "bookFile"
                 select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded
             )
                 .Distinct()
                 .ToList();
+            // bookFile query URLs can sneak in, so we need to handle them here as well (BL-16376)
+            var imgUrls = (
+                from SafeXmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
+                where HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded == "bookFile"
+                select HtmlDom.GetImageElementUrl(img)
+            )
+                .Distinct()
+                .ToList();
+            foreach (var url in imgUrls)
+            {
+                var matches = Regex.Matches(
+                    url.NotEncoded,
+                    "bookFile\\?book-id=(.*)&file=([^?&]*)"
+                );
+                if (matches.Count > 0)
+                    filenames.Add(matches[0].Groups[2].Value.Replace("+", " "));
+            }
+            return filenames;
         }
 
         #endregion Image Files

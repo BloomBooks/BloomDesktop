@@ -12,6 +12,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Security.Policy;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -912,6 +913,10 @@ namespace Bloom.Api
             if (TryHandlePlaceholderImageRequest(info, imageFile))
                 return true;
 
+            // bookFile query URLs can sneak in, so we need to handle them here as well (BL-16376)
+            if (TryHandleBookFileRequest(info, imageFile))
+                return true;
+
             // This can't be right. At some point it may have had something to do with
             // images in page thumbnails, but that is now handled by a param.
             // But we definitely don't want Bloom to fail to find any picture of a thumbnail!
@@ -1070,6 +1075,42 @@ namespace Bloom.Api
 
             info.ReplyWithImage(imageFile, originalImageFile);
             return true;
+        }
+
+        /// <summary>
+        /// Parse out a bookFile query to see if it references a valid file for the current book
+        /// </summary>
+        /// <remarks>
+        /// See BL-16376.
+        /// </remarks>
+        private bool TryHandleBookFileRequest(IRequestInfo info, string imageFile)
+        {
+            if (
+                imageFile.StartsWith("bookFile?book-id=")
+                || imageFile.Contains("/bookFile?book-id=")
+            )
+            {
+                var matches = Regex.Matches(imageFile, "bookFile\\?book-id=(.*)&file=([^?&]*)");
+                if (matches.Count > 0)
+                {
+                    var bookId = matches[0].Groups[1].Value;
+                    var file = matches[0].Groups[2].Value.Replace("+", " ");
+                    if (
+                        !string.IsNullOrEmpty(bookId)
+                        && CurrentBook.BookInfo.Id == bookId
+                        && !string.IsNullOrEmpty(file)
+                    )
+                    {
+                        var filePath = Path.Combine(CurrentBook.FolderPath, file);
+                        if (RobustFileExistsWithCaseCheck(filePath))
+                        {
+                            info.ReplyWithImage(filePath);
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         protected static bool IsImageTypeThatCanBeDegraded(string path)
