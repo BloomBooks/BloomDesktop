@@ -1330,12 +1330,36 @@ namespace Bloom.Book
         /// <returns></returns>
         internal static List<string> GetImagePathsRelativeToBook(SafeXmlElement element)
         {
-            return (
+            var filenames = (
                 from SafeXmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
+                where HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded != "bookFile"
                 select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded
             )
                 .Distinct()
                 .ToList();
+            // bookFile query URLs can sneak in, so we need to handle them here as well (BL-16376)
+            var imgUrls = (
+                from SafeXmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
+                where HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded == "bookFile"
+                select HtmlDom.GetImageElementUrl(img)
+            )
+                .Distinct()
+                .ToList();
+            foreach (var url in imgUrls)
+            {
+                /// I've seen a query parameter value that contains a literal ? (essentially the parameter itself
+                /// contains a subquery string), which breaks the automatic parsing.  See BL-16376.
+                var matches = Regex.Matches(
+                    url.NotEncoded,
+                    "bookFile\\?book-id=([^?&]*)&file=([^?&]*)"
+                );
+                // Bloom doesn't allow + in its filenames.  If it exists here, it's an extra level of encoding.
+                if (matches.Count > 0)
+                {
+                    filenames.Add(matches[0].Groups[2].Value.Replace("+", " "));
+                }
+            }
+            return filenames;
         }
 
         #endregion Image Files
