@@ -1,5 +1,4 @@
 import { css } from "@emotion/react";
-import { H3 } from "../react_components/l10nComponents";
 import { useApiData } from "../utils/bloomApi";
 import { CollectionCardList } from "./CollectionCardList";
 import { ICollectionInfo } from "./CollectionCard";

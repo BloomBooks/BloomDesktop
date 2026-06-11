@@ -1006,8 +1006,15 @@ namespace Bloom.web.controllers
 
             const int maxMruItems = 9;
             var collectionsToShow = Settings.Default.MruProjects.Paths.Take(maxMruItems).ToList();
+
+            // Always include the MRU items first.
+            collections.AddRange(collectionsToShow.Select(path => MakeCollectionInfoObject(path)));
+
+            // If there are fewer MRU items than the max, fill remaining slots with collections
+            // discovered in the default directory, ordered most-recently-modified first
+            // (matching the Reverse().Take() pattern from the old OpenCreateCloneControl logic).
             if (
-                collectionsToShow.Count() < maxMruItems
+                collectionsToShow.Count < maxMruItems
                 && Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections)
             )
             {
@@ -1015,22 +1022,18 @@ namespace Bloom.web.controllers
                     Directory
                         .GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
                         .Select(d =>
-                            Path.Combine(
-                                d,
-                                Path.ChangeExtension(Path.GetFileName(d), "bloomCollection")
-                            )
+                            //Avoiding use of Path.ChangeExtension as it's just possible the collectionName could have a period.
+                            CollectionSettings.GetSettingsFilePath(d)
                         )
                         .Where(path => RobustFile.Exists(path) && !collectionsToShow.Contains(path))
-                        .OrderBy(path => Directory.GetLastWriteTime(Path.GetDirectoryName(path)))
-                        .Select(path => MakeCollectionInfoObject(path))
+                        .OrderByDescending(path =>
+                            Directory.GetLastWriteTime(Path.GetDirectoryName(path))
+                        )
+                        .Take(maxMruItems - collectionsToShow.Count)
+                        .Select(MakeCollectionInfoObject)
                 );
             }
-            else
-            {
-                collections.AddRange(
-                    collectionsToShow.Select(path => MakeCollectionInfoObject(path))
-                );
-            }
+
             request.ReplyWithJson(collections);
         }
 
