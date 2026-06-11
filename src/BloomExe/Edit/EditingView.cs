@@ -959,7 +959,9 @@ namespace Bloom.Edit
                 using (
                     var dlg = new BloomOpenFileDialog
                     {
-                        InitialDirectory = Environment.SpecialFolder.MyPictures.ToString(),
+                        InitialDirectory = Environment.GetFolderPath(
+                            Environment.SpecialFolder.MyPictures
+                        ),
                         Filter = "gif|*.gif",
                     }
                 )

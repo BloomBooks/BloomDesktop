@@ -26,7 +26,7 @@ Validate the token before doing real work:
 
 ## 2. Choose the initial state — ASK
 
-Unless the requester already named a state, use the **AskUserQuestion tool** to choose where the
+Unless the requester already named a state, use the **askQuestions tool** to choose where the
 new issue should start. Offer exactly these options (header e.g. "Initial state"):
 
 - **Ready For Work** — *(Recommended / default)* triaged and ready to be picked up.
