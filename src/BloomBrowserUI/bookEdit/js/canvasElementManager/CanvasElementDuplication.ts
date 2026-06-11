@@ -319,6 +319,9 @@ export class CanvasElementDuplication {
         });
     }
 
+    // Copy everything we need to so that the copy will have the same narration audio as the source,
+    // but with independent ids and files so that if the copy narration is changed, it won't affect the source
+    // (or vice versa). (We also avoid duplicate IDs, which is incorrect in HTML and can cause problems).
     public copyAnySoundFileAndAttributesForEditable(
         sourceElement: HTMLElement,
         copiedElement: HTMLElement,
