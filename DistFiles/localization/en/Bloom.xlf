@@ -314,6 +314,26 @@
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
         <note>ID: Browser.ProblemSaving</note>
       </trans-unit>
+      <trans-unit id="CollectionChooser.BookCountSingular" translate="no">
+        <source xml:lang="en">{0} book</source>
+        <note>ID: CollectionChooser.BookCountSingular</note>
+        <note>{0} is the number of books; use this entry when the count is exactly 1.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.BookCountPlural" translate="no">
+        <source xml:lang="en">{0} books</source>
+        <note>ID: CollectionChooser.BookCountPlural</note>
+        <note>{0} is the number of books; use this entry when the count is 0 or more than 1.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.CheckedOutCount" translate="no">
+        <source xml:lang="en">{0} checked out to you</source>
+        <note>ID: CollectionChooser.CheckedOutCount</note>
+        <note>{0} is the number of books checked out to the current user in a team collection.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.UnpublishedToBloomLibrary" translate="no">
+        <source xml:lang="en">{0} unpublished to bloomlibrary.org</source>
+        <note>ID: CollectionChooser.UnpublishedToBloomLibrary</note>
+        <note>{0} is the number of books in the collection not yet published to bloomlibrary.org.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
         <note>ID: CollectionSettingsDialog.AboutBloomSubscriptions</note>
@@ -3580,10 +3600,6 @@
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3">
         <source xml:lang="en">Click 'Next' to get started.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine3</note>
-      </trans-unit>
-      <trans-unit id="OpenCreateCloneControl.InDropboxMessage">
-        <source xml:lang="en">Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.</source>
-        <note>ID: OpenCreateCloneControl.InDropboxMessage</note>
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage">
         <source xml:lang="en">This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</source>

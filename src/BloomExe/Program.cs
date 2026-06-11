@@ -1591,7 +1591,8 @@ namespace Bloom
         /// ------------------------------------------------------------------------------------
         private static void StartUpShellBasedOnMostRecentUsedIfPossible()
         {
-            var path = Settings.Default.MruProjects.Latest;
+            // TEMPORARY (BL-16270): always show the Open Project dialog at startup.
+            var path = (string)null;
 
             if (!string.IsNullOrEmpty(path))
             {
@@ -1782,13 +1783,11 @@ namespace Bloom
             {
                 CollectionChosenAtStartup = null;
                 string closeSource;
-                using (
-                    var dlg = new ReactDialog(
-                        "collectionChooserBundle",
-                        null,
-                        "Open / Create Collections"
-                    )
-                )
+                var dialogTitle = LocalizationManager.GetString(
+                    "OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle",
+                    "Open/Create Collections"
+                );
+                using (var dlg = new ReactDialog("collectionChooserBundle", null, dialogTitle))
                 {
                     dlg.SetScaledSize(700, 500);
                     dlg.StartPosition = FormStartPosition.CenterScreen;
