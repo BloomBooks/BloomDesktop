@@ -82,7 +82,7 @@ async function runWatcherFromCli() {
         // In the normal (watching) case, don't list every stylesheet during the
         // initial sync; print a single summary line below instead. --verbose
         // restores per-file logging.
-        quietInitialSync: !verbose,
+        quietInitialSync: !once && !verbose,
     });
 
     await manager.initialize();

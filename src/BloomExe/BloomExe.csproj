@@ -26,10 +26,6 @@
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<Platforms>x64;ARM64</Platforms>
 		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
-		<!-- These packages only ship .NET Framework builds and are consumed via
-		     the NuGet compatibility shim. NU1701 just reports that expected
-		     situation, so silence it to keep the build output readable. -->
-		<NoWarn>$(NoWarn);NU1701</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
@@ -259,7 +255,11 @@
 		<PackageReference Include="SharpZipLib" Version="1.3.3" />
 		<PackageReference Include="SIL.BuildTasks" Version="3.1.1" GeneratePathProperty="true" />
 		<PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0014" />
-		<PackageReference Include="SIL.DesktopAnalytics" Version="4.0.4" />
+		<!-- Only ships a .NET Framework build; consumed via the NuGet compatibility
+		     shim, so its NU1701 (compat) warning is expected. Silenced just here. -->
+		<PackageReference Include="SIL.DesktopAnalytics" Version="4.0.4">
+			<NoWarn>NU1701</NoWarn>
+		</PackageReference>
 		<PackageReference Include="SIL.libpalaso.l10ns" Version="18.0.0-beta0012" GeneratePathProperty="true" />
 		<PackageReference Include="SIL.Media" Version="18.0.0-beta0014" />
 		<PackageReference Include="SIL.Windows.Forms" Version="18.0.0-beta0014" />
@@ -284,6 +284,15 @@
 		<!-- Version is sourced from the repo-wide Directory.Build.props (VelopackVersion) so that we always
 		 use the same version of the BloomBooks.Velopack and BloomBooks.Velopack.Cli  -->
 		<PackageReference Include="BloomBooks.Velopack" Version="$(VelopackVersion)" />
+	</ItemGroup>
+	<!-- These three are transitive (pulled in by the SIL.Windows.Forms.Keyboarding stack)
+	     and only ship .NET Framework builds, so they raise NU1701. They are not direct
+	     PackageReferences, so we silence NU1701 for just these packages via Update
+	     metadata rather than suppressing it for the whole project. -->
+	<ItemGroup>
+		<PackageReference Update="Enchant.Net" NoWarn="NU1701" />
+		<PackageReference Update="ibusdotnet" NoWarn="NU1701" />
+		<PackageReference Update="KeymanLegacyBundle" NoWarn="NU1701" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="PodcastUtilities.PortableDevices">
