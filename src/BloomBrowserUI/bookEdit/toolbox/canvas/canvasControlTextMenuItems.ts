@@ -6,6 +6,7 @@
 import * as React from "react";
 import { default as CheckIcon } from "@mui/icons-material/Check";
 import { get, postThatMightNavigate } from "../../../utils/bloomApi";
+import { wrapWithRequestPageContentDelay } from "../../js/bloomEditing";
 import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { IControlContext, IControlMenuCommandRow } from "./canvasControlTypes";
 
@@ -384,46 +385,58 @@ export function makeFieldTypeMenuItem(
                     return;
                 }
 
-                translationGroup.classList.add(...fieldType.classes);
-                editables.forEach((editable) => {
-                    editable.classList.add(...fieldType.editableClasses);
-                    editable.removeAttribute("data-derived");
-                    editable.setAttribute("data-book", fieldType.dataBook);
-                    if (
-                        editable.classList.contains(
-                            "bloom-visibility-code-on",
-                        ) &&
-                        fieldType.dataBook
-                    ) {
-                        get(
-                            `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${fieldType.dataBook}`,
-                            (result) => {
-                                const response = result.data;
-                                const content = response.content;
-                                const temp = document.createElement("div");
-                                temp.innerHTML = content || "";
-                                const keptExistingContent =
-                                    temp.textContent.trim() === "";
-                                if (!keptExistingContent) {
-                                    editable.innerHTML = content;
-                                    applyEditableAudioIdentityFromDataBookValue(
-                                        editable,
-                                        response,
-                                    );
-                                }
-                                if (fieldTypeChanged && keptExistingContent) {
-                                    getCanvasElementManager()?.makeEditableAudioIndependent(
-                                        editable,
-                                    );
-                                }
-                            },
-                        );
-                    } else if (fieldTypeChanged) {
-                        getCanvasElementManager()?.makeEditableAudioIndependent(
-                            editable,
-                        );
+                // Wrap to prevent saving an incompletely modified page
+                // while the async getDataBookValue request is in flight.
+                void wrapWithRequestPageContentDelay(async () => {
+                    translationGroup.classList.add(...fieldType.classes);
+                    for (const editable of editables) {
+                        editable.classList.add(...fieldType.editableClasses);
+                        editable.removeAttribute("data-derived");
+                        editable.setAttribute("data-book", fieldType.dataBook);
+                        if (
+                            editable.classList.contains(
+                                "bloom-visibility-code-on",
+                            ) &&
+                            fieldType.dataBook
+                        ) {
+                            await new Promise<void>((resolve) => {
+                                get(
+                                    `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${fieldType.dataBook}`,
+                                    (result) => {
+                                        const response = result.data;
+                                        const content = response.content;
+                                        const temp =
+                                            document.createElement("div");
+                                        temp.innerHTML = content || "";
+                                        const keptExistingContent =
+                                            temp.textContent.trim() === "";
+                                        if (!keptExistingContent) {
+                                            editable.innerHTML = content;
+                                            applyEditableAudioIdentityFromDataBookValue(
+                                                editable,
+                                                response,
+                                            );
+                                        }
+                                        if (
+                                            fieldTypeChanged &&
+                                            keptExistingContent
+                                        ) {
+                                            getCanvasElementManager()?.makeEditableAudioIndependent(
+                                                editable,
+                                            );
+                                        }
+                                        resolve();
+                                    },
+                                    () => resolve(),
+                                );
+                            });
+                        } else if (fieldTypeChanged) {
+                            getCanvasElementManager()?.makeEditableAudioIndependent(
+                                editable,
+                            );
+                        }
                     }
-                });
+                }, "setCanvasFieldType");
             },
         });
     });
