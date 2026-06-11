@@ -214,7 +214,7 @@ namespace Bloom.Api
                     _requestInfo.WriteError(_statusCodeInt, text);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Debug.Fail("could not WriteError to requestInfo (is it disposed?)");
             }

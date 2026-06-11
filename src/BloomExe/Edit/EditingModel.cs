@@ -963,7 +963,7 @@ namespace Bloom.Edit
                     PageSelectModelChangesComplete?.Invoke(this, EventArgs.Empty);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // It's very important that we succeed in navigating to SOME page; otherwise, we may well be left
                 // in a state where the page UI isn't fully set up, and the state machine is in the SavedAndStripped
@@ -1622,15 +1622,15 @@ namespace Bloom.Edit
                     );
                 }
             }
-            catch (ObjectDisposedException err) // in case even calling CanUpdate gave an error
+            catch (ObjectDisposedException) // in case even calling CanUpdate gave an error
             {
                 Logger.WriteEvent("Error: SaveNow() found that this book was disposed.");
-                throw err;
+                throw;
             }
-            catch (Exception err) // in case even calling CanUpdate gave an error
+            catch (Exception) // in case even calling CanUpdate gave an error
             {
                 Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
-                throw err;
+                throw;
             }
             //OK, looks safe, time to save.
             var editedDom = new HtmlDom(docFromBrowser);
