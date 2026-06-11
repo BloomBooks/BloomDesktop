@@ -249,8 +249,10 @@ export class CanvasElementClipboard {
         }
 
         // Otherwise we will add a new canvas element...but only if subscription allows it.
-        // Delay requestPageContent while the async feature status check runs so we don't save
-        // before the potential new canvas element has been added.
+        // Keep this wrapper even though adjustContainerAspectRatio now manages its own image-load delay.
+        // This branch still has a separate async feature-status request before we even know whether a
+        // new element will be created. Without this wrapper, requestPageContent can run before the
+        // callback adds the pasted element or decides to show the subscription dialog instead.
         wrapWithRequestPageContentDelay(
             () =>
                 new Promise<void>((resolve) => {
