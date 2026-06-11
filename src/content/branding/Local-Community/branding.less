@@ -5,22 +5,64 @@
 @import "../branding-base.less";
 
 [data-book="outside-back-cover-branding-bottom-html"] {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px; // space between the logo and the {personalization} text
-    border: solid #ce5546 3px;
-    border-radius: 4px;
-    background: white;
-    padding: 10px;
-    font-family: "Andika";
-    font-size: 10.5pt;
-    width: 9cm;
-    margin-right: auto;
-    margin-left: auto;
+    .bloom-branding-wrapper.local-community-branding {
+        border-width: 3px;
+        border-radius: 4px;
+        padding: 10px;
+        font-family: "Andika";
+        font-size: 10.5pt;
+        width: 12cm;
+        max-width: 100%;
+        box-sizing: border-box;
 
-    img.branding {
-        height: 2cm;
-        margin-right: 10px;
+        .local-community-badge {
+            display: grid;
+            // Keep side images at normal size while giving the message as much room as possible.
+            // If space gets tight, keep at least this much width for readable text in the center.
+            grid-template-columns: max-content minmax(3cm, 1fr) max-content;
+            grid-auto-columns: 0;
+            align-items: center;
+            column-gap: 10px;
+            row-gap: 6px;
+            color: inherit;
+            text-decoration: none;
+
+            .local-community-logo {
+                height: 2cm;
+                width: auto;
+                max-width: none;
+                margin: 0;
+                grid-column: 1;
+                align-self: start;
+                justify-self: start;
+            }
+
+            .local-community-message {
+                grid-column: 2;
+                min-width: 0;
+                margin: 0;
+            }
+
+            .bloom-qrcode {
+                width: 2cm;
+                max-width: none;
+                padding: 0;
+                margin: 0;
+                grid-column: 3;
+                align-self: start;
+                justify-self: end;
+            }
+
+            .bloom-lang-on-blorg {
+                grid-column-start: 1;
+                grid-column-end: -1;
+                grid-row: 2;
+                margin: 0;
+                width: auto;
+                justify-self: stretch;
+                text-align: start;
+                max-width: none;
+            }
+        }
     }
 }
