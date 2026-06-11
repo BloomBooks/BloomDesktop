@@ -224,16 +224,16 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
 const AdditionalCardText: React.FunctionComponent<{
     text?: string;
     color?: string;
-}> = ({ text, color = "#606060" }) => (
+}> = (props) => (
     <Typography
         variant="body2"
         css={css`
-            color: ${color};
+            color: ${props.color ?? "#606060"};
             line-height: 1.1;
             margin-block-end: 2px !important;
-            ${text ? "" : "visibility: hidden;"}
+            ${props.text ? "" : "visibility: hidden;"}
         `}
     >
-        {text || "invisible"}
+        {props.text || "invisible"}
     </Typography>
 );
