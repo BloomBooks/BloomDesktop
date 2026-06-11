@@ -13,6 +13,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { LocalizableMenuItem } from "../react_components/localizableMenuItem";
 import { get, postString } from "../utils/bloomApi";
 import { kBloomRed } from "../bloomMaterialUITheme";
+import { useL10n } from "../react_components/l10nHooks";
 import { TeamCollectionIcon } from "../teamCollection/TeamCollectionIcon";
 
 export interface ICollectionInfo {
@@ -72,6 +73,32 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
             (r) => setUnpublishedCount(r.data?.count),
         );
     }, [props.path, props.unpublishedCount]);
+
+    const bookCountSingular = useL10n(
+        "{0} book",
+        "CollectionChooser.BookCountSingular",
+        undefined,
+        String(props.bookCount),
+    );
+    const bookCountPlural = useL10n(
+        "{0} books",
+        "CollectionChooser.BookCountPlural",
+        undefined,
+        String(props.bookCount),
+    );
+    const checkedOutText = useL10n(
+        "{0} checked out to you",
+        "CollectionChooser.CheckedOutCount",
+        undefined,
+        String(props.checkedOutCount ?? 0),
+    );
+    const unpublishedText = useL10n(
+        "{0} unpublished to bloomlibrary.org",
+        "CollectionChooser.UnpublishedToBloomLibrary",
+        undefined,
+        String(unpublishedCount ?? 0),
+    );
+
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         event.stopPropagation();
         setMoreMenuAnchorEl(event.currentTarget);
@@ -84,7 +111,7 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
         handleMenuClose();
     };
 
-    const additionalCardTexts: JSX.Element[] = getAdditionalCardTexts(props);
+    const additionalCardTexts: JSX.Element[] = getAdditionalCardTexts();
 
     return (
         <Card variant="outlined" css={cardStyle}>
@@ -188,23 +215,21 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
         </Card>
     );
 
-    function getAdditionalCardTexts(collectionInfo: ICollectionInfo) {
+    function getAdditionalCardTexts() {
         const additionalCardTexts: JSX.Element[] = [];
         additionalCardTexts.push(
             <AdditionalCardText
                 key="bookCount"
                 text={
-                    collectionInfo.bookCount === 1
-                        ? `${collectionInfo.bookCount} book`
-                        : `${collectionInfo.bookCount} books`
+                    props.bookCount === 1 ? bookCountSingular : bookCountPlural
                 }
             />,
         );
-        if (collectionInfo.checkedOutCount) {
+        if (props.checkedOutCount) {
             additionalCardTexts.push(
                 <AdditionalCardText
                     key="checkedOutCount"
-                    text={`${collectionInfo.checkedOutCount} checked out to you`}
+                    text={checkedOutText}
                     color={kBloomRed}
                 />,
             );
@@ -213,7 +238,7 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
             additionalCardTexts.push(
                 <AdditionalCardText
                     key="unpublishedCount"
-                    text={`${unpublishedCount} unpublished to bloomlibrary.org`}
+                    text={unpublishedText}
                 />,
             );
         }
@@ -224,16 +249,16 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
 const AdditionalCardText: React.FunctionComponent<{
     text?: string;
     color?: string;
-}> = ({ text, color = "#606060" }) => (
+}> = (props) => (
     <Typography
         variant="body2"
         css={css`
-            color: ${color};
+            color: ${props.color ?? "#606060"};
             line-height: 1.1;
             margin-block-end: 2px !important;
-            ${text ? "" : "visibility: hidden;"}
+            ${props.text ? "" : "visibility: hidden;"}
         `}
     >
-        {text || "invisible"}
+        {props.text || "invisible"}
     </Typography>
 );

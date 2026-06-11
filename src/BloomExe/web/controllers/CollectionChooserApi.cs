@@ -1,13 +1,22 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
+using Bloom.Properties;
+using Bloom.TeamCollection;
+using Bloom.ToPalaso;
 using Bloom.Utils;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
+using SIL.IO;
 
 namespace Bloom.web.controllers
 {
@@ -23,6 +32,13 @@ namespace Bloom.web.controllers
     /// </summary>
     public class CollectionChooserApi
     {
+        /// <summary>
+        /// Set to true by HandleOpenCollectionFolderInExplorer when the caller passes
+        /// updateAfter=true. Read and cleared by CollectionApi.CheckForCollectionUpdates /
+        /// ResetUpdatingList when Bloom regains focus after Explorer closes.
+        /// </summary>
+        internal static bool UpdateAfterExplorerOpened;
+
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler(
@@ -70,10 +86,155 @@ namespace Bloom.web.controllers
             apiHandler.RegisterBooleanEndpointHandler(
                 "workspace/showUnapprovedTranslations",
                 request => WorkspaceView.GetShowUnapprovedTranslations(),
-                (request, value) => WorkspaceView.SetShowUnapprovedTranslations(value),
+                (request, value) =>
+                {
+                    WorkspaceView.SetShowUnapprovedTranslations(value);
+                    // At startup (no project loaded), Bloom can't restart to apply the
+                    // change, so reopen the dialog to refresh the language list.
+                    if (WorkspaceView.Current == null)
+                        Application.Idle += CloseForLanguageChange;
+                },
                 true
             );
+            apiHandler.RegisterEndpointHandler(
+                "collections/getMostRecentlyUsedCollections",
+                HandleGetMostRecentlyUsedCollections,
+                false,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "collections/openCollectionFolderInExplorer",
+                HandleOpenCollectionFolderInExplorer,
+                true
+            );
+            // Allow background thread; this makes a network call to BloomLibrary.
+            apiHandler.RegisterEndpointHandler(
+                "collections/getUnpublishedCount",
+                HandleGetUnpublishedCount,
+                false,
+                false
+            );
         }
+
+        /// <summary>
+        /// Returns a list of recently used and locally available collections for display
+        /// in the collection chooser dialog.
+        /// </summary>
+        private static void HandleGetMostRecentlyUsedCollections(ApiRequest request)
+        {
+            var collections = new List<dynamic>();
+
+            const int maxMruItems = 9;
+            var collectionsToShow = Settings.Default.MruProjects.Paths.Take(maxMruItems).ToList();
+
+            // Always include the MRU items first.
+            collections.AddRange(collectionsToShow.Select(path => MakeCollectionInfoObject(path)));
+
+            // If there are fewer MRU items than the max, fill remaining slots with collections
+            // discovered in the default directory, ordered most-recently-modified first
+            // (matching the Reverse().Take() pattern from the old OpenCreateCloneControl logic).
+            if (
+                collectionsToShow.Count < maxMruItems
+                && Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections)
+            )
+            {
+                collections.AddRange(
+                    Directory
+                        .GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
+                        .Select(d =>
+                            //Avoiding use of Path.ChangeExtension as it's just possible the collectionName could have a period.
+                            CollectionSettings.GetSettingsFilePath(d)
+                        )
+                        .Where(path => RobustFile.Exists(path) && !collectionsToShow.Contains(path))
+                        .OrderByDescending(path =>
+                            Directory.GetLastWriteTime(Path.GetDirectoryName(path))
+                        )
+                        .Take(maxMruItems - collectionsToShow.Count)
+                        .Select(MakeCollectionInfoObject)
+                );
+            }
+
+            request.ReplyWithJson(collections);
+        }
+
+        /// <summary>
+        /// Builds the JSON object returned per collection by getMostRecentlyUsedCollections.
+        /// Add new fields here as the collection chooser needs more information.
+        /// </summary>
+        private static dynamic MakeCollectionInfoObject(string collectionFilePath)
+        {
+            var folderPath = Path.GetDirectoryName(collectionFilePath);
+            var isTeamCollection = IsTeamCollectionFolder(folderPath);
+            var checkedOutCount = isTeamCollection
+                ? CountCheckedOutToCurrentUser(folderPath)
+                : (int?)null;
+            return new
+            {
+                path = collectionFilePath,
+                title = Path.GetFileNameWithoutExtension(collectionFilePath),
+                bookCount = CountBooksInCollection(folderPath),
+                isTeamCollection,
+                checkedOutCount,
+            };
+        }
+
+        /// <summary>
+        /// Returns true if the collection folder is a team collection, indicated by
+        /// the presence of a TeamCollectionLink.txt file.
+        /// </summary>
+        private static bool IsTeamCollectionFolder(string collectionFolderPath) =>
+            RobustFile.Exists(TeamCollectionManager.GetTcLinkPathFromLcPath(collectionFolderPath));
+
+        /// <summary>
+        /// Counts the books in a TC collection folder that are checked out to the current user.
+        /// This includes books whose TeamCollection.status file has lockedBy == currentUser,
+        /// and also books with no status file at all (local-only books that have never been
+        /// synced to the shared repo).
+        /// </summary>
+        private static int CountCheckedOutToCurrentUser(string collectionFolderPath)
+        {
+            var currentUser = TeamCollectionManager.CurrentUser;
+            if (string.IsNullOrEmpty(currentUser))
+                return 0;
+            return GetBookFolders(collectionFolderPath)
+                .Count(bookFolder =>
+                {
+                    var statusPath = Path.Combine(bookFolder, "TeamCollection.status");
+                    if (!RobustFile.Exists(statusPath))
+                        return true; // local-only book; belongs to the current user
+                    try
+                    {
+                        var status = BookStatus.FromJson(RobustFile.ReadAllText(statusPath));
+                        return status?.lockedBy == currentUser;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                });
+        }
+
+        /// <summary>
+        /// Returns the paths of all book folders in a collection folder (excluding xmatter,
+        /// hidden, and BloomIgnore'd folders).
+        /// </summary>
+        private static IEnumerable<string> GetBookFolders(string collectionFolderPath)
+        {
+            if (!Directory.Exists(collectionFolderPath))
+                return Array.Empty<string>();
+            return Directory
+                .GetDirectories(collectionFolderPath)
+                .Where(d => !Path.GetFileName(d).StartsWith("."))
+                .Where(d => !d.ToLowerInvariant().Contains("xmatter"))
+                .Where(d => !RobustFile.Exists(Path.Combine(d, "BloomIgnore.txt")))
+                .Where(d => Directory.GetFiles(d, "*.htm").Length > 0);
+        }
+
+        /// <summary>
+        /// Counts all books in a collection folder.
+        /// </summary>
+        private static int CountBooksInCollection(string collectionFolderPath) =>
+            GetBookFolders(collectionFolderPath).Count();
 
         private void CloseForLanguageChange(object sender, System.EventArgs e)
         {
@@ -161,6 +322,83 @@ namespace Bloom.web.controllers
                     ReactDialog.CloseCurrentModal("collection-chosen");
                 }
                 // If null, the user cancelled the wizard; they remain in the chooser.
+            }
+        }
+
+        /// <summary>
+        /// Opens the folder containing a collection in the system file explorer.
+        /// Accepts either a .bloomCollection file path or a directory path.
+        /// Pass updateAfter=true as a query parameter to trigger a collection list refresh
+        /// after the explorer window is opened (used by CollectionsTabPane when the user
+        /// may delete the folder).
+        /// </summary>
+        private static void HandleOpenCollectionFolderInExplorer(ApiRequest request)
+        {
+            // path might be a .bloomCollection file or a directory
+            var path = request.RequiredPostString();
+            string collectionFolderPath;
+            if (RobustFile.Exists(path))
+            {
+                collectionFolderPath = Path.GetDirectoryName(path);
+            }
+            else if (Directory.Exists(path))
+            {
+                collectionFolderPath = path;
+            }
+            else
+            {
+                request.Failed();
+                return;
+            }
+            request.PostSucceeded();
+            if (request.Parameters["updateAfter"] == "true")
+                UpdateAfterExplorerOpened = true;
+            ProcessExtra.SafeStartInFront(collectionFolderPath);
+        }
+
+        /// <summary>
+        /// Returns the number of books in the given collection that have not been published to
+        /// BloomLibrary.org (i.e. not found on the server or found only as a draft). Requires a
+        /// network call to BloomLibrary, so this endpoint is called lazily per-card.
+        /// </summary>
+        private static void HandleGetUnpublishedCount(ApiRequest request)
+        {
+            var collectionFilePath = request.RequiredParam("collectionPath");
+            var folderPath = Path.GetDirectoryName(collectionFilePath);
+
+            var bookFolders = GetBookFolders(folderPath).ToList();
+            if (bookFolders.Count == 0)
+            {
+                request.ReplyWithJson(new { count = 0 });
+                return;
+            }
+
+            var bookInfos = bookFolders
+                .Select(f => new BookInfo(f, false, NoEditSaveContext.Singleton))
+                .ToList();
+
+            try
+            {
+                var apiClient = new BloomLibraryBookApiClient();
+                var statuses = apiClient.GetLibraryStatusForBooks(bookInfos);
+
+                // A book is "unpublished" if it has no entry on the server, or if its entry is
+                // marked as a draft (not yet publicly visible).
+                var unpublishedCount = bookInfos.Count(bi =>
+                    !statuses.TryGetValue(bi.Id, out var status) || status.Draft
+                );
+
+                request.ReplyWithJson(new { count = unpublishedCount });
+            }
+            catch (Exception e)
+            {
+                NonFatalProblem.Report(
+                    ModalIf.None,
+                    PassiveIf.All,
+                    "Error getting unpublished count for collection",
+                    exception: e
+                );
+                request.Failed("Could not reach BloomLibrary");
             }
         }
 

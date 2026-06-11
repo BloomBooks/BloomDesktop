@@ -1782,13 +1782,11 @@ namespace Bloom
             {
                 CollectionChosenAtStartup = null;
                 string closeSource;
-                using (
-                    var dlg = new ReactDialog(
-                        "collectionChooserBundle",
-                        null,
-                        "Open / Create Collections"
-                    )
-                )
+                var dialogTitle = LocalizationManager.GetString(
+                    "OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle",
+                    "Open/Create Collections"
+                );
+                using (var dlg = new ReactDialog("collectionChooserBundle", null, dialogTitle))
                 {
                     dlg.SetScaledSize(700, 500);
                     dlg.StartPosition = FormStartPosition.CenterScreen;

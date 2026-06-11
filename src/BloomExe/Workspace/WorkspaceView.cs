@@ -1021,9 +1021,12 @@ window.showWorkspaceInitializationFailure = function(message) {
                 .Default
                 .ShowUnapprovedLocalizations;
             Current?.FinishUiLanguageMenuItemClick(); // apply newly revealed/hidden localizations
-            // until L10nSharp changes to allow dynamic response to setting change
             Settings.Default.Save();
-            Program.RestartBloom(false);
+            // until L10nSharp changes to allow dynamic response to setting change
+            // Skip the restart at startup (no project loaded); CollectionChooserApi
+            // handles that case by reopening the dialog to refresh the language list.
+            if (Current != null)
+                Program.RestartBloom(false);
         }
 
         /// <summary>
