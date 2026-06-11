@@ -1,0 +1,22 @@
+name: run-devin
+
+# Fires when a PR is opened and again whenever a new commit is pushed to it
+# (synchronize). GitHub runners are headless, so we can't literally "open" a
+# page in a browser; instead we send an HTTP request to the equivalent
+# devinreview.com URL, which is the actionable equivalent.
+on:
+    pull_request:
+        types: [opened, synchronize]
+
+jobs:
+    open-devin-review:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Hit the devinreview.com URL for this PR
+              env:
+                  # The PR's URL on github.com, e.g. https://github.com/owner/repo/pull/123
+                  PR_URL: ${{ github.event.pull_request.html_url }}
+              run: |
+                  DEVIN_URL="${PR_URL/github.com/devinreview.com}"
+                  echo "Opening: $DEVIN_URL"
+                  curl --fail --silent --show-error --location "$DEVIN_URL"
