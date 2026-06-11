@@ -416,7 +416,7 @@ const startDevServerOnPort = (port) =>
                 sawInitialBuild = true;
             }
 
-            if (logTail.includes("Watching appearance migration files...")) {
+            if (logTail.includes("Watching for changes:")) {
                 sawWatchersStarted = true;
             }
 
