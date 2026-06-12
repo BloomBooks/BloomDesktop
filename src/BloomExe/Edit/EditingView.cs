@@ -942,8 +942,6 @@ namespace Bloom.Edit
             return true;
         }
 
-        private string _gifDirectory; // Todo: worth saving this as a UserPrefs? Or can/should we use the same one as for images?
-
         public void OnChangeImage(
             string imageId,
             UrlPathString imageSrc,
@@ -961,8 +959,9 @@ namespace Bloom.Edit
                 using (
                     var dlg = new BloomOpenFileDialog
                     {
-                        InitialDirectory =
-                            _gifDirectory ?? Environment.SpecialFolder.MyPictures.ToString(),
+                        InitialDirectory = Environment.GetFolderPath(
+                            Environment.SpecialFolder.MyPictures
+                        ),
                         Filter = "gif|*.gif",
                     }
                 )

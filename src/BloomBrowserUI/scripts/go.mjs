@@ -17,7 +17,11 @@ const viteHealthTimeoutMs = 15000;
 const viteHealthPollMs = 250;
 const maxRandomVitePortAttempts = 10;
 const gracefulShutdownMs = 1500;
-const toViteOrigin = (port) => `http://localhost:${port}`;
+// Probe both loopback families: Vite may bind only IPv6 (::1) on some machines,
+// and Node's fetch resolves "localhost" to IPv4 (127.0.0.1) first, so a
+// localhost-only probe can spuriously report Vite as unreachable.
+const viteLoopbackHosts = ["127.0.0.1", "[::1]"];
+const toViteOrigin = (host, port) => `http://${host}:${port}`;
 
 const parsePositiveInteger = (value) => {
     const parsed = Number.parseInt(value, 10);
@@ -216,14 +220,23 @@ const pickRandomAvailablePort = () =>
     });
 
 const isViteClientReachable = async (port) => {
-    try {
-        const response = await fetch(`${toViteOrigin(port)}/@vite/client`, {
-            signal: AbortSignal.timeout(500),
-        });
-        return response.ok;
-    } catch {
-        return false;
+    for (const host of viteLoopbackHosts) {
+        try {
+            const response = await fetch(
+                `${toViteOrigin(host, port)}/@vite/client`,
+                {
+                    signal: AbortSignal.timeout(500),
+                },
+            );
+            if (response.ok) {
+                return true;
+            }
+        } catch {
+            // Try the next loopback host before giving up.
+        }
     }
+
+    return false;
 };
 
 const waitForViteClient = async (port, timeoutMs) => {
@@ -416,7 +429,7 @@ const startDevServerOnPort = (port) =>
                 sawInitialBuild = true;
             }
 
-            if (logTail.includes("Watching appearance migration files...")) {
+            if (logTail.includes("Watching for changes:")) {
                 sawWatchersStarted = true;
             }
 

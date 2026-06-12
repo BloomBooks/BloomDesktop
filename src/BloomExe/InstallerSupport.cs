@@ -81,7 +81,7 @@ namespace Bloom
             return _updateTableLookupResult;
         }
 
-        class logger : IVelopackLogger
+        class VelopackLoggerAdapter : IVelopackLogger
         {
             public void Log(VelopackLogLevel logLevel, string message, Exception exception)
             {
@@ -102,7 +102,7 @@ namespace Bloom
         /// <returns>false if there is a problem, and Bloom should not continue to start up.</returns>
         internal static bool HandleVelopackStartup(string[] commandLineArgs)
         {
-            var log = new logger();
+            var log = new VelopackLoggerAdapter();
             VelopackApp
                 .Build()
                 .SetLogger(log)

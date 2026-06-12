@@ -47,7 +47,6 @@ namespace Bloom.Edit
         private EditingView _view;
         private List<ContentLanguage> _contentLanguages;
         private IPage _previouslySelectedPage;
-        private bool _inProcessOfDeleting;
         private BloomServer _server;
         private readonly BloomWebSocketServer _webSocketServer;
         internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
@@ -73,10 +72,9 @@ namespace Bloom.Edit
         /// </summary>
         public static bool IsTextSelected;
 
-        // these 3 are used as part of automatically re-rerendering a page when a developer changes something in the supporting files
+        // these 2 are used as part of automatically re-rerendering a page when a developer changes something in the supporting files
         private FileSystemWatcher _developerFileWatcher;
         private DateTime _lastTimeWeReloadedBecauseOfDeveloperChange;
-        private bool _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles;
 
         //public event EventHandler UpdatePageList;
 
@@ -538,7 +536,6 @@ namespace Bloom.Edit
                 // If this happens, just abort the delete.
                 return;
             }
-            _inProcessOfDeleting = true;
             SaveThen(
                 () =>
                 {
@@ -558,10 +555,6 @@ namespace Bloom.Edit
                             "Could not delete that page. Try quiting Bloom, run it again, and then attempt to delete the page again. And please click 'details' below and report this to us."
                         );
                         return page.Id; // stay on this page.
-                    }
-                    finally
-                    {
-                        _inProcessOfDeleting = false;
                     }
                 },
                 () => { }, // wrong state, do nothing
@@ -922,7 +915,6 @@ namespace Bloom.Edit
 
             if (page != null)
                 _view.GoToPage(page);
-            _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles = false;
             if (_view != null)
             {
                 _view.UpdatePageList(false);
@@ -980,7 +972,7 @@ namespace Bloom.Edit
                     PageSelectModelChangesComplete?.Invoke(this, EventArgs.Empty);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // It's very important that we succeed in navigating to SOME page; otherwise, we may well be left
                 // in a state where the page UI isn't fully set up, and the state machine is in the SavedAndStripped
@@ -1639,15 +1631,15 @@ namespace Bloom.Edit
                     );
                 }
             }
-            catch (ObjectDisposedException err) // in case even calling CanUpdate gave an error
+            catch (ObjectDisposedException) // in case even calling CanUpdate gave an error
             {
                 Logger.WriteEvent("Error: SaveNow() found that this book was disposed.");
-                throw err;
+                throw;
             }
-            catch (Exception err) // in case even calling CanUpdate gave an error
+            catch (Exception) // in case even calling CanUpdate gave an error
             {
                 Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
-                throw err;
+                throw;
             }
             //OK, looks safe, time to save.
             var editedDom = new HtmlDom(docFromBrowser);
@@ -2141,8 +2133,6 @@ namespace Bloom.Edit
                             // Because BringBookUpToDate will have changed page id's, we need to rebuild the page
                             // list else the next time you click on one, that page won't be found.
                             _view.UpdatePageList(true);
-                            // And also, when you click on another page, if we try to save the current page, it won't be found.
-                            _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles = true;
                             _view.Refresh();
 
                             _pageSelection.SelectPage(

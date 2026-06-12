@@ -175,8 +175,6 @@ namespace Bloom.Spreadsheet
             return _spreadsheet;
         }
 
-        private bool _reportedImageDescription;
-
         private void AddContentRows(
             SafeXmlElement page,
             string pageNumber,
