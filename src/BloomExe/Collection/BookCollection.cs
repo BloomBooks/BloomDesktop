@@ -432,13 +432,35 @@ namespace Bloom.Collection
                 // Mar 2025: I think this is no longer a problem, because the BookInfo constructor fully loads
                 // AppearanceSettings. Not sure, so I'm leaving this code here, but I've made another exception,
                 // because it's bad to use the selection BookInfo if it has the wrong SaveContext.
-                var bookInfo =
+                var reusableSelectionInfo =
                     (
                         folderPath == _bookSelection.CurrentSelection?.FolderPath
                         && _bookSelection.CurrentSelection.BookInfo.SaveContext == sc
                     )
                         ? _bookSelection.CurrentSelection.BookInfo
-                        : new BookInfo(folderPath, editable, sc);
+                        : null;
+                // If an external tool (e.g. BloomBridge via external/update-book +
+                // process-book) has overwritten this folder on disk with a *different* book — one whose
+                // bookInstanceId no longer matches the selected book we have in memory — then reusing the
+                // selection's BookInfo would keep the stale id and hide the new book's identity from the
+                // collection. The on-disk id is what callers look the book up by, so a rescan that still
+                // reports the old id makes the new book unfindable (this is what made external/process-book
+                // fail with "could not find a book with id ..." on a re-import). Only reuse the selection's
+                // BookInfo when its id still matches what's on disk; otherwise read fresh. (A missing/unreadable
+                // meta.json leaves the id as-is, preserving the previous reuse behavior.)
+                // NOTE: BookMetaData.FromFolder is not a pure read — on a corrupt-but-recoverable meta.json
+                // it can restore from backup (delete/move) and can throw (IOException / FileException). Both
+                // are intentionally handled by the catch below, which degrades to an ErrorBookInfo just as a
+                // throwing `new BookInfo(...)` would, so don't "optimize" this assuming it only reads.
+                if (
+                    reusableSelectionInfo != null
+                    && (BookMetaData.FromFolder(folderPath)?.Id ?? reusableSelectionInfo.Id)
+                        != reusableSelectionInfo.Id
+                )
+                {
+                    reusableSelectionInfo = null;
+                }
+                var bookInfo = reusableSelectionInfo ?? new BookInfo(folderPath, editable, sc);
                 bookInfo.ThumbnailLabel = bookInfo.GetBestDisplayTitle(
                     _collectionSettings,
                     _bookSelection.CurrentSelection

@@ -103,6 +103,7 @@ export interface IPageFrameExports {
 import {
     getBodyContentForSavePage,
     requestPageContent,
+    captureContentForExternalProcessing,
     userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
@@ -121,6 +122,7 @@ import { showGamePromptDialog } from "./toolbox/games/GameTool";
 export {
     getBodyContentForSavePage,
     requestPageContent,
+    captureContentForExternalProcessing,
     userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
@@ -346,6 +348,12 @@ window["PasteImageCredits"] = () => {
 $(document).ready(() => {
     $("body").find("*[data-i18n]").localize();
     bootstrap();
+    // Step 1 of the off-screen page-capture handshake (see __bloomEditablePageReady in the
+    // `declare global` block below): bootstrap()/SetupElements() has now run, so the synchronous
+    // load-time DOM fix-ups (image sizing, canvas-element layout, etc.) are in place and it is safe
+    // for the off-screen book processor to proceed to capture. Harmless no-op in the live editor,
+    // which never reads this flag.
+    window.__bloomEditablePageReady = true;
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message
@@ -365,6 +373,7 @@ export function SayHello() {
 // NOTE: Keep this as a minimal curated surface: only expose functions intentionally callable cross-frame.
 interface EditablePageBundleApi {
     requestPageContent: typeof requestPageContent;
+    captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
     getBodyContentForSavePage: typeof getBodyContentForSavePage;
     userStylesheetContent: typeof userStylesheetContent;
     pageUnloading: typeof pageUnloading;
@@ -404,11 +413,41 @@ interface EditablePageBundleApi {
 declare global {
     interface Window {
         editablePageBundle: EditablePageBundleApi;
+        // ── Off-screen page-capture handshake (C# BookProcessor ⇆ this bundle) ──────────────────
+        // The "process-book" feature (external/process-book API, used by BloomBridge to run
+        // finished books through Bloom's browser-only page fix-ups) re-saves every page of a book
+        // WITHOUT opening the live editor. For each page, C# loads it into a throwaway, off-screen
+        // WebView2 and runs this three-step handshake against the two globals below:
+        //
+        //   1. C# polls window.__bloomEditablePageReady until it is true. We set it (once, in
+        //      $(document).ready below) the moment bootstrap()/SetupElements() has applied the
+        //      synchronous load-time DOM fix-ups (image sizing, canvas-element layout, ...).
+        //   2. C# calls editablePageBundle.captureContentForExternalProcessing() (defined in
+        //      bloomEditing.ts). That waits for any in-flight async DOM work to settle, then stashes
+        //      the finished page onto window.__bloomExternalPageContent.
+        //   3. C# polls window.__bloomExternalPageContent until it is non-empty and reads it back.
+        //
+        // Why globals + polling, rather than posting to the editView/pageContent API the way the live
+        // editor's requestPageContent() does:
+        //   - That API feeds the live EditingModel; reusing it off-screen would corrupt the real
+        //     editor's state. We want the same page-cleanup output, delivered out-of-band.
+        //   - C#'s JS runner on this path (RunJavascriptWithStringResult_Sync_Dangerous) is
+        //     synchronous, so it can't directly await the capture function's internal async settle.
+        //     A plain window field it can poll is the simplest bridge.
+        // This looks fragile (two magic globals) but is well-contained: exactly one writer (the
+        // capture fn) and one reader (BookProcessor), and every page gets its own fresh disposable
+        // browser, so there is no stale-value or cross-page-bleed risk.
+        //
+        // Step 1's flag: set in $(document).ready below; read in BookProcessor.ProcessPage.
+        __bloomEditablePageReady?: boolean;
+        // Step 2/3's mailbox: the combined "body<SPLIT-DATA>userCss" string, or "ERROR: <message>".
+        __bloomExternalPageContent?: string;
     }
 }
 
 window.editablePageBundle = {
     requestPageContent,
+    captureContentForExternalProcessing,
     getBodyContentForSavePage,
     userStylesheetContent,
     pageUnloading,
