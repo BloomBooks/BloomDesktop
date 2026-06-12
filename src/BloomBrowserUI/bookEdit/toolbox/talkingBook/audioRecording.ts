@@ -69,6 +69,7 @@ import {
 } from "../../../react_components/featureStatus";
 import { animateStyleName } from "../../../utils/shared";
 import jQuery from "jquery";
+import { AudioTextHighlightManager } from "./audioTextHighlightManager";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -207,6 +208,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     private playbackOrderCache: IPlaybackOrderInfo[] = [];
     private disablingOverlay: HTMLDivElement;
+    private audioTextHighlightManager = new AudioTextHighlightManager();
 
     constructor(maySetHighlight: boolean = true) {
         this.audioSplitButton = <HTMLButtonElement>(
@@ -898,6 +900,10 @@ export default class AudioRecording implements IAudioRecorder {
         if (pageDocBody) {
             this.removeAudioCurrent(pageDocBody);
         }
+
+        this.audioTextHighlightManager.clearAllManagedHighlights(
+            pageDocBody ?? undefined,
+        );
     }
 
     private removeAudioCurrent(parentElement: Element) {
@@ -1002,7 +1008,9 @@ export default class AudioRecording implements IAudioRecorder {
         }
 
         if (oldElement === newElement && !forceRedisplay) {
-            // No need to do much, and better not to so we can avoid any temporary flashes as the highlight is removed and re-applied
+            // The current element is unchanged, so avoid tearing down and rebuilding anything in the DOM.
+            // We still need to refresh the custom-highlight pseudoelement state so yellow/split highlights stay in sync without a flash.
+            this.refreshAudioTextHighlights(newElement);
             return;
         }
 
@@ -1075,6 +1083,23 @@ export default class AudioRecording implements IAudioRecorder {
                 );
             }
         }
+
+        this.refreshAudioTextHighlights(newElement);
+    }
+
+    private refreshAudioTextHighlights(currentHighlight?: Element | null) {
+        const activeHighlight = currentHighlight ?? this.getCurrentHighlight();
+        const currentTextBox = activeHighlight
+            ? ((this.getTextBoxOfElement(
+                  activeHighlight,
+              ) as HTMLElement | null) ?? null)
+            : null;
+        // The manager keeps both the yellow current highlight and the blue post-split
+        // highlights in sync so callers do not need separate refresh paths.
+        this.audioTextHighlightManager.refreshHighlights(
+            activeHighlight,
+            currentTextBox,
+        );
     }
 
     // Scrolls an element into view.
@@ -1172,6 +1197,12 @@ export default class AudioRecording implements IAudioRecorder {
         }
 
         this.resetAudioIfPaused();
+        // According to copilot:
+        // Clear any split-complete state before rebuilding the current highlight.
+        // Otherwise the custom-highlight logic will still treat the textbox as "post split"
+        // and suppress the yellow current highlight we want to show as Speak starts.
+        this.clearAudioSplit();
+
         // If we were paused highlighting one sentence but are recording in text box mode,
         // things could get confusing. At least make sure the selection reflects what we
         // actually want to record.
@@ -1186,8 +1217,6 @@ export default class AudioRecording implements IAudioRecorder {
         this.recording = true;
 
         const id = this.getCurrentAudioId();
-
-        this.clearAudioSplit();
 
         return axios
             .post("/bloom/api/audio/startRecord?id=" + id)
@@ -2069,7 +2098,7 @@ export default class AudioRecording implements IAudioRecorder {
         this.updateDisplay();
     }
     private showPlaybackOrderUi(docBody: HTMLElement) {
-        this.removeAudioCurrent(docBody);
+        this.removeAudioCurrentFromPageDocBody();
         this.playbackOrderCache = [];
         const translationGroups = this.getVisibleTranslationGroups(docBody);
         if (translationGroups.length < 1) {
@@ -4412,6 +4441,7 @@ export default class AudioRecording implements IAudioRecorder {
         const currentTextBox = this.getCurrentTextBox();
         if (currentTextBox) {
             currentTextBox.classList.add("bloom-postAudioSplit");
+            this.refreshAudioTextHighlights(currentTextBox);
         }
     }
 
@@ -4421,6 +4451,10 @@ export default class AudioRecording implements IAudioRecorder {
             currentTextBox.classList.remove("bloom-postAudioSplit");
             currentTextBox.removeAttribute("data-audioRecordingEndTimes");
         }
+
+        this.audioTextHighlightManager.clearSplitHighlights(
+            currentTextBox ?? undefined,
+        );
     }
 
     private getElementsToUpdateForCursor(): (Element | null)[] {
@@ -4860,6 +4894,7 @@ export default class AudioRecording implements IAudioRecorder {
             }
         });
         this.nodesToRestoreAfterPlayEnded.clear();
+        this.refreshAudioTextHighlights();
     }
 }
 
