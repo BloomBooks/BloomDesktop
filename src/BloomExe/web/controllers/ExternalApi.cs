@@ -261,15 +261,20 @@ namespace Bloom.web.controllers
                 // keeps painting and this overlay (with its CSS spinner) stays visible/animated for
                 // the whole run. Pump a few events first so it actually appears before the heavy
                 // work (BringBookUpToDate) ties up the thread.
-                dynamic overlay = new DynamicJson();
-                overlay.message = "Bloom is processing a book for BloomBridge, please wait…";
-                BloomWebSocketServer.Instance?.SendBundle("externalProcessing", "show", overlay);
-                // The 'show' and the DoEvents/Sleep loop are inside this try so that an exception
-                // anywhere after 'show' (e.g. ThreadInterruptedException from Sleep, or a re-entrant
-                // handler throwing during DoEvents) still runs the finally and sends 'hide';
-                // otherwise the modal overlay would be stuck opaque until the user navigates away.
+                // The 'show', the DoEvents/Sleep spin-up loop, and the processing all run inside this
+                // try so that an exception anywhere after we raise the overlay (a re-entrant handler
+                // throwing during DoEvents, ThreadInterruptedException from Sleep, etc.) still runs the
+                // finally and sends 'hide'; otherwise the modal overlay would be stuck opaque until the
+                // user navigates away. (Sending 'hide' when 'show' never succeeded is a harmless no-op.)
                 try
                 {
+                    dynamic overlay = new DynamicJson();
+                    overlay.message = "Bloom is processing a book for BloomBridge, please wait…";
+                    BloomWebSocketServer.Instance?.SendBundle(
+                        "externalProcessing",
+                        "show",
+                        overlay
+                    );
                     for (var i = 0; i < 10; i++)
                     {
                         System.Windows.Forms.Application.DoEvents();
@@ -324,14 +329,45 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            // The book is processed off-screen and is never the selected book, so there is no live
-            // editor state to reconcile afterwards. isInEditableCollection:true + AlwaysEditSaveContext
-            // makes Book.IsSaveable true (Book.IsSaveable => IsInEditableCollection && BookInfo.IsSaveable),
-            // matching the semantics of the old flow where the book was first copied into the
-            // editable collection.
+            // Normally the path points at an off-screen staging folder that is NOT the selected book,
+            // so there's no live editor state to reconcile. But a caller could hand us the folder of the
+            // book currently open in the Edit tab; capture that now (before processing, which may rename
+            // the folder) so we can reload the editor afterward and not let it clobber what we wrote.
+            // isInEditableCollection:true + AlwaysEditSaveContext makes Book.IsSaveable true
+            // (Book.IsSaveable => IsInEditableCollection && BookInfo.IsSaveable), matching the semantics
+            // of the old flow where the book was first copied into the editable collection.
+            var selectedBeforeProcessing = _collectionModel.GetSelectedBookOrNull();
+            var processingSelectedBook =
+                selectedBeforeProcessing != null
+                && AreSameFolder(selectedBeforeProcessing.FolderPath, folderPath);
+
             var bookInfo = new BookInfo(folderPath, true, new AlwaysEditSaveContext());
             var book = _bookServer.GetBookFromBookInfo(bookInfo);
             var pageCount = BookProcessor.ProcessBook(book, fitImageTextSplits);
+
+            // If the folder we just rewrote is the book currently open in the Edit tab, the live
+            // EditingModel still holds the pre-processed in-memory DOM; the next time the user leaves the
+            // Edit tab, OnTabAboutToChange would Save() it and silently overwrite what we just wrote.
+            // Discard those in-memory edits and reload from disk, then refresh the collection's view of
+            // it. This mirrors HandleProcessBookById. It only reconciles in-memory UI state, so a failure
+            // here is logged but does NOT fail the request (the disk output is already correct).
+            if (processingSelectedBook)
+            {
+                try
+                {
+                    _editingModel.ReloadCurrentBookDiscardingEdits();
+                    _collectionModel.ReloadEditableCollection();
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteError(
+                        "external/process-book: book at "
+                            + folderPath
+                            + " was processed and saved, but the in-memory UI refresh afterward failed",
+                        e
+                    );
+                }
+            }
 
             // Saving may have renamed the folder to match the book's title, so report the final
             // location the client should read its output from.
@@ -342,6 +378,32 @@ namespace Bloom.web.controllers
                     bookFolderPath = book.FolderPath,
                     htmPath = book.GetPathHtmlFile(),
                 }
+            );
+        }
+
+        /// <summary>
+        /// True if the two paths refer to the same folder on disk (normalized, trailing separators and
+        /// case ignored — Windows file systems are case-insensitive). Used to tell whether a path-based
+        /// process-book is targeting the book currently open in the Edit tab.
+        /// </summary>
+        private static bool AreSameFolder(string a, string b)
+        {
+            if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b))
+                return false;
+            return string.Equals(
+                System
+                    .IO.Path.GetFullPath(a)
+                    .TrimEnd(
+                        System.IO.Path.DirectorySeparatorChar,
+                        System.IO.Path.AltDirectorySeparatorChar
+                    ),
+                System
+                    .IO.Path.GetFullPath(b)
+                    .TrimEnd(
+                        System.IO.Path.DirectorySeparatorChar,
+                        System.IO.Path.AltDirectorySeparatorChar
+                    ),
+                StringComparison.OrdinalIgnoreCase
             );
         }
 

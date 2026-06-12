@@ -141,17 +141,22 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Hand the OS foreground back to <paramref name="priorForeground"/> if it has moved away from
-        /// it (i.e. the off-screen browser stole it for Bloom). No-op if we never knew the prior window
-        /// or it still holds the foreground, so we don't gratuitously flip windows around. Restoring is
-        /// allowed here because, having just stolen it, Bloom is the current foreground process.
+        /// Hand the OS foreground back to <paramref name="priorForeground"/> if the off-screen browser
+        /// stole it for Bloom. No-op if we never knew the prior window or it still holds the foreground,
+        /// so we don't gratuitously flip windows around. Critically, we only restore when Bloom itself
+        /// currently holds the foreground: if some other application now holds it, the user has switched
+        /// away on purpose and we must not yank focus back out from under them.
         /// </summary>
         private static void RestoreForeground(IntPtr priorForeground)
         {
             if (priorForeground == IntPtr.Zero)
                 return;
-            if (ProcessExtra.GetForegroundWindow() != priorForeground)
-                ProcessExtra.SetForegroundWindow(priorForeground);
+            var currentForeground = ProcessExtra.GetForegroundWindow();
+            if (currentForeground == priorForeground)
+                return; // already where we want it
+            if (!ProcessExtra.IsWindowInCurrentProcess(currentForeground))
+                return; // user has moved on to another app; leave their choice alone
+            ProcessExtra.SetForegroundWindow(priorForeground);
         }
 
         // Write a process-book diagnostic line to BOTH the terminal (Bloom's stdout is piped to the

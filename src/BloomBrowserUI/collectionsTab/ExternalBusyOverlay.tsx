@@ -7,6 +7,7 @@ import {
     useSubscribeToWebSocketForObject,
 } from "../utils/WebSocketManager";
 import { kBloomBlue, kPanelBackground } from "../bloomMaterialUITheme";
+import { useL10n } from "../react_components/l10nHooks";
 
 // A modal "busy" dialog shown while Bloom is doing a long-running external operation
 // (currently external/process-book, which processes a book off-screen for ~20-30s). The C# side
@@ -24,22 +25,32 @@ import { kBloomBlue, kPanelBackground } from "../bloomMaterialUITheme";
 // painting and this dialog's CSS spinner keeps animating (it runs in the renderer process) for
 // the whole run.
 export const ExternalBusyOverlay: React.FunctionComponent = () => {
+    const [open, setOpen] = useState(false);
     const [message, setMessage] = useState<string | undefined>();
+
+    // Localized fallback shown if the C# side ever raises the overlay without supplying a message.
+    // Applied at render time (rather than captured in the websocket callback) so it reflects the
+    // localized value even though useL10n resolves asynchronously.
+    const defaultBusyMessage = useL10n(
+        "Bloom is busy, please wait…",
+        "Common.BloomIsBusy",
+    );
 
     useSubscribeToWebSocketForObject<{ message?: string }>(
         "externalProcessing",
         "show",
         (data) => {
-            setMessage(data.message ?? "Bloom is busy, please wait…");
+            setMessage(data.message);
+            setOpen(true);
         },
     );
     useSubscribeToWebSocketForEvent("externalProcessing", "hide", () => {
-        setMessage(undefined);
+        setOpen(false);
     });
 
     return (
         <Backdrop
-            open={message !== undefined}
+            open={open}
             css={css`
                 // Above everything else in the tab (MUI modals default to 1300).
                 z-index: 5000;
@@ -71,7 +82,7 @@ export const ExternalBusyOverlay: React.FunctionComponent = () => {
                         text-align: center;
                     `}
                 >
-                    {message}
+                    {message ?? defaultBusyMessage}
                 </div>
             </Paper>
         </Backdrop>

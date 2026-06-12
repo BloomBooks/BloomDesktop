@@ -27,6 +27,26 @@ namespace Bloom.ToPalaso
         [DllImport("user32.dll")]
         public static extern IntPtr GetForegroundWindow();
 
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        [DllImport("kernel32.dll")]
+        private static extern uint GetCurrentProcessId();
+
+        /// <summary>
+        /// True if the given window belongs to this (Bloom) process. Used to decide whether it is safe
+        /// to steal the OS foreground back: if Bloom currently holds it (e.g. an off-screen browser
+        /// grabbed it) we may restore the prior window, but if some other application now holds the
+        /// foreground the user has moved on and we must not yank focus away from them.
+        /// </summary>
+        public static bool IsWindowInCurrentProcess(IntPtr hWnd)
+        {
+            if (hWnd == IntPtr.Zero)
+                return false;
+            GetWindowThreadProcessId(hWnd, out uint processId);
+            return processId == GetCurrentProcessId();
+        }
+
         /// <summary>
         /// Safely start the process when the program code merely supplies the URL (or a command).
         /// </summary>
