@@ -7,7 +7,7 @@ import { Div } from "../../react_components/l10nComponents";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import StyleEditor from "./StyleEditor";
 import { useL10n } from "../../react_components/l10nHooks";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../utils/reactRender";
 import { ColorDisplayButton } from "../../react_components/color-picking/colorPickerDialog";
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import { NoteBox, WarningBox } from "../../react_components/boxes";
@@ -67,7 +67,7 @@ export function RenderCanvasElementRoot(
     const root = document.getElementById("canvasFormatPage");
     // This tab is deleted when we are not in a canvas element, so we need to check for its existence.
     if (root) {
-        ReactDOM.render(
+        renderRoot(
             <CanvasElementFormatPage
                 padding={padding ?? ""}
                 onPropsChanged={(padding) => changeProps(padding)}

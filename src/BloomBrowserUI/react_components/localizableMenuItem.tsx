@@ -13,7 +13,21 @@ import {
     TypographyPropsVariantOverrides,
 } from "@mui/material";
 import { OverridableStringUnion } from "@mui/types";
-import NestedMenuItem from "mui-nested-menu-item";
+import NestedMenuItemRaw from "mui-nested-menu-item";
+// Under @types/react 18, mui-nested-menu-item@1.2.6 incorrectly marks the inherited DOM
+// props placeholder/onPointerEnterCapture/onPointerLeaveCapture as *required*. They are
+// genuinely optional, so we relax them here rather than passing meaningless values.
+type NestedMenuItemRawProps = React.ComponentProps<typeof NestedMenuItemRaw>;
+const NestedMenuItem = NestedMenuItemRaw as React.ComponentType<
+    Omit<
+        NestedMenuItemRawProps,
+        "placeholder" | "onPointerEnterCapture" | "onPointerLeaveCapture"
+    > & {
+        placeholder?: string;
+        onPointerEnterCapture?: React.PointerEventHandler;
+        onPointerLeaveCapture?: React.PointerEventHandler;
+    }
+>;
 import CheckIcon from "@mui/icons-material/Check";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
@@ -53,6 +67,7 @@ interface IBaseLocalizableMenuItemProps {
 export interface INestedMenuItemProps extends IBaseLocalizableMenuItemProps {
     icon?: ReactNode;
     truncateMainLabel?: boolean;
+    children?: ReactNode;
 }
 
 export interface ILocalizableMenuItemProps
