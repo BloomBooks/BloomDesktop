@@ -2781,6 +2781,10 @@ export class CanvasElementManager {
         );
     }
 
+    public makeEditableAudioIndependent(editable: HTMLElement): void {
+        this.duplication.makeEditableAudioIndependent(editable);
+    }
+
     public startDraggingSplitter() {
         this.editingSuspension.startDraggingSplitter();
     }

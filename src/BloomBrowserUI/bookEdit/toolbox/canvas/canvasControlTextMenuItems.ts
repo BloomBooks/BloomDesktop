@@ -5,7 +5,8 @@
 
 import * as React from "react";
 import { default as CheckIcon } from "@mui/icons-material/Check";
-import { getString, postThatMightNavigate } from "../../../utils/bloomApi";
+import { get, postThatMightNavigate } from "../../../utils/bloomApi";
+import { wrapWithRequestPageContentDelay } from "../../js/bloomEditing";
 import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { IControlContext, IControlMenuCommandRow } from "./canvasControlTypes";
 
@@ -138,6 +139,53 @@ function clearFieldTypeClasses(translationGroup: HTMLElement): void {
             );
         });
     });
+}
+
+function applyEditableAudioIdentityFromDataBookValue(
+    editable: HTMLElement,
+    dataBookValue: {
+        id?: string;
+        dataAudioRecordingMode?: string;
+        dataDuration?: string;
+        dataAudioRecordingEndTimes?: string;
+        recordingMd5?: string;
+        hasAudioSentenceClass?: boolean;
+        hasBloomPostAudioSplitClass?: boolean;
+    },
+) {
+    const syncAttribute = (attributeName: string, value?: string) => {
+        if (value) {
+            editable.setAttribute(attributeName, value);
+        } else {
+            editable.removeAttribute(attributeName);
+        }
+    };
+
+    if (dataBookValue.id) {
+        editable.setAttribute("id", dataBookValue.id);
+    }
+
+    syncAttribute(
+        "data-audiorecordingmode",
+        dataBookValue.dataAudioRecordingMode,
+    );
+    syncAttribute("data-duration", dataBookValue.dataDuration);
+    syncAttribute(
+        "data-audiorecordingendtimes",
+        dataBookValue.dataAudioRecordingEndTimes,
+    );
+    syncAttribute("recordingmd5", dataBookValue.recordingMd5);
+
+    if (dataBookValue.hasAudioSentenceClass) {
+        editable.classList.add("audio-sentence");
+    } else {
+        editable.classList.remove("audio-sentence");
+    }
+    if (dataBookValue.hasBloomPostAudioSplitClass) {
+        editable.classList.add("bloom-postAudioSplit");
+    } else {
+        editable.classList.remove("bloom-postAudioSplit");
+    }
 }
 
 export function makeLanguageMenuItem(
@@ -283,6 +331,9 @@ export function makeFieldTypeMenuItem(
                     translationGroup.getElementsByClassName("bloom-editable"),
                 ).forEach((editable) => {
                     const htmlEditable = editable as HTMLElement;
+                    getCanvasElementManager()?.makeEditableAudioIndependent(
+                        htmlEditable,
+                    );
                     htmlEditable.removeAttribute("data-book");
                     htmlEditable.removeAttribute("data-derived");
                 });
@@ -302,6 +353,7 @@ export function makeFieldTypeMenuItem(
                 if (!translationGroup) {
                     return;
                 }
+                const fieldTypeChanged = activeType !== fieldType.dataBook;
                 clearFieldTypeClasses(translationGroup);
                 const editables = Array.from(
                     translationGroup.getElementsByClassName("bloom-editable"),
@@ -333,29 +385,58 @@ export function makeFieldTypeMenuItem(
                     return;
                 }
 
-                translationGroup.classList.add(...fieldType.classes);
-                editables.forEach((editable) => {
-                    editable.classList.add(...fieldType.editableClasses);
-                    editable.removeAttribute("data-derived");
-                    editable.setAttribute("data-book", fieldType.dataBook);
-                    if (
-                        editable.classList.contains(
-                            "bloom-visibility-code-on",
-                        ) &&
-                        fieldType.dataBook
-                    ) {
-                        getString(
-                            `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${fieldType.dataBook}`,
-                            (content) => {
-                                const temp = document.createElement("div");
-                                temp.innerHTML = content || "";
-                                if (temp.textContent.trim() !== "") {
-                                    editable.innerHTML = content;
-                                }
-                            },
-                        );
+                // Wrap to prevent saving an incompletely modified page
+                // while the async getDataBookValue request is in flight.
+                void wrapWithRequestPageContentDelay(async () => {
+                    translationGroup.classList.add(...fieldType.classes);
+                    for (const editable of editables) {
+                        editable.classList.add(...fieldType.editableClasses);
+                        editable.removeAttribute("data-derived");
+                        editable.setAttribute("data-book", fieldType.dataBook);
+                        if (
+                            editable.classList.contains(
+                                "bloom-visibility-code-on",
+                            ) &&
+                            fieldType.dataBook
+                        ) {
+                            await new Promise<void>((resolve) => {
+                                get(
+                                    `editView/getDataBookValue?lang=${editable.getAttribute("lang")}&dataBook=${fieldType.dataBook}`,
+                                    (result) => {
+                                        const response = result.data;
+                                        const content = response.content;
+                                        const temp =
+                                            document.createElement("div");
+                                        temp.innerHTML = content || "";
+                                        const keptExistingContent =
+                                            temp.textContent.trim() === "";
+                                        if (!keptExistingContent) {
+                                            editable.innerHTML = content;
+                                            applyEditableAudioIdentityFromDataBookValue(
+                                                editable,
+                                                response,
+                                            );
+                                        }
+                                        if (
+                                            fieldTypeChanged &&
+                                            keptExistingContent
+                                        ) {
+                                            getCanvasElementManager()?.makeEditableAudioIndependent(
+                                                editable,
+                                            );
+                                        }
+                                        resolve();
+                                    },
+                                    () => resolve(),
+                                );
+                            });
+                        } else if (fieldTypeChanged) {
+                            getCanvasElementManager()?.makeEditableAudioIndependent(
+                                editable,
+                            );
+                        }
                     }
-                });
+                }, "setCanvasFieldType");
             },
         });
     });
