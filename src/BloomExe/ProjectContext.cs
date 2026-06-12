@@ -872,6 +872,11 @@ namespace Bloom
                 // disposed. On the whole, I think it's best to clear the handlers first; that way,
                 // at least we avoid mysterious errors in the API handlers due to disposed objects.
                 server.ApiHandler.ClearProjectLevelHandlers();
+                // Clear the project-scoped collection settings we set on the application-level CommonApi
+                // (see constructor), so common/instanceInfo doesn't report stale collection info after the
+                // project is closed. A reload disposes this context before creating the next one, which
+                // sets it again, so clearing here is safe.
+                web.controllers.CommonApi.CurrentCollectionSettings = null;
                 _scope.Dispose();
             }
             finally

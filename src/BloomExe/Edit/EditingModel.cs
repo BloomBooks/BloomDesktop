@@ -437,6 +437,12 @@ namespace Bloom.Edit
                         }
                         if (reloadFromDiskInsteadOfSaving)
                         {
+                            // We reached the fallback because we couldn't take over the save (e.g. a
+                            // save was already in flight: we're in SavePending, waiting on the browser).
+                            // Tell that in-flight save to discard its content, so when it completes it
+                            // doesn't merge the edits we're throwing away and write them back over what
+                            // the external process just put on disk.
+                            StateMachine.DiscardInFlightSave();
                             CurrentBook?.ReloadFromDisk(null);
                             _currentlyDisplayedBook = null;
                         }

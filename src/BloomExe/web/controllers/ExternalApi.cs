@@ -614,16 +614,22 @@ namespace Bloom.web.controllers
                     bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
                 }
 
-                string title = bookInfo?.Title ?? bookInfo?.QuickTitleUserDisplay ?? "";
-                if (bookInfo != null)
+                if (bookInfo == null)
                 {
-                    // GetBookFromBookInfo returns the current selection (already reloaded above) when this
-                    // is the selected book, otherwise a fresh Book read from disk; either way the thumbnail
-                    // reflects the new content.
-                    _collectionModel.UpdateThumbnailAsync(
-                        _collectionModel.GetBookFromBookInfo(bookInfo)
-                    );
+                    // Even after reloading the collection we cannot find a book with this id on disk.
+                    // The update did not land, so report failure rather than a false-positive
+                    // "Added/Updated" notification that would hide the real problem from the caller.
+                    request.Failed("external/update-book could not find a book with id " + id);
+                    return;
                 }
+
+                string title = bookInfo.Title ?? bookInfo.QuickTitleUserDisplay ?? "";
+                // GetBookFromBookInfo returns the current selection (already reloaded above) when this
+                // is the selected book, otherwise a fresh Book read from disk; either way the thumbnail
+                // reflects the new content.
+                _collectionModel.UpdateThumbnailAsync(
+                    _collectionModel.GetBookFromBookInfo(bookInfo)
+                );
 
                 // Intentionally NOT localized: this is a developer/operator-facing notification driven by
                 // an external automation tool. We include a timestamp and keep the toast up for a few

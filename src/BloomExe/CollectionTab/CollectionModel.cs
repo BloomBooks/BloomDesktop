@@ -256,8 +256,16 @@ namespace Bloom.CollectionTab
                     // first so we don't leave it pointing at a folder that's headed for the trash.
                     if (_bookSelection.CurrentSelection?.FolderPath == info.FolderPath)
                         _bookSelection.SelectBook(null);
-                    if (ConfirmRecycleDialog.Recycle(info.FolderPath))
-                        TheOneEditableCollection.HandleBookDeletedFromCollection(info.FolderPath);
+                    // Abort the import if we can't actually remove the existing copy. Continuing would
+                    // leave two books sharing incomingId, which breaks later id-based targeting (and is
+                    // the opposite of the intended replace). Recycle has already notified the user of the
+                    // underlying failure; the throw surfaces it to the external caller too.
+                    if (!ConfirmRecycleDialog.Recycle(info.FolderPath))
+                        throw new IOException(
+                            $"Could not recycle the existing book at \"{info.FolderPath}\" to replace it; "
+                                + "aborting import to avoid creating a duplicate book id."
+                        );
+                    TheOneEditableCollection.HandleBookDeletedFromCollection(info.FolderPath);
                 }
             }
 
