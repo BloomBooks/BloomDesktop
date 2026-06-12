@@ -80,7 +80,7 @@ namespace Bloom.Publish.Rab
         private readonly CollectionSettings _collectionSettings;
         private readonly BloomWebSocketServer _webSocketServer;
         private readonly IWebSocketProgress _progress;
-        private string _activeProgressAction;
+        private volatile string _activeProgressAction;
         private int _lastBuildProgressPercent;
         private string _lastLoggedProgressStage;
         private int? _lastLoggedProgressPercent;
@@ -379,6 +379,11 @@ namespace Bloom.Publish.Rab
                 TrackedBooks = trackedBooks,
                 TrackedBookTitles = trackedBooks.Select(book => book.Title).ToArray(),
                 PrepareSteps = prepareSteps,
+                ActiveAction = _activeProgressAction,
+                ActiveActionProgressStage =
+                    _activeProgressAction != null ? _lastLoggedProgressStage : null,
+                ActiveActionProgressPercent =
+                    _activeProgressAction != null ? (_lastLoggedProgressPercent ?? 0) : 0,
             };
 
             if (status.ProjectExists)
@@ -430,6 +435,26 @@ namespace Bloom.Publish.Rab
                 EstimatedAppOverheadBytes = kEstimatedAppOverheadBytes,
                 MaxAppSizeBytes = kMaxAppSizeBytes,
             };
+        }
+
+        /// <summary>
+        /// True while a prepare/build/install action is running on a background thread.
+        /// Used by <see cref="RabPublishApi"/> to reject duplicate invocations.
+        /// </summary>
+        internal bool IsActionInProgress => _activeProgressAction != null;
+
+        /// <summary>
+        /// Sends an "actionComplete" websocket event so the Apps screen knows when a background
+        /// prepare/build/install has finished.  Called by RabPublishApi after ReportFailure (if
+        /// any) so the error message is logged before the UI tears down the progress subscriber.
+        /// </summary>
+        internal void SendActionCompleteEvent(string action, bool succeeded)
+        {
+            _webSocketServer.SendString(
+                kWebSocketContext,
+                RabPublishApi.kWebSocketEventId_ActionComplete,
+                $"{action}:{(succeeded ? "success" : "failure")}"
+            );
         }
 
         /// <summary>

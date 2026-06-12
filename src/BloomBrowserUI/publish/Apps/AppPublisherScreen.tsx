@@ -460,11 +460,7 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                         <Step expanded={true} completed={false}>
                             <StepLabel>
                                 <AppActionButton
-                                    enabled={
-                                        prepareIsReady &&
-                                        buildIsNeeded &&
-                                        canRunBuild
-                                    }
+                                    enabled={prepareIsReady && canRunBuild}
                                     l10nKey="PublishTab.Apps.Build"
                                     onClick={() =>
                                         screenState.runAction("build")

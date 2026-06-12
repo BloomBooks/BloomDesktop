@@ -12,6 +12,13 @@ namespace Bloom.Publish.Rab
         private const string kApiUrlPart = "publish/rab/";
         public const string kWebSocketContext = "publish-rab";
 
+        /// <summary>
+        /// WebSocket event id sent when a prepare/build/install action finishes.
+        /// The message payload is "{action}:success" or "{action}:failure"
+        /// (e.g. "build:success").
+        /// </summary>
+        public const string kWebSocketEventId_ActionComplete = "actionComplete";
+
         private readonly RabProjectService _rabProjectService;
 
         public RabPublishApi(RabProjectService rabProjectService)
@@ -25,10 +32,14 @@ namespace Bloom.Publish.Rab
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             // Keep the API layer thin: deserialize/route here and let RabProjectService own the workflow rules.
+
+            // Status and size reads don't need the sync lock — they're pure reads that can run
+            // concurrently with a background build without corrupting shared state.
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "status",
                 request => request.ReplyWithJson(_rabProjectService.GetStatus()),
-                true
+                false,
+                requiresSync: false
             );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "settings",
@@ -75,7 +86,8 @@ namespace Bloom.Publish.Rab
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "size-estimates",
                 request => request.ReplyWithJson(_rabProjectService.GetSizeEstimates()),
-                true
+                false,
+                requiresSync: false
             );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "reset-bloompub-cache",
@@ -95,54 +107,98 @@ namespace Bloom.Publish.Rab
                 },
                 true
             );
-            apiHandler.RegisterAsyncEndpointHandler(
+
+            // The three long-running actions (prepare, build, install) fire a background task and
+            // return immediately so the sync lock is not held for their entire duration.
+            // Progress updates arrive via the "publish-rab" websocket channel as before.
+            // Completion is signalled via the "actionComplete" websocket event.
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "prepare",
-                async request =>
-                    await RunRabOperationAsync(
-                        request,
-                        () => _rabProjectService.PrepareAsync(),
-                        "Prepare"
-                    ),
-                true
+                request =>
+                {
+                    if (_rabProjectService.IsActionInProgress)
+                    {
+                        request.Failed("A prepare/build/install action is already running.");
+                        return;
+                    }
+                    _ = Task.Run(async () =>
+                    {
+                        var succeeded = false;
+                        try
+                        {
+                            await _rabProjectService.PrepareAsync();
+                            succeeded = true;
+                        }
+                        catch (Exception error)
+                        {
+                            // ReportFailure logs to the progress channel first so the error
+                            // message lands in the ActionLogAccordion before the UI tears
+                            // down the subscription in response to "actionComplete".
+                            _rabProjectService.ReportFailure("Prepare", error);
+                        }
+                        _rabProjectService.SendActionCompleteEvent("prepare", succeeded);
+                    });
+                    request.PostSucceeded();
+                },
+                false,
+                requiresSync: false
             );
-            apiHandler.RegisterAsyncEndpointHandler(
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "build",
-                async request =>
-                    await RunRabOperationAsync(
-                        request,
-                        () => _rabProjectService.BuildAsync(),
-                        "Build"
-                    ),
-                true
+                request =>
+                {
+                    if (_rabProjectService.IsActionInProgress)
+                    {
+                        request.Failed("A prepare/build/install action is already running.");
+                        return;
+                    }
+                    _ = Task.Run(async () =>
+                    {
+                        var succeeded = false;
+                        try
+                        {
+                            await _rabProjectService.BuildAsync();
+                            succeeded = true;
+                        }
+                        catch (Exception error)
+                        {
+                            _rabProjectService.ReportFailure("Build", error);
+                        }
+                        _rabProjectService.SendActionCompleteEvent("build", succeeded);
+                    });
+                    request.PostSucceeded();
+                },
+                false,
+                requiresSync: false
             );
-            apiHandler.RegisterAsyncEndpointHandler(
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "install",
-                async request =>
-                    await RunRabOperationAsync(
-                        request,
-                        () => _rabProjectService.InstallAsync(),
-                        "Try on phone"
-                    ),
-                true
+                request =>
+                {
+                    if (_rabProjectService.IsActionInProgress)
+                    {
+                        request.Failed("A prepare/build/install action is already running.");
+                        return;
+                    }
+                    _ = Task.Run(async () =>
+                    {
+                        var succeeded = false;
+                        try
+                        {
+                            await _rabProjectService.InstallAsync();
+                            succeeded = true;
+                        }
+                        catch (Exception error)
+                        {
+                            _rabProjectService.ReportFailure("Try on phone", error);
+                        }
+                        _rabProjectService.SendActionCompleteEvent("install", succeeded);
+                    });
+                    request.PostSucceeded();
+                },
+                false,
+                requiresSync: false
             );
-        }
-
-        private async Task RunRabOperationAsync(
-            ApiRequest request,
-            Func<Task> operation,
-            string actionName
-        )
-        {
-            try
-            {
-                await operation();
-            }
-            catch (Exception error)
-            {
-                _rabProjectService.ReportFailure(actionName, error);
-            }
-
-            request.PostSucceeded();
         }
     }
 }
