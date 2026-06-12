@@ -10,12 +10,14 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionChoosing;
 using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.SafeXml;
+using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
@@ -350,8 +352,8 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "removeSourceFolder",
-                HandleRemoveSourceFolder,
+                kApiUrlPart + "openCollectionFolderInExplorer",
+                HandleOpenCollectionFolderInExplorer,
                 true
             );
             apiHandler.RegisterEndpointHandler(
@@ -373,6 +375,20 @@ namespace Bloom.web.controllers
                 {
                     request.ReplyWithText(_collectionModel.CurrentEditableCollection.Name);
                 },
+                false
+            );
+
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "getMostRecentlyUsedCollections",
+                HandleGetMostRecentlyUsedCollections,
+                false,
+                false
+            );
+
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "getUnpublishedCount",
+                HandleGetUnpublishedCount,
+                false,
                 false
             );
         }
@@ -397,20 +413,34 @@ namespace Bloom.web.controllers
 
         bool _updateAfterExplorerOpened;
 
-        private void HandleRemoveSourceFolder(ApiRequest request)
+        /// <summary>
+        /// Opens the folder containing a collection in the system file explorer.
+        /// Accepts either a .bloomCollection file path or a directory path.
+        /// Pass updateAfter=true as a query parameter to trigger a collection list refresh
+        /// after the explorer window is opened (used when the user may delete the folder).
+        /// </summary>
+        private void HandleOpenCollectionFolderInExplorer(ApiRequest request)
         {
-            var collectionFolderPath = request.RequiredPostString();
-            if (Directory.Exists(collectionFolderPath))
+            // path might be a .bloomCollection file or a directory
+            var path = request.RequiredPostString();
+            string collectionFolderPath;
+            if (RobustFile.Exists(path))
             {
-                request.PostSucceeded();
-                _updateAfterExplorerOpened = true;
-                ProcessExtra.SafeStartInFront(collectionFolderPath);
+                collectionFolderPath = Path.GetDirectoryName(path);
+            }
+            else if (Directory.Exists(path))
+            {
+                collectionFolderPath = path;
             }
             else
             {
                 request.Failed();
                 return;
             }
+            request.PostSucceeded();
+            if (request.Parameters["updateAfter"] == "true")
+                _updateAfterExplorerOpened = true;
+            ProcessExtra.SafeStartInFront(collectionFolderPath);
         }
 
         // Currently only used by Books on Blorg Progress Bar
@@ -964,6 +994,174 @@ namespace Bloom.web.controllers
         private Book.Book GetUpdatedBookObjectFromBookInfo(BookInfo info)
         {
             return _collectionModel.GetBookFromBookInfo(info);
+        }
+
+        /// <summary>
+        /// Returns a list of recently used and locally available collections for display
+        /// in the collection chooser dialog.
+        /// </summary>
+        private void HandleGetMostRecentlyUsedCollections(ApiRequest request)
+        {
+            var collections = new List<dynamic>();
+
+            const int maxMruItems = 9;
+            var collectionsToShow = Settings.Default.MruProjects.Paths.Take(maxMruItems).ToList();
+
+            // Always include the MRU items first.
+            collections.AddRange(collectionsToShow.Select(path => MakeCollectionInfoObject(path)));
+
+            // If there are fewer MRU items than the max, fill remaining slots with collections
+            // discovered in the default directory, ordered most-recently-modified first
+            // (matching the Reverse().Take() pattern from the old OpenCreateCloneControl logic).
+            if (
+                collectionsToShow.Count < maxMruItems
+                && Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections)
+            )
+            {
+                collections.AddRange(
+                    Directory
+                        .GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
+                        .Select(d =>
+                            //Avoiding use of Path.ChangeExtension as it's just possible the collectionName could have a period.
+                            CollectionSettings.GetSettingsFilePath(d)
+                        )
+                        .Where(path => RobustFile.Exists(path) && !collectionsToShow.Contains(path))
+                        .OrderByDescending(path =>
+                            Directory.GetLastWriteTime(Path.GetDirectoryName(path))
+                        )
+                        .Take(maxMruItems - collectionsToShow.Count)
+                        .Select(MakeCollectionInfoObject)
+                );
+            }
+
+            request.ReplyWithJson(collections);
+        }
+
+        /// <summary>
+        /// Builds the JSON object returned per collection by getMostRecentlyUsedCollections.
+        /// Add new fields here as the collection chooser needs more information.
+        /// </summary>
+        private static dynamic MakeCollectionInfoObject(string collectionFilePath)
+        {
+            var folderPath = Path.GetDirectoryName(collectionFilePath);
+            var isTeamCollection = IsTeamCollectionFolder(folderPath);
+            var checkedOutCount = isTeamCollection
+                ? CountCheckedOutToCurrentUser(folderPath)
+                : (int?)null;
+            return new
+            {
+                path = collectionFilePath,
+                title = Path.GetFileNameWithoutExtension(collectionFilePath),
+                bookCount = CountBooksInCollection(folderPath),
+                isTeamCollection,
+                checkedOutCount,
+            };
+        }
+
+        /// <summary>
+        /// Returns true if the collection folder is a team collection, indicated by
+        /// the presence of a TeamCollectionLink.txt file.
+        /// </summary>
+        private static bool IsTeamCollectionFolder(string collectionFolderPath) =>
+            RobustFile.Exists(TeamCollectionManager.GetTcLinkPathFromLcPath(collectionFolderPath));
+
+        /// <summary>
+        /// Counts the books in a TC collection folder that are checked out to the current user.
+        /// This includes books whose TeamCollection.status file has lockedBy == currentUser,
+        /// and also books with no status file at all (local-only books that have never been
+        /// synced to the shared repo).
+        /// </summary>
+        private static int CountCheckedOutToCurrentUser(string collectionFolderPath)
+        {
+            var currentUser = TeamCollectionManager.CurrentUser;
+            if (string.IsNullOrEmpty(currentUser))
+                return 0;
+            return GetBookFolders(collectionFolderPath)
+                .Count(bookFolder =>
+                {
+                    var statusPath = Path.Combine(bookFolder, "TeamCollection.status");
+                    if (!RobustFile.Exists(statusPath))
+                        return true; // local-only book; belongs to the current user
+                    try
+                    {
+                        var status = BookStatus.FromJson(RobustFile.ReadAllText(statusPath));
+                        return status?.lockedBy == currentUser;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                });
+        }
+
+        /// <summary>
+        /// Counts the books in a collection folder using the same lightweight criteria
+        /// as BookCollection: a subdirectory that is not hidden, not xmatter, not
+        /// BloomIgnore'd, and contains at least one .htm file.
+        /// </summary>
+        /// <summary>
+        /// Returns the paths of all book folders in a collection folder (excluding xmatter,
+        /// hidden, and BloomIgnore'd folders).
+        /// </summary>
+        private static IEnumerable<string> GetBookFolders(string collectionFolderPath)
+        {
+            if (!Directory.Exists(collectionFolderPath))
+                return Array.Empty<string>();
+            return Directory
+                .GetDirectories(collectionFolderPath)
+                .Where(d => !Path.GetFileName(d).StartsWith("."))
+                .Where(d => !d.ToLowerInvariant().Contains("xmatter"))
+                .Where(d => !RobustFile.Exists(Path.Combine(d, "BloomIgnore.txt")))
+                .Where(d => Directory.GetFiles(d, "*.htm").Length > 0);
+        }
+
+        private static int CountBooksInCollection(string collectionFolderPath) =>
+            GetBookFolders(collectionFolderPath).Count();
+
+        /// <summary>
+        /// Returns the number of books in the given collection that have not been published to
+        /// BloomLibrary.org (i.e. not found on the server or found only as a draft). Requires a
+        /// network call to BloomLibrary, so this endpoint is called lazily per-card.
+        /// </summary>
+        private static void HandleGetUnpublishedCount(ApiRequest request)
+        {
+            var collectionFilePath = request.RequiredParam("collectionPath");
+            var folderPath = Path.GetDirectoryName(collectionFilePath);
+
+            var bookFolders = GetBookFolders(folderPath).ToList();
+            if (bookFolders.Count == 0)
+            {
+                request.ReplyWithJson(new { count = 0 });
+                return;
+            }
+
+            var bookInfos = bookFolders
+                .Select(f => new BookInfo(f, false, NoEditSaveContext.Singleton))
+                .ToList();
+
+            try
+            {
+                var apiClient = new BloomLibraryBookApiClient();
+                var statuses = apiClient.GetLibraryStatusForBooks(bookInfos);
+
+                // A book is "unpublished" if it has no entry on the server, or if its entry is
+                // marked as a draft (not yet publicly visible).
+                var unpublishedCount = bookInfos.Count(bi =>
+                    !statuses.TryGetValue(bi.Id, out var status) || status.Draft
+                );
+
+                request.ReplyWithJson(new { count = unpublishedCount });
+            }
+            catch (Exception e)
+            {
+                NonFatalProblem.Report(
+                    ModalIf.None,
+                    PassiveIf.All,
+                    "Error getting unpublished count for collection",
+                    exception: e
+                );
+                request.Failed("Could not reach BloomLibrary");
+            }
         }
     }
 }

@@ -562,6 +562,8 @@ export default defineConfig(async ({ command }) => {
         languageChooserBundle: "./collection/LanguageChooserDialog.tsx",
         newCollectionLanguageChooserBundle:
             "./collection/NewCollectionLanguageChooser.tsx",
+        collectionChooserBundle:
+            "./collection/CollectionChooserDialog.entry.tsx",
         registrationDialogBundle:
             "./react_components/registration/registrationDialog.tsx",
     };
