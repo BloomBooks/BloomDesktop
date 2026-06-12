@@ -28,6 +28,10 @@ function getOrCreateRoot(container: Element | DocumentFragment): Root {
 // same container reuses its Root, matching the old update-in-place behavior. The container
 // type allows null (as ReactDOM.render's did, since callers commonly pass
 // document.getElementById(...)); a null container fails fast with a clear error.
+//
+// Unlike React 17's ReactDOM.render, createRoot().render() mounts ASYNCHRONOUSLY: the DOM
+// is not populated by the time this returns. Callers that must read the mounted result
+// synchronously should use renderForInstance() (or wrap in act()/flushSync) instead.
 export function renderRoot(
     element: React.ReactNode,
     container: Element | DocumentFragment | null,
@@ -38,6 +42,12 @@ export function renderRoot(
 
 // Drop-in replacement for ReactDOM.unmountComponentAtNode(container). Returns true if a
 // root was found and unmounted, like the old API returned whether a component was unmounted.
+// Deleting the WeakMap entry here lets a later renderRoot() create a fresh Root for the same
+// container. Note: we only learn a Root is dead through this explicit unmount. If React were
+// to tear a Root down on its own (e.g. an error escaping every error boundary), our cached
+// entry would go stale and a later renderRoot() would .render() into a dead Root, which React
+// 18 silently no-ops. That path requires an unhandled boundary error; flagged here as a
+// debugging hint rather than guarded, since Root exposes no "is unmounted" check.
 export function unmountRoot(
     container: Element | DocumentFragment | null,
 ): boolean {

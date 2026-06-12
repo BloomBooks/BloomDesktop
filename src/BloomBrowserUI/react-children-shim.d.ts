@@ -13,6 +13,12 @@
 // them, giving up a type-safety improvement React 18 introduced. The plan is to
 // unwind it during the React 19 upgrade by deleting this file and declaring
 // explicit `children` props on the components that actually take children.
+//
+// As a head start on that, ~25 components that read props.children internally
+// already declare `children?: React.ReactNode` explicitly. Those declarations are
+// redundant while this shim is in place, but are the forward-compatible pattern:
+// when the shim is deleted, only the components still lacking such a declaration
+// will surface as errors, which is exactly the to-do list for finishing the job.
 
 import type * as React from "react";
 

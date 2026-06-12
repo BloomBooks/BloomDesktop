@@ -17,6 +17,8 @@ import NestedMenuItemRaw from "mui-nested-menu-item";
 // Under @types/react 18, mui-nested-menu-item@1.2.6 incorrectly marks the inherited DOM
 // props placeholder/onPointerEnterCapture/onPointerLeaveCapture as *required*. They are
 // genuinely optional, so we relax them here rather than passing meaningless values.
+// TODO: remove this cast once mui-nested-menu-item ships a build with corrected types
+// (verified needed against mui-nested-menu-item@1.2.6); then use NestedMenuItemRaw directly.
 type NestedMenuItemRawProps = React.ComponentProps<typeof NestedMenuItemRaw>;
 const NestedMenuItem = NestedMenuItemRaw as React.ComponentType<
     Omit<
