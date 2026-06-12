@@ -68,5 +68,11 @@ export function renderForInstance<T>(
     } as any);
     const root = getOrCreateRoot(container);
     flushSync(() => root.render(elementWithRef));
+    if (!instance) {
+        throw new Error(
+            "renderForInstance: ref was not populated after flushSync. " +
+                "Ensure the element is a class component (function components require forwardRef).",
+        );
+    }
     return instance;
 }
