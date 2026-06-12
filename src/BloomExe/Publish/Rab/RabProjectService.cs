@@ -80,7 +80,7 @@ namespace Bloom.Publish.Rab
         private readonly CollectionSettings _collectionSettings;
         private readonly BloomWebSocketServer _webSocketServer;
         private readonly IWebSocketProgress _progress;
-        private string _activeProgressAction;
+        private volatile string _activeProgressAction;
         private int _lastBuildProgressPercent;
         private string _lastLoggedProgressStage;
         private int? _lastLoggedProgressPercent;
@@ -379,6 +379,11 @@ namespace Bloom.Publish.Rab
                 TrackedBooks = trackedBooks,
                 TrackedBookTitles = trackedBooks.Select(book => book.Title).ToArray(),
                 PrepareSteps = prepareSteps,
+                ActiveAction = _activeProgressAction,
+                ActiveActionProgressStage =
+                    _activeProgressAction != null ? _lastLoggedProgressStage : null,
+                ActiveActionProgressPercent =
+                    _activeProgressAction != null ? (_lastLoggedProgressPercent ?? 0) : 0,
             };
 
             if (status.ProjectExists)
@@ -433,6 +438,19 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
+        /// Sends an "actionComplete" websocket event so the Apps screen knows when a background
+        /// prepare/build/install has finished.  Called from the finally block of each action.
+        /// </summary>
+        private void SendActionCompleteEvent(string action, bool succeeded)
+        {
+            _webSocketServer.SendString(
+                kWebSocketContext,
+                RabPublishApi.kWebSocketEventId_ActionComplete,
+                $"{action}:{(succeeded ? "success" : "failure")}"
+            );
+        }
+
+        /// <summary>
         /// Reports an App Builder failure to Bloom's log and the progress channel used by the Apps screen.
         /// </summary>
         public void ReportFailure(string action, Exception error)
@@ -450,6 +468,7 @@ namespace Bloom.Publish.Rab
         {
             var paths = GetPaths();
             _activeProgressAction = "prepare";
+            var succeeded = false;
             try
             {
                 ReportProgressStage("checking-installer", 0);
@@ -544,10 +563,12 @@ namespace Bloom.Publish.Rab
                 ReportProgressStage("complete", 100);
                 _progress.MessageWithoutLocalizing("Prepare complete.", ProgressKind.Heading);
                 _progress.MessageWithoutLocalizing($"Project file: {existingProjectPath}");
+                succeeded = true;
             }
             finally
             {
                 _activeProgressAction = null;
+                SendActionCompleteEvent("prepare", succeeded);
             }
         }
 
@@ -655,6 +676,7 @@ namespace Bloom.Publish.Rab
             EnsureWorkspaceFolders(paths);
             _activeProgressAction = "build";
             _lastBuildProgressPercent = 0;
+            var succeeded = false;
             try
             {
                 ReportProgressStage("preparing-build", 0);
@@ -735,10 +757,12 @@ namespace Bloom.Publish.Rab
                 );
                 state.LastBuiltApkPath = apkPath;
                 SaveState(paths, state);
+                succeeded = true;
             }
             finally
             {
                 _activeProgressAction = null;
+                SendActionCompleteEvent("build", succeeded);
             }
         }
 
@@ -747,6 +771,7 @@ namespace Bloom.Publish.Rab
             // Install re-reads package/app metadata from the project so launching uses the same identity that was built.
             var paths = GetPaths();
             _activeProgressAction = "install";
+            var succeeded = false;
             try
             {
                 var apkPath = FindLatestApkPath(paths);
@@ -825,10 +850,12 @@ namespace Bloom.Publish.Rab
                     $"Install complete. Opened {appName} on {device.DisplayName}.",
                     ProgressKind.Heading
                 );
+                succeeded = true;
             }
             finally
             {
                 _activeProgressAction = null;
+                SendActionCompleteEvent("install", succeeded);
             }
         }
 

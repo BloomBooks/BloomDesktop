@@ -1,5 +1,11 @@
 import * as React from "react";
-import { get, getWithPromise, postData, postJson } from "../../utils/bloomApi";
+import {
+    get,
+    getWithPromise,
+    post,
+    postData,
+    postJson,
+} from "../../utils/bloomApi";
 import {
     IBloomWebSocketProgressEvent,
     useSubscribeToWebSocketForEvent,
@@ -16,6 +22,7 @@ import {
     IAppBuilderStatusApi,
     IAppBuilderSizeEstimatesApi,
     kAppBuilderWebSocketContext,
+    kAppBuilderActionCompleteEventId,
     normalizeSizeEstimates,
     normalizeStatus,
     AppBuilderAction,
@@ -158,6 +165,27 @@ export function useAppBuilderPublisherScreen(
                 statusRetryTimeoutRef.current = undefined;
             }
             setStatus(nextStatus);
+            // If the backend reports an action is running but we have no local busyAction
+            // (e.g. after a remount mid-build), restore the action and its last-known progress
+            // so the indicator appears immediately without waiting for a websocket event.
+            if (nextStatus.activeAction) {
+                const isRestoringFromBlank = !busyActionRef.current;
+                setBusyAction(
+                    (current) =>
+                        current ??
+                        (nextStatus.activeAction as AppBuilderAction),
+                );
+                if (isRestoringFromBlank) {
+                    if (nextStatus.activeActionProgressStage) {
+                        setProgressStageCode(
+                            nextStatus.activeActionProgressStage,
+                        );
+                    }
+                    setProgressPercent(
+                        nextStatus.activeActionProgressPercent ?? 0,
+                    );
+                }
+            }
 
             if (initializeSettingsAfterPrepare && nextStatus.appDefPath) {
                 const initializedSettings = await initializeAppBuilderSettings(
@@ -198,18 +226,73 @@ export function useAppBuilderPublisherScreen(
         }
     }
 
-    // This effect is warranted because tab activation is an external UI lifecycle boundary,
-    // and we need to reset the ephemeral BloomPUB cache plus re-read the RAB project whenever the Apps screen becomes active.
+    // Track busyAction in a ref so async callbacks can read the latest value
+    // without closing over a stale render's state.
+    const busyActionRef = React.useRef(busyAction);
+    busyActionRef.current = busyAction;
+
+    // This effect is warranted because tab activation is an external UI lifecycle boundary.
+    // We fetch status first so any active build, its current stage, and its progress are
+    // shown immediately — without waiting for the next websocket event — and so we know
+    // whether it's safe to reset the ephemeral BloomPUB cache.
     React.useEffect(() => {
         if (!isActive) {
             return;
         }
 
-        void postData("publish/rab/reset-bloompub-cache", {}).then(() => {
+        void (async () => {
+            // Snapshot the current server state right away.
+            let activeActionFromServer: AppBuilderAction | undefined;
+            try {
+                const nextStatus = await fetchStatusAsync();
+                if (!isMountedRef.current) {
+                    return;
+                }
+                setStatus(nextStatus);
+                activeActionFromServer = nextStatus.activeAction;
+                if (activeActionFromServer) {
+                    setBusyAction(
+                        (current) => current ?? activeActionFromServer!,
+                    );
+                    // Restore the last-known stage and progress so the indicator
+                    // appears immediately rather than waiting for the next websocket event.
+                    if (nextStatus.activeActionProgressStage) {
+                        setProgressStageCode(
+                            nextStatus.activeActionProgressStage,
+                        );
+                    }
+                    setProgressPercent(
+                        nextStatus.activeActionProgressPercent ?? 0,
+                    );
+                }
+                void refreshSettings(nextStatus.appDefPath);
+            } catch {
+                // Status fetch failed; fall through to the cache-reset path which
+                // will call refreshStatus() for its own retry handling.
+            }
+
+            if (!isMountedRef.current) {
+                return;
+            }
+            refreshSizeEstimates();
+
+            if (activeActionFromServer) {
+                // A background action is running — skip the cache reset to avoid
+                // deleting BloomPUBs the build is actively using.
+                return;
+            }
+
+            // No active action: clear the stale per-session BloomPUB cache, then
+            // do a full status refresh to pick up any changes since the last visit.
+            await postData("publish/rab/reset-bloompub-cache", {});
+            if (!isMountedRef.current) {
+                return;
+            }
             void refreshStatus();
             refreshSizeEstimates();
-        });
-        // refreshStatus and refreshSizeEstimates are intentionally omitted so this only reruns when the tab activation boundary changes.
+        })();
+        // fetchStatusAsync, refreshSettings, refreshSizeEstimates, and refreshStatus
+        // are intentionally omitted — this only reruns at the tab-activation boundary.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isActive]);
 
@@ -298,17 +381,34 @@ export function useAppBuilderPublisherScreen(
                     : undefined,
         );
         setBusyAction(action);
-        postData(
-            `publish/rab/${action}`,
-            {},
-            () => {
-                void handleActionCompleted(action, action === "prepare");
-            },
-            () => {
-                void handleActionCompleted(action, false);
-            },
-        );
+        // The endpoint returns immediately; actual completion arrives via the
+        // "actionComplete" websocket event handled by the subscription below.
+        post(`publish/rab/${action}`);
     }
+
+    // Listen for background-task completion from the server.
+    // useWebSocketListener keeps the callback reference current on every render
+    // so handleActionCompleted always has a fresh closure.
+    useSubscribeToWebSocketForStringMessage(
+        kAppBuilderWebSocketContext,
+        kAppBuilderActionCompleteEventId,
+        (result) => {
+            const separatorIndex = result.indexOf(":");
+            if (separatorIndex < 0) {
+                return;
+            }
+            const completedAction = result.substring(
+                0,
+                separatorIndex,
+            ) as AppBuilderAction;
+            const succeeded =
+                result.substring(separatorIndex + 1) === "success";
+            void handleActionCompleted(
+                completedAction,
+                completedAction === "prepare" && succeeded,
+            );
+        },
+    );
 
     function showApkInExplorerInShell(): void {
         if (!status.apkPath) {
