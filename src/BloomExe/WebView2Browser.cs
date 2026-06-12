@@ -282,6 +282,16 @@ namespace Bloom
             // a change in UI language will take effect at this level.
             // See https://github.com/MicrosoftEdge/WebView2Feedback/issues/3635 (which was just opened last week!)
             var additionalBrowserArgs = "--autoplay-policy=no-user-gesture-required";
+            // Disables sleeping tabs, allows insecure localhost, and keeps rendering active.
+            // These were all suggested by AI to prevent problems when the computer sleeps or is idle for a long
+            // time while Bloom is open. Apparently by default WebView2 will put tabs to sleep after a while,
+            // and become suspicious of some URLs when restarting. The hope is that this will help with BL-16363
+            // and similar problems.
+            // Not sleeping potentially allows computation to continue and drain battery, but we don't
+            // expect this to be an important factor for Bloom, as we don't have long-running
+            // animations except for things like playing motion books, which probably want to continue to the end.
+            additionalBrowserArgs +=
+                " --disable-features=msSleepingTabs --allow-insecure-localhost --disable-renderer-backgrounding";
 
             // WebView2 can fail to initialize if we try to open a new one with different `--accept-lang` arguments.
             // This even happens if it is a different copy of Bloom running. Our hypothesis is that this is because they are sharing
