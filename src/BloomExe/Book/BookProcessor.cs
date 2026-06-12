@@ -40,8 +40,15 @@ namespace Bloom.Book
         /// as an error so BloomBridge can re-run, rather than leaving a half-processed book on disk.
         ///
         /// Must be called on the UI thread: it creates and pumps a WebView2 browser.
+        ///
+        /// When <paramref name="fitImageTextSplits"/> is true, pages that are a single illustration
+        /// above a single text block (a two-pane vertical origami split) have their split auto-fit:
+        /// the image pane is grown (and the text pane shrunk) as far as it can without making the
+        /// text overflow, but no further than the image filling the page width. This uses the real
+        /// off-screen browser layout (no font/text estimation); see fitImageOverTextSplits() in
+        /// bloomEditing.ts.
         /// </summary>
-        public static int ProcessBook(Book book)
+        public static int ProcessBook(Book book, bool fitImageTextSplits = false)
         {
             Debug.Assert(
                 Program.RunningOnUiThread || Program.RunningUnitTests,
@@ -65,22 +72,12 @@ namespace Bloom.Book
             // back whenever a browser steals it (see RestoreForeground in the per-page loop and below).
             var priorForeground = ProcessExtra.GetForegroundWindow();
 
-            var totalTimer = Stopwatch.StartNew();
-            var upToDateTimer = Stopwatch.StartNew();
             book.BringBookUpToDate(new NullProgress());
-            upToDateTimer.Stop();
-            Log($"BringBookUpToDate: {upToDateTimer.ElapsedMilliseconds} ms");
 
             // 2. Per-page browser fix-up.
             var pages = book.GetPages().Where(p => p != null).ToList();
             Log($"starting per-page fix-up of {pages.Count} pages (ckeditor stripped off-screen)");
 
-            // Per-phase timing accumulators, summed for the DONE line at the end (see Log calls below).
-            long totalBrowserMs = 0,
-                totalInitMs = 0,
-                totalNavReadyMs = 0,
-                totalCaptureMs = 0,
-                totalUpdateMs = 0;
             var pageIndex = 0;
 
             // Create a FRESH WebView2 control per page, but share ONE CoreWebView2Environment across them.
@@ -105,7 +102,6 @@ namespace Bloom.Book
                     Browser browser = null;
                     try
                     {
-                        var browserTimer = Stopwatch.StartNew();
                         browser = BrowserMaker.MakeBrowser();
                         // Force the control's window handle into existence. The WebView2's CoreWebView2
                         // initialization (kicked off unawaited in the browser constructor) can only complete
@@ -114,35 +110,14 @@ namespace Bloom.Book
                         // off-screen browser. (We never add this browser to a Form, so nothing else would
                         // create the handle for us.)
                         browser.CreateControl();
-                        browserTimer.Stop();
 
                         // If realizing the off-screen browser pulled Bloom to the front, put the
                         // previous window back so we keep processing quietly in the background.
                         RestoreForeground(priorForeground);
 
-                        var timings = ProcessOnePage(book, browser, page);
+                        ProcessOnePage(book, browser, page, fitImageTextSplits);
 
-                        totalBrowserMs += browserTimer.ElapsedMilliseconds;
-                        totalInitMs += timings.InitMs;
-                        totalNavReadyMs += timings.NavReadyMs;
-                        totalCaptureMs += timings.CaptureMs;
-                        totalUpdateMs += timings.UpdateMs;
-
-                        var pageTotal =
-                            browserTimer.ElapsedMilliseconds
-                            + timings.InitMs
-                            + timings.NavReadyMs
-                            + timings.CaptureMs
-                            + timings.UpdateMs;
-                        Log(
-                            $"page {pageIndex}/{pages.Count} [{page.Id}]: "
-                                + $"browser={browserTimer.ElapsedMilliseconds}ms "
-                                + $"init={timings.InitMs}ms "
-                                + $"nav={timings.NavReadyMs}ms "
-                                + $"capture={timings.CaptureMs}ms "
-                                + $"update={timings.UpdateMs}ms "
-                                + $"total={pageTotal}ms"
-                        );
+                        Log($"page {pageIndex}/{pages.Count} [{page.Id}] done");
                     }
                     finally
                     {
@@ -159,18 +134,9 @@ namespace Bloom.Book
             }
 
             // 3. One full save now that every page's in-memory DOM has been updated.
-            var saveTimer = Stopwatch.StartNew();
             book.Save();
-            saveTimer.Stop();
 
-            totalTimer.Stop();
-            var avgPerPage = pages.Count > 0 ? totalTimer.ElapsedMilliseconds / pages.Count : 0;
-            Log(
-                $"DONE: {pages.Count} pages in {totalTimer.ElapsedMilliseconds} ms ({avgPerPage} ms/page avg). "
-                    + $"Breakdown: upToDate={upToDateTimer.ElapsedMilliseconds}ms "
-                    + $"browserCreate={totalBrowserMs}ms init={totalInitMs}ms nav={totalNavReadyMs}ms "
-                    + $"capture={totalCaptureMs}ms update={totalUpdateMs}ms save={saveTimer.ElapsedMilliseconds}ms"
-            );
+            Log($"DONE: {pages.Count} pages");
             return pages.Count;
         }
 
@@ -188,17 +154,8 @@ namespace Bloom.Book
                 ProcessExtra.SetForegroundWindow(priorForeground);
         }
 
-        /// <summary>Per-page phase timings (milliseconds), for the diagnostic logging in ProcessBook.</summary>
-        private struct PageTimings
-        {
-            public long InitMs;
-            public long NavReadyMs;
-            public long CaptureMs;
-            public long UpdateMs;
-        }
-
         // Write a process-book diagnostic line to BOTH the terminal (Bloom's stdout is piped to the
-        // `go` dev terminal) and the Bloom log file, so timing is visible live and after the fact.
+        // `go` dev terminal) and the Bloom log file, so progress is visible live and after the fact.
         private static void Log(string message)
         {
             var line = "[process-book] " + message;
@@ -206,7 +163,12 @@ namespace Bloom.Book
             SIL.Reporting.Logger.WriteEvent(line);
         }
 
-        private static PageTimings ProcessOnePage(Book book, Browser browser, IPage page)
+        private static void ProcessOnePage(
+            Book book,
+            Browser browser,
+            IPage page,
+            bool fitImageTextSplits
+        )
         {
             var dom = book.GetEditableHtmlDomForPage(page);
             // So the page's relative links (images, css) resolve against the book folder.
@@ -234,24 +196,21 @@ namespace Bloom.Book
             // timeout. Instead we fire the navigation and then poll for __bloomEditablePageReady, which
             // is the signal we actually care about (the load-time DOM fix-ups are in place).
             //
-            // Navigate() blocks internally until the control is ready to navigate, so we pre-wait here
-            // only to attribute that readiness cost to its own timer (init) instead of folding it into
-            // nav time. With the shared environment the heavy browser-process/cache warm-up is paid once
-            // for the batch, so after the first page this mostly measures the control's handle/CoreWebView2
+            // Navigate() blocks internally until the control is ready to navigate, so we pre-wait here.
+            // With the shared environment the heavy browser-process/cache warm-up is paid once for the
+            // batch, so after the first page this mostly waits on the control's handle/CoreWebView2
             // initialization.
-            var initTimer = Stopwatch.StartNew();
+            var readyTimer = Stopwatch.StartNew();
             while (!browser.IsReadyToNavigate)
             {
-                if (initTimer.ElapsedMilliseconds >= kReadyTimeoutMs)
+                if (readyTimer.ElapsedMilliseconds >= kReadyTimeoutMs)
                     throw new ApplicationException(
                         $"process-book: timed out waiting for the browser to become ready to navigate on page {page.Id}."
                     );
                 Application.DoEvents();
                 Thread.Sleep(5);
             }
-            initTimer.Stop();
 
-            var navReadyTimer = Stopwatch.StartNew();
             browser.Navigate(dom, source: InMemoryHtmlFileSource.Frame);
 
             // Wait until bootstrap()/SetupElements() has actually run (signaled by
@@ -263,14 +222,14 @@ namespace Bloom.Book
                 "the editing bundle to initialize",
                 page
             );
-            navReadyTimer.Stop();
 
             // Ask the bundle to gather the (now browser-processed) page content. It stashes the
             // result on window for us to poll, rather than posting to the live editView API (which
             // would feed the live EditingModel and corrupt the live editor's state).
-            var captureTimer = Stopwatch.StartNew();
+            // The boolean tells the bundle whether to auto-fit image-over-text origami splits before
+            // capturing (see fitImageOverTextSplits in bloomEditing.ts).
             browser.RunJavascriptWithStringResult_Sync_Dangerous(
-                "window.editablePageBundle.captureContentForExternalProcessing(); ''"
+                $"window.editablePageBundle.captureContentForExternalProcessing({(fitImageTextSplits ? "true" : "false")}); ''"
             );
 
             var pageContent = WaitForJavascriptResult(
@@ -279,7 +238,6 @@ namespace Bloom.Book
                 "the page content to be captured",
                 page
             );
-            captureTimer.Stop();
 
             if (pageContent.StartsWith("ERROR:", StringComparison.Ordinal))
             {
@@ -288,21 +246,11 @@ namespace Bloom.Book
                 );
             }
 
-            var updateTimer = Stopwatch.StartNew();
             var editedDom = EditingModel.GetEditedPageDomFromBrowserContent(pageContent);
             // Force a full update so shared/derived data (titles, metadata) is sucked in, matching
             // what the live editor does when leaving a page that changed such data. We delay the
             // actual write to disk until a single Book.Save() after all pages are processed.
             book.UpdateDomFromEditedPage(editedDom, out _, needToDoFullSave: true);
-            updateTimer.Stop();
-
-            return new PageTimings
-            {
-                InitMs = initTimer.ElapsedMilliseconds,
-                NavReadyMs = navReadyTimer.ElapsedMilliseconds,
-                CaptureMs = captureTimer.ElapsedMilliseconds,
-                UpdateMs = updateTimer.ElapsedMilliseconds,
-            };
         }
 
         /// <summary>

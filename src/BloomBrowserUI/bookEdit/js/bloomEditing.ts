@@ -66,6 +66,7 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { setupBookLinkGrids } from "./linkGrid";
+import { fitImageOverTextSplits } from "./autoFitImageOverTextSplits";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { handleUndo } from "../workspaceRoot";
@@ -1409,8 +1410,34 @@ export function getBodyContentForSavePage() {
 // requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, up to
 // kMaxWaitTimeMs, so browser-based measurements (image sizing, canvas-element layout, etc.) are complete
 // before we capture the page.
-export function captureContentForExternalProcessing(): void {
+export function captureContentForExternalProcessing(
+    fitImageTextSplits?: boolean,
+): void {
     window.__bloomExternalPageContent = undefined;
+
+    // Optionally auto-fit single-image-over-single-text origami pages so the grown split persists
+    // into the saved HTML. We do this UP FRONT, before the delay-wait below, for two reasons:
+    //  - It must run on the fully settled, real browser layout (which it now is: bootstrap() and the
+    //    load-time fix-ups have run before C# calls us).
+    //  - Growing the image pane means the background image must be re-fit to the new pane size. That
+    //    re-fit (adjustBackgroundImageSize) is async and registers a requestPageContent delay, so we
+    //    kick it off here and let the waitForDelaysThenFinish loop below wait for it to settle before
+    //    we capture. Otherwise we'd save the new split with the OLD (too-small) image, and the image
+    //    would only get corrected later when a user opened the page in the Edit tab.
+    // Never throws out: a failure to fit must not block capturing/saving the page.
+    if (fitImageTextSplits) {
+        try {
+            const changedAny = fitImageOverTextSplits();
+            if (changedAny) {
+                // Re-fit the background image(s) to the resized pane(s), exactly as the editor does
+                // after a programmatic splitter change (double-click "match previous page").
+                theOneCanvasElementManager.adjustAfterOrigamiDoubleClick();
+            }
+        } catch (e) {
+            console.error("fitImageOverTextSplits failed: ", e);
+        }
+    }
+
     const start = Date.now();
     const finish = () => {
         try {

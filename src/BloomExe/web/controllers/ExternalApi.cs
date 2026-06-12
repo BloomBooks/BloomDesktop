@@ -234,6 +234,9 @@ namespace Bloom.web.controllers
                 var data = Newtonsoft.Json.Linq.JObject.Parse(request.RequiredPostJson());
                 id = (string)data["id"];
                 folderPath = (string)data["path"];
+                // Optional: auto-fit single-image-over-single-text origami pages (grow the image
+                // pane to fill the space the text doesn't need). Defaults to false.
+                var fitImageTextSplits = (bool?)data["fitImageTextSplits"] ?? false;
                 if (string.IsNullOrEmpty(id) && string.IsNullOrEmpty(folderPath))
                 {
                     request.Failed(
@@ -274,11 +277,11 @@ namespace Bloom.web.controllers
                     }
                     if (!string.IsNullOrEmpty(folderPath))
                     {
-                        HandleProcessBookByPath(request, folderPath);
+                        HandleProcessBookByPath(request, folderPath, fitImageTextSplits);
                         return;
                     }
 
-                    HandleProcessBookById(request, id);
+                    HandleProcessBookById(request, id, fitImageTextSplits);
                 }
                 finally
                 {
@@ -303,7 +306,11 @@ namespace Bloom.web.controllers
         /// nothing is added to the open collection. This is what BloomBridge uses, so its staging
         /// books no longer have to be copied into the collection just to be processed.
         /// </summary>
-        private void HandleProcessBookByPath(ApiRequest request, string folderPath)
+        private void HandleProcessBookByPath(
+            ApiRequest request,
+            string folderPath,
+            bool fitImageTextSplits
+        )
         {
             if (
                 !System.IO.Directory.Exists(folderPath)
@@ -324,7 +331,7 @@ namespace Bloom.web.controllers
             // editable collection.
             var bookInfo = new BookInfo(folderPath, true, new AlwaysEditSaveContext());
             var book = _bookServer.GetBookFromBookInfo(bookInfo);
-            var pageCount = BookProcessor.ProcessBook(book);
+            var pageCount = BookProcessor.ProcessBook(book, fitImageTextSplits);
 
             // Saving may have renamed the folder to match the book's title, so report the final
             // location the client should read its output from.
@@ -342,7 +349,7 @@ namespace Bloom.web.controllers
         /// Legacy flow: process a book that is a member of the open editable collection, found by its
         /// bookInstanceId.
         /// </summary>
-        private void HandleProcessBookById(ApiRequest request, string id)
+        private void HandleProcessBookById(ApiRequest request, string id, bool fitImageTextSplits)
         {
             var editableCollection = _collectionModel.TheOneEditableCollection;
             var collectionPath = editableCollection.PathToDirectory;
@@ -363,7 +370,7 @@ namespace Bloom.web.controllers
             // Process a fresh Book read from disk rather than any in-memory selection, so we
             // don't disturb the state of the currently-selected book object.
             var book = _bookServer.GetBookFromBookInfo(bookInfo);
-            var pageCount = BookProcessor.ProcessBook(book);
+            var pageCount = BookProcessor.ProcessBook(book, fitImageTextSplits);
 
             // The book is now processed and saved on disk: the operation the caller asked for has
             // succeeded. Everything below only reconciles in-memory UI state, so wrap it so a refresh
