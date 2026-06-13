@@ -114,6 +114,11 @@ export const SettingsToolControls: FunctionComponent = () => {
                     l10nKeySuffix="SignLanguageTool"
                     toolLabel="Sign Language Tool"
                 />
+                <ToolboxCheckbox
+                    tool="table"
+                    l10nKeySuffix="TableTool"
+                    toolLabel="Table Tool"
+                />
             </div>
         </ThemeProvider>
     );

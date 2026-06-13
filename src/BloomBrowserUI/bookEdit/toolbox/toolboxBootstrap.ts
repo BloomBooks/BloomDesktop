@@ -21,6 +21,7 @@ import "errorHandler";
 import { CanvasTool } from "./canvas/canvasTool";
 import { GameTool, setActiveDragActivityTab } from "./games/GameTool";
 import { SettingsTool } from "./settings/settingsTool";
+import { TableTool } from "./table/tableTool";
 // Explicit imports needed so that these symbols are in local scope for the window.toolboxBundle object
 import {
     addWordListChangedListener,
@@ -132,6 +133,7 @@ ToolBox.registerTool(new ImageDescriptionAdapter());
 ToolBox.registerTool(new CanvasTool());
 ToolBox.registerTool(new GameTool());
 ToolBox.registerTool(new SettingsTool());
+ToolBox.registerTool(new TableTool());
 
 const toolboxBundle: ToolboxBundleApi = {
     getTheOneToolbox,

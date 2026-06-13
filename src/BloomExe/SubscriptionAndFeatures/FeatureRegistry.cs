@@ -30,6 +30,7 @@ namespace Bloom.SubscriptionAndFeatures
         Bookshelf,
         AppBuilder,
         AiImageEditing,
+        Table,
     }
 
     public static class FeatureRegistry
@@ -200,6 +201,12 @@ namespace Bloom.SubscriptionAndFeatures
                 Feature = FeatureName.AiImageEditing,
                 SubscriptionTier = SubscriptionTier.Pro,
                 ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kAiImageEditing,
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.Table,
+                SubscriptionTier = SubscriptionTier.Basic,
+                ExistsInPageXPath = ".//div[contains(@class,'bloom-table')]",
             },
             // ----------------------------------------
             // Enterprise Tier Features

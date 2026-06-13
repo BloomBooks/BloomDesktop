@@ -20,6 +20,8 @@ import {
 } from "./bloomVideo";
 import { SetupWidgetEditing } from "./bloomWidgets";
 import { setupOrigami, cleanupOrigami } from "./origami";
+import { SetupTableEditing, TeardownTableEditing } from "./tableEditing";
+import { removeTableEditingArtifacts } from "bloom-table";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -576,6 +578,7 @@ export function SetupElements(
 
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
+    SetupTableEditing(container);
     initializeCanvasElementManager();
     initChoiceWidgetsForEditing();
 
@@ -1313,6 +1316,8 @@ function removeEditingDebris() {
         textLabels[i].remove();
     }
     removeTransientVideoTimestampParams(document.body);
+    removeTableEditingArtifacts(document);
+    TeardownTableEditing(document.body);
     cleanupNiceScroll(); // don't leave the nicescroll debris around
 }
 

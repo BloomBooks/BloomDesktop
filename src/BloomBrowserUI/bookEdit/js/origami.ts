@@ -12,6 +12,7 @@ import { kCanvasToolId } from "../toolbox/toolIds";
 import { updateAbovePageControls } from "./AbovePageControls";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
+import { AttachNewTable } from "./tableEditing";
 
 $(() => {
     splitPane($("div.split-pane"));
@@ -58,8 +59,8 @@ export function setupOrigami() {
             }
 
             $(".customPage").find("*[data-i18n]").localize();
-        });
-    });
+        }); // canvas
+    }); // widget
 }
 
 export function cleanupOrigami() {
@@ -147,7 +148,7 @@ function setupLayoutMode() {
 // N.B. If you add/remove a container class, you'll likely need to modify 'createTypeSelectors()' too.
 // These are the top-level things, other than text, that an origami split can contain.
 const bloomContainerClasses =
-    ".bloom-canvas, .bloom-widgetContainer, .bloom-videoContainer,";
+    ".bloom-canvas, .bloom-widgetContainer, .bloom-videoContainer, .bloom-table,";
 
 function isSplitPaneComponentInnerEmpty(spci: JQuery) {
     return !spci.find(
@@ -455,6 +456,10 @@ function createTypeSelectors(includeWidget: boolean, includeCanvas: boolean) {
         "<a href='' data-i18n='EditTab.CustomPage.HtmlWidget'>HTML Widget</a>",
     );
     htmlWidgetLink.click(makeHtmlWidgetFieldClickHandler);
+    const tableLink = $(
+        "<a href='' data-i18n='EditTab.CustomPage.Table'>Table</a>",
+    );
+    tableLink.click(makeTableFieldClickHandler);
     links.append(imageLink).append(",").append(space);
     if (includeCanvas) links.append(canvasLink).append(",");
     links.append(space).append(videoLink).append(",").append(space);
@@ -469,6 +474,7 @@ function createTypeSelectors(includeWidget: boolean, includeCanvas: boolean) {
     } else {
         links.append(orDiv).append(space).append(textLink);
     }
+    links.append(",").append(space).append(tableLink);
     return $(
         "<div class='container-selector-links bloom-ui origami-ui'></div>",
     ).append(links);
@@ -572,5 +578,20 @@ function makeHtmlWidgetFieldClickHandler(e) {
     // everywhere, this one is only meant to be around when needed. This call asks the server to make
     // sure it is present in the book folder.
     post("edit/pageControls/requestWidgetPlaceHolder");
+    $(this).closest(".selector-links").remove();
+}
+
+function makeTableFieldClickHandler(e) {
+    e.preventDefault();
+    const container = $(this).closest(".split-pane-component-inner");
+    addUndoPoint();
+    const tableContainer = $(
+        "<div class='bloom-table table bloom-leadingElement'></div>",
+    );
+    container.append(tableContainer);
+    // AttachNewTable registers Bloom-specific content types and calls attachTable,
+    // which creates the initial 2×2 structure. The page-level event listener
+    // installed by SetupTableEditing on the body handles kTableCellContentChangedEvent.
+    AttachNewTable(tableContainer[0] as HTMLElement);
     $(this).closest(".selector-links").remove();
 }
