@@ -2,6 +2,10 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import { TableMenu } from "bloom-table";
+// The panel's components use Tailwind utility class names; Bloom doesn't ship
+// Tailwind, so we load the library's scoped utility CSS or the menu collapses
+// to a vertical stack with no spacing.
+import "bloom-table/table-menu.css";
 import { renderRoot } from "../../../utils/reactRender";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
