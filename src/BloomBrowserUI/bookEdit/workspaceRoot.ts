@@ -93,8 +93,15 @@ const showAdjustTimingsDialogFromWorkspaceRoot = showAdjustTimingsDialog;
 
 //Called by c# using workspaceBundle.handleUndo()
 export function handleUndo(): void {
-    // First see if origami is active and knows about something we can undo.
     const contentWindow = getEditablePageBundleExports();
+    // Check table (bloom-table) undo first. Structural grid ops leave no
+    // CKEditor footprint, while pure text edits inside cells leave
+    // tableCanUndo() false and so still route to CKEditor below.
+    if (contentWindow && contentWindow.tableCanUndo()) {
+        contentWindow.tableUndo();
+        return;
+    }
+    // Next see if origami is active and knows about something we can undo.
     if (contentWindow && contentWindow.origamiCanUndo()) {
         contentWindow.origamiUndo();
     }
@@ -233,6 +240,9 @@ export function doWhenToolboxLoaded(
 export function canUndo(): string {
     // See comments on handleUndo()
     const contentWindow = getEditablePageBundleExports();
+    if (contentWindow && contentWindow.tableCanUndo()) {
+        return "yes";
+    }
     if (contentWindow && contentWindow.origamiCanUndo()) {
         return "yes";
     }

@@ -1430,6 +1430,11 @@
         <source xml:lang="en">Video</source>
         <note>ID: EditTab.CustomPage.Video</note>
       </trans-unit>
+      <trans-unit id="EditTab.CustomPage.Table" translate="no" sil:dynamic="true">
+        <source xml:lang="en">Table</source>
+        <note>ID: EditTab.CustomPage.Table</note>
+        <note>Shown as an option when a Custom Page section can contain a table (experimental feature)</note>
+      </trans-unit>
       <trans-unit id="EditTab.CustomPage.TextBox" sil:dynamic="true">
         <source xml:lang="en">Text Box</source>
         <note>ID: EditTab.CustomPage.TextBox</note>
@@ -2495,6 +2500,11 @@
       <trans-unit id="EditTab.Toolbox.MusicTool" sil:dynamic="true">
         <source xml:lang="en">Music Tool</source>
         <note>ID: EditTab.Toolbox.MusicTool</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TableTool" translate="no" sil:dynamic="true">
+        <source xml:lang="en">Table Tool</source>
+        <note>ID: EditTab.Toolbox.TableTool</note>
+        <note>Name of the toolbox tool for editing tables (experimental feature)</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool" sil:dynamic="true">
         <source xml:lang="en">Decodable Reader Tool</source>

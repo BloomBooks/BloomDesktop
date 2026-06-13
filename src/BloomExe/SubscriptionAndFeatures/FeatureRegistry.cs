@@ -29,6 +29,7 @@ namespace Bloom.SubscriptionAndFeatures
         BulkBloomPub,
         Bookshelf,
         AppBuilder,
+        Table,
     }
 
     public static class FeatureRegistry
@@ -193,6 +194,12 @@ namespace Bloom.SubscriptionAndFeatures
                 Feature = FeatureName.AppBuilder,
                 SubscriptionTier = SubscriptionTier.Pro,
                 ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kAppBuilder,
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.Table,
+                SubscriptionTier = SubscriptionTier.Basic,
+                ExistsInPageXPath = ".//div[contains(@class,'bloom-table')]",
             },
             // ----------------------------------------
             // Enterprise Tier Features
