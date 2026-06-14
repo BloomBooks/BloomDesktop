@@ -11,6 +11,7 @@ namespace Bloom
         public const string kExperimentalSourceBooks = "experimental-source-books";
         public const string kTeamCollections = "team-collections";
         public const string kAppBuilder = "app-builder";
+        public const string kTables = "tables";
 
         public static string TokensOfEnabledFeatures =>
             Settings.Default.EnabledExperimentalFeatures;

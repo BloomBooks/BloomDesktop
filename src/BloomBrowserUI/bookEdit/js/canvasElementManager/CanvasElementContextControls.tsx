@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../../utils/reactRender";
 import { kBloomBlue, lightTheme } from "../../../bloomMaterialUITheme";
 import { SvgIconProps } from "@mui/material";
 import { default as MenuIcon } from "@mui/icons-material/MoreHorizSharp";
@@ -750,7 +750,7 @@ export function renderCanvasElementContextControls(
         );
         return;
     }
-    ReactDOM.render(
+    renderRoot(
         <CanvasElementContextControls
             canvasElement={canvasElement}
             menuOpen={menuOpen}

@@ -79,7 +79,7 @@ import { reportError } from "../lib/errorHandler";
 import type { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../utils/reactRender";
 import { FunctionComponentElement } from "react";
 import { ToastDebugInput, toastDebugEvents } from "../toast/toastUtils";
 
@@ -93,8 +93,15 @@ const showAdjustTimingsDialogFromWorkspaceRoot = showAdjustTimingsDialog;
 
 //Called by c# using workspaceBundle.handleUndo()
 export function handleUndo(): void {
-    // First see if origami is active and knows about something we can undo.
     const contentWindow = getEditablePageBundleExports();
+    // Check table (bloom-table) undo first. Structural grid ops leave no
+    // CKEditor footprint, while pure text edits inside cells leave
+    // tableCanUndo() false and so still route to CKEditor below.
+    if (contentWindow && contentWindow.tableCanUndo()) {
+        contentWindow.tableUndo();
+        return;
+    }
+    // Next see if origami is active and knows about something we can undo.
     if (contentWindow && contentWindow.origamiCanUndo()) {
         contentWindow.origamiUndo();
     }
@@ -233,6 +240,9 @@ export function doWhenToolboxLoaded(
 export function canUndo(): string {
     // See comments on handleUndo()
     const contentWindow = getEditablePageBundleExports();
+    if (contentWindow && contentWindow.tableCanUndo()) {
+        return "yes";
+    }
     if (contentWindow && contentWindow.origamiCanUndo()) {
         return "yes";
     }
@@ -280,7 +290,7 @@ export function ShowEditViewDialog(dialog: FunctionComponentElement<unknown>) {
     // Note that modal dialogs actually create a sibling to this, they don't actually end up being children in the DOM.
     // Also note that if we call this twice, everything is fine: MUI doesn't seem to actually care if we remove the
     // root we called render on; it has already made a child of Body that it is using for the root of its dialog.
-    ReactDOM.render(dialog, root);
+    renderRoot(dialog, root);
 }
 
 export function showConfirmDialog(props: IConfirmDialogProps): void {

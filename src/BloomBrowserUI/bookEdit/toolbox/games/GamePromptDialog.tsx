@@ -17,7 +17,7 @@ import {
 import { copyContentToTargetAndCleanup } from "../../js/dragActivityRuntimeUtils";
 import { setGeneratedDraggableId } from "../canvas/CanvasElementItem";
 import { adjustTarget, makeTargetForDraggable } from "../games/GameTool";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../../utils/reactRender";
 import BloomSourceBubbles from "../../sourceBubbles/BloomSourceBubbles";
 import { saveStateOfCanvasElementAsCurrentLangAlternate } from "../../js/canvasElementManager/CanvasElementAlternates";
 import { getAllDraggables } from "../canvas/canvasElementDraggables";
@@ -478,7 +478,7 @@ export function renderGamePromptDialog(
     prompt: HTMLElement,
     open: boolean,
 ) {
-    ReactDOM.render(
+    renderRoot(
         <GamePromptDialog
             prompt={prompt}
             open={open}

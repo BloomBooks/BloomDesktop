@@ -1015,3 +1015,12 @@ The buffer would be absent if the marginBox had a border or the page has a backg
     --topLevel-text-padding-right: var(--topLevel-text-padding);
     --topLevel-text-padding-left: var(--topLevel-text-padding);
 }
+
+// bloom-table structural / read-time styles. These are owned by the bloom-table
+// library, not duplicated here, so they stay in sync as the library evolves.
+// Inlined (not a runtime @import) so the rules land in basePage.css and ship
+// wherever a table renders, including static reader/publish views that run no
+// JavaScript. The edit-only styles (selection, hints) live in the library's
+// bloom-table-edit.css, loaded only in the editing context by tableEditing.ts.
+@import (inline)
+    "../../BloomBrowserUI/node_modules/bloom-table/dist/bloom-table.css";

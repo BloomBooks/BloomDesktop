@@ -1,0 +1,47 @@
+/* Bloom-toolbox layout overrides for the bloom-table panel (TableMenu).
+ *
+ * The library's panel is designed as a fixed-width (w-64 = 256px) floating menu
+ * with its own border/shadow, which suits the demo but overflows Bloom's narrow
+ * toolbox column (~185px) and scrolls horizontally. These rules, scoped under
+ * .bloom-table-tool-panel, make it fill the column with no horizontal scroll,
+ * equal left/right gutters, no border, wrapping rows, and smaller buttons.
+ * The library's generic menu (and the demo) are unaffected.
+ */
+
+.bloom-table-tool-panel .table-menu {
+    /* Fill the toolbox column instead of a fixed 256px; no chrome of its own. */
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    /* Small symmetric gutters so content has whitespace on both sides. */
+    padding: 4px 6px;
+    /* Belt-and-suspenders: never scroll horizontally (content wraps below). */
+    overflow-x: hidden;
+}
+
+/* Reclaim width: the sections' generous side padding (px-4 = 16px) is too much
+   for a narrow column. */
+.bloom-table-tool-panel .table-menu .px-4 {
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+/* (Wrapping + wrapped-row gap now live in the library's table-menu.css, which
+   every non-Tailwind host loads, so they no longer need to be repeated here.) */
+
+/* Smaller buttons: shrink the 48x48 icon buttons toward the 24px icon (mostly
+   reducing the padding around the glyph). width:auto + min-width keeps icon
+   tiles compact and square while letting text-label tiles (e.g. the cell
+   content "Image"/"Text" options) grow enough to keep their label on one line
+   instead of wrapping to "Imag e"/"Tex". */
+.bloom-table-tool-panel .table-menu .MuiIconButton-root {
+    width: auto;
+    min-width: 36px;
+    height: 36px;
+    padding-left: 4px;
+    padding-right: 4px;
+}

@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../utils/reactRender";
 import axios from "axios";
 import { css } from "@emotion/react";
 import Accordion from "@mui/material/Accordion";
@@ -62,6 +62,7 @@ const toolIconPathByToolId: Record<string, string> = {
     music: "/bloom/bookEdit/toolbox/music/music-notes-white.svg",
     motion: "/bloom/bookEdit/toolbox/motion/motion.svg",
     canvas: "/bloom/bookEdit/toolbox/canvas/Canvas%20Icon.svg",
+    table: "/bloom/bookEdit/toolbox/table/tableTool.svg",
     imageDescription:
         "/bloom/bookEdit/toolbox/imageDescription/ImageDescriptionToolIcon.svg",
     impairmentVisualizer:
@@ -1065,5 +1066,5 @@ export const renderToolboxRoot = (): void => {
     hostElement.style.display = "flex";
     hostElement.style.flexDirection = "column";
 
-    ReactDOM.render(<ToolboxRoot />, hostElement);
+    renderRoot(<ToolboxRoot />, hostElement);
 };

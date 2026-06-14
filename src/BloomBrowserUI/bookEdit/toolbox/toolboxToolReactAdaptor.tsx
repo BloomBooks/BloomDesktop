@@ -1,4 +1,4 @@
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../utils/reactRender";
 import $ from "jquery";
 import { ITool, IReactTool } from "./toolbox";
 import { ReactElement } from "react";
@@ -26,7 +26,7 @@ export default abstract class ToolboxToolReactAdaptor
         // We need a wrapperDiv to hand back to our the toolbox because react wants some freedom to render asynchronously.
         // So we just create empty div now to hand back to the toolbox, and ask React to render into it eventually.
         const wrapperDiv = document.createElement("div");
-        ReactDOM.render(element, wrapperDiv);
+        renderRoot(element, wrapperDiv);
         return wrapperDiv as HTMLDivElement;
     }
     public isAlwaysEnabled(): boolean {

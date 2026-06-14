@@ -304,7 +304,9 @@ export const LicensePanel: React.FunctionComponent<{
 };
 
 // Just a simple wrapper to indent components
-const SubPanel: React.FunctionComponent = (props) => {
+const SubPanel: React.FunctionComponent<{
+    children?: React.ReactNode;
+}> = (props) => {
     return (
         <div
             css={css`

@@ -255,6 +255,7 @@ export const DialogTitle: FunctionComponent<{
     title: string; // note, this is prop instead of just a child so that we can ensure vertical alignment and bar height, which are easy to mess up.
     // true: no close button. otherwise: close button iff BloomDialogContext has onCancel.
     preventCloseButton?: boolean;
+    children?: React.ReactNode;
 }> = (props) => {
     const color = props.color || "black";
     const background = props.backgroundColor || "transparent";
@@ -348,7 +349,9 @@ DialogTitle.displayName = "DialogTitle";
 
 // The height of this is determined by what is inside of it. If the content might grow (e.g. a progress box), then it's up to the
 // client to set maxes or fixed dimensions. See <ProgressDialog> for an example.
-export const DialogMiddle: FunctionComponent = (props) => {
+export const DialogMiddle: FunctionComponent<{
+    children?: React.ReactNode;
+}> = (props) => {
     return (
         <div
             id="draggable-dialog-middle"
@@ -380,7 +383,9 @@ export const DialogMiddle: FunctionComponent = (props) => {
 };
 
 // should be a child of DialogBottomButtons
-export const DialogBottomLeftButtons: FunctionComponent = (props) => (
+export const DialogBottomLeftButtons: FunctionComponent<{
+    children?: React.ReactNode;
+}> = (props) => (
     <div
         css={css`
             margin-right: auto;
@@ -404,7 +409,9 @@ export const DialogBottomLeftButtons: FunctionComponent = (props) => (
 );
 
 // normally one or more buttons. 1st child can also be <DialogBottomLeftButtons> if you have left-aligned buttons to show
-export const DialogBottomButtons: FunctionComponent = (props) => {
+export const DialogBottomButtons: FunctionComponent<{
+    children?: React.ReactNode;
+}> = (props) => {
     return (
         <div
             css={css`
