@@ -1016,49 +1016,11 @@ The buffer would be absent if the marginBox had a border or the page has a backg
     --topLevel-text-padding-left: var(--topLevel-text-padding);
 }
 
-// bloom-table: structural / read-time styles.
-// Required wherever a table is rendered, including static reader/publish
-// views that run no JavaScript. The edit-only styles (selection, hints)
-// live in a separate -edit stylesheet loaded only in the editing context.
-.bloom-table {
-    --cell-bg: #fff;
-    --cell-padding: 8px 10px;
-    --edge-default-weight: 1;
-    --edge-default-style: solid;
-    --edge-default-color: #000;
-}
-
-.table {
-    display: grid;
-    width: 100%;
-    height: 100%;
-    gap: var(--gap, 0);
-    background: var(--bg, transparent);
-}
-
-.cell {
-    background: var(--this-bg, var(--cell-bg));
-    padding: var(--this-padding, var(--cell-padding));
-    grid-column: span var(--span-x, 1);
-    grid-row: span var(--span-y, 1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.cell.skip {
-    display: none;
-}
-
-.cell:nth-of-type(odd) {
-    border-radius: var(--cell-border-radius-odd);
-}
-
-.cell[data-content-type="table"] > .table {
-    width: 100%;
-    height: 100%;
-}
-
-.cell[data-content-type="table"] {
-    --this-padding: 0;
-}
+// bloom-table structural / read-time styles. These are owned by the bloom-table
+// library, not duplicated here, so they stay in sync as the library evolves.
+// Inlined (not a runtime @import) so the rules land in basePage.css and ship
+// wherever a table renders, including static reader/publish views that run no
+// JavaScript. The edit-only styles (selection, hints) live in the library's
+// bloom-table-edit.css, loaded only in the editing context by tableEditing.ts.
+@import (inline)
+    "../../BloomBrowserUI/node_modules/bloom-table/dist/bloom-table.css";

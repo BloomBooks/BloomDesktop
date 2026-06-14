@@ -5,6 +5,12 @@ import {
     setDefaultCellContentTypeId,
     kTableCellContentChangedEvent,
 } from "bloom-table";
+// Edit-only table styles (selection highlight, boundary hints). These must NOT
+// reach published output, so they are loaded here in the editing context rather
+// than via basePage.less. This injects into the page iframe (this module is part
+// of editablePageBundle). The structural/read-time styles come from
+// bloom-table.css, which basePage.less inlines so they ship everywhere.
+import "bloom-table/bloom-table-edit.css";
 import { SetupImagesInContainer } from "./bloomImages";
 import BloomField from "../bloomField/BloomField";
 

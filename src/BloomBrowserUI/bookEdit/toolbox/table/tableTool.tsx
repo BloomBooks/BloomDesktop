@@ -6,6 +6,10 @@ import { TableMenu } from "bloom-table";
 // Tailwind, so we load the library's scoped utility CSS or the menu collapses
 // to a vertical stack with no spacing.
 import "bloom-table/table-menu.css";
+// Bloom-toolbox-specific layout overrides for the panel (fit the narrow column,
+// no border, wrap, smaller buttons). Scoped under .bloom-table-tool-panel so the
+// library's generic/demo menu is unaffected.
+import "./tableTool.css";
 import { renderRoot } from "../../../utils/reactRender";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
@@ -37,7 +41,7 @@ const TableToolControls: React.FunctionComponent<{
         if (!pageDoc) return;
         const onFocusIn = (e: Event) => {
             const target = e.target as HTMLElement | null;
-            const cell = target?.closest(".cell") as HTMLElement | null;
+            const cell = target?.closest(".bloom-cell") as HTMLElement | null;
             // Leave the selection as-is on blur so the menu stays usable when
             // focus moves to it (mirrors the library demo's Toolbar).
             if (cell) setCurrentCell(cell);
@@ -52,12 +56,14 @@ const TableToolControls: React.FunctionComponent<{
     const tableApi = getTableApi();
 
     return (
-        <ThemeProvider theme={toolboxTheme}>
-            <TableMenu
-                currentCell={tableApi ? currentCell : null}
-                tableApi={tableApi}
-            />
-        </ThemeProvider>
+        <div className="bloom-table-tool-panel">
+            <ThemeProvider theme={toolboxTheme}>
+                <TableMenu
+                    currentCell={tableApi ? currentCell : null}
+                    tableApi={tableApi}
+                />
+            </ThemeProvider>
+        </div>
     );
 };
 
