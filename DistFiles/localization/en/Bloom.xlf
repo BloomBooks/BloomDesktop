@@ -3208,6 +3208,7 @@
       <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem">
         <source xml:lang="en">Building Reader Templates</source>
         <note>ID: HelpMenu.BuildingReaderTemplatesMenuItem</note>
+        <note xml:lang="en">OBSOLETE as of Bloom 6.4</note>
       </trans-unit>
       <trans-unit id="HelpMenu.CheckForNewVersionMenuItem">
         <source xml:lang="en">Check For New Version</source>
@@ -3261,6 +3262,7 @@
       <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem">
         <source xml:lang="en">Using Reader Templates </source>
         <note>ID: HelpMenu.UsingReaderTemplatesMenuItem</note>
+        <note xml:lang="en">OBSOLETE as of Bloom 6.4</note>
       </trans-unit>
       <trans-unit id="HelpMenu.WebSiteMenuItem">
         <source xml:lang="en">BloomLibrary.org</source>
