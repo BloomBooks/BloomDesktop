@@ -588,6 +588,9 @@ export function SetupElements(
             "originalCopyrightAndLicense",
     );
     originalTitleCitations.forEach((titleElement: HTMLElement) => {
+        if (titleElement.innerText)
+            titleElement.classList.remove("missingOriginalTitle");
+        else titleElement.classList.add("missingOriginalTitle");
         titleElement.onclick = () => {
             showRequestStringDialog(
                 titleElement.innerText,
