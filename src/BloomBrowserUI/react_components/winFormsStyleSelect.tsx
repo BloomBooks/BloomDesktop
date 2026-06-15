@@ -33,6 +33,7 @@ interface FormsSelectProps {
     // Use this if you need to modify the style of popup menus by increasing z-index
     // (e.g., to make the popup be in front of the bloom font dialog)
     popoverZindex?: string;
+    children?: React.ReactNode;
 }
 
 // This component initially attempted to imitate a winforms combobox in React.

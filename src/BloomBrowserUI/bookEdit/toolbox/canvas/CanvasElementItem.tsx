@@ -308,6 +308,7 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
     makeTarget?: boolean;
     makeMatchingTextBox?: boolean;
     addClasses?: string;
+    children?: React.ReactNode;
     extraAction?: (top: HTMLElement) => void;
     // Objects to drag during play (ones that don't have an opaque background) want a shadow rectangle
     // around them. If it didn't depend on the particular icon, we could just make this depend on

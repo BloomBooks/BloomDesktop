@@ -1,6 +1,6 @@
 import { get, postThatMightNavigate } from "../../../utils/bloomApi";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../../utils/reactRender";
 import BloomButton from "../../../react_components/bloomButton";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import { confirmRemovePage } from "../confirmRemovePage";
@@ -144,4 +144,4 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
     }
 }
 
-ReactDOM.render(<PageControls />, document.getElementById("PageControls"));
+renderRoot(<PageControls />, document.getElementById("PageControls"));
