@@ -38,14 +38,6 @@ export const HelpMenu: React.FunctionComponent = () => {
         "Training Videos",
         "HelpMenu.trainingVideos",
     );
-    const buildingReaderTemplatesText = useL10n(
-        "Building Reader Templates",
-        "HelpMenu.BuildingReaderTemplatesMenuItem",
-    );
-    const usingReaderTemplatesText = useL10n(
-        "Using Reader Templates ",
-        "HelpMenu.UsingReaderTemplatesMenuItem",
-    );
     const askQuestionText = useL10n(
         "Ask a Question",
         "HelpMenu.AskAQuestionMenuItem",
@@ -149,24 +141,6 @@ export const HelpMenu: React.FunctionComponent = () => {
                 label: trainingVideosText,
                 onClick: () => postHelpAction("showTrainingVideos"),
             },
-            {
-                id: "buildingReaderTemplates",
-                label: buildingReaderTemplatesText,
-                onClick: () =>
-                    postHelpAction(
-                        "safeStartInFront",
-                        "infoPage:Building and Distributing Reader Templates in Bloom.pdf",
-                    ),
-            },
-            {
-                id: "usingReaderTemplates",
-                label: usingReaderTemplatesText,
-                onClick: () =>
-                    postHelpAction(
-                        "safeStartInFront",
-                        "infoPage:Using Bloom Reader Templates.pdf",
-                    ),
-            },
             { id: "separator-1", separator: true },
             {
                 id: "askQuestion",
@@ -228,7 +202,6 @@ export const HelpMenu: React.FunctionComponent = () => {
         [
             aboutText,
             askQuestionText,
-            buildingReaderTemplatesText,
             checkUpdatesText,
             documentationText,
             onlineHelpText,
@@ -240,7 +213,6 @@ export const HelpMenu: React.FunctionComponent = () => {
             showAboutDialogFromWorkspaceRoot,
             showRegistrationDialogFromWorkspaceRoot,
             trainingVideosText,
-            usingReaderTemplatesText,
             websiteText,
         ],
     );
