@@ -76,8 +76,7 @@ export class ReaderToolsModel {
     public fontName: string = "";
     public readableFileExtensions: string[] = [];
     public directoryWatcher: DirectoryWatcher | undefined;
-    public maxAllowedWords: number = 5;
-    public refreshFunc: () => void | undefined;
+    public maxAllowedWords: number = 10000;
 
     // remember words so we can update the counts real-time
     public pageIDToText: any[] = [];
@@ -408,9 +407,6 @@ export class ReaderToolsModel {
         this.enableLevelButtons();
         this.updateLevelLimits();
         this.updateWordList();
-        if (this.refreshFunc !== undefined) {
-            this.refreshFunc();
-        }
     }
 
     public updateStageNOfMDisplay() {
@@ -479,12 +475,12 @@ export class ReaderToolsModel {
     }
 
     public updateStageButtonsAvailability(): void {
-        this.updateDisabledStatus("decStage1", this.stageNumber <= 1);
+        this.updateDisabledStatus("decStage", this.stageNumber <= 1);
         if (!this.synphony) {
             return; // Synphony not loaded yet
         }
         this.updateDisabledStatus(
-            "incStage1",
+            "incStage",
             this.stageNumber >= this.synphony.getStages().length,
         );
     }
@@ -858,28 +854,6 @@ export class ReaderToolsModel {
         return _.compact(_.pluck(stages, "letters").join(" ").split(" "));
     }
 
-    public getKnownGraphemesSorted(stageNumber: number): string[] {
-        if (!this.synphony) {
-            return []; // Synphony not loaded yet
-        }
-
-        if (this.stageNumber > 0) {
-            this.stageGraphemes = this.getKnownGraphemes(stageNumber);
-        }
-
-        // Letters up through current stage
-        const letters = this.stageGraphemes;
-
-        // All the letters in the order they were entered on the Letters tab in the set up dialog
-        const allLetters = this.synphony.source.letters.split(" ");
-
-        // Sort our letters based on the order they were entered
-        letters.sort((a, b) => {
-            return allLetters.indexOf(a) - allLetters.indexOf(b);
-        });
-        return letters;
-    }
-
     /**
      *
      * @returns An array of DataWord objects
@@ -905,45 +879,6 @@ export class ReaderToolsModel {
         return _.uniq(stageWords.concat(sightWords), false, (w: DataWord) => {
             return w.Name;
         });
-    }
-
-    public getStageSightWordsSorted(stageNumber: number): string[] {
-        const stringWords: string[] = [];
-        const dataWords: DataWord[] | null =
-            this.getStageWordsAndSightWords(stageNumber);
-        if (!dataWords) {
-            return stringWords;
-        }
-        switch (this.sort) {
-            case SortType.alphabetic:
-                dataWords.sort((a: DataWord, b: DataWord) => {
-                    return a.Name.localeCompare(b.Name);
-                });
-                break;
-            case SortType.byLength:
-                dataWords.sort((a: DataWord, b: DataWord) => {
-                    if (a.Name.length === b.Name.length) {
-                        return a.Name.localeCompare(b.Name);
-                    }
-                    return a.Name.length - b.Name.length;
-                });
-                break;
-            case SortType.byFrequency:
-                dataWords.sort((a: DataWord, b: DataWord) => {
-                    const aFreq = a.Count;
-                    const bFreq = b.Count;
-                    if (aFreq === bFreq) {
-                        return a.Name.localeCompare(b.Name);
-                    }
-                    return bFreq - aFreq; // MOST frequent first
-                });
-                break;
-            default:
-        }
-        for (let i = 0; i < dataWords.length; i++) {
-            stringWords.push(dataWords[i].Name);
-        }
-        return stringWords;
     }
 
     /**
@@ -1998,28 +1933,6 @@ export class ReaderToolsModel {
         }
 
         return returnVal;
-    }
-
-    public getAllowedWordsSorted(stageNumber: number): string[] {
-        const stringWords: string[] =
-            this.selectWordsFromAllowedLists(stageNumber);
-        switch (this.sort) {
-            case SortType.alphabetic:
-                stringWords.sort((a: string, b: string) => {
-                    return a.localeCompare(b);
-                });
-                break;
-            case SortType.byLength:
-                stringWords.sort((a: string, b: string) => {
-                    if (a.length === b.length) {
-                        return a.localeCompare(b);
-                    }
-                    return a.length - b.length;
-                });
-                break;
-            default:
-        }
-        return stringWords;
     }
 
     public saveState(): void {

@@ -2,17 +2,13 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { ThemeProvider } from "@emotion/react";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
-import { applyToolboxStateToUpdatedPage } from "../toolbox";
+import { ToolBox, applyToolboxStateToUpdatedPage } from "../toolbox";
 import { BloomSwitch } from "../../../react_components/BloomSwitch";
 import { postBoolean } from "../../../utils/bloomApi";
-import {
-    isReaderToolEnabledOnCurrentPage,
-    setReaderToolEnabledOnCurrentPage,
-} from "./readerToolPageState";
+import { isReaderToolEnabledOnCurrentPage } from "./readerToolPageState";
 
 export const ReaderToolSwitch: React.FunctionComponent<{
     isForLeveled: boolean;
-    changeDisplayFunc: () => void;
 }> = (props) => {
     const prefix = props.isForLeveled ? "leveled" : "decodable";
 
@@ -22,6 +18,20 @@ export const ReaderToolSwitch: React.FunctionComponent<{
     const [checked, setChecked] = React.useState<boolean>(() =>
         isReaderToolEnabledOnCurrentPage(props.isForLeveled),
     );
+    const isFirstContentSync = React.useRef(true);
+
+    // This component must update a non-React toolbox pane element, so we need an effect to keep
+    // that external DOM synchronized whenever the controlled switch state changes.
+    React.useEffect(() => {
+        if (isFirstContentSync.current) {
+            isFirstContentSync.current = false;
+            return;
+        }
+
+        document
+            .getElementById(prefix + "-reader-tool-content")
+            ?.classList.toggle("turned-off", !checked);
+    }, [prefix, checked]);
 
     return (
         <ThemeProvider theme={toolboxTheme}>
@@ -45,8 +55,10 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                 onChange={(_, checked) => {
                     setChecked(checked);
 
-                    setReaderToolEnabledOnCurrentPage(
-                        props.isForLeveled,
+                    // Set the class on the page we are currently working with in edit mode.
+                    // This just ensures our display is correct while editing. Persisting the value is done below.
+                    ToolBox.getPage()?.classList.toggle(
+                        `${prefix}-reader`,
                         checked,
                     );
 
@@ -57,7 +69,6 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                     // (Currently nothing automatically updates the classes from the page body back up to the book body,
                     //  and I don't know if adding such an update is safe.)
                     postBoolean(`toolbox/${prefix}`, checked);
-                    props.changeDisplayFunc();
                 }}
             />
         </ThemeProvider>
