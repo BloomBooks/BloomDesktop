@@ -368,6 +368,26 @@ K'ate k'u ri' chatzoqopij ri cholnak'tz'ib' ri xapitz'o rech kuk'ut ri cholb'i'a
         <target xml:lang="quc" state="final">Xriqitaj jun k'axk'olil are taq' xak'ol ri no'jwuj awech. Chab'ana jun toq'ob' kattzalij pa ri uxaq wuj chi uxe' uloq chech rilik we utz ub'anom ronojel.</target>
         <note>ID: Browser.ProblemSaving</note>
       </trans-unit>
+      <trans-unit id="CollectionChooser.BookCountSingular" translate="no">
+        <source xml:lang="en">{0} book</source>
+        <target xml:lang="quc" state="needs-translation">{0} book</target>
+        <note>ID: CollectionChooser.BookCountSingular</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.BookCountPlural" translate="no">
+        <source xml:lang="en">{0} books</source>
+        <target xml:lang="quc" state="needs-translation">{0} books</target>
+        <note>ID: CollectionChooser.BookCountPlural</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.CheckedOutCount" translate="no">
+        <source xml:lang="en">{0} checked out to you</source>
+        <target xml:lang="quc" state="needs-translation">{0} checked out to you</target>
+        <note>ID: CollectionChooser.CheckedOutCount</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.UnpublishedToBloomLibrary" translate="no">
+        <source xml:lang="en">{0} unpublished to bloomlibrary.org</source>
+        <target xml:lang="quc" state="needs-translation">{0} unpublished to bloomlibrary.org</target>
+        <note>ID: CollectionChooser.UnpublishedToBloomLibrary</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
         <target xml:lang="quc" state="needs-translation">About Bloom Subscriptions</target>
@@ -4100,11 +4120,6 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <source xml:lang="en">Click 'Next' to get started.</source>
         <target xml:lang="quc" state="final">Chab'ana pitz' pa 'Jun chik' rech umajik.</target>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine3</note>
-      </trans-unit>
-      <trans-unit id="OpenCreateCloneControl.InDropboxMessage" approved="yes">
-        <source xml:lang="en">Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.</source>
-        <target xml:lang="quc" state="final">Bloom xrilo chi we wokcha'talik ri' kriqitaj pa jun k'olchak rech Dropbox. Wa' k'o kuya k'axk'olil xa rumal k'o karaj Dropbox kuq'atej Bloom ruk' taq ri uk'olchak. We k'o k'axk'olil, kkoqxa'nij chi solob'isax pa jun wokcha'talik para jun k'olib'al chik te'qne' pa utoq'ob'axik Dropbox rech kab'an ukojik aq'anoq Bloom.</target>
-        <note>ID: OpenCreateCloneControl.InDropboxMessage</note>
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage" approved="yes">
         <source xml:lang="en">This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</source>
