@@ -10,7 +10,6 @@ import {
 import { simulateBlurOnPageFrameMouseDown } from "../../utils/menuCloseOnBlur";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
-import { DecodableReaderToolboxTool } from "./readers/decodableReader/decodableReaderToolboxTool";
 import { LeveledReaderToolboxTool } from "./readers/leveledReader/leveledReaderToolboxTool";
 import { MusicToolAdaptor } from "./music/musicToolControls";
 import { ImpairmentVisualizerAdaptor } from "./impairmentVisualizer/impairmentVisualizer";
@@ -122,7 +121,6 @@ $(document).ready(() => {
 // Make the one instance of each Toolbox class and register it with the master toolbox.
 // The imports we need to make these calls possible also serve to ensure that each
 // toolbox's code is made part of the bundle.
-ToolBox.registerTool(new DecodableReaderToolboxTool());
 ToolBox.registerTool(new DecodableReaderTool());
 ToolBox.registerTool(new LeveledReaderToolboxTool());
 ToolBox.registerTool(new MusicToolAdaptor());

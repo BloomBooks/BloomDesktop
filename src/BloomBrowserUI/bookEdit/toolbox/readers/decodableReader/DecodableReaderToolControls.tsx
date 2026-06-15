@@ -6,60 +6,68 @@ import BloomButton from "../../../../react_components/bloomButton";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import { css } from "@emotion/react";
 import { Link } from "../../../../react_components/link";
+import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 
 const model = getTheOneReaderToolsModel();
 
-const GenLetterWordList: React.FunctionComponent = () => {
-    return (
-        <div id="make-letter-word-list-div1" className="clear1">
-            <Link
-                l10nKey="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
-                href="javascript:toolboxBundle.makeLetterWordList();"
-            >
-                Generate a letter and word list report
-            </Link>
-            <a
-                href="javascript:toolboxBundle.makeLetterWordList();"
-                data-i18n="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
-                id="make-letter-word-list1"
-            >
-                Generate a letter and word list report
-            </a>
-        </div>
-    );
-};
-
-const CurrentStage: React.FunctionComponent<{
+const StageNav: React.FunctionComponent<{
     currentStage: number;
     changeFunction: (increment: boolean) => void;
 }> = ({ currentStage, changeFunction }) => {
     return (
-        //<div className="stageLine1 clear1 noSelect1">
-        //  <span id="decStage1" className="scroll-button ui-icon ui-icon-triangle-1-w" onClick={() => changeStage(false)}></span>
-        //<span className="stageLabel stageLine1 noSelect1">
-        <>
+        <div>
             <BloomButton
-                iconBeforeText={<ArrowLeft style={{ color: "white" }} />}
+                iconBeforeText={
+                    currentStage > 1 ? (
+                        <ArrowLeft
+                            css={css`
+                                color: white;
+                            `}
+                        />
+                    ) : (
+                        <></>
+                    )
+                }
                 variant="text"
+                disabled={currentStage <= 1}
                 l10nKey=""
                 hasText={false}
                 enabled={true}
                 onClick={() => changeFunction(false)}
                 css={css`
-                    width: 16px;
+                    width: 6px;
                     min-width: unset;
+                    height: 18px;
+                    margin-left: 5px;
+                    margin-bottom: 8px;
+                    padding-left: 10px;
+                    padding-right: 3px;
                 `}
             />
             <Span
                 l10nKey="EditTab.Toolbox.DecodableReaderTool.StageNofM"
                 l10nParam0={currentStage.toString()}
                 l10nParam1={model.getNumberOfStages()?.toString()}
+                css={css`
+                    font-size: 20px;
+                `}
             >
                 Stage {0} of {1}
             </Span>
             <BloomButton
-                iconBeforeText={<ArrowRight style={{ color: "white" }} />}
+                iconBeforeText={
+                    currentStage !== model.getNumberOfStages() ? (
+                        <ArrowRight
+                            css={css`
+                                color: white;
+                            `}
+                        />
+                    ) : (
+                        <></>
+                    )
+                }
                 variant="text"
+                disabled={currentStage === model.getNumberOfStages()}
                 l10nKey=""
                 hasText={false}
                 enabled={true}
@@ -67,37 +75,58 @@ const CurrentStage: React.FunctionComponent<{
                 css={css`
                     width: 16px;
                     min-width: unset;
+                    height: 18px;
+                    padding-left: 12px;
+                    padding-right: 1px;
+                    margin-bottom: 8px;
                 `}
             />
-        </>
-        //</span>
-        //<span id="incStage1" className="scroll-button ui-icon ui-icon-triangle-1-e" onClick={() => changeStage(true)}></span>
-        //</div>
-    );
-};
-
-const LettersInStageTitle: React.FunctionComponent = () => {
-    return (
-        <div
-            id="letters-in-this-stage1"
-            className="section clear1"
-            style={{ marginLeft: "6px" }}
-        >
-            <Span l10nKey="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage">
-                Letters in this stage
-            </Span>
         </div>
     );
 };
 
-const LettersInStage: React.FunctionComponent<{
+const StageGraphemes: React.FunctionComponent<{
     currentGraphemes: string[];
 }> = ({ currentGraphemes }) => {
     return (
-        <div id="lettersTable1" className="tableHolder1 clear1">
-            <div id="letterList1" className="letterList1">
+        <div
+            css={css`
+                min-height: 0;
+                margin-top: 20px;
+                display: flex;
+                flex-direction: column;
+                flex: 1 1 auto;
+                overflow: hidden;
+            `}
+        >
+            <Span
+                l10nKey="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage"
+                css={css`
+                    margin-left: 8px;
+                    color: #b0dee4;
+                `}
+            >
+                Letters in this stage
+            </Span>
+            <div
+                css={css`
+                    display: flex;
+                    flex-wrap: wrap;
+                    row-gap: 8px;
+                    min-height: 0;
+                    overflow: auto;
+                    margin-left: 8px;
+                    margin-right: 8px;
+                    margin-top: 8px;
+                `}
+            >
                 {currentGraphemes.map((letter, index) => (
-                    <div key={index} className="letter">
+                    <div
+                        key={index}
+                        css={css`
+                            width: 23px;
+                        `}
+                    >
                         {letter}
                     </div>
                 ))}
@@ -106,98 +135,163 @@ const LettersInStage: React.FunctionComponent<{
     );
 };
 
-const SortTable: React.FunctionComponent = () => {
+const SortButton: React.FunctionComponent<{
+    sortType: 0 | 1 | 2;
+    changeSortFunc: (which: 0 | 1 | 2) => void;
+}> = ({ sortType, changeSortFunc }) => {
+    let keyInsert: string;
+    let tipInsert: string;
+    let unicodeIcon: string;
+    let shouldHighlight: boolean = false;
+    switch (sortType) {
+        case 0:
+            keyInsert = "Alphabetically";
+            tipInsert = "alphabetically";
+            unicodeIcon = "\uf15d";
+            shouldHighlight = model.sort === "alphabetic" ? true : false;
+            break;
+        case 1:
+            keyInsert = "ByWordLength";
+            tipInsert = "by word length";
+            unicodeIcon = "\uf160";
+            shouldHighlight = model.sort === "byLength" ? true : false;
+            break;
+        case 2:
+            keyInsert = "ByFrequency";
+            tipInsert = "by frequency";
+            unicodeIcon = "\uf176\uf09a";
+            shouldHighlight = model.sort === "byFrequency" ? true : false;
+            break;
+    }
     return (
-        <div className="section clear1" style={{ marginLeft: "6px" }}>
-            <table>
-                <tr>
-                    <td style={{ paddingLeft: "0" }}>
-                        <span
-                            id="sample-words-this-stage"
-                            data-i18n="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage"
-                        >
-                            Sample words in this stage
-                        </span>
-                        <span
-                            id="allowed-words-this-stage"
-                            data-i18n="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage"
-                        >
-                            Allowed words in this stage
-                        </span>
-                    </td>
-                    <td style={{ whiteSpace: "nowrap", paddingRight: "0" }}>
-                        <div className="sortBlock1 clear1">
-                            <div
-                                id="sortAlphabetic"
-                                className="sortItem1 rightBorder1 sortIconSelected"
-                            >
-                                <i
-                                    className="fa fa-sort-alpha-asc"
-                                    title="Sort alphabetically"
-                                ></i>
-                            </div>
-                            <div
-                                id="sortLength"
-                                className="sortItem1 rightBorder1"
-                            >
-                                <i
-                                    className="fa fa-sort-amount-asc"
-                                    title="Sort by word length"
-                                ></i>
-                            </div>
-                            <div id="sortFrequency" className="sortItem1">
-                                <i
-                                    className="fa fa-long-arrow-up"
-                                    title="Sort by frequency"
-                                ></i>
-                                <i
-                                    id="sortFrequency2"
-                                    className="fa fa-facebook"
-                                    title="Sort by frequency"
-                                ></i>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
+        <BloomButton
+            l10nKey={`EditTab.Toolbox.DecodableReaderTool.Sort${keyInsert}.Tooltip`}
+            l10nTipEnglishEnabled={`Sort ${tipInsert}`}
+            temporarilyDisableI18nWarning={true}
+            variant="text"
+            enabled={true}
+            hasText={true}
+            onClick={() => changeSortFunc(sortType)}
+            css={css`
+                font-family: FontAwesome;
+                font-size: 9pt;
+                width: 20px;
+                min-width: unset;
+                height: 18px;
+                border-radius: 0;
+                color: white;
+                border: 1px solid white;
+                background-color: ${shouldHighlight ? "grey" : "transparent"};
+
+                &:hover {
+                    background-color: ${shouldHighlight
+                        ? "grey"
+                        : "transparent"};
+                }
+            `}
+        >
+            {unicodeIcon}
+        </BloomButton>
     );
 };
 
-const WordsInStage: React.FunctionComponent = () => {
+const SortedStageWords: React.FunctionComponent<{
+    stageSightWords: string[];
+    allowedWords: string[];
+    changeSortFunc: (which: 0 | 1 | 2) => void;
+}> = ({ stageSightWords, allowedWords, changeSortFunc }) => {
     return (
-        <div className="tableHolder1 clear1">
-            <div id="wordList" className="wordList1"></div>
-        </div>
-    );
-};
-
-const HiddenLabel: React.FunctionComponent = () => {
-    return (
-        <div id="hiddenWordListForDecodableReader" style={{ display: "none" }}>
-            <label
-                id="allowed_word_list_truncated_text"
-                data-i18n="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated"
+        <div
+            css={css`
+                margin-top: 20px;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+                flex: 1 1 auto;
+                overflow: hidden;
+            `}
+        >
+            <div>
+                {model.synphony?.source.useAllowedWords === 1 ? (
+                    <Span
+                        l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage"
+                        css={css`
+                            margin-left: 8px;
+                            color: #b0dee4;
+                            display: inline-flex;
+                            width: 110px;
+                        `}
+                    >
+                        Allowed words in this stage
+                    </Span>
+                ) : (
+                    <Span
+                        l10nKey="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage"
+                        css={css`
+                            margin-left: 8px;
+                            color: #b0dee4;
+                            display: inline-flex;
+                            width: 110px;
+                        `}
+                    >
+                        Sample words in this stage
+                    </Span>
+                )}
+                <SortButton sortType={0} changeSortFunc={changeSortFunc} />
+                <SortButton sortType={1} changeSortFunc={changeSortFunc} />
+                {model.synphony?.source.useAllowedWords === 0 && (
+                    <SortButton sortType={2} changeSortFunc={changeSortFunc} />
+                )}
+            </div>
+            <div
+                css={css`
+                    display: grid;
+                    overflow: auto;
+                    gap: 8px;
+                    max-height: 300px;
+                    margin-left: 8px;
+                    margin-right: 8px;
+                    margin-top: 8px;
+                `}
             >
-                Bloom can handle only the first {0} words.
-            </label>
-        </div>
-    );
-};
-
-const DecReaderToggle: React.FunctionComponent = () => {
-    return (
-        <div id="decodable-reader-tool-toggle-react-container1">
-            <ReaderToolSwitch isForLeveled={false} />
+                {(model.synphony?.source.useAllowedWords === 1
+                    ? allowedWords
+                    : stageSightWords
+                ).map((word, index) => (
+                    <div key={index}>{word}</div>
+                ))}
+            </div>
         </div>
     );
 };
 
 export const DecodableReaderToolControls: React.FunctionComponent = () => {
-    const [currentStage, setCurrentStage] = useState<number>(model.stageNumber);
-    const [currentGraphemes, setCurGraphemes] = useState(
+    const [showTool, setShowTool] = useState<boolean>(
+        isReaderToolEnabledOnCurrentPage(false),
+    );
+    const [currentStage, setCurrentStage] = useState<number>(
+        model.getNumberOfStages() === 0 ? 0 : model.stageNumber,
+    );
+    const [currentGraphemes, setCurGraphemes] = useState<string[]>(
         model.getKnownGraphemesSorted(model.stageNumber),
     );
+    const [stageSightWords, setStageSightWords] = useState<string[]>(
+        model.getStageSightWordsSorted(model.stageNumber),
+    );
+    const [allowedWords, setAllowedWords] = useState<string[]>(
+        model.getAllowedWordsSorted(model.stageNumber),
+    );
+
+    function updateState(): void {
+        setCurrentStage(
+            model.getNumberOfStages() === 0 ? 0 : model.stageNumber,
+        );
+        setCurGraphemes(model.getKnownGraphemesSorted(model.stageNumber));
+        setStageSightWords(model.getStageSightWordsSorted(model.stageNumber));
+        setAllowedWords(model.getAllowedWordsSorted(model.stageNumber));
+    }
+
+    model.refreshFunc = updateState;
 
     function changeStage(increment: boolean): void {
         if (increment) {
@@ -205,40 +299,124 @@ export const DecodableReaderToolControls: React.FunctionComponent = () => {
         } else {
             model.decrementStage();
         }
-        setCurrentStage(model.stageNumber);
-        setCurGraphemes(model.getKnownGraphemesSorted(model.stageNumber));
+        updateState();
+    }
+
+    function changeSortFunc(which: 0 | 1 | 2): void {
+        switch (which) {
+            case 0:
+                model.sortAlphabetically();
+                break;
+            case 1:
+                model.sortByLength();
+                break;
+            case 2:
+                model.sortByFrequency();
+                break;
+            default:
+        }
+        setStageSightWords(model.getStageSightWordsSorted(model.stageNumber));
+        setAllowedWords(model.getAllowedWordsSorted(model.stageNumber));
     }
 
     return (
-        <div>
-            <div id="decodable-reader-tool-content1" className="turned-off1">
-                <BloomButton
-                    href="javascript:window.toolboxBundle.showSetupDialog('stages');"
-                    l10nKey="EditTab.Toolbox.DecodableReaderTool.SetUpStages"
-                    variant={"text"}
-                    enabled={true}
-                    hasText={true}
-                    enabledImageFile="/bloom/bookEdit/toolbox/readers/edit-white.png"
+        <div
+            css={css`
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                min-height: 0;
+                overflow: hidden;
+            `}
+        >
+            {showTool && (
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        flex: 1 1 auto;
+                        min-height: 0;
+                        overflow: hidden;
+                    `}
                 >
-                    Set Up Stages
-                </BloomButton>
-                <CurrentStage
-                    currentStage={currentStage}
-                    changeFunction={changeStage}
-                />
-                <LettersInStageTitle />
-                <LettersInStage currentGraphemes={currentGraphemes} />
-                <SortTable />
-                <WordsInStage />
-                <Link
-                    l10nKey="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
-                    href="javascript:toolboxBundle.makeLetterWordList();"
-                >
-                    Generate a letter and word list report
-                </Link>
-                <HiddenLabel />
-            </div>
-            <DecReaderToggle />
+                    <div
+                        css={css`
+                            display: flex;
+                            justify-content: right;
+                            margin-bottom: 10px;
+                        `}
+                    >
+                        <BloomButton
+                            href="javascript:window.toolboxBundle.showSetupDialog('stages');"
+                            l10nKey="EditTab.Toolbox.DecodableReaderTool.SetUpStages"
+                            variant="text"
+                            enabled={true}
+                            hasText={true}
+                            enabledImageFile="/bloom/bookEdit/toolbox/readers/edit-white.png"
+                            css={css`
+                                font-size: xx-small;
+                                text-decoration: underline;
+                                text-underline-offset: 1px;
+                                height: 30px;
+                                img {
+                                    height: 14px;
+                                    margin-right: 1px;
+                                }
+                            `}
+                        >
+                            Set Up Stages
+                        </BloomButton>
+                    </div>
+                    <StageNav
+                        currentStage={currentStage}
+                        changeFunction={changeStage}
+                    />
+                    {model.synphony?.source.useAllowedWords === 0 && (
+                        <StageGraphemes currentGraphemes={currentGraphemes} />
+                    )}
+                    <SortedStageWords
+                        stageSightWords={stageSightWords}
+                        allowedWords={allowedWords}
+                        changeSortFunc={changeSortFunc}
+                    />
+                    {model.synphony?.source.useAllowedWords === 0 && (
+                        <Link
+                            l10nKey="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
+                            href="javascript:toolboxBundle.makeLetterWordList();"
+                            css={css`
+                                left: -3px;
+                                padding: 8px;
+                                padding-left: 11px;
+                                background-color: #1a1a1a;
+                                box-sizing: border-box;
+                                width: calc(100% + 3px);
+                                text-decoration: underline;
+                            `}
+                        >
+                            Generate a letter and word list report
+                        </Link>
+                    )}
+                    {allowedWords.length >= model.maxAllowedWords && (
+                        <Span
+                            l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated"
+                            l10nParam0={model.maxAllowedWords.toString()}
+                            css={css`
+                                padding: 8px 4px;
+                                background-color: #1a1a1a;
+                                color: red;
+                            `}
+                        >
+                            Bloom can handle only the first {0} words.
+                        </Span>
+                    )}
+                </div>
+            )}
+            <ReaderToolSwitch
+                isForLeveled={false}
+                changeDisplayFunc={() =>
+                    showTool ? setShowTool(false) : setShowTool(true)
+                }
+            />
         </div>
     );
 };
