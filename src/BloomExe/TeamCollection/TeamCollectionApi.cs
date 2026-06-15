@@ -586,7 +586,12 @@ namespace Bloom.TeamCollection
 
             // If the request asked for the book by name, we don't have an actual Book object.
             // However, it happens that those requests don't need the checkinMessage.
-            var checkinMessage = book == null ? "" : BookHistory.GetPendingCheckinMessage(book);
+            // Also skip if the book's folder is gone (e.g., between a TC rename and SelectBookAtStartup
+            // running), to avoid a spurious "Problem reading book history" toast.
+            var checkinMessage =
+                book == null || !Directory.Exists(book.FolderPath)
+                    ? ""
+                    : BookHistory.GetPendingCheckinMessage(book);
             return JsonConvert.SerializeObject(
                 new
                 {
