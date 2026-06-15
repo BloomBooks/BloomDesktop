@@ -367,6 +367,26 @@
         <target xml:lang="bn" state="final">সংরক্ষণ করার সময় সমস্যা ছিল। পূর্বের পৃষ্ঠায় ফিরে যান এবং নিশ্চিত করুন যে সেটি সঠিক।</target>
         <note>ID: Browser.ProblemSaving</note>
       </trans-unit>
+      <trans-unit id="CollectionChooser.BookCountSingular" translate="no">
+        <source xml:lang="en">{0} book</source>
+        <target xml:lang="bn" state="needs-translation">{0} book</target>
+        <note>ID: CollectionChooser.BookCountSingular</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.BookCountPlural" translate="no">
+        <source xml:lang="en">{0} books</source>
+        <target xml:lang="bn" state="needs-translation">{0} books</target>
+        <note>ID: CollectionChooser.BookCountPlural</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.CheckedOutCount" translate="no">
+        <source xml:lang="en">{0} checked out to you</source>
+        <target xml:lang="bn" state="needs-translation">{0} checked out to you</target>
+        <note>ID: CollectionChooser.CheckedOutCount</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.UnpublishedToBloomLibrary" translate="no">
+        <source xml:lang="en">{0} unpublished to bloomlibrary.org</source>
+        <target xml:lang="bn" state="needs-translation">{0} unpublished to bloomlibrary.org</target>
+        <note>ID: CollectionChooser.UnpublishedToBloomLibrary</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
         <target xml:lang="bn" state="needs-translation">About Bloom Subscriptions</target>
@@ -4098,11 +4118,6 @@
         <source xml:lang="en">Click 'Next' to get started.</source>
         <target xml:lang="bn" state="final">শুরু করতে 'পরবর্তী' ক্লিক করুন।</target>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine3</note>
-      </trans-unit>
-      <trans-unit id="OpenCreateCloneControl.InDropboxMessage" approved="yes">
-        <source xml:lang="en">Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.</source>
-        <target xml:lang="bn" state="final">ব্লুম শনাক্ত করেছে যে এই সংগ্রহশালাটি আপনার ড্রপবক্সের ফোল্ডারে রয়েছে।এটি একটি সমস্যার কারণ হতে পারে যেহেতু ড্রপবক্স কখনও কখনও ব্লুমকে তার নিজের ফাইল থেকে লক করে।যদি কোন সমস্যার সম্মুখীন হন, আমরা পরামর্শ দিচ্ছি যে আপনার সংগ্রহ অন্যত্র সরিয়ে রাখুন অথবা ব্লুম ব্যবহারের সময় ড্রপবক্স নিষ্ক্রিয় রাখুন।</target>
-        <note>ID: OpenCreateCloneControl.InDropboxMessage</note>
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage" approved="yes">
         <source xml:lang="en">This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</source>
