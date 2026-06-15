@@ -319,6 +319,10 @@ export const DialogTitle: FunctionComponent<{
                 css={css`
                     margin-top: auto;
                     margin-bottom: auto;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    min-width: 0;
                 `}
             >
                 {props.title}
