@@ -266,7 +266,7 @@ export class DecodableReaderToolboxTool implements ITool {
     }
 
     public id() {
-        return "decodableReader";
+        return "decodableReaderOld";
     }
 
     public hasRestoredSettings: boolean;
