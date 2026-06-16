@@ -121,11 +121,19 @@ namespace Bloom.Api
                 langTagM1 = request.CurrentBook.BookData.MetadataLanguage1Tag;
                 langTagM2 = request.CurrentBook.BookData.MetadataLanguage2Tag;
             }
-            else
+            else if (request.CurrentCollectionSettings != null)
             {
                 langTag1 = request.CurrentCollectionSettings.Language1.Tag;
                 langTagM1 = request.CurrentCollectionSettings.Language2.Tag;
                 langTagM2 = request.CurrentCollectionSettings.Language3?.Tag ?? "";
+            }
+            else
+            {
+                // No project loaded (e.g. startup collection chooser dialog).
+                // V/N1/N2 substitutions are irrelevant for app-level UI strings.
+                langTag1 = "";
+                langTagM1 = "";
+                langTagM2 = "";
             }
             langId = langId.Replace("V", langTag1);
             langId = langId.Replace("N1", langTagM1);

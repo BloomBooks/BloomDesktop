@@ -13,7 +13,8 @@ import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-import * as ReactDOM from "react-dom";
+import { createPortal } from "react-dom";
+import { renderRoot } from "../../utils/reactRender";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 import * as toastr from "toastr";
@@ -379,7 +380,7 @@ const PageThumbnailContextMenu: React.FunctionComponent<{
         }
     };
 
-    return ReactDOM.createPortal(
+    return createPortal(
         <div
             ref={menuRef}
             role="menu"
@@ -1027,7 +1028,7 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
 $(window).ready(() => {
     const pageLayout =
         document.body.getAttribute("data-pageSize") || "A5Portrait";
-    ReactDOM.render(
+    renderRoot(
         <PageList initialPageLayout={pageLayout} />,
         document.getElementById("pageGridWrapper"),
     );

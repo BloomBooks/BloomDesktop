@@ -136,6 +136,7 @@ export const BloomEnterpriseIconWithTooltip: React.FunctionComponent<{
 
 export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
     featureName: string;
+    children?: React.ReactNode;
 }> = (props) => {
     const memoizedFeatureName = React.useMemo(
         () => props.featureName,

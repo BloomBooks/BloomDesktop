@@ -20,7 +20,7 @@ import "../../../lib/jquery.onSafe";
 import axios from "axios";
 import { get } from "../../../utils/bloomApi";
 import * as _ from "underscore";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../../utils/reactRender";
 import * as React from "react";
 import { ReaderToolSwitch } from "./ReaderToolSwitch";
 
@@ -699,7 +699,7 @@ export function createToggle(isForLeveled: boolean) {
     const renderToggle = (currentBookKey: string) => {
         // ReaderToolSwitch is controlled, so a normal render updates it for the current page
         // without the visible blanking caused by unmounting first.
-        ReactDOM.render(
+        renderRoot(
             React.createElement(ReaderToolSwitch, {
                 isForLeveled,
                 key: getReaderToggleRenderKey(isForLeveled, currentBookKey),
@@ -726,7 +726,7 @@ export function setReaderToolContentShown(
     const prefix = isForLeveled ? "leveled" : "decodable";
     document
         .getElementById(`${prefix}-reader-tool-content`)
-        ?.classList.toggle("turned-off1", !isShown);
+        ?.classList.toggle("turned-off", !isShown);
 }
 
 export function setReaderToolToggleShown(

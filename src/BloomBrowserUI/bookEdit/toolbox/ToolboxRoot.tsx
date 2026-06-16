@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../utils/reactRender";
 import axios from "axios";
 import { css } from "@emotion/react";
 import Accordion from "@mui/material/Accordion";
@@ -70,7 +70,7 @@ const toolIconPathByToolId: Record<string, string> = {
 
 const legacyToolSubPathByToolId: Record<string, string> = {
     talkingBook: "talkingBook/talkingBookToolboxTool.html",
-    //decodableReader: "readers/decodableReader/decodableReaderToolboxTool.html",
+    decodableReader: "readers/decodableReader/decodableReaderToolboxTool.html",
     leveledReader: "readers/leveledReader/leveledReaderToolboxTool.html",
     settings: "settings/Settings.html",
     settingsTool: "settings/Settings.html",
@@ -1065,5 +1065,5 @@ export const renderToolboxRoot = (): void => {
     hostElement.style.display = "flex";
     hostElement.style.flexDirection = "column";
 
-    ReactDOM.render(<ToolboxRoot />, hostElement);
+    renderRoot(<ToolboxRoot />, hostElement);
 };

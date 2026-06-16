@@ -79,7 +79,7 @@ import { reportError } from "../lib/errorHandler";
 import type { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../utils/reactRender";
 import { FunctionComponentElement } from "react";
 import { ToastDebugInput, toastDebugEvents } from "../toast/toastUtils";
 
@@ -280,7 +280,7 @@ export function ShowEditViewDialog(dialog: FunctionComponentElement<unknown>) {
     // Note that modal dialogs actually create a sibling to this, they don't actually end up being children in the DOM.
     // Also note that if we call this twice, everything is fine: MUI doesn't seem to actually care if we remove the
     // root we called render on; it has already made a child of Body that it is using for the root of its dialog.
-    ReactDOM.render(dialog, root);
+    renderRoot(dialog, root);
 }
 
 export function showConfirmDialog(props: IConfirmDialogProps): void {
