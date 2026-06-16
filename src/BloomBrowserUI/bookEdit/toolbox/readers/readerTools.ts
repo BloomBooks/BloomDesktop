@@ -598,7 +598,7 @@ export function setReaderToolContentShown(
     const prefix = isForLeveled ? "leveled" : "decodable";
     document
         .getElementById(`${prefix}-reader-tool-content`)
-        ?.classList.toggle("turned-off", !isShown);
+        ?.classList.toggle("turned-off1", !isShown);
 }
 
 export function setReaderToolToggleShown(

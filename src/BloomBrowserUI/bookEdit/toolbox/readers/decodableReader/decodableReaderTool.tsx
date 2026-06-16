@@ -180,4 +180,62 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     public configureElements(container: HTMLElement) {
         this.setupReaderKeyAndFocusHandlers(container);
     }
+<<<<<<<< HEAD:src/BloomBrowserUI/bookEdit/toolbox/readers/decodableReader/decodableReaderTool.tsx
+========
+
+    public showTool() {
+        // change markup based on visible options
+        getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
+        // Toggle render is handled in newPageReady(), where page reader classes are settled.
+    }
+
+    public newPageReady() {
+        // Remount the toggle after the page is ready so it can pick up the
+        // current page body's reader classes instead of the initial placeholder state.
+        createToggle(false);
+
+        const isForLeveled = false;
+        const shouldShowContent =
+            !!ToolBox.getPage()?.classList.contains("decodable-reader");
+        setReaderToolContentShown(isForLeveled, shouldShowContent);
+
+        // Most cases don't require setMarkupType(), but when switching pages
+        // it will have been set to 0 by detachFromPage() on the old page.
+        // So we do want to set the appropriate markup, but if the toggle is off, we want the markup off.
+        getTheOneReaderToolsModel().setMarkupType(shouldShowContent ? 1 : 0);
+        getTheOneReaderToolsModel().updateControlContents();
+        // usually updateMarkup will do this, unless we are coming from showTool
+        getTheOneReaderToolsModel().doMarkup();
+    }
+
+    public hideTool() {
+        // nothing to do here (if this class eventually extends our React Adaptor, this can be removed.)
+    }
+
+    public detachFromPage() {
+        getTheOneReaderToolsModel().setMarkupType(0);
+    }
+
+    public updateMarkup() {
+        // Don't let this lower-level code create ckeditor bookmarks in this case.
+        // We've already created them in toolbox.ts which calls this.
+        const createCkEditorBookMarks = false;
+        getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
+    }
+    public async updateMarkupAsync() {
+        // If you implement this, you may need to do something like cleanUpCkEditorHtml() in audioRecording.ts.
+        throw "not implemented...use updateMarkup";
+        return () => undefined;
+    }
+
+    public isUpdateMarkupAsync(): boolean {
+        return false;
+    }
+
+    public id() {
+        return "decodableReaderOld";
+    }
+
+    public hasRestoredSettings: boolean;
+>>>>>>>> 240a7533fd (Reapply "Merge pull request #7968 from josiahwall/ConvertToolsToReact"):src/BloomBrowserUI/bookEdit/toolbox/readers/decodableReader/decodableReaderToolboxTool.ts
 }
