@@ -3,33 +3,33 @@
 @toggle-button-height: 32px;
 
 #leveled-reader-tool-content,
-#decodable-reader-tool-content {
+#decodable-reader-tool-content1 {
     max-height: calc(100% - @toggle-button-height);
     overflow: auto;
-    &.turned-off {
+    &.turned-off1 {
         max-height: 0;
         opacity: 0;
     }
 }
 #leveled-reader-tool-toggle-react-container,
-#decodable-reader-tool-toggle-react-container {
+#decodable-reader-tool-toggle-react-container1 {
     max-height: @toggle-button-height;
 }
 
 // Not sure why, but after the switch to single browser, the toggle
 // was displaying too high. I'm ok just tweaking it for now.
 // Eventually we'll rewrite the tool in React.
-#decodable-reader-tool-content:not(.turned-off)
-    + #decodable-reader-tool-toggle-react-container {
+#decodable-reader-tool-content1:not(.turned-off)
+    + #decodable-reader-tool-toggle-react-container1 {
     margin-top: 8px;
 }
 
 /*Styles for ReaderTools.htm*/
-div.stageLine {
+div.stageLine1 {
     display: block;
     font-size: 16pt;
 }
-span.stageLine {
+span.stageLine1 {
     float: left;
     user-select: none;
 }
@@ -58,28 +58,28 @@ td.statistics-actual {
     overflow-wrap: break-word;
     vertical-align: top;
 }
-span.setup {
+span.setup1 {
     font-size: xx-small;
     margin-left: 10px;
 }
-div.tableHolder {
+div.tableHolder1 {
     overflow: auto;
 }
-div.sortBlock {
+div.sortBlock1 {
     position: relative;
     float: right;
     margin: 0 14px 8px 6px;
     display: inline-block;
     border: 1px solid white;
 }
-div.rightBorder {
+div.rightBorder1 {
     border: 0 solid white;
     border-right-width: 1px;
 }
 div.sortIconSelected {
     background: grey;
 }
-div.sortItem {
+div.sortItem1 {
     display: inline-block;
     color: white;
     padding: 2px 3px;
@@ -95,11 +95,11 @@ td.disabledLimit {
     visibility: hidden;
 }
 
-div.wordList,
-div.letterList {
+div.wordList1,
+div.letterList1 {
     margin: 4px;
 }
-div.wordList {
+div.wordList1 {
     column-count: 3;
 }
 div.letter {
@@ -115,7 +115,7 @@ div.sight-word {
     color: #87cefa;
 }
 
-#lettersTable {
+#lettersTable1 {
     max-height: ~"calc(100% - 200px)"; //prefer the letters list over the word list. It's a real drag to have to scroll the letters.
     min-height: 100px;
 }
@@ -133,7 +133,7 @@ div.section ul li {
     cursor: pointer;
 }
 
-#make-letter-word-list-div {
+#make-letter-word-list-div1 {
     position: absolute;
     bottom: 0;
     left: -3px; // matches the 3px left padding in toolbox.less
@@ -143,7 +143,7 @@ div.section ul li {
     box-sizing: border-box;
     width: calc(100% + 3px); // to match the -3px left above
 }
-#make-letter-word-list {
+#make-letter-word-list1 {
     font-size: 10px;
 }
 
@@ -154,15 +154,15 @@ div.section ul li {
     margin: 0 10px 14px 0;
 }
 
-#setupStages span.setup {
+#setupStages span.setup1 {
     margin-left: 2px;
 }
 
-.noSelect {
+.noSelect1 {
     user-select: none;
 }
 
-#decodable-edit {
+#decodable-edit1 {
     height: 14px;
     position: relative;
     top: 3px;
@@ -173,7 +173,7 @@ div.section ul li {
     top: 3px;
 }
 
-#allowed-word-list-truncated {
+#allowed-word-list-truncated1 {
     position: absolute;
     bottom: 0;
     padding: 8px 4px;
