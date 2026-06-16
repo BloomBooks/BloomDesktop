@@ -215,113 +215,225 @@ namespace Bloom.Publish.BloomPub
             SafeXmlDocument dom
         )
         {
-            List<string> imagesToPreserveResolution;
-            List<string> coverImages;
+            var imagesToPreserveResolution = FindImagesToPreserveResolution(dom);
 
             var fullScreenAttr = dom.GetElementsByTagName("body")
                 .Cast<SafeXmlElement>()
                 .First()
                 .GetAttribute("data-bffullscreenpicture");
-            if (
+            // Motion books in landscape mode produce an all-black background; making images
+            // transparent on a black background makes line art invisible (BL-6564).
+            var fullScreenBlack =
                 fullScreenAttr != null
-                && fullScreenAttr.IndexOf("bloomReader", StringComparison.InvariantCulture) >= 0
+                && fullScreenAttr.IndexOf("bloomReader", StringComparison.InvariantCulture) >= 0;
+
+            // ImagePublishSettings.MaxWidth/MaxHeight are in landscape orientation (width > height),
+            // but GetDesiredImageSize expects portrait orientation, so pass Height as maxShortSide.
+            var maxShortSide = (int)imagePublishSettings.MaxHeight;
+            var maxLongSide = (int)imagePublishSettings.MaxWidth;
+
+            // Cache: (lowercaseFilename, transparencyMode) → new filename, or null if unchanged.
+            var processedImages = new Dictionary<(string, ImageTransparencyMode), string>();
+
+            // Original files that have been format-converted (e.g. "photo.jpg" when it became
+            // "photo_t.png"). Deletion is deferred until after all elements are processed so
+            // that a second element with a different mode can still read the original.
+            var pendingDeletions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // Files on disk that are still referenced unchanged by an already-processed element.
+            // A deferred deletion must not remove a claimed file, because the earlier element's
+            // style/src still points to it.
+            var claimedFilenames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            using (var tempDir = new TemporaryFolder("BloomPubImageAdjust"))
+            {
+                foreach (
+                    SafeXmlElement pageDiv in dom.SafeSelectNodes(
+                            "//div[contains(@class,'bloom-page')]"
+                        )
+                        .Cast<SafeXmlElement>()
+                )
+                {
+                    var pageNeedsTransparent =
+                        !fullScreenBlack && HtmlDom.PageNeedsTransparentImages(pageDiv);
+
+                    // Background-image style divs: ConvertImagesToBackground already ran and
+                    // copied bloom-transparent/bloom-opaque from the deleted img to the div.
+                    foreach (
+                        var div in pageDiv
+                            .SafeSelectNodes(
+                                ".//div[contains(@class,'bloom-background-image-in-style-attr')]"
+                            )
+                            .Cast<SafeXmlElement>()
+                    )
+                    {
+                        var style = div.GetAttribute("style") ?? "";
+                        if (!style.Contains("background-image:url"))
+                            continue;
+                        var filename = ExtractFilenameFromBackgroundImageStyleUrl(style);
+                        if (
+                            string.IsNullOrEmpty(filename)
+                            || imagesToPreserveResolution.Contains(filename)
+                        )
+                            continue;
+
+                        var transparencyMode = GetElementTransparencyMode(
+                            div,
+                            pageNeedsTransparent,
+                            fullScreenBlack
+                        );
+                        var newFilename = ProcessImageFile(
+                            filename,
+                            transparencyMode,
+                            modifiedBookFolderPath,
+                            tempDir.FolderPath,
+                            maxShortSide,
+                            maxLongSide,
+                            processedImages,
+                            pendingDeletions,
+                            claimedFilenames
+                        );
+                        if (newFilename != null)
+                        {
+                            var oldEncoded = System.Web.HttpUtility.UrlPathEncode(filename);
+                            var newEncoded = System.Web.HttpUtility.UrlPathEncode(newFilename);
+                            div.SetAttribute(
+                                "style",
+                                style.Replace(oldEncoded, newEncoded).Replace(filename, newFilename)
+                            );
+                        }
+                    }
+
+                    // After ConvertImagesToBackground, all content images (inside
+                    // bloom-imageContainer / bloom-canvas) are already background-image divs
+                    // handled by the loop above. Any remaining img elements (branding, qrcode)
+                    // don't need transparency and are small enough not to require resizing here.
+                }
+
+                // Delete original files that were format-converted by some mode and are no
+                // longer referenced directly. Deletion is deferred to here so that a second
+                // element using a different mode can still read the original during processing.
+                foreach (var fileToDelete in pendingDeletions)
+                {
+                    if (!claimedFilenames.Contains(fileToDelete))
+                    {
+                        var pathToDelete = Path.Combine(modifiedBookFolderPath, fileToDelete);
+                        if (RobustFile.Exists(pathToDelete))
+                            RobustFile.Delete(pathToDelete);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determine what transparency processing an image element needs, based on its CSS
+        /// classes and whether its page has a colored background.
+        /// </summary>
+        private static ImageTransparencyMode GetElementTransparencyMode(
+            SafeXmlElement element,
+            bool pageNeedsTransparent,
+            bool fullScreenBlack
+        )
+        {
+            // Motion-book all-black backdrop: transparency makes images invisible.
+            if (fullScreenBlack)
+                return ImageTransparencyMode.None;
+            // bloom-opaque: explicit user override "never make transparent".
+            if (element.HasClass("bloom-opaque"))
+                return ImageTransparencyMode.None;
+            // bloom-transparent: explicit user override "always force transparent".
+            if (element.HasClass("bloom-transparent"))
+                return ImageTransparencyMode.Force;
+            if (!pageNeedsTransparent)
+                return ImageTransparencyMode.None;
+            return ImageTransparencyMode.Auto;
+        }
+
+        /// <summary>
+        /// Compress/resize a single image file, applying transparency if needed. Returns the
+        /// new filename when the file format changed (e.g. jpg → png), or null when the filename
+        /// is unchanged. Results are cached by (filename, mode) so the same (file, processing)
+        /// pair is only handled once. Each (filename, mode) pair always processes from the
+        /// original source file, so different modes never interfere with each other. When a
+        /// format change occurs (e.g. jpg → png), a mode-specific suffix is added to avoid
+        /// filename collisions between modes, and the original is added to
+        /// <paramref name="pendingDeletions"/> rather than deleted immediately (so that a
+        /// subsequent element with a different mode can still read the original).
+        /// </summary>
+        private static string ProcessImageFile(
+            string filename,
+            ImageTransparencyMode mode,
+            string bookFolderPath,
+            string tempFolderPath,
+            int maxShortSide,
+            int maxLongSide,
+            Dictionary<(string, ImageTransparencyMode), string> processedImages,
+            HashSet<string> pendingDeletions,
+            HashSet<string> claimedFilenames
+        )
+        {
+            var cacheKey = (filename.ToLowerInvariant(), mode);
+            if (processedImages.TryGetValue(cacheKey, out var cached))
+                return cached;
+
+            // Each (filename, mode) pair always works from the original source file.
+            // Different modes never follow each other's renames, so there is no cross-mode
+            // interference.
+            var filePath = Path.Combine(bookFolderPath, filename);
+            if (
+                !RobustFile.Exists(filePath)
+                || !BookCompressor.CompressableImageFileExtensions.Contains(
+                    Path.GetExtension(filePath).ToLowerInvariant()
+                )
             )
             {
-                // This feature (currently used for motion books in landscape mode) triggers an all-black background,
-                // due to a rule in bookFeatures.less.
-                // Making white pixels transparent on an all-black background makes line-art disappear,
-                // which is bad (BL-6564), so just make an empty list in this case.
-                coverImages = new List<string>();
+                processedImages[cacheKey] = null;
+                return null;
+            }
+
+            var adjustedPath = ImageUtils.AdjustImageForDisplay(
+                filePath,
+                tempFolderPath,
+                mode,
+                maxShortSide,
+                maxLongSide
+            );
+
+            string result;
+            if (adjustedPath == null)
+            {
+                // No size/transparency change needed; the original file is used as-is.
+                claimedFilenames.Add(filename);
+                result = null;
             }
             else
             {
-                coverImages = FindCoverImages(dom);
-            }
-            imagesToPreserveResolution = FindImagesToPreserveResolution(dom);
+                var adjustedExt = Path.GetExtension(adjustedPath).ToLowerInvariant();
 
-            foreach (var filePath in Directory.GetFiles(modifiedBookFolderPath))
-            {
-                if (
-                    BookCompressor.CompressableImageFileExtensions.Contains(
-                        Path.GetExtension(filePath).ToLowerInvariant()
-                    )
-                )
+                // Whether the extension changed or not, always write to a new mode-specific
+                // file and defer deletion of the original. This prevents the same-extension
+                // case (e.g. PNG made transparent, or JPEG resized) from overwriting the
+                // original before a later (filename, differentMode) pair has processed it.
+                var modeSuffix = mode switch
                 {
-                    var fileName = Path.GetFileName(filePath);
-                    if (imagesToPreserveResolution.Contains(fileName))
-                        continue; // don't compress these
-                    // Cover images should be transparent if possible.  Others don't need to be.
-                    var forUseOnColoredBackground = coverImages.Contains(fileName);
-                    GetNewImageIfNeeded(filePath, imagePublishSettings, forUseOnColoredBackground);
-                }
+                    ImageTransparencyMode.Force => "_tf",
+                    ImageTransparencyMode.Auto => "_t",
+                    _ => "_r", // None mode: resize / format-conversion only
+                };
+                var newFilename =
+                    Path.GetFileNameWithoutExtension(filename) + modeSuffix + adjustedExt;
+                RobustFile.Copy(adjustedPath, Path.Combine(bookFolderPath, newFilename));
+                // Defer deletion: a later element with a different mode may still need
+                // the original. The actual delete happens after all elements are processed.
+                pendingDeletions.Add(filename);
+                result = newFilename;
             }
-        }
 
-        private static void GetNewImageIfNeeded(
-            string filePath,
-            ImagePublishSettings imagePublishSettings,
-            bool forUseOnColoredBackground
-        )
-        {
-            using (var tagFile = RobustFileIO.CreateTaglibFile(filePath))
-            {
-                var currentWidth = tagFile.Properties.PhotoWidth;
-                var currentHeight = tagFile.Properties.PhotoHeight;
-                // We want to make sure that the image is not larger than the maximum width or height.
-                // We don't know whether the image is portrait or landscape, so we have to check both
-                // orientations.  The publish settings are known to be in landscape orientation, and
-                // the image has to fit into those bounds, but we don't care whether the actual display
-                // is portrait or landscape.
-                if (
-                    imagePublishSettings.MaxWidth >= currentWidth
-                        && imagePublishSettings.MaxHeight >= currentHeight
-                    || imagePublishSettings.MaxWidth >= currentHeight
-                        && imagePublishSettings.MaxHeight >= currentWidth
-                )
-                {
-                    if (!forUseOnColoredBackground)
-                        return; // current file is okay as is: small enough and no need to make transparent.
-                }
-            }
-            BookCompressor.CopyResizedImageFile(
-                filePath,
-                filePath,
-                imagePublishSettings,
-                forUseOnColoredBackground
-            );
+            processedImages[cacheKey] = result;
+            return result;
         }
 
         private const string kBackgroundImage = "background-image:url('"; // must match format string in HtmlDom.SetImageElementUrl()
-
-        private static List<string> FindCoverImages(SafeXmlDocument xmlDom)
-        {
-            var transparentImageFiles = new List<string>();
-            foreach (
-                var div in xmlDom
-                    .SafeSelectNodes(
-                        "//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-background-image-in-style-attr')]"
-                    )
-                    .Cast<SafeXmlElement>()
-            )
-            {
-                var style = div.GetAttribute("style");
-                if (!String.IsNullOrEmpty(style) && style.Contains("background-image:url"))
-                {
-                    // extract filename from the background-image style
-                    transparentImageFiles.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
-                }
-                else
-                {
-                    // extract filename from child img element
-                    var img = div.SelectSingleNode("//img[@src]");
-                    if (img != null)
-                        transparentImageFiles.Add(
-                            System.Web.HttpUtility.UrlDecode(img.GetAttribute("src"))
-                        );
-                }
-            }
-            return transparentImageFiles;
-        }
 
         private static List<string> FindImagesToPreserveResolution(SafeXmlDocument dom)
         {
@@ -901,9 +1013,10 @@ namespace Bloom.Publish.BloomPub
                     .ToArray()
             )
             {
-                var img = imgContainer.ChildNodes.FirstOrDefault(n =>
-                    n is SafeXmlElement && n.Name == "img"
-                );
+                var img =
+                    imgContainer.ChildNodes.FirstOrDefault(n =>
+                        n is SafeXmlElement && n.Name == "img"
+                    ) as SafeXmlElement;
                 if (img == null || string.IsNullOrEmpty(img.GetAttribute("src")))
                     continue;
                 // The filename should be already urlencoded since src is a url.
@@ -919,13 +1032,19 @@ namespace Bloom.Publish.BloomPub
                 }
 
                 var classesToAdd = " bloom-background-image-in-style-attr";
+                // Preserve the user's explicit transparency overrides so FindImagesNeedingTransparency
+                // can still read them after the img element is deleted below.
+                if (img.HasClass("bloom-transparent"))
+                    classesToAdd += " bloom-transparent";
+                else if (img.HasClass("bloom-opaque"))
+                    classesToAdd += " bloom-opaque";
                 // This is a nasty special case; see BL-11712. This class causes images to grow to
                 // cover the container, so when we convert to a background image, somehow we need to
                 // do the same thing. If we have other similar classes we will have to do it again,
                 // and again have two equivalent rules. Maybe we can eventually get rid of converting
                 // to background image? Why did we want to, anyway?? Maybe we can copy all classes from
                 // the img? But we'd still need duplicate rules.
-                if ((img.GetAttribute("class") ?? "").Contains("bloom-imageObjectFit-cover"))
+                if (img.HasClass("bloom-imageObjectFit-cover"))
                     classesToAdd += " bloom-imageObjectFit-cover";
                 else
                 {

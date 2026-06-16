@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Xml;
 using Bloom.Api;
+using Bloom.ImageProcessing;
 using Bloom.Publish; // for DynamicJson
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
@@ -1959,6 +1960,225 @@ namespace Bloom.Book
             }
         }
 
+        /// <summary>
+        /// Returns true if the given bloom-page div has a non-white, non-transparent background
+        /// color, meaning images on this page should have their backgrounds made transparent.
+        /// Considers --page-background-color in the page's inline style (content pages set via
+        /// Page Settings) and the coverColor class (cover pages, reading the cover color from
+        /// the owning document's style element via GetCoverBackgroundColorFromOldInlineStyle).
+        /// This should be consistent with bloomImages.getOwningPageBackgroundColor().
+        /// </summary>
+        public static bool PageNeedsTransparentImages(SafeXmlElement pageDiv)
+        {
+            // Content pages: --page-background-color is written directly into the page div's style.
+            var style = pageDiv.GetAttribute("style");
+            if (!string.IsNullOrEmpty(style))
+            {
+                foreach (
+                    var segment in style.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                )
+                {
+                    var colonIndex = segment.IndexOf(':');
+                    if (colonIndex <= 0)
+                        continue;
+                    if (
+                        segment
+                            .Substring(0, colonIndex)
+                            .Trim()
+                            .Equals("--page-background-color", StringComparison.OrdinalIgnoreCase)
+                    )
+                        return ImageUtils.ShouldMakeTransparentForPageBackground(
+                            segment.Substring(colonIndex + 1).Trim()
+                        );
+                }
+            }
+
+            // Cover pages: background comes from the CSS rule written into the document's <style>
+            // element by SetBackwardsCompatibleCoverBackgroundColor.
+            if (pageDiv.HasClass("coverColor"))
+                return ImageUtils.ShouldMakeTransparentForPageBackground(
+                    GetCoverBackgroundColorFromOldInlineStyle(pageDiv.OwnerDocument)
+                );
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the active cover background color: first checks AppearanceSettings for
+        /// non-legacy books, then falls back to the CSS rule in the document's style element.
+        /// </summary>
+        public string GetCoverColor(AppearanceSettings settings)
+        {
+            if (settings != null && settings.CssThemeName != "legacy-5-6")
+            {
+                var color = settings.GetStringPropertyValueOrDefault(
+                    "cover-background-color",
+                    null
+                );
+                if (color != null)
+                    return color;
+            }
+            return GetCoverBackgroundColorFromOldInlineStyle(RawDom);
+        }
+
+        /// <summary>
+        /// Reads the cover background color from the CSS rule written into the document's
+        /// &lt;style&gt; element by SetBackwardsCompatibleCoverBackgroundColor.
+        /// Returns "#FFFFFF" if no rule is found.
+        /// </summary>
+        public static string GetCoverBackgroundColorFromOldInlineStyle(SafeXmlDocument dom)
+        {
+            foreach (
+                SafeXmlElement stylesheet in dom.SafeSelectNodes("//style").Cast<SafeXmlElement>()
+            )
+            {
+                var content = stylesheet.InnerText;
+                var match = new Regex(
+                    @".*\.bloom-page\.coverColor\s*{.*?background-color:\s*(#[0-9a-fA-F]*|[a-z]*)",
+                    RegexOptions.Singleline
+                ).Match(content);
+                if (match.Success)
+                    return match.Groups[1].Value;
+            }
+            return "#FFFFFF";
+        }
+
+        /// <summary>
+        /// Returns the transparency mode for a specific image, given its class and whether the page
+        /// needs transparent images (i.e., has a non-white background).
+        /// bloom-opaque and bloom-transparent classes override the page background check, but in the
+        /// absence of those, we use the page background to determine whether we will (later) apply
+        /// our algorithm to decide whether the image looks like line art.
+        /// </summary>
+        internal static ImageTransparencyMode GetImageTransparencyMode(
+            SafeXmlElement img,
+            bool pageNeedsTransparent
+        )
+        {
+            // bloom-opaque is an explicit user override: never apply transparency.
+            if (img.HasClass("bloom-opaque"))
+                return ImageTransparencyMode.None;
+            // bloom-transparent is an explicit user override: always force transparency,
+            // even for images that don't look (at least to our algorithm) like line art.
+            // This can also 'erase' very light-colored parts of an image, even on a white page.
+            if (img.HasClass("bloom-transparent"))
+                return ImageTransparencyMode.Force;
+            if (!pageNeedsTransparent)
+                return ImageTransparencyMode.None;
+            return ImageTransparencyMode.Auto;
+        }
+
+        /// <summary>
+        /// For each image that needs transparent rendering, append the appropriate
+        /// <c>transparent</c> query parameter to the img src:
+        /// <c>transparent=yes</c> for auto-detect mode, <c>transparent=force</c> to
+        /// bypass the line-art check (bloom-transparent class). Images with bloom-opaque
+        /// or on white pages (unless they have bloom-transparent) receive no parameter.
+        /// When <paramref name="suppressBackgroundColors"/> is true every page is treated
+        /// as having a white background, so only bloom-transparent images get a parameter.
+        /// Returns a list of modified (element, original-src) pairs so the caller can
+        /// restore them with <see cref="RestoreImageSrcs"/>, typically after making
+        /// HTML out of the temporarily modified DOM..
+        /// </summary>
+        internal static List<(SafeXmlElement img, string src)> AddTransparencyParamToImages(
+            HtmlDom dom,
+            bool suppressBackgroundColors = false
+        )
+        {
+            var modified = new List<(SafeXmlElement, string)>();
+            foreach (
+                SafeXmlElement pageDiv in dom.SafeSelectNodes(
+                        "//div[contains(@class,'bloom-page')]"
+                    )
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                var pageNeedsTransparent =
+                    !suppressBackgroundColors && PageNeedsTransparentImages(pageDiv);
+                foreach (
+                    SafeXmlElement img in pageDiv
+                        .SafeSelectNodes(".//img[@src]")
+                        .Cast<SafeXmlElement>()
+                )
+                {
+                    if (img.HasClass("branding") || img.HasClass("bloom-qrcode"))
+                        continue;
+                    var mode = GetImageTransparencyMode(img, pageNeedsTransparent);
+                    if (mode == ImageTransparencyMode.None)
+                        continue;
+                    var src = img.GetAttribute("src");
+                    if (string.IsNullOrEmpty(src))
+                        continue;
+                    modified.Add((img, src));
+                    var paramValue = mode == ImageTransparencyMode.Force ? "force" : "yes";
+                    img.SetAttribute("src", GetSrcWithTransparencyParam(src, paramValue));
+                }
+            }
+            return modified;
+        }
+
+        /// <summary>Restore image srcs saved by <see cref="AddTransparencyParamToImages"/>.</summary>
+        internal static void RestoreImageSrcs(List<(SafeXmlElement img, string src)> modifications)
+        {
+            foreach (var (img, src) in modifications)
+                img.SetAttribute("src", src);
+        }
+
+        /// <summary>
+        /// Returns <paramref name="src"/> with the <c>transparent</c> query parameter set to
+        /// <paramref name="paramValue"/> ("yes" or "force"), replacing any existing value.
+        /// When <paramref name="src"/> has no query string (the common case) this is a simple append.
+        /// </summary>
+        internal static string GetSrcWithTransparencyParam(string src, string paramValue)
+        {
+            var qIndex = src.IndexOf('?');
+            if (qIndex < 0)
+                return $"{src}?transparent={paramValue}";
+
+            // Strip any pre-existing transparent= param, then append the new one.
+            var path = src[..qIndex];
+            var remaining = string.Join(
+                "&",
+                src[(qIndex + 1)..]
+                    .Split('&')
+                    .Where(p => !p.StartsWith("transparent=", StringComparison.OrdinalIgnoreCase))
+            );
+            return remaining.Length > 0
+                ? $"{path}?{remaining}&transparent={paramValue}"
+                : $"{path}?transparent={paramValue}";
+        }
+
+        /// <summary>
+        /// Remove any <c>transparent=yes</c> or <c>transparent=force</c> query parameter
+        /// from img srcs in <paramref name="pageDiv"/>. Call this when page content is
+        /// received back from the browser before saving it permanently to the book DOM.
+        /// </summary>
+        internal static void RemoveTransparencyParamFromImages(SafeXmlElement pageDiv)
+        {
+            foreach (
+                SafeXmlElement img in pageDiv.SafeSelectNodes(".//img[@src]").Cast<SafeXmlElement>()
+            )
+            {
+                var src = img.GetAttribute("src");
+                if (src == null || !src.Contains("transparent="))
+                    continue;
+
+                var qIndex = src.IndexOf('?');
+                if (qIndex < 0)
+                    continue; // no query string; nothing to remove
+                var path = src[..qIndex];
+                var remaining = string.Join(
+                    "&",
+                    src[(qIndex + 1)..]
+                        .Split('&')
+                        .Where(p =>
+                            !p.StartsWith("transparent=", StringComparison.OrdinalIgnoreCase)
+                        )
+                );
+                img.SetAttribute("src", remaining.Length > 0 ? path + "?" + remaining : path);
+            }
+        }
+
         private static void RemoveStyleProperties(
             SafeXmlElement element,
             params string[] propertyNames
@@ -2016,6 +2236,7 @@ namespace Bloom.Book
                 node.ParentNode.RemoveChild(node);
             RemoveTemplateEditingMarkup(edittedPageDiv);
             RemoveCkEditorMarkup(edittedPageDiv);
+            RemoveTransparencyParamFromImages(edittedPageDiv);
 
             destinationPageDiv.InnerXml = edittedPageDiv.InnerXml;
 

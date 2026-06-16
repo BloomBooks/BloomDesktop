@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using Bloom;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
@@ -2990,25 +2991,25 @@ namespace BloomTests.Publish.Epub
             Book = book;
         }
 
-        internal override void CopyFile(
+        internal override string CopyFile(
             string srcPath,
             string dstPath,
             ImagePublishSettings imagePublishSettings,
             bool reduceImageIfPossible = false,
-            bool makeTransparentifAppropriate = false
+            ImageTransparencyMode transparencyMode = ImageTransparencyMode.None
         )
         {
             if (srcPath.Contains("notareallocation"))
             {
                 File.WriteAllText(dstPath, "This is a test fake");
-                return;
+                return dstPath;
             }
-            base.CopyFile(
+            return base.CopyFile(
                 srcPath,
                 dstPath,
                 imagePublishSettings,
                 reduceImageIfPossible,
-                makeTransparentifAppropriate
+                transparencyMode
             );
         }
     }

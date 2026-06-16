@@ -4,8 +4,12 @@ import $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
+    getImageTransparencyMode,
+    getOwningPageBackgroundColor,
     HandleImageError,
     normalizeCoverImageDesignation,
+    buildSrcWithTransparentParam,
+    pageBackgroundNeedsTransparency,
     SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
@@ -480,7 +484,13 @@ export function changeImageInfo(
             "bloom-imageLoadError",
         );
         (imgOrImageContainer as HTMLImageElement).onerror = HandleImageError;
-        (imgOrImageContainer as HTMLImageElement).src = imageInfo.src;
+        const bgColor = getOwningPageBackgroundColor(imgOrImageContainer);
+        const mode = getImageTransparencyMode(
+            imgOrImageContainer,
+            pageBackgroundNeedsTransparency(bgColor),
+        );
+        (imgOrImageContainer as HTMLImageElement).src =
+            buildSrcWithTransparentParam(imageInfo.src, mode);
     }
     // else if it has class bloom-imageContainer or bloom-canvas, we need to set the background-image on the container
     else if (
