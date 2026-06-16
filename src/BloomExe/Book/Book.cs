@@ -4733,7 +4733,7 @@ namespace Bloom.Book
             {
                 HasFatalError = true;
                 FatalErrorDescription = error.Message;
-                throw error;
+                throw;
             }
         }
 

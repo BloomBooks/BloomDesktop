@@ -137,7 +137,7 @@ namespace Bloom
                         RaiseDocumentCompleted(sender2, args2);
                     };
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // enhance: how to show using the winforms error dialog?
                     MessageBox.Show(

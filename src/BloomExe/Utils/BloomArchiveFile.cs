@@ -170,7 +170,7 @@ namespace Bloom.Utils
                 if (ze.Message.ToLowerInvariant().Contains("crc"))
                     msg += ": CRC check failed";
                 Logger.WriteError(msg, ze);
-                throw ze;
+                throw;
             }
 
             return count;

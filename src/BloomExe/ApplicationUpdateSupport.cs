@@ -17,7 +17,6 @@ using SIL.PlatformUtilities;
 using SIL.Reporting;
 #if !__MonoCS__
 using Bloom.ErrorReporter;
-using SIL.Reporting;
 using Velopack;
 #endif
 

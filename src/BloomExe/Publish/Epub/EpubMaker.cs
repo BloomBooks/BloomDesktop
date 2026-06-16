@@ -591,8 +591,6 @@ namespace Bloom.Publish.Epub
             }
         }
 
-        private static string basePageText;
-
         public static void GetPageDimensions(string pageSize, out double width, out double height)
         {
             var path = FileLocationUtilities.GetFileDistributedWithApplication("pageSizes.json");

@@ -915,7 +915,7 @@ namespace Bloom.TeamCollection
 
         private string MakeChecksumOnFilesInternal(IEnumerable<string> files)
         {
-            using (var sha = SHA256Managed.Create())
+            using (var sha = SHA256.Create())
             {
                 // Order must be predictable but does not otherwise matter.
                 foreach (var path in files.OrderBy(x => x))
