@@ -6,7 +6,7 @@
  * or from C# via WireUpForWinforms.
  */
 import * as React from "react";
-import { renderRoot } from "../../utils/reactRender";
+import { renderRootSync } from "../../utils/reactRender";
 import {
     IBloomDialogEnvironmentParams,
     Mode,
@@ -135,7 +135,10 @@ const doRender = (
     }
 
     try {
-        renderRoot(<RegistrationDialogLauncher {...props} />, modalContainer);
+        renderRootSync(
+            <RegistrationDialogLauncher {...props} />,
+            modalContainer,
+        );
     } catch (error) {
         console.error(error);
     }

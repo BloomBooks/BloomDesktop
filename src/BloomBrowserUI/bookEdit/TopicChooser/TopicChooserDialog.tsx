@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
-import { renderRoot } from "../../utils/reactRender";
+import { renderRootSync } from "../../utils/reactRender";
 
 import { get, postBoolean, postString } from "../../utils/bloomApi";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
@@ -199,7 +199,7 @@ export function showTopicChooserDialog(mode: Mode = Mode.Edit) {
             // Here, topics will be an array with an entry for each known topic. Each topic is an
             // englishKey/translated pair.
             if (topics) {
-                renderRoot(
+                renderRootSync(
                     <TopicChooserDialog
                         currentTopic={currentTopic}
                         availableTopics={topics}

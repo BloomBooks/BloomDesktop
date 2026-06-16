@@ -1,6 +1,6 @@
 import { css, Global } from "@emotion/react";
 import * as React from "react";
-import { renderRoot } from "../../utils/reactRender";
+import { renderRootSync } from "../../utils/reactRender";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getWorkspaceBundleExports } from "../../bookEdit/js/workspaceFrames";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
@@ -474,7 +474,7 @@ const doRender = (
     if (container) modalContainer = container;
     else modalContainer = getWorkspaceBundleExports().getModalDialogContainer();
     try {
-        renderRoot(<ColorPickerDialog {...props} />, modalContainer);
+        renderRootSync(<ColorPickerDialog {...props} />, modalContainer);
     } catch (error) {
         console.error(error);
     }
