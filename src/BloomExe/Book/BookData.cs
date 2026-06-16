@@ -2169,6 +2169,22 @@ namespace Bloom.Book
 
                 foreach (var activeAttributeName in _attributesToInactivate)
                 {
+                    if (
+                        toInactive
+                        && activeAttributeName == "id"
+                        && string.Equals(element.Name, "img", StringComparison.OrdinalIgnoreCase)
+                    )
+                    {
+                        // Image ids are transient and should not be persisted into the data-div clone.
+                        // Review: should we log this, or Debug.Fail? It is indicative of saving a page
+                        // in an intermediate state where we are in the middle of changing an image.
+                        // Removing the id prevents the program from crashing, but may also result in
+                        // failure to update the image as expected.
+                        if (element.HasAttribute("id"))
+                            element.RemoveAttribute("id");
+                        continue;
+                    }
+
                     // Only inactivate ids in parts of the saved marginBox clone that are also
                     // persisted separately via data-book/data-derived. This prevents our duplicate-id
                     // code from de-duplicating them. But we must not do it for pure custom-only content
