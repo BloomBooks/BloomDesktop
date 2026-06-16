@@ -536,15 +536,19 @@ namespace Bloom.Publish.Epub
                 }
             }
             // Cover image file and therefore thumbnail file may be non-existent simply because no cover image was chosen/it was still the placeHolder, not a problem
+            string thumbnailManifestItem = null;
             if (thumbnailFileExists)
             {
-                CopyFileToEpub(
+                var thumbnailDstPath = CopyFileToEpub(
                     epubThumbnailImagePath,
                     limitImageDimensions: true,
                     transparencyMode: ImageTransparencyMode.Auto,
                     subfolder: kImagesFolder,
                     imageSettings: imageSettings
                 );
+                // CopyFileToEpub may have changed the extension (e.g. PNG→JPEG); use the actual
+                // filename so MakeManifest can match it against _manifestItems for cover-image property.
+                thumbnailManifestItem = kImagesFolder + "/" + Path.GetFileName(thumbnailDstPath);
             }
             var warnings = EmbedFonts(progress); // must call after copying stylesheets
             if (warnings.Any())
@@ -573,11 +577,7 @@ namespace Bloom.Publish.Epub
 					</container>"
             );
 
-            MakeManifest(
-                thumbnailFileExists
-                    ? kImagesFolder + "/" + Path.GetFileName(epubThumbnailImagePath)
-                    : null
-            );
+            MakeManifest(thumbnailManifestItem);
 
             foreach (
                 var filename in Directory.EnumerateFiles(
@@ -2213,7 +2213,11 @@ namespace Bloom.Publish.Epub
                         .LastOrDefault(); // last ancestor = nearest page div
                     var transparencyMode = HtmlDom.GetImageTransparencyMode(
                         img,
-                        owningPage != null && HtmlDom.PageNeedsTransparentImages(owningPage)
+                        owningPage != null
+                            && HtmlDom.PageNeedsTransparentImages(
+                                owningPage,
+                                Book.BookInfo.AppearanceSettings
+                            )
                     );
                     var dstPath = CopyFileToEpub(
                         srcPath,
