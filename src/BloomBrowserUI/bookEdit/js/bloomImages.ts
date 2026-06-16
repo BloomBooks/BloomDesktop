@@ -224,7 +224,10 @@ export function SetupImage(image) {
 // adds the very simple "this.classList.add('bloom-imageLoadError');" as the content
 // of the onerror attribute.  Anything much more complicated would probably require
 // more javascript work to bundle up the error handler appropriately for access.
-export function HandleImageError(event: Event) {
+export function HandleImageError(event: Event | string) {
+    if (typeof event === "string") {
+        return;
+    }
     const target = event.target as HTMLImageElement;
     target.classList.add("bloom-imageLoadError");
     // console.error("Image failed to load:", target.src);
