@@ -162,7 +162,8 @@ namespace Bloom.Publish.BloomPub
             CompressImages(
                 modifiedBook.FolderPath,
                 settings.ImagePublishSettings,
-                modifiedBook.RawDom
+                modifiedBook.RawDom,
+                modifiedBook.BookInfo.AppearanceSettings
             );
             SignLanguageApi.ProcessVideos(
                 HtmlDom
@@ -212,7 +213,8 @@ namespace Bloom.Publish.BloomPub
         public static void CompressImages(
             string modifiedBookFolderPath,
             ImagePublishSettings imagePublishSettings,
-            SafeXmlDocument dom
+            SafeXmlDocument dom,
+            AppearanceSettings appearanceSettings = null
         )
         {
             var imagesToPreserveResolution = FindImagesToPreserveResolution(dom);
@@ -255,7 +257,8 @@ namespace Bloom.Publish.BloomPub
                 )
                 {
                     var pageNeedsTransparent =
-                        !fullScreenBlack && HtmlDom.PageNeedsTransparentImages(pageDiv);
+                        !fullScreenBlack
+                        && HtmlDom.PageNeedsTransparentImages(pageDiv, appearanceSettings);
 
                     // Background-image style divs: ConvertImagesToBackground already ran and
                     // copied bloom-transparent/bloom-opaque from the deleted img to the div.

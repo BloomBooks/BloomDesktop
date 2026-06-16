@@ -1965,10 +1965,16 @@ namespace Bloom.Book
         /// color, meaning images on this page should have their backgrounds made transparent.
         /// Considers --page-background-color in the page's inline style (content pages set via
         /// Page Settings) and the coverColor class (cover pages, reading the cover color from
-        /// the owning document's style element via GetCoverBackgroundColorFromOldInlineStyle).
+        /// AppearanceSettings when available, then falling back to GetCoverBackgroundColorFromOldInlineStyle).
         /// This should be consistent with bloomImages.getOwningPageBackgroundColor().
         /// </summary>
-        public static bool PageNeedsTransparentImages(SafeXmlElement pageDiv)
+        /// <param name="settings">Optional AppearanceSettings from BookInfo; pass when publishing
+        /// so that modern non-legacy books get the cover color from AppearanceSettings rather than
+        /// only from the legacy CSS rule.</param>
+        public static bool PageNeedsTransparentImages(
+            SafeXmlElement pageDiv,
+            AppearanceSettings settings = null
+        )
         {
             // Content pages: --page-background-color is written directly into the page div's style.
             var style = pageDiv.GetAttribute("style");
@@ -1993,12 +1999,20 @@ namespace Bloom.Book
                 }
             }
 
-            // Cover pages: background comes from the CSS rule written into the document's <style>
-            // element by SetBackwardsCompatibleCoverBackgroundColor.
+            // Cover pages: background comes from AppearanceSettings (modern non-legacy books) or
+            // from the CSS rule written into the document's <style> element by
+            // SetBackwardsCompatibleCoverBackgroundColor (legacy books).
             if (pageDiv.HasClass("coverColor"))
-                return ImageUtils.ShouldMakeTransparentForPageBackground(
-                    GetCoverBackgroundColorFromOldInlineStyle(pageDiv.OwnerDocument)
-                );
+            {
+                string coverColor = null;
+                if (settings != null && settings.CssThemeName != "legacy-5-6")
+                    coverColor = settings.GetStringPropertyValueOrDefault(
+                        "cover-background-color",
+                        null
+                    );
+                coverColor ??= GetCoverBackgroundColorFromOldInlineStyle(pageDiv.OwnerDocument);
+                return ImageUtils.ShouldMakeTransparentForPageBackground(coverColor);
+            }
 
             return false;
         }

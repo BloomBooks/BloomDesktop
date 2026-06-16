@@ -719,7 +719,8 @@ namespace Bloom.web.controllers
             BloomPubMaker.CompressImages(
                 modifiedBook.FolderPath,
                 settings.ImagePublishSettings,
-                modifiedBook.RawDom
+                modifiedBook.RawDom,
+                modifiedBook.BookInfo.AppearanceSettings
             );
             modifiedBook.Save(true);
             progress.Message(
