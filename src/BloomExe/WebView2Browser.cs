@@ -282,6 +282,22 @@ namespace Bloom
             // a change in UI language will take effect at this level.
             // See https://github.com/MicrosoftEdge/WebView2Feedback/issues/3635 (which was just opened last week!)
             var additionalBrowserArgs = "--autoplay-policy=no-user-gesture-required";
+            // Disables sleeping tabs and keeps rendering active.
+            // These were suggested by AI to prevent problems when the computer sleeps or is idle for a long
+            // time while Bloom is open. Apparently by default WebView2 will put tabs to sleep after a while,
+            // and become suspicious of some URLs when restarting. The hope is that this will help with BL-16363
+            // and similar problems. The AI also suggested --allow-insecure-localhost, but this is not relevant
+            // since we are not using https: to access our server.
+            // Not sleeping potentially allows computation to continue and drain battery, but we don't
+            // expect this to be an important factor for Bloom, as we don't have long-running
+            // animations except for things like playing motion books, which probably want to continue to the end.
+            additionalBrowserArgs += " --disable-renderer-backgrounding";
+            // Chromium only respects the last --disable-features argument, so we collect all features
+            // here and emit a single comma-separated value at the end.
+            var featuresToDisable = new List<string>
+            {
+                "msSleepingTabs", // prevent WebView2 from putting tabs to sleep after idle (BL-16363)
+            };
 
             // WebView2 can fail to initialize if we try to open a new one with different `--accept-lang` arguments.
             // This even happens if it is a different copy of Bloom running. Our hypothesis is that this is because they are sharing
@@ -305,6 +321,9 @@ namespace Bloom
                 // Expose a CDP endpoint so Playwright and other automation can attach to the real Bloom WebView2 surface.
                 additionalBrowserArgs += $" --remote-debugging-port={RemoteDebuggingPort.Value} "; // allow external inspector connect
             }
+            if (featuresToDisable.Count > 0)
+                additionalBrowserArgs +=
+                    " --disable-features=" + string.Join(",", featuresToDisable);
 
             var op = new CoreWebView2EnvironmentOptions(additionalBrowserArgs);
 
