@@ -699,12 +699,20 @@ namespace Bloom.Edit
                             || Path.GetExtension(path).ToLowerInvariant() != ".gif"
                         )
                         {
-                            throw new InvalidOperationException(
-                                LocalizationManager.GetString(
-                                    "EditTab.NoGifOnClipboard",
-                                    "To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element"
-                                )
-                            );
+                            path = path.Trim('"'); // In some cases, the path may be enclosed in quotes. Trim them off and check again.
+                            if (
+                                string.IsNullOrEmpty(path)
+                                || !RobustFile.Exists(path)
+                                || Path.GetExtension(path).ToLowerInvariant() != ".gif"
+                            )
+                            {
+                                throw new InvalidOperationException(
+                                    LocalizationManager.GetString(
+                                        "EditTab.NoGifOnClipboard",
+                                        "To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element"
+                                    )
+                                );
+                            }
                         }
                         SetGifImage(imageId, priorImageSrc, path);
                         return;
@@ -1258,6 +1266,7 @@ namespace Bloom.Edit
                 copyright = "",
                 license = "",
                 creator = "",
+                undoable = "true",
             };
             _model.UpdateImageInBrowser(args);
         }

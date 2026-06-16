@@ -27,6 +27,14 @@ namespace Bloom.TeamCollection
 
         bool UserMayChangeEmail { get; }
 
+        /// <summary>
+        /// Sends the bookContent/reload websocket event so the collection-tab preview
+        /// iframe refreshes its content, even when the selected book ID has not changed.
+        /// Call this after silently re-copying a book's content from the repo so the UI
+        /// reflects the updated files without requiring a manual Reload.
+        /// </summary>
+        void SendBookContentReload();
+
         // ENHANCE: Add other properties and methods as needed
     }
 
@@ -549,6 +557,12 @@ namespace Bloom.TeamCollection
         public void RaiseBookStatusChanged(BookStatusChangeEventArgs eventInfo)
         {
             _bookStatusChangeEvent.Raise(eventInfo);
+        }
+
+        /// <inheritdoc />
+        public void SendBookContentReload()
+        {
+            _webSocketServer.SendEvent("bookContent", "reload");
         }
 
         /// <summary>

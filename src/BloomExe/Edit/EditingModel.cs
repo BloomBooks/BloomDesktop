@@ -1701,7 +1701,8 @@ namespace Bloom.Edit
                     imageId,
                     priorImageSrc,
                     imageInfo,
-                    pageBackgroundColor
+                    pageBackgroundColor,
+                    undoable: true // All image changes made here are undoable.
                 );
                 UpdateImageInBrowser(args);
             }
