@@ -907,13 +907,6 @@ window.showWorkspaceInitializationFailure = function(message) {
                     return UrlLookup.LookupUrl(urlType, null);
             }
 
-            const string infoPagePrefix = "infoPage:";
-            if (argument.StartsWith(infoPagePrefix, StringComparison.Ordinal))
-            {
-                var fileName = argument.Substring(infoPagePrefix.Length);
-                return BloomFileLocator.GetBrowserFile(false, "infoPages", fileName);
-            }
-
             return argument;
         }
 
