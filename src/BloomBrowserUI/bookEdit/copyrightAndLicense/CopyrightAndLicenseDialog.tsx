@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
-import { renderRoot } from "../../utils/reactRender";
+import { renderRootSync } from "../../utils/reactRender";
 import { Tab, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.less";
 
@@ -241,7 +241,7 @@ function showCopyrightAndLicenseDialog(
     data: ICopyrightAndLicenseData,
 ) {
     try {
-        renderRoot(
+        renderRootSync(
             <CopyrightAndLicenseDialog isForBook={isForBook} data={data} />,
             getModalContainer(),
         );
