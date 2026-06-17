@@ -310,7 +310,7 @@ namespace Bloom.Api
                     object[] args = Enumerable.Repeat("ar" as object, braceCount).ToArray();
                     string.Format(localizedString, args);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     ErrorReport.NotifyUserOfProblem(
                         "Debug Only: '"

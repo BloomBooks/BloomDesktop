@@ -44,7 +44,6 @@ namespace Bloom.web.controllers
 
         // This constant must match the ID that is used for the listener set up in the client
         private const string kWebSocketEventId_Preview = "bloomPubPreview";
-        private Book.Book _coverColorSourceBook;
         public const string kStagingFolder = "PlaceForStagingBook";
 
         // This constant must match the ID used for the useWatchString called by the React component MethodChooser.
@@ -719,8 +718,10 @@ namespace Bloom.web.controllers
             BloomPubMaker.CompressImages(
                 modifiedBook.FolderPath,
                 settings.ImagePublishSettings,
-                modifiedBook.RawDom
+                modifiedBook.RawDom,
+                modifiedBook.BookInfo.AppearanceSettings
             );
+            modifiedBook.Save(true);
             progress.Message(
                 "Common.Done",
                 "Shown in a list of messages when Bloom has completed a task.",

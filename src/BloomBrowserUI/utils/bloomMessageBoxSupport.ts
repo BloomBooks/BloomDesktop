@@ -1,5 +1,5 @@
 import * as React from "react";
-import { renderRoot } from "./reactRender";
+import { renderRootSync } from "./reactRender";
 import { BloomMessageBox, showBloomMessageBox } from "./BloomMessageBox";
 import { getWorkspaceBundleExports } from "../bookEdit/js/workspaceFrames";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
@@ -20,7 +20,7 @@ export default class BloomMessageBoxSupport {
         theOneLocalizationManager
             .asyncGetText("Common.OK", "OK", "")
             .done((okText) => {
-                renderRoot(
+                renderRootSync(
                     React.createElement(BloomMessageBox, {
                         messageHtml: localizedMessage,
                         icon: "warning",

@@ -101,6 +101,13 @@ import {
     setupBackgroundImageAttributes,
     type BackgroundImageManagerState,
 } from "./CanvasElementBackgroundImageManager";
+import {
+    clearImageOperationUndoState,
+    commitPendingImageOperationUndo,
+    IImageCropInfo,
+    initializeImageUndoManager,
+    prepareUndoForImageOperation,
+} from "../ImageUndoManager";
 
 const kComicalGeneratedClass: string = "comical-generated";
 const kAdjustContainerAspectRatioDelayId =
@@ -154,6 +161,18 @@ export class CanvasElementManager {
     private lastMoveContainer: HTMLElement;
 
     public constructor() {
+        initializeImageUndoManager({
+            getCurrentPage: () =>
+                document.getElementsByClassName("bloom-page")[0] as
+                    | HTMLElement
+                    | undefined,
+            updateCanvasElementForChangedImage:
+                this.updateCanvasElementForChangedImage.bind(this),
+            getActiveElement: this.getActiveElement.bind(this),
+            setActiveElement: this.setActiveElement.bind(this),
+            removeDetachedTargets: this.removeDetachedTargets.bind(this),
+            updateCanvasElementClass,
+        });
         this.snapProvider = new CanvasSnapProvider();
         this.guideProvider = new CanvasGuideProvider();
         this.editingSuspension = new CanvasElementEditingSuspension({
@@ -312,7 +331,7 @@ export class CanvasElementManager {
     public moveActiveCanvasElement(
         dx: number,
         dy: number,
-        _event: KeyboardEvent,
+        _event?: KeyboardEvent,
     ): void {
         if (!this.activeElement) return;
 
@@ -1693,7 +1712,10 @@ export class CanvasElementManager {
 
     // When the image is changed in a canvas element (e.g., choose or paste image),
     // we remove cropping, adjust the aspect ratio, and move the control frame.
-    updateCanvasElementForChangedImage(imgOrImageContainer: HTMLElement) {
+    updateCanvasElementForChangedImage(
+        imgOrImageContainer: HTMLElement,
+        cropInfo?: IImageCropInfo,
+    ) {
         const canvasElement = imgOrImageContainer.closest(
             kCanvasElementSelector,
         ) as HTMLElement;
@@ -1714,6 +1736,7 @@ export class CanvasElementManager {
                 canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
                 true,
+                cropInfo,
             );
             SetupMetadataButton(canvasElement);
         } else {
@@ -2730,6 +2753,7 @@ export class CanvasElementManager {
             // just revert it to a placeholder
             const img = getImageFromCanvasElement(textOverPicDiv);
             if (img) {
+                prepareUndoForImageOperation(img);
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
@@ -2737,6 +2761,7 @@ export class CanvasElementManager {
                     normalizeCoverImageDesignation(page);
                 }
                 this.updateCanvasElementForChangedImage(img);
+                commitPendingImageOperationUndo(img);
                 notifyToolOfChangedImage(img);
             }
             return;
@@ -2779,6 +2804,10 @@ export class CanvasElementManager {
             textElement,
             sameLocation,
         );
+    }
+
+    public makeEditableAudioIndependent(editable: HTMLElement): void {
+        this.duplication.makeEditableAudioIndependent(editable);
     }
 
     public startDraggingSplitter() {
@@ -2827,6 +2856,8 @@ export class CanvasElementManager {
     }
 
     public initializeCanvasElementEditing(): void {
+        clearImageOperationUndoState();
+
         // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
         // load, so that canvas element editing works even when the Canvas element tool is not active. So it definitely
         // needs to be called there when we're calling SetupElements during page load. It's possible
@@ -3084,12 +3115,14 @@ export class CanvasElementManager {
         bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
+        cropInfo?: IImageCropInfo,
     ) {
         return adjustCanvasBackgroundImageSize(
             this.backgroundImageManagerState,
             bloomCanvas,
             bgCanvasElement,
             useSizeOfNewImage,
+            cropInfo,
             () => this.activeElement,
             this.alignControlFrameWithActiveElement,
         );

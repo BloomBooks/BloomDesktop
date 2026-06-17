@@ -44,10 +44,14 @@ import {
     doImageCommand,
     getImageFromCanvasElement,
     getImageFromContainer,
+    getImageTransparencyMode,
     getImageUrlFromImageContainer,
     HandleImageError,
+    getOwningPageBackgroundColor,
     isPlaceHolderImage,
     kImageContainerClass,
+    pageBackgroundNeedsTransparency,
+    setImgTransparentParam,
 } from "../../js/bloomImages";
 import { doVideoCommand } from "../../js/bloomVideo";
 import {
@@ -693,6 +697,87 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         englishLabel: "Image Fit",
         canvasToolsControl: ImageFillModePanelControl,
     },
+    imageBackground: {
+        kind: "command",
+        id: "imageBackground",
+        l10nId: "EditTab.Image.Background",
+        englishLabel: "Background",
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx, _runtime) => {
+                const img = getImage(ctx);
+                const isTransparent =
+                    img?.classList.contains("bloom-transparent") ?? false;
+                const isOpaque =
+                    img?.classList.contains("bloom-opaque") ?? false;
+                const isAuto = !isTransparent && !isOpaque;
+
+                // After mutating the img's classes, recompute and apply the transparent param.
+                function applyTransparencyParam() {
+                    if (!img) return;
+                    const bgColor = getOwningPageBackgroundColor(img);
+                    setImgTransparentParam(
+                        img,
+                        getImageTransparencyMode(
+                            img,
+                            pageBackgroundNeedsTransparency(bgColor),
+                        ),
+                    );
+                }
+
+                return {
+                    id: "imageBackground",
+                    l10nId: "EditTab.Image.Background",
+                    englishLabel: "Background",
+                    onSelect: () => {},
+                    subMenuItems: [
+                        {
+                            l10nId: "EditTab.Image.Background.Auto",
+                            englishLabel: "Auto",
+                            icon: isAuto
+                                ? React.createElement(CheckIcon, null)
+                                : undefined,
+                            onSelect: () => {
+                                if (!img) return;
+                                img.classList.remove(
+                                    "bloom-transparent",
+                                    "bloom-opaque",
+                                );
+                                applyTransparencyParam();
+                            },
+                        },
+                        {
+                            l10nId: "EditTab.Image.Background.Transparent",
+                            englishLabel: "Transparent",
+                            icon: isTransparent
+                                ? React.createElement(CheckIcon, null)
+                                : undefined,
+                            onSelect: () => {
+                                if (!img) return;
+                                img.classList.add("bloom-transparent");
+                                img.classList.remove("bloom-opaque");
+                                applyTransparencyParam();
+                            },
+                        },
+                        {
+                            l10nId: "EditTab.Image.Background.Opaque",
+                            englishLabel: "Opaque",
+                            icon: isOpaque
+                                ? React.createElement(CheckIcon, null)
+                                : undefined,
+                            onSelect: () => {
+                                if (!img) return;
+                                img.classList.add("bloom-opaque");
+                                img.classList.remove("bloom-transparent");
+                                // bloom-opaque always means "none" regardless of page background.
+                                setImgTransparentParam(img, "none");
+                            },
+                        },
+                    ],
+                };
+            },
+        },
+    },
     chooseVideo: {
         kind: "command",
         id: "chooseVideo",
@@ -1141,6 +1226,7 @@ export const controlSections: Record<SectionId, IControlSection> = {
                 "expandToFillSpace",
                 "becomeBackground",
                 "imageFieldType",
+                "imageBackground",
             ],
         },
     },

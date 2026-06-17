@@ -19,7 +19,7 @@ import {
     BloomDialog,
     DialogBottomButtons,
 } from "../react_components/BloomDialog/BloomDialog";
-import { renderRoot } from "../utils/reactRender";
+import { renderRootSync } from "../utils/reactRender";
 import { AppBar } from "@mui/material";
 import { kBloomLightGray } from "../utils/colorUtils";
 import {
@@ -176,7 +176,7 @@ export function showLanguageChooserDialog(
     initialCustomName?: string,
 ) {
     try {
-        renderRoot(
+        renderRootSync(
             <LanguageChooserDialog
                 initialLanguageTag={initialLanguageTag}
                 initialCustomName={initialCustomName}

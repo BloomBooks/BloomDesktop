@@ -26,6 +26,7 @@ namespace Bloom.Edit
             public string copyright;
             public string creator;
             public string license;
+            public string undoable;
         }
 
         public static ImageInfoForJavascript ChangePicture(
@@ -33,15 +34,15 @@ namespace Bloom.Edit
             string imageId,
             UrlPathString priorImageSrc,
             PalasoImage imageInfo,
-            string pageBackgroundColor = null
+            string pageBackgroundColor = null,
+            bool undoable = false
         )
         {
             var isSameFile = IsSameFilePath(bookFolderPath, priorImageSrc, imageInfo);
             var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(
                 imageInfo,
                 bookFolderPath,
-                isSameFile,
-                pageBackgroundColor
+                isSameFile
             );
             try
             {
@@ -64,6 +65,7 @@ namespace Bloom.Edit
                 copyright = imageInfo.Metadata.CopyrightNotice ?? "",
                 creator = imageInfo.Metadata.Creator ?? "",
                 license = imageInfo.Metadata.License?.ToString() ?? "",
+                undoable = undoable.ToString().ToLowerInvariant(),
             };
         }
 

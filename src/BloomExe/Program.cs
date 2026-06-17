@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -118,7 +117,6 @@ namespace Bloom
             );
 
         [STAThread]
-        [HandleProcessCorruptedStateExceptions]
         static int Main(string[] args1)
         {
             // AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
@@ -1328,7 +1326,6 @@ namespace Bloom
             _projectContext = projectContext;
         }
 
-        [HandleProcessCorruptedStateExceptions]
         private static void Run(string[] args)
         {
             if (!IsInstallerLaunch(args))

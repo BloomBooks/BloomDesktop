@@ -3673,6 +3673,7 @@ namespace BloomTests.Book
                         <div class='bloom-translationGroup'>
                             <div class='bloom-editable bloom-visibility-code-on audio-sentence' data-book='bookTitle' lang='en' id='i6a720491' data-audiorecordingmode='TextBox' recordingmd5='5b5efdab7f705554614a6383ae6d9469' data-duration='5.839433'><p>My Title</p></div>
 						</div>
+                        <img id='transientImageId' src='cover.png'/>
                         <div data-book='customNote' lang='en'><p><span class='audio-sentence' id='nestedSentenceId'>Nested sentence</span></p></div>
                         <p><span class='audio-sentence' id='plainSentenceId'>Unbound sentence</span></p>
 					</div>
@@ -3704,6 +3705,12 @@ namespace BloomTests.Book
                 .Dom(bookDom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//div[@data-book-inactive='customNote']//span[contains(@class,'audio-sentence') and @data-id-inactive='nestedSentenceId' and not(@id) and not(@id-inactive)]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//img[@src='cover.png' and not(@id) and not(@data-id-inactive) and not(@id-inactive)]",
                     1
                 );
             AssertThatXmlIn

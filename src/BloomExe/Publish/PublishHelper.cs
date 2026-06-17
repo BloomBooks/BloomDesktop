@@ -215,6 +215,11 @@ namespace Bloom.Publish
         /// This information will be loaded into two Dictionary objects, one mapping id to display
         /// and the other mapping id to font-family for faster lookup.
         /// </remarks>
+        // The fields below are assigned only by JSON deserialization (via reflection), so the
+        // compiler reports CS0649 ("never assigned, always default"). We could instead make them
+        // auto-properties ({ get; set; }), which Newtonsoft deserializes to identically and which
+        // don't trip the warning; for now we just suppress it around these data-transfer classes.
+#pragma warning disable CS0649
         private class ElementInfoArray
         {
             public ElementInfo[] results;
@@ -231,6 +236,7 @@ namespace Bloom.Publish
             public string fontStyle;
             public string fontWeight;
         }
+#pragma warning restore CS0649
 
         public class FontInfo
         {

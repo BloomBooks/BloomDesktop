@@ -157,7 +157,7 @@ function spawnNodeScript(scriptPath, args, options = {}) {
 
 function startVite(port) {
     return new Promise((resolve) => {
-        console.log("Starting Vite dev server...\n");
+        console.log("Starting Vite dev server...");
 
         const viteBin = resolvePackageBin(browserUIRoot, "vite", "vite");
         let ready = false;
@@ -282,7 +282,7 @@ async function runInitialBuilds() {
     const compiledCount = pugResult?.compiled ?? 0;
     const totalChanges = compiledCount + copiedCount;
     if (totalChanges === 0) {
-        console.log("\nInitial build done (no changes).\n");
+        console.log("Initial build done (no changes).");
         return;
     }
 
@@ -298,15 +298,14 @@ async function runInitialBuilds() {
         const summaryText = summaryParts.length
             ? ` (${summaryParts.join(", ")})`
             : "";
-        console.log(`\nInitial build done${summaryText}.\n`);
+        console.log(`Initial build done${summaryText}.`);
     } else {
-        console.log("\nInitial build done.\n");
+        console.log("Initial build done.");
     }
 }
 
 async function startWatchers() {
     await runInitialBuilds();
-    console.log("\nStarting file watchers...\n");
 
     const onchangeBin = resolvePackageBin(
         browserUIRoot,
@@ -316,7 +315,6 @@ async function startWatchers() {
     const nodeForOnchange = isWindows ? "node" : process.execPath;
 
     // Pug watcher - compile all pug files initially, then watch for changes
-    console.log("Watching pug files...");
     const verboseFlag = isVerbose ? ["--verbose"] : [];
 
     spawnNodeScript(
@@ -335,14 +333,16 @@ async function startWatchers() {
     );
 
     // Less watcher - consolidate BloomBrowserUI and content LESS processing
-    console.log("Watching LESS files...");
-    spawnProcess(process.execPath, ["./scripts/watchLess.mjs", "--scope=all"], {
-        cwd: browserUIRoot,
-        shell: false,
-    });
+    spawnProcess(
+        process.execPath,
+        ["./scripts/watchLess.mjs", "--scope=all", ...verboseFlag],
+        {
+            cwd: browserUIRoot,
+            shell: false,
+        },
+    );
 
     // Static file watcher - only triggers on actual changes (no -i since copyStaticFile needs a specific file)
-    console.log("Watching browser UI static files...");
     spawnNodeScript(
         onchangeBin,
         [
@@ -358,7 +358,6 @@ async function startWatchers() {
     );
 
     // Content watchers (spawn directly to avoid printing full commands)
-    console.log("Watching template files...");
     spawnNodeScript(
         onchangeBin,
         [
@@ -377,7 +376,6 @@ async function startWatchers() {
         { cwd: contentRoot },
     );
 
-    console.log("Watching branding files...");
     spawnNodeScript(
         onchangeBin,
         [
@@ -396,7 +394,6 @@ async function startWatchers() {
         { cwd: contentRoot },
     );
 
-    console.log("Watching appearance theme files...");
     spawnNodeScript(
         onchangeBin,
         [
@@ -415,7 +412,6 @@ async function startWatchers() {
         { cwd: contentRoot },
     );
 
-    console.log("Watching appearance migration files...");
     spawnNodeScript(
         onchangeBin,
         [
@@ -432,6 +428,10 @@ async function startWatchers() {
             ...verboseFlag,
         ],
         { cwd: contentRoot },
+    );
+
+    console.log(
+        "Watching for changes: pug, LESS, static files, templates, branding, appearance themes & migrations.",
     );
 }
 

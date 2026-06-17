@@ -40,6 +40,21 @@ export function renderRoot(
     getOrCreateRoot(container).render(element);
 }
 
+// Use instead of renderRoot() when the component must be mounted before the call
+// returns — e.g., when a module-level `show` variable is set during the component's
+// render body and must be callable immediately afterward. React 18's createRoot().render()
+// is asynchronous, so a plain renderRoot() followed by show() hits the fallback "not set
+// up yet" alert. flushSync forces the commit (and thus the assignment of `show`) to happen
+// synchronously before this returns.
+export function renderRootSync(
+    element: React.ReactNode,
+    container: Element | DocumentFragment | null,
+): void {
+    if (!container)
+        throw new Error("renderRootSync called with a null container.");
+    flushSync(() => getOrCreateRoot(container).render(element));
+}
+
 // Drop-in replacement for ReactDOM.unmountComponentAtNode(container). Returns true if a
 // root was found and unmounted, like the old API returned whether a component was unmounted.
 // Deleting the WeakMap entry here lets a later renderRoot() create a fresh Root for the same
