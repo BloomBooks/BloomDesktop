@@ -1,6 +1,6 @@
 import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot, unmountRoot } from "../../../utils/reactRender";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { kGameToolId } from "../toolIds";
 import { Fragment, useEffect, useMemo, useState } from "react";
@@ -142,7 +142,7 @@ export const hideGamePromptDialog = (page: HTMLElement) => {
     const dialogRoot =
         page.ownerDocument.getElementsByClassName("bloom-ui-dialog")[0];
     if (dialogRoot) {
-        ReactDOM.unmountComponentAtNode(dialogRoot);
+        unmountRoot(dialogRoot);
         dialogRoot.remove();
     }
 };
@@ -1754,7 +1754,7 @@ export class GameTool extends ToolboxToolReactAdaptor {
     private renderRoot(): void {
         if (!this.root) return;
         this.pageGeneration++;
-        ReactDOM.render(
+        renderRoot(
             <DragActivityControls
                 activeTab={this.tab}
                 pageGeneration={this.pageGeneration}

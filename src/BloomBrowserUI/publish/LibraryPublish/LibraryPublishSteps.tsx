@@ -840,7 +840,9 @@ const AgreementCheckbox: React.FunctionComponent<{
     );
 };
 
-const WarningMessage: React.FunctionComponent = (props) => {
+const WarningMessage: React.FunctionComponent<{
+    children?: React.ReactNode;
+}> = (props) => {
     return (
         <div
             css={css`

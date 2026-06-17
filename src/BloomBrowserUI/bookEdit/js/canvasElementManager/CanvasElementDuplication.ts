@@ -291,7 +291,38 @@ export class CanvasElementDuplication {
         );
     }
 
-    private copyAnySoundFileAndAttributesForEditable(
+    // Copies audio-sentence ids and files in an editable, giving each a new independent id
+    // so that changing the field type doesn't share recordings with the data-book source.
+    public makeEditableAudioIndependent(editable: HTMLElement): void {
+        if (!editable) {
+            return;
+        }
+
+        const audioElements: Element[] = [];
+        if (
+            editable.classList.contains("audio-sentence") &&
+            editable.getAttribute("id")
+        ) {
+            audioElements.push(editable);
+        }
+
+        audioElements.push(
+            ...Array.from(editable.querySelectorAll(".audio-sentence[id]")),
+        );
+
+        audioElements.forEach((audioElement) => {
+            const oldId = audioElement.getAttribute("id");
+            if (!oldId) {
+                return;
+            }
+            this.copySoundFileAndAttributes(audioElement, oldId, audioElement);
+        });
+    }
+
+    // Copy everything we need to so that the copy will have the same narration audio as the source,
+    // but with independent ids and files so that if the copy narration is changed, it won't affect the source
+    // (or vice versa). (We also avoid duplicate IDs, which is incorrect in HTML and can cause problems).
+    public copyAnySoundFileAndAttributesForEditable(
         sourceElement: HTMLElement,
         copiedElement: HTMLElement,
     ): void {

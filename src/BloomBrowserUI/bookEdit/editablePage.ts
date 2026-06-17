@@ -69,6 +69,8 @@ export interface IPageFrameExports {
 
     ckeditorCanUndo(): boolean;
     ckeditorUndo(): void;
+    imageOperationCanUndo(): boolean;
+    imageOperationUndo(): boolean;
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
@@ -115,6 +117,8 @@ import {
     attachToCkEditor,
     removeImageId,
     changeImage,
+    imageOperationCanUndo,
+    imageOperationUndo,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
 } from "./js/bloomEditing";
@@ -134,6 +138,8 @@ export {
     attachToCkEditor,
     removeImageId,
     changeImage,
+    imageOperationCanUndo,
+    imageOperationUndo,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
     renderDragActivityTabControl,
@@ -386,6 +392,8 @@ interface EditablePageBundleApi {
     attachToCkEditor: typeof attachToCkEditor;
     removeImageId: typeof removeImageId;
     changeImage: typeof changeImage;
+    imageOperationCanUndo: typeof imageOperationCanUndo;
+    imageOperationUndo: typeof imageOperationUndo;
     origamiCanUndo: typeof origamiCanUndo;
     origamiUndo: typeof origamiUndo;
     getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
@@ -460,6 +468,8 @@ window.editablePageBundle = {
     attachToCkEditor,
     removeImageId,
     changeImage,
+    imageOperationCanUndo: imageOperationCanUndo,
+    imageOperationUndo: imageOperationUndo,
     origamiCanUndo,
     origamiUndo,
     getTheOneCanvasElementManager,

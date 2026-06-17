@@ -200,6 +200,8 @@ namespace Bloom.Api
             _useCache = Settings.Default.ImageHandler != "off";
             ApiHandler = new BloomApiHandler(bookSelection);
             _theOneInstance = this;
+            if (_bookSelection != null) // maybe null in some tests?
+                _bookSelection.SelectionChanged += (_, _) => _cache?.ClearAll();
         }
 
 #if DEBUG
@@ -387,7 +389,8 @@ namespace Bloom.Api
             HtmlDom dom,
             bool isCurrentPageContent = false,
             bool setAsCurrentPageForDebugging = false,
-            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Normal
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Normal,
+            bool suppressBackgroundColors = false
         )
         {
             var simulatedPageFileName = Path.ChangeExtension(
@@ -446,7 +449,19 @@ namespace Bloom.Api
                 ReplaceAnyVideoElementsWithPlaceholder(dom);
             }
             dom.Title = InMemoryHtmlFile.GetTitleForProcessExplorer(source) + " (InMemoryHtmlFile)"; // makes this show up in Windows Process Explorer WebView2 listing
-            var html5String = dom.getHtmlStringDisplayOnly();
+            var transparencyModifications = HtmlDom.AddTransparencyParamToImages(
+                dom,
+                suppressBackgroundColors
+            );
+            string html5String;
+            try
+            {
+                html5String = dom.getHtmlStringDisplayOnly();
+            }
+            finally
+            {
+                HtmlDom.RestoreImageSrcs(transparencyModifications);
+            }
             lock (_theOneInstance._queue)
             {
                 foreach (var item in _theOneInstance._idleTasks)
@@ -625,9 +640,19 @@ namespace Bloom.Api
                 if (localPath == "book-preview/index.htm")
                 {
                     request.ResponseContentType = "text/html";
-                    var html = CurrentBook
-                        .GetPreviewHtmlFileForWholeBook()
-                        .getHtmlStringDisplayOnly();
+                    var previewDom = CurrentBook.GetPreviewHtmlFileForWholeBook();
+                    var transparencyModifications = HtmlDom.AddTransparencyParamToImages(
+                        previewDom
+                    );
+                    string html;
+                    try
+                    {
+                        html = previewDom.getHtmlStringDisplayOnly();
+                    }
+                    finally
+                    {
+                        HtmlDom.RestoreImageSrcs(transparencyModifications);
+                    }
                     request.WriteCompleteOutput(html);
                     return true;
                 }
@@ -924,7 +949,6 @@ namespace Bloom.Api
 
             if (imageFile.StartsWith(OriginalImageMarker + "/"))
             {
-                processImage = false;
                 imageFile = imageFile.Substring((OriginalImageMarker + "/").Length);
 
                 if (!RobustFileExistsWithCaseCheck(imageFile))
@@ -935,28 +959,47 @@ namespace Bloom.Api
                     return false;
                 }
 
-                if (
-                    CurrentBook?.UserPrefs.IncludeBackgroundColors == true
-                    && info.GetQueryParameters()["transparent"] == "yes"
-                )
+                var transparentParam = info.GetQueryParameters()["transparent"];
+
+                // bloom-transparent (transparent=force) must always be honored, even when
+                // serving original images for PDF. Use the cache so format conversion
+                // (e.g. jpg → png) is handled correctly.
+                if (transparentParam == "force" && _useCache)
                 {
-                    if (ImageUtils.IsPngFile(imageFile))
+                    var forcedFile = _cache.GetPathToAdjustedImage(
+                        imageFile,
+                        false,
+                        ImageTransparencyMode.Force
+                    );
+                    if (!string.IsNullOrEmpty(forcedFile))
                     {
-                        using (var tempFile = TempFile.WithExtension(".png"))
-                        {
-                            if (
-                                ImageUtils.MakeTransparentBackgroundIfNeeded(
-                                    imageFile,
-                                    tempFile.Path
-                                )
-                            )
-                            {
-                                info.ReplyWithImage(tempFile.Path);
-                                return true;
-                            }
-                        }
+                        info.ReplyWithImage(forcedFile, imageFile);
+                        return true;
                     }
                 }
+
+                if (
+                    CurrentBook?.UserPrefs.IncludeBackgroundColors == true
+                    && transparentParam == "yes"
+                    && _useCache
+                )
+                {
+                    // Use transparencyOnly so AdjustImageForDisplay skips resize and JPEG
+                    // conversion and returns null (→ cached as a no-op) when the image isn't
+                    // line art, avoiding an expensive reload on every subsequent request.
+                    var autoFile = _cache.GetPathToAdjustedImage(
+                        imageFile,
+                        false,
+                        ImageTransparencyMode.Auto,
+                        transparencyOnly: true
+                    );
+                    // autoFile == imageFile means the cache confirmed this image is not line art;
+                    // either way we reply with whatever the cache decided is correct.
+                    info.ReplyWithImage(autoFile, imageFile);
+                    return true;
+                }
+                // IncludeBackgroundColors is off, or no transparent param — serve the original
+                // without any processing.
                 info.ReplyWithImage(imageFile);
                 return true;
             }
@@ -1041,28 +1084,23 @@ namespace Bloom.Api
                 //          want them. Running them through _cache.GetPathToAdjustedImage() is not necessary, and in PNG files
                 //          it converts all white areas to transparent. This is resulting in icons which only contain white
                 //          (because they are rendered on a dark background) becoming completely invisible.
-                // But things in the book folder should possibly be processed. The code below will still investigate
-                // whether it is really necessary; currently we're not resizing images except for thumbnails,
-                // and otherwise, only the cover image needs adjusting (to possibly provide a transparent background).
+                // Things in the book folder are processed on demand: resized, format-converted, and optionally
+                // made transparent, with results cached by GetPathToAdjustedImage / AdjustImageForDisplay.
                 processImage = sourceDir == CurrentBook?.FolderPath;
             }
 
             var originalImageFile = imageFile;
             // Currently _useCache is always true. It appears likely that the intent
             // is not so much about caching, but whether we want image processing.
-            // If we go back to allowing this to be turned off, we may need to make
-            // use of a check like CurrentBook?.ImageFileIsForBookCover() to make sure
-            // it is not disabled there, where it is important for transparency as
-            // well as performance.
             if (processImage && _useCache)
             {
-                // thumbnail requests have the thumbnail parameter set in the query string
                 var thumb = info.GetQueryParameters()["thumbnail"] != null;
-                var isForCover = CurrentBook?.ImageFileIsForBookCover(imageFile) ?? false;
-                if (thumb || isForCover)
-                {
-                    imageFile = _cache.GetPathToAdjustedImage(imageFile, thumb, isForCover);
-                }
+                var transparentParam = info.GetQueryParameters()["transparent"];
+                var transparencyMode =
+                    transparentParam == "force" ? ImageTransparencyMode.Force
+                    : transparentParam == "yes" ? ImageTransparencyMode.Auto
+                    : ImageTransparencyMode.None;
+                imageFile = _cache.GetPathToAdjustedImage(imageFile, thumb, transparencyMode);
 
                 if (String.IsNullOrEmpty(imageFile))
                     return false;

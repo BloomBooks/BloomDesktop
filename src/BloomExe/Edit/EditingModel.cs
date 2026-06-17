@@ -53,7 +53,6 @@ namespace Bloom.Edit
         private EditingView _view;
         private List<ContentLanguage> _contentLanguages;
         private IPage _previouslySelectedPage;
-        private bool _inProcessOfDeleting;
         private BloomServer _server;
         private readonly BloomWebSocketServer _webSocketServer;
         internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
@@ -79,10 +78,9 @@ namespace Bloom.Edit
         /// </summary>
         public static bool IsTextSelected;
 
-        // these 3 are used as part of automatically re-rerendering a page when a developer changes something in the supporting files
+        // these 2 are used as part of automatically re-rerendering a page when a developer changes something in the supporting files
         private FileSystemWatcher _developerFileWatcher;
         private DateTime _lastTimeWeReloadedBecauseOfDeveloperChange;
-        private bool _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles;
 
         //public event EventHandler UpdatePageList;
 
@@ -593,7 +591,6 @@ namespace Bloom.Edit
                 // If this happens, just abort the delete.
                 return;
             }
-            _inProcessOfDeleting = true;
             SaveThen(
                 () =>
                 {
@@ -613,10 +610,6 @@ namespace Bloom.Edit
                             "Could not delete that page. Try quiting Bloom, run it again, and then attempt to delete the page again. And please click 'details' below and report this to us."
                         );
                         return page.Id; // stay on this page.
-                    }
-                    finally
-                    {
-                        _inProcessOfDeleting = false;
                     }
                 },
                 () => { }, // wrong state, do nothing
@@ -674,9 +667,26 @@ namespace Bloom.Edit
                         page as Page,
                         e.NumberToAdd
                     );
-                    _view.Browser.RunJavascriptAsync(
-                        "document.getElementById('pageList').contentWindow.location.reload(true);"
-                    );
+                    // We deliberately do NOT force the page-list iframe to reload here.
+                    // InsertPageAfter raises pageListChangedEvent (deferred until idle), which
+                    // leads to UpdatePageList(); that either sends pageListNeedsRefresh over the
+                    // websocket (a cheap, incremental update in the React page list) or, if the
+                    // new page brought new stylesheets, regenerates the page-list document and
+                    // navigates the iframe to it. We used to also do a hard location.reload of
+                    // the iframe here, but that repainted the entire thumbnail list on every
+                    // insert and raced with those deferred notifications: a websocket message
+                    // arriving while the iframe was mid-reload was silently dropped, leaving the
+                    // list permanently stale.
+                    //
+                    // The stylesheet-change path still navigates the iframe, which does repaint
+                    // the whole list and does have a brief window during load where websocket
+                    // messages are ignored. The difference is that this navigation is no longer a
+                    // blind reload racing a separate notification: it is triggered by the deferred
+                    // event itself and loads a freshly regenerated document that already contains
+                    // the new page (and its stylesheet), so it is correct on its own. And when the
+                    // reloaded iframe's socket opens, the React code re-fetches the page list (see
+                    // the websocket/open handler in pageThumbnailList.tsx), recovering anything
+                    // missed during the load. So no stale-list race remains.
                     //_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
                     //_pageSelection.SelectPage(newPage);
                     if (e.FromTemplate)
@@ -960,7 +970,6 @@ namespace Bloom.Edit
 
             if (page != null)
                 _view.GoToPage(page);
-            _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles = false;
             if (_view != null)
             {
                 _view.UpdatePageList(false);
@@ -1061,7 +1070,7 @@ namespace Bloom.Edit
                     PageSelectModelChangesComplete?.Invoke(this, EventArgs.Empty);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // It's very important that we succeed in navigating to SOME page; otherwise, we may well be left
                 // in a state where the page UI isn't fully set up, and the state machine is in the SavedAndStripped
@@ -1224,7 +1233,16 @@ namespace Bloom.Edit
 
         public static string GetEditPageIframeContents(Book.Book book, IPage page)
         {
-            return GetEditPageIframeDom(book, page).getHtmlStringDisplayOnly();
+            var dom = GetEditPageIframeDom(book, page);
+            var transparencyModifications = HtmlDom.AddTransparencyParamToImages(dom);
+            try
+            {
+                return dom.getHtmlStringDisplayOnly();
+            }
+            finally
+            {
+                HtmlDom.RestoreImageSrcs(transparencyModifications);
+            }
         }
 
         public static HtmlDom GetEditPageIframeDom(Book.Book book, IPage page)
@@ -1720,15 +1738,15 @@ namespace Bloom.Edit
                     );
                 }
             }
-            catch (ObjectDisposedException err) // in case even calling CanUpdate gave an error
+            catch (ObjectDisposedException) // in case even calling CanUpdate gave an error
             {
                 Logger.WriteEvent("Error: SaveNow() found that this book was disposed.");
-                throw err;
+                throw;
             }
-            catch (Exception err) // in case even calling CanUpdate gave an error
+            catch (Exception) // in case even calling CanUpdate gave an error
             {
                 Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
-                throw err;
+                throw;
             }
             //OK, looks safe, time to save.
             var editedDom = new HtmlDom(docFromBrowser);
@@ -1782,7 +1800,8 @@ namespace Bloom.Edit
                     imageId,
                     priorImageSrc,
                     imageInfo,
-                    pageBackgroundColor
+                    pageBackgroundColor,
+                    undoable: true // All image changes made here are undoable.
                 );
                 UpdateImageInBrowser(args);
             }
@@ -1800,8 +1819,8 @@ namespace Bloom.Edit
         public void UpdateImageInBrowser(PageEditingModel.ImageInfoForJavascript args)
         {
             // We generally don't need to wait. Even if we decide to save, its call to RunJavascriptAsync() will come in after ours.
-            // changeImage() itself is synchronous. The one async path (adjustBackgroundImageSize) is wrapped with
-            // wrapWithRequestPageContentDelay, which ensures any C#-triggered request for page content waits until
+            // changeImage() itself is synchronous. When it triggers async image-resize work in the editable page,
+            // that code registers requestPageContent delays so any C#-triggered request for page content waits until
             // those async DOM adjustments settle before retrieving the page HTML.
             GetEditingBrowser()
                 .RunJavascriptFireAndForget(
@@ -1815,8 +1834,8 @@ namespace Bloom.Edit
              *  talk directly to the BloomServer and tell it that image needs transparency.]
              * Another possible reason to Save is that it is needed if we're going to update the thumbnail, but we decided
              * we can live without this...probably we can get that behavior back once the page list is in the same browser.
-             * Note: although changeImage() is synchronous, the async background-image-size adjustment it triggers is wrapped
-             * with wrapWithRequestPageContentDelay, so any save below will correctly wait for DOM adjustments to settle.
+             * Note: although changeImage() is synchronous, any async image-resize adjustments it triggers in the editable
+             * page register requestPageContent delays, so any save below will correctly wait for DOM adjustments to settle.
              */
             if (CurrentPage.IsCoverPage)
             {
@@ -2222,8 +2241,6 @@ namespace Bloom.Edit
                             // Because BringBookUpToDate will have changed page id's, we need to rebuild the page
                             // list else the next time you click on one, that page won't be found.
                             _view.UpdatePageList(true);
-                            // And also, when you click on another page, if we try to save the current page, it won't be found.
-                            _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles = true;
                             _view.Refresh();
 
                             _pageSelection.SelectPage(

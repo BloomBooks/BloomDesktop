@@ -353,6 +353,34 @@ namespace Bloom.TeamCollection
             }
         }
 
+        /// <summary>
+        /// Returns true if the named book's .bloom file appears to be actively downloading
+        /// (its size grew over a brief observation window). Dropbox downloads files in-place
+        /// without an exclusive write lock, so a partially-downloaded file is readable but
+        /// not a valid zip; comparing sizes lets us distinguish that from permanent corruption.
+        /// If the file hasn't changed recently it is likely stably corrupt, not downloading.
+        /// </summary>
+        protected override bool IsBookDownloading(string bookName)
+        {
+            var bookPath = GetPathToBookFileInRepo(bookName);
+            if (!RobustFile.Exists(bookPath))
+                return false;
+
+            // If the last-write time is more than 10 minutes ago the file is almost certainly
+            // not being actively downloaded (even a very large book on a slow connection should
+            // complete well within that window).
+            var age = DateTime.UtcNow - RobustFile.GetLastWriteTimeUtc(bookPath);
+            if (age.TotalMinutes > 10)
+                return false;
+
+            // The file is recently written — check whether it is actively growing.
+            // This runs in the progress-dialog background worker, so Thread.Sleep is safe.
+            var size1 = new FileInfo(bookPath).Length;
+            System.Threading.Thread.Sleep(500);
+            var size2 = new FileInfo(bookPath).Length;
+            return size2 > size1;
+        }
+
         public string GetBadZipFileMessage(string zipName)
         {
             var zipPath = GetPathToBookFileInRepo(zipName);

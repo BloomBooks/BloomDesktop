@@ -44,9 +44,14 @@ import {
     doImageCommand,
     getImageFromCanvasElement,
     getImageFromContainer,
+    getImageTransparencyMode,
     getImageUrlFromImageContainer,
+    HandleImageError,
+    getOwningPageBackgroundColor,
     isPlaceHolderImage,
     kImageContainerClass,
+    pageBackgroundNeedsTransparency,
+    setImgTransparentParam,
 } from "../../js/bloomImages";
 import { doVideoCommand } from "../../js/bloomVideo";
 import {
@@ -156,6 +161,16 @@ const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
 
     if (isPlaceHolderImage(img.getAttribute("src"))) {
         return false;
+    }
+
+    // If the image actually rendered, it is a real image, even if a stale
+    // bloom-imageLoadError class is hanging around. Cover images get a persisted
+    // onerror that sets that class (BookData.cs), and their resource load can fail
+    // spuriously before bootstrap (see BL-14241); nothing clears the class on a
+    // later successful load. naturalWidth is the ground truth: a genuinely broken
+    // image has naturalWidth 0, so this still treats those as not-real. See BL-16416.
+    if (img.complete && img.naturalWidth > 0) {
+        return true;
     }
 
     if (img.classList.contains("bloom-imageLoadError")) {
@@ -589,9 +604,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 return;
             }
 
-            const bgImg = bgImageCe
-                .getElementsByClassName(kImageContainerClass)[0]
-                ?.getElementsByTagName("img")[0] as
+            const bgImgContainer =
+                bgImageCe.getElementsByClassName(kImageContainerClass)[0];
+            const bgImg = bgImgContainer?.getElementsByTagName("img")[0] as
                 | HTMLImageElement
                 | undefined;
             if (!bgImg) {
@@ -629,6 +644,15 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 canvasElementManager.updateCanvasElementForChangedImage(img);
             }
 
+            // Reset any stale load-error state before changing the src, matching
+            // switchBackgroundToCanvasElement. Otherwise a leftover bloom-imageLoadError
+            // class (e.g. from the cover image's spurious early-load failure) can make
+            // the new background image look unreal and disable Delete. See BL-16416.
+            // hasRealImage() checks the class on both the img and its container, so
+            // clear both.
+            bgImg.classList.remove("bloom-imageLoadError");
+            bgImgContainer?.classList.remove("bloom-imageLoadError");
+            bgImg.onerror = HandleImageError;
             // Keep the stored value book-relative; assigning .src can expand to an absolute URL.
             bgImg.setAttribute("src", currentImageSource);
             bgImg.setAttribute("data-copyright", currentCopyright || "");
@@ -672,6 +696,87 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         l10nId: "EditTab.Toolbox.CanvasTool.ImageFit",
         englishLabel: "Image Fit",
         canvasToolsControl: ImageFillModePanelControl,
+    },
+    imageBackground: {
+        kind: "command",
+        id: "imageBackground",
+        l10nId: "EditTab.Image.Background",
+        englishLabel: "Background",
+        action: () => {},
+        menu: {
+            buildMenuItem: (ctx, _runtime) => {
+                const img = getImage(ctx);
+                const isTransparent =
+                    img?.classList.contains("bloom-transparent") ?? false;
+                const isOpaque =
+                    img?.classList.contains("bloom-opaque") ?? false;
+                const isAuto = !isTransparent && !isOpaque;
+
+                // After mutating the img's classes, recompute and apply the transparent param.
+                function applyTransparencyParam() {
+                    if (!img) return;
+                    const bgColor = getOwningPageBackgroundColor(img);
+                    setImgTransparentParam(
+                        img,
+                        getImageTransparencyMode(
+                            img,
+                            pageBackgroundNeedsTransparency(bgColor),
+                        ),
+                    );
+                }
+
+                return {
+                    id: "imageBackground",
+                    l10nId: "EditTab.Image.Background",
+                    englishLabel: "Background",
+                    onSelect: () => {},
+                    subMenuItems: [
+                        {
+                            l10nId: "EditTab.Image.Background.Auto",
+                            englishLabel: "Auto",
+                            icon: isAuto
+                                ? React.createElement(CheckIcon, null)
+                                : undefined,
+                            onSelect: () => {
+                                if (!img) return;
+                                img.classList.remove(
+                                    "bloom-transparent",
+                                    "bloom-opaque",
+                                );
+                                applyTransparencyParam();
+                            },
+                        },
+                        {
+                            l10nId: "EditTab.Image.Background.Transparent",
+                            englishLabel: "Transparent",
+                            icon: isTransparent
+                                ? React.createElement(CheckIcon, null)
+                                : undefined,
+                            onSelect: () => {
+                                if (!img) return;
+                                img.classList.add("bloom-transparent");
+                                img.classList.remove("bloom-opaque");
+                                applyTransparencyParam();
+                            },
+                        },
+                        {
+                            l10nId: "EditTab.Image.Background.Opaque",
+                            englishLabel: "Opaque",
+                            icon: isOpaque
+                                ? React.createElement(CheckIcon, null)
+                                : undefined,
+                            onSelect: () => {
+                                if (!img) return;
+                                img.classList.add("bloom-opaque");
+                                img.classList.remove("bloom-transparent");
+                                // bloom-opaque always means "none" regardless of page background.
+                                setImgTransparentParam(img, "none");
+                            },
+                        },
+                    ],
+                };
+            },
+        },
     },
     chooseVideo: {
         kind: "command",
@@ -1121,6 +1226,7 @@ export const controlSections: Record<SectionId, IControlSection> = {
                 "expandToFillSpace",
                 "becomeBackground",
                 "imageFieldType",
+                "imageBackground",
             ],
         },
     },

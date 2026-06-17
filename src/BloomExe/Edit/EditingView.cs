@@ -54,6 +54,7 @@ namespace Bloom.Edit
         private Browser _mainBrowser => WorkspaceView?.MainBrowser;
         private WorkspaceView _workspaceView;
         private Form _hostFormForEvents;
+        private int _modalDialogDepth;
 
         internal WorkspaceView WorkspaceView
         {
@@ -520,6 +521,19 @@ namespace Bloom.Edit
 
         public string FileNameOfImageBeingModified => _fileNameOfImageBeingModified;
 
+        internal bool MetadataEditIsFromImageToolbox =>
+            _saveNewImageMetadataActionForImageToolbox != null;
+
+        /// <summary>
+        /// Called when the user confirms new metadata in the C/L dialog that was launched from
+        /// the palaso image toolbox. Invokes the toolbox's save callback directly so that the
+        /// toolbox UI immediately reflects the new copyright/license information.
+        /// </summary>
+        internal void ApplyImageMetadataToImageToolbox(Metadata metadata)
+        {
+            _saveNewImageMetadataActionForImageToolbox?.Invoke(metadata);
+        }
+
         public Metadata PrepareToEditImageMetadata(string fileName)
         {
             if (fileName == null)
@@ -699,12 +713,20 @@ namespace Bloom.Edit
                             || Path.GetExtension(path).ToLowerInvariant() != ".gif"
                         )
                         {
-                            throw new InvalidOperationException(
-                                LocalizationManager.GetString(
-                                    "EditTab.NoGifOnClipboard",
-                                    "To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element"
-                                )
-                            );
+                            path = path.Trim('"'); // In some cases, the path may be enclosed in quotes. Trim them off and check again.
+                            if (
+                                string.IsNullOrEmpty(path)
+                                || !RobustFile.Exists(path)
+                                || Path.GetExtension(path).ToLowerInvariant() != ".gif"
+                            )
+                            {
+                                throw new InvalidOperationException(
+                                    LocalizationManager.GetString(
+                                        "EditTab.NoGifOnClipboard",
+                                        "To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element"
+                                    )
+                                );
+                            }
                         }
                         SetGifImage(imageId, priorImageSrc, path);
                         return;
@@ -942,8 +964,6 @@ namespace Bloom.Edit
             return true;
         }
 
-        private string _gifDirectory; // Todo: worth saving this as a UserPrefs? Or can/should we use the same one as for images?
-
         public void OnChangeImage(
             string imageId,
             UrlPathString imageSrc,
@@ -961,8 +981,9 @@ namespace Bloom.Edit
                 using (
                     var dlg = new BloomOpenFileDialog
                     {
-                        InitialDirectory =
-                            _gifDirectory ?? Environment.SpecialFolder.MyPictures.ToString(),
+                        InitialDirectory = Environment.GetFolderPath(
+                            Environment.SpecialFolder.MyPictures
+                        ),
                         Filter = "gif|*.gif",
                     }
                 )
@@ -970,7 +991,15 @@ namespace Bloom.Edit
                     DialogResult result;
                     using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                     {
-                        result = dlg.ShowDialog();
+                        try
+                        {
+                            SetModalState(true);
+                            result = dlg.ShowDialog();
+                        }
+                        finally
+                        {
+                            SetModalState(false);
+                        }
                     }
                     if (result == DialogResult.OK)
                         SetGifImage(imageId, imageSrc, dlg.FileName);
@@ -1087,13 +1116,16 @@ namespace Bloom.Edit
                 }
 
                 dlg.SearchLanguage = searchLanguage;
-                DialogResult result;
+                DialogResult result = DialogResult.Cancel;
                 try
                 {
+                    SetModalState(true);
                     result = dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());
                 }
                 finally
                 {
+                    SetModalState(false);
+
                     // These variables get set during a callback from the dialog that allows us to use our own way of
                     // editing metadata for an image. It's important that they get cleaned up once the dialog is closed
                     // so they don't interfere with future uses of the metadata editing code.
@@ -1258,6 +1290,7 @@ namespace Bloom.Edit
                 copyright = "",
                 license = "",
                 creator = "",
+                undoable = "true",
             };
             _model.UpdateImageInBrowser(args);
         }
@@ -1688,7 +1721,13 @@ namespace Bloom.Edit
         /// </summary>
         internal void SetModalState(bool isModal)
         {
-            _pageListView.Enabled = !isModal;
+            if (isModal)
+                _modalDialogDepth++;
+            else
+                _modalDialogDepth = Math.Max(0, _modalDialogDepth - 1);
+
+            var isActuallyModal = _modalDialogDepth > 0;
+            _pageListView.Enabled = !isActuallyModal;
         }
 
         public void ShowAddPageDialog()

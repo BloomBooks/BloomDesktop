@@ -232,6 +232,26 @@
         <source xml:lang="en">Red on white</source>
         <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.pollinator">
+        <source xml:lang="en">Pollinator</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.pollinator</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.garden-path">
+        <source xml:lang="en">Garden Path</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.garden-path</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.cherry-blossom">
+        <source xml:lang="en">Cherry Blossom</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.cherry-blossom</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.coral-reef">
+        <source xml:lang="en">Coral Reef</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.coral-reef</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.arctic-dawn">
+        <source xml:lang="en">Arctic Dawn</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.arctic-dawn</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragLettersInstructions">
         <source>Drag the letters where they go</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragLettersInstructions</note>

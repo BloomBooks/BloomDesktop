@@ -30,7 +30,7 @@ import axios from "axios";
 import { get, wrapAxios } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import { ensureFieldFitsOnCustomPage } from "../toolbox/canvas/derivedFieldFitting";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../utils/reactRender";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
 import * as React from "react";
 import {
@@ -1123,7 +1123,7 @@ export default class StyleEditor {
         fontMetadata: IFontMetaData[],
         fontName: string,
     ): void {
-        ReactDOM.render(
+        renderRoot(
             React.createElement(FontSelectComponent, {
                 fontMetadata: fontMetadata,
                 currentFontName: fontName,

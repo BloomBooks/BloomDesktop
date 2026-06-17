@@ -21,8 +21,10 @@ import { getRgbaColorStringFromColorAndOpacity } from "../../../utils/colorUtils
 import {
     IImageInfo,
     SetupElements,
+    addRequestPageContentDelay,
     attachToCkEditor,
     notifyToolOfChangedImage,
+    removeRequestPageContentDelay,
 } from "../bloomEditing";
 import {
     EnableAllImageEditing,
@@ -99,8 +101,17 @@ import {
     setupBackgroundImageAttributes,
     type BackgroundImageManagerState,
 } from "./CanvasElementBackgroundImageManager";
+import {
+    clearImageOperationUndoState,
+    commitPendingImageOperationUndo,
+    IImageCropInfo,
+    initializeImageUndoManager,
+    prepareUndoForImageOperation,
+} from "../ImageUndoManager";
 
 const kComicalGeneratedClass: string = "comical-generated";
+const kAdjustContainerAspectRatioDelayId =
+    "adjustContainerAspectRatioImageLoad";
 
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 export { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
@@ -150,6 +161,18 @@ export class CanvasElementManager {
     private lastMoveContainer: HTMLElement;
 
     public constructor() {
+        initializeImageUndoManager({
+            getCurrentPage: () =>
+                document.getElementsByClassName("bloom-page")[0] as
+                    | HTMLElement
+                    | undefined,
+            updateCanvasElementForChangedImage:
+                this.updateCanvasElementForChangedImage.bind(this),
+            getActiveElement: this.getActiveElement.bind(this),
+            setActiveElement: this.setActiveElement.bind(this),
+            removeDetachedTargets: this.removeDetachedTargets.bind(this),
+            updateCanvasElementClass,
+        });
         this.snapProvider = new CanvasSnapProvider();
         this.guideProvider = new CanvasGuideProvider();
         this.editingSuspension = new CanvasElementEditingSuspension({
@@ -308,7 +331,7 @@ export class CanvasElementManager {
     public moveActiveCanvasElement(
         dx: number,
         dy: number,
-        _event: KeyboardEvent,
+        _event?: KeyboardEvent,
     ): void {
         if (!this.activeElement) return;
 
@@ -1482,6 +1505,19 @@ export class CanvasElementManager {
     // width as necessary, or possibly increasing one if the usual adjustment would make it too small.
     // After making the adjustment if necessary (which might be delayed if the image dimensions
     // are not available), align the control frame with the active element.
+    //
+    // SAVE-RACE INVARIANT: when the adjustment must wait for the image to load, the geometry it
+    // eventually writes (width/height/left/top) would be stale if a save (requestPageContent) ran
+    // first. We guard the *deferred* path below with addRequestPageContentDelay, but that guard is
+    // only registered once we reach this method. requestPageContent always arrives as a separate
+    // JS task (posted by C# via RunJavascript), so it cannot interleave with a synchronous call
+    // stack. The guard is therefore sufficient ONLY because every caller reaches this method
+    // synchronously from the DOM mutation that necessitates the adjustment -- no await, setTimeout,
+    // or event-handler boundary in between -- so no save task can be processed in that gap. If you
+    // add a caller that does async work *before* the mutation (as the paste-new-element path does),
+    // it must hold its own requestPageContent delay across that gap; see the wrapWithRequestPageContentDelay
+    // usage in the paste branch, whose delay overlaps the one registered here so there is never an
+    // uncovered window.
     public adjustContainerAspectRatio(
         canvasElement: HTMLElement,
         useSizeOfNewImage = false,
@@ -1536,30 +1572,13 @@ export class CanvasElementManager {
                 return;
             }
             if (imgHeight === 0 || useSizeOfNewImage) {
-                // image not ready yet, try again later.
-                const handle = setTimeout(
-                    () =>
-                        this.adjustContainerAspectRatio(
-                            canvasElement,
-                            false, // if we've got dimensions just use them
-                            0,
-                        ), // if we get this call we don't have a timeout to cancel
-                    // I think this is long enough that we won't be seeing obsolete data (from a previous src).
-                    // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
-                    // If by any chance this happens when the image really isn't loaded enough to
-                    // have naturalHeight/Width, the zero checks above will force another iteration.
-                    100,
-                    // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
-                ) as unknown as number;
-                imgOrVideo.addEventListener(
-                    "load",
-                    () =>
-                        this.adjustContainerAspectRatio(
-                            canvasElement,
-                            false, // it's loaded, we don't want to wait again
-                            handle,
-                        ), // if we get this call we can cancel the timeout above.
-                    { once: true },
+                // A newly changed image often needs an async retry before the browser reports
+                // natural dimensions. That retry will later write width/height/left/top, so it
+                // must participate in requestPageContent delay bookkeeping or saves can capture
+                // stale geometry.
+                this.waitForImageAndAdjustContainerAspectRatio(
+                    canvasElement,
+                    imgOrVideo,
                 );
                 return; // control frame will be aligned when the image is loaded
             }
@@ -1647,9 +1666,56 @@ export class CanvasElementManager {
         copyContentToTargetAndCleanup(canvasElement);
     }
 
+    private waitForImageAndAdjustContainerAspectRatio(
+        canvasElement: HTMLElement,
+        image: HTMLImageElement,
+    ): void {
+        // This delay is separate from the wrapper around the "add a new canvas element" paste path.
+        // That wrapper only covers the async feature-status request before an element is added.
+        // This one covers the later async wait for the image itself to finish loading so our final
+        // geometry updates become part of any saved page content.
+        // NB: this is registered only once we reach here; it closes the save-race window for the
+        // image-load wait, but relies on callers reaching adjustContainerAspectRatio synchronously
+        // from the triggering DOM mutation. See the SAVE-RACE INVARIANT note on that method.
+        addRequestPageContentDelay(kAdjustContainerAspectRatioDelayId);
+        let adjustmentResumed = false;
+        const resumeAdjustment = (timeoutHandler: number) => {
+            if (adjustmentResumed) {
+                return;
+            }
+            adjustmentResumed = true;
+            try {
+                this.adjustContainerAspectRatio(
+                    canvasElement,
+                    false, // if we've got dimensions just use them
+                    timeoutHandler,
+                );
+            } finally {
+                removeRequestPageContentDelay(
+                    kAdjustContainerAspectRatioDelayId,
+                );
+            }
+        };
+        const handle = setTimeout(
+            () => resumeAdjustment(0),
+            // I think this is long enough that we won't be seeing obsolete data (from a previous src).
+            // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
+            // If by any chance this happens when the image really isn't loaded enough to
+            // have naturalHeight/Width, the zero checks above will force another iteration.
+            100,
+            // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
+        ) as unknown as number;
+        image.addEventListener("load", () => resumeAdjustment(handle), {
+            once: true,
+        });
+    }
+
     // When the image is changed in a canvas element (e.g., choose or paste image),
     // we remove cropping, adjust the aspect ratio, and move the control frame.
-    updateCanvasElementForChangedImage(imgOrImageContainer: HTMLElement) {
+    updateCanvasElementForChangedImage(
+        imgOrImageContainer: HTMLElement,
+        cropInfo?: IImageCropInfo,
+    ) {
         const canvasElement = imgOrImageContainer.closest(
             kCanvasElementSelector,
         ) as HTMLElement;
@@ -1670,6 +1736,7 @@ export class CanvasElementManager {
                 canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
                 true,
+                cropInfo,
             );
             SetupMetadataButton(canvasElement);
         } else {
@@ -2686,6 +2753,7 @@ export class CanvasElementManager {
             // just revert it to a placeholder
             const img = getImageFromCanvasElement(textOverPicDiv);
             if (img) {
+                prepareUndoForImageOperation(img);
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
@@ -2693,6 +2761,7 @@ export class CanvasElementManager {
                     normalizeCoverImageDesignation(page);
                 }
                 this.updateCanvasElementForChangedImage(img);
+                commitPendingImageOperationUndo(img);
                 notifyToolOfChangedImage(img);
             }
             return;
@@ -2735,6 +2804,10 @@ export class CanvasElementManager {
             textElement,
             sameLocation,
         );
+    }
+
+    public makeEditableAudioIndependent(editable: HTMLElement): void {
+        this.duplication.makeEditableAudioIndependent(editable);
     }
 
     public startDraggingSplitter() {
@@ -2783,6 +2856,8 @@ export class CanvasElementManager {
     }
 
     public initializeCanvasElementEditing(): void {
+        clearImageOperationUndoState();
+
         // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
         // load, so that canvas element editing works even when the Canvas element tool is not active. So it definitely
         // needs to be called there when we're calling SetupElements during page load. It's possible
@@ -3040,12 +3115,14 @@ export class CanvasElementManager {
         bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
+        cropInfo?: IImageCropInfo,
     ) {
         return adjustCanvasBackgroundImageSize(
             this.backgroundImageManagerState,
             bloomCanvas,
             bgCanvasElement,
             useSizeOfNewImage,
+            cropInfo,
             () => this.activeElement,
             this.alignControlFrameWithActiveElement,
         );

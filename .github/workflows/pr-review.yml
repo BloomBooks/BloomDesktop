@@ -1,0 +1,25 @@
+# Caller for the shared "PR Review Tracker" automation.
+#
+# The actual logic lives once, centrally, in the org repo:
+#   BloomBooks/.github/.github/workflows/pr-review-tracker.yml
+# This file just forwards this repo's pull_request events to it. Copy this same
+# ~12-line caller into any repo whose PRs should appear on the board.
+#
+# Requires the org-level secret PR_REVIEW_TRACKER_PROJECT_TOKEN to be shared with
+# this repo; we pass only that one secret through (not every secret).
+name: PR Review Tracker
+
+on:
+    pull_request:
+        types: [opened, reopened, synchronize]
+
+jobs:
+    track:
+        # PRs from forks don't receive repository secrets, so the token would be
+        # empty and the run would fail. BloomDesktop is public and gets fork PRs;
+        # board automation only needs to cover same-repo PRs, so skip forks.
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: BloomBooks/.github/.github/workflows/pr-review-tracker.yml@main
+        # Pass only this one secret, not `secrets: inherit`, to limit blast radius.
+        secrets:
+            PR_REVIEW_TRACKER_PROJECT_TOKEN: ${{ secrets.PR_REVIEW_TRACKER_PROJECT_TOKEN }}

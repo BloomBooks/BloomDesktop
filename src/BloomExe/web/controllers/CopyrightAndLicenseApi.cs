@@ -128,6 +128,18 @@ namespace Bloom.web.controllers
                     break;
                 case HttpMethods.Post:
                     metadata = GetMetadataFromJson(request, forBook: false);
+                    if (View.MetadataEditIsFromImageToolbox)
+                    {
+                        // Invoke the palaso image toolbox's save callback directly so that the
+                        // toolbox UI immediately shows the new copyright/license information.
+                        // However, since we launched this dialog from the image chooser, and
+                        // have not yet committed to a new image, we don't want to save the page
+                        // and save the metadata to the current image file, if any.
+                        View.ApplyImageMetadataToImageToolbox(metadata);
+                        request.PostSucceeded();
+                        break;
+                    }
+
                     View.Model.SaveThen(
                         () =>
                         { // Saved DOM must be up to date with possibly new imageUrl
