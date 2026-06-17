@@ -651,12 +651,11 @@ export class ReaderToolsModel {
         });
     }
 
-    public getStageSightWordsSorted(stageNumber: number): string[] {
-        const stringWords: string[] = [];
+    public getStageSightWordsSorted(stageNumber: number): DataWord[] {
         const dataWords: DataWord[] | null =
             this.getStageWordsAndSightWords(stageNumber);
         if (!dataWords) {
-            return stringWords;
+            return [];
         }
         switch (this.sort) {
             case SortType.alphabetic:
@@ -684,10 +683,7 @@ export class ReaderToolsModel {
                 break;
             default:
         }
-        for (let i = 0; i < dataWords.length; i++) {
-            stringWords.push(dataWords[i].Name);
-        }
-        return stringWords;
+        return dataWords;
     }
 
     /**
@@ -1793,7 +1789,7 @@ export class ReaderToolsModel {
         return dataWords;
     }
 
-    public getAllowedWordsSorted(stageNumber: number): string[] {
+    public getAllowedWordsSorted(stageNumber: number): DataWord[] {
         const stringWords: string[] =
             this.selectWordsFromAllowedLists(stageNumber);
         switch (this.sort) {
@@ -1812,7 +1808,10 @@ export class ReaderToolsModel {
                 break;
             default:
         }
-        return stringWords;
+        const dataWords: DataWord[] = stringWords.map(
+            (word) => new DataWord(word),
+        );
+        return dataWords;
     }
 
     public saveState(): void {
