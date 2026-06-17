@@ -2671,6 +2671,14 @@ namespace Bloom.Book
                     "<em>$1</em>",
                     RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                 );
+                // Remove empty (or essentially empty) character markup tags.  (BL-16387)
+                // strong em sup u, empty or zero-width characters in between are all considered empty.
+                // \u200B = zero-width space, \u200C = zero-width non-joiner, \u200D = zero-width joiner
+                inner = Regex.Replace(
+                    inner,
+                    @"<(strong|em|sup|u)>(\u200B|\u200C|\u200D)?</\1>",
+                    ""
+                );
                 if (inner != para.InnerXml)
                     para.InnerXml = inner;
             }
