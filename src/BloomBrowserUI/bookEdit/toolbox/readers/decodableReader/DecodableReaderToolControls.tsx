@@ -1,12 +1,13 @@
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { ReaderToolSwitch } from "../ReaderToolSwitch";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Span } from "../../../../react_components/l10nComponents";
 import BloomButton from "../../../../react_components/bloomButton";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import { css } from "@emotion/react";
 import { Link } from "../../../../react_components/link";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
+import { DataWord } from "../libSynphony/bloomSynphonyExtensions";
 
 const model = getTheOneReaderToolsModel();
 
@@ -91,7 +92,7 @@ const StageGraphemes: React.FunctionComponent<{
     return (
         <div
             css={css`
-                min-height: 0;
+                min-height: 100px;
                 margin-top: 20px;
                 display: flex;
                 flex-direction: column;
@@ -195,11 +196,98 @@ const SortButton: React.FunctionComponent<{
     );
 };
 
+/*
+const DecodableGrid: React.FunctionComponent = ({ wordOrLetterList }) => {
+    const measureRef = useRef<HTMLDivElement>(null);
+    const [columnWidth, setColumnWidth] = useState(100);
+
+    const words =
+        model.synphony?.source.useAllowedWords === 1
+            ? allowedWords
+            : stageSightWords;
+
+    useLayoutEffect(() => {
+        if (!measureRef.current) {
+            return;
+        }
+        measureRef.current.style.display = "block";
+        const width = Math.ceil(
+            measureRef.current.getBoundingClientRect().width,
+        );
+
+        setColumnWidth(width);
+        measureRef.current.style.display = "none";
+    }, [words]);
+
+    const widestWord = words.reduce(
+        (widest, current) =>
+            current.Name.length > widest.length ? current.Name : widest,
+        "",
+    );
+    return (
+        <div>
+            <div
+                ref={measureRef}
+                css={css`
+                    position: absolute;
+                    visibility: hidden;
+                    white-space: nowrap;
+                    pointer-events: none;
+                `}
+            >
+                {widestWord}
+            </div>
+            <div
+                css={css`
+                    display: grid;
+                    grid-template-columns: repeat(
+                        auto-fill,
+                        minmax(${columnWidth}px, 1fr)
+                    );
+                    gap: 8px;
+                    overflow: auto;
+                    max-height: 365px;
+                    margin-left: 8px;
+                    margin-top: 8px;
+                `}
+            >
+                {words.map((word, index) => (
+                    <div
+                        key={index}
+                        css={css`
+                            color: ${word.isSightWord ? "#87cefa" : "white"};
+                        `}
+                    >
+                        {word.Name}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+*/
+
 const SortedStageWords: React.FunctionComponent<{
-    stageSightWords: string[];
-    allowedWords: string[];
+    stageSightWords: DataWord[];
+    allowedWords: DataWord[];
     changeSortFunc: (which: 0 | 1 | 2) => void;
 }> = ({ stageSightWords, allowedWords, changeSortFunc }) => {
+    const measureRef = useRef<HTMLDivElement>(null);
+    const [columnWidth, setColumnWidth] = useState(100);
+
+    const words =
+        model.synphony?.source.useAllowedWords === 1
+            ? allowedWords
+            : stageSightWords;
+
+    useLayoutEffect(() => {
+        if (!measureRef.current) return;
+
+        const width = measureRef.current.getBoundingClientRect().width;
+
+        setColumnWidth(Math.ceil(width));
+    }, [words]);
+
     return (
         <div
             css={css`
@@ -211,6 +299,20 @@ const SortedStageWords: React.FunctionComponent<{
                 overflow: hidden;
             `}
         >
+            <div
+                ref={measureRef}
+                css={css`
+                    position: absolute;
+                    visibility: hidden;
+                    white-space: nowrap;
+                    pointer-events: none;
+                `}
+            >
+                {words.map((word, index) => (
+                    <div key={index}>{word.Name}</div>
+                ))}
+            </div>
+
             <div>
                 {model.synphony?.source.useAllowedWords === 1 ? (
                     <Span
@@ -246,19 +348,27 @@ const SortedStageWords: React.FunctionComponent<{
             <div
                 css={css`
                     display: grid;
+                    grid-template-columns: repeat(
+                        auto-fill,
+                        minmax(${columnWidth}px, 1fr)
+                    );
+                    row-gap: 5px;
+                    column-gap: 4px;
                     overflow: auto;
-                    gap: 8px;
-                    max-height: 300px;
+                    max-height: 365px;
                     margin-left: 8px;
-                    margin-right: 8px;
                     margin-top: 8px;
                 `}
             >
-                {(model.synphony?.source.useAllowedWords === 1
-                    ? allowedWords
-                    : stageSightWords
-                ).map((word, index) => (
-                    <div key={index}>{word}</div>
+                {words.map((word, index) => (
+                    <div
+                        key={index}
+                        css={css`
+                            color: ${word.isSightWord ? "#87cefa" : "white"};
+                        `}
+                    >
+                        {word.Name}
+                    </div>
                 ))}
             </div>
         </div>
@@ -275,10 +385,10 @@ export const DecodableReaderToolControls: React.FunctionComponent = () => {
     const [currentGraphemes, setCurGraphemes] = useState<string[]>(
         model.getKnownGraphemesSorted(model.stageNumber),
     );
-    const [stageSightWords, setStageSightWords] = useState<string[]>(
+    const [stageSightWords, setStageSightWords] = useState<DataWord[]>(
         model.getStageSightWordsSorted(model.stageNumber),
     );
-    const [allowedWords, setAllowedWords] = useState<string[]>(
+    const [allowedWords, setAllowedWords] = useState<DataWord[]>(
         model.getAllowedWordsSorted(model.stageNumber),
     );
 
