@@ -21,22 +21,34 @@
     #titlePageTitleBlock {
         margin-bottom: @MarginBetweenMajorItems;
     }
-    // scrunch as necessary to fit
-    &.Device16x9Landscape {
-        #titlePageTitleBlock {
-            margin-bottom: 0.5em;
-        }
-    }
-    // shrink things down even more if it's a small paper size
-    &.A6Landscape,
-    &.A6Portrait,
+    // On the short (landscape) and small page sizes, the title content can be
+    // taller than the page. Rather than shrink the fonts, we reclaim the large
+    // fixed inter-section gaps so the free space pools into the funding block's
+    // margin-top:auto (set at the bottom of this file). The content then grows
+    // upward to fill the page while the bottom branding logo stays anchored,
+    // instead of the logo being pushed off the page. (With an extreme amount of
+    // text the page can still overflow, which is preferable to always shrinking
+    // the text on every book.)
+    &.Device16x9Landscape,
+    &.HalfLetterLandscape,
     &.QuarterLetterLandscape,
-    &.QuarterLetterPortrait {
+    &.QuarterLetterPortrait,
+    &.A6Landscape,
+    &.A6Portrait {
         #titlePageTitleBlock {
             margin-bottom: 0;
             div {
                 margin-bottom: 0;
             }
+        }
+        // Scripture's reference row otherwise reserves a large fixed gap here.
+        .creditsRow .smallCoverCredits.bloom-content1 {
+            margin-bottom: @MarginBetweenMinorItems;
+        }
+        // Literacy's contributions block otherwise reserves a large fixed gap.
+        #contributions,
+        .OriginalContributions-style.bloom-contentNational1 {
+            margin-bottom: @MarginBetweenMinorItems;
         }
     }
 }
@@ -59,6 +71,69 @@
         .OriginalContributions-style.bloom-contentNational1 {
             margin-bottom: 1em;
             margin-top: 1em;
+        }
+    }
+    // Quarter Letter Landscape is the shortest page (5.5 x 4.25 in). Even after
+    // reclaiming the major inter-section gaps, the contributions block's default
+    // 3em margins pushed the bottom branding logo off the page. Tighten just those
+    // margins (spacing only; fonts unchanged) so the logo — anchored after
+    // #funding's margin-top:auto — sits fully on the page.
+    &.QuarterLetterLandscape {
+        #contributions {
+            margin-bottom: 0.5em;
+        }
+        .OriginalContributions-style.bloom-contentNational1 {
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+    }
+    // Prepublication books additionally show a printing-history / "Versión Preliminar"
+    // block on the title page. Its default loose leading (line-height 1.5) makes the
+    // block tall enough to push the bottom branding logo off the short/small pages.
+    // Tighten the leading and collapse the surrounding margins (spacing only; fonts
+    // unchanged) so it fits. (On non-prepub books this block is empty, so these rules
+    // are no-ops there.)
+    &.QuarterLetterLandscape,
+    &.QuarterLetterPortrait,
+    &.HalfLetterLandscape,
+    &.Device16x9Landscape {
+        #contributions {
+            margin-bottom: 0;
+        }
+        #printingHistory .bloom-editable {
+            margin-bottom: 0;
+            &,
+            p {
+                line-height: 1.1;
+            }
+        }
+        #prepubNotice {
+            line-height: 1.1;
+        }
+    }
+    // The 16x9 device landscape page is the shortest of all (100 mm tall); tighten a
+    // little more so the prepub printing-history block and the logo both fit.
+    &.Device16x9Landscape {
+        #languageInformation {
+            margin-bottom: 0;
+        }
+        #contributions .OriginalContributions-style.bloom-contentNational1 {
+            margin-top: 0.5em;
+            margin-bottom: 0.25em;
+        }
+        #printingHistory .bloom-editable {
+            &,
+            p {
+                line-height: 1;
+            }
+        }
+        #prepubNotice {
+            line-height: 1;
+            // Only collapse the bottom margin — NOT margin-top, which the global rule sets to
+            // `auto` to pool the free space and anchor the funding/notice + logo group at the
+            // bottom margin. A `margin: 0` shorthand here clobbered that auto and let the whole
+            // title page flow from the top, stranding the logo mid-page (BL review).
+            margin-bottom: 0;
         }
     }
     // default values for the Funding section
@@ -142,6 +217,60 @@
     .bloom-contentNational1,
     .bloom-content1 {
         margin-bottom: 0.5em;
+    }
+    // Quarter Letter (and the equally-small A6) can't hold the full credits
+    // content at the normal sizes, so shrink the font, line height, inter-section
+    // spacing, and the CC license badge so it all fits on the page.
+    &.QuarterLetterPortrait,
+    &.QuarterLetterLandscape,
+    &.A6Portrait,
+    &.A6Landscape {
+        .marginBox {
+            font-size: 6pt;
+        }
+        // Inter-item spacing is kept tight (0.25em) so the credits content fits with a
+        // little slack. Without that slack the flex column squeezes one block below its
+        // content height, which makes Bloom flag it with a red overflow box (the "smell
+        // of overflow") even though the page edge isn't breached.
+        .Credits-Page-style,
+        .bloom-contentNational1 {
+            font-size: 6pt;
+            line-height: 1.15;
+            margin-bottom: 0.25em;
+        }
+        #originalAcknowledgments {
+            margin-top: 0.25em;
+        }
+        .ISBNContainer {
+            margin-bottom: 0.25em;
+        }
+        .licenseImage,
+        .licenseImage img {
+            height: 26px;
+            width: auto;
+        }
+    }
+    // Device 16x9 Landscape is wide but very short; the credits content
+    // overflowed the bottom of the page, so shrink the font, line height,
+    // spacing, and CC license badge to fit the limited height.
+    &.Device16x9Landscape {
+        .marginBox {
+            font-size: 7pt;
+        }
+        .Credits-Page-style,
+        .bloom-contentNational1 {
+            font-size: 7pt;
+            line-height: 1.15;
+            margin-bottom: 0.4em;
+        }
+        #originalAcknowledgments {
+            margin-top: 0.4em;
+        }
+        .licenseImage,
+        .licenseImage img {
+            height: 24px;
+            width: auto;
+        }
     }
 }
 
@@ -252,4 +381,31 @@ body {
 #funding,
 #prepubNotice {
     margin-top: auto;
+}
+
+// Full Letter is much taller than the Half Letter this xmatter was designed for.
+// Per the BL layout review, on the tall Letter sizes the title page anchors the
+// branding logo to the bottom margin with the funding-agency info stacked just above
+// it (the .marginBox is a flex column and #funding / #prepubNotice keep the global
+// margin-top:auto, which pools the free space and pushes the funding + logo group to
+// the bottom). The review also asked to "slightly lower" the upper block (title /
+// language / contributions) to be more centered, so we drop it by a small fixed offset
+// (chosen with BL from live renders). The remaining free space still pools below it via
+// the auto margins, keeping the logo anchored at the bottom.
+.LetterPortrait,
+.LetterLandscape {
+    &.credits .licenseAndCopyrightBlock {
+        margin-top: 0;
+    }
+    &.titlePage {
+        #localizedAcknowledgments {
+            margin-top: @MarginBetweenMajorItems;
+        }
+    }
+}
+.LetterPortrait.titlePage #titlePageTitleBlock {
+    margin-top: 0.9in;
+}
+.LetterLandscape.titlePage #titlePageTitleBlock {
+    margin-top: 0.7in;
 }

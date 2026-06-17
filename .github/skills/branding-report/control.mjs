@@ -388,7 +388,7 @@ function buildPrintHtml(paperName) {
     const when = new Date().toLocaleString();
     return `<!doctype html><html><head><meta charset="utf-8"><title>Bloom branding report</title>
 <style>
-  @page { margin: 0; }
+  @page { size: A4; margin: 0.5in; }
   html,body{margin:0}
   body{font-family:"Segoe UI",system-ui,sans-serif;color:#141414;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   h1{font-size:16pt;margin:0 0 2pt}

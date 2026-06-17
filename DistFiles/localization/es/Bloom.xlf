@@ -398,6 +398,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES" state="final">Importación/exportación de hojas de cálculo</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText">
+        <source xml:lang="en">Get more books in the {0} language on BloomLibrary.org.</source>
+        <target xml:lang="es-ES" state="translated">Encuentra más libros en {0} en BloomLibrary.org.</target>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText</note>
+        <note>{0} will be replaced by a language name</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
         <target xml:lang="es-ES" state="final">Bloom está cambiando la fuente predeterminada para "{0}" a la nueva fuente "Andika New Basic".</target>
