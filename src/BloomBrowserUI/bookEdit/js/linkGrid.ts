@@ -1,3 +1,5 @@
+/// <reference path="./collectionSettings.d.ts" />
+
 import WebSocketManager, {
     IBloomWebSocketEvent,
 } from "../../utils/WebSocketManager";
@@ -5,12 +7,29 @@ import { postJson } from "../../utils/bloomApi";
 import { showBookGridSetupDialog } from "../../react_components/BookGridSetup/BookGridSetupDialog";
 import { Link } from "../../react_components/BookGridSetup/BookLinkTypes";
 
+function getLanguage1Font(): string {
+    const settings = GetSettings() as ICollectionSettings;
+    return settings.language1Font;
+}
+
+function applyLanguage1Font(element: HTMLElement) {
+    const language1Font = getLanguage1Font();
+    if (!language1Font) {
+        return;
+    }
+
+    Array.from(element.getElementsByTagName("p")).forEach((p) => {
+        p.style.fontFamily = language1Font;
+    });
+}
+
 export function setupBookLinkGrids(container: HTMLElement) {
     // Add skeleton to empty grids on initial setup
     const linkGrids = Array.from(
         container.getElementsByClassName("bloom-link-grid"),
     ) as HTMLElement[];
     for (const linkGrid of linkGrids) {
+        applyLanguage1Font(linkGrid);
         addSkeletonIfEmpty(linkGrid as HTMLElement);
         // In case anyone wonders why this works here but will not on most canvas elements
         // and their children...we put a rule in basepage.less that puts bloom-link-grid
@@ -96,10 +115,13 @@ export function editLinkGrid(linkGrid: HTMLElement) {
                     const p = document.createElement("p");
                     p.textContent =
                         link.book.title || link.book.folderName || "";
+                    p.style.fontFamily = getLanguage1Font();
                     button.appendChild(p);
 
                     linkGrid.appendChild(button);
                 });
+
+                applyLanguage1Font(linkGrid);
             }
         },
     );

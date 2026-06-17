@@ -17,6 +17,7 @@ function GetSettings() {
     v.currentCollectionLanguage2 = "tpi";
     v.currentCollectionLanguage3 = "fr";
     v.languageForNewTextBoxes = "en";
+    v.language1Font = "Andika";
     v.browserRoot = "";
     v.topics = [
         "Agriculture",

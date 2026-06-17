@@ -475,6 +475,7 @@ globalThis.jQuery = jQuery;
     currentCollectionLanguage2: "tpi",
     currentCollectionLanguage3: "fr",
     languageForNewTextBoxes: "en",
+    language1Font: "Andika",
     browserRoot: "",
     topics: [
         "Agriculture",
