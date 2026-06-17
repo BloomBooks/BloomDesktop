@@ -59,7 +59,7 @@ export const CollectionChooserDialog: React.FunctionComponent<IProps> = (
                             css={css`
                                 width: 15px;
                                 height: 15px;
-                                top: 2px;
+                                top: 7px;
                                 position: relative;
                             `}
                             src={`${getBloomApiPrefix(false)}BloomIcon.svg`}
