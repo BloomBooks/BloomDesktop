@@ -4,6 +4,10 @@ import { spawn } from "node:child_process";
 import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+    killProcessTree,
+    sweepStaleWorktreeNodeProcesses,
+} from "./processTree.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -259,6 +263,16 @@ const waitForViteClient = async (port, timeoutMs) => {
     return false;
 };
 
+// Terminate a spawned child AND all of its descendants.
+//
+// On Windows we do NOT rely on SIGINT propagation: terminating a Node child does
+// not terminate its descendants, so the dev.mjs subtree (Vite + ~7 watchers and
+// their own command children) would orphan if we merely signaled dev.mjs and
+// then trusted it to reap them before exiting. Instead we `taskkill /t /f` the
+// whole subtree directly, which is the only reliable way to leave zero orphans.
+//
+// On POSIX we keep the graceful SIGINT-then-force path so dotnet/Bloom can shut
+// down cleanly; terminals already propagate Ctrl-C to the process group there.
 const terminateChild = (child) =>
     new Promise((resolve) => {
         if (!child || child.exitCode !== null || child.signalCode) {
@@ -283,6 +297,14 @@ const terminateChild = (child) =>
 
         child.once("exit", finish);
 
+        if (process.platform === "win32") {
+            // Kill the entire subtree by pid; the "exit" event resolves us, and
+            // the watchdog covers the case where it never arrives.
+            void killProcessTree(child.pid);
+            forceTimer = setTimeout(finish, gracefulShutdownMs);
+            return;
+        }
+
         try {
             child.kill("SIGINT");
         } catch {
@@ -295,27 +317,7 @@ const terminateChild = (child) =>
                 return;
             }
 
-            if (process.platform === "win32") {
-                const killer = spawn(
-                    "taskkill",
-                    ["/pid", String(child.pid), "/t", "/f"],
-                    {
-                        stdio: "ignore",
-                        shell: false,
-                    },
-                );
-
-                killer.on("exit", finish);
-                killer.on("error", finish);
-                return;
-            }
-
-            try {
-                child.kill("SIGTERM");
-            } catch (error) {
-                void error;
-            }
-
+            void killProcessTree(child.pid, "SIGTERM");
             setTimeout(finish, 250);
         }, gracefulShutdownMs);
     });
@@ -560,6 +562,20 @@ const startBloomExe = (vitePort) => {
 };
 
 const main = async () => {
+    // Defensive sweep: a prior launcher that was hard-killed (terminal closed,
+    // SIGKILL, timeout) cannot run its shutdown handlers, so its Vite + watcher
+    // node processes orphan. Reap any such leftovers from THIS worktree before we
+    // start, so a previous leak can't starve the machine and wreck this run. We
+    // match on this worktree's repo-root path (which appears in the command lines
+    // of dev.mjs, watchBloomExe.mjs, and the Vite/onchange bins) and exclude our
+    // own pid. Killing a tree root takes its relative-path descendants
+    // (watchLess, onchange's command children) with it.
+    await sweepStaleWorktreeNodeProcesses({
+        commandLineMarker: repoRoot,
+        excludePids: [process.pid],
+        log: (message) => console.log(`[go] ${message}`),
+    });
+
     console.log(
         "[go] Launching Vite first and waiting for it to go quiet before starting Bloom.",
     );

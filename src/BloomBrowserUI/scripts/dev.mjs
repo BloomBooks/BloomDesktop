@@ -1,5 +1,5 @@
 /* eslint-env node */
-/* global console, process */
+/* global clearTimeout, console, process, setTimeout */
 import { spawn } from "child_process";
 import path from "node:path";
 import * as fs from "node:fs";
@@ -9,6 +9,7 @@ import { glob } from "glob";
 import { compilePugFiles } from "./compilePug.mjs";
 import { copyStaticFile } from "./copyStaticFile.mjs";
 import { copyContentFile } from "../../content/scripts/copyContentFile.mjs";
+import { killProcessTree } from "./processTree.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -435,24 +436,38 @@ async function startWatchers() {
     );
 }
 
-function cleanup(exitCode = 0) {
+// Force-kill every watcher subtree, then exit. We must kill whole trees (not
+// just the direct children) because on Windows a plain kill leaves each
+// watcher's own command children (notably `onchange -k`) running, and those
+// orphans accumulate across runs. We await the kills so they actually complete
+// before we exit; a watchdog guarantees we still exit even if a kill hangs.
+async function cleanup(exitCode = 0) {
     if (isShuttingDown) {
         return;
     }
     isShuttingDown = true;
     console.log("\nShutting down...");
-    for (const proc of processes) {
-        proc.kill();
-    }
     const normalizedExitCode =
         typeof exitCode === "number" && Number.isFinite(exitCode)
             ? exitCode
             : 0;
+
+    // Never let a stuck kill keep us alive indefinitely.
+    const watchdog = setTimeout(() => process.exit(normalizedExitCode), 5000);
+    watchdog.unref();
+
+    await Promise.all(
+        processes.map((proc) =>
+            proc.pid ? killProcessTree(proc.pid) : Promise.resolve(),
+        ),
+    );
+
+    clearTimeout(watchdog);
     process.exit(normalizedExitCode);
 }
 
-process.on("SIGINT", () => cleanup(0));
-process.on("SIGTERM", () => cleanup(0));
+process.on("SIGINT", () => void cleanup(0));
+process.on("SIGTERM", () => void cleanup(0));
 
 async function main() {
     if (!fs.existsSync(process.execPath)) {
