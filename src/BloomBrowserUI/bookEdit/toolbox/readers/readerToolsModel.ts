@@ -76,7 +76,7 @@ export class ReaderToolsModel {
     public fontName: string = "";
     public readableFileExtensions: string[] = [];
     public directoryWatcher: DirectoryWatcher | undefined;
-    public maxAllowedWords: number = 5;
+    public maxAllowedWords: number = 10000;
     public refreshFunc: () => void | undefined;
 
     // remember words so we can update the counts real-time
