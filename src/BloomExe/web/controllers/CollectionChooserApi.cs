@@ -124,7 +124,7 @@ namespace Bloom.web.controllers
         {
             var collections = new List<dynamic>();
 
-            const int maxMruItems = 9;
+            const int maxMruItems = 10;
             var collectionsToShow = Settings.Default.MruProjects.Paths.Take(maxMruItems).ToList();
 
             // Always include the MRU items first.
