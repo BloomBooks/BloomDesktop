@@ -1,16 +1,14 @@
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { ReaderToolSwitch } from "../ReaderToolSwitch";
 import { useLayoutEffect, useRef, useState } from "react";
-import {
-    LocalizableElement,
-    Span,
-} from "../../../../react_components/l10nComponents";
+import { Span } from "../../../../react_components/l10nComponents";
 import BloomButton from "../../../../react_components/bloomButton";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import { css } from "@emotion/react";
 import { Link } from "../../../../react_components/link";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { DataWord } from "../libSynphony/bloomSynphonyExtensions";
+import { useL10n } from "../../../../react_components/l10nHooks";
 
 const model = getTheOneReaderToolsModel();
 
@@ -89,13 +87,89 @@ const StageNav: React.FunctionComponent<{
     );
 };
 
+const DecodableGrid: React.FunctionComponent<{
+    forGraphemes: boolean;
+    displayList: DataWord[] | string[];
+}> = ({ forGraphemes, displayList }) => {
+    const measureRef = useRef<HTMLDivElement>(null);
+    const gridRef = useRef<HTMLDivElement>(null);
+    const [curColCount, setCurColCount] = useState(1);
+    const [curRowCount, setCurRowCount] = useState(1);
+
+    useLayoutEffect(() => {
+        if (!measureRef.current || !gridRef.current) return;
+
+        const width = Math.ceil(
+            measureRef.current.getBoundingClientRect().width,
+        );
+
+        const gridWidth = gridRef.current.getBoundingClientRect().width;
+        let colCount = Math.floor((gridWidth - 20) / width);
+        if (colCount < 1) {
+            colCount = 1;
+        } else if (colCount > 7) {
+            colCount = 7;
+        }
+        setCurColCount(colCount);
+        const rowCount = Math.ceil(displayList.length / colCount);
+        setCurRowCount(rowCount);
+    }, [displayList]);
+
+    return (
+        <>
+            <div
+                ref={measureRef}
+                css={css`
+                    position: absolute;
+                    visibility: hidden;
+                    white-space: nowrap;
+                    pointer-events: none;
+                `}
+            >
+                {displayList.map((item, index) => (
+                    <div key={index}>
+                        {typeof item === "string" ? item : item.Name}
+                    </div>
+                ))}
+            </div>
+            <div
+                ref={gridRef}
+                css={css`
+                    display: grid;
+                    grid-template-columns: repeat(${curColCount}, 1fr);
+                    grid-template-rows: repeat(${curRowCount}, auto);
+                    grid-auto-flow: ${forGraphemes ? "row" : "column"};
+                    row-gap: 5px;
+                    overflow: auto;
+                    margin-left: 8px;
+                    margin-top: 8px;
+                `}
+            >
+                {displayList.map((item, index) => (
+                    <div
+                        key={index}
+                        css={css`
+                            color: ${typeof item !== "string" &&
+                            item.isSightWord
+                                ? "#87cefa"
+                                : "white"};
+                        `}
+                    >
+                        {typeof item === "string" ? item : item.Name}
+                    </div>
+                ))}
+            </div>
+        </>
+    );
+};
+
 const StageGraphemes: React.FunctionComponent<{
     currentGraphemes: string[];
 }> = ({ currentGraphemes }) => {
     return (
         <div
             css={css`
-                min-height: 100px;
+                min-height: 120px;
                 margin-top: 20px;
                 display: flex;
                 flex-direction: column;
@@ -112,28 +186,7 @@ const StageGraphemes: React.FunctionComponent<{
             >
                 Letters in this stage
             </Span>
-            <div
-                css={css`
-                    display: flex;
-                    flex-wrap: wrap;
-                    row-gap: 8px;
-                    min-height: 0;
-                    overflow: auto;
-                    margin-left: 8px;
-                    margin-top: 8px;
-                `}
-            >
-                {currentGraphemes.map((letter, index) => (
-                    <div
-                        key={index}
-                        css={css`
-                            width: 23px;
-                        `}
-                    >
-                        {letter}
-                    </div>
-                ))}
-            </div>
+            <DecodableGrid forGraphemes={true} displayList={currentGraphemes} />
         </div>
     );
 };
@@ -141,7 +194,6 @@ const StageGraphemes: React.FunctionComponent<{
 const SortButton: React.FunctionComponent<{
     sortType: 0 | 1 | 2;
     changeSortFunc: (which: 0 | 1 | 2) => void;
-    children: string;
 }> = (props) => {
     let keyInsert: string;
     let tipInsert: string;
@@ -167,11 +219,15 @@ const SortButton: React.FunctionComponent<{
             shouldHighlight = model.sort === "byFrequency" ? true : false;
             break;
     }
+    const tooltip = useL10n(
+        `Sort ${tipInsert}`,
+        `EditTab.Toolbox.DecodableReaderTool.Sort${keyInsert}`,
+    );
     return (
         <BloomButton
-            l10nKey=""
-            l10nTipEnglishEnabled={props.children}
-            temporarilyDisableI18nWarning={true}
+            title={tooltip}
+            l10nKey="already-localized"
+            alreadyLocalized={true}
             variant="text"
             enabled={true}
             hasText={true}
@@ -204,31 +260,6 @@ const SortedStageWords: React.FunctionComponent<{
     allowedWords: DataWord[];
     changeSortFunc: (which: 0 | 1 | 2) => void;
 }> = ({ stageSightWords, allowedWords, changeSortFunc }) => {
-    const measureRef = useRef<HTMLDivElement>(null);
-    const gridRef = useRef<HTMLDivElement>(null);
-    const [curColCount, setCurColCount] = useState(1);
-    const [curRowCount, setCurRowCount] = useState(1);
-
-    const words =
-        model.synphony?.source.useAllowedWords === 1
-            ? allowedWords
-            : stageSightWords;
-
-    useLayoutEffect(() => {
-        if (!measureRef.current || !gridRef.current) return;
-
-        const width = Math.ceil(
-            measureRef.current.getBoundingClientRect().width,
-        );
-
-        const gridWidth = gridRef.current.getBoundingClientRect().width;
-        let colCount = Math.floor((gridWidth - 20) / width);
-        if (colCount < 1) colCount = 1;
-        setCurColCount(colCount);
-        const rowCount = Math.ceil(words.length / colCount);
-        setCurRowCount(rowCount);
-    }, [words]);
-
     return (
         <div
             css={css`
@@ -240,20 +271,6 @@ const SortedStageWords: React.FunctionComponent<{
                 overflow: hidden;
             `}
         >
-            <div
-                ref={measureRef}
-                css={css`
-                    position: absolute;
-                    visibility: hidden;
-                    white-space: nowrap;
-                    pointer-events: none;
-                `}
-            >
-                {words.map((word, index) => (
-                    <div key={index}>{word.Name}</div>
-                ))}
-            </div>
-
             <div>
                 {model.synphony?.source.useAllowedWords === 1 ? (
                     <Span
@@ -280,43 +297,20 @@ const SortedStageWords: React.FunctionComponent<{
                         Sample words in this stage
                     </Span>
                 )}
-                <SortButton sortType={0} changeSortFunc={changeSortFunc}>
-                    Sort Alphabetically
-                </SortButton>
-                <SortButton sortType={1} changeSortFunc={changeSortFunc}>
-                    Sort by length
-                </SortButton>
+                <SortButton sortType={0} changeSortFunc={changeSortFunc} />
+                <SortButton sortType={1} changeSortFunc={changeSortFunc} />
                 {model.synphony?.source.useAllowedWords === 0 && (
-                    <SortButton sortType={2} changeSortFunc={changeSortFunc}>
-                        Sort by frequency
-                    </SortButton>
+                    <SortButton sortType={2} changeSortFunc={changeSortFunc} />
                 )}
             </div>
-            <div
-                ref={gridRef}
-                css={css`
-                    display: grid;
-                    grid-template-columns: repeat(${curColCount}, 1fr);
-                    grid-template-rows: repeat(${curRowCount}, auto);
-                    grid-auto-flow: column;
-                    row-gap: 5px;
-                    overflow: auto;
-                    margin-left: 8px;
-                    margin-top: 8px;
-                    padding-right: 0px;
-                `}
-            >
-                {words.map((word, index) => (
-                    <div
-                        key={index}
-                        css={css`
-                            color: ${word.isSightWord ? "#87cefa" : "white"};
-                        `}
-                    >
-                        {word.Name}
-                    </div>
-                ))}
-            </div>
+            <DecodableGrid
+                forGraphemes={false}
+                displayList={
+                    model.synphony?.source.useAllowedWords === 1
+                        ? allowedWords
+                        : stageSightWords
+                }
+            />
         </div>
     );
 };

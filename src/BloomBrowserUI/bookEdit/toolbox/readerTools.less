@@ -3,7 +3,7 @@
 @toggle-button-height: 32px;
 
 #leveled-reader-tool-content,
-#decodable-reader-tool-content1 {
+#decodable-reader-tool-content {
     max-height: calc(100% - @toggle-button-height);
     overflow: auto;
     &.turned-off1 {
@@ -12,7 +12,7 @@
     }
 }
 #leveled-reader-tool-toggle-react-container,
-#decodable-reader-tool-toggle-react-container1 {
+#decodable-reader-tool-toggle-react-container {
     max-height: @toggle-button-height;
 }
 
@@ -20,16 +20,16 @@
 // was displaying too high. I'm ok just tweaking it for now.
 // Eventually we'll rewrite the tool in React.
 #decodable-reader-tool-content1:not(.turned-off)
-    + #decodable-reader-tool-toggle-react-container1 {
+    + #decodable-reader-tool-toggle-react-container {
     margin-top: 8px;
 }
 
 /*Styles for ReaderTools.htm*/
-div.stageLine1 {
+div.stageLine {
     display: block;
     font-size: 16pt;
 }
-span.stageLine1 {
+span.stageLine {
     float: left;
     user-select: none;
 }
@@ -58,28 +58,28 @@ td.statistics-actual {
     overflow-wrap: break-word;
     vertical-align: top;
 }
-span.setup1 {
+span.setup {
     font-size: xx-small;
     margin-left: 10px;
 }
-div.tableHolder1 {
+div.tableHolder {
     overflow: auto;
 }
-div.sortBlock1 {
+div.sortBlock {
     position: relative;
     float: right;
     margin: 0 14px 8px 6px;
     display: inline-block;
     border: 1px solid white;
 }
-div.rightBorder1 {
+div.rightBorder {
     border: 0 solid white;
     border-right-width: 1px;
 }
 div.sortIconSelected {
     background: grey;
 }
-div.sortItem1 {
+div.sortItem {
     display: inline-block;
     color: white;
     padding: 2px 3px;
@@ -95,11 +95,11 @@ td.disabledLimit {
     visibility: hidden;
 }
 
-div.wordList1,
-div.letterList1 {
+div.wordList,
+div.letterList {
     margin: 4px;
 }
-div.wordList1 {
+div.wordList {
     column-count: 3;
 }
 div.letter {
@@ -115,7 +115,7 @@ div.sight-word {
     color: #87cefa;
 }
 
-#lettersTable1 {
+#lettersTable {
     max-height: ~"calc(100% - 200px)"; //prefer the letters list over the word list. It's a real drag to have to scroll the letters.
     min-height: 100px;
 }
@@ -133,7 +133,7 @@ div.section ul li {
     cursor: pointer;
 }
 
-#make-letter-word-list-div1 {
+#make-letter-word-list-div {
     position: absolute;
     bottom: 0;
     left: -3px; // matches the 3px left padding in toolbox.less
@@ -143,7 +143,7 @@ div.section ul li {
     box-sizing: border-box;
     width: calc(100% + 3px); // to match the -3px left above
 }
-#make-letter-word-list1 {
+#make-letter-word-list {
     font-size: 10px;
 }
 
@@ -154,15 +154,15 @@ div.section ul li {
     margin: 0 10px 14px 0;
 }
 
-#setupStages span.setup1 {
+#setupStages span.setup {
     margin-left: 2px;
 }
 
-.noSelect1 {
+.noSelect {
     user-select: none;
 }
 
-#decodable-edit1 {
+#decodable-edit {
     height: 14px;
     position: relative;
     top: 3px;
@@ -173,7 +173,7 @@ div.section ul li {
     top: 3px;
 }
 
-#allowed-word-list-truncated1 {
+#allowed-word-list-truncated {
     position: absolute;
     bottom: 0;
     padding: 8px 4px;
