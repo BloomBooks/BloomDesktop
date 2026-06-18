@@ -61,14 +61,22 @@ export const killProcessTree = (pid, signal = "SIGTERM") =>
 const toPowerShellLiteral = (value) => `'${value.replace(/'/g, "''")}'`;
 
 /**
- * Find the process ids of stale `node.exe` processes whose command line contains
- * the given marker (typically this worktree's BloomBrowserUI path), excluding the
- * supplied pids (e.g. our own process). Windows only; returns an empty array on
+ * Find the process ids of stale, ORPHANED `node.exe` processes whose command line
+ * contains the given marker (typically this worktree's repo-root path), excluding
+ * the supplied pids (e.g. our own process). Windows only; returns an empty array on
  * other platforms because the orphaning bug this guards against is Windows-specific.
+ *
+ * "Orphaned" means the process's parent is no longer running -- exactly the state a
+ * dev-server tree is left in after the launcher is hard-killed without running its
+ * shutdown handlers. Requiring a dead parent is what keeps the sweep from killing a
+ * legitimate concurrent run from the same worktree (e.g. another terminal's
+ * `yarn dev` or tests), whose processes still have a living parent. We only need to
+ * find the orphaned tree roots; their still-parented descendants (Vite, onchange's
+ * command children) are taken down when the root's tree is killed.
  *
  * @param {string} commandLineMarker - Substring that identifies this worktree's processes.
  * @param {number[]} [excludePids] - Process ids to exclude from the result.
- * @returns {Promise<number[]>} The matching, non-excluded process ids.
+ * @returns {Promise<number[]>} The matching, orphaned, non-excluded process ids.
  */
 export const findStaleWorktreeNodeProcesses = (
     commandLineMarker,
@@ -82,12 +90,17 @@ export const findStaleWorktreeNodeProcesses = (
 
         const excluded = new Set(excludePids.filter(Number.isInteger));
         const markerLiteral = toPowerShellLiteral(commandLineMarker);
-        // List node.exe processes whose command line mentions this worktree and
-        // print just their pids, one per line.
+        // List node.exe processes whose command line mentions this worktree AND
+        // whose parent process is no longer alive (true orphans), printing just
+        // their pids, one per line. We build a lookup of every live pid so the
+        // parent-alive test is a cheap hash check.
         const script = [
             `$marker = ${markerLiteral};`,
-            "Get-CimInstance Win32_Process -Filter \"Name='node.exe'\"",
-            "| Where-Object { $_.CommandLine -and $_.CommandLine.Contains($marker) }",
+            "$all = Get-CimInstance Win32_Process;",
+            "$alive = @{};",
+            "foreach ($p in $all) { $alive[[int]$p.ProcessId] = $true }",
+            "$all",
+            "| Where-Object { $_.Name -eq 'node.exe' -and $_.CommandLine -and $_.CommandLine.Contains($marker) -and -not $alive.ContainsKey([int]$_.ParentProcessId) }",
             "| ForEach-Object { $_.ProcessId }",
         ].join(" ");
 
@@ -140,7 +153,7 @@ export const sweepStaleWorktreeNodeProcesses = async (params) => {
     }
 
     params.log?.(
-        `Found ${stalePids.length} stale dev-server node process(es) from a previous run of this worktree (pids: ${stalePids.join(", ")}). Cleaning them up before starting.`,
+        `Found ${stalePids.length} orphaned dev-server node process(es) from a hard-killed previous run of this worktree (pids: ${stalePids.join(", ")}). Cleaning them up before starting.`,
     );
 
     await Promise.all(stalePids.map((pid) => killProcessTree(pid)));

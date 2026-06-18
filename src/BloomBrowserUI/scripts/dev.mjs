@@ -125,7 +125,7 @@ function spawnProcess(command, args, options = {}) {
         }
         console.error(`Process failed to start: ${command}`);
         console.error(err);
-        cleanup(1);
+        void cleanup(1);
     });
 
     proc.on("close", (code, signal) => {
@@ -135,13 +135,13 @@ function spawnProcess(command, args, options = {}) {
 
         if (signal) {
             console.error(`Process exited due to signal ${signal}: ${command}`);
-            cleanup(1);
+            void cleanup(1);
             return;
         }
 
         if (code !== 0) {
             console.error(`Process exited with code ${code}: ${command}`);
-            cleanup(code ?? 1);
+            void cleanup(code ?? 1);
         }
     });
 
@@ -193,7 +193,7 @@ function startVite(port) {
                 return;
             }
             console.error("Vite failed to start:", err);
-            cleanup(1);
+            void cleanup(1);
         });
 
         vite.on("close", (code) => {
@@ -204,12 +204,12 @@ function startVite(port) {
                 console.error(
                     `Vite exited before becoming ready (code ${code}).`,
                 );
-                cleanup(1);
+                void cleanup(1);
                 return;
             }
 
             console.error(`Vite exited unexpectedly (code ${code}).`);
-            cleanup(code ?? 1);
+            void cleanup(code ?? 1);
         });
     });
 }
@@ -490,5 +490,5 @@ async function main() {
 
 main().catch((err) => {
     console.error("Dev script failed:", err);
-    cleanup(1);
+    void cleanup(1);
 });
