@@ -3606,6 +3606,167 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Vídeos de capacitación</target>
         <note>ID: HelpMenu.trainingVideos</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.AboutArtOfReading" translate="no">
+        <source xml:lang="en">About Art of Reading</source>
+        <target xml:lang="es-ES" state="translated">Acerca de Art of Reading</target>
+        <note>ID: ImageLibrary.AboutArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.AboutOpenVerse" translate="no">
+        <source xml:lang="en">About OpenVerse</source>
+        <target xml:lang="es-ES" state="translated">Acerca de OpenVerse</target>
+        <note>ID: ImageLibrary.AboutOpenVerse</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.AboutPixabay" translate="no">
+        <source xml:lang="en">About Pixabay</source>
+        <target xml:lang="es-ES" state="translated">Acerca de Pixabay</target>
+        <note>ID: ImageLibrary.AboutPixabay</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ArtOfReadingDescription" translate="no">
+        <source xml:lang="en">International Illustrations: Art of Reading 3.0 is a collection of over 11,000 images. The collection is designed for use in the preparation of a wide variety of literacy and educational materials, such as shellbooks, primers, news-sheets, posters, and other culturally appropriate materials. These images are black and white line drawings collected from SIL and national artists from around the world.</source>
+        <target xml:lang="es-ES" state="translated">Ilustraciones internacionales: Art of Reading 3.0 es una colección de más de 11.000 imágenes. La colección está diseñada para su uso en la preparación de una amplia variedad de materiales educativos y de alfabetización, como libros de texto, cartillas, boletines, afiches y otros materiales culturalmente apropiados. Estas imágenes son dibujos en blanco y negro recopilados de artistas de SIL y nacionales de todo el mundo.</target>
+        <note>ID: ImageLibrary.ArtOfReadingDescription</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ArtOfReadingNotReadyInstructions" translate="no">
+        <source xml:lang="en">To get Art of Reading images, you need to:</source>
+        <target xml:lang="es-ES" state="translated">Para obtener imágenes de Art of Reading, necesitas:</target>
+        <note>ID: ImageLibrary.ArtOfReadingNotReadyInstructions</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.CollectionsOnThisComputer" translate="no">
+        <source xml:lang="en">Collections on this Computer</source>
+        <target xml:lang="es-ES" state="translated">Colecciones en este equipo</target>
+        <note>ID: ImageLibrary.CollectionsOnThisComputer</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Disclaimer" translate="no">
+        <source xml:lang="en">These images are not from Bloom or SIL. This tool requests images suitable for general audiences. However, we cannot guarantee that all images will be inoffensive.</source>
+        <target xml:lang="es-ES" state="translated">Estas imágenes no provienen de Bloom ni de SIL. Esta herramienta solicita imágenes adecuadas para el público en general. Sin embargo, no podemos garantizar que todas las imágenes sean inofensivas.</target>
+        <note>ID: ImageLibrary.Disclaimer</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.DownloadArtOfReading" translate="no">
+        <source xml:lang="en">Download and install the Art of Reading Installer</source>
+        <target xml:lang="es-ES" state="translated">Descargar e instalar el instalador de Art of Reading</target>
+        <note>ID: ImageLibrary.DownloadArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ImageCount" translate="no">
+        <source xml:lang="en">{0} images</source>
+        <target xml:lang="es-ES" state="translated">{0} imágenes</target>
+        <note>ID: ImageLibrary.ImageCount</note>
+        <note>{0} is a placeholder for the number of images</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.MoreInfo" translate="no">
+        <source xml:lang="en">More info</source>
+        <target xml:lang="es-ES" state="translated">Más información</target>
+        <note>ID: ImageLibrary.MoreInfo</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.NoMatchesFound" translate="no">
+        <source xml:lang="en">No matches found</source>
+        <target xml:lang="es-ES" state="translated">No se encontraron resultados</target>
+        <note>ID: ImageLibrary.NoMatchesFound</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.NotReady" translate="no">
+        <source xml:lang="en">Not Ready</source>
+        <target xml:lang="es-ES" state="translated">No disponible</target>
+        <note>ID: ImageLibrary.NotReady</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OnlineSources" translate="no">
+        <source xml:lang="en">Online Sources</source>
+        <target xml:lang="es-ES" state="translated">Fuentes en línea</target>
+        <note>ID: ImageLibrary.OnlineSources</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OpenFile" translate="no">
+        <source xml:lang="en">Open File...</source>
+        <target xml:lang="es-ES" state="translated">Abrir archivo...</target>
+        <note>ID: ImageLibrary.OpenFile</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OpenVerseDescription" translate="no">
+        <source xml:lang="en">Openverse searches multiple public repositories for CC-licensed and public domain works.</source>
+        <target xml:lang="es-ES" state="translated">Openverse busca en varios repositorios públicos obras con licencia CC y de dominio público.</target>
+        <note>ID: ImageLibrary.OpenVerseDescription</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PasteApiKeyFromClipboard" translate="no">
+        <source xml:lang="en">Paste API key from clipboard</source>
+        <target xml:lang="es-ES" state="translated">Pegar clave API del portapapeles</target>
+        <note>ID: ImageLibrary.PasteApiKeyFromClipboard</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PhotogrIllustrator" translate="no">
+        <source xml:lang="en">Photographer/Illustrator:</source>
+        <target xml:lang="es-ES" state="translated">Fotógrafo/Ilustrador:</target>
+        <note>ID: ImageLibrary.PhotogrIllustrator</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayApiKeyInstructions" translate="no">
+        <source xml:lang="en">To use Pixabay, you need an API key:</source>
+        <target xml:lang="es-ES" state="translated">Para usar Pixabay, necesitas una clave API:</target>
+        <note>ID: ImageLibrary.PixabayApiKeyInstructions</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayApiKeyLabel" translate="no">
+        <source xml:lang="en">Pixabay API Key</source>
+        <target xml:lang="es-ES" state="translated">Clave API de Pixabay</target>
+        <note>ID: ImageLibrary.PixabayApiKeyLabel</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayDescription" translate="no">
+        <source xml:lang="en">Pixabay is a large collection of images that may be used for free without attribution.</source>
+        <target xml:lang="es-ES" state="translated">Pixabay es una gran colección de imágenes que se pueden usar gratis sin atribución.</target>
+        <note>ID: ImageLibrary.PixabayDescription</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayLogIn" translate="no">
+        <source xml:lang="en">Log in to Pixabay</source>
+        <target xml:lang="es-ES" state="translated">Iniciar sesión en Pixabay</target>
+        <note>ID: ImageLibrary.PixabayLogIn</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayOrIfLoggedIn" translate="no">
+        <source xml:lang="en">or, if already logged in,</source>
+        <target xml:lang="es-ES" state="translated">o, si ya has iniciado sesión,</target>
+        <note>ID: ImageLibrary.PixabayOrIfLoggedIn</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayGoToApiKeyPage" translate="no">
+        <source xml:lang="en">go to the API key page</source>
+        <target xml:lang="es-ES" state="translated">ve a la página de la clave API</target>
+        <note>ID: ImageLibrary.PixabayGoToApiKeyPage</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayFindKey" translate="no">
+        <source xml:lang="en">Copy the API key shown near the top of that page, next to &quot;Your API key:&quot;</source>
+        <target xml:lang="es-ES" state="translated">Copia la clave API que aparece en esa página, junto a &quot;Your API key:&quot;</target>
+        <note>ID: ImageLibrary.PixabayFindKey</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayStep4" translate="no">
+        <source xml:lang="en">Paste it below</source>
+        <target xml:lang="es-ES" state="translated">Pégala abajo</target>
+        <note>ID: ImageLibrary.PixabayStep4</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.QuitAndRerunBloom" translate="no">
+        <source xml:lang="en">Quit and re-run Bloom</source>
+        <target xml:lang="es-ES" state="translated">Cerrar y volver a abrir Bloom</target>
+        <note>ID: ImageLibrary.QuitAndRerunBloom</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Refresh" translate="no">
+        <source xml:lang="en">Refresh</source>
+        <target xml:lang="es-ES" state="translated">Actualizar</target>
+        <note>ID: ImageLibrary.Refresh</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Search" translate="no">
+        <source xml:lang="en">Search</source>
+        <target xml:lang="es-ES" state="translated">Buscar</target>
+        <note>ID: ImageLibrary.Search</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Source" translate="no">
+        <source xml:lang="en">Source</source>
+        <target xml:lang="es-ES" state="translated">Fuente</target>
+        <note>ID: ImageLibrary.Source</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ThisComputer" translate="no">
+        <source xml:lang="en">This Computer</source>
+        <target xml:lang="es-ES" state="translated">Este equipo</target>
+        <note>ID: ImageLibrary.ThisComputer</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ThisPage" translate="no">
+        <source xml:lang="en">this page</source>
+        <target xml:lang="es-ES" state="translated">esta página</target>
+        <note>ID: ImageLibrary.ThisPage</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.UseThisImage" translate="no">
+        <source xml:lang="en">Use this image</source>
+        <target xml:lang="es-ES" state="translated">Usar esta imagen</target>
+        <note>ID: ImageLibrary.UseThisImage</note>
+      </trans-unit>
       <trans-unit id="ImageUtils.PreparingImage" approved="yes">
         <source xml:lang="en">Preparing image: {0}</source>
         <target xml:lang="es-ES" state="final">Preparando imagen: {0}</target>

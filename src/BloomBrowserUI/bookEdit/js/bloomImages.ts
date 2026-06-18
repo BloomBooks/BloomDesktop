@@ -2,6 +2,7 @@ import {
     getWithConfig,
     getWithConfigAsync,
     postJson,
+    postJsonAsync,
 } from "../../utils/bloomApi";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
@@ -21,6 +22,8 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { showCopyrightAndLicenseDialog } from "../workspaceRoot";
+import { getWorkspaceBundleExports } from "./workspaceFrames";
+import { changeImage, IImageInfo } from "./bloomEditing";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import $ from "jquery";
@@ -312,35 +315,88 @@ export function doImageCommand(
             imageId = EditableDivUtils.createUuid();
             img.setAttribute("id", imageId);
         }
-        // Note that the changeImage method (called from the C# code) will remove the id
-        // attribute after using it to find the correct image.  The C# code will call the
-        // removeImageId method if it doesn't call the changeImage method.  See BL-13619.
+        // Note that the changeImage method will remove the id attribute after using
+        // it to find the correct image.  removeImageId is called on cancel. See BL-13619.
     }
 
-    const topDiv = img.closest(kCanvasElementSelector);
-    // Currently Gifs can only be added using the Games tool.
-    // A gif is always an img in a canvas element div, and we put a special class
-    // on the canvas element
-    // and use it in various ways where GIFs need to behave differently from
-    // other imgs. (For example, currently, they can only be cut/copied as file
-    // paths, we don't support metadata, they can't be cropped,...)
-    const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
-    const pageBackgroundColor = getOwningPageBackgroundColor(img);
-
-    const endpoint = "editView/" + command + "Image";
-    const payload = {
-        imageId,
-        imageSrc,
-        imageIsGif,
-        pageBackgroundColor,
-    };
-
     if (command === "paste") {
-        postJson(endpoint, payload, undefined, handlePasteImageApiError);
+        const topDiv = img.closest(kCanvasElementSelector);
+        const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
+        const pageBackgroundColor = getOwningPageBackgroundColor(img);
+        postJson(
+            "editView/pasteImage",
+            { imageId, imageSrc, imageIsGif, pageBackgroundColor },
+            undefined,
+            handlePasteImageApiError,
+        );
         return;
     }
 
-    postJson(endpoint, payload);
+    if (command === "copy") {
+        const copyTopDiv = img.closest(kCanvasElementSelector);
+        const copyImageIsGif =
+            copyTopDiv?.classList.contains("bloom-gif") ?? false;
+        postJson("editView/copyImage", {
+            imageSrc,
+            imageIsGif: copyImageIsGif,
+        });
+        return;
+    }
+
+    // command === "change"
+    const topDiv = img.closest(kCanvasElementSelector);
+    // Currently Gifs can only be added using the Games tool.
+    // A gif is always an img in a canvas element div, and we put a special class
+    // on the canvas element and use it in various ways where GIFs need to behave
+    // differently from other imgs.
+    const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
+
+    if (imageIsGif) {
+        // GIF images bypass the gallery and go straight to a native file picker.
+        doChangeGifImage(img, imageId!);
+    } else {
+        const searchLang = navigator.language.split("-")[0] || "en";
+        getWorkspaceBundleExports().showImageGalleryDialog(
+            imageId!,
+            searchLang,
+        );
+    }
+}
+
+// Handles the "change image" flow for GIF elements: picks a file via C# and applies it.
+async function doChangeGifImage(
+    img: HTMLElement,
+    imageId: string,
+): Promise<void> {
+    const pickResponse = await postJsonAsync("editView/pickLocalImageFile", {
+        gifOnly: true,
+    });
+    if (!pickResponse) return;
+    const { filePath } = pickResponse.data as { filePath: string };
+    if (!filePath) {
+        // User cancelled — remove the temporary id.
+        img.removeAttribute("id");
+        return;
+    }
+    const changeResponse = await postJsonAsync("editView/imageGalleryResult", {
+        localPath: filePath,
+    });
+    if (!changeResponse) return;
+    const result = changeResponse.data as {
+        src: string;
+        copyright: string;
+        creator: string;
+        license: string;
+    };
+    const imageInfo: IImageInfo = {
+        imageId,
+        src: result.src,
+        copyright: result.copyright,
+        creator: result.creator,
+        license: result.license,
+        undoable: "false",
+    };
+    changeImage(imageInfo);
 }
 
 export function getOwningPageBackgroundColor(element: HTMLElement): string {

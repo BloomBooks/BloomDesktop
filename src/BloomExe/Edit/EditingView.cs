@@ -575,25 +575,6 @@ namespace Bloom.Edit
                     return null; // exception handled in ImageUpdater
                 }
 
-                if (ImageUpdater.ImageHasMetadata(imageBeingModified))
-                {
-                    // If we have metadata with an official collectionUri
-                    // just give a summary of the metadata
-                    if (
-                        ImageUpdater.ImageIsFromOfficialCollection(imageBeingModified.Metadata)
-                        || ImageUpdater.ImageIsStockGameImage(fileName, imageBeingModified.Metadata)
-                    )
-                    {
-                        MessageBox.Show(
-                            imageBeingModified.Metadata.GetSummaryParagraph(
-                                new string[] { "en" },
-                                out string _
-                            )
-                        );
-                        return null;
-                    }
-                }
-
                 var metadata = imageBeingModified.Metadata;
                 // If the license is not set, default to CC-BY.
                 metadata.SetupReasonableLicenseDefaultBeforeEditing();

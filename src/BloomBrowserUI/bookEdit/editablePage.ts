@@ -6,7 +6,7 @@
 // Currently that is done using a regular script tag in the HTML, not via an import here.
 
 import $ from "jquery";
-import { bootstrap } from "./js/bloomEditing";
+import { bootstrap, IImageInfo } from "./js/bloomEditing";
 import { EditableDivUtils } from "./js/editableDivUtils";
 import "../lib/long-press/jquery.longpress.js";
 import "../lib/jquery.i18n.custom"; // side-effect: adds .localize() to $.fn (kept via sideEffects allow-list)
@@ -98,6 +98,8 @@ export interface IPageFrameExports {
     SayHello(): void;
     renderDragActivityTabControl(currentTab: number): void;
     showGamePromptDialog: (onlyIfEmpty: boolean) => void;
+    changeImage(imageInfo: IImageInfo): void;
+    removeImageId(imageId: string): void;
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.

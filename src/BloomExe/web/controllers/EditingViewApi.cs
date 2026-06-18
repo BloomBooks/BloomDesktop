@@ -10,12 +10,17 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
+using SIL.Core.ClearShare;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Windows.Forms.ClearShare;
+using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom.web.controllers
@@ -141,6 +146,36 @@ namespace Bloom.web.controllers
                 "editView/frameSources",
                 HandleGetFrameSources,
                 true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/imageGalleryResult",
+                HandleImageGalleryResult,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/pickLocalImageFile",
+                HandlePickLocalImageFile,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/localFilePreview",
+                HandleLocalFilePreview,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "imageGallery/artOfReading/local-collections/collections",
+                HandleArtOfReadingCollections,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "imageGallery/artOfReading/local-collections/search",
+                HandleArtOfReadingSearch,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "imageGallery/artOfReading/local-collections/collection-image",
+                HandleArtOfReadingCollectionImage,
+                false
             );
         }
 
@@ -691,6 +726,460 @@ namespace Bloom.web.controllers
                 return;
             }
             request.ReplyWithText(request.CurrentBook.ID);
+        }
+
+        /// <summary>
+        /// Saves an image chosen in the image gallery to the book folder and returns
+        /// the resulting src and metadata as JSON for the JS caller to apply.
+        /// Accepts either a local file path (localPath) or a remote URL (imageUrl).
+        /// Gallery-provided license/credits/creator override the source EXIF, except for
+        /// images from official collections (e.g. Art of Reading) whose EXIF is authoritative.
+        /// </summary>
+        private void HandleImageGalleryResult(ApiRequest request)
+        {
+            var data = (DynamicJson)DynamicJson.Parse(request.RequiredPostJson());
+            data.TryGetValue("localPath", out string localPath);
+            data.TryGetValue("imageUrl", out string imageUrl);
+            data.TryGetValue("credits", out string credits);
+            data.TryGetValue("license", out string license);
+            data.TryGetValue("licenseUrl", out string licenseUrl);
+            data.TryGetValue("creator", out string galleryCreator);
+            string sourceFilePath;
+            bool isTempFile = false;
+
+            if (!string.IsNullOrEmpty(localPath))
+            {
+                sourceFilePath = localPath;
+            }
+            else if (!string.IsNullOrEmpty(imageUrl))
+            {
+                string extension;
+                try
+                {
+                    extension = Path.GetExtension(new Uri(imageUrl).LocalPath);
+                }
+                catch
+                {
+                    extension = ".jpg";
+                }
+                if (string.IsNullOrEmpty(extension))
+                    extension = ".jpg";
+
+                sourceFilePath = Path.Combine(
+                    Path.GetTempPath(),
+                    Guid.NewGuid().ToString() + extension
+                );
+#pragma warning disable SYSLIB0014 // WebClient is fine for a simple synchronous download here
+                using (var client = new System.Net.WebClient())
+                    client.DownloadFile(imageUrl, sourceFilePath);
+#pragma warning restore SYSLIB0014
+                isTempFile = true;
+            }
+            else
+            {
+                request.Failed(
+                    HttpStatusCode.BadRequest,
+                    "imageGalleryResult requires localPath or imageUrl"
+                );
+                return;
+            }
+
+            try
+            {
+                using (var palasoImage = PalasoImage.FromFileRobustly(sourceFilePath))
+                {
+                    var info = PageEditingModel.ChangePicture(
+                        View.Model.CurrentBook.FolderPath,
+                        "",
+                        UrlPathString.CreateFromUnencodedString(""),
+                        palasoImage
+                    );
+
+                    // Metadata.Write (used inside ChangePicture) writes from the
+                    // source-file-locked TagLib object, so existing EXIF tags like
+                    // "Picassa" Artist can survive. Use SaveImageMetadataIfNeeded on a
+                    // fresh load of the destination file so the replacement is complete.
+                    //
+                    // Official-collection images (e.g. Art of Reading) carry authoritative
+                    // EXIF — copyright, CollectionUri, CC licence — already preserved by
+                    // ChangePicture. Ignore any gallery-provided values for these images so
+                    // we don't overwrite the correct metadata, and so the CollectionUri
+                    // survives to trigger the non-editable copyright summary dialog.
+                    bool isOfficialCollection = ImageUpdater.ImageIsFromOfficialCollection(
+                        palasoImage.Metadata
+                    );
+                    var licenseInfo = BuildLicenseInfoFromGallery(license, licenseUrl);
+                    bool hasGalleryMeta =
+                        !isOfficialCollection
+                        && (
+                            !string.IsNullOrEmpty(galleryCreator)
+                            || !string.IsNullOrEmpty(credits)
+                            || licenseInfo != null
+                        );
+
+                    if (hasGalleryMeta)
+                    {
+                        var galleryMetadata = new Metadata();
+                        galleryMetadata.Creator = galleryCreator ?? "";
+                        galleryMetadata.CopyrightNotice = credits ?? "";
+                        if (licenseInfo != null)
+                            galleryMetadata.License = licenseInfo;
+
+                        var destFileName = Uri.UnescapeDataString(info.src);
+                        ImageUtils.SaveImageMetadataIfNeeded(
+                            galleryMetadata,
+                            View.Model.CurrentBook.FolderPath,
+                            destFileName
+                        );
+                    }
+
+                    request.ReplyWithJson(
+                        new
+                        {
+                            src = info.src,
+                            copyright = !string.IsNullOrEmpty(credits) ? credits : info.copyright,
+                            creator = !string.IsNullOrEmpty(galleryCreator)
+                                ? galleryCreator
+                                : info.creator,
+                            license = (!isOfficialCollection && licenseInfo != null)
+                                ? licenseInfo.ToString()
+                                : info.license,
+                        }
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                request.Failed(HttpStatusCode.InternalServerError, ex.Message);
+            }
+            finally
+            {
+                if (isTempFile && RobustFile.Exists(sourceFilePath))
+                    RobustFile.Delete(sourceFilePath);
+            }
+        }
+
+        /// <summary>
+        /// Builds a libpalaso ILicenseInfo from the gallery-provided license string and/or URL.
+        /// CC license URLs (creativecommons.org) are parsed into a proper CreativeCommonsLicense;
+        /// everything else becomes a CustomLicense so the text is preserved.
+        /// Returns null when no info is given.
+        /// </summary>
+        private static LicenseInfo BuildLicenseInfoFromGallery(string license, string licenseUrl)
+        {
+            // Only invoke the CC parser for actual creativecommons.org URLs.
+            // FromLicenseUrl misparses unrelated URLs (e.g. pixabay.com/service/license/)
+            // instead of throwing, so we guard before calling it.
+            if (!string.IsNullOrEmpty(licenseUrl) && licenseUrl.Contains("creativecommons.org"))
+            {
+                try
+                {
+                    return CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
+                }
+                catch
+                {
+                    // Malformed CC URL — fall through to the named string.
+                }
+            }
+            if (!string.IsNullOrEmpty(license))
+                return new CustomLicense { RightsStatement = license };
+            return null;
+        }
+
+        /// <summary>
+        /// Opens a native file-picker dialog and returns the selected path as JSON.
+        /// Pass gifOnly:true to restrict the filter to GIF files.
+        /// </summary>
+        private void HandlePickLocalImageFile(ApiRequest request)
+        {
+            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            ((DynamicJson)data).TryGetValue("gifOnly", out bool gifOnly);
+
+            var filter = gifOnly
+                ? "GIF images|*.gif"
+                : "Images|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tif;*.tiff;*.svg";
+
+            string selectedPath = "";
+            View.Invoke(
+                (Action)(
+                    () =>
+                    {
+                        using (
+                            var dlg = new BloomOpenFileDialog
+                            {
+                                InitialDirectory = Environment.GetFolderPath(
+                                    Environment.SpecialFolder.MyPictures
+                                ),
+                                Filter = filter,
+                            }
+                        )
+                        {
+                            View.SetModalState(true);
+                            try
+                            {
+                                using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
+                                {
+                                    if (dlg.ShowDialog() == DialogResult.OK)
+                                        selectedPath = dlg.FileName;
+                                }
+                            }
+                            finally
+                            {
+                                View.SetModalState(false);
+                            }
+                        }
+                    }
+                )
+            );
+
+            _lastPickedLocalImagePath = selectedPath;
+            var previewUrl = string.IsNullOrEmpty(selectedPath)
+                ? ""
+                : "/bloom/api/editView/localFilePreview?path=" + Uri.EscapeDataString(selectedPath);
+            request.ReplyWithJson(new { filePath = selectedPath, previewUrl });
+        }
+
+        /// <summary>
+        /// Serves a single local image file for preview purposes.
+        /// The "path" query parameter is the absolute OS path to the file.
+        /// Only the path most recently returned by HandlePickLocalImageFile is allowed.
+        /// </summary>
+        private void HandleLocalFilePreview(ApiRequest request)
+        {
+            var path = request.RequiredParam("path");
+            var fullPath = Path.GetFullPath(path);
+
+            if (fullPath != _lastPickedLocalImagePath)
+            {
+                request.Failed(HttpStatusCode.Forbidden, "File not authorized for preview");
+                return;
+            }
+
+            if (!RobustFile.Exists(fullPath))
+            {
+                request.Failed(HttpStatusCode.NotFound, "File not found");
+                return;
+            }
+
+            request.ReplyWithImage(fullPath);
+        }
+
+        /// <summary>
+        /// The path most recently returned by HandlePickLocalImageFile. HandleLocalFilePreview
+        /// only serves this exact file, preventing arbitrary local-file access via the endpoint.
+        /// </summary>
+        private string _lastPickedLocalImagePath;
+
+        private static readonly string[] _defaultAorLanguages = new[] { "en", "es" };
+
+        /// <summary>
+        /// The root folder where SIL image collections (including Art of Reading) are installed.
+        /// </summary>
+        private static string ArtOfReadingBaseFolder =>
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                "SIL",
+                "ImageCollections"
+            );
+
+        /// <summary>
+        /// Returns the list of Art of Reading image collections installed on this machine,
+        /// together with the keyword-search languages they support.
+        /// </summary>
+        private void HandleArtOfReadingCollections(ApiRequest request)
+        {
+            var baseFolder = ArtOfReadingBaseFolder;
+            if (!Directory.Exists(baseFolder))
+            {
+                request.ReplyWithJson(
+                    new { collections = Array.Empty<string>(), languages = _defaultAorLanguages }
+                );
+                return;
+            }
+
+            var collections = Directory
+                .GetDirectories(baseFolder)
+                .Select(Path.GetFileName)
+                .Where(n => !string.IsNullOrEmpty(n))
+                .ToArray();
+
+            var languages = GetArtOfReadingLanguages(baseFolder, collections);
+            request.ReplyWithJson(new { collections, languages });
+        }
+
+        /// <summary>
+        /// Reads the first available index.txt header to discover which keyword-language
+        /// columns the collection provides (e.g. "en", "es").
+        /// </summary>
+        private static string[] GetArtOfReadingLanguages(string baseFolder, string[] collections)
+        {
+            foreach (var collection in collections)
+            {
+                var indexPath = Path.Combine(baseFolder, collection, "index.txt");
+                if (!RobustFile.Exists(indexPath))
+                    continue;
+                var firstLine = RobustFile.ReadAllLines(indexPath).FirstOrDefault();
+                if (firstLine == null)
+                    continue;
+                // Language-code columns are exactly 2 characters; skip "filename", "subfolder", "country"
+                var langCodes = firstLine.Split('\t').Where(col => col.Length == 2).ToArray();
+                if (langCodes.Length > 0)
+                    return langCodes;
+            }
+            return _defaultAorLanguages;
+        }
+
+        /// <summary>
+        /// Searches an Art of Reading collection's index.txt for images whose keyword list
+        /// (in the requested language) contains the search term.
+        /// Returns an array of {url, localPath} objects — url is a root-relative Bloom API URL
+        /// for thumbnail display; localPath is the absolute OS path so the caller can copy the
+        /// file directly without an extra HTTP round-trip.
+        /// </summary>
+        private void HandleArtOfReadingSearch(ApiRequest request)
+        {
+            var collection = request.RequiredParam("collection");
+            var lang = request.RequiredParam("lang");
+            var term = request.RequiredParam("term").Trim().ToLowerInvariant();
+
+            var indexPath = Path.Combine(ArtOfReadingBaseFolder, collection, "index.txt");
+            if (!RobustFile.Exists(indexPath))
+            {
+                request.ReplyWithJson(Array.Empty<object>());
+                return;
+            }
+
+            var lines = RobustFile.ReadAllLines(indexPath);
+            if (lines.Length == 0)
+            {
+                request.ReplyWithJson(Array.Empty<object>());
+                return;
+            }
+
+            var headers = lines[0].Split('\t');
+            var filenameIdx = Array.IndexOf(headers, "filename");
+            var subfolderIdx = Array.IndexOf(headers, "subfolder");
+            if (subfolderIdx < 0)
+                subfolderIdx = Array.IndexOf(headers, "country");
+            var langIdx = Array.IndexOf(headers, lang);
+
+            if (filenameIdx < 0 || langIdx < 0)
+            {
+                request.ReplyWithJson(Array.Empty<object>());
+                return;
+            }
+
+            const string imageEndpoint =
+                "/bloom/api/imageGallery/artOfReading/local-collections/collection-image";
+            var imagesBase = Path.Combine(ArtOfReadingBaseFolder, collection, "images");
+            var results = new List<object>();
+
+            foreach (var line in lines.Skip(1))
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+                var cols = line.Split('\t');
+                if (cols.Length <= langIdx)
+                    continue;
+
+                var tags = cols[langIdx].Split(',').Select(t => t.Trim().ToLowerInvariant());
+                if (!tags.Contains(term))
+                    continue;
+
+                var filename = filenameIdx < cols.Length ? cols[filenameIdx].Trim() : "";
+                var subfolder =
+                    subfolderIdx >= 0 && subfolderIdx < cols.Length
+                        ? cols[subfolderIdx].Trim()
+                        : "";
+
+                // Resolve the actual file path, handling AOR's optional one-level
+                // subsubfolder nesting (index subfolder may not be the direct parent).
+                var imagePath = FindAorImagePath(imagesBase, subfolder, filename);
+                if (imagePath == null)
+                    continue;
+
+                // Relative path from images/ to the file, forward-slash separated, for the URL
+                var relPath = imagePath[imagesBase.Length..]
+                    .TrimStart(Path.DirectorySeparatorChar)
+                    .Replace(Path.DirectorySeparatorChar, '/');
+
+                results.Add(
+                    new
+                    {
+                        url = $"{imageEndpoint}?collection={Uri.EscapeDataString(collection)}&file={Uri.EscapeDataString(relPath)}",
+                        localPath = imagePath,
+                    }
+                );
+            }
+
+            request.ReplyWithJson(results.ToArray());
+        }
+
+        /// <summary>
+        /// Resolves the actual path of an AOR image on disk.
+        /// The index "subfolder" column may omit a further nesting level, so if the direct
+        /// path does not exist we search one level of subdirectories (mirroring the Node.js
+        /// storeInMapsIfFileExists logic).
+        /// Returns null if the file cannot be found.
+        /// </summary>
+        private static string FindAorImagePath(string imagesBase, string subfolder, string filename)
+        {
+            // Try the direct path first
+            var directPath = string.IsNullOrEmpty(subfolder)
+                ? Path.Combine(imagesBase, filename)
+                : Path.Combine(imagesBase, subfolder, filename);
+
+            if (RobustFile.Exists(directPath))
+                return directPath;
+
+            if (string.IsNullOrEmpty(subfolder))
+                return null;
+
+            // Direct path failed; search subdirectories of the subfolder one level deep
+            var subfolderDir = Path.Combine(imagesBase, subfolder);
+            if (!Directory.Exists(subfolderDir))
+                return null;
+
+            foreach (var subdir in Directory.GetDirectories(subfolderDir))
+            {
+                var candidate = Path.Combine(subdir, filename);
+                if (RobustFile.Exists(candidate))
+                    return candidate;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Serves a single Art of Reading image from the local image collections folder.
+        /// The "file" query parameter is a subfolder-relative path such as "Animals/dog.png".
+        /// </summary>
+        private void HandleArtOfReadingCollectionImage(ApiRequest request)
+        {
+            var collection = request.RequiredParam("collection");
+            var file = request.RequiredParam("file");
+
+            // Normalise separators and guard against directory traversal
+            var normalizedFile = file.Replace('/', Path.DirectorySeparatorChar)
+                .Replace('\\', Path.DirectorySeparatorChar);
+            var imagePath = Path.GetFullPath(
+                Path.Combine(ArtOfReadingBaseFolder, collection, "images", normalizedFile)
+            );
+            var safeBase = Path.GetFullPath(ArtOfReadingBaseFolder);
+
+            if (!imagePath.StartsWith(safeBase, StringComparison.OrdinalIgnoreCase))
+            {
+                request.Failed(HttpStatusCode.Forbidden, "Invalid image path");
+                return;
+            }
+
+            if (!RobustFile.Exists(imagePath))
+            {
+                request.Failed(HttpStatusCode.NotFound, "Image not found");
+                return;
+            }
+
+            request.ReplyWithImage(imagePath);
         }
     }
 }

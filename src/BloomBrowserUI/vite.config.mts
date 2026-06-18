@@ -576,6 +576,12 @@ export default defineConfig(async ({ command }) => {
             // React plugin: Enables JSX, Fast Refresh, and React-specific optimizations
             react({
                 reactRefreshHost: `http://localhost:${devServerPort}`,
+                // jsxImportSource is also set in tsconfig.json; duplicating here ensures
+                // it applies to bloom-image-gallery files (see exclude below).
+                jsxImportSource: "@emotion/react",
+                // Include bloom-image-gallery in the transform pipeline even though it's in
+                // node_modules — its TSX source uses emotion's css prop and needs this plugin.
+                exclude: /node_modules\/(?!bloom-image-gallery)/,
                 babel: {
                     parserOpts: {
                         // This enables decorators like @mobxReact.observer.
@@ -721,8 +727,6 @@ export default defineConfig(async ({ command }) => {
         // MODULE RESOLUTION CONFIGURATION
         // Controls how Vite finds and loads modules
         resolve: {
-            preserveSymlinks: false, // Follow symlinks to actual files
-
             // DEDUPE: Prevent duplicate copies of these packages in bundles
             // If multiple dependencies use React, only include one copy
             dedupe: [
@@ -827,7 +831,10 @@ export default defineConfig(async ({ command }) => {
                 "jquery", // Always pre-bundle jQuery
                 "comicaljs", // Pre-bundle comicaljs (webpack UMD bundle needs processing)
             ],
-            exclude: ["lib/localizationManager/localizationManager"], // Don't pre-bundle this
+            exclude: [
+                "lib/localizationManager/localizationManager", // Don't pre-bundle this
+                "bloom-image-gallery", // TypeScript source entry point — must go through Vite's transform pipeline, not esbuild pre-bundling
+            ],
             // Force Vite to treat comicaljs as having named exports even though it's CommonJS/UMD
             esbuildOptions: {
                 plugins: [],
