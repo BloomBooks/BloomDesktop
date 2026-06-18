@@ -552,6 +552,14 @@ namespace Bloom.Edit
                 );
             }
 
+            // The fileName comes straight from the html src attribute, so it may carry a query
+            // string (e.g. "image1.png?transparent=yes") and/or still be URL-encoded. Reduce it
+            // to the actual file name on disk before we try to load the image; otherwise
+            // PalasoImage fails to find the file and we wrongly report it as corrupt. (BL-16446)
+            // CreateFromUnencodedString only decodes if the string still looks encoded (the
+            // server already decodes query parameters once), and PathOnly drops the query string.
+            fileName = UrlPathString.CreateFromUnencodedString(fileName).PathOnly.NotEncoded;
+
             // keep a reference to the fileName rather the image to avoid dispose issues
             _fileNameOfImageBeingModified = fileName;
 
