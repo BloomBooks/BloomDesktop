@@ -1,7 +1,10 @@
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { ReaderToolSwitch } from "../ReaderToolSwitch";
 import { useLayoutEffect, useRef, useState } from "react";
-import { Span } from "../../../../react_components/l10nComponents";
+import {
+    LocalizableElement,
+    Span,
+} from "../../../../react_components/l10nComponents";
 import BloomButton from "../../../../react_components/bloomButton";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import { css } from "@emotion/react";
@@ -96,7 +99,7 @@ const StageGraphemes: React.FunctionComponent<{
                 margin-top: 20px;
                 display: flex;
                 flex-direction: column;
-                flex: 1 1 auto;
+                flex: 0 1 auto;
                 overflow: hidden;
             `}
         >
@@ -117,7 +120,6 @@ const StageGraphemes: React.FunctionComponent<{
                     min-height: 0;
                     overflow: auto;
                     margin-left: 8px;
-                    margin-right: 8px;
                     margin-top: 8px;
                 `}
             >
@@ -139,12 +141,13 @@ const StageGraphemes: React.FunctionComponent<{
 const SortButton: React.FunctionComponent<{
     sortType: 0 | 1 | 2;
     changeSortFunc: (which: 0 | 1 | 2) => void;
-}> = ({ sortType, changeSortFunc }) => {
+    children: string;
+}> = (props) => {
     let keyInsert: string;
     let tipInsert: string;
     let unicodeIcon: string;
     let shouldHighlight: boolean = false;
-    switch (sortType) {
+    switch (props.sortType) {
         case 0:
             keyInsert = "Alphabetically";
             tipInsert = "alphabetically";
@@ -166,13 +169,13 @@ const SortButton: React.FunctionComponent<{
     }
     return (
         <BloomButton
-            l10nKey={`EditTab.Toolbox.DecodableReaderTool.Sort${keyInsert}.Tooltip`}
-            l10nTipEnglishEnabled={`Sort ${tipInsert}`}
+            l10nKey=""
+            l10nTipEnglishEnabled={props.children}
             temporarilyDisableI18nWarning={true}
             variant="text"
             enabled={true}
             hasText={true}
-            onClick={() => changeSortFunc(sortType)}
+            onClick={() => props.changeSortFunc(props.sortType)}
             css={css`
                 font-family: FontAwesome;
                 font-size: 9pt;
@@ -196,84 +199,15 @@ const SortButton: React.FunctionComponent<{
     );
 };
 
-/*
-const DecodableGrid: React.FunctionComponent = ({ wordOrLetterList }) => {
-    const measureRef = useRef<HTMLDivElement>(null);
-    const [columnWidth, setColumnWidth] = useState(100);
-
-    const words =
-        model.synphony?.source.useAllowedWords === 1
-            ? allowedWords
-            : stageSightWords;
-
-    useLayoutEffect(() => {
-        if (!measureRef.current) {
-            return;
-        }
-        measureRef.current.style.display = "block";
-        const width = Math.ceil(
-            measureRef.current.getBoundingClientRect().width,
-        );
-
-        setColumnWidth(width);
-        measureRef.current.style.display = "none";
-    }, [words]);
-
-    const widestWord = words.reduce(
-        (widest, current) =>
-            current.Name.length > widest.length ? current.Name : widest,
-        "",
-    );
-    return (
-        <div>
-            <div
-                ref={measureRef}
-                css={css`
-                    position: absolute;
-                    visibility: hidden;
-                    white-space: nowrap;
-                    pointer-events: none;
-                `}
-            >
-                {widestWord}
-            </div>
-            <div
-                css={css`
-                    display: grid;
-                    grid-template-columns: repeat(
-                        auto-fill,
-                        minmax(${columnWidth}px, 1fr)
-                    );
-                    gap: 8px;
-                    overflow: auto;
-                    max-height: 365px;
-                    margin-left: 8px;
-                    margin-top: 8px;
-                `}
-            >
-                {words.map((word, index) => (
-                    <div
-                        key={index}
-                        css={css`
-                            color: ${word.isSightWord ? "#87cefa" : "white"};
-                        `}
-                    >
-                        {word.Name}
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
-*/
-
 const SortedStageWords: React.FunctionComponent<{
     stageSightWords: DataWord[];
     allowedWords: DataWord[];
     changeSortFunc: (which: 0 | 1 | 2) => void;
 }> = ({ stageSightWords, allowedWords, changeSortFunc }) => {
     const measureRef = useRef<HTMLDivElement>(null);
-    const [columnWidth, setColumnWidth] = useState(100);
+    const gridRef = useRef<HTMLDivElement>(null);
+    const [curColCount, setCurColCount] = useState(1);
+    const [curRowCount, setCurRowCount] = useState(1);
 
     const words =
         model.synphony?.source.useAllowedWords === 1
@@ -281,21 +215,28 @@ const SortedStageWords: React.FunctionComponent<{
             : stageSightWords;
 
     useLayoutEffect(() => {
-        if (!measureRef.current) return;
+        if (!measureRef.current || !gridRef.current) return;
 
-        const width = measureRef.current.getBoundingClientRect().width;
+        const width = Math.ceil(
+            measureRef.current.getBoundingClientRect().width,
+        );
 
-        setColumnWidth(Math.ceil(width));
+        const gridWidth = gridRef.current.getBoundingClientRect().width;
+        let colCount = Math.floor((gridWidth - 20) / width);
+        if (colCount < 1) colCount = 1;
+        setCurColCount(colCount);
+        const rowCount = Math.ceil(words.length / colCount);
+        setCurRowCount(rowCount);
     }, [words]);
 
     return (
         <div
             css={css`
                 margin-top: 20px;
-                min-height: 0;
+                min-height: 200px;
                 display: flex;
                 flex-direction: column;
-                flex: 1 1 auto;
+                flex: 1 0 200px;
                 overflow: hidden;
             `}
         >
@@ -339,25 +280,30 @@ const SortedStageWords: React.FunctionComponent<{
                         Sample words in this stage
                     </Span>
                 )}
-                <SortButton sortType={0} changeSortFunc={changeSortFunc} />
-                <SortButton sortType={1} changeSortFunc={changeSortFunc} />
+                <SortButton sortType={0} changeSortFunc={changeSortFunc}>
+                    Sort Alphabetically
+                </SortButton>
+                <SortButton sortType={1} changeSortFunc={changeSortFunc}>
+                    Sort by length
+                </SortButton>
                 {model.synphony?.source.useAllowedWords === 0 && (
-                    <SortButton sortType={2} changeSortFunc={changeSortFunc} />
+                    <SortButton sortType={2} changeSortFunc={changeSortFunc}>
+                        Sort by frequency
+                    </SortButton>
                 )}
             </div>
             <div
+                ref={gridRef}
                 css={css`
                     display: grid;
-                    grid-template-columns: repeat(
-                        auto-fill,
-                        minmax(${columnWidth}px, 1fr)
-                    );
+                    grid-template-columns: repeat(${curColCount}, 1fr);
+                    grid-template-rows: repeat(${curRowCount}, auto);
+                    grid-auto-flow: column;
                     row-gap: 5px;
-                    column-gap: 4px;
                     overflow: auto;
-                    max-height: 365px;
                     margin-left: 8px;
                     margin-top: 8px;
+                    padding-right: 0px;
                 `}
             >
                 {words.map((word, index) => (
@@ -393,6 +339,12 @@ export const DecodableReaderToolControls: React.FunctionComponent = () => {
     );
 
     function updateState(): void {
+        if (
+            model.synphony?.source.useAllowedWords === 1 &&
+            model.sort === "byFrequency"
+        ) {
+            model.sortAlphabetically();
+        }
         setCurrentStage(
             model.getNumberOfStages() === 0 ? 0 : model.stageNumber,
         );
@@ -471,6 +423,9 @@ export const DecodableReaderToolControls: React.FunctionComponent = () => {
                                 img {
                                     height: 14px;
                                     margin-right: 1px;
+                                }
+                                &:hover {
+                                    text-decoration: underline;
                                 }
                             `}
                         >
