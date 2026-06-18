@@ -588,6 +588,9 @@ export function SetupElements(
             "originalCopyrightAndLicense",
     );
     originalTitleCitations.forEach((titleElement: HTMLElement) => {
+        if (titleElement.innerText.trim())
+            titleElement.classList.remove("missingOriginalTitle");
+        else titleElement.classList.add("missingOriginalTitle");
         titleElement.onclick = () => {
             showRequestStringDialog(
                 titleElement.innerText,
@@ -596,8 +599,8 @@ export function SetupElements(
                 "EditTab.FrontMatter.EditOriginalTitleLabel",
                 "Original Title",
                 (newTitle) => {
-                    titleElement.innerText = newTitle;
-                    if (newTitle) {
+                    titleElement.innerText = newTitle ?? "";
+                    if (titleElement.innerText.trim()) {
                         titleElement.classList.remove("missingOriginalTitle");
                     } else {
                         titleElement.classList.add("missingOriginalTitle");
