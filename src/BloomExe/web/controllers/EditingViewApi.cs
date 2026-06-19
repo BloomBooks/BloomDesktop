@@ -76,7 +76,6 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler("editView/topics", HandleTopics, false);
-            apiHandler.RegisterEndpointHandler("editView/changeImage", HandleChangeImage, true);
             apiHandler.RegisterEndpointHandler("editView/copyImage", HandleCopyImage, true);
             apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
             apiHandler.RegisterEndpointHandler("editView/paste", HandlePaste, true);
@@ -511,23 +510,6 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
-        private void HandleChangeImage(ApiRequest request)
-        {
-            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            ((DynamicJson)data).TryGetValue("pageBackgroundColor", out string pageBackgroundColor);
-            // We don't want to tie up server locks etc. while the dialog displays.
-            MiscUtils.DoOnceOnIdle(() =>
-            {
-                View.OnChangeImage(
-                    data.imageId,
-                    UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
-                    data.imageIsGif,
-                    pageBackgroundColor
-                );
-            });
-            request.PostSucceeded();
-        }
-
         private void RequestDefaultTranslationGroupContent(ApiRequest request)
         {
             View.Model.RequestDefaultTranslationGroupContent(request);
@@ -786,6 +768,36 @@ namespace Bloom.web.controllers
 
             try
             {
+                // GIF files must be copied byte-for-byte to preserve animation.
+                // PalasoImage / ProcessAndSaveImageIntoFolder will strip the animation frames.
+                if (
+                    Path.GetExtension(sourceFilePath)
+                        .Equals(".gif", StringComparison.OrdinalIgnoreCase)
+                )
+                {
+                    var baseName = Path.GetFileNameWithoutExtension(sourceFilePath);
+                    var destName = ImageUtils.GetUnusedFilename(
+                        View.Model.CurrentBook.FolderPath,
+                        baseName,
+                        ".gif",
+                        "gif"
+                    );
+                    RobustFile.Copy(
+                        sourceFilePath,
+                        Path.Combine(View.Model.CurrentBook.FolderPath, destName)
+                    );
+                    request.ReplyWithJson(
+                        new
+                        {
+                            src = UrlPathString.CreateFromUnencodedString(destName).UrlEncoded,
+                            copyright = "",
+                            license = "",
+                            creator = "",
+                        }
+                    );
+                    return;
+                }
+
                 using (var palasoImage = PalasoImage.FromFileRobustly(sourceFilePath))
                 {
                     var info = PageEditingModel.ChangePicture(
@@ -799,23 +811,11 @@ namespace Bloom.web.controllers
                     // source-file-locked TagLib object, so existing EXIF tags like
                     // "Picassa" Artist can survive. Use SaveImageMetadataIfNeeded on a
                     // fresh load of the destination file so the replacement is complete.
-                    //
-                    // Official-collection images (e.g. Art of Reading) carry authoritative
-                    // EXIF — copyright, CollectionUri, CC licence — already preserved by
-                    // ChangePicture. Ignore any gallery-provided values for these images so
-                    // we don't overwrite the correct metadata, and so the CollectionUri
-                    // survives to trigger the non-editable copyright summary dialog.
-                    bool isOfficialCollection = ImageUpdater.ImageIsFromOfficialCollection(
-                        palasoImage.Metadata
-                    );
                     var licenseInfo = BuildLicenseInfoFromGallery(license, licenseUrl);
                     bool hasGalleryMeta =
-                        !isOfficialCollection
-                        && (
-                            !string.IsNullOrEmpty(galleryCreator)
-                            || !string.IsNullOrEmpty(credits)
-                            || licenseInfo != null
-                        );
+                        !string.IsNullOrEmpty(galleryCreator)
+                        || !string.IsNullOrEmpty(credits)
+                        || licenseInfo != null;
 
                     if (hasGalleryMeta)
                     {
@@ -841,9 +841,7 @@ namespace Bloom.web.controllers
                             creator = !string.IsNullOrEmpty(galleryCreator)
                                 ? galleryCreator
                                 : info.creator,
-                            license = (!isOfficialCollection && licenseInfo != null)
-                                ? licenseInfo.ToString()
-                                : info.license,
+                            license = licenseInfo != null ? licenseInfo.ToString() : info.license,
                         }
                     );
                 }
@@ -1042,7 +1040,22 @@ namespace Bloom.web.controllers
             var lang = request.RequiredParam("lang");
             var term = request.RequiredParam("term").Trim().ToLowerInvariant();
 
-            var indexPath = Path.Combine(ArtOfReadingBaseFolder, collection, "index.txt");
+            var safeBase = Path.GetFullPath(ArtOfReadingBaseFolder);
+            var indexPath = Path.GetFullPath(
+                Path.Combine(ArtOfReadingBaseFolder, collection, "index.txt")
+            );
+            var imagesBaseForGuard = Path.GetFullPath(
+                Path.Combine(ArtOfReadingBaseFolder, collection, "images")
+            );
+            if (
+                !indexPath.StartsWith(safeBase, StringComparison.OrdinalIgnoreCase)
+                || !imagesBaseForGuard.StartsWith(safeBase, StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                request.Failed(HttpStatusCode.Forbidden, "Invalid collection path");
+                return;
+            }
+
             if (!RobustFile.Exists(indexPath))
             {
                 request.ReplyWithJson(Array.Empty<object>());
@@ -1071,7 +1084,7 @@ namespace Bloom.web.controllers
 
             const string imageEndpoint =
                 "/bloom/api/imageGallery/artOfReading/local-collections/collection-image";
-            var imagesBase = Path.Combine(ArtOfReadingBaseFolder, collection, "images");
+            var imagesBase = imagesBaseForGuard;
             var results = new List<object>();
 
             foreach (var line in lines.Skip(1))
