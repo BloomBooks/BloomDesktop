@@ -27,13 +27,16 @@ namespace Bloom.web.controllers
     ///   no npm/bundler dependency between the two projects.
     ///
     /// WHERE THE EDITOR COMES FROM  (see GetEditorUrl)
-    ///   DEBUG  : http://localhost:3000/  — the editor repo's Vite dev server (HMR).
-    ///   RELEASE: {ServerUrl}/bloom/aiImageEditor/index.html — the editor's built app
+    ///   DEFAULT: {ServerUrl}/bloom/aiImageEditor/index.html — the editor's built app
     ///            ("dist-app"), served same-origin by BloomServer so there's no CORS.
-    ///   NOTE: the RELEASE path is not fully wired yet. A build step must copy the
-    ///   editor package's `dist-app/` into output/browser/aiImageEditor/ (mirroring the
-    ///   existing `bp-to-output` copy for bloom-player), and Bloom must take a dependency
-    ///   on the published `bloom-ai-image-tools` package as the source.
+    ///            The build copies dist-app/ from the installed `bloom-ai-image-tools`
+    ///            package into output/browser/aiImageEditor/ (a viteStaticCopy target,
+    ///            mirroring the bloom-player copy); `./go.sh` stages the same at dev time
+    ///            (scripts/aiEditorBuild.mjs), falling back to building a local checkout
+    ///            until the package is published and added as a dependency.
+    ///   LINKED : set BLOOM_AI_EDITOR_URL to the editor's own Vite dev server for HMR.
+    ///            `./go.sh --with bloom-ai-image-tools` does this automatically (it starts
+    ///            the dev server and points Bloom at it); GetEditorUrl honors the env var.
     ///
     /// TWO COMMUNICATION PLANES
     ///   1. HTTP, editor/front-end JS -> this controller, over Bloom's own local server:
@@ -210,6 +213,12 @@ namespace Bloom.web.controllers
                     // hands any newly obtained key back via aiImageEditor/saveCredentials.
                     apiKey = OpenRouterCredentialStore.GetApiKey(),
                     openRouterUser = OpenRouterCredentialStore.GetOpenRouterUser(),
+                    // In a Playground template book all features are unlocked for
+                    // "try it out", so the editor opens — but it's a shared demo
+                    // context, so the editor must not let the user set/save an
+                    // OpenRouter API key. The editor disables its credential UI when
+                    // this is true; HandleSaveCredentials also refuses to persist.
+                    demoOnly = book.IsPlayground,
                 }
             );
         }
@@ -231,6 +240,15 @@ namespace Bloom.web.controllers
         {
             if (!HasValidSession(request))
                 return;
+
+            // Defense in depth for the Playground "demo" case (see HandleLaunch): never
+            // persist a key obtained during a Playground session, even if a stray frame
+            // posts here despite the editor's disabled credential UI.
+            if (_bookSelection.CurrentSelection?.IsPlayground == true)
+            {
+                request.PostSucceeded();
+                return;
+            }
 
             SaveCredentialsRequest payload;
             try

@@ -143,6 +143,10 @@ export interface IControlContext {
     hasClipboardText: boolean;
     isCustomPage: boolean;
     languageNameValues: ILanguageNameValues;
+    // True when the AI Image Editing experimental feature is turned on (its
+    // FeatureStatus.visible). Off by default, so the "Edit with AI" menu item is
+    // hidden until the user enables the feature in Experimental Features.
+    aiImageEditingAvailable: boolean;
 }
 
 export interface IControlRuntime {

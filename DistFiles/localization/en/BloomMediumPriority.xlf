@@ -14,6 +14,16 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
         <note>This checkbox enables the experimental publish-to-apps workflow.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.EditWithAI" translate="no">
+        <source xml:lang="en">Edit Images with AI</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.EditWithAI</note>
+        <note>This checkbox enables the experimental "Edit with AI" image editor.</note>
+      </trans-unit>
+      <trans-unit id="Feature.AiImageEditing" translate="no">
+        <source xml:lang="en">Edit Images with AI</source>
+        <note>ID: Feature.AiImageEditing</note>
+        <note>Name of the AI image editing feature, used in subscription messages.</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>

@@ -226,5 +226,8 @@ export const buildCanvasElementControlRegistryContext = (
             language2Name: "",
             language2Tag: "",
         },
+        // Default off; CanvasElementContextControls overlays the real feature
+        // status (which is async) when it assembles the context.
+        aiImageEditingAvailable: false,
     };
 };

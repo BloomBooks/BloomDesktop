@@ -1,26 +1,28 @@
 /* eslint-env node */
-/* global console, process */
+/* global process */
 
-// Build-and-stage the AI Image Editor so `./go.sh` "just works" with no separate
-// dev server.
+// Stage the AI Image Editor for the DEFAULT `./go.sh` (i.e. when you are NOT actively
+// developing the editor with `--with bloom-ai-image-tools`).
 //
-// The editor is a SEPARATE app (the `bloom-ai-image-tools` package). Bloom loads it
-// in an <iframe> at {ServerUrl}/bloom/aiImageEditor/index.html, which BloomServer
-// serves from output/browser/aiImageEditor/ (see AiImageEditorApi.GetEditorUrl). This
-// module builds that app from the local bloom-ai-image-tools checkout (its `build:app`
-// script emits dist-app/ with base=/bloom/aiImageEditor/, so its asset URLs are already
-// correct) and copies dist-app/ into output/browser/aiImageEditor/.
+// The editor is a SEPARATE app (the `bloom-ai-image-tools` package). Bloom loads it in an
+// <iframe> at {ServerUrl}/bloom/aiImageEditor/index.html, which BloomServer serves from
+// output/browser/aiImageEditor/ (see AiImageEditorApi.GetEditorUrl).
 //
-// It is intentionally best-effort: if the library checkout can't be found or the build
-// fails, we log and let Bloom start anyway — only the "Edit with AI" feature is affected.
+// Preferred source: the prebuilt dist-app/ shipped in the INSTALLED package
+// (node_modules/bloom-ai-image-tools/dist-app). That is the uniform "as installed" model.
+// Until the package is published and added as a dependency, we fall back to building
+// dist-app/ from a local checkout so the feature keeps working.
 //
-// Editor developers who want HMR can skip all this and point Bloom at the editor's own
-// Vite dev server by setting BLOOM_AI_EDITOR_URL (e.g. http://localhost:3000/); see
-// AiImageEditorApi.GetEditorUrl.
+// This is best-effort: if neither source is available we log and let Bloom start anyway —
+// only "Edit with AI" is affected.
+//
+// Editor developers who want live HMR should use `./go.sh --with bloom-ai-image-tools`,
+// which runs the editor's own Vite dev server and points Bloom at it (see go.mjs).
 
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { getLibrary, resolveCheckoutDir } from "./devLibraries.mjs";
 
 // Directory names that never contain editable editor source; skipping them keeps the
 // staleness scan fast and stops generated output from looking "newer" than the build.
@@ -35,31 +37,6 @@ const SCAN_IGNORE_DIRS = new Set([
     "test-results",
     "playwright-report",
 ]);
-
-// Locate the bloom-ai-image-tools checkout. Explicit env var wins; otherwise try the
-// layouts we actually ship in (sibling checkout or sibling worktree), relative to the
-// Bloom repo root, so the common case needs zero configuration.
-const resolveLibraryDir = (repoRoot) => {
-    const explicit = process.env.BLOOM_AI_IMAGE_TOOLS_DIR;
-    const candidates = [];
-    if (explicit) {
-        candidates.push(path.resolve(explicit));
-    }
-    for (const rel of [
-        "../bloom-ai-image-tools.worktrees/V2",
-        "../../bloom-ai-image-tools.worktrees/V2",
-        "../bloom-ai-image-tools",
-        "../../bloom-ai-image-tools",
-    ]) {
-        candidates.push(path.resolve(repoRoot, rel));
-    }
-    for (const dir of candidates) {
-        if (fs.existsSync(path.join(dir, "package.json"))) {
-            return dir;
-        }
-    }
-    return null;
-};
 
 // Newest mtime (ms) of any source file under `dir`, skipping SCAN_IGNORE_DIRS.
 const newestSourceMtimeMs = (dir) => {
@@ -103,6 +80,14 @@ const mtimeMsOrZero = (file) => {
     }
 };
 
+// Clear `target` and copy the whole tree at `source` into it. Clearing first stops old
+// content-hashed assets from a previous build piling up.
+const copyTree = (source, target) => {
+    fs.rmSync(target, { recursive: true, force: true });
+    fs.mkdirSync(target, { recursive: true });
+    fs.cpSync(source, target, { recursive: true });
+};
+
 const runBuild = (libraryDir, log) =>
     new Promise((resolve) => {
         const isWindows = process.platform === "win32";
@@ -140,60 +125,70 @@ const runBuild = (libraryDir, log) =>
         });
     });
 
-// Build the editor from its local checkout (only when its sources are newer than the
-// last build) and copy the result into output/browser/aiImageEditor/. Never throws.
-export const ensureAiEditorBuilt = async ({ repoRoot, log }) => {
-    try {
-        const libraryDir = resolveLibraryDir(repoRoot);
-        if (!libraryDir) {
+// Build dist-app/ from the local checkout (only when its sources are newer than the last
+// build) and copy it into `target`. Used only as a fallback when the package isn't installed.
+const buildFromCheckoutAndStage = async ({ repoRoot, entry, target, log }) => {
+    const libraryDir = resolveCheckoutDir(entry, repoRoot);
+    if (!libraryDir) {
+        log(
+            "AI editor: not installed and no bloom-ai-image-tools checkout found; 'Edit with AI' will be unavailable. (Install the package, or use --with bloom-ai-image-tools.)",
+        );
+        return;
+    }
+
+    const distApp = path.join(libraryDir, "dist-app");
+    const distIndex = path.join(distApp, "index.html");
+
+    const builtMtime = mtimeMsOrZero(distIndex);
+    const sourceMtime = newestSourceMtimeMs(libraryDir);
+    if (builtMtime === 0 || sourceMtime > builtMtime) {
+        log(
+            builtMtime === 0
+                ? `AI editor: building from ${libraryDir} (no prior build)...`
+                : `AI editor: sources changed; rebuilding from ${libraryDir}...`,
+        );
+        const ok = await runBuild(libraryDir, log);
+        if (!ok && !fs.existsSync(distIndex)) {
             log(
-                "AI editor: bloom-ai-image-tools checkout not found; skipping (set BLOOM_AI_IMAGE_TOOLS_DIR to enable). 'Edit with AI' will be unavailable.",
+                "AI editor: no usable build available; 'Edit with AI' will be unavailable.",
             );
             return;
         }
+    }
 
-        const distApp = path.join(libraryDir, "dist-app");
-        const distIndex = path.join(distApp, "index.html");
+    if (
+        mtimeMsOrZero(distIndex) >
+        mtimeMsOrZero(path.join(target, "index.html"))
+    ) {
+        copyTree(distApp, target);
+        log(`AI editor: staged from checkout into ${target}.`);
+    } else {
+        log("AI editor: staged copy is up to date.");
+    }
+};
 
-        // Rebuild only when the editor sources are newer than the existing dist-app, or
-        // there is no dist-app yet.
-        const builtMtime = mtimeMsOrZero(distIndex);
-        const sourceMtime = newestSourceMtimeMs(libraryDir);
-        if (builtMtime === 0 || sourceMtime > builtMtime) {
-            log(
-                builtMtime === 0
-                    ? `AI editor: building from ${libraryDir} (no prior build)...`
-                    : `AI editor: sources changed; rebuilding from ${libraryDir}...`,
-            );
-            const ok = await runBuild(libraryDir, log);
-            if (!ok && !fs.existsSync(distIndex)) {
-                log(
-                    "AI editor: no usable build available; 'Edit with AI' will be unavailable.",
-                );
-                return;
-            }
-        } else {
-            log("AI editor: build is up to date.");
-        }
+// Stage the AI editor for a default (non-linked) launch: prefer the installed package's
+// prebuilt dist-app/, otherwise build from a local checkout. Never throws.
+export const stageAiEditorForDefault = async ({
+    repoRoot,
+    browserUIRoot,
+    log,
+}) => {
+    try {
+        const entry = getLibrary("bloom-ai-image-tools");
+        const target = path.join(repoRoot, ...entry.stageTarget.split("/"));
 
-        // Copy dist-app/ -> output/browser/aiImageEditor/ when the staged copy is missing
-        // or older than the build. Clear the target first so old content-hashed assets
-        // from a previous build don't pile up.
-        const target = path.join(
-            repoRoot,
-            "output",
-            "browser",
-            "aiImageEditor",
+        const installedDistApp = path.join(
+            browserUIRoot,
+            ...entry.installedDistApp.split("/"),
         );
-        const targetIndex = path.join(target, "index.html");
-        if (mtimeMsOrZero(distIndex) > mtimeMsOrZero(targetIndex)) {
-            fs.rmSync(target, { recursive: true, force: true });
-            fs.mkdirSync(target, { recursive: true });
-            fs.cpSync(distApp, target, { recursive: true });
-            log(`AI editor: staged into ${target}.`);
-        } else {
-            log("AI editor: staged copy is up to date.");
+        if (fs.existsSync(path.join(installedDistApp, "index.html"))) {
+            copyTree(installedDistApp, target);
+            log(`AI editor: staged from installed package into ${target}.`);
+            return;
         }
+
+        await buildFromCheckoutAndStage({ repoRoot, entry, target, log });
     } catch (error) {
         log(
             `AI editor: staging skipped due to error: ${error?.message ?? error}`,

@@ -526,11 +526,14 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     editWithAi: {
         kind: "command",
         id: "editWithAi",
+        featureName: "AiImageEditing",
         l10nId: "EditTab.Image.EditWithAI",
         englishLabel: "Edit with AI...",
+        iconScale: 0.75,
         icon: React.createElement("img", {
             src: "/bloom/images/ai-edit.svg",
             alt: "",
+            className: "canvas-context-menu-monochrome-icon",
         }),
         action: (ctx, runtime) => {
             const img = getImage(ctx);
@@ -568,6 +571,10 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                     }>;
                     apiKey?: string | null;
                     openRouterUser?: string | null;
+                    // Playground/demo context: the editor must disable its
+                    // "set OpenRouter API key" UI. Rides through the `...launchData`
+                    // spread below into the editor's init payload.
+                    demoOnly?: boolean;
                 };
                 const hostWindow = (window.top ?? window) as Window & {
                     __bloomAiImageEditorCleanup?: () => void;
@@ -1644,11 +1651,11 @@ export const controlSections: Record<SectionId, IControlSection> = {
                 "copyImage",
                 "pasteImage",
                 "resetImage",
-                "editWithAi",
                 "expandToFillSpace",
                 "becomeBackground",
                 "imageFieldType",
                 "imageBackground",
+                "editWithAi",
             ],
         },
     },

@@ -1,14 +1,21 @@
 /* eslint-env node */
 /* global AbortSignal, clearTimeout, console, fetch, process, setTimeout */
 import { spawn } from "node:child_process";
+import fs from "node:fs";
 import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+    killLinkedLibraryServers,
     killProcessTree,
     sweepStaleWorktreeNodeProcesses,
 } from "./processTree.mjs";
-import { ensureAiEditorBuilt } from "./aiEditorBuild.mjs";
+import { stageAiEditorForDefault } from "./aiEditorBuild.mjs";
+import {
+    getLibrary,
+    libraryNames,
+    resolveCheckoutDir,
+} from "./devLibraries.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,10 +64,32 @@ const parseRequiredPortValue = (optionName, value) => {
     return parsed;
 };
 
+// Parse a `--with` value of the form "name" or "name=path". The name may itself contain
+// no "=" (package names like "@sillsdev/config-r" don't), so we split on the first "=".
+const parseWithValue = (value) => {
+    const eq = value.indexOf("=");
+    if (eq === -1) {
+        return { name: value, checkoutPath: undefined };
+    }
+    return { name: value.slice(0, eq), checkoutPath: value.slice(eq + 1) };
+};
+
+const addWithLib = (options, value) => {
+    const { name, checkoutPath } = parseWithValue(value);
+    if (!getLibrary(name)) {
+        throw new Error(
+            `--with: unknown library "${name}". Valid names: ${libraryNames().join(", ")}.`,
+        );
+    }
+    options.withLibs.push({ name, checkoutPath });
+};
+
 const parseArgs = () => {
     const args = process.argv.slice(2);
     const options = {
         vitePort: undefined,
+        // Libraries to serve live from a local checkout: [{ name, checkoutPath? }, ...].
+        withLibs: [],
     };
 
     for (let index = 0; index < args.length; index++) {
@@ -82,6 +111,17 @@ const parseArgs = () => {
             );
             continue;
         }
+
+        if (arg === "--with") {
+            addWithLib(options, requireOptionValue(args, index, "--with"));
+            index++;
+            continue;
+        }
+
+        if (arg.startsWith("--with=")) {
+            addWithLib(options, arg.slice("--with=".length));
+            continue;
+        }
     }
 
     return options;
@@ -97,6 +137,10 @@ try {
 }
 
 const children = [];
+// Checkout dirs of linked libraries (--with) whose dev servers / watch-builds we spawned.
+// Their processes live under these paths (outside this repo), spawn through pnpm/cmd
+// layers, and can outrace taskkill /t, so we sweep these markers on startup and shutdown.
+const linkedCheckouts = new Set();
 let isShuttingDown = false;
 
 const delay = (milliseconds) =>
@@ -333,6 +377,19 @@ const shutdown = async (exitCode = 0) => {
     console.log(`[go] Shutting down (exit ${normalizedExitCode})...`);
 
     await Promise.all(children.map((child) => terminateChild(child)));
+
+    // Reap any linked dev-server processes that escaped the tree-kill above. They spawn
+    // through pnpm/cmd/vite-plus layers under the library checkout and can outrace
+    // taskkill /t; an intermediate process often survives, so the orphan-scoped sweep
+    // would miss them. We own these (the user opted in via --with), so kill all matches.
+    for (const checkout of linkedCheckouts) {
+        await killLinkedLibraryServers({
+            commandLineMarker: checkout,
+            selfGoPid: process.pid,
+            log: (message) => console.log(`[go] ${message}`),
+        });
+    }
+
     process.exit(normalizedExitCode);
 };
 
@@ -562,6 +619,170 @@ const startBloomExe = (vitePort) => {
     });
 };
 
+// Spawn a long-running shell command (e.g. a library's watch-build) as a managed child so
+// it is piped, tracked, and torn down with the rest of the tree on shutdown.
+const startManagedCommand = (command, cwd, prefix) => {
+    const child = spawn(command, {
+        cwd,
+        stdio: ["ignore", "pipe", "pipe"],
+        shell: true,
+    });
+
+    children.push(child);
+    pipeChildOutput(child, prefix);
+
+    child.on("error", (error) => {
+        if (isShuttingDown) {
+            return;
+        }
+        console.error(`[go] ${prefix}failed to start: ${error.message}`);
+    });
+
+    return child;
+};
+
+// Start a linked iframe-app library's own Vite dev server and resolve with the URL it
+// prints (e.g. http://localhost:5173/). Rejects on timeout or early exit so launch fails
+// fast rather than pointing Bloom at a dead server.
+const startIframeDevServer = (entry, checkoutDir) =>
+    new Promise((resolve, reject) => {
+        const prefix = `[${entry.name}] `;
+        const child = spawn(entry.devCommand, {
+            cwd: checkoutDir,
+            stdio: ["ignore", "pipe", "pipe"],
+            shell: true,
+            // We embed this dev server in Bloom's iframe, so suppress its own auto-open.
+            // Vite honors BROWSER=none to skip opening a browser tab on startup.
+            env: { ...process.env, BROWSER: "none" },
+        });
+        children.push(child);
+
+        let settled = false;
+        let logTail = "";
+
+        const onText = (text) => {
+            if (settled) {
+                return;
+            }
+            // Strip ANSI color codes first: Vite prints the URL with escapes spliced in
+            // (e.g. "http://localhost:\x1b[1m3001\x1b[22m/"), which would defeat the regex.
+            // eslint-disable-next-line no-control-regex
+            const plain = text.replace(/\x1b\[[0-9;]*m/g, "");
+            logTail = (logTail + plain).slice(-8000);
+            const match = logTail.match(
+                /(https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\]):\d+\/?)/i,
+            );
+            if (match) {
+                settled = true;
+                const url = match[1].endsWith("/") ? match[1] : `${match[1]}/`;
+                resolve(url);
+            }
+        };
+
+        pipeChildOutput(child, prefix, onText);
+
+        child.on("error", (error) => {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            reject(
+                new Error(
+                    `${entry.name} dev server failed to start: ${error.message}`,
+                ),
+            );
+        });
+
+        child.on("exit", (code) => {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            reject(
+                new Error(
+                    `${entry.name} dev server exited before printing a URL (code ${code ?? 0}).`,
+                ),
+            );
+        });
+
+        setTimeout(() => {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            reject(
+                new Error(
+                    `${entry.name} dev server did not print a URL within 30s.`,
+                ),
+            );
+        }, 30000);
+    });
+
+// Mirror a library's build-output directory into Bloom's output/ on change, so a linked
+// bundled lib whose assets are served as static files (e.g. bloom-player's dist/) stays
+// fresh while its watch-build runs. Waits for `src` to appear, copies once, then watches.
+const startMirrorWatcher = (src, dest, prefix) => {
+    let timer;
+
+    const copyOnce = () => {
+        try {
+            fs.mkdirSync(dest, { recursive: true });
+            fs.cpSync(src, dest, { recursive: true });
+            console.log(`[go] ${prefix}mirrored ${src} -> ${dest}`);
+        } catch (error) {
+            console.error(`[go] ${prefix}mirror failed: ${error.message}`);
+        }
+    };
+
+    const schedule = () => {
+        clearTimeout(timer);
+        timer = setTimeout(copyOnce, 250);
+    };
+
+    const begin = () => {
+        if (isShuttingDown) {
+            return;
+        }
+        if (!fs.existsSync(src)) {
+            setTimeout(begin, 500);
+            return;
+        }
+        copyOnce();
+        try {
+            fs.watch(src, { recursive: true }, schedule);
+        } catch (error) {
+            console.error(`[go] ${prefix}watch failed: ${error.message}`);
+        }
+    };
+
+    begin();
+};
+
+// Turn the parsed --with flags into resolved checkouts grouped by kind. Throws (fail fast)
+// if a requested library's checkout can't be found.
+const resolveLinks = () => {
+    const bundled = [];
+    let iframe;
+
+    for (const requested of options.withLibs) {
+        const entry = getLibrary(requested.name);
+        const dir = resolveCheckoutDir(entry, repoRoot, requested.checkoutPath);
+        if (!dir) {
+            throw new Error(
+                `--with ${requested.name}: no checkout found${requested.checkoutPath ? ` at ${requested.checkoutPath}` : ""}. Pass an explicit path: --with ${requested.name}=<path>.`,
+            );
+        }
+
+        if (entry.kind === "iframe-app") {
+            iframe = { entry, dir };
+        } else {
+            bundled.push({ entry, dir });
+        }
+    }
+
+    return { bundled, iframe };
+};
+
 const main = async () => {
     // Defensive sweep: a prior launcher that was hard-killed (terminal closed,
     // SIGKILL, timeout) cannot run its shutdown handlers, so its Vite + watcher
@@ -577,18 +798,79 @@ const main = async () => {
         log: (message) => console.log(`[go] ${message}`),
     });
 
+    const { bundled, iframe } = resolveLinks();
+
+    // Remember every linked checkout so shutdown can reap its servers, and reap any left
+    // behind by a previously hard-killed --with run before we start fresh ones. These paths
+    // live outside this repo, so the repo-root sweep above never matches them; and because
+    // --with means we own the library's dev server, we reap all matches, not just orphans.
+    for (const { dir } of bundled) {
+        linkedCheckouts.add(dir);
+    }
+    if (iframe) {
+        linkedCheckouts.add(iframe.dir);
+    }
+    for (const checkout of linkedCheckouts) {
+        await killLinkedLibraryServers({
+            commandLineMarker: checkout,
+            selfGoPid: process.pid,
+            log: (message) => console.log(`[go] ${message}`),
+        });
+    }
+
+    // Linked bundled libs: tell Bloom's Vite to alias them to the checkout (read in
+    // vite.config.mts), and run each checkout's watch-build so the alias target rebuilds.
+    if (bundled.length > 0) {
+        process.env.BLOOM_LINKED_LIBS = bundled
+            .map(
+                ({ entry, dir }) =>
+                    `${entry.name}=${path.resolve(dir, entry.aliasTo)}`,
+            )
+            .join(";");
+        console.log(
+            `[go] Linking bundled libraries: ${process.env.BLOOM_LINKED_LIBS}`,
+        );
+        for (const { entry, dir } of bundled) {
+            for (const command of entry.watchCommands) {
+                startManagedCommand(command, dir, `[${entry.name}] `);
+            }
+            if (entry.extraCopy) {
+                startMirrorWatcher(
+                    path.join(dir, entry.extraCopy.from),
+                    path.join(repoRoot, ...entry.extraCopy.to.split("/")),
+                    `[${entry.name}] `,
+                );
+            }
+        }
+    }
+
     console.log(
         "[go] Launching Vite first and waiting for it to go quiet before starting Bloom.",
     );
-    // Build/stage the AI Image Editor in parallel with Vite startup so the editor is
-    // served by Bloom itself (no separate dev server). Best-effort: never blocks launch.
-    const [dev] = await Promise.all([
-        startDevServer(),
-        ensureAiEditorBuilt({
-            repoRoot,
-            log: (message) => console.log(`[go] ${message}`),
-        }),
-    ]);
+
+    // AI Image Editor: either run its own dev server (linked, HMR) or stage the prebuilt
+    // app for Bloom to serve, before Bloom starts.
+    let dev;
+    if (iframe) {
+        // Bring Bloom's Vite up and confirm it healthy FIRST, THEN start the editor's own
+        // Vite dev server. Running two Vite startups (and the editor's dependency optimizer)
+        // at once starves Bloom's health check and makes it look unreachable.
+        dev = await startDevServer();
+        const url = await startIframeDevServer(iframe.entry, iframe.dir);
+        // Bloom.exe inherits process.env; AiImageEditorApi.GetEditorUrl reads this.
+        process.env[iframe.entry.devUrlEnv] = url;
+        console.log(`[go] AI editor: live dev server at ${url} (HMR).`);
+    } else {
+        // Default staging is best-effort and lightweight, so run it alongside Vite startup.
+        [dev] = await Promise.all([
+            startDevServer(),
+            stageAiEditorForDefault({
+                repoRoot,
+                browserUIRoot,
+                log: (message) => console.log(`[go] ${message}`),
+            }),
+        ]);
+    }
     console.log(
         `[go] Vite is reachable and quiet on port ${dev.port}. Starting Bloom...`,
     );
