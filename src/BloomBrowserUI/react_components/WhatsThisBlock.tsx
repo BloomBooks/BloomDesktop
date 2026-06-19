@@ -6,6 +6,7 @@ import BloomButton from "./bloomButton";
 export const WhatsThisBlock: React.FunctionComponent<{
     // we could add this when we are using this for built-in help:   helpId: string;
     url: string;
+    children?: React.ReactNode;
 }> = (props) => {
     return (
         <div

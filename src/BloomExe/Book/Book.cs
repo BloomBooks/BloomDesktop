@@ -233,6 +233,12 @@ namespace Bloom.Book
         public string PendingCreationSource { get; set; }
 
         /// <summary>
+        /// Snapshot of the source book's title (in L1, usually empty) captured when the new book is created.
+        /// This lets us distinguish true user title edits from automatic recalculation.
+        /// </summary>
+        public string PendingCreationSourceTitle { get; set; }
+
+        /// <summary>
         /// If there is a pending "Created" history event (set during book creation), record it now
         /// using the book's current title.
         /// </summary>
@@ -244,14 +250,27 @@ namespace Bloom.Book
         {
             if (PendingCreationSource == null)
                 return;
-            if (onlyIfTitleChanged && Storage.Dom.Title == PendingCreationSource)
-                return;
+            if (onlyIfTitleChanged)
+            {
+                // Compare L1 titles to detect if the user has actually changed the title.
+                // Extract the current book's L1 title using its BookData language.
+                var sourceTitle = PendingCreationSourceTitle ?? string.Empty;
+                var currentL1Title = string.Empty;
+                if (BookInfo != null && BookData != null)
+                {
+                    currentL1Title =
+                        BookInfo.GetTitleForLanguage(BookData.Language1Tag) ?? string.Empty;
+                }
+                if (sourceTitle == currentL1Title)
+                    return;
+            }
             BookHistory.AddEvent(
                 this,
                 BookHistoryEventType.Created,
                 $"Created a new book \"{Storage.Dom.Title}\" from a source book \"{PendingCreationSource}\""
             );
             PendingCreationSource = null;
+            PendingCreationSourceTitle = null;
         }
 
         public void UpdateBookInfoFromDisk()
@@ -2652,6 +2671,14 @@ namespace Bloom.Book
                     "<em>$1</em>",
                     RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                 );
+                // Remove empty (or essentially empty) character markup tags.  (BL-16387)
+                // strong em sup u, empty or zero-width characters in between are all considered empty.
+                // \u200B = zero-width space, \u200C = zero-width non-joiner, \u200D = zero-width joiner
+                inner = Regex.Replace(
+                    inner,
+                    @"<(strong|em|sup|u)>(\u200B|\u200C|\u200D)*</\1>",
+                    ""
+                );
                 if (inner != para.InnerXml)
                     para.InnerXml = inner;
             }
@@ -3415,43 +3442,8 @@ namespace Bloom.Book
             );
         }
 
-        // returns the active color, be it from Apppearance or the Legacy system
-        public String GetCoverColor()
-        {
-            if (BookInfo.AppearanceSettings.CssThemeName != "legacy-5-6")
-            {
-                var color = BookInfo.AppearanceSettings.GetStringPropertyValueOrDefault(
-                    "cover-background-color",
-                    null
-                );
-                if (color != null)
-                {
-                    return color;
-                }
-            }
-
-            return GetCoverBackgroundColorFromOldInlineStyle(RawDom);
-        }
-
-        internal static String GetCoverBackgroundColorFromOldInlineStyle(SafeXmlDocument dom)
-        {
-            foreach (SafeXmlElement stylesheet in dom.SafeSelectNodes("//style"))
-            {
-                var content = stylesheet.InnerText;
-                // Our XML representation of an HTML DOM doesn't seem to have any object structure we can
-                // work with. The Stylesheet content is just raw CDATA text.
-                // Regex updated to handle comments and lowercase 'div' in the cover color rule.
-                var match = new Regex(
-                    @".*\.bloom-page\.coverColor\s*{.*?background-color:\s*(#[0-9a-fA-F]*|[a-z]*)",
-                    RegexOptions.Singleline
-                ).Match(content);
-                if (match.Success)
-                {
-                    return match.Groups[1].Value;
-                }
-            }
-            return "#FFFFFF";
-        }
+        // returns the active color, be it from Appearance or the Legacy system
+        public String GetCoverColor() => OurHtmlDom.GetCoverColor(BookInfo.AppearanceSettings);
 
         public void SetCoverColor(string color)
         {
@@ -4749,7 +4741,7 @@ namespace Bloom.Book
             {
                 HasFatalError = true;
                 FatalErrorDescription = error.Message;
-                throw error;
+                throw;
             }
         }
 

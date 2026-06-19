@@ -314,6 +314,26 @@
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
         <note>ID: Browser.ProblemSaving</note>
       </trans-unit>
+      <trans-unit id="CollectionChooser.BookCountSingular" translate="no">
+        <source xml:lang="en">{0} book</source>
+        <note>ID: CollectionChooser.BookCountSingular</note>
+        <note>{0} is the number of books; use this entry when the count is exactly 1.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.BookCountPlural" translate="no">
+        <source xml:lang="en">{0} books</source>
+        <note>ID: CollectionChooser.BookCountPlural</note>
+        <note>{0} is the number of books; use this entry when the count is 0 or more than 1.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.CheckedOutCount" translate="no">
+        <source xml:lang="en">{0} checked out to you</source>
+        <note>ID: CollectionChooser.CheckedOutCount</note>
+        <note>{0} is the number of books checked out to the current user in a team collection.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.UnpublishedToBloomLibrary" translate="no">
+        <source xml:lang="en">{0} unpublished to bloomlibrary.org</source>
+        <note>ID: CollectionChooser.UnpublishedToBloomLibrary</note>
+        <note>{0} is the number of books in the collection not yet published to bloomlibrary.org.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
         <note>ID: CollectionSettingsDialog.AboutBloomSubscriptions</note>
@@ -1988,6 +2008,26 @@
         <note>ID: EditTab.Image.Reset</note>
         <note>Removes cropping from image</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.Background" translate="no">
+        <source xml:lang="en">Background</source>
+        <note>ID: EditTab.Image.Background</note>
+        <note>Submenu for controlling whether the image background is made transparent</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Background.Auto" translate="no">
+        <source xml:lang="en">Auto</source>
+        <note>ID: EditTab.Image.Background.Auto</note>
+        <note>Image background transparency is automatic: transparent when the image looks like line art</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Background.Transparent" translate="no">
+        <source xml:lang="en">Transparent</source>
+        <note>ID: EditTab.Image.Background.Transparent</note>
+        <note>Always make the image background transparent regardless of its content</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Background.Opaque" translate="no">
+        <source xml:lang="en">Opaque</source>
+        <note>ID: EditTab.Image.Background.Opaque</note>
+        <note>Never make the image background transparent</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
         <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
         <note>ID: EditTab.Image.TooLarge</note>
@@ -3188,6 +3228,7 @@
       <trans-unit id="HelpMenu.BuildingReaderTemplatesMenuItem">
         <source xml:lang="en">Building Reader Templates</source>
         <note>ID: HelpMenu.BuildingReaderTemplatesMenuItem</note>
+        <note xml:lang="en">OBSOLETE as of Bloom 6.4</note>
       </trans-unit>
       <trans-unit id="HelpMenu.CheckForNewVersionMenuItem">
         <source xml:lang="en">Check For New Version</source>
@@ -3241,6 +3282,7 @@
       <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem">
         <source xml:lang="en">Using Reader Templates </source>
         <note>ID: HelpMenu.UsingReaderTemplatesMenuItem</note>
+        <note xml:lang="en">OBSOLETE as of Bloom 6.4</note>
       </trans-unit>
       <trans-unit id="HelpMenu.WebSiteMenuItem">
         <source xml:lang="en">BloomLibrary.org</source>
@@ -3580,10 +3622,6 @@
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3">
         <source xml:lang="en">Click 'Next' to get started.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine3</note>
-      </trans-unit>
-      <trans-unit id="OpenCreateCloneControl.InDropboxMessage">
-        <source xml:lang="en">Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.</source>
-        <note>ID: OpenCreateCloneControl.InDropboxMessage</note>
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage">
         <source xml:lang="en">This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</source>

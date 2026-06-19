@@ -203,6 +203,14 @@ function postBuildPlugin(): Plugin {
             const manifestPath = path.join(outputDir, ".vite/manifest.json");
 
             try {
+                if (!fs.existsSync(manifestPath)) {
+                    console.warn(
+                        `[post-build] Skipping manifest processing because ${manifestPath} does not exist. ` +
+                            "An earlier build error likely prevented manifest generation.",
+                    );
+                    return;
+                }
+
                 // Read the manifest file
                 const manifestContent = await fs.promises.readFile(
                     manifestPath,
@@ -554,6 +562,8 @@ export default defineConfig(async ({ command }) => {
         languageChooserBundle: "./collection/LanguageChooserDialog.tsx",
         newCollectionLanguageChooserBundle:
             "./collection/NewCollectionLanguageChooser.tsx",
+        collectionChooserBundle:
+            "./collection/CollectionChooserDialog.entry.tsx",
         registrationDialogBundle:
             "./react_components/registration/registrationDialog.tsx",
     };
@@ -622,6 +632,9 @@ export default defineConfig(async ({ command }) => {
                                       "!**/*.bat",
                                       "!**/node_modules/**/*.*",
                                       "!**/tsconfig.json",
+                                      "!**/test-results/**/*",
+                                      "!**/playwright-report/**/*",
+                                      "!**/.playwright-artifacts-*/**/*",
                                   ],
                                   dest: ".",
                               },
@@ -764,7 +777,7 @@ export default defineConfig(async ({ command }) => {
                 ? ["default", "junit"]
                 : ["default"],
             outputFile: "./bloombrowserui-test-results.xml",
-            includeConsoleOutput: true,
+            includeConsoleOutput: false,
             // Uncomment to run only specific test files during development:
             // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
             exclude: [
@@ -773,12 +786,20 @@ export default defineConfig(async ({ command }) => {
                 "**/cypress/**",
                 "**/.{idea,git,cache,output,temp}/**",
                 "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+                "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via yarn e2e canvas)
                 "**/react_components/component-tester/**", // Exclude playwright component tests
                 "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
             ],
             environment: "jsdom", // Use jsdom to simulate browser DOM in Node
             globals: false, // Don't inject global test functions (use imports instead)
             testTimeout: 30000, // 30 second timeout for async operations
+            teardownTimeout: 10000, // 10s max for after-test cleanup; prevents hung workers from blocking the pool
+            // Cap parallel workers. On Windows, running too many jsdom workers simultaneously
+            // may exhaust system resources (TCP connections to localhost, libuv thread pool), causing
+            // workers to stall indefinitely. This may slightly slow things down on some computers
+            // but reduces the chance of the tests hanging altogether.
+            maxWorkers: "70%",
+            minWorkers: 2,
             sourcemap: true, // Enable source maps for debugging test code
             deps: {
                 inline: ["vitest-canvas-mock"], // Force this dep to be bundled (not externalized)
@@ -795,9 +816,7 @@ export default defineConfig(async ({ command }) => {
                 ],
             },
             environmentOptions: {
-                jsdom: {
-                    resources: "usable", // Allow jsdom to load external resources
-                },
+                jsdom: {},
             },
         },
 

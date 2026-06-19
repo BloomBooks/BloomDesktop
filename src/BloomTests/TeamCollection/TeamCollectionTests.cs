@@ -356,6 +356,89 @@ namespace BloomTests.TeamCollection
         }
 
         [Test]
+        public void HandleModifiedFile_BookCopiedDuringSync_DropboxTwoPhaseDelivery_AutoRecopiesAndSendsReload_NoNewStuff()
+        {
+            // Verifies the Dropbox two-phase delivery fix. When a book is remotely renamed, Dropbox
+            // sometimes delivers it in two writes: Phase 1 has the correct folder name but Phase 1
+            // content (old title in HTML). Phase 2, arriving seconds later, has the final content.
+            // SyncAtStartup copies Phase 1 via CopyBookFromRepoToLocal, which tracks the book in
+            // _booksCopiedDuringSync. When the watcher fires for Phase 2, HandleModifiedFile should
+            // silently re-copy from the repo and send bookContent/reload, rather than writing a
+            // NewStuff message that would force the user to click Reload a second time.
+
+            // Setup //
+            const string bookFolderName = "Phase Two Book";
+            var bookBuilder = new BookFolderBuilder()
+                .WithRootFolder(_collectionFolder.FolderPath)
+                .WithTitle(bookFolderName)
+                .WithHtm("<html>Phase 1 content</html>")
+                .Build();
+            string bookFolderPath = bookBuilder.BuiltBookFolderPath;
+
+            // Put Phase 1 in the repo and record its status (checksum)
+            _collection.PutBook(bookFolderPath);
+            var phase1Status = _collection.GetLocalStatus(bookFolderName);
+
+            // Simulate SyncAtStartup copying Phase 1 — sets _syncIsRunning so that
+            // CopyBookFromRepoToLocal populates _booksCopiedDuringSync as it does during real sync
+            _collection.TestOnly_BeginFakeSync();
+            Assert.That(
+                _collection.CopyBookFromRepoToLocal(bookFolderName),
+                Is.Null,
+                "CopyBookFromRepoToLocal should succeed (sanity)"
+            );
+            Assert.That(
+                _collection.HasBeenChangedRemotely(bookFolderName),
+                Is.False,
+                "Book is not yet changed remotely immediately after copy (sanity)"
+            );
+
+            // Simulate Phase 2 arriving in the repo: update the book content in the repo
+            RobustFile.WriteAllText(bookBuilder.BuiltBookHtmPath, "<html>Phase 2 content</html>");
+            _collection.PutBook(bookFolderPath); // overwrites repo with Phase 2; also updates local status
+
+            // Reset local status to Phase 1 checksum — local is "behind" the repo, as if
+            // Phase 2 arrived after sync had already recorded Phase 1 as current
+            _collection.WriteLocalStatus(bookFolderName, phase1Status);
+
+            Assert.That(
+                _collection.HasBeenChangedRemotely(bookFolderName),
+                Is.True,
+                "Phase 2 in repo now differs from Phase 1 local status (sanity)"
+            );
+
+            var prevMessages = _tcLog.Messages.Count;
+
+            // System Under Test //
+            _collection.HandleModifiedFile(
+                new BookRepoChangeEventArgs() { BookFileName = $"{bookFolderName}.bloom" }
+            );
+
+            // Verification
+            // No NewStuff message — the update was handled silently, no second Reload needed
+            Assert.That(
+                _tcLog.Messages.Count,
+                Is.EqualTo(prevMessages),
+                "No new log messages: no Reload button should appear"
+            );
+
+            // The preview iframe must be told to refresh from disk
+            _mockTcManager.Verify(m => m.SendBookContentReload(), Times.Once());
+
+            // The book is now up-to-date locally (Phase 2 was re-copied)
+            Assert.That(
+                _collection.GetLocalStatus(bookFolderName).checksum,
+                Is.EqualTo(_collection.GetStatus(bookFolderName).checksum),
+                "Local checksum matches repo after auto-recopy"
+            );
+            Assert.That(
+                _collection.HasBeenChangedRemotely(bookFolderName),
+                Is.False,
+                "Book is no longer considered changed remotely after auto-recopy"
+            );
+        }
+
+        [Test]
         public void HandleBookRename_CheckedOutToMe_FixesStatusProperly()
         {
             // Setup //
@@ -551,6 +634,131 @@ namespace BloomTests.TeamCollection
             var status = _collection.PutBook(bookFolderPath);
             _collection.DeleteBookFromRepo(bookFolderPath);
             Assert.That(_collection.KnownToHaveBeenDeleted("Delete away"), Is.True);
+        }
+
+        [Test]
+        public void DeleteBookFromRepo_RenamedBeforeCheckin_DeletesOldRepoFileAndCreatesTombstone()
+        {
+            const string originalBookName = "Old TC Name";
+            const string renamedBookName = "New Local Name";
+
+            var bookBuilder = new BookFolderBuilder()
+                .WithRootFolder(_collectionFolder.FolderPath)
+                .WithTitle(originalBookName)
+                .WithHtm("<html><body>This is just a dummy</body></html>")
+                .Build();
+            var originalBookFolderPath = bookBuilder.BuiltBookFolderPath;
+            var originalHtmlPath = bookBuilder.BuiltBookHtmPath;
+
+            TeamCollectionManager.ForceCurrentUserForTests("steve@somewhere.org");
+            _collection.PutBook(originalBookFolderPath);
+            var locked = _collection.AttemptLock(originalBookName);
+            Assert.That(locked, Is.True, "successfully checked out book to steve@somewhere.org");
+
+            var renamedBookFolderPath = Path.Combine(_collectionFolder.FolderPath, renamedBookName);
+            File.Move(
+                originalHtmlPath,
+                Path.Combine(originalBookFolderPath, renamedBookName + ".htm")
+            );
+            Directory.Move(originalBookFolderPath, renamedBookFolderPath);
+            _collection.HandleBookRename(originalBookName, renamedBookName);
+
+            var oldRepoPath = Path.Combine(
+                _sharedFolder.FolderPath,
+                "Books",
+                originalBookName + ".bloom"
+            );
+            var newRepoPath = Path.Combine(
+                _sharedFolder.FolderPath,
+                "Books",
+                renamedBookName + ".bloom"
+            );
+            Assert.That(
+                File.Exists(oldRepoPath),
+                Is.True,
+                "old repo file should exist before delete"
+            );
+            Assert.That(
+                File.Exists(newRepoPath),
+                Is.False,
+                "new repo file should not exist before delete"
+            );
+
+            _collection.DeleteBookFromRepo(renamedBookFolderPath);
+
+            Assert.That(File.Exists(oldRepoPath), Is.False, "old repo file should be deleted");
+            Assert.That(File.Exists(newRepoPath), Is.False, "new repo file should still not exist");
+            Assert.That(
+                _collection.KnownToHaveBeenDeleted(renamedBookName),
+                Is.True,
+                "tombstone should be created for the deleted book"
+            );
+        }
+
+        [Test]
+        public void DeleteBookFromRepo_StaleStatusFromAnotherCollection_IgnoresOldName()
+        {
+            const string currentBookName = "Current Book";
+            const string wrongOldName = "Wrong Old Name";
+
+            var currentBookBuilder = new BookFolderBuilder()
+                .WithRootFolder(_collectionFolder.FolderPath)
+                .WithTitle(currentBookName)
+                .WithHtm("<html><body>This is just a dummy</body></html>")
+                .Build();
+            var currentBookFolderPath = currentBookBuilder.BuiltBookFolderPath;
+
+            var wrongBookBuilder = new BookFolderBuilder()
+                .WithRootFolder(_collectionFolder.FolderPath)
+                .WithTitle(wrongOldName)
+                .WithHtm("<html><body>This is just a dummy</body></html>")
+                .Build();
+            var wrongBookFolderPath = wrongBookBuilder.BuiltBookFolderPath;
+
+            _collection.PutBook(currentBookFolderPath);
+            _collection.PutBook(wrongBookFolderPath);
+
+            _collection.WriteLocalStatus(
+                currentBookName,
+                new BookStatus().WithOldName(wrongOldName),
+                collectionId: "not-this-collection"
+            );
+
+            var currentRepoPath = Path.Combine(
+                _sharedFolder.FolderPath,
+                "Books",
+                currentBookName + ".bloom"
+            );
+            var wrongRepoPath = Path.Combine(
+                _sharedFolder.FolderPath,
+                "Books",
+                wrongOldName + ".bloom"
+            );
+            Assert.That(
+                File.Exists(currentRepoPath),
+                Is.True,
+                "current repo book should exist before delete"
+            );
+            Assert.That(
+                File.Exists(wrongRepoPath),
+                Is.True,
+                "wrong repo book should exist before delete"
+            );
+
+            _collection.DeleteBookFromRepo(currentBookFolderPath);
+
+            Assert.That(
+                File.Exists(currentRepoPath),
+                Is.False,
+                "current repo book should be deleted"
+            );
+            Assert.That(
+                File.Exists(wrongRepoPath),
+                Is.True,
+                "stale oldName must not delete a different repo book"
+            );
+            Assert.That(_collection.KnownToHaveBeenDeleted(currentBookName), Is.True);
+            Assert.That(_collection.KnownToHaveBeenDeleted(wrongOldName), Is.False);
         }
 
         [Test]

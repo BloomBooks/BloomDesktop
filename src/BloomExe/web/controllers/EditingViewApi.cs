@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -157,7 +158,31 @@ namespace Bloom.web.controllers
             var dataBook = request.RequiredParam("dataBook");
             var multiText = View.Model.CurrentBook.BookData.GetMultiTextVariableOrEmpty(dataBook);
             var value = multiText.GetExactAlternative(lang) ?? "";
-            request.ReplyWithText(value);
+            var matchingDataDivElement =
+                View.Model.CurrentBook.RawDom.SelectSingleNode(
+                    $"//div[@id='bloomDataDiv']/div[@data-book='{dataBook}' and @lang='{lang}']"
+                ) as SafeXmlElement;
+
+            request.ReplyWithJson(
+                new
+                {
+                    content = value,
+                    id = matchingDataDivElement?.GetAttribute("id"),
+                    dataAudioRecordingMode = matchingDataDivElement?.GetAttribute(
+                        "data-audiorecordingmode"
+                    ),
+                    dataDuration = matchingDataDivElement?.GetAttribute("data-duration"),
+                    dataAudioRecordingEndTimes = matchingDataDivElement?.GetAttribute(
+                        "data-audiorecordingendtimes"
+                    ),
+                    recordingMd5 = matchingDataDivElement?.GetAttribute("recordingmd5"),
+                    hasAudioSentenceClass = matchingDataDivElement?.HasClass("audio-sentence")
+                        ?? false,
+                    hasBloomPostAudioSplitClass = matchingDataDivElement?.HasClass(
+                        "bloom-postAudioSplit"
+                    ) ?? false,
+                }
+            );
         }
 
         /// <summary>
@@ -348,13 +373,31 @@ namespace Bloom.web.controllers
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
             ((DynamicJson)data).TryGetValue("pageBackgroundColor", out string pageBackgroundColor);
-            View.OnPasteImage(
-                data.imageId,
-                UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
-                data.imageIsGif,
-                pageBackgroundColor
-            );
+            try
+            {
+                PasteImage(
+                    data.imageId,
+                    UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
+                    data.imageIsGif,
+                    pageBackgroundColor
+                );
+            }
+            catch (InvalidOperationException e)
+            {
+                request.Failed(System.Net.HttpStatusCode.BadRequest, e.Message);
+                return;
+            }
             request.PostSucceeded();
+        }
+
+        protected virtual void PasteImage(
+            string imageId,
+            UrlPathString priorImageSrc,
+            bool imageIsGif,
+            string pageBackgroundColor
+        )
+        {
+            View.OnPasteImage(imageId, priorImageSrc, imageIsGif, pageBackgroundColor);
         }
 
         // Ctrl-V seems to be only possible to intercept in Javascript.

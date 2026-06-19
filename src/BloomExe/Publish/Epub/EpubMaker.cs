@@ -127,8 +127,8 @@ namespace Bloom.Publish.Epub
         private Dictionary<string, string> _mapItemToId = new Dictionary<string, string>();
 
         // Keep track of the files we already copied to the ePUB, so we don't copy them again to a new name.
-        private Dictionary<string, string> _mapSrcPathToDestFileName =
-            new Dictionary<string, string>();
+        private Dictionary<(string, ImageTransparencyMode), string> _mapSrcPathToDestFileName =
+            new Dictionary<(string, ImageTransparencyMode), string>();
 
         // All the things (files) we need to list in the manifest
         private List<string> _manifestItems;
@@ -536,9 +536,19 @@ namespace Bloom.Publish.Epub
                 }
             }
             // Cover image file and therefore thumbnail file may be non-existent simply because no cover image was chosen/it was still the placeHolder, not a problem
+            string thumbnailManifestItem = null;
             if (thumbnailFileExists)
             {
-                CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder, imageSettings);
+                var thumbnailDstPath = CopyFileToEpub(
+                    epubThumbnailImagePath,
+                    limitImageDimensions: true,
+                    transparencyMode: ImageTransparencyMode.Auto,
+                    subfolder: kImagesFolder,
+                    imageSettings: imageSettings
+                );
+                // CopyFileToEpub may have changed the extension (e.g. PNG→JPEG); use the actual
+                // filename so MakeManifest can match it against _manifestItems for cover-image property.
+                thumbnailManifestItem = kImagesFolder + "/" + Path.GetFileName(thumbnailDstPath);
             }
             var warnings = EmbedFonts(progress); // must call after copying stylesheets
             if (warnings.Any())
@@ -567,11 +577,7 @@ namespace Bloom.Publish.Epub
 					</container>"
             );
 
-            MakeManifest(
-                thumbnailFileExists
-                    ? kImagesFolder + "/" + Path.GetFileName(epubThumbnailImagePath)
-                    : null
-            );
+            MakeManifest(thumbnailManifestItem);
 
             foreach (
                 var filename in Directory.EnumerateFiles(
@@ -584,8 +590,6 @@ namespace Bloom.Publish.Epub
                     PruneSvgFileOfCruft(filename);
             }
         }
-
-        private static string basePageText;
 
         public static void GetPageDimensions(string pageSize, out double width, out double height)
         {
@@ -2195,20 +2199,28 @@ namespace Bloom.Publish.Epub
                     continue; // REVIEW: should we remove the element since the image source is empty?
                 if (srcPath == String.Empty)
                 {
-                    img.ParentNode.RemoveChild(img); // the image source file can't be found.
+                    img.ParentNode.RemoveChild(img);
+                    continue;
                 }
                 else
                 {
-                    var isCoverImage =
-                        img.SafeSelectNodes(
-                                "ancestor::div[contains(concat(' ',@class,' '),' coverColor ')]"
+                    var owningPage = img.SafeSelectNodes(
+                            "ancestor::div[contains(@class,'bloom-page')]"
+                        )
+                        .Cast<SafeXmlElement>()
+                        .LastOrDefault(); // last ancestor = nearest page div
+                    var transparencyMode = HtmlDom.GetImageTransparencyMode(
+                        img,
+                        owningPage != null
+                            && HtmlDom.PageNeedsTransparentImages(
+                                owningPage,
+                                Book.BookInfo.AppearanceSettings
                             )
-                            .Cast<SafeXmlElement>()
-                            .Count() != 0;
+                    );
                     var dstPath = CopyFileToEpub(
                         srcPath,
                         limitImageDimensions: true,
-                        forUseOnColoredBackground: isCoverImage,
+                        transparencyMode: transparencyMode,
                         subfolder: kImagesFolder,
                         imageSettings: imageSettings
                     );
@@ -3358,14 +3370,16 @@ namespace Bloom.Publish.Epub
         private string CopyFileToEpub(
             string srcPath,
             bool limitImageDimensions = false,
-            bool forUseOnColoredBackground = false,
+            ImageTransparencyMode transparencyMode = ImageTransparencyMode.None,
             string subfolder = "",
             ImagePublishSettings imageSettings = null
         )
         {
             string existingFile;
-            if (_mapSrcPathToDestFileName.TryGetValue(srcPath, out existingFile))
-                return existingFile; // File already present, must be used more than once.
+            if (
+                _mapSrcPathToDestFileName.TryGetValue((srcPath, transparencyMode), out existingFile)
+            )
+                return existingFile; // Same file + same transparency already processed.
             var fileName = GetAdjustedFilename(srcPath, Storage.FolderPath);
             // If the fileName starts with a folder inside the Bloom book that maps onto
             // a folder in the epub, remove that folder from the fileName since the proper
@@ -3393,15 +3407,26 @@ namespace Bloom.Publish.Epub
             Directory.CreateDirectory(Path.GetDirectoryName(dstPath));
             if (imageSettings == null)
                 imageSettings = new ImagePublishSettings();
-            CopyFile(
+            var actualDstPath = CopyFile(
                 srcPath,
                 dstPath,
                 imageSettings,
                 limitImageDimensions,
-                forUseOnColoredBackground
+                transparencyMode
             );
+            // CopyFile may have changed the path (e.g. PNG photo → JPEG, or collision rename).
+            // Reconstruct fileName by stripping the subfolder-aware content prefix so the
+            // manifest entry and the actual file on disk always agree.
+            if (!actualDstPath.Equals(dstPath, StringComparison.OrdinalIgnoreCase))
+            {
+                var contentPrefix = string.IsNullOrEmpty(subfolder)
+                    ? _contentFolder
+                    : Path.Combine(_contentFolder, subfolder);
+                fileName = actualDstPath[(contentPrefix.Length + 1)..].Replace('\\', '/');
+                dstPath = actualDstPath;
+            }
             _manifestItems.Add(SubfolderAdjustedName(subfolder, fileName));
-            _mapSrcPathToDestFileName[srcPath] = dstPath;
+            _mapSrcPathToDestFileName[(srcPath, transparencyMode)] = dstPath;
             return dstPath;
         }
 
@@ -3469,13 +3494,15 @@ namespace Bloom.Publish.Epub
 
         /// <summary>
         /// This supports testing without actually copying files.
+        /// Returns the actual destination path used, which may have a different extension than
+        /// <paramref name="dstPath"/> if image format conversion occurred.
         /// </summary>
-        internal virtual void CopyFile(
+        internal virtual string CopyFile(
             string srcPath,
             string dstPath,
             ImagePublishSettings imagePublishSettings,
             bool limitImageDimensions = false,
-            bool forUseOnColoredBackground = false
+            ImageTransparencyMode transparencyMode = ImageTransparencyMode.None
         )
         {
             if (
@@ -3485,13 +3512,40 @@ namespace Bloom.Publish.Epub
                 )
             )
             {
-                BookCompressor.CopyResizedImageFile(
+                // ImagePublishSettings.MaxWidth/MaxHeight are in landscape orientation; pass Height
+                // as maxShortSide to match what GetDesiredImageSize expects.
+                using var tempDir = new TemporaryFolder("EpubImageAdjust");
+                var adjustedPath = ImageUtils.AdjustImageForDisplay(
                     srcPath,
-                    dstPath,
-                    imagePublishSettings,
-                    forUseOnColoredBackground
+                    tempDir.FolderPath,
+                    transparencyMode,
+                    (int)imagePublishSettings.MaxHeight,
+                    (int)imagePublishSettings.MaxWidth
                 );
-                return;
+                if (adjustedPath != null)
+                {
+                    // Format may have changed (e.g. PNG photo → JPEG); update dstPath accordingly.
+                    var adjustedExt = Path.GetExtension(adjustedPath).ToLowerInvariant();
+                    var dstExt = Path.GetExtension(dstPath).ToLowerInvariant();
+                    if (adjustedExt != dstExt)
+                    {
+                        // Re-check for collisions with the new extension — the earlier collision
+                        // loop only ran against the original extension.
+                        var basePath = Path.ChangeExtension(dstPath, adjustedExt);
+                        dstPath = basePath;
+                        var baseNoExt = Path.Combine(
+                            Path.GetDirectoryName(basePath),
+                            Path.GetFileNameWithoutExtension(basePath)
+                        );
+                        for (int fix = 1; RobustFile.Exists(dstPath); fix++)
+                            dstPath = baseNoExt + fix + adjustedExt;
+                    }
+                    RobustFile.Copy(adjustedPath, dstPath);
+                    return dstPath;
+                }
+                // AdjustImageForDisplay returned null: no processing needed, just copy.
+                RobustFile.Copy(srcPath, dstPath);
+                return dstPath;
             }
             if (dstPath.Contains(kCssFolder) && dstPath.EndsWith(".css"))
             {
@@ -3504,9 +3558,10 @@ namespace Bloom.Publish.Epub
                     RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                 );
                 RobustFile.WriteAllText(dstPath, outputText);
-                return;
+                return dstPath;
             }
             RobustFile.Copy(srcPath, dstPath);
+            return dstPath;
         }
 
         // The validator is (probably excessively) upset about IDs that start with numbers.

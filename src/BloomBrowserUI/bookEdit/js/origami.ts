@@ -1,9 +1,9 @@
 import { SetupImage } from "./bloomImages";
-import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementUtils";
+import { kBloomCanvasClass } from "../toolbox/canvas/canvasElementPageBridge";
 import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { post, postThatMightNavigate } from "../../utils/bloomApi";
-import { theOneCanvasElementManager } from "./CanvasElementManager";
+import { theOneCanvasElementManager } from "./canvasElementManager/CanvasElementManager";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import $ from "jquery";
 import "../../lib/jquery.i18n.custom";
@@ -102,7 +102,6 @@ function getRequiredOrigamiTemplate(selector: string) {
 
     return template;
 }
-
 function setupLayoutMode() {
     theOneCanvasElementManager.suspendComicEditing("forTool");
     $(".split-pane-component-inner").each(function (): boolean {

@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using Bloom;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
@@ -2481,28 +2482,34 @@ namespace BloomTests.Publish.Epub
                 FixContentForXPathValueSlash(_manifestContent)
             );
             assertThatManifest.HasAtLeastOneMatchForXpath(
-                "package/manifest/item[@id='f12' and @href='" + kImagesSlash + "12.png']"
+                $"package/manifest/item[@id='f12' and (@href='{kImagesSlash}12.png' or @href='{kImagesSlash}12.jpg')]"
             );
             assertThatManifest.HasSpecifiedNumberOfMatchesForXpath(
-                "package/manifest/item[@id='f121' and @href='" + kImagesSlash + "f12.png']",
+                $"package/manifest/item[@id='f121' and (@href='{kImagesSlash}f12.png' or @href='{kImagesSlash}f12.jpg')]",
                 1
             );
+            // Verify no third copy was made (neither .png nor .jpg variant)
             assertThatManifest.HasNoMatchForXpath(
-                "package/manifest/item[@href='" + kImagesSlash + "f121.png']"
-            ); // What it would typically generate if it made another copy.
+                $"package/manifest/item[@href='{kImagesSlash}f121.png']"
+            );
+            assertThatManifest.HasNoMatchForXpath(
+                $"package/manifest/item[@href='{kImagesSlash}f121.jpg']"
+            );
 
             AssertThatXmlIn
                 .String(page2Data)
-                .HasAtLeastOneMatchForXpath("//img[@src='" + kImagesSlash + "12.png']");
+                .HasAtLeastOneMatchForXpath(
+                    $"//img[@src='{kImagesSlash}12.png' or @src='{kImagesSlash}12.jpg']"
+                );
             AssertThatXmlIn
                 .String(page2Data)
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    "//img[@src='" + kImagesSlash + "f12.png']",
+                    $"//img[@src='{kImagesSlash}f12.png' or @src='{kImagesSlash}f12.jpg']",
                     2
                 );
 
-            VerifyEpubItemExists("content/" + EpubMaker.kImagesFolder + "/12.png");
-            VerifyEpubItemExists("content/" + EpubMaker.kImagesFolder + "/f12.png");
+            VerifyEpubImageExists("content/" + EpubMaker.kImagesFolder + "/12");
+            VerifyEpubImageExists("content/" + EpubMaker.kImagesFolder + "/f12");
         }
 
         /// <summary>
@@ -2990,25 +2997,25 @@ namespace BloomTests.Publish.Epub
             Book = book;
         }
 
-        internal override void CopyFile(
+        internal override string CopyFile(
             string srcPath,
             string dstPath,
             ImagePublishSettings imagePublishSettings,
             bool reduceImageIfPossible = false,
-            bool makeTransparentifAppropriate = false
+            ImageTransparencyMode transparencyMode = ImageTransparencyMode.None
         )
         {
             if (srcPath.Contains("notareallocation"))
             {
                 File.WriteAllText(dstPath, "This is a test fake");
-                return;
+                return dstPath;
             }
-            base.CopyFile(
+            return base.CopyFile(
                 srcPath,
                 dstPath,
                 imagePublishSettings,
                 reduceImageIfPossible,
-                makeTransparentifAppropriate
+                transparencyMode
             );
         }
     }

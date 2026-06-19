@@ -1,8 +1,9 @@
-import { get } from "../../../utils/bloomApi";
+import { get, postThatMightNavigate } from "../../../utils/bloomApi";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../../utils/reactRender";
 import BloomButton from "../../../react_components/bloomButton";
 import WebSocketManager from "../../../utils/WebSocketManager";
+import { confirmRemovePage } from "../confirmRemovePage";
 import "./pageControls.less";
 import "errorHandler";
 
@@ -124,8 +125,13 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
                         transparent={true}
                         l10nComment="Button that tells Bloom to delete the currently selected page."
                         enabled={this.state.canDeleteState}
-                        clickApiEndpoint="edit/pageControls/deletePage"
-                        mightNavigate={true}
+                        onClick={() =>
+                            confirmRemovePage(() =>
+                                postThatMightNavigate(
+                                    "edit/pageControls/deletePage",
+                                ),
+                            )
+                        }
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/deletePage.svg"
                         disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/deletePageDisabled.svg"
                         hasText={false}
@@ -138,4 +144,4 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
     }
 }
 
-ReactDOM.render(<PageControls />, document.getElementById("PageControls"));
+renderRoot(<PageControls />, document.getElementById("PageControls"));

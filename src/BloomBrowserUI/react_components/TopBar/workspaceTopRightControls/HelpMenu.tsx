@@ -38,14 +38,6 @@ export const HelpMenu: React.FunctionComponent = () => {
         "Training Videos",
         "HelpMenu.trainingVideos",
     );
-    const buildingReaderTemplatesText = useL10n(
-        "Building Reader Templates",
-        "HelpMenu.BuildingReaderTemplatesMenuItem",
-    );
-    const usingReaderTemplatesText = useL10n(
-        "Using Reader Templates ",
-        "HelpMenu.UsingReaderTemplatesMenuItem",
-    );
     const askQuestionText = useL10n(
         "Ask a Question",
         "HelpMenu.AskAQuestionMenuItem",
@@ -79,6 +71,7 @@ export const HelpMenu: React.FunctionComponent = () => {
         helpText === "?" || ["en", "fr", "de", "es"].includes(uiLanguage);
     const [anchorEl, setAnchorEl] = React.useState<HTMLElement>();
     const [suppressTooltip, setSuppressTooltip] = React.useState(false);
+    const pendingMenuCloseActionRef = React.useRef<(() => void) | undefined>();
 
     const showRegistrationDialogFromWorkspaceRoot = React.useCallback(() => {
         (
@@ -149,24 +142,6 @@ export const HelpMenu: React.FunctionComponent = () => {
                 label: trainingVideosText,
                 onClick: () => postHelpAction("showTrainingVideos"),
             },
-            {
-                id: "buildingReaderTemplates",
-                label: buildingReaderTemplatesText,
-                onClick: () =>
-                    postHelpAction(
-                        "safeStartInFront",
-                        "infoPage:Building and Distributing Reader Templates in Bloom.pdf",
-                    ),
-            },
-            {
-                id: "usingReaderTemplates",
-                label: usingReaderTemplatesText,
-                onClick: () =>
-                    postHelpAction(
-                        "safeStartInFront",
-                        "infoPage:Using Bloom Reader Templates.pdf",
-                    ),
-            },
             { id: "separator-1", separator: true },
             {
                 id: "askQuestion",
@@ -228,7 +203,6 @@ export const HelpMenu: React.FunctionComponent = () => {
         [
             aboutText,
             askQuestionText,
-            buildingReaderTemplatesText,
             checkUpdatesText,
             documentationText,
             onlineHelpText,
@@ -240,7 +214,6 @@ export const HelpMenu: React.FunctionComponent = () => {
             showAboutDialogFromWorkspaceRoot,
             showRegistrationDialogFromWorkspaceRoot,
             trainingVideosText,
-            usingReaderTemplatesText,
             websiteText,
         ],
     );
@@ -251,6 +224,9 @@ export const HelpMenu: React.FunctionComponent = () => {
     }, []);
 
     const onOpen = React.useCallback(() => {
+        // Clear any stale pending action so a previous 'Report a Problem' click
+        // that never got an onExited callback can't fire on the next menu close.
+        pendingMenuCloseActionRef.current = undefined;
         const button = document.getElementById(
             "helpMenuButton",
         ) as HTMLElement | null;
@@ -274,17 +250,36 @@ export const HelpMenu: React.FunctionComponent = () => {
             if (!item.onClick || item.enabled === false) {
                 return;
             }
-            item.onClick();
             onClose();
+            // For reporting a problem, we want to wait until the menu has fully closed
+            // before opening the problem report dialog, because that dialog needs to take
+            // a screenshot of the Bloom window, and we don't want the menu in that
+            // screenshot. So instead of calling the click handler directly, we save it
+            // in a ref and call it from the onMenuExited handler for the menu.
+            if (item.id === "reportProblem") {
+                pendingMenuCloseActionRef.current = item.onClick;
+                return;
+            }
+            item.onClick();
         },
         [onClose],
     );
+
+    const onMenuExited = React.useCallback(() => {
+        if (!pendingMenuCloseActionRef.current) {
+            return;
+        }
+        const pendingAction = pendingMenuCloseActionRef.current;
+        pendingMenuCloseActionRef.current = undefined;
+        pendingAction();
+    }, []);
 
     const menu = (
         <Menu
             open={Boolean(anchorEl)}
             anchorEl={anchorEl}
             onClose={onClose}
+            TransitionProps={{ onExited: onMenuExited }}
             disablePortal={false}
             keepMounted={false}
             anchorOrigin={{

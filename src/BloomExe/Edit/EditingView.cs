@@ -57,6 +57,7 @@ namespace Bloom.Edit
         public Browser MainBrowser => _mainBrowser;
         private WorkspaceView _workspaceView;
         private Form _hostFormForEvents;
+        private int _modalDialogDepth;
 
         internal WorkspaceView WorkspaceView
         {
@@ -409,10 +410,11 @@ namespace Bloom.Edit
             _model.SaveStateForFullSaveDecision();
 
             var canReuseCurrentRoot = !_changingUiLanguage && !ShouldDoFullReload();
+            var pageUrl = _model.GetUrlForCurrentPage();
+            var pageListUrl = _model.GetUrlForPageListFile();
             if (_model.AreToolboxAndOuterFrameCurrent() && canReuseCurrentRoot && !ThemeChanged)
             {
                 // Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
-                var pageUrl = _model.GetUrlForCurrentPage();
                 var urlFile = Path.GetFileName(pageUrl); // this actually works with a leading http://.
                 Logger.WriteEvent(
                     $"changing page via workspaceBundle.switchContentPage('{urlFile}')"
@@ -426,8 +428,6 @@ namespace Bloom.Edit
                 // The workspace root is always loaded (after initial startup),
                 // so don't navigate the top document again. Just initialize edit-frame content.
                 _model.SetupServerWithCurrentBookToolboxContents();
-                var pageListUrl = _model.GetUrlForPageListFile();
-                var pageUrl = _model.GetUrlForCurrentPage();
 
                 _mainBrowser.RunJavascriptFireAndForget(
                     "(function(){ const toolbox = document.getElementById('toolbox'); if (toolbox && toolbox.contentWindow) { toolbox.contentWindow.location.reload(); } })();"
@@ -526,6 +526,19 @@ namespace Bloom.Edit
 
         public string FileNameOfImageBeingModified => _fileNameOfImageBeingModified;
 
+        internal bool MetadataEditIsFromImageToolbox =>
+            _saveNewImageMetadataActionForImageToolbox != null;
+
+        /// <summary>
+        /// Called when the user confirms new metadata in the C/L dialog that was launched from
+        /// the palaso image toolbox. Invokes the toolbox's save callback directly so that the
+        /// toolbox UI immediately reflects the new copyright/license information.
+        /// </summary>
+        internal void ApplyImageMetadataToImageToolbox(Metadata metadata)
+        {
+            _saveNewImageMetadataActionForImageToolbox?.Invoke(metadata);
+        }
+
         public Metadata PrepareToEditImageMetadata(string fileName)
         {
             if (fileName == null)
@@ -533,6 +546,24 @@ namespace Bloom.Edit
                 // Without a file name, we are coming from the palaso image toolbox
                 return _originalImageMetadataFromImageToolbox;
             }
+
+            if (fileName.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    LocalizationManager.GetString(
+                        "EditTab.ImageMetadata.CannotEditEmbeddedImage",
+                        "Bloom can't edit image information for this image because it is embedded data, not a file image."
+                    )
+                );
+            }
+
+            // The fileName comes straight from the html src attribute, so it may carry a query
+            // string (e.g. "image1.png?transparent=yes") and/or still be URL-encoded. Reduce it
+            // to the actual file name on disk before we try to load the image; otherwise
+            // PalasoImage fails to find the file and we wrongly report it as corrupt. (BL-16446)
+            // CreateFromUnencodedString only decodes if the string still looks encoded (the
+            // server already decodes query parameters once), and PathOnly drops the query string.
+            fileName = UrlPathString.CreateFromUnencodedString(fileName).PathOnly.NotEncoded;
 
             // keep a reference to the fileName rather the image to avoid dispose issues
             _fileNameOfImageBeingModified = fileName;
@@ -695,13 +726,20 @@ namespace Bloom.Edit
                             || Path.GetExtension(path).ToLowerInvariant() != ".gif"
                         )
                         {
-                            MessageBox.Show(
-                                LocalizationManager.GetString(
-                                    "EditTab.NoGifOnClipboard",
-                                    "To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element"
-                                )
-                            );
-                            return;
+                            path = path.Trim('"'); // In some cases, the path may be enclosed in quotes. Trim them off and check again.
+                            if (
+                                string.IsNullOrEmpty(path)
+                                || !RobustFile.Exists(path)
+                                || Path.GetExtension(path).ToLowerInvariant() != ".gif"
+                            )
+                            {
+                                throw new InvalidOperationException(
+                                    LocalizationManager.GetString(
+                                        "EditTab.NoGifOnClipboard",
+                                        "To paste a Gif, copy a path to a Gif file, or copy from another Bloom GIF element"
+                                    )
+                                );
+                            }
                         }
                         SetGifImage(imageId, priorImageSrc, path);
                         return;
@@ -712,25 +750,23 @@ namespace Bloom.Edit
                     }
                     catch (Exception ex)
                     {
-                        Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
-                        MessageBox.Show(
+                        throw new InvalidOperationException(
                             LocalizationManager.GetString(
                                 "EditTab.NoValidImageFoundOnClipboard",
                                 "Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else."
-                            )
+                            ),
+                            ex
                         );
-                        return;
                     }
 
                     if (clipboardImage == null)
                     {
-                        MessageBox.Show(
+                        throw new InvalidOperationException(
                             LocalizationManager.GetString(
                                 "EditTab.NoImageFoundOnClipboard",
                                 "Before you can paste an image, copy one onto your 'clipboard', from another program."
                             )
                         );
-                        return;
                     }
 
                     Cursor = Cursors.WaitCursor;
@@ -811,7 +847,7 @@ namespace Bloom.Edit
                                     ImageFormat.Png
                                 );
 
-                                using (var palasoImage = ImageUtils.FromFileRobustly(temp.Path))
+                                using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
                                 {
                                     _model.ChangePicture(
                                         imageId,
@@ -824,6 +860,10 @@ namespace Bloom.Edit
                             }
                         }
                     }
+                }
+                catch (InvalidOperationException)
+                {
+                    throw;
                 }
                 catch (Exception error)
                 {
@@ -866,7 +906,7 @@ namespace Bloom.Edit
                     PortableClipboard.SetText(path);
                     return true;
                 }
-                using (var image = ImageUtils.FromFileRobustly(path))
+                using (var image = PalasoImage.FromFileRobustly(path))
                 {
                     PortableClipboard.CopyImageToClipboard(image);
                 }
@@ -937,8 +977,6 @@ namespace Bloom.Edit
             return true;
         }
 
-        private string _gifDirectory; // Todo: worth saving this as a UserPrefs? Or can/should we use the same one as for images?
-
         public void OnChangeImage(
             string imageId,
             UrlPathString imageSrc,
@@ -956,8 +994,9 @@ namespace Bloom.Edit
                 using (
                     var dlg = new BloomOpenFileDialog
                     {
-                        InitialDirectory =
-                            _gifDirectory ?? Environment.SpecialFolder.MyPictures.ToString(),
+                        InitialDirectory = Environment.GetFolderPath(
+                            Environment.SpecialFolder.MyPictures
+                        ),
                         Filter = "gif|*.gif",
                     }
                 )
@@ -965,7 +1004,15 @@ namespace Bloom.Edit
                     DialogResult result;
                     using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                     {
-                        result = dlg.ShowDialog();
+                        try
+                        {
+                            SetModalState(true);
+                            result = dlg.ShowDialog();
+                        }
+                        finally
+                        {
+                            SetModalState(false);
+                        }
                     }
                     if (result == DialogResult.OK)
                         SetGifImage(imageId, imageSrc, dlg.FileName);
@@ -1004,7 +1051,7 @@ namespace Bloom.Edit
                     RobustFile.Copy(existingImagePath, newImagePath);
                     Debug.WriteLine("Created image copy: " + newImagePath);
                     Logger.WriteEvent("Created image copy: " + newImagePath);
-                    imageInfo = ImageUtils.FromFileRobustly(newImagePath);
+                    imageInfo = PalasoImage.FromFileRobustly(newImagePath);
                     oldSize = imageInfo.Image.Size;
                     oldImage = imageInfo.Image;
                 }
@@ -1082,13 +1129,16 @@ namespace Bloom.Edit
                 }
 
                 dlg.SearchLanguage = searchLanguage;
-                DialogResult result;
+                DialogResult result = DialogResult.Cancel;
                 try
                 {
+                    SetModalState(true);
                     result = dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());
                 }
                 finally
                 {
+                    SetModalState(false);
+
                     // These variables get set during a callback from the dialog that allows us to use our own way of
                     // editing metadata for an image. It's important that they get cleaned up once the dialog is closed
                     // so they don't interfere with future uses of the metadata editing code.
@@ -1253,6 +1303,7 @@ namespace Bloom.Edit
                 copyright = "",
                 license = "",
                 creator = "",
+                undoable = "true",
             };
             _model.UpdateImageInBrowser(args);
         }
@@ -1683,7 +1734,13 @@ namespace Bloom.Edit
         /// </summary>
         internal void SetModalState(bool isModal)
         {
-            _pageListView.Enabled = !isModal;
+            if (isModal)
+                _modalDialogDepth++;
+            else
+                _modalDialogDepth = Math.Max(0, _modalDialogDepth - 1);
+
+            var isActuallyModal = _modalDialogDepth > 0;
+            _pageListView.Enabled = !isActuallyModal;
         }
 
         public void ShowAddPageDialog()

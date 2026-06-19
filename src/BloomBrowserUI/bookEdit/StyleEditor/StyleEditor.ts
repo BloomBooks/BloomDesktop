@@ -30,7 +30,7 @@ import axios from "axios";
 import { get, wrapAxios } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import { ensureFieldFitsOnCustomPage } from "../toolbox/canvas/derivedFieldFitting";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../utils/reactRender";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
 import * as React from "react";
 import {
@@ -41,8 +41,8 @@ import { BloomPalette } from "../../react_components/color-picking/bloomPalette"
 import { kBloomYellow } from "../../bloomMaterialUITheme";
 import { RenderRoot } from "./AudioHilitePage";
 import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
-import { CanvasElementManager } from "../js/CanvasElementManager";
-import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
+import { CanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { getPageIFrame } from "../../utils/shared";
 
 // Controls the CSS text-align value
@@ -1123,7 +1123,7 @@ export default class StyleEditor {
         fontMetadata: IFontMetaData[],
         fontName: string,
     ): void {
-        ReactDOM.render(
+        renderRoot(
             React.createElement(FontSelectComponent, {
                 fontMetadata: fontMetadata,
                 currentFontName: fontName,

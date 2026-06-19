@@ -9,6 +9,7 @@ import {
     useWatchApiData,
 } from "../../../utils/bloomApi";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
+import { CollectionChooserDialog } from "../../../collection/CollectionChooserDialog";
 const bloomApiPrefix = getBloomApiPrefix(false);
 
 const kOpenCreateCollectionIcon = `${bloomApiPrefix}images/OpenCreateCollection24x24.png`;
@@ -35,56 +36,65 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
         post("workspace/showLegacySettingsDialog");
     }, []);
 
+    const [collectionChooserOpen, setCollectionChooserOpen] =
+        React.useState(false);
+
     const handleOpenOrCreateClick = React.useCallback(() => {
-        post("workspace/openOrCreateCollection/");
+        setCollectionChooserOpen(true);
     }, []);
 
     return (
-        /* The result of the two sets of flex divs is we get the TC button
-           on the left and the other buttons on the right */
-        <div
-            css={css`
-                display: flex;
-                align-items: flex-start;
-                justify-content: space-between;
-                padding-top: 2px;
-                width: 100%;
-            `}
-        >
-            <TeamCollectionButton status={teamCollectionStatus} />
+        <>
+            {/* The result of the two sets of flex divs is we get the TC button
+           on the left and the other buttons on the right */}
             <div
                 css={css`
                     display: flex;
-                    gap: 10px;
-                    align-items: center;
+                    align-items: flex-start;
+                    justify-content: space-between;
+                    padding-top: 2px;
+                    width: 100%;
                 `}
             >
-                <TopBarButton
-                    iconPath={kSettingsIcon}
-                    labelL10nKey="CollectionTab.SettingsButton"
-                    labelEnglish="Settings"
-                    onClick={handleLegacySettingsClick}
-                    backgroundColor={mainButtonBackground}
-                    textColor={mainButtonTextColor}
-                    cssOverrides={css`
-                        white-space: normal;
-                        line-height: 1.15;
-
-                        span {
-                            display: inline-block;
-                            text-align: center;
-                        }
+                <TeamCollectionButton status={teamCollectionStatus} />
+                <div
+                    css={css`
+                        display: flex;
+                        gap: 10px;
+                        align-items: center;
                     `}
-                />
-                <TopBarButton
-                    iconPath={kOpenCreateCollectionIcon}
-                    labelL10nKey="CollectionTab.Open/CreateCollectionButton"
-                    labelEnglish="Other Collection"
-                    onClick={handleOpenOrCreateClick}
-                    backgroundColor={mainButtonBackground}
-                    textColor={mainButtonTextColor}
-                />
+                >
+                    <TopBarButton
+                        iconPath={kSettingsIcon}
+                        labelL10nKey="CollectionTab.SettingsButton"
+                        labelEnglish="Settings"
+                        onClick={handleLegacySettingsClick}
+                        backgroundColor={mainButtonBackground}
+                        textColor={mainButtonTextColor}
+                        cssOverrides={css`
+                            white-space: normal;
+                            line-height: 1.15;
+
+                            span {
+                                display: inline-block;
+                                text-align: center;
+                            }
+                        `}
+                    />
+                    <TopBarButton
+                        iconPath={kOpenCreateCollectionIcon}
+                        labelL10nKey="CollectionTab.Open/CreateCollectionButton"
+                        labelEnglish="Other Collection"
+                        onClick={handleOpenOrCreateClick}
+                        backgroundColor={mainButtonBackground}
+                        textColor={mainButtonTextColor}
+                    />
+                </div>
             </div>
-        </div>
+            <CollectionChooserDialog
+                open={collectionChooserOpen}
+                onClose={() => setCollectionChooserOpen(false)}
+            />
+        </>
     );
 };

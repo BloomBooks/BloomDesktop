@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.MiscUI;
@@ -64,6 +65,12 @@ namespace Bloom.Workspace
 
         internal Browser MainBrowser => _mainBrowser;
 
+        /// <summary>
+        /// The currently active WorkspaceView, or null when no project is loaded (e.g. at startup).
+        /// Used by CollectionChooserApi to distinguish startup mode from mid-session.
+        /// </summary>
+        public static WorkspaceView Current { get; private set; }
+
         //autofac uses this
 
         public WorkspaceView(
@@ -93,6 +100,7 @@ namespace Bloom.Workspace
             TeamCollectionApi teamCollectionApi
         )
         {
+            Current = this;
             _model = model;
             _settingsDialogFactory = settingsDialogFactory;
             _selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
@@ -215,14 +223,18 @@ namespace Bloom.Workspace
             // Convenient place to call this, after the workspace is installed in its parent form.
             _editingView?.HookupHostFormEvents();
 
+            StartupScreenManager.ClearStartupMilestone("collectionButtonsDrawn");
+            StartupScreenManager.ClearStartupMilestone("teamSyncCompleted");
+            StartupScreenManager.ClearStartupMilestone("startupBookSelectionReady");
+            if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
+            {
+                StartupScreenManager.StartupMilestoneReached("teamSyncCompleted");
+                _collectionTabView.ReadyToShowCollections();
+            }
             // If we're loading a team collection, we need to do that...with its progress dialog...
             // before anything else, and we'll need to close the splash screen to make room for
             // that dialog.
-            // Note, this not put into _startupActions...it should never be disabled.
-            if (_tcManager?.CurrentCollectionEvenIfDisconnected == null)
-            {
-                _collectionTabView.ReadyToShowCollections();
-            }
+            // Note, we don't save the result of AddStartupAction; this action should never be disabled.
             else
             {
                 StartupScreenManager.AddStartupAction(
@@ -243,15 +255,19 @@ namespace Bloom.Workspace
             // needs to be checked out before BringBookUpToDate renames it here.
             StartupScreenManager.AddStartupAction(
                 () => SelectBookAtStartup(),
-                // We want to delay this until the buttons get drawn,
+                // startupBookSelectionReady is set only after BOTH teamSyncCompleted and
+                // collectionButtonsDrawn are reached.
+                // We need to wait for the teamSyncCompleted because in the case of a remote rename,
+                // the book we want to show as selected may not have all its files until then.
+                // We also want to delay selecting the book until the buttons get drawn,
                 // since it ties up the UI thread for a while.
-                // Enhance: the code in CollectionsApi that raises this event is crude; it just
+                // Enhance: the code in CollectionApi that raises collectionButtonsDrawn is crude; it just
                 // looks for the first two button thumbnails to be requested. It would be better if
                 // we had some way of knowing when the collection panes were fully rendered.
-                // It would be better still if most of the work of SelectPreviouslySelectedBook could
+                // It would be better still if most of the work of SelectBookAtStartup could
                 // be done on a background thread so it could make progress as quickly as possible
                 // without holding up drawing the collection panes.
-                waitForMilestone: "collectionButtonsDrawn",
+                waitForMilestone: "startupBookSelectionReady",
                 shouldHideSplashScreen: true
             ); // possibility of error message boxes (BL-12155)
         }
@@ -773,7 +789,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             return zoomInfo;
         }
 
-        public string GetCurrentUiLanguageLabel()
+        public static string GetCurrentUiLanguageLabel()
         {
             var lang = Settings.Default.UserInterfaceLanguage;
             if (String.IsNullOrEmpty(lang))
@@ -809,13 +825,13 @@ window.showWorkspaceInitializationFailure = function(message) {
             return items;
         }
 
-        public object GetAvailableUiLanguageNames()
+        public static object GetAvailableUiLanguageNames()
         {
             var languageItems = GetLanguageItems(onlyActiveItem: false);
             return languageItems.Select(item => item.MenuText).ToList();
         }
 
-        public void HandleUiLanguageAction(string action, string languageName = null)
+        public static void HandleUiLanguageAction(string action, string languageName = null)
         {
             if (String.IsNullOrEmpty(action))
                 return;
@@ -829,7 +845,11 @@ window.showWorkspaceInitializationFailure = function(message) {
                     ?.LangTag;
                 if (String.IsNullOrEmpty(langTag))
                     return;
-                SetUiLanguage(langTag);
+                var current = Current;
+                if (current != null)
+                    current.SetUiLanguage(langTag); // reopens the project for full localization refresh
+                else
+                    ApplyUiLanguageChange(langTag); // startup: apply the change, no project to reopen
                 return;
             }
 
@@ -845,12 +865,12 @@ window.showWorkspaceInitializationFailure = function(message) {
             }
         }
 
-        public bool GetShowUnapprovedTranslations()
+        public static bool GetShowUnapprovedTranslations()
         {
             return Settings.Default.ShowUnapprovedLocalizations;
         }
 
-        public void SetShowUnapprovedTranslations(bool showUnapproved)
+        public static void SetShowUnapprovedTranslations(bool showUnapproved)
         {
             if (Settings.Default.ShowUnapprovedLocalizations == showUnapproved)
                 return;
@@ -897,13 +917,6 @@ window.showWorkspaceInitializationFailure = function(message) {
                 var urlTypeString = argument.Substring(urlTypePrefix.Length);
                 if (Enum.TryParse(urlTypeString, true, out UrlType urlType))
                     return UrlLookup.LookupUrl(urlType, null);
-            }
-
-            const string infoPagePrefix = "infoPage:";
-            if (argument.StartsWith(infoPagePrefix, StringComparison.Ordinal))
-            {
-                var fileName = argument.Substring(infoPagePrefix.Length);
-                return BloomFileLocator.GetBrowserFile(false, "infoPages", fileName);
             }
 
             return argument;
@@ -992,7 +1005,7 @@ window.showWorkspaceInitializationFailure = function(message) {
                 ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
         }
 
-        private void ToggleShowingOnlyApprovedTranslations()
+        private static void ToggleShowingOnlyApprovedTranslations()
         {
             Settings.Default.ShowUnapprovedLocalizations = !Settings
                 .Default
@@ -1000,10 +1013,13 @@ window.showWorkspaceInitializationFailure = function(message) {
             LocalizationManager.ReturnOnlyApprovedStrings = !Settings
                 .Default
                 .ShowUnapprovedLocalizations;
-            FinishUiLanguageMenuItemClick(); // apply newly revealed/hidden localizations
-            // until L10nSharp changes to allow dynamic response to setting change
+            Current?.FinishUiLanguageMenuItemClick(); // apply newly revealed/hidden localizations
             Settings.Default.Save();
-            Program.RestartBloom(false);
+            // until L10nSharp changes to allow dynamic response to setting change
+            // Skip the restart at startup (no project loaded); CollectionChooserApi
+            // handles that case by reopening the dialog to refresh the language list.
+            if (Current != null)
+                Program.RestartBloom(false);
         }
 
         /// <summary>
@@ -1052,7 +1068,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             );
         }
 
-        private static void ApplyUiLanguageChange(string langTag)
+        internal static void ApplyUiLanguageChange(string langTag)
         {
             try
             {
@@ -1242,43 +1258,64 @@ window.showWorkspaceInitializationFailure = function(message) {
             SendBookSelectionChanged(forceNotSaveable: true);
         }
 
-        public void OpenCreateCollection()
+        /// <summary>
+        /// Switches directly to the specified collection without showing the chooser dialog.
+        /// Called from the React-based collection chooser when the user clicks a collection card.
+        /// </summary>
+        public void OpenSpecificCollection(string collectionPath)
         {
             var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
             _selectedTabAboutToChangeEvent.Raise(
                 new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
-
             _selectedTabChangedEvent.Raise(
                 new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
 
-            var oldSelectedTab = previousTab;
-
-            Invoke(
-                (Action)(
-                    () =>
-                    {
-                        var didOpen = Program.ChooseACollection(
-                            Shell.GetShellOrOtherOpenForm() as Shell
-                        );
-                        if (!didOpen)
-                        {
-                            // We want to resume whatever tab we were in.
-                            // There is some overkill here...the old tab can only be the collection tab,
-                            // and currently it doesn't care about these events. The critical thing is to
-                            // restore tab identity in subsequent tab-change event payloads.
-                            // If we're not shutting down, we're switching the previously selected tab back on.
-                            _selectedTabAboutToChangeEvent.Raise(
-                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
-                            );
-                            _selectedTabChangedEvent.Raise(
-                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
-                            );
-                        }
-                    }
-                )
+            Invoke(() =>
+                Program.SwitchToCollection(collectionPath, Shell.GetShellOrOtherOpenForm() as Shell)
             );
+        }
+
+        /// <summary>
+        /// Runs the New Collection Wizard and, if the user completes it, opens the new collection.
+        /// Called from the React-based collection chooser "Create New Collection" button.
+        /// </summary>
+        public void CreateNewCollection()
+        {
+            var shell = Shell.GetShellOrOtherOpenForm() as Shell;
+            var path = NewCollectionWizard.CreateNewCollection(null, shell);
+            if (path != null)
+                OpenSpecificCollection(path);
+        }
+
+        /// <summary>
+        /// Shows a file picker for .bloomCollection files and opens the selected collection.
+        /// Called from the React-based collection chooser "Browse" button.
+        /// </summary>
+        public void BrowseForAndOpenCollection()
+        {
+            if (!Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
+                Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
+
+            string selectedPath;
+            using (var dlg = new BloomOpenFileDialog())
+            {
+                dlg.Title = LocalizationManager.GetString(
+                    "CollectionTab.ChooseCollection",
+                    "Choose Collection",
+                    "Title of the file-open dialog for choosing a Bloom collection"
+                );
+                dlg.Filter = CollectionSettings.GetFileDialogFilterString();
+                dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
+                if (
+                    dlg.ShowDialog() == DialogResult.Cancel
+                    || MiscUtils.ReportIfInvalidCollection(dlg.FileName)
+                )
+                    return;
+                selectedPath = dlg.FileName;
+            }
+            OpenSpecificCollection(selectedPath);
         }
 
         private CollectionSettingsDialog _currentlyOpenSettingsDialog;

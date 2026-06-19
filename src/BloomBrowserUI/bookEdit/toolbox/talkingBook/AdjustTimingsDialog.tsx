@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useCallback, useState } from "react";
-import * as ReactDOM from "react-dom";
+import { renderRootSync } from "../../../utils/reactRender";
 
 import {
     BloomDialog,
@@ -410,7 +410,7 @@ export function showAdjustTimingsDialog(
     closing: (canceling: boolean) => void,
 ) {
     try {
-        ReactDOM.render(
+        renderRootSync(
             <AdjustTimingsDialog
                 split={split}
                 editTimingsFile={editTimingsFile}

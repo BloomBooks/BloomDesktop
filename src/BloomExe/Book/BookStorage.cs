@@ -3294,7 +3294,7 @@ namespace Bloom.Book
                 //if the source was locked, don't copy the lock over
                 RobustFile.SetAttributes(documentPath, FileAttributes.Normal);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 if (
                     documentPath.Contains(

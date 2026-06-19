@@ -4,8 +4,12 @@ import $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
+    getImageTransparencyMode,
+    getOwningPageBackgroundColor,
     HandleImageError,
     normalizeCoverImageDesignation,
+    buildSrcWithTransparentParam,
+    pageBackgroundNeedsTransparency,
     SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
@@ -27,12 +31,19 @@ import {
     CanvasElementManager,
     initializeCanvasElementManager,
     theOneCanvasElementManager,
-} from "./CanvasElementManager";
+} from "./canvasElementManager/CanvasElementManager";
+import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import {
-    getCanvasElementManager,
+    canUndoImageOperation,
+    clearImageOperationUndoState,
+    commitPendingImageOperationUndo,
+    prepareUndoForImageOperation,
+    undoImageOperation,
+} from "./ImageUndoManager";
+import {
     kCanvasElementClass,
     kCanvasElementSelector,
-} from "../toolbox/canvas/canvasElementUtils";
+} from "../toolbox/canvas/canvasElementConstants";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
 import "../../lib/jquery.qtip.js";
@@ -409,6 +420,7 @@ export interface IImageInfo {
     copyright: string;
     creator: string;
     license: string;
+    undoable: string;
 }
 
 export const kMakeNewCanvasElement = "makeNewCanvasElement";
@@ -420,6 +432,9 @@ export function notifyToolOfChangedImage(img?: HTMLImageElement) {
 
 // called by c# so be careful about changing the signature, including names of parameters
 export function changeImage(imageInfo: IImageInfo) {
+    if (imageInfo.undoable !== "true") {
+        clearImageOperationUndoState();
+    }
     if (imageInfo.imageId === kMakeNewCanvasElement) {
         theOneCanvasElementManager.finishPasteImageFromClipboard(imageInfo);
         // like to do this here, but the image overlay isn't always really created yet.
@@ -432,13 +447,26 @@ export function changeImage(imageInfo: IImageInfo) {
             `changeImage: imageOrImageContainerId: "${imageInfo.imageId}" not found`,
         );
     }
+    if (imageInfo.undoable === "true") {
+        prepareUndoForImageOperation(imgOrImageContainer);
+    }
     changeImageInfo(imgOrImageContainer, imageInfo);
     // id is just a temporary expedient to find the right image easily in this method.
     imgOrImageContainer.removeAttribute("id");
     theOneCanvasElementManager.updateCanvasElementForChangedImage(
         imgOrImageContainer,
     );
+    commitPendingImageOperationUndo(imgOrImageContainer);
     notifyToolOfChangedImage();
+}
+
+export function imageOperationCanUndo(): boolean {
+    return canUndoImageOperation();
+}
+
+export function imageOperationUndo(): boolean {
+    const didUndo = undoImageOperation();
+    return didUndo;
 }
 
 export function changeImageInfo(
@@ -456,7 +484,13 @@ export function changeImageInfo(
             "bloom-imageLoadError",
         );
         (imgOrImageContainer as HTMLImageElement).onerror = HandleImageError;
-        (imgOrImageContainer as HTMLImageElement).src = imageInfo.src;
+        const bgColor = getOwningPageBackgroundColor(imgOrImageContainer);
+        const mode = getImageTransparencyMode(
+            imgOrImageContainer,
+            pageBackgroundNeedsTransparency(bgColor),
+        );
+        (imgOrImageContainer as HTMLImageElement).src =
+            buildSrcWithTransparentParam(imageInfo.src, mode);
     }
     // else if it has class bloom-imageContainer or bloom-canvas, we need to set the background-image on the container
     else if (
@@ -489,45 +523,6 @@ function recordWhatThisPageLooksLikeForSanityCheck(container: HTMLElement) {
 }
 function hasOrigami(container: HTMLElement) {
     return container.getElementsByClassName("split-pane-component").length > 0;
-}
-
-function prepareSourceAndHintBubbles(container: HTMLElement): {
-    divsThatHaveSourceBubbles: HTMLElement[];
-    bubbleDivs: Element[];
-} {
-    // Copy source texts out to their own div, where we can make a bubble with tabs out of them
-    // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too.
-    const divsThatHaveSourceBubbles: HTMLElement[] = [];
-    const bubbleDivs: Element[] = [];
-    if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
-        $(container)
-            .find("*.bloom-translationGroup")
-            .not(".bloom-readOnlyInTranslationMode")
-            .each(function () {
-                if ($(this).find("textarea, div").length > 1) {
-                    const bubble =
-                        BloomSourceBubbles.ProduceSourceBubbles(this);
-                    if (bubble.length !== 0) {
-                        divsThatHaveSourceBubbles.push(this);
-                        bubbleDivs.push(bubble[0]);
-                    }
-                }
-            });
-    }
-
-    // NB: this should be after the ProduceSourceBubbles(), because hint-bubbles are lower priority
-    // and should not show if we already have a source bubble. (Eventually we may make the hint part
-    // of the source bubble when there is one...Bl-4295.) This would happen with the Book Title, which
-    // would have both when there are source languages to show.
-    BloomHintBubbles.addHintBubbles(
-        container,
-        divsThatHaveSourceBubbles,
-        bubbleDivs,
-    );
-
-    PlaceholderProvider.addPlaceholders(container);
-
-    return { divsThatHaveSourceBubbles, bubbleDivs };
 }
 
 // Originally, all this code was in document.load and the selectors were acting
@@ -772,6 +767,8 @@ export function SetupElements(
     const { divsThatHaveSourceBubbles, bubbleDivs } =
         prepareSourceAndHintBubbles(container);
 
+    PlaceholderProvider.addPlaceholders(container);
+
     // We seem to need a delay to get a reliable result in BloomSourceBubbles.MakeSourceBubblesIntoQtips()
     // as it calls BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(), which ends by calling
     // bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(); see the comment on this last method.
@@ -949,14 +946,51 @@ export function SetupElements(
     ConstrainContentsOfPageLabel(container);
 }
 
+function prepareSourceAndHintBubbles(container: HTMLElement): {
+    divsThatHaveSourceBubbles: HTMLElement[];
+    bubbleDivs: JQuery[];
+} {
+    // Copy source texts out to their own div, where we can make a bubble with tabs out of them
+    // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
+    const divsThatHaveSourceBubbles: HTMLElement[] = [];
+    const bubbleDivs: JQuery[] = [];
+    if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
+        $(container)
+            .find("*.bloom-translationGroup")
+            .not(".bloom-readOnlyInTranslationMode")
+            .each(function () {
+                if ($(this).find("textarea, div").length > 1) {
+                    const bubble =
+                        BloomSourceBubbles.ProduceSourceBubbles(this);
+                    if (bubble.length !== 0) {
+                        divsThatHaveSourceBubbles.push(this);
+                        bubbleDivs.push(bubble);
+                    }
+                }
+            });
+    }
+
+    //NB: this should be after the ProduceSourceBubbles(), because hint-bubbles are lower
+    // priority, and should not show if we already have a source bubble.
+    // (Eventually we may make the hint part of the source bubble when there is one...Bl-4295.)
+    // This would happen with the Book Title, which would have both
+    // when there are source languages to show
+    BloomHintBubbles.addHintBubbles(
+        container,
+        divsThatHaveSourceBubbles,
+        bubbleDivs,
+    );
+    return { divsThatHaveSourceBubbles, bubbleDivs };
+}
+
 function makeSourceBubblesIntoQtips(
-    bubbleDivs: Element[],
+    bubbleDivs: JQuery[],
     divsThatHaveSourceBubbles: HTMLElement[],
 ) {
     for (let i = 0; i < bubbleDivs.length; i++) {
         BloomSourceBubbles.MakeSourceBubblesIntoQtips(
             divsThatHaveSourceBubbles[i],
-            $(bubbleDivs[i]),
+            bubbleDivs[i],
         );
     }
 }
@@ -964,6 +998,7 @@ function makeSourceBubblesIntoQtips(
 export function recomputeSourceBubblesForPage(container: HTMLElement) {
     const { divsThatHaveSourceBubbles, bubbleDivs } =
         prepareSourceAndHintBubbles(container);
+    PlaceholderProvider.addPlaceholders(container);
     setTimeout(() => {
         makeSourceBubblesIntoQtips(bubbleDivs, divsThatHaveSourceBubbles);
         BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
@@ -1073,6 +1108,7 @@ function isTextSelected(): boolean {
 }
 
 let reportedTextSelected = isTextSelected();
+
 // ---------------------------------------------------------------------------------
 // called inside document ready function
 // ---------------------------------------------------------------------------------
@@ -1235,7 +1271,7 @@ function removeEditingDebris() {
 // Delay notification management for requestPageContent
 const activeDelays: string[] = [];
 const kMaxWaitTimeMs = 2000;
-let requestPageContentTimeout;
+let requestPageContentTimeout: number | null = null;
 
 // Add a delay notification that will prevent requestPageContent from running immediately.
 // The caller must provide a string ID and pass it to removeRequestPageContentDelay when done.
@@ -1245,7 +1281,7 @@ export function addRequestPageContentDelay(id: string): void {
 }
 
 // Remove a delay notification, allowing requestPageContent to proceed if no other delays are active.
-// If this was the last delay, proceed with requesting page content
+// If this was the last delay, proceed with requesting page content.
 export function removeRequestPageContentDelay(id: string): void {
     const index = activeDelays.indexOf(id);
     if (index === -1) {
@@ -1258,7 +1294,7 @@ export function removeRequestPageContentDelay(id: string): void {
     }
     activeDelays.splice(index, 1);
 
-    // If there are no more delays, go on and request page content
+    // If there are no more delays, go on and request page content.
     if (activeDelays.length === 0 && requestPageContentTimeout) {
         requestPageContentInternal();
     }
@@ -1289,14 +1325,16 @@ export async function wrapWithRequestPageContentDelay<T>(
 // When other javascript code is doing something that will change the page DOM asynchronously and will also cause the
 // document to be saved, race conditions are possible. In such cases the delay functions above
 // (preferably wrapWithRequestPageContentDelay) should be used to wrap the asynchronous DOM changes to ensure that this
-//  function does not return the page content for saving until after the changes have been completed.
+// function does not return the page content for saving until after the changes have been completed.
 // The current delay mechanism is not designed to handle multiple concurrent requests.
 export function requestPageContent() {
-    // Check if there are active delay requests
+    // Check if there are active delay requests.
     if (activeDelays.length > 0) {
-        requestPageContentTimeout = setTimeout(() => {
+        requestPageContentTimeout = window.setTimeout(() => {
             console.warn(
-                `requestPageContent: Maximum wait time (${kMaxWaitTimeMs}ms) exceeded with active delay(s): [${activeDelays.join(", ")}]. Proceeding anyway.`,
+                `requestPageContent: Maximum wait time (${kMaxWaitTimeMs}ms) exceeded with active delay(s): [${activeDelays.join(
+                    ", ",
+                )}]. Proceeding anyway.`,
             );
             requestPageContentInternal();
         }, kMaxWaitTimeMs);
@@ -1306,13 +1344,14 @@ export function requestPageContent() {
 }
 
 function requestPageContentInternal() {
-    clearTimeout(requestPageContentTimeout);
+    if (requestPageContentTimeout !== null) {
+        clearTimeout(requestPageContentTimeout);
+    }
     requestPageContentTimeout = null;
     try {
         // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports().
         getToolboxBundleExports()?.removeToolboxMarkup();
         removeEditingDebris(); // Enhance this makes a change when better it would only changed the
-
         const content = getBodyContentForSavePage();
         const userStylesheet = userStylesheetContent();
         postString(
@@ -1471,16 +1510,11 @@ async function cutSelectionImpl() {
     // We do a Save before and after to make sure that the cut is distinct from
     // any other editing and that ckEditor actually has an item in its undo stack
     // so that the Undo gets activated.
-    const currentEditor = CKEDITOR.currentInstance as CKEDITOR.editor & {
-        undoManager: {
-            save: (update?: boolean) => void;
-        };
-    };
-    currentEditor.undoManager.save(true);
+    (<any>CKEDITOR.currentInstance).undoManager.save(true);
     const range = CKEDITOR.currentInstance.getSelection().getRanges()[0];
     range.deleteContents();
     range.select(); // Select emptied range to place the caret in its place.
-    currentEditor.undoManager.save(true);
+    (<any>CKEDITOR.currentInstance).undoManager.save(true);
     // This is a non-ckeditor way to perform the deletion, but doesn't integrate with Undo.
     //sel.deleteFromDocument();
 }
@@ -1579,17 +1613,7 @@ async function pasteImpl(imageAvailable: boolean) {
     ) {
         // We've issued a paste command on a canvas element that isn't active for editing.
         // Replace its entire content with what's on the clipboard.
-        const editor = (
-            activeCanvasElementEditable as HTMLElement & {
-                bloomCkEditor?: CKEDITOR.editor & {
-                    undoManager: {
-                        save: (update?: boolean) => void;
-                        lock: (dontUpdate?: boolean, force?: boolean) => void;
-                        unlock: () => void;
-                    };
-                };
-            }
-        ).bloomCkEditor;
+        const editor = (activeCanvasElementEditable as any).bloomCkEditor;
         if (editor) {
             const manager = editor.undoManager;
             editor.focus();
@@ -1622,14 +1646,9 @@ async function pasteImpl(imageAvailable: boolean) {
         // We do a Save before and after to make sure that the cut is distinct from
         // any other editing and that ckEditor actually has an item in its undo stack
         // so that the Undo gets activated.
-        const editorWithUndo = ckEditorInstance as CKEDITOR.editor & {
-            undoManager: {
-                save: (update?: boolean) => void;
-            };
-        };
-        editorWithUndo.undoManager.save(true);
+        (<any>ckEditorInstance).undoManager.save(true);
         ckEditorInstance.insertText(textToPaste);
-        editorWithUndo.undoManager.save(true);
+        (<any>ckEditorInstance).undoManager.save(true);
         // We need to update the canvas element height (BL-14004).
         if (
             activeCanvasElementEditable &&
@@ -1727,7 +1746,7 @@ export function IsPageXMatter($target: JQuery): boolean {
     );
 }
 
-function updateCkEditorButtonStatus(_editor: CKEDITOR.editor) {
+function updateCkEditorButtonStatus(editor: CKEDITOR.editor) {
     // At the moment nothing needs to enabled or disabled dynamically.
     // This method is a placeholder for future use.
 }

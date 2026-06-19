@@ -13,7 +13,8 @@ import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-import * as ReactDOM from "react-dom";
+import { createPortal } from "react-dom";
+import { renderRoot } from "../../utils/reactRender";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 import * as toastr from "toastr";
@@ -30,6 +31,7 @@ import {
 import { PageThumbnail } from "./PageThumbnail";
 import LazyLoad, { forceCheck } from "react-lazyload";
 import { useL10n } from "../../react_components/l10nHooks";
+import { confirmRemovePage } from "./confirmRemovePage";
 
 // We're using the Responsive version of react-grid-layout because
 // (1) the previous version of the page thumbnails, which this replaces,
@@ -378,7 +380,7 @@ const PageThumbnailContextMenu: React.FunctionComponent<{
         }
     };
 
-    return ReactDOM.createPortal(
+    return createPortal(
         <div
             ref={menuRef}
             role="menu"
@@ -533,10 +535,12 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
 
     // All the code in this useEffect is one-time initialization.
     useEffect(() => {
-        let localizedNotification = "";
+        // English fallback shown in the "saving" toast until the localized text arrives.
+        // The websocket listener must be registered immediately (see below), so it cannot
+        // wait for localization; in the worst case an early save shows this fallback.
+        let localizedNotification = "Saving...";
 
-        // This function will be hooked up (after we set localizedNotification properly)
-        // to be called when C# sends messages through the web socket.
+        // This function will be called when C# sends messages through the web socket.
         // We need a named function because it looks cleaner.
         webSocketListenerFunction = (event) => {
             switch (event.id) {
@@ -581,17 +585,36 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
                     // below that uses resetValue for something we don't care about.
                     setResetValue((oldResetValue) => oldResetValue + 1);
                     break;
+                case `websocket/open/${kWebsocketContext}`:
+                    // The socket just (re)opened. Any messages C# sent while we had no
+                    // connection (e.g. while this iframe was loading, or after a network
+                    // hiccup before the 2-second reconnect loop restored the socket) were
+                    // lost; the server does not queue them. Re-fetch the page list so we
+                    // are sure to be in sync. This bump also drives the very first load:
+                    // the effect below skips its initial run (reloadValue === 0) and waits
+                    // for this, so we fetch the page list exactly once, when the socket is
+                    // ready, instead of fetching immediately and then again on open.
+                    setReloadValue((oldReloadValue) => oldReloadValue + 1);
+                    break;
             }
         };
+
+        // Register the listener right away. This used to happen only inside the .done()
+        // of the localization request below, which widened the window during load in which
+        // messages from C# (e.g. pageListNeedsRefresh after adding a page) were silently
+        // dropped. Registering now shrinks that window but does not eliminate it: anything
+        // C# sends before the socket finishes opening is still lost (the server does not
+        // queue messages). The websocket/open handler above is what actually closes the
+        // remaining gap, by re-fetching the page list once the socket is connected.
+        WebSocketManager.addListener(
+            kWebsocketContext,
+            webSocketListenerFunction,
+        );
 
         theOneLocalizationManager
             .asyncGetText("EditTab.SavingNotification", "Saving...", "")
             .done((savingNotification) => {
                 localizedNotification = savingNotification;
-                WebSocketManager.addListener(
-                    kWebsocketContext,
-                    webSocketListenerFunction,
-                );
             });
         theOneLocalizationManager
             .asyncGetText("EditTab.PageList.Heading", "Pages", "")
@@ -601,12 +624,19 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
             });
     }, []);
 
-    // Initially we have an empty page list. Then we run this once and get a list
-    // of pages that have the right ID and caption (and the right number of pages)
-    // but the content is empty. The individual thumbnail objects do their own API
-    // calls to fill in the page content. Then this runs again when the sequence
-    // of pages changes (e.g., adding a page or re-ordering them).
+    // We get a list of pages that have the right ID and caption (and the right number
+    // of pages) but the content is empty. The individual thumbnail objects do their own
+    // API calls to fill in the page content. This runs again when the sequence of pages
+    // changes (e.g., adding a page or re-ordering them).
     useEffect(() => {
+        // Skip the initial run (reloadValue === 0). The websocket/open handler above bumps
+        // reloadValue to 1 as soon as the socket connects, which re-runs this effect.
+        // Fetching here on mount too would just be a wasted duplicate that the open handler
+        // always repeats. Waiting for the open bump also means the socket is listening
+        // before we fetch, so we cannot miss a refresh notification sent right after.
+        if (reloadValue === 0) {
+            return;
+        }
         get("pageList/pages", (response) => {
             // We're using a double approach here. The WebThumbnailList actually gets
             // notified a few times of the initial selected page. Each time, it sends
@@ -786,10 +816,17 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
         closeContextMenuOnBlurCleanupRef.current?.();
         closeContextMenuOnBlurCleanupRef.current = undefined;
 
-        postJson("pageList/contextMenuItemClicked", {
-            pageId: contextMenuPoint.pageId,
-            commandId,
-        });
+        const pageId = contextMenuPoint.pageId;
+        const postCommand = () =>
+            postJson("pageList/contextMenuItemClicked", {
+                pageId,
+                commandId,
+            });
+        if (commandId === "removePage") {
+            confirmRemovePage(postCommand);
+        } else {
+            postCommand();
+        }
         closeContextMenu();
     };
 
@@ -991,7 +1028,7 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
 $(window).ready(() => {
     const pageLayout =
         document.body.getAttribute("data-pageSize") || "A5Portrait";
-    ReactDOM.render(
+    renderRoot(
         <PageList initialPageLayout={pageLayout} />,
         document.getElementById("pageGridWrapper"),
     );

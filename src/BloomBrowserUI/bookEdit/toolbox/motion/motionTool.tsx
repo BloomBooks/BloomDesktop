@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderForInstance } from "../../../utils/reactRender";
 import $ from "jquery";
 import { Div } from "../../../react_components/l10nComponents";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
@@ -22,10 +22,8 @@ import { kMotionToolId } from "../toolIds";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
 import { getFeatureStatusAsync } from "../../../react_components/featureStatus";
 import { TransformBasedAnimator } from "bloom-player";
-import {
-    kBloomCanvasClass,
-    getCanvasElementManager,
-} from "../canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
+import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 import { animateStyleName } from "../../../utils/shared";
 import { ThemeProvider } from "@mui/material/styles";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
@@ -46,13 +44,13 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
-        this.rootControl = ReactDOM.render(
+        this.rootControl = renderForInstance<MotionControl>(
             <MotionControl
                 onPreviewClick={() => this.toggleMotionPreviewPlaying()}
                 onMotionChanged={(checked) => this.motionChanged(checked)}
             />,
             root,
-        ) as unknown as MotionControl;
+        );
         const initialState = this.getStateFromHtml();
         this.rootControl.setState(initialState);
         this.setupImageObserver();
