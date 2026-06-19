@@ -858,6 +858,11 @@ export class ReaderToolsModel {
         return _.compact(_.pluck(stages, "letters").join(" ").split(" "));
     }
 
+    /**
+     * sorts the letters for the decodable reader tool
+     * @param stageNumber
+     * @returns a sorted array of letters
+     */
     public getKnownGraphemesSorted(stageNumber: number): string[] {
         if (!this.synphony) {
             return []; // Synphony not loaded yet
@@ -907,6 +912,11 @@ export class ReaderToolsModel {
         });
     }
 
+    /**
+     * sorts the stage and sight words for the decodable reader tool
+     * @param stageNumber
+     * @returns a sorted array of the stage and sight words
+     */
     public getStageSightWordsSorted(stageNumber: number): DataWord[] {
         const dataWords: DataWord[] | null =
             this.getStageWordsAndSightWords(stageNumber);
@@ -1996,6 +2006,11 @@ export class ReaderToolsModel {
         return returnVal;
     }
 
+    /**
+     * sorts the allowed words for the decodable reader tool
+     * @param stageNumber
+     * @returns a sorted array of the allowed words
+     */
     public getAllowedWordsSorted(stageNumber: number): DataWord[] {
         const stringWords: string[] =
             this.selectWordsFromAllowedLists(stageNumber);

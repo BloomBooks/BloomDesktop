@@ -87,6 +87,13 @@ const StageNav: React.FunctionComponent<{
     );
 };
 
+// This component puts all of the letters/words from the list
+// into a single-columned div so that its width can be gathered
+// using getBoundingClientReact().width and used to determine the
+// number of columns and rows to be used in the actual display grid.
+// This way, the greatest word width is used instead of most number
+// of characters, since there are instances where strings such as
+// ww can be bigger than iii
 const DecodableGrid: React.FunctionComponent<{
     forGraphemes: boolean;
     displayList: DataWord[] | string[];
@@ -108,7 +115,7 @@ const DecodableGrid: React.FunctionComponent<{
         if (colCount < 1) {
             colCount = 1;
         } else if (colCount > 7) {
-            colCount = 7;
+            colCount = 7; // this way, the graphemes and small words won't be so clumped together
         }
         setCurColCount(colCount);
         const rowCount = Math.ceil(displayList.length / colCount);
@@ -219,11 +226,19 @@ const SortButton: React.FunctionComponent<{
             shouldHighlight = model.sort === "byFrequency" ? true : false;
             break;
     }
+    // this component makes use of useL10n to localize the tooltip
+    // for the bloom button, since there currently is no localization
+    // set up for EditTab.Toolbox.DecodableReaderTool.Sort${keyInsert}.Tooltip
     const tooltip = useL10n(
         `Sort ${tipInsert}`,
         `EditTab.Toolbox.DecodableReaderTool.Sort${keyInsert}`,
     );
     return (
+        // this button uses the title attribute instead of the
+        // l10nTipEnglishDisabled attribute because that attribute
+        // causes .Tooltip to be appended to the l10nKey attribute,
+        // and the sort keys don't have a .Tooltip suffix in the xlf
+        // files.
         <BloomButton
             title={tooltip}
             l10nKey="already-localized"
@@ -319,9 +334,14 @@ export const DecodableReaderToolControls: React.FunctionComponent = () => {
     const [showTool, setShowTool] = useState<boolean>(
         isReaderToolEnabledOnCurrentPage(false),
     );
+    // make sure the current stage number shows 0 if there are
+    // currently no stages
     const [currentStage, setCurrentStage] = useState<number>(
         model.getNumberOfStages() === 0 ? 0 : model.stageNumber,
     );
+    // These next three state initializers use functions that I
+    // created in the readerToolsModel.ts file, which return
+    // completely sorted lists
     const [currentGraphemes, setCurGraphemes] = useState<string[]>(
         model.getKnownGraphemesSorted(model.stageNumber),
     );
@@ -333,12 +353,18 @@ export const DecodableReaderToolControls: React.FunctionComponent = () => {
     );
 
     function updateState(): void {
+        // If the current sort function is byFrequency when switching to
+        // using allowed words, change the current sort function to
+        // sortAlphabetically, since allowed words doesn't use frequency
+        // sort.
         if (
             model.synphony?.source.useAllowedWords === 1 &&
             model.sort === "byFrequency"
         ) {
             model.sortAlphabetically();
         }
+        // if all the stages are removed in the setup, set the current
+        // stage number to be 0
         setCurrentStage(
             model.getNumberOfStages() === 0 ? 0 : model.stageNumber,
         );
@@ -347,6 +373,12 @@ export const DecodableReaderToolControls: React.FunctionComponent = () => {
         setAllowedWords(model.getAllowedWordsSorted(model.stageNumber));
     }
 
+    // giving updateState to the model causes this function to be
+    // called whenever the updateControlContents function in
+    // readerToolsModel.ts is called, so that the state of the
+    // tool can be updated along with everything else.
+    // Note: I made a change in that file so that this function
+    // would get called.
     model.refreshFunc = updateState;
 
     function changeStage(increment: boolean): void {

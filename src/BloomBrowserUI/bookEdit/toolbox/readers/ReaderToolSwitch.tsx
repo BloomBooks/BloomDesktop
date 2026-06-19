@@ -45,6 +45,9 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                 onChange={(_, checked) => {
                     setChecked(checked);
 
+                    // An AI agent made this function so that the decodable reader tool
+                    // would correctly update the markup type whenever the the switch
+                    // is turned on or off.
                     setReaderToolEnabledOnCurrentPage(
                         props.isForLeveled,
                         checked,
