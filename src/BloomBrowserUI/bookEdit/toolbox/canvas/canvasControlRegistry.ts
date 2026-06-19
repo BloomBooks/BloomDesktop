@@ -700,8 +700,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     imageBackground: {
         kind: "command",
         id: "imageBackground",
-        l10nId: "EditTab.Image.Transparency",
-        englishLabel: "Transparency",
+        l10nId: "EditTab.Image.Background",
+        englishLabel: "Background",
         action: () => {},
         menu: {
             buildMenuItem: (ctx, _runtime) => {
@@ -727,12 +727,12 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
 
                 return {
                     id: "imageBackground",
-                    l10nId: "EditTab.Image.Transparency",
-                    englishLabel: "Transparency",
+                    l10nId: "EditTab.Image.Background",
+                    englishLabel: "Background",
                     onSelect: () => {},
                     subMenuItems: [
                         {
-                            l10nId: "EditTab.Image.Transparency.Auto",
+                            l10nId: "EditTab.Image.Background.Auto",
                             englishLabel: "Auto",
                             icon: isAuto
                                 ? React.createElement(CheckIcon, null)
@@ -747,7 +747,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                             },
                         },
                         {
-                            l10nId: "EditTab.Image.Transparency.Transparent",
+                            l10nId: "EditTab.Image.Background.Transparent",
                             englishLabel: "Transparent",
                             icon: isTransparent
                                 ? React.createElement(CheckIcon, null)
@@ -760,7 +760,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                             },
                         },
                         {
-                            l10nId: "EditTab.Image.Transparency.Opaque",
+                            l10nId: "EditTab.Image.Background.Opaque",
                             englishLabel: "Opaque",
                             icon: isOpaque
                                 ? React.createElement(CheckIcon, null)
