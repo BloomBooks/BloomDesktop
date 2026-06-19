@@ -2,17 +2,14 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { ThemeProvider } from "@emotion/react";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
-import { applyToolboxStateToUpdatedPage } from "../toolbox";
+import { ToolBox, applyToolboxStateToUpdatedPage } from "../toolbox";
 import { BloomSwitch } from "../../../react_components/BloomSwitch";
 import { postBoolean } from "../../../utils/bloomApi";
-import {
-    isReaderToolEnabledOnCurrentPage,
-    setReaderToolEnabledOnCurrentPage,
-} from "./readerToolPageState";
+import { isReaderToolEnabledOnCurrentPage } from "./readerToolPageState";
 
 export const ReaderToolSwitch: React.FunctionComponent<{
     isForLeveled: boolean;
-    changeDisplayFunc: () => void;
+    changeDisplayFunc?: () => void;
 }> = (props) => {
     const prefix = props.isForLeveled ? "leveled" : "decodable";
 
@@ -45,11 +42,10 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                 onChange={(_, checked) => {
                     setChecked(checked);
 
-                    // An AI agent made this function so that the decodable reader tool
-                    // would correctly update the markup type whenever the the switch
-                    // is turned on or off.
-                    setReaderToolEnabledOnCurrentPage(
-                        props.isForLeveled,
+                    // Set the class on the page we are currently working with in edit mode.
+                    // This just ensures our display is correct while editing. Persisting the value is done below.
+                    ToolBox.getPage()?.classList.toggle(
+                        `${prefix}-reader`,
                         checked,
                     );
 
@@ -60,7 +56,10 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                     // (Currently nothing automatically updates the classes from the page body back up to the book body,
                     //  and I don't know if adding such an update is safe.)
                     postBoolean(`toolbox/${prefix}`, checked);
-                    props.changeDisplayFunc();
+
+                    if (props.changeDisplayFunc !== undefined) {
+                        props.changeDisplayFunc();
+                    }
                 }}
             />
         </ThemeProvider>

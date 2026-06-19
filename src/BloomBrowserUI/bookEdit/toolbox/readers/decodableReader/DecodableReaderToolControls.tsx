@@ -1,6 +1,12 @@
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { ReaderToolSwitch } from "../ReaderToolSwitch";
-import { useLayoutEffect, useRef, useState } from "react";
+import {
+    useLayoutEffect,
+    useRef,
+    useState,
+    FunctionComponent,
+    useEffect,
+} from "react";
 import { Span } from "../../../../react_components/l10nComponents";
 import BloomButton from "../../../../react_components/bloomButton";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
@@ -10,17 +16,16 @@ import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { DataWord } from "../libSynphony/bloomSynphonyExtensions";
 import { useL10n } from "../../../../react_components/l10nHooks";
 
-const model = getTheOneReaderToolsModel();
-
-const StageNav: React.FunctionComponent<{
+const StageNav: FunctionComponent<{
     currentStage: number;
     changeFunction: (increment: boolean) => void;
-}> = ({ currentStage, changeFunction }) => {
+}> = (props) => {
+    const model = getTheOneReaderToolsModel();
     return (
         <div>
             <BloomButton
                 iconBeforeText={
-                    currentStage > 1 ? (
+                    props.currentStage > 1 ? (
                         <ArrowLeft
                             css={css`
                                 color: white;
@@ -31,11 +36,11 @@ const StageNav: React.FunctionComponent<{
                     )
                 }
                 variant="text"
-                disabled={currentStage <= 1}
+                disabled={props.currentStage <= 1}
                 l10nKey=""
                 hasText={false}
                 enabled={true}
-                onClick={() => changeFunction(false)}
+                onClick={() => props.changeFunction(false)}
                 css={css`
                     width: 6px;
                     min-width: unset;
@@ -48,7 +53,7 @@ const StageNav: React.FunctionComponent<{
             />
             <Span
                 l10nKey="EditTab.Toolbox.DecodableReaderTool.StageNofM"
-                l10nParam0={currentStage.toString()}
+                l10nParam0={props.currentStage.toString()}
                 l10nParam1={model.getNumberOfStages()?.toString()}
                 css={css`
                     font-size: 20px;
@@ -58,7 +63,7 @@ const StageNav: React.FunctionComponent<{
             </Span>
             <BloomButton
                 iconBeforeText={
-                    currentStage !== model.getNumberOfStages() ? (
+                    props.currentStage !== model.getNumberOfStages() ? (
                         <ArrowRight
                             css={css`
                                 color: white;
@@ -69,11 +74,11 @@ const StageNav: React.FunctionComponent<{
                     )
                 }
                 variant="text"
-                disabled={currentStage === model.getNumberOfStages()}
+                disabled={props.currentStage === model.getNumberOfStages()}
                 l10nKey=""
                 hasText={false}
                 enabled={true}
-                onClick={() => changeFunction(true)}
+                onClick={() => props.changeFunction(true)}
                 css={css`
                     width: 16px;
                     min-width: unset;
@@ -94,15 +99,18 @@ const StageNav: React.FunctionComponent<{
 // This way, the greatest word width is used instead of most number
 // of characters, since there are instances where strings such as
 // ww can be bigger than iii
-const DecodableGrid: React.FunctionComponent<{
+const DecodableGrid: FunctionComponent<{
     forGraphemes: boolean;
     displayList: DataWord[] | string[];
-}> = ({ forGraphemes, displayList }) => {
+}> = (props) => {
     const measureRef = useRef<HTMLDivElement>(null);
     const gridRef = useRef<HTMLDivElement>(null);
     const [curColCount, setCurColCount] = useState(1);
     const [curRowCount, setCurRowCount] = useState(1);
 
+    // useLayoutEffect is being used here so that the proper dimensions
+    // needed for the grid can be computed and applied before the grid
+    // is displayed in the toolbar.
     useLayoutEffect(() => {
         if (!measureRef.current || !gridRef.current) return;
 
@@ -118,9 +126,9 @@ const DecodableGrid: React.FunctionComponent<{
             colCount = 7; // this way, the graphemes and small words won't be so clumped together
         }
         setCurColCount(colCount);
-        const rowCount = Math.ceil(displayList.length / colCount);
+        const rowCount = Math.ceil(props.displayList.length / colCount);
         setCurRowCount(rowCount);
-    }, [displayList]);
+    }, [props.displayList]);
 
     return (
         <>
@@ -133,7 +141,7 @@ const DecodableGrid: React.FunctionComponent<{
                     pointer-events: none;
                 `}
             >
-                {displayList.map((item, index) => (
+                {props.displayList.map((item, index) => (
                     <div key={index}>
                         {typeof item === "string" ? item : item.Name}
                     </div>
@@ -145,14 +153,14 @@ const DecodableGrid: React.FunctionComponent<{
                     display: grid;
                     grid-template-columns: repeat(${curColCount}, 1fr);
                     grid-template-rows: repeat(${curRowCount}, auto);
-                    grid-auto-flow: ${forGraphemes ? "row" : "column"};
+                    grid-auto-flow: ${props.forGraphemes ? "row" : "column"};
                     row-gap: 5px;
                     overflow: auto;
                     margin-left: 8px;
                     margin-top: 8px;
                 `}
             >
-                {displayList.map((item, index) => (
+                {props.displayList.map((item, index) => (
                     <div
                         key={index}
                         css={css`
@@ -170,9 +178,9 @@ const DecodableGrid: React.FunctionComponent<{
     );
 };
 
-const StageGraphemes: React.FunctionComponent<{
+const StageGraphemes: FunctionComponent<{
     currentGraphemes: string[];
-}> = ({ currentGraphemes }) => {
+}> = (props) => {
     return (
         <div
             css={css`
@@ -193,15 +201,19 @@ const StageGraphemes: React.FunctionComponent<{
             >
                 Letters in this stage
             </Span>
-            <DecodableGrid forGraphemes={true} displayList={currentGraphemes} />
+            <DecodableGrid
+                forGraphemes={true}
+                displayList={props.currentGraphemes}
+            />
         </div>
     );
 };
 
-const SortButton: React.FunctionComponent<{
+const SortButton: FunctionComponent<{
     sortType: 0 | 1 | 2;
     changeSortFunc: (which: 0 | 1 | 2) => void;
 }> = (props) => {
+    const model = getTheOneReaderToolsModel();
     let keyInsert: string;
     let tipInsert: string;
     let unicodeIcon: string;
@@ -270,11 +282,12 @@ const SortButton: React.FunctionComponent<{
     );
 };
 
-const SortedStageWords: React.FunctionComponent<{
+const SortedStageWords: FunctionComponent<{
     stageSightWords: DataWord[];
     allowedWords: DataWord[];
     changeSortFunc: (which: 0 | 1 | 2) => void;
-}> = ({ stageSightWords, allowedWords, changeSortFunc }) => {
+}> = (props) => {
+    const model = getTheOneReaderToolsModel();
     return (
         <div
             css={css`
@@ -312,25 +325,35 @@ const SortedStageWords: React.FunctionComponent<{
                         Sample words in this stage
                     </Span>
                 )}
-                <SortButton sortType={0} changeSortFunc={changeSortFunc} />
-                <SortButton sortType={1} changeSortFunc={changeSortFunc} />
+                <SortButton
+                    sortType={0}
+                    changeSortFunc={props.changeSortFunc}
+                />
+                <SortButton
+                    sortType={1}
+                    changeSortFunc={props.changeSortFunc}
+                />
                 {model.synphony?.source.useAllowedWords === 0 && (
-                    <SortButton sortType={2} changeSortFunc={changeSortFunc} />
+                    <SortButton
+                        sortType={2}
+                        changeSortFunc={props.changeSortFunc}
+                    />
                 )}
             </div>
             <DecodableGrid
                 forGraphemes={false}
                 displayList={
                     model.synphony?.source.useAllowedWords === 1
-                        ? allowedWords
-                        : stageSightWords
+                        ? props.allowedWords
+                        : props.stageSightWords
                 }
             />
         </div>
     );
 };
 
-export const DecodableReaderToolControls: React.FunctionComponent = () => {
+export const DecodableReaderToolControls: FunctionComponent = () => {
+    const model = getTheOneReaderToolsModel();
     const [showTool, setShowTool] = useState<boolean>(
         isReaderToolEnabledOnCurrentPage(false),
     );
@@ -368,18 +391,26 @@ export const DecodableReaderToolControls: React.FunctionComponent = () => {
         setCurrentStage(
             model.getNumberOfStages() === 0 ? 0 : model.stageNumber,
         );
+        // I include this line so that all the sort getter functions can
+        // receive the correct graphemes.
+        model.stageGraphemes = model.getKnownGraphemes(model.stageNumber);
         setCurGraphemes(model.getKnownGraphemesSorted(model.stageNumber));
         setStageSightWords(model.getStageSightWordsSorted(model.stageNumber));
         setAllowedWords(model.getAllowedWordsSorted(model.stageNumber));
     }
 
-    // giving updateState to the model causes this function to be
-    // called whenever the updateControlContents function in
-    // readerToolsModel.ts is called, so that the state of the
-    // tool can be updated along with everything else.
-    // Note: I made a change in that file so that this function
-    // would get called.
-    model.refreshFunc = updateState;
+    // model.refreshFunc lets the model push updates into this component's
+    // React state whenever updateControlContents() runs. A useEffect is used
+    // here to provide a safe cleanup so that the updateState function won't
+    // get called when the tool is not being used.
+    // Note: I made a change in that file so that this function would get
+    // called.
+    useEffect(() => {
+        model.refreshFunc = updateState;
+        return () => {
+            model.refreshFunc = undefined;
+        };
+    });
 
     function changeStage(increment: boolean): void {
         if (increment) {
@@ -504,9 +535,7 @@ export const DecodableReaderToolControls: React.FunctionComponent = () => {
             )}
             <ReaderToolSwitch
                 isForLeveled={false}
-                changeDisplayFunc={() =>
-                    showTool ? setShowTool(false) : setShowTool(true)
-                }
+                changeDisplayFunc={() => setShowTool((prev) => !prev)}
             />
         </div>
     );

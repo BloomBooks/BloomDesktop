@@ -72,7 +72,7 @@ export class ReaderToolsModel {
     public readableFileExtensions: string[] = [];
     public directoryWatcher: DirectoryWatcher | undefined;
     public maxAllowedWords: number = 10000;
-    public refreshFunc: () => void | undefined;
+    public refreshFunc?: () => void;
 
     // remember words so we can update the counts real-time
     public pageIDToText: any[] = [];
@@ -181,28 +181,71 @@ export class ReaderToolsModel {
         this.stageNumber = stage;
         this.updateStageNumberIfNeeded(); // May change the stage number
 
-        return setTimeoutPromise(async () => {
-            if (this.stageNumber === stage) {
-                this.stageGraphemes = this.getKnownGraphemes(stage);
-            }
+        // this was moved outside of the async setTimeoutPromise
+        // that's returned below so that saveState would not be
+        // called asynchronously. This helps the decodable reader
+        // tool to display the correct state when closed and re-opened.
+        const defaultStagePostedPromise = new Promise<void>(
+            (resolve, reject) => {
+                if (!skipSave) {
+                    this.saveState();
+                    // When we're actually changing the stage number is the only time we want
+                    // to update the default.
+                    post(
+                        "readers/io/defaultStage?stage=" + this.stageNumber,
+                        () => {
+                            resolve();
+                        },
+                        (r) => {
+                            reject(r);
+                        },
+                    );
+                } else {
+                    resolve();
+                }
+            },
+        );
 
-            const defaultStagePostedPromise = new Promise<void>(
-                (resolve, reject) => {
-                    if (!skipSave) {
-                        this.saveState();
-                        // When we're actually changing the stage number is the only time we want
-                        // to update the default.
-                        post(
-                            "readers/io/defaultStage?stage=" + this.stageNumber,
-                            () => {
-                                resolve();
-                            },
-                            (r) => {
-                                reject(r);
-                            },
-                        );
-                    } else {
-                        resolve();
+        return theOneLocalizationManager
+            .asyncGetText("Common.Loading", "Loading...", "")
+            .then((loadingMessage) => {
+                // this may result in a need to resize the word list
+                this.previousHeight = 0;
+                $("#letterList").html(loadingMessage);
+                $("#wordList").html(loadingMessage);
+
+                // OK, now let that changed number and the "loading" messages
+                // make it to the user's screen, then start doing the work.
+                return setTimeoutPromise(async () => {
+                    if (this.stageNumber === stage) {
+                        this.stageGraphemes = this.getKnownGraphemes(stage);
+                    }
+
+                    // Both setting the letters and words require that to be done,
+                    // but they can be done independently of each other.
+                    // By separating them, we allow the letters to update while
+                    // the words are still being generated.
+                    const updateLetterListDonePromise = setTimeoutPromise(
+                        () => {
+                            // make sure this is still the stage they want
+                            // (it won't be if they are rapidly clicking the next/previous stage buttons)
+                            if (this.stageNumber === stage) {
+                                this.updateLetterList();
+                            }
+                        },
+                        0,
+                    );
+
+                    const updateWordListDonePromise = setTimeoutPromise(() => {
+                        // make sure this is still the stage they want
+                        // (it won't be if they are rapidly clicking the next/previous stage buttons)
+                        if (this.stageNumber === stage) {
+                            this.updateWordList();
+                        }
+                    }, 0);
+
+                    if (this.readyToDoMarkup()) {
+                        this.doMarkup();
                     }
                 },
             );
@@ -388,12 +431,12 @@ export class ReaderToolsModel {
     }
 
     public updateStageButtonsAvailability(): void {
-        this.updateDisabledStatus("decStage1", this.stageNumber <= 1);
+        this.updateDisabledStatus("decStage", this.stageNumber <= 1);
         if (!this.synphony) {
             return; // Synphony not loaded yet
         }
         this.updateDisabledStatus(
-            "incStage1",
+            "incStage",
             this.stageNumber >= this.synphony.getStages().length,
         );
     }
@@ -587,10 +630,6 @@ export class ReaderToolsModel {
     public getKnownGraphemesSorted(stageNumber: number): string[] {
         if (!this.synphony) {
             return []; // Synphony not loaded yet
-        }
-
-        if (this.stageNumber > 0) {
-            this.stageGraphemes = this.getKnownGraphemes(stageNumber);
         }
 
         // Letters up through current stage
@@ -1838,17 +1877,37 @@ export class ReaderToolsModel {
         const active = toolbox.accordion("option", "active");
         if (isNaN(active)) return;
 
+        // This code puts the stage number and sort in a variable
+        // to be used by the event listener in toolbox.ts to update
+        // the savedSettings variable. This allows the decodable
+        // reader tool to correctly retrieve the current saved state
+        // after it has been closed and re-opened
+        const decodableReaderState =
+            "stage:" + this.stageNumber + ";sort:" + this.sort;
         postString(
             "editView/saveToolboxSetting",
-            "state\tdecodableReader\t" +
-                "stage:" +
-                this.stageNumber +
-                ";sort:" +
-                this.sort,
+            "state\tdecodableReader\t" + decodableReaderState,
         );
+        window.dispatchEvent(
+            new CustomEvent("toolbox-setting-saved", {
+                detail: {
+                    key: "decodableReaderState",
+                    value: decodableReaderState,
+                },
+            }),
+        );
+        const leveledReaderState = this.levelNumber.toString();
         postString(
             "editView/saveToolboxSetting",
-            "state\tleveledReader\t" + this.levelNumber,
+            "state\tleveledReader\t" + leveledReaderState,
+        );
+        window.dispatchEvent(
+            new CustomEvent("toolbox-setting-saved", {
+                detail: {
+                    key: "leveledReaderState",
+                    value: leveledReaderState,
+                },
+            }),
         );
     }
 
