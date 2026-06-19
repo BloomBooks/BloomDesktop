@@ -779,6 +779,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                                       incomingId?: string;
                                       resultId?: string;
                                   }>;
+                                  apiKey?: string | null;
+                                  authMethod?: string | null;
+                                  openRouterUser?: string | null;
                               };
                           }
                         | undefined;
@@ -891,6 +894,23 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                                     data.payload.url,
                                 );
                             }
+                            break;
+                        case "saveCredentials":
+                            // Bloom owns the OpenRouter key. When the user signs in or
+                            // pastes a key in the editor, the editor hands it up here so
+                            // Bloom persists it per-user (and supplies it on the next
+                            // launch). A null apiKey clears the stored credentials.
+                            postJson(
+                                "aiImageEditor/saveCredentials?session=" +
+                                    encodeURIComponent(launchData.sessionToken),
+                                {
+                                    apiKey: data.payload?.apiKey ?? null,
+                                    authMethod:
+                                        data.payload?.authMethod ?? null,
+                                    openRouterUser:
+                                        data.payload?.openRouterUser ?? null,
+                                },
+                            );
                             break;
                     }
                 };

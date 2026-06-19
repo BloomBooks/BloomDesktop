@@ -8,6 +8,7 @@ import {
     killProcessTree,
     sweepStaleWorktreeNodeProcesses,
 } from "./processTree.mjs";
+import { ensureAiEditorBuilt } from "./aiEditorBuild.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -579,7 +580,15 @@ const main = async () => {
     console.log(
         "[go] Launching Vite first and waiting for it to go quiet before starting Bloom.",
     );
-    const dev = await startDevServer();
+    // Build/stage the AI Image Editor in parallel with Vite startup so the editor is
+    // served by Bloom itself (no separate dev server). Best-effort: never blocks launch.
+    const [dev] = await Promise.all([
+        startDevServer(),
+        ensureAiEditorBuilt({
+            repoRoot,
+            log: (message) => console.log(`[go] ${message}`),
+        }),
+    ]);
     console.log(
         `[go] Vite is reachable and quiet on port ${dev.port}. Starting Bloom...`,
     );

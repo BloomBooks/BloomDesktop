@@ -123,6 +123,12 @@ namespace Bloom.web.controllers
                 requiresSync: false
             );
             apiHandler.RegisterEndpointHandler(
+                "aiImageEditor/saveCredentials",
+                HandleSaveCredentials,
+                handleOnUiThread: false,
+                requiresSync: false
+            );
+            apiHandler.RegisterEndpointHandler(
                 "aiImageEditor/oauth-callback",
                 HandleOAuthCallback,
                 handleOnUiThread: false,
@@ -146,11 +152,19 @@ namespace Bloom.web.controllers
 
         private string GetEditorUrl()
         {
-#if DEBUG
-            return "http://localhost:3000/";
-#else
+            // The editor is served by BloomServer from output/browser/aiImageEditor/. The
+            // go.mjs launcher (scripts/aiEditorBuild.mjs) builds it from the local
+            // bloom-ai-image-tools checkout and stages it there, so `./go.sh` "just works"
+            // with no separate dev server, in both Debug and Release.
+            //
+            // Editor developers who want hot-module reload can instead point Bloom at the
+            // editor's own Vite dev server by setting BLOOM_AI_EDITOR_URL, e.g.
+            // BLOOM_AI_EDITOR_URL=http://localhost:3000/ and running `pnpm dev` in the
+            // editor checkout.
+            var overrideUrl = Environment.GetEnvironmentVariable("BLOOM_AI_EDITOR_URL");
+            if (!string.IsNullOrWhiteSpace(overrideUrl))
+                return overrideUrl;
             return $"{BloomServer.ServerUrl}/bloom/aiImageEditor/index.html";
-#endif
         }
 
         private void HandleLaunch(ApiRequest request)
@@ -191,9 +205,50 @@ namespace Bloom.web.controllers
                     // (and their sidecars) appear even when state.json doesn't list them.
                     history = EnumerateHistoryImages(book),
                     references = Array.Empty<object>(),
-                    apiKey = (string)null,
+                    // Bloom owns the OpenRouter key: supply the per-user stored key (and
+                    // user name) so the editor doesn't have to ask for it again. The editor
+                    // hands any newly obtained key back via aiImageEditor/saveCredentials.
+                    apiKey = OpenRouterCredentialStore.GetApiKey(),
+                    openRouterUser = OpenRouterCredentialStore.GetOpenRouterUser(),
                 }
             );
+        }
+
+        private class SaveCredentialsRequest
+        {
+            public string apiKey { get; set; }
+            public string authMethod { get; set; }
+            public string openRouterUser { get; set; }
+        }
+
+        /// <summary>
+        /// Receives the user's OpenRouter credentials from the editor (after OAuth sign-in or
+        /// manual key entry) and persists them per-user via <see cref="OpenRouterCredentialStore"/>.
+        /// A null/empty apiKey clears the stored credentials (sign-out). Session-gated so a
+        /// stray frame can't overwrite the user's stored key.
+        /// </summary>
+        private void HandleSaveCredentials(ApiRequest request)
+        {
+            if (!HasValidSession(request))
+                return;
+
+            SaveCredentialsRequest payload;
+            try
+            {
+                payload = request.RequiredPostObject<SaveCredentialsRequest>();
+            }
+            catch (Exception)
+            {
+                request.Failed(HttpStatusCode.BadRequest, "Invalid credentials payload");
+                return;
+            }
+
+            OpenRouterCredentialStore.Save(
+                payload.apiKey,
+                payload.authMethod,
+                payload.openRouterUser
+            );
+            request.PostSucceeded();
         }
 
         private void HandleOpenExternal(ApiRequest request)
