@@ -59,31 +59,32 @@ const ImageGalleryDialog: React.FunctionComponent<{
 
     const onConfirmSelection = async (image: IImage) => {
         setOpen(false);
-
-        const payload = {
-            imageUrl: image.url ?? image.reasonableSizeUrl,
-            localPath: image.localPath,
-            license: image.license,
-            licenseUrl: image.licenseUrl,
-            credits: image.credits,
-            creator: image.creator,
-        };
-        const response = await postJsonAsync(
-            "editView/imageGalleryResult",
-            payload,
-        );
-        if (!response) return;
-
-        const result = response.data as IImageGalleryApiResult;
-        const imageInfo: IImageInfo = {
-            imageId: props.imageId,
-            src: result.src,
-            copyright: result.copyright,
-            creator: result.creator,
-            license: result.license,
-            undoable: "false",
-        };
-        getEditablePageBundleExports()?.changeImage(imageInfo);
+        try {
+            const payload = {
+                imageUrl: image.url ?? image.reasonableSizeUrl,
+                localPath: image.localPath,
+                license: image.license,
+                licenseUrl: image.licenseUrl,
+                credits: image.credits,
+                creator: image.creator,
+            };
+            const response = await postJsonAsync(
+                "editView/imageGalleryResult",
+                payload,
+            );
+            const result = response!.data as IImageGalleryApiResult;
+            const imageInfo: IImageInfo = {
+                imageId: props.imageId,
+                src: result.src,
+                copyright: result.copyright,
+                creator: result.creator,
+                license: result.license,
+                undoable: "false",
+            };
+            getEditablePageBundleExports()?.changeImage(imageInfo);
+        } catch {
+            getEditablePageBundleExports()?.removeImageId(props.imageId);
+        }
     };
 
     const onPickLocalFile = async (): Promise<IImage | undefined> => {
