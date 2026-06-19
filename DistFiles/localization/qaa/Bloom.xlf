@@ -2289,25 +2289,25 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Reset image</target>
         <note>ID: EditTab.Image.Reset</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.Background" translate="no">
-        <source xml:lang="en">Background</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">Background</target>
-        <note>ID: EditTab.Image.Background</note>
+      <trans-unit id="EditTab.Image.Transparency" translate="no">
+        <source xml:lang="en">Transparency</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Transparency</target>
+        <note>ID: EditTab.Image.Transparency</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.Background.Auto" translate="no">
+      <trans-unit id="EditTab.Image.Transparency.Auto" translate="no">
         <source xml:lang="en">Auto</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Auto</target>
-        <note>ID: EditTab.Image.Background.Auto</note>
+        <note>ID: EditTab.Image.Transparency.Auto</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.Background.Transparent" translate="no">
+      <trans-unit id="EditTab.Image.Transparency.Transparent" translate="no">
         <source xml:lang="en">Transparent</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Transparent</target>
-        <note>ID: EditTab.Image.Background.Transparent</note>
+        <note>ID: EditTab.Image.Transparency.Transparent</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.Background.Opaque" translate="no">
+      <trans-unit id="EditTab.Image.Transparency.Opaque" translate="no">
         <source xml:lang="en">Opaque</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Opaque</target>
-        <note>ID: EditTab.Image.Background.Opaque</note>
+        <note>ID: EditTab.Image.Transparency.Opaque</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
         <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
