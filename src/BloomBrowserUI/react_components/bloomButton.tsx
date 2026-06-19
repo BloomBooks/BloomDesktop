@@ -6,7 +6,6 @@ import {
     LocalizableElement,
 } from "./l10nComponents";
 import Button, { ButtonProps } from "@mui/material/Button";
-import { css } from "@emotion/react";
 
 export interface IBloomButtonProps extends ILocalizationProps, ButtonProps {
     enabled: boolean;
