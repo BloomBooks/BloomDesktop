@@ -67,6 +67,9 @@ namespace Bloom.web.controllers
         private void HandleImageMetadataForFile(ApiRequest request)
         {
             var fileName = request.RequiredParam("fileName");
+            // We don't guard fileName against path traversal here. This is a local-only API and we
+            // control both ends, so we don't care about the case where something asks to look at an
+            // image outside of the book folder.
             var path = Model.CurrentBook.FolderPath.CombineForPath(fileName);
             if (!RobustFile.Exists(path))
             {
@@ -192,6 +195,13 @@ namespace Bloom.web.controllers
                         // have not yet committed to a new image, we don't want to save the page
                         // and save the metadata to the current image file, if any.
                         View.ApplyImageMetadataToImageToolbox(metadata);
+                        // The "Add this info to all images" button is also visible in this
+                        // toolbox-launched case. We can't copy to the book's images here (we
+                        // have not committed to an image and deliberately don't save the page),
+                        // but we must still clear the dialog's "Working…" spinner so it doesn't
+                        // hang forever.
+                        if (applyToAllImages)
+                            View.Model.NotifyCopyrightPushedToAllImages();
                         request.PostSucceeded();
                         break;
                     }

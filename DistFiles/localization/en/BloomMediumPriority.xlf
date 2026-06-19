@@ -19,20 +19,20 @@
         <note>ID: CopyrightAndLicense.FromThisBook</note>
         <note>Label shown on the reuse option that offers the book's own copyright and license (in place of an illustrator/photographer name).</note>
       </trans-unit>
-      <trans-unit id="CopyrightAndLicense.Gathering" translate="no">
+      <trans-unit id="Common.Gathering" translate="no">
         <source xml:lang="en">Gathering…</source>
-        <note>ID: CopyrightAndLicense.Gathering</note>
-        <note>Shown while Bloom is scanning the book's images to find reusable copyright/license metadata.</note>
+        <note>ID: Common.Gathering</note>
+        <note>Shown while Bloom is collecting items.</note>
       </trans-unit>
       <trans-unit id="CopyrightAndLicense.CopyToAllImages" translate="no">
         <source xml:lang="en">Add this info to all images in this book</source>
         <note>ID: CopyrightAndLicense.CopyToAllImages</note>
         <note>Button that applies the current image's copyright and license to every other image in the book.</note>
       </trans-unit>
-      <trans-unit id="CopyrightAndLicense.Working" translate="no">
+      <trans-unit id="Common.Working" translate="no">
         <source xml:lang="en">Working…</source>
-        <note>ID: CopyrightAndLicense.Working</note>
-        <note>Shown next to a spinner while Bloom applies the copyright and license to all images in the book.</note>
+        <note>ID: Common.Working</note>
+        <note>Shown next to a spinner while an operation is in progress.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder" translate="no">
         <source xml:lang="en">App Builder</source>

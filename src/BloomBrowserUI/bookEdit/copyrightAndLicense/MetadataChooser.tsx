@@ -95,10 +95,7 @@ export const MetadataChooser: React.FunctionComponent<{
         "Copyright and license from this book",
         "CopyrightAndLicense.FromThisBook",
     );
-    const gatheringLabel = useL10n(
-        "Gathering…",
-        "CopyrightAndLicense.Gathering",
-    );
+    const gatheringLabel = useL10n("Gathering…", "Common.Gathering");
 
     useEffect(() => {
         // Set when the dialog unmounts so the scan stops instead of running on against a

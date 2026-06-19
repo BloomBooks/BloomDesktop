@@ -118,7 +118,7 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
     const [pushState, setPushState] = useState<"idle" | "working" | "done">(
         "idle",
     );
-    const pushWorkingLabel = useL10n("Working…", "CopyrightAndLicense.Working");
+    const pushWorkingLabel = useL10n("Working…", "Common.Working");
     const pushDoneLabel = useL10n("Done", "Common.Done");
 
     function onCopyrightChange(
@@ -401,7 +401,10 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                 <DialogOkButton
                     onClick={handleOk}
                     default={true}
-                    enabled={canSave}
+                    // Disable OK while a push is in flight, so the user can't fire a
+                    // redundant save and unmount the dialog before the "pushedToAllImages"
+                    // websocket event arrives (which would set state on an unmounted component).
+                    enabled={canSave && pushState !== "working"}
                 />
                 <DialogCancelButton onClick_DEPRECATED={closeDialog} />
             </DialogBottomButtons>
