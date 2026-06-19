@@ -1100,12 +1100,15 @@ namespace Bloom.Api
                     transparentParam == "force" ? ImageTransparencyMode.Force
                     : transparentParam == "yes" ? ImageTransparencyMode.Auto
                     : ImageTransparencyMode.None;
+
                 imageFile = _cache.GetPathToAdjustedImage(imageFile, thumb, transparencyMode);
 
-                if (String.IsNullOrEmpty(imageFile))
+                if (string.IsNullOrEmpty(imageFile))
                     return false;
             }
 
+            // File served without image processing: either an SVG, a Bloom UI file (BL-2368),
+            // or processImage was false because the file was found in bloomRoot (not the book folder).
             info.ReplyWithImage(imageFile, originalImageFile);
             return true;
         }
