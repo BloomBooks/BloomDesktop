@@ -76,7 +76,6 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler("editView/topics", HandleTopics, false);
-            apiHandler.RegisterEndpointHandler("editView/changeImage", HandleChangeImage, true);
             apiHandler.RegisterEndpointHandler("editView/copyImage", HandleCopyImage, true);
             apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
             apiHandler.RegisterEndpointHandler("editView/paste", HandlePaste, true);
@@ -511,23 +510,6 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
-        private void HandleChangeImage(ApiRequest request)
-        {
-            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            ((DynamicJson)data).TryGetValue("pageBackgroundColor", out string pageBackgroundColor);
-            // We don't want to tie up server locks etc. while the dialog displays.
-            MiscUtils.DoOnceOnIdle(() =>
-            {
-                View.OnChangeImage(
-                    data.imageId,
-                    UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
-                    data.imageIsGif,
-                    pageBackgroundColor
-                );
-            });
-            request.PostSucceeded();
-        }
-
         private void RequestDefaultTranslationGroupContent(ApiRequest request)
         {
             View.Model.RequestDefaultTranslationGroupContent(request);
@@ -786,6 +768,36 @@ namespace Bloom.web.controllers
 
             try
             {
+                // GIF files must be copied byte-for-byte to preserve animation.
+                // PalasoImage / ProcessAndSaveImageIntoFolder will strip the animation frames.
+                if (
+                    Path.GetExtension(sourceFilePath)
+                        .Equals(".gif", StringComparison.OrdinalIgnoreCase)
+                )
+                {
+                    var baseName = Path.GetFileNameWithoutExtension(sourceFilePath);
+                    var destName = ImageUtils.GetUnusedFilename(
+                        View.Model.CurrentBook.FolderPath,
+                        baseName,
+                        ".gif",
+                        "gif"
+                    );
+                    RobustFile.Copy(
+                        sourceFilePath,
+                        Path.Combine(View.Model.CurrentBook.FolderPath, destName)
+                    );
+                    request.ReplyWithJson(
+                        new
+                        {
+                            src = UrlPathString.CreateFromUnencodedString(destName).UrlEncoded,
+                            copyright = "",
+                            license = "",
+                            creator = "",
+                        }
+                    );
+                    return;
+                }
+
                 using (var palasoImage = PalasoImage.FromFileRobustly(sourceFilePath))
                 {
                     var info = PageEditingModel.ChangePicture(

@@ -23,7 +23,11 @@ import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { showCopyrightAndLicenseDialog } from "../workspaceRoot";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
-import { changeImage, IImageInfo } from "./bloomEditing";
+import {
+    changeImage,
+    IImageInfo,
+    wrapWithRequestPageContentDelay,
+} from "./bloomEditing";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import $ from "jquery";
@@ -353,7 +357,10 @@ export function doImageCommand(
 
     if (imageIsGif) {
         // GIF images bypass the gallery and go straight to a native file picker.
-        doChangeGifImage(img, imageId!);
+        wrapWithRequestPageContentDelay(
+            () => doChangeGifImage(img, imageId!),
+            "doChangeGifImage",
+        );
     } else {
         const searchLang = navigator.language.split("-")[0] || "en";
         getWorkspaceBundleExports().showImageGalleryDialog(
@@ -368,35 +375,43 @@ async function doChangeGifImage(
     img: HTMLElement,
     imageId: string,
 ): Promise<void> {
-    const pickResponse = await postJsonAsync("editView/pickLocalImageFile", {
-        gifOnly: true,
-    });
-    if (!pickResponse) return;
-    const { filePath } = pickResponse.data as { filePath: string };
-    if (!filePath) {
-        // User cancelled — remove the temporary id.
+    try {
+        const pickResponse = await postJsonAsync(
+            "editView/pickLocalImageFile",
+            {
+                gifOnly: true,
+            },
+        );
+        const { filePath } = pickResponse!.data as { filePath: string };
+        if (!filePath) {
+            // User cancelled — remove the temporary id.
+            img.removeAttribute("id");
+            return;
+        }
+        const changeResponse = await postJsonAsync(
+            "editView/imageGalleryResult",
+            {
+                localPath: filePath,
+            },
+        );
+        const result = changeResponse!.data as {
+            src: string;
+            copyright: string;
+            creator: string;
+            license: string;
+        };
+        const imageInfo: IImageInfo = {
+            imageId,
+            src: result.src,
+            copyright: result.copyright,
+            creator: result.creator,
+            license: result.license,
+            undoable: "false",
+        };
+        changeImage(imageInfo);
+    } catch {
         img.removeAttribute("id");
-        return;
     }
-    const changeResponse = await postJsonAsync("editView/imageGalleryResult", {
-        localPath: filePath,
-    });
-    if (!changeResponse) return;
-    const result = changeResponse.data as {
-        src: string;
-        copyright: string;
-        creator: string;
-        license: string;
-    };
-    const imageInfo: IImageInfo = {
-        imageId,
-        src: result.src,
-        copyright: result.copyright,
-        creator: result.creator,
-        license: result.license,
-        undoable: "false",
-    };
-    changeImage(imageInfo);
 }
 
 export function getOwningPageBackgroundColor(element: HTMLElement): string {
