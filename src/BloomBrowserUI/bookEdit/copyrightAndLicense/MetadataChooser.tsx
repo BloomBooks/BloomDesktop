@@ -15,17 +15,18 @@ import { useL10n } from "../../react_components/l10nHooks";
 import { ICopyrightAndLicenseData } from "./CopyrightAndLicenseDialog";
 import { computePackageKey, getLicenseShorthand } from "./metadataReuseUtils";
 
-// One distinct copyright/license/illustrator combination found among the book's images,
-// along with a precomputed human-readable summary for display.
+// One distinct copyright/license/illustrator combination found among the book's images. We
+// store only raw data here; the human-readable summary (which depends on localized labels) is
+// computed at render time, where the labels are always current. (useL10n returns the English
+// fallback synchronously and the localized string only on a later render, so a summary baked in
+// during the once-on-mount gather effect would be stuck in English.)
 interface IMetadataPackage {
     key: string;
     data: ICopyrightAndLicenseData;
-    summary: string;
     illustrator: string;
-    // When set, this label replaces the illustrator/photographer line. Used for the book's own
-    // copyright/license, which has no illustrator and is labeled "Copyright and license from this
-    // book" instead.
-    secondaryLabel?: string;
+    // True for the book's own copyright/license, which has no illustrator and is labeled
+    // "Copyright and license from this book" in place of the illustrator/photographer line.
+    isFromThisBook?: boolean;
 }
 
 // Shown at the bottom of the Copyright and License dialog. It gathers candidate metadata
@@ -78,8 +79,9 @@ export const MetadataChooser: React.FunctionComponent<{
         setListMaxHeight(Math.ceil(thirdBottom - firstTop));
     }, [packages.length]);
 
-    // Labels needed to build summaries. Hooks must be called unconditionally up front,
-    // so we capture them here rather than inside the gathering loop.
+    // Localized labels for the rows. These are read at render time (below), NOT inside the
+    // gather effect: useL10n delivers the localized value asynchronously, but the effect runs
+    // only once on mount, so anything it captured would be stuck on the English fallback.
     const allRightsReservedLabel = useL10n(
         "All Rights Reserved",
         "License.AllRightsReserved",
@@ -105,18 +107,13 @@ export const MetadataChooser: React.FunctionComponent<{
         const seen = new Set<string>();
 
         // De-duplicate and append one candidate (ignoring ones too sparse to be worth offering).
-        // secondaryLabel, when given, replaces the illustrator line (used for the book's own data).
+        // isFromThisBook marks the book's own copyright/license (labeled specially at render).
         function addData(
             data: ICopyrightAndLicenseData | undefined,
-            secondaryLabel?: string,
+            isFromThisBook?: boolean,
         ) {
             if (!data) return;
-            const pkg = makePackage(
-                data,
-                allRightsReservedLabel,
-                customLabel,
-                secondaryLabel,
-            );
+            const pkg = makePackage(data, isFromThisBook);
             if (!pkg) return; // not enough metadata to be worth offering
             if (seen.has(pkg.key)) return;
             seen.add(pkg.key);
@@ -142,7 +139,7 @@ export const MetadataChooser: React.FunctionComponent<{
                                 },
                                 licenseInfo: bookData.licenseInfo,
                             },
-                            fromThisBookLabel,
+                            true, // isFromThisBook
                         );
                     }
                 } catch (error) {
@@ -185,7 +182,8 @@ export const MetadataChooser: React.FunctionComponent<{
         return () => {
             cancelled.current = true;
         };
-        // We intentionally run this once on mount; the props/labels are stable for the dialog's life.
+        // We intentionally run this once on mount; the props are stable for the dialog's life.
+        // (Localized labels are deliberately NOT used here — see the labels comment above.)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -267,6 +265,13 @@ export const MetadataChooser: React.FunctionComponent<{
             >
                 {orderedPackages.map((pkg) => {
                     const isChosen = pkg.key === currentKey;
+                    // Computed here (not when gathering) so the labels are always the current,
+                    // localized ones rather than the English fallbacks present at mount.
+                    const summary = getSummary(
+                        pkg.data,
+                        allRightsReservedLabel,
+                        customLabel,
+                    );
                     return (
                         <div
                             key={pkg.key}
@@ -311,15 +316,15 @@ export const MetadataChooser: React.FunctionComponent<{
                                     flex-direction: column;
                                 `}
                             >
-                                <div>{pkg.summary}</div>
-                                {pkg.secondaryLabel ? (
+                                <div>{summary}</div>
+                                {pkg.isFromThisBook ? (
                                     <div
                                         css={css`
                                             font-size: 0.8em;
                                             color: ${kMutedTextGray};
                                         `}
                                     >
-                                        {pkg.secondaryLabel}
+                                        {fromThisBookLabel}
                                     </div>
                                 ) : (
                                     pkg.illustrator && (
@@ -343,23 +348,30 @@ export const MetadataChooser: React.FunctionComponent<{
     );
 };
 
-// Builds a display package from raw metadata, or returns undefined if there's not enough
-// information (no copyright holder and no illustrator) to be worth offering.
+// Builds a package from raw metadata, or returns undefined if there's not enough information
+// (no copyright holder and no illustrator) to be worth offering. No localized labels here: the
+// display summary is built at render time by getSummary so it tracks the current language.
 function makePackage(
     data: ICopyrightAndLicenseData,
-    allRightsReservedLabel: string,
-    customLabel: string,
-    secondaryLabel?: string,
+    isFromThisBook?: boolean,
 ): IMetadataPackage | undefined {
     const holder = (data.copyrightInfo.copyrightHolder || "").trim();
-    const year = (data.copyrightInfo.copyrightYear || "").trim();
     const illustrator = (data.copyrightInfo.imageCreator || "").trim();
     if (!holder && !illustrator) return undefined;
 
-    const key = computePackageKey(data);
+    return { key: computePackageKey(data), data, illustrator, isFromThisBook };
+}
 
-    // The row shows copyright + license on the first line and the illustrator separately,
-    // so the summary here intentionally omits the creator.
+// Builds the first row of a package: copyright (© year holder) and the license shorthand,
+// joined by a middot. The illustrator is shown separately, so it's intentionally omitted here.
+// Takes the localized labels as arguments so it can be called at render time with current values.
+function getSummary(
+    data: ICopyrightAndLicenseData,
+    allRightsReservedLabel: string,
+    customLabel: string,
+): string {
+    const holder = (data.copyrightInfo.copyrightHolder || "").trim();
+    const year = (data.copyrightInfo.copyrightYear || "").trim();
     const license = getLicenseShorthand(
         data.licenseInfo,
         allRightsReservedLabel,
@@ -367,7 +379,5 @@ function makePackage(
     );
     let copyright = "";
     if (holder) copyright = year ? `© ${year} ${holder}` : `© ${holder}`;
-    const summary = [copyright, license].filter((s) => !!s).join(" · ");
-
-    return { key, data, summary, illustrator, secondaryLabel };
+    return [copyright, license].filter((s) => !!s).join(" · ");
 }
