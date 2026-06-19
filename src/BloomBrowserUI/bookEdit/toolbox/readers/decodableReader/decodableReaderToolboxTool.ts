@@ -97,7 +97,7 @@ export class DecodableReaderToolboxTool implements ITool {
     public isExperimental(): boolean {
         return false;
     }
-
+    /*
     public setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
         // invoke function when a bloom-editable element loses focus.
         $(container)
@@ -159,7 +159,9 @@ export class DecodableReaderToolboxTool implements ITool {
                 }
                 return true;
             });
+            
     }
+    */
 
     // Some things were impossible to do i18n on via the jade/pug
     // This gives us a hook to finish up the more difficult spots
@@ -213,7 +215,7 @@ export class DecodableReaderToolboxTool implements ITool {
     }
 
     public configureElements(container: HTMLElement) {
-        this.setupReaderKeyAndFocusHandlers(container);
+        //this.setupReaderKeyAndFocusHandlers(container);
     }
 
     public showTool() {
