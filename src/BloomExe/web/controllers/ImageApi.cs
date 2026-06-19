@@ -91,6 +91,29 @@ namespace Bloom.web.controllers
             return result;
         }
 
+        /// <summary>
+        /// Returns the file names of the "real" images used in the book (in order of first
+        /// occurrence), excluding the license, branding, and placeholder images that we never
+        /// want to attribute credits to. This is a static counterpart to
+        /// GetFilteredImageNameToPagesDictionary so that other controllers (e.g. the copyright
+        /// and license dialog's metadata chooser) can get the list without an ImageApi instance.
+        /// </summary>
+        public static List<string> GetCreditableImageFileNamesInBook(
+            SafeXmlNode domBody,
+            IEnumerable<string> langs
+        )
+        {
+            var doNotPaste = new HashSet<string>(
+                GetImageFilesToNotPasteCreditsFor().Select(BookStorage.GetNormalizedPathForOS)
+            );
+            return GetWhichImagesAreUsedOnWhichPages(domBody, langs)
+                .Keys.Where(name =>
+                    !doNotPaste.Contains(BookStorage.GetNormalizedPathForOS(name))
+                    && !name.ToLowerInvariant().StartsWith("placeholder")
+                )
+                .ToList();
+        }
+
         private void HandleCopyImageCreditsForWholeBook(ApiRequest request)
         {
             // This method is called on a fileserver thread. To minimize the chance that the current selection somehow

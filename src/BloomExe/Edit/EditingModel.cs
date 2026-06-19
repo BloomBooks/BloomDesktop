@@ -1806,6 +1806,29 @@ namespace Bloom.Edit
         }
 #endif
 
+        // Client context and event id used to tell the open Copyright & License dialog that an
+        // "Add this info to all images" operation has finished. These must match the constants
+        // used by the React dialog (CopyrightAndLicenseDialog.tsx).
+        public const string kCopyrightWebSocketContext = "copyrightAndLicense";
+        public const string kCopyrightWebSocketEventId_PushedToAllImages = "pushedToAllImages";
+
+        /// <summary>
+        /// Tell the (still-open) Copyright &amp; License dialog that an "Add this info to all
+        /// images" request has finished, so it can replace its "Working…" spinner with a "done"
+        /// confirmation. The image-metadata POST handler calls this for every such request,
+        /// whether or not the copy actually ran (e.g. the save failed or the image is not a
+        /// normal image), so the dialog never waits forever. We can't signal completion from the
+        /// POST response itself, which returns as soon as the save is initiated, well before the
+        /// asynchronous post-save action runs.
+        /// </summary>
+        public void NotifyCopyrightPushedToAllImages()
+        {
+            _webSocketServer.SendEvent(
+                kCopyrightWebSocketContext,
+                kCopyrightWebSocketEventId_PushedToAllImages
+            );
+        }
+
         public void CopyImageMetadataToWholeBook(Metadata metadata)
         {
             using (var dlg = new ProgressDialogForeground()) //REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well

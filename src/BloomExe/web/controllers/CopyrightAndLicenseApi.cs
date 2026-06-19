@@ -5,6 +5,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using SIL.Core.ClearShare;
+using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
@@ -34,6 +35,58 @@ namespace Bloom.web.controllers
                 HandleImageCopyrightAndLicense,
                 true
             );
+            // The next two endpoints support the "reuse metadata from another image" chooser.
+            // They are read-only and are driven one image at a time from the front-end so that
+            // gathering can be progressive and can stop when the dialog is closed.
+            apiHandler.RegisterEndpointHandler(
+                "copyrightAndLicense/imageFileNamesInBook",
+                HandleImageFileNamesInBook,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "copyrightAndLicense/imageMetadataForFile",
+                HandleImageMetadataForFile,
+                false
+            );
+        }
+
+        // Returns the file names of the "real" images in the current book (excluding license,
+        // branding, and placeholder images). The metadata chooser fetches each one's metadata
+        // separately so it can show results as they arrive.
+        private void HandleImageFileNamesInBook(ApiRequest request)
+        {
+            var domBody = Model.CurrentBook.RawDom.DocumentElement.SelectSingleNode("//body");
+            var langs = Model.CurrentBook.GetLanguagePrioritiesForLocalizedTextOnPage();
+            var names = ImageApi.GetCreditableImageFileNamesInBook(domBody, langs);
+            request.ReplyWithJson(names);
+        }
+
+        // Returns the copyright/license metadata for a single image file (by file name) in the
+        // same JSON shape that the dialog's image GET uses. Read-only: unlike
+        // HandleImageCopyrightAndLicense, this does not prepare the image for editing.
+        private void HandleImageMetadataForFile(ApiRequest request)
+        {
+            var fileName = request.RequiredParam("fileName");
+            var path = Model.CurrentBook.FolderPath.CombineForPath(fileName);
+            if (!RobustFile.Exists(path))
+            {
+                request.ReplyWithJson(String.Empty);
+                return;
+            }
+            try
+            {
+                var metadata = RobustFileIO.MetadataFromFile(path);
+                request.ReplyWithJson(GetJsonFromMetadata(metadata, forBook: false));
+            }
+            catch (Exception e)
+            {
+                // A corrupt or unreadable image must not break gathering. Log it and reply with
+                // empty so the chooser simply skips this image instead of surfacing an error.
+                Logger.WriteEvent(
+                    $"MetadataChooser: could not read metadata for image '{fileName}': {e.Message}"
+                );
+                request.ReplyWithJson(String.Empty);
+            }
         }
 
         private void HandleGetCCImage(ApiRequest request)
@@ -128,31 +181,68 @@ namespace Bloom.web.controllers
                     break;
                 case HttpMethods.Post:
                     metadata = GetMetadataFromJson(request, forBook: false);
+                    // The dialog's "Copy to all other images in the book" button sets this.
+                    // (We no longer pop up a question asking whether to copy to all images.)
+                    bool applyToAllImages = request.GetParamOrNull("applyToAllImages") == "true";
+                    if (View.MetadataEditIsFromImageToolbox)
+                    {
+                        // Invoke the palaso image toolbox's save callback directly so that the
+                        // toolbox UI immediately shows the new copyright/license information.
+                        // However, since we launched this dialog from the image chooser, and
+                        // have not yet committed to a new image, we don't want to save the page
+                        // and save the metadata to the current image file, if any.
+                        View.ApplyImageMetadataToImageToolbox(metadata);
+                        request.PostSucceeded();
+                        break;
+                    }
+
                     View.Model.SaveThen(
                         () =>
                         { // Saved DOM must be up to date with possibly new imageUrl
-                            bool wasNormalSuccessfulSave = View.SaveImageMetadata(metadata);
-                            bool isNormalImageType =
-                                View.FileNameOfImageBeingModified != null
-                                && ImageUpdater.IsNormalImagePath(
-                                    View.FileNameOfImageBeingModified
-                                );
-                            bool shouldAskUserIfCopyMetadataToAllImages =
-                                wasNormalSuccessfulSave && isNormalImageType;
-                            bool copyMetadataToAllImages = shouldAskUserIfCopyMetadataToAllImages
-                                ? View.AskUserIfCopyImageMetadataToAllImages()
-                                : false;
-                            if (copyMetadataToAllImages)
+                            try
                             {
-                                View.CopyImageMetadataToAllImages(metadata);
+                                bool wasNormalSuccessfulSave = View.SaveImageMetadata(metadata);
+                                // The filename can be null if coming in from the libpalaso toolbox callback,
+                                // in which case wasNormalSuccessfulSave will be false anyway.
+                                bool isNormalImageType =
+                                    View.FileNameOfImageBeingModified != null
+                                    && ImageUpdater.IsNormalImagePath(
+                                        View.FileNameOfImageBeingModified
+                                    );
+                                if (
+                                    applyToAllImages
+                                    && wasNormalSuccessfulSave
+                                    && isNormalImageType
+                                )
+                                {
+                                    // Copies the metadata to every image (runs synchronously).
+                                    View.CopyImageMetadataToAllImages(metadata);
+                                }
+                                else if (wasNormalSuccessfulSave)
+                                {
+                                    View.UpdateMetadataForCurrentImage(); // Need to get things up to date on the current page.
+                                }
                             }
-                            else if (wasNormalSuccessfulSave)
+                            finally
                             {
-                                View.UpdateMetadataForCurrentImage(); // Need to get things up to date on the current page.
+                                // Always tell the (still-open) dialog that the "Add this info to
+                                // all images" request has finished, so it can replace its
+                                // "Working…" spinner with a "done" confirmation. We must do this
+                                // even when the copy didn't actually run (save failed, non-normal
+                                // image, or an error above) so the spinner never hangs forever.
+                                if (applyToAllImages)
+                                    View.Model.NotifyCopyrightPushedToAllImages();
                             }
                             return View.Model.CurrentPage.Id;
                         },
-                        () => { } // wrong state, do nothing
+                        () =>
+                        {
+                            // We weren't in a state to save, so nothing happened; still clear the
+                            // dialog's "Working…" spinner if it is waiting on an "Add this info to
+                            // all images" request.
+                            if (applyToAllImages)
+                                View.Model.NotifyCopyrightPushedToAllImages();
+                        }
                     );
 
                     request.PostSucceeded();

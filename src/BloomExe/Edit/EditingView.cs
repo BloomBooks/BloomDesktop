@@ -608,25 +608,6 @@ namespace Bloom.Edit
             }
         }
 
-        public bool AskUserIfCopyImageMetadataToAllImages()
-        {
-            var answer = MessageBox.Show(
-                LocalizationManager.GetString(
-                    "EditTab.CopyImageIPMetadataQuestion",
-                    "Copy this information to all other images in this book?",
-                    "get this after you edit the metadata of an image"
-                ),
-                LocalizationManager.GetString(
-                    "EditTab.TitleOfCopyIPToWholeBooksDialog",
-                    "Image Intellectual Property Information"
-                ),
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question,
-                MessageBoxDefaultButton.Button2
-            );
-            return answer == DialogResult.Yes;
-        }
-
         public void CopyImageMetadataToAllImages(Metadata metadata)
         {
             {

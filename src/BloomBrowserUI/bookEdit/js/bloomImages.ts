@@ -22,7 +22,6 @@ import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
-import { showCopyrightAndLicenseDialog } from "../workspaceRoot";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
 import {
     changeImage,
@@ -1155,7 +1154,11 @@ export function SetupMetadataButton(parent: HTMLElement) {
         button.addEventListener("click", () => {
             // Don't do this before it gets clicked; might not be correct at the time we set up the handler.
             const url = img.getAttribute("src");
-            showCopyrightAndLicenseDialog(url ?? "");
+            // Launch via the workspace (top window) bundle, not this page iframe, so that saving
+            // the metadata — which reloads the page iframe — doesn't tear the dialog down.
+            getWorkspaceBundleExports().showCopyrightAndLicenseDialog(
+                url ?? "",
+            );
         });
         theOneLocalizationManager
             .asyncGetText(titleId, title, "tooltip text")
