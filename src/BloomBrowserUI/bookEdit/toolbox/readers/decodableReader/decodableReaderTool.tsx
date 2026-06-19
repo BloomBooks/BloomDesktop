@@ -5,19 +5,22 @@ import { beginInitializeDecodableReaderTool } from "../readerTools";
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { get } from "../../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
+import { renderRoot } from "../../../../utils/reactRender";
 
 const model = getTheOneReaderToolsModel();
 
+// this new version of the decodable reader tool re-implements some
+// of the methods that were implemented in decodableReaderToolboxTool.ts,
+// so that everything would load properly and the markup would work as
+// usual.
 export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
-        //root.setAttribute("class", "CanvasBody");
 
-        ReactDOM.render(<DecodableReaderToolControls />, root);
+        renderRoot(<DecodableReaderToolControls />, root);
         return root as HTMLDivElement;
     }
     public id(): string {
-        //return "decodableReader";
         return "decodableReader";
     }
     public newPageReady(): void {
