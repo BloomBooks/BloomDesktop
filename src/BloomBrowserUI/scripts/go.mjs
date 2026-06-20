@@ -29,6 +29,14 @@ const viteHealthTimeoutMs = 15000;
 const viteHealthPollMs = 250;
 const maxRandomVitePortAttempts = 10;
 const gracefulShutdownMs = 1500;
+// How long to wait for a linked iframe-app (--with) dev server to print its URL. The first
+// cold run is slow: `pnpm dev` runs the package's prepare step (vp config) and vite-plus
+// optimizes dependencies before serving, all while Bloom's own Vite + dotnet build compete
+// for the machine, so it routinely exceeds a short fixed deadline. We therefore fail only
+// when the server goes silent for iframeUrlInactivityMs (no progress at all), with
+// iframeUrlMaxMs as an absolute backstop against a server that chatters but never serves.
+const iframeUrlInactivityMs = 60000;
+const iframeUrlMaxMs = 180000;
 // Probe both loopback families: Vite may bind only IPv6 (::1) on some machines,
 // and Node's fetch resolves "localhost" to IPv4 (127.0.0.1) first, so a
 // localhost-only probe can spuriously report Vite as unreachable.
@@ -659,11 +667,43 @@ const startIframeDevServer = (entry, checkoutDir) =>
 
         let settled = false;
         let logTail = "";
+        let inactivityTimer;
+        let maxTimer;
+
+        // Settle the promise exactly once, tearing down both watchdog timers.
+        const finish = (action, value) => {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            clearTimeout(inactivityTimer);
+            clearTimeout(maxTimer);
+            action(value);
+        };
+
+        // (Re)arm the inactivity watchdog. Any output counts as progress and pushes the
+        // deadline back, so a slow-but-advancing cold start is not killed; we only give up
+        // if the server stalls entirely.
+        const armInactivityTimer = () => {
+            if (settled) {
+                return;
+            }
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                finish(
+                    reject,
+                    new Error(
+                        `${entry.name} dev server produced no output for ${iframeUrlInactivityMs / 1000}s while waiting for it to print a URL.`,
+                    ),
+                );
+            }, iframeUrlInactivityMs);
+        };
 
         const onText = (text) => {
             if (settled) {
                 return;
             }
+            armInactivityTimer();
             // Strip ANSI color codes first: Vite prints the URL with escapes spliced in
             // (e.g. "http://localhost:\x1b[1m3001\x1b[22m/"), which would defeat the regex.
             // eslint-disable-next-line no-control-regex
@@ -673,20 +713,16 @@ const startIframeDevServer = (entry, checkoutDir) =>
                 /(https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\]):\d+\/?)/i,
             );
             if (match) {
-                settled = true;
                 const url = match[1].endsWith("/") ? match[1] : `${match[1]}/`;
-                resolve(url);
+                finish(resolve, url);
             }
         };
 
         pipeChildOutput(child, prefix, onText);
 
         child.on("error", (error) => {
-            if (settled) {
-                return;
-            }
-            settled = true;
-            reject(
+            finish(
+                reject,
                 new Error(
                     `${entry.name} dev server failed to start: ${error.message}`,
                 ),
@@ -694,28 +730,24 @@ const startIframeDevServer = (entry, checkoutDir) =>
         });
 
         child.on("exit", (code) => {
-            if (settled) {
-                return;
-            }
-            settled = true;
-            reject(
+            finish(
+                reject,
                 new Error(
                     `${entry.name} dev server exited before printing a URL (code ${code ?? 0}).`,
                 ),
             );
         });
 
-        setTimeout(() => {
-            if (settled) {
-                return;
-            }
-            settled = true;
-            reject(
+        maxTimer = setTimeout(() => {
+            finish(
+                reject,
                 new Error(
-                    `${entry.name} dev server did not print a URL within 30s.`,
+                    `${entry.name} dev server did not print a URL within ${iframeUrlMaxMs / 1000}s.`,
                 ),
             );
-        }, 30000);
+        }, iframeUrlMaxMs);
+
+        armInactivityTimer();
     });
 
 // Mirror a library's build-output directory into Bloom's output/ on change, so a linked
