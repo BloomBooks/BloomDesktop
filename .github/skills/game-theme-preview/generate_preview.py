@@ -12,7 +12,11 @@ approve and clicks "Copy approved changes" to put an apply-ready block on the
 clipboard, which can be handed back to an agent to edit gamesThemes.less.
 
 Usage:
-    py generate_preview.py [output.html] [path/to/gamesThemes.less]
+    py generate_preview.py [output.html] [path/to/gamesThemes.less] [curated.json]
+
+The optional third argument is a curated-suggestions JSON file (theme ->
+"Component title|check label" -> [{label, why, changes}]); its picks render first
+as validated "Recommended" options. See SKILL.md for the format.
 """
 
 import colorsys
@@ -53,24 +57,37 @@ def parse_themes(less_text):
     """
     text = _strip_comments(less_text)
 
-    mixin = re.search(r"\.apply-game-theme\(\)\s*\{(.*?)\n\}", text, re.S)
-    mixin_vars = _vars_in(mixin.group(1)) if mixin else []
-
-    base = re.search(r'\.bloom-page\[class\*="game-theme-"\]\s*\{(.*?)\n\}', text, re.S)
-    base_vars = _vars_in(base.group(1)) if base else []
+    # These blocks have no nested braces, so [^{}]* is both correct and robust to
+    # whitespace/formatting (unlike requiring a newline before the closing brace).
+    mixin = re.search(r"\.apply-game-theme\(\)\s*\{([^{}]*)\}", text)
+    base = re.search(r'\.bloom-page\[class\*="game-theme-"\]\s*\{([^{}]*)\}', text)
+    # Fail fast (per AGENTS.md): if the expected structure is gone, say so clearly
+    # rather than silently producing wrong/empty themes that error obscurely later.
+    if not mixin:
+        raise ValueError("Could not find the .apply-game-theme() mixin in gamesThemes.less")
+    if not base:
+        raise ValueError('Could not find the .bloom-page[class*="game-theme-"] base block')
+    mixin_vars = _vars_in(mixin.group(1))
+    base_vars = _vars_in(base.group(1))
 
     themes = {}
-    for m in re.finditer(r"\.bloom-page\.game-theme-([\w-]+)\s*\{(.*?)\n\}", text, re.S):
+    for m in re.finditer(r"\.bloom-page\.game-theme-([\w-]+)\s*\{([^{}]*)\}", text):
         name = m.group(1)
         merged = {}
         for k, v in base_vars + mixin_vars + _vars_in(m.group(2)):
             merged[k] = v
         themes[name] = merged
+    if not themes:
+        raise ValueError("Found no .bloom-page.game-theme-* blocks in gamesThemes.less")
     return themes
 
 
 def resolve(name, vars_map, _seen=None):
-    """Resolve a variable to a concrete color string, following var() chains."""
+    """Resolve a variable to a concrete color string, following var() chains.
+
+    Supports `var(--x)` and `var(--x, fallback)`: if --x is undefined, the fallback
+    (itself possibly a literal or another var()) is used, matching CSS semantics.
+    """
     _seen = _seen or set()
     if name in _seen:
         raise ValueError(f"variable cycle at {name}")
@@ -78,10 +95,27 @@ def resolve(name, vars_map, _seen=None):
     val = vars_map.get(name)
     if val is None:
         return None
-    m = re.fullmatch(r"var\(\s*(--[\w-]+)\s*\)", val)
+    m = re.fullmatch(r"var\(\s*(--[\w-]+)\s*(?:,\s*(.+?))?\s*\)", val)
     if m:
-        return resolve(m.group(1), vars_map, _seen)
+        referenced = resolve(m.group(1), vars_map, _seen)
+        if referenced is not None:
+            return referenced
+        if m.group(2) is not None:  # fall back to the var()'s default
+            return _resolve_value(m.group(2).strip(), vars_map, _seen)
+        return None
     return val  # a literal color (hex / named)
+
+
+def _resolve_value(val, vars_map, _seen):
+    """Resolve a raw value string (used for a var() fallback, which may be a literal
+    color or another var() reference)."""
+    m = re.fullmatch(r"var\(\s*(--[\w-]+)\s*(?:,\s*(.+?))?\s*\)", val)
+    if not m:
+        return val
+    referenced = resolve(m.group(1), vars_map, _seen)
+    if referenced is not None:
+        return referenced
+    return _resolve_value(m.group(2).strip(), vars_map, _seen) if m.group(2) else None
 
 
 # ---------------------------------------------------------------------------
@@ -160,9 +194,15 @@ def curated_options(name, comp, ck, vars_map, curated):
 
 
 def _search_one(var, comp, vars_map):
-    """Smallest same-hue lightness move of `var` that makes the WHOLE component valid."""
+    """Smallest same-hue lightness move of `var` that makes the WHOLE component valid.
+
+    If the current color carries alpha (an 8-digit hex, e.g. a semi-transparent target
+    outline), the suggestion keeps that alpha so we never silently make a translucent
+    color opaque; contrast is judged on the composited result."""
     cur = resolve(var, vars_map)
-    r, g, b = parse(cur)
+    r, g, b = parse(cur)  # raw rgb (alpha, if any, dropped here for the hue/sat)
+    bare = cur.strip().lstrip("#").lower()
+    alpha = bare[6:8] if len(bare) == 8 else ""
     h, l, s = colorsys.rgb_to_hls(r / 255, g / 255, b / 255)
     best = None
     for sign in (-1, 1):
@@ -171,7 +211,7 @@ def _search_one(var, comp, vars_map):
             if l2 < 0 or l2 > 1:
                 break
             rr, gg, bb = colorsys.hls_to_rgb(h, l2, s)
-            val = _hex((round(rr * 255), round(gg * 255), round(bb * 255)))
+            val = _hex((round(rr * 255), round(gg * 255), round(bb * 255))) + alpha
             if _valid(comp, _apply(vars_map, [(var, val)])):
                 if best is None or step < best[1]:
                     best = (val, step, "darken" if sign < 0 else "lighten")
@@ -418,7 +458,6 @@ def render(themes, curated=None):
                         res_html += (f'<span class="mini {cls}">{r["label"]} '
                                      f'{r["before"]:.1f}&rarr;{r["after"]:.1f}</span>')
                     dot = opt["changes"][0]["value"]
-                    swatches = " ".join(c["value"] for c in opt["changes"])
                     var_html = "".join(f'<code>{c["var"]}: {c["value"]}</code>' for c in opt["changes"])
                     data_changes = ";;".join(f'{c["var"]}|{c["value"]}' for c in opt["changes"])
                     rec_cls = " rec" if opt.get("recommended") else ""
@@ -617,7 +656,7 @@ PAGE = r"""<title>Bloom Game Theme Preview</title>
     if(!checked.length) return;
     const byTheme={};
     checked.forEach(o=>{ (byTheme[o.dataset.theme] ??= []).push(o); });
-    let out='# Approved game-theme contrast changes\n# Apply each line as a CSS variable in the named .bloom-page.game-theme-* block of gamesThemes.less\n';
+    let out='# Approved game-theme contrast changes\n# Apply each line as a CSS variable in the named .bloom-page.game-theme-* block of gamesThemes.less.\n# Keep a short comment on each, including the issue id (e.g. BL-16323), for traceability.\n';
     let lines=0;
     for(const [theme,list] of Object.entries(byTheme)){
       out += `\n## ${theme}\n`;
