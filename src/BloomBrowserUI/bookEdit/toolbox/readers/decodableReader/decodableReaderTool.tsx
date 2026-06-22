@@ -5,7 +5,10 @@ import { getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
 import { get } from "../../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { renderRoot } from "../../../../utils/reactRender";
-import { isLongPressEvaluating } from "../../toolbox";
+import {
+    applyToolboxStateToUpdatedPage,
+    isLongPressEvaluating,
+} from "../../toolbox";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
 
 // this new version of the decodable reader tool re-implements some
@@ -31,6 +34,7 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     }
     public detachFromPage(): void {
         getTheOneReaderToolsModel().setMarkupType(0);
+        applyToolboxStateToUpdatedPage();
     }
     public updateMarkup() {
         // Don't let this lower-level code create ckeditor bookmarks in this case.

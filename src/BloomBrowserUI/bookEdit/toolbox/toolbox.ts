@@ -38,21 +38,6 @@ type ToolboxSettings = Record<string, string> & {
 
 let savedSettings: ToolboxSettings = {};
 
-// added this event listener so that savedSettings would
-// be updated when saveState is called readerToolsModel.ts.
-// This allows the React decodable reader tool to correctly
-// restore the current stage and sort type after the tool
-// has been closed and reentered
-window.addEventListener("toolbox-setting-saved", (event: Event) => {
-    const detail = (
-        event as CustomEvent<{
-            key: string;
-            value: string;
-        }>
-    ).detail;
-    savedSettings[detail.key] = detail.value;
-});
-
 let keypressTimer: ReturnType<typeof setTimeout> | null = null;
 
 const showExperimentalTools = false; // set by Toolbox.initialize()
