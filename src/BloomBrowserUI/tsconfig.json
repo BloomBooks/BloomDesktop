@@ -24,7 +24,9 @@
         // this solved the 'foo' cannot be used as a JSX component. Its instance type 'foo' is not a valid JSX element,
         // which came in when we were at react 17 but some things are going towards 18
         "paths": {
-            "react": ["./node_modules/@types/react"]
+            "react": ["./node_modules/@types/react"],
+            // The self-contained game theme editor project (see vite.config.mts resolve.alias).
+            "gameThemeEditor": ["../gameThemeEditor/src/index.tsx"]
         }
     },
     "exclude": [

@@ -743,6 +743,12 @@ export default defineConfig(async ({ command }) => {
             // This matches our webpack configuration
             alias: {
                 "@": path.resolve(__dirname, "."), // @ = project root
+                // The self-contained game theme editor project (sibling of BloomBrowserUI).
+                // Bloom consumes its TypeScript source directly; see src/gameThemeEditor/README.md.
+                gameThemeEditor: path.resolve(
+                    __dirname,
+                    "../gameThemeEditor/src",
+                ),
                 // Browser shims for Node built-ins used by some dependencies
                 os: path.resolve(__dirname, "shims/os.ts"),
                 // Module resolution paths to match webpack configuration
@@ -826,6 +832,12 @@ export default defineConfig(async ({ command }) => {
             include: [
                 "jquery", // Always pre-bundle jQuery
                 "comicaljs", // Pre-bundle comicaljs (webpack UMD bundle needs processing)
+                // The game theme editor project lives outside BloomBrowserUI (../gameThemeEditor),
+                // so Vite can't auto-resolve its bare deps from BloomBrowserUI/node_modules by
+                // walking up from those files. Pre-bundling react-rnd here makes the bare id
+                // resolvable from the editor's source regardless of its location.
+                "react-rnd",
+                "@emotion/cache",
             ],
             exclude: ["lib/localizationManager/localizationManager"], // Don't pre-bundle this
             // Force Vite to treat comicaljs as having named exports even though it's CommonJS/UMD
