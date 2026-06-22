@@ -13,7 +13,7 @@ import {
     postDataWithConfigAsync,
 } from "../../utils/bloomApi";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
-import type { IImageInfo } from "../../bookEdit/js/bloomEditing";
+
 import { getEditablePageBundleExports } from "../../bookEdit/js/workspaceFrames";
 import { ShowEditViewDialog } from "../../bookEdit/workspaceRoot";
 
@@ -26,7 +26,7 @@ interface IImageGalleryApiResult {
 }
 
 const ImageGalleryDialog: React.FunctionComponent<{
-    imageId: string;
+    img: HTMLElement;
     searchLang: string;
 }> = (props) => {
     const [open, setOpen] = useState(true);
@@ -37,6 +37,9 @@ const ImageGalleryDialog: React.FunctionComponent<{
     >(undefined);
     const [keysLoaded, setKeysLoaded] = useState(false);
 
+    // useEffect justified: this is a one-time async fetch that must run after mount
+    // so the component can render before the network round-trip completes.
+    // There are no dependencies to react to; [] is correct.
     useEffect(() => {
         getAsync("app/userSetting?settingName=ImageGalleryProviderKeys")
             .then((r) => {
@@ -54,13 +57,11 @@ const ImageGalleryDialog: React.FunctionComponent<{
 
     const handleClose = () => {
         setOpen(false);
-        getEditablePageBundleExports()?.removeImageId(props.imageId);
     };
 
     const onConfirmSelection = async (image: IImage) => {
-        getEditablePageBundleExports()?.addRequestPageContentDelay(
-            "imageGalleryConfirm",
-        );
+        const exports = getEditablePageBundleExports();
+        exports?.addRequestPageContentDelay("imageGalleryConfirm");
         setOpen(false);
         try {
             const payload = {
@@ -76,21 +77,15 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 payload,
             );
             const result = response!.data as IImageGalleryApiResult;
-            const imageInfo: IImageInfo = {
-                imageId: props.imageId,
+            exports?.changeImageByElement(props.img, {
                 src: result.src,
                 copyright: result.copyright,
                 creator: result.creator,
                 license: result.license,
-                undoable: "false",
-            };
-            getEditablePageBundleExports()?.changeImage(imageInfo);
-        } catch {
-            getEditablePageBundleExports()?.removeImageId(props.imageId);
+                undoable: "true",
+            });
         } finally {
-            getEditablePageBundleExports()?.removeRequestPageContentDelay(
-                "imageGalleryConfirm",
-            );
+            exports?.removeRequestPageContentDelay("imageGalleryConfirm");
         }
     };
 
@@ -111,8 +106,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
         };
     };
 
-    const artOfReadingBaseUrl =
-        getBloomApiPrefix() + "imageGallery/artOfReading";
+    const localCollectionsBaseUrl = getBloomApiPrefix() + "imageGallery";
 
     return (
         <BloomDialog
@@ -147,7 +141,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
                         onConfirmSelection={onConfirmSelection}
                         onPickLocalFile={onPickLocalFile}
                         onCancel={handleClose}
-                        artOfReadingBaseUrl={artOfReadingBaseUrl}
+                        localCollectionsBaseUrl={localCollectionsBaseUrl}
                         lang={props.searchLang}
                         initialProviderKeys={providerKeys}
                         primaryColor={kBloomBlue}
@@ -182,12 +176,12 @@ const ImageGalleryDialog: React.FunctionComponent<{
     );
 };
 
-/** Show the image gallery dialog. imageId must already be set on the imgElement. */
+/** Show the image gallery dialog for the given image element. */
 export function showImageGalleryDialog(
-    imageId: string,
+    img: HTMLElement,
     searchLang: string,
 ): void {
     ShowEditViewDialog(
-        <ImageGalleryDialog imageId={imageId} searchLang={searchLang} />,
+        <ImageGalleryDialog img={img} searchLang={searchLang} />,
     );
 }

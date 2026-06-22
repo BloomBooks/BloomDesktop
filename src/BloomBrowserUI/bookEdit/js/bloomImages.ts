@@ -307,23 +307,16 @@ export function doImageCommand(
     if (!img) {
         return;
     }
-    // get the image id attribute. If it doesn't have one, add it before calling
-    // the server api. This is needed to properly identify the image later on in the
-    // changeImage method.  The copy command doesn't need to identify the image later,
-    // as the source url is enough for that command.
-    // (An image usually shouldn't have an id to begin with.)
-    let imageId = img.getAttribute("id");
     const imageSrc = GetRawImageUrl(img);
-    if (command !== "copy") {
+
+    if (command === "paste") {
+        // A temporary id is needed so the server-side callback can find the right
+        // image element when C# calls changeImage() by id.
+        let imageId = img.getAttribute("id");
         if (!imageId) {
             imageId = EditableDivUtils.createUuid();
             img.setAttribute("id", imageId);
         }
-        // Note that the changeImage method will remove the id attribute after using
-        // it to find the correct image.  removeImageId is called on cancel. See BL-13619.
-    }
-
-    if (command === "paste") {
         const topDiv = img.closest(kCanvasElementSelector);
         const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
         const pageBackgroundColor = getOwningPageBackgroundColor(img);
@@ -357,16 +350,22 @@ export function doImageCommand(
 
     if (imageIsGif) {
         // GIF images bypass the gallery and go straight to a native file picker.
+        // A temporary id is needed so the wrapWithRequestPageContentDelay / changeImage
+        // round-trip can locate the element.
+        let imageId = img.getAttribute("id");
+        if (!imageId) {
+            imageId = EditableDivUtils.createUuid();
+            img.setAttribute("id", imageId);
+        }
         wrapWithRequestPageContentDelay(
             () => doChangeGifImage(img, imageId!),
             "doChangeGifImage",
         );
     } else {
+        // The gallery dialog holds a direct JS reference to img, so no temporary id
+        // is needed and requestPageContent cannot capture a stale attribute.
         const searchLang = navigator.language.split("-")[0] || "en";
-        getWorkspaceBundleExports().showImageGalleryDialog(
-            imageId!,
-            searchLang,
-        );
+        getWorkspaceBundleExports().showImageGalleryDialog(img, searchLang);
     }
 }
 
@@ -406,7 +405,7 @@ async function doChangeGifImage(
             copyright: result.copyright,
             creator: result.creator,
             license: result.license,
-            undoable: "false",
+            undoable: "true",
         };
         changeImage(imageInfo);
     } catch {

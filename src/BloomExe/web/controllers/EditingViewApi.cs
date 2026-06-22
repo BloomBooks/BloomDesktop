@@ -162,18 +162,18 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                "imageGallery/artOfReading/local-collections/collections",
-                HandleArtOfReadingCollections,
+                "imageGallery/local-collections/collections",
+                HandleLocalCollections,
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                "imageGallery/artOfReading/local-collections/search",
-                HandleArtOfReadingSearch,
+                "imageGallery/local-collections/search",
+                HandleLocalCollectionsSearch,
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                "imageGallery/artOfReading/local-collections/collection-image",
-                HandleArtOfReadingCollectionImage,
+                "imageGallery/local-collections/collection-image",
+                HandleLocalCollectionImage,
                 false
             );
         }
@@ -812,16 +812,31 @@ namespace Bloom.web.controllers
                     // "Picassa" Artist can survive. Use SaveImageMetadataIfNeeded on a
                     // fresh load of the destination file so the replacement is complete.
                     var licenseInfo = BuildLicenseInfoFromGallery(license, licenseUrl);
+
+                    // Priority rules:
+                    // Copyright: EXIF is more specific (often includes year); use it when present,
+                    //   fall back to gallery-provided collection-level credits.
+                    // Creator: per-image artist from the collection index trumps EXIF, which in
+                    //   turn trumps the absence of any data.
+                    var effectiveCopyright = !string.IsNullOrEmpty(info.copyright)
+                        ? info.copyright
+                        : credits ?? "";
+                    var effectiveCreator = !string.IsNullOrEmpty(galleryCreator)
+                        ? galleryCreator
+                        : info.creator ?? "";
+
                     bool hasGalleryMeta =
-                        !string.IsNullOrEmpty(galleryCreator)
-                        || !string.IsNullOrEmpty(credits)
+                        !string.IsNullOrEmpty(effectiveCreator)
+                        || !string.IsNullOrEmpty(effectiveCopyright)
                         || licenseInfo != null;
 
                     if (hasGalleryMeta)
                     {
                         var galleryMetadata = new Metadata();
-                        galleryMetadata.Creator = galleryCreator ?? "";
-                        galleryMetadata.CopyrightNotice = credits ?? "";
+                        if (!string.IsNullOrEmpty(effectiveCreator))
+                            galleryMetadata.Creator = effectiveCreator;
+                        if (!string.IsNullOrEmpty(effectiveCopyright))
+                            galleryMetadata.CopyrightNotice = effectiveCopyright;
                         if (licenseInfo != null)
                             galleryMetadata.License = licenseInfo;
 
@@ -837,10 +852,8 @@ namespace Bloom.web.controllers
                         new
                         {
                             src = info.src,
-                            copyright = !string.IsNullOrEmpty(credits) ? credits : info.copyright,
-                            creator = !string.IsNullOrEmpty(galleryCreator)
-                                ? galleryCreator
-                                : info.creator,
+                            copyright = effectiveCopyright,
+                            creator = effectiveCreator,
                             license = licenseInfo != null ? licenseInfo.ToString() : info.license,
                         }
                     );
@@ -860,6 +873,7 @@ namespace Bloom.web.controllers
         /// <summary>
         /// Builds a libpalaso ILicenseInfo from the gallery-provided license string and/or URL.
         /// CC license URLs (creativecommons.org) are parsed into a proper CreativeCommonsLicense;
+        /// well-known CC license strings (e.g. "CC-BY-SA") are similarly mapped even without a URL;
         /// everything else becomes a CustomLicense so the text is preserved.
         /// Returns null when no info is given.
         /// </summary>
@@ -880,8 +894,58 @@ namespace Bloom.web.controllers
                 }
             }
             if (!string.IsNullOrEmpty(license))
+            {
+                // Try to interpret the string as a standard CC license code so we get a
+                // proper CreativeCommonsLicense (with type/version) rather than CustomLicense.
+                var ccUrl = TryGetCcUrlFromString(license);
+                if (ccUrl != null)
+                {
+                    try
+                    {
+                        return CreativeCommonsLicense.FromLicenseUrl(ccUrl);
+                    }
+                    catch
+                    { /* fall through to CustomLicense */
+                    }
+                }
                 return new CustomLicense { RightsStatement = license };
+            }
             return null;
+        }
+
+        /// <summary>
+        /// Maps a CC license string such as "CC-BY-SA" or "CC-BY-SA 3.0" to a canonical
+        /// creativecommons.org URL.  Returns null if the string is not a recognised CC code.
+        /// Always uses the latest 4.0 URL so Bloom's license picker shows the right type;
+        /// the exact version is not critical here — it can be corrected by the author.
+        /// </summary>
+        private static string TryGetCcUrlFromString(string license)
+        {
+            // Normalise: upper-case, collapse spaces/underscores to hyphens, strip trailing version
+            var key = System.Text.RegularExpressions.Regex.Replace(
+                license.Trim().ToUpperInvariant().Replace(' ', '-').Replace('_', '-'),
+                @"-\d+\.\d+$",
+                ""
+            );
+            switch (key)
+            {
+                case "CC-BY":
+                    return "https://creativecommons.org/licenses/by/4.0/";
+                case "CC-BY-SA":
+                    return "https://creativecommons.org/licenses/by-sa/4.0/";
+                case "CC-BY-ND":
+                    return "https://creativecommons.org/licenses/by-nd/4.0/";
+                case "CC-BY-NC":
+                    return "https://creativecommons.org/licenses/by-nc/4.0/";
+                case "CC-BY-NC-SA":
+                    return "https://creativecommons.org/licenses/by-nc-sa/4.0/";
+                case "CC-BY-NC-ND":
+                    return "https://creativecommons.org/licenses/by-nc-nd/4.0/";
+                case "CC0":
+                    return "https://creativecommons.org/publicdomain/zero/1.0/";
+                default:
+                    return null;
+            }
         }
 
         /// <summary>
@@ -968,12 +1032,10 @@ namespace Bloom.web.controllers
         /// </summary>
         private string _lastPickedLocalImagePath;
 
-        private static readonly string[] _defaultAorLanguages = new[] { "en", "es" };
-
         /// <summary>
         /// The root folder where SIL image collections (including Art of Reading) are installed.
         /// </summary>
-        private static string ArtOfReadingBaseFolder =>
+        private static string LocalCollectionsBaseFolder =>
             Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                 "SIL",
@@ -984,32 +1046,130 @@ namespace Bloom.web.controllers
         /// Returns the list of Art of Reading image collections installed on this machine,
         /// together with the keyword-search languages they support.
         /// </summary>
-        private void HandleArtOfReadingCollections(ApiRequest request)
+        private void HandleLocalCollections(ApiRequest request)
         {
-            var baseFolder = ArtOfReadingBaseFolder;
+            var baseFolder = LocalCollectionsBaseFolder;
             if (!Directory.Exists(baseFolder))
             {
                 request.ReplyWithJson(
-                    new { collections = Array.Empty<string>(), languages = _defaultAorLanguages }
+                    new { collections = Array.Empty<object>(), languages = new[] { "en" } }
                 );
                 return;
             }
 
-            var collections = Directory
+            var collectionNames = Directory
                 .GetDirectories(baseFolder)
                 .Select(Path.GetFileName)
                 .Where(n => !string.IsNullOrEmpty(n))
                 .ToArray();
 
-            var languages = GetArtOfReadingLanguages(baseFolder, collections);
+            var languages = GetLocalCollectionsLanguages(baseFolder, collectionNames);
+            var collections = collectionNames
+                .Select(name =>
+                {
+                    var (licenseUrl, credits) = GetCollectionMetadata(name, baseFolder);
+                    return (object)
+                        new
+                        {
+                            name,
+                            licenseUrl,
+                            credits,
+                        };
+                })
+                .ToArray();
             request.ReplyWithJson(new { collections, languages });
+        }
+
+        /// <summary>
+        /// Returns the license URL and credit text for a named local image collection.
+        /// Priority: metadata.json (if present) → InstallerLicense.rtf (if present) → empty strings.
+        /// </summary>
+        private static (string licenseUrl, string credits) GetCollectionMetadata(
+            string name,
+            string baseFolder
+        )
+        {
+            var collectionFolder = Path.Combine(baseFolder, name);
+
+            var metaPath = Path.Combine(collectionFolder, "metadata.json");
+            if (RobustFile.Exists(metaPath))
+            {
+                try
+                {
+                    var meta = (DynamicJson)DynamicJson.Parse(RobustFile.ReadAllText(metaPath));
+                    meta.TryGetValue("licenseUrl", out string fileLicenseUrl);
+                    meta.TryGetValue("credits", out string fileCredits);
+                    if (!string.IsNullOrEmpty(fileLicenseUrl) || !string.IsNullOrEmpty(fileCredits))
+                        return (fileLicenseUrl ?? "", fileCredits ?? "");
+                }
+                catch
+                {
+                    // Malformed metadata.json — fall through to RTF.
+                }
+            }
+
+            return GetInstallerLicenseMetadata(collectionFolder);
+        }
+
+        /// <summary>
+        /// Parses InstallerLicense.rtf (a standard SIL image-collection license file) to extract
+        /// the CC license URL and the copyright-holder/grantor name.
+        /// Returns empty strings if the file is absent or cannot be parsed.
+        /// </summary>
+        internal static (string licenseUrl, string credits) GetInstallerLicenseMetadata(
+            string collectionFolder
+        )
+        {
+            var rtfPath = Path.Combine(collectionFolder, "InstallerLicense.rtf");
+            if (!RobustFile.Exists(rtfPath))
+                return ("", "");
+
+            string rtf;
+            try
+            {
+                rtf = RobustFile.ReadAllText(rtfPath);
+            }
+            catch
+            {
+                return ("", "");
+            }
+
+            // Extract the CC license URL from the HYPERLINK directive.
+            // The RTF contains e.g. "HYPERLINK https://creativecommons.org/licenses/by-sa/4.0/legalcode"
+            string licenseUrl = "";
+            var hyperlinkMatch = Regex.Match(
+                rtf,
+                @"HYPERLINK\s+(https://creativecommons\.org/licenses/[^\s]+)"
+            );
+            if (hyperlinkMatch.Success)
+            {
+                licenseUrl = hyperlinkMatch.Groups[1].Value;
+                // Strip the /legalcode suffix to get the canonical license URL.
+                licenseUrl = Regex.Replace(licenseUrl, @"/legalcode/?$", "/");
+                if (!licenseUrl.EndsWith('/'))
+                    licenseUrl += "/";
+            }
+
+            // Strip RTF control words and braces to get readable plain text, then find
+            // the grantor — the name that appears before "grants you use of these images".
+            string credits = "";
+            var plain = Regex.Replace(rtf, @"\\[a-zA-Z]+\d*\s?|\\'[0-9a-fA-F]{2}|\\\*|[{}]", " ");
+            plain = Regex.Replace(plain, @"\s+", " ");
+            var grantorMatch = Regex.Match(plain, @"((?:[A-Z][^\s]*\s+){1,6})grants you use");
+            if (grantorMatch.Success)
+                credits = grantorMatch.Groups[1].Value.Trim();
+
+            return (licenseUrl, credits);
         }
 
         /// <summary>
         /// Reads the first available index.txt header to discover which keyword-language
         /// columns the collection provides (e.g. "en", "es").
         /// </summary>
-        private static string[] GetArtOfReadingLanguages(string baseFolder, string[] collections)
+        private static string[] GetLocalCollectionsLanguages(
+            string baseFolder,
+            string[] collections
+        )
         {
             foreach (var collection in collections)
             {
@@ -1024,7 +1184,7 @@ namespace Bloom.web.controllers
                 if (langCodes.Length > 0)
                     return langCodes;
             }
-            return _defaultAorLanguages;
+            return new[] { "en" };
         }
 
         /// <summary>
@@ -1034,18 +1194,18 @@ namespace Bloom.web.controllers
         /// for thumbnail display; localPath is the absolute OS path so the caller can copy the
         /// file directly without an extra HTTP round-trip.
         /// </summary>
-        private void HandleArtOfReadingSearch(ApiRequest request)
+        private void HandleLocalCollectionsSearch(ApiRequest request)
         {
             var collection = request.RequiredParam("collection");
             var lang = request.RequiredParam("lang");
             var term = request.RequiredParam("term").Trim().ToLowerInvariant();
 
-            var safeBase = Path.GetFullPath(ArtOfReadingBaseFolder);
+            var safeBase = Path.GetFullPath(LocalCollectionsBaseFolder);
             var indexPath = Path.GetFullPath(
-                Path.Combine(ArtOfReadingBaseFolder, collection, "index.txt")
+                Path.Combine(LocalCollectionsBaseFolder, collection, "index.txt")
             );
             var imagesBaseForGuard = Path.GetFullPath(
-                Path.Combine(ArtOfReadingBaseFolder, collection, "images")
+                Path.Combine(LocalCollectionsBaseFolder, collection, "images")
             );
             if (
                 !indexPath.StartsWith(safeBase, StringComparison.OrdinalIgnoreCase)
@@ -1075,6 +1235,7 @@ namespace Bloom.web.controllers
             if (subfolderIdx < 0)
                 subfolderIdx = Array.IndexOf(headers, "country");
             var langIdx = Array.IndexOf(headers, lang);
+            var artistIdx = Array.IndexOf(headers, "artist");
 
             if (filenameIdx < 0 || langIdx < 0)
             {
@@ -1083,7 +1244,7 @@ namespace Bloom.web.controllers
             }
 
             const string imageEndpoint =
-                "/bloom/api/imageGallery/artOfReading/local-collections/collection-image";
+                "/bloom/api/imageGallery/local-collections/collection-image";
             var imagesBase = imagesBaseForGuard;
             var results = new List<object>();
 
@@ -1104,6 +1265,8 @@ namespace Bloom.web.controllers
                     subfolderIdx >= 0 && subfolderIdx < cols.Length
                         ? cols[subfolderIdx].Trim()
                         : "";
+                var artist =
+                    artistIdx >= 0 && artistIdx < cols.Length ? cols[artistIdx].Trim() : "";
 
                 // Resolve the actual file path, handling AOR's optional one-level
                 // subsubfolder nesting (index subfolder may not be the direct parent).
@@ -1116,11 +1279,35 @@ namespace Bloom.web.controllers
                     .TrimStart(Path.DirectorySeparatorChar)
                     .Replace(Path.DirectorySeparatorChar, '/');
 
+                // Read per-image EXIF so the image chooser can show accurate copyright
+                // before the user confirms. MetadataFromFile reads only metadata chunks
+                // (not pixel data), so it is fast enough to call per search result.
+                string exifCopyright = "";
+                string exifCreator = "";
+                try
+                {
+                    var meta = RobustFileIO.MetadataFromFile(imagePath);
+                    if (meta?.ExceptionCaughtWhileLoading == null)
+                    {
+                        exifCopyright = meta?.CopyrightNotice?.Trim() ?? "";
+                        exifCreator = meta?.Creator?.Trim() ?? "";
+                    }
+                }
+                catch
+                {
+                    // Ignore metadata read failures; the gallery falls back gracefully.
+                }
+
+                // For creator: index artist column is authoritative; fall back to EXIF.
+                var creator = !string.IsNullOrEmpty(artist) ? artist : exifCreator;
+
                 results.Add(
                     new
                     {
                         url = $"{imageEndpoint}?collection={Uri.EscapeDataString(collection)}&file={Uri.EscapeDataString(relPath)}",
                         localPath = imagePath,
+                        creator,
+                        copyright = exifCopyright,
                     }
                 );
             }
@@ -1167,7 +1354,7 @@ namespace Bloom.web.controllers
         /// Serves a single Art of Reading image from the local image collections folder.
         /// The "file" query parameter is a subfolder-relative path such as "Animals/dog.png".
         /// </summary>
-        private void HandleArtOfReadingCollectionImage(ApiRequest request)
+        private void HandleLocalCollectionImage(ApiRequest request)
         {
             var collection = request.RequiredParam("collection");
             var file = request.RequiredParam("file");
@@ -1176,9 +1363,9 @@ namespace Bloom.web.controllers
             var normalizedFile = file.Replace('/', Path.DirectorySeparatorChar)
                 .Replace('\\', Path.DirectorySeparatorChar);
             var imagePath = Path.GetFullPath(
-                Path.Combine(ArtOfReadingBaseFolder, collection, "images", normalizedFile)
+                Path.Combine(LocalCollectionsBaseFolder, collection, "images", normalizedFile)
             );
-            var safeBase = Path.GetFullPath(ArtOfReadingBaseFolder);
+            var safeBase = Path.GetFullPath(LocalCollectionsBaseFolder);
 
             if (!imagePath.StartsWith(safeBase, StringComparison.OrdinalIgnoreCase))
             {

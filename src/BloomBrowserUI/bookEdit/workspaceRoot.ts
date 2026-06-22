@@ -50,7 +50,7 @@ export interface IWorkspaceExports {
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
     showBookSettingsDialog(initiallySelectedPageKey?: string): void;
-    showImageGalleryDialog(imageId: string, searchLang: string): void;
+    showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
 }
 
 export function SayHello() {
@@ -333,10 +333,10 @@ export function showRegistrationDialogFromWorkspaceRoot() {
 }
 
 export function showImageGalleryDialog(
-    imageId: string,
+    img: HTMLElement,
     searchLang: string,
 ): void {
-    doShowImageGalleryDialog(imageId, searchLang);
+    doShowImageGalleryDialog(img, searchLang);
 }
 
 const updateWorkspaceUrlParam = (name: string, value: string): void => {

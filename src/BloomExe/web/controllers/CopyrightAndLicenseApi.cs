@@ -214,6 +214,9 @@ namespace Bloom.web.controllers
                 licenseType = GetLicenseType(metadata.License),
                 creativeCommonsInfo = creativeCommonsInfoJson,
                 rightsStatement = metadata.License?.RightsStatement ?? string.Empty,
+                // The exact URL (including CC version) from the stored metadata.
+                // JS uses this for the "About" link so e.g. AOR 3.0 images link correctly.
+                licenseUrl = metadata.License?.Url ?? string.Empty,
             };
         }
 

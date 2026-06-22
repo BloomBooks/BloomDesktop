@@ -99,6 +99,10 @@ export interface IPageFrameExports {
     renderDragActivityTabControl(currentTab: number): void;
     showGamePromptDialog: (onlyIfEmpty: boolean) => void;
     changeImage(imageInfo: IImageInfo): void;
+    changeImageByElement(
+        imgOrImageContainer: HTMLElement,
+        imageInfo: Omit<IImageInfo, "imageId">,
+    ): void;
     removeImageId(imageId: string): void;
 }
 
@@ -118,6 +122,7 @@ import {
     attachToCkEditor,
     removeImageId,
     changeImage,
+    changeImageByElement,
     imageOperationCanUndo,
     imageOperationUndo,
     addRequestPageContentDelay,
@@ -138,6 +143,7 @@ export {
     attachToCkEditor,
     removeImageId,
     changeImage,
+    changeImageByElement,
     imageOperationCanUndo,
     imageOperationUndo,
     addRequestPageContentDelay,
@@ -385,6 +391,7 @@ interface EditablePageBundleApi {
     attachToCkEditor: typeof attachToCkEditor;
     removeImageId: typeof removeImageId;
     changeImage: typeof changeImage;
+    changeImageByElement: typeof changeImageByElement;
     imageOperationCanUndo: typeof imageOperationCanUndo;
     imageOperationUndo: typeof imageOperationUndo;
     origamiCanUndo: typeof origamiCanUndo;
@@ -431,6 +438,7 @@ window.editablePageBundle = {
     attachToCkEditor,
     removeImageId,
     changeImage,
+    changeImageByElement,
     imageOperationCanUndo: imageOperationCanUndo,
     imageOperationUndo: imageOperationUndo,
     origamiCanUndo,
