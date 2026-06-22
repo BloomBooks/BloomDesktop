@@ -216,11 +216,11 @@ export const BloomTabs: React.FunctionComponent<{
                     padding: 0;
                     gap: 1px;
                     // Bottom-align the tabs to the TopBar so the active tab's bottom edge
-                    // meets the pane below it. The TopBar's purple background is slightly
-                    // taller than the tabs (its height is driven by the taller right-hand
-                    // controls). With the default top-alignment, that left a sub-pixel strip
-                    // of purple showing below the active tab, which rounds up to a visible
-                    // ~1px line on high-DPI screens (the high-res purple line bug).
+                    // meets the pane below it. The TopBar's background color (based on the active tab)
+                    // is slightly taller than the tabs (its height is driven by the taller right-hand
+                    // controls). With the default top-alignment, that left a sub-pixel strip of the
+                    // TopBar background showing below the active tab, which rounds up to a visible
+                    // ~1px line on high-DPI screens.
                     align-self: flex-end;
                 `
             }
