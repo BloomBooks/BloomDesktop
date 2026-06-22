@@ -119,15 +119,21 @@ const DecodableGrid: FunctionComponent<{
         );
 
         const gridWidth = gridRef.current.getBoundingClientRect().width;
-        let colCount = Math.floor((gridWidth - 20) / width);
-        if (colCount < 1) {
-            colCount = 1;
-        } else if (colCount > 7) {
-            colCount = 7; // this way, the graphemes and small words won't be so clumped together
+
+        if (width !== 0) {
+            let colCount = Math.floor((gridWidth - 20) / width);
+            if (colCount < 1) {
+                colCount = 1;
+            } else if (colCount > 7) {
+                colCount = 7; // this way, the graphemes and small words won't be so clumped together
+            }
+            setCurColCount(colCount);
+            const rowCount = Math.ceil(props.displayList.length / colCount);
+            setCurRowCount(rowCount);
+        } else {
+            setCurColCount(1);
+            setCurRowCount(1);
         }
-        setCurColCount(colCount);
-        const rowCount = Math.ceil(props.displayList.length / colCount);
-        setCurRowCount(rowCount);
     }, [props.displayList]);
 
     return (
@@ -445,7 +451,7 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
                 flex-direction: column;
                 height: 100%;
                 min-height: 0;
-                overflow: hidden;
+                overflow-x: hidden;
             `}
         >
             {showTool && (
@@ -455,7 +461,7 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
                         flex-direction: column;
                         flex: 1 1 auto;
                         min-height: 0;
-                        overflow: hidden;
+                        overflow-x: hidden;
                     `}
                 >
                     <div
@@ -536,6 +542,9 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
             <ReaderToolSwitch
                 isForLeveled={false}
                 changeDisplayFunc={() => setShowTool((prev) => !prev)}
+                css={css`
+                    margin-left: 50px;
+                `}
             />
         </div>
     );
