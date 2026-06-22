@@ -15,6 +15,7 @@ import {
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import {
     post,
+    postBoolean,
     postJson,
     useApiBoolean,
     useApiObject,
@@ -81,6 +82,12 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         initiallyOpen: true,
         dialogFrameProvidedExternally: false,
     });
+
+    React.useEffect(() => {
+        if (propsForBloomDialog.open !== undefined) {
+            postBoolean("editView/setModalState", propsForBloomDialog.open);
+        }
+    }, [propsForBloomDialog.open]);
 
     const appearanceUIOptions: IAppearanceUIOptions =
         useApiObject<IAppearanceUIOptions>(
