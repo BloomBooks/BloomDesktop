@@ -166,7 +166,7 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
             >
                 {props.children}
             </div>
-            {featureStatus?.enabled || (
+            {featureStatus === undefined || featureStatus.enabled || (
                 <div
                     css={css`
                         position: absolute;
