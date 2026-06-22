@@ -246,13 +246,21 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         >
             <DialogTitle title={dialogTitle} />
             <DialogMiddle>
-                <AdjustTimingsControl
-                    segments={segments!}
-                    audioFileUrl={audioFileUrl!}
-                    setEndTimes={(endTimes) => updateEndTimes(endTimes)}
-                    fontFamily={fontFamily}
-                    shouldAdjustSegments={shouldAdjustSegments}
-                />
+                {/* Don't render the control until both inputs are actually ready.
+                    They are populated asynchronously in the open effect above; rendering
+                    sooner would mount the control with undefined props (the non-null
+                    assertions would be false), causing WaveSurfer to load the literal
+                    "undefined" URL and the server to report a missing Temp/undefined
+                    file (BL-16447). */}
+                {segments && audioFileUrl && (
+                    <AdjustTimingsControl
+                        segments={segments}
+                        audioFileUrl={audioFileUrl}
+                        setEndTimes={(endTimes) => updateEndTimes(endTimes)}
+                        fontFamily={fontFamily}
+                        shouldAdjustSegments={shouldAdjustSegments}
+                    />
+                )}
                 <div
                     id={timingsMenuId}
                     css={css`
