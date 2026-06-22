@@ -170,6 +170,11 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
         postData(
             getApiUrlSuffix(props.isForBook) + "?applyToAllImages=true",
             gatherData(),
+            undefined,
+            // If the POST itself fails before reaching the server, no "pushedToAllImages"
+            // websocket event will ever arrive, so reset to "idle" rather than leaving the
+            // spinner running forever.
+            () => setPushState("idle"),
         );
     }
 
