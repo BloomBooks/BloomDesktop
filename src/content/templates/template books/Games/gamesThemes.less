@@ -33,10 +33,6 @@
     --game-draggable-bg-color: var(--game-primary-bg-color);
 
     --game-draggable-target-outline-color: var(--game-draggable-bg-color);
-    // CSS variable cannot reference themselves, so we define this copy
-    // so that we can use color-mix() to make it semi-transparent
-    // when we want.
-    --game-draggable-target-outline-color-base: var(--game-draggable-bg-color);
 
     --game-header-color: var(--game-secondary-color);
     --game-header-bg-color: var(--game-primary-bg-color);
@@ -101,97 +97,58 @@
     --game-checkbox-outline-color: white;
 }
 .bloom-page.game-theme-pollinator {
-    // The 'right answer' terracotta was just shy of AA for its white text (4.09:1);
-    // a slightly deeper terracotta reaches 4.95:1. The selected checkbox derives its
-    // color from this variable, so this fixes that too. (BL-16323)
     --game-button-correct-bg-color: #b35527;
     --game-draggable-bg-color: #6b678d;
+    --game-draggable-target-outline-color: #5d5d98b6;
     --game-primary-color: #617321;
     --game-secondary-color: white;
-    // Kept translucent so it doesn't cover target images, but the previous olive
-    // (#61732185, 2.13:1 on white) was too faint; this darker olive at ~70% alpha
-    // reaches 3.71:1. (BL-16323)
-    --game-draggable-target-outline-color: #4a5719b3;
 }
 .bloom-page.game-theme-garden-path {
-    --game-button-bg-color: #ffffff;
-    --game-button-correct-color: #000000;
-    // The default outline matched the cream page, leaving the white button edgeless
-    // (1.15:1); the theme's dark green outlines it at 8.41:1. (BL-16323)
-    --game-button-outline-color: #2d4c1e;
-    --game-button-text-color: #2d4c1e;
-    --game-checkbox-outline-color: #2d4c1e;
-    // A gold draggable is invisible on the cream page (1.16:1). Darkening the fill to
-    // olive and switching its text to white keeps it readable while it stands out
-    // from the page (text 5.0:1, fill vs page 4.3:1). (BL-16323)
-    --game-draggable-bg-color: #806f00;
-    --game-draggable-color: white;
-    // The default outline color (gold #ffde00) is invisible on the cream page
-    // background (1.16:1); the theme's dark green gives 8.41:1. (BL-16323)
-    --game-draggable-target-outline-color: #2d4c1e;
-    // The Check button's gold fill was invisible on cream (1.16:1); dark green gives
-    // 8.41:1. (BL-16323)
-    --game-control-button-bg-color: #2d4c1e;
-    --game-header-bg-color: #2d4c1e;
-    --game-header-color: #feefb1;
-    --game-primary-color: #ffde00;
-    --game-secondary-color: #feefb1;
-    // The selected checkbox reused the gold fill, invisible on cream (1.16:1). Olive
-    // fill + white check keeps it readable and distinct (text 5.0:1, vs page 4.3:1). (BL-16323)
-    --game-selected-checkbox-bg-color: #806f00;
-    --game-selected-checkbox-color: white;
-    --game-text-color: #2d4c1e;
+    --game-button-correct-bg-color: #ea5252;
+    --game-button-correct-color: #ffffff;
+    --game-draggable-target-outline-color: #5c8a47;
+    --game-header-color: #ffffff;
+    --game-primary-color: #5b7e3c;
+    --game-secondary-color: #ffe18c;
+    --game-selected-checkbox-bg-color: #5b7e3c;
+    --game-text-color: #485e35;
 }
 .bloom-page.game-theme-cherry-blossom {
     --game-button-bg-color: #ffffff;
     --game-button-correct-color: #ffffff;
-    // The white button's edge matched the page (invisible, 1.10:1); reusing the
-    // checkbox-outline magenta gives it a visible cherry border (6.5:1). (BL-16323)
-    --game-button-outline-color: #8c3d56;
+    --game-button-outline-color: #fff0f3;
     --game-button-text-color: #5d2a3a;
     --game-checkbox-outline-color: #8c3d56;
     --game-draggable-color: #ffffff;
-    --game-header-bg-color: #ffb7c5;
-    --game-header-color: #4a1c2b;
-    // Deepened the cherry pink slightly: white text on the magenta chips (draggable,
-    // correct, selected) was only 4.19:1; this lifts them all over AA (4.83:1) in one
-    // change while staying 'cherry blossom'. (BL-16323)
-    --game-primary-color: #c83f64;
+    --game-draggable-target-outline-color: #c94779d0;
+    --game-header-color: #ffffff;
+    --game-primary-color: #d14d72;
     --game-secondary-color: #fff0f3;
     --game-text-color: #7a2e45;
 }
 .bloom-page.game-theme-coral-reef {
     --game-button-bg-color: white;
-    --game-button-correct-color: black;
-    --game-button-outline-color: var(--game-page-bg-color);
+    --game-button-correct-color: #000000;
+    --game-button-outline-color: #00000000;
     --game-button-text-color: black;
+    --game-button-wrong-bg-color: #747474;
     --game-checkbox-outline-color: #e0f2f1;
-    --game-draggable-color: black;
-    // Bold coral was invisible on the teal page (1.98:1). A pale coral keeps the reef's
-    // signature color while standing out (3.5:1) with the black draggable text. Used for
-    // the draggables, the Check button, and the selected checkbox so they read as one
-    // family. (BL-16323)
-    --game-draggable-bg-color: #ffdccf;
     --game-control-button-bg-color: #ffdccf;
-    --game-selected-checkbox-bg-color: #ffdccf;
-    // The default outline color (coral #ff8c6b) is too close in lightness to the
-    // teal page background (1.98:1); a pale coral gives 3.45:1. (BL-16323)
+    --game-draggable-bg-color: #ffdccf;
+    --game-draggable-color: black;
     --game-draggable-target-outline-color: #ffd9c9;
     --game-header-bg-color: #b34525;
     --game-header-color: white;
     --game-primary-color: #ff8c6b;
     --game-secondary-color: #00838f;
+    --game-selected-checkbox-bg-color: #ffdccf;
     --game-text-color: white;
 }
 .bloom-page.game-theme-arctic-dawn {
     --game-button-bg-color: white;
-    --game-button-correct-color: black;
-    --game-button-outline-color: var(--game-page-bg-color);
     --game-button-text-color: #042c53;
+    --game-button-wrong-bg-color: #858585;
     --game-checkbox-outline-color: #85b7eb;
-    --game-draggable-color: black;
-    --game-header-bg-color: #ed93b1;
-    --game-header-color: #042c53;
     --game-primary-color: #ed93b1;
     --game-secondary-color: #042c53;
     --game-text-color: white;
@@ -214,12 +171,9 @@
     .apply-game-theme();
 }
 
-.bloom-page.targets-semi-transparent {
-    // The target outline sticks out and ruins the target image, so we
-    // set the opacity of game-draggable-target-outline-color to 0.5
-    --game-draggable-target-outline-color: color-mix(
-        in srgb,
-        var(--game-draggable-target-outline-color-base) 10%,
-        transparent
-    );
-}
+// Note: target pages still carry the .targets-semi-transparent class, but the target
+// outline color is now controlled entirely by each theme's
+// --game-draggable-target-outline-color (including its alpha). Themes that want a faint
+// target outline bake the desired transparency into that color. This used to be forced
+// here via a color-mix() override, but that shadowed the theme's chosen color/opacity on
+// target pages, so the theme editor's changes appeared to "revert" when you left the page.
