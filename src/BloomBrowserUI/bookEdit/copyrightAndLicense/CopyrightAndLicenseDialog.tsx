@@ -121,6 +121,13 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
     const pushWorkingLabel = useL10n("Working…", "Common.Working");
     const pushDoneLabel = useL10n("Done", "Common.Done");
 
+    // Editing makes a prior "pushed to all images" confirmation stale, so offer the button
+    // again. But if a push is still running ("working"), leave the spinner alone: resetting to
+    // "idle" mid-operation would hide the spinner and re-enable the button for redundant clicks.
+    function markEditedSincePush() {
+        setPushState((prev) => (prev === "working" ? prev : "idle"));
+    }
+
     function onCopyrightChange(
         copyrightInfo: ICopyrightInfo,
         useOriginalCopyrightAndLicense: boolean,
@@ -129,14 +136,13 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
         setCopyrightInfo(copyrightInfo);
         setUseOriginalCopyrightAndLicense(useOriginalCopyrightAndLicense);
         setIsCopyrightValid(isValid);
-        // Editing makes a prior "pushed to all images" confirmation stale; offer the button again.
-        setPushState("idle");
+        markEditedSincePush();
     }
 
     function onLicenseChange(licenseInfo: ILicenseInfo, isValid: boolean) {
         setLicenseInfo(licenseInfo);
         setIsLicenseValid(isValid);
-        setPushState("idle");
+        markEditedSincePush();
     }
 
     // The current dialog values, in the shape the backend expects.
