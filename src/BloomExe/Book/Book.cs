@@ -2630,13 +2630,22 @@ namespace Bloom.Book
         /// Convert old &lt;b&gt; and &lt;i&gt; to &lt;strong&gt; and &lt;em&gt; respectively.
         /// Also remove instances like &lt;/b&gt;&lt;b&gt; altogether since such markup is redundant.
         /// </summary>
-        public void UpdateCharacterStyleMarkup(HtmlDom bookDOM)
+        public static void UpdateCharacterStyleMarkup(HtmlDom bookDOM)
         {
             var preserve = bookDOM.RawDom.PreserveWhitespace;
             bookDOM.RawDom.PreserveWhitespace = true;
             var paragraphs = bookDOM.SafeSelectNodes("//div[contains(@class,'bloom-editable')]/p");
             foreach (SafeXmlElement para in paragraphs)
             {
+                // spans are the only paragraph internal elements that should have any attributes.
+                foreach (var node in para.ChildNodes)
+                {
+                    if (node is SafeXmlElement && node.Name.ToLowerInvariant() != "span")
+                    {
+                        foreach (var attrName in node.AttributeNames)
+                            (node as SafeXmlElement).RemoveAttribute(attrName);
+                    }
+                }
                 string inner = para.InnerXml;
                 if (String.IsNullOrEmpty(inner) || !inner.Contains("<"))
                     continue;
