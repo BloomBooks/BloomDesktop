@@ -1086,7 +1086,7 @@ namespace Bloom.Api
                 //          (because they are rendered on a dark background) becoming completely invisible.
                 // Things in the book folder are processed on demand: resized, format-converted, and optionally
                 // made transparent, with results cached by GetPathToAdjustedImage / AdjustImageForDisplay.
-                processImage = sourceDir == CurrentBook?.FolderPath;
+                processImage = !isSvg && sourceDir == CurrentBook?.FolderPath;
             }
 
             var originalImageFile = imageFile;

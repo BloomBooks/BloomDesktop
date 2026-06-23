@@ -95,7 +95,7 @@ namespace Bloom.ImageProcessing
             public bool isNearWhite;
         }
 
-        // Tolerances used by the quantize-based line-art palette check.
+        // Thresholds for the in-process dominant-color line-art check.
         // To be a line-art background, a color must have a perceptual brightness
         // of at least LineArtBackgroundMinBrightness and a chroma (max-min channel) of at
         // most LineArtBackgroundMaxChroma.
@@ -109,11 +109,10 @@ namespace Bloom.ImageProcessing
         private const int LineArtInkGrayscaleChromaThreshold = 6;
         private const float LineArtInkHueTolerance = 0.15f;
 
-        // Number of colors to quantize the image to when summarizing its dominant palette.
-        // Eight gives the quantizer enough slots that distinct chromatic colors don't get
-        // averaged together (e.g. a red line and a blue line getting smeared into a single
-        // brown palette entry that would otherwise look like a single-hue ink), while still
-        // being small enough that anti-aliasing intermediates don't fill every slot.
+        // Number of dominant color bins to pass to IsLineArtPalette.
+        // Eight gives enough slots that distinct chromatic colors don't get averaged together
+        // (e.g. red and blue ink staying separate), while still being small enough that
+        // anti-aliasing intermediates don't fill every slot.
         private const int QuantizedColorCount = 8;
 
         /// <summary>
@@ -146,17 +145,10 @@ namespace Bloom.ImageProcessing
             if (HasAnyTransparentSampledPixel(bitmapImage))
                 return false;
 
-            // Ask GraphicsMagick to summarize the image as a handful of dominant colors.
-            // This is much more reliable than per-pixel sampling because it averages out
-            // anti-aliasing artifacts and slight channel asymmetries that the legacy strict
-            // R==G==B check would mis-classify as a "third color".
-            var dominantColors = TryGetDominantColorsViaQuantize(imageInfo);
-            if (dominantColors != null)
-                return IsLineArtPalette(dominantColors);
-
-            // GraphicsMagick unavailable (shouldn't happen in normal Bloom installs): fall back
-            // to the legacy pixel-sampling algorithm so we still produce a defensible answer.
-            return CheckLineArtByLegacySampling(bitmapImage);
+            // Summarize the image as a handful of dominant colors and check whether they
+            // look like line art. Bucketing averages out anti-aliasing artifacts and slight
+            // channel asymmetries that a strict per-pixel color check would mis-classify.
+            return IsLineArtPalette(GetDominantColors(bitmapImage));
         }
 
         /// <summary>
@@ -312,151 +304,80 @@ namespace Bloom.ImageProcessing
         }
 
         /// <summary>
-        /// Legacy fallback: sample roughly 100 pixels and require the encountered colors to
-        /// all be near-white or grayscale. Preserved verbatim from the previous algorithm in
-        /// case GraphicsMagick is unavailable.
+        /// Sample the image on an irregular grid, bucket sampled colors into coarse RGB bins, and
+        /// return the <see cref="QuantizedColorCount"/> most-populous bins as representative
+        /// Color values. Results are roughly equivalent to GraphicsMagick's color quantization but run
+        /// entirely in-process with no subprocess or temporary files.
+        /// Earlier code ran GM with "convert \"{0}\" -colors {1} +dither -type Palette -depth 8",
+        /// but this took ~20x longer, and we still had to do a separate random check for transparency.
+        /// For example, on my computer for a 2800x2800 image, this approach takes about 44ms; the old
+        /// one took 943ms.
+        /// Returns a single <see cref="Color.Transparent"/> entry if any sampled pixel is already
+        /// transparent, causing <see cref="IsLineArtPalette"/> to return false.
         /// </summary>
-        private static bool CheckLineArtByLegacySampling(Bitmap bitmapImage)
+        private static Color[] GetDominantColors(Bitmap bitmapImage)
         {
-            var colors = new List<ColorInfo>();
-            var whiteFound = false;
-            int yDelta = Math.Max(bitmapImage.Height / 10, 2);
-            int xDelta = Math.Max(bitmapImage.Width / 10, 2);
-            var randomXFix = GenerateRandomAdjustments(271828182, xDelta);
-            var randomYFix = GenerateRandomAdjustments(271828182, yDelta);
-            for (int j = 0, y = yDelta / 2; y < bitmapImage.Height; y += yDelta, ++j)
+            // Preferred step: sample every Nth pixel in each dimension. Set to 1 to sample
+            // every pixel; larger values trade some coverage for speed.
+            const int kSampleStep = 10;
+
+            // Minimum steps per dimension: ensures small images still get enough coverage.
+            // A 20×20 grid = 400 samples, giving well over one sample per expected bucket
+            // even in the worst case where all 512 bins are occupied.
+            const int kMinGridSize = 20;
+
+            // Reduce step for small images so neither dimension has fewer than kMinGridSize
+            // steps. For a 40×40 image this gives step=2; for a 20×20 image, step=1.
+            int step = Math.Min(
+                kSampleStep,
+                Math.Max(1, Math.Min(bitmapImage.Width / kMinGridSize, bitmapImage.Height / kMinGridSize))
+            );
+
+            // Divide the RGB cube into 32-unit bins (5 bits discarded per channel,
+            // yielding 8×8×8 = 512 possible bin keys). Anti-aliasing pixels within ~32
+            // units of the background or ink color land in the same bin and average in.
+            const int kBucketShift = 5; // 2^5 = 32 units per bin
+            const int kBitsPerBucket = 8 - kBucketShift; // 3 bits kept per channel
+
+            // Random offsets (deterministic seed) reduce the chance of systematically
+            // missing thin features aligned with the sampling grid.
+            var randomXFix = GenerateRandomAdjustments(271828182, step);
+            var randomYFix = GenerateRandomAdjustments(271828182, step);
+
+            var buckets = new Dictionary<int, (long r, long g, long b, int count)>();
+
+            for (int j = 0, y = step / 2; y < bitmapImage.Height; y += step, ++j)
             {
                 j = Math.Min(j, 9);
-                for (int i = 0, x = xDelta / 2; x < bitmapImage.Width; x += xDelta, ++i)
+                for (int i = 0, x = step / 2; x < bitmapImage.Width; x += step, ++i)
                 {
                     i = Math.Min(i, 9);
                     var y1 = Math.Min(Math.Max(y + randomYFix[j, i], 0), bitmapImage.Height - 1);
                     var x1 = Math.Min(Math.Max(x + randomXFix[j, i], 0), bitmapImage.Width - 1);
-                    var color = bitmapImage.GetPixel(x1, y1);
-                    if (color.A < 255)
-                        return false;
-                    if (!IsThisColorForLineDrawing(color, colors, ref whiteFound))
-                        return false;
+                    var c = bitmapImage.GetPixel(x1, y1);
+                    if (c.A < 255)
+                        return new[] { Color.Transparent };
+                    int key = ((c.R >> kBucketShift) << (2 * kBitsPerBucket))
+                            | ((c.G >> kBucketShift) << kBitsPerBucket)
+                            |  (c.B >> kBucketShift);
+                    if (buckets.TryGetValue(key, out var entry))
+                        buckets[key] = (entry.r + c.R, entry.g + c.G, entry.b + c.B, entry.count + 1);
+                    else
+                        buckets[key] = (c.R, c.G, c.B, 1);
                 }
             }
-            return colors.Count == 2 && whiteFound;
-        }
 
-        /// <summary>
-        /// Use GraphicsMagick to reduce the image to <see cref="QuantizedColorCount"/> dominant
-        /// colors (no dithering), then read those colors back. Returns null if GraphicsMagick
-        /// is unavailable or the conversion fails.
-        /// </summary>
-        private static Color[] TryGetDominantColorsViaQuantize(PalasoImage imageInfo)
-        {
-            var graphicsMagickPath = GetGraphicsMagickPath();
-            if (!RobustFile.Exists(graphicsMagickPath))
-                return null;
+            if (buckets.Count == 0)
+                return Array.Empty<Color>();
 
-            var sourcePath = imageInfo.GetCurrentFilePath();
-            var needTempSource = string.IsNullOrEmpty(sourcePath) || !RobustFile.Exists(sourcePath);
-
-            using (var tempSource = needTempSource ? TempFile.WithExtension(".png") : null)
-            using (var quantizedFile = TempFile.WithExtension(".png"))
-            {
-                if (needTempSource)
-                {
-                    // We have an in-memory image but no file on disk; save a temp copy for GM.
-                    try
-                    {
-                        imageInfo.Image.Save(tempSource.Path, ImageFormat.Png);
-                        sourcePath = tempSource.Path;
-                    }
-                    catch (Exception e)
-                    {
-                        MiscUtils.SuppressUnusedExceptionVarWarning(e);
-                        return null;
-                    }
-                }
-
-                var quantizedPath = quantizedFile.Path;
-                return WithSafeFilePath(
-                    sourcePath,
-                    safeSource =>
-                    {
-                        return WithSafeFilePath(
-                            quantizedPath,
-                            safeDest =>
-                            {
-                                var args = string.Format(
-                                    CultureInfo.InvariantCulture,
-                                    "convert \"{0}\" -colors {1} +dither -type Palette -depth 8 \"{2}\"",
-                                    safeSource,
-                                    QuantizedColorCount,
-                                    safeDest
-                                );
-                                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
-                                    graphicsMagickPath,
-                                    args,
-                                    "",
-                                    120,
-                                    new NullProgress()
-                                );
-                                if (result.ExitCode != 0 || !RobustFile.Exists(safeDest))
-                                    return null;
-                                if (safeDest != quantizedPath)
-                                {
-                                    try
-                                    {
-                                        RobustFile.Copy(safeDest, quantizedPath, true);
-                                    }
-                                    catch (Exception)
-                                    {
-                                        return null;
-                                    }
-                                }
-                                return ReadDistinctColorsFromQuantizedImage(quantizedPath);
-                            },
-                            makeCopyIfNeeded: false
-                        );
-                    }
-                );
-            }
-        }
-
-        /// <summary>
-        /// Read distinct colors from a GraphicsMagick-quantized image. Prefer palette entries
-        /// when the image is indexed; otherwise fall back to coarse pixel sampling.
-        /// </summary>
-        private static Color[] ReadDistinctColorsFromQuantizedImage(string path)
-        {
-            using (var img = (Bitmap)Image.FromFile(path))
-            {
-                var seen = new HashSet<int>();
-                var colors = new List<Color>();
-
-                if ((img.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
-                {
-                    foreach (var c in img.Palette.Entries)
-                    {
-                        int key = (c.A << 24) | (c.R << 16) | (c.G << 8) | c.B;
-                        if (seen.Add(key))
-                            colors.Add(c);
-                    }
-                    return colors.ToArray();
-                }
-
-                // Fallback for unexpected direct-color output.
-                int step = Math.Max(Math.Min(img.Width, img.Height) / 32, 1);
-                for (int y = 0; y < img.Height; y += step)
-                {
-                    for (int x = 0; x < img.Width; x += step)
-                    {
-                        var c = img.GetPixel(x, y);
-                        int key = (c.A << 24) | (c.R << 16) | (c.G << 8) | c.B;
-                        if (seen.Add(key))
-                            colors.Add(c);
-                        if (colors.Count > QuantizedColorCount * 4)
-                            return colors.ToArray(); // safety: image somehow had more colors
-                    }
-                }
-                return colors.ToArray();
-            }
+            return buckets
+                .OrderByDescending(kv => kv.Value.count)
+                .Take(QuantizedColorCount)
+                .Select(kv => Color.FromArgb(
+                    (int)(kv.Value.r / kv.Value.count),
+                    (int)(kv.Value.g / kv.Value.count),
+                    (int)(kv.Value.b / kv.Value.count)))
+                .ToArray();
         }
 
         private static void ConfigureGraphicsForHighQualityScaling(Graphics g)
@@ -483,66 +404,6 @@ namespace Bloom.ImageProcessing
             //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
             //g.SmoothingMode = SmoothingMode.HighQuality;
             //g.CompositingQuality = CompositingQuality.HighQuality;
-        }
-
-        /// <summary>
-        /// Check whether this color is near white or grayish, and store the first two colors
-        /// encountered.  Return false if we encounter a third color and any of the three colors
-        /// are neither near white nor grayish.  (If only two colors are encountered, one of them
-        /// must be near white, but the other does not have to be grayish.)  It would be nice to
-        /// allow, for example, shades of purple, but that's too hard to do reliably.
-        /// </summary>
-        private static bool IsThisColorForLineDrawing(
-            Color color,
-            List<ColorInfo> colors,
-            ref bool whiteFound
-        )
-        {
-            var whitish = IsNearWhite(color);
-            var grayish = IsGrayish(color);
-            if (colors.Count == 0)
-            {
-                colors.Add(
-                    new ColorInfo
-                    {
-                        color = color,
-                        isGrayish = grayish,
-                        isNearWhite = whitish,
-                    }
-                );
-            }
-            else if (colors.Count == 1 && color != colors[0].color)
-            {
-                colors.Add(
-                    new ColorInfo
-                    {
-                        color = color,
-                        isGrayish = grayish,
-                        isNearWhite = whitish,
-                    }
-                );
-            }
-            else if (colors.Count == 2 && color != colors[0].color && color != colors[1].color)
-            {
-                // NearWhite is not guaranteed to be Grayish, so we have to check both.
-                if (
-                    !(colors[0].isGrayish || colors[0].isNearWhite)
-                    || !(colors[1].isGrayish || colors[1].isNearWhite)
-                    || !(grayish || whitish)
-                )
-                {
-                    // we have at least 3 colors, at least one of which is neither white nor gray
-                    return false;
-                }
-            }
-            // Enhance: store all distinct colors encountered, not just the first two, and store a
-            // count of how often they were found (for the bitmap check).  Then the caller could
-            // check all of them for grayishness and whiteness, or do a more sophisticated analysis
-            // for being shades of a given color, or (for the bitmap) look at the ratio of white vs
-            // non-white colors for line drawing detection.  (Of course, then the name of the method
-            // might no longer be appropriate and the return value wouldn't exist.)
-            whiteFound |= whitish;
-            return true;
         }
 
         private static int[,] GenerateRandomAdjustments(int seed, int range)

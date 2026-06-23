@@ -136,45 +136,75 @@ namespace Bloom.ImageProcessing
             if (getThumbnail)
                 return GetPathToThumbnail(originalPath, cacheFileName, transparencyMode);
 
+            return GetPathToAdjustedImageUnlocked(
+                originalPath,
+                cacheFileName,
+                transparencyMode,
+                transparencyOnly
+            );
+        }
+
+        /// <summary>
+        /// Non-thumbnail image processing: check cache under lock, run AdjustImageForDisplay
+        /// OUTSIDE the lock (so different images are processed concurrently), then store under lock.
+        /// If two threads race for the same image the loser discards its file.
+        /// </summary>
+        private string GetPathToAdjustedImageUnlocked(
+            string originalPath,
+            string cacheFileName,
+            ImageTransparencyMode transparencyMode,
+            bool transparencyOnly
+        )
+        {
+            // Step 1: quick cache check under lock
             lock (this)
             {
-                // if there is a cached version, return it
-                string pathToProcessedVersion;
                 if (
                     _originalPathToProcessedVersionPath.TryGetValue(
                         cacheFileName,
-                        out pathToProcessedVersion
+                        out var cached
                     )
                 )
                 {
                     if (
-                        RobustFile.Exists(pathToProcessedVersion)
+                        RobustFile.Exists(cached)
                         && new FileInfo(originalPath).LastWriteTimeUtc
-                            <= new FileInfo(pathToProcessedVersion).LastWriteTimeUtc
+                            <= new FileInfo(cached).LastWriteTimeUtc
                     )
                     {
-                        return pathToProcessedVersion;
+                        return cached;
                     }
-
                     // the file has changed, remove from cache
-                    string valueRemoved;
-                    _originalPathToProcessedVersionPath.TryRemove(cacheFileName, out valueRemoved);
+                    _originalPathToProcessedVersionPath.TryRemove(cacheFileName, out _);
                 }
+            }
 
-                var processedPath = ImageUtils.AdjustImageForDisplay(
-                    originalPath,
-                    _cacheFolder,
-                    transparencyMode,
-                    transparencyOnly: transparencyOnly
-                );
+            // Step 2: process OUTSIDE the lock — different images run concurrently.
+            var processedPath = ImageUtils.AdjustImageForDisplay(
+                originalPath,
+                _cacheFolder,
+                transparencyMode,
+                transparencyOnly: transparencyOnly
+            );
 
-                if (processedPath == null)
+            if (processedPath == null)
+            {
+                _imageFilesToReturnUnprocessed.TryAdd(cacheFileName, true);
+                return originalPath;
+            }
+
+            // Step 3: store under lock, discarding our file if another thread got there first.
+            lock (this)
+            {
+                if (
+                    _originalPathToProcessedVersionPath.TryGetValue(cacheFileName, out var winner)
+                    && RobustFile.Exists(winner)
+                )
                 {
-                    _imageFilesToReturnUnprocessed.TryAdd(cacheFileName, true);
-                    return originalPath;
+                    RobustFile.Delete(processedPath);
+                    return winner;
                 }
-
-                _originalPathToProcessedVersionPath.TryAdd(cacheFileName, processedPath); //remember it so we can reuse if they show it again, and later delete
+                _originalPathToProcessedVersionPath.TryAdd(cacheFileName, processedPath);
                 return processedPath;
             }
         }
