@@ -812,8 +812,8 @@ namespace Bloom.web.controllers
 
         private void HandleBookFileRequest(ApiRequest request)
         {
-            var bookId = System.Web.HttpUtility.UrlDecode(request.RequiredParam("book-id"));
-            var fileParam = System.Web.HttpUtility.UrlDecode(request.RequiredParam("file"));
+            var bookId = request.RequiredParam("book-id");
+            var fileParam = request.RequiredParam("file");
 
             if (string.IsNullOrWhiteSpace(fileParam))
             {
