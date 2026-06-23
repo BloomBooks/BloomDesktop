@@ -29,9 +29,10 @@ export const AdjustTimingsControl: React.FunctionComponent<{
     const [waveSurfer, setWaveSurfer] = useState<WaveSurfer>();
     const waveSurferRef = useRef<WaveSurfer>();
     waveSurferRef.current = waveSurfer;
-    const [playQueue] = useState<playQueue>([]);
-    const playQueueRef = useRef<playQueue>();
-    playQueueRef.current = playQueue;
+    // We don't need to use a state variable or to reassign playQueue.current.
+    // React 18 changed behavior for useRef in some way to make that unnecessary
+    // and even bug inducing.  See BL-16462.
+    const playQueueRef = useRef<playQueue>([]);
 
     function stopAndClearQueue() {
         playQueueRef.current = [];
