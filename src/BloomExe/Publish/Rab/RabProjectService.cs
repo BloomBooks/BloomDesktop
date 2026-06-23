@@ -1561,7 +1561,7 @@ namespace Bloom.Publish.Rab
             );
         }
 
-        private string[] EnsureLauncherIcons(RabWorkspacePaths paths, RabAppSettings settings)
+        internal string[] EnsureLauncherIcons(RabWorkspacePaths paths, RabAppSettings settings)
         {
             var iconSourcePath = settings?.IconPath;
 
@@ -1571,7 +1571,7 @@ namespace Bloom.Publish.Rab
                 );
 
             var iconSizes = new[] { 36, 48, 72, 96, 144, 192, 512 };
-            using (var iconBitmap = (Bitmap)Image.FromFile(iconSourcePath))
+            using (var iconImage = LoadIconImage(iconSourcePath))
             {
                 return iconSizes
                     .Select(size =>
@@ -1580,10 +1580,43 @@ namespace Bloom.Publish.Rab
                             paths.LauncherIconRoot,
                             $"bloom-icon-{size}.png"
                         );
-                        SaveResizedPng(iconBitmap, outputPath, size);
+                        SaveResizedPng(iconImage, outputPath, size);
                         return outputPath;
                     })
                     .ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Loads the chosen launcher-icon image, converting GDI+'s misleading failure for an image
+        /// it cannot decode into a clear error that names the offending file (BL-16467).
+        /// System.Drawing's Image.FromFile reports an undecodable image — a corrupt file, or one in
+        /// an unsupported encoding such as a CMYK JPEG — by throwing OutOfMemoryException, which
+        /// previously aborted the RAB build with a baffling "Out of memory" message that gave no
+        /// hint of which file was at fault.
+        /// </summary>
+        private static Image LoadIconImage(string iconSourcePath)
+        {
+            try
+            {
+                // RobustImageIO rides out transient file-sharing hiccups while reading the file.
+                return RobustImageIO.GetImageFromFile(iconSourcePath);
+            }
+            catch (Exception e) when (e is OutOfMemoryException || e is ArgumentException)
+            {
+                // GDI+ uses these two exception types to signal "I can't decode this image",
+                // regardless of the actual reason. Re-throw with the path and size so the user and
+                // our logs can see exactly which file failed. Any other exception (e.g. a genuine
+                // I/O failure) is left to propagate unchanged.
+                var sizeInBytes = RobustFile.Exists(iconSourcePath)
+                    ? new FileInfo(iconSourcePath).Length
+                    : 0L;
+                throw new ApplicationException(
+                    $"Bloom could not read the app icon image \"{iconSourcePath}\" ({sizeInBytes:N0} bytes). "
+                        + "The file appears to be corrupt or in an image format Bloom cannot read "
+                        + "(for example a CMYK JPEG). Choose a different icon, such as a PNG or a standard RGB JPEG.",
+                    e
+                );
             }
         }
 
