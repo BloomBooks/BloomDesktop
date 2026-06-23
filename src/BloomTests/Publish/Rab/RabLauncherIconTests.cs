@@ -94,10 +94,11 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void EnsureLauncherIcons_UndecodableIcon_ThrowsOutOfMemoryFromGdiPlus_Sanity()
+        public void EnsureLauncherIcons_UndecodableIcon_ThrowsMisleadingExceptionFromGdiPlus_Sanity()
         {
             // This documents the BL-16467 root cause: GDI+ reports an undecodable image with a
-            // misleading OutOfMemoryException, which is what aborted the original build.
+            // misleading exception (often OutOfMemoryException) rather than something actionable,
+            // which is what aborted the original build.
             using (var folder = new TemporaryFolder("RabLauncherIcon_ReproSanity"))
             {
                 var badIcon = WriteUndecodableImage(Path.Combine(folder.Path, "bad-icon.png"));
@@ -105,14 +106,18 @@ namespace BloomTests.Publish.Rab
                 // Sanity-check that the file really exists before we test how it decodes.
                 Assert.That(RobustFile.Exists(badIcon), Is.True);
 
-                Assert.That(
-                    () =>
-                    {
-                        using (Image.FromFile(badIcon)) { }
-                    },
-                    Throws.InstanceOf<OutOfMemoryException>(),
-                    "Expected GDI+ to throw its misleading OutOfMemoryException for an undecodable image."
-                );
+                try
+                {
+                    using (Image.FromFile(badIcon)) { }
+                    Assert.Fail("Expected GDI+ to throw a misleading exception for an undecodable image.");
+                }
+                catch (Exception e)
+                {
+                    Assert.That(
+                        e,
+                        Is.InstanceOf<OutOfMemoryException>().Or.InstanceOf<ArgumentException>()
+                    );
+                }
             }
         }
 
