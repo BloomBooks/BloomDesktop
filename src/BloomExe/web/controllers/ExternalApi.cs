@@ -184,10 +184,20 @@ namespace Bloom.web.controllers
             // generated HTML is missing. The call blocks until processing is complete.
             //
             // This must run on the UI thread because it creates and pumps an off-screen WebView2.
+            //
+            // requiresSync: false is essential here. The off-screen editable page this handler loads
+            // makes its own /bloom/api/* calls during bootstrap (image/info to size images, bubble
+            // languages, etc.). If we held the global API sync lock for the whole ~20-30s run, those
+            // dependent requests (which also default to requiresSync) would block behind us while we
+            // block waiting for them to complete the page — a deadlock. We don't need the global lock
+            // anyway: process-book is already serialized against itself by _processBookInProgress, and
+            // the user is blocked behind the opaque ExternalBusyOverlay for the duration, so there is no
+            // competing user-driven API traffic to race with.
             apiHandler.RegisterEndpointHandler(
                 "external/process-book",
                 HandleProcessBook,
-                handleOnUiThread: true
+                handleOnUiThread: true,
+                requiresSync: false
             );
 
             // Called by an external utility (e.g. BloomBridge) to discover which languages
