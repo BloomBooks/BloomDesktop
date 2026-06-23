@@ -1578,7 +1578,7 @@ namespace Bloom.Publish.Rab
             );
         }
 
-        private string[] EnsureLauncherIcons(RabWorkspacePaths paths, RabAppSettings settings)
+        internal string[] EnsureLauncherIcons(RabWorkspacePaths paths, RabAppSettings settings)
         {
             var iconSourcePath = settings?.IconPath;
 
@@ -1588,7 +1588,7 @@ namespace Bloom.Publish.Rab
                 );
 
             var iconSizes = new[] { 36, 48, 72, 96, 144, 192, 512 };
-            using (var iconBitmap = (Bitmap)Image.FromFile(iconSourcePath))
+            using (var iconImage = LoadIconImageWithFallback(iconSourcePath))
             {
                 return iconSizes
                     .Select(size =>
@@ -1597,10 +1597,73 @@ namespace Bloom.Publish.Rab
                             paths.LauncherIconRoot,
                             $"bloom-icon-{size}.png"
                         );
-                        SaveResizedPng(iconBitmap, outputPath, size);
+                        SaveResizedPng(iconImage, outputPath, size);
                         return outputPath;
                     })
                     .ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Loads the chosen launcher-icon image, falling back to Bloom's default bundled icon when
+        /// the chosen image cannot be decoded. GDI+ (System.Drawing) reports an image it cannot
+        /// decode — a corrupt file, or one in an unsupported encoding such as a CMYK JPEG — by
+        /// throwing a misleading OutOfMemoryException. That previously aborted the whole RAB build
+        /// with a baffling "Out of memory" message (BL-16467). Falling back lets the build finish
+        /// with the generic Bloom icon and surfaces a clear warning instead of crashing.
+        /// </summary>
+        private Image LoadIconImageWithFallback(string iconSourcePath)
+        {
+            if (TryLoadImage(iconSourcePath, out var iconImage))
+                return iconImage;
+
+            _progress.MessageWithoutLocalizing(
+                $"Bloom could not read the chosen app icon \"{iconSourcePath}\"; it may be corrupt or in an unsupported image format. Using the default Bloom icon instead.",
+                ProgressKind.Warning
+            );
+
+            var defaultIconPath = GetDefaultBundledIconPath();
+            if (
+                !string.IsNullOrEmpty(defaultIconPath)
+                && !string.Equals(
+                    defaultIconPath,
+                    iconSourcePath,
+                    StringComparison.OrdinalIgnoreCase
+                )
+                && TryLoadImage(defaultIconPath, out iconImage)
+            )
+                return iconImage;
+
+            // We could not read the chosen icon and have no usable fallback. Throw a clear,
+            // actionable message rather than letting GDI+'s misleading OutOfMemoryException escape.
+            throw new ApplicationException(
+                $"Bloom could not read the Reading App Builder icon source as an image: {iconSourcePath}"
+            );
+        }
+
+        /// <summary>
+        /// Attempts to load an image file, returning false (instead of throwing) when GDI+ cannot
+        /// decode it. GDI+ signals an undecodable image with OutOfMemoryException or
+        /// ArgumentException, so we treat those as "not a usable image" rather than letting them
+        /// propagate. Any other exception (e.g. a genuine I/O failure) is left to bubble up.
+        /// </summary>
+        private static bool TryLoadImage(string path, out Image image)
+        {
+            image = null;
+            if (!RobustFile.Exists(path))
+                return false;
+
+            try
+            {
+                // RobustImageIO rides out transient file-sharing hiccups while reading the file.
+                image = RobustImageIO.GetImageFromFile(path);
+                return true;
+            }
+            catch (Exception e) when (e is OutOfMemoryException || e is ArgumentException)
+            {
+                image?.Dispose();
+                image = null;
+                return false;
             }
         }
 
