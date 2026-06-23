@@ -3122,9 +3122,9 @@ export class CanvasElementManager {
             bloomCanvas,
             bgCanvasElement,
             useSizeOfNewImage,
-            cropInfo,
             () => this.activeElement,
             this.alignControlFrameWithActiveElement,
+            cropInfo,
         );
     }
 

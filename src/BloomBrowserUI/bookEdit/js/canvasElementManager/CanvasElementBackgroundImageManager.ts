@@ -293,9 +293,9 @@ export function adjustBackgroundImageSize(
     bloomCanvas: HTMLElement,
     bgCanvasElement: HTMLElement,
     useSizeOfNewImage: boolean,
-    cropInfo?: IImageCropInfo,
     getActiveElement: () => HTMLElement | undefined,
     alignControlFrameWithActiveElement: () => void,
+    cropInfo?: IImageCropInfo,
 ): Promise<void> {
     // adjustBackgroundImageSizeToFit may wait for the image to load and make modifications after,
     // and we want to make sure those modifications are included in any save that occurs in the meantime.
