@@ -449,7 +449,13 @@ const makeArrowShape = (
     // rectangle that contains the arrow, without this it would not get mouse events.
     arrow.style.pointerEvents = "none";
 
-    const color = "#80808080";
+    // Match the arrow to the target's outline color so the two read as a pair. We read the
+    // target's resolved border color rather than the --game-draggable-target-outline-color
+    // variable directly, so themes that define it via color-mix() still yield a concrete color.
+    const color =
+        target.ownerDocument.defaultView!.getComputedStyle(
+            target,
+        ).borderTopColor;
     const strokeWidth = "3";
     const lines = [line, line2, line3];
     lines.forEach((l) => {
