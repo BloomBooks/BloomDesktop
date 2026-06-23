@@ -1426,6 +1426,10 @@
         <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
         <note>Summary text for the estimated total app size. %0 is the current estimated app size and %1 is the app size limit, for example 100 MB.</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.FailedToAddImage" translate="no">
+        <source xml:lang="en">Sorry, there was a problem adding the image.</source>
+        <note>ID: ImageLibrary.FailedToAddImage</note>
+      </trans-unit>
       <trans-unit id="ImageLibrary.AboutArtOfReading" translate="no">
         <source xml:lang="en">About Art of Reading</source>
         <note>ID: ImageLibrary.AboutArtOfReading</note>

@@ -1,4 +1,5 @@
 import {
+    getAsync,
     getWithConfig,
     getWithConfigAsync,
     postJson,
@@ -364,9 +365,41 @@ export function doImageCommand(
     } else {
         // The gallery dialog holds a direct JS reference to img, so no temporary id
         // is needed and requestPageContent cannot capture a stale attribute.
-        const searchLang = navigator.language.split("-")[0] || "en";
-        getWorkspaceBundleExports().showImageGalleryDialog(img, searchLang);
+        getImageSearchLanguage().then((searchLang) => {
+            getWorkspaceBundleExports().showImageGalleryDialog(img, searchLang);
+        });
     }
+}
+
+/**
+ * Returns the preferred image search language, mirroring the old WinForms logic:
+ *   1. Settings.Default.ImageSearchLanguage (explicit user choice)
+ *   2. Settings.Default.UserInterfaceLanguage stripped to its primary subtag
+ *   3. "en" as a final fallback
+ */
+async function getImageSearchLanguage(): Promise<string> {
+    try {
+        const r = await getAsync(
+            "app/userSetting?settingName=ImageSearchLanguage",
+        );
+        const lang = r?.data?.settingValue as string;
+        if (lang) return lang;
+    } catch {
+        // fall through
+    }
+    try {
+        const r = await getAsync(
+            "app/userSetting?settingName=UserInterfaceLanguage",
+        );
+        const lang = r?.data?.settingValue as string;
+        if (lang) {
+            const idx = lang.search(/[-_]/);
+            return idx > 0 ? lang.substring(0, idx) : lang;
+        }
+    } catch {
+        // fall through
+    }
+    return "en";
 }
 
 // Handles the "change image" flow for GIF elements: picks a file via C# and applies it.

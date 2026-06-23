@@ -515,6 +515,8 @@ namespace Bloom.Edit
 
         public Metadata PrepareToEditImageMetadata(string fileName)
         {
+            if (string.IsNullOrEmpty(fileName))
+                return null;
             if (fileName.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(

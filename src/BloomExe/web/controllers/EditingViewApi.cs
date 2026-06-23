@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -31,6 +32,9 @@ namespace Bloom.web.controllers
     public class EditingViewApi
     {
         public EditingView View { get; set; }
+
+        // Shared HttpClient for downloading remote images; reused to avoid socket exhaustion.
+        private static readonly HttpClient s_httpClient = new();
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
@@ -146,7 +150,7 @@ namespace Bloom.web.controllers
                 HandleGetFrameSources,
                 true
             );
-            apiHandler.RegisterEndpointHandler(
+            apiHandler.RegisterAsyncEndpointHandler(
                 "editView/imageGalleryResult",
                 HandleImageGalleryResult,
                 false
@@ -717,7 +721,7 @@ namespace Bloom.web.controllers
         /// Gallery-provided license/credits/creator override the source EXIF, except for
         /// images from official collections (e.g. Art of Reading) whose EXIF is authoritative.
         /// </summary>
-        private void HandleImageGalleryResult(ApiRequest request)
+        private async Task HandleImageGalleryResult(ApiRequest request)
         {
             var data = (DynamicJson)DynamicJson.Parse(request.RequiredPostJson());
             data.TryGetValue("localPath", out string localPath);
@@ -751,10 +755,12 @@ namespace Bloom.web.controllers
                     Path.GetTempPath(),
                     Guid.NewGuid().ToString() + extension
                 );
-#pragma warning disable SYSLIB0014 // WebClient is fine for a simple synchronous download here
-                using (var client = new System.Net.WebClient())
-                    client.DownloadFile(imageUrl, sourceFilePath);
-#pragma warning restore SYSLIB0014
+                using (var response = await s_httpClient.GetAsync(imageUrl))
+                {
+                    response.EnsureSuccessStatusCode();
+                    using var fileStream = RobustFile.Create(sourceFilePath);
+                    await response.Content.CopyToAsync(fileStream);
+                }
                 isTempFile = true;
             }
             else

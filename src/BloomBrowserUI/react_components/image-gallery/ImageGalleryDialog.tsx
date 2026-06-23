@@ -13,7 +13,7 @@ import {
     postDataWithConfigAsync,
 } from "../../utils/bloomApi";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
-
+import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { getEditablePageBundleExports } from "../../bookEdit/js/workspaceFrames";
 import { ShowEditViewDialog } from "../../bookEdit/workspaceRoot";
 
@@ -62,7 +62,6 @@ const ImageGalleryDialog: React.FunctionComponent<{
     const onConfirmSelection = async (image: IImage) => {
         const exports = getEditablePageBundleExports();
         exports?.addRequestPageContentDelay("imageGalleryConfirm");
-        setOpen(false);
         try {
             const payload = {
                 imageUrl: image.url ?? image.reasonableSizeUrl,
@@ -84,6 +83,13 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 license: result.license,
                 undoable: "true",
             });
+            setOpen(false);
+        } catch {
+            BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
+                "ImageLibrary.FailedToAddImage",
+                "Sorry, there was a problem adding the image.",
+                "",
+            );
         } finally {
             exports?.removeRequestPageContentDelay("imageGalleryConfirm");
         }
@@ -149,6 +155,12 @@ const ImageGalleryDialog: React.FunctionComponent<{
                             postJsonAsync("app/userSetting", {
                                 settingName: "ImageGalleryProviderKeys",
                                 settingValue: JSON.stringify(keys),
+                            })
+                        }
+                        onLanguageChange={(lang) =>
+                            postJsonAsync("app/userSetting", {
+                                settingName: "ImageSearchLanguage",
+                                settingValue: lang,
                             })
                         }
                         getLocalizations={async (strings) => {
