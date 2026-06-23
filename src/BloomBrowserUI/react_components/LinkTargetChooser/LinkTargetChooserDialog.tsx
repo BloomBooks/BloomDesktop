@@ -12,6 +12,7 @@ import { DialogCancelButton } from "../BloomDialog/commonDialogComponents";
 import BloomButton from "../bloomButton";
 import { useL10n } from "../l10nHooks";
 import { useSetupBloomDialog } from "../BloomDialog/BloomDialogPlumbing";
+import { postBoolean } from "../../utils/bloomApi";
 
 export const LinkTargetChooserDialog: React.FunctionComponent<{
     currentURL: string;
@@ -34,6 +35,13 @@ export const LinkTargetChooserDialog: React.FunctionComponent<{
             setHasUserInteracted(false);
         }
     }, [propsForBloomDialog.open, props.currentURL]);
+
+    // Force the dialog to be fully modal.
+    useEffect(() => {
+        if (propsForBloomDialog.open !== undefined) {
+            postBoolean("editView/setModalState", propsForBloomDialog.open);
+        }
+    }, [propsForBloomDialog.open]);
 
     const handleURLChanged = useCallback((url: string, hasError: boolean) => {
         setCurrentUrl(url);
