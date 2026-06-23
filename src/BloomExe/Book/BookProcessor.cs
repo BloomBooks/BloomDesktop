@@ -70,6 +70,10 @@ namespace Bloom.Book
             // process-book, e.g. BloomBridge) was looking at. This is a background processing step, so
             // it has no business stealing focus. Remember who held the foreground up front and hand it
             // back whenever a browser steals it (see RestoreForeground in the per-page loop and below).
+            // We capture this ONCE: every RestoreForeground call aims at this same original window, so
+            // if Bloom grabs the foreground again on a later page we still hand it back to where it
+            // started. (Re-capturing mid-batch would be wrong: by then Bloom itself often holds the
+            // foreground, so we'd "restore" to Bloom's own window.)
             var priorForeground = ProcessExtra.GetForegroundWindow();
 
             book.BringBookUpToDate(new NullProgress());
@@ -233,8 +237,12 @@ namespace Bloom.Book
             // would feed the live EditingModel and corrupt the live editor's state).
             // The boolean tells the bundle whether to auto-fit image-over-text origami splits before
             // capturing (see fitImageOverTextSplits in bloomEditing.ts).
-            browser.RunJavascriptWithStringResult_Sync_Dangerous(
-                $"window.editablePageBundle.captureContentForExternalProcessing({(fitImageTextSplits ? "true" : "false")}); ''"
+            // Fire-and-forget: capture is asynchronous (it stashes onto window.__bloomExternalPageContent
+            // when it finishes) and we poll for that below, so there is no result to wait for here. The
+            // sync RunJavascriptWithStringResult_Sync_Dangerous would only block until the script's
+            // synchronous kickoff returned, which buys us nothing.
+            browser.RunJavascriptFireAndForget(
+                $"window.editablePageBundle.captureContentForExternalProcessing({(fitImageTextSplits ? "true" : "false")})"
             );
 
             var pageContent = WaitForJavascriptResult(
@@ -260,8 +268,16 @@ namespace Bloom.Book
 
         /// <summary>
         /// Polls a javascript expression (which evaluates to a non-empty string when "ready") until
-        /// it is non-empty or we time out, returning the result. RunJavascriptWithStringResult_Sync_Dangerous
-        /// already pumps the message loop while it waits for each script to return.
+        /// it is non-empty or we time out, returning the result.
+        ///
+        /// We deliberately keep this "poll a window global" approach for the off-screen processor
+        /// rather than the async editView/pageContent API callback the live editor uses: that callback
+        /// pattern needs the live EditingModel and edit WebSocket channel, which a throwaway off-screen
+        /// browser doesn't have, and the per-page loop here wants a deterministic in-line result. We are
+        /// aware RunJavascriptWithStringResult_Sync_Dangerous is the same family of call implicated in
+        /// past page-content deadlocks (BL-13120 etc.); moving this to an async/callback design is
+        /// deferred. That method already pumps the message loop while it waits for each script to
+        /// return, so we do NOT pump again between polls (just sleep briefly).
         /// </summary>
         private static string WaitForJavascriptResult(
             Browser browser,
@@ -276,7 +292,6 @@ namespace Bloom.Book
                 var result = browser.RunJavascriptWithStringResult_Sync_Dangerous(script);
                 if (!string.IsNullOrEmpty(result))
                     return result;
-                Application.DoEvents();
                 Thread.Sleep(20);
             }
             throw new ApplicationException(

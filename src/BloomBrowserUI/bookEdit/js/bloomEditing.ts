@@ -1348,8 +1348,6 @@ export function requestPageContent() {
 // <SPLIT-DATA> delimiter that C# splits on. Shared by the live save path (requestPageContentInternal)
 // and the off-screen capture path (captureContentForExternalProcessing) so the cleanup steps and the
 // delimiter can't drift between them.
-// (We tossed up whether to use a JSON object instead of a delimiter, but combining two strings is
-// simpler: HTML needs escaping to live in JSON, which we'd then have to undo in C#.)
 //
 // DESTRUCTIVE READ: this mutates the live DOM as a side effect (removeToolboxMarkup(),
 // removeEditingDebris(), and getBodyContentForSavePage() all strip classes, blur elements, turn off
@@ -1364,6 +1362,8 @@ function extractAndStripPageContentForSave(): string {
     removeEditingDebris();
     const content = getBodyContentForSavePage();
     const userStylesheet = userStylesheetContent();
+    // (We tossed up whether to use a JSON object instead of a delimiter, but combining two strings is
+    // simpler: HTML needs escaping to live in JSON, which we'd then have to undo in C#.)
     return content + "<SPLIT-DATA>" + userStylesheet;
 }
 

@@ -86,6 +86,16 @@ namespace Bloom.CollectionTab
             _currentEditableCollectionSelection.CurrentSelection;
 
         /// <summary>
+        /// True if the open editable collection is a Team Collection (even if it is currently
+        /// disconnected or disabled). BloomBridge's external write endpoints (add/update/process-book)
+        /// refuse to operate on a Team Collection: doing so safely would require honoring checkout
+        /// state, preserving the TeamCollection.status file, and notifying the TC of renames, which
+        /// BloomBridge does not do. See ExternalApi.
+        /// </summary>
+        public bool IsEditableCollectionATeamCollection =>
+            _tcManager?.CurrentCollectionEvenIfDisconnected != null;
+
+        /// <summary>
         /// The constructor of BookCommandsApi calls this to work around an Autofac circularity problem.
         /// </summary>
         public BookCommandsApi BookCommands { get; set; }
@@ -199,6 +209,11 @@ namespace Bloom.CollectionTab
         /// only the destination folder name is made unique (and the main .htm renamed to match) if it
         /// would collide with an unrelated existing book folder.
         /// Returns the new Book, or null if it could not be located after the copy.
+        ///
+        /// Assumes the open collection is NOT a Team Collection: it strips the TeamCollection.status
+        /// file, recycles any same-id book without checking it out, and does not notify a TC of the
+        /// resulting add/rename. The only caller (external/add-book) refuses Team Collections up front
+        /// (see ExternalApi.RefuseIfTeamCollection), so that case never reaches here.
         /// </summary>
         public Book.Book AddBookFromFolder(string sourceBookFolderPath)
         {
@@ -223,7 +238,10 @@ namespace Bloom.CollectionTab
 
             var collectionDir = TheOneEditableCollection.PathToDirectory;
 
-            // Don't try to copy a book that already lives in this collection onto itself.
+            // It's an error to import from a source folder that is itself inside this collection:
+            // that would be copying a book onto itself. (This is a different situation from the
+            // same-bookInstanceId replacement handled below, where the source lives OUTSIDE the
+            // collection but an existing book in the collection shares its id and/or folder name.)
             if (
                 string.Equals(
                     Path.GetDirectoryName(sourceBookFolderPath),

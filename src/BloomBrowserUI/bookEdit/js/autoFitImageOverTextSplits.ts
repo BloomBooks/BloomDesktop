@@ -1,5 +1,9 @@
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
-import { kBloomCanvasSelector } from "../toolbox/canvas/canvasElementConstants";
+import {
+    kBackgroundImageClass,
+    kBloomCanvasSelector,
+    kCanvasElementSelector,
+} from "../toolbox/canvas/canvasElementConstants";
 import { EditableDivUtils } from "./editableDivUtils";
 
 // ── Auto-fit image-over-text origami splits (off-screen process-book only) ──────────────────────
@@ -70,17 +74,26 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
     );
     if (!topInner || !bottomInner) return false;
 
-    // Top pane must be image-only; bottom pane must be text-only. (Matches "an illustration above a
-    // single text block.")
+    // Top pane must be a plain background image with no overlays; bottom pane must be text-only.
+    // (Matches "an illustration above a single text block.")
     const topCanvas = topInner.querySelector(
         kBloomCanvasSelector,
     ) as HTMLElement | null;
     const topHasText = topInner.querySelector(".bloom-translationGroup");
+    // Overlays (canvas elements other than the background image) make this page out of scope. Our
+    // resizing math reasons only about the background image's aspect ratio; overlays don't scale with
+    // it predictably — a text bubble keeps its font size (changing line breaks / revealing or clipping
+    // content) and any bubble could end up extending past the resized image — so we leave such pages
+    // exactly as authored. Text overlays are technically also caught by topHasText (a text bubble
+    // contains a .bloom-translationGroup), but this also excludes image/video/other overlays.
+    const topHasOverlay = topCanvas?.querySelector(
+        `${kCanvasElementSelector}:not(.${kBackgroundImageClass})`,
+    );
     const bottomTextGroup = bottomInner.querySelector(
         ".bloom-translationGroup",
     ) as HTMLElement | null;
     const bottomHasCanvas = bottomInner.querySelector(kBloomCanvasSelector);
-    if (!topCanvas || topHasText) return false;
+    if (!topCanvas || topHasText || topHasOverlay) return false;
     if (!bottomTextGroup || bottomHasCanvas) return false;
 
     const splitPaneHeight = splitPane.offsetHeight;
@@ -214,7 +227,13 @@ function getImageAspectRatio(bloomCanvas: HTMLElement): number | null {
     if (bg && bg.clientWidth > 0 && bg.clientHeight > 0) {
         return bg.clientWidth / bg.clientHeight;
     }
-    // Fallback: the image's natural dimensions (ignores cropping, but better than nothing).
+    // Fallback: the image's natural dimensions (ignores cropping, but better than nothing). These read
+    // as 0 until the image has loaded, and a missing/placeholder/corrupt image may never acquire a
+    // natural size; in those cases we return null and the caller simply skips the image-width cap (the
+    // no-overflow guarantee from the binary search still holds). In the off-screen book processor the
+    // image-sizing delay (SetImageDisplaySizeIfCalledFor registers a requestPageContent delay) means
+    // images are normally loaded before we get here, so the .bloom-backgroundImage branch above usually
+    // wins anyway.
     const img = bloomCanvas.querySelector("img") as HTMLImageElement | null;
     if (img && img.naturalWidth > 0 && img.naturalHeight > 0) {
         return img.naturalWidth / img.naturalHeight;

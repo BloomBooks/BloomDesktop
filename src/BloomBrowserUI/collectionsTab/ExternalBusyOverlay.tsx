@@ -52,8 +52,11 @@ export const ExternalBusyOverlay: React.FunctionComponent = () => {
         <Backdrop
             open={open}
             css={css`
-                // Above everything else in the tab (MUI modals default to 1300).
-                z-index: 5000;
+                // Sit above everything else. This overlay is shown on the Collection tab, where the
+                // Edit-tab chrome (toolbox at 18000, origami at 60000, etc.) isn't present, but we use
+                // a value above those anyway so it stays the topmost layer regardless of context.
+                // (MUI modals default to 1300.)
+                z-index: 100000;
                 // Fully opaque (not the default translucent scrim) so the user can neither see nor
                 // click the collection behind while Bloom is busy.
                 background-color: ${kPanelBackground};

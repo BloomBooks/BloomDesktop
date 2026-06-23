@@ -355,10 +355,13 @@ $(document).ready(() => {
     $("body").find("*[data-i18n]").localize();
     bootstrap();
     // Step 1 of the off-screen page-capture handshake (see __bloomEditablePageReady in the
-    // `declare global` block below): bootstrap()/SetupElements() has now run, so the synchronous
-    // load-time DOM fix-ups (image sizing, canvas-element layout, etc.) are in place and it is safe
-    // for the off-screen book processor to proceed to capture. Harmless no-op in the live editor,
-    // which never reads this flag.
+    // `declare global` block below): bootstrap()/SetupElements() has now run. That applies the
+    // load-time DOM fix-ups (canvas-element layout, image sizing, etc.) — but note that some of them,
+    // notably image sizing, finish ASYNCHRONOUSLY after bootstrap() returns (they fetch image info and
+    // wait for images to load). Those register requestPageContent delays, and the capture step
+    // (captureContentForExternalProcessing) waits for those delays to clear, so setting this flag here
+    // just signals that bootstrap itself has run and it is safe to ask for the content. Harmless no-op
+    // in the live editor, which never reads this flag.
     window.__bloomEditablePageReady = true;
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
@@ -428,8 +431,9 @@ declare global {
         // WebView2 and runs this three-step handshake against the two globals below:
         //
         //   1. C# polls window.__bloomEditablePageReady until it is true. We set it (once, in
-        //      $(document).ready below) the moment bootstrap()/SetupElements() has applied the
-        //      synchronous load-time DOM fix-ups (image sizing, canvas-element layout, ...).
+        //      $(document).ready below) the moment bootstrap()/SetupElements() returns. That kicks off
+        //      the load-time DOM fix-ups (canvas-element layout, image sizing, ...); some of them finish
+        //      asynchronously, which is exactly why step 2 still has to wait for in-flight work to settle.
         //   2. C# calls editablePageBundle.captureContentForExternalProcessing() (defined in
         //      bloomEditing.ts). That waits for any in-flight async DOM work to settle, then stashes
         //      the finished page onto window.__bloomExternalPageContent.

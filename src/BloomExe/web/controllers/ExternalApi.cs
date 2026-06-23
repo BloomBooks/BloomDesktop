@@ -54,6 +54,28 @@ namespace Bloom.web.controllers
             _collectionSettings = collectionSettings;
         }
 
+        /// <summary>
+        /// BloomBridge is not supported on Team Collections. Operating on a TC safely would require
+        /// honoring checkout state, preserving each book's TeamCollection.status file, and telling the
+        /// TC about renames (and recording them in history) — none of which the external write
+        /// endpoints do. Rather than silently corrupt a shared collection, the mutating endpoints
+        /// (add/update/process-book) fail fast when the open collection is a Team Collection. Returns
+        /// true (and fails the request) if we refused; false if it is safe to proceed.
+        /// </summary>
+        private bool RefuseIfTeamCollection(ApiRequest request, string endpoint)
+        {
+            if (_collectionModel.IsEditableCollectionATeamCollection)
+            {
+                request.Failed(
+                    endpoint
+                        + " is not supported on Team Collections. BloomBridge can only be used with a "
+                        + "regular (non-Team) collection."
+                );
+                return true;
+            }
+            return false;
+        }
+
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             // This is called from bloomlibrary.org after a successful login.
@@ -256,6 +278,9 @@ namespace Bloom.web.controllers
                     return;
                 }
 
+                if (RefuseIfTeamCollection(request, "external/process-book"))
+                    return;
+
                 // Let the user know Bloom is busy. ProcessBook runs synchronously on this (UI)
                 // thread but pumps the message loop via Application.DoEvents(), so the main WebView2
                 // keeps painting and this overlay (with its CSS spinner) stays visible/animated for
@@ -269,6 +294,8 @@ namespace Bloom.web.controllers
                 try
                 {
                     dynamic overlay = new DynamicJson();
+                    // Intentionally NOT localized, like the add-book/update-book toasts below: this is
+                    // an operator-facing message shown only during a BloomBridge-driven processing run.
                     overlay.message = "Bloom is processing a book for BloomBridge, please wait…";
                     BloomWebSocketServer.Instance?.SendBundle(
                         "externalProcessing",
@@ -518,6 +545,9 @@ namespace Bloom.web.controllers
                     return;
                 }
 
+                if (RefuseIfTeamCollection(request, "external/add-book"))
+                    return;
+
                 var newBook = _collectionModel.AddBookFromFolder(folderPath);
                 if (newBook == null)
                 {
@@ -641,6 +671,9 @@ namespace Bloom.web.controllers
                     request.Failed("external/update-book requires a book 'id'");
                     return;
                 }
+
+                if (RefuseIfTeamCollection(request, "external/update-book"))
+                    return;
 
                 var editableCollection = _collectionModel.TheOneEditableCollection;
                 var collectionPath = editableCollection.PathToDirectory;

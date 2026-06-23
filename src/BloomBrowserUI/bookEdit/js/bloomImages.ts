@@ -1,8 +1,5 @@
-import {
-    getWithConfig,
-    getWithConfigAsync,
-    postJson,
-} from "../../utils/bloomApi";
+import { getWithConfigAsync, postJson } from "../../utils/bloomApi";
+import { wrapWithRequestPageContentDelay } from "./bloomEditing";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
 
@@ -919,45 +916,53 @@ function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
         if (url.startsWith("/bloom/")) {
             return;
         }
-        getWithConfig(
-            "image/info",
-            { params: { image: GetRawImageUrl(img) } },
-            (result) => {
-                const imageInfo: any = result.data;
-                const containerAspectRatio =
-                    container.width() / Math.max(1, container.height());
-                const imageAspectRatio =
-                    imageInfo.width / Math.max(1, imageInfo.height);
+        // Fetching the image info and applying the size is ASYNCHRONOUS, so this fix-up is NOT complete
+        // when SetupElements()/bootstrap() returns. Register a requestPageContent delay around it so any
+        // save/capture in flight waits for the sizing to finish before reading the DOM. In particular
+        // the off-screen book processor's captureContentForExternalProcessing() honors these delays, so
+        // it captures the sized page rather than the un-sized one. Mirrors adjustBackgroundImageSize().
+        wrapWithRequestPageContentDelay(async () => {
+            const result = await getWithConfigAsync<IImageInfoResponse>(
+                "image/info",
+                { params: { image: GetRawImageUrl(img) } },
+            );
+            if (!result) {
+                return;
+            }
+            const imageInfo = result.data;
+            const containerAspectRatio =
+                container.width() / Math.max(1, container.height());
+            const imageAspectRatio =
+                imageInfo.width / Math.max(1, imageInfo.height);
 
-                // image is skinnier than the container
-                if (imageAspectRatio < containerAspectRatio) {
-                    $(img).css(
-                        "width",
-                        `${container.height() * imageAspectRatio}px`,
-                    );
-                    $(img).css("height", "100%");
-                }
-                // image is fatter than the container
-                else {
-                    $(img).css(
-                        "height",
-                        `${
-                            imageInfo.height *
-                            (container.width() / Math.max(1, imageInfo.width))
-                        }px`,
-                    );
-                    $(img).css("width", "100%");
-                }
-                // This isn't actually needed once we have the height and width
-                // here. However, when a new the book is previewed *before we've
-                // had a chance to set this stuff*, it will look awful unless we
-                // can put object-fit:contain on it. That won't make the border
-                // fit tightly, but at least the image won't be distorted. So we
-                // do set it that way in the stylesheet, and then overwrite that here once
-                // we have the height and width set.
-                $(img).css("object-fit", "cover");
-            },
-        );
+            // image is skinnier than the container
+            if (imageAspectRatio < containerAspectRatio) {
+                $(img).css(
+                    "width",
+                    `${container.height() * imageAspectRatio}px`,
+                );
+                $(img).css("height", "100%");
+            }
+            // image is fatter than the container
+            else {
+                $(img).css(
+                    "height",
+                    `${
+                        imageInfo.height *
+                        (container.width() / Math.max(1, imageInfo.width))
+                    }px`,
+                );
+                $(img).css("width", "100%");
+            }
+            // This isn't actually needed once we have the height and width
+            // here. However, when a new the book is previewed *before we've
+            // had a chance to set this stuff*, it will look awful unless we
+            // can put object-fit:contain on it. That won't make the border
+            // fit tightly, but at least the image won't be distorted. So we
+            // do set it that way in the stylesheet, and then overwrite that here once
+            // we have the height and width set.
+            $(img).css("object-fit", "cover");
+        }, "SetImageDisplaySizeIfCalledFor");
     }
 }
 
