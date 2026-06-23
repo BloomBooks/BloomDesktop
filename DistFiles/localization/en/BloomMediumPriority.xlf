@@ -1426,6 +1426,95 @@
         <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
         <note>Summary text for the estimated total app size. %0 is the current estimated app size and %1 is the app size limit, for example 100 MB.</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.AboutArtOfReading" translate="no">
+        <source xml:lang="en">About Art of Reading</source>
+        <note>ID: ImageLibrary.AboutArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.AboutPixabay" translate="no">
+        <source xml:lang="en">About Pixabay</source>
+        <note>ID: ImageLibrary.AboutPixabay</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ArtOfReadingDescription" translate="no">
+        <source xml:lang="en">International Illustrations: Art of Reading 3.0 is a collection of over 11,000 images. The collection is designed for use in the preparation of a wide variety of literacy and educational materials, such as shellbooks, primers, news-sheets, posters, and other culturally appropriate materials. These images are black and white line drawings collected from SIL and national artists from around the world.</source>
+        <note>ID: ImageLibrary.ArtOfReadingDescription</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ArtOfReadingNotReadyInstructions" translate="no">
+        <source xml:lang="en">To get Art of Reading images, you need to:</source>
+        <note>ID: ImageLibrary.ArtOfReadingNotReadyInstructions</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.DownloadArtOfReading" translate="no">
+        <source xml:lang="en">Download and install the Art of Reading Installer</source>
+        <note>ID: ImageLibrary.DownloadArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ImageCount" translate="no">
+        <source xml:lang="en">{0} images</source>
+        <note>ID: ImageLibrary.ImageCount</note>
+        <note>{0} is a placeholder for the number of images</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.NoMatchesFound" translate="no">
+        <source xml:lang="en">No matches found</source>
+        <note>ID: ImageLibrary.NoMatchesFound</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.NotReady" translate="no">
+        <source xml:lang="en">Not Ready</source>
+        <note>ID: ImageLibrary.NotReady</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PasteApiKeyFromClipboard" translate="no">
+        <source xml:lang="en">Paste API key from clipboard</source>
+        <note>ID: ImageLibrary.PasteApiKeyFromClipboard</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PhotogrIllustrator" translate="no">
+        <source xml:lang="en">Photographer/Illustrator:</source>
+        <note>ID: ImageLibrary.PhotogrIllustrator</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayApiKeyInstructions" translate="no">
+        <source xml:lang="en">To use Pixabay, you need an API key:</source>
+        <note>ID: ImageLibrary.PixabayApiKeyInstructions</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayApiKeyLabel" translate="no">
+        <source xml:lang="en">Pixabay API Key</source>
+        <note>ID: ImageLibrary.PixabayApiKeyLabel</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayDescription" translate="no">
+        <source xml:lang="en">Pixabay is a large collection of images that may be used for free without attribution.</source>
+        <note>ID: ImageLibrary.PixabayDescription</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayLogIn" translate="no">
+        <source xml:lang="en">Log in to Pixabay</source>
+        <note>ID: ImageLibrary.PixabayLogIn</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayOrIfLoggedIn" translate="no">
+        <source xml:lang="en">or, if already logged in,</source>
+        <note>ID: ImageLibrary.PixabayOrIfLoggedIn</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayGoToApiKeyPage" translate="no">
+        <source xml:lang="en">go to the API key page</source>
+        <note>ID: ImageLibrary.PixabayGoToApiKeyPage</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayFindKey" translate="no">
+        <source xml:lang="en">Copy the API key shown on that page, next to &quot;Your API key:&quot;</source>
+        <note>ID: ImageLibrary.PixabayFindKey</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayStep4" translate="no">
+        <source xml:lang="en">Paste it below</source>
+        <note>ID: ImageLibrary.PixabayStep4</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.QuitAndRerunBloom" translate="no">
+        <source xml:lang="en">Quit and re-run Bloom</source>
+        <note>ID: ImageLibrary.QuitAndRerunBloom</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Refresh" translate="no">
+        <source xml:lang="en">Refresh</source>
+        <note>ID: ImageLibrary.Refresh</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Source" translate="no">
+        <source xml:lang="en">Source</source>
+        <note>ID: ImageLibrary.Source</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ThisPage" translate="no">
+        <source xml:lang="en">this page</source>
+        <note>ID: ImageLibrary.ThisPage</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
