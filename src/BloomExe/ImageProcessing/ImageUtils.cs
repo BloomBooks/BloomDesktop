@@ -109,12 +109,6 @@ namespace Bloom.ImageProcessing
         private const int LineArtInkGrayscaleChromaThreshold = 6;
         private const float LineArtInkHueTolerance = 0.15f;
 
-        // Number of dominant color bins to pass to IsLineArtPalette.
-        // Eight gives enough slots that distinct chromatic colors don't get averaged together
-        // (e.g. red and blue ink staying separate), while still being small enough that
-        // anti-aliasing intermediates don't fill every slot.
-        private const int QuantizedColorCount = 8;
-
         /// <summary>
         /// Check whether we should try to make the background of this image transparent.
         /// Returns true when the image looks like line art on a (near-)white background: that
@@ -370,9 +364,10 @@ namespace Bloom.ImageProcessing
             if (buckets.Count == 0)
                 return Array.Empty<Color>();
 
+            // Return ALL distinct bins rather than a fixed top-N. This ensures that photos
+            // with many diverse bins expose their full color variety to IsLineArtPalette,
+            // which then correctly rejects them via InksShareConsistentHue.
             return buckets
-                .OrderByDescending(kv => kv.Value.count)
-                .Take(QuantizedColorCount)
                 .Select(kv => Color.FromArgb(
                     (int)(kv.Value.r / kv.Value.count),
                     (int)(kv.Value.g / kv.Value.count),
