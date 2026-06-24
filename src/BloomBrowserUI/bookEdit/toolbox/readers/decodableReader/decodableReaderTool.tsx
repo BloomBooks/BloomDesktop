@@ -7,6 +7,7 @@ import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { renderRoot } from "../../../../utils/reactRender";
 import { isLongPressEvaluating } from "../../toolbox";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
+import $ from "jquery";
 
 // This class renders the DecodableReaderToolControls React component
 // in the toolbox, and implements all the functionality/logic needed
