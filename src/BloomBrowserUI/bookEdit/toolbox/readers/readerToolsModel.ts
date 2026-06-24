@@ -181,48 +181,41 @@ export class ReaderToolsModel {
         this.stageNumber = stage;
         this.updateStageNumberIfNeeded(); // May change the stage number
 
-        return theOneLocalizationManager
-            .asyncGetText("Common.Loading", "Loading...", "")
-            .then(() => {
-                // OK, now let that changed number and the "loading" messages
-                // make it to the user's screen, then start doing the work.
-                return setTimeoutPromise(async () => {
-                    if (this.stageNumber === stage) {
-                        this.stageGraphemes = this.getKnownGraphemes(stage);
-                    }
+        return setTimeoutPromise(async () => {
+            if (this.stageNumber === stage) {
+                this.stageGraphemes = this.getKnownGraphemes(stage);
+            }
 
-                    const defaultStagePostedPromise = new Promise<void>(
-                        (resolve, reject) => {
-                            if (!skipSave) {
-                                this.saveState();
-                                // When we're actually changing the stage number is the only time we want
-                                // to update the default.
-                                post(
-                                    "readers/io/defaultStage?stage=" +
-                                        this.stageNumber,
-                                    () => {
-                                        resolve();
-                                    },
-                                    (r) => {
-                                        reject(r);
-                                    },
-                                );
-                            } else {
+            const defaultStagePostedPromise = new Promise<void>(
+                (resolve, reject) => {
+                    if (!skipSave) {
+                        this.saveState();
+                        // When we're actually changing the stage number is the only time we want
+                        // to update the default.
+                        post(
+                            "readers/io/defaultStage?stage=" + this.stageNumber,
+                            () => {
                                 resolve();
-                            }
-                        },
-                    );
-
-                    if (this.readyToDoMarkup()) {
-                        this.doMarkup();
+                            },
+                            (r) => {
+                                reject(r);
+                            },
+                        );
+                    } else {
+                        resolve();
                     }
+                },
+            );
 
-                    return allPromiseSettled([defaultStagePostedPromise]);
+            if (this.readyToDoMarkup()) {
+                this.doMarkup();
+            }
 
-                    // The 1/2 second delay here gives us a chance to click quickly and change the stage before we start working
-                    // If that happens, the check that is the first line of this setTimeout function will decide to bail out.
-                }, 500);
-            });
+            return allPromiseSettled([defaultStagePostedPromise]);
+
+            // The 1/2 second delay here gives us a chance to click quickly and change the stage before we start working
+            // If that happens, the check that is the first line of this setTimeout function will decide to bail out.
+        }, 500);
     }
 
     private updateStageNumberIfNeeded(): void {

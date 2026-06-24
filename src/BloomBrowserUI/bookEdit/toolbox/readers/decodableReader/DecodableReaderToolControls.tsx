@@ -91,14 +91,16 @@ const DecodableGrid: FunctionComponent<{
                 ref={gridRef}
                 css={css`
                     display: grid;
+                    align-content: start;
                     grid-template-columns: repeat(${curColCount}, auto);
                     grid-template-rows: repeat(${curRowCount}, auto);
                     grid-auto-flow: ${props.direction};
-                    flex: 1 1 auto;
                     min-height: 0;
+                    flex: 1 1 auto;
                     overflow: auto;
                     margin-left: 8px;
                     margin-top: 4px;
+                    padding-bottom: 0.6em;
                     font-family: ${getTheOneReaderToolsModel().fontName};
                 `}
             >
@@ -108,6 +110,7 @@ const DecodableGrid: FunctionComponent<{
                         className="lang1InATool"
                         css={css`
                             line-height: 1.3;
+                            padding-bottom: 0.2em;
                             color: ${typeof item !== "string" &&
                             item.isSightWord
                                 ? "#87cefa"
