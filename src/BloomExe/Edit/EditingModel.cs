@@ -1549,36 +1549,34 @@ namespace Bloom.Edit
         private bool _nextSaveMustBeFull; // review: store in state machine?
 
         /// <summary>
-        /// Request the needed data to do a save, then when the contents of the current page have been saved,
-        /// do the given action. The result of the action is a page ID which we will then navigate to, or null
-        /// to show a blank screen if we are leaving the edit tab.
-        /// If we are not in the right state to save, doAfterSaving() will not be called at all,
-        /// but instead doIfNotInRightStateToSave() will be called. Usually the latter does nothing,
-        /// but we are deliberately not making it optional to make sure it gets thought about.
-        /// Usually, the book will be saved to disk after executing the action, but before navigating to
-        /// the new page. Sometimes the action needs to save the book itself, in which case it can prevent
-        /// a further Save() by setting skipSaveToDisk to true. (Or just possibly, we might not want the Save
-        /// to go all the way to disk, especially if we aren't going to switch pages.)
-        /// Returns true if we're in a valid state to save, false if we're not. In the latter case, doAfterSaving
-        /// will not be called (even later).
+        /// Request the needed data to do a save, then when the in-memory DOM has been updated from the browser,
+        /// call doBeforeSaveToDisk. Its return value is a page ID to navigate to afterward (or null to show a
+        /// blank screen when leaving the edit tab). Unless skipSaveToDisk is true, the book is then saved to
+        /// disk. If doAfterSaveToDisk is provided, it is called after the disk save and before navigation —
+        /// useful for blocking UI (e.g. a modal dialog) that needs up-to-date files on disk.
+        /// (It is only called if skipSaveToDisk is false and the save succeeds.)
+        /// If we are not in the right state to save, doIfNotInRightStateToSave() is called instead. It is
+        /// deliberately not optional so callers think about what to do in that case.
         /// </summary>
         /// <remarks>If you are doing this in an API handler, remember that you must retrieve any data in
-        /// the request before calling SaveThen. The Request object can't be used in side the doAfterSaving function,
+        /// the request before calling SaveThen. The Request object can't be used inside doBeforeSaveToDisk,
         /// since by then the request has been marked completed.</remarks>
         public void SaveThen(
-            Func<string> doAfterSaving,
+            Func<string> doBeforeSaveToDisk,
             Action doIfNotInRightStateToSave,
             bool forceFullSave = false,
             bool skipSaveToDisk = false,
-            Action failureAction = null
+            Action failureAction = null,
+            Action doAfterSaveToDisk = null
         )
         {
             _nextSaveMustBeFull |= forceFullSave;
             if (
                 !_stateMachine.ToSavePending(
-                    doAfterSaving,
+                    doBeforeSaveToDisk,
                     saveActionHandlesSaveBook: skipSaveToDisk,
-                    failureAction
+                    failureAction,
+                    doAfterSaveToDisk
                 )
             )
                 doIfNotInRightStateToSave();
