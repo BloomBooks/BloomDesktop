@@ -8,6 +8,12 @@
         "jsx": "react-jsx",
         "jsxImportSource": "@emotion/react",
         "esModuleInterop": true,
+        // Don't type-check the .d.ts files inside node_modules. Several of our
+        // dependencies ship declaration files that don't pass a strict check
+        // (e.g. react-select's bundled @emotion types); checking them buried our
+        // own ~80 errors under ~970 library errors and made `tsc` useless as a
+        // gate. This matches how the Vite/esbuild build already treats libraries.
+        "skipLibCheck": true,
         "types": [
             /*"@emotion/core",*/
             "@emotion/react/types/css-prop",
