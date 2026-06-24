@@ -6,102 +6,28 @@ import {
     useState,
     FunctionComponent,
     useEffect,
+    useReducer,
 } from "react";
 import { Span } from "../../../../react_components/l10nComponents";
 import BloomButton from "../../../../react_components/bloomButton";
-import { ArrowLeft, ArrowRight } from "@mui/icons-material";
-import { css } from "@emotion/react";
+import { css, ThemeProvider } from "@emotion/react";
 import { Link } from "../../../../react_components/link";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { DataWord } from "../libSynphony/bloomSynphonyExtensions";
 import { useL10n } from "../../../../react_components/l10nHooks";
+import {
+    kBloomLightBlue,
+    kBloomDarkestBackground,
+} from "../../../../utils/colorUtils";
+import { ReaderToolNav } from "../ReaderToolNav";
+import { toolboxTheme } from "../../../../bloomMaterialUITheme";
 
-const StageNav: FunctionComponent<{
-    currentStage: number;
-    changeFunction: (increment: boolean) => void;
-}> = (props) => {
-    const model = getTheOneReaderToolsModel();
-    return (
-        <div>
-            <BloomButton
-                iconBeforeText={
-                    props.currentStage > 1 ? (
-                        <ArrowLeft
-                            css={css`
-                                color: white;
-                            `}
-                        />
-                    ) : (
-                        <></>
-                    )
-                }
-                variant="text"
-                disabled={props.currentStage <= 1}
-                l10nKey=""
-                hasText={false}
-                enabled={true}
-                onClick={() => props.changeFunction(false)}
-                css={css`
-                    width: 6px;
-                    min-width: unset;
-                    height: 18px;
-                    margin-left: 5px;
-                    margin-bottom: 8px;
-                    padding-left: 10px;
-                    padding-right: 3px;
-                `}
-            />
-            <Span
-                l10nKey="EditTab.Toolbox.DecodableReaderTool.StageNofM"
-                l10nParam0={props.currentStage.toString()}
-                l10nParam1={model.getNumberOfStages()?.toString()}
-                css={css`
-                    font-size: 20px;
-                `}
-            >
-                Stage {0} of {1}
-            </Span>
-            <BloomButton
-                iconBeforeText={
-                    props.currentStage !== model.getNumberOfStages() ? (
-                        <ArrowRight
-                            css={css`
-                                color: white;
-                            `}
-                        />
-                    ) : (
-                        <></>
-                    )
-                }
-                variant="text"
-                disabled={props.currentStage === model.getNumberOfStages()}
-                l10nKey=""
-                hasText={false}
-                enabled={true}
-                onClick={() => props.changeFunction(true)}
-                css={css`
-                    width: 16px;
-                    min-width: unset;
-                    height: 18px;
-                    padding-left: 12px;
-                    padding-right: 1px;
-                    margin-bottom: 8px;
-                `}
-            />
-        </div>
-    );
-};
-
-// This component puts all of the letters/words from the list
-// into a single-columned div so that its width can be gathered
-// using getBoundingClientReact().width and used to determine the
-// number of columns and rows to be used in the actual display grid.
-// This way, the greatest word width is used instead of most number
-// of characters, since there are instances where strings such as
-// ww can be bigger than iii
+// This component displays a list of words in a grid
+// where the number of rows and columns is dynamically
+// determined based on the word with the greatest width
 const DecodableGrid: FunctionComponent<{
-    forGraphemes: boolean;
-    displayList: DataWord[] | string[];
+    direction: "row" | "column";
+    words: DataWord[] | string[];
 }> = (props) => {
     const measureRef = useRef<HTMLDivElement>(null);
     const gridRef = useRef<HTMLDivElement>(null);
@@ -114,6 +40,11 @@ const DecodableGrid: FunctionComponent<{
     useLayoutEffect(() => {
         if (!measureRef.current || !gridRef.current) return;
 
+        // Here, getBoundingClientRect().width is used on a hidden div
+        // and the actual grid div to properly determine how many rows
+        // and columns will be needed to nicely fit all the words within
+        // the grid. This means that words are placed in both the hidden
+        // div and the grid div.
         const width = Math.ceil(
             measureRef.current.getBoundingClientRect().width,
         );
@@ -128,16 +59,18 @@ const DecodableGrid: FunctionComponent<{
                 colCount = 7; // this way, the graphemes and small words won't be so clumped together
             }
             setCurColCount(colCount);
-            const rowCount = Math.ceil(props.displayList.length / colCount);
+            const rowCount = Math.ceil(props.words.length / colCount);
             setCurRowCount(rowCount);
         } else {
             setCurColCount(1);
             setCurRowCount(1);
         }
-    }, [props.displayList]);
+    }, [props.words]);
 
     return (
         <>
+            {/* This is the hidden div that's used to get the width of the widest word,
+                by displaying all the words in a single column*/}
             <div
                 ref={measureRef}
                 css={css`
@@ -145,10 +78,11 @@ const DecodableGrid: FunctionComponent<{
                     visibility: hidden;
                     white-space: nowrap;
                     pointer-events: none;
+                    font-family: ${getTheOneReaderToolsModel().fontName};
                 `}
             >
-                {props.displayList.map((item, index) => (
-                    <div key={index}>
+                {props.words.map((item, index) => (
+                    <div key={index} className="lang1InATool">
                         {typeof item === "string" ? item : item.Name}
                     </div>
                 ))}
@@ -159,16 +93,18 @@ const DecodableGrid: FunctionComponent<{
                     display: grid;
                     grid-template-columns: repeat(${curColCount}, 1fr);
                     grid-template-rows: repeat(${curRowCount}, auto);
-                    grid-auto-flow: ${props.forGraphemes ? "row" : "column"};
+                    grid-auto-flow: ${props.direction};
                     row-gap: 5px;
                     overflow: auto;
                     margin-left: 8px;
-                    margin-top: 8px;
+                    margin-top: 4px;
+                    font-family: ${getTheOneReaderToolsModel().fontName};
                 `}
             >
-                {props.displayList.map((item, index) => (
+                {props.words.map((item, index) => (
                     <div
                         key={index}
+                        className="lang1InATool"
                         css={css`
                             color: ${typeof item !== "string" &&
                             item.isSightWord
@@ -184,14 +120,12 @@ const DecodableGrid: FunctionComponent<{
     );
 };
 
-const StageGraphemes: FunctionComponent<{
-    currentGraphemes: string[];
-}> = (props) => {
+const StageGraphemes: FunctionComponent = () => {
     return (
         <div
             css={css`
-                min-height: 120px;
-                margin-top: 20px;
+                min-height: 100px;
+                margin-top: 15px;
                 display: flex;
                 flex-direction: column;
                 flex: 0 1 auto;
@@ -202,14 +136,14 @@ const StageGraphemes: FunctionComponent<{
                 l10nKey="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage"
                 css={css`
                     margin-left: 8px;
-                    color: #b0dee4;
+                    color: ${kBloomLightBlue};
                 `}
             >
                 Letters in this stage
             </Span>
             <DecodableGrid
-                forGraphemes={true}
-                displayList={props.currentGraphemes}
+                direction="row"
+                words={getTheOneReaderToolsModel().getKnownGraphemesSorted()}
             />
         </div>
     );
@@ -267,14 +201,18 @@ const SortButton: FunctionComponent<{
             onClick={() => props.changeSortFunc(props.sortType)}
             css={css`
                 font-family: FontAwesome;
-                font-size: 9pt;
                 width: 20px;
                 min-width: unset;
-                height: 18px;
+                height: 20px;
                 border-radius: 0;
                 color: white;
                 border: 1px solid white;
                 background-color: ${shouldHighlight ? "grey" : "transparent"};
+
+                &&,
+                &&:hover {
+                    border-width: 1px;
+                }
 
                 &:hover {
                     background-color: ${shouldHighlight
@@ -289,15 +227,13 @@ const SortButton: FunctionComponent<{
 };
 
 const SortedStageWords: FunctionComponent<{
-    stageSightWords: DataWord[];
-    allowedWords: DataWord[];
     changeSortFunc: (which: 0 | 1 | 2) => void;
 }> = (props) => {
     const model = getTheOneReaderToolsModel();
     return (
         <div
             css={css`
-                margin-top: 20px;
+                margin-top: 15px;
                 min-height: 200px;
                 display: flex;
                 flex-direction: column;
@@ -311,7 +247,7 @@ const SortedStageWords: FunctionComponent<{
                         l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage"
                         css={css`
                             margin-left: 8px;
-                            color: #b0dee4;
+                            color: ${kBloomLightBlue};
                             display: inline-flex;
                             width: 110px;
                         `}
@@ -323,7 +259,7 @@ const SortedStageWords: FunctionComponent<{
                         l10nKey="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage"
                         css={css`
                             margin-left: 8px;
-                            color: #b0dee4;
+                            color: ${kBloomLightBlue};
                             display: inline-flex;
                             width: 110px;
                         `}
@@ -347,11 +283,11 @@ const SortedStageWords: FunctionComponent<{
                 )}
             </div>
             <DecodableGrid
-                forGraphemes={false}
-                displayList={
+                direction="column"
+                words={
                     model.synphony?.source.useAllowedWords === 1
-                        ? props.allowedWords
-                        : props.stageSightWords
+                        ? model.getAllowedWordsSorted(model.stageNumber)
+                        : model.getStageSightWordsSorted(model.stageNumber)
                 }
             />
         </div>
@@ -363,23 +299,8 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
     const [showTool, setShowTool] = useState<boolean>(
         isReaderToolEnabledOnCurrentPage(false),
     );
-    // make sure the current stage number shows 0 if there are
-    // currently no stages
-    const [currentStage, setCurrentStage] = useState<number>(
-        model.getNumberOfStages() === 0 ? 0 : model.stageNumber,
-    );
-    // These next three state initializers use functions that I
-    // created in the readerToolsModel.ts file, which return
-    // completely sorted lists
-    const [currentGraphemes, setCurGraphemes] = useState<string[]>(
-        model.getKnownGraphemesSorted(model.stageNumber),
-    );
-    const [stageSightWords, setStageSightWords] = useState<DataWord[]>(
-        model.getStageSightWordsSorted(model.stageNumber),
-    );
-    const [allowedWords, setAllowedWords] = useState<DataWord[]>(
-        model.getAllowedWordsSorted(model.stageNumber),
-    );
+
+    const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
     function updateState(): void {
         // If the current sort function is byFrequency when switching to
@@ -392,31 +313,36 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
         ) {
             model.sortAlphabetically();
         }
-        // if all the stages are removed in the setup, set the current
-        // stage number to be 0
-        setCurrentStage(
-            model.getNumberOfStages() === 0 ? 0 : model.stageNumber,
-        );
+
         // I include this line so that all the sort getter functions can
-        // receive the correct graphemes.
+        // receive the correct graphemes for the current stage. Wihout this
+        // line, the displaying of the graphemes and words will be one stage
+        // behind. For example, if you are in stage 1 of 3 and go to stage 2
+        // of 3, the tool will still display the data from stage 1. If you
+        // then go to stage 3, it will then display the data from stage 2.
         model.stageGraphemes = model.getKnownGraphemes(model.stageNumber);
-        setCurGraphemes(model.getKnownGraphemesSorted(model.stageNumber));
-        setStageSightWords(model.getStageSightWordsSorted(model.stageNumber));
-        setAllowedWords(model.getAllowedWordsSorted(model.stageNumber));
+        forceUpdate();
     }
 
-    // model.refreshFunc lets the model push updates into this component's
-    // React state whenever updateControlContents() runs. A useEffect is used
-    // here to provide a safe cleanup so that the updateState function won't
-    // get called when the tool is not being used.
-    // Note: I made a change in that file so that this function would get
-    // called.
+    // This useRef and useEffect handle assigning the updateState()
+    // function, defined above, to the refreshFunc variable in
+    // readerToolsModel.ts, so that this component updates and re-renders
+    // whenever updateControlContents() is called in readerToolsModel.ts.
+    //
+    // This approach is intended to guard against potential problems where
+    // model.refreshFunc may be called when it is undefined, which could
+    // possibly lead to the component being out of sync with the data.
+    // The chance of this happening is not super likely, but it is still
+    // good to make sure that this possibility won't happen.
+    const updateStateRef = useRef(updateState);
+    updateStateRef.current = updateState;
+
     useEffect(() => {
-        model.refreshFunc = updateState;
+        model.refreshFunc = () => updateStateRef.current();
         return () => {
             model.refreshFunc = undefined;
         };
-    });
+    }, []);
 
     function changeStage(increment: boolean): void {
         if (increment) {
@@ -440,112 +366,110 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
                 break;
             default:
         }
-        setStageSightWords(model.getStageSightWordsSorted(model.stageNumber));
-        setAllowedWords(model.getAllowedWordsSorted(model.stageNumber));
+        forceUpdate();
     }
 
     return (
-        <div
-            css={css`
-                display: flex;
-                flex-direction: column;
-                height: 100%;
-                min-height: 0;
-                overflow-x: hidden;
-            `}
-        >
-            {showTool && (
-                <div
-                    css={css`
-                        display: flex;
-                        flex-direction: column;
-                        flex: 1 1 auto;
-                        min-height: 0;
-                        overflow-x: hidden;
-                    `}
-                >
+        <ThemeProvider theme={toolboxTheme}>
+            <div
+                css={css`
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                    min-height: 0;
+                    overflow-x: hidden;
+                `}
+            >
+                {showTool && (
                     <div
                         css={css`
                             display: flex;
-                            justify-content: right;
-                            margin-bottom: 10px;
+                            flex-direction: column;
+                            flex: 1 1 auto;
+                            min-height: 0;
+                            overflow-x: hidden;
                         `}
                     >
-                        <BloomButton
-                            href="javascript:window.toolboxBundle.showSetupDialog('stages');"
-                            l10nKey="EditTab.Toolbox.DecodableReaderTool.SetUpStages"
-                            variant="text"
-                            enabled={true}
-                            hasText={true}
-                            enabledImageFile="/bloom/bookEdit/toolbox/readers/edit-white.png"
+                        <div
                             css={css`
-                                font-size: xx-small;
-                                text-decoration: underline;
-                                text-underline-offset: 1px;
-                                height: 30px;
-                                img {
-                                    height: 14px;
-                                    margin-right: 1px;
-                                }
-                                &:hover {
+                                display: flex;
+                                margin-left: auto;
+                                margin-bottom: 10px;
+                                padding-right: 2px;
+                            `}
+                        >
+                            <BloomButton
+                                href="javascript:window.toolboxBundle.showSetupDialog('stages');"
+                                l10nKey="EditTab.Toolbox.DecodableReaderTool.SetUpStages"
+                                variant="text"
+                                enabled={true}
+                                hasText={true}
+                                enabledImageFile="/bloom/bookEdit/toolbox/readers/edit-white.png"
+                                css={css`
+                                    font-size: xx-small;
                                     text-decoration: underline;
-                                }
-                            `}
-                        >
-                            Set Up Stages
-                        </BloomButton>
+                                    font-weight: normal;
+                                    height: 22px;
+                                    img {
+                                        height: 14px;
+                                        margin-right: 2px;
+                                        margin-bottom: 2px;
+                                    }
+                                    &:hover {
+                                        text-decoration: underline;
+                                    }
+                                `}
+                            >
+                                Set Up Stages
+                            </BloomButton>
+                        </div>
+                        <ReaderToolNav
+                            isForLeveled={false}
+                            changeFunction={changeStage}
+                        />
+                        {model.synphony?.source.useAllowedWords === 0 && (
+                            <StageGraphemes />
+                        )}
+                        <SortedStageWords changeSortFunc={changeSortFunc} />
+                        {model.synphony?.source.useAllowedWords === 0 && (
+                            <Link
+                                l10nKey="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
+                                href="javascript:toolboxBundle.makeLetterWordList();"
+                                css={css`
+                                    padding: 8px;
+                                    padding-left: 11px;
+                                    background-color: ${kBloomDarkestBackground};
+                                    box-sizing: border-box;
+                                    text-decoration: underline;
+                                `}
+                            >
+                                Generate a letter and word list report
+                            </Link>
+                        )}
+                        {model.getAllowedWordsAsObjects(model.stageNumber)
+                            .length >= model.maxAllowedWords && (
+                            <Span
+                                l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated"
+                                l10nParam0={model.maxAllowedWords.toString()}
+                                css={css`
+                                    padding: 8px 4px;
+                                    background-color: ${kBloomDarkestBackground};
+                                    color: red;
+                                `}
+                            >
+                                {"Bloom can handle only the first {0} words."}
+                            </Span>
+                        )}
                     </div>
-                    <StageNav
-                        currentStage={currentStage}
-                        changeFunction={changeStage}
-                    />
-                    {model.synphony?.source.useAllowedWords === 0 && (
-                        <StageGraphemes currentGraphemes={currentGraphemes} />
-                    )}
-                    <SortedStageWords
-                        stageSightWords={stageSightWords}
-                        allowedWords={allowedWords}
-                        changeSortFunc={changeSortFunc}
-                    />
-                    {model.synphony?.source.useAllowedWords === 0 && (
-                        <Link
-                            l10nKey="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
-                            href="javascript:toolboxBundle.makeLetterWordList();"
-                            css={css`
-                                left: -3px;
-                                padding: 8px;
-                                padding-left: 11px;
-                                background-color: #1a1a1a;
-                                box-sizing: border-box;
-                                width: calc(100% + 3px);
-                                text-decoration: underline;
-                            `}
-                        >
-                            Generate a letter and word list report
-                        </Link>
-                    )}
-                    {allowedWords.length >= model.maxAllowedWords && (
-                        <Span
-                            l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated"
-                            l10nParam0={model.maxAllowedWords.toString()}
-                            css={css`
-                                padding: 8px 4px;
-                                background-color: #1a1a1a;
-                                color: red;
-                            `}
-                        >
-                            Bloom can handle only the first {0} words.
-                        </Span>
-                    )}
-                </div>
-            )}
-            <ReaderToolSwitch
-                isForLeveled={false}
-                changeDisplayFunc={() => setShowTool((prev) => !prev)}
-                css={css`
-                    margin-left: 50px;
-                `}
-            />
-        </div>
+                )}
+                <ReaderToolSwitch
+                    isForLeveled={false}
+                    changeDisplayFunc={() => setShowTool((prev) => !prev)}
+                    css={css`
+                        margin-left: 50px;
+                    `}
+                />
+            </div>
+        </ThemeProvider>
     );
 };

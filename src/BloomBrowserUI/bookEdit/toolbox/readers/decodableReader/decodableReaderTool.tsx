@@ -8,10 +8,13 @@ import { renderRoot } from "../../../../utils/reactRender";
 import { isLongPressEvaluating } from "../../toolbox";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
 
-// this new version of the decodable reader tool re-implements some
-// of the methods that were implemented in decodableReaderToolboxTool.ts,
-// so that everything would load properly and the markup would work as
-// usual.
+// This class renders the DecodableReaderToolControls React component
+// in the toolbox, and implements all the functionality/logic needed
+// for detaching the tool, reattaching the tool, updating the markup,
+// restoring the current tool state (which includes the saved stage
+// number, sorting type, and current graphemes and words for that stage),
+// and handling certain events such as focsuing in an element (such as
+// a textbox), focusing out of an element, and undo/redo.
 export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     public makeRootElement(): HTMLDivElement {
         const root = document.createElement("div");
@@ -50,7 +53,7 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
             const decodableReaderState = (
                 settings as unknown as Record<string, string>
             )["decodableReaderState"];
-            // This wrapper function keeps Devin happy by ensuring that the promise gets resolved,
+            // This wrapper function ensures that the promise gets resolved,
             // even in the very unlikely case that setStageNumber fails.
             const runStageRestore = (
                 work: () => void | Promise<unknown>,
