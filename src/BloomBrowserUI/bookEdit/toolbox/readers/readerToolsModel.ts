@@ -184,7 +184,7 @@ export class ReaderToolsModel {
         }
 
         this.stageNumber = stage;
-        this.updateStageNOfMDisplay();
+        this.updateStageNumberIfNeeded(); // May change the stage number
         this.updateStageButtonsAvailability();
 
         return theOneLocalizationManager
@@ -402,7 +402,7 @@ export class ReaderToolsModel {
      */
     public updateControlContents(): void {
         this.updateLetterList();
-        this.updateStageNOfMDisplay();
+        this.updateStageNumberIfNeeded(); // May change the stage number
         this.updateLevelNOfMDisplay();
         this.updateStageButtonsAvailability();
         this.enableLevelButtons();
@@ -411,38 +411,6 @@ export class ReaderToolsModel {
         if (this.refreshFunc !== undefined) {
             this.refreshFunc();
         }
-    }
-
-    public updateStageNOfMDisplay() {
-        this.updateStageNumberIfNeeded(); // May change the stage number
-
-        const stageParent = this.getToolElementById("stageNofM");
-        if (!stageParent) {
-            return;
-        }
-
-        this.updateStageNOfMInternal(stageParent);
-    }
-
-    public updateStageNOfMInternal(stageParent: HTMLElement) {
-        const stageLabel = this.getStageLabel() ?? "0";
-        const numStages = this.getNumberOfStages() ?? 0;
-
-        // Note: getText is synchronous. If the string's translation has not been loaded yet, it will just return the English synchronously.
-        // I want this function to be synchronous in order so that the callers and all their dependencies
-        // don't have to worry about asynchonously waiting for this function to complete.
-        // The constructor does pre-load the translations at construction time, and it does seem to complete with plenty of time to spare.
-        // So, hopefully we will always have the string in the UI language already ready to go when we reach here.
-        // If not, it's not the end of the world to display it in English at first. (This function gets called several times,
-        // so one would expect that even if the localizations aren't ready the first time, it ought to be ready by the last time)
-        const localizedFormattedText = theOneLocalizationManager.getText(
-            "EditTab.Toolbox.DecodableReaderTool.StageNofM",
-            "Stage {0} of {1}",
-            stageLabel,
-            numStages.toString(),
-        );
-
-        stageParent.innerText = localizedFormattedText;
     }
 
     public updateLevelNOfMDisplay() {
@@ -863,13 +831,13 @@ export class ReaderToolsModel {
      * @param stageNumber
      * @returns a sorted array of letters
      */
-    public getKnownGraphemesSorted(stageNumber: number): string[] {
+    public getKnownGraphemesSorted(): string[] {
         if (!this.synphony) {
             return []; // Synphony not loaded yet
         }
 
         // Letters up through current stage
-        const letters = this.stageGraphemes;
+        const letters = [...this.stageGraphemes];
 
         // All the letters in the order they were entered on the Letters tab in the set up dialog
         const allLetters = this.synphony.source.letters.split(" ");
