@@ -68,7 +68,6 @@ describe("Bloom Edit Controls tests", () => {
         getTheOneReaderToolsModel().addWordsFromFile(sampleFileContents);
 
         getTheOneReaderToolsModel().addWordsToSynphony();
-        getTheOneReaderToolsModel().updateWordList();
 
         const setStageDone = getTheOneReaderToolsModel().setStageNumber(1);
         getTheOneReaderToolsModel().wordListLoaded = true;

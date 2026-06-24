@@ -8,7 +8,6 @@
 /// <reference path="readerTools.ts" />
 import $ from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
-import { resizeWordList } from "./readerTools";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import "./libSynphony/jquery.text-markup";
 import { removeAllHtmlMarkupFromString } from "./libSynphony/jquery.text-markup";
@@ -51,7 +50,6 @@ export const MarkupType = {
     Decodable: 2,
 };
 
-const sortIconSelectedClass = "sortIconSelected"; // The class we apply to the selected sort icon
 const disabledIconClass = "disabledIcon"; // The class we apply to icons that are disabled.
 const disabledLimitClass = "disabledLimit"; // The class we apply to max values that are disabled (0).
 
@@ -62,9 +60,6 @@ export class DRTState {
 }
 
 export class ReaderToolsModel {
-    public previousHeight: number = 0;
-    public previousWidth: number = 0;
-
     public stageNumber: number = 1;
     public levelNumber: number = 1;
     public synphony: ReadersSynphonyWrapper | undefined; // to ensure detection of async issues, don't init until we load its settings
@@ -185,45 +180,16 @@ export class ReaderToolsModel {
 
         this.stageNumber = stage;
         this.updateStageNumberIfNeeded(); // May change the stage number
-        this.updateStageButtonsAvailability();
 
         return theOneLocalizationManager
             .asyncGetText("Common.Loading", "Loading...", "")
-            .then((loadingMessage) => {
-                // this may result in a need to resize the word list
-                this.previousHeight = 0;
-                $("#letterList").html(loadingMessage);
-                $("#wordList").html(loadingMessage);
-
+            .then(() => {
                 // OK, now let that changed number and the "loading" messages
                 // make it to the user's screen, then start doing the work.
                 return setTimeoutPromise(async () => {
                     if (this.stageNumber === stage) {
                         this.stageGraphemes = this.getKnownGraphemes(stage);
                     }
-
-                    // Both setting the letters and words require that to be done,
-                    // but they can be done independently of each other.
-                    // By separating them, we allow the letters to update while
-                    // the words are still being generated.
-                    const updateLetterListDonePromise = setTimeoutPromise(
-                        () => {
-                            // make sure this is still the stage they want
-                            // (it won't be if they are rapidly clicking the next/previous stage buttons)
-                            if (this.stageNumber === stage) {
-                                this.updateLetterList();
-                            }
-                        },
-                        0,
-                    );
-
-                    const updateWordListDonePromise = setTimeoutPromise(() => {
-                        // make sure this is still the stage they want
-                        // (it won't be if they are rapidly clicking the next/previous stage buttons)
-                        if (this.stageNumber === stage) {
-                            this.updateWordList();
-                        }
-                    }, 0);
 
                     const defaultStagePostedPromise = new Promise<void>(
                         (resolve, reject) => {
@@ -251,11 +217,7 @@ export class ReaderToolsModel {
                         this.doMarkup();
                     }
 
-                    return allPromiseSettled([
-                        updateLetterListDonePromise,
-                        updateWordListDonePromise,
-                        defaultStagePostedPromise,
-                    ]);
+                    return allPromiseSettled([defaultStagePostedPromise]);
 
                     // The 1/2 second delay here gives us a chance to click quickly and change the stage before we start working
                     // If that happens, the check that is the first line of this setTimeout function will decide to bail out.
@@ -370,30 +332,9 @@ export class ReaderToolsModel {
 
     public setSort(sortType: string, skipSave?: boolean): void {
         this.sort = sortType;
-        this.updateSortStatus();
-        this.updateWordList();
         if (!skipSave) {
             this.saveState();
         }
-    }
-
-    public updateSortStatus(): void {
-        this.updateSelectedStatus(
-            "sortAlphabetic",
-            this.sort === SortType.alphabetic,
-        );
-        this.updateSelectedStatus(
-            "sortLength",
-            this.sort === SortType.byLength,
-        );
-        this.updateSelectedStatus(
-            "sortFrequency",
-            this.sort === SortType.byFrequency,
-        );
-    }
-
-    public updateSelectedStatus(eltId: string, isSelected: boolean): void {
-        this.setPresenceOfClass(eltId, isSelected, sortIconSelectedClass);
     }
 
     /**
@@ -401,13 +342,10 @@ export class ReaderToolsModel {
      * It updates various things in the UI to be consistent with the state of things in the model.
      */
     public updateControlContents(): void {
-        this.updateLetterList();
         this.updateStageNumberIfNeeded(); // May change the stage number
         this.updateLevelNOfMDisplay();
-        this.updateStageButtonsAvailability();
         this.enableLevelButtons();
         this.updateLevelLimits();
-        this.updateWordList();
         if (this.refreshFunc !== undefined) {
             this.refreshFunc();
         }
@@ -444,17 +382,6 @@ export class ReaderToolsModel {
 
     public getNumberOfLevels() {
         return this.synphony?.getLevels().length;
-    }
-
-    public updateStageButtonsAvailability(): void {
-        this.updateDisabledStatus("decStage", this.stageNumber <= 1);
-        if (!this.synphony) {
-            return; // Synphony not loaded yet
-        }
-        this.updateDisabledStatus(
-            "incStage",
-            this.stageNumber >= this.synphony.getStages().length,
-        );
     }
 
     public updateDisabledStatus(eltId: string, isDisabled: boolean): void {
@@ -569,194 +496,6 @@ export class ReaderToolsModel {
 
     public updateDisabledLimit(eltId: string, isDisabled: boolean): void {
         this.setPresenceOfClass(eltId, isDisabled, disabledLimitClass);
-    }
-
-    /**
-     * Displays the list of words for the current Stage.
-     */
-    public updateWordList(): void {
-        if (!this.synphony) {
-            return; // Synphony not loaded yet
-        }
-        // show the correct headings
-        //reviewSLog
-        const useAllowedWords = this.synphony.source
-            ? this.synphony.source.useAllowedWords === 1
-            : false;
-
-        // this happens during unit testing
-        const mlwld = this.getToolElementById("make-letter-word-list-div");
-        if (mlwld) {
-            mlwld.style.display = useAllowedWords ? "none" : "";
-            this.setDisplayForHTMLElementById(
-                "letters-in-this-stage",
-                useAllowedWords,
-            );
-            const ltrList = this.getToolElementById("letterList");
-            if (ltrList && ltrList.parentElement) {
-                this.setDisplayForHTMLElement(
-                    ltrList.parentElement,
-                    useAllowedWords,
-                );
-            }
-            this.setDisplayForHTMLElementById(
-                "sample-words-this-stage",
-                useAllowedWords,
-            );
-            this.setDisplayForHTMLElementById("sortFrequency", useAllowedWords);
-            this.setDisplayForHTMLElementById(
-                "allowed-words-this-stage",
-                !useAllowedWords,
-            );
-            this.setDisplayForHTMLElementById(
-                "allowed-word-list-truncated",
-                !useAllowedWords,
-            );
-        }
-
-        if (!this.readyToDoMarkup()) return;
-
-        const wordList = this.getToolElementById("wordList");
-        if (wordList) wordList.innerHTML = "";
-
-        const stages = this.synphony.getStages();
-        if (stages.length === 0) return;
-
-        let words: DataWord[] = [];
-        if (useAllowedWords)
-            words = this.getAllowedWordsAsObjects(this.stageNumber);
-        else {
-            const stageWords = this.getStageWordsAndSightWords(
-                this.stageNumber,
-            );
-            if (stageWords) {
-                words = stageWords;
-            }
-        }
-
-        resizeWordList(false);
-
-        // All cases use localeCompare for alphabetic sort. This is not ideal; it will use whatever
-        // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
-        switch (this.sort) {
-            case SortType.alphabetic:
-                words.sort((a: DataWord, b: DataWord) => {
-                    return a.Name.localeCompare(b.Name);
-                });
-                break;
-            case SortType.byLength:
-                words.sort((a: DataWord, b: DataWord) => {
-                    if (a.Name.length === b.Name.length) {
-                        return a.Name.localeCompare(b.Name);
-                    }
-                    return a.Name.length - b.Name.length;
-                });
-                break;
-            case SortType.byFrequency:
-                words.sort((a: DataWord, b: DataWord) => {
-                    const aFreq = a.Count;
-                    const bFreq = b.Count;
-                    if (aFreq === bFreq) {
-                        return a.Name.localeCompare(b.Name);
-                    }
-                    return bFreq - aFreq; // MOST frequent first
-                });
-                break;
-            default:
-        }
-
-        // add the words
-        let result = "";
-        let longestWord = "";
-        for (let i = 0; i < words.length; i++) {
-            const w: DataWord = words[i];
-            // Sigh. LangID is always null
-            // result += `<div lang='${
-            //     theOneLanguageDataInstance.LangID
-            // }' class="word ${w.isSightWord ? " sight-word" : ""}"> ${w.Name}-${
-            //     theOneLanguageDataInstance.LangID
-            // }</div>`;
-
-            // NOTE: The generated HTML would look nicer without the space immediately after lang1InATool
-            // NOTE 2: The HTML would also look nicer without the extra space between the end of the open tag and the contents
-            result += `<div class="word lang1InATool ${
-                w.isSightWord ? " sight-word" : ""
-            }"> ${w.Name}</div>`;
-
-            if (w.Name.length > longestWord.length) longestWord = w.Name;
-        }
-        const div = $("div.wordList");
-        div.css("font-family", this.fontName);
-
-        this.updateElementContent("wordList", result);
-
-        $.divsToColumnsBasedOnLongestWord("word", longestWord);
-    }
-
-    private setDisplayForHTMLElement(
-        element: HTMLElement,
-        conditionForNone: boolean,
-    ): void {
-        if (!element) return; // safety first!
-        element.style.display = conditionForNone ? "none" : "";
-    }
-
-    private setDisplayForHTMLElementById(
-        elementId: string,
-        conditionForNone: boolean,
-    ): void {
-        const elt = this.getToolElementById(elementId);
-        if (!elt) return;
-        this.setDisplayForHTMLElement(elt, conditionForNone);
-    }
-
-    /**
-     * Displays the list of letters for the current Stage.
-     */
-    public updateLetterList(): void {
-        if (!this.synphony) {
-            return; // Synphony not loaded yet
-        }
-        const stages = this.synphony.getStages();
-        if (stages.length === 0) {
-            // In case the user deletes all stages, and something had been displayed before.
-            this.updateElementContent("letterList", "");
-            return;
-        }
-
-        if (this.stageNumber > 0) {
-            this.stageGraphemes = this.getKnownGraphemes(this.stageNumber); //BL-838
-        }
-
-        // Letters up through current stage
-        const letters = this.stageGraphemes;
-
-        // All the letters in the order they were entered on the Letters tab in the set up dialog
-        const allLetters = this.synphony.source.letters.split(" ");
-
-        // Sort our letters based on the order they were entered
-        letters.sort((a, b) => {
-            return allLetters.indexOf(a) - allLetters.indexOf(b);
-        });
-
-        let result = "";
-        for (let i = 0; i < letters.length; i++) {
-            const letter = letters[i];
-            result +=
-                // Alas, LangID is always null in this monstrosity of a code base
-                // `<div lang='${
-                //     theOneLanguageDataInstance.LangID
-                // }' class="letter">` +
-                `<div lang='en' class="lang1InATool letter">` +
-                letter +
-                "</div>";
-        }
-        const div = $("div.letterList");
-        div.css("font-family", this.fontName);
-
-        this.updateElementContent("letterList", result);
-
-        $.divsToColumns("letter");
     }
 
     /**
@@ -1780,7 +1519,6 @@ export class ReaderToolsModel {
                 this.wordListLoaded = true;
                 this.updateControlContents(); // needed if user deletes all of the stages.
                 this.doMarkup();
-                this.updateWordList();
                 this.processWordListChangedListeners();
 
                 //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
@@ -1943,28 +1681,8 @@ export class ReaderToolsModel {
         const words: string[] = this.selectWordsFromAllowedLists(stageNumber);
         const returnVal: DataWord[] = [];
 
-        const uiLang = theOneLocalizationManager.getCurrentUILocale();
-
         for (let i = 0; i < words.length; i++) {
             returnVal.push(new DataWord(words[i]));
-        }
-
-        // inform the user if the list was truncated
-        const msgDiv = this.getToolElementById("allowed-word-list-truncated");
-        const truncatedText = this.getToolElementById(
-            "allowed_word_list_truncated_text",
-        );
-
-        // if the list was truncated, show the message
-        if (words.length < this.maxAllowedWords) {
-            if (msgDiv) {
-                msgDiv.innerHTML = "";
-            }
-        } else if (msgDiv) {
-            msgDiv.innerHTML = theOneLocalizationManager.simpleFormat(
-                truncatedText?.innerHTML || "",
-                [this.maxAllowedWords.toLocaleString(uiLang)],
-            );
         }
 
         return returnVal;
