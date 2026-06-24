@@ -468,6 +468,76 @@ namespace BloomTests.ImageProcessing
             }
         }
 
+        // To use: uncomment GetDominantColorBucketsForDiagnostics in ImageUtils.cs (remove
+        // the surrounding #if false / #endif), then run this test explicitly via the IDE or
+        //   dotnet test --filter "FullyQualifiedName~DiagnoseLineArtColorBuckets"
+        // It writes LineArtDiagnostics.html to the system temp folder; open it in a browser
+        // to see colored swatches, sample counts, and BG/INK labels for each image.
+#if false
+        [Test, Explicit]
+        public void DiagnoseLineArtColorBuckets()
+        {
+            // Add any images of interest here — relative to _pathToTestImages, or just a filename.
+            var imagesToDiagnose = new[]
+            {
+                "line-art-tests/no/AceByDaisyError.png",
+                "line-art-tests/yes/AceByDaisyError Mono antialised.png",
+                "lady24b.png",
+                "line-art-tests/yes/aor_oce003m.png",
+                "line-art-tests/no/LineDrawing-2017.png",
+            };
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("<!doctype html><html><body style='font-family:sans-serif;padding:16px'>");
+
+            foreach (var relPath in imagesToDiagnose)
+            {
+                var imagePath = FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestImages,
+                    relPath.Replace('/', Path.DirectorySeparatorChar)
+                );
+                using var palasoImage = PalasoImage.FromFileRobustly(imagePath);
+                var bmp = palasoImage.Image as Bitmap;
+                if (bmp == null)
+                {
+                    sb.AppendLine($"<p><b>{Path.GetFileName(relPath)}</b>: not a Bitmap</p>");
+                    continue;
+                }
+                var buckets = ImageUtils.GetDominantColorBucketsForDiagnostics(bmp);
+                var result = ImageUtils.ShouldMakeBackgroundTransparent(palasoImage);
+                sb.AppendLine(
+                    $"<h2>{Path.GetFileName(relPath)} ({bmp.Width}×{bmp.Height}) — "
+                    + $"{buckets.Length} buckets — "
+                    + $"<span style='color:{(result ? "green" : "red")}'>"
+                    + $"{(result ? "LINE ART ✓" : "not line art")}</span></h2>"
+                );
+                sb.AppendLine("<div style='display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px'>");
+                foreach (var (color, count, isBackground) in buckets)
+                {
+                    var hex = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+                    var brightness = 0.299 * color.R + 0.587 * color.G + 0.114 * color.B;
+                    var textColor = brightness > 128 ? "#000" : "#fff";
+                    sb.AppendLine(
+                        $"<div style='text-align:center;font-size:11px;width:72px'>"
+                        + $"<div style='background:{hex};width:72px;height:72px;border:1px solid #999;"
+                        + $"display:flex;align-items:center;justify-content:center;"
+                        + $"color:{textColor};font-weight:bold'>{(isBackground ? "BG" : "INK")}</div>"
+                        + $"<div>{hex}</div>"
+                        + $"<div>{color.R},{color.G},{color.B}</div>"
+                        + $"<div>{count} px</div>"
+                        + $"</div>"
+                    );
+                }
+                sb.AppendLine("</div>");
+            }
+
+            sb.AppendLine("</body></html>");
+            var outPath = Path.Combine(Path.GetTempPath(), "LineArtDiagnostics.html");
+            File.WriteAllText(outPath, sb.ToString());
+            TestContext.Out.WriteLine($"Diagnostic output written to: {outPath}");
+        }
+#endif
+
         [Test]
         public void StripMetadataFromImageFile()
         {
