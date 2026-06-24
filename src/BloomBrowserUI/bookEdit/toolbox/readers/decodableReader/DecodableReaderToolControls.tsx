@@ -91,10 +91,11 @@ const DecodableGrid: FunctionComponent<{
                 ref={gridRef}
                 css={css`
                     display: grid;
-                    grid-template-columns: repeat(${curColCount}, 1fr);
+                    grid-template-columns: repeat(${curColCount}, auto);
                     grid-template-rows: repeat(${curRowCount}, auto);
                     grid-auto-flow: ${props.direction};
-                    row-gap: 5px;
+                    flex: 1 1 auto;
+                    min-height: 0;
                     overflow: auto;
                     margin-left: 8px;
                     margin-top: 4px;
@@ -106,6 +107,7 @@ const DecodableGrid: FunctionComponent<{
                         key={index}
                         className="lang1InATool"
                         css={css`
+                            line-height: 1.3;
                             color: ${typeof item !== "string" &&
                             item.isSightWord
                                 ? "#87cefa"
@@ -124,11 +126,11 @@ const StageGraphemes: FunctionComponent = () => {
     return (
         <div
             css={css`
-                min-height: 100px;
                 margin-top: 15px;
                 display: flex;
                 flex-direction: column;
                 flex: 0 1 auto;
+                min-height: 100px;
                 overflow: hidden;
             `}
         >
@@ -234,10 +236,10 @@ const SortedStageWords: FunctionComponent<{
         <div
             css={css`
                 margin-top: 15px;
-                min-height: 200px;
                 display: flex;
                 flex-direction: column;
-                flex: 1 0 200px;
+                flex: 1 1 200px;
+                min-height: 200px;
                 overflow: hidden;
             `}
         >

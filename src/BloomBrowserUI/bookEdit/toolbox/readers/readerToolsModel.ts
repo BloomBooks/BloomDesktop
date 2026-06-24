@@ -180,45 +180,16 @@ export class ReaderToolsModel {
 
         this.stageNumber = stage;
         this.updateStageNumberIfNeeded(); // May change the stage number
-        this.updateStageButtonsAvailability();
 
         return theOneLocalizationManager
             .asyncGetText("Common.Loading", "Loading...", "")
-            .then((loadingMessage) => {
-                // this may result in a need to resize the word list
-                this.previousHeight = 0;
-                $("#letterList").html(loadingMessage);
-                $("#wordList").html(loadingMessage);
-
+            .then(() => {
                 // OK, now let that changed number and the "loading" messages
                 // make it to the user's screen, then start doing the work.
                 return setTimeoutPromise(async () => {
                     if (this.stageNumber === stage) {
                         this.stageGraphemes = this.getKnownGraphemes(stage);
                     }
-
-                    // Both setting the letters and words require that to be done,
-                    // but they can be done independently of each other.
-                    // By separating them, we allow the letters to update while
-                    // the words are still being generated.
-                    const updateLetterListDonePromise = setTimeoutPromise(
-                        () => {
-                            // make sure this is still the stage they want
-                            // (it won't be if they are rapidly clicking the next/previous stage buttons)
-                            if (this.stageNumber === stage) {
-                                this.updateLetterList();
-                            }
-                        },
-                        0,
-                    );
-
-                    const updateWordListDonePromise = setTimeoutPromise(() => {
-                        // make sure this is still the stage they want
-                        // (it won't be if they are rapidly clicking the next/previous stage buttons)
-                        if (this.stageNumber === stage) {
-                            this.updateWordList();
-                        }
-                    }, 0);
 
                     const defaultStagePostedPromise = new Promise<void>(
                         (resolve, reject) => {
@@ -248,9 +219,7 @@ export class ReaderToolsModel {
                 },
             );
 
-            if (this.readyToDoMarkup()) {
-                this.doMarkup();
-            }
+                    return allPromiseSettled([defaultStagePostedPromise]);
 
             return allPromiseSettled([defaultStagePostedPromise]);
 
@@ -376,12 +345,10 @@ export class ReaderToolsModel {
      * It updates various things in the UI to be consistent with the state of things in the model.
      */
     public updateControlContents(): void {
-        this.updateLetterList();
         this.updateStageNumberIfNeeded(); // May change the stage number
         this.updateLevelNOfMDisplay();
         this.enableLevelButtons();
         this.updateLevelLimits();
-        this.updateWordList();
         if (this.refreshFunc !== undefined) {
             this.refreshFunc();
         }
@@ -418,17 +385,6 @@ export class ReaderToolsModel {
 
     public getNumberOfLevels() {
         return this.synphony?.getLevels().length;
-    }
-
-    public updateStageButtonsAvailability(): void {
-        this.updateDisabledStatus("decStage", this.stageNumber <= 1);
-        if (!this.synphony) {
-            return; // Synphony not loaded yet
-        }
-        this.updateDisabledStatus(
-            "incStage",
-            this.stageNumber >= this.synphony.getStages().length,
-        );
     }
 
     public updateDisabledStatus(eltId: string, isDisabled: boolean): void {
@@ -1796,36 +1752,6 @@ export class ReaderToolsModel {
         }
 
         return returnVal;
-    }
-
-    /**
-     * sorts the allowed words for the decodable reader tool
-     * @param stageNumber
-     * @returns a sorted array of the allowed words
-     */
-    public getAllowedWordsSorted(stageNumber: number): DataWord[] {
-        const stringWords: string[] =
-            this.selectWordsFromAllowedLists(stageNumber);
-        switch (this.sort) {
-            case SortType.alphabetic:
-                stringWords.sort((a: string, b: string) => {
-                    return a.localeCompare(b);
-                });
-                break;
-            case SortType.byLength:
-                stringWords.sort((a: string, b: string) => {
-                    if (a.length === b.length) {
-                        return a.localeCompare(b);
-                    }
-                    return a.length - b.length;
-                });
-                break;
-            default:
-        }
-        const dataWords: DataWord[] = stringWords.map(
-            (word) => new DataWord(word),
-        );
-        return dataWords;
     }
 
     /**
