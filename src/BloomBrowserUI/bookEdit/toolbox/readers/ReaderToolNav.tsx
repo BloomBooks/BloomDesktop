@@ -64,11 +64,7 @@ export const ReaderToolNav: FunctionComponent<{
                 `}
             />
             <Span
-                l10nKey={
-                    props.isForLeveled
-                        ? "EditTab.Toolbox.LeveledReaderTool.LevelNofM"
-                        : "EditTab.Toolbox.DecodableReaderTool.StageNofM"
-                }
+                l10nKey="EditTab.Toolbox.DecodableReaderTool.StageNofM"
                 l10nParam0={curPhaseNum().toString()}
                 l10nParam1={numberOfPhases().toString()}
                 css={css`

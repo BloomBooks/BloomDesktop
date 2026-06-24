@@ -180,6 +180,7 @@ export class ReaderToolsModel {
 
         this.stageNumber = stage;
         this.updateStageNumberIfNeeded(); // May change the stage number
+        this.updateStageButtonsAvailability();
 
         return theOneLocalizationManager
             .asyncGetText("Common.Loading", "Loading...", "")
@@ -375,6 +376,7 @@ export class ReaderToolsModel {
      * It updates various things in the UI to be consistent with the state of things in the model.
      */
     public updateControlContents(): void {
+        this.updateLetterList();
         this.updateStageNumberIfNeeded(); // May change the stage number
         this.updateLevelNOfMDisplay();
         this.enableLevelButtons();
@@ -382,15 +384,6 @@ export class ReaderToolsModel {
         this.updateWordList();
         if (this.refreshFunc !== undefined) {
             this.refreshFunc();
-        }
-    }
-
-    public updateStageNOfMDisplay() {
-        this.updateStageNumberIfNeeded(); // May change the stage number
-
-        const stageParent = this.getToolElementById("stageNofM");
-        if (!stageParent) {
-            return;
         }
     }
 
@@ -624,13 +617,13 @@ export class ReaderToolsModel {
      * @param stageNumber
      * @returns a sorted array of letters
      */
-    public getKnownGraphemesSorted(stageNumber: number): string[] {
+    public getKnownGraphemesSorted(): string[] {
         if (!this.synphony) {
             return []; // Synphony not loaded yet
         }
 
         // Letters up through current stage
-        const letters = this.stageGraphemes;
+        const letters = [...this.stageGraphemes];
 
         // All the letters in the order they were entered on the Letters tab in the set up dialog
         const allLetters = this.synphony.source.letters.split(" ");
