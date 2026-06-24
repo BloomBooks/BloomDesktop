@@ -424,10 +424,13 @@ export default class WebSocketManager {
         clientContext: string,
         listener: (messageEvent: IBloomWebSocketEvent) => void,
     ): void {
+        if (!WebSocketManager.clientContextCallbacks[clientContext]) {
+            return;
+        }
         WebSocketManager.clientContextCallbacks[clientContext] =
             WebSocketManager.clientContextCallbacks[clientContext].filter(
                 (l) => l !== listener,
-            );
+            ) || [];
     }
 
     // useful for storybook stories to send messages

@@ -38,7 +38,9 @@ import {
     postJsonAsync,
 } from "../../../utils/bloomApi";
 import * as toastr from "toastr";
-import WebSocketManager from "../../../utils/WebSocketManager";
+import WebSocketManager, {
+    IBloomWebSocketEvent,
+} from "../../../utils/WebSocketManager";
 import { getActiveToolId, ToolBox } from "../toolbox";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -227,23 +229,41 @@ export default class AudioRecording implements IAudioRecorder {
     // Class method called by exported function of the same name.
     // Only called the first time the Toolbox is opened for this book during this Editing session.
     public async initializeTalkingBookToolAsync(): Promise<void> {
-        // I've sometimes observed events like click being handled repeatedly for a single click.
-        // Adding these .off calls seems to help...it's as if something causes this show event to happen
-        // more than once so the event handlers were being added repeatedly, but I haven't caught
-        // that actually happening. However, the off() calls seem to prevent it.
-        $("#audio-next")
-            .off()
-            .click((e) => this.moveToNextAudioElement());
-        $("#audio-prev")
-            .off()
-            .click((e) => this.moveToPrevAudioElementAsync());
-        $("#audio-record")
-            .off()
-            .mousedown((e) => this.startRecordCurrentAsync())
-            .mouseup((e) => this.endRecordCurrentAsync());
-        $("#audio-play")
-            .off()
-            .click((e) => {
+        // Bind the toolbar buttons using delegated handlers on a stable root
+        // ($(document)) rather than directly on the button elements. The toolbox
+        // re-hydrates the tool body (ToolboxRoot's LiveToolBodyHost does
+        // host.innerHTML = "" and re-inserts the markup), which destroys the
+        // button nodes these handlers were attached to and replaces them with
+        // fresh nodes that have no handlers. The result is buttons that look
+        // enabled but do nothing, because direct (non-delegated) handlers live on
+        // the specific DOM node, which no longer exists. Delegating from $(document)
+        // with a namespaced event survives that re-creation, and the namespaced
+        // .off() prevents handlers being added twice if the tool is reopened.
+        // (This matches the delegation pattern in readers/readerTools.ts.)
+        const delegationRoot = $(document);
+        const ns = ".audioRecorder";
+
+        delegationRoot
+            .off("click" + ns, "#audio-next")
+            .on("click" + ns, "#audio-next", () =>
+                this.moveToNextAudioElement(),
+            );
+        delegationRoot
+            .off("click" + ns, "#audio-prev")
+            .on("click" + ns, "#audio-prev", () =>
+                this.moveToPrevAudioElementAsync(),
+            );
+        delegationRoot
+            .off("mousedown" + ns + " mouseup" + ns, "#audio-record")
+            .on("mousedown" + ns, "#audio-record", () =>
+                this.startRecordCurrentAsync(),
+            )
+            .on("mouseup" + ns, "#audio-record", () =>
+                this.endRecordCurrentAsync(),
+            );
+        delegationRoot
+            .off("click" + ns, "#audio-play")
+            .on("click" + ns, "#audio-play", (e) => {
                 if (!e.ctrlKey) {
                     // Normal case
                     this.togglePlayCurrentAsync();
@@ -252,10 +272,9 @@ export default class AudioRecording implements IAudioRecorder {
                     this.playESpeakPreview();
                 }
             });
-
-        $("#audio-split")
-            .off()
-            .click(async (e) => {
+        delegationRoot
+            .off("click" + ns, "#audio-split")
+            .on("click" + ns, "#audio-split", async () => {
                 const mediaPlayer = this.getMediaPlayer();
                 mediaPlayer.pause();
                 getWorkspaceBundleExports().showAdjustTimingsDialogFromWorkspaceRoot(
@@ -270,21 +289,66 @@ export default class AudioRecording implements IAudioRecorder {
                     },
                 );
             });
+        delegationRoot
+            .off("click" + ns, "#audio-listen")
+            .on("click" + ns, "#audio-listen", () => this.listenAsync());
+        delegationRoot
+            .off("click" + ns, "#audio-clear")
+            .on("click" + ns, "#audio-clear", () => this.clearRecordingAsync());
 
-        $("#audio-listen")
-            .off()
-            .click((e) => this.listenAsync());
-        $("#audio-clear")
-            .off()
-            .click((e) => this.clearRecordingAsync());
+        // Wire the media player's event handlers. They are (re)applied lazily in
+        // getMediaPlayer() so they survive the toolbox re-hydrating and replacing
+        // the #player element. Media events (ended/durationchange/error) don't
+        // bubble, so unlike the buttons they can't be delegated; instead we detect
+        // a replaced node and re-attach. Calling getMediaPlayer() here forces the
+        // initial wiring.
+        this.getMediaPlayer();
 
-        $("#player").off();
-        const player = this.getMediaPlayer();
+        delegationRoot
+            .off("click" + ns, "#audio-input-dev")
+            .on("click" + ns, "#audio-input-dev", () =>
+                this.selectInputDevice(),
+            );
 
+        toastr.options.positionClass = "toast-toolbox-bottom";
+        toastr.options.timeOut = 10000;
+        toastr.options.preventDuplicates = true;
+
+        this.wholeTextBoxAudioFeatureStatus =
+            await getFeatureStatusAsync("WholeTextBoxAudio");
+
+        return this.pullDefaultRecordingModeAsync();
+    }
+
+    // The DOM node we last attached media-event handlers to. Used to detect when
+    // the toolbox has re-hydrated and replaced the #player element.
+    private wiredPlayer: HTMLMediaElement | null = null;
+
+    private getMediaPlayer(): HTMLMediaElement {
+        const player = document.getElementById(
+            "player",
+        ) as HTMLMediaElement | null;
+
+        if (!player) {
+            throw new Error(`HTMLMediaElement #player was not found.`);
+        }
+
+        // If the element was replaced (e.g. by toolbox re-hydration), its media-event
+        // handlers were lost; re-attach them. Property assignment is idempotent, so
+        // re-wiring the same node would be harmless, but the guard avoids redundant work.
+        if (player !== this.wiredPlayer) {
+            this.wirePlayerHandlers(player);
+            this.wiredPlayer = player;
+        }
+
+        return player;
+    }
+
+    private wirePlayerHandlers(player: HTMLMediaElement): void {
         // The following speeds playback, ensures we get the durationchange event.
         player.setAttribute("preload", "auto");
 
-        player.onerror = (e) => {
+        player.onerror = () => {
             if (this.playingAudio()) {
                 // during a "listen", we walk through each segment, but some (or all) may not have audio
                 this.playEndedAsync(); //move to the next one
@@ -299,34 +363,8 @@ export default class AudioRecording implements IAudioRecorder {
             // We could possibly arrange for a toast if we get an error while actually playing,
             // but it seems very unlikely.
         };
-
         player.onended = () => this.playEndedAsync();
         player.ondurationchange = () => this.durationChanged();
-
-        $("#audio-input-dev")
-            .off()
-            .click((e) => this.selectInputDevice());
-
-        toastr.options.positionClass = "toast-toolbox-bottom";
-        toastr.options.timeOut = 10000;
-        toastr.options.preventDuplicates = true;
-
-        this.wholeTextBoxAudioFeatureStatus =
-            await getFeatureStatusAsync("WholeTextBoxAudio");
-
-        return this.pullDefaultRecordingModeAsync();
-    }
-
-    private getMediaPlayer(): HTMLMediaElement {
-        const player = document.getElementById(
-            "player",
-        ) as HTMLMediaElement | null;
-
-        if (!player) {
-            throw new Error(`HTMLMediaElement #player was not found.`);
-        }
-
-        return player;
     }
 
     // Updates our cached version of the default recording mode with the version from the Bloom API Server.
@@ -486,27 +524,39 @@ export default class AudioRecording implements IAudioRecorder {
 
     // Called when the Talking Book Tool is chosen.
     public addAudioLevelListener(): void {
-        WebSocketManager.addListener(kWebsocketContext, (e) => {
-            if (e.id == "peakAudioLevel")
-                this.setStaticPeakLevel(e.message ? e.message : "");
-        });
+        WebSocketManager.removeListener(
+            kWebsocketContext,
+            this.audioLevelListener,
+        );
+        WebSocketManager.addListener(
+            kWebsocketContext,
+            this.audioLevelListener,
+        );
+    }
+
+    private audioLevelListener(e: IBloomWebSocketEvent) {
+        if (e.id === "peakAudioLevel" && this && this.setStaticPeakLevel)
+            this.setStaticPeakLevel(e.message ? e.message : "");
     }
 
     public addMicErrorListener(): void {
-        WebSocketManager.addListener(kWebsocketContext, (e) => {
-            if (
-                e.id === "recordingStartError" ||
-                e.id === "monitoringStartError"
-            ) {
-                toastr.error(e.message ? e.message : "");
-            }
-            // Don't disable recording for a monitoring error, as right now when switching mics we may
-            // kick off monitoring for the wrong mic
-            if (e.id === "recordingStartError") {
-                this.recording = false;
-                this.setStatus("record", Status.Disabled);
-            }
-        });
+        WebSocketManager.removeListener(
+            kWebsocketContext,
+            this.micErrorListener,
+        );
+        WebSocketManager.addListener(kWebsocketContext, this.micErrorListener);
+    }
+
+    private micErrorListener(e: IBloomWebSocketEvent) {
+        if (e.id === "recordingStartError" || e.id === "monitoringStartError") {
+            toastr.error(e.message ? e.message : "");
+        }
+        // Don't disable recording for a monitoring error, as right now when switching mics we may
+        // kick off monitoring for the wrong mic
+        if (e.id === "recordingStartError") {
+            this.recording = false;
+            this.setStatus("record", Status.Disabled);
+        }
     }
 
     // Called by TalkingBookModel.detachFromPage(), which is called when changing tools, hiding the toolbox,
@@ -4559,7 +4609,7 @@ export default class AudioRecording implements IAudioRecorder {
         );
     }
 
-    private editTimingsFileAsync = async (timingsFilePath: string) => {
+    private editTimingsFileAsync = async (timingsFilePath?: string) => {
         // we'll give this a real UI in the future. Also, not going to localize this yet.
         const realTimingsFile = timingsFilePath;
         alert(
@@ -4570,7 +4620,7 @@ export default class AudioRecording implements IAudioRecorder {
         });
     };
     private applyTimingsFileAsync = async (
-        timingsFilePath: string,
+        timingsFilePath?: string,
     ): Promise<string | undefined> => {
         const realTimingsFile = timingsFilePath;
         const result = await postJson("fileIO/chooseFile", {
