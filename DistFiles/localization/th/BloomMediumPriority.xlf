@@ -1547,6 +1547,101 @@
         <target xml:lang="th" state="needs-translation">Apps have a maximum size of about %1. The current estimate for this app is %0.</target>
         <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.FailedToAddImage" translate="no">
+        <source xml:lang="en">Sorry, there was a problem adding the image.</source>
+        <target xml:lang="th" state="needs-translation">Sorry, there was a problem adding the image.</target>
+        <note>ID: ImageLibrary.FailedToAddImage</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.AboutOpenVerse" translate="no">
+        <source xml:lang="en">About OpenVerse</source>
+        <target xml:lang="th" state="needs-translation">About OpenVerse</target>
+        <note>ID: ImageLibrary.AboutOpenVerse</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Disclaimer" translate="no">
+        <source xml:lang="en">These images are not from Bloom or SIL. This tool requests images suitable for general audiences. However, we cannot guarantee that all images will be inoffensive.</source>
+        <target xml:lang="th" state="needs-translation">These images are not from Bloom or SIL. This tool requests images suitable for general audiences. However, we cannot guarantee that all images will be inoffensive.</target>
+        <note>ID: ImageLibrary.Disclaimer</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.MoreInfo" translate="no">
+        <source xml:lang="en">More info</source>
+        <target xml:lang="th" state="needs-translation">More info</target>
+        <note>ID: ImageLibrary.MoreInfo</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OpenVerseDescription" translate="no">
+        <source xml:lang="en">Openverse searches multiple public repositories for CC-licensed and public domain works.</source>
+        <target xml:lang="th" state="needs-translation">Openverse searches multiple public repositories for CC-licensed and public domain works.</target>
+        <note>ID: ImageLibrary.OpenVerseDescription</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.AboutArtOfReading" translate="no">
+        <source xml:lang="en">About Art of Reading</source>
+        <target xml:lang="th" state="needs-translation">About Art of Reading</target>
+        <note>ID: ImageLibrary.AboutArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.AboutPixabay" translate="no">
+        <source xml:lang="en">About Pixabay</source>
+        <target xml:lang="th" state="needs-translation">About Pixabay</target>
+        <note>ID: ImageLibrary.AboutPixabay</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ArtOfReadingDescription" translate="no">
+        <source xml:lang="en">International Illustrations: Art of Reading 3.0 is a collection of over 11,000 images. The collection is designed for use in the preparation of a wide variety of literacy and educational materials, such as shellbooks, primers, news-sheets, posters, and other culturally appropriate materials. These images are black and white line drawings collected from SIL and national artists from around the world.</source>
+        <target xml:lang="th" state="needs-translation">International Illustrations: Art of Reading 3.0 is a collection of over 11,000 images. The collection is designed for use in the preparation of a wide variety of literacy and educational materials, such as shellbooks, primers, news-sheets, posters, and other culturally appropriate materials. These images are black and white line drawings collected from SIL and national artists from around the world.</target>
+        <note>ID: ImageLibrary.ArtOfReadingDescription</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ArtOfReadingNotReadyInstructions" translate="no">
+        <source xml:lang="en">To get Art of Reading images, you need to:</source>
+        <target xml:lang="th" state="needs-translation">To get Art of Reading images, you need to:</target>
+        <note>ID: ImageLibrary.ArtOfReadingNotReadyInstructions</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.DownloadArtOfReading" translate="no">
+        <source xml:lang="en">Download and install the Art of Reading Installer</source>
+        <target xml:lang="th" state="needs-translation">Download and install the Art of Reading Installer</target>
+        <note>ID: ImageLibrary.DownloadArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ImageCount" translate="no">
+        <source xml:lang="en">{0} images</source>
+        <target xml:lang="th" state="needs-translation">{0} images</target>
+        <note>ID: ImageLibrary.ImageCount</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.NoMatchesFound" translate="no">
+        <source xml:lang="en">No matches found</source>
+        <target xml:lang="th" state="needs-translation">No matches found</target>
+        <note>ID: ImageLibrary.NoMatchesFound</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.NotReady" translate="no">
+        <source xml:lang="en">Not Ready</source>
+        <target xml:lang="th" state="needs-translation">Not Ready</target>
+        <note>ID: ImageLibrary.NotReady</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PhotogrIllustrator" translate="no">
+        <source xml:lang="en">Photographer/Illustrator:</source>
+        <target xml:lang="th" state="needs-translation">Photographer/Illustrator:</target>
+        <note>ID: ImageLibrary.PhotogrIllustrator</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayDescription" translate="no">
+        <source xml:lang="en">Pixabay is a large collection of images that may be used for free without attribution.</source>
+        <target xml:lang="th" state="needs-translation">Pixabay is a large collection of images that may be used for free without attribution.</target>
+        <note>ID: ImageLibrary.PixabayDescription</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.QuitAndRerunBloom" translate="no">
+        <source xml:lang="en">Quit and re-run Bloom</source>
+        <target xml:lang="th" state="needs-translation">Quit and re-run Bloom</target>
+        <note>ID: ImageLibrary.QuitAndRerunBloom</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Refresh" translate="no">
+        <source xml:lang="en">Refresh</source>
+        <target xml:lang="th" state="needs-translation">Refresh</target>
+        <note>ID: ImageLibrary.Refresh</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Source" translate="no">
+        <source xml:lang="en">Source</source>
+        <target xml:lang="th" state="needs-translation">Source</target>
+        <note>ID: ImageLibrary.Source</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ThisPage" translate="no">
+        <source xml:lang="en">this page</source>
+        <target xml:lang="th" state="needs-translation">this page</target>
+        <note>ID: ImageLibrary.ThisPage</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
