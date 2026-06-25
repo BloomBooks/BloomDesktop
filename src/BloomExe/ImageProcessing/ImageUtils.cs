@@ -95,7 +95,7 @@ namespace Bloom.ImageProcessing
             public bool isNearWhite;
         }
 
-        // Tolerances used by the quantize-based line-art palette check.
+        // Thresholds for the in-process dominant-color line-art check.
         // To be a line-art background, a color must have a perceptual brightness
         // of at least LineArtBackgroundMinBrightness and a chroma (max-min channel) of at
         // most LineArtBackgroundMaxChroma.
@@ -106,15 +106,17 @@ namespace Bloom.ImageProcessing
         // grayscale ink, regardless of overall hue. Above this we additionally require that all
         // non-grayscale ink entries share a single hue direction (so e.g. shades of dark green
         // ink on white still qualify, but a mix of red and blue text does not).
-        private const int LineArtInkGrayscaleChromaThreshold = 6;
-        private const float LineArtInkHueTolerance = 0.15f;
+        private const int LineArtInkGrayscaleChromaThreshold = 8;
 
-        // Number of colors to quantize the image to when summarizing its dominant palette.
-        // Eight gives the quantizer enough slots that distinct chromatic colors don't get
-        // averaged together (e.g. a red line and a blue line getting smeared into a single
-        // brown palette entry that would otherwise look like a single-hue ink), while still
-        // being small enough that anti-aliasing intermediates don't fill every slot.
-        private const int QuantizedColorCount = 8;
+        // Inks with radius (1 - brightness) below this are treated as hue-neutral: they are
+        // too pale to meaningfully constrain the ink color, so they pass regardless of direction.
+        // sin(15°) ≈ 0.259 was the previous implicit auto-pass radius; 0.12 is stricter.
+        private const float LineArtInkAutoPassRadius = 0.12f;
+
+        // Maximum perpendicular distance (from the origin-reference line) that a chromatic ink
+        // may have and still be considered the same hue family as the reference ink.
+        // Equivalent to sin(~8.6°) at radius 1.  The previous value was sin(15°) ≈ 0.259.
+        private const float LineArtInkHueTolerance = 0.15f;
 
         /// <summary>
         /// Check whether we should try to make the background of this image transparent.
@@ -136,7 +138,7 @@ namespace Bloom.ImageProcessing
             {
                 var palette = imageInfo.Image.Palette;
                 if (palette != null && palette.Entries != null)
-                    return IsLineArtPalette(palette.Entries);
+                    return IsLineArtPalette(palette.Entries.Select(c => (c, 1)));
             }
 
             if (!(imageInfo.Image is Bitmap bitmapImage))
@@ -146,31 +148,24 @@ namespace Bloom.ImageProcessing
             if (HasAnyTransparentSampledPixel(bitmapImage))
                 return false;
 
-            // Ask GraphicsMagick to summarize the image as a handful of dominant colors.
-            // This is much more reliable than per-pixel sampling because it averages out
-            // anti-aliasing artifacts and slight channel asymmetries that the legacy strict
-            // R==G==B check would mis-classify as a "third color".
-            var dominantColors = TryGetDominantColorsViaQuantize(imageInfo);
-            if (dominantColors != null)
-                return IsLineArtPalette(dominantColors);
-
-            // GraphicsMagick unavailable (shouldn't happen in normal Bloom installs): fall back
-            // to the legacy pixel-sampling algorithm so we still produce a defensible answer.
-            return CheckLineArtByLegacySampling(bitmapImage);
+            // Summarize the image as a handful of dominant colors and check whether they
+            // look like line art. Bucketing averages out anti-aliasing artifacts and slight
+            // channel asymmetries that a strict per-pixel color check would mis-classify.
+            return IsLineArtPalette(GetDominantColors(bitmapImage));
         }
 
         /// <summary>
-        /// Decide whether a small palette of dominant colors looks like line art on a near-white
-        /// background. Used both for indexed PNG palettes (read directly from the image) and for
-        /// the palette returned by GraphicsMagick quantization of direct-color images.
+        /// Decide whether a palette of (color, count) pairs looks like line art on a near-white
+        /// background. Used both for indexed-palette images (all counts set to 1) and for the
+        /// dominant-color buckets returned by <see cref="GetDominantColors"/>.
         /// </summary>
-        private static bool IsLineArtPalette(IEnumerable<Color> paletteEntries)
+        private static bool IsLineArtPalette(IEnumerable<(Color color, int count)> paletteEntries)
         {
             var seen = new HashSet<int>();
-            var inks = new List<Color>();
+            var inks = new List<(Color color, int count)>();
             bool whiteFound = false;
             int totalDistinct = 0;
-            foreach (var c in paletteEntries)
+            foreach (var (c, count) in paletteEntries)
             {
                 if (c.A < 255)
                     return false; // already has transparent pixels
@@ -184,7 +179,7 @@ namespace Bloom.ImageProcessing
                 }
                 else
                 {
-                    inks.Add(c);
+                    inks.Add((c, count));
                 }
             }
             if (!whiteFound || totalDistinct < 2)
@@ -198,22 +193,39 @@ namespace Bloom.ImageProcessing
         /// <see cref="LineArtInkGrayscaleChromaThreshold"/>) or share the same hue direction as
         /// the other non-grayscale entries.
         /// </summary>
-        private static bool InksShareConsistentHue(List<Color> inks)
+        private static bool InksShareConsistentHue(List<(Color color, int count)> inks)
         {
             // Use 2D hue/brightness geometry:
             // - angle: hue
             // - radius: 1 - brightness (black=1, white=0)
             // Then compare each point to the line through the origin and reference point.
+            // This means that the more brilliant the color, the closer it has to be
+            // to the reference hue.
+
+            // First, determine a reference color as the basis for deciding whether
+            // inks share a hue.
+            // Score each candidate reference color by chroma × √(proportion of ink samples),
+            // so a dominant ink wins over an equally saturated but rare one, independent
+            // of image size (raw counts grow with resolution; proportions don't).
+            // The sqrt dampens the weight given to count differences relative to chroma.
+            int totalInkSamples = 0;
+            foreach (var (_, cnt) in inks)
+                totalInkSamples += cnt;
+
+            // Only chromatic inks (those that survive the grayscale and auto-pass-radius
+            // filters) are eligible as the reference; pale/neutral inks don't define a hue.
             Color referenceColor = default;
-            int maxChroma = -1;
-            foreach (var c in inks)
+            double bestScore = -1;
+            foreach (var (c, count) in inks)
             {
+                if (!TryGetHueBrightnessPoint(c, out _, out _))
+                    continue;
                 int max = Math.Max(c.R, Math.Max(c.G, c.B));
                 int min = Math.Min(c.R, Math.Min(c.G, c.B));
-                int chroma = max - min;
-                if (chroma > maxChroma)
+                double score = (max - min) * Math.Sqrt((double)count / totalInkSamples);
+                if (score > bestScore)
                 {
-                    maxChroma = chroma;
+                    bestScore = score;
                     referenceColor = c;
                 }
             }
@@ -225,12 +237,9 @@ namespace Bloom.ImageProcessing
             if (refLenSq <= 0)
                 return true;
 
-            // Distance equivalent to 15 degrees at radius 1.
-            float threshold = (float)Math.Sin(Math.PI / 12.0);
+            float threshold = LineArtInkHueTolerance;
 
-            string debug = string.Join(", ", inks.Select(c => "#" + c.Name));
-
-            foreach (var c in inks)
+            foreach (var (c, _) in inks)
             {
                 if (!TryGetHueBrightnessPoint(c, out var x, out var y))
                     continue; // grayscale ink — compatible with any hue
@@ -268,6 +277,11 @@ namespace Bloom.ImageProcessing
                 float hueRadians = (float)(color.GetHue() * Math.PI / 180.0);
                 float brightness = color.GetBrightness();
                 float radius = 1f - brightness;
+                if (radius < LineArtInkAutoPassRadius)
+                {
+                    x = y = 0;
+                    return false;
+                }
                 x = radius * (float)Math.Cos(hueRadians);
                 y = radius * (float)Math.Sin(hueRadians);
                 return true;
@@ -312,152 +326,235 @@ namespace Bloom.ImageProcessing
         }
 
         /// <summary>
-        /// Legacy fallback: sample roughly 100 pixels and require the encountered colors to
-        /// all be near-white or grayscale. Preserved verbatim from the previous algorithm in
-        /// case GraphicsMagick is unavailable.
+        /// Sample the image on an irregular grid, average a 5×5 pixel neighborhood at each
+        /// sample point to suppress isolated anti-aliasing color artifacts, bucket the averaged
+        /// colors into coarse RGB bins, and return all distinct bins as representative Color values.
+        /// Results are roughly equivalent to GraphicsMagick's color quantization but run entirely
+        /// in-process with no subprocess or temporary files.
+        /// Earlier code ran GM with "convert \"{0}\" -colors {1} +dither -type Palette -depth 8",
+        /// but this took ~20x longer, and we still had to do a separate random check for transparency.
+        /// For example, on my computer for a 2800x2800 image, this approach takes about 44ms; the old
+        /// one took 943ms.
+        /// The 5×5 neighborhood average means that isolated 1–4 pixel color artifacts (JPEG
+        /// anti-aliasing noise) are pulled toward the surrounding white/black pixels and lose
+        /// most of their chroma, while genuine large color regions survive largely unchanged.
+        /// Returns a single <see cref="Color.Transparent"/> entry if the center of any sample
+        /// window is already transparent, causing <see cref="IsLineArtPalette"/> to return false.
         /// </summary>
-        private static bool CheckLineArtByLegacySampling(Bitmap bitmapImage)
+        private static (Color color, int count)[] GetDominantColors(Bitmap bitmapImage)
         {
-            var colors = new List<ColorInfo>();
-            var whiteFound = false;
-            int yDelta = Math.Max(bitmapImage.Height / 10, 2);
-            int xDelta = Math.Max(bitmapImage.Width / 10, 2);
-            var randomXFix = GenerateRandomAdjustments(271828182, xDelta);
-            var randomYFix = GenerateRandomAdjustments(271828182, yDelta);
-            for (int j = 0, y = yDelta / 2; y < bitmapImage.Height; y += yDelta, ++j)
+            // Preferred step: sample every Nth pixel in each dimension.
+            const int kSampleStep = 10;
+
+            // Minimum steps per dimension: ensures small images still get enough coverage.
+            // A 20×20 grid = 400 samples, giving well over one sample per expected bucket
+            // even in the worst case where all 512 bins are occupied.
+            const int kMinGridSize = 20;
+
+            // Reduce step for small images so neither dimension has fewer than kMinGridSize
+            // steps. For a 40×40 image this gives step=2; for a 20×20 image, step=1.
+            int step = Math.Min(
+                kSampleStep,
+                Math.Max(1, Math.Min(bitmapImage.Width / kMinGridSize, bitmapImage.Height / kMinGridSize))
+            );
+
+            // Divide the RGB cube into 32-unit bins (5 bits discarded per channel,
+            // yielding 8×8×8 = 512 possible bin keys).
+            const int kBucketShift = 5; // 2^5 = 32 units per bin
+            const int kBitsPerBucket = 8 - kBucketShift; // 3 bits kept per channel
+
+            // Random offsets (deterministic seed) reduce the chance of systematically
+            // missing thin features aligned with the sampling grid.
+            var randomXFix = GenerateRandomAdjustments(271828182, step);
+            var randomYFix = GenerateRandomAdjustments(271828182, step);
+
+            var buckets = new Dictionary<int, (long r, long g, long b, int count)>();
+
+            // LockBits + Marshal.Copy gives direct array access to pixel data, making the
+            // 5×5 neighborhood average affordable compared to repeated GetPixel calls.
+            int imageWidth = bitmapImage.Width;
+            int imageHeight = bitmapImage.Height;
+            var bitmapData = bitmapImage.LockBits(
+                new Rectangle(0, 0, imageWidth, imageHeight),
+                ImageLockMode.ReadOnly,
+                PixelFormat.Format32bppArgb);
+            try
             {
-                j = Math.Min(j, 9);
-                for (int i = 0, x = xDelta / 2; x < bitmapImage.Width; x += xDelta, ++i)
+                int stride = bitmapData.Stride;
+                byte[] pixels = new byte[stride * imageHeight];
+                System.Runtime.InteropServices.Marshal.Copy(
+                    bitmapData.Scan0, pixels, 0, pixels.Length);
+                for (int j = 0, y = step / 2; y < imageHeight; y += step, ++j)
                 {
-                    i = Math.Min(i, 9);
-                    var y1 = Math.Min(Math.Max(y + randomYFix[j, i], 0), bitmapImage.Height - 1);
-                    var x1 = Math.Min(Math.Max(x + randomXFix[j, i], 0), bitmapImage.Width - 1);
-                    var color = bitmapImage.GetPixel(x1, y1);
-                    if (color.A < 255)
-                        return false;
-                    if (!IsThisColorForLineDrawing(color, colors, ref whiteFound))
-                        return false;
-                }
-            }
-            return colors.Count == 2 && whiteFound;
-        }
-
-        /// <summary>
-        /// Use GraphicsMagick to reduce the image to <see cref="QuantizedColorCount"/> dominant
-        /// colors (no dithering), then read those colors back. Returns null if GraphicsMagick
-        /// is unavailable or the conversion fails.
-        /// </summary>
-        private static Color[] TryGetDominantColorsViaQuantize(PalasoImage imageInfo)
-        {
-            var graphicsMagickPath = GetGraphicsMagickPath();
-            if (!RobustFile.Exists(graphicsMagickPath))
-                return null;
-
-            var sourcePath = imageInfo.GetCurrentFilePath();
-            var needTempSource = string.IsNullOrEmpty(sourcePath) || !RobustFile.Exists(sourcePath);
-
-            using (var tempSource = needTempSource ? TempFile.WithExtension(".png") : null)
-            using (var quantizedFile = TempFile.WithExtension(".png"))
-            {
-                if (needTempSource)
-                {
-                    // We have an in-memory image but no file on disk; save a temp copy for GM.
-                    try
+                    j = Math.Min(j, 9);
+                    for (int i = 0, x = step / 2; x < imageWidth; x += step, ++i)
                     {
-                        imageInfo.Image.Save(tempSource.Path, ImageFormat.Png);
-                        sourcePath = tempSource.Path;
-                    }
-                    catch (Exception e)
-                    {
-                        MiscUtils.SuppressUnusedExceptionVarWarning(e);
-                        return null;
-                    }
-                }
+                        i = Math.Min(i, 9);
+                        var y1 = Math.Min(Math.Max(y + randomYFix[j, i], 0), imageHeight - 1);
+                        var x1 = Math.Min(Math.Max(x + randomXFix[j, i], 0), imageWidth - 1);
 
-                var quantizedPath = quantizedFile.Path;
-                return WithSafeFilePath(
-                    sourcePath,
-                    safeSource =>
-                    {
-                        return WithSafeFilePath(
-                            quantizedPath,
-                            safeDest =>
+                        // Check alpha of the center pixel only.
+                        if (pixels[y1 * stride + x1 * 4 + 3] < 255)
+                            return new[] { (color: Color.Transparent, count: 1) };
+
+                        // Average a 5×5 neighborhood. Isolated 1–4 pixel color noise is pulled
+                        // toward the surrounding white/black background and loses most of its
+                        // chroma; genuine large-region colors are unaffected.
+                        const int kHalfWindow = 2; // (2*2+1)² = 25 pixels
+                        long rSum = 0, gSum = 0, bSum = 0;
+                        for (int dy = -kHalfWindow; dy <= kHalfWindow; dy++)
+                        {
+                            int py = Math.Min(Math.Max(y1 + dy, 0), imageHeight - 1);
+                            for (int dx = -kHalfWindow; dx <= kHalfWindow; dx++)
                             {
-                                var args = string.Format(
-                                    CultureInfo.InvariantCulture,
-                                    "convert \"{0}\" -colors {1} +dither -type Palette -depth 8 \"{2}\"",
-                                    safeSource,
-                                    QuantizedColorCount,
-                                    safeDest
-                                );
-                                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
-                                    graphicsMagickPath,
-                                    args,
-                                    "",
-                                    120,
-                                    new NullProgress()
-                                );
-                                if (result.ExitCode != 0 || !RobustFile.Exists(safeDest))
-                                    return null;
-                                if (safeDest != quantizedPath)
-                                {
-                                    try
-                                    {
-                                        RobustFile.Copy(safeDest, quantizedPath, true);
-                                    }
-                                    catch (Exception)
-                                    {
-                                        return null;
-                                    }
-                                }
-                                return ReadDistinctColorsFromQuantizedImage(quantizedPath);
-                            },
-                            makeCopyIfNeeded: false
-                        );
-                    }
-                );
-            }
-        }
+                                int px = Math.Min(Math.Max(x1 + dx, 0), imageWidth - 1);
+                                int ofs = py * stride + px * 4;
+                                // Format32bppArgb memory layout: B, G, R, A
+                                bSum += pixels[ofs];
+                                gSum += pixels[ofs + 1];
+                                rSum += pixels[ofs + 2];
+                            }
+                        }
+                        const int kWindowArea = (2 * kHalfWindow + 1) * (2 * kHalfWindow + 1);
+                        int r = (int)(rSum / kWindowArea);
+                        int g = (int)(gSum / kWindowArea);
+                        int b = (int)(bSum / kWindowArea);
 
-        /// <summary>
-        /// Read distinct colors from a GraphicsMagick-quantized image. Prefer palette entries
-        /// when the image is indexed; otherwise fall back to coarse pixel sampling.
-        /// </summary>
-        private static Color[] ReadDistinctColorsFromQuantizedImage(string path)
-        {
-            using (var img = (Bitmap)Image.FromFile(path))
+                        int key = ((r >> kBucketShift) << (2 * kBitsPerBucket))
+                                | ((g >> kBucketShift) << kBitsPerBucket)
+                                |  (b >> kBucketShift);
+                        if (buckets.TryGetValue(key, out var entry))
+                            buckets[key] = (entry.r + r, entry.g + g, entry.b + b, entry.count + 1);
+                        else
+                            buckets[key] = (r, g, b, 1);
+                    }
+                }
+            }
+            finally
             {
-                var seen = new HashSet<int>();
-                var colors = new List<Color>();
-
-                if ((img.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
-                {
-                    foreach (var c in img.Palette.Entries)
-                    {
-                        int key = (c.A << 24) | (c.R << 16) | (c.G << 8) | c.B;
-                        if (seen.Add(key))
-                            colors.Add(c);
-                    }
-                    return colors.ToArray();
-                }
-
-                // Fallback for unexpected direct-color output.
-                int step = Math.Max(Math.Min(img.Width, img.Height) / 32, 1);
-                for (int y = 0; y < img.Height; y += step)
-                {
-                    for (int x = 0; x < img.Width; x += step)
-                    {
-                        var c = img.GetPixel(x, y);
-                        int key = (c.A << 24) | (c.R << 16) | (c.G << 8) | c.B;
-                        if (seen.Add(key))
-                            colors.Add(c);
-                        if (colors.Count > QuantizedColorCount * 4)
-                            return colors.ToArray(); // safety: image somehow had more colors
-                    }
-                }
-                return colors.ToArray();
+                bitmapImage.UnlockBits(bitmapData);
             }
+
+            if (buckets.Count == 0)
+                return Array.Empty<(Color color, int count)>();
+
+            // Drop bins with too few samples — they represent isolated pixels (anti-aliasing
+            // or JPEG compression noise) rather than genuine color regions.  A threshold
+            // proportional to 1/1700 of total samples filters 1–3 sample noise clusters in
+            // large images while the floor of 1 ensures no filtering occurs for small images
+            // (where a single sample can represent a genuine but small color region).
+            int totalSamples = 0;
+            foreach (var b in buckets.Values) totalSamples += b.count;
+            int minCount = Math.Max(1, totalSamples / 1700);
+
+            return buckets
+                .Where(kv => kv.Value.count >= minCount)
+                .Select(kv => (
+                    color: Color.FromArgb(
+                        (int)(kv.Value.r / kv.Value.count),
+                        (int)(kv.Value.g / kv.Value.count),
+                        (int)(kv.Value.b / kv.Value.count)),
+                    kv.Value.count))
+                .ToArray();
         }
+
+        // To visualize color buckets for any image, uncomment this method and the
+        // DiagnoseLineArtColorBuckets test in ImageUtilsTests.cs, then run that test
+        // explicitly. It writes an HTML page to the system temp folder showing each
+        // bucket as a colored swatch with its hex value, sample count, and BG/INK label.
+#if false
+        /// <summary>
+        /// Diagnostic version of <see cref="GetDominantColors"/> for use from tests.
+        /// Uses the same 5×5 neighborhood averaging algorithm as the production method.
+        /// Returns all color buckets ordered by pixel count descending, including the count
+        /// and whether each color qualifies as a line-art background.
+        /// </summary>
+        internal static (Color color, int count, bool isBackground)[] GetDominantColorBucketsForDiagnostics(
+            Bitmap bitmapImage
+        )
+        {
+            const int kSampleStep = 10;
+            const int kMinGridSize = 20;
+            int step = Math.Min(
+                kSampleStep,
+                Math.Max(1, Math.Min(bitmapImage.Width / kMinGridSize, bitmapImage.Height / kMinGridSize))
+            );
+            const int kBucketShift = 5;
+            const int kBitsPerBucket = 8 - kBucketShift;
+            var randomXFix = GenerateRandomAdjustments(271828182, step);
+            var randomYFix = GenerateRandomAdjustments(271828182, step);
+            var buckets = new Dictionary<int, (long r, long g, long b, int count)>();
+
+            var bitmapData = bitmapImage.LockBits(
+                new Rectangle(0, 0, bitmapImage.Width, bitmapImage.Height),
+                ImageLockMode.ReadOnly,
+                PixelFormat.Format32bppArgb);
+            try
+            {
+                int stride = bitmapData.Stride;
+                byte[] pixels = new byte[stride * bitmapImage.Height];
+                System.Runtime.InteropServices.Marshal.Copy(
+                    bitmapData.Scan0, pixels, 0, pixels.Length);
+
+                for (int j = 0, y = step / 2; y < bitmapImage.Height; y += step, ++j)
+                {
+                    j = Math.Min(j, 9);
+                    for (int i = 0, x = step / 2; x < bitmapImage.Width; x += step, ++i)
+                    {
+                        i = Math.Min(i, 9);
+                        var y1 = Math.Min(Math.Max(y + randomYFix[j, i], 0), bitmapImage.Height - 1);
+                        var x1 = Math.Min(Math.Max(x + randomXFix[j, i], 0), bitmapImage.Width - 1);
+
+                        if (pixels[y1 * stride + x1 * 4 + 3] < 255)
+                            return new[] { (Color.Transparent, 0, false) };
+
+                        const int kHalfWindow = 2;
+                        long rSum = 0, gSum = 0, bSum = 0;
+                        for (int dy = -kHalfWindow; dy <= kHalfWindow; dy++)
+                        {
+                            int py = Math.Min(Math.Max(y1 + dy, 0), bitmapImage.Height - 1);
+                            for (int dx = -kHalfWindow; dx <= kHalfWindow; dx++)
+                            {
+                                int px = Math.Min(Math.Max(x1 + dx, 0), bitmapImage.Width - 1);
+                                int ofs = py * stride + px * 4;
+                                bSum += pixels[ofs];
+                                gSum += pixels[ofs + 1];
+                                rSum += pixels[ofs + 2];
+                            }
+                        }
+                        const int kWindowArea = (2 * kHalfWindow + 1) * (2 * kHalfWindow + 1);
+                        int r = (int)(rSum / kWindowArea);
+                        int g = (int)(gSum / kWindowArea);
+                        int b = (int)(bSum / kWindowArea);
+
+                        int key = ((r >> kBucketShift) << (2 * kBitsPerBucket))
+                                | ((g >> kBucketShift) << kBitsPerBucket)
+                                |  (b >> kBucketShift);
+                        if (buckets.TryGetValue(key, out var entry))
+                            buckets[key] = (entry.r + r, entry.g + g, entry.b + b, entry.count + 1);
+                        else
+                            buckets[key] = (r, g, b, 1);
+                    }
+                }
+            }
+            finally
+            {
+                bitmapImage.UnlockBits(bitmapData);
+            }
+
+            return buckets
+                .OrderByDescending(kv => kv.Value.count)
+                .Select(kv =>
+                {
+                    var c = Color.FromArgb(
+                        (int)(kv.Value.r / kv.Value.count),
+                        (int)(kv.Value.g / kv.Value.count),
+                        (int)(kv.Value.b / kv.Value.count));
+                    return (c, kv.Value.count, IsLineArtBackground(c));
+                })
+                .ToArray();
+        }
+#endif
 
         private static void ConfigureGraphicsForHighQualityScaling(Graphics g)
         {
@@ -483,66 +580,6 @@ namespace Bloom.ImageProcessing
             //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
             //g.SmoothingMode = SmoothingMode.HighQuality;
             //g.CompositingQuality = CompositingQuality.HighQuality;
-        }
-
-        /// <summary>
-        /// Check whether this color is near white or grayish, and store the first two colors
-        /// encountered.  Return false if we encounter a third color and any of the three colors
-        /// are neither near white nor grayish.  (If only two colors are encountered, one of them
-        /// must be near white, but the other does not have to be grayish.)  It would be nice to
-        /// allow, for example, shades of purple, but that's too hard to do reliably.
-        /// </summary>
-        private static bool IsThisColorForLineDrawing(
-            Color color,
-            List<ColorInfo> colors,
-            ref bool whiteFound
-        )
-        {
-            var whitish = IsNearWhite(color);
-            var grayish = IsGrayish(color);
-            if (colors.Count == 0)
-            {
-                colors.Add(
-                    new ColorInfo
-                    {
-                        color = color,
-                        isGrayish = grayish,
-                        isNearWhite = whitish,
-                    }
-                );
-            }
-            else if (colors.Count == 1 && color != colors[0].color)
-            {
-                colors.Add(
-                    new ColorInfo
-                    {
-                        color = color,
-                        isGrayish = grayish,
-                        isNearWhite = whitish,
-                    }
-                );
-            }
-            else if (colors.Count == 2 && color != colors[0].color && color != colors[1].color)
-            {
-                // NearWhite is not guaranteed to be Grayish, so we have to check both.
-                if (
-                    !(colors[0].isGrayish || colors[0].isNearWhite)
-                    || !(colors[1].isGrayish || colors[1].isNearWhite)
-                    || !(grayish || whitish)
-                )
-                {
-                    // we have at least 3 colors, at least one of which is neither white nor gray
-                    return false;
-                }
-            }
-            // Enhance: store all distinct colors encountered, not just the first two, and store a
-            // count of how often they were found (for the bitmap check).  Then the caller could
-            // check all of them for grayishness and whiteness, or do a more sophisticated analysis
-            // for being shades of a given color, or (for the bitmap) look at the ratio of white vs
-            // non-white colors for line drawing detection.  (Of course, then the name of the method
-            // might no longer be appropriate and the return value wouldn't exist.)
-            whiteFound |= whitish;
-            return true;
         }
 
         private static int[,] GenerateRandomAdjustments(int seed, int range)

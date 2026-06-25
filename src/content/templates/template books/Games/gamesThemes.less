@@ -33,10 +33,6 @@
     --game-draggable-bg-color: var(--game-primary-bg-color);
 
     --game-draggable-target-outline-color: var(--game-draggable-bg-color);
-    // CSS variable cannot reference themselves, so we define this copy
-    // so that we can use color-mix() to make it semi-transparent
-    // when we want.
-    --game-draggable-target-outline-color-base: var(--game-draggable-bg-color);
 
     --game-header-color: var(--game-secondary-color);
     --game-header-bg-color: var(--game-primary-bg-color);
@@ -76,6 +72,18 @@
 
     --game-draggable-color: black;
 
+    // The theme's orange #ffb453 is only 2.81:1 on the blue page, just under the 3:1 UI
+    // minimum. A slightly brighter orange (3.4:1) keeps the theme's orange identity on
+    // the draggables, Check button, and selected checkbox while clearing AA; black text
+    // on it stays very readable. (BL-16323)
+    --game-draggable-bg-color: #ffce8f;
+    --game-control-button-bg-color: #ffce8f;
+    --game-selected-checkbox-bg-color: #ffce8f;
+
+    // The default outline color (the orange draggable bg) is only 2.81:1 against
+    // the blue page background; a lighter orange clears the 3:1 UI minimum. (BL-16323)
+    --game-draggable-target-outline-color: #ffd9a8;
+
     --game-header-color: white;
     --game-header-bg-color: var(--game-secondary-color);
 
@@ -84,63 +92,63 @@
     --game-button-correct-color: black;
     --game-button-outline-color: var(--game-page-bg-color);
 
-    --game-checkbox-outline-color: #848484;
+    // The previous gray (#848484, 1.32:1 on blue) was off-palette and nearly invisible;
+    // white is the theme's other named color and contrasts strongly (4.95:1). (BL-16323)
+    --game-checkbox-outline-color: white;
 }
 .bloom-page.game-theme-pollinator {
-    --game-button-correct-bg-color: #c46232;
+    --game-button-correct-bg-color: #b35527;
     --game-draggable-bg-color: #6b678d;
+    --game-draggable-target-outline-color: #5d5d98b6;
     --game-primary-color: #617321;
     --game-secondary-color: white;
-    --game-draggable-target-outline-color: #61732185;
 }
 .bloom-page.game-theme-garden-path {
-    --game-button-bg-color: #ffffff;
-    --game-button-correct-color: #000000;
-    --game-button-outline-color: var(--game-page-bg-color);
-    --game-button-text-color: #2d4c1e;
-    --game-checkbox-outline-color: #2d4c1e;
-    --game-draggable-color: #000000;
-    --game-header-bg-color: #2d4c1e;
-    --game-header-color: #feefb1;
-    --game-primary-color: #ffde00;
-    --game-secondary-color: #feefb1;
-    --game-text-color: #2d4c1e;
+    --game-button-correct-bg-color: #ea5252;
+    --game-button-correct-color: #ffffff;
+    --game-draggable-target-outline-color: #5c8a47;
+    --game-header-color: #ffffff;
+    --game-primary-color: #5b7e3c;
+    --game-secondary-color: #ffe18c;
+    --game-selected-checkbox-bg-color: #5b7e3c;
+    --game-text-color: #485e35;
 }
 .bloom-page.game-theme-cherry-blossom {
     --game-button-bg-color: #ffffff;
     --game-button-correct-color: #ffffff;
-    --game-button-outline-color: var(--game-page-bg-color);
+    --game-button-outline-color: #fff0f3;
     --game-button-text-color: #5d2a3a;
     --game-checkbox-outline-color: #8c3d56;
     --game-draggable-color: #ffffff;
-    --game-header-bg-color: #ffb7c5;
-    --game-header-color: #4a1c2b;
+    --game-draggable-target-outline-color: #c94779d0;
+    --game-header-color: #ffffff;
     --game-primary-color: #d14d72;
     --game-secondary-color: #fff0f3;
     --game-text-color: #7a2e45;
 }
 .bloom-page.game-theme-coral-reef {
     --game-button-bg-color: white;
-    --game-button-correct-color: black;
-    --game-button-outline-color: var(--game-page-bg-color);
+    --game-button-correct-color: #000000;
+    --game-button-outline-color: #00000000;
     --game-button-text-color: black;
+    --game-button-wrong-bg-color: #747474;
     --game-checkbox-outline-color: #e0f2f1;
+    --game-control-button-bg-color: #ffdccf;
+    --game-draggable-bg-color: #ffdccf;
     --game-draggable-color: black;
+    --game-draggable-target-outline-color: #ffd9c9;
     --game-header-bg-color: #b34525;
     --game-header-color: white;
     --game-primary-color: #ff8c6b;
     --game-secondary-color: #00838f;
+    --game-selected-checkbox-bg-color: #ffdccf;
     --game-text-color: white;
 }
 .bloom-page.game-theme-arctic-dawn {
     --game-button-bg-color: white;
-    --game-button-correct-color: black;
-    --game-button-outline-color: var(--game-page-bg-color);
     --game-button-text-color: #042c53;
+    --game-button-wrong-bg-color: #858585;
     --game-checkbox-outline-color: #85b7eb;
-    --game-draggable-color: black;
-    --game-header-bg-color: #ed93b1;
-    --game-header-color: #042c53;
     --game-primary-color: #ed93b1;
     --game-secondary-color: #042c53;
     --game-text-color: white;
@@ -163,12 +171,9 @@
     .apply-game-theme();
 }
 
-.bloom-page.targets-semi-transparent {
-    // The target outline sticks out and ruins the target image, so we
-    // set the opacity of game-draggable-target-outline-color to 0.5
-    --game-draggable-target-outline-color: color-mix(
-        in srgb,
-        var(--game-draggable-target-outline-color-base) 10%,
-        transparent
-    );
-}
+// Note: target pages still carry the .targets-semi-transparent class, but the target
+// outline color is now controlled entirely by each theme's
+// --game-draggable-target-outline-color (including its alpha). Themes that want a faint
+// target outline bake the desired transparency into that color. This used to be forced
+// here via a color-mix() override, but that shadowed the theme's chosen color/opacity on
+// target pages, so the theme editor's changes appeared to "revert" when you left the page.
