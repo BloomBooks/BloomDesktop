@@ -444,9 +444,10 @@ function showCopyrightAndLicenseDialog(
     show();
 }
 
-// Either the `get` call will show info to the user
-// (e.g. read-only info if he can't modify the image or a message stating images cannot be changed unless unlocked)
-// or we will display the dialog.
+// The `get` call either returns the image's copyright/license data (so we display the dialog),
+// returns nothing (e.g. the image file wasn't found, so there is nothing to show), or fails with
+// a message we surface to the user (e.g. the image is embedded data rather than a file, so its
+// information can't be edited).
 export function showCopyrightAndLicenseInfoOrDialog(imageUrl?: string) {
     const isForBook: boolean = !imageUrl;
     get(
