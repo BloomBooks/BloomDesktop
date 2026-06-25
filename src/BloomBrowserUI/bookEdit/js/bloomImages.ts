@@ -409,7 +409,7 @@ async function doChangeGifImage(
 ): Promise<void> {
     try {
         const pickResponse = await postJsonAsync(
-            "editView/pickLocalImageFile",
+            "imageGallery/pickLocalImageFile",
             {
                 gifOnly: true,
             },
@@ -421,7 +421,7 @@ async function doChangeGifImage(
             return;
         }
         const changeResponse = await postJsonAsync(
-            "editView/imageGalleryResult",
+            "imageGallery/imageGalleryResult",
             {
                 localPath: filePath,
             },

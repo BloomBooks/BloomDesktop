@@ -54,6 +54,7 @@ It is vital that you not run `yarn build` unless instructed to. If there is alre
 - Don't change the content of an existing XLF entry unless it is new (marked translate="no") or you are sure that the change will not cause problems with existing translations. Instead, mark the old one with a note saying it is "obsolete as of <current Bloom version>" and make a new entry with the new content and a different ID.
 - You can find the current version from the `Version` property in `build/Bloom.proj`.
 - It's OK not to make XLF entries for strings only used in experimental features, as long as there is fallback English in the code that will be used.
+- After adding the ID note to a new XLF entry, consider whether a translator would have enough context from the string alone. If the context isn't obvious — e.g. it's a sentence fragment, generic word ("Source", "More info"), step in a sequence, or link text assembled from multiple strings — add a second `<note>` element explaining what UI element it labels, where it appears, and any constraints (e.g. "appears mid-sentence, should be lowercase", "step N of M in X instructions", "do not translate 'Bloom'").
 
 # Commenting
 All public methods should have a comment. So should most private ones!

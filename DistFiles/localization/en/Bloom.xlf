@@ -3293,21 +3293,9 @@
         <source xml:lang="en">Training Videos</source>
         <note>ID: HelpMenu.trainingVideos</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.AboutOpenVerse" translate="no">
-        <source xml:lang="en">About OpenVerse</source>
-        <note>ID: ImageLibrary.AboutOpenVerse</note>
-      </trans-unit>
       <trans-unit id="ImageLibrary.CollectionsOnThisComputer" translate="no">
         <source xml:lang="en">Collections on this Computer</source>
         <note>ID: ImageLibrary.CollectionsOnThisComputer</note>
-      </trans-unit>
-      <trans-unit id="ImageLibrary.Disclaimer" translate="no">
-        <source xml:lang="en">These images are not from Bloom or SIL. This tool requests images suitable for general audiences. However, we cannot guarantee that all images will be inoffensive.</source>
-        <note>ID: ImageLibrary.Disclaimer</note>
-      </trans-unit>
-      <trans-unit id="ImageLibrary.MoreInfo" translate="no">
-        <source xml:lang="en">More info</source>
-        <note>ID: ImageLibrary.MoreInfo</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.OnlineSources" translate="no">
         <source xml:lang="en">Online Sources</source>
@@ -3317,13 +3305,10 @@
         <source xml:lang="en">Open File...</source>
         <note>ID: ImageLibrary.OpenFile</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.OpenVerseDescription" translate="no">
-        <source xml:lang="en">Openverse searches multiple public repositories for CC-licensed and public domain works.</source>
-        <note>ID: ImageLibrary.OpenVerseDescription</note>
-      </trans-unit>
       <trans-unit id="ImageLibrary.Search" translate="no">
         <source xml:lang="en">Search</source>
         <note>ID: ImageLibrary.Search</note>
+        <note>Label for the search input field in the image library.</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.ThisComputer" translate="no">
         <source xml:lang="en">This Computer</source>

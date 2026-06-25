@@ -17,7 +17,7 @@ import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { getEditablePageBundleExports } from "../../bookEdit/js/workspaceFrames";
 import { ShowEditViewDialog } from "../../bookEdit/workspaceRoot";
 
-// The shape of what C# returns from editView/imageGalleryResult
+// The shape of what C# returns from imageGallery/imageGalleryResult
 interface IImageGalleryApiResult {
     src: string;
     copyright: string;
@@ -72,7 +72,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 creator: image.creator,
             };
             const response = await postJsonAsync(
-                "editView/imageGalleryResult",
+                "imageGallery/imageGalleryResult",
                 payload,
             );
             const result = response!.data as IImageGalleryApiResult;
@@ -96,7 +96,10 @@ const ImageGalleryDialog: React.FunctionComponent<{
     };
 
     const onPickLocalFile = async (): Promise<IImage | undefined> => {
-        const response = await postJsonAsync("editView/pickLocalImageFile", {});
+        const response = await postJsonAsync(
+            "imageGallery/pickLocalImageFile",
+            {},
+        );
         if (!response) return undefined;
         const { filePath, previewUrl } = response.data as {
             filePath: string;
