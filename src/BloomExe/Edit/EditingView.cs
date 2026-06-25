@@ -107,6 +107,7 @@ namespace Bloom.Edit
             SignLanguageApi signLanguageApi,
             CommonApi commonApi,
             EditingViewApi editingViewApi,
+            ImageGalleryApi imageGalleryApi,
             PageListApi pageListApi,
             BookRenamedEvent bookRenamedEvent,
             CopyrightAndLicenseApi copyrightAndLicenseApi,
@@ -133,6 +134,7 @@ namespace Bloom.Edit
             signLanguageApi.Model = _model;
             signLanguageApi.View = this;
             editingViewApi.View = this;
+            imageGalleryApi.View = this;
             commonApi.Model = _model;
             _copyrightAndLicenseApi = copyrightAndLicenseApi;
             copyrightAndLicenseApi.Model = _model;

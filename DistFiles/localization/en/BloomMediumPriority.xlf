@@ -1430,6 +1430,23 @@
         <source xml:lang="en">Sorry, there was a problem adding the image.</source>
         <note>ID: ImageLibrary.FailedToAddImage</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.AboutOpenVerse" translate="no">
+        <source xml:lang="en">About OpenVerse</source>
+        <note>ID: ImageLibrary.AboutOpenVerse</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Disclaimer" translate="no">
+        <source xml:lang="en">These images are not from Bloom or SIL. This tool requests images suitable for general audiences. However, we cannot guarantee that all images will be inoffensive.</source>
+        <note>ID: ImageLibrary.Disclaimer</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.MoreInfo" translate="no">
+        <source xml:lang="en">More info</source>
+        <note>ID: ImageLibrary.MoreInfo</note>
+        <note>Link text that opens the OpenVerse about page, shown in the "About OpenVerse" section of the image library.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OpenVerseDescription" translate="no">
+        <source xml:lang="en">Openverse searches multiple public repositories for CC-licensed and public domain works.</source>
+        <note>ID: ImageLibrary.OpenVerseDescription</note>
+      </trans-unit>
       <trans-unit id="ImageLibrary.AboutArtOfReading" translate="no">
         <source xml:lang="en">About Art of Reading</source>
         <note>ID: ImageLibrary.AboutArtOfReading</note>
@@ -1445,10 +1462,12 @@
       <trans-unit id="ImageLibrary.ArtOfReadingNotReadyInstructions" translate="no">
         <source xml:lang="en">To get Art of Reading images, you need to:</source>
         <note>ID: ImageLibrary.ArtOfReadingNotReadyInstructions</note>
+        <note>Introductory sentence for an ordered list of setup steps shown when Art of Reading is not installed.</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.DownloadArtOfReading" translate="no">
         <source xml:lang="en">Download and install the Art of Reading Installer</source>
         <note>ID: ImageLibrary.DownloadArtOfReading</note>
+        <note>Step 1 of 2 in the Art of Reading setup instructions. This text is a clickable link to the download page.</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.ImageCount" translate="no">
         <source xml:lang="en">{0} images</source>
@@ -1462,62 +1481,35 @@
       <trans-unit id="ImageLibrary.NotReady" translate="no">
         <source xml:lang="en">Not Ready</source>
         <note>ID: ImageLibrary.NotReady</note>
-      </trans-unit>
-      <trans-unit id="ImageLibrary.PasteApiKeyFromClipboard" translate="no">
-        <source xml:lang="en">Paste API key from clipboard</source>
-        <note>ID: ImageLibrary.PasteApiKeyFromClipboard</note>
+        <note>Status badge shown next to an image provider's name (e.g., Art of Reading, Pixabay) when the provider is not yet installed or configured.</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.PhotogrIllustrator" translate="no">
         <source xml:lang="en">Photographer/Illustrator:</source>
         <note>ID: ImageLibrary.PhotogrIllustrator</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayApiKeyInstructions" translate="no">
-        <source xml:lang="en">To use Pixabay, you need an API key:</source>
-        <note>ID: ImageLibrary.PixabayApiKeyInstructions</note>
-      </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayApiKeyLabel" translate="no">
-        <source xml:lang="en">Pixabay API Key</source>
-        <note>ID: ImageLibrary.PixabayApiKeyLabel</note>
-      </trans-unit>
       <trans-unit id="ImageLibrary.PixabayDescription" translate="no">
         <source xml:lang="en">Pixabay is a large collection of images that may be used for free without attribution.</source>
         <note>ID: ImageLibrary.PixabayDescription</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayLogIn" translate="no">
-        <source xml:lang="en">Log in to Pixabay</source>
-        <note>ID: ImageLibrary.PixabayLogIn</note>
-      </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayOrIfLoggedIn" translate="no">
-        <source xml:lang="en">or, if already logged in,</source>
-        <note>ID: ImageLibrary.PixabayOrIfLoggedIn</note>
-      </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayGoToApiKeyPage" translate="no">
-        <source xml:lang="en">go to the API key page</source>
-        <note>ID: ImageLibrary.PixabayGoToApiKeyPage</note>
-      </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayFindKey" translate="no">
-        <source xml:lang="en">Copy the API key shown on that page, next to &quot;Your API key:&quot;</source>
-        <note>ID: ImageLibrary.PixabayFindKey</note>
-      </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayStep4" translate="no">
-        <source xml:lang="en">Paste it below</source>
-        <note>ID: ImageLibrary.PixabayStep4</note>
-      </trans-unit>
       <trans-unit id="ImageLibrary.QuitAndRerunBloom" translate="no">
         <source xml:lang="en">Quit and re-run Bloom</source>
         <note>ID: ImageLibrary.QuitAndRerunBloom</note>
+        <note>Step 2 of 2 in the Art of Reading setup instructions. "Bloom" is the product name and should not be translated.</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.Refresh" translate="no">
         <source xml:lang="en">Refresh</source>
         <note>ID: ImageLibrary.Refresh</note>
+        <note>Button label that reloads the current image provider's results or status in the image library dialog.</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.Source" translate="no">
         <source xml:lang="en">Source</source>
         <note>ID: ImageLibrary.Source</note>
+        <note>Default label for a link to the source webpage of an image in the image details panel, used when the image provider does not supply a more specific link label.</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.ThisPage" translate="no">
         <source xml:lang="en">this page</source>
         <note>ID: ImageLibrary.ThisPage</note>
+        <note>Short link text used in setup instructions (e.g., as in "go to this page"). Should be lowercase as it appears mid-sentence.</note>
       </trans-unit>
     </body>
   </file>
