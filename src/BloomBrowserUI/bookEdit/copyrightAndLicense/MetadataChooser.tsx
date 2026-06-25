@@ -60,9 +60,10 @@ export const MetadataChooser: React.FunctionComponent<{
     const initialKeyRef = useRef(currentKey);
 
     // We never cap the list when there are three or fewer options (so three choices never
-    // scroll). With four or more, we measure the first three rows and cap to exactly that
-    // height, so the fourth option starts the scrollbar. Measuring (rather than a fixed pixel
-    // height) keeps this correct across fonts and translations, where row heights vary.
+    // scroll). With four or more, we measure three full rows plus half of the fourth and cap to
+    // that height, so a peek of the fourth option makes it obvious the list scrolls. Measuring
+    // (rather than a fixed pixel height) keeps this correct across fonts and translations, where
+    // row heights vary.
     const listRef = useRef<HTMLDivElement>(null);
     const [listMaxHeight, setListMaxHeight] = useState<number | undefined>(
         undefined,
@@ -75,8 +76,12 @@ export const MetadataChooser: React.FunctionComponent<{
         }
         const rows = list.children;
         const firstTop = rows[0].getBoundingClientRect().top;
-        const thirdBottom = rows[2].getBoundingClientRect().bottom;
-        setListMaxHeight(Math.ceil(thirdBottom - firstTop));
+        const fourthRect = rows[3].getBoundingClientRect();
+        // Bottom of the third row is the top of the fourth; add half the fourth row's height so
+        // half of it peeks below the cutoff.
+        setListMaxHeight(
+            Math.ceil(fourthRect.top + fourthRect.height / 2 - firstTop),
+        );
     }, [packages.length]);
 
     // Localized labels for the rows. These are read at render time (below), NOT inside the
@@ -254,9 +259,9 @@ export const MetadataChooser: React.FunctionComponent<{
                     display: flex;
                     flex-direction: column;
                     gap: 4px;
-                    // Height is capped to three rows (see listMaxHeight) only when there are more
-                    // than three options, so three choices never scroll and a fourth starts the
-                    // scrollbar.
+                    // Height is capped to three and a half rows (see listMaxHeight) only when
+                    // there are more than three options, so three choices never scroll and a
+                    // fourth peeks in to show the list scrolls.
                     overflow-y: auto;
                 `}
             >
