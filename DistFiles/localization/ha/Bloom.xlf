@@ -3739,6 +3739,76 @@
         <target xml:lang="ha" state="final">Hoton bidiyo na Koyarwa</target>
         <note>ID: HelpMenu.trainingVideos</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.CollectionsOnThisComputer" translate="no">
+        <source xml:lang="en">Collections on this Computer</source>
+        <target xml:lang="ha" state="needs-translation">Collections on this Computer</target>
+        <note>ID: ImageLibrary.CollectionsOnThisComputer</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OnlineSources" translate="no">
+        <source xml:lang="en">Online Sources</source>
+        <target xml:lang="ha" state="needs-translation">Online Sources</target>
+        <note>ID: ImageLibrary.OnlineSources</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OpenFile" translate="no">
+        <source xml:lang="en">Open File...</source>
+        <target xml:lang="ha" state="needs-translation">Open File...</target>
+        <note>ID: ImageLibrary.OpenFile</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Search" translate="no">
+        <source xml:lang="en">Search</source>
+        <target xml:lang="ha" state="needs-translation">Search</target>
+        <note>ID: ImageLibrary.Search</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ThisComputer" translate="no">
+        <source xml:lang="en">This Computer</source>
+        <target xml:lang="ha" state="needs-translation">This Computer</target>
+        <note>ID: ImageLibrary.ThisComputer</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.UseThisImage" translate="no">
+        <source xml:lang="en">Use this image</source>
+        <target xml:lang="ha" state="needs-translation">Use this image</target>
+        <note>ID: ImageLibrary.UseThisImage</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PasteApiKeyFromClipboard" translate="no">
+        <source xml:lang="en">Paste API key from clipboard</source>
+        <target xml:lang="ha" state="needs-translation">Paste API key from clipboard</target>
+        <note>ID: ImageLibrary.PasteApiKeyFromClipboard</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayApiKeyInstructions" translate="no">
+        <source xml:lang="en">To use Pixabay, you need an API key:</source>
+        <target xml:lang="ha" state="needs-translation">To use Pixabay, you need an API key:</target>
+        <note>ID: ImageLibrary.PixabayApiKeyInstructions</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayApiKeyLabel" translate="no">
+        <source xml:lang="en">Pixabay API Key</source>
+        <target xml:lang="ha" state="needs-translation">Pixabay API Key</target>
+        <note>ID: ImageLibrary.PixabayApiKeyLabel</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayFindKey" translate="no">
+        <source xml:lang="en">Copy the API key shown on that page, next to &quot;Your API key:&quot;</source>
+        <target xml:lang="ha" state="needs-translation">Copy the API key shown on that page, next to "Your API key:"</target>
+        <note>ID: ImageLibrary.PixabayFindKey</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayGoToApiKeyPage" translate="no">
+        <source xml:lang="en">go to the API key page</source>
+        <target xml:lang="ha" state="needs-translation">go to the API key page</target>
+        <note>ID: ImageLibrary.PixabayGoToApiKeyPage</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayLogIn" translate="no">
+        <source xml:lang="en">Log in to Pixabay</source>
+        <target xml:lang="ha" state="needs-translation">Log in to Pixabay</target>
+        <note>ID: ImageLibrary.PixabayLogIn</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayOrIfLoggedIn" translate="no">
+        <source xml:lang="en">{0} or, if already logged in, {1}</source>
+        <target xml:lang="ha" state="needs-translation">{0} or, if already logged in, {1}</target>
+        <note>ID: ImageLibrary.PixabayOrIfLoggedIn</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayStep4" translate="no">
+        <source xml:lang="en">Paste it below</source>
+        <target xml:lang="ha" state="needs-translation">Paste it below</target>
+        <note>ID: ImageLibrary.PixabayStep4</note>
+      </trans-unit>
       <trans-unit id="ImageUtils.PreparingImage">
         <source xml:lang="en">Preparing image: {0}</source>
         <target xml:lang="ha" state="needs-translation">Preparing image: {0}</target>
