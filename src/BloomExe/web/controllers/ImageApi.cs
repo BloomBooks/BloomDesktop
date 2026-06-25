@@ -28,14 +28,14 @@ namespace Bloom.web.controllers
         public ImageApi(BookSelection bookSelection)
         {
             _bookSelection = bookSelection;
-            // The following is a list of image files that we don't want to paste image credits for.
+            // The following is a list of image files that we don't want to generate image credits for.
             // It includes CC license image, placeholder and branding images.
-            _doNotPasteArray = GetImageFilesToNotPasteCreditsFor().ToArray();
+            _doNotPasteArray = GetImageFilesToNotCreditFor().ToArray();
             for (int i = 0; i < _doNotPasteArray.Length; ++i)
                 _doNotPasteArray[i] = BookStorage.GetNormalizedPathForOS(_doNotPasteArray[i]);
         }
 
-        private static IEnumerable<string> GetImageFilesToNotPasteCreditsFor()
+        private static IEnumerable<string> GetImageFilesToNotCreditFor()
         {
             // Handles all except placeholder images. They can show up with digits after them, so we do them differently.
             var imageFiles = new HashSet<string> { "license.png" };
@@ -103,12 +103,12 @@ namespace Bloom.web.controllers
             IEnumerable<string> langs
         )
         {
-            var doNotPaste = new HashSet<string>(
-                GetImageFilesToNotPasteCreditsFor().Select(BookStorage.GetNormalizedPathForOS)
+            var nonCreditableImages = new HashSet<string>(
+                GetImageFilesToNotCreditFor().Select(BookStorage.GetNormalizedPathForOS)
             );
             return GetWhichImagesAreUsedOnWhichPages(domBody, langs)
                 .Keys.Where(name =>
-                    !doNotPaste.Contains(BookStorage.GetNormalizedPathForOS(name))
+                    !nonCreditableImages.Contains(BookStorage.GetNormalizedPathForOS(name))
                     && !name.ToLowerInvariant().StartsWith("placeholder")
                 )
                 .ToList();
