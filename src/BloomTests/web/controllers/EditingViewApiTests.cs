@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Net;
 using Bloom;
 using Bloom.Api;

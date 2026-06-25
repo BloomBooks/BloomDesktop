@@ -3293,6 +3293,70 @@
         <source xml:lang="en">Training Videos</source>
         <note>ID: HelpMenu.trainingVideos</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.CollectionsOnThisComputer" translate="no">
+        <source xml:lang="en">Collections on this Computer</source>
+        <note>ID: ImageLibrary.CollectionsOnThisComputer</note>
+        <note>Section heading in the image library's local-images tab, above the list of installed image collections (e.g. Art of Reading).</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OnlineSources" translate="no">
+        <source xml:lang="en">Online Sources</source>
+        <note>ID: ImageLibrary.OnlineSources</note>
+        <note>Tab or section header in the image library dialog for online image providers such as Pixabay and Openverse.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OpenFile" translate="no">
+        <source xml:lang="en">Open File...</source>
+        <note>ID: ImageLibrary.OpenFile</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Search" translate="no">
+        <source xml:lang="en">Search</source>
+        <note>ID: ImageLibrary.Search</note>
+        <note>Label for the search input field in the image library.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ThisComputer" translate="no">
+        <source xml:lang="en">This Computer</source>
+        <note>ID: ImageLibrary.ThisComputer</note>
+        <note>Tab or section header in the image library dialog for browsing locally installed image collections.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.UseThisImage" translate="no">
+        <source xml:lang="en">Use this image</source>
+        <note>ID: ImageLibrary.UseThisImage</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PasteApiKeyFromClipboard" translate="no">
+        <source xml:lang="en">Paste API key from clipboard</source>
+        <note>ID: ImageLibrary.PasteApiKeyFromClipboard</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayApiKeyInstructions" translate="no">
+        <source xml:lang="en">To use Pixabay, you need an API key:</source>
+        <note>ID: ImageLibrary.PixabayApiKeyInstructions</note>
+        <note>Introductory sentence for a numbered list of steps to obtain a Pixabay API key.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayApiKeyLabel" translate="no">
+        <source xml:lang="en">Pixabay API Key</source>
+        <note>ID: ImageLibrary.PixabayApiKeyLabel</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayFindKey" translate="no">
+        <source xml:lang="en">Copy the API key shown on that page, next to &quot;Your API key:&quot;</source>
+        <note>ID: ImageLibrary.PixabayFindKey</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayGoToApiKeyPage" translate="no">
+        <source xml:lang="en">go to the API key page</source>
+        <note>ID: ImageLibrary.PixabayGoToApiKeyPage</note>
+        <note>Clickable link text completing the sentence "or, if already logged in, go to the API key page" in the Pixabay API key instructions.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayLogIn" translate="no">
+        <source xml:lang="en">Log in to Pixabay</source>
+        <note>ID: ImageLibrary.PixabayLogIn</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayOrIfLoggedIn" translate="no">
+        <source xml:lang="en">{0} or, if already logged in, {1}</source>
+        <note>ID: ImageLibrary.PixabayOrIfLoggedIn</note>
+        <note>Sentence in the Pixabay API key instructions. {0} is replaced with a "Log in to Pixabay" link; {1} is replaced with a "go to the API key page" link.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayStep4" translate="no">
+        <source xml:lang="en">Paste it below</source>
+        <note>ID: ImageLibrary.PixabayStep4</note>
+        <note>Step 4 in the Pixabay API key instructions. "It" refers to the API key copied in step 3; "below" refers to the text input field below the instruction list.</note>
+      </trans-unit>
       <trans-unit id="ImageUtils.PreparingImage">
         <source xml:lang="en">Preparing image: {0}</source>
         <note>ID: ImageUtils.PreparingImage</note>

@@ -117,11 +117,7 @@ export const LicenseBadge: React.FunctionComponent<{
                     </div>
                 )}
                 <Link
-                    href={getCcUrl(
-                        token,
-                        licenseInfo.creativeCommonsInfo
-                            .intergovernmentalVersion,
-                    )}
+                    href={getAboutUrl(token, licenseInfo)}
                     l10nKey="License.About"
                     l10nComment='%0 is a shorthand version of the Creative Commons license, such as "CC-BY"'
                     l10nParam0={token.toUpperCase()}
@@ -154,6 +150,31 @@ export const LicenseBadge: React.FunctionComponent<{
         }
 
         return "https://creativecommons.org/licenses/" + urlSuffix;
+    }
+
+    // Use the exact URL stored in metadata when it matches the currently-selected
+    // license type (so e.g. an AOR CC-BY-SA 3.0 image links to 3.0, not 4.0).
+    // If the user has changed the license type via the controls the token will no
+    // longer match the stored URL, so we fall back to the reconstructed 4.0 link.
+    function getAboutUrl(token: string, info: typeof licenseInfo) {
+        if (info.licenseUrl && token !== "cc0") {
+            // Extract the license type segment from the URL path, e.g. "by-sa" from
+            // "…/licenses/by-sa/3.0/".  Compare it to the controls-derived token
+            // (strip the "cc-" prefix that the token carries but the URL does not).
+            const urlTypePart = info.licenseUrl.match(
+                /\/licenses\/([^/]+)\//,
+            )?.[1];
+            const tokenTypePart = token.startsWith("cc-")
+                ? token.slice(3)
+                : token;
+            if (urlTypePart === tokenTypePart) {
+                return info.licenseUrl;
+            }
+        }
+        return getCcUrl(
+            token,
+            info.creativeCommonsInfo.intergovernmentalVersion,
+        );
     }
 
     switch (licenseInfo.licenseType) {

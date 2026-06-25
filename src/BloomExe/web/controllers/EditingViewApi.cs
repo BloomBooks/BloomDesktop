@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
@@ -71,7 +71,6 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler("editView/topics", HandleTopics, false);
-            apiHandler.RegisterEndpointHandler("editView/changeImage", HandleChangeImage, true);
             apiHandler.RegisterEndpointHandler("editView/copyImage", HandleCopyImage, true);
             apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
             apiHandler.RegisterEndpointHandler("editView/paste", HandlePaste, true);
@@ -473,23 +472,6 @@ namespace Bloom.web.controllers
                 UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
                 data.imageIsGif
             );
-            request.PostSucceeded();
-        }
-
-        private void HandleChangeImage(ApiRequest request)
-        {
-            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            ((DynamicJson)data).TryGetValue("pageBackgroundColor", out string pageBackgroundColor);
-            // We don't want to tie up server locks etc. while the dialog displays.
-            MiscUtils.DoOnceOnIdle(() =>
-            {
-                View.OnChangeImage(
-                    data.imageId,
-                    UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
-                    data.imageIsGif,
-                    pageBackgroundColor
-                );
-            });
             request.PostSucceeded();
         }
 

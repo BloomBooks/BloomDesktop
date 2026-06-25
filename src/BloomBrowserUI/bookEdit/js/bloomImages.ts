@@ -1,7 +1,9 @@
 import {
+    getAsync,
     getWithConfig,
     getWithConfigAsync,
     postJson,
+    postJsonAsync,
 } from "../../utils/bloomApi";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
@@ -21,6 +23,12 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { showCopyrightAndLicenseDialog } from "../workspaceRoot";
+import { getWorkspaceBundleExports } from "./workspaceFrames";
+import {
+    changeImage,
+    IImageInfo,
+    wrapWithRequestPageContentDelay,
+} from "./bloomEditing";
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import $ from "jquery";
@@ -300,47 +308,142 @@ export function doImageCommand(
     if (!img) {
         return;
     }
-    // get the image id attribute. If it doesn't have one, add it before calling
-    // the server api. This is needed to properly identify the image later on in the
-    // changeImage method.  The copy command doesn't need to identify the image later,
-    // as the source url is enough for that command.
-    // (An image usually shouldn't have an id to begin with.)
-    let imageId = img.getAttribute("id");
     const imageSrc = GetRawImageUrl(img);
-    if (command !== "copy") {
+
+    if (command === "paste") {
+        // A temporary id is needed so the server-side callback can find the right
+        // image element when C# calls changeImage() by id.
+        let imageId = img.getAttribute("id");
         if (!imageId) {
             imageId = EditableDivUtils.createUuid();
             img.setAttribute("id", imageId);
         }
-        // Note that the changeImage method (called from the C# code) will remove the id
-        // attribute after using it to find the correct image.  The C# code will call the
-        // removeImageId method if it doesn't call the changeImage method.  See BL-13619.
-    }
-
-    const topDiv = img.closest(kCanvasElementSelector);
-    // Currently Gifs can only be added using the Games tool.
-    // A gif is always an img in a canvas element div, and we put a special class
-    // on the canvas element
-    // and use it in various ways where GIFs need to behave differently from
-    // other imgs. (For example, currently, they can only be cut/copied as file
-    // paths, we don't support metadata, they can't be cropped,...)
-    const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
-    const pageBackgroundColor = getOwningPageBackgroundColor(img);
-
-    const endpoint = "editView/" + command + "Image";
-    const payload = {
-        imageId,
-        imageSrc,
-        imageIsGif,
-        pageBackgroundColor,
-    };
-
-    if (command === "paste") {
-        postJson(endpoint, payload, undefined, handlePasteImageApiError);
+        const topDiv = img.closest(kCanvasElementSelector);
+        const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
+        const pageBackgroundColor = getOwningPageBackgroundColor(img);
+        postJson(
+            "editView/pasteImage",
+            { imageId, imageSrc, imageIsGif, pageBackgroundColor },
+            undefined,
+            handlePasteImageApiError,
+        );
         return;
     }
 
-    postJson(endpoint, payload);
+    if (command === "copy") {
+        const copyTopDiv = img.closest(kCanvasElementSelector);
+        const copyImageIsGif =
+            copyTopDiv?.classList.contains("bloom-gif") ?? false;
+        postJson("editView/copyImage", {
+            imageSrc,
+            imageIsGif: copyImageIsGif,
+        });
+        return;
+    }
+
+    // command === "change"
+    const topDiv = img.closest(kCanvasElementSelector);
+    // Currently Gifs can only be added using the Games tool.
+    // A gif is always an img in a canvas element div, and we put a special class
+    // on the canvas element and use it in various ways where GIFs need to behave
+    // differently from other imgs.
+    const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
+
+    if (imageIsGif) {
+        // GIF images bypass the gallery and go straight to a native file picker.
+        // A temporary id is needed so the wrapWithRequestPageContentDelay / changeImage
+        // round-trip can locate the element.
+        let imageId = img.getAttribute("id");
+        if (!imageId) {
+            imageId = EditableDivUtils.createUuid();
+            img.setAttribute("id", imageId);
+        }
+        wrapWithRequestPageContentDelay(
+            () => doChangeGifImage(img, imageId!),
+            "doChangeGifImage",
+        );
+    } else {
+        // The gallery dialog holds a direct JS reference to img, so no temporary id
+        // is needed and requestPageContent cannot capture a stale attribute.
+        getImageSearchLanguage().then((searchLang) => {
+            getWorkspaceBundleExports().showImageGalleryDialog(img, searchLang);
+        });
+    }
+}
+
+/**
+ * Returns the preferred image search language, mirroring the old WinForms logic:
+ *   1. Settings.Default.ImageSearchLanguage (explicit user choice)
+ *   2. Settings.Default.UserInterfaceLanguage stripped to its primary subtag
+ *   3. "en" as a final fallback
+ */
+async function getImageSearchLanguage(): Promise<string> {
+    try {
+        const r = await getAsync(
+            "app/userSetting?settingName=ImageSearchLanguage",
+        );
+        const lang = r?.data?.settingValue as string;
+        if (lang) return lang;
+    } catch {
+        // fall through
+    }
+    try {
+        const r = await getAsync(
+            "app/userSetting?settingName=UserInterfaceLanguage",
+        );
+        const lang = r?.data?.settingValue as string;
+        if (lang) {
+            const idx = lang.search(/[-_]/);
+            return idx > 0 ? lang.substring(0, idx) : lang;
+        }
+    } catch {
+        // fall through
+    }
+    return "en";
+}
+
+// Handles the "change image" flow for GIF elements: picks a file via C# and applies it.
+async function doChangeGifImage(
+    img: HTMLElement,
+    imageId: string,
+): Promise<void> {
+    try {
+        const pickResponse = await postJsonAsync(
+            "imageGallery/pickLocalImageFile",
+            {
+                gifOnly: true,
+            },
+        );
+        const { filePath } = pickResponse!.data as { filePath: string };
+        if (!filePath) {
+            // User cancelled — remove the temporary id.
+            img.removeAttribute("id");
+            return;
+        }
+        const changeResponse = await postJsonAsync(
+            "imageGallery/imageGalleryResult",
+            {
+                localPath: filePath,
+            },
+        );
+        const result = changeResponse!.data as {
+            src: string;
+            copyright: string;
+            creator: string;
+            license: string;
+        };
+        const imageInfo: IImageInfo = {
+            imageId,
+            src: result.src,
+            copyright: result.copyright,
+            creator: result.creator,
+            license: result.license,
+            undoable: "true",
+        };
+        changeImage(imageInfo);
+    } catch {
+        img.removeAttribute("id");
+    }
 }
 
 export function getOwningPageBackgroundColor(element: HTMLElement): string {
