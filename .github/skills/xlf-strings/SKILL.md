@@ -19,9 +19,10 @@ There are three priority files. Choose based on what the string labels:
 
 Strings that are only meant to be seen by developers or if code bugs occur should not be localized. Add comments explaining why they are not.
 
-Verify which priority to use for each new string, with a recommendation. You may present several as a single question if they occur in the same context.
-
 ## Adding a new entry
+
+1. **Ask the user which priority file to use, with your recommendation.** Explain why you prefer one based on the table above. You may present several strings as a single question if they occur in the same context.
+2. Add the entry in the chosen file:
 
 ```xml
 <trans-unit id="Namespace.EntryName" translate="no">
