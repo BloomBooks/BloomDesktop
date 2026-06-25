@@ -582,29 +582,6 @@ export class ReaderToolsModel {
     }
 
     /**
-     * sorts the letters for the decodable reader tool
-     * @param stageNumber
-     * @returns a sorted array of letters
-     */
-    public getKnownGraphemesSorted(): string[] {
-        if (!this.synphony) {
-            return []; // Synphony not loaded yet
-        }
-
-        // Letters up through current stage
-        const letters = [...this.stageGraphemes];
-
-        // All the letters in the order they were entered on the Letters tab in the set up dialog
-        const allLetters = this.synphony.source.letters.split(" ");
-
-        // Sort our letters based on the order they were entered
-        letters.sort((a, b) => {
-            return allLetters.indexOf(a) - allLetters.indexOf(b);
-        });
-        return letters;
-    }
-
-    /**
      *
      * @returns An array of DataWord objects
      */
@@ -629,46 +606,6 @@ export class ReaderToolsModel {
         return _.uniq(stageWords.concat(sightWords), false, (w: DataWord) => {
             return w.Name;
         });
-    }
-
-    /**
-     * sorts the stage and sight words for the decodable reader tool
-     * @param stageNumber
-     * @returns a sorted array of the stage and sight words
-     */
-    public getStageSightWordsSorted(stageNumber: number): DataWord[] {
-        const dataWords: DataWord[] | null =
-            this.getStageWordsAndSightWords(stageNumber);
-        if (!dataWords) {
-            return [];
-        }
-        switch (this.sort) {
-            case SortType.alphabetic:
-                dataWords.sort((a: DataWord, b: DataWord) => {
-                    return a.Name.localeCompare(b.Name);
-                });
-                break;
-            case SortType.byLength:
-                dataWords.sort((a: DataWord, b: DataWord) => {
-                    if (a.Name.length === b.Name.length) {
-                        return a.Name.localeCompare(b.Name);
-                    }
-                    return a.Name.length - b.Name.length;
-                });
-                break;
-            case SortType.byFrequency:
-                dataWords.sort((a: DataWord, b: DataWord) => {
-                    const aFreq = a.Count;
-                    const bFreq = b.Count;
-                    if (aFreq === bFreq) {
-                        return a.Name.localeCompare(b.Name);
-                    }
-                    return bFreq - aFreq; // MOST frequent first
-                });
-                break;
-            default:
-        }
-        return dataWords;
     }
 
     /**
