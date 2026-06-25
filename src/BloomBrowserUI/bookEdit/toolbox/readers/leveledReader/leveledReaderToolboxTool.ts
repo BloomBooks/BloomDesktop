@@ -65,9 +65,9 @@ export class LeveledReaderToolboxTool implements ITool {
 
     public configureElements(_container: HTMLElement) {
         // Leveled reader makes use of the setup in this.setupReaderKeyAndFocusHandlers(container).
-        // This would be the place to call it, but it is called by decodableReaderToolboxTool.ts' configureElements().
+        // This would be the place to call it, but it is called by decodableReaderTool.tsx' configureElements().
         // And configureElements gets called for every tool, whether or not that tool is open,
-        // so it always get initialized by decodableReaderToolboxTool.ts, and we don't want to call it twice.
+        // so it always get initialized by decodableReaderTool.tsx, and we don't want to call it twice.
     }
     public isAlwaysEnabled(): boolean {
         return false;

@@ -41,7 +41,6 @@ describe("readerTools-libSynphony tests", () => {
 
         getTheOneReaderToolsModel().addWordsFromFile(sampleFileContents);
         getTheOneReaderToolsModel().addWordsToSynphony();
-        getTheOneReaderToolsModel().updateWordList();
     }
 
     function generateSightWordsOnlyTestData() {
@@ -63,7 +62,6 @@ describe("readerTools-libSynphony tests", () => {
         synphony.loadSettings(settings);
 
         getTheOneReaderToolsModel().addWordsToSynphony();
-        getTheOneReaderToolsModel().updateWordList();
     }
 
     function addDiv(id) {
