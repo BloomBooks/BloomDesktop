@@ -1124,7 +1124,7 @@ namespace Bloom.Api
         }
 
         static HashSet<string> _imageExtensions = new HashSet<string>(
-            new[] { ".jpg", "jpeg", ".png", ".svg" }
+            new[] { ".jpg", ".jpeg", ".png", ".svg" }
         );
 
         internal static bool IsImageTypeThatCanBeReturned(string path)
