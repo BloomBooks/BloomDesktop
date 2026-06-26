@@ -39,7 +39,7 @@ The vscode terminal often loses the first character sent from copilot agents. So
 # Running Bloom
 - Do not run an already-built `Bloom.exe` directly, because it may be stale and miss local code changes.
 - Use a source-aware launcher that picks up the current repo state. Right now the default launcher is `./go.sh` at the repo root. If a build fails with errors like missing `PodcastUtilities`, `IDevice`, or other types/namespaces
-that "could not be found" (CS0246) in files such as `src/BloomExe/Publish/BloomPub/usb/AndroidDeviceUsbConnection.cs`, the problem is probably that this worktree has not got its dependencies yet. Fix that with `./init.sh`.
+  that "could not be found" (CS0246) in files such as `src/BloomExe/Publish/BloomPub/usb/AndroidDeviceUsbConnection.cs`, the problem is probably that this worktree has not got its dependencies yet. Fix that with `./init.sh`.
 
 - Do not launch Bloom with `dotnet run` or `node scripts/watchBloomExe.mjs` unless you are specifically working on the launcher scripts themselves or a better repo-supported source-aware launcher has been documented.
 
