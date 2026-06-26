@@ -234,66 +234,68 @@ function getDisplayItems(
         );
 }
 
-// Render one clickable size. The selected item is a solid purple pill sized to
-// its content; an unselected item is a left-aligned row that fills its grid cell
-// and highlights on hover. A few "recommended" sizes are shown bold.
+// Render one clickable size. Every item — selected or not — occupies the exact
+// same box as the selected purple pill (same padding, radius, and reserved bold
+// width), so selecting an item only changes its background/color/weight and never
+// reflows the menu. A few "recommended" sizes are shown bold even when unselected.
 function renderLayoutChoiceItem(
     item: ITopBarMenuItem & { shortLabel: string },
     onMenuItemClick: (item: ITopBarMenuItem) => void,
     buttonId: string,
-    variant: "metric" | "imperial",
 ) {
-    const selectedCss = css`
-        justify-self: start;
-        background-color: #8a5a96;
-        color: #fff;
-        font-size: 15px;
-        font-weight: 700;
-        padding: 4px 14px;
-        border-radius: 999px;
-    `;
-    // Metric/Ebook rows live in a 2-column grid and carry a small right pad;
-    // Imperial rows are single-column with no right pad. The left indent comes
-    // from the grid container in both cases.
-    const rowCss = css`
-        color: #222;
-        font-size: 15px;
-        font-weight: ${emphasizedLayoutIds.has(item.id) ? 700 : 400};
-        border-radius: 4px;
-        padding: 3px ${variant === "metric" ? "6px" : "0"} 3px 0;
-
-        &:hover {
-            background-color: #f5f1f7;
-        }
-    `;
-
+    const bold = item.checked || emphasizedLayoutIds.has(item.id);
     return (
         <button
             key={`${buttonId}-${item.id}-${item.shortLabel}`}
             type="button"
             onClick={() => onMenuItemClick(item)}
             disabled={!item.enabled}
-            css={[
-                css`
-                    display: inline-flex;
-                    align-items: center;
-                    border: 0;
-                    background: transparent;
-                    cursor: ${item.enabled ? "pointer" : "default"};
-                    opacity: ${item.enabled ? 1 : 0.5};
-                    text-align: left;
-                    white-space: nowrap;
-                    font-family: inherit;
+            css={css`
+                justify-self: start;
+                display: inline-flex;
+                align-items: center;
+                border: 0;
+                cursor: ${item.enabled ? "pointer" : "default"};
+                opacity: ${item.enabled ? 1 : 0.5};
+                text-align: left;
+                white-space: nowrap;
+                font-family: inherit;
+                font-size: 15px;
+                padding: 4px 14px;
+                border-radius: 999px;
+                background-color: ${item.checked ? "#8a5a96" : "transparent"};
+                color: ${item.checked ? "#fff" : "#222"};
+                font-weight: ${bold ? 700 : 400};
 
-                    &:focus-visible {
-                        outline: 2px solid #1d94a4;
-                        outline-offset: 1px;
-                    }
-                `,
-                item.checked ? selectedCss : rowCss,
-            ]}
+                &:hover {
+                    background-color: ${item.checked ? "#8a5a96" : "#f5f1f7"};
+                }
+
+                &:focus-visible {
+                    outline: 2px solid #1d94a4;
+                    outline-offset: 1px;
+                }
+            `}
         >
-            {item.shortLabel}
+            {/* The hidden bold copy (::after) reserves the bold width so that
+                becoming selected/bold does not change the item's width. */}
+            <span
+                data-text={item.shortLabel}
+                css={css`
+                    display: flex;
+                    flex-direction: column;
+
+                    &::after {
+                        content: attr(data-text);
+                        height: 0;
+                        font-weight: 700;
+                        overflow: hidden;
+                        visibility: hidden;
+                    }
+                `}
+            >
+                {item.shortLabel}
+            </span>
         </button>
     );
 }
@@ -350,12 +352,7 @@ function renderLayoutChoiceSection(
                 `}
             >
                 {items.map((item) =>
-                    renderLayoutChoiceItem(
-                        item,
-                        onMenuItemClick,
-                        buttonId,
-                        variant,
-                    ),
+                    renderLayoutChoiceItem(item, onMenuItemClick, buttonId),
                 )}
             </div>
         </div>
@@ -493,7 +490,6 @@ export const LayoutChoicesDropdown: React.FunctionComponent<{
                             { ...item, shortLabel: item.label },
                             onClick,
                             buttonId,
-                            "imperial",
                         ),
                     )}
                 </div>
