@@ -391,97 +391,96 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
                 `}
             >
                 {showTool && (
-                    <div
-                        css={css`
-                            display: flex;
-                            flex-direction: column;
-                            flex: 1 1 auto;
-                            min-height: 0;
-                            overflow-x: hidden;
-                        `}
-                    >
+                    <>
                         <div
                             css={css`
                                 display: flex;
-                                margin-left: auto;
-                                margin-bottom: 10px;
-                                padding-right: 2px;
+                                flex-direction: column;
+                                flex: 1 1 auto;
+                                min-height: 0;
+                                overflow-x: hidden;
                             `}
                         >
-                            <BloomButton
-                                href="javascript:window.toolboxBundle.showSetupDialog('stages');"
-                                l10nKey="EditTab.Toolbox.DecodableReaderTool.SetUpStages"
-                                variant="text"
-                                enabled={true}
-                                hasText={true}
-                                enabledImageFile="/bloom/bookEdit/toolbox/readers/edit-white.png"
+                            <div
                                 css={css`
-                                    font-size: xx-small;
-                                    text-decoration: underline;
-                                    font-weight: normal;
-                                    height: 22px;
-                                    img {
-                                        height: 14px;
-                                        margin-right: 2px;
-                                        margin-bottom: 2px;
-                                    }
-                                    &:hover {
-                                        text-decoration: underline;
-                                    }
+                                    display: flex;
+                                    margin-left: auto;
+                                    margin-bottom: 10px;
+                                    padding-right: 2px;
                                 `}
                             >
-                                Set Up Stages
-                            </BloomButton>
+                                <BloomButton
+                                    href="javascript:window.toolboxBundle.showSetupDialog('stages');"
+                                    l10nKey="EditTab.Toolbox.DecodableReaderTool.SetUpStages"
+                                    variant="text"
+                                    enabled={true}
+                                    hasText={true}
+                                    enabledImageFile="/bloom/bookEdit/toolbox/readers/edit-white.png"
+                                    css={css`
+                                        font-size: xx-small;
+                                        text-decoration: underline;
+                                        font-weight: normal;
+                                        height: 22px;
+                                        img {
+                                            height: 14px;
+                                            margin-right: 2px;
+                                            margin-bottom: 2px;
+                                        }
+                                        &:hover {
+                                            text-decoration: underline;
+                                        }
+                                    `}
+                                >
+                                    Set Up Stages
+                                </BloomButton>
+                            </div>
+                            <ReaderToolNav
+                                isForLeveled={false}
+                                changeFunction={changeStage}
+                            />
+                            {model.synphony?.source.useAllowedWords === 0 && (
+                                <StageGraphemes />
+                            )}
+                            <SortedStageWords changeSortFunc={changeSortFunc} />
                         </div>
-                        <ReaderToolNav
-                            isForLeveled={false}
-                            changeFunction={changeStage}
-                        />
-                        {model.synphony?.source.useAllowedWords === 0 && (
-                            <StageGraphemes />
-                        )}
-                        <SortedStageWords changeSortFunc={changeSortFunc} />
-                    </div>
+                        <>
+                            {model.synphony?.source.useAllowedWords === 0 && (
+                                <Link
+                                    l10nKey="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
+                                    href="javascript:toolboxBundle.makeLetterWordList();"
+                                    css={css`
+                                        padding: 8px;
+                                        padding-left: 11px;
+                                        background-color: ${kBloomDarkestBackground};
+                                        text-decoration: underline;
+                                    `}
+                                >
+                                    Generate a letter and word list report
+                                </Link>
+                            )}
+                            {model.getAllowedWordsAsObjects(model.stageNumber)
+                                .length >= model.maxAllowedWords && (
+                                <Span
+                                    l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated"
+                                    l10nParam0={model.maxAllowedWords.toString()}
+                                    css={css`
+                                        padding: 8px 4px;
+                                        background-color: ${kBloomDarkestBackground};
+                                        color: red;
+                                    `}
+                                >
+                                    {
+                                        "Bloom can handle only the first {0} words."
+                                    }
+                                </Span>
+                            )}
+                        </>
+                    </>
                 )}
                 <ReaderToolSwitch
                     isForLeveled={false}
                     changeDisplayFunc={() => setShowTool((prev) => !prev)}
-                    css={css`
-                        margin-left: 50px;
-                    `}
                 />
-                {showTool && (
-                    <>
-                        {model.synphony?.source.useAllowedWords === 0 && (
-                            <Link
-                                l10nKey="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
-                                href="javascript:toolboxBundle.makeLetterWordList();"
-                                css={css`
-                                    padding: 8px;
-                                    padding-left: 11px;
-                                    background-color: ${kBloomDarkestBackground};
-                                    text-decoration: underline;
-                                `}
-                            >
-                                Generate a letter and word list report
-                            </Link>
-                        )}
-                        {model.getAllowedWordsAsObjects(model.stageNumber)
-                            .length >= model.maxAllowedWords && (
-                            <Span
-                                l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated"
-                                l10nParam0={model.maxAllowedWords.toString()}
-                                css={css`
-                                    padding: 8px 4px;
-                                    background-color: ${kBloomDarkestBackground};
-                                    color: red;
-                                `}
-                            >
-                                {"Bloom can handle only the first {0} words."}
-                            </Span>
-                        )}
-                    </>
-                )}
             </div>
         </ThemeProvider>
     );
