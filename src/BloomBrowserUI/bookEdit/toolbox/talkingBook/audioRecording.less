@@ -10,40 +10,6 @@
 @textOnLightBackground: black;
 @disablingOverlayZindex: 1001; // higher than #audio-devlist
 
-// See BL-7442: When low line height causes lines to overlap, the highlighting overlaps and
-// can over up the bottom of the characters in the line above. For Chrome/Safari we have
-// a fix that can be found in bloom-player. But those don't work in Firefox yet (as of FF 68).
-// So we deal with the most common case of overlap (the book title on the cover) by just
-// treating the text as a rectangle. And it's fine that this will show this way in Chrome too:
-.Title-On-Cover-style
-    span.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) {
-    display: inline-block;
-    white-space: pre-wrap;
-}
-
-span.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight),
-div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p {
-    // This behavior is now achieved by a default rule in content/basePage-shared.less,
-    // from whence it can work in various players and be overridden by our new audio-hightlighting
-    // control. The negation for suppress/disable is now handled by a separate rule below.
-    // background: @highlightColor;
-    // /* make highlighted text easier to read if it is normally a light color (like white)*/
-    // color: @textOnLightBackground;
-}
-
-// In the Edit tab, we now use pseudo-elements to display the highlight instead of just background-color nd color, to avoid
-// computed styles getting stuck in the book (BL-15300, see audioTextHighlightManager.ts). Here overwrite the highlighting
-// colors from basePage.less which are otherwise used to display highlighting (e.g. in Bloom Player), so that only the
-// pseudo-elements are displaying the highlights
-body.bloom-audio-pseudoHighlights {
-    span.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight),
-    div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p,
-    .ui-audioCurrent .ui-enableHighlight {
-        background-color: transparent !important;
-        color: inherit !important;
-    }
-}
-
 .bloom-ui-current-audio-marker:before {
     background-image: url(currentTextIndicator.svg);
     background-repeat: no-repeat;
@@ -57,38 +23,6 @@ body.bloom-audio-pseudoHighlights {
     content: " ";
 }
 
-// These classes get applied to ui-audioCurrent elements when we don't currently want
-// them highlighted. Because a lot of rules now set various foreground and background
-// colors for .ui-audioCurrent, not only during editing when the suppress and disable
-// classes are relevant, it's cleaner to do the suppression with separate rules
-// rather than :not claues like the above.
-// The goal is that rules that set background and foreground color for the current
-// playback element shall be defeated when the disable/suppress classes are present.
-// There could pathologically be a case where some other rule was defeated unintentionally,
-// but we don't have any other rule-based text or background coloring that applies to
-// audio elements, so I think the neatness of not having to complicate many rules
-// with :not clauses that aren't relevant in most contexts is worth it.
-.ui-audioCurrent.ui-suppressHighlight,
-.ui-audioCurrent.ui-suppressHighlight p,
-.ui-audioCurrent.ui-disableHighlight,
-.ui-audioCurrent.ui-disableHighlight p {
-    background-color: unset !important;
-    color: unset !important;
-}
-
-.ui-audioCurrent .ui-enableHighlight {
-    background-color: @highlightColor;
-    // If we can one day get rid of this, we can simplify code for positioning the microphone icon near the span.
-    position: unset; // BL-11633, works around Chromium bug
-}
-
-span.ui-audioCurrent,
-div.ui-audioCurrent p {
-    // The rule that sets the background color is in basepage.less. However, we only need to
-    // interfere with position: relative when editing, so I _think_ this rule belongs here.
-    position: unset; // BL-11633, works around Chromium bug
-}
-
 // Use pseudoelements to display TBT highlighting in the Edit tab. See audioTextHighlightManager.ts
 ::highlight(bloom-audio-current) {
     // Read from CSS variables so the Format dialog's stored audio highlight colors
@@ -98,6 +32,9 @@ div.ui-audioCurrent p {
         @highlightColor
     );
     color: var(--bloom-audio-current-highlight-color, @textOnLightBackground);
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    mix-blend-mode: multiply;
 }
 // Note: This highlighting is expected to persist across sessions, but to be hidden
 // (displayed with the yellow color) while each segment is playing.

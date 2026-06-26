@@ -98,6 +98,11 @@ export class AudioTextHighlightManager {
         splitHighlightNames.forEach((name) => registry.delete(name));
     }
 
+    // currentHighlight is the element currently selected for recording etc.
+    // It might be a span (sentence mode) or text box (text box mode).
+    // currentTextBox is either the same as currentHighlight (text box mode)
+    // or its TextBox ancestor (sentence mode).
+    // Adjust pseudo-element hightlights to what they should be for this state of things.
     public refreshHighlights(
         currentHighlight: Element | null,
         currentTextBox: HTMLElement | null,
@@ -294,6 +299,8 @@ export class AudioTextHighlightManager {
         };
     }
 
+    // Set the CSS variables that control the ::highlight colors to match the user's chosen
+    // highlight color for the current text style, falling back to the default yellow.
     private updateCurrentHighlightColors(styleSource: Element): void {
         const documentElement = getDocumentElement(styleSource);
         if (!documentElement) {
@@ -303,47 +310,61 @@ export class AudioTextHighlightManager {
             return;
         }
 
-        // The actual colors still come from CSS so user-modified highlight colors keep working.
-        // We copy them into document-level variables that the ::highlight rule can read.
-        const documentBody = getDocumentBody(styleSource);
-        const hadPseudoHighlightOverride = documentBody?.classList.contains(
-            kPseudoHighlightSupportClass,
+        const bloomEditable = styleSource.closest(".bloom-editable");
+        const styleName = bloomEditable
+            ? Array.from(bloomEditable.classList).find((c) =>
+                  c.endsWith("-style"),
+              )
+            : undefined;
+
+        const userColors = styleName
+            ? this.getHighlightColorsFromUserStyles(
+                  styleSource.ownerDocument,
+                  styleName,
+              )
+            : undefined;
+
+        documentElement.style.setProperty(
+            kCurrentHighlightBackgroundCssVar,
+            userColors?.backgroundColor ?? "#febf00",
         );
+        documentElement.style.setProperty(
+            kCurrentHighlightColorCssVar,
+            userColors?.color ?? "black",
+        );
+    }
 
-        // We have rules in audioRecording.less to override the normal highlighting background-color
-        // (make it transparent), so it isn't underneath
-        // the pseudo-element highlights which we use instead in the edit tab. Remove that rule, detect the otherwise
-        // present computed highlight color, and then put the rule back.
-        if (hadPseudoHighlightOverride) {
-            documentBody?.classList.remove(kPseudoHighlightSupportClass);
-        }
-        const computedStyle =
-            getDocumentWindow(styleSource)?.getComputedStyle(styleSource);
-        const backgroundColor = computedStyle?.backgroundColor;
-        const color = computedStyle?.color;
-        if (hadPseudoHighlightOverride) {
-            documentBody?.classList.add(kPseudoHighlightSupportClass);
-        }
+    // Look in the book's userModifiedStyles sheet for an audio highlight rule for the
+    // given style name, and return its background-color and color if found.
+    private getHighlightColorsFromUserStyles(
+        doc: Document,
+        styleName: string,
+    ): { backgroundColor: string; color: string } | undefined {
+        const userStyles = Array.from(doc.styleSheets).find(
+            (s) =>
+                (s.ownerNode as Element)?.getAttribute("title") ===
+                "userModifiedStyles",
+        );
+        if (!userStyles) return undefined;
 
-        if (backgroundColor) {
-            documentElement.style.setProperty(
-                kCurrentHighlightBackgroundCssVar,
-                backgroundColor,
-            );
-        } else {
-            documentElement.style.removeProperty(
-                kCurrentHighlightBackgroundCssVar,
-            );
+        try {
+            for (const cssRule of Array.from(userStyles.cssRules)) {
+                const rule = cssRule as CSSStyleRule;
+                if (
+                    rule.selectorText?.includes(styleName) &&
+                    rule.selectorText?.includes("ui-audioCurrent") &&
+                    rule.style.backgroundColor
+                ) {
+                    return {
+                        backgroundColor: rule.style.backgroundColor,
+                        color: rule.style.color || "black",
+                    };
+                }
+            }
+        } catch {
+            // Stylesheets can throw on cross-origin access; shouldn't happen here
         }
-
-        if (color) {
-            documentElement.style.setProperty(
-                kCurrentHighlightColorCssVar,
-                color,
-            );
-        } else {
-            documentElement.style.removeProperty(kCurrentHighlightColorCssVar);
-        }
+        return undefined;
     }
 
     private shouldShowSplitHighlights(

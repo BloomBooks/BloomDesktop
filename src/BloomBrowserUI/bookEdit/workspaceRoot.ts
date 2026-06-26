@@ -34,6 +34,7 @@ export interface IWorkspaceExports {
     showCopyrightAndLicenseDialog(imageUrl?: string): void;
     showEditViewTopicChooserDialog(): void;
     showAdjustTimingsDialogFromWorkspaceRoot(
+        currentTextBox: HTMLElement | null,
         // The split and applyTimingsFile calls both return a list of new timings,
         // such as we might find in data-audioRecordingEndTimes
         split: (timingFilePath: string) => Promise<string | undefined>,

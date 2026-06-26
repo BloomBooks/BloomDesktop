@@ -1036,15 +1036,31 @@ even when the div is focused (as long as it is empty).*/
     color: @bloom-buff;
 }
 
+// BL-11633: Works around a Chromium bug where elements with position:relative and a
+// background color cause the caret to disappear. We unset position on the element
+// itself and on any inline text-formatting children, since the bug can trigger at
+// any level of nesting.
+.bl11633-unset-position() {
+    position: unset;
+    em,
+    i,
+    strong,
+    span[style],
+    u,
+    sup {
+        position: unset;
+    }
+}
+
 /*This block handles marking elements that violate decodable book and leveled reader constraints*/
 span.sentence-too-long {
     background-color: @LeveledReaderViolationColor;
-    position: unset; // BL-11633, works around Chromium bug
+    .bl11633-unset-position();
 }
 
 span.word-too-long {
     background-color: @bloom-lightblue;
-    position: unset; // BL-11633, works around Chromium bug
+    .bl11633-unset-position();
 }
 
 .page-too-many-words-or-sentences .marginBox {
@@ -1068,21 +1084,20 @@ span.sight-word {
 
 span.word-not-found {
     background-color: @DecodableReaderViolationColor;
-    position: unset; // BL-11633, works around Chromium bug
+    .bl11633-unset-position();
 }
 
 div.bloom-editable {
-    // Chrome 105 and later (ie, WebView2) has the :has selector.
-    // These rules may not need the :has(span) selector, but I
-    // don't want to risk breaking something.  This is enough to
-    // work around the Chromium bug reported in BL-11633.
-    span[style]:has(span),
-    em:has(span),
-    strong:has(span),
-    u:has(span),
-    sup:has(span) {
-        position: unset; // BL-11633, works around Chromium bug
-    }
+    .bl11633-unset-position();
+}
+
+// p elements can be the ::highlight range in text-box recording mode; they need position:unset
+// for the same BL-11633 reason (caret hidden behind a background-colored ancestor).
+// Sentence spans are the ::highlight range in sentence mode, so they need it too.
+div.bloom-editable p,
+div.bloom-editable p > .audio-sentence,
+div.bloom-editable p > .bloom-highlightSegment {
+    .bl11633-unset-position();
 }
 
 /* We are disabling the "Possible Word" feature at this time.
@@ -1225,10 +1240,10 @@ body {
 // and a background color cause the caret not to show up. Somehow, this
 // triggers when a decodable reader error span is nested inside one of these
 // spans, even though when DR is active the rules that give these segments
-// background color are not active. Nothing depends on thei being position:relative,
+// background color are not active. Nothing depends on their being position:relative,
 // so it's easiest to just prevent it. See BL-11633 for reproduction steps in Bloom 5.5.
 .bloom-highlightSegment {
-    position: unset;
+    .bl11633-unset-position();
 }
 
 // Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image
