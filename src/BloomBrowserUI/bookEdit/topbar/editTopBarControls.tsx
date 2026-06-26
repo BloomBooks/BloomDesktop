@@ -1,7 +1,7 @@
-import { css } from "@emotion/react";
+import { css, SerializedStyles } from "@emotion/react";
 import BloomButton from "../../react_components/bloomButton";
 import { get, getBloomApiPrefix, post, postJson } from "../../utils/bloomApi";
-import { useCallback, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 import {
@@ -17,6 +17,7 @@ import Checkbox from "@mui/material/Checkbox";
 import { useL10n } from "../../react_components/l10nHooks";
 import { LocalizableMenuItem } from "../../react_components/localizableMenuItem";
 import { callOnBlur } from "../../utils/menuCloseOnBlur";
+import { LayoutChoicesDropdown } from "./layoutChoicesDropdown";
 
 interface IDropdownData {
     contentLanguagesEnabled: boolean;
@@ -24,7 +25,7 @@ interface IDropdownData {
     layoutChoicesText: string;
 }
 
-interface ITopBarMenuItem {
+export interface ITopBarMenuItem {
     id: string;
     label: string;
     enabled: boolean;
@@ -41,6 +42,13 @@ interface IEditingControlDropdownProps {
     loadMenuItems: (onLoaded?: (itemCount: number) => void) => void;
     onMenuItemClick: (item: ITopBarMenuItem) => void;
     showChecks: boolean;
+    renderMenuItems?: (
+        menuItems: ITopBarMenuItem[],
+        onMenuItemClick: (item: ITopBarMenuItem) => void,
+        showChecks: boolean,
+        buttonId: string,
+    ) => ReactNode;
+    menuPaperCss?: SerializedStyles;
 }
 
 interface IEditingDropdownMenuBehaviorProps {
@@ -121,39 +129,6 @@ const normalizeContentLanguageUsageItems = (
         checked: language.checked,
         enabled: !language.checked || selectedCount > 1,
     }));
-};
-
-const normalizeLayoutChoiceItems = (
-    choices: unknown,
-    currentLayoutChoiceId: unknown,
-    noOtherLayoutsText: string,
-): ITopBarMenuItem[] => {
-    if (!Array.isArray(choices)) {
-        return [];
-    }
-
-    const currentId = String(currentLayoutChoiceId ?? "");
-    const normalizedChoices = choices.map((choice) => {
-        const choiceInfo = choice as Record<string, unknown>;
-        const id = String(choiceInfo.id ?? "");
-        return {
-            id,
-            label: String(choiceInfo.label ?? ""),
-            enabled: true,
-            checked: id === currentId,
-        };
-    });
-
-    if (normalizedChoices.length < 2) {
-        normalizedChoices.push({
-            id: "",
-            label: noOtherLayoutsText,
-            enabled: false,
-            checked: false,
-        });
-    }
-
-    return normalizedChoices;
 };
 
 export const EditTopBarControls: React.FunctionComponent = () => {
@@ -501,68 +476,6 @@ export const ContentLanguagesDropdown: React.FunctionComponent<{
     );
 };
 
-export const LayoutChoicesDropdown: React.FunctionComponent<{
-    localizedText: string;
-}> = (props) => {
-    const [layoutChoiceMenuItems, setLayoutChoiceMenuItems] = useState<
-        ITopBarMenuItem[]
-    >([]);
-    const [fallbackLocalizedText, setFallbackLocalizedText] = useState("");
-    const noOtherLayoutsText = useL10n(
-        "There are no other options for this template.",
-        "EditTab.NoOtherLayouts",
-        "Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice",
-    );
-
-    const loadLayoutChoiceData = useCallback(
-        (onLoaded?: (itemCount: number) => void) => {
-            get("editView/topBar/layoutChoiceData", (result) => {
-                const items = normalizeLayoutChoiceItems(
-                    result.data?.choices,
-                    result.data?.currentLayoutChoiceId,
-                    noOtherLayoutsText,
-                );
-                const currentChoice = items.find((item) => item.checked);
-                if (currentChoice?.label) {
-                    setFallbackLocalizedText(currentChoice.label);
-                }
-                onLoaded?.(items.length);
-                setLayoutChoiceMenuItems(items);
-            });
-        },
-        [noOtherLayoutsText],
-    );
-
-    const loadMenuItems = (onLoaded?: (itemCount: number) => void) => {
-        loadLayoutChoiceData(onLoaded);
-    };
-
-    useEffect(() => {
-        loadLayoutChoiceData();
-    }, [loadLayoutChoiceData]);
-
-    const onMenuItemClick = (item: ITopBarMenuItem) => {
-        setFallbackLocalizedText(item.label);
-        postJson("editView/topBar/layoutChoiceChange", {
-            layoutChoiceId: item.id,
-        });
-        post("editView/updateTopBarDropdownDisplay");
-    };
-
-    return (
-        <EditingControlDropdown
-            enabled={true}
-            localizedText={props.localizedText || fallbackLocalizedText}
-            tooltipL10nKey={"EditTab.PageSizeAndOrientation.Tooltip"}
-            buttonId="layoutChoicesDropdownButton"
-            menuItems={layoutChoiceMenuItems}
-            loadMenuItems={loadMenuItems}
-            onMenuItemClick={onMenuItemClick}
-            showChecks={false}
-        />
-    );
-};
-
 export const EditingControlDropdown: React.FunctionComponent<
     IEditingControlDropdownProps
 > = (props) => {
@@ -601,32 +514,41 @@ export const EditingControlDropdown: React.FunctionComponent<
                     css: css`
                         min-width: 220px;
                         max-width: 440px;
+
+                        ${props.menuPaperCss}
                     `,
                 },
             }}
         >
-            {props.menuItems.map((item) => (
-                <LocalizableMenuItem
-                    key={`${props.buttonId}-${item.id}-${item.label}`}
-                    english={item.label}
-                    l10nId={null}
-                    onClick={() => onMenuItemClick(item)}
-                    disabled={!item.enabled}
-                    icon={
-                        props.showChecks ? (
-                            <Checkbox
-                                checked={Boolean(item.checked)}
-                                size="small"
-                                disableRipple
-                                css={css`
-                                    padding: 0 6px 0 0;
-                                `}
-                            />
-                        ) : undefined
-                    }
-                    hasLeadingIconSpace={props.showChecks}
-                />
-            ))}
+            {props.renderMenuItems
+                ? props.renderMenuItems(
+                      props.menuItems,
+                      onMenuItemClick,
+                      props.showChecks,
+                      props.buttonId,
+                  )
+                : props.menuItems.map((item) => (
+                      <LocalizableMenuItem
+                          key={`${props.buttonId}-${item.id}-${item.label}`}
+                          english={item.label}
+                          l10nId={null}
+                          onClick={() => onMenuItemClick(item)}
+                          disabled={!item.enabled}
+                          icon={
+                              props.showChecks ? (
+                                  <Checkbox
+                                      checked={Boolean(item.checked)}
+                                      size="small"
+                                      disableRipple
+                                      css={css`
+                                          padding: 0 6px 0 0;
+                                      `}
+                                  />
+                              ) : undefined
+                          }
+                          hasLeadingIconSpace={props.showChecks}
+                      />
+                  ))}
         </Menu>
     );
 
@@ -681,3 +603,5 @@ export const EditingControlDropdown: React.FunctionComponent<
         </BloomTooltip>
     );
 };
+
+export { LayoutChoicesDropdown };

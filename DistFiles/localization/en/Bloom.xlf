@@ -2043,6 +2043,21 @@
         <note>ID: EditTab.NoOtherLayouts</note>
         <note>Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice</note>
       </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Ebooks" translate="no">
+        <source xml:lang="en">Ebooks</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Ebooks</note>
+        <note>Heading for the ebook-size column in the page size and orientation chooser dropdown on the edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Metric" translate="no">
+        <source xml:lang="en">Metric Paper</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Metric</note>
+        <note>Heading for the metric paper-size group in the page size and orientation chooser dropdown on the edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.USPaper" translate="no">
+        <source xml:lang="en">Imperial Paper</source>
+        <note>ID: EditTab.LayoutChoicesMenu.USPaper</note>
+        <note>Heading for the imperial paper-size group in the page size and orientation chooser dropdown on the edit tab. This includes sizes like Letter, Legal, Half Folio, Quarter Letter, US Comic, and 6x9.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Overflow" sil:dynamic="true">
         <source xml:lang="en">This box has more text than will fit</source>
         <note>ID: EditTab.Overflow</note>
