@@ -36,6 +36,34 @@ namespace Bloom.web.controllers
         // there is no cross-thread race to lock against.
         private bool _processBookInProgress;
 
+        // The most recent (or in-progress) external/process-book job. process-book replies
+        // immediately with a jobId and runs the heavy work asynchronously on the UI thread; the
+        // client then polls external/process-book-status until State is "done" or "failed". This
+        // replaces a single long-held HTTP response — which a stale/dropped keep-alive socket could
+        // silently swallow, leaving the client hung in "Converting…" forever — with a pollable
+        // terminal state the client can read with short, retryable requests, so it learns precisely
+        // when processing finished. Guarded by _processBookJobLock: the UI thread writes it while
+        // server worker threads read it for the status endpoint.
+        private readonly object _processBookJobLock = new object();
+        private ProcessBookJob _processBookJob;
+
+        private class ProcessBookJob
+        {
+            public string JobId;
+            public string State; // "running" | "done" | "failed"
+            public int Processed;
+            public string BookFolderPath;
+            public string HtmPath;
+            public string Error;
+        }
+
+        private struct ProcessBookResult
+        {
+            public int Processed;
+            public string BookFolderPath;
+            public string HtmPath;
+        }
+
         // Called by autofac, which creates the one instance and registers it with the server.
         public ExternalApi(
             BloomLibraryBookApiClient bloomLibraryBookApiClient,
@@ -200,6 +228,20 @@ namespace Bloom.web.controllers
                 requiresSync: false
             );
 
+            // Poll the status of the most recent external/process-book job (see HandleProcessBook).
+            // Read-only, so it does not need the UI thread — and crucially it MUST answer on a server
+            // worker thread while the UI thread is busy processing a book, so the client can watch for
+            // completion mid-run. requiresSync: false for the same reason process-book uses it: while a
+            // book processes, the off-screen WebView2's own /bloom/api/* bootstrap calls hold the global
+            // sync lock, and a status poll must not queue behind them — it only reads an in-memory field
+            // under its own lock. Returns { state: "unknown" | "running" | "done" | "failed", ... }.
+            apiHandler.RegisterEndpointHandler(
+                "external/process-book-status",
+                HandleProcessBookStatus,
+                handleOnUiThread: false,
+                requiresSync: false
+            );
+
             // Called by an external utility (e.g. BloomBridge) to discover which languages
             // the open collection is set up for, so it can tag the book content it generates correctly.
             // Returns the collection's L1/L2/L3 language tags; L3Code is null when the collection has no
@@ -260,15 +302,16 @@ namespace Bloom.web.controllers
 
             string id = null;
             string folderPath = null;
-            _processBookInProgress = true;
+            bool fitImageTextSplits = false;
             try
             {
                 var data = Newtonsoft.Json.Linq.JObject.Parse(request.RequiredPostJson());
                 id = (string)data["id"];
                 folderPath = (string)data["path"];
-                // Optional: auto-fit single-image-over-single-text origami pages (grow the image
-                // pane to fill the space the text doesn't need). Defaults to false.
-                var fitImageTextSplits = (bool?)data["fitImageTextSplits"] ?? false;
+                // Optional: auto-fit simple single-image/single-text origami pages (currently both
+                // image-above-text and image-left-of-text; grow the image pane to fill the space the
+                // text doesn't need). Defaults to false.
+                fitImageTextSplits = (bool?)data["fitImageTextSplits"] ?? false;
                 if (string.IsNullOrEmpty(id) && string.IsNullOrEmpty(folderPath))
                 {
                     request.Failed(
@@ -290,22 +333,77 @@ namespace Bloom.web.controllers
 
                 if (RefuseIfTeamCollection(request, "external/process-book"))
                     return;
+            }
+            catch (Exception e)
+            {
+                // A failure validating/parsing the request (before any work started). Report it the
+                // old synchronous way — there is no job to poll yet.
+                Logger.WriteError(
+                    "external/process-book failed to start for book " + (folderPath ?? id),
+                    e
+                );
+                request.Failed("external/process-book failed: " + e.Message);
+                return;
+            }
 
-                // Let the user know Bloom is busy. ProcessBook runs synchronously on this (UI)
-                // thread but pumps the message loop via Application.DoEvents(), so the main WebView2
-                // keeps painting and this overlay (with its CSS spinner) stays visible/animated for
-                // the whole run. Pump a few events first so it actually appears before the heavy
-                // work (BringBookUpToDate) ties up the thread.
-                // The 'show', the DoEvents/Sleep spin-up loop, and the processing all run inside this
-                // try so that an exception anywhere after we raise the overlay (a re-entrant handler
-                // throwing during DoEvents, ThreadInterruptedException from Sleep, etc.) still runs the
-                // finally and sends 'hide'; otherwise the modal overlay would be stuck opaque until the
-                // user navigates away. (Sending 'hide' when 'show' never succeeded is a harmless no-op.)
+            // The heavy work needs the UI thread (it creates and pumps an off-screen WebView2). We
+            // are on the UI thread now, but we must NOT do that work here: holding the HTTP response
+            // open for the whole ~20-30s run is exactly what leaves the client hung if the connection
+            // is dropped (e.g. a stale keep-alive socket). Instead reply immediately with a jobId and
+            // BeginInvoke the work to run after this response is sent — it queues on this same UI
+            // thread's message loop and runs once this handler returns. The client polls
+            // external/process-book-status for the outcome. _processBookInProgress stays true for the
+            // whole async run, so the re-entrancy guard still rejects an overlapping process-book.
+            var shell = Shell.GetShellOrNull();
+            if (shell == null || shell.IsDisposed)
+            {
+                request.Failed("external/process-book: Bloom has no main window to process on.");
+                return;
+            }
+
+            var jobId = Guid.NewGuid().ToString("N");
+            _processBookInProgress = true;
+            lock (_processBookJobLock)
+            {
+                _processBookJob = new ProcessBookJob { JobId = jobId, State = "running" };
+            }
+            request.ReplyWithJson(new { jobId, state = "running" });
+
+            shell.BeginInvoke(
+                (Action)(() => RunProcessBookJob(jobId, folderPath, id, fitImageTextSplits))
+            );
+        }
+
+        /// <summary>
+        /// Runs the heavy process-book work on the UI thread. Posted via BeginInvoke from
+        /// HandleProcessBook so it executes after that request's reply has already been sent, then
+        /// records the outcome on _processBookJob for the client to poll via
+        /// external/process-book-status. Never throws to the caller (it is a fire-and-forget UI
+        /// message); any failure is captured as the job's "failed" state.
+        /// </summary>
+        private void RunProcessBookJob(
+            string jobId,
+            string folderPath,
+            string id,
+            bool fitImageTextSplits
+        )
+        {
+            try
+            {
+                // The overlay 'show', the DoEvents/Sleep spin-up loop, and the processing all run
+                // inside this try so that an exception anywhere after we raise the overlay still runs
+                // the finally and sends 'hide'; otherwise the modal overlay would be stuck opaque
+                // until the user navigates away. (Sending 'hide' when 'show' never succeeded is a
+                // harmless no-op.)
                 try
                 {
+                    // Let the user know Bloom is busy. The work below pumps the message loop via
+                    // Application.DoEvents(), so the main WebView2 keeps painting and this overlay
+                    // (with its CSS spinner) stays visible/animated for the whole run. Pump a few
+                    // events first so it actually appears before the heavy work ties up the thread.
                     dynamic overlay = new DynamicJson();
-                    // Intentionally NOT localized, like the add-book/update-book toasts below: this is
-                    // an operator-facing message shown only during a BloomBridge-driven processing run.
+                    // Intentionally NOT localized, like the add-book/update-book toasts: this is an
+                    // operator-facing message shown only during a BloomBridge-driven processing run.
                     overlay.message = "Bloom is processing a book for BloomBridge, please wait…";
                     BloomWebSocketServer.Instance?.SendBundle(
                         "externalProcessing",
@@ -317,13 +415,21 @@ namespace Bloom.web.controllers
                         System.Windows.Forms.Application.DoEvents();
                         System.Threading.Thread.Sleep(15);
                     }
-                    if (!string.IsNullOrEmpty(folderPath))
-                    {
-                        HandleProcessBookByPath(request, folderPath, fitImageTextSplits);
-                        return;
-                    }
 
-                    HandleProcessBookById(request, id, fitImageTextSplits);
+                    var result = !string.IsNullOrEmpty(folderPath)
+                        ? ProcessBookByPath(folderPath, fitImageTextSplits)
+                        : ProcessBookById(id, fitImageTextSplits);
+
+                    lock (_processBookJobLock)
+                    {
+                        if (_processBookJob?.JobId == jobId)
+                        {
+                            _processBookJob.State = "done";
+                            _processBookJob.Processed = result.Processed;
+                            _processBookJob.BookFolderPath = result.BookFolderPath;
+                            _processBookJob.HtmPath = result.HtmPath;
+                        }
+                    }
                 }
                 finally
                 {
@@ -333,11 +439,59 @@ namespace Bloom.web.controllers
             catch (Exception e)
             {
                 Logger.WriteError("external/process-book failed for book " + (folderPath ?? id), e);
-                request.Failed("external/process-book failed: " + e.Message);
+                lock (_processBookJobLock)
+                {
+                    if (_processBookJob?.JobId == jobId)
+                    {
+                        _processBookJob.State = "failed";
+                        _processBookJob.Error = e.Message;
+                    }
+                }
             }
             finally
             {
                 _processBookInProgress = false;
+            }
+        }
+
+        /// <summary>
+        /// Report the state of the most recent process-book job. The client polls this (with short,
+        /// independent requests) until State is a terminal "done"/"failed", rather than waiting on one
+        /// long-held process-book response. An optional jobId query param scopes the answer to a
+        /// specific job: if it doesn't match the current job we report "unknown" so a stale poll can't
+        /// misread a newer job's result.
+        /// </summary>
+        private void HandleProcessBookStatus(ApiRequest request)
+        {
+            if (request.HttpMethod == HttpMethods.Options)
+            {
+                // Allow a CORS preflight request to succeed (as the other external endpoints do).
+                request.PostSucceeded();
+                return;
+            }
+
+            var jobId = request.GetParamOrNull("jobId");
+            lock (_processBookJobLock)
+            {
+                if (
+                    _processBookJob == null
+                    || (!string.IsNullOrEmpty(jobId) && _processBookJob.JobId != jobId)
+                )
+                {
+                    request.ReplyWithJson(new { state = "unknown" });
+                    return;
+                }
+                request.ReplyWithJson(
+                    new
+                    {
+                        jobId = _processBookJob.JobId,
+                        state = _processBookJob.State,
+                        processed = _processBookJob.Processed,
+                        bookFolderPath = _processBookJob.BookFolderPath,
+                        htmPath = _processBookJob.HtmPath,
+                        error = _processBookJob.Error,
+                    }
+                );
             }
         }
 
@@ -348,22 +502,17 @@ namespace Bloom.web.controllers
         /// nothing is added to the open collection. This is what BloomBridge uses, so its staging
         /// books no longer have to be copied into the collection just to be processed.
         /// </summary>
-        private void HandleProcessBookByPath(
-            ApiRequest request,
-            string folderPath,
-            bool fitImageTextSplits
-        )
+        private ProcessBookResult ProcessBookByPath(string folderPath, bool fitImageTextSplits)
         {
             if (
                 !System.IO.Directory.Exists(folderPath)
                 || !SIL.IO.RobustFile.Exists(System.IO.Path.Combine(folderPath, "meta.json"))
             )
             {
-                request.Failed(
+                throw new ApplicationException(
                     "external/process-book could not find a book folder (with meta.json) at "
                         + folderPath
                 );
-                return;
             }
 
             // Normally the path points at an off-screen staging folder that is NOT the selected book,
@@ -386,8 +535,8 @@ namespace Bloom.web.controllers
             // EditingModel still holds the pre-processed in-memory DOM; the next time the user leaves the
             // Edit tab, OnTabAboutToChange would Save() it and silently overwrite what we just wrote.
             // Discard those in-memory edits and reload from disk, then refresh the collection's view of
-            // it. This mirrors HandleProcessBookById. It only reconciles in-memory UI state, so a failure
-            // here is logged but does NOT fail the request (the disk output is already correct).
+            // it. This mirrors ProcessBookById. It only reconciles in-memory UI state, so a failure
+            // here is logged but does NOT turn the job into a failure (the disk output is already correct).
             if (processingSelectedBook)
             {
                 try
@@ -408,14 +557,12 @@ namespace Bloom.web.controllers
 
             // Saving may have renamed the folder to match the book's title, so report the final
             // location the client should read its output from.
-            request.ReplyWithJson(
-                new
-                {
-                    processed = pageCount,
-                    bookFolderPath = book.FolderPath,
-                    htmPath = book.GetPathHtmlFile(),
-                }
-            );
+            return new ProcessBookResult
+            {
+                Processed = pageCount,
+                BookFolderPath = book.FolderPath,
+                HtmPath = book.GetPathHtmlFile(),
+            };
         }
 
         /// <summary>
@@ -448,7 +595,7 @@ namespace Bloom.web.controllers
         /// Legacy flow: process a book that is a member of the open editable collection, found by its
         /// bookInstanceId.
         /// </summary>
-        private void HandleProcessBookById(ApiRequest request, string id, bool fitImageTextSplits)
+        private ProcessBookResult ProcessBookById(string id, bool fitImageTextSplits)
         {
             var editableCollection = _collectionModel.TheOneEditableCollection;
             var collectionPath = editableCollection.PathToDirectory;
@@ -462,8 +609,9 @@ namespace Bloom.web.controllers
             }
             if (bookInfo == null)
             {
-                request.Failed("external/process-book could not find a book with id " + id);
-                return;
+                throw new ApplicationException(
+                    "external/process-book could not find a book with id " + id
+                );
             }
 
             // Process a fresh Book read from disk rather than any in-memory selection, so we
@@ -473,8 +621,8 @@ namespace Bloom.web.controllers
 
             // The book is now processed and saved on disk: the operation the caller asked for has
             // succeeded. Everything below only reconciles in-memory UI state, so wrap it so a refresh
-            // failure is logged but does NOT turn into request.Failed() — otherwise we'd report failure
-            // for a book whose output is already correct on disk, and the caller would discard it.
+            // failure is logged but does NOT fail the job — otherwise we'd report failure for a book
+            // whose output is already correct on disk, and the caller would discard it.
             try
             {
                 // If we just rewrote the book that is currently selected, the in-memory selection now
@@ -507,14 +655,12 @@ namespace Bloom.web.controllers
                 );
             }
 
-            request.ReplyWithJson(
-                new
-                {
-                    processed = pageCount,
-                    bookFolderPath = book.FolderPath,
-                    htmPath = book.GetPathHtmlFile(),
-                }
-            );
+            return new ProcessBookResult
+            {
+                Processed = pageCount,
+                BookFolderPath = book.FolderPath,
+                HtmPath = book.GetPathHtmlFile(),
+            };
         }
 
         private void HandleAddBook(ApiRequest request)

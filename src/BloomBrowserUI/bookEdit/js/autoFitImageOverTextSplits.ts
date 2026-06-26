@@ -6,15 +6,15 @@ import {
 } from "../toolbox/canvas/canvasElementConstants";
 import { EditableDivUtils } from "./editableDivUtils";
 
-// ── Auto-fit image-over-text origami splits (off-screen process-book only) ──────────────────────
+// ── Auto-fit image/text origami splits (off-screen process-book only) ───────────────────────────
 //
-// A page that is a single illustration above a single text block — a two-pane vertical origami split
-// (a .split-pane.horizontal-percent with a bloom-canvas image in the top pane and a
-// bloom-translationGroup in the bottom pane) — is usually saved at whatever ratio it was authored
-// with (commonly 50/50). That often leaves a lot of empty space below the text while the image is
-// much smaller than it could be. This grows the image pane (shrinking the text pane) as far as it
-// can WITHOUT making the text overflow, but no further than the point where the image already fills
-// the page width (growing past that just adds whitespace around the image).
+// A page that is a single illustration in the first pane and a single text block in the second pane
+// is usually saved at whatever ratio it was authored with (commonly 50/50). That often leaves a lot
+// of empty space after the text while the image is much smaller than it could be. This grows the
+// image pane (shrinking the text pane) as far as it can WITHOUT making the text overflow, but no
+// further than the point where the image already fills the constraining page dimension (for
+// top/bottom splits, the page width; for left/right splits, the page height). Growing past that just
+// adds whitespace around the image.
 //
 // Governing rule: never leave the text overflowing. We don't estimate font/text sizes — we measure
 // the real browser layout with OverflowChecker, and bias toward a hair more text room than the
@@ -29,8 +29,8 @@ const kFitTextCushionPercent = 1.5;
 // Never shrink the text pane below this percent of the split-pane height.
 const kFitMinTextPercent = 5;
 
-// Auto-fit every qualifying image-over-text page in the document. Returns true if any page's split
-// was changed (so the caller knows to re-fit the background images afterward).
+// Auto-fit every qualifying image/text page in the document. Returns true if any page's split was
+// changed (so the caller knows to re-fit the background images afterward).
 export function fitImageOverTextSplits(): boolean {
     const pages = Array.from(
         document.querySelectorAll(".bloom-page"),
@@ -42,79 +42,85 @@ export function fitImageOverTextSplits(): boolean {
     return changedAny;
 }
 
+type SplitOrientation = "horizontal" | "vertical";
+
+interface SplitConfig {
+    orientation: SplitOrientation;
+    firstComponent: HTMLElement;
+    secondComponent: HTMLElement;
+    divider: HTMLElement;
+    firstInner: Element;
+    secondInner: Element;
+}
+
 // Returns true if it changed this page's split (grew the image), false if it left the page alone.
 function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
     const marginBox = page.querySelector(".marginBox");
     if (!marginBox) return false;
 
-    // We only handle the simple case: the marginBox's content is a single top-level
-    // horizontal-percent split with exactly two panes and no nested splits.
+    // We only handle the simple case: the marginBox's content is a single top-level two-pane split
+    // with no nested splits.
     const splitPane = marginBox.querySelector(
-        ":scope > .split-pane.horizontal-percent",
+        ":scope > .split-pane.horizontal-percent, :scope > .split-pane.vertical-percent",
     ) as HTMLElement | null;
     if (!splitPane) return false;
     if (splitPane.querySelector(".split-pane")) return false; // nested split: too complex, skip
 
-    const topComponent = splitPane.querySelector(
-        ":scope > .split-pane-component.position-top",
-    ) as HTMLElement | null;
-    const bottomComponent = splitPane.querySelector(
-        ":scope > .split-pane-component.position-bottom",
-    ) as HTMLElement | null;
-    const divider = splitPane.querySelector(
-        ":scope > .split-pane-divider",
-    ) as HTMLElement | null;
-    if (!topComponent || !bottomComponent || !divider) return false;
+    const splitConfig = getSplitConfig(splitPane);
+    if (!splitConfig) return false;
 
-    const topInner = topComponent.querySelector(
-        ":scope > .split-pane-component-inner",
-    );
-    const bottomInner = bottomComponent.querySelector(
-        ":scope > .split-pane-component-inner",
-    );
-    if (!topInner || !bottomInner) return false;
-
-    // Top pane must be a plain background image with no overlays; bottom pane must be text-only.
-    // (Matches "an illustration above a single text block.")
-    const topCanvas = topInner.querySelector(
+    // First pane must be a plain background image with no overlays; second pane must be text-only.
+    const firstCanvas = splitConfig.firstInner.querySelector(
         kBloomCanvasSelector,
     ) as HTMLElement | null;
-    const topHasText = topInner.querySelector(".bloom-translationGroup");
+    const firstHasText = splitConfig.firstInner.querySelector(
+        ".bloom-translationGroup",
+    );
     // Overlays (canvas elements other than the background image) make this page out of scope. Our
     // resizing math reasons only about the background image's aspect ratio; overlays don't scale with
     // it predictably — a text bubble keeps its font size (changing line breaks / revealing or clipping
     // content) and any bubble could end up extending past the resized image — so we leave such pages
-    // exactly as authored. Text overlays are technically also caught by topHasText (a text bubble
+    // exactly as authored. Text overlays are technically also caught by firstHasText (a text bubble
     // contains a .bloom-translationGroup), but this also excludes image/video/other overlays.
-    const topHasOverlay = topCanvas?.querySelector(
+    const firstHasOverlay = firstCanvas?.querySelector(
         `${kCanvasElementSelector}:not(.${kBackgroundImageClass})`,
     );
-    const bottomTextGroup = bottomInner.querySelector(
+    const secondTextGroup = splitConfig.secondInner.querySelector(
         ".bloom-translationGroup",
     ) as HTMLElement | null;
-    const bottomHasCanvas = bottomInner.querySelector(kBloomCanvasSelector);
-    if (!topCanvas || topHasText || topHasOverlay) return false;
-    if (!bottomTextGroup || bottomHasCanvas) return false;
+    const secondHasCanvas =
+        splitConfig.secondInner.querySelector(kBloomCanvasSelector);
+    if (!firstCanvas || firstHasText || firstHasOverlay) return false;
+    if (!secondTextGroup || secondHasCanvas) return false;
 
-    const splitPaneHeight = splitPane.offsetHeight;
-    if (splitPaneHeight <= 0) return false;
+    const splitPaneRelevantSize =
+        splitConfig.orientation === "horizontal"
+            ? splitPane.offsetHeight
+            : splitPane.offsetWidth;
+    if (splitPaneRelevantSize <= 0) return false;
 
-    // The stored split value is the bottom (text) pane's height as a percent of the split pane; the
-    // image (top) pane gets the rest. Growing the image means shrinking this value.
-    const originalTextPercent = readBottomPanePercent(bottomComponent);
+    // The stored split value is the second (text) pane's size as a percent of the split pane; the
+    // image pane gets the rest. Growing the image means shrinking this value.
+    const originalTextPercent = readSecondPanePercent(splitConfig);
 
     const setTextPercent = (percent: number) => {
         const value = percent + "%";
-        topComponent.style.bottom = value;
-        divider.style.bottom = value;
-        bottomComponent.style.height = value;
+        if (splitConfig.orientation === "horizontal") {
+            splitConfig.firstComponent.style.bottom = value;
+            splitConfig.divider.style.bottom = value;
+            splitConfig.secondComponent.style.height = value;
+        } else {
+            splitConfig.firstComponent.style.right = value;
+            splitConfig.divider.style.right = value;
+            splitConfig.secondComponent.style.width = value;
+        }
         // Force a synchronous reflow so the measurements below see the new layout.
         void splitPane.offsetHeight;
     };
 
     const textEditables = () =>
         Array.from(
-            bottomTextGroup.querySelectorAll(
+            secondTextGroup.querySelectorAll(
                 ".bloom-editable.bloom-visibility-code-on",
             ),
         ) as HTMLElement[];
@@ -158,13 +164,17 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
 
     // Cap how far the image can grow: once it fills the page width, growing the image pane further
     // just adds whitespace around the image, so don't shrink the text below that point.
-    const imageFitTopPercent = computeImageFitTopPercent(splitPane, topCanvas);
+    const imageFitFirstPanePercent = computeImageFitFirstPanePercent(
+        splitPane,
+        firstCanvas,
+        splitConfig.orientation,
+    );
 
     let finalTextPercent = minTextPercent + kFitTextCushionPercent;
-    if (imageFitTopPercent !== null) {
-        const textFloorForImageWidth = 100 - imageFitTopPercent;
-        if (finalTextPercent < textFloorForImageWidth)
-            finalTextPercent = textFloorForImageWidth;
+    if (imageFitFirstPanePercent !== undefined) {
+        const textFloorForImageFit = 100 - imageFitFirstPanePercent;
+        if (finalTextPercent < textFloorForImageFit)
+            finalTextPercent = textFloorForImageFit;
     }
     finalTextPercent = Math.min(
         Math.max(finalTextPercent, kFitMinTextPercent),
@@ -181,46 +191,137 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
     return true;
 }
 
-// Read the bottom (text) pane's height as a percent. The stylesheet defaults an unset split to 50%.
-function readBottomPanePercent(bottomComponent: HTMLElement): number {
-    const match = (bottomComponent.getAttribute("style") || "").match(
-        /height:\s*([0-9.]+)%/,
+function getSplitConfig(splitPane: HTMLElement): SplitConfig | undefined {
+    if (splitPane.classList.contains("horizontal-percent")) {
+        const firstComponent = splitPane.querySelector(
+            ":scope > .split-pane-component.position-top",
+        ) as HTMLElement | null;
+        const secondComponent = splitPane.querySelector(
+            ":scope > .split-pane-component.position-bottom",
+        ) as HTMLElement | null;
+        const divider = splitPane.querySelector(
+            ":scope > .split-pane-divider",
+        ) as HTMLElement | null;
+        const firstInner = firstComponent?.querySelector(
+            ":scope > .split-pane-component-inner",
+        );
+        const secondInner = secondComponent?.querySelector(
+            ":scope > .split-pane-component-inner",
+        );
+        if (
+            !firstComponent ||
+            !secondComponent ||
+            !divider ||
+            !firstInner ||
+            !secondInner
+        ) {
+            return undefined;
+        }
+        return {
+            orientation: "horizontal",
+            firstComponent,
+            secondComponent,
+            divider,
+            firstInner,
+            secondInner,
+        };
+    }
+
+    if (splitPane.classList.contains("vertical-percent")) {
+        const firstComponent = splitPane.querySelector(
+            ":scope > .split-pane-component.position-left",
+        ) as HTMLElement | null;
+        const secondComponent = splitPane.querySelector(
+            ":scope > .split-pane-component.position-right",
+        ) as HTMLElement | null;
+        const divider = splitPane.querySelector(
+            ":scope > .split-pane-divider",
+        ) as HTMLElement | null;
+        const firstInner = firstComponent?.querySelector(
+            ":scope > .split-pane-component-inner",
+        );
+        const secondInner = secondComponent?.querySelector(
+            ":scope > .split-pane-component-inner",
+        );
+        if (
+            !firstComponent ||
+            !secondComponent ||
+            !divider ||
+            !firstInner ||
+            !secondInner
+        ) {
+            return undefined;
+        }
+        return {
+            orientation: "vertical",
+            firstComponent,
+            secondComponent,
+            divider,
+            firstInner,
+            secondInner,
+        };
+    }
+
+    return undefined;
+}
+
+// Read the second (text) pane's size as a percent. The stylesheet defaults an unset split to 50%.
+function readSecondPanePercent(splitConfig: SplitConfig): number {
+    const match = (
+        splitConfig.secondComponent.getAttribute("style") || ""
+    ).match(
+        splitConfig.orientation === "horizontal"
+            ? /height:\s*([0-9.]+)%/
+            : /width:\s*([0-9.]+)%/,
     );
     return match ? parseFloat(match[1]) : 50;
 }
 
-// The percent of the split-pane height the TOP (image) pane needs so the image fills the page width
-// at its natural aspect ratio. Returns null if we can't determine it (e.g. image not yet loaded), in
-// which case the caller simply skips the width cap (the no-overflow guarantee still holds). Mirrors
-// the horizontal-split aspect math in split-pane.ts getImagePercent().
-function computeImageFitTopPercent(
+// The percent of the split-pane size the FIRST (image) pane needs so the image fills the limiting
+// page dimension at its natural aspect ratio. Returns undefined if we can't determine it (e.g. image
+// not yet loaded), in which case the caller simply skips the cap (the no-overflow guarantee still
+// holds). Mirrors the aspect math in split-pane.ts getImagePercent().
+function computeImageFitFirstPanePercent(
     splitPane: HTMLElement,
-    topCanvas: HTMLElement,
-): number | null {
-    const aspectRatio = getImageAspectRatio(topCanvas);
-    if (aspectRatio === null) return null;
-    const splitPaneHeight = splitPane.offsetHeight;
-    if (splitPaneHeight <= 0) return null;
+    firstCanvas: HTMLElement,
+    orientation: SplitOrientation,
+): number | undefined {
+    const aspectRatio = getImageAspectRatio(firstCanvas);
+    if (aspectRatio === undefined) return undefined;
     const scale = EditableDivUtils.getPageScale() || 1;
-    const width = splitPane.offsetWidth;
-    const imageHeight = width / aspectRatio;
-    // Compensate for any padding between the component (which carries the percent) and the canvas.
-    const topComponent = topCanvas.closest(
+    const firstComponent = firstCanvas.closest(
         ".split-pane-component",
     ) as HTMLElement | null;
-    const extraHeight = topComponent
-        ? (topComponent.offsetHeight - topCanvas.offsetHeight) / scale
+
+    if (orientation === "horizontal") {
+        const splitPaneHeight = splitPane.offsetHeight;
+        if (splitPaneHeight <= 0) return undefined;
+        const width = splitPane.offsetWidth;
+        const imageHeight = width / aspectRatio;
+        const extraHeight = firstComponent
+            ? (firstComponent.offsetHeight - firstCanvas.offsetHeight) / scale
+            : 0;
+        return ((imageHeight + extraHeight) * 100) / splitPaneHeight;
+    }
+
+    const splitPaneWidth = splitPane.offsetWidth;
+    if (splitPaneWidth <= 0) return undefined;
+    const height = splitPane.offsetHeight;
+    const imageWidth = height * aspectRatio;
+    const extraWidth = firstComponent
+        ? (firstComponent.offsetWidth - firstCanvas.offsetWidth) / scale
         : 0;
-    return ((imageHeight + extraHeight) * 100) / splitPaneHeight;
+    return ((imageWidth + extraWidth) * 100) / splitPaneWidth;
 }
 
-// The DISPLAYED aspect ratio (width/height) of the image in this bloom-canvas, or null if unknown.
+// The DISPLAYED aspect ratio (width/height) of the image in this bloom-canvas, or undefined if
+// unknown.
 // We measure the rendered .bloom-backgroundImage canvas element rather than the <img>'s natural
 // dimensions, because that box reflects any cropping the user applied — and it is the same source
 // adjustBackgroundImageSizeToFit() (split-pane.ts getImagePercent()) uses, so our width cap agrees
 // with how the image will actually be re-fit afterward. The background canvas element keeps its
 // load-time size while we resize panes, so this aspect is stable across the binary search.
-function getImageAspectRatio(bloomCanvas: HTMLElement): number | null {
+function getImageAspectRatio(bloomCanvas: HTMLElement): number | undefined {
     const bg = bloomCanvas.getElementsByClassName(
         "bloom-backgroundImage",
     )[0] as HTMLElement | undefined;
@@ -229,7 +330,7 @@ function getImageAspectRatio(bloomCanvas: HTMLElement): number | null {
     }
     // Fallback: the image's natural dimensions (ignores cropping, but better than nothing). These read
     // as 0 until the image has loaded, and a missing/placeholder/corrupt image may never acquire a
-    // natural size; in those cases we return null and the caller simply skips the image-width cap (the
+    // natural size; in those cases we return undefined and the caller simply skips the image-fit cap (the
     // no-overflow guarantee from the binary search still holds). In the off-screen book processor the
     // image-sizing delay (SetImageDisplaySizeIfCalledFor registers a requestPageContent delay) means
     // images are normally loaded before we get here, so the .bloom-backgroundImage branch above usually
@@ -238,5 +339,5 @@ function getImageAspectRatio(bloomCanvas: HTMLElement): number | null {
     if (img && img.naturalWidth > 0 && img.naturalHeight > 0) {
         return img.naturalWidth / img.naturalHeight;
     }
-    return null;
+    return undefined;
 }

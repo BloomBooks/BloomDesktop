@@ -41,11 +41,12 @@ namespace Bloom.Book
         ///
         /// Must be called on the UI thread: it creates and pumps a WebView2 browser.
         ///
-        /// When <paramref name="fitImageTextSplits"/> is true, pages that are a single illustration
-        /// above a single text block (a two-pane vertical origami split) have their split auto-fit:
-        /// the image pane is grown (and the text pane shrunk) as far as it can without making the
-        /// text overflow, but no further than the image filling the page width. This uses the real
-        /// off-screen browser layout (no font/text estimation); see fitImageOverTextSplits() in
+        /// When <paramref name="fitImageTextSplits"/> is true, simple two-pane origami pages with a
+        /// single illustration in the first pane and a single text block in the second pane have their
+        /// split auto-fit. This currently covers both image-above-text and image-left-of-text layouts.
+        /// The image pane is grown (and the text pane shrunk) as far as it can without making the text
+        /// overflow, but no further than the image filling the relevant page dimension. This uses the
+        /// real off-screen browser layout (no font/text estimation); see fitImageOverTextSplits() in
         /// bloomEditing.ts.
         /// </summary>
         public static int ProcessBook(Book book, bool fitImageTextSplits = false)
@@ -235,7 +236,7 @@ namespace Bloom.Book
             // Ask the bundle to gather the (now browser-processed) page content. It stashes the
             // result on window for us to poll, rather than posting to the live editView API (which
             // would feed the live EditingModel and corrupt the live editor's state).
-            // The boolean tells the bundle whether to auto-fit image-over-text origami splits before
+            // The boolean tells the bundle whether to auto-fit simple image/text origami splits before
             // capturing (see fitImageOverTextSplits in bloomEditing.ts).
             // Fire-and-forget: capture is asynchronous (it stashes onto window.__bloomExternalPageContent
             // when it finishes) and we poll for that below, so there is no result to wait for here. The
