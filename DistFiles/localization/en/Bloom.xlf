@@ -3374,6 +3374,14 @@
         <source xml:lang="en">Device16x9 Portrait</source>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
       </trans-unit>
+      <trans-unit id="LayoutChoices.Ebook7x5Landscape" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Ebook 7x5 Landscape</source>
+        <note>ID: LayoutChoices.Ebook7x5Landscape</note>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.Ebook2x3Portrait" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Ebook 2x3 Portrait</source>
+        <note>ID: LayoutChoices.Ebook2x3Portrait</note>
+      </trans-unit>
       <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true">
         <source xml:lang="en">Half Folio Portrait</source>
         <note>ID: LayoutChoices.HalfFolioPortrait</note>

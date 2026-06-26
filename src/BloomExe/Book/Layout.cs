@@ -81,7 +81,15 @@ namespace Bloom.Book
 
         public bool IsDeviceLayout
         {
-            get { return SizeAndOrientation.ToString().StartsWith("Device"); }
+            get
+            {
+                // "Device*" is the original family of screen-oriented (non-paper) layouts.
+                // Layouts whose name contains "Ebook" (e.g. Ebook2x3/Ebook7x5) are the same kind of
+                // thing; eventually the "Device" name is expected to be retired in favor of a family
+                // of ebook layouts.
+                var name = SizeAndOrientation.ToString();
+                return name.StartsWith("Device") || name.Contains("Ebook");
+            }
         }
 
         public override string ToString()
@@ -149,6 +157,22 @@ namespace Bloom.Book
                 else if (englishNameLowerCase == "size6x9 landscape")
                 {
                     englishName = "6\"x9\" Landscape";
+                }
+                else if (englishNameLowerCase == "ebook2x3 portrait")
+                {
+                    englishName = "Ebook 2x3 Portrait";
+                }
+                else if (englishNameLowerCase == "ebook7x5 landscape")
+                {
+                    englishName = "Ebook 7x5 Landscape";
+                }
+                else if (englishNameLowerCase == "device16x9 portrait")
+                {
+                    englishName = "Ebook 9x16 Portrait";
+                }
+                else if (englishNameLowerCase == "device16x9 landscape")
+                {
+                    englishName = "Ebook 16x9 Landscape";
                 }
 
                 englishName = englishName.Replace("letter", " Letter");

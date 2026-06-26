@@ -54,10 +54,13 @@ namespace Bloom.Book
                 return new SizeAndOrientation() { IsLandScape = false, PageSizeName = "A5" };
             }
 
+            var isLandscape = nameLower.Contains("landscape");
             return new SizeAndOrientation()
             {
-                IsLandScape = nameLower.Contains("landscape"),
-                PageSizeName = ExtractPageSizeName(name, startOfOrientationName),
+                IsLandScape = isLandscape,
+                PageSizeName = NormalizeLegacyPageSizeName(
+                    ExtractPageSizeName(name, startOfOrientationName)
+                ),
             };
         }
 
@@ -69,7 +72,19 @@ namespace Bloom.Book
             name = name.Replace("legal", "Legal");
             name = name.Replace("folio", "Folio");
             name = name.Replace("Uscomic", "USComic");
+            name = name.Replace("weaver", "Weaver");
+            name = name.Replace("ebook", "Ebook");
             return name;
+        }
+
+        private static string NormalizeLegacyPageSizeName(string pageSizeName)
+        {
+            // Handle books created in a future version of Bloom
+            // that may use the planned for "Ebook16x9Landscape" and "Ebook9x16Portrait" names.
+            if (pageSizeName == "Ebook9x16" || pageSizeName == "Ebook16x9")
+                return "Device16x9";
+
+            return pageSizeName;
         }
 
         /// <summary>
@@ -197,6 +212,8 @@ namespace Bloom.Book
             yield return new Layout { SizeAndOrientation = FromString("QuarterLetterLandscape") };
             yield return new Layout { SizeAndOrientation = FromString("Device16x9Portrait") };
             yield return new Layout { SizeAndOrientation = FromString("Device16x9Landscape") };
+            yield return new Layout { SizeAndOrientation = FromString("Ebook2x3Portrait") };
+            yield return new Layout { SizeAndOrientation = FromString("Ebook7x5Landscape") };
             yield return new Layout { SizeAndOrientation = FromString("Cm13Landscape") }; // actually square, but acts more like landscape than portrait
             yield return new Layout { SizeAndOrientation = FromString("USComicPortrait") };
             yield return new Layout { SizeAndOrientation = FromString("Size6x9Portrait") };

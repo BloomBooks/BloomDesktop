@@ -8,6 +8,21 @@ namespace BloomTests.Book
     [TestFixture]
     public class LayoutTests
     {
+        [TestCase("Device16x9Portrait", "Ebook 9x16 Portrait")]
+        [TestCase("Device16x9Landscape", "Ebook 16x9 Landscape")]
+        public void DisplayName_Device16x9Layouts_UsesEbookLabels(
+            string layoutClassName,
+            string expectedDisplayName
+        )
+        {
+            var layout = new Layout
+            {
+                SizeAndOrientation = SizeAndOrientation.FromString(layoutClassName),
+            };
+
+            Assert.That(layout.DisplayName, Is.EqualTo(expectedDisplayName));
+        }
+
         [Test]
         public void UpdatePageSplitMode_WasCombinedAndShouldStayThatWay_PageUntouched()
         {

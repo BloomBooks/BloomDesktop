@@ -613,6 +613,8 @@ namespace Bloom.Publish.Epub
 
         // Method must parse the json input in a culture invariant manner, since the computer's culture may not match
         // the culture of the json file.
+        // Returns the dimension in pixels at 96 DPI. Supported units: "px" (already pixels),
+        // "mm", and anything else is treated as inches.
         private static double ConvertDimension(string input)
         {
             string unit = input.Substring(input.Length - 2);
@@ -620,7 +622,11 @@ namespace Bloom.Publish.Epub
                 input.Substring(0, input.Length - 2),
                 CultureInfo.InvariantCulture
             );
-            return num * (unit == "mm" ? 96 / 25.4 : 96);
+            double pixelsPerUnit =
+                unit == "px" ? 1
+                : unit == "mm" ? 96 / 25.4
+                : 96;
+            return num * pixelsPerUnit;
         }
 
         /// <summary>

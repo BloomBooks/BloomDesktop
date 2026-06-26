@@ -99,7 +99,9 @@ export const PageThumbnail: React.FunctionComponent<{
     const reForOverflow = /^[^>]*class="[^"]*pageOverflows/;
     const overflowing = reForOverflow.test(content); // enhance: memo?
 
-    const scrollingWillBeAvailable = props.pageLayout.indexOf("Device") > -1;
+    const scrollingWillBeAvailable =
+        props.pageLayout.indexOf("Device") > -1 ||
+        props.pageLayout.indexOf("Ebook") > -1;
 
     useEffect(() => {
         if (Math.abs(Date.now() - lastPageRequestTime) > 5000) {
