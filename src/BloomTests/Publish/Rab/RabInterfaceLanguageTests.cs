@@ -185,12 +185,10 @@ namespace BloomTests.Publish.Rab
             return XDocument.Load(tempFile.Path).Root;
         }
 
-        private static List<XElement> InterfaceWritingSystems(XElement root)
-        {
             return root.Element("interface-languages")
                     ?.Element("writing-systems")
                     ?.Elements("writing-system")
-                    .ToList() ?? new List<XElement>();
+                    ?.ToList() ?? new List<XElement>();
         }
 
         [Test]
