@@ -1237,7 +1237,7 @@ namespace Bloom.Publish.Rab
 
         // The interface (app UI) languages Reading App Builder offers, keyed by their language
         // subtag. RAB requires at least one enabled interface language or it refuses to build
-        // (BL-16467). Keep this in sync with the languages RAB actually ships UI translations for.
+        // (BL-16470). Keep this in sync with the languages RAB actually ships UI translations for.
         private static readonly Dictionary<
             string,
             RabInterfaceLanguage
