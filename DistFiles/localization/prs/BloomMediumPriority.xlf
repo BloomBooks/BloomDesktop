@@ -1607,11 +1607,6 @@
         <target xml:lang="prs" state="needs-translation">No matches found</target>
         <note>ID: ImageLibrary.NoMatchesFound</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.NotReady" translate="no">
-        <source xml:lang="en">Not Ready</source>
-        <target xml:lang="prs" state="needs-translation">Not Ready</target>
-        <note>ID: ImageLibrary.NotReady</note>
-      </trans-unit>
       <trans-unit id="ImageLibrary.PhotogrIllustrator" translate="no">
         <source xml:lang="en">Photographer/Illustrator:</source>
         <target xml:lang="prs" state="needs-translation">Photographer/Illustrator:</target>
