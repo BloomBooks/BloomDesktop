@@ -348,7 +348,10 @@ function renderLayoutChoiceSection(
                         ? "1fr 1fr"
                         : "1fr"};
                     column-gap: 18px;
-                    padding-left: 19px;
+                    /* Indent so a label lines up under the header text. Each item
+                       carries 14px of internal (pill) left padding, so this is
+                       19px (the desired text indent) minus that 14px. */
+                    padding-left: 5px;
                 `}
             >
                 {items.map((item) =>
