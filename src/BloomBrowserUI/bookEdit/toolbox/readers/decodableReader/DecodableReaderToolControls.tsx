@@ -5,7 +5,6 @@ import {
     useRef,
     useState,
     FunctionComponent,
-    useEffect,
     useReducer,
 } from "react";
 import { Span } from "../../../../react_components/l10nComponents";
@@ -21,6 +20,7 @@ import {
 } from "../../../../utils/colorUtils";
 import { ReaderToolNav } from "../ReaderToolNav";
 import { toolboxTheme } from "../../../../bloomMaterialUITheme";
+import { useMountEffect } from "../../../../utils/useMountEffect";
 
 // This component displays a list of words in a grid
 // where the number of rows and columns is dynamically
@@ -209,6 +209,7 @@ const SortButton: FunctionComponent<{
                 width: 20px;
                 min-width: unset;
                 height: 20px;
+                margin-top: 1px;
                 border-radius: 0;
                 color: white;
                 border: 1px solid white;
@@ -246,7 +247,11 @@ const SortedStageWords: FunctionComponent<{
                 overflow: hidden;
             `}
         >
-            <div>
+            <div
+                css={css`
+                    display: flex;
+                `}
+            >
                 {model.synphony?.source.useAllowedWords === 1 ? (
                     <Span
                         l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage"
@@ -329,7 +334,7 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
         forceUpdate();
     }
 
-    // This useRef and useEffect handle assigning the updateState()
+    // This useRef and useMountEffect handle assigning the updateState()
     // function, defined above, to the refreshFunc variable in
     // readerToolsModel.ts, so that this component updates and re-renders
     // whenever updateControlContents() is called in readerToolsModel.ts.
@@ -342,12 +347,12 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
     const updateStateRef = useRef(updateState);
     updateStateRef.current = updateState;
 
-    useEffect(() => {
+    useMountEffect(() => {
         model.refreshFunc = () => updateStateRef.current();
         return () => {
             model.refreshFunc = undefined;
         };
-    }, []);
+    });
 
     function changeStage(increment: boolean): void {
         if (increment) {
@@ -436,6 +441,17 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
                             <StageGraphemes />
                         )}
                         <SortedStageWords changeSortFunc={changeSortFunc} />
+                    </div>
+                )}
+                <ReaderToolSwitch
+                    isForLeveled={false}
+                    changeDisplayFunc={() => setShowTool((prev) => !prev)}
+                    css={css`
+                        margin-left: 50px;
+                    `}
+                />
+                {showTool && (
+                    <>
                         {model.synphony?.source.useAllowedWords === 0 && (
                             <Link
                                 l10nKey="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
@@ -444,7 +460,6 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
                                     padding: 8px;
                                     padding-left: 11px;
                                     background-color: ${kBloomDarkestBackground};
-                                    box-sizing: border-box;
                                     text-decoration: underline;
                                 `}
                             >
@@ -465,15 +480,8 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
                                 {"Bloom can handle only the first {0} words."}
                             </Span>
                         )}
-                    </div>
+                    </>
                 )}
-                <ReaderToolSwitch
-                    isForLeveled={false}
-                    changeDisplayFunc={() => setShowTool((prev) => !prev)}
-                    css={css`
-                        margin-left: 50px;
-                    `}
-                />
             </div>
         </ThemeProvider>
     );
