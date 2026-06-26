@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 
 import * as React from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { renderRootSync } from "../../utils/reactRender";
 import { Tab, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.less";
@@ -34,6 +34,7 @@ import { CopyrightPanel, ICopyrightInfo } from "./CopyrightPanel";
 import { ILicenseInfo, LicensePanel } from "./LicensePanel";
 import { LicenseBadge } from "./LicenseBadge";
 import { MetadataChooser } from "./MetadataChooser";
+import { computePackageKey } from "./metadataReuseUtils";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 
 export interface ICopyrightAndLicenseData {
@@ -121,9 +122,16 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
     const pushWorkingLabel = useL10n("Working…", "Common.Working");
     const pushDoneLabel = useL10n("Done", "Common.Done");
 
+    // The package key of the values submitted by the most recent "Add to all images" push, so
+    // that when the completion event arrives we can tell whether the user has edited since. (null
+    // means no push has been initiated.)
+    const pushedKeyRef = useRef<string | null>(null);
+
     // Editing makes a prior "pushed to all images" confirmation stale, so offer the button
     // again. But if a push is still running ("working"), leave the spinner alone: resetting to
     // "idle" mid-operation would hide the spinner and re-enable the button for redundant clicks.
+    // (The completion handler below still notices that the values changed and avoids a stale
+    // "done".)
     function markEditedSincePush() {
         setPushState((prev) => (prev === "working" ? prev : "idle"));
     }
@@ -173,6 +181,10 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
     // when the copy has finished, and that flips us to "done".
     function handlePushToAllImages() {
         setPushState("working");
+        // Remember exactly which values we are pushing, so the completion handler can tell whether
+        // the user has edited since (in which case the values that finished copying are stale and
+        // we must not show "done" for the current, un-pushed values).
+        pushedKeyRef.current = computePackageKey(gatherData());
         postData(
             getApiUrlSuffix(props.isForBook) + "?applyToAllImages=true",
             gatherData(),
@@ -184,11 +196,19 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
         );
     }
 
-    // The backend fires this when a "Add to all images" operation has actually finished.
+    // The backend fires this when a "Add to all images" operation has actually finished. Only
+    // show "done" if the dialog's current values still match what we pushed; if the user edited
+    // while the push was in flight, those edits were not copied, so we drop back to "idle" and
+    // offer the button again rather than claiming the new values are done.
     useSubscribeToWebSocketForEvent(
         "copyrightAndLicense",
         "pushedToAllImages",
-        () => setPushState("done"),
+        () =>
+            setPushState(
+                computePackageKey(gatherData()) === pushedKeyRef.current
+                    ? "done"
+                    : "idle",
+            ),
     );
 
     return (
