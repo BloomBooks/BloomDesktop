@@ -1478,11 +1478,6 @@
         <source xml:lang="en">No matches found</source>
         <note>ID: ImageLibrary.NoMatchesFound</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.NotReady" translate="no">
-        <source xml:lang="en">Not Ready</source>
-        <note>ID: ImageLibrary.NotReady</note>
-        <note>Status badge shown next to an image provider's name (e.g., Art of Reading, Pixabay) when the provider is not yet installed or configured.</note>
-      </trans-unit>
       <trans-unit id="ImageLibrary.PhotogrIllustrator" translate="no">
         <source xml:lang="en">Photographer/Illustrator:</source>
         <note>ID: ImageLibrary.PhotogrIllustrator</note>

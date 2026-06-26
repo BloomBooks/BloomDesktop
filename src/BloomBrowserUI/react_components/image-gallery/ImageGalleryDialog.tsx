@@ -138,10 +138,11 @@ const ImageGalleryDialog: React.FunctionComponent<{
                     flex: 1;
                     min-height: 0;
                     overflow: hidden;
-                    /* Counteract BloomDialog's side and bottom padding so the gallery
-                       fills edge-to-edge and its own 20px padding provides the margins. */
-                    margin-left: -24px;
-                    margin-right: -24px;
+                    /* Counteract most of BloomDialog's side padding so the gallery
+                       sits inset ~8px from the dialog edge; the gallery's own 20px
+                       padding then provides the internal margins. */
+                    margin-left: -16px;
+                    margin-right: -16px;
                     margin-bottom: -10px;
                 `}
             >
