@@ -1,6 +1,18 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
+// Some legacy specs use the Jasmine/Jest-style fail() helper, which vitest does
+// not provide. Define it globally (throwing an Error) so those assertions both
+// work at runtime and type-check. Test-only: this file is loaded only by vitest.
+declare global {
+    function fail(message?: string): never;
+}
+(globalThis as unknown as { fail: (message?: string) => never }).fail = (
+    message?: string,
+): never => {
+    throw new Error(message ?? "fail() was called");
+};
+
 // Reduce test-runner stderr spam from intentional assertions in legacy code.
 const originalConsoleAssert = console.assert.bind(console);
 console.assert = (condition?: boolean, ...data: unknown[]) => {

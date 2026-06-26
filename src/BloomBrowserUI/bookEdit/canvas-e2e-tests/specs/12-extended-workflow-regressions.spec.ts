@@ -126,14 +126,17 @@ const getCanvasElementSnapshotByIndex = async (
 }> => {
     return canvasContext.pageFrame.evaluate(
         ({ selector, elementIndex }) => {
-            const elements = Array.from(document.querySelectorAll(selector));
+            const elements = Array.from(
+                document.querySelectorAll<HTMLElement>(selector),
+            );
             const element = elements[elementIndex];
             if (!element) {
                 throw new Error(
                     `No canvas element found at index ${elementIndex}.`,
                 );
             }
-            const editable = element.querySelector(".bloom-editable");
+            const editable =
+                element.querySelector<HTMLElement>(".bloom-editable");
             return {
                 text: editable?.innerText ?? "",
                 className: element.className,
@@ -187,7 +190,7 @@ const getTextForActiveElement = async (
         if (!active) {
             return "";
         }
-        const editable = active.querySelector(".bloom-editable");
+        const editable = active.querySelector<HTMLElement>(".bloom-editable");
         return editable?.innerText ?? "";
     });
 };
@@ -719,7 +722,7 @@ test("Workflow 03: auto-height grows for multiline content and shrinks after con
     // TODO: Replace this with a pure UI pre-sizing gesture when a stable
     // text-capable resize interaction is available for this path.
     await canvasTestContext.pageFrame.evaluate(() => {
-        const active = document.querySelector(
+        const active = document.querySelector<HTMLElement>(
             '.bloom-canvas-element[data-bloom-active="true"]',
         );
         if (!active) {
@@ -1282,12 +1285,6 @@ test.fixme(
             const styleApplied = await setStyleDropdown(
                 canvasTestContext,
                 value,
-                {
-                    maxAttempts: 1,
-                    dropdownVisibleTimeoutMs: failFastTimeoutMs,
-                    optionVisibleTimeoutMs: failFastTimeoutMs,
-                    settleTimeoutMs: failFastTimeoutMs,
-                },
             )
                 .then(() => true)
                 .catch(() => false);
@@ -1305,16 +1302,13 @@ test.fixme(
             await expect(styleInput).toHaveValue(value, {
                 timeout: failFastTimeoutMs,
             });
-            await expectToolboxControlsVisible(
-                canvasTestContext,
-                [
-                    "styleDropdown",
-                    "textColorBar",
-                    "backgroundColorBar",
-                    "outlineColorDropdown",
-                ],
-                failFastTimeoutMs,
-            );
+
+            await expectToolboxControlsVisible(canvasTestContext, [
+                "styleDropdown",
+                "textColorBar",
+                "backgroundColorBar",
+                "outlineColorDropdown",
+            ]);
 
             if (value === "caption") {
                 await expect(roundedCheckbox).toBeEnabled({
@@ -1400,7 +1394,7 @@ test("Workflow 14: text color control can apply a non-default color and revert t
     await chooseColorSwatchInDialog(canvasTestContext.page, 3);
 
     const withExplicitColor = await canvasTestContext.pageFrame.evaluate(() => {
-        const active = document.querySelector(
+        const active = document.querySelector<HTMLElement>(
             '.bloom-canvas-element[data-bloom-active="true"] .bloom-editable',
         );
         return active?.style.color ?? "";
@@ -1421,7 +1415,7 @@ test("Workflow 14: text color control can apply a non-default color and revert t
     }
 
     const revertedColor = await canvasTestContext.pageFrame.evaluate(() => {
-        const active = document.querySelector(
+        const active = document.querySelector<HTMLElement>(
             '.bloom-canvas-element[data-bloom-active="true"] .bloom-editable',
         );
         return active?.style.color ?? "";
@@ -1491,12 +1485,10 @@ test("Workflow 16: navigation label button shows only text/background controls a
     await chooseColorSwatchInDialog(canvasTestContext.page, 2);
 
     const rendered = await canvasTestContext.pageFrame.evaluate(() => {
-        const active = document.querySelector(
+        const active = document.querySelector<HTMLElement>(
             '.bloom-canvas-element[data-bloom-active="true"]',
         );
-        const editable = active?.querySelector(
-            ".bloom-editable",
-        ) as HTMLElement | null;
+        const editable = active?.querySelector<HTMLElement>(".bloom-editable");
         return {
             text: editable?.innerText ?? "",
             textColor: editable?.style.color ?? "",
