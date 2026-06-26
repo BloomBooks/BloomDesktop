@@ -3,6 +3,7 @@ import { ArrowDropDown } from "@mui/icons-material";
 import Menu from "@mui/material/Menu";
 import { kBloomPurple, kTextOnPurple } from "../../bloomMaterialUITheme";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMountEffect } from "../../utils/useMountEffect";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import BloomButton from "../../react_components/bloomButton";
 import { get, post, postJson } from "../../utils/bloomApi";
@@ -11,8 +12,12 @@ import { useL10n } from "../../react_components/l10nHooks";
 
 // The page-size/orientation picker that lives in the edit-tab top bar. The
 // trigger button shows the current size; clicking it opens a popover card that
-// groups every available size under Metric / Ebooks / Imperial headings, split
-// by orientation, with the current size shown as a solid purple "pill".
+// groups the available sizes into a metric column, an ebooks group, and an
+// imperial column, each split by orientation, with the current size shown as a
+// solid purple "pill". Only the "Ebooks" group carries a visible system
+// heading; the metric and imperial groups are distinguished by position alone.
+// Any backend-offered size that isn't in the curated lists below still appears,
+// under an "Other" heading, so no available size is ever unselectable.
 
 interface ITopBarMenuItem {
     id: string;
@@ -76,6 +81,22 @@ const ebookLandscapeItems: ILayoutDisplayItem[] = [
     { id: "Device16x9Landscape", shortLabel: "16x9" },
     { id: "Ebook7x5Landscape", shortLabel: "7x5" },
 ];
+
+// Every layout id that one of the curated groups above knows how to place. Any
+// backend-offered choice whose id is not in this set is rendered in the catch-all
+// "Other" group (see getOtherDisplayItems) so it stays visible and selectable,
+// matching the old dropdown which listed every backend choice.
+const curatedLayoutIds = new Set(
+    [
+        metricPortraitItems,
+        metricLandscapeItems,
+        metricSquareItems,
+        imperialPortraitItems,
+        imperialLandscapeItems,
+        ebookPortraitItems,
+        ebookLandscapeItems,
+    ].flatMap((group) => group.map((item) => item.id)),
+);
 
 // Sizes we want to draw the eye to (the common/recommended choices). These are
 // shown bold in the menu when not selected.
@@ -236,6 +257,17 @@ function getDisplayItems(
         );
 }
 
+// Return any loaded menu items the curated groups don't place (an id not in
+// curatedLayoutIds), using the backend's full label as the display label. This
+// is the safety net that keeps an unanticipated template/book size selectable.
+function getOtherDisplayItems(
+    menuItems: ITopBarMenuItem[],
+): Array<ITopBarMenuItem & { shortLabel: string }> {
+    return menuItems
+        .filter((item) => item.id !== "" && !curatedLayoutIds.has(item.id))
+        .map((item) => ({ ...item, shortLabel: item.label }));
+}
+
 // Render one clickable size. Every item — selected or not — occupies the exact
 // same box as the selected purple pill (same padding, radius, and reserved bold
 // width), so selecting an item only changes its background/color/weight and never
@@ -250,6 +282,10 @@ function renderLayoutChoiceItem(
         <button
             key={`${buttonId}-${item.id}-${item.shortLabel}`}
             type="button"
+            // This is a single-select list of sizes, so expose each option as a
+            // radio-style menu item and announce which one is currently chosen.
+            role="menuitemradio"
+            aria-checked={!!item.checked}
             onClick={() => onMenuItemClick(item)}
             disabled={!item.enabled}
             css={css`
@@ -403,6 +439,11 @@ export const LayoutChoicesDropdown: React.FunctionComponent<{
         "EditTab.LayoutChoicesMenu.Square",
         "Section heading for square page sizes in the page size and orientation chooser dropdown on the edit tab.",
     );
+    const otherHeading = useL10n(
+        "Other",
+        "EditTab.LayoutChoicesMenu.Other",
+        "Heading for the catch-all group in the page size and orientation chooser dropdown on the edit tab. It lists any sizes a template offers that don't fit the standard metric, ebook, or imperial groups.",
+    );
 
     // Fetch the available layout choices (and which one is current) from the
     // backend. onLoaded is used by the open logic to decide whether to show the
@@ -432,13 +473,13 @@ export const LayoutChoicesDropdown: React.FunctionComponent<{
 
     // Cancel any pending layout-change timer if we unmount before it fires, so we
     // don't post a change / set state on an unmounted component.
-    useEffect(() => {
+    useMountEffect(() => {
         return () => {
             if (applyChangeTimerRef.current !== undefined) {
                 window.clearTimeout(applyChangeTimerRef.current);
             }
         };
-    }, []);
+    });
 
     const { anchorEl, onClose, onOpen } = useLayoutChoicesMenuBehavior({
         buttonId: "layoutChoicesDropdownButton",
@@ -534,9 +575,10 @@ export const LayoutChoicesDropdown: React.FunctionComponent<{
             itemsById,
             ebookLandscapeItems,
         );
+        const otherDisplayItems = getOtherDisplayItems(menuItems);
 
-        // The group heading style (currently used only for "Ebooks"; the Metric
-        // and Imperial headings are intentionally omitted from the design).
+        // The group heading style (used for the "Ebooks" and "Other" groups; the
+        // Metric and Imperial headings are intentionally omitted from the design).
         const systemHeadingCss = css`
             font-size: 13px;
             font-weight: 700;
@@ -643,6 +685,32 @@ export const LayoutChoicesDropdown: React.FunctionComponent<{
                         "landscape",
                         "imperial",
                         false,
+                    )}
+                    {/* Catch-all for sizes the curated groups don't place, so an
+                        unanticipated template/book size is still selectable. */}
+                    {otherDisplayItems.length > 0 && (
+                        <div
+                            css={css`
+                                margin-top: 22px;
+                            `}
+                        >
+                            <div css={systemHeadingCss}>{otherHeading}</div>
+                            <div
+                                css={css`
+                                    display: grid;
+                                    grid-template-columns: 1fr;
+                                    padding-left: 5px;
+                                `}
+                            >
+                                {otherDisplayItems.map((item) =>
+                                    renderLayoutChoiceItem(
+                                        item,
+                                        onClick,
+                                        buttonId,
+                                    ),
+                                )}
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
