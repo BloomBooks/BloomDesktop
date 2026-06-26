@@ -1,6 +1,7 @@
 /* replace EFL eBook Template 3 custom CSS: curved design and fancy page numbers */
 
-/* This theme applies only to "Device 16x9 Landscape and Device 16x9 Portrait" pages. */
+/* This theme applies to the eBook page sizes: Device 16x9 (Landscape and Portrait)
+   and the StoryWeaver Ebook sizes (Ebook2x3 Portrait and Ebook7x5 Landscape). */
 
 /* The below statements control the size and color of the marginbox. It holds the text and picture of that page.
  * The top and left numbers determine the position of the margin box on the page. */

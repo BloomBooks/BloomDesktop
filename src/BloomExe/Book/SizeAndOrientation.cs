@@ -59,7 +59,7 @@ namespace Bloom.Book
             {
                 IsLandScape = isLandscape,
                 PageSizeName = NormalizeLegacyPageSizeName(
-                    ExtractPageSizeName(name, startOfOrientationName)
+                    ExtractPageSizeName(nameLower, startOfOrientationName)
                 ),
             };
         }
