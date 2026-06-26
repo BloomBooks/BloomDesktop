@@ -480,7 +480,7 @@ namespace Bloom.Publish.Rab
         /// <summary>
         /// Enables the given language as the app's interface (UI) language, adding it to
         /// &lt;interface-languages&gt; if it is not already present. Reading App Builder requires at
-        /// least one enabled interface language to build (BL-16467).
+        /// least one enabled interface language to build (BL-16470).
         /// </summary>
         internal void SetInterfaceLanguage(string code, string englishName, bool isRightToLeft)
         {
