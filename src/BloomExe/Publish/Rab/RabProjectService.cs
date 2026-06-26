@@ -87,7 +87,10 @@ namespace Bloom.Publish.Rab
 
         // When non-null, RAB process output lines are collected here (in addition to being sent to
         // the progress log) so a build that produces no APK can surface RAB's own diagnostics.
+        // Writes happen on threadpool threads from both the stdout and stderr process callbacks, so
+        // access is guarded by _rabOutputCaptureLock to keep the List<string> from corrupting.
         private List<string> _rabOutputCapture;
+        private readonly object _rabOutputCaptureLock = new object();
 
         public RabProjectService(
             CollectionModel collectionModel,
@@ -1513,7 +1516,8 @@ namespace Bloom.Publish.Rab
                 return;
 
             TryAdvanceBuildProgressFromOutput(line);
-            _rabOutputCapture?.Add(line);
+            lock (_rabOutputCaptureLock)
+                _rabOutputCapture?.Add(line);
             _progress.MessageWithoutLocalizing(FormatTimestampedLogLine(line), kind);
         }
 

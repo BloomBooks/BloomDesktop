@@ -132,12 +132,14 @@ namespace BloomTests.Publish.Rab
 
                 // Sanity: confirm the chosen icon really is one GDI+ cannot decode, so we know the
                 // test is exercising the failure path rather than passing for an unrelated reason.
+                // GDI+ may signal this with OutOfMemoryException (the file overload) or
+                // ArgumentException, depending on platform/.NET version.
                 Assert.That(
                     () =>
                     {
                         using (Image.FromFile(badIcon)) { }
                     },
-                    Throws.InstanceOf<OutOfMemoryException>()
+                    Throws.InstanceOf<OutOfMemoryException>().Or.InstanceOf<ArgumentException>()
                 );
 
                 // The build must still fail (we do not silently substitute a generic icon), but
