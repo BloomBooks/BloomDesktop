@@ -105,6 +105,10 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
         setCopyrightInfo(data.copyrightInfo);
         setLicenseInfo(data.licenseInfo);
         setAppliedVersion((v) => v + 1);
+        // Picking a shortcut changes the fields just like a manual edit, so any prior "pushed to
+        // all images" confirmation is now stale: re-offer the button (but leave an in-flight
+        // push's spinner alone).
+        markEditedSincePush();
     }
 
     // Header for the image reuse chooser.
