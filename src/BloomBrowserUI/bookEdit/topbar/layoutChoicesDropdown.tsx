@@ -542,10 +542,12 @@ export const LayoutChoicesDropdown: React.FunctionComponent<{
             <div
                 css={css`
                     display: grid;
-                    grid-template-columns: 1fr 1fr;
+                    /* size each column to its own content so the card hugs the
+                       content and the white space is even on all sides */
+                    grid-template-columns: auto auto;
                     gap: 26px;
                     align-items: start;
-                    padding: 18px 22px 22px;
+                    padding: 22px;
                 `}
             >
                 <div
@@ -698,7 +700,6 @@ export const LayoutChoicesDropdown: React.FunctionComponent<{
                     slotProps={{
                         paper: {
                             css: css`
-                                min-width: 440px;
                                 background-color: #fff;
                                 border: 1px solid #e2e2e2;
                                 border-radius: 6px;
