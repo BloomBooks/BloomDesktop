@@ -93,12 +93,14 @@ type OrientationShape = "portrait" | "landscape" | "square";
 const OrientationIcon: React.FunctionComponent<{ shape: OrientationShape }> = (
     props,
 ) => {
+    // Keep each glyph centered within the 14x14 viewBox (so y = (14 - height)/2)
+    // so it vertical-centers cleanly against the heading text beside it.
     const rect =
         props.shape === "portrait"
-            ? { x: 4.5, y: 2, width: 7, height: 12 }
+            ? { x: 4.5, y: 1, width: 7, height: 12 }
             : props.shape === "landscape"
-              ? { x: 2, y: 4.5, width: 12, height: 7 }
-              : { x: 3, y: 3, width: 10, height: 10 };
+              ? { x: 2, y: 3.5, width: 12, height: 7 }
+              : { x: 3, y: 2, width: 10, height: 10 };
     return (
         <svg
             width={12}
@@ -333,6 +335,10 @@ function renderLayoutChoiceSection(
                     margin: ${collapseTopMargin ? 0 : 12}px 0 1px;
                     font-size: 10.5px;
                     font-weight: 700;
+                    /* Tight line box so centering aligns the icon to the visible
+                       (uppercase) caps rather than to a tall line box whose empty
+                       descender space would pull the icon below the text. */
+                    line-height: 1;
                     letter-spacing: 0.08em;
                     text-transform: uppercase;
                     color: #9a8aa0;
