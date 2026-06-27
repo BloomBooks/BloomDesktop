@@ -63,11 +63,14 @@ Checks, Reviewers, Assignees, Labels — these are metadata only, no action from
 
 ### 1. Navigate to the Review Page
 
-Use the Chrome DevTools CLI:
+Use the Chrome DevTools CLI with an **isolated context** (no shared cookies). This is critical — navigating while logged in to Devin consumes on-demand credits. The isolated context is unauthenticated but still shows all findings.
+
 ```bash
-chrome-devtools navigate_page --url "https://app.devin.ai/review/<owner>/<repo>/pull/<number>"
-sleep 5
+chrome-devtools new_page "https://app.devin.ai/review/<owner>/<repo>/pull/<number>" --isolatedContext "devin-noauth"
+sleep 6
 ```
+
+Close this tab when done to avoid accumulating isolated-context tabs.
 
 ### 2. Check if Review is Complete
 
