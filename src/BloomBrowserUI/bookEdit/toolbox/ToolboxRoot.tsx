@@ -70,7 +70,6 @@ const toolIconPathByToolId: Record<string, string> = {
 
 const legacyToolSubPathByToolId: Record<string, string> = {
     talkingBook: "talkingBook/talkingBookToolboxTool.html",
-    leveledReader: "readers/leveledReader/leveledReaderToolboxTool.html",
     settings: "settings/Settings.html",
     settingsTool: "settings/Settings.html",
 };
@@ -989,17 +988,6 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                         align-items: stretch;
                                         min-height: 100%;
                                         overflow: visible;
-
-                                        #leveled-reader-tool-content,
-                                        #decodable-reader-tool-content {
-                                            width: 100% !important;
-                                            box-sizing: border-box;
-                                            min-width: 0;
-                                            display: block !important;
-                                            align-self: stretch;
-                                            margin-right: 0 !important;
-                                            padding-right: 0 !important;
-                                        }
 
                                         div[data-toolid="leveledReaderTool"],
                                         div[data-toolId="decodableReaderTool"] {
