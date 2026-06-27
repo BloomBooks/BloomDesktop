@@ -1272,8 +1272,10 @@ function beginAddTool(
 
     const subpath = {
         talkingBookTool: "talkingBook/talkingBookToolboxTool.html",
+        /*
         leveledReaderTool:
             "readers/leveledReader/leveledReaderToolboxTool.html",
+            */
         settingsTool: "settings/Settings.html",
         // none for music: done in React
     };
