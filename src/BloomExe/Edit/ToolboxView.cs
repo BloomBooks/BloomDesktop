@@ -75,9 +75,6 @@ namespace Bloom.Edit
         public static IEnumerable<string> GetToolboxServerDirectories()
         {
             yield return BloomFileLocator.GetBrowserDirectory("bookEdit", "toolbox");
-            yield return BloomFileLocator.GetBrowserDirectory(
-                "bookEdit/toolbox/readers/leveledReader"
-            );
             yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/talkingBook");
             yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/motion");
             yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/music");

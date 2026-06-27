@@ -249,16 +249,6 @@ function markLeveledStatus(): void {
 export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
     // load synphony settings and then finish init
     return beginLoadSynphonySettings().then(() => {
-        const runWithReaderModelReady = (action: () => void) => {
-            const model = getTheOneReaderToolsModel();
-            if (model.synphony) {
-                action();
-                return;
-            }
-
-            beginLoadSynphonySettings().then(() => action());
-        };
-
         getTheOneReaderToolsModel().updateControlContents();
         $("#toolbox").accordion("refresh");
     });
@@ -267,34 +257,6 @@ export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
 export function beginInitializeLeveledReaderTool(): JQueryPromise<void> {
     // load synphony settings
     return beginLoadSynphonySettings().then(() => {
-        const runWithReaderModelReady = (action: () => void) => {
-            const model = getTheOneReaderToolsModel();
-            if (model.synphony) {
-                action();
-                return;
-            }
-
-            beginLoadSynphonySettings().then(() => action());
-        };
-
-        const delegationRoot = $(document);
-
-        delegationRoot
-            .off("click.readerTools", "#incLevel")
-            .on("click.readerTools", "#incLevel", () => {
-                runWithReaderModelReady(() =>
-                    getTheOneReaderToolsModel().incrementLevel(),
-                );
-            });
-
-        delegationRoot
-            .off("click.readerTools", "#decLevel")
-            .on("click.readerTools", "#decLevel", () => {
-                runWithReaderModelReady(() =>
-                    getTheOneReaderToolsModel().decrementLevel(),
-                );
-            });
-
         getTheOneReaderToolsModel().updateControlContents();
         $("#toolbox").accordion("refresh");
     });
@@ -558,60 +520,4 @@ export function makeLetterWordList(): void {
     };
 
     $.ajax(<JQueryAjaxSettings>ajaxSettings);
-}
-
-export function createToggle(isForLeveled: boolean) {
-    const container = document.getElementById(
-        `${isForLeveled ? "leveled" : "decodable"}-reader-tool-toggle-react-container`,
-    );
-    if (!container) {
-        return;
-    }
-
-    const renderToggle = (currentBookKey: string) => {
-        // ReaderToolSwitch is controlled, so a normal render updates it for the current page
-        // without the visible blanking caused by unmounting first.
-        renderRoot(
-            React.createElement(ReaderToolSwitch, {
-                isForLeveled,
-                key: getReaderToggleRenderKey(isForLeveled, currentBookKey),
-            }),
-            container,
-        );
-    };
-
-    get(
-        "editView/currentBookId",
-        (result) => {
-            renderToggle((result?.data as string) || "");
-        },
-        () => {
-            renderToggle("");
-        },
-    );
-}
-
-export function setReaderToolContentShown(
-    isForLeveled: boolean,
-    isShown: boolean,
-): void {
-    const prefix = isForLeveled ? "leveled" : "decodable";
-    document
-        .getElementById(`${prefix}-reader-tool-content`)
-        ?.classList.toggle("turned-off", !isShown);
-}
-
-export function setReaderToolToggleShown(
-    isForLeveled: boolean,
-    isShown: boolean,
-): void {
-    const prefix = isForLeveled ? "leveled" : "decodable";
-    const element = document.getElementById(
-        `${prefix}-reader-tool-toggle-react-container`,
-    );
-    if (!element) {
-        return;
-    }
-
-    element.style.display = isShown ? "" : "none";
 }
