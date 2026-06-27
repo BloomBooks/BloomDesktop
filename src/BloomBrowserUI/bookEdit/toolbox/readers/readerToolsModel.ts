@@ -72,7 +72,8 @@ export class ReaderToolsModel {
     public readableFileExtensions: string[] = [];
     public directoryWatcher: DirectoryWatcher | undefined;
     public maxAllowedWords: number = 10000;
-    public refreshFunc?: () => void;
+    public refreshFuncLeveled?: () => void;
+    public refreshFuncDecodable?: () => void;
 
     // remember words so we can update the counts real-time
     public pageIDToText: any[] = [];
@@ -351,8 +352,11 @@ export class ReaderToolsModel {
         this.updateLevelNOfMDisplay();
         this.enableLevelButtons();
         this.updateLevelLimits();
-        if (this.refreshFunc !== undefined) {
-            this.refreshFunc();
+        if (this.refreshFuncLeveled !== undefined) {
+            this.refreshFuncLeveled();
+        }
+        if (this.refreshFuncDecodable !== undefined) {
+            this.refreshFuncDecodable();
         }
     }
 
@@ -1064,133 +1068,6 @@ export class ReaderToolsModel {
     private gettingTextOfWholeBook = false;
     private bookStatistics = {};
 
-    /**
-     * Gets the combined text from the editable elements on the current page.
-     */
-    public getCurrentPageText(): string {
-        return this.getElementsToCheck()
-            .toArray()
-            .map((x) => x.innerText) // this has newlines between paragraph content, text has none
-            .join(" ");
-    }
-
-    /**
-     * Gets the number of sentences on the current page.
-     */
-    public getCurrentPageSentenceCount(): number {
-        const sentences = theOneLibSynphony
-            .stringToSentences(this.getCurrentPageText())
-            .filter((x) => x.isSentence);
-        return ReaderToolsModel.countSentences(sentences);
-    }
-
-    /**
-     * Gets the longest word length on the current page, measured in glyphs.
-     */
-    public getCurrentPageMaxGlyphsPerWord(): number {
-        return ReaderToolsModel.maxWordLength(this.getCurrentPageText());
-    }
-
-    /**
-     * Gets sentence fragments for all known book pages.
-     */
-    private getSentenceFragmentsByPageForBook(): TextFragment[][] {
-        if (this.pageIDToText.length === 0) {
-            return [];
-        }
-
-        const pageStrings = _.values(this.pageIDToText).map((x) =>
-            removeAllHtmlMarkupFromString(x),
-        );
-        return this.getSentences(pageStrings);
-    }
-
-    /**
-     * Gets the total word count in the book.
-     */
-    public getTotalWordsInBook(): number {
-        return this.countWordsInBook(this.getSentenceFragmentsByPageForBook());
-    }
-
-    /**
-     * Gets the maximum word count on any page in the book.
-     */
-    public getMaxWordsPerPageInBook(): number {
-        return this.maxWordsPerPageInBook(
-            this.getSentenceFragmentsByPageForBook(),
-        );
-    }
-
-    /**
-     * Gets the number of unique words in the book.
-     */
-    public getUniqueWordsInBook(): number {
-        return this.uniqueWordsInBook(this.getSentenceFragmentsByPageForBook());
-    }
-
-    /**
-     * Gets the total sentence count in the book.
-     */
-    public getTotalSentencesInBook(): number {
-        return ReaderToolsModel.totalSentencesInBook(
-            this.getSentenceFragmentsByPageForBook(),
-        );
-    }
-
-    /**
-     * Gets the longest word length in the book, measured in glyphs.
-     */
-    public getMaxGlyphsPerWordInBook(): number {
-        return ReaderToolsModel.maxGlyphsInWord(
-            this.getSentenceFragmentsByPageForBook(),
-        );
-    }
-
-    /**
-     * Gets the longest sentence length in the book.
-     */
-    public getMaxSentenceLengthInBook(): number {
-        return ReaderToolsModel.maxSentenceLengthInBook(
-            this.getSentenceFragmentsByPageForBook(),
-        );
-    }
-
-    /**
-     * Gets the average number of words per sentence in the book.
-     */
-    public getAverageWordsPerSentenceInBook(): number {
-        return ReaderToolsModel.averageWordsInSentence(
-            this.getSentenceFragmentsByPageForBook(),
-        );
-    }
-
-    /**
-     * Gets the average number of words per page in the book.
-     */
-    public getAverageWordsPerPageInBook(): number {
-        return ReaderToolsModel.averageWordsInPage(
-            this.getSentenceFragmentsByPageForBook(),
-        );
-    }
-
-    /**
-     * Gets the average word length in the book, measured in glyphs.
-     */
-    public getAverageGlyphsPerWordInBook(): number {
-        return ReaderToolsModel.averageGlyphsInWord(
-            this.getSentenceFragmentsByPageForBook(),
-        );
-    }
-
-    /**
-     * Gets the average number of sentences per page in the book.
-     */
-    public getAverageSentencesPerPageInBook(): number {
-        return ReaderToolsModel.averageSentencesInPage(
-            this.getSentenceFragmentsByPageForBook(),
-        );
-    }
-
     public displayBookTotals(): void {
         if (this.gettingTextOfWholeBook) {
             return;
@@ -1210,19 +1087,30 @@ export class ReaderToolsModel {
         }
 
         this.bookStatistics = {};
+        const pageStrings = _.values(this.pageIDToText).map((x) =>
+            removeAllHtmlMarkupFromString(x),
+        );
+
         const pageElementsToCheck = this.getElementsToCheck();
-        const sentenceFragmentsByPage =
-            this.getSentenceFragmentsByPageForBook();
+        const pageText = pageElementsToCheck
+            .toArray()
+            .map((x) => x.innerText) // this has newlines between paragraph content, text has none
+            .join(" ");
+
+        const sentences = theOneLibSynphony
+            .stringToSentences(pageText)
+            .filter((x) => x.isSentence);
+        const sentenceFragmentsByPage = this.getSentences(pageStrings);
         this.bookStatistics["levelNumber"] = this.levelNumber;
         this.bookStatistics["pageCount"] = sentenceFragmentsByPage.length;
         this.updateActualCount(
-            this.getCurrentPageSentenceCount(),
+            ReaderToolsModel.countSentences(sentences),
             this.maxSentencesPerPage(),
             "actualSentencesPerPage",
         );
 
         this.updateActualCount(
-            this.getCurrentPageMaxGlyphsPerWord(),
+            ReaderToolsModel.maxWordLength(pageText),
             this.maxGlyphsPerWord(),
             "actualLettersPerWord",
         );
@@ -1240,58 +1128,55 @@ export class ReaderToolsModel {
         );
 
         this.updateActualCount(
-            this.getTotalWordsInBook(),
+            this.countWordsInBook(sentenceFragmentsByPage),
             this.maxWordsPerBook(),
             "actualWordCount",
         );
         this.updateActualCount(
-            this.getMaxWordsPerPageInBook(),
+            this.maxWordsPerPageInBook(sentenceFragmentsByPage),
             this.maxWordsPerPage(),
             "actualWordsPerPageBook",
         );
         this.updateActualCount(
-            this.getUniqueWordsInBook(),
+            this.uniqueWordsInBook(sentenceFragmentsByPage),
             this.maxUniqueWordsPerBook(),
             "actualUniqueWords",
         );
         this.updateActualCount(
-            this.getTotalSentencesInBook(),
+            ReaderToolsModel.totalSentencesInBook(sentenceFragmentsByPage),
             this.maxSentencesPerBook(),
             "actualSentenceCount",
         );
         this.updateActualCount(
-            this.getMaxGlyphsPerWordInBook(),
+            ReaderToolsModel.maxGlyphsInWord(sentenceFragmentsByPage),
             this.maxGlyphsPerWord(),
             "actualMaxGlyphsPerWord",
         );
         this.updateActualCount(
-            this.getMaxSentenceLengthInBook(),
+            ReaderToolsModel.maxSentenceLengthInBook(sentenceFragmentsByPage),
             this.maxWordsPerSentenceOnThisPage(),
             "actualMaxWordsPerSentence",
         );
         this.updateActualAverageCount(
-            this.getAverageWordsPerSentenceInBook(),
+            ReaderToolsModel.averageWordsInSentence(sentenceFragmentsByPage),
             this.maxAverageWordsPerSentence(),
             "actualAverageWordsPerSentence",
         );
         this.updateActualAverageCount(
-            this.getAverageWordsPerPageInBook(),
+            ReaderToolsModel.averageWordsInPage(sentenceFragmentsByPage),
             this.maxAverageWordsPerPage(),
             "actualAverageWordsPerPage",
         );
         this.updateActualAverageCount(
-            this.getAverageGlyphsPerWordInBook(),
+            ReaderToolsModel.averageGlyphsInWord(sentenceFragmentsByPage),
             this.maxAverageGlyphsPerWord(),
             "actualAverageGlyphsPerWord",
         );
         this.updateActualAverageCount(
-            this.getAverageSentencesPerPageInBook(),
+            ReaderToolsModel.averageSentencesInPage(sentenceFragmentsByPage),
             this.maxAverageSentencesPerPage(),
             "actualAverageSentencesPerPage",
         );
-        if (this.refreshFunc !== undefined) {
-            this.refreshFunc();
-        }
     }
 
     public copyLeveledReaderStatsToClipboard(): void {

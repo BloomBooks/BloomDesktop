@@ -1,4 +1,11 @@
-import { FunctionComponent, useReducer, useRef, useState } from "react";
+import {
+    FunctionComponent,
+    useEffect,
+    useLayoutEffect,
+    useReducer,
+    useRef,
+    useState,
+} from "react";
 import { ReaderToolSwitch } from "../ReaderToolSwitch";
 import { css, ThemeProvider } from "@emotion/react";
 import { toolboxTheme } from "../../../../bloomMaterialUITheme";
@@ -10,6 +17,7 @@ import { Div } from "../../../../react_components/l10nComponents";
 import { kBloomLightBlue } from "../../../../utils/colorUtils";
 import { useMountEffect } from "../../../../utils/useMountEffect";
 import { Link } from "../../../../react_components/link";
+import { ContentCopySharp } from "@mui/icons-material";
 
 const DataRow: FunctionComponent<{
     l10nKeyInsert: string;
@@ -22,7 +30,7 @@ const DataRow: FunctionComponent<{
             css={css`
                 display: flex;
                 align-items: flex-start;
-                margin-left: 6px;
+                margin-top: 4px;
             `}
         >
             <Div
@@ -31,20 +39,21 @@ const DataRow: FunctionComponent<{
                     flex: 0 0 83px;
                     min-width: 83px;
                     padding-right: 5px;
+                    align-self: center;
                 `}
             >
                 {props.children}
             </Div>
             <div
                 css={css`
-                    flex: 0 0 30px;
-                    max-width: 30px;
+                    flex: 0 0 40px;
+                    max-width: 40px;
                     padding-right: 3px;
                     overflow-wrap: break-word;
                     text-align: center;
                 `}
             >
-                {props.maxNum}
+                {props.maxNum !== 0 ? props.maxNum : ""}
             </div>
             <div
                 css={css`
@@ -53,6 +62,10 @@ const DataRow: FunctionComponent<{
                     padding-right: 3px;
                     overflow-wrap: break-word;
                     text-align: center;
+                    color: ${(props.actualNum as number) > props.maxNum &&
+                    props.maxNum !== 0
+                        ? "orange"
+                        : "lightgreen"};
                 `}
             >
                 {props.actualNum}
@@ -67,7 +80,6 @@ const HeaderRow: FunctionComponent = () => {
             css={css`
                 display: flex;
                 align-items: flex-start;
-                margin-left: 6px;
             `}
         >
             <div
@@ -80,8 +92,8 @@ const HeaderRow: FunctionComponent = () => {
             <Div
                 l10nKey="EditTab.Toolbox.LeveledReaderTool.Max"
                 css={css`
-                    flex: 0 0 30px;
-                    max-width: 30px;
+                    flex: 0 0 40px;
+                    max-width: 40px;
                     padding-right: 3px;
                     text-align: center;
                 `}
@@ -109,16 +121,21 @@ const StatsSection: FunctionComponent<{
     children: React.ReactNode;
 }> = (props) => {
     return (
-        <>
+        <div
+            css={css`
+                margin-bottom: 25px;
+            `}
+        >
             <Div
                 l10nKey={`EditTab.Toolbox.LeveledReaderTool.${props.l10nKeyInsert}`}
                 css={css`
                     color: ${props.divColor};
+                    margin-bottom: 2px;
                 `}
             />
             <HeaderRow />
             {props.children}
-        </>
+        </div>
     );
 };
 
@@ -130,27 +147,31 @@ const LeveledReaderStats: FunctionComponent = () => {
     const model = getTheOneReaderToolsModel();
 
     return (
-        <>
+        <div
+            css={css`
+                margin-left: 8px;
+                margin-top: 20px;
+            `}
+        >
             <Div
                 l10nKey="EditTab.Toolbox.LeveledReaderTool.WordCounts"
                 css={css`
                     color: ${kBloomLightBlue};
+                    margin-bottom: 3px;
                 `}
             />
             <StatsSection l10nKeyInsert="ThisPage" divColor="white">
                 <DataRow
                     l10nKeyInsert="PerPage"
                     maxNum={model.maxWordsPerPage()}
-                    actualNum={model.getElementsToCheck().getTotalWordCount()}
+                    actualNum={0}
                 >
                     per page
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="PerSentence"
                     maxNum={model.maxWordsPerSentenceOnThisPage()}
-                    actualNum={model
-                        .getElementsToCheck()
-                        .getMaxSentenceLength()}
+                    actualNum={0}
                 >
                     longest sentence
                 </DataRow>
@@ -159,46 +180,42 @@ const LeveledReaderStats: FunctionComponent = () => {
                 <DataRow
                     l10nKeyInsert="Total"
                     maxNum={model.maxWordsPerBook()}
-                    actualNum={model.getTotalWordsInBook()}
+                    actualNum={0}
                 >
                     total
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="PerPage"
                     maxNum={model.maxWordsPerPage()}
-                    actualNum={model.getMaxWordsPerPageInBook()}
+                    actualNum={0}
                 >
                     per page
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="Unique"
                     maxNum={model.maxUniqueWordsPerBook()}
-                    actualNum={model.getUniqueWordsInBook()}
+                    actualNum={0}
                 >
                     unique
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="MaxSentenceLength"
                     maxNum={model.maxWordsPerSentenceOnThisPage()}
-                    actualNum={model.getMaxSentenceLengthInBook()}
+                    actualNum={0}
                 >
                     longest sentence
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="Average"
                     maxNum={model.maxAverageWordsPerSentence()}
-                    actualNum={formatAverage(
-                        model.getAverageWordsPerSentenceInBook(),
-                    )}
+                    actualNum={0}
                 >
                     avg per sentence
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="AveragePerPage"
                     maxNum={model.maxAverageWordsPerPage()}
-                    actualNum={formatAverage(
-                        model.getAverageWordsPerPageInBook(),
-                    )}
+                    actualNum={0}
                 >
                     avg per page
                 </DataRow>
@@ -210,23 +227,21 @@ const LeveledReaderStats: FunctionComponent = () => {
                 <DataRow
                     l10nKeyInsert="ThisPageLC"
                     maxNum={model.maxGlyphsPerWord()}
-                    actualNum={model.getCurrentPageMaxGlyphsPerWord()}
+                    actualNum={0}
                 >
                     this page
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="MaxInBook"
                     maxNum={model.maxGlyphsPerWord()}
-                    actualNum={model.getMaxGlyphsPerWordInBook()}
+                    actualNum={0}
                 >
                     max in book
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="AverageInBook"
                     maxNum={model.maxAverageGlyphsPerWord()}
-                    actualNum={formatAverage(
-                        model.getAverageGlyphsPerWordInBook(),
-                    )}
+                    actualNum={0}
                 >
                     avg in book
                 </DataRow>
@@ -238,28 +253,26 @@ const LeveledReaderStats: FunctionComponent = () => {
                 <DataRow
                     l10nKeyInsert="ThisPageLC"
                     maxNum={model.maxSentencesPerPage()}
-                    actualNum={model.getCurrentPageSentenceCount()}
+                    actualNum={0}
                 >
                     this page
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="TotalInBook"
                     maxNum={model.maxSentencesPerBook()}
-                    actualNum={model.getTotalSentencesInBook()}
+                    actualNum={0}
                 >
                     total in book
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="AverageInBook"
                     maxNum={model.maxAverageSentencesPerPage()}
-                    actualNum={formatAverage(
-                        model.getAverageSentencesPerPageInBook(),
-                    )}
+                    actualNum={0}
                 >
                     avg in book
                 </DataRow>
             </StatsSection>
-        </>
+        </div>
     );
 };
 
@@ -267,41 +280,42 @@ const LeveledReaderList: FunctionComponent<{
     isLinkList: boolean;
     l10nKeyInsert: string;
 }> = (props) => {
-    const listItems = !props.isLinkList
-        ? getTheOneReaderToolsModel().getLevelReminders()
-        : [
-              "Vocabulary",
-              "Formatting",
-              "Predictability",
-              "Illustration Support",
-              "Choice of Topic",
-          ];
-    const attributeInserts = props.isLinkList
+    const listItems = props.isLinkList
         ? [
               "Vocabulary",
               "Formatting",
               "Predictability",
-              "IllustrationSupport",
-              "ChoiceOfTopic",
+              "Illustration Support",
+              "Choice Of Topic",
           ]
-        : [];
+        : getTheOneReaderToolsModel().getLevelReminders();
     return (
-        <>
+        <div
+            css={css`
+                padding-left: 8px;
+                margin-top: 15px;
+            `}
+        >
             <Div
                 l10nKey={`EditTab.Toolbox.LeveledReaderTool.${props.l10nKeyInsert}`}
                 css={css`
                     color: ${kBloomLightBlue};
                 `}
             />
-            <ul>
+            <ul
+                css={css`
+                    padding-left: 16px;
+                    margin-top: 5px;
+                `}
+            >
                 {listItems.map((item, index) => (
                     <li key={index}>
                         {!props.isLinkList ? (
                             item
                         ) : (
                             <Link
-                                l10nKey={`EditTab.Toolbox.LeveledReaderTool.${attributeInserts[index]}`}
-                                href={`api/externalLink?path=leveledRTInfo/leveledReaderInfo-en.html&fragment=${attributeInserts[index]}`}
+                                l10nKey={`EditTab.Toolbox.LeveledReaderTool.${item.replace(/\s/g, "")}`}
+                                href={`api/externalLink?path=leveledRTInfo/leveledReaderInfo-en.html&fragment=${item.replace(/\s/g, "")}`}
                                 css={css`
                                     text-decoration: underline;
                                 `}
@@ -311,98 +325,6 @@ const LeveledReaderList: FunctionComponent<{
                         )}
                     </li>
                 ))}
-            </ul>
-        </>
-    );
-};
-
-const LeveledReminders: FunctionComponent = () => {
-    const model = getTheOneReaderToolsModel();
-    const reminders = model.synphony
-        ? model.synphony.getLevels()[model.levelNumber - 1].thingsToRemember
-        : [];
-
-    return (
-        <div>
-            <Div
-                l10nKey="EditTab.Toolbox.LeveledReaderTool.FoThisLevel"
-                css={css`
-                    color: ${kBloomLightBlue};
-                `}
-            >
-                For this Level
-            </Div>
-            <ul>
-                {reminders.map((thingToRemember, index) => (
-                    <li key={index}>{thingToRemember}</li>
-                ))}
-            </ul>
-        </div>
-    );
-};
-
-const LeveledLinks: FunctionComponent = () => {
-    return (
-        <div>
-            <Div l10nKey="EditTab.Toolbox.LeveledReaderTool.KeepInMind">
-                Keep in mind
-            </Div>
-            <ul>
-                <li>
-                    <Link
-                        l10nKey="EditTab.Toolbox.LeveledReaderTool.Vocabulary"
-                        href="api/externalLink?path=leveledRTInfo/leveledReaderInfo-en.html&fragment=Vocabulary"
-                        css={css`
-                            text-decoration: underline;
-                        `}
-                    >
-                        Vocabulary
-                    </Link>
-                </li>
-                <li>
-                    <Link
-                        l10nKey="EditTab.Toolbox.LeveledReaderTool.Formatting"
-                        href="api/externalLink?path=leveledRTInfo/leveledReaderInfo-en.html&fragment=Formatting"
-                        css={css`
-                            text-decoration: underline;
-                        `}
-                    >
-                        Formatting
-                    </Link>
-                </li>
-                <li>
-                    <Link
-                        l10nKey="EditTab.Toolbox.LeveledReaderTool.Predictability"
-                        href="api/externalLink?path=leveledRTInfo/leveledReaderInfo-en.html&fragment=Predictability"
-                        css={css`
-                            text-decoration: underline;
-                        `}
-                    >
-                        Predictability
-                    </Link>
-                </li>
-                <li>
-                    <Link
-                        l10nKey="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport"
-                        href="api/externalLink?path=leveledRTInfo/leveledReaderInfo-en.html&fragment=IllustrationSupport"
-                        css={css`
-                            text-decoration: underline;
-                        `}
-                    >
-                        Illustration Support
-                    </Link>
-                </li>
-                <li>
-                    <Link
-                        l10nKey="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic"
-                        href="api/externalLink?path=leveledRTInfo/leveledReaderInfo-en.html&fragment=ChoiceOfTopic"
-                        css={css`
-                            text-decoration: underline;
-                        `}
-                    >
-                        Choice of Topic
-                    </Link>
-                </li>
             </ul>
         </div>
     );
@@ -433,9 +355,9 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
 
     // This mount effect synchronizes this React component with the external reader tools model refresh callback.
     useMountEffect(() => {
-        model.refreshFunc = () => updateStateRef.current();
+        model.refreshFuncLeveled = () => updateStateRef.current();
         return () => {
-            model.refreshFunc = undefined;
+            model.refreshFuncLeveled = undefined;
         };
     });
 
@@ -506,6 +428,49 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
                             isLinkList={true}
                             l10nKeyInsert="KeepInMind"
                         />
+                        <div
+                            css={css`
+                                display: flex;
+                                margin-right: auto;
+                                margin-left: 8px;
+                                margin-bottom: 10px;
+                            `}
+                        >
+                            <BloomButton
+                                l10nKey="EditTab.Toolbox.LeveledReaderTool.CopyBookStatistics"
+                                variant="text"
+                                enabled={true}
+                                hasText={true}
+                                iconBeforeText={
+                                    <ContentCopySharp
+                                        css={css`
+                                            color: white;
+                                        `}
+                                    />
+                                }
+                                onClick={() =>
+                                    model.copyLeveledReaderStatsToClipboard()
+                                }
+                                css={css`
+                                    text-transform: uppercase;
+                                    color: white;
+                                    font-weight: normal;
+                                    border-radius: 0;
+                                    text-align: left;
+
+                                    &:hover {
+                                        background-color: black;
+                                    }
+
+                                    &:active {
+                                        background-color: black;
+                                        transform: translateY(2px);
+                                    }
+                                `}
+                            >
+                                Copy Book Stats
+                            </BloomButton>
+                        </div>
                     </div>
                 )}
                 <ReaderToolSwitch

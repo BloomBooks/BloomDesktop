@@ -5,7 +5,6 @@ import {
     useRef,
     useState,
     FunctionComponent,
-    useEffect,
     useReducer,
 } from "react";
 import { Span } from "../../../../react_components/l10nComponents";
@@ -21,6 +20,7 @@ import {
 } from "../../../../utils/colorUtils";
 import { ReaderToolNav } from "../ReaderToolNav";
 import { toolboxTheme } from "../../../../bloomMaterialUITheme";
+import { useMountEffect } from "../../../../utils/useMountEffect";
 
 // This component displays a list of words in a grid
 // where the number of rows and columns is dynamically
@@ -209,6 +209,7 @@ const SortButton: FunctionComponent<{
                 width: 20px;
                 min-width: unset;
                 height: 20px;
+                margin-top: 1px;
                 border-radius: 0;
                 color: white;
                 border: 1px solid white;
@@ -246,7 +247,11 @@ const SortedStageWords: FunctionComponent<{
                 overflow: hidden;
             `}
         >
-            <div>
+            <div
+                css={css`
+                    display: flex;
+                `}
+            >
                 {model.synphony?.source.useAllowedWords === 1 ? (
                     <Span
                         l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage"
@@ -329,7 +334,7 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
         forceUpdate();
     }
 
-    // This useRef and useEffect handle assigning the updateState()
+    // This useRef and useMountEffect handle assigning the updateState()
     // function, defined above, to the refreshFunc variable in
     // readerToolsModel.ts, so that this component updates and re-renders
     // whenever updateControlContents() is called in readerToolsModel.ts.
@@ -342,12 +347,12 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
     const updateStateRef = useRef(updateState);
     updateStateRef.current = updateState;
 
-    useEffect(() => {
-        model.refreshFunc = () => updateStateRef.current();
+    useMountEffect(() => {
+        model.refreshFuncDecodable = () => updateStateRef.current();
         return () => {
-            model.refreshFunc = undefined;
+            model.refreshFuncDecodable = undefined;
         };
-    }, []);
+    });
 
     function changeStage(increment: boolean): void {
         if (increment) {
@@ -386,93 +391,95 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
                 `}
             >
                 {showTool && (
-                    <div
-                        css={css`
-                            display: flex;
-                            flex-direction: column;
-                            flex: 1 1 auto;
-                            min-height: 0;
-                            overflow-x: hidden;
-                        `}
-                    >
+                    <>
                         <div
                             css={css`
                                 display: flex;
-                                margin-left: auto;
-                                margin-bottom: 10px;
-                                padding-right: 2px;
+                                flex-direction: column;
+                                flex: 1 1 auto;
+                                min-height: 0;
+                                overflow-x: hidden;
                             `}
                         >
-                            <BloomButton
-                                href="javascript:window.toolboxBundle.showSetupDialog('stages');"
-                                l10nKey="EditTab.Toolbox.DecodableReaderTool.SetUpStages"
-                                variant="text"
-                                enabled={true}
-                                hasText={true}
-                                enabledImageFile="/bloom/bookEdit/toolbox/readers/edit-white.png"
+                            <div
                                 css={css`
-                                    font-size: xx-small;
-                                    text-decoration: underline;
-                                    font-weight: normal;
-                                    height: 22px;
-                                    img {
-                                        height: 14px;
-                                        margin-right: 2px;
-                                        margin-bottom: 2px;
-                                    }
-                                    &:hover {
+                                    display: flex;
+                                    margin-left: auto;
+                                    margin-bottom: 10px;
+                                    padding-right: 2px;
+                                `}
+                            >
+                                <BloomButton
+                                    href="javascript:window.toolboxBundle.showSetupDialog('stages');"
+                                    l10nKey="EditTab.Toolbox.DecodableReaderTool.SetUpStages"
+                                    variant="text"
+                                    enabled={true}
+                                    hasText={true}
+                                    enabledImageFile="/bloom/bookEdit/toolbox/readers/edit-white.png"
+                                    css={css`
+                                        font-size: xx-small;
                                         text-decoration: underline;
-                                    }
-                                `}
-                            >
-                                Set Up Stages
-                            </BloomButton>
+                                        font-weight: normal;
+                                        height: 22px;
+                                        img {
+                                            height: 14px;
+                                            margin-right: 2px;
+                                            margin-bottom: 2px;
+                                        }
+                                        &:hover {
+                                            text-decoration: underline;
+                                        }
+                                    `}
+                                >
+                                    Set Up Stages
+                                </BloomButton>
+                            </div>
+                            <ReaderToolNav
+                                isForLeveled={false}
+                                changeFunction={changeStage}
+                            />
+                            {model.synphony?.source.useAllowedWords === 0 && (
+                                <StageGraphemes />
+                            )}
+                            <SortedStageWords changeSortFunc={changeSortFunc} />
                         </div>
-                        <ReaderToolNav
-                            isForLeveled={false}
-                            changeFunction={changeStage}
-                        />
-                        {model.synphony?.source.useAllowedWords === 0 && (
-                            <StageGraphemes />
-                        )}
-                        <SortedStageWords changeSortFunc={changeSortFunc} />
-                        {model.synphony?.source.useAllowedWords === 0 && (
-                            <Link
-                                l10nKey="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
-                                href="javascript:toolboxBundle.makeLetterWordList();"
-                                css={css`
-                                    padding: 8px;
-                                    padding-left: 11px;
-                                    background-color: ${kBloomDarkestBackground};
-                                    box-sizing: border-box;
-                                    text-decoration: underline;
-                                `}
-                            >
-                                Generate a letter and word list report
-                            </Link>
-                        )}
-                        {model.getAllowedWordsAsObjects(model.stageNumber)
-                            .length >= model.maxAllowedWords && (
-                            <Span
-                                l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated"
-                                l10nParam0={model.maxAllowedWords.toString()}
-                                css={css`
-                                    padding: 8px 4px;
-                                    background-color: ${kBloomDarkestBackground};
-                                    color: red;
-                                `}
-                            >
-                                {"Bloom can handle only the first {0} words."}
-                            </Span>
-                        )}
-                    </div>
+                        <>
+                            {model.synphony?.source.useAllowedWords === 0 && (
+                                <Link
+                                    l10nKey="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport"
+                                    href="javascript:toolboxBundle.makeLetterWordList();"
+                                    css={css`
+                                        padding: 8px;
+                                        padding-left: 11px;
+                                        background-color: ${kBloomDarkestBackground};
+                                        text-decoration: underline;
+                                    `}
+                                >
+                                    Generate a letter and word list report
+                                </Link>
+                            )}
+                            {model.getAllowedWordsAsObjects(model.stageNumber)
+                                .length >= model.maxAllowedWords && (
+                                <Span
+                                    l10nKey="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated"
+                                    l10nParam0={model.maxAllowedWords.toString()}
+                                    css={css`
+                                        padding: 8px 4px;
+                                        background-color: ${kBloomDarkestBackground};
+                                        color: red;
+                                    `}
+                                >
+                                    {
+                                        "Bloom can handle only the first {0} words."
+                                    }
+                                </Span>
+                            )}
+                        </>
+                    </>
                 )}
                 <ReaderToolSwitch
                     isForLeveled={false}
                     changeDisplayFunc={() => setShowTool((prev) => !prev)}
-                    css={css`
-                        margin-left: 50px;
-                    `}
                 />
             </div>
         </ThemeProvider>

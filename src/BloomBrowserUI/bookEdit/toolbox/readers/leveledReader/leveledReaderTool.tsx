@@ -5,6 +5,7 @@ import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { LeveledReaderToolControls } from "./LeveledReaderToolControls";
+import $ from "jquery";
 
 export class LeveledReaderTool extends ToolboxToolReactAdaptor {
     public makeRootElement(): HTMLDivElement {
