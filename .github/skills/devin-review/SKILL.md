@@ -84,31 +84,53 @@ chrome-devtools evaluate_script "() => document.body.innerText" 2>/dev/null | gr
 
 The review typically takes 10–20 minutes from first page navigation.
 
-### 3. Extract Findings
+### 3. Enumerate Findings
 
-Run this to get the full sidebar text:
+Take a snapshot to get accessible UIDs for all finding buttons in the sidebar:
 
 ```bash
-chrome-devtools evaluate_script "() => { const t = document.body.innerText; const idx = t.indexOf('1 Bug') !== -1 ? t.indexOf('1 Bug') : t.indexOf(' Bug'); return idx >= 0 ? t.slice(idx, idx+4000) : 'not found'; }"
+chrome-devtools take_snapshot 2>/dev/null | grep -E "Bug|Investigate|Informational|Resolved"
 ```
 
-Then expand the Flags section by clicking it:
+Each finding appears as a button whose accessible name contains the title, type label (`Bug`, `Investigate`, `Informational`), and file:line. Resolved bugs additionally contain `• Resolved`.
 
+Collect:
+- **Unresolved Bugs**: button text contains `Bug` but NOT `• Resolved`
+- **Investigate flags**: button text contains `Investigate`
+- **Skip**: buttons containing `• Resolved` (resolved bugs) or `Informational`
+
+Expand the Flags section first if it is collapsed:
 ```bash
 chrome-devtools evaluate_script "() => { const btn = [...document.querySelectorAll('button')].find(el => el.textContent.includes('Flags')); btn?.click(); return btn?.textContent?.trim(); }"
 sleep 2
-chrome-devtools evaluate_script "() => { const t = document.body.innerText; const idx = t.indexOf('Flags'); return t.slice(idx, idx+3000); }"
 ```
 
-Parse the extracted text to build a findings list:
+### 4. Extract Full Descriptions
 
-**Unresolved Bugs**: lines where `Bug  file:line` appears WITHOUT `• Resolved`
+Each finding has a **full description** visible only after clicking the finding button. Always extract it — the one-line summary alone is not enough for a useful GitHub comment.
 
-**Investigate flags**: lines with label `Investigate` (stop before `Informational` items)
+For each finding to post (unresolved Bug or Investigate):
 
-**Skip**: Resolved bugs, and all Informational items.
+```bash
+# Click the finding button by its UID from the snapshot
+chrome-devtools click "{uid}"
+sleep 2
 
-### 4. Post Findings to GitHub
+# Extract: title + body up to the action buttons
+# "Ask Devin" is a reliable end-of-description marker for both Bug and Flag panels.
+# The dismiss buttons just before it are "Copy bug"/"Copy flag"/"Prompt for agents".
+chrome-devtools evaluate_script "() => { var t = document.body.innerText; var askD = t.indexOf('Ask Devin'); var copyIdx = t.lastIndexOf('Copy ', askD); var promptIdx = t.lastIndexOf('Prompt for agents', askD); var end = Math.min(copyIdx > 0 ? copyIdx : askD, promptIdx > 0 ? promptIdx : askD); var start = t.lastIndexOf('TITLE_PREFIX', end); return start >= 0 ? t.slice(start, end).trim() : 'not found'; }"
+
+# Dismiss the panel before clicking the next finding
+chrome-devtools press_key "Escape"
+sleep 1
+```
+
+Where `TITLE_PREFIX` is a distinctive prefix of the finding title (enough to be unambiguous in the page text — avoid words like "the", "a", file names that appear in code diffs).
+
+The extracted text will be: `{Title}\n\n{Full description paragraphs}`
+
+### 5. Post Findings to GitHub
 
 The "Post to GitHub" button on the Devin page is not functional — always post via `gh` instead.
 
@@ -141,7 +163,7 @@ EOF
 
 Skip if a comment starting with `[Devin]` and containing the same title already exists.
 
-### 5. Report
+### 6. Report
 
 Return a summary:
 - N unresolved Bugs found — N posted, N skipped (already posted), N resolved (skipped)
