@@ -169,5 +169,6 @@ Return a summary:
 - Devin does **not** post its findings to GitHub automatically — that is why this skill exists.
 - A Resolved bug means Devin confirmed the PR already fixes what it found. No GitHub comment needed.
 - Informational items are observations, not action items. Skip them.
-- Use `chrome-devtools` CLI (not Orca browser) for all browser automation in this skill.
+- Use the `chrome-devtools` **CLI** (Bash commands) for all browser automation in this skill — not the MCP plugin (disabled; spawns zombie node processes) and not the Orca browser.
+- Always use `--isolatedContext "devin-noauth"` when opening Devin pages. Navigating while logged in consumes on-demand credits; the isolated context is unauthenticated but still shows all findings.
 - If Chrome DevTools CLI is unavailable, tell the user: "Please open `https://app.devin.ai/review/<owner>/<repo>/pull/<number>` in Chrome to check Devin's findings."
