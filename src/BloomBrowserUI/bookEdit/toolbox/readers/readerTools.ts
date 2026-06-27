@@ -249,16 +249,6 @@ function markLeveledStatus(): void {
 export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
     // load synphony settings and then finish init
     return beginLoadSynphonySettings().then(() => {
-        const runWithReaderModelReady = (action: () => void) => {
-            const model = getTheOneReaderToolsModel();
-            if (model.synphony) {
-                action();
-                return;
-            }
-
-            beginLoadSynphonySettings().then(() => action());
-        };
-
         getTheOneReaderToolsModel().updateControlContents();
         $("#toolbox").accordion("refresh");
     });
@@ -267,34 +257,6 @@ export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
 export function beginInitializeLeveledReaderTool(): JQueryPromise<void> {
     // load synphony settings
     return beginLoadSynphonySettings().then(() => {
-        const runWithReaderModelReady = (action: () => void) => {
-            const model = getTheOneReaderToolsModel();
-            if (model.synphony) {
-                action();
-                return;
-            }
-
-            beginLoadSynphonySettings().then(() => action());
-        };
-
-        const delegationRoot = $(document);
-
-        delegationRoot
-            .off("click.readerTools", "#incLevel")
-            .on("click.readerTools", "#incLevel", () => {
-                runWithReaderModelReady(() =>
-                    getTheOneReaderToolsModel().incrementLevel(),
-                );
-            });
-
-        delegationRoot
-            .off("click.readerTools", "#decLevel")
-            .on("click.readerTools", "#decLevel", () => {
-                runWithReaderModelReady(() =>
-                    getTheOneReaderToolsModel().decrementLevel(),
-                );
-            });
-
         getTheOneReaderToolsModel().updateControlContents();
         $("#toolbox").accordion("refresh");
     });
