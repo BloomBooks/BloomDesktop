@@ -348,9 +348,9 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
     updateStateRef.current = updateState;
 
     useMountEffect(() => {
-        model.refreshFunc = () => updateStateRef.current();
+        model.refreshFuncDecodable = () => updateStateRef.current();
         return () => {
-            model.refreshFunc = undefined;
+            model.refreshFuncDecodable = undefined;
         };
     });
 

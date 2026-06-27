@@ -197,7 +197,7 @@ export class LeveledReaderToolboxTool implements ITool {
     }
 
     public id() {
-        return "leveledReader";
+        return "leveledReaderOld";
     }
 
     public hasRestoredSettings: boolean = false;

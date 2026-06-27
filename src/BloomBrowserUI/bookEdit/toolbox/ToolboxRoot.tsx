@@ -70,7 +70,7 @@ const toolIconPathByToolId: Record<string, string> = {
 
 const legacyToolSubPathByToolId: Record<string, string> = {
     talkingBook: "talkingBook/talkingBookToolboxTool.html",
-    leveledReader: "readers/leveledReader/leveledReaderToolboxTool.html",
+    //leveledReader: "readers/leveledReader/leveledReaderToolboxTool.html",
     settings: "settings/Settings.html",
     settingsTool: "settings/Settings.html",
 };

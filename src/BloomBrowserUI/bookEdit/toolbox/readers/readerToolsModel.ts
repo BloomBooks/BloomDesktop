@@ -72,7 +72,8 @@ export class ReaderToolsModel {
     public readableFileExtensions: string[] = [];
     public directoryWatcher: DirectoryWatcher | undefined;
     public maxAllowedWords: number = 10000;
-    public refreshFunc?: () => void;
+    public refreshFuncLeveled?: () => void;
+    public refreshFuncDecodable?: () => void;
 
     // remember words so we can update the counts real-time
     public pageIDToText: any[] = [];
@@ -311,6 +312,18 @@ export class ReaderToolsModel {
         return levels[this.levelNumber - 1].getName();
     }
 
+    public getLevelReminders(): string[] {
+        if (!this.synphony) {
+            return [];
+        }
+        const levels = this.synphony.getLevels();
+
+        if (levels.length <= 0) {
+            return [];
+        }
+        return levels[this.levelNumber - 1].thingsToRemember;
+    }
+
     public sortByLength(): void {
         this.setSort(SortType.byLength);
     }
@@ -339,8 +352,11 @@ export class ReaderToolsModel {
         this.updateLevelNOfMDisplay();
         this.enableLevelButtons();
         this.updateLevelLimits();
-        if (this.refreshFunc !== undefined) {
-            this.refreshFunc();
+        if (this.refreshFuncLeveled !== undefined) {
+            this.refreshFuncLeveled();
+        }
+        if (this.refreshFuncDecodable !== undefined) {
+            this.refreshFuncDecodable();
         }
     }
 
@@ -1051,6 +1067,24 @@ export class ReaderToolsModel {
 
     private gettingTextOfWholeBook = false;
     private bookStatistics = {};
+    private starterBookStats = {
+        levelNumber: 0,
+        pageCount: 0,
+        actualSentencesPerPage: 0,
+        actualLettersPerWord: 0,
+        actualWordsPerPage: 0,
+        actualWordsPerSentence: 0,
+        actualWordCount: 0,
+        actualWordsPerPageBook: 0,
+        actualUniqueWords: 0,
+        actualSentenceCount: 0,
+        actualMaxGlyphsPerWord: 0,
+        actualMaxWordsPerSentence: 0,
+        actualAverageWordsPerSentence: 0,
+        actualAverageWordsPerPage: 0,
+        actualAverageGlyphsPerWord: 0,
+        actualAverageSentencesPerPage: 0,
+    };
 
     public displayBookTotals(): void {
         if (this.gettingTextOfWholeBook) {
@@ -1161,6 +1195,17 @@ export class ReaderToolsModel {
             this.maxAverageSentencesPerPage(),
             "actualAverageSentencesPerPage",
         );
+        if (this.refreshFuncLeveled !== undefined) {
+            this.refreshFuncLeveled();
+        }
+    }
+
+    public getStarterBookStats(): { [key: string]: number } {
+        return this.starterBookStats;
+    }
+
+    public getActualBookStats(): { [key: string]: number } {
+        return this.bookStatistics;
     }
 
     public copyLeveledReaderStatsToClipboard(): void {
