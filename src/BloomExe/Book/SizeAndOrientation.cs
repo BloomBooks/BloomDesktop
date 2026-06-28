@@ -73,7 +73,6 @@ namespace Bloom.Book
             name = name.Replace("folio", "Folio");
             name = name.Replace("Uscomic", "USComic");
             name = name.Replace("weaver", "Weaver");
-            name = name.Replace("ebook", "Ebook");
             return name;
         }
 
@@ -81,7 +80,13 @@ namespace Bloom.Book
         {
             // Handle books created in a future version of Bloom
             // that may use the planned for "Ebook16x9Landscape" and "Ebook9x16Portrait" names.
-            if (pageSizeName == "Ebook9x16" || pageSizeName == "Ebook16x9")
+            // Match case-insensitively: a future version's class casing is not guaranteed (e.g. it
+            // might emit "EBook16x9" with a capital B), and ExtractPageSizeName only normalizes the
+            // first letter, so "EBook16x9" would otherwise slip through this mapping.
+            if (
+                pageSizeName.Equals("Ebook9x16", StringComparison.OrdinalIgnoreCase)
+                || pageSizeName.Equals("Ebook16x9", StringComparison.OrdinalIgnoreCase)
+            )
                 return "Device16x9";
 
             return pageSizeName;
