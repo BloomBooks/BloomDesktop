@@ -12,16 +12,14 @@ When the user says **"This is ready for human review"** (or equivalent), execute
 
 When the user pushes a new commit to a PR that is already in a review state, re-enter at **Stage 4** (reset to bot-wait).
 
-## GitHub Project Board Reference
-Project: **PR Review Tracker** — https://github.com/orgs/BloomBooks/projects/2
+## Board & Sync Reference
+All Orca / GitHub board / YouTrack moves use the scripts documented in the `pr-kanban-sync` skill. Status keys: `waiting-ai` | `in-review` | `has-comments` | `completed`.
 
-GraphQL IDs (hardcoded — do not re-query unless these stop working):
-- Project ID: `PVT_kwDOAFlSFM4Bawkp`
-- Status field ID: `PVTSSF_lADOAFlSFM4BawkpzhVl0_w`
-- Status option IDs:
-  - `97860183` → "Waiting for AI-Review"
-  - `99a3f545` → "Has Comments"
-  - `05eedb52` → "Ready for Human"
+```bash
+node scripts/sync-move.mjs all <pr-number> <status-key>
+```
+
+See `.github/skills/pr-kanban-sync/SKILL.md` for IDs, limitations, and individual-system fallbacks.
 
 ## Stage 1: Committed & Pushed
 
@@ -66,54 +64,34 @@ curl -s -X POST "https://issues.bloomlibrary.org/youtrack/api/issues/<issue-id>/
   -d "{\"text\": \"PR: <PR URL>\"}"
 ```
 
-If `$YOUTRACK_TOKEN` is not set, tell the user: "I need a YouTrack API token to post the PR link. Set `YOUTRACK_TOKEN` in your environment or post the comment manually: PR: <PR URL>"
+If `$YOUTRACK` is not set, tell the user: "I need a YouTrack API token to post the PR link. Set `YOUTRACK` in your environment or post the comment manually: PR: <PR URL>"
 
 ## Stage 4: GitHub Project Board — Add to Project & Set "Waiting for AI-Review"
 
-### Find or add the PR's project item
+### Ensure the PR is on the board
+Check if it's already there:
 ```bash
-gh api graphql -f query='{
-  repository(owner:"BloomBooks", name:"BloomDesktop") {
-    pullRequest(number:<PR-number>) {
-      projectItems(first:10) {
-        nodes { id project { number } }
-      }
-    }
-  }
-}'
+gh project item-list 2 --owner BloomBooks --format json --limit 200 | \
+  node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(d.items.find(i=>i.content?.number===<PR-number>)?.id ?? 'not found')"
 ```
 
-If the PR is not in project 2, add it:
+If not on the board, add it:
 ```bash
-gh api graphql -f query='mutation {
+PR_NODE_ID=$(gh pr view <number> --repo BloomBooks/BloomDesktop --json id --jq '.id')
+gh api graphql -f query="mutation {
   addProjectV2ItemById(input: {
-    projectId: "PVT_kwDOAFlSFM4Bawkp"
-    contentId: "<PR node id>"
+    projectId: \"PVT_kwDOAFlSFM4Bawkp\"
+    contentId: \"$PR_NODE_ID\"
   }) { item { id } }
-}'
+}"
 ```
 
-Get the PR node ID with:
+### Set all three systems to "waiting-ai"
 ```bash
-gh pr view <number> --repo BloomBooks/BloomDesktop --json id --jq '.id'
+node scripts/sync-move.mjs all <pr-number> waiting-ai
 ```
 
-### Set Status to "Waiting for AI-Review"
-```bash
-gh api graphql -f query='mutation {
-  updateProjectV2ItemFieldValue(input: {
-    projectId: "PVT_kwDOAFlSFM4Bawkp"
-    itemId: "<itemId>"
-    fieldId: "PVTSSF_lADOAFlSFM4BawkpzhVl0_w"
-    value: { singleSelectOptionId: "97860183" }
-  }) { projectV2Item { id } }
-}'
-```
-
-### Also reset Orca card to "in-progress" if re-entering after a commit
-```bash
-orca worktree set --worktree active --workspace-status in-progress --json
-```
+This sets GitHub board → "Waiting for AI-Review", Orca → "status-5" (Waiting on AI Review), YouTrack → "In Progress". If `all` warns about a missing Orca link, fall back to individual commands (see `pr-kanban-sync` skill).
 
 ## Stage 5: Bot-Review Wait Cycle
 
@@ -153,29 +131,18 @@ If the user says "skip bots, just move it to human review" → honor explicitly 
 
 ## Stage 6: Move to "Ready for Human"
 
-### GitHub project board
 ```bash
-gh api graphql -f query='mutation {
-  updateProjectV2ItemFieldValue(input: {
-    projectId: "PVT_kwDOAFlSFM4Bawkp"
-    itemId: "<itemId>"
-    fieldId: "PVTSSF_lADOAFlSFM4BawkpzhVl0_w"
-    value: { singleSelectOptionId: "05eedb52" }
-  }) { projectV2Item { id } }
-}'
+node scripts/sync-move.mjs all <pr-number> in-review
 ```
 
-### Orca board
-```bash
-orca worktree set --worktree active --workspace-status in-review --json
-```
+This sets GitHub board → "Ready for Human", Orca → "in-review", YouTrack → "Ready For Code Review".
 
 ### Report
 "PR #<number> is now in **Ready for Human** review. PR: <URL>"
 
 ## Re-entry After a New Commit
 When a commit is pushed to a PR already in "Ready for Human" or "Has Comments":
-1. Re-run Stage 4 (set project card back to "Waiting for AI-Review", set Orca to "in-progress").
+1. Re-run Stage 4 (`node scripts/sync-move.mjs all <pr> waiting-ai` — resets all three systems).
 2. Re-run Stages 5–6 (new bot-wait cycle, then back to human when quiet).
 
 The whole cycle must restart because bots re-run on every commit.
@@ -185,5 +152,5 @@ The whole cycle must restart because bots re-run on every commit.
 - Never move to "Ready for Human" without Devin having run.
 - Always check for duplicate YouTrack comments before posting.
 - Always post Devin findings as GitHub PR comments before moving to any review state.
-- If `YOUTRACK_TOKEN` is unavailable, note it and continue — the YouTrack comment is the lowest-stakes step.
+- If `YOUTRACK` is unavailable, note it and continue — the YouTrack comment is the lowest-stakes step.
 - If the Orca browser is unavailable for Devin, tell the user what URL to open manually.
