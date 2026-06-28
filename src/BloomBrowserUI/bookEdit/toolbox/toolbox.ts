@@ -1272,8 +1272,6 @@ function beginAddTool(
 
     const subpath = {
         talkingBookTool: "talkingBook/talkingBookToolboxTool.html",
-        decodableReaderTool:
-            "readers/decodableReader/decodableReaderToolboxTool.html",
         leveledReaderTool:
             "readers/leveledReader/leveledReaderToolboxTool.html",
         settingsTool: "settings/Settings.html",

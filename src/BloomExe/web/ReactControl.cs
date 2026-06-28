@@ -313,7 +313,10 @@ namespace Bloom.web
                 },
                 { "problemReportBundle", "/problemDialog/ProblemDialog.entry.tsx" },
                 { "progressDialogBundle", "/react_components/Progress/ProgressDialog.entry.tsx" },
-                { "registrationDialogBundle", "/react_components/registrationDialog.entry.tsx" },
+                {
+                    "registrationDialogBundle",
+                    "/react_components/registration/registrationDialog.entry.tsx"
+                },
                 { "subscriptionSettingsBundle", "/collection/subscriptionSettingsTab.entry.tsx" },
                 {
                     "teamCollectionSettingsBundle",

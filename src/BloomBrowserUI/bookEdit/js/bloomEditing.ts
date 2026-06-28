@@ -461,6 +461,29 @@ export function changeImage(imageInfo: IImageInfo) {
     notifyToolOfChangedImage();
 }
 
+/**
+ * Apply a new image to a known element reference, without requiring a temporary id attribute.
+ * Use this from JS-initiated flows (e.g. the image gallery dialog) where the caller already
+ * holds a direct reference to the element.
+ */
+export function changeImageByElement(
+    imgOrImageContainer: HTMLElement,
+    imageInfo: Omit<IImageInfo, "imageId">,
+): void {
+    if (imageInfo.undoable !== "true") {
+        clearImageOperationUndoState();
+    }
+    if (imageInfo.undoable === "true") {
+        prepareUndoForImageOperation(imgOrImageContainer);
+    }
+    changeImageInfo(imgOrImageContainer, imageInfo as IImageInfo);
+    theOneCanvasElementManager.updateCanvasElementForChangedImage(
+        imgOrImageContainer,
+    );
+    commitPendingImageOperationUndo(imgOrImageContainer);
+    notifyToolOfChangedImage();
+}
+
 export function imageOperationCanUndo(): boolean {
     return canUndoImageOperation();
 }
@@ -560,6 +583,9 @@ export function SetupElements(
             "originalCopyrightAndLicense",
     );
     originalTitleCitations.forEach((titleElement: HTMLElement) => {
+        if (titleElement.innerText.trim())
+            titleElement.classList.remove("missingOriginalTitle");
+        else titleElement.classList.add("missingOriginalTitle");
         titleElement.onclick = () => {
             showRequestStringDialog(
                 titleElement.innerText,
@@ -568,8 +594,8 @@ export function SetupElements(
                 "EditTab.FrontMatter.EditOriginalTitleLabel",
                 "Original Title",
                 (newTitle) => {
-                    titleElement.innerText = newTitle;
-                    if (newTitle) {
+                    titleElement.innerText = newTitle ?? "";
+                    if (titleElement.innerText.trim()) {
                         titleElement.classList.remove("missingOriginalTitle");
                     } else {
                         titleElement.classList.add("missingOriginalTitle");

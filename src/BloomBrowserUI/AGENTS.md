@@ -40,6 +40,8 @@ See {repository root}/.github/skills/react-useeffect
 
 If you read that and decide that a useEffect is warranted, you must add a comment justifying why it is necessary.
 
+When the effect should run only on mount (and optionally clean up on unmount), prefer the `useMountEffect` helper in `utils/useMountEffect.ts` over a bare `useEffect(..., [])`. It states the "run on mount" intent clearly and keeps the empty-dependency-array eslint suppression in one place.
+
 ## UI Tests
 
 We use Playwright.

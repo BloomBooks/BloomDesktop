@@ -1426,6 +1426,86 @@
         <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
         <note>Summary text for the estimated total app size. %0 is the current estimated app size and %1 is the app size limit, for example 100 MB.</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.FailedToAddImage" translate="no">
+        <source xml:lang="en">Sorry, there was a problem adding the image.</source>
+        <note>ID: ImageLibrary.FailedToAddImage</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.AboutOpenVerse" translate="no">
+        <source xml:lang="en">About OpenVerse</source>
+        <note>ID: ImageLibrary.AboutOpenVerse</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Disclaimer" translate="no">
+        <source xml:lang="en">These images are not from Bloom or SIL. This tool requests images suitable for general audiences. However, we cannot guarantee that all images will be inoffensive.</source>
+        <note>ID: ImageLibrary.Disclaimer</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.MoreInfo" translate="no">
+        <source xml:lang="en">More info</source>
+        <note>ID: ImageLibrary.MoreInfo</note>
+        <note>Link text that opens the OpenVerse about page, shown in the "About OpenVerse" section of the image library.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OpenVerseDescription" translate="no">
+        <source xml:lang="en">Openverse searches multiple public repositories for CC-licensed and public domain works.</source>
+        <note>ID: ImageLibrary.OpenVerseDescription</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.AboutArtOfReading" translate="no">
+        <source xml:lang="en">About Art of Reading</source>
+        <note>ID: ImageLibrary.AboutArtOfReading</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.AboutPixabay" translate="no">
+        <source xml:lang="en">About Pixabay</source>
+        <note>ID: ImageLibrary.AboutPixabay</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ArtOfReadingDescription" translate="no">
+        <source xml:lang="en">International Illustrations: Art of Reading 3.0 is a collection of over 11,000 images. The collection is designed for use in the preparation of a wide variety of literacy and educational materials, such as shellbooks, primers, news-sheets, posters, and other culturally appropriate materials. These images are black and white line drawings collected from SIL and national artists from around the world.</source>
+        <note>ID: ImageLibrary.ArtOfReadingDescription</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ArtOfReadingNotReadyInstructions" translate="no">
+        <source xml:lang="en">To get Art of Reading images, you need to:</source>
+        <note>ID: ImageLibrary.ArtOfReadingNotReadyInstructions</note>
+        <note>Introductory sentence for an ordered list of setup steps shown when Art of Reading is not installed.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.DownloadArtOfReading" translate="no">
+        <source xml:lang="en">Download and install the Art of Reading Installer</source>
+        <note>ID: ImageLibrary.DownloadArtOfReading</note>
+        <note>Step 1 of 2 in the Art of Reading setup instructions. This text is a clickable link to the download page.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ImageCount" translate="no">
+        <source xml:lang="en">{0} images</source>
+        <note>ID: ImageLibrary.ImageCount</note>
+        <note>{0} is a placeholder for the number of images</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.NoMatchesFound" translate="no">
+        <source xml:lang="en">No matches found</source>
+        <note>ID: ImageLibrary.NoMatchesFound</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PhotogrIllustrator" translate="no">
+        <source xml:lang="en">Photographer/Illustrator:</source>
+        <note>ID: ImageLibrary.PhotogrIllustrator</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayDescription" translate="no">
+        <source xml:lang="en">Pixabay is a large collection of images that may be used for free without attribution.</source>
+        <note>ID: ImageLibrary.PixabayDescription</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.QuitAndRerunBloom" translate="no">
+        <source xml:lang="en">Quit and re-run Bloom</source>
+        <note>ID: ImageLibrary.QuitAndRerunBloom</note>
+        <note>Step 2 of 2 in the Art of Reading setup instructions. "Bloom" is the product name and should not be translated.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Refresh" translate="no">
+        <source xml:lang="en">Refresh</source>
+        <note>ID: ImageLibrary.Refresh</note>
+        <note>Button label that reloads the current image provider's results or status in the image library dialog.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Source" translate="no">
+        <source xml:lang="en">Source</source>
+        <note>ID: ImageLibrary.Source</note>
+        <note>Default label for a link to the source webpage of an image in the image details panel, used when the image provider does not supply a more specific link label.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ThisPage" translate="no">
+        <source xml:lang="en">this page</source>
+        <note>ID: ImageLibrary.ThisPage</note>
+        <note>Short link text used in setup instructions (e.g., as in "go to this page"). Should be lowercase as it appears mid-sentence.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

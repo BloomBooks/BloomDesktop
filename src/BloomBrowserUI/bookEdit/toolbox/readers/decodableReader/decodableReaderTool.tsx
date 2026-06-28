@@ -1,27 +1,51 @@
-﻿/// <reference path="../../toolbox.ts" />
-/// <reference path="../readerToolsModel.ts" />
-
+import ToolboxToolReactAdaptor from "../../toolboxToolReactAdaptor";
+import { DecodableReaderToolControls } from "./DecodableReaderToolControls";
+import { beginInitializeDecodableReaderTool } from "../readerTools";
 import { getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
-import {
-    beginInitializeDecodableReaderTool,
-    createToggle,
-    setReaderToolContentShown,
-} from "../readerTools";
-import { isLongPressEvaluating, ITool, ToolBox } from "../../toolbox";
-import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 import { get } from "../../../../utils/bloomApi";
+import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
+import { renderRoot } from "../../../../utils/reactRender";
+import { isLongPressEvaluating } from "../../toolbox";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
 import $ from "jquery";
 
-export class DecodableReaderToolboxTool implements ITool {
-    imageUpdated(img: HTMLImageElement | undefined): void {
-        // No action needed for this tool
-    }
+// This class renders the DecodableReaderToolControls React component
+// in the toolbox, and implements all the functionality/logic needed
+// for detaching the tool, reattaching the tool, updating the markup,
+// restoring the current tool state (which includes the saved stage
+// number, sorting type, and current graphemes and words for that stage),
+// and handling certain events such as focsuing in an element (such as
+// a textbox), focusing out of an element, and undo/redo.
+export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     public makeRootElement(): HTMLDivElement {
-        throw new Error("Method not implemented.");
+        const root = document.createElement("div");
+
+        renderRoot(<DecodableReaderToolControls />, root);
+        return root as HTMLDivElement;
     }
-    public requiresToolId(): boolean {
-        return false;
+    public id(): string {
+        return "decodableReader";
+    }
+    public newPageReady(): void {
+        const model = getTheOneReaderToolsModel();
+        model.setMarkupType(isReaderToolEnabledOnCurrentPage(false) ? 1 : 0);
+        model.updateControlContents();
+        // usually updateMarkup will do this, unless we are coming from showTool
+        model.doMarkup();
+    }
+    public detachFromPage(): void {
+        getTheOneReaderToolsModel().setMarkupType(0);
+    }
+    public updateMarkup() {
+        // Don't let this lower-level code create ckeditor bookmarks in this case.
+        // We've already created them in toolbox.ts which calls this.
+        const createCkEditorBookMarks = false;
+        getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
+    }
+    public showTool() {
+        // change markup based on visible options
+        getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
+        // Toggle render is handled in newPageReady(), where page reader classes are settled.
     }
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
         return beginInitializeDecodableReaderTool().then(() => {
@@ -30,7 +54,7 @@ export class DecodableReaderToolboxTool implements ITool {
             const decodableReaderState = (
                 settings as unknown as Record<string, string>
             )["decodableReaderState"];
-            // This wrapper function keeps Devin happy by ensuring that the promise gets resolved,
+            // This wrapper function ensures that the promise gets resolved,
             // even in the very unlikely case that setStageNumber fails.
             const runStageRestore = (
                 work: () => void | Promise<unknown>,
@@ -91,13 +115,6 @@ export class DecodableReaderToolboxTool implements ITool {
             return restoreDone.promise();
         });
     }
-    public isAlwaysEnabled(): boolean {
-        return false;
-    }
-    public isExperimental(): boolean {
-        return false;
-    }
-
     public setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
         // invoke function when a bloom-editable element loses focus.
         $(container)
@@ -160,114 +177,7 @@ export class DecodableReaderToolboxTool implements ITool {
                 return true;
             });
     }
-
-    // Some things were impossible to do i18n on via the jade/pug
-    // This gives us a hook to finish up the more difficult spots
-    public finishToolLocalization(paneDOM: HTMLElement) {
-        // DRT has sort buttons with tooltips that are HTML 'i' elements with 'title' attributes.
-        // Update those 'title' attributes from localizationManager.
-
-        const doc = paneDOM.ownerDocument;
-        theOneLocalizationManager
-            .asyncGetText(
-                "EditTab.Toolbox.DecodableReaderTool.SortAlphabetically",
-                "Sort alphabetically",
-                "",
-            )
-            .done((result) => {
-                this.setTitleOfI(paneDOM, "sortAlphabetic", result);
-            });
-
-        theOneLocalizationManager
-            .asyncGetText(
-                "EditTab.Toolbox.DecodableReaderTool.SortByWordLength",
-                "Sort by word length",
-                "",
-            )
-            .done((result) => {
-                this.setTitleOfI(paneDOM, "sortLength", result);
-            });
-
-        theOneLocalizationManager
-            .asyncGetText(
-                "EditTab.Toolbox.DecodableReaderTool.SortByFrequency",
-                "Sort by frequency",
-                "",
-            )
-            .done((result) => {
-                // there are actually two here, but JQuery nicely just does it
-                this.setTitleOfI(paneDOM, "sortFrequency", result);
-            });
-    }
-
-    public setTitleOfI(paneDOM: HTMLElement, rootId: string, val: string) {
-        // Apparently in some cases asyncGetText may return before the document is ready.
-        if (!paneDOM || !paneDOM.ownerDocument) return;
-        $(paneDOM.ownerDocument).ready(() => {
-            if (!paneDOM || !paneDOM.ownerDocument) return;
-            $(paneDOM.ownerDocument)
-                .find("#" + rootId)
-                .find("i")
-                .attr("title", val);
-        });
-    }
-
     public configureElements(container: HTMLElement) {
         this.setupReaderKeyAndFocusHandlers(container);
     }
-
-    public showTool() {
-        // change markup based on visible options
-        getTheOneReaderToolsModel().setCkEditorLoaded(); // we don't call showTool until it is.
-        // Toggle render is handled in newPageReady(), where page reader classes are settled.
-    }
-
-    public newPageReady() {
-        // Remount the toggle after the page is ready so it can pick up the
-        // current page body's reader classes instead of the initial placeholder state.
-        createToggle(false);
-
-        const isForLeveled = false;
-        const shouldShowContent =
-            !!ToolBox.getPage()?.classList.contains("decodable-reader");
-        setReaderToolContentShown(isForLeveled, shouldShowContent);
-
-        // Most cases don't require setMarkupType(), but when switching pages
-        // it will have been set to 0 by detachFromPage() on the old page.
-        // So we do want to set the appropriate markup, but if the toggle is off, we want the markup off.
-        getTheOneReaderToolsModel().setMarkupType(shouldShowContent ? 1 : 0);
-        getTheOneReaderToolsModel().updateControlContents();
-        // usually updateMarkup will do this, unless we are coming from showTool
-        getTheOneReaderToolsModel().doMarkup();
-    }
-
-    public hideTool() {
-        // nothing to do here (if this class eventually extends our React Adaptor, this can be removed.)
-    }
-
-    public detachFromPage() {
-        getTheOneReaderToolsModel().setMarkupType(0);
-    }
-
-    public updateMarkup() {
-        // Don't let this lower-level code create ckeditor bookmarks in this case.
-        // We've already created them in toolbox.ts which calls this.
-        const createCkEditorBookMarks = false;
-        getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
-    }
-    public async updateMarkupAsync() {
-        // If you implement this, you may need to do something like cleanUpCkEditorHtml() in audioRecording.ts.
-        throw "not implemented...use updateMarkup";
-        return () => undefined;
-    }
-
-    public isUpdateMarkupAsync(): boolean {
-        return false;
-    }
-
-    public id() {
-        return "decodableReader";
-    }
-
-    public hasRestoredSettings: boolean;
 }

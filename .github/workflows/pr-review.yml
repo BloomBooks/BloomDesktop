@@ -21,5 +21,7 @@ jobs:
         if: github.event.pull_request.head.repo.full_name == github.repository
         uses: BloomBooks/.github/.github/workflows/pr-review-tracker.yml@main
         # Pass only this one secret, not `secrets: inherit`, to limit blast radius.
+        # The reusable workflow declares the input as PROJECT_TOKEN; supply it from
+        # this repo's org-level PR_REVIEW_TRACKER_PROJECT_TOKEN secret.
         secrets:
-            PR_REVIEW_TRACKER_PROJECT_TOKEN: ${{ secrets.PR_REVIEW_TRACKER_PROJECT_TOKEN }}
+            PROJECT_TOKEN: ${{ secrets.PR_REVIEW_TRACKER_PROJECT_TOKEN }}

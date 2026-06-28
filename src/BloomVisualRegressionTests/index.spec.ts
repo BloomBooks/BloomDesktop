@@ -43,7 +43,7 @@ describe("All books", () => {
             .filter(
                 (f) =>
                     fs.statSync(Path.join(collectionPath, f)).isDirectory() &&
-                    !f.startsWith("Sample Texts")
+                    !f.startsWith("Sample Texts"),
             )
             .map((f) => Path.join(collectionPath, f));
         return paths;
@@ -62,32 +62,32 @@ describe("All books", () => {
             await setBranding(branding);
             await selectBook(bookFolder);
             var screenshotsDir = ensureDir(
-                Path.join(bookFolder, "screenshots")
+                Path.join(bookFolder, "screenshots"),
             );
             var referenceScreenPath = Path.join(
                 screenshotsDir,
-                `${branding}-reference.png`
+                `${branding}-reference.png`,
             );
             if (!fs.existsSync(referenceScreenPath)) {
                 console.log(
                     chalk.blueBright(
-                        `Creating reference image for ${bookFolder}`
-                    )
+                        `Creating reference image for ${bookFolder}`,
+                    ),
                 );
                 await saveScreenshot(referenceScreenPath);
                 return;
             }
             var currentScreenshotPath = Path.join(
                 screenshotsDir,
-                `${branding}-current.png`
+                `${branding}-current.png`,
             );
             await saveScreenshot(currentScreenshotPath);
             await comparePreviewImage(
                 referenceScreenPath,
                 currentScreenshotPath,
-                Path.join(screenshotsDir, `${branding}-diff.png`)
+                Path.join(screenshotsDir, `${branding}-diff.png`),
             );
-        }
+        },
     );
 
     async function saveScreenshot(imagePath: string) {
@@ -115,7 +115,7 @@ describe("All books", () => {
             {
                 method: "POST",
                 body: branding,
-            }
+            },
         );
         expect(result.ok).toBe(true);
     }
@@ -125,11 +125,11 @@ describe("All books", () => {
         // get us on the correct book
         let result = await fetch(
             `http://localhost:8089/bloom/api/collections/selected-book?path=${bookPath}&collection-id=${encodeURIComponent(
-                Path.dirname(bookPath)
+                Path.dirname(bookPath),
             )}`,
             {
                 method: "POST",
-            }
+            },
         );
         expect(result.ok).toBe(true);
     }
@@ -137,7 +137,7 @@ describe("All books", () => {
     async function comparePreviewImage(
         referencePath: string,
         testPath: string,
-        diffPath: string
+        diffPath: string,
     ) {
         const referenceImage = PNG.sync.read(fs.readFileSync(referencePath));
         const testImage = PNG.sync.read(fs.readFileSync(testPath));
@@ -153,19 +153,22 @@ describe("All books", () => {
             {
                 threshold: 0.1,
                 aaColor: [255, 0, 0], // the default is yellow. this sets it to red, the same as the non-anti-aliased pixels
-            }
+            },
         );
         if (numberOfDifferentPixels > 0) {
-            fs.writeFileSync(diffPath, PNG.sync.write(diff));
+            // PNG.sync.write returns a Node Buffer. TypeScript 6.0's newer lib types
+            // made Buffer/ArrayBufferView generic, so cast to Uint8Array (which Buffer
+            // extends) to satisfy fs.writeFileSync's parameter type.
+            fs.writeFileSync(diffPath, PNG.sync.write(diff) as Uint8Array);
             console.log(
                 chalk.black.bgYellow(
-                    `${testPath} differed from the reference by ${numberOfDifferentPixels} pixels. The diff image is at ${diffPath}`
-                )
+                    `${testPath} differed from the reference by ${numberOfDifferentPixels} pixels. The diff image is at ${diffPath}`,
+                ),
             );
             console.log(
                 chalk.yellow(
-                    `If the new version is correct, replace ${referencePath} with ${testPath}`
-                )
+                    `If the new version is correct, replace ${referencePath} with ${testPath}`,
+                ),
             );
             expect(numberOfDifferentPixels).toBe(0);
         }
@@ -180,7 +183,7 @@ async function launchBloomIfNeeded() {
         process.cwd(),
         "collections",
         "basic",
-        "basic.bloomCollection"
+        "basic.bloomCollection",
     )}`;
     console.log(`Launching Bloom with ${p}`);
     execFile("../../output/Debug/Bloom.exe ", [p]);

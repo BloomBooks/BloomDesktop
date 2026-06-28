@@ -60,7 +60,7 @@
             //
             // _longVersionInfo
             //
-            this._longVersionInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this._longVersionInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
             this._longVersionInfo.AutoSize = true;
             this._longVersionInfo.BackColor = System.Drawing.Color.Transparent;
             this._longVersionInfo.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -75,7 +75,7 @@
             //
             // _feedbackStatusLabel
             //
-            this._feedbackStatusLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this._feedbackStatusLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
             this._feedbackStatusLabel.AutoSize = true;
             this._feedbackStatusLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
             this._feedbackStatusLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(161)))), ((int)(((byte)(255)))));
@@ -88,7 +88,7 @@
             //
             // _copyrightlabel
             //
-            this._copyrightlabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this._copyrightlabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
             this._copyrightlabel.AutoSize = true;
             this._copyrightlabel.BackColor = System.Drawing.Color.Transparent;
             this._copyrightlabel.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -104,7 +104,7 @@
             //
             // _shortVersionLabel
             //
-            this._shortVersionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this._shortVersionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
             this._shortVersionLabel.AutoSize = true;
             this._shortVersionLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
             this._shortVersionLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(69)))), ((int)(((byte)(161)))), ((int)(((byte)(255)))));
@@ -119,7 +119,10 @@
             //
             // pictureBox2
             //
-            this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            // Anchored Top|Left (the DPI-stable anchor); its lower-right position is set
+            // in code by LayoutBottomControls(). Bottom|Right anchoring mis-rescales on high-DPI
+            // monitor transitions and strands the logo over the Bloom logo (BL-16452).
+            this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
             this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
             this.pictureBox2.Location = new System.Drawing.Point(373, 318);
             this.pictureBox2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);

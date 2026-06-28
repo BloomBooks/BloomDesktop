@@ -31,6 +31,7 @@ The front-end uses yarn 1.22.22. Never ever use npm.
 - Fail Fast. Don't write code that silently works around failed dependencies. If a dependency is missing we should fail. Javascript itself will fail if we try to use a missing dependency, and that's fine. E.g. if you expect a foo to be defined, don't write "if(foo){}". Just use foo and if it's null, fine, we'll get an error, which is good.
 - Try to make it so that test failures indicate what went wrong. For example, `fail("An error occurred in setup; we should not have gotten here")` would be better than `expect(false).toBeTruthy();` and `expect(foo).toBe(3);` would be better than `expect(foo === 3).toBe(true);`.
 - Add sanity checks to guard against falsely passing tests. For example, when unit testing a method, sanity check that the test data values are as expected before you call the method, and then after you call the method you can verify that those values have changed as expected.
+- When running C# tests with `dotnet test`, never pass `--no-build`. Always let dotnet build the test project first so the tests run against the latest code. A stale DLL can cause tests to pass or fail against an old version of the code, hiding real regressions.
 
 
 # Terminal
@@ -45,17 +46,13 @@ that "could not be found" (CS0246) in files such as `src/BloomExe/Publish/BloomP
 
 If you create new files for temporary purposes (e.g. output or artifact or log files), be sure to clean them up when you're done and be careful not to accidentally commit them.
 
-# Don't run build
+# Don't run yarn build
 It is vital that you not run `yarn build` unless instructed to. If there is already a "--watch" build running, you will wreck it and waste the developer's time. You are welcome to `yarn lint` if you want to check for errors without building.
 
 # Localization
-- Localizations for translatable strings are kept in DistFiles/localizations; new ones are initially added to one of the files in the "en" subdirectory: There are high (DistFiles/localization/en/Bloom.xlf), medium (DistFiles/localization/en/BloomMediumPriority.xlf), and low (DistFiles/localization/en/BloomLowPriority.xlf) priority options. If you don't know where it should go, ask.
-- Mark new XLF entries translate="no" unless instructed otherwise.
-- When adding a new string, do not add it to all of the various language files. Just the one in the "en" subdirectory.
-- Don't change the ID of an existing XLF entry unless it is new (marked translate="no"). Instead, mark the old one with a note saying it is "obsolete as of <current Bloom version>" and make a new entry with a different ID. Try to avoid this if possible by keeping the existing ID.
-- Don't change the content of an existing XLF entry unless it is new (marked translate="no") or you are sure that the change will not cause problems with existing translations. Instead, mark the old one with a note saying it is "obsolete as of <current Bloom version>" and make a new entry with the new content and a different ID.
-- You can find the current version from the `Version` property in `build/Bloom.proj`.
-- It's OK not to make XLF entries for strings only used in experimental features, as long as there is fallback English in the code that will be used.
+Whenever you add, modify, or review localizable strings (XLF entries), follow `.github/skills/xlf-strings/SKILL.md`.
+
+The one rule that applies at all times even outside that skill: **only ever edit files under `DistFiles/localization/en/`** — never touch the other language subdirectories.
 
 # Commenting
 All public methods should have a comment. So should most private ones!

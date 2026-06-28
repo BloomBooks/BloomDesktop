@@ -349,7 +349,9 @@ namespace Bloom.Collection
 
                 _bookInfos = _bookInfos.Where(b => Directory.Exists(b.FolderPath)).ToList();
 
-                return _bookInfos;
+                // Return a snapshot so callers can enumerate without holding the lock,
+                // preventing "Collection was modified" exceptions from concurrent updates.
+                return _bookInfos.ToList();
             }
         }
 

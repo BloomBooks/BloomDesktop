@@ -391,6 +391,11 @@ namespace Bloom.web.controllers
             try
             {
                 var fileName = request.RequiredParam("image");
+                // Strip any query params (e.g. ?transparent=yes, ?thumbnail=1) — they are
+                // serving hints, not part of the filename.
+                var q = fileName.IndexOf('?');
+                if (q >= 0)
+                    fileName = fileName.Substring(0, q);
                 Guard.AgainstNull(_bookSelection.CurrentSelection, "CurrentBook");
                 var path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName);
                 while (!RobustFile.Exists(path) && fileName.Contains('%'))

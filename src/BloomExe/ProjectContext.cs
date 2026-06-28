@@ -186,6 +186,7 @@ namespace Bloom
                                 typeof(FileIOApi),
                                 typeof(ProgressDialogApi),
                                 typeof(EditingViewApi),
+                                typeof(ImageGalleryApi),
                                 typeof(ProblemReportApi),
                                 typeof(FontsApi),
                                 typeof(BulkBloomPubCreator),
@@ -436,6 +437,7 @@ namespace Bloom
             _scope.Resolve<FileIOApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ProgressDialogApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<EditingViewApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<ImageGalleryApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<LibraryPublishApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
