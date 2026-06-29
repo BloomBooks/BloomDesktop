@@ -72,7 +72,6 @@ namespace Bloom.Book
             name = name.Replace("legal", "Legal");
             name = name.Replace("folio", "Folio");
             name = name.Replace("Uscomic", "USComic");
-            name = name.Replace("weaver", "Weaver");
             name = name.Replace("ebook", "Ebook");
             return name;
         }

@@ -33,6 +33,7 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     is picture on top, text on the bottom, we need to make room for the page number */
     --pageNumber-extra-height: 12mm !important;
 }
+.bloom-fullBleed .Ebook7x5Landscape.numberedPage,
 .bloom-fullBleed .Device16x9Landscape.numberedPage {
     /* On full-bleed pages we want the page number positioned based on the ideal place where
        the page should be trimmed, not the actual edge of the page.  Only the left (or right)
@@ -54,6 +55,8 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     --pageNumber-always-left-margin: var(--page-margin-left);
     --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
 }
+.bloom-fullBleed
+    .Ebook7x5Landscape.numberedPage.pictureOnRight.pictureOnRight::after,
 .bloom-fullBleed
     .Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight::after {
     /* Adjust the page number position for full bleed pages (BL-15611) */
