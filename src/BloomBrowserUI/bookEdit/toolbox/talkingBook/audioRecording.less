@@ -10,31 +10,42 @@
 @textOnLightBackground: black;
 @disablingOverlayZindex: 1001; // higher than #audio-devlist
 
-.bloom-ui-current-audio-marker:before {
-    background-image: url(currentTextIndicator.svg);
-    background-repeat: no-repeat;
-    background-size: 10px 13px;
-    background-position: 2px 5px;
-    left: -15px;
-    top: 0; // should have no effect, but prevents a FF bug causing BL-6796
-    width: 15px;
-    height: 19px;
-    position: absolute;
-    content: " ";
-}
-
-// Use pseudoelements to display TBT highlighting in the Edit tab. See audioTextHighlightManager.ts
-::highlight(bloom-audio-current) {
-    // Read from CSS variables so the Format dialog's stored audio highlight colors
-    // control the normally-yellow recording highlight
+.bloom-ui-current-audio-marker {
+    // Use the same highlight background color as the current sentence.
     background-color: var(
         --bloom-audio-current-highlight-background,
         @highlightColor
     );
-    color: var(--bloom-audio-current-highlight-color, @textOnLightBackground);
-    -webkit-box-decoration-break: clone;
-    box-decoration-break: clone;
-    mix-blend-mode: multiply;
+    // Mask to the microphone shape so the background-color shows through it.
+    -webkit-mask-image: url(currentTextIndicator.svg);
+    -webkit-mask-size: 10px 13px;
+    -webkit-mask-position: 2px 5px;
+    -webkit-mask-repeat: no-repeat;
+    mask-image: url(currentTextIndicator.svg);
+    mask-size: 10px 13px;
+    mask-position: 2px 5px;
+    mask-repeat: no-repeat;
+    width: 15px;
+    height: 19px;
+    // Must be above the split-pane-component and other content in the page frame.
+    z-index: 1;
+}
+
+// Use pseudoelements to display TBT highlighting in the Edit tab. See audioTextHighlightManager.ts
+::highlight(bloom-audio-current) {
+    // A thick underline offset upwards (the skip-ink setting allows it to be drawn right against the text)
+    // does not extend upwards as far as background-color highlighting, which greatly reduces the
+    // extent to which it covers previous lines of text when tightly spaced.
+    // Color is read from a CSS variable so the Format dialog's stored audio highlight colors apply.
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-decoration-color: var(
+        --bloom-audio-current-highlight-background,
+        @highlightColor
+    );
+    text-decoration-thickness: 1.1em;
+    text-underline-offset: -0.8em;
+    text-decoration-skip-ink: none;
 }
 // Note: This highlighting is expected to persist across sessions, but to be hidden
 // (displayed with the yellow color) while each segment is playing.

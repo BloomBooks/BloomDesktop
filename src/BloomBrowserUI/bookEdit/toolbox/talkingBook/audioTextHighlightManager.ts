@@ -1,6 +1,5 @@
 const kSegmentClass = "bloom-highlightSegment";
 const kEnableHighlightClass = "ui-enableHighlight";
-const kSuppressHighlightClass = "ui-suppressHighlight";
 const kDisableHighlightClass = "ui-disableHighlight";
 const kPostAudioSplitClass = "bloom-postAudioSplit";
 const kTextBoxRecordingMode = "textbox";
@@ -106,16 +105,15 @@ export class AudioTextHighlightManager {
     public refreshHighlights(
         currentHighlight: Element | null,
         currentTextBox: HTMLElement | null,
+        suppressCurrentHighlight?: boolean,
     ): void {
         const contextNode = currentHighlight ?? currentTextBox;
         if (!contextNode) {
             return;
         }
 
-        if (
-            !getHighlightRegistry(contextNode) ||
-            !getHighlightConstructor(contextNode)
-        ) {
+        const registry = getHighlightRegistry(contextNode);
+        if (!registry || !getHighlightConstructor(contextNode)) {
             return;
         }
 
@@ -123,6 +121,11 @@ export class AudioTextHighlightManager {
         getDocumentBody(contextNode)?.classList.add(
             kPseudoHighlightSupportClass,
         );
+
+        if (suppressCurrentHighlight) {
+            allManagedHighlightNames.forEach((name) => registry.delete(name));
+            return;
+        }
 
         this.refreshCurrentHighlight(currentHighlight, currentTextBox);
         this.refreshSplitHighlights(currentHighlight, currentTextBox);
@@ -251,10 +254,6 @@ export class AudioTextHighlightManager {
             return undefined;
         }
 
-        if (currentHighlight.classList.contains(kSuppressHighlightClass)) {
-            return undefined;
-        }
-
         // copilot says: fixHighlighting() can carve the visible pieces into nested ui-enableHighlight
         // spans so punctuation or outer whitespace stays unpainted. Prefer those exact
         // spans whenever they exist so the pseudo-highlight matches the background-color highlight behavior
@@ -379,10 +378,7 @@ export class AudioTextHighlightManager {
             return false;
         }
 
-        if (
-            currentTextBox.classList.contains(kSuppressHighlightClass) ||
-            currentTextBox.classList.contains(kDisableHighlightClass)
-        ) {
+        if (currentTextBox.classList.contains(kDisableHighlightClass)) {
             return false;
         }
 
