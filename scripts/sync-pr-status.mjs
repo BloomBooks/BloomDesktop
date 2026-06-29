@@ -10,34 +10,21 @@
  */
 
 import { execSync } from "child_process";
+import {
+    GH_OWNER,
+    GH_PROJECT_NUMBER,
+    ORCA_STATUSES,
+    YT_STATES,
+    YT_BASE,
+} from "./sync-constants.mjs";
 
-const GH_OWNER = "BloomBooks";
-const GH_PROJECT_NUMBER = 2;
-
-// GitHub board status label → internal key
+// GitHub board status label → internal key (reconciler-only)
 const GH_STATUS_TO_KEY = {
     "Waiting for AI-Review": "waiting-ai",
     "Ready for Human": "in-review",
     "Has Comments": "has-comments",
 };
 
-// Internal key → Orca workspaceStatus value
-const ORCA_STATUSES = {
-    "waiting-ai": "status-5",
-    "in-review": "in-review",
-    "has-comments": "status-6",
-    completed: "completed",
-};
-
-// Internal key → YouTrack state name (null = leave for human)
-const YT_STATES = {
-    "waiting-ai": "In Progress",
-    "in-review": "Ready For Code Review",
-    "has-comments": "Has Comments",
-    completed: null,
-};
-
-const YT_BASE = "https://issues.bloomlibrary.org/youtrack";
 const YT_TOKEN = process.env.YOUTRACK;
 
 function run(cmd) {

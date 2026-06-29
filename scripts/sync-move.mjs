@@ -20,10 +20,15 @@
  */
 
 import { execSync } from "child_process";
+import {
+    GH_OWNER,
+    GH_PROJECT_NUMBER,
+    ORCA_STATUSES,
+    YT_STATES,
+    YT_BASE,
+} from "./sync-constants.mjs";
 
-// ── GitHub project constants ──────────────────────────────────────────────────
-const GH_OWNER = "BloomBooks";
-const GH_PROJECT_NUMBER = 2;
+// ── GitHub project constants (move-only; the board edit needs these IDs) ──────
 const GH_PROJECT_ID = "PVT_kwDOAFlSFM4Bawkp";
 const GH_STATUS_FIELD = "PVTSSF_lADOAFlSFM4BawkpzhVl0_w";
 
@@ -35,23 +40,6 @@ const GH_OPTIONS = {
     completed: null, // auto-hidden when PR closes
 };
 
-// YouTrack state names (exact strings from the bundle)
-const YT_STATES = {
-    "waiting-ai": "In Progress",
-    "in-review": "Ready For Code Review",
-    "has-comments": "Has Comments",
-    completed: null, // leave for human (type-dependent: bug→Closed, feature→Ready For Testing)
-};
-
-// Orca workspace-status IDs
-const ORCA_STATUSES = {
-    "waiting-ai": "status-5",
-    "in-review": "in-review",
-    "has-comments": "status-6",
-    completed: "completed",
-};
-
-const YT_BASE = "https://issues.bloomlibrary.org/youtrack";
 const YT_TOKEN = process.env.YOUTRACK;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -90,7 +78,7 @@ async function moveGh(prNumber, status) {
 
     // Look up the board item ID for this PR number
     const raw = run(
-        `gh project item-list ${GH_PROJECT_NUMBER} --owner ${GH_OWNER} --format json --limit 200`,
+        `gh project item-list ${GH_PROJECT_NUMBER} --owner ${GH_OWNER} --format json --limit 500`,
     );
     const data = JSON.parse(raw);
     const item = data.items.find((i) => i.content?.number === Number(prNumber));
@@ -177,7 +165,14 @@ async function moveAll(prNumber, status) {
     }
 
     if (ytIssue) {
-        await moveYt(ytIssue, status);
+        // GitHub and Orca were already mutated above, so a YouTrack failure
+        // here must not abort the whole command. Warn and skip to match
+        // sync-pr-status.mjs's warn-and-skip contract.
+        try {
+            await moveYt(ytIssue, status);
+        } catch (e) {
+            console.warn(`  YT: ${e.message} — skipping YouTrack`);
+        }
     } else {
         console.warn(
             `  YT: no BL-xxxxx found for PR #${prNumber} — skipping YouTrack`,
