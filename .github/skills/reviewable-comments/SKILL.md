@@ -1,5 +1,5 @@
 ---
-name: reviewable-thread-replies
+name: reviewable-comments
 description: 'Reply to Reviewable PR discussion threads using the reviewable CLI. Use whenever the user asks you to respond to review comments.'
 argument-hint: 'Repo/PR reference (e.g. BloomBooks/BloomDesktop#7949) and optionally specific discussion keys to target'
 ---

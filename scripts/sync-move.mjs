@@ -74,7 +74,7 @@ function validateStatus(status) {
 async function moveOrca(worktreePath, status) {
     const s = ORCA_STATUSES[status];
     run(
-        `orca worktree set --worktree path:${worktreePath} --workspace-status ${s} --json`,
+        `orca worktree set --worktree "path:${worktreePath}" --workspace-status ${s} --json`,
     );
     console.log(`✓ Orca: ${worktreePath} → ${s}`);
 }

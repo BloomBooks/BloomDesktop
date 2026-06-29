@@ -52,7 +52,7 @@ function extractBl(text) {
 
 async function setOrcaStatus(worktreePath, statusKey) {
     run(
-        `orca worktree set --worktree path:${worktreePath} --workspace-status ${ORCA_STATUSES[statusKey]}`,
+        `orca worktree set --worktree "path:${worktreePath}" --workspace-status ${ORCA_STATUSES[statusKey]}`,
     );
 }
 
@@ -98,7 +98,7 @@ async function main() {
 
     // 2. GitHub board status by PR number (single batch call)
     const boardRaw = run(
-        `gh project item-list ${GH_PROJECT_NUMBER} --owner ${GH_OWNER} --format json --limit 200`,
+        `gh project item-list ${GH_PROJECT_NUMBER} --owner ${GH_OWNER} --format json --limit 500`,
     );
     const boardData = JSON.parse(boardRaw);
     const boardByPr = {};
