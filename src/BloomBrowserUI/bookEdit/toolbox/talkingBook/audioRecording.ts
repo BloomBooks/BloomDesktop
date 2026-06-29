@@ -257,6 +257,7 @@ export default class AudioRecording implements IAudioRecorder {
             .click(async (e) => {
                 const mediaPlayer = this.getMediaPlayer();
                 mediaPlayer.pause();
+                if (!this.highlightedElement) return;
                 getWorkspaceBundleExports().showAdjustTimingsDialogFromWorkspaceRoot(
                     this.highlightedElement,
                     this.split,
@@ -2146,7 +2147,7 @@ export default class AudioRecording implements IAudioRecorder {
         // If the highlight was on something not currently visible, move the selection
         const current = this.getCurrentHighlight();
         if (page && current && !this.isVisible(current)) {
-            this.removeAudioCurrent(page);
+            this.removeAudioCurrentFromPageDocBody();
             await this.setCurrentAudioElementToDefaultAsync();
         }
         // Whether or not we had to move the selection, some button states may need to change.
@@ -2156,7 +2157,7 @@ export default class AudioRecording implements IAudioRecorder {
         this.updateDisplay();
     }
     private showPlaybackOrderUi(docBody: HTMLElement) {
-        this.removeAudioCurrent(docBody);
+        this.removeAudioCurrentFromPageDocBody();
         this.playbackOrderCache = [];
         const translationGroups = this.getVisibleTranslationGroups(docBody);
         if (translationGroups.length < 1) {
@@ -2748,7 +2749,7 @@ export default class AudioRecording implements IAudioRecorder {
         const oldHighlight = this.getCurrentHighlight();
         if (!boxToSelect) {
             this.resetAudioIfPaused();
-            this.removeAudioCurrent(this.getPageDocBody()!);
+            this.removeAudioCurrentFromPageDocBody();
             await this.changeStateAndSetExpectedAsync("");
             this.updateDisplay(false);
             return false;

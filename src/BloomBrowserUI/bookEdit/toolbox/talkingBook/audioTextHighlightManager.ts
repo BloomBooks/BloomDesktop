@@ -3,7 +3,6 @@ const kEnableHighlightClass = "ui-enableHighlight";
 const kDisableHighlightClass = "ui-disableHighlight";
 const kPostAudioSplitClass = "bloom-postAudioSplit";
 const kTextBoxRecordingMode = "textbox";
-const kPseudoHighlightSupportClass = "bloom-audio-pseudoHighlights";
 
 const kCurrentHighlightBackgroundCssVar =
     "--bloom-audio-current-highlight-background";
@@ -39,10 +38,6 @@ function getDocumentWindow(contextNode: Node): Window | undefined {
 
 function getDocumentElement(contextNode: Node): HTMLElement | undefined {
     return contextNode.ownerDocument?.documentElement ?? undefined;
-}
-
-function getDocumentBody(contextNode: Node): HTMLElement | undefined {
-    return contextNode.ownerDocument?.body ?? undefined;
 }
 
 function getHighlightRegistry(
@@ -101,7 +96,7 @@ export class AudioTextHighlightManager {
     // It might be a span (sentence mode) or text box (text box mode).
     // currentTextBox is either the same as currentHighlight (text box mode)
     // or its TextBox ancestor (sentence mode).
-    // Adjust pseudo-element hightlights to what they should be for this state of things.
+    // Adjust pseudo-element highlights to what they should be for this state of things.
     public refreshHighlights(
         currentHighlight: Element | null,
         currentTextBox: HTMLElement | null,
@@ -113,53 +108,38 @@ export class AudioTextHighlightManager {
         }
 
         const registry = getHighlightRegistry(contextNode);
-        if (!registry || !getHighlightConstructor(contextNode)) {
+        const Highlight = getHighlightConstructor(contextNode);
+        if (!registry || !Highlight) {
             return;
         }
-
-        // Once pseudo-element highlights are active, suppress the old element background rules so we don't double-highlight
-        getDocumentBody(contextNode)?.classList.add(
-            kPseudoHighlightSupportClass,
-        );
 
         if (suppressCurrentHighlight) {
             allManagedHighlightNames.forEach((name) => registry.delete(name));
             return;
         }
 
-        this.refreshCurrentHighlight(currentHighlight, currentTextBox);
-        this.refreshSplitHighlights(currentHighlight, currentTextBox);
+        // Split highlights (blue segments after a textbox recording) and the current highlight
+        // (yellow sentence) are mutually exclusive: split state replaces the yellow highlight.
+        if (this.shouldShowSplitHighlights(currentHighlight, currentTextBox)) {
+            registry.delete(currentHighlightName);
+            this.refreshSplitHighlights(currentTextBox, registry, Highlight);
+        } else {
+            splitHighlightNames.forEach((name) => registry.delete(name));
+            this.refreshCurrentHighlight(
+                currentHighlight,
+                currentTextBox,
+                registry,
+                Highlight,
+            );
+        }
     }
 
     private refreshCurrentHighlight(
         currentHighlight: Element | null,
         currentTextBox: HTMLElement | null,
+        registry: HighlightRegistry,
+        Highlight: HighlightConstructor,
     ): void {
-        const contextNode = currentHighlight ?? currentTextBox;
-        if (!contextNode) {
-            console.error(
-                "AudioTextHighlightManager.refreshCurrentHighlight() was called without a context node.",
-            );
-            return;
-        }
-
-        const registry = getHighlightRegistry(contextNode);
-        const Highlight = getHighlightConstructor(contextNode);
-        // copilot wants belt-and-suspenders, fine
-        if (!registry || !Highlight) {
-            console.error(
-                "AudioTextHighlightManager.refreshCurrentHighlight() lost pseudo-highlight support after refreshHighlights() verified it.",
-            );
-            return;
-        }
-
-        // The split-complete blue state replaces the yellow current highlight while it is visible,
-        // so clear the yellow registry entry instead of letting the two overlap.
-        if (this.shouldShowSplitHighlights(currentHighlight, currentTextBox)) {
-            registry.delete(currentHighlightName);
-            return;
-        }
-
         const highlightInfo = this.getCurrentHighlightInfo(
             currentHighlight,
             currentTextBox,
@@ -178,57 +158,22 @@ export class AudioTextHighlightManager {
     }
 
     private refreshSplitHighlights(
-        currentHighlight: Element | null,
-        currentTextBox: HTMLElement | null,
+        currentTextBox: HTMLElement,
+        registry: HighlightRegistry,
+        Highlight: HighlightConstructor,
     ): void {
-        const contextNode = currentHighlight ?? currentTextBox;
-        if (!contextNode) {
-            console.error(
-                "AudioTextHighlightManager.refreshSplitHighlights() was called without a context node.",
-            );
-            return;
-        }
-
-        if (!this.shouldShowSplitHighlights(currentHighlight, currentTextBox)) {
-            this.clearSplitHighlights(contextNode);
-            return;
-        }
-
-        const registry = getHighlightRegistry(contextNode);
-        const Highlight = getHighlightConstructor(contextNode);
-        if (!registry || !Highlight) {
-            console.error(
-                "AudioTextHighlightManager.refreshSplitHighlights() lost pseudo-highlight support after refreshHighlights() verified it.",
-            );
-            return;
-        }
-
-        // We cycle through 3 colors for split highlights
+        // Cycle through 3 colors using a page-relative index so adjacent paragraphs
+        // never share the same color at their boundary.
         const rangesByName = new Map<string, Range[]>();
         splitHighlightNames.forEach((name) => rangesByName.set(name, []));
 
-        const segmentGroups = new Map<Element, Element[]>();
         Array.from(
             currentTextBox.querySelectorAll(`span.${kSegmentClass}`),
-        ).forEach((segment) => {
-            const parent = segment.parentElement;
-            if (!parent) {
-                // won't happen
-                return;
-            }
-
-            const segments = segmentGroups.get(parent) ?? [];
-            segments.push(segment);
-            segmentGroups.set(parent, segments);
-        });
-
-        segmentGroups.forEach((segments) => {
-            segments.forEach((segment, index) => {
-                const highlightName =
-                    splitHighlightNames[index % splitHighlightNames.length];
-                const ranges = rangesByName.get(highlightName);
-                ranges?.push(...this.getRangesForSegment(segment));
-            });
+        ).forEach((segment, index) => {
+            const highlightName =
+                splitHighlightNames[index % splitHighlightNames.length];
+            const ranges = rangesByName.get(highlightName);
+            ranges?.push(...this.getRangesForSegment(segment));
         });
 
         splitHighlightNames.forEach((name) => {
