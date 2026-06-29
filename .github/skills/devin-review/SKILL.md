@@ -70,19 +70,52 @@ chrome-devtools new_page "https://app.devin.ai/review/<owner>/<repo>/pull/<numbe
 sleep 6
 ```
 
-Close this tab when done to avoid accumulating isolated-context tabs.
-
-### 2. Check if Review is Complete
+**Pin to the right tab and verify the PR before reading anything.** Multiple PR reviews
+opened in the same `devin-noauth` context are separate tabs that all share that context, and
+`evaluate_script`/`take_snapshot` operate on whatever page is currently *selected* — which can
+drift to another PR's tab. So always select your tab explicitly and confirm the page header
+shows the PR you expect:
 
 ```bash
-chrome-devtools evaluate_script "() => document.body.innerText" 2>/dev/null | grep -E "Bug|Flags"
+chrome-devtools list_pages                      # find the index of YOUR pull/<number> tab
+chrome-devtools select_page <id>                # pin future calls to it
+chrome-devtools evaluate_script "() => (document.body.innerText.match(/PR #\d+/)||['?'])[0]"
+# → must print "PR #<number>". If not, you are about to read the wrong review.
 ```
 
-- If you see lines like `1 Bug` or `6 Flags` → review is complete. Proceed to step 3.
-- If the page shows only a loading state or no Bug/Flags section → review is not yet done. Report "Devin review not yet complete" and return. Come back in 5–10 minutes.
+Close stray tabs when done to avoid accumulating isolated-context tabs.
+
+### 2. Check if Review is Complete — beware STALE results
+
+Reviews take a while (**10–20+ minutes**), and a **new push invalidates the prior review**:
+Devin keeps showing the *old* commit's findings, prefixed with an **"Outdated"** badge, until
+the re-review of the new HEAD finishes. So "I see `1 Bug` / `6 Flags`" does **NOT** mean the
+results are current — you must check they are not marked Outdated.
+
+Do **not** grep `document.body.innerText` for status. The page embeds the entire diff inline,
+so keywords like `pending`, `complete`, `reviewing`, and even commit SHAs match diff/source
+text and give false positives. Read the finding **buttons** in the sidebar instead:
+
+```bash
+chrome-devtools evaluate_script "() => { const b=[...document.querySelectorAll('button')]; const headers=b.filter(x=>/\d+\s+(Bug|Flag)s?/.test(x.textContent)).map(x=>x.textContent.trim().replace(/\s+/g,' ')); return JSON.stringify(headers); }"
+```
+
+- Headers like `"1 Bug"`, `"6 Flags"` with **no** `Outdated` prefix → review is current for the
+  selected commit. Proceed to step 3.
+- Headers like `"Outdated 1 Bug"`, `"Outdated6 Flags"` → these are the *previous* commit's
+  results; the re-review is still running. Report "Devin re-review still in progress" and come
+  back in 5–10 minutes. Re-checking requires a reload (`chrome-devtools navigate_page --type reload`).
+- No Bug/Flags buttons at all → review hasn't produced results yet; come back later.
 - Timeout after 30 minutes total from trigger.
 
-The review typically takes 10–20 minutes from first page navigation.
+**There is no GitHub-side signal.** Devin does not post a commit status/check, so `gh pr checks`
+will not tell you whether the review is done — the web UI is the only source. (A "pending"
+entry in Devin's commit-status popup is some *other* GitHub check, e.g. `code-review/reviewable`,
+not Devin.)
+
+**Do not pre-judge the findings.** Even when a push looks purely mechanical (e.g. a master
+merge), wait for the non-Outdated results and enumerate them — don't assume the prior set
+carries over.
 
 ### 3. Enumerate Findings
 
