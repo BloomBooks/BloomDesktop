@@ -711,6 +711,18 @@ namespace Bloom.Publish.Rab
                         paths.RabRoot
                     );
                 }
+                catch (ApplicationException e)
+                {
+                    // RAB exited with an error (RunProcess throws here on a non-zero exit code).
+                    // Its own stdout/stderr (collected in buildOutput) usually explains why — e.g. a
+                    // missing font — so surface those diagnostics alongside the exit-code summary
+                    // instead of leaving the user with a bare "cmd.exe exited with code N" (BL-16467).
+                    // The original exception is preserved as InnerException for the log.
+                    throw new ApplicationException(
+                        DescribeFailedRabBuild(e.Message, buildOutput),
+                        e
+                    );
+                }
                 finally
                 {
                     _rabOutputCapture = null;
@@ -776,6 +788,30 @@ namespace Bloom.Publish.Rab
 
             return header
                 + " Reading App Builder reported:"
+                + Environment.NewLine
+                + string.Join(Environment.NewLine, notableLines.Select(line => "    " + line));
+        }
+
+        /// <summary>
+        /// Builds the error message for the case where Reading App Builder exits with an error
+        /// (a non-zero exit code) rather than running cleanly to a missing-APK state. The
+        /// exit-code summary (<paramref name="failureSummary"/>) is kept so the user still sees
+        /// what failed, and RAB's own diagnostics are appended when it reported any, so a build
+        /// that fails part-way still surfaces something actionable instead of a bare exit-code
+        /// message (BL-16467).
+        /// </summary>
+        internal static string DescribeFailedRabBuild(
+            string failureSummary,
+            IReadOnlyList<string> rabOutputLines
+        )
+        {
+            var notableLines = ExtractNotableRabOutputLines(rabOutputLines);
+            if (notableLines.Count == 0)
+                return failureSummary;
+
+            return failureSummary
+                + Environment.NewLine
+                + "Reading App Builder reported:"
                 + Environment.NewLine
                 + string.Join(Environment.NewLine, notableLines.Select(line => "    " + line));
         }

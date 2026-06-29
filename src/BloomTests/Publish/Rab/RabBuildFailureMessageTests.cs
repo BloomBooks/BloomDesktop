@@ -86,5 +86,39 @@ namespace BloomTests.Publish.Rab
             Assert.That(message, Does.Contain("without producing an Android app"));
             Assert.That(message, Does.Contain("did not report a reason"));
         }
+
+        [Test]
+        public void DescribeFailedRabBuild_KeepsExitSummaryAndSurfacesRabsOwnDiagnostics()
+        {
+            // When RAB exits non-zero, the captured output usually explains the failure; both the
+            // exit-code summary and RAB's diagnostics should appear (BL-16467).
+            const string exitSummary = "cmd.exe exited with code 1.";
+
+            var message = RabProjectService.DescribeFailedRabBuild(
+                exitSummary,
+                kRealWorldRabOutput
+            );
+
+            // The exit-code summary is preserved...
+            Assert.That(message, Does.Contain(exitSummary));
+            // ...and RAB's own diagnostics are surfaced alongside it.
+            Assert.That(message, Does.Contain("Font not found: Charis SIL Compact"));
+            Assert.That(message, Does.Contain("Message_Build_Add_Font"));
+            // Sanity: ordinary progress lines that are not problems are still left out.
+            Assert.That(message, Does.Not.Contain("READING APP BUILDER"));
+        }
+
+        [Test]
+        public void DescribeFailedRabBuild_NoNotableOutput_ReturnsJustTheExitSummary()
+        {
+            // With nothing actionable in the output, the bare exit-code summary is the best we can
+            // do; we should not pad it with a "did not report a reason" sentence (that phrasing is
+            // for the ran-cleanly-but-no-APK case).
+            const string exitSummary = "cmd.exe exited with code 1.";
+
+            var message = RabProjectService.DescribeFailedRabBuild(exitSummary, new List<string>());
+
+            Assert.That(message, Is.EqualTo(exitSummary));
+        }
     }
 }
