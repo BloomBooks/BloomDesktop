@@ -110,10 +110,10 @@ gh api graphql -f query='mutation {
 }'
 ```
 
-### Also reset Orca card to "in-progress" if re-entering after a commit
-```bash
-orca worktree set --worktree active --workspace-status in-progress --json
-```
+### Also sync the local worktree board if re-entering after a commit
+If you maintain a personal local board tracker (e.g. an `orca-board` user skill), sync it
+back to the "in progress / waiting on AI review" state. Skip this step if no such skill is
+available — the GitHub project board above is the shared source of truth.
 
 ## Stage 5: Bot-Review Wait Cycle
 
@@ -165,17 +165,16 @@ gh api graphql -f query='mutation {
 }'
 ```
 
-### Orca board
-```bash
-orca worktree set --worktree active --workspace-status in-review --json
-```
+### Local worktree board
+If you maintain a personal local board tracker (e.g. an `orca-board` user skill), sync it
+to the "in human review" state. Skip if unavailable.
 
 ### Report
 "PR #<number> is now in **Ready for Human** review. PR: <URL>"
 
 ## Re-entry After a New Commit
 When a commit is pushed to a PR already in "Ready for Human" or "Has Comments":
-1. Re-run Stage 4 (set project card back to "Waiting for AI-Review", set Orca to "in-progress").
+1. Re-run Stage 4 (set project card back to "Waiting for AI-Review", and sync any local board tracker).
 2. Re-run Stages 5–6 (new bot-wait cycle, then back to human when quiet).
 
 The whole cycle must restart because bots re-run on every commit.
@@ -186,4 +185,4 @@ The whole cycle must restart because bots re-run on every commit.
 - Always check for duplicate YouTrack comments before posting.
 - Always post Devin findings as GitHub PR comments before moving to any review state.
 - If `YOUTRACK_TOKEN` is unavailable, note it and continue — the YouTrack comment is the lowest-stakes step.
-- If the Orca browser is unavailable for Devin, tell the user what URL to open manually.
+- If the browser automation is unavailable for Devin, tell the user what URL to open manually.
