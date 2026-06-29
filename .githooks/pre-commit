@@ -1,0 +1,64 @@
+#!/bin/sh
+#
+# .githooks/pre-commit  --  TRANSITIONAL pre-commit DISPATCHER
+# ============================================================
+#
+# WHAT THIS IS
+#   A tiny router that git runs as the pre-commit hook (when core.hooksPath is set
+#   to ".githooks", see "HOW TO ENABLE" below). It figures out which pre-commit
+#   checker the *currently checked-out branch* ships, runs that one, and -- if it
+#   finds none -- exits non-zero with a message instead of silently doing nothing.
+#
+# WHY IT EXISTS
+#   We are migrating the front-end from yarn + husky 4 to pnpm + vite-plus (vp).
+#   During the transition, different branches carry different hook systems:
+#       * pnpm / vite-plus branches commit  src/BloomBrowserUI/.vite-hooks/pre-commit
+#       * husky 4 branches keep their hook in the default  .git/hooks/pre-commit
+#
+#   The catch: git picks the hook location from config (core.hooksPath) BEFORE it
+#   knows which branch is checked out, and that setting is shared across every
+#   worktree of a clone. So if a worktree is configured for one system and you
+#   switch it to a branch that uses the other, git runs the wrong hook -- or, worse,
+#   silently runs NO hook (the path it points at doesn't exist on that branch).
+#
+#   This dispatcher fixes that by being committed to every maintained branch at the
+#   same path. Whatever branch a worktree lands on, git always finds THIS file and
+#   it routes to the correct checker *at commit time* (the one moment branch-aware
+#   logic can run). No silent skips.
+#
+# HOW TO ENABLE (per clone -- this is git config, which is NOT committed):
+#       git config core.hooksPath .githooks
+#   On pnpm/vite-plus branches the install step ("prepare") sets this for you. On
+#   husky branches you can run it once, or add it to the install, so the dispatcher
+#   is active there too and you get the loud-fail safety net.
+#
+# WHEN THIS CAN BE DELETED
+#   This is scaffolding for the husky->vp transition ONLY. Once EVERY actively
+#   maintained branch has migrated to pnpm + vite-plus (i.e. there are no husky
+#   branches left that anyone checks out), this router serves no purpose:
+#       1. point core.hooksPath back at the vp hooks dir (or let vp manage it), and
+#       2. delete this .githooks/ directory.
+#   See .githooks/README.md for the full story.
+#
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+echo "[pre-commit dispatcher] running (.githooks/pre-commit)"
+
+# 1) pnpm / vite-plus branches ship their own pre-commit script.
+if [ -f src/BloomBrowserUI/.vite-hooks/pre-commit ]; then
+    echo "[pre-commit dispatcher] -> vite-plus hook (src/BloomBrowserUI/.vite-hooks/pre-commit)"
+    exec sh src/BloomBrowserUI/.vite-hooks/pre-commit "$@"
+fi
+
+# 2) husky 4 branches install their hook in the default location.
+husky_hook="$(git rev-parse --git-common-dir)/hooks/pre-commit"
+if [ -f "$husky_hook" ]; then
+    echo "[pre-commit dispatcher] -> husky hook ($husky_hook)"
+    exec sh "$husky_hook" "$@"
+fi
+
+# 3) Neither runner is present -- fail loudly rather than skip silently.
+echo "[pre-commit dispatcher] ERROR: no pre-commit runner found for this branch." >&2
+echo "  - pnpm / vite-plus branch?  run 'pnpm install' in src/BloomBrowserUI" >&2
+echo "  - yarn / husky branch?      run 'yarn install' in src/BloomBrowserUI" >&2
+exit 1
