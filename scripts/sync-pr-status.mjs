@@ -56,6 +56,25 @@ async function setOrcaStatus(worktreePath, statusKey) {
     );
 }
 
+/** Read an issue's current State field value (name), or null if unset/unknown. */
+async function getYtState(issueId) {
+    const res = await fetch(
+        `${YT_BASE}/api/issues/${issueId}?fields=customFields(name,value(name))`,
+        {
+            headers: {
+                Authorization: `Bearer ${YT_TOKEN}`,
+                Accept: "application/json",
+            },
+        },
+    );
+    if (!res.ok) {
+        throw new Error(`YouTrack GET ${res.status}: ${await res.text()}`);
+    }
+    const data = await res.json();
+    const stateField = data.customFields?.find((f) => f.name === "State");
+    return stateField?.value?.name ?? null;
+}
+
 async function setYtState(issueId, statusKey) {
     const state = YT_STATES[statusKey];
     if (!state) return false;
@@ -63,6 +82,12 @@ async function setYtState(issueId, statusKey) {
         console.warn("  YT: YOUTRACK env var not set — skipping");
         return false;
     }
+
+    // Idempotent: only issue the command if the issue isn't already in the
+    // target state. This lets a later reconciliation cycle self-heal a
+    // YouTrack update that failed transiently on an earlier cycle, without
+    // re-applying (and re-logging activity for) state that's already correct.
+    if ((await getYtState(issueId)) === state) return false;
 
     const res = await fetch(`${YT_BASE}/api/commands`, {
         method: "POST",
@@ -147,12 +172,11 @@ async function main() {
         }
 
         const targetOrcaStatus = ORCA_STATUSES[targetKey];
-        if (currentOrcaStatus === targetOrcaStatus) {
-            console.log(`  ${label}: already ${currentOrcaStatus} ✓`);
-            continue;
-        }
+        const orcaInSync = currentOrcaStatus === targetOrcaStatus;
 
-        // Resolve BL# for YouTrack: branch → display name → PR title/body
+        // Resolve BL# for YouTrack: branch → display name → PR title/body.
+        // We resolve it even when Orca is already in sync, because YouTrack is
+        // reconciled independently below (see "Apply YouTrack update").
         let ytIssue = extractBl(wt.git?.branch) ?? extractBl(wt.displayName);
         if (!ytIssue) {
             try {
@@ -166,16 +190,22 @@ async function main() {
             }
         }
 
-        // Apply Orca update
-        try {
-            await setOrcaStatus(wt.path, targetKey);
-            console.log(
-                `✓ ${label}: Orca ${currentOrcaStatus} → ${targetOrcaStatus}`,
-            );
-            changed++;
-        } catch (e) {
-            console.error(`  ${label}: Orca update failed: ${e.message}`);
-            continue;
+        // Apply Orca update (skip the write when it already matches, but still
+        // fall through to reconcile YouTrack — a matching Orca status does NOT
+        // imply YouTrack succeeded on a previous cycle).
+        if (orcaInSync) {
+            console.log(`  ${label}: Orca already ${currentOrcaStatus} ✓`);
+        } else {
+            try {
+                await setOrcaStatus(wt.path, targetKey);
+                console.log(
+                    `✓ ${label}: Orca ${currentOrcaStatus} → ${targetOrcaStatus}`,
+                );
+                changed++;
+            } catch (e) {
+                console.error(`  ${label}: Orca update failed: ${e.message}`);
+                continue;
+            }
         }
 
         // Apply YouTrack update
