@@ -1,7 +1,7 @@
-import { css, SerializedStyles } from "@emotion/react";
+import { css } from "@emotion/react";
 import BloomButton from "../../react_components/bloomButton";
 import { get, getBloomApiPrefix, post, postJson } from "../../utils/bloomApi";
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 import {
@@ -42,13 +42,6 @@ interface IEditingControlDropdownProps {
     loadMenuItems: (onLoaded?: (itemCount: number) => void) => void;
     onMenuItemClick: (item: ITopBarMenuItem) => void;
     showChecks: boolean;
-    renderMenuItems?: (
-        menuItems: ITopBarMenuItem[],
-        onMenuItemClick: (item: ITopBarMenuItem) => void,
-        showChecks: boolean,
-        buttonId: string,
-    ) => ReactNode;
-    menuPaperCss?: SerializedStyles;
 }
 
 interface IEditingDropdownMenuBehaviorProps {
@@ -514,41 +507,32 @@ export const EditingControlDropdown: React.FunctionComponent<
                     css: css`
                         min-width: 220px;
                         max-width: 440px;
-
-                        ${props.menuPaperCss}
                     `,
                 },
             }}
         >
-            {props.renderMenuItems
-                ? props.renderMenuItems(
-                      props.menuItems,
-                      onMenuItemClick,
-                      props.showChecks,
-                      props.buttonId,
-                  )
-                : props.menuItems.map((item) => (
-                      <LocalizableMenuItem
-                          key={`${props.buttonId}-${item.id}-${item.label}`}
-                          english={item.label}
-                          l10nId={null}
-                          onClick={() => onMenuItemClick(item)}
-                          disabled={!item.enabled}
-                          icon={
-                              props.showChecks ? (
-                                  <Checkbox
-                                      checked={Boolean(item.checked)}
-                                      size="small"
-                                      disableRipple
-                                      css={css`
-                                          padding: 0 6px 0 0;
-                                      `}
-                                  />
-                              ) : undefined
-                          }
-                          hasLeadingIconSpace={props.showChecks}
-                      />
-                  ))}
+            {props.menuItems.map((item) => (
+                <LocalizableMenuItem
+                    key={`${props.buttonId}-${item.id}-${item.label}`}
+                    english={item.label}
+                    l10nId={null}
+                    onClick={() => onMenuItemClick(item)}
+                    disabled={!item.enabled}
+                    icon={
+                        props.showChecks ? (
+                            <Checkbox
+                                checked={Boolean(item.checked)}
+                                size="small"
+                                disableRipple
+                                css={css`
+                                    padding: 0 6px 0 0;
+                                `}
+                            />
+                        ) : undefined
+                    }
+                    hasLeadingIconSpace={props.showChecks}
+                />
+            ))}
         </Menu>
     );
 
@@ -603,5 +587,3 @@ export const EditingControlDropdown: React.FunctionComponent<
         </BloomTooltip>
     );
 };
-
-export { LayoutChoicesDropdown };

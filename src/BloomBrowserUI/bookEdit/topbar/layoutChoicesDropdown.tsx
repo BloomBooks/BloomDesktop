@@ -9,6 +9,7 @@ import BloomButton from "../../react_components/bloomButton";
 import { get, post, postJson } from "../../utils/bloomApi";
 import { callOnBlur } from "../../utils/menuCloseOnBlur";
 import { useL10n } from "../../react_components/l10nHooks";
+import type { ITopBarMenuItem } from "./editTopBarControls";
 
 // The page-size/orientation picker that lives in the edit-tab top bar. The
 // trigger button shows the current size; clicking it opens a popover card that
@@ -18,13 +19,6 @@ import { useL10n } from "../../react_components/l10nHooks";
 // heading; the metric and imperial groups are distinguished by position alone.
 // Any backend-offered size that isn't in the curated lists below still appears,
 // under an "Other" heading, so no available size is ever unselectable.
-
-interface ITopBarMenuItem {
-    id: string;
-    label: string;
-    enabled: boolean;
-    checked?: boolean;
-}
 
 // Maps a backend layout id to the short label we show for it in the grid (the
 // backend's full label is used only as a fallback, e.g. the "no other options"
@@ -467,6 +461,11 @@ export const LayoutChoicesDropdown: React.FunctionComponent<{
         [noOtherLayoutsText],
     );
 
+    // Fetch the initial layout choices from the backend on mount, because this
+    // state is sourced from C# and cannot be derived from React state alone.
+    // loadLayoutChoiceData is in the dependency list only to satisfy the linter;
+    // it changes solely when the localized "no other options" text resolves, in
+    // which case re-fetching to stay in sync with the backend is harmless.
     useEffect(() => {
         loadLayoutChoiceData();
     }, [loadLayoutChoiceData]);
