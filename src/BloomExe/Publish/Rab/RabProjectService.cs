@@ -1286,7 +1286,7 @@ namespace Bloom.Publish.Rab
 
         /// <summary>
         /// Ensures the RAB project has an enabled interface (app UI) language. Without one, RAB
-        /// stops with a "select an interface language" message and produces no APK (BL-16467).
+        /// stops with a "select an interface language" message and produces no APK (BL-16470).
         /// Bloom only supplies a default when none is enabled, deriving it from the collection's
         /// languages (L1, then L2, then L3) and falling back to English; if an interface language
         /// is already enabled — for example one the user chose in Reading App Builder — we leave

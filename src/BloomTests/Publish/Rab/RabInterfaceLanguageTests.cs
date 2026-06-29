@@ -11,7 +11,7 @@ namespace BloomTests.Publish.Rab
     /// <summary>
     /// Tests for choosing and setting the app's interface (UI) language for a Reading App Builder
     /// project. RAB requires at least one enabled interface language or it will not build
-    /// (BL-16467); Bloom derives a default from the collection's languages (L1, then L2, then L3),
+    /// (BL-16470); Bloom derives a default from the collection's languages (L1, then L2, then L3),
     /// falling back to English, but never overrides an interface language that is already enabled.
     /// </summary>
     [TestFixture]
@@ -55,7 +55,7 @@ namespace BloomTests.Publish.Rab
         public void ChooseInterfaceLanguage_UsesFirstSupportedCollectionLanguage()
         {
             // L1 (Sena) is not a supported interface language, but L2 (Portuguese) is. This is the
-            // BL-16467 collection: minority L1, Portuguese L2, no L3.
+            // BL-16470 collection: minority L1, Portuguese L2, no L3.
             var language = RabProjectService.ChooseInterfaceLanguage(new[] { "seh", "pt", null });
 
             Assert.That(language.Code, Is.EqualTo("pt"));
@@ -185,10 +185,10 @@ namespace BloomTests.Publish.Rab
             return XDocument.Load(tempFile.Path).Root;
         }
 
-            return root.Element("interface-languages")
-                    ?.Element("writing-systems")
-                    ?.Elements("writing-system")
-                    ?.ToList() ?? new List<XElement>();
+        private static List<XElement> InterfaceWritingSystems(XElement root)
+        {
+            var writingSystems = root.Element("interface-languages")?.Element("writing-systems");
+            return writingSystems?.Elements("writing-system").ToList() ?? new List<XElement>();
         }
 
         [Test]
