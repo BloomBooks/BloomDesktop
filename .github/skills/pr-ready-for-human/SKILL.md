@@ -110,10 +110,10 @@ gh api graphql -f query='mutation {
 }'
 ```
 
-### Also sync the local worktree board if re-entering after a commit
-If you maintain a personal local board tracker (e.g. an `orca-board` user skill), sync it
-back to the "in progress / waiting on AI review" state. Skip this step if no such skill is
-available — the GitHub project board above is the shared source of truth.
+### Also sync the personal board if re-entering after a commit
+If a `personal-board` skill is available, invoke it to move this worktree back to its
+active / in-progress state (let that skill choose the exact column). Skip this step if no
+such skill exists — the GitHub project board above is the shared source of truth.
 
 ## Stage 5: Bot-Review Wait Cycle
 
@@ -165,9 +165,9 @@ gh api graphql -f query='mutation {
 }'
 ```
 
-### Local worktree board
-If you maintain a personal local board tracker (e.g. an `orca-board` user skill), sync it
-to the "in human review" state. Skip if unavailable.
+### Personal board
+If a `personal-board` skill is available, invoke it to record that this PR is now ready
+for human review (let that skill choose the exact column). Skip if unavailable.
 
 ### Report
 "PR #<number> is now in **Ready for Human** review. PR: <URL>"
