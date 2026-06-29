@@ -44,17 +44,24 @@ cd "$(git rev-parse --show-toplevel)" || exit 1
 
 echo "[pre-commit dispatcher] running (.githooks/pre-commit)"
 
+# We delegate with `exec "$target"` (NOT `exec sh "$target"`) so the target runs
+# under its OWN shebang. Forcing `sh` would run a bash-requiring hook under dash
+# on Debian/Ubuntu and break it. Consequence: each delegated hook MUST be
+# executable and carry a valid shebang. Husky installs its hook that way already;
+# the vite-plus hook must likewise be committed mode 0755 with a shebang (ensured
+# when the pnpm/vite-plus branch adopts this dispatcher).
+
 # 1) pnpm / vite-plus branches ship their own pre-commit script.
 if [ -f src/BloomBrowserUI/.vite-hooks/pre-commit ]; then
     echo "[pre-commit dispatcher] -> vite-plus hook (src/BloomBrowserUI/.vite-hooks/pre-commit)"
-    exec sh src/BloomBrowserUI/.vite-hooks/pre-commit "$@"
+    exec ./src/BloomBrowserUI/.vite-hooks/pre-commit "$@"
 fi
 
 # 2) husky 4 branches install their hook in the default location.
 husky_hook="$(git rev-parse --git-common-dir)/hooks/pre-commit"
 if [ -f "$husky_hook" ]; then
     echo "[pre-commit dispatcher] -> husky hook ($husky_hook)"
-    exec sh "$husky_hook" "$@"
+    exec "$husky_hook" "$@"
 fi
 
 # 3) Neither runner is present -- fail loudly rather than skip silently.
