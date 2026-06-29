@@ -192,77 +192,67 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
 }
 
 function getSplitConfig(splitPane: HTMLElement): SplitConfig | undefined {
-    if (splitPane.classList.contains("horizontal-percent")) {
-        const firstComponent = splitPane.querySelector(
-            ":scope > .split-pane-component.position-top",
-        ) as HTMLElement | null;
-        const secondComponent = splitPane.querySelector(
-            ":scope > .split-pane-component.position-bottom",
-        ) as HTMLElement | null;
-        const divider = splitPane.querySelector(
-            ":scope > .split-pane-divider",
-        ) as HTMLElement | null;
-        const firstInner = firstComponent?.querySelector(
-            ":scope > .split-pane-component-inner",
-        );
-        const secondInner = secondComponent?.querySelector(
-            ":scope > .split-pane-component-inner",
-        );
-        if (
-            !firstComponent ||
-            !secondComponent ||
-            !divider ||
-            !firstInner ||
-            !secondInner
-        ) {
-            return undefined;
-        }
-        return {
+    // A split pane is laid out either horizontally (panes stacked top/bottom) or vertically
+    // (panes side-by-side left/right). The two cases differ only in the marker class and the
+    // position classes of the two panes, so describe them in a table and share the lookup below.
+    const layouts: Array<{
+        orientation: SplitOrientation;
+        percentClass: string;
+        firstPosition: string;
+        secondPosition: string;
+    }> = [
+        {
             orientation: "horizontal",
-            firstComponent,
-            secondComponent,
-            divider,
-            firstInner,
-            secondInner,
-        };
-    }
-
-    if (splitPane.classList.contains("vertical-percent")) {
-        const firstComponent = splitPane.querySelector(
-            ":scope > .split-pane-component.position-left",
-        ) as HTMLElement | null;
-        const secondComponent = splitPane.querySelector(
-            ":scope > .split-pane-component.position-right",
-        ) as HTMLElement | null;
-        const divider = splitPane.querySelector(
-            ":scope > .split-pane-divider",
-        ) as HTMLElement | null;
-        const firstInner = firstComponent?.querySelector(
-            ":scope > .split-pane-component-inner",
-        );
-        const secondInner = secondComponent?.querySelector(
-            ":scope > .split-pane-component-inner",
-        );
-        if (
-            !firstComponent ||
-            !secondComponent ||
-            !divider ||
-            !firstInner ||
-            !secondInner
-        ) {
-            return undefined;
-        }
-        return {
+            percentClass: "horizontal-percent",
+            firstPosition: "position-top",
+            secondPosition: "position-bottom",
+        },
+        {
             orientation: "vertical",
-            firstComponent,
-            secondComponent,
-            divider,
-            firstInner,
-            secondInner,
-        };
+            percentClass: "vertical-percent",
+            firstPosition: "position-left",
+            secondPosition: "position-right",
+        },
+    ];
+    const layout = layouts.find((l) =>
+        splitPane.classList.contains(l.percentClass),
+    );
+    if (!layout) {
+        return undefined;
     }
 
-    return undefined;
+    const firstComponent = splitPane.querySelector(
+        `:scope > .split-pane-component.${layout.firstPosition}`,
+    ) as HTMLElement | null;
+    const secondComponent = splitPane.querySelector(
+        `:scope > .split-pane-component.${layout.secondPosition}`,
+    ) as HTMLElement | null;
+    const divider = splitPane.querySelector(
+        ":scope > .split-pane-divider",
+    ) as HTMLElement | null;
+    const firstInner = firstComponent?.querySelector(
+        ":scope > .split-pane-component-inner",
+    );
+    const secondInner = secondComponent?.querySelector(
+        ":scope > .split-pane-component-inner",
+    );
+    if (
+        !firstComponent ||
+        !secondComponent ||
+        !divider ||
+        !firstInner ||
+        !secondInner
+    ) {
+        return undefined;
+    }
+    return {
+        orientation: layout.orientation,
+        firstComponent,
+        secondComponent,
+        divider,
+        firstInner,
+        secondInner,
+    };
 }
 
 // Read the second (text) pane's size as a percent. The stylesheet defaults an unset split to 50%.

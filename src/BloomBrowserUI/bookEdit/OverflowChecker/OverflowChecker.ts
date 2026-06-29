@@ -11,6 +11,7 @@ import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
 import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
+import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -505,12 +506,11 @@ export default class OverflowChecker {
             }
             const isButton =
                 $editable.closest("." + kBloomButtonClass).length > 0;
-            if (
-                $editable.parents("[class*=Device],[class*=Ebook]").length ===
-                    0 ||
-                isButton
-            ) {
-                // don't show an overflow warning if we have scrolling available (unless it's a button)
+            // don't show an overflow warning if we have scrolling available (unless it's a button)
+            const scrollingWillBeAvailable =
+                !!page[0] &&
+                OverflowChecker.GetScrollInsteadOfOverflow(page[0]);
+            if (!scrollingWillBeAvailable || isButton) {
                 theOneLocalizationManager
                     .asyncGetText(
                         "EditTab.Overflow",
@@ -714,13 +714,7 @@ export default class OverflowChecker {
     }
 
     private static GetScrollInsteadOfOverflow(page: HTMLElement): boolean {
-        const $page = $(page);
-        return (
-            $page.hasClass("Device16x9Portrait") ||
-            $page.hasClass("Device16x9Landscape") ||
-            $page.hasClass("Ebook2x3Portrait") ||
-            $page.hasClass("Ebook7x5Landscape")
-        );
+        return pageScrollsInsteadOfOverflowing(page);
     }
     // Make sure there are no boxes with class 'overflow' or 'thisOverflowingParent' on the page before removing
     // the page-level overflow marker 'pageOverflows', or add it if there are.
