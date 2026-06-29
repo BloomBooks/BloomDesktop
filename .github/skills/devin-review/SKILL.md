@@ -102,7 +102,7 @@ chrome-devtools evaluate_script "() => { const b=[...document.querySelectorAll('
 
 - Headers like `"1 Bug"`, `"6 Flags"` with **no** `Outdated` prefix → review is current for the
   selected commit. Proceed to step 3.
-- Headers like `"Outdated 1 Bug"`, `"Outdated6 Flags"` → these are the *previous* commit's
+- Headers like "Outdated 1 Bug", "Outdated 6 Flags" → these are the *previous* commit's
   results; the re-review is still running. Report "Devin re-review still in progress" and come
   back in 5–10 minutes. Re-checking requires a reload (`chrome-devtools navigate_page --type reload`).
 - No Bug/Flags buttons at all → review hasn't produced results yet; come back later.
