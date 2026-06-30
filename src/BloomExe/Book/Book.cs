@@ -169,6 +169,9 @@ namespace Bloom.Book
                 // xmatter pages to the data-div that would otherwise be lost when we update
                 // the xmatter pages. That's important in some unit tests, at least. And a few
                 // other unit tests fail if we don't do this.
+                // Run data-div repairs before synchronizing so that corrupt entries (e.g. nested
+                // bloom-editables from old CKEditor language-tip divs) are cleaned up first.
+                RepairBrokenSmallCoverCredits(OurHtmlDom);
                 _bookData.SynchronizeDataItemsThroughoutDOM();
             }
 
@@ -2038,9 +2041,9 @@ namespace Bloom.Book
                 return;
             }
 
+            RepairBrokenSmallCoverCredits(OurHtmlDom);
             progress.WriteStatus("Updating Front/Back Matter...");
             BringXmatterHtmlUpToDate(OurHtmlDom);
-            RepairBrokenSmallCoverCredits(OurHtmlDom);
             RepairCoverImageDescriptions(OurHtmlDom);
             DetectAndMarkDarkCoverColor();
 
@@ -2413,13 +2416,22 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// A bug in the initial release of Bloom 3.8 resulted in the nested editable divs being stored
-        /// for the smallCoverCredits data under the general language tag "*".  (The bug was actually in
-        /// the pug mixins for xmatter.)  The manifestation experienced by users was having the front page
+        /// Repairs two known ways the bloomDataDiv entries for smallCoverCredits can end up corrupted.
+        ///
+        /// First: a bug in the initial release of Bloom 3.8 resulted in the nested editable divs being
+        /// stored for the smallCoverCredits data under the general language tag "*".  (The bug was actually
+        /// in the pug mixins for xmatter.)  The manifestation experienced by users was having the front page
         /// credits disappear from older books.  New books appeared to work properly.  Fixing the xmatter
         /// without fixing the book's html would have much the same effect, but for any books that had been
-        /// created or edited with Bloom 3.8 (or newer).  This method restores sanity to the bloomDataDiv
-        /// for the smallCoverCredits content.
+        /// created or edited with Bloom 3.8 (or newer).
+        ///
+        /// Second: entries that lack the classes "bloom-editable" and "smallCoverCredits" are not normalized
+        /// by BookData when round-tripping through the dataset.  This can leave spurious nested bloom-editable
+        /// divs (e.g. source-bubble or CKEditor language-tip elements) embedded in the data div entries,
+        /// which BookData then faithfully copies back into the page on every open, producing a cover page
+        /// where multiple lang="en" bloom-editables are all visible at once.  Adding the missing classes
+        /// causes BookData.SetNodeXml to apply NormalizeEditableInnerXml, which strips those empty nested
+        /// divs on the next round-trip.
         /// </summary>
         /// <remarks>
         /// See http://issues.bloomlibrary.org/youtrack/issue/BL-4591.
@@ -2427,7 +2439,10 @@ namespace Bloom.Book
         internal static void RepairBrokenSmallCoverCredits(HtmlDom bookDOM)
         {
             var dataDiv = bookDOM?.Body?.SelectSingleNode("div[@id='bloomDataDiv']");
-            var badSmallCoverDiv = dataDiv?.SelectSingleNode(
+            if (dataDiv == null)
+                return;
+
+            var badSmallCoverDiv = dataDiv.SelectSingleNode(
                 "div[@data-book='smallCoverCredits' and @lang='*']"
             );
             if (badSmallCoverDiv != null)
@@ -2452,6 +2467,19 @@ namespace Bloom.Book
                     dataDiv.AppendChild(newDiv);
                 }
                 dataDiv.RemoveChild(badSmallCoverDiv);
+            }
+
+            // Ensure every smallCoverCredits entry has both bloom-editable and smallCoverCredits classes.
+            // Without bloom-editable, BookData skips NormalizeEditableInnerXml when reading/writing these
+            // entries, allowing spurious nested bloom-editable divs to survive indefinitely.
+            foreach (
+                SafeXmlElement div in dataDiv
+                    .SafeSelectNodes("div[@data-book='smallCoverCredits']")
+                    .Cast<SafeXmlElement>()
+            )
+            {
+                div.AddClass("bloom-editable");
+                div.AddClass("smallCoverCredits");
             }
         }
 

@@ -1071,14 +1071,20 @@ namespace Bloom.Book
             // Remove top-level divs that contain only whitespace/nbsp/br and optional CKEditor bookmark spans.
             // These are CKEditor artifacts with no visible content; a <br> at the start or end of a <p>
             // does not affect rendering, so there is no need to preserve them.
+            // Also remove any top-level div that has class bloom-editable: this function is only ever
+            // called for bloom-editable content, and bloom-editables must never nest inside one another.
             foreach (var child in wrapper.ChildNodes)
             {
                 if (
                     child is SafeXmlElement el
                     && string.Equals(el.Name, "div", StringComparison.OrdinalIgnoreCase)
-                    && IsEmptyishTopLevelBreakDiv(el)
+                    && (IsEmptyishTopLevelBreakDiv(el) || el.HasClass("bloom-editable"))
                 )
                 {
+                    if (el.HasClass("bloom-editable") && !IsWhitespaceOrNbsp(el.InnerText))
+                        Logger.WriteEvent(
+                            $"NormalizeEditableInnerXml: removing nested bloom-editable with content: \"{el.InnerText}\""
+                        );
                     wrapper.RemoveChild(child);
                 }
             }
