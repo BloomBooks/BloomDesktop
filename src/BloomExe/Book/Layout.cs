@@ -143,9 +143,13 @@ namespace Bloom.Book
                 }
 
                 // These layouts have an explicit, already-formatted English display name.
-                // Note: Whatever you pass for englishName to LocalizationManager
-                // will win for English (over the value in the localization XLF),
-                // so we need to populate it correctly here.
+                // Note: for an English UI the englishName we pass below wins (GetDynamicString
+                // treats the runtime English value as authoritative for the source language).
+                // But that only governs the *English* display: for any other UI language whose
+                // entry is untranslated, GetDynamicString falls back to the <source> value in
+                // the XLF, not to englishName. So if these labels are renamed, the matching XLF
+                // sources must be updated too, or non-English users (and tests run under a
+                // non-English UI language) will still see the old name.
                 // Because these names are already final, they skip the generic
                 // fix-ups in the "default" branch below.
                 var englishNameLowerCase = englishName.ToLowerInvariant();
