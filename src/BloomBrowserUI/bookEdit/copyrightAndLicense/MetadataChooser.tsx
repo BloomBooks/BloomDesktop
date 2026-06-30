@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 
 import * as React from "react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import CheckIcon from "@mui/icons-material/Check";
 
 import { getAsync } from "../../utils/bloomApi";
@@ -12,6 +12,7 @@ import {
     kMutedTextGray,
 } from "../../bloomMaterialUITheme";
 import { useL10n } from "../../react_components/l10nHooks";
+import { useMountEffect } from "../../utils/useMountEffect";
 import { ICopyrightAndLicenseData } from "./CopyrightAndLicenseDialog";
 import { computePackageKey, getLicenseShorthand } from "./metadataReuseUtils";
 
@@ -102,7 +103,7 @@ export const MetadataChooser: React.FunctionComponent<{
     );
     const gatheringLabel = useL10n("Gathering…", "Common.Gathering");
 
-    useEffect(() => {
+    useMountEffect(() => {
         // Set when the dialog unmounts so the scan stops instead of running on against a
         // collection/book that may have hundreds of items.
         const cancelled = { current: false };
@@ -186,8 +187,7 @@ export const MetadataChooser: React.FunctionComponent<{
         };
         // We intentionally run this once on mount; the props are stable for the dialog's life.
         // (Localized labels are deliberately NOT used here — see the labels comment above.)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     function handleChoose(pkg: IMetadataPackage) {
         // Filling the dialog's fields updates currentData, which makes this package's

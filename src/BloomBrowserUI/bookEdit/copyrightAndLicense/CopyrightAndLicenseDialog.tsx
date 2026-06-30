@@ -244,6 +244,10 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                             }
                             onChange={(newLicenseInfo: ILicenseInfo) => {
                                 setLicenseInfo(newLicenseInfo);
+                                // Like the other edit handlers, a license change via the badge
+                                // means the fields no longer match a completed push-to-all, so
+                                // clear any stale "Done" indicator.
+                                markEditedSincePush();
                             }}
                             disabled={useOriginalCopyrightAndLicense}
                         />
