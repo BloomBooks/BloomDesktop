@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using L10NSharp;
 using SIL.PlatformUtilities;
@@ -397,11 +398,11 @@ namespace Bloom.Publish.Video
             var mainWindow = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
             if (mainWindow != null && mainWindow.IsHandleCreated)
             {
-                var monitorScalePercent = TryGetWindowScalePercent(mainWindow.Handle);
+                var monitorScalePercent = DpiUtils.TryGetWindowScalePercent(mainWindow.Handle);
                 if (monitorScalePercent.HasValue)
                     return monitorScalePercent.Value != 100;
 
-                var windowDpi = TryGetWindowDpi(mainWindow.Handle);
+                var windowDpi = DpiUtils.TryGetWindowDpi(mainWindow.Handle);
                 if (windowDpi.HasValue)
                     return windowDpi.Value != 96;
 
@@ -410,7 +411,7 @@ namespace Bloom.Publish.Video
                     return true;
             }
 
-            var systemDpi = TryGetSystemDpi();
+            var systemDpi = DpiUtils.TryGetSystemDpi();
             if (systemDpi.HasValue)
                 return systemDpi.Value != 96;
 
@@ -420,76 +421,6 @@ namespace Bloom.Publish.Video
                 return Math.Abs(graphics.DpiX - 96f) > 0.5f;
             }
         }
-
-        /// <summary>
-        /// Returns the DPI for a specific window when supported by this Windows version.
-        /// </summary>
-        private static uint? TryGetWindowDpi(IntPtr handle)
-        {
-            try
-            {
-                return GetDpiForWindow(handle);
-            }
-            catch (EntryPointNotFoundException)
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Returns the system DPI when supported by this Windows version.
-        /// </summary>
-        private static uint? TryGetSystemDpi()
-        {
-            try
-            {
-                return GetDpiForSystem();
-            }
-            catch (EntryPointNotFoundException)
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Returns monitor scale percentage (for example, 100, 125, 150) for the monitor
-        /// containing the specified window, when supported by this Windows version.
-        /// </summary>
-        private static uint? TryGetWindowScalePercent(IntPtr handle)
-        {
-            try
-            {
-                var monitor = MonitorFromWindow(handle, MONITOR_DEFAULTTONEAREST);
-                if (monitor == IntPtr.Zero)
-                    return null;
-
-                return GetScaleFactorForMonitor(monitor, out var scaleFactor) == 0
-                    ? scaleFactor
-                    : null;
-            }
-            catch (EntryPointNotFoundException)
-            {
-                return null;
-            }
-            catch (DllNotFoundException)
-            {
-                return null;
-            }
-        }
-
-        private const uint MONITOR_DEFAULTTONEAREST = 2;
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
-
-        [DllImport("Shcore.dll")]
-        private static extern int GetScaleFactorForMonitor(IntPtr hMon, out uint pScale);
-
-        [DllImport("user32.dll")]
-        private static extern uint GetDpiForWindow(IntPtr hWnd);
-
-        [DllImport("user32.dll")]
-        private static extern uint GetDpiForSystem();
 
         private void RecordVideo(ApiRequest request)
         {

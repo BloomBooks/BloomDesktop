@@ -14,6 +14,7 @@ using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.SafeXml;
+using Bloom.Utils;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -419,6 +420,11 @@ const page = document.getElementsByClassName('bloom-page')[0]; page.clientHeight
             );
             var browser = BrowserMaker.MakeBrowser();
             browser.CreateControl();
+            if (browser is WebView2Browser)
+            {
+                var dpi = DpiUtils.TryGetWindowDpi(browser.Handle) ?? 96;
+                (browser as WebView2Browser).InternalBrowser.ZoomFactor = 96.0 / dpi;
+            }
             browser.DocumentCompleted += _browser_OnDocumentCompleted;
             return browser;
         }
