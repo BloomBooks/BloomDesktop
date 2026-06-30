@@ -3905,6 +3905,16 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <target xml:lang="sw" state="final">Kifaa 16X9 Kurasa wima</target>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
       </trans-unit>
+      <trans-unit id="LayoutChoices.Ebook7x5Landscape" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Ebook 7x5 Landscape</source>
+        <target xml:lang="sw" state="needs-translation">Ebook 7x5 Landscape</target>
+        <note>ID: LayoutChoices.Ebook7x5Landscape</note>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.Ebook2x3Portrait" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Ebook 2x3 Portrait</source>
+        <target xml:lang="sw" state="needs-translation">Ebook 2x3 Portrait</target>
+        <note>ID: LayoutChoices.Ebook2x3Portrait</note>
+      </trans-unit>
       <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true">
         <source xml:lang="en">Half Folio Portrait</source>
         <target xml:lang="sw" state="needs-translation">Half Folio Portrait</target>
