@@ -1067,6 +1067,24 @@ export class ReaderToolsModel {
 
     private gettingTextOfWholeBook = false;
     private bookStatistics = {};
+    private starterBookStats = {
+        levelNumber: 0,
+        pageCount: 0,
+        actualSentencesPerPage: 0,
+        actualLettersPerWord: 0,
+        actualWordsPerPage: 0,
+        actualWordsPerSentence: 0,
+        actualWordCount: 0,
+        actualWordsPerPageBook: 0,
+        actualUniqueWords: 0,
+        actualSentenceCount: 0,
+        actualMaxGlyphsPerWord: 0,
+        actualMaxWordsPerSentence: 0,
+        actualAverageWordsPerSentence: 0,
+        actualAverageWordsPerPage: 0,
+        actualAverageGlyphsPerWord: 0,
+        actualAverageSentencesPerPage: 0,
+    };
 
     public displayBookTotals(): void {
         if (this.gettingTextOfWholeBook) {
@@ -1177,6 +1195,17 @@ export class ReaderToolsModel {
             this.maxAverageSentencesPerPage(),
             "actualAverageSentencesPerPage",
         );
+        if (this.refreshFuncLeveled !== undefined) {
+            this.refreshFuncLeveled();
+        }
+    }
+
+    public getStarterBookStats(): { [key: string]: number } {
+        return this.starterBookStats;
+    }
+
+    public getActualBookStats(): { [key: string]: number } {
+        return this.bookStatistics;
     }
 
     public copyLeveledReaderStatsToClipboard(): void {

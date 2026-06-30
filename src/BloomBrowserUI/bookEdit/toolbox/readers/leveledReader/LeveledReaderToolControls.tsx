@@ -1,11 +1,4 @@
-import {
-    FunctionComponent,
-    useEffect,
-    useLayoutEffect,
-    useReducer,
-    useRef,
-    useState,
-} from "react";
+import { FunctionComponent, useReducer, useRef, useState } from "react";
 import { ReaderToolSwitch } from "../ReaderToolSwitch";
 import { css, ThemeProvider } from "@emotion/react";
 import { toolboxTheme } from "../../../../bloomMaterialUITheme";
@@ -26,17 +19,10 @@ const DataRow: FunctionComponent<{
     children: string;
 }> = (props) => {
     return (
-        <div
-            css={css`
-                display: flex;
-                align-items: flex-start;
-                margin-top: 4px;
-            `}
-        >
+        <>
             <Div
                 l10nKey={`EditTab.Toolbox.LeveledReaderTool.${props.l10nKeyInsert}`}
                 css={css`
-                    flex: 0 0 83px;
                     min-width: 83px;
                     padding-right: 5px;
                     align-self: center;
@@ -46,22 +32,24 @@ const DataRow: FunctionComponent<{
             </Div>
             <div
                 css={css`
-                    flex: 0 0 40px;
                     max-width: 40px;
                     padding-right: 3px;
+                    word-wrap: break-word;
                     overflow-wrap: break-word;
                     text-align: center;
+                    align-self: start;
                 `}
             >
                 {props.maxNum !== 0 ? props.maxNum : ""}
             </div>
             <div
                 css={css`
-                    flex: 0 0 40px;
                     max-width: 40px;
                     padding-right: 3px;
+                    word-wrap: break-word;
                     overflow-wrap: break-word;
                     text-align: center;
+                    align-self: start;
                     color: ${(props.actualNum as number) > props.maxNum &&
                     props.maxNum !== 0
                         ? "orange"
@@ -70,21 +58,15 @@ const DataRow: FunctionComponent<{
             >
                 {props.actualNum}
             </div>
-        </div>
+        </>
     );
 };
 
 const HeaderRow: FunctionComponent = () => {
     return (
-        <div
-            css={css`
-                display: flex;
-                align-items: flex-start;
-            `}
-        >
+        <>
             <div
                 css={css`
-                    flex: 0 0 83px;
                     min-width: 83px;
                     padding-right: 5px;
                 `}
@@ -92,10 +74,12 @@ const HeaderRow: FunctionComponent = () => {
             <Div
                 l10nKey="EditTab.Toolbox.LeveledReaderTool.Max"
                 css={css`
-                    flex: 0 0 40px;
                     max-width: 40px;
                     padding-right: 3px;
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
                     text-align: center;
+                    align-self: start;
                 `}
             >
                 Max
@@ -103,36 +87,34 @@ const HeaderRow: FunctionComponent = () => {
             <Div
                 l10nKey="EditTab.Toolbox.LeveledReaderTool.Actual"
                 css={css`
-                    flex: 0 0 40px;
                     max-width: 40px;
                     padding-right: 3px;
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
                     text-align: center;
+                    align-self: start;
                 `}
             >
                 Actual
             </Div>
-        </div>
+        </>
     );
 };
 
-const StatsSection: FunctionComponent<{
-    l10nKeyInsert: string;
-    divColor: string;
+const StatsGrid: FunctionComponent<{
     children: React.ReactNode;
 }> = (props) => {
     return (
         <div
             css={css`
+                display: grid;
+                row-gap: 5px;
+                grid-template-columns:
+                    minmax(83px, max-content) minmax(min-content, 40px)
+                    minmax(min-content, 40px);
                 margin-bottom: 25px;
             `}
         >
-            <Div
-                l10nKey={`EditTab.Toolbox.LeveledReaderTool.${props.l10nKeyInsert}`}
-                css={css`
-                    color: ${props.divColor};
-                    margin-bottom: 2px;
-                `}
-            />
             <HeaderRow />
             {props.children}
         </div>
@@ -143,13 +125,15 @@ function formatAverage(value: number): string {
     return value.toFixed(1);
 }
 
-const LeveledReaderStats: FunctionComponent = () => {
+const LeveledReaderStats: FunctionComponent<{
+    bookStats: { [key: string]: number };
+}> = (props) => {
     const model = getTheOneReaderToolsModel();
 
     return (
         <div
             css={css`
-                margin-left: 8px;
+                margin-left: 10px;
                 margin-top: 20px;
             `}
         >
@@ -157,121 +141,151 @@ const LeveledReaderStats: FunctionComponent = () => {
                 l10nKey="EditTab.Toolbox.LeveledReaderTool.WordCounts"
                 css={css`
                     color: ${kBloomLightBlue};
-                    margin-bottom: 3px;
+                    margin-bottom: 4px;
                 `}
             />
-            <StatsSection l10nKeyInsert="ThisPage" divColor="white">
+            <Div
+                l10nKey="EditTab.Toolbox.LeveledReaderTool.ThisPage"
+                css={css`
+                    color: white;
+                    margin-bottom: 4px;
+                `}
+            />
+            <StatsGrid>
                 <DataRow
                     l10nKeyInsert="PerPage"
                     maxNum={model.maxWordsPerPage()}
-                    actualNum={0}
+                    actualNum={props.bookStats["actualWordsPerPage"]}
                 >
                     per page
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="PerSentence"
                     maxNum={model.maxWordsPerSentenceOnThisPage()}
-                    actualNum={0}
+                    actualNum={props.bookStats["actualWordsPerSentence"]}
                 >
                     longest sentence
                 </DataRow>
-            </StatsSection>
-            <StatsSection l10nKeyInsert="ThisBook" divColor="white">
+            </StatsGrid>
+            <Div
+                l10nKey="EditTab.Toolbox.LeveledReaderTool.ThisBook"
+                css={css`
+                    color: white;
+                    margin-bottom: 4px;
+                `}
+            />
+            <StatsGrid>
                 <DataRow
                     l10nKeyInsert="Total"
                     maxNum={model.maxWordsPerBook()}
-                    actualNum={0}
+                    actualNum={props.bookStats["actualWordCount"]}
                 >
                     total
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="PerPage"
                     maxNum={model.maxWordsPerPage()}
-                    actualNum={0}
+                    actualNum={props.bookStats["actualWordsPerPageBook"]}
                 >
                     per page
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="Unique"
                     maxNum={model.maxUniqueWordsPerBook()}
-                    actualNum={0}
+                    actualNum={props.bookStats["actualUniqueWords"]}
                 >
                     unique
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="MaxSentenceLength"
                     maxNum={model.maxWordsPerSentenceOnThisPage()}
-                    actualNum={0}
+                    actualNum={props.bookStats["actualMaxWordsPerSentence"]}
                 >
                     longest sentence
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="Average"
                     maxNum={model.maxAverageWordsPerSentence()}
-                    actualNum={0}
+                    actualNum={formatAverage(
+                        props.bookStats["actualAverageWordsPerSentence"],
+                    )}
                 >
                     avg per sentence
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="AveragePerPage"
                     maxNum={model.maxAverageWordsPerPage()}
-                    actualNum={0}
+                    actualNum={formatAverage(
+                        props.bookStats["actualAverageWordsPerPage"],
+                    )}
                 >
                     avg per page
                 </DataRow>
-            </StatsSection>
-            <StatsSection
-                l10nKeyInsert="WordLengths"
-                divColor={kBloomLightBlue}
-            >
+            </StatsGrid>
+            <Div
+                l10nKey="EditTab.Toolbox.LeveledReaderTool.WordLengths"
+                css={css`
+                    color: ${kBloomLightBlue};
+                    margin-bottom: 4px;
+                `}
+            />
+            <StatsGrid>
                 <DataRow
                     l10nKeyInsert="ThisPageLC"
                     maxNum={model.maxGlyphsPerWord()}
-                    actualNum={0}
+                    actualNum={props.bookStats["actualLettersPerWord"]}
                 >
                     this page
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="MaxInBook"
                     maxNum={model.maxGlyphsPerWord()}
-                    actualNum={0}
+                    actualNum={props.bookStats["actualMaxGlyphsPerWord"]}
                 >
                     max in book
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="AverageInBook"
                     maxNum={model.maxAverageGlyphsPerWord()}
-                    actualNum={0}
+                    actualNum={formatAverage(
+                        props.bookStats["actualAverageGlyphsPerWord"],
+                    )}
                 >
                     avg in book
                 </DataRow>
-            </StatsSection>
-            <StatsSection
-                l10nKeyInsert="SentenceCounts"
-                divColor={kBloomLightBlue}
-            >
+            </StatsGrid>
+            <Div
+                l10nKey="EditTab.Toolbox.LeveledReaderTool.SentenceCounts"
+                css={css`
+                    color: ${kBloomLightBlue};
+                    margin-bottom: 4px;
+                `}
+            />
+            <StatsGrid>
                 <DataRow
                     l10nKeyInsert="ThisPageLC"
                     maxNum={model.maxSentencesPerPage()}
-                    actualNum={0}
+                    actualNum={props.bookStats["actualSentencesPerPage"]}
                 >
                     this page
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="TotalInBook"
                     maxNum={model.maxSentencesPerBook()}
-                    actualNum={0}
+                    actualNum={props.bookStats["actualSentenceCount"]}
                 >
                     total in book
                 </DataRow>
                 <DataRow
                     l10nKeyInsert="AverageInBook"
                     maxNum={model.maxAverageSentencesPerPage()}
-                    actualNum={0}
+                    actualNum={formatAverage(
+                        props.bookStats["actualAverageSentencesPerPage"],
+                    )}
                 >
                     avg in book
                 </DataRow>
-            </StatsSection>
+            </StatsGrid>
         </div>
     );
 };
@@ -292,8 +306,9 @@ const LeveledReaderList: FunctionComponent<{
     return (
         <div
             css={css`
-                padding-left: 8px;
+                padding-left: 10px;
                 margin-top: 15px;
+                margin-bottom: 5px;
             `}
         >
             <Div
@@ -335,9 +350,16 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
     const [showTool, setShowTool] = useState<boolean>(
         isReaderToolEnabledOnCurrentPage(true),
     );
+    const [bookStats, setBookStats] = useState<{ [key: string]: number }>(
+        model.getStarterBookStats(),
+    );
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
     function updateState(): void {
+        const curBookStats = model.getActualBookStats();
+        if (Object.keys(curBookStats).length === 16) {
+            setBookStats(curBookStats);
+        }
         forceUpdate();
     }
 
@@ -347,7 +369,7 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
         } else {
             model.decrementLevel();
         }
-        updateState();
+        forceUpdate();
     }
 
     const updateStateRef = useRef(updateState);
@@ -419,7 +441,7 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
                             isForLeveled={true}
                             changeFunction={changeLevel}
                         />
-                        <LeveledReaderStats />
+                        <LeveledReaderStats bookStats={bookStats} />
                         <LeveledReaderList
                             isLinkList={false}
                             l10nKeyInsert="FoThisLevel"
