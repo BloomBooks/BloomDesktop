@@ -66,6 +66,7 @@ function getHighlightConstructor(
 }
 
 export class AudioTextHighlightManager {
+    // Remove all current and split highlights from the registry for the document containing contextNode.
     public clearAllManagedHighlights(contextNode?: Node): void {
         if (!contextNode) {
             return;
@@ -79,6 +80,7 @@ export class AudioTextHighlightManager {
         allManagedHighlightNames.forEach((name) => registry.delete(name));
     }
 
+    // Remove only the split (blue segment) highlights from the registry, leaving the current highlight intact.
     public clearSplitHighlights(contextNode?: Node): void {
         if (!contextNode) {
             return;

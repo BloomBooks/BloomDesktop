@@ -1266,6 +1266,11 @@ export default class AudioRecording implements IAudioRecorder {
         }
 
         this.resetAudioIfPaused();
+        // Clear any split-complete state before rebuilding the current highlight.
+        // Otherwise the custom-highlight logic will still treat the textbox as "post split"
+        // and suppress the yellow current highlight we want to show as Speak starts.
+        this.clearAudioSplit();
+
         // If we were paused highlighting one sentence but are recording in text box mode,
         // things could get confusing. At least make sure the selection reflects what we
         // actually want to record.
@@ -1280,8 +1285,6 @@ export default class AudioRecording implements IAudioRecorder {
         this.recording = true;
 
         const id = this.getCurrentAudioId();
-
-        this.clearAudioSplit();
 
         return axios
             .post("/bloom/api/audio/startRecord?id=" + id)
