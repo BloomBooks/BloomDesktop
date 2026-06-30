@@ -81,7 +81,15 @@ namespace Bloom.Book
 
         public bool IsDeviceLayout
         {
-            get { return SizeAndOrientation.ToString().StartsWith("Device"); }
+            get
+            {
+                // "Device*" is the original family of screen-oriented (non-paper) layouts.
+                // Layouts whose name contains "Ebook" (e.g. Ebook2x3/Ebook7x5) are the same kind of
+                // thing; eventually the "Device" name is expected to be retired in favor of a family
+                // of ebook layouts.
+                var name = SizeAndOrientation.ToString();
+                return name.StartsWith("Device") || name.Contains("Ebook");
+            }
         }
 
         public override string ToString()
@@ -134,27 +142,44 @@ namespace Bloom.Book
                     englishName = englishName + " (" + splitStyle + ")";
                 }
 
+                // These layouts have an explicit, already-formatted English display name.
+                // Note: Whatever you pass for englishName to LocalizationManager
+                // will win for English (over the value in the localization XLF),
+                // so we need to populate it correctly here.
+                // Because these names are already final, they skip the generic
+                // fix-ups in the "default" branch below.
                 var englishNameLowerCase = englishName.ToLowerInvariant();
-                if (englishNameLowerCase == "uscomic portrait")
+                switch (englishNameLowerCase)
                 {
-                    englishName = "US Comic Portrait";
+                    case "uscomic portrait":
+                        englishName = "US Comic Portrait";
+                        break;
+                    case "size6x9 portrait":
+                        englishName = "6\"x9\" Portrait";
+                        break;
+                    case "size6x9 landscape":
+                        englishName = "6\"x9\" Landscape";
+                        break;
+                    case "ebook2x3 portrait":
+                        englishName = "Ebook 2x3 Portrait";
+                        break;
+                    case "ebook7x5 landscape":
+                        englishName = "Ebook 7x5 Landscape";
+                        break;
+                    case "device16x9 portrait":
+                        englishName = "Ebook 9x16 Portrait";
+                        break;
+                    case "device16x9 landscape":
+                        englishName = "Ebook 16x9 Landscape";
+                        break;
+                    default:
+                        // Generic fix-ups for sizes that don't have an explicit name above.
+                        englishName = englishName.Replace("letter", " Letter");
+                        englishName = englishName.Replace("legal", " Legal");
+                        englishName = englishName.Replace("folio", " Folio");
+                        englishName = englishName.Replace("16x9", " 16x9");
+                        break;
                 }
-                else if (englishNameLowerCase == "size6x9 portrait")
-                {
-                    // Note: Whatever you pass for englishName to Localizationmanager
-                    // will win for English (over the value in the localization XLF,
-                    // so we need to populate it correctly here.
-                    englishName = "6\"x9\" Portrait";
-                }
-                else if (englishNameLowerCase == "size6x9 landscape")
-                {
-                    englishName = "6\"x9\" Landscape";
-                }
-
-                englishName = englishName.Replace("letter", " Letter");
-                englishName = englishName.Replace("legal", " Legal");
-                englishName = englishName.Replace("folio", " Folio");
-                englishName = englishName.Replace("16x9", " 16x9");
                 englishName = englishName.Trim();
                 var displayName = L10NSharp.LocalizationManager.GetDynamicString(
                     "Bloom",
