@@ -3180,6 +3180,34 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void UpdateCharacterStyleMarkup_ReducesNestingOfSameTags()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><b><b style='color:red'>text</b></b></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo("<strong>text</strong>")
+            );
+            var dom1 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><i><i style='color:red'>text</i></i></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom1);
+            Assert.That(GetFirstEditableParagraph(dom1).InnerXml, Is.EqualTo("<em>text</em>"));
+            var dom2 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><sup><sup style='color:red'>text</sup></sup></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom2);
+            Assert.That(GetFirstEditableParagraph(dom2).InnerXml, Is.EqualTo("<sup>text</sup>"));
+            var dom3 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><u><u style='color:red'>text</u></u></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom3);
+            Assert.That(GetFirstEditableParagraph(dom3).InnerXml, Is.EqualTo("<u>text</u>"));
+        }
+
+        [Test]
         public void BringBookUpToDate_FixesDuplicateAudioIds_SentenceRecording()
         {
             _bookDom = new HtmlDom(
