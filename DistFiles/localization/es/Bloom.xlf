@@ -3906,6 +3906,16 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Dispositivo 16x9 Vertical</target>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
       </trans-unit>
+      <trans-unit id="LayoutChoices.Ebook7x5Landscape" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Ebook 7x5 Landscape</source>
+        <target xml:lang="es-ES" state="needs-translation">Ebook 7x5 Landscape</target>
+        <note>ID: LayoutChoices.Ebook7x5Landscape</note>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.Ebook2x3Portrait" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Ebook 2x3 Portrait</source>
+        <target xml:lang="es-ES" state="needs-translation">Ebook 2x3 Portrait</target>
+        <note>ID: LayoutChoices.Ebook2x3Portrait</note>
+      </trans-unit>
       <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Half Folio Portrait</source>
         <target xml:lang="es-ES" state="final">Medio folio Vertical</target>
