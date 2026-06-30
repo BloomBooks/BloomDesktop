@@ -168,10 +168,12 @@
 .Cm13Landscape {
     --page-margin: 5mm;
 }
+.bloom-page[class*="Ebook"],
 .bloom-page[class*="Device"] {
     --page-margin: 10px;
 }
 
+.bloom-page[class*="Ebook"],
 .bloom-page[class*="Device"],
 .bloomPlayer-page .bloom-page {
     /* Deliberately set both of these, which combines with a special device/bloom-player rule
@@ -182,6 +184,7 @@
     --pageNumber-always-left-margin: 0px;
 }
 
+.numberedPage[class*="Ebook"],
 .numberedPage[class*="Device"] {
     /* These page sizes have small margins, so we need extra height on numbered ones.
     (Note that this disappears if page numbers are turned off, because --pageNumber-show-multiplicand is 0.) */

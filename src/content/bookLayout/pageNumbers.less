@@ -52,6 +52,7 @@
     // special behaviors for side-left for device page sizes, I decided to let this
     // rule go ahead and set left for them, too, just in case we encounter a case where
     // --pageNumber-always-left-margin has no value.
+    &[class*="Ebook"]:after,
     &[class*="Device"]:after,
     .bloomPlayer-page &:after,
     &.side-left:after {
@@ -68,6 +69,7 @@
         );
     }
 
+    &[class*="Ebook"]:after,
     &[class*="Device"]:after,
     .bloomPlayer-page &:after {
         // note that here the property has "always"
@@ -85,6 +87,7 @@
      * To defeat that, either right: or left: must not be set, which I've only managed
      * to achieve (since the default theme sets them both) by setting to something
      * deliberately invalid. */
+    &[class*="Ebook"]:after,
     &[class*="Device"]:after,
     .bloomPlayer-page &:after {
         // in the default theme, we always center the page number; both right and left will be 0 for that
