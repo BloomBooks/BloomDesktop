@@ -7,24 +7,10 @@ Use this skill when the user asks you to **create** a new YouTrack issue (a bug,
 in the Bloom tracker at `https://issues.bloomlibrary.org/youtrack`. For *fixing* an existing
 issue see `youtrack-fix`; for *querying/reporting* on issues see `bloom-youtrack-reporting`.
 
-## 1. Authentication (never hard-code a token)
+For authentication, the base URL, and request conventions (headers, `fields=`), use the
+**`youtrack-api`** skill — this skill only covers what's specific to *creating* an issue.
 
-You need a YouTrack **permanent token**. Find one in this order; do NOT paste a real token into
-this skill or any committed file:
-
-1. If the `youtrack` MCP server is connected (`claude mcp list`), prefer its tools — no token
-   handling needed. (Note: the built-in `/mcp` endpoint has been returning HTTP 500 on the
-   self-hosted instance, so REST below is usually the working path.)
-2. Otherwise look for a token already available to the agent (e.g. a stored `youtrack-mcp-token`
-   memory, or a `YOUTRACK_TOKEN` environment variable).
-3. If you still don't have one, ask the user to create it: in YouTrack click the avatar →
-   **Profile** → **Account Security** → **New token…**, name it (e.g. `claude-code`), scope
-   **YouTrack**, and paste it back (or have them set it up themselves). Tokens start with `perm-`.
-
-Validate the token before doing real work:
-`GET /api/users/me?fields=login,name` with header `Authorization: Bearer <token>` should return 200.
-
-## 2. Choose the initial state — ASK
+## 1. Choose the initial state — ASK
 
 Unless the requester already named a state, use the **askQuestions tool** to choose where the
 new issue should start. Offer exactly these options (header e.g. "Initial state"):
@@ -35,7 +21,7 @@ new issue should start. Offer exactly these options (header e.g. "Initial state"
 
 Use the chosen value as the `State` field below.
 
-## 3. Gather the content
+## 2. Gather the content
 
 - **Summary**: one concise line.
 - **Description**: Markdown. For code-found bugs include where (`file:line`), the root cause, any
@@ -44,10 +30,9 @@ Use the chosen value as the `State` field below.
 - **Board/version**: which release board the user wants (e.g. "6.5"). This maps to the
   **Kanban Board** version field / agile sprint — see below.
 
-## 4. Create via the REST API
+## 3. Create via the REST API
 
-Base: `https://issues.bloomlibrary.org/youtrack`. All calls send
-`Authorization: Bearer <token>`, `Accept: application/json`, and (for POSTs) `Content-Type: application/json`.
+Calls use the base URL, headers, and token from the **`youtrack-api`** skill.
 
 **Look IDs up dynamically — do not trust the cached values, they change every release:**
 
@@ -79,10 +64,7 @@ Recommended sequence:
    `GET /api/issues/<idReadable>?fields=idReadable,summary,customFields(name,value(name))`
    and confirm Type, Kanban Board, and State are what was requested.
 
-Building POST bodies with embedded code/quotes is easier from a JSON file (`curl -d @file.json`)
-than inline.
-
-## 5. Report back
+## 4. Report back
 
 Give the user the readable id and a clickable link:
 `https://issues.bloomlibrary.org/youtrack/issue/<idReadable>`, and note the final Type / board /

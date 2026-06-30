@@ -4,6 +4,9 @@ description: fix issues reported in youtrack cards, which start with "BL-", e.g.
 ---
 
 You will be given a url or an issue number starting with "BL". If you have just the issue number, then the URL is https://issues.bloomlibrary.org/youtrack/issue/<issue-number>.
+
+To read the issue's summary, description, and attachments, use the **`youtrack-api`** skill (the web URL above is a SPA and returns blank to a plain fetch — use the REST API). For *creating* a new issue see `youtrack-create-issue`; for *querying/reporting* across issues see `bloom-youtrack-reporting`.
+
 Begin by making a plan: read the code base as needed. If you want clarification from me, use the askQuestions tool. Once you have a plan, print it out and then use the askQuestions tool to ask me if you can proceed.
 
 If the current branch is not "master", "main", or "VersionX.Y" (e.g. "Version6.3"), then this means another agent is already working on an issue. Use the askQuestions tool to tell me that and ask me if I am ready for you to proceed. At this point ensure that the current branch is "master", "main", or "VersionX.Y" (e.g. "Version6.3"). If it isn't, ask me if I can fix the situation.
