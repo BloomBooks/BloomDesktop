@@ -2667,10 +2667,32 @@ namespace Bloom.Book
                     "<strong>$1</strong>",
                     RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                 );
+                if (inner.Contains("<b>")) // handle one level of nesting
+                    inner = Regex.Replace(
+                        inner,
+                        @"<b>(.*?)</b>",
+                        "<strong>$1</strong>",
+                        RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
+                    );
                 inner = Regex.Replace(
                     inner,
                     @"<i>(.*?)</i>",
                     "<em>$1</em>",
+                    RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
+                );
+                if (inner.Contains("<i>")) // handle one level of nesting
+                    inner = Regex.Replace(
+                        inner,
+                        @"<i>(.*?)</i>",
+                        "<em>$1</em>",
+                        RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
+                    );
+                // Replace nested (doubled) markup with single markup.  This shouldn't happen, but it
+                // has been seen in the wild, possibly as a result of pasting text. (BL-16378)
+                inner = Regex.Replace(
+                    inner,
+                    @"<(strong|em|sup|u)>(<\1>.*?</\1>)</\1>",
+                    "$2",
                     RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                 );
                 // Remove empty (or essentially empty) character markup tags.  (BL-16387)
@@ -2679,7 +2701,8 @@ namespace Bloom.Book
                 inner = Regex.Replace(
                     inner,
                     @"<(strong|em|sup|u)>(\u200B|\u200C|\u200D)*</\1>",
-                    ""
+                    "",
+                    RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                 );
                 if (inner != para.InnerXml)
                     para.InnerXml = inner;

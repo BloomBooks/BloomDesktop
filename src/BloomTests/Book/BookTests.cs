@@ -3180,6 +3180,19 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void UpdateCharacterStyleMarkup_ReducesNestingOfSameTags()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><b><b style='color:red'>text</b></b></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo("<strong>text</strong>")
+            );
+        }
+
+        [Test]
         public void BringBookUpToDate_FixesDuplicateAudioIds_SentenceRecording()
         {
             _bookDom = new HtmlDom(
