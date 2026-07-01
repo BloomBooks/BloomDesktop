@@ -728,8 +728,11 @@ export default class OverflowChecker {
             $page.removeClass("pageOverflows");
         else $page.addClass("pageOverflows");
 
-        // BL-11949: books with device layouts can ignore overflows because we'll show a scrollbar
-        if (this.GetScrollInsteadOfOverflow(page)) {
+        // BL-11949: books with device layouts can ignore overflows because we'll show a scrollbar.
+        // Note: our caller passes a jQuery object here, so hand GetScrollInsteadOfOverflow the
+        // underlying DOM element (it reads classList directly). $page may be empty if the element
+        // has no .bloom-page ancestor, so guard for that. See BL-16503.
+        if ($page[0] && this.GetScrollInsteadOfOverflow($page[0])) {
             $page.removeClass("pageOverflows");
             // note, we don't yet remove the bubble that says there is too much text. This code is already spaghetti enough, I didn't want to pay that price at this time. --JH
         }
