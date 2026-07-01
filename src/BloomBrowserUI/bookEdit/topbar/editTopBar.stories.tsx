@@ -6,10 +6,10 @@ import {
     ContentLanguagesDropdown,
     CopyButton,
     CutButton,
-    LayoutChoicesDropdown,
     PasteButton,
     UndoButton,
 } from "./editTopBarControls";
+import { LayoutChoicesDropdown } from "./layoutChoicesDropdown";
 
 const meta: Meta = {
     title: "Edit Top Bar Controls",

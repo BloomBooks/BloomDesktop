@@ -2083,6 +2083,31 @@
         <note>ID: EditTab.NoOtherLayouts</note>
         <note>Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice</note>
       </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Ebooks" translate="no">
+        <source xml:lang="en">Ebooks</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Ebooks</note>
+        <note>Heading for the ebook-size column in the page size and orientation chooser dropdown on the edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Other" translate="no">
+        <source xml:lang="en">Other</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Other</note>
+        <note>Heading for the catch-all group in the page size and orientation chooser dropdown on the edit tab. It lists any sizes a template offers that don't fit the standard metric, ebook, or imperial groups.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Portrait" translate="no">
+        <source xml:lang="en">Portrait</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Portrait</note>
+        <note>Section heading for portrait page sizes in the page size and orientation chooser dropdown on the edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Landscape" translate="no">
+        <source xml:lang="en">Landscape</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Landscape</note>
+        <note>Section heading for landscape page sizes in the page size and orientation chooser dropdown on the edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Square" translate="no">
+        <source xml:lang="en">Square</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Square</note>
+        <note>Section heading for square page sizes in the page size and orientation chooser dropdown on the edit tab.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Overflow" sil:dynamic="true">
         <source xml:lang="en">This box has more text than will fit</source>
         <note>ID: EditTab.Overflow</note>
