@@ -187,33 +187,12 @@ namespace Bloom.web.controllers
                     // The dialog's "Copy to all other images in the book" button sets this.
                     // (We no longer pop up a question asking whether to copy to all images.)
                     bool applyToAllImages = request.GetParamOrNull("applyToAllImages") == "true";
-                    if (View.MetadataEditIsFromImageToolbox)
-                    {
-                        // Invoke the palaso image toolbox's save callback directly so that the
-                        // toolbox UI immediately shows the new copyright/license information.
-                        // However, since we launched this dialog from the image chooser, and
-                        // have not yet committed to a new image, we don't want to save the page
-                        // and save the metadata to the current image file, if any.
-                        View.ApplyImageMetadataToImageToolbox(metadata);
-                        // The "Add this info to all images" button is also visible in this
-                        // toolbox-launched case. We can't copy to the book's images here (we
-                        // have not committed to an image and deliberately don't save the page),
-                        // but we must still clear the dialog's "Working…" spinner so it doesn't
-                        // hang forever.
-                        if (applyToAllImages)
-                            View.Model.NotifyCopyrightPushedToAllImages();
-                        request.PostSucceeded();
-                        break;
-                    }
-
                     View.Model.SaveThen(
                         () =>
                         { // Saved DOM must be up to date with possibly new imageUrl
                             try
                             {
                                 bool wasNormalSuccessfulSave = View.SaveImageMetadata(metadata);
-                                // The filename can be null if coming in from the libpalaso toolbox callback,
-                                // in which case wasNormalSuccessfulSave will be false anyway.
                                 bool isNormalImageType =
                                     View.FileNameOfImageBeingModified != null
                                     && ImageUpdater.IsNormalImagePath(
