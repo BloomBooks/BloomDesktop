@@ -86,6 +86,13 @@ namespace Bloom.Publish.Rab
         private volatile string _lastLoggedProgressStage;
         private volatile int _lastLoggedProgressPercent = -1;
 
+        // When non-null, RAB process output lines are collected here (in addition to being sent to
+        // the progress log) so a build that produces no APK can surface RAB's own diagnostics.
+        // Writes happen on threadpool threads from both the stdout and stderr process callbacks, so
+        // access is guarded by _rabOutputCaptureLock to keep the List<string> from corrupting.
+        private List<string> _rabOutputCapture;
+        private readonly object _rabOutputCaptureLock = new object();
+
         public RabProjectService(
             CollectionModel collectionModel,
             BookSelection bookSelection,
@@ -724,45 +731,44 @@ namespace Bloom.Publish.Rab
                 ProgressKind.Heading
             );
             Directory.CreateDirectory(paths.SafeApkRoot);
-            RunRabCommand(
-                BuildRabArgsForProjectUpdate(
-                    paths,
-                    state,
-                    Array.Empty<RabBookPublishInfo>(),
-                    supportFiles,
-                    true
-                ),
-                paths.RabRoot
-            );
+
+            // Capture this run's RAB output so that, if no APK is produced, we can surface
+            // Reading App Builder's own diagnostics (e.g. a missing font) instead of a generic
+            // "no APK was found" message that gives the user nothing to act on (BL-16467).
+            var buildOutput = new List<string>();
+            _rabOutputCapture = buildOutput;
+            try
+            {
+                RunRabCommand(
+                    BuildRabArgsForProjectUpdate(
+                        paths,
+                        state,
+                        Array.Empty<RabBookPublishInfo>(),
+                        supportFiles,
+                        true
+                    ),
+                    paths.RabRoot
+                );
+            }
+            catch (ApplicationException e)
+            {
+                // RAB exited with an error (RunProcess throws here on a non-zero exit code).
+                // Its own stdout/stderr (collected in buildOutput) usually explains why — e.g. a
+                // missing font — so surface those diagnostics alongside the exit-code summary
+                // instead of leaving the user with a bare "cmd.exe exited with code N" (BL-16467).
+                // The original exception is preserved as InnerException for the log.
+                throw new ApplicationException(DescribeFailedRabBuild(e.Message, buildOutput), e);
+            }
+            finally
+            {
+                _rabOutputCapture = null;
+            }
 
             ReportProgressStage("finalizing-apk", 98);
 
             var apkPath = FindLatestApkPath(paths);
             if (string.IsNullOrEmpty(apkPath))
-            {
-                var searchRoots = new[]
-                {
-                    paths.ApkRoot,
-                    paths.SafeApkRoot,
-                    paths.BuildRoot,
-                    paths.RabRoot,
-                }
-                    .Where(Directory.Exists)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-                var apkCandidates = searchRoots
-                    .SelectMany(root =>
-                        Directory.GetFiles(root, "*.apk", SearchOption.AllDirectories)
-                    )
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
-                throw new ApplicationException(
-                    "Reading App Builder finished without producing an APK in the collection's Bloom App Data folder. "
-                        + $"Searched roots: {string.Join(", ", searchRoots)}. "
-                        + $"APK candidates found: {string.Join(", ", apkCandidates)}"
-                );
-            }
+                throw new ApplicationException(DescribeMissingApkFailure(buildOutput));
 
             ReportProgressStage("complete", 100);
             _progress.MessageWithoutLocalizing("Build complete.", ProgressKind.Heading);
@@ -774,6 +780,107 @@ namespace Bloom.Publish.Rab
             );
             state.LastBuiltApkPath = apkPath;
             SaveState(paths, state);
+        }
+
+        // Markers that flag a RAB output line as worth surfacing when a build produces no APK.
+        // "fail" intentionally also matches "failed"/"failure"; "Message_" matches RAB's pre-build
+        // requirement keys such as Message_Build_Add_Font.
+        private static readonly string[] kRabProblemMarkers =
+        {
+            "not found",
+            "missing",
+            "error",
+            "fail",
+            "warning",
+            "cannot",
+            "could not",
+            "unable",
+            "not valid",
+            "invalid",
+            "Message_",
+        };
+
+        /// <summary>
+        /// Builds the error message for the case where Reading App Builder ran but produced no APK.
+        /// RAB normally explains the problem in its own output (for example a missing font, or an
+        /// app that is not yet configured to build), so we surface those lines rather than a
+        /// generic "no APK was found" message that leaves the user with nothing to act on
+        /// (BL-16467).
+        /// </summary>
+        internal static string DescribeMissingApkFailure(IReadOnlyList<string> rabOutputLines)
+        {
+            const string header =
+                "Reading App Builder finished without producing an Android app (APK).";
+
+            var notableLines = ExtractNotableRabOutputLines(rabOutputLines);
+            if (notableLines.Count == 0)
+                return header
+                    + " It did not report a reason; please check the Reading App Builder messages above for details.";
+
+            return header
+                + " Reading App Builder reported:"
+                + Environment.NewLine
+                + string.Join(Environment.NewLine, notableLines.Select(line => "    " + line));
+        }
+
+        /// <summary>
+        /// Builds the error message for the case where Reading App Builder exits with an error
+        /// (a non-zero exit code) rather than running cleanly to a missing-APK state. The
+        /// exit-code summary (<paramref name="failureSummary"/>) is kept so the user still sees
+        /// what failed, and RAB's own diagnostics are appended when it reported any, so a build
+        /// that fails part-way still surfaces something actionable instead of a bare exit-code
+        /// message (BL-16467).
+        /// </summary>
+        internal static string DescribeFailedRabBuild(
+            string failureSummary,
+            IReadOnlyList<string> rabOutputLines
+        )
+        {
+            var notableLines = ExtractNotableRabOutputLines(rabOutputLines);
+            if (notableLines.Count == 0)
+                return failureSummary;
+
+            return failureSummary
+                + Environment.NewLine
+                + "Reading App Builder reported:"
+                + Environment.NewLine
+                + string.Join(Environment.NewLine, notableLines.Select(line => "    " + line));
+        }
+
+        /// <summary>
+        /// Picks the RAB output lines most likely to explain a failed build. Falls back to the tail
+        /// of the output when nothing matches a known problem marker, so we never hide RAB's last
+        /// words.
+        /// </summary>
+        private static List<string> ExtractNotableRabOutputLines(
+            IReadOnlyList<string> rabOutputLines
+        )
+        {
+            if (rabOutputLines == null)
+                return new List<string>();
+
+            var cleaned = rabOutputLines
+                .Where(line => !string.IsNullOrWhiteSpace(line))
+                .Select(line => line.Trim())
+                .ToList();
+
+            const int kMaxLines = 25;
+            var notable = cleaned
+                .Where(line =>
+                    kRabProblemMarkers.Any(marker =>
+                        line.IndexOf(marker, StringComparison.OrdinalIgnoreCase) >= 0
+                    )
+                )
+                .Distinct()
+                .ToList();
+
+            if (notable.Count > 0)
+                return notable.Take(kMaxLines).ToList();
+
+            // Nothing matched a known marker; show the last few lines so the user still has
+            // something concrete to look at.
+            const int kTailLineCount = 15;
+            return cleaned.Skip(Math.Max(0, cleaned.Count - kTailLineCount)).ToList();
         }
 
         private void Install()
@@ -1459,6 +1566,8 @@ namespace Bloom.Publish.Rab
                 return;
 
             TryAdvanceBuildProgressFromOutput(line);
+            lock (_rabOutputCaptureLock)
+                _rabOutputCapture?.Add(line);
             _progress.MessageWithoutLocalizing(FormatTimestampedLogLine(line), kind);
         }
 
@@ -1578,7 +1687,7 @@ namespace Bloom.Publish.Rab
             );
         }
 
-        private string[] EnsureLauncherIcons(RabWorkspacePaths paths, RabAppSettings settings)
+        internal string[] EnsureLauncherIcons(RabWorkspacePaths paths, RabAppSettings settings)
         {
             var iconSourcePath = settings?.IconPath;
 
@@ -1588,7 +1697,7 @@ namespace Bloom.Publish.Rab
                 );
 
             var iconSizes = new[] { 36, 48, 72, 96, 144, 192, 512 };
-            using (var iconBitmap = (Bitmap)Image.FromFile(iconSourcePath))
+            using (var iconImage = LoadIconImage(iconSourcePath))
             {
                 return iconSizes
                     .Select(size =>
@@ -1597,10 +1706,42 @@ namespace Bloom.Publish.Rab
                             paths.LauncherIconRoot,
                             $"bloom-icon-{size}.png"
                         );
-                        SaveResizedPng(iconBitmap, outputPath, size);
+                        SaveResizedPng(iconImage, outputPath, size);
                         return outputPath;
                     })
                     .ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Loads the chosen launcher-icon image, converting GDI+'s misleading failure for an image
+        /// it cannot decode into a clear error that names the offending file (BL-16467).
+        /// System.Drawing's Image.FromFile reports an undecodable image — a corrupt file, or one in
+        /// an unsupported encoding such as a CMYK JPEG — by throwing OutOfMemoryException, which
+        /// previously aborted the RAB build with a baffling "Out of memory" message that gave no
+        /// hint of which file was at fault.
+        /// </summary>
+        private static Image LoadIconImage(string iconSourcePath)
+        {
+            try
+            {
+                // RobustImageIO rides out transient file-sharing hiccups while reading the file.
+                return RobustImageIO.GetImageFromFile(iconSourcePath);
+            }
+            catch (Exception e) when (e is OutOfMemoryException || e is ArgumentException)
+            {
+                // GDI+ uses these two exception types to signal "I can't decode this image",
+                // regardless of the actual reason. Re-throw with the path and size so the user and
+                // our logs can see exactly which file failed. Any other exception (e.g. a genuine
+                // I/O failure) is left to propagate unchanged.
+                var sizeInBytes = RobustFile.Exists(iconSourcePath)
+                    ? new FileInfo(iconSourcePath).Length
+                    : 0L;
+                throw new ApplicationException(
+                    $"Bloom could not read the app icon image \"{iconSourcePath}\" ({sizeInBytes:N0} bytes). "
+                        + "The file appears to be corrupt or in an image format Bloom cannot read.",
+                    e
+                );
             }
         }
 
