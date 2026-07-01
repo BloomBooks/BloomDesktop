@@ -4,11 +4,13 @@ description: Kick off a Devin AI code review for a GitHub PR, wait for it, then 
 argument-hint: "PR URL or number, e.g. BloomBooks/BloomDesktop#7949"
 user-invocable: true
 ---
+
 # Devin Review Skill
 
 ## When To Use
 
 - When a new PR is created or a new commit pushed, as part of the bot-wait phase before human review.
+- Invoked by `pr-ready-for-human` during its bot-wait stage.
 - When the user explicitly wants a Devin review run and reported.
 
 ## URLs
@@ -22,6 +24,14 @@ Navigating to the results page both triggers a review (if none exists yet) and s
 ## Page Structure
 
 The right sidebar of the review page has two tabs: **Info** and **Chat**.
+
+### The "View results" gate
+
+When analysis finishes, the Info tab may show only an **"Analysis complete"** card with a **"View results"** button — the Bugs/Flags sections are **not rendered until you click it**. Do not conclude "no findings" from an initial snapshot; click "View results" first (see Procedure §3). (Older/other layouts show the sections inline; clicking is then a no-op.)
+
+### Outdated findings (after a new commit)
+
+When a new commit is pushed, Devin re-analyzes. While it regenerates — and sometimes after — the **previous commit's** findings remain on the page grouped under **`Outdated N Bug`** / **`Outdated N Flag`** regions. These are superseded; **never post or re-post them**. Only findings that are **not** inside an `Outdated …` region are current. The header counts (e.g. `1 Bug`) can be the count *inside* an Outdated region, so trust the finding **buttons and their region**, not the header text.
 
 The **Info** tab contains:
 
@@ -79,41 +89,57 @@ sleep 6
 
 Close this tab when done to avoid accumulating isolated-context tabs.
 
-### 2. Check if Review is Complete
+### 2. Check if Review is Complete (and analyzing the *current* commit)
+
+Do **not** grep the page for `Bug`/`Flags` to decide completeness — those words appear in the PR description and in stale `Outdated` regions, so a cached prior-commit review reads as "done." Instead:
+
+**a. Know the commit you expect.** Capture the PR head SHA up front (also reused in steps 5–7):
 
 ```bash
-chrome-devtools evaluate_script "() => document.body.innerText" 2>/dev/null | grep -E "Bug|Flags"
+HEAD_SHA=$(gh pr view <number> --repo <owner>/<repo> --json headRefOid --jq .headRefOid)
 ```
 
-- If you see lines like `1 Bug` or `6 Flags` → review is complete. Proceed to step 3.
-- If the page shows only a loading state or no Bug/Flags section → review is not yet done. Report "Devin review not yet complete" and return. Come back in 5–10 minutes.
-- Timeout after 30 minutes total from trigger.
+**b. Completion = generation finished, not text match.** Reload, then check the `Generating…` marker is gone:
 
-The review typically takes 10–20 minutes from first page navigation.
+```bash
+chrome-devtools navigate_page --type reload --ignoreCache true >/dev/null; sleep 6
+chrome-devtools evaluate_script "() => document.body.innerText.includes('Generating')"   # expect false
+```
+
+- `true` → still analyzing. Come back in ~2–3 min (poll; typical run is 10–20 min). **Timeout 30 min** from trigger.
+- `false` → generation done. Proceed to §3 (which opens "View results" and reads only current, non-Outdated findings).
+
+**c. Guard against staleness on a re-trigger.** Right after navigating to re-review a new commit, the page often paints the **previous** commit's cached findings *before* it flips to `Generating…`. So on a re-trigger: reload once, confirm `Generating` is (or was) present for the new run, then wait for it to clear — don't trust the first paint. If unsure whether the shown analysis matches `$HEAD_SHA`, reload and re-check rather than reporting.
 
 ### 3. Enumerate Findings
 
-Take a snapshot to get accessible UIDs for all finding buttons in the sidebar:
+First open the Info tab and click **"View results"** (the gate — see Page Structure), then expand the Flags section:
 
 ```bash
-chrome-devtools take_snapshot 2>/dev/null | grep -E "Bug|Investigate|Informational|Resolved"
+# Open Info tab + click "View results" if present
+chrome-devtools evaluate_script "() => { const info=[...document.querySelectorAll('button,[role=tab]')].find(e=>e.textContent.trim()==='Info'); info?.click(); const vr=[...document.querySelectorAll('button,a')].find(e=>/view results/i.test(e.textContent)); vr?.click(); return vr?'opened results':'no gate (inline)'; }"
+sleep 2
+# Expand the Flags section if collapsed
+chrome-devtools evaluate_script "() => { const btn = [...document.querySelectorAll('button')].find(el => /Flag/.test(el.textContent) && el.getAttribute('aria-expanded')!=='true'); btn?.click(); return btn?.textContent?.trim(); }"
+sleep 2
 ```
 
-Each finding appears as a button whose accessible name contains the title, type label (`Bug`, `Investigate`, `Informational`), and file:line. Resolved bugs additionally contain `• Resolved`.
+Then snapshot to get accessible UIDs for all finding buttons:
+
+```bash
+chrome-devtools take_snapshot 2>/dev/null | grep -E "Bug|Investigate|Informational|Resolved|Outdated"
+```
+
+Each finding appears as a button whose accessible name contains the title, type label (`Bug`, `Investigate`, `Informational`), and file:line. Resolved bugs additionally contain `• Resolved`. Findings under an `Outdated N Bug`/`Outdated N Flag` **region** belong to a superseded commit.
 
 Collect:
 
-- **Unresolved Bugs**: button text contains `Bug` but NOT `• Resolved` — to post (step 5)
-- **Investigate flags**: button text contains `Investigate` — to post (step 5)
+- **Unresolved Bugs**: button text contains `Bug`, NOT `• Resolved`, NOT under an `Outdated …` region — to post (step 5)
+- **Investigate flags**: button text contains `Investigate`, NOT under an `Outdated …` region — to post (step 5)
 - **Resolved Bugs**: buttons containing `• Resolved` — record their titles; used to reconcile/resolve GitHub threads (step 6). Do NOT post these.
-- **Skip entirely**: `Informational` items (low signal, no post, no reconcile)
+- **Skip entirely**: `Informational` items (low signal, no post, no reconcile), and **anything under an `Outdated …` region**
 
-Expand the Flags section first if it is collapsed:
-
-```bash
-chrome-devtools evaluate_script "() => { const btn = [...document.querySelectorAll('button')].find(el => el.textContent.includes('Flags')); btn?.click(); return btn?.textContent?.trim(); }"
-sleep 2
-```
+If *every* current Bug/Flag sits under an `Outdated …` region and there are no non-outdated findings, the re-review is **clean** — post nothing (still do step 6 for any `• Resolved` bugs, and step 7 logging).
 
 ### 4. Extract Full Descriptions
 
@@ -142,13 +168,11 @@ The extracted text will be: `{Title}\n\n{Full description paragraphs}`
 
 ### 5. Post Findings to GitHub as Inline Review Threads
 
-Post each finding as an **inline review comment anchored to its diff line**, so it becomes a *resolvable* GitHub review thread. (Top-level PR comments have no "Resolve" affordance, so we can never close the loop on them — that is why we use review threads.) The "Post to GitHub" button on the Devin page is not functional — always post via `gh`.
+Post each finding as an **inline review comment anchored to its diff line**, so it becomes a *resolvable* GitHub review thread. (Top-level PR comments have no "Resolve" affordance, so we can never close the loop on them — that is why we prefer review threads.) The "Post to GitHub" button on the Devin page is not functional — always post via `gh`.
 
-First gather the PR head commit and the existing Devin review threads. This one query serves both dedup (step 5) and resolution (step 6): it returns each thread's GraphQL id (to resolve), its first comment's REST id (to reply), the body (to match by title), and whether it is already resolved.
+**Gather the existing Devin threads once.** This one query serves both dedup (this step) and resolution (step 6): it returns each thread's GraphQL id (to resolve), its first comment's REST id (to reply), the body (to match by title), and whether it is already resolved.
 
 ```bash
-HEAD_SHA=$(gh pr view <number> --repo <owner>/<repo> --json headRefOid --jq .headRefOid)
-
 gh api graphql -f owner=<owner> -f repo=<repo> -F number=<number> -f query='
 query($owner:String!,$repo:String!,$number:Int!){
   repository(owner:$owner,name:$repo){
@@ -164,45 +188,59 @@ query($owner:String!,$repo:String!,$number:Int!){
   | {threadId:.id, isResolved, commentId:.comments.nodes[0].databaseId, body:.comments.nodes[0].body}'
 ```
 
-A finding is **already posted** if one of those thread bodies contains the same finding title. Skip posting it again.
+A finding is **already posted** if one of those thread bodies contains the same finding title. Skip posting it again. (Also glance at legacy top-level comments: `gh api repos/<owner>/<repo>/issues/<number>/comments --jq '.[].body' | grep "\[Devin\]"`.)
 
-**Post each unresolved Bug** (and each Investigate flag) that is not already posted. Use `Bug` or `Investigate` in the label:
+**Snap the line to the diff first.** Devin's line number is frequently a line or two off from the actual diff hunk (it points at the logical location, not always a changed/context line). Anchoring the raw number then over-triggers the fallback. Before posting, compute the file's commentable RIGHT-side lines and, if Devin's line isn't one of them, snap to the nearest within a small window (±3):
 
 ```bash
-# Single line "<file>:<line>":
-gh api repos/<owner>/<repo>/pulls/<number>/comments \
-  -f commit_id="$HEAD_SHA" \
-  -f path="<file>" \
-  -F line=<line> \
-  -f side="RIGHT" \
-  -f body="$(cat <<'EOF'
+# RIGHT-side line numbers that accept an inline comment, for <file>
+commentable_lines() {
+  gh api repos/<owner>/<repo>/pulls/<number>/files --paginate \
+    --jq '.[] | select(.filename=="'"$1"'") | .patch' \
+  | awk '
+      /^@@/ { match($0, /\+([0-9]+)/, m); ln = m[1]; next }  # RIGHT start of hunk
+      /^-/  { next }                                          # deleted line: no RIGHT number
+      { print ln; ln++ }                                      # context/added: commentable
+    '
+}
+```
+
+Snap rule: if `<line>` ∈ `commentable_lines <file>`, use it as-is; else snap to the nearest within ±3 (ties → the lower line); else skip straight to the file-level rung below. For a range finding, snap `start_line` and `line` independently; if only one endpoint lands in the diff, post a single-line comment on it.
+
+**Post with a fallback ladder** — line → file-level → top-level, stopping at the first that succeeds. GitHub only accepts a line-anchored comment when the line is part of the diff (else HTTP 422, common for Investigate flags on unchanged context lines). The first two rungs both create *resolvable* threads that step 6 can close; only the last does not.
+
+```bash
+# Body (Bug shown; use "**Investigate**" for flags). Keep file:line in the body
+# so it's still legible if we fall back.
+BODY=$(cat <<'EOF'
 [Devin] **Bug**: <Title>
 
 <Full description>
 EOF
-)"
+)
+
+# 1) line-anchored on the snapped line
+#    range: also pass -F start_line=<start> -f start_side="RIGHT" and set line=<end>
+gh api repos/<owner>/<repo>/pulls/<number>/comments \
+  -f commit_id="$HEAD_SHA" -f path="<file>" -F line=<line> -f side="RIGHT" -f body="$BODY" \
+  || \
+# 2) file-level review comment — still a resolvable thread (appears in the step-5 query)
+gh api repos/<owner>/<repo>/pulls/<number>/comments \
+  -f commit_id="$HEAD_SHA" -f path="<file>" -f subject_type=file -f body="$BODY" \
+  || \
+# 3) last resort: top-level issue comment (NOT resolvable) — tag it so step 6 recognizes it
+gh pr comment <number> --repo <owner>/<repo> --body "[Devin] **Bug**: <Title> (\`<file>:<line>\` — outside diff, not resolvable as a thread)
+
+<Full description>"
 ```
 
-For a **line range** `<start>-<end>`, add `-F start_line=<start> -f start_side="RIGHT"` and set `line=<end>`.
-
-**Fallback when the line is not in the diff** (the API returns HTTP 422 — common for Investigate flags on unchanged context lines): post a top-level comment instead so the finding is not lost, and tag it so step 6 can recognize it:
-
-```bash
-gh pr comment <number> --repo <owner>/<repo> --body "$(cat <<'EOF'
-[Devin] **Bug**: <Title> (`<file>:<line>` — outside diff, not resolvable as a thread)
-
-<Full description>
-EOF
-)"
-```
-
-Record which findings fell back — they cannot be natively resolved later (step 6 edits them instead).
+Record which findings fell through to rung 3 (top-level) — those cannot be natively resolved later; step 6 edits them instead.
 
 ### 6. Reconcile Resolved Findings
 
 For each bug Devin now marks **• Resolved** (collected in step 3), match it by title against the Devin threads gathered in step 5:
 
-- **We posted it before and its thread is still unresolved** → reply to document why, then resolve the thread:
+- **We posted it before and its thread is still unresolved** → reply to document why, then resolve the thread. (This covers both line-anchored and file-level threads — both appear in the step-5 query.)
 
   ```bash
   # Reply on the thread (needs the REST comment id from the query above)
@@ -215,34 +253,56 @@ For each bug Devin now marks **• Resolved** (collected in step 3), match it by
   mutation($threadId:ID!){ resolveReviewThread(input:{threadId:$threadId}){ thread{ id isResolved } } }'
   ```
 
-- **We posted it before only as a top-level fallback comment** (no thread) → it cannot be natively resolved; edit that comment to prepend a `✅ Resolved (<SHA>)` marker so a human sees it is closed.
+- **We posted it before only as a top-level fallback comment** (rung 3, no thread) → it cannot be natively resolved; edit that comment to prepend a `✅ Resolved (<SHA>)` marker so a human sees it is closed.
 - **We never posted it** → no action; it was fixed before we ever flagged it.
 - **Its thread is already `isResolved: true`** → no action.
 
-Note: Investigate flags have no "Resolved" state in Devin — when Devin stops flagging one, it simply disappears from the list. Do **not** auto-resolve threads for vanished flags (no reliable signal); leave those for the human reviewer.
+Note: Investigate flags have no "Resolved" state in Devin — when Devin stops flagging one, it simply disappears from the list (or moves to an `Outdated` region on a re-review). Do **not** auto-resolve threads for vanished/outdated flags (no reliable signal); leave those for the human reviewer.
 
 ### 7. Log that Devin was run — even if it found no issues
 
-Because it is quite expensive to consult Devin, it's important that we can avoid consulting it if we know that we have not committed anything since the last time we consulted it. For this reason, whenever a consultation with Devin is finished, add a comment to the PR: "Consulted Devin on (date time) up to commit (SHA)". Of course it is vital that we actually gave Devin sufficient time to do the check before we decide that it has no new findings.
+Because it is quite expensive to consult Devin, it's important that we can avoid consulting it if we know that we have not committed anything since the last time we consulted it. For this reason, whenever a consultation with Devin is finished, add a comment to the PR: "Consulted Devin on (date time) up to commit (SHA)". Of course it is vital that we actually gave Devin sufficient time to do the check (step 2) before we decide it has no new findings.
 
 ### 8. Report
 
 Return a summary:
 
-- N unresolved Bugs found — N posted, N skipped (already posted), N fell back to top-level (line not in diff)
+- N unresolved Bugs found — N posted, N skipped (already posted), N fell back to file-level, N fell back to top-level (line not in diff)
 - N Resolved Bugs — N threads resolved, N fallback comments marked, N no-action (never posted / already resolved)
 - N Investigate flags found — N posted, N skipped
 - N Informational items found (not posted — low signal)
+- If this was a re-review and all prior findings are now `Outdated`/resolved with no current findings: report **"re-review clean — bots quiet."**
 - Whether any findings need developer attention before moving to human review
+
+## Real Example (PR #7949)
+
+**Bugs (3 total, 1 unresolved):**
+
+- ✅ Post: "Legacy ebook layout name normalization fails for mixed-case input" — `SizeAndOrientation.cs:80`
+- ⏭ Skip: "buildSavePageContentString calls removeEditingDebris..." — `bloomEditing.ts:1322` — Resolved
+- ⏭ Skip: "Overlay can get permanently stuck if exception occurs..." — `ExternalApi.cs:240` — Resolved
+
+**Flags (6 Investigate, several Informational):**
+
+- ✅ Post: "Scale inconsistency in computeImageFitTopPercent..." — `autoFitImageOverTextSplits.ts:284`
+- ✅ Post: "BringBookUpToDate may write to disk before per-page processing..." — `BookProcessor.cs:36`
+- ⏭ Skip: All Informational items
+
+Each posted finding went in as an **inline** review thread on its `file:line`; any whose line fell outside the diff fell back to a file-level (still resolvable) comment, and only truly un-anchorable ones to a top-level comment.
+
+## Real Example (re-review after a fix commit)
+
+After the developer pushed fixes, re-navigating showed `Generating…`, then completed with the prior findings grouped under **`Outdated 1 Bug`** and **`Outdated 1 Flag`** and **no current findings**. Correct outcome: post nothing, resolve any threads whose bugs are now `• Resolved` (step 6), log the consultation (step 7), and report **"re-review clean — bots quiet."** (A naive `grep "Bug|Flags"` here would have wrongly re-posted the outdated bug.)
 
 ## Notes
 
 - Devin does **not** post its findings to GitHub automatically — that is why this skill exists.
-- Findings are posted as **inline review-thread comments** (anchored to the diff line), not top-level PR comments, specifically so they can be resolved later.
+- Findings are posted as **inline review-thread comments** (anchored to the diff line, or file-level when the line isn't in the diff), not top-level PR comments, specifically so they can be resolved later. Top-level is only the last-resort rung.
+- On a **re-review** (new commit), prior findings show under `Outdated …` regions — never re-post them. Judge completeness by the `Generating…` marker clearing for the current head SHA, not by matching "Bug"/"Flags" text.
+- Findings may hide behind a **"View results"** button; click it before concluding there are none.
 - A Resolved bug means Devin confirmed the PR already fixes what it found. If we **never posted** it, no GitHub action is needed. If we **did post** it in a prior run, resolve that thread now (step 6) so the comment we created doesn't linger looking unaddressed.
 - Titles are the matching key between a Devin finding and the GitHub thread we posted for it, both for dedup (step 5) and resolution (step 6). Keep the `[Devin] **Bug**: <Title>` / `[Devin] **Investigate**: <Title>` format stable.
 - Informational items are observations, not action items. Skip them.
 - Use the `chrome-devtools` **CLI** (Bash commands) for all browser automation in this skill — not the MCP plugin (disabled; spawns zombie node processes) and not the Orca browser.
 - Always use `--isolatedContext "devin-noauth"` when opening Devin pages. Navigating while logged in consumes on-demand credits; the isolated context is unauthenticated but still shows all findings.
 - If Chrome DevTools CLI is unavailable, tell the user: "Please open `https://app.devin.ai/review/<owner>/<repo>/pull/<number>` in Chrome to check Devin's findings."
-
