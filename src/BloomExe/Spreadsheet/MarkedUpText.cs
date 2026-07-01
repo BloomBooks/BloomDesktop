@@ -231,7 +231,9 @@ namespace Bloom.Spreadsheet
         public bool Superscript { get; set; }
         public Color Color { get; set; }
 
-        public bool HasFormatting => Bold | Italic | Underlined | Superscript | Color != null;
+        // Color is a struct, so it can never be null; an unset Color defaults to Color.Empty.
+        // We therefore test !Color.IsEmpty to detect when a color has actually been specified.
+        public bool HasFormatting => Bold | Italic | Underlined | Superscript | !Color.IsEmpty;
 
         public void setProperty(string propertyName, string styleAttribute)
         {

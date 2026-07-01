@@ -335,6 +335,62 @@ namespace BloomTests.Spreadsheet
             );
         }
 
+        [Test]
+        public void HasFormatting_PlainText_IsFalse()
+        {
+            // Sanity check: a run with no formatting set should have an empty color.
+            var run = new MarkedUpTextRun("plain");
+            Assert.That(run.Color.IsEmpty, Is.True, "test setup: expected an unset color");
+            Assert.That(run.HasFormatting, Is.False);
+        }
+
+        [Test]
+        public void HasFormatting_Bold_IsTrue()
+        {
+            var run = new MarkedUpTextRun("text");
+            Assert.That(
+                run.HasFormatting,
+                Is.False,
+                "test setup: expected no formatting initially"
+            );
+            run.Bold = true;
+            Assert.That(run.HasFormatting, Is.True);
+        }
+
+        [Test]
+        public void HasFormatting_Italic_IsTrue()
+        {
+            var run = new MarkedUpTextRun("text") { Italic = true };
+            Assert.That(run.HasFormatting, Is.True);
+        }
+
+        [Test]
+        public void HasFormatting_Underlined_IsTrue()
+        {
+            var run = new MarkedUpTextRun("text") { Underlined = true };
+            Assert.That(run.HasFormatting, Is.True);
+        }
+
+        [Test]
+        public void HasFormatting_Superscript_IsTrue()
+        {
+            var run = new MarkedUpTextRun("text") { Superscript = true };
+            Assert.That(run.HasFormatting, Is.True);
+        }
+
+        [Test]
+        public void HasFormatting_Color_IsTrue()
+        {
+            var run = new MarkedUpTextRun("text");
+            Assert.That(
+                run.HasFormatting,
+                Is.False,
+                "test setup: expected no formatting initially"
+            );
+            run.Color = ColorTranslator.FromHtml("#123def");
+            Assert.That(run.HasFormatting, Is.True);
+        }
+
         private void AssertHasFormatting(
             MarkedUpTextRun textRun,
             string text,
