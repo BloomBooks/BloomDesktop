@@ -9,6 +9,31 @@
         <source xml:lang="en">Available with your Bloom Subscription</source>
         <note>ID: AvailableWithSubscription</note>
       </trans-unit>
+      <trans-unit id="CopyrightAndLicense.ReuseMetadataShortcutLabel" translate="no">
+        <source xml:lang="en">Shortcuts:</source>
+        <note>ID: CopyrightAndLicense.ReuseMetadataShortcutLabel</note>
+        <note>Header above a list of metadata the user can reuse from other images in the book or books in the collection.</note>
+      </trans-unit>
+      <trans-unit id="CopyrightAndLicense.FromThisBook" translate="no">
+        <source xml:lang="en">Copyright and license from this book</source>
+        <note>ID: CopyrightAndLicense.FromThisBook</note>
+        <note>Label shown on the reuse option that offers the book's own copyright and license (in place of an illustrator/photographer name).</note>
+      </trans-unit>
+      <trans-unit id="Common.Gathering" translate="no">
+        <source xml:lang="en">Gathering…</source>
+        <note>ID: Common.Gathering</note>
+        <note>Shown while Bloom is collecting items.</note>
+      </trans-unit>
+      <trans-unit id="CopyrightAndLicense.CopyToAllImages" translate="no">
+        <source xml:lang="en">Add this info to all images in this book</source>
+        <note>ID: CopyrightAndLicense.CopyToAllImages</note>
+        <note>Button that applies the current image's copyright and license to every other image in the book.</note>
+      </trans-unit>
+      <trans-unit id="Common.Working" translate="no">
+        <source xml:lang="en">Working…</source>
+        <note>ID: Common.Working</note>
+        <note>Shown next to a spinner while an operation is in progress.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder" translate="no">
         <source xml:lang="en">App Builder</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>

@@ -23,19 +23,21 @@ namespace Bloom.web.controllers
     public class ImageApi
     {
         private readonly BookSelection _bookSelection;
-        private readonly string[] _doNotPasteArray;
+        private readonly string[] _nonCreditableImages;
 
         public ImageApi(BookSelection bookSelection)
         {
             _bookSelection = bookSelection;
-            // The following is a list of image files that we don't want to paste image credits for.
+            // The following is a list of image files that we don't want to generate image credits for.
             // It includes CC license image, placeholder and branding images.
-            _doNotPasteArray = GetImageFilesToNotPasteCreditsFor().ToArray();
-            for (int i = 0; i < _doNotPasteArray.Length; ++i)
-                _doNotPasteArray[i] = BookStorage.GetNormalizedPathForOS(_doNotPasteArray[i]);
+            _nonCreditableImages = GetImageFilesToNotCreditFor().ToArray();
+            for (int i = 0; i < _nonCreditableImages.Length; ++i)
+                _nonCreditableImages[i] = BookStorage.GetNormalizedPathForOS(
+                    _nonCreditableImages[i]
+                );
         }
 
-        private static IEnumerable<string> GetImageFilesToNotPasteCreditsFor()
+        private static IEnumerable<string> GetImageFilesToNotCreditFor()
         {
             // Handles all except placeholder images. They can show up with digits after them, so we do them differently.
             var imageFiles = new HashSet<string> { "license.png" };
@@ -86,9 +88,32 @@ namespace Bloom.web.controllers
             var result = new Dictionary<string, List<string>>();
             result.AddRange(
                 GetWhichImagesAreUsedOnWhichPages(domBody, langs)
-                    .Where(kvp => !DoNotPasteCreditsImages(kvp.Key))
+                    .Where(kvp => !IsNonCreditableImage(kvp.Key))
             );
             return result;
+        }
+
+        /// <summary>
+        /// Returns the file names of the "real" images used in the book (in order of first
+        /// occurrence), excluding the license, branding, and placeholder images that we never
+        /// want to attribute credits to. This is a static counterpart to
+        /// GetFilteredImageNameToPagesDictionary so that other controllers (e.g. the copyright
+        /// and license dialog's metadata chooser) can get the list without an ImageApi instance.
+        /// </summary>
+        public static List<string> GetCreditableImageFileNamesInBook(
+            SafeXmlNode domBody,
+            IEnumerable<string> langs
+        )
+        {
+            var nonCreditableImages = new HashSet<string>(
+                GetImageFilesToNotCreditFor().Select(BookStorage.GetNormalizedPathForOS)
+            );
+            return GetWhichImagesAreUsedOnWhichPages(domBody, langs)
+                .Keys.Where(name =>
+                    !nonCreditableImages.Contains(BookStorage.GetNormalizedPathForOS(name))
+                    && !name.ToLowerInvariant().StartsWith("placeholder")
+                )
+                .ToList();
         }
 
         private void HandleCopyImageCreditsForWholeBook(ApiRequest request)
@@ -305,16 +330,16 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Determine whether or not a particular image should have its credits pasted.
+        /// Determine whether or not a particular image is one we never generate credits for.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        private bool DoNotPasteCreditsImages(string name)
+        private bool IsNonCreditableImage(string name)
         {
-            // returns 'true' if 'name' is among the list of ones we don't want to paste image credits for
+            // returns 'true' if 'name' is among the list of ones we don't want to generate image credits for
             // includes CC license image, placeholder and branding images
             var normalName = BookStorage.GetNormalizedPathForOS(name);
-            return _doNotPasteArray.Contains(normalName)
+            return _nonCreditableImages.Contains(normalName)
                 || name.ToLowerInvariant().StartsWith("placeholder");
         }
 
