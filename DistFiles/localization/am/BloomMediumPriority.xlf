@@ -10,6 +10,31 @@
         <target xml:lang="am" state="needs-translation">Available with your Bloom Subscription</target>
         <note>ID: AvailableWithSubscription</note>
       </trans-unit>
+      <trans-unit id="CopyrightAndLicense.ReuseMetadataShortcutLabel" translate="no">
+        <source xml:lang="en">Shortcuts:</source>
+        <target xml:lang="am" state="needs-translation">Shortcuts:</target>
+        <note>ID: CopyrightAndLicense.ReuseMetadataShortcutLabel</note>
+      </trans-unit>
+      <trans-unit id="CopyrightAndLicense.FromThisBook" translate="no">
+        <source xml:lang="en">Copyright and license from this book</source>
+        <target xml:lang="am" state="needs-translation">Copyright and license from this book</target>
+        <note>ID: CopyrightAndLicense.FromThisBook</note>
+      </trans-unit>
+      <trans-unit id="Common.Gathering" translate="no">
+        <source xml:lang="en">Gathering…</source>
+        <target xml:lang="am" state="needs-translation">Gathering…</target>
+        <note>ID: Common.Gathering</note>
+      </trans-unit>
+      <trans-unit id="CopyrightAndLicense.CopyToAllImages" translate="no">
+        <source xml:lang="en">Add this info to all images in this book</source>
+        <target xml:lang="am" state="needs-translation">Add this info to all images in this book</target>
+        <note>ID: CopyrightAndLicense.CopyToAllImages</note>
+      </trans-unit>
+      <trans-unit id="Common.Working" translate="no">
+        <source xml:lang="en">Working…</source>
+        <target xml:lang="am" state="needs-translation">Working…</target>
+        <note>ID: Common.Working</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder" translate="no">
         <source xml:lang="en">App Builder</source>
         <target xml:lang="am" state="needs-translation">App Builder</target>
