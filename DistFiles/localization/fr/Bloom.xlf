@@ -2374,6 +2374,31 @@
         <target xml:lang="fr" state="final">Il n'y a aucune autre option de mise en page pour ce modèle.</target>
         <note>ID: EditTab.NoOtherLayouts</note>
       </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Ebooks" translate="no">
+        <source xml:lang="en">Ebooks</source>
+        <target xml:lang="fr" state="needs-translation">Ebooks</target>
+        <note>ID: EditTab.LayoutChoicesMenu.Ebooks</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Other" translate="no">
+        <source xml:lang="en">Other</source>
+        <target xml:lang="fr" state="needs-translation">Other</target>
+        <note>ID: EditTab.LayoutChoicesMenu.Other</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Portrait" translate="no">
+        <source xml:lang="en">Portrait</source>
+        <target xml:lang="fr" state="needs-translation">Portrait</target>
+        <note>ID: EditTab.LayoutChoicesMenu.Portrait</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Landscape" translate="no">
+        <source xml:lang="en">Landscape</source>
+        <target xml:lang="fr" state="needs-translation">Landscape</target>
+        <note>ID: EditTab.LayoutChoicesMenu.Landscape</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Square" translate="no">
+        <source xml:lang="en">Square</source>
+        <target xml:lang="fr" state="needs-translation">Square</target>
+        <note>ID: EditTab.LayoutChoicesMenu.Square</note>
+      </trans-unit>
       <trans-unit id="EditTab.Overflow" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This box has more text than will fit</source>
         <target xml:lang="fr" state="final">Cette zone de texte ne peut contenir autant de texte</target>
