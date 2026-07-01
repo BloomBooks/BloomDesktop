@@ -1,7 +1,7 @@
-diff --git a/node_modules/react-lazyload/lib/utils/scrollParent.js b/node_modules/react-lazyload/lib/utils/scrollParent.js
+diff --git a/lib/utils/scrollParent.js b/lib/utils/scrollParent.js
 index dc29b19..b9da998 100644
---- a/node_modules/react-lazyload/lib/utils/scrollParent.js
-+++ b/node_modules/react-lazyload/lib/utils/scrollParent.js
+--- a/lib/utils/scrollParent.js
++++ b/lib/utils/scrollParent.js
 @@ -33,7 +33,7 @@ exports.default = function (node) {
        continue;
      }

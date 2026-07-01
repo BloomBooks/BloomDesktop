@@ -70,7 +70,7 @@ const toPowerShellLiteral = (value) => `'${value.replace(/'/g, "''")}'`;
  * dev-server tree is left in after the launcher is hard-killed without running its
  * shutdown handlers. Requiring a dead parent is what keeps the sweep from killing a
  * legitimate concurrent run from the same worktree (e.g. another terminal's
- * `yarn dev` or tests), whose processes still have a living parent. We only need to
+ * `pnpm dev` or tests), whose processes still have a living parent. We only need to
  * find the orphaned tree roots; their still-parented descendants (Vite, onchange's
  * command children) are taken down when the root's tree is killed.
  *

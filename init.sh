@@ -2,10 +2,10 @@
 set -euo pipefail
 
 ./build/getDependencies-windows.sh &
-(cd src/content && yarn install) &
-(cd src/BloomBrowserUI && yarn install) &
+(cd src/content && pnpm install) &
+(cd src/BloomBrowserUI && pnpm install) &
 dotnet build src/WebView2PdfMaker &
 
 wait
 
-(cd src/BloomBrowserUI && yarn build)
+(cd src/BloomBrowserUI && pnpm run build)
