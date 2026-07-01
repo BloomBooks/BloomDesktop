@@ -4336,8 +4336,8 @@ bindings@^1.5.0:
     file-uri-to-path "1.0.0"
 
 bloom-image-gallery@BloomBooks/bloom-image-gallery:
-  version "0.0.0"
-  resolved "https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e84eb712b2ebcac1c3fd1107fd48269cf45b149a"
+  version "0.0.2"
+  resolved "https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/51c5a75bb611c51dd24b40c9162929c6e75473eb"
   dependencies:
     "@emotion/react" "^11.14.0"
     "@emotion/styled" "^11.14.0"
@@ -7168,14 +7168,14 @@ is-ci@^2.0.0:
   dependencies:
     ci-info "^2.0.0"
 
-is-core-module@^2.13.0, is-core-module@^2.16.1:
+is-core-module@^2.13.0:
   version "2.16.1"
   resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.16.1.tgz#2a98801a849f43e2add644fbb6bc6229b19a4ef4"
   integrity sha512-UfoeMA6fIJ8wTYFEUjelnaGI67v6+N7qXJEvQuIGa99l4xsCruSYOVSQ0uPANn4dAzm8lkYPaKLrrijLq7x23w==
   dependencies:
     hasown "^2.0.2"
 
-is-core-module@^2.16.0:
+is-core-module@^2.16.0, is-core-module@^2.16.1:
   version "2.16.2"
   resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.16.2.tgz#3e07450a8080ebce3fbf0cac494f4d2ab324e082"
   integrity sha512-evOr8xfXKxE6qSR0hSXL2r3sd7ALj8+7jQEUvPYcm5sgZFdJ+AYzT6yNmJenvIYQBgIGwfwz08sL8zoL7yq2BA==

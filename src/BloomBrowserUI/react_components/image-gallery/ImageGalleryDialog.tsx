@@ -144,6 +144,14 @@ const ImageGalleryDialog: React.FunctionComponent<{
                     margin-left: -16px;
                     margin-right: -16px;
                     margin-bottom: -10px;
+                    /* bloom-image-gallery's content div uses height:100% + padding:20px
+                       with box-sizing:content-box, making its total height 40px taller
+                       than its parent and pushing the OK/Cancel buttons below the clipping
+                       boundary. Switching to border-box makes height:100% include the
+                       padding, so buttons stay visible even when the dialog is shrunk. */
+                    main > div {
+                        box-sizing: border-box;
+                    }
                 `}
             >
                 {keysLoaded && (
