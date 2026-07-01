@@ -2376,6 +2376,31 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">No hay otras opciones de diseño para esta plantilla.</target>
         <note>ID: EditTab.NoOtherLayouts</note>
       </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Ebooks" translate="no">
+        <source xml:lang="en">Ebooks</source>
+        <target xml:lang="es-ES" state="needs-translation">Ebooks</target>
+        <note>ID: EditTab.LayoutChoicesMenu.Ebooks</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Other" translate="no">
+        <source xml:lang="en">Other</source>
+        <target xml:lang="es-ES" state="needs-translation">Other</target>
+        <note>ID: EditTab.LayoutChoicesMenu.Other</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Portrait" translate="no">
+        <source xml:lang="en">Portrait</source>
+        <target xml:lang="es-ES" state="needs-translation">Portrait</target>
+        <note>ID: EditTab.LayoutChoicesMenu.Portrait</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Landscape" translate="no">
+        <source xml:lang="en">Landscape</source>
+        <target xml:lang="es-ES" state="needs-translation">Landscape</target>
+        <note>ID: EditTab.LayoutChoicesMenu.Landscape</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Square" translate="no">
+        <source xml:lang="en">Square</source>
+        <target xml:lang="es-ES" state="needs-translation">Square</target>
+        <note>ID: EditTab.LayoutChoicesMenu.Square</note>
+      </trans-unit>
       <trans-unit id="EditTab.Overflow" sil:dynamic="true" approved="yes">
         <source xml:lang="en">This box has more text than will fit</source>
         <target xml:lang="es-ES" state="final">Este cuadro contiene más texto del que cabe en él</target>
