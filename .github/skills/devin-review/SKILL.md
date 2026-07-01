@@ -78,6 +78,8 @@ Checks, Reviewers, Assignees, Labels — these are metadata only, no action from
 
 ## Procedure
 
+> ⚠️ **Do NOT post `@devin review` (or any `@devin` mention) to GitHub.** That is *not* how this skill triggers Devin, and this repo has no Devin GitHub app to respond to it — the mention goes nowhere and no review runs. Devin is triggered **only** by navigating to the `app.devin.ai` results page via chrome-devtools (step 1). If all you have done is post a `@devin review` comment, you have **not** run this skill. (This exact mistake left PR #613 with a `@devin review` comment but no findings, no consultation log, and no idea whether Devin was satisfied.)
+
 ### 1. Navigate to the Review Page
 
 Use the Chrome DevTools CLI with an **isolated context** (no shared cookies). This is critical — navigating while logged in to Devin consumes on-demand credits. The isolated context is unauthenticated but still shows all findings.
@@ -99,15 +101,21 @@ Do **not** grep the page for `Bug`/`Flags` to decide completeness — those word
 HEAD_SHA=$(gh pr view <number> --repo <owner>/<repo> --json headRefOid --jq .headRefOid)
 ```
 
-**b. Completion = generation finished, not text match.** Reload, then check the `Generating…` marker is gone:
+**b. Completion = generation finished, not text match.** There are **two** independent progress markers and you must wait for **both** to clear:
+
+- `Generating` (or `Generating…`) — the left **"Devin's AI analysis" summary** panel.
+- `PR analysis in progress` — the right **Info sidebar**, which runs the actual **findings** pass (Bugs/Flags) and finishes *later* than the summary.
+
+⚠️ The summary panel finishes well before the findings pass. If you check only `Generating`, you will see it clear while the Info sidebar still says `PR analysis in progress`, open the results, and wrongly conclude **zero findings** — the bug/flag list is still being generated. (This exact trap hid the one real bug on PR #613 on the first poll.) Reload, then confirm **both** are gone:
 
 ```bash
 chrome-devtools navigate_page --type reload --ignoreCache true >/dev/null; sleep 6
-chrome-devtools evaluate_script "() => document.body.innerText.includes('Generating')"   # expect false
+chrome-devtools evaluate_script "() => document.body.innerText.includes('Generating')"          # expect false
+chrome-devtools evaluate_script "() => /analysis in progress/i.test(document.body.innerText)"    # expect false
 ```
 
-- `true` → still analyzing. Come back in ~2–3 min (poll; typical run is 10–20 min). **Timeout 30 min** from trigger.
-- `false` → generation done. Proceed to §3 (which opens "View results" and reads only current, non-Outdated findings).
+- either `true` → still analyzing. Come back in ~2–3 min (poll; typical run is 10–20 min). **Timeout 30 min** from trigger.
+- **both** `false` → analysis done. Proceed to §3 (which opens "View results" and reads only current, non-Outdated findings).
 
 **c. Guard against staleness on a re-trigger.** Right after navigating to re-review a new commit, the page often paints the **previous** commit's cached findings *before* it flips to `Generating…`. So on a re-trigger: reload once, confirm `Generating` is (or was) present for the new run, then wait for it to clear — don't trust the first paint. If unsure whether the shown analysis matches `$HEAD_SHA`, reload and re-check rather than reporting.
 
@@ -298,7 +306,7 @@ After the developer pushed fixes, re-navigating showed `Generating…`, then com
 
 - Devin does **not** post its findings to GitHub automatically — that is why this skill exists.
 - Findings are posted as **inline review-thread comments** (anchored to the diff line, or file-level when the line isn't in the diff), not top-level PR comments, specifically so they can be resolved later. Top-level is only the last-resort rung.
-- On a **re-review** (new commit), prior findings show under `Outdated …` regions — never re-post them. Judge completeness by the `Generating…` marker clearing for the current head SHA, not by matching "Bug"/"Flags" text.
+- On a **re-review** (new commit), prior findings show under `Outdated …` regions — never re-post them. Judge completeness by **both** the `Generating…` (summary) **and** `PR analysis in progress` (Info sidebar / findings pass) markers clearing for the current head SHA, not by matching "Bug"/"Flags" text — the summary finishes before the findings pass (see step 2b).
 - Findings may hide behind a **"View results"** button; click it before concluding there are none.
 - A Resolved bug means Devin confirmed the PR already fixes what it found. If we **never posted** it, no GitHub action is needed. If we **did post** it in a prior run, resolve that thread now (step 6) so the comment we created doesn't linger looking unaddressed.
 - Titles are the matching key between a Devin finding and the GitHub thread we posted for it, both for dedup (step 5) and resolution (step 6). Keep the `[Devin] **Bug**: <Title>` / `[Devin] **Investigate**: <Title>` format stable.
