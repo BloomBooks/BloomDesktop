@@ -218,7 +218,6 @@ namespace Bloom.Collection
             Country = collectionInfo.Country;
             Province = collectionInfo.Province;
             District = collectionInfo.District;
-            IsSourceCollection = collectionInfo.IsSourceCollection;
             XMatterPackName = collectionInfo.XMatterPackName;
             PageNumberStyle = collectionInfo.PageNumberStyle;
             Subscription = collectionInfo.Subscription;
@@ -309,12 +308,6 @@ namespace Bloom.Collection
         }
 
         /// <summary>
-        /// Intended for making shell books and templates, not vernacular
-        /// </summary>
-        [Obsolete("We never distinguish source collections anymore, so this is obsolete.")]
-        public virtual bool IsSourceCollection { get; set; }
-
-        /// <summary>
         /// Get the name of the language whose tag is the first argument, if possible in the language specified by the second.
         /// If the language tag is unknown, return it unchanged.
         /// </summary>
@@ -382,7 +375,6 @@ namespace Bloom.Collection
             xml.Add(languagesElement);
             SignLanguage.SaveToXElement(xml, isSignLanguage: true);
             xml.Add(new XElement("OneTimeCheckVersionNumber", OneTimeCheckVersionNumber));
-            xml.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
             xml.Add(new XElement("XMatterPack", XMatterPackName));
             xml.Add(new XElement("PageNumberStyle", PageNumberStyle));
 
@@ -552,10 +544,8 @@ namespace Bloom.Collection
                 {
                     new[] { "LanguageName", "Language1Name" }, // but NOT SignLanguageName -> SignLanguage1Name !!
                     new[] { "SignLanguage1Name", "SignLanguageName" }, // un-migrate SignLanguageName
-                    new[] { "IsShellLibrary", "IsSourceCollection" },
                     new[] { "National1Iso639Code", "Language2Iso639Code" },
                     new[] { "National2Iso639Code", "Language3Iso639Code" },
-                    new[] { "IsShellMakingProject", "IsSourceCollection" },
                     new[] { "Local Community", "Local-Community" }, // migrate for 4.4
                 };
 
@@ -644,7 +634,6 @@ namespace Bloom.Collection
                 Province = ReadString(xml, "Province", "");
                 District = ReadString(xml, "District", "");
                 AllowNewBooks = ReadBoolean(xml, "AllowNewBooks", true);
-                IsSourceCollection = ReadBoolean(xml, "IsSourceCollection", false);
 
                 string audioRecordingModeStr = ReadString(xml, "AudioRecordingMode", "Unknown");
                 TalkingBookApi.AudioRecordingMode parsedAudioRecordingMode;

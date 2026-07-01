@@ -1560,10 +1560,10 @@ namespace Bloom.web.controllers
 
         private static void AppendTimeZone(StringBuilder bldr)
         {
-            var tzName = TimeZone.CurrentTimeZone.IsDaylightSavingTime(DateTime.Now)
-                ? TimeZone.CurrentTimeZone.DaylightName
-                : TimeZone.CurrentTimeZone.StandardName;
-            var tzOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
+            var tzName = TimeZoneInfo.Local.IsDaylightSavingTime(DateTime.Now)
+                ? TimeZoneInfo.Local.DaylightName
+                : TimeZoneInfo.Local.StandardName;
+            var tzOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
             var tzFormatString = (tzOffset < TimeSpan.Zero ? "\\-" : "") + "hh\\:mm";
             bldr.AppendLine(
                 "User timezone: UTC" + tzOffset.ToString(tzFormatString) + "  (" + tzName + ")"

@@ -207,11 +207,14 @@ namespace Bloom.web
                 using (var s3Client = new BloomS3Client(null))
                 {
                     s3Client.Timeout = TimeSpan.FromMilliseconds(2500.0);
-                    s3Client.ReadWriteTimeout = TimeSpan.FromMilliseconds(3000.0);
                     s3Client.MaxErrorRetry = 1;
+                    // Timeout (above) only covers connecting and receiving the response headers;
+                    // this overall timeout also covers reading the (small) response body, so a
+                    // stalled connection can't leave us waiting forever. See BloomS3Client.DownloadFile.
                     var jsonContent = s3Client.DownloadFile(
                         BloomS3Client.BloomDesktopFiles,
-                        kUrlLookupFileName
+                        kUrlLookupFileName,
+                        TimeSpan.FromMilliseconds(3000.0)
                     );
                     Urls urls = JsonConvert.DeserializeObject<Urls>(jsonContent);
                     // cache them all, so we don't have to repeat the server request.
