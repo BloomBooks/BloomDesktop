@@ -21,6 +21,7 @@ import {
 import { ReaderToolNav } from "../ReaderToolNav";
 import { toolboxTheme } from "../../../../bloomMaterialUITheme";
 import { useMountEffect } from "../../../../utils/useMountEffect";
+import { BloomTooltip } from "../../../../react_components/BloomToolTip";
 
 // This component displays a list of words in a grid
 // where the number of rows and columns is dynamically
@@ -183,52 +184,55 @@ const SortButton: FunctionComponent<{
             shouldHighlight = model.sort === "byFrequency" ? true : false;
             break;
     }
-    // this component makes use of useL10n to localize the tooltip
-    // for the bloom button, since there currently is no localization
-    // set up for EditTab.Toolbox.DecodableReaderTool.Sort${keyInsert}.Tooltip
+    // this component makes use of useL10n to localize the tooltip text
+    // for the bloom tooltip component
     const tooltip = useL10n(
         `Sort ${tipInsert}`,
         `EditTab.Toolbox.DecodableReaderTool.Sort${keyInsert}`,
     );
     return (
-        // this button uses the title attribute instead of the
-        // l10nTipEnglishDisabled attribute because that attribute
-        // causes .Tooltip to be appended to the l10nKey attribute,
-        // and the sort keys don't have a .Tooltip suffix in the xlf
-        // files.
-        <BloomButton
-            title={tooltip}
-            l10nKey="already-localized"
-            alreadyLocalized={true}
-            variant="text"
-            enabled={true}
-            hasText={true}
-            onClick={() => props.changeSortFunc(props.sortType)}
-            css={css`
-                font-family: FontAwesome;
-                width: 20px;
-                min-width: unset;
-                height: 20px;
-                margin-top: 1px;
-                border-radius: 0;
-                color: white;
-                border: 1px solid white;
-                background-color: ${shouldHighlight ? "grey" : "transparent"};
-
-                &&,
-                &&:hover {
-                    border-width: 1px;
-                }
-
-                &:hover {
+        <BloomTooltip
+            tip={tooltip}
+            placement="top-end"
+            slotProps={{
+                tooltip: { sx: { width: "auto", maxWidth: "165px" } },
+            }}
+        >
+            <BloomButton
+                l10nKey="already-localized"
+                alreadyLocalized={true}
+                variant="text"
+                enabled={true}
+                hasText={true}
+                onClick={() => props.changeSortFunc(props.sortType)}
+                css={css`
+                    font-family: FontAwesome;
+                    width: 20px;
+                    min-width: unset;
+                    height: 20px;
+                    margin-top: 1px;
+                    border-radius: 0;
+                    color: white;
+                    border: 1px solid white;
                     background-color: ${shouldHighlight
                         ? "grey"
                         : "transparent"};
-                }
-            `}
-        >
-            {unicodeIcon}
-        </BloomButton>
+
+                    &&,
+                    &&:hover {
+                        border-width: 1px;
+                    }
+
+                    &:hover {
+                        background-color: ${shouldHighlight
+                            ? "grey"
+                            : "transparent"};
+                    }
+                `}
+            >
+                {unicodeIcon}
+            </BloomButton>
+        </BloomTooltip>
     );
 };
 
