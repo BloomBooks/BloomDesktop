@@ -1297,7 +1297,11 @@ function removeEditingDebris() {
 
 // Delay notification management for requestPageContent
 const activeDelays: string[] = [];
-const kMaxWaitTimeMs = 2000;
+// Upper bound (not a fixed wait) on how long we wait for in-flight async DOM work
+// (image sizing, canvas-element layout, etc.) to finish before capturing anyway. The
+// wait ends as soon as activeDelays empties, so simple pages are unaffected by this value;
+// it only gives slower computers with complex pages more headroom before we give up.
+const kMaxWaitTimeMs = 4000;
 let requestPageContentTimeout: number | null = null;
 
 // Add a delay notification that will prevent requestPageContent from running immediately.
