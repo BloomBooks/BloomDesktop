@@ -95,7 +95,7 @@ const getHighlightTexts = (highlightName: string): string[] => {
 /**
  * In BL-15300, the "current" audio element is tracked by AudioRecording.highlightedElement.
  * Tests mark the intended pre-selected element with data-test-preselect="true" in their
- * HTML fixture (never via the production ui-audioCurrent class). This helper reads that
+ * HTML fixture (never via the obsolete ui-audioCurrent class). This helper reads that
  * attribute and transfers the element to the recording's highlightedElement field before
  * calling methods under test.
  */

@@ -297,7 +297,8 @@ export class AudioTextHighlightManager {
             for (const cssRule of Array.from(userStyles.cssRules)) {
                 const rule = cssRule as CSSStyleRule;
                 if (
-                    rule.selectorText?.includes(styleName) &&
+                    (rule.selectorText?.includes("." + styleName + " ") ||
+                        rule.selectorText?.includes("." + styleName + ".")) &&
                     rule.selectorText?.includes("ui-audioCurrent") &&
                     rule.style.backgroundColor
                 ) {
