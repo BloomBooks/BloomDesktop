@@ -1,7 +1,7 @@
 /**
  * Tests for Registration Dialog - User Interaction and Navigation
  * Covers: form submission, focus management, keyboard navigation, accessibility
- * Run with: yarn test
+ * Run with: ../test.sh (or `pnpm test` from react_components/component-tester)
  */
 
 import { expect, test } from "../../component-tester/playwrightTest";

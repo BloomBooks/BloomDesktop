@@ -1,0 +1,39 @@
+# pnpm policy for the Bloom front-end. See https://pnpm.io/settings
+#
+# Dependency-risk hardening:
+#  - minimumReleaseAge: ignore any package version published less than 7 days
+#    (10080 minutes) ago. A freshly-published (possibly compromised) version
+#    can't be pulled into a build until it has had time to be noticed/yanked.
+#  - savePrefix "": save exact versions so `pnpm add` keeps installs reproducible.
+minimumReleaseAge: 10080
+savePrefix: ""
+
+# Formerly the yarn "resolutions" block: force a single @types/react across the
+# tree. Many @types/* packages pin @types/react@^17, and mixing those with
+# @types/react 18 makes MUI component props (e.g. NestedMenuItem) appear to
+# require placeholder/onPointerEnterCapture. Dedupe to 18.
+overrides:
+    "@types/react": "18.3.31"
+    "@types/react-dom": "18.3.7"
+
+# Replaces patch-package. Patch files live in ./patches and are applied by pnpm
+# during install.
+patchedDependencies:
+    react-collapse-pane@3.0.1: patches/react-collapse-pane@3.0.1.patch
+    react-lazyload@3.2.0: patches/react-lazyload@3.2.0.patch
+
+# Build-script allowlist. pnpm does NOT run a dependency's install/postinstall
+# script unless it is explicitly allowed here. Only esbuild (needs its
+# platform-specific binary) genuinely requires its script; the rest are
+# funding/notice postinstalls we deliberately skip. (Git hooks are installed by
+# scripts/setup-git-hooks.mjs via the package.json "prepare" script, not by a
+# dependency build script.)
+allowBuilds:
+    "@fortawesome/fontawesome-common-types": false
+    "@fortawesome/fontawesome-svg-core": false
+    "@fortawesome/free-solid-svg-icons": false
+    core-js: false
+    core-js-pure: false
+    esbuild: true
+    less-watch-compiler: false
+    styled-components: false

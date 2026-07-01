@@ -41,7 +41,7 @@ const config: PlaywrightTestConfig = {
     },
     // Spin up the Vite dev server so the harness is available during tests.
     webServer: {
-        command: "yarn dev",
+        command: "pnpm dev",
         cwd: __dirname,
         url: "http://127.0.0.1:5183",
         reuseExistingServer: true,

@@ -1,5 +1,5 @@
 #!/bin/sh
-# This script is run by Husky from src/BloomBrowserUI/package.json. We need to get to
+# This script is run by the pre-commit hook in src/BloomBrowserUI/.vite-hooks/pre-commit. We need to get to
 # the root of the git repository, which is one level up from where this script lives.
 cd $(dirname $0)/..
 echo Formatting any C# files that are being submitted

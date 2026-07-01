@@ -189,9 +189,9 @@ Commands:
   create        Only create/update XLIFF files from English HTML files
 
 Examples:
-  yarn build:l10n              # Run both tasks
-  yarn build:l10n:translate    # Only translate
-  yarn build:l10n:create       # Only create XLIFF files
+  pnpm build:l10n              # Run both tasks
+  pnpm build:l10n:translate    # Only translate
+  pnpm build:l10n:create       # Only create XLIFF files
         `);
         process.exit(0);
     }
