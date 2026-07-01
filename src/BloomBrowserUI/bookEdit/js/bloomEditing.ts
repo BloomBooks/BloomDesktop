@@ -77,6 +77,7 @@ import { EditableDivUtils } from "./editableDivUtils";
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { setupBookLinkGrids } from "./linkGrid";
+import { fitImageOverTextSplits } from "./autoFitImageOverTextSplits";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { handleUndo } from "../workspaceRoot";
@@ -1296,7 +1297,11 @@ function removeEditingDebris() {
 
 // Delay notification management for requestPageContent
 const activeDelays: string[] = [];
-const kMaxWaitTimeMs = 2000;
+// Upper bound (not a fixed wait) on how long we wait for in-flight async DOM work
+// (image sizing, canvas-element layout, etc.) to finish before capturing anyway. The
+// wait ends as soon as activeDelays empties, so simple pages are unaffected by this value;
+// it only gives slower computers with complex pages more headroom before we give up.
+const kMaxWaitTimeMs = 4000;
 let requestPageContentTimeout: number | null = null;
 
 // Add a delay notification that will prevent requestPageContent from running immediately.
@@ -1369,25 +1374,36 @@ export function requestPageContent() {
     }
 }
 
+// Run the load-time cleanup and return the page body + user stylesheet combined with the
+// <SPLIT-DATA> delimiter that C# splits on. Shared by the live save path (requestPageContentInternal)
+// and the off-screen capture path (captureContentForExternalProcessing) so the cleanup steps and the
+// delimiter can't drift between them.
+//
+// DESTRUCTIVE READ: this mutates the live DOM as a side effect (removeToolboxMarkup(),
+// removeEditingDebris(), and getBodyContentForSavePage() all strip classes, blur elements, turn off
+// canvas-element editing, and do CKEditor cleanup) and does NOT restore it afterward. Both current
+// callers tolerate this: the live editor re-navigates the page after saving, and the off-screen path
+// uses a fresh disposable browser per page. Don't call this from a context where the page must stay
+// live and editable afterward.
+function extractAndStripPageContentForSave(): string {
+    // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports(). (Off-screen,
+    // e.g. process-book, there is no toolbox iframe, so this is a no-op there.)
+    getToolboxBundleExports()?.removeToolboxMarkup();
+    removeEditingDebris();
+    const content = getBodyContentForSavePage();
+    const userStylesheet = userStylesheetContent();
+    // (We tossed up whether to use a JSON object instead of a delimiter, but combining two strings is
+    // simpler: HTML needs escaping to live in JSON, which we'd then have to undo in C#.)
+    return content + "<SPLIT-DATA>" + userStylesheet;
+}
+
 function requestPageContentInternal() {
     if (requestPageContentTimeout !== null) {
         clearTimeout(requestPageContentTimeout);
     }
     requestPageContentTimeout = null;
     try {
-        // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports().
-        getToolboxBundleExports()?.removeToolboxMarkup();
-        removeEditingDebris(); // Enhance this makes a change when better it would only changed the
-        const content = getBodyContentForSavePage();
-        const userStylesheet = userStylesheetContent();
-        postString(
-            "editView/pageContent",
-            // We tossed up whether to use a JSON object here, but decided that it was simpler to just
-            // combine the two strings with a delimiter that we can split on in C#.
-            // For one thing, HTML requires some escaping to put in a JSON object, which would have
-            // to be done in Javascript, and then undone in C#.
-            content + "<SPLIT-DATA>" + userStylesheet,
-        );
+        postString("editView/pageContent", extractAndStripPageContentForSave());
     } catch (e) {
         postString(
             "editView/pageContent",
@@ -1448,6 +1464,63 @@ export function getBodyContentForSavePage() {
     }
 
     return result;
+}
+
+// Used by the off-screen "process whole book" path (C# BookProcessor, driven by the
+// external/process-book API). It gathers the same page content that requestPageContent() would save
+// (via the shared extractAndStripPageContentForSave()), but instead of posting it to the editView/pageContent
+// API (which feeds the LIVE EditingModel and would corrupt the live editor's state), it stashes the
+// combined result on window.__bloomExternalPageContent for the C# caller to poll. Like
+// requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, up to
+// kMaxWaitTimeMs, so browser-based measurements (image sizing, canvas-element layout, etc.) are complete
+// before we capture the page.
+export function captureContentForExternalProcessing(
+    fitImageTextSplits?: boolean,
+): void {
+    window.__bloomExternalPageContent = undefined;
+
+    // Optionally auto-fit simple single-image/single-text origami pages so the grown split persists
+    // into the saved HTML. This currently handles both image-above-text and image-left-of-text when
+    // the image is in the first pane. We do this UP FRONT, before the delay-wait below, for two reasons:
+    //  - It must run on the fully settled, real browser layout (which it now is: bootstrap() and the
+    //    load-time fix-ups have run before C# calls us).
+    //  - Growing the image pane means the background image must be re-fit to the new pane size. That
+    //    re-fit (adjustBackgroundImageSize) is async and registers a requestPageContent delay, so we
+    //    kick it off here and let the waitForDelaysThenFinish loop below wait for it to settle before
+    //    we capture. Otherwise we'd save the new split with the OLD (too-small) image, and the image
+    //    would only get corrected later when a user opened the page in the Edit tab.
+    // Never throws out: a failure to fit must not block capturing/saving the page.
+    if (fitImageTextSplits) {
+        try {
+            const changedAny = fitImageOverTextSplits();
+            if (changedAny) {
+                // Re-fit the background image(s) to the resized pane(s), exactly as the editor does
+                // after a programmatic splitter change (double-click "match previous page").
+                theOneCanvasElementManager.adjustAfterOrigamiDoubleClick();
+            }
+        } catch (e) {
+            console.error("fitImageOverTextSplits failed: ", e);
+        }
+    }
+
+    const start = Date.now();
+    const finish = () => {
+        try {
+            window.__bloomExternalPageContent =
+                extractAndStripPageContentForSave();
+        } catch (e) {
+            window.__bloomExternalPageContent =
+                "ERROR: " + (e && e.message) + "\n" + (e && e.stack);
+        }
+    };
+    const waitForDelaysThenFinish = () => {
+        if (activeDelays.length === 0 || Date.now() - start > kMaxWaitTimeMs) {
+            finish();
+        } else {
+            setTimeout(waitForDelaysThenFinish, 50);
+        }
+    };
+    waitForDelaysThenFinish();
 }
 
 // Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via

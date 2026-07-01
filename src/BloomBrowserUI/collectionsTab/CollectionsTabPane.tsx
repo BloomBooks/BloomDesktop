@@ -37,6 +37,7 @@ import {
     showMakeReaderTemplateBloomPackDialog,
 } from "../react_components/makeReaderTemplateBloomPackDialog";
 import { AboutDialogLauncher } from "../react_components/aboutDialog";
+import { ExternalBusyOverlay } from "./ExternalBusyOverlay";
 import { CollectionChooserDialog } from "../collection/CollectionChooserDialog";
 
 const kResizerSize = 10;
@@ -595,6 +596,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             <CollectionSettingsDialog />
             <EmbeddedProgressDialog id="collectionTab" />
             <MakeReaderTemplateBloomPackDialog />
+            <ExternalBusyOverlay />
             <CollectionChooserDialog
                 open={collectionChooserOpen}
                 onClose={() => setCollectionChooserOpen(false)}

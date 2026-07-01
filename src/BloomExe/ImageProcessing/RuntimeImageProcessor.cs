@@ -159,12 +159,7 @@ namespace Bloom.ImageProcessing
             // Step 1: quick cache check under lock
             lock (this)
             {
-                if (
-                    _originalPathToProcessedVersionPath.TryGetValue(
-                        cacheFileName,
-                        out var cached
-                    )
-                )
+                if (_originalPathToProcessedVersionPath.TryGetValue(cacheFileName, out var cached))
                 {
                     if (
                         RobustFile.Exists(cached)

@@ -1058,10 +1058,6 @@ namespace Bloom.web.controllers
 
         private const uint PW_RENDERFULLCONTENT = 0x00000002;
 
-        /// <summary>Returns the handle of the window currently in the foreground.</summary>
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
-
         /// <summary>Returns the thread and process that created the given window.</summary>
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
@@ -1072,7 +1068,7 @@ namespace Bloom.web.controllers
         /// </summary>
         private static bool IsBloomProcessInForeground()
         {
-            var fgWindow = GetForegroundWindow();
+            var fgWindow = ProcessExtra.GetForegroundWindow();
             if (fgWindow == IntPtr.Zero)
                 return false;
             GetWindowThreadProcessId(fgWindow, out uint fgProcessId);

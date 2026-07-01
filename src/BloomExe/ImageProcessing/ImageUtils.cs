@@ -355,7 +355,10 @@ namespace Bloom.ImageProcessing
             // steps. For a 40×40 image this gives step=2; for a 20×20 image, step=1.
             int step = Math.Min(
                 kSampleStep,
-                Math.Max(1, Math.Min(bitmapImage.Width / kMinGridSize, bitmapImage.Height / kMinGridSize))
+                Math.Max(
+                    1,
+                    Math.Min(bitmapImage.Width / kMinGridSize, bitmapImage.Height / kMinGridSize)
+                )
             );
 
             // Divide the RGB cube into 32-unit bins (5 bits discarded per channel,
@@ -377,13 +380,18 @@ namespace Bloom.ImageProcessing
             var bitmapData = bitmapImage.LockBits(
                 new Rectangle(0, 0, imageWidth, imageHeight),
                 ImageLockMode.ReadOnly,
-                PixelFormat.Format32bppArgb);
+                PixelFormat.Format32bppArgb
+            );
             try
             {
                 int stride = bitmapData.Stride;
                 byte[] pixels = new byte[stride * imageHeight];
                 System.Runtime.InteropServices.Marshal.Copy(
-                    bitmapData.Scan0, pixels, 0, pixels.Length);
+                    bitmapData.Scan0,
+                    pixels,
+                    0,
+                    pixels.Length
+                );
                 for (int j = 0, y = step / 2; y < imageHeight; y += step, ++j)
                 {
                     j = Math.Min(j, 9);
@@ -401,7 +409,9 @@ namespace Bloom.ImageProcessing
                         // toward the surrounding white/black background and loses most of its
                         // chroma; genuine large-region colors are unaffected.
                         const int kHalfWindow = 2; // (2*2+1)² = 25 pixels
-                        long rSum = 0, gSum = 0, bSum = 0;
+                        long rSum = 0,
+                            gSum = 0,
+                            bSum = 0;
                         for (int dy = -kHalfWindow; dy <= kHalfWindow; dy++)
                         {
                             int py = Math.Min(Math.Max(y1 + dy, 0), imageHeight - 1);
@@ -420,9 +430,10 @@ namespace Bloom.ImageProcessing
                         int g = (int)(gSum / kWindowArea);
                         int b = (int)(bSum / kWindowArea);
 
-                        int key = ((r >> kBucketShift) << (2 * kBitsPerBucket))
-                                | ((g >> kBucketShift) << kBitsPerBucket)
-                                |  (b >> kBucketShift);
+                        int key =
+                            ((r >> kBucketShift) << (2 * kBitsPerBucket))
+                            | ((g >> kBucketShift) << kBitsPerBucket)
+                            | (b >> kBucketShift);
                         if (buckets.TryGetValue(key, out var entry))
                             buckets[key] = (entry.r + r, entry.g + g, entry.b + b, entry.count + 1);
                         else
@@ -444,17 +455,22 @@ namespace Bloom.ImageProcessing
             // large images while the floor of 1 ensures no filtering occurs for small images
             // (where a single sample can represent a genuine but small color region).
             int totalSamples = 0;
-            foreach (var b in buckets.Values) totalSamples += b.count;
+            foreach (var b in buckets.Values)
+                totalSamples += b.count;
             int minCount = Math.Max(1, totalSamples / 1700);
 
             return buckets
                 .Where(kv => kv.Value.count >= minCount)
-                .Select(kv => (
-                    color: Color.FromArgb(
-                        (int)(kv.Value.r / kv.Value.count),
-                        (int)(kv.Value.g / kv.Value.count),
-                        (int)(kv.Value.b / kv.Value.count)),
-                    kv.Value.count))
+                .Select(kv =>
+                    (
+                        color: Color.FromArgb(
+                            (int)(kv.Value.r / kv.Value.count),
+                            (int)(kv.Value.g / kv.Value.count),
+                            (int)(kv.Value.b / kv.Value.count)
+                        ),
+                        kv.Value.count
+                    )
+                )
                 .ToArray();
         }
 

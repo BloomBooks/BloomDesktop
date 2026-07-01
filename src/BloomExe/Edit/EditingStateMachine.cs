@@ -40,6 +40,11 @@ public class EditingStateMachine
     private Action<string, string> _updateBookWithPageContents; // args are (pageId, pageContentData)
     private Action _saveBook;
     private bool _saveActionHandlesSaveBook;
+
+    // When set, the in-flight save (we are in SavePending, waiting for the browser to return the
+    // page content) will be discarded on completion rather than merged into the DOM and written to
+    // disk. See DiscardInFlightSave.
+    private bool _discardInFlightSave;
     private Action _hidePage;
 
     private Action<bool> _enableStateTransitions; // arg is (enabled)
@@ -223,9 +228,14 @@ public class EditingStateMachine
         Action doAfterSaveToDisk = null
     )
     {
+        // If an external process overwrote the book on disk while this save was in flight, we are
+        // intentionally discarding the gathered page content (see DiscardInFlightSave): don't merge
+        // it into the DOM and don't write it to disk below, or we'd clobber what that process wrote.
+        var discard = _discardInFlightSave;
+        _discardInFlightSave = false;
         try
         {
-            if (pageContentData != null)
+            if (pageContentData != null && !discard)
             {
                 if (pageContentData.StartsWith("ERROR:"))
                     throw new ApplicationException(pageContentData); // This is caught immediately below. We want that error handling for this case.
@@ -234,7 +244,7 @@ public class EditingStateMachine
             }
             else
             {
-                // We're in the no page state, and there's nothing to save.
+                // We're in the no page state (or discarding), and there's nothing to save.
             }
         }
         catch (Exception e)
@@ -278,7 +288,7 @@ public class EditingStateMachine
             {
                 _saveActionHandlesSaveBook = false;
             }
-            else
+            else if (!discard)
             {
                 _saveBook();
                 doAfterSaveToDisk?.Invoke();
@@ -343,6 +353,23 @@ public class EditingStateMachine
         {
             UpdateUI();
         }
+    }
+
+    /// <summary>
+    /// If a save is in flight (we are in SavePending, having asked the browser for the current page's
+    /// content but not yet received it), arrange for that save's completion to throw the content away
+    /// rather than merging it into the book DOM or writing it to disk. Used when an external process
+    /// has overwritten the book on disk and we are intentionally discarding the user's unsaved edits
+    /// (see EditingModel.ReloadCurrentBookDiscardingEdits). Without this, the in-flight save would
+    /// finish after we reload and clobber the external process's content on disk.
+    /// Returns true if a save was actually in flight (so the discard will take effect).
+    /// </summary>
+    public bool DiscardInFlightSave()
+    {
+        if (_currentState != State.SavePending)
+            return false;
+        _discardInFlightSave = true;
+        return true;
     }
 
     /// <summary>

@@ -31,6 +31,10 @@ namespace Bloom
 
         public static string AlternativeWebView2Path;
         private bool _readyToNavigate;
+
+        // Exposes whether the (async) CoreWebView2 environment initialization has finished. Lets callers
+        // measure how long that init takes separately from the subsequent navigation (see BookProcessor).
+        public override bool IsReadyToNavigate => _readyToNavigate;
         private PasteCommand _pasteCommand;
         private CopyCommand _copyCommand;
         private UndoCommand _undoCommand;
@@ -259,6 +263,50 @@ namespace Bloom
 
         static int dataFolderCounter = 0;
 
+        // When set (via BeginSharedEnvironmentBatch), all WebView2 browsers created during the batch
+        // share ONE CoreWebView2Environment — i.e. one browser process, one user-data folder, and one
+        // HTTP cache — instead of each creating its own. The first browser of the batch creates the
+        // environment; the rest reuse it. Each browser still gets its own fresh CoreWebView2 control
+        // (fresh renderer), so this does NOT reintroduce the single-control reuse-wedge. Used by
+        // BookProcessor's off-screen per-page fix-up to avoid paying environment creation per page.
+        //
+        // These statics assume the batch is UI-thread-only (which it is: all browser construction is
+        // marshalled to the UI thread, and BookProcessor drives the batch there). If another browser
+        // happens to be created during the batch (e.g. a thumbnail), it harmlessly joins the shared
+        // environment. They are NOT a mechanism for concurrent batches.
+        private static bool _useSharedEnvironment;
+        private static CoreWebView2Environment _sharedEnvironment;
+
+        public static void BeginSharedEnvironmentBatch()
+        {
+            AssertSharedEnvironmentStaticsAreUiThreadOnly();
+            _useSharedEnvironment = true;
+            _sharedEnvironment = null;
+        }
+
+        public static void EndSharedEnvironmentBatch()
+        {
+            AssertSharedEnvironmentStaticsAreUiThreadOnly();
+            _useSharedEnvironment = false;
+            // Drop our reference; the underlying browser process/profile is released once the last
+            // CoreWebView2 using this environment is disposed. (CoreWebView2Environment is not IDisposable.)
+            _sharedEnvironment = null;
+        }
+
+        // The shared-environment statics above have no synchronization; they are safe only because the
+        // batch is UI-thread-only (see the comment on _useSharedEnvironment). Assert that assumption so
+        // any future code that drives a batch off the UI thread trips here instead of silently corrupting
+        // state. Unit-test/console modes are exempt, as elsewhere in this file.
+        private static void AssertSharedEnvironmentStaticsAreUiThreadOnly()
+        {
+            Debug.Assert(
+                Program.RunningOnUiThread
+                    || Program.RunningUnitTests
+                    || Program.RunningInConsoleMode,
+                "Shared WebView2 environment batch must be driven on the UI thread (these statics are unsynchronized)"
+            );
+        }
+
         private async Task InitWebView()
         {
             // based on https://stackoverflow.com/questions/63404822/how-to-disable-cors-in-wpf-webview2
@@ -378,25 +426,36 @@ namespace Bloom
             // different instances of WebView2 using the same one, so we decided to make sure it is uniqiue.
             // Enhance: it might be a good thing to try to delete this folder if we find it already exists (on a background thread).
             // For now we'll just keep incrementing until we find an available folder.
-            string dataFolder;
-            do
-            {
-                dataFolder = Path.Combine(
-                    Path.GetTempPath(),
-                    "Bloom WV2-"
-                        + (BloomServer.portForHttp == 0 ? 8085 : BloomServer.portForHttp)
-                        + dataFolderCounter++
-                );
-            } while (Directory.Exists(dataFolder));
             // This sets up a handler for the CoreWebView2InitializationCompleted event, which will run before
             // EnsureCoreWebView2Async returns if we're awaiting properly, so we need to set up that handler
-            // before calling EnsureCoreWebView2Async.
+            // before calling EnsureCoreWebView2Async. (It must run even when we reuse a shared environment,
+            // because EnsureCoreWebView2Async still fires this control's own InitializationCompleted, which
+            // is what sets _readyToNavigate.)
             SetupEventHandling();
-            var env = await CoreWebView2Environment.CreateAsync(
-                browserExecutableFolder: AlternativeWebView2Path,
-                userDataFolder: dataFolder,
-                options: op
-            );
+            // During a shared-environment batch, reuse the one environment (and its browser process +
+            // user-data folder + HTTP cache) so we don't pay environment creation per browser. The first
+            // browser of the batch falls through and creates it; subsequent ones reuse it.
+            var env = _useSharedEnvironment ? _sharedEnvironment : null;
+            if (env == null)
+            {
+                string dataFolder;
+                do
+                {
+                    dataFolder = Path.Combine(
+                        Path.GetTempPath(),
+                        "Bloom WV2-"
+                            + (BloomServer.portForHttp == 0 ? 8085 : BloomServer.portForHttp)
+                            + dataFolderCounter++
+                    );
+                } while (Directory.Exists(dataFolder));
+                env = await CoreWebView2Environment.CreateAsync(
+                    browserExecutableFolder: AlternativeWebView2Path,
+                    userDataFolder: dataFolder,
+                    options: op
+                );
+                if (_useSharedEnvironment)
+                    _sharedEnvironment = env;
+            }
             await _webview.EnsureCoreWebView2Async(env);
             // Added as a footnote to BL-15466 to prevent popups generated from title
             // attributes being white on black, presumably because of some setting the
