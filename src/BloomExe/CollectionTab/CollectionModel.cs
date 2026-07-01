@@ -48,6 +48,11 @@ namespace Bloom.CollectionTab
         private LocalizationChangedEvent _localizationChangedEvent;
         private BookCollectionHolder _bookCollectionHolder;
 
+        // The .bloomSource files the user chose to import, remembered between the file-picker step
+        // (ChooseBloomSourceFilesToImport) and the actual import (ImportBloomSourceFiles), so the
+        // collection screen can ask edit-vs-derivative in between.
+        private string[] _bloomSourceFilesToImport;
+
         public CollectionModel(
             string pathToCollection,
             CollectionSettings collectionSettings,
@@ -187,6 +192,521 @@ namespace Bloom.CollectionTab
                 );
                 newBook.UserPrefs.UploadAgreementsAccepted = false;
             }
+        }
+
+        /// <summary>
+        /// What the user chose to do when an imported .bloomSource book is already present
+        /// (same bookInstanceId) in the editable collection.
+        /// </summary>
+        internal enum ImportDuplicateChoice
+        {
+            Replace,
+            AddCopy,
+            Cancel,
+        }
+
+        /// <summary>
+        /// A problem with an imported .bloomSource file that we can explain to the user
+        /// (e.g. corrupt file, wrong kind of file, no book inside). The Message is shown
+        /// directly to the user, so it should be friendly and not require a bug report.
+        /// </summary>
+        internal class BloomSourceImportException : Exception
+        {
+            public BloomSourceImportException(string userMessage)
+                : base(userMessage) { }
+        }
+
+        /// <summary>
+        /// Prompts the user to pick one or more .bloomSource files, remembering them for a following
+        /// <see cref="ImportBloomSourceFiles"/> call. Returns true if at least one file was chosen.
+        /// This is separate from the import itself so the collection screen can ask (once, for the
+        /// whole batch) whether to edit or make derivatives *after* the files have been chosen.
+        /// </summary>
+        public bool ChooseBloomSourceFilesToImport()
+        {
+            using (var dlg = new BloomOpenFileDialog())
+            {
+                dlg.Multiselect = true;
+                dlg.CheckFileExists = true;
+                dlg.Title = LocalizationManager.GetString(
+                    "CollectionTab.ImportBloomSource",
+                    "Import .bloomSource File(s)"
+                );
+                dlg.Filter =
+                    "Bloom Source files (*.bloomSource)|*.bloomSource|Team Collection books (*.bloom)|*.bloom|All files (*.*)|*.*";
+                if (dlg.ShowDialog() != DialogResult.OK)
+                {
+                    _bloomSourceFilesToImport = null;
+                    return false;
+                }
+                _bloomSourceFilesToImport = dlg.FileNames;
+                return _bloomSourceFilesToImport.Length > 0;
+            }
+        }
+
+        /// <summary>
+        /// Imports the .bloomSource files previously chosen via
+        /// <see cref="ChooseBloomSourceFilesToImport"/> into the current editable collection. The
+        /// user has already made two choices (in the collection screen) that apply to the whole
+        /// batch: when <paramref name="makeDerivatives"/> is true, each imported book is used to make
+        /// a new derivative book (otherwise each is imported as an editable book); and, for the edit
+        /// case, when <paramref name="replaceExistingDuplicates"/> is true any book already in the
+        /// collection is replaced (otherwise it is added as a numbered copy). The last successfully
+        /// imported book is selected when done.
+        /// </summary>
+        public void ImportBloomSourceFiles(bool makeDerivatives, bool replaceExistingDuplicates)
+        {
+            var paths = _bloomSourceFilesToImport;
+            _bloomSourceFilesToImport = null;
+            if (paths == null || paths.Length == 0)
+                return;
+
+            // The user has already chosen, once for the whole batch, what to do when an imported
+            // book is already in the collection (only relevant when editing, not making derivatives).
+            var duplicateChoice = replaceExistingDuplicates
+                ? ImportDuplicateChoice.Replace
+                : ImportDuplicateChoice.AddCopy;
+
+            Book.Book lastImported = null;
+            foreach (var path in paths)
+            {
+                try
+                {
+                    var book = makeDerivatives
+                        ? MakeDerivativeFromBloomSourceFile(path)
+                        : ImportOneBloomSourceFile(path, _ => duplicateChoice);
+                    if (book != null)
+                        lastImported = book;
+                }
+                catch (BloomSourceImportException e)
+                {
+                    // A problem we can explain to the user; no bug report needed.
+                    ErrorReport.NotifyUserOfProblem(
+                        "{0}\r\n\r\n{1}",
+                        Path.GetFileName(path),
+                        e.Message
+                    );
+                }
+                catch (Exception e)
+                {
+                    // Something unexpected; let the user report it.
+                    NonFatalProblem.Report(
+                        ModalIf.All,
+                        PassiveIf.None,
+                        shortUserLevelMessage: string.Format(
+                            "Bloom was not able to import \"{0}\".",
+                            Path.GetFileName(path)
+                        ),
+                        moreDetails: null,
+                        exception: e
+                    );
+                }
+            }
+
+            if (lastImported != null)
+                SelectBook(lastImported);
+        }
+
+        /// <summary>
+        /// Imports the single book contained in one .bloomSource (or legacy .bloom) file into the
+        /// editable collection and returns the new Book, or null if the user cancelled.
+        /// The <paramref name="resolveDuplicate"/> callback decides what to do when the book is
+        /// already in the collection; it is a parameter so tests can drive it without a dialog.
+        /// Throws <see cref="BloomSourceImportException"/> for problems we can explain to the user.
+        /// </summary>
+        internal Book.Book ImportOneBloomSourceFile(
+            string sourcePath,
+            Func<string, ImportDuplicateChoice> resolveDuplicate
+        )
+        {
+            var destFolder = ImportBloomSourceFileToCollectionFolder(
+                sourcePath,
+                resolveDuplicate,
+                out var addNumberPrefix
+            );
+            if (destFolder == null)
+                return null; // user cancelled
+
+            ReloadEditableCollection();
+            var newInfo = TheOneEditableCollection
+                .GetBookInfos()
+                .FirstOrDefault(i => i.FolderPath == destFolder);
+            if (newInfo == null)
+                throw new BloomSourceImportException(
+                    "The book was extracted but did not show up in the collection."
+                );
+            var newBook = GetBookFromBookInfo(newInfo);
+
+            if (addNumberPrefix)
+                PrefixCaptionWithUniqueNumber(newBook);
+
+            BookHistory.AddEvent(
+                newBook,
+                BookHistoryEventType.Created,
+                $"Imported from \"{Path.GetFileName(sourcePath)}\""
+            );
+            return newBook;
+        }
+
+        /// <summary>
+        /// Does the file-system part of importing a .bloomSource: validates it, extracts it, removes
+        /// the stray .bloomCollection and any Team-Collection status files, handles the
+        /// already-in-collection case (Replace/Add-a-copy/Cancel), and moves the book into the
+        /// editable collection folder. Returns the destination folder, or null if the user cancelled.
+        /// <paramref name="addNumberPrefix"/> is set true when the caller should give the new book a
+        /// numbered caption (the "Add a copy" case). This is separated from the Book-level work so it
+        /// can be unit tested without loading a Book.
+        /// </summary>
+        internal string ImportBloomSourceFileToCollectionFolder(
+            string sourcePath,
+            Func<string, ImportDuplicateChoice> resolveDuplicate,
+            out bool addNumberPrefix
+        )
+        {
+            addNumberPrefix = false;
+
+            var editable = TheOneEditableCollection;
+            var tempFolder = ExtractAndPrepareBloomSourceToTemp(
+                sourcePath,
+                out var htmlPath,
+                out var instanceId
+            );
+            string destFolder = null;
+            string folderToRecycleAfterImport = null;
+            try
+            {
+                var baseName = Path.GetFileNameWithoutExtension(htmlPath);
+
+                var existing = string.IsNullOrEmpty(instanceId)
+                    ? null
+                    : editable.GetBookInfos().FirstOrDefault(b => b.Id == instanceId);
+                if (existing != null)
+                {
+                    switch (resolveDuplicate(existing.Title))
+                    {
+                        case ImportDuplicateChoice.Cancel:
+                            return null;
+                        case ImportDuplicateChoice.Replace:
+                            // Keep the imported book's id and recycle the existing book, but only
+                            // *after* the imported book is safely in place (below); recycling first
+                            // would lose the original if the move then failed. The existing book
+                            // (same id) stays on disk for now, so GetUniqueBookFolderName just picks
+                            // a fresh folder name to avoid the transient collision.
+                            folderToRecycleAfterImport = existing.FolderPath;
+                            break;
+                        case ImportDuplicateChoice.AddCopy:
+                            // Make the copy independent: new id (so the two books don't collide)
+                            // and a numbered caption (handled after the book is loaded).
+                            addNumberPrefix = true;
+                            instanceId = Guid.NewGuid().ToString();
+                            var meta = BookMetaData.FromFolder(tempFolder);
+                            if (meta != null)
+                            {
+                                meta.Id = instanceId;
+                                meta.WriteToFolder(tempFolder);
+                            }
+                            break;
+                    }
+                }
+
+                // Pick a folder name that doesn't collide with an existing book on disk, and make
+                // the main htm file match it (Bloom's convention: folder name == book htm name).
+                var destName = BookStorage.GetUniqueBookFolderName(
+                    editable.PathToDirectory,
+                    BookStorage.SanitizeNameForFileSystem(baseName),
+                    instanceId,
+                    "-"
+                );
+                destFolder = Path.Combine(editable.PathToDirectory, destName);
+                var renamedHtmlPath = Path.Combine(tempFolder, destName + ".htm");
+                if (!string.Equals(htmlPath, renamedHtmlPath, StringComparison.OrdinalIgnoreCase))
+                    RobustFile.Move(htmlPath, renamedHtmlPath);
+                SIL.IO.RobustIO.MoveDirectory(tempFolder, destFolder);
+
+                // The imported book is now safely in place; for the Replace case it is finally safe
+                // to recycle the book it duplicates.
+                if (folderToRecycleAfterImport != null)
+                {
+                    if (_bookSelection.CurrentSelection?.FolderPath == folderToRecycleAfterImport)
+                        _bookSelection.SelectBook(null);
+                    PathUtilities.DeleteToRecycleBin(folderToRecycleAfterImport);
+                    editable.HandleBookDeletedFromCollection(folderToRecycleAfterImport);
+                }
+                return destFolder;
+            }
+            catch
+            {
+                // If we failed after starting to create the destination folder, don't leave a
+                // half-imported book behind in the collection.
+                if (destFolder != null && Directory.Exists(destFolder))
+                    SIL.IO.RobustIO.DeleteDirectoryAndContents(destFolder);
+                throw;
+            }
+            finally
+            {
+                if (Directory.Exists(tempFolder))
+                    SIL.IO.RobustIO.DeleteDirectoryAndContents(tempFolder);
+            }
+        }
+
+        /// <summary>
+        /// Validates a .bloomSource file, extracts it to a fresh temp folder, removes the stray
+        /// .bloomCollection settings file and any Team-Collection status files, and confirms the
+        /// folder contains a book. Returns the temp folder path (the caller owns deleting it), the
+        /// book's main htm path, and its bookInstanceId (may be null). On any failure the temp
+        /// folder is cleaned up and the exception is rethrown.
+        /// </summary>
+        private string ExtractAndPrepareBloomSourceToTemp(
+            string sourcePath,
+            out string htmlPath,
+            out string instanceId
+        )
+        {
+            // A .bloomSource is a zip of a single book folder's *contents* (flat at the root),
+            // plus the collection's .bloomCollection settings file. Validate that shape and guard
+            // against malicious entries before we extract anything.
+            ValidateBloomSourceZip(sourcePath);
+
+            // Extract onto the same volume as the collection. The book is later moved into the
+            // collection folder with a directory move, which cannot cross volumes; the system
+            // temp folder is frequently on a different drive than the user's collection (e.g. %TEMP%
+            // on C: but the collection on D: or a removable/network drive), which would make every
+            // edit-mode import fail. Staging in the collection's parent guarantees a same-volume move.
+            // The name is dot-prefixed so it is ignored by the collection's book scan if it ever ends
+            // up inside a scanned folder.
+            var collectionDir = TheOneEditableCollection.PathToDirectory;
+            var stagingParent = Directory.GetParent(collectionDir)?.FullName ?? Path.GetTempPath();
+            var tempFolder = Path.Combine(stagingParent, ".BloomImport-" + Guid.NewGuid());
+            try
+            {
+                ZipUtils.ExpandZip(sourcePath, tempFolder);
+
+                // The .bloomCollection file (there should be exactly one, but delete any) is
+                // collection-level and must not end up inside the book folder.
+                foreach (var settingsFile in Directory.GetFiles(tempFolder, "*.bloomCollection"))
+                    RobustFile.Delete(settingsFile);
+
+                htmlPath = BookStorage.FindBookHtmlInFolder(tempFolder);
+                if (string.IsNullOrEmpty(htmlPath))
+                    throw new BloomSourceImportException("No book was found in this file.");
+
+                // An imported book should not carry over Team Collection status from wherever it came from.
+                BookStorage.RemoveLocalOnlyFiles(tempFolder);
+
+                instanceId = BookMetaData.FromFolder(tempFolder)?.Id;
+                return tempFolder;
+            }
+            catch
+            {
+                if (Directory.Exists(tempFolder))
+                    SIL.IO.RobustIO.DeleteDirectoryAndContents(tempFolder);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Imports one .bloomSource file by making a NEW derivative book (new id and lineage) from
+        /// the book it contains, placed in the editable collection. Returns the new Book, or null if
+        /// creation was cancelled (e.g. a template configuration dialog). Because a derivative always
+        /// gets a fresh id, there is never a duplicate to resolve.
+        /// </summary>
+        internal Book.Book MakeDerivativeFromBloomSourceFile(string sourcePath)
+        {
+            var tempFolder = ExtractAndPrepareBloomSourceToTemp(sourcePath, out _, out _);
+            try
+            {
+                var newBook = _bookServer.CreateFromSourceBook(
+                    tempFolder,
+                    TheOneEditableCollection.PathToDirectory
+                );
+                if (newBook == null)
+                    return null; // e.g. the source had a configuration dialog and the user cancelled
+
+                newBook.BringBookUpToDate(new NullProgress(), false);
+                BookHistory.AddEvent(
+                    newBook,
+                    BookHistoryEventType.Created,
+                    $"Created from imported source file \"{Path.GetFileName(sourcePath)}\""
+                );
+
+                var newFolderPath = newBook.FolderPath;
+                ReloadEditableCollection();
+                var newInfo = TheOneEditableCollection
+                    .GetBookInfos()
+                    .FirstOrDefault(i => i.FolderPath == newFolderPath);
+                return newInfo != null ? GetBookFromBookInfo(newInfo) : newBook;
+            }
+            finally
+            {
+                if (Directory.Exists(tempFolder))
+                    SIL.IO.RobustIO.DeleteDirectoryAndContents(tempFolder);
+            }
+        }
+
+        /// <summary>
+        /// Opens the file as a zip and confirms it looks like a single-book .bloomSource: it must
+        /// open as a zip, must not contain path-traversal/absolute entries (zip-slip), and must not
+        /// be a Bloom Pack (a zip whose sole top-level entry is a collection folder).
+        /// Throws <see cref="BloomSourceImportException"/> otherwise.
+        /// </summary>
+        private void ValidateBloomSourceZip(string sourcePath)
+        {
+            ICSharpCode.SharpZipLib.Zip.ZipFile zip;
+            try
+            {
+                zip = new ICSharpCode.SharpZipLib.Zip.ZipFile(sourcePath);
+            }
+            catch (Exception)
+            {
+                throw new BloomSourceImportException("This is not a valid Bloom source file.");
+            }
+            try
+            {
+                var topLevelDirs = new HashSet<string>();
+                var hasTopLevelFile = false;
+                foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in zip)
+                {
+                    var name = entry.Name.Replace('\\', '/');
+                    var parts = name.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                    // Zip-slip / absolute path guard: reject anything that could escape the target folder.
+                    if (Path.IsPathRooted(entry.Name) || parts.Contains(".."))
+                        throw new BloomSourceImportException(
+                            "This file contains invalid entries and cannot be imported."
+                        );
+                    if (parts.Length == 0)
+                        continue;
+                    if (parts.Length == 1 && !entry.IsDirectory)
+                        hasTopLevelFile = true;
+                    else
+                        topLevelDirs.Add(parts[0]);
+                }
+
+                // A single book always has files at the root (meta.json, the book htm). A Bloom Pack
+                // instead wraps everything in one collection folder, so it has no top-level files.
+                if (!hasTopLevelFile && topLevelDirs.Count == 1)
+                    throw new BloomSourceImportException(
+                        "This looks like a Bloom Pack (a whole collection), not a single book. "
+                            + "To install a Bloom Pack, double-click it or use \"Open or Create Another Collection\"."
+                    );
+            }
+            finally
+            {
+                zip.Close();
+            }
+        }
+
+        /// <summary>
+        /// Returns true if any of the .bloomSource files the user chose (via
+        /// <see cref="ChooseBloomSourceFilesToImport"/>) contains a book whose bookInstanceId is
+        /// already present in the editable collection. The collection screen uses this to decide
+        /// whether to ask the user how duplicates should be handled before importing.
+        /// </summary>
+        public bool AnyChosenBloomSourceIsAlreadyInCollection()
+        {
+            return AnyBloomSourceIsAlreadyInCollection(_bloomSourceFilesToImport);
+        }
+
+        /// <summary>
+        /// Returns true if any of the given .bloomSource files contains a book whose bookInstanceId
+        /// is already present in the editable collection. Detection is purely by bookInstanceId, not
+        /// by title or folder name: two books with the same name but different ids are not duplicates,
+        /// while two books with the same id are (that id also controls re-uploading to the Bloom
+        /// library, so we must never end up with two books sharing one). Split out from
+        /// <see cref="AnyChosenBloomSourceIsAlreadyInCollection"/> so it can be unit tested without a
+        /// file-picker dialog.
+        /// </summary>
+        internal bool AnyBloomSourceIsAlreadyInCollection(string[] paths)
+        {
+            if (paths == null || paths.Length == 0)
+                return false;
+
+            var existingIds = new HashSet<string>(
+                TheOneEditableCollection
+                    .GetBookInfos()
+                    .Select(b => b.Id)
+                    .Where(id => !string.IsNullOrEmpty(id))
+            );
+            foreach (var path in paths)
+            {
+                var id = ReadBookInstanceIdFromBloomSource(path);
+                if (!string.IsNullOrEmpty(id) && existingIds.Contains(id))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Reads the bookInstanceId from a .bloomSource file's meta.json (which is at the zip root)
+        /// without extracting the whole book. Returns null if it can't be read (e.g. the file is
+        /// not a valid single-book source); such files simply aren't treated as duplicates here.
+        /// </summary>
+        private static string ReadBookInstanceIdFromBloomSource(string sourcePath)
+        {
+            try
+            {
+                using (var zip = new ICSharpCode.SharpZipLib.Zip.ZipFile(sourcePath))
+                {
+                    var index = zip.FindEntry("meta.json", true);
+                    if (index < 0)
+                        return null;
+                    using (var stream = zip.GetInputStream(index))
+                    using (var reader = new StreamReader(stream))
+                    {
+                        var json = Newtonsoft.Json.Linq.JObject.Parse(reader.ReadToEnd());
+                        return (string)json["bookInstanceId"];
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Prefixes the book's displayed title with the smallest unused number starting at 2
+        /// (e.g. "2 Moon and Cap") so an added copy is distinguishable from the book it duplicates.
+        /// The caption for an editable book comes from the in-HTML bookTitle, so we set that (not
+        /// just meta.json) and then save.
+        /// </summary>
+        private void PrefixCaptionWithUniqueNumber(Book.Book newBook)
+        {
+            var baseTitle = newBook.NameBestForUserDisplay;
+            var existingTitles = TheOneEditableCollection
+                .GetBookInfos()
+                .Where(i => i.FolderPath != newBook.FolderPath)
+                .Select(i => i.Title);
+            var number = ComputeUniqueCaptionNumber(baseTitle, existingTitles);
+
+            // Prefix every language form so whichever one drives the caption starts with the number.
+            var titleForms = newBook.BookData.GetMultiTextVariableOrEmpty("bookTitle");
+            foreach (var form in titleForms.Forms)
+            {
+                newBook.BookData.Set(
+                    "bookTitle",
+                    XmlString.FromXml($"{number} {form.Form}"),
+                    form.WritingSystemId
+                );
+            }
+            newBook.Save();
+            UpdateLabelOfBookInEditableCollection(newBook);
+        }
+
+        /// <summary>
+        /// Returns the smallest whole number, starting at 2, such that "{number} {baseTitle}" is not
+        /// already the title of a book in the collection. Used to give an added copy of an imported
+        /// book a distinguishable caption ("2 Moon and Cap", then "3 Moon and Cap", ...).
+        /// </summary>
+        internal static int ComputeUniqueCaptionNumber(
+            string baseTitle,
+            IEnumerable<string> existingTitles
+        )
+        {
+            var titles = new HashSet<string>(existingTitles);
+            var number = 2;
+            while (titles.Contains($"{number} {baseTitle}"))
+                number++;
+            return number;
         }
 
         public void moveBookIntoThisCollection(Book.Book origBook, BookCollection origCollection)

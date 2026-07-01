@@ -1,4 +1,5 @@
 ﻿using Bloom;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
@@ -37,7 +38,11 @@ namespace BloomTests.TestDoubles.CollectionTab
                     null,
                     null
                 ),
-                null,
+                // A real (unstarted) web socket server: CollectionModel's CollectionChanged handler
+                // calls _webSocketServer.SendEvent when a book is added/removed (e.g. when an import
+                // replaces an existing book), which would NullReferenceException if this were null.
+                // With no sockets connected, SendEvent is a harmless no-op.
+                new BloomWebSocketServer(),
                 null,
                 null
             )
@@ -59,7 +64,13 @@ namespace BloomTests.TestDoubles.CollectionTab
             CollectionSettings settings = null
         )
         {
-            return new BookCollection(path, collectionType, null);
+            // A real BookSelection (not null) is required: BookCollection.AddBookInfo dereferences
+            // it (_bookSelection.CurrentSelection) while enumerating books, so passing null makes
+            // every book come back as an ErrorBookInfo (with a random Id), which in turn breaks
+            // duplicate-by-bookInstanceId detection in tests that rely on GetBookInfos().
+            // We deliberately leave collectionSettings null: with it set, GetBestDisplayTitle tries
+            // to build a BookData from the (deliberately minimal) test book html and throws.
+            return new BookCollection(path, collectionType, new BookSelection());
         }
     }
 }
