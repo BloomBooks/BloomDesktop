@@ -10,7 +10,8 @@ import {
 import { simulateBlurOnPageFrameMouseDown } from "../../utils/menuCloseOnBlur";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
-import { LeveledReaderToolboxTool } from "./readers/leveledReader/leveledReaderToolboxTool";
+import { DecodableReaderTool } from "./readers/decodableReader/decodableReaderTool";
+import { LeveledReaderTool } from "./readers/leveledReader/leveledReaderTool";
 import { MusicToolAdaptor } from "./music/musicToolControls";
 import { ImpairmentVisualizerAdaptor } from "./impairmentVisualizer/impairmentVisualizer";
 import { MotionTool } from "./motion/motionTool";
@@ -78,7 +79,6 @@ import {
     initializeReaderSetupDialog,
     closeSetupDialog,
 } from "./readers/readerSetup/readerSetupDialog";
-import { DecodableReaderTool } from "./readers/decodableReader/decodableReaderTool";
 
 export function canUndo(): boolean {
     const readerToolsModel = getTheOneReaderToolsModel();
@@ -122,7 +122,7 @@ $(document).ready(() => {
 // The imports we need to make these calls possible also serve to ensure that each
 // toolbox's code is made part of the bundle.
 ToolBox.registerTool(new DecodableReaderTool());
-ToolBox.registerTool(new LeveledReaderToolboxTool());
+ToolBox.registerTool(new LeveledReaderTool());
 ToolBox.registerTool(new MusicToolAdaptor());
 ToolBox.registerTool(new ImpairmentVisualizerAdaptor());
 ToolBox.registerTool(new MotionTool());

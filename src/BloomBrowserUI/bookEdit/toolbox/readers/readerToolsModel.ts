@@ -72,7 +72,8 @@ export class ReaderToolsModel {
     public readableFileExtensions: string[] = [];
     public directoryWatcher: DirectoryWatcher | undefined;
     public maxAllowedWords: number = 10000;
-    public refreshFunc?: () => void;
+    public refreshFuncLeveled?: () => void;
+    public refreshFuncDecodable?: () => void;
 
     // remember words so we can update the counts real-time
     public pageIDToText: any[] = [];
@@ -311,6 +312,22 @@ export class ReaderToolsModel {
         return levels[this.levelNumber - 1].getName();
     }
 
+    // This function returns the list of reminders for the current level,
+    // seeing that the synphony has loaded and contains levels. This function
+    // is used by the React leveled reader tool to retrieve the current level's
+    // reminders to display them.
+    public getLevelReminders(): string[] {
+        if (!this.synphony) {
+            return [];
+        }
+        const levels = this.synphony.getLevels();
+
+        if (levels.length <= 0) {
+            return [];
+        }
+        return levels[this.levelNumber - 1]?.thingsToRemember ?? [];
+    }
+
     public sortByLength(): void {
         this.setSort(SortType.byLength);
     }
@@ -339,8 +356,11 @@ export class ReaderToolsModel {
         this.updateLevelNOfMDisplay();
         this.enableLevelButtons();
         this.updateLevelLimits();
-        if (this.refreshFunc !== undefined) {
-            this.refreshFunc();
+        if (this.refreshFuncLeveled !== undefined) {
+            this.refreshFuncLeveled();
+        }
+        if (this.refreshFuncDecodable !== undefined) {
+            this.refreshFuncDecodable();
         }
     }
 
@@ -1047,10 +1067,33 @@ export class ReaderToolsModel {
         this.pageIDToText = [];
         this.gettingTextOfWholeBook = false;
         this.bookStatistics = {};
+        this.bookStatsReady = false;
     }
 
     private gettingTextOfWholeBook = false;
     private bookStatistics = {};
+    private bookStatsReady: boolean = false; // boolean used by React leveled reader tool to determine when to update its book stats state
+
+    // a dictionary of starting values to be used by the React leveled reader tool
+    // upon loading into the tool, since bookStatistics may start off empty
+    private starterBookStats = {
+        levelNumber: 0,
+        pageCount: 0,
+        actualSentencesPerPage: 0,
+        actualLettersPerWord: 0,
+        actualWordsPerPage: 0,
+        actualWordsPerSentence: 0,
+        actualWordCount: 0,
+        actualWordsPerPageBook: 0,
+        actualUniqueWords: 0,
+        actualSentenceCount: 0,
+        actualMaxGlyphsPerWord: 0,
+        actualMaxWordsPerSentence: 0,
+        actualAverageWordsPerSentence: 0,
+        actualAverageWordsPerPage: 0,
+        actualAverageGlyphsPerWord: 0,
+        actualAverageSentencesPerPage: 0,
+    };
 
     public displayBookTotals(): void {
         if (this.gettingTextOfWholeBook) {
@@ -1071,6 +1114,7 @@ export class ReaderToolsModel {
         }
 
         this.bookStatistics = {};
+        this.bookStatsReady = false;
         const pageStrings = _.values(this.pageIDToText).map((x) =>
             removeAllHtmlMarkupFromString(x),
         );
@@ -1161,6 +1205,27 @@ export class ReaderToolsModel {
             this.maxAverageSentencesPerPage(),
             "actualAverageSentencesPerPage",
         );
+
+        // rerender the React leveled reader tool once book stats are ready
+        this.bookStatsReady = true;
+        if (this.refreshFuncLeveled !== undefined) {
+            this.refreshFuncLeveled();
+        }
+    }
+
+    // Returns the bookStatsReady boolean.
+    public areBookStatsReady(): boolean {
+        return this.bookStatsReady;
+    }
+
+    // returns a shallow copy of the starting book stats
+    public getStarterBookStats(): { [key: string]: number } {
+        return { ...this.starterBookStats };
+    }
+
+    // returns a shallow copy of the real book stats
+    public getActualBookStats(): { [key: string]: number } {
+        return { ...this.bookStatistics };
     }
 
     public copyLeveledReaderStatsToClipboard(): void {
