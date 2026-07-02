@@ -560,7 +560,7 @@ namespace Bloom.CollectionTab
             {
                 throw new BloomSourceImportException("This is not a valid Bloom source file.");
             }
-            try
+            using (zip)
             {
                 var topLevelDirs = new HashSet<string>();
                 var hasTopLevelFile = false;
@@ -588,10 +588,6 @@ namespace Bloom.CollectionTab
                         "This looks like a Bloom Pack (a whole collection), not a single book. "
                             + "To install a Bloom Pack, double-click it or use \"Open or Create Another Collection\"."
                     );
-            }
-            finally
-            {
-                zip.Close();
             }
         }
 

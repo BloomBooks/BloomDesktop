@@ -29,7 +29,7 @@ export const RadioChoiceDialog: React.FunctionComponent<{
     options: IRadioChoice[];
     onClose: (value?: string) => void;
 }> = (props) => {
-    const [choice, setChoice] = useState<string | undefined>(undefined);
+    const [choice, setChoice] = useState<string>();
 
     // Start with nothing selected each time the dialog opens, so OK is disabled until the user picks.
     useEffect(() => {
