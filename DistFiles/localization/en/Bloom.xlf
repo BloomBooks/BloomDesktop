@@ -812,6 +812,11 @@
         <note>Radio-button choice in the import dialog: use the imported book(s) as the basis for new derivative books (e.g. translations).</note>
         <note>ID: CollectionTab.ImportBloomSource.DerivativeChoice</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoiceDescription" translate="no">
+        <source xml:lang="en">Credits from the original are preserved and attributed to the source book.</source>
+        <note>Explanation shown under the "Import as derivatives" radio-button choice in the import dialog.</note>
+        <note>ID: CollectionTab.ImportBloomSource.DerivativeChoiceDescription</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.ImportBloomSource.DuplicatePrompt" translate="no">
         <source xml:lang="en">Some of these books are already in this collection.</source>
         <note>Shown once when importing .bloomSource file(s), if any of the books is already in the collection.</note>

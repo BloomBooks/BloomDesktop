@@ -221,6 +221,10 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         "Import as derivatives — new books based on the originals",
         "CollectionTab.ImportBloomSource.DerivativeChoice",
     );
+    const importDerivativeChoiceDescription = useL10n(
+        "Credits from the original are preserved and attributed to the source book.",
+        "CollectionTab.ImportBloomSource.DerivativeChoiceDescription",
+    );
     const importDuplicateMessage = useL10n(
         "Some of these books are already in this collection.",
         "CollectionTab.ImportBloomSource.DuplicatePrompt",
@@ -683,6 +687,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                     {
                         value: "derivative",
                         label: importDerivativeChoiceLabel,
+                        description: importDerivativeChoiceDescription,
                     },
                 ]}
                 onClose={handleImportSourceChoice}
