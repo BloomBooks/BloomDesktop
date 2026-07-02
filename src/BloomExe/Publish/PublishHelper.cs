@@ -43,8 +43,6 @@ namespace Bloom.Publish
             _latestInstance = this;
         }
 
-        public Control ControlForInvoke { get; set; }
-
         public static void Cancel()
         {
             _latestInstance = null;
@@ -52,88 +50,27 @@ namespace Bloom.Publish
 
         public static bool InPublishTab { get; set; }
 
-        private Browser _browser;
-        public Browser BrowserForPageChecks
+        private OffScreenBrowser _pageChecksBrowser;
+
+        /// <summary>
+        /// The browser we use for the "page checks" (element visibility and font info). It is an off-screen
+        /// browser on its own dedicated thread, so we can drive it with blocking calls that never pump the main
+        /// UI message loop — avoiding the reentrancy that made RunJavascriptWithStringResult_Sync_Dangerous
+        /// dangerous (BL-12614 / BL-13120) — and never deadlock. Created lazily. See <see cref="OffScreenBrowser"/>.
+        /// </summary>
+        private OffScreenBrowser PageChecksBrowser
         {
             get
             {
-                if (_browser == null)
-                {
-                    Debug.Assert(
-                        ControlForInvoke != null
-                            || Program.RunningUnitTests
-                            || Program.RunningOnUiThread
-                    );
-                    if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
-                    {
-                        ControlForInvoke.Invoke(
-                            (Action)(() => _browser = BrowserMaker.MakeBrowser())
-                        );
-                    }
-                    else
-                    {
-                        _browser = BrowserMaker.MakeBrowser();
-                    }
-                }
-                return _browser;
+                if (_pageChecksBrowser == null)
+                    _pageChecksBrowser = new OffScreenBrowser();
+                return _pageChecksBrowser;
             }
         }
 
         // The only reason this isn't just ../* is performance. We could change it.  It comes from the need to actually
         // remove any elements that the style rules would hide, because epub readers ignore visibility settings.
         private const string kSelectThingsThatCanBeHidden = ".//div | .//img";
-
-        /// <summary>
-        /// Remove unwanted content from the XHTML of this book.  As a side-effect, store the fonts used in the remaining
-        /// content of the book.
-        /// </summary>
-        public void RemoveUnwantedContent(
-            HtmlDom dom,
-            Book.Book book,
-            bool removeInactiveLanguages,
-            Dictionary<string, int> omittedPages,
-            ISet<string> modifiedPageMessages,
-            PublishingMediums medium, // should normally only be one of them
-            EpubMaker epubMaker = null,
-            bool keepPageLabels = false
-        )
-        {
-            FontsUsed.Clear();
-            FontsAndLangsUsed.Clear();
-            // Removing unwanted content involves a real browser really navigating. I'm not sure exactly why,
-            // but things freeze up if we don't do it on the UI thread.
-            if (ControlForInvoke != null)
-            {
-                ControlForInvoke.Invoke(
-                    (Action)(
-                        delegate
-                        {
-                            RemoveUnwantedContentInternal(
-                                dom,
-                                book,
-                                removeInactiveLanguages,
-                                epubMaker,
-                                omittedPages,
-                                modifiedPageMessages,
-                                medium,
-                                keepPageLabels
-                            );
-                        }
-                    )
-                );
-            }
-            else
-                RemoveUnwantedContentInternal(
-                    dom,
-                    book,
-                    removeInactiveLanguages,
-                    epubMaker,
-                    omittedPages,
-                    modifiedPageMessages,
-                    medium,
-                    keepPageLabels
-                );
-        }
 
         /// <summary>
         /// This javascript function is run in the browser to get the display and font information
@@ -299,20 +236,29 @@ namespace Bloom.Publish
         protected Dictionary<string, FontInfo> _mapIdToFontInfo =
             new Dictionary<string, FontInfo>();
 
-        private void RemoveUnwantedContentInternal(
+        /// <summary>
+        /// Remove unwanted content from the XHTML of this book.  As a side-effect, store the fonts used in the remaining
+        /// content of the book.
+        /// </summary>
+        /// <remarks>
+        /// This no longer needs to run on the UI thread: the browser it uses lives on its own dedicated thread
+        /// (see PageChecksBrowser) and is driven by blocking calls that marshal onto that thread, so the DOM work
+        /// here is thread-agnostic and can run on whatever thread the caller is on.
+        /// </remarks>
+        public void RemoveUnwantedContent(
             HtmlDom dom,
             Book.Book book,
             bool removeInactiveLanguages,
-            EpubMaker epubMaker,
             Dictionary<string, int> omittedPages,
             ISet<string> modifiedPageMessages,
             PublishingMediums medium, // should normally only be one of them
+            EpubMaker epubMaker = null,
             bool keepPageLabels = false
         )
         {
+            FontsUsed.Clear();
+            FontsAndLangsUsed.Clear();
             var startRemoveTime = DateTime.Now;
-            // The ControlForInvoke can be null for tests.  If it's not null, we better not need an Invoke!
-            Debug.Assert(ControlForInvoke == null || !ControlForInvoke.InvokeRequired); // should be called on UI thread.
             Debug.Assert(dom != null && dom.Body != null);
 
             // Collect all the page divs.
@@ -473,15 +419,7 @@ namespace Bloom.Publish
                 epubMaker.AddEpubVisibilityStylesheetAndClass(displayDom);
             if (this != _latestInstance)
                 return;
-            if (
-                !BrowserForPageChecks.NavigateAndWaitTillDone(
-                    displayDom,
-                    10000,
-                    InMemoryHtmlFileSource.JustCheckingPage,
-                    () => this != _latestInstance,
-                    false
-                )
-            )
+            if (!PageChecksBrowser.Navigate(displayDom, 10000, () => this != _latestInstance))
             {
                 // We started having problems with timeouts here (BL-7892).
                 // We may as well carry on. We only need the browser to have navigated so calls to IsDisplayed(elt)
@@ -495,7 +433,7 @@ namespace Bloom.Publish
                 return;
 
             // Get and store the display and font information for each element in the DOM.
-            var elementsInfo = BrowserForPageChecks.RunJavascriptWithStringResult_Sync_Dangerous(
+            var elementsInfo = PageChecksBrowser.RunJavascript(
                 GetElementDisplayAndFontInfoJavascript
             );
             var rawInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<ElementInfoArray>(
@@ -1520,33 +1458,11 @@ namespace Bloom.Publish
             {
                 if (disposing)
                 {
-                    if (_browser != null) // Don't use BrowserForPageChecks here...if we don't have one we don't want to make it now!
-                    {
-                        if (
-                            ControlForInvoke != null
-                            && ControlForInvoke.IsHandleCreated
-                            && !ControlForInvoke.IsDisposed
-                        )
-                        {
-                            // Seems safest of all to invoke using the thing we use for all other invokes.
-                            // Also, seems our WebView2Browser may not actually get a handle, yet its
-                            // embedded WebView2 still needs to be disposed on the right thread.
-                            ControlForInvoke.Invoke((Action)(() => _browser.Dispose()));
-                        }
-                        else if (_browser.IsHandleCreated)
-                        {
-                            _browser.Invoke((Action)(() => _browser.Dispose()));
-                        }
-                        else
-                        {
-                            // We can't invoke if it doesn't have a handle...and we certainly don't want
-                            // to waste time getting it one...hopefully we can just dispose it on this
-                            // thread.
-                            _browser.Dispose();
-                        }
-                    }
-
-                    _browser = null;
+                    // The page-checks browser owns its thread and disposes its WebView2 on that thread; we just
+                    // ask it to shut down. (Don't use the PageChecksBrowser property here — if we never created
+                    // one, we don't want to make it now just to dispose it.)
+                    _pageChecksBrowser?.Dispose();
+                    _pageChecksBrowser = null;
                 }
                 _isDisposed = true;
             }

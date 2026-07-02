@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom;
@@ -195,19 +194,6 @@ namespace Bloom.Publish.Epub
 
         // image counter for creating id values
         private int _imgCount;
-
-        /// <summary>
-        /// Preparing a book for publication involves displaying it in a browser in order
-        /// to accurately determine which elements are invisible and can be pruned from the
-        /// published book.  This requires being on the UI thread, which may require having
-        /// a Control available for calling Invoke() which will move execution to the UI
-        /// thread.
-        /// </summary>
-        public Control ControlForInvoke
-        {
-            get { return _publishHelper.ControlForInvoke; }
-            set { _publishHelper.ControlForInvoke = value; }
-        }
 
         public bool AbortRequested
         {
