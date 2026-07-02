@@ -37,7 +37,6 @@ namespace Bloom.Publish.BloomPub
         internal const string kCreatorBloom = "bloom";
         internal const string kCreatorHarvester = "harvester";
         public static string HashOfMostRecentlyCreatedBook { get; private set; }
-        public static Control ControlForInvoke { get; set; }
 
         public static void CreateBloomPub(
             BloomPubPublishSettings settings,
@@ -647,7 +646,6 @@ namespace Bloom.Publish.BloomPub
             HashSet<PublishHelper.FontInfo> fontsUsed = null;
             using (var helper = new PublishHelper())
             {
-                helper.ControlForInvoke = ControlForInvoke;
                 var omittedPages = new Dictionary<string, int>();
                 var modifiedPageMessages = new HashSet<string>();
                 helper.RemoveUnwantedContent(
