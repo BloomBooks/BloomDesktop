@@ -217,12 +217,16 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         "Import for editing",
         "CollectionTab.ImportBloomSource.EditChoice",
     );
+    const importEditChoiceDescription = useL10n(
+        "Preserve everything.",
+        "CollectionTab.ImportBloomSource.EditChoiceDescription",
+    );
     const importDerivativeChoiceLabel = useL10n(
         "Import as derivatives — new books based on the originals",
         "CollectionTab.ImportBloomSource.DerivativeChoice",
     );
     const importDerivativeChoiceDescription = useL10n(
-        "Credits from the original are preserved and attributed to the source book.",
+        "Use a new book ID & make room for new copyright and credits while preserving those of the original.",
         "CollectionTab.ImportBloomSource.DerivativeChoiceDescription",
     );
     const importDuplicateMessage = useL10n(
@@ -683,7 +687,11 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                 open={showImportSourceChoiceDialog}
                 title={importChoiceTitle}
                 options={[
-                    { value: "edit", label: importEditChoiceLabel },
+                    {
+                        value: "edit",
+                        label: importEditChoiceLabel,
+                        description: importEditChoiceDescription,
+                    },
                     {
                         value: "derivative",
                         label: importDerivativeChoiceLabel,

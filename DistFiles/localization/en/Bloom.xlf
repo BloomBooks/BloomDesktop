@@ -807,13 +807,18 @@
         <note>Radio-button choice in the import dialog: import the book(s) to edit them directly.</note>
         <note>ID: CollectionTab.ImportBloomSource.EditChoice</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.EditChoiceDescription" translate="no">
+        <source xml:lang="en">Preserve everything.</source>
+        <note>Explanation shown under the "Import for editing" radio-button choice in the import dialog.</note>
+        <note>ID: CollectionTab.ImportBloomSource.EditChoiceDescription</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoice" translate="no">
         <source xml:lang="en">Import as derivatives — new books based on the originals</source>
         <note>Radio-button choice in the import dialog: use the imported book(s) as the basis for new derivative books (e.g. translations).</note>
         <note>ID: CollectionTab.ImportBloomSource.DerivativeChoice</note>
       </trans-unit>
       <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoiceDescription" translate="no">
-        <source xml:lang="en">Credits from the original are preserved and attributed to the source book.</source>
+        <source xml:lang="en">Use a new book ID &amp; make room for new copyright and credits while preserving those of the original.</source>
         <note>Explanation shown under the "Import as derivatives" radio-button choice in the import dialog.</note>
         <note>ID: CollectionTab.ImportBloomSource.DerivativeChoiceDescription</note>
       </trans-unit>
