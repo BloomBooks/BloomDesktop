@@ -5,7 +5,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
+using System.Threading;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using Newtonsoft.Json;
@@ -83,6 +84,15 @@ namespace Bloom.web
 
         private static readonly ConcurrentDictionary<UrlType, string> s_liveUrlCache =
             new ConcurrentDictionary<UrlType, string>();
+
+        // A single shared HttpClient is the recommended pattern; reusing it avoids socket exhaustion.
+        private static HttpClient s_httpClient = new HttpClient();
+
+        // Test seam: lets tests inject an HttpClient backed by a fake handler.
+        internal static void SetHttpClientForTests(HttpClient client)
+        {
+            s_httpClient = client;
+        }
 
         private static bool _internetAvailable = true; // assume it's available to start out
 
@@ -283,19 +293,37 @@ namespace Bloom.web
             return _internetAvailable;
         }
 
-        private static bool TestInternetConnection(string url)
+        internal static bool TestInternetConnection(string url)
         {
             try
             {
-                var iNetRequest = (HttpWebRequest)WebRequest.Create(url);
-                iNetRequest.Timeout = 2500;
-                iNetRequest.KeepAlive = false;
-                var iNetResponse = iNetRequest.GetResponse();
-                iNetResponse.Close();
-                return true;
+                // We only care whether we can reach the site, so don't bother downloading the body.
+                // The timeout starts inside the delegate so that thread-pool queueing delay (possible
+                // when the pool is busy) doesn't count against the 2500ms budget for the request itself.
+                // (RunSync executes on the thread pool so we don't deadlock if called on a thread
+                // with a synchronization context, e.g. the WinForms UI thread.)
+                using (
+                    var response = Bloom.Utils.AsyncUtil.RunSync(async () =>
+                    {
+                        using (var cts = new CancellationTokenSource(2500))
+                            return await s_httpClient.GetAsync(
+                                url,
+                                HttpCompletionOption.ResponseHeadersRead,
+                                cts.Token
+                            );
+                    })
+                )
+                {
+                    // Treat only a "clean" response as success, matching the old HttpWebRequest behavior
+                    // (which threw, and so returned false, on 4xx/5xx). Otherwise a captive portal or
+                    // proxy that answers with an error/interstitial would be mistaken for real internet.
+                    var code = (int)response.StatusCode;
+                    return code >= 200 && code < 400;
+                }
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
+                // Being offline (or a timeout) shows up as an exception rather than a nice failure.
                 Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
                 return false;
             }
