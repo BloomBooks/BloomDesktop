@@ -34,6 +34,11 @@ namespace Bloom
     /// </summary>
     public class NonFatalProblem
     {
+        // Guard against reentrant calls (e.g. ShowToast → SendBundle → ReportConnectionError → Report)
+        // which cause infinite mutual recursion leading to a StackOverflowException.
+        [ThreadStatic]
+        private static bool s_isReporting;
+
         /// <summary>
         /// Always log, possibly inform the user, possibly throw the exception
         /// </summary>
@@ -164,15 +169,24 @@ namespace Bloom
                 if (
                     !string.IsNullOrEmpty(shortUserLevelMessage)
                     && Matches(passive).Any(s => channel.Contains(s))
+                    && !s_isReporting
                 )
                 {
-                    ShowToast(
-                        shortUserLevelMessage,
-                        exception,
-                        fullDetailedMessage,
-                        showSendReport,
-                        showRequestDetails
-                    );
+                    s_isReporting = true;
+                    try
+                    {
+                        ShowToast(
+                            shortUserLevelMessage,
+                            exception,
+                            fullDetailedMessage,
+                            showSendReport,
+                            showRequestDetails
+                        );
+                    }
+                    finally
+                    {
+                        s_isReporting = false;
+                    }
                 }
             }
             catch (Exception errorWhileReporting)
