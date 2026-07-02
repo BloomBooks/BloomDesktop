@@ -310,6 +310,56 @@ namespace Bloom.web.controllers
             );
 
             apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "chooseBloomSourceFilesToImport/",
+                (request) =>
+                {
+                    // Opens the file picker so the user can select the .bloomSource file(s) to import.
+                    // Replies true if at least one was chosen; the collection screen then asks whether
+                    // to edit or make derivatives before calling importBloomSource.
+                    request.ReplyWithBoolean(_collectionModel.ChooseBloomSourceFilesToImport());
+                },
+                true
+            );
+
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "anyChosenBloomSourceAlreadyInCollection/",
+                (request) =>
+                {
+                    // Replies true if any book the user chose to import is already in the collection,
+                    // so the collection screen knows whether to ask how duplicates should be handled.
+                    request.ReplyWithBoolean(
+                        _collectionModel.AnyChosenBloomSourceIsAlreadyInCollection()
+                    );
+                },
+                true
+            );
+
+            apiHandler.RegisterAsyncEndpointHandler(
+                kApiUrlPart + "importBloomSource/",
+                async (request) =>
+                {
+                    // Imports the .bloomSource file(s) the user already chose (via
+                    // chooseBloomSourceFilesToImport) into the current editable collection. The
+                    // collection screen has since asked the user whether they want to edit the
+                    // imported book(s) or make derivatives ("mode"), and, when editing, what to do
+                    // with any book already in the collection ("onDuplicate"). Each single choice
+                    // applies to every chosen file.
+                    // Runs behind the collection tab's progress dialog on a background thread (not the
+                    // UI thread) so a large batch neither freezes the screen nor lets this request
+                    // time out.
+                    var makeDerivatives = request.RequiredParam("mode") == "derivative";
+                    var replaceExistingDuplicates =
+                        request.GetParamOrNull("onDuplicate") == "replace";
+                    await _collectionModel.ImportBloomSourceFilesWithProgressAsync(
+                        makeDerivatives,
+                        replaceExistingDuplicates
+                    );
+                    request.PostSucceeded();
+                },
+                handleOnUiThread: false
+            );
+
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "doChecksOfAllBooks/",
                 (request) =>
                 {

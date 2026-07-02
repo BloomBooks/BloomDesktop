@@ -792,6 +792,41 @@
         <note>Shell Books are books that are meant to be translated.</note>
         <note>ID: CollectionTab.MakeBloomPackOfShellBooks</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource" translate="no">
+        <source xml:lang="en">Import .bloomSource File(s)</source>
+        <note>Menu command (and dialog title) that imports one or more books from .bloomSource files into the current collection. Keep ".bloomSource" unchanged; it is a file extension.</note>
+        <note>ID: CollectionTab.ImportBloomSource</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.EditChoice" translate="no">
+        <source xml:lang="en">I want to edit the book(s) I am importing.</source>
+        <note>Radio-button choice in the import dialog: import the book(s) to edit them directly.</note>
+        <note>ID: CollectionTab.ImportBloomSource.EditChoice</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoice" translate="no">
+        <source xml:lang="en">I want to make new book(s) based on the book(s) I am importing (derivatives).</source>
+        <note>Radio-button choice in the import dialog: use the imported book(s) as the basis for new derivative books (e.g. translations).</note>
+        <note>ID: CollectionTab.ImportBloomSource.DerivativeChoice</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.DuplicatePrompt" translate="no">
+        <source xml:lang="en">Some of the book(s) you are importing are already in this collection. Do you want to replace them, or add the imported book(s) as new copies?</source>
+        <note>Shown once when importing .bloomSource file(s), if any of the books is already in the collection.</note>
+        <note>ID: CollectionTab.ImportBloomSource.DuplicatePrompt</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.Replace" translate="no">
+        <source xml:lang="en">Replace the existing book(s)</source>
+        <note>Radio-button choice in the import duplicate prompt: replace the existing book(s) with the imported one(s).</note>
+        <note>ID: CollectionTab.ImportBloomSource.Replace</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.AddCopy" translate="no">
+        <source xml:lang="en">Add them as new copies</source>
+        <note>Radio-button choice in the import duplicate prompt: keep the existing book(s) and add the imported one(s) as new copies.</note>
+        <note>ID: CollectionTab.ImportBloomSource.AddCopy</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.Importing" translate="no">
+        <source xml:lang="en">Importing Books</source>
+        <note>Title of the progress dialog shown while .bloomSource file(s) are being imported.</note>
+        <note>ID: CollectionTab.ImportBloomSource.Importing</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
         <source xml:lang="en">Make a book using this source</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>
