@@ -51,14 +51,12 @@ function ChangeSizeAbsolute(
     editor.changeSizeInternal(newSize + "pt", shouldSetDefaultRule);
 }
 
-function GetUserModifiedStyleSheet(): any {
+function GetUserModifiedStyleSheet(): CSSStyleSheet | undefined {
     for (let i = 0; i < document.styleSheets.length; i++) {
-        if (document.styleSheets[i].title == "userModifiedStyles")
+        if (document.styleSheets[i].title === "userModifiedStyles")
             return <CSSStyleSheet>document.styleSheets[i];
     }
-    // this is not a valid constructor
-    //return new CSSStyleSheet();
-    return {};
+    return undefined;
 }
 
 function GetFooStyleRuleFontSize(): number {
@@ -83,8 +81,8 @@ function ParseRuleForFontSize(ruleText: string): number {
 }
 
 function GetRuleForFooStyle(): CSSRule | null {
-    const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
-        .cssRules;
+    const x = GetUserModifiedStyleSheet()?.cssRules;
+    if (!x) return null;
 
     for (let i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf("foo-style") > -1) {
@@ -95,8 +93,7 @@ function GetRuleForFooStyle(): CSSRule | null {
 }
 
 function GetRuleForNormalStyle(): CSSRule | null {
-    const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
-        .cssRules;
+    const x = GetUserModifiedStyleSheet()?.cssRules;
     if (!x) return null;
 
     for (let i = 0; i < x.length; i++) {
@@ -108,8 +105,7 @@ function GetRuleForNormalStyle(): CSSRule | null {
 }
 
 function GetRuleForCoverTitleStyle(): CSSRule | null {
-    const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
-        .cssRules;
+    const x = GetUserModifiedStyleSheet()?.cssRules;
     if (!x) return null;
     for (let i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf("Title-On-Cover-style") > -1) {
@@ -128,8 +124,9 @@ function GetCalculatedFontSize(target: string): number {
 }
 
 function GetRuleMatchingSelector(selector: string): CSSRule | null {
-    const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
-    const count = 0;
+    const sheet = GetUserModifiedStyleSheet();
+    const x = sheet?.cssRules;
+    if (!x) return null;
     for (let i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf(selector) > -1) {
             return x[i];
@@ -139,7 +136,9 @@ function GetRuleMatchingSelector(selector: string): CSSRule | null {
 }
 
 function HasRuleMatchingThisSelector(selector: string): boolean {
-    const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+    const sheet = GetUserModifiedStyleSheet();
+    const x = sheet?.cssRules;
+    if (!x) return false;
     let count = 0;
     for (let i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf(selector) > -1) {
@@ -150,8 +149,8 @@ function HasRuleMatchingThisSelector(selector: string): boolean {
 }
 
 function countFooStyleRules(): number {
-    const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
-        .cssRules;
+    const x = GetUserModifiedStyleSheet()?.cssRules;
+    if (!x) return 0;
 
     let count = 0;
     for (let i = 0; i < x.length; i++) {
@@ -318,6 +317,69 @@ describe("StyleEditor", () => {
         const rule = GetRuleForFooStyle();
         expect(rule).not.toBeNull();
         if (rule != null) expect(ParseRuleForFontSize(rule.cssText)).toBe(20);
+    });
+
+    it("putAudioHiliteRulesInDom stores audio highlight legacy properties", () => {
+        const editor = new StyleEditor(
+            "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+        );
+
+        const sentenceSelector = "foo-style span.ui-audioCurrent";
+        const paddedSentenceSelector =
+            "foo-style span.ui-audioCurrent > span.ui-enableHighlight";
+        const paragraphSelector = "foo-style.ui-audioCurrent p";
+
+        // sanity check that the rules do not yet exist
+        expect(HasRuleMatchingThisSelector(sentenceSelector)).toBeFalsy();
+        expect(HasRuleMatchingThisSelector(paddedSentenceSelector)).toBeFalsy();
+        expect(HasRuleMatchingThisSelector(paragraphSelector)).toBeFalsy();
+
+        editor.putAudioHiliteRulesInDom(
+            "foo-style",
+            "rgb(1, 2, 3)",
+            "rgb(4, 5, 6)",
+        );
+
+        const sentenceRule = GetRuleMatchingSelector(sentenceSelector);
+        const paddedSentenceRule = GetRuleMatchingSelector(
+            paddedSentenceSelector,
+        );
+        const paragraphRule = GetRuleMatchingSelector(paragraphSelector);
+
+        expect(sentenceRule?.cssText).toContain(
+            "background-color: rgb(4, 5, 6)",
+        );
+        expect(sentenceRule?.cssText).toContain("color: rgb(1, 2, 3)");
+        expect(paddedSentenceRule?.cssText).toContain(
+            "background-color: rgb(4, 5, 6)",
+        );
+        expect(paddedSentenceRule?.cssText).toContain("color: rgb(1, 2, 3)");
+        expect(paragraphRule?.cssText).toContain(
+            "background-color: rgb(4, 5, 6)",
+        );
+        expect(paragraphRule?.cssText).toContain("color: rgb(1, 2, 3)");
+    });
+
+    it("getAudioHiliteProps reads colors from audio highlight legacy properties", () => {
+        const editor = new StyleEditor(
+            "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+        );
+
+        const origProps = editor.getAudioHiliteProps("foo-style");
+
+        expect(origProps?.hiliteTextColor).not.toBe("rgb(1, 2, 3)");
+        expect(origProps?.hiliteBgColor).not.toBe("rgb(4, 5, 6)");
+
+        editor.putAudioHiliteRulesInDom(
+            "foo-style",
+            "rgb(1, 2, 3)",
+            "rgb(4, 5, 6)",
+        );
+
+        const props = editor.getAudioHiliteProps("foo-style");
+
+        expect(props.hiliteTextColor).toBe("rgb(1, 2, 3)");
+        expect(props.hiliteBgColor).toBe("rgb(4, 5, 6)");
     });
 
     // Skipped because currently we're running in jsdom. Making use of the existing rule depends on

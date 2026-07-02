@@ -390,16 +390,24 @@ describe("talking book tests", () => {
             }
         }
 
+        // The new highlight code tracks highlighting via highlightedElement instead of DOM
+        // class manipulation. setCurrentAudioElementToDefaultAsync() strips ui-audioCurrent
+        // from all DOM elements as defensive cleanup, so the class will never appear in
+        // outerHTML after showTool() — strip it from both sides before comparing.
+        function stripAudioCurrent(html: string): string {
+            return html.replace(/\s*\bui-audioCurrent\b/g, "");
+        }
+
         function verifyHtmlPreserved(_scenario: AudioMode) {
             const currentHtml1 = getFrameElementById("page", "div1")
                 ?.outerHTML as string;
-            expect(StripRecordingMd5(currentHtml1)).toBe(
-                StripRecordingMd5(originalDiv1Html),
+            expect(StripRecordingMd5(stripAudioCurrent(currentHtml1))).toBe(
+                StripRecordingMd5(stripAudioCurrent(originalDiv1Html)),
             );
             const currentHtml2 = getFrameElementById("page", "div2")
                 ?.outerHTML as string;
-            expect(StripRecordingMd5(currentHtml2)).toBe(
-                StripRecordingMd5(originalDiv2Html),
+            expect(StripRecordingMd5(stripAudioCurrent(currentHtml2))).toBe(
+                StripRecordingMd5(stripAudioCurrent(originalDiv2Html)),
             );
         }
 
@@ -429,18 +437,18 @@ describe("talking book tests", () => {
                 return;
             }
 
-            const page1 = getFrameElementById("page", "page1");
-            const numCurrents =
-                page1?.querySelectorAll(".ui-audioCurrent").length;
+            // The new code tracks the current element via highlightedElement rather than
+            // the ui-audioCurrent DOM class. Use getCurrentHighlight() instead.
+            const currentHighlight = theOneAudioRecorder.getCurrentHighlight();
             expect(
-                numCurrents,
-                "Only 1 item is allowed to be the current: " + page1?.innerHTML,
-            ).toBe(1);
+                currentHighlight,
+                "getCurrentHighlight() should return a non-null element after showTool",
+            ).not.toBeNull();
 
             switch (scenario) {
                 case AudioMode.PureSentence: {
                     const firstSpan = div.querySelector("span.audio-sentence");
-                    expect(firstSpan).toHaveClass("ui-audioCurrent");
+                    expect(currentHighlight).toBe(firstSpan);
                     break;
                 }
 
@@ -448,7 +456,7 @@ describe("talking book tests", () => {
                 case AudioMode.PureTextBox:
                 case AudioMode.HardSplitTextBox:
                 case AudioMode.SoftSplitTextBox: {
-                    expect(div).toHaveClass("ui-audioCurrent");
+                    expect(currentHighlight).toBe(div);
                     break;
                 }
 
