@@ -374,14 +374,11 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            // The heavy work needs the UI thread (it creates and pumps an off-screen WebView2). We
-            // are on the UI thread now, but we must NOT do that work here: holding the HTTP response
-            // open for the whole ~20-30s run is exactly what leaves the client hung if the connection
-            // is dropped (e.g. a stale keep-alive socket). Instead reply immediately with a jobId and
-            // BeginInvoke the work to run after this response is sent — it queues on this same UI
-            // thread's message loop and runs once this handler returns. The client polls
-            // external/process-book-status for the outcome. _processBookInProgress stays true for the
-            // whole async run, so the re-entrancy guard still rejects an overlapping process-book.
+            // We must NOT do the heavy work here: holding the HTTP response open for the whole ~20-30s run
+            // is exactly what leaves the client hung if the connection is dropped (e.g. a stale keep-alive
+            // socket). Instead reply immediately with a jobId and run the work on a background thread; the
+            // client polls external/process-book-status for the outcome. _processBookInProgress stays true for
+            // the whole async run, so the re-entrancy guard still rejects an overlapping process-book.
             var shell = Shell.GetShellOrNull();
             if (shell == null || shell.IsDisposed)
             {
@@ -397,17 +394,19 @@ namespace Bloom.web.controllers
             }
             request.ReplyWithJson(new { jobId, state = "running" });
 
-            shell.BeginInvoke(
-                (Action)(() => RunProcessBookJob(jobId, folderPath, id, fitImageTextSplits))
+            // Run on a background thread, NOT the UI thread: ProcessBook drives its WebView2 on the
+            // OffScreenBrowser's own thread and just blocks on it, so keeping this off the UI thread leaves
+            // the UI free to paint the "processing" overlay and stay responsive for the whole run.
+            _ = System.Threading.Tasks.Task.Run(() =>
+                RunProcessBookJob(jobId, folderPath, id, fitImageTextSplits)
             );
         }
 
         /// <summary>
-        /// Runs the heavy process-book work on the UI thread. Posted via BeginInvoke from
-        /// HandleProcessBook so it executes after that request's reply has already been sent, then
-        /// records the outcome on _processBookJob for the client to poll via
-        /// external/process-book-status. Never throws to the caller (it is a fire-and-forget UI
-        /// message); any failure is captured as the job's "failed" state.
+        /// Runs the heavy process-book work on a background thread (dispatched from HandleProcessBook after
+        /// that request's reply has already been sent), then records the outcome on _processBookJob for the
+        /// client to poll via external/process-book-status. Never throws to the caller (it is a fire-and-forget
+        /// background task); any failure is captured as the job's "failed" state.
         /// </summary>
         private void RunProcessBookJob(
             string jobId,
@@ -418,17 +417,14 @@ namespace Bloom.web.controllers
         {
             try
             {
-                // The overlay 'show', the DoEvents/Sleep spin-up loop, and the processing all run
-                // inside this try so that an exception anywhere after we raise the overlay still runs
-                // the finally and sends 'hide'; otherwise the modal overlay would be stuck opaque
-                // until the user navigates away. (Sending 'hide' when 'show' never succeeded is a
-                // harmless no-op.)
+                // The overlay 'show' and the processing both run inside this try so that an exception anywhere
+                // after we raise the overlay still runs the finally and sends 'hide'; otherwise the modal
+                // overlay would be stuck opaque until the user navigates away. (Sending 'hide' when 'show'
+                // never succeeded is a harmless no-op.)
                 try
                 {
-                    // Let the user know Bloom is busy. The work below pumps the message loop via
-                    // Application.DoEvents(), so the main WebView2 keeps painting and this overlay
-                    // (with its CSS spinner) stays visible/animated for the whole run. Pump a few
-                    // events first so it actually appears before the heavy work ties up the thread.
+                    // Let the user know Bloom is busy. We run off the UI thread, so the UI thread is free to
+                    // paint this overlay (with its CSS spinner) and keep it animated for the whole run.
                     dynamic overlay = new DynamicJson();
                     // Intentionally NOT localized, like the add-book/update-book toasts: this is an
                     // operator-facing message shown only during a BloomBridge-driven processing run.
@@ -438,11 +434,6 @@ namespace Bloom.web.controllers
                         "show",
                         overlay
                     );
-                    for (var i = 0; i < 10; i++)
-                    {
-                        System.Windows.Forms.Application.DoEvents();
-                        System.Threading.Thread.Sleep(15);
-                    }
 
                     var result = !string.IsNullOrEmpty(folderPath)
                         ? ProcessBookByPath(folderPath, fitImageTextSplits)
