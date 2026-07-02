@@ -822,6 +822,11 @@
         <note>Radio-button choice in the import duplicate prompt: keep the existing book(s) and add the imported one(s) as new copies.</note>
         <note>ID: CollectionTab.ImportBloomSource.AddCopy</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.Importing" translate="no">
+        <source xml:lang="en">Importing Books</source>
+        <note>Title of the progress dialog shown while .bloomSource file(s) are being imported.</note>
+        <note>ID: CollectionTab.ImportBloomSource.Importing</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
         <source xml:lang="en">Make a book using this source</source>
         <note>ID: CollectionTab.MakeBookUsingThisTemplate</note>

@@ -247,16 +247,6 @@ namespace Bloom.CollectionTab
         }
 
         /// <summary>
-        /// Imports the .bloomSource files previously chosen via
-        /// <see cref="ChooseBloomSourceFilesToImport"/> into the current editable collection. The
-        /// user has already made two choices (in the collection screen) that apply to the whole
-        /// batch: when <paramref name="makeDerivatives"/> is true, each imported book is used to make
-        /// a new derivative book (otherwise each is imported as an editable book); and, for the edit
-        /// case, when <paramref name="replaceExistingDuplicates"/> is true any book already in the
-        /// collection is replaced (otherwise it is added as a numbered copy). The last successfully
-        /// imported book is selected when done.
-        /// </summary>
-        /// <summary>
         /// Runs <see cref="ImportBloomSourceFiles"/> behind the embedded progress dialog on a
         /// background thread, so a large batch neither freezes the collection screen nor lets the
         /// awaiting browser request time out. The front-end already hosts the "collectionTab"
@@ -283,6 +273,16 @@ namespace Bloom.CollectionTab
             );
         }
 
+        /// <summary>
+        /// Imports the .bloomSource files previously chosen via
+        /// <see cref="ChooseBloomSourceFilesToImport"/> into the current editable collection. The
+        /// user has already made two choices (in the collection screen) that apply to the whole
+        /// batch: when <paramref name="makeDerivatives"/> is true, each imported book is used to make
+        /// a new derivative book (otherwise each is imported as an editable book); and, for the edit
+        /// case, when <paramref name="replaceExistingDuplicates"/> is true any book already in the
+        /// collection is replaced (otherwise it is added as a numbered copy). The last successfully
+        /// imported book is selected when done.
+        /// </summary>
         public void ImportBloomSourceFiles(
             bool makeDerivatives,
             bool replaceExistingDuplicates,
@@ -410,6 +410,9 @@ namespace Bloom.CollectionTab
             );
             string destFolder = null;
             string folderToRecycleAfterImport = null;
+            // Once the book has been moved into the collection the import has succeeded; a failure
+            // after that point (e.g. recycling the replaced duplicate) must not delete it.
+            var importSucceeded = false;
             // "Add a copy" produces an independent copy exactly like the Duplicate Book command:
             // a new id and the "<name> - Copy-<id>" folder convention (the caption is left alone,
             // just as Duplicate leaves it).
@@ -464,6 +467,7 @@ namespace Bloom.CollectionTab
                 if (!string.Equals(htmlPath, renamedHtmlPath, StringComparison.OrdinalIgnoreCase))
                     RobustFile.Move(htmlPath, renamedHtmlPath);
                 SIL.IO.RobustIO.MoveDirectory(tempFolder, destFolder);
+                importSucceeded = true;
 
                 // The imported book is now safely in place; for the Replace case it is finally safe
                 // to recycle the book it duplicates.
@@ -478,9 +482,11 @@ namespace Bloom.CollectionTab
             }
             catch
             {
-                // If we failed after starting to create the destination folder, don't leave a
-                // half-imported book behind in the collection.
-                if (destFolder != null && Directory.Exists(destFolder))
+                // If we failed partway through creating the destination folder, don't leave a
+                // half-imported book behind in the collection. But once the import has succeeded
+                // (the book is fully moved into place), a later failure such as recycling the
+                // replaced duplicate must not delete the book we just imported.
+                if (!importSucceeded && destFolder != null && Directory.Exists(destFolder))
                     SIL.IO.RobustIO.DeleteDirectoryAndContents(destFolder);
                 throw;
             }
