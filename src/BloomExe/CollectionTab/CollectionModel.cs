@@ -301,16 +301,33 @@ namespace Bloom.CollectionTab
                 : ImportDuplicateChoice.AddCopy;
 
             Book.Book lastImported = null;
+            // For the edit path we move every book into place first and reload the collection just
+            // once at the end, instead of reloading (which rescans the whole collection from disk)
+            // once per file. Each entry pairs the destination folder with its source file name so we
+            // can record an accurate "Imported from" history event after that single reload.
+            var importedEditFolders = new List<(string destFolder, string sourceName)>();
             foreach (var path in paths)
             {
                 try
                 {
                     progress?.MessageWithoutLocalizing($"Importing {Path.GetFileName(path)}...");
-                    var book = makeDerivatives
-                        ? MakeDerivativeFromBloomSourceFile(path)
-                        : ImportOneBloomSourceFile(path, _ => duplicateChoice);
-                    if (book != null)
-                        lastImported = book;
+                    if (makeDerivatives)
+                    {
+                        // The derivative path builds its Book in memory and adds it to the collection
+                        // itself, so it needs no reload.
+                        var book = MakeDerivativeFromBloomSourceFile(path);
+                        if (book != null)
+                            lastImported = book;
+                    }
+                    else
+                    {
+                        var destFolder = ImportBloomSourceFileToCollectionFolder(
+                            path,
+                            _ => duplicateChoice
+                        );
+                        if (destFolder != null)
+                            importedEditFolders.Add((destFolder, Path.GetFileName(path)));
+                    }
                 }
                 catch (BloomSourceImportException e)
                 {
@@ -337,6 +354,40 @@ namespace Bloom.CollectionTab
                 }
             }
 
+            // Now that every edit-import's folder is in place, reload the collection a single time
+            // and turn each imported folder into a Book with its Created history event.
+            if (importedEditFolders.Count > 0)
+            {
+                ReloadEditableCollection();
+                foreach (var (destFolder, sourceName) in importedEditFolders)
+                {
+                    var newInfo = TheOneEditableCollection
+                        .GetBookInfos()
+                        .FirstOrDefault(i => i.FolderPath == destFolder);
+                    if (newInfo == null)
+                    {
+                        // Should not happen after a successful move; surface it but don't abort the
+                        // rest of the batch.
+                        NonFatalProblem.Report(
+                            ModalIf.All,
+                            PassiveIf.None,
+                            shortUserLevelMessage: string.Format(
+                                "Bloom imported \"{0}\" but could not find it in the collection afterward.",
+                                sourceName
+                            )
+                        );
+                        continue;
+                    }
+                    var newBook = GetBookFromBookInfo(newInfo);
+                    BookHistory.AddEvent(
+                        newBook,
+                        BookHistoryEventType.Created,
+                        $"Imported from \"{sourceName}\""
+                    );
+                    lastImported = newBook;
+                }
+            }
+
             if (lastImported != null)
                 SelectBookOnUiThread(lastImported);
         }
@@ -354,40 +405,6 @@ namespace Bloom.CollectionTab
                 form.Invoke((Action)(() => _bookSelection.SelectBook(book)));
             else
                 _bookSelection.SelectBook(book);
-        }
-
-        /// <summary>
-        /// Imports the single book contained in one .bloomSource (or legacy .bloom) file into the
-        /// editable collection and returns the new Book, or null if the user cancelled.
-        /// The <paramref name="resolveDuplicate"/> callback decides what to do when the book is
-        /// already in the collection; it is a parameter so tests can drive it without a dialog.
-        /// Throws <see cref="BloomSourceImportException"/> for problems we can explain to the user.
-        /// </summary>
-        internal Book.Book ImportOneBloomSourceFile(
-            string sourcePath,
-            Func<string, ImportDuplicateChoice> resolveDuplicate
-        )
-        {
-            var destFolder = ImportBloomSourceFileToCollectionFolder(sourcePath, resolveDuplicate);
-            if (destFolder == null)
-                return null; // user cancelled
-
-            ReloadEditableCollection();
-            var newInfo = TheOneEditableCollection
-                .GetBookInfos()
-                .FirstOrDefault(i => i.FolderPath == destFolder);
-            if (newInfo == null)
-                throw new BloomSourceImportException(
-                    "The book was extracted but did not show up in the collection."
-                );
-            var newBook = GetBookFromBookInfo(newInfo);
-
-            BookHistory.AddEvent(
-                newBook,
-                BookHistoryEventType.Created,
-                $"Imported from \"{Path.GetFileName(sourcePath)}\""
-            );
-            return newBook;
         }
 
         /// <summary>
