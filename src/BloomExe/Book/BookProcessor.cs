@@ -22,7 +22,7 @@ namespace Bloom.Book
     /// that initialization run, pull the resulting DOM back out, and save it through the normal
     /// editing save path (Book.UpdateDomFromEditedPage), which strips editing markup and extracts
     /// metadata. This mirrors the publish tab's off-screen page-check browser
-    /// (PublishHelper.BrowserForPageChecks).
+    /// (PublishHelper.PageChecksBrowser).
     /// </summary>
     public static class BookProcessor
     {
