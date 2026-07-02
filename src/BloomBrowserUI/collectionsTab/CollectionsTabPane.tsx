@@ -25,6 +25,7 @@ import { EmbeddedProgressDialog } from "../react_components/Progress/ProgressDia
 import { useSubscribeToWebSocketForObject } from "../utils/WebSocketManager";
 import CloseIcon from "@mui/icons-material/Close";
 import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
+import { ImportIcon } from "../react_components/icons/ImportIcon";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { BloomTooltip } from "../react_components/BloomToolTip";
 import { Link } from "../react_components/link";
@@ -344,6 +345,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         {
             label: "Import .bloomSource File(s)",
             l10nId: "CollectionTab.ImportBloomSource",
+            icon: <ImportIcon />,
             onClick: () => {
                 handleClose();
                 // Let the user choose the file(s) first; only then ask (once) whether to edit them
