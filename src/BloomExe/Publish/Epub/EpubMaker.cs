@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom;
@@ -195,19 +194,6 @@ namespace Bloom.Publish.Epub
 
         // image counter for creating id values
         private int _imgCount;
-
-        /// <summary>
-        /// Preparing a book for publication involves displaying it in a browser in order
-        /// to accurately determine which elements are invisible and can be pruned from the
-        /// published book.  This requires being on the UI thread, which may require having
-        /// a Control available for calling Invoke() which will move execution to the UI
-        /// thread.
-        /// </summary>
-        public Control ControlForInvoke
-        {
-            get { return _publishHelper.ControlForInvoke; }
-            set { _publishHelper.ControlForInvoke = value; }
-        }
 
         public bool AbortRequested
         {
@@ -589,6 +575,13 @@ namespace Bloom.Publish.Epub
                 if (Path.GetExtension(filename).ToLowerInvariant() == ".svg")
                     PruneSvgFileOfCruft(filename);
             }
+
+            // Staging is the only thing that uses the off-screen page-checks browser, and it is done now.
+            // Release it so its dedicated thread and WebView2 process don't linger idle after we leave the
+            // publish tab (until this EpubMaker is finally disposed). It is lazily recreated if we stage again.
+            // Safe here: we are on the staging thread and no longer calling into the browser, so this won't
+            // race an in-flight page check (unlike disposing from the UI thread on tab switch).
+            _publishHelper.ReleaseBrowser();
         }
 
         public static void GetPageDimensions(string pageSize, out double width, out double height)
