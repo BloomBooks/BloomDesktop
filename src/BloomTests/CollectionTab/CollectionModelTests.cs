@@ -366,6 +366,50 @@ namespace BloomTests.CollectionTab
         }
 
         [Test]
+        public void ImportBloomSource_SameIdTwiceInOneBatch_SecondBecomesIndependentCopy()
+        {
+            // Two files in the same import batch can carry the same bookInstanceId (e.g. two exports
+            // of the same book selected together). The collection is only reloaded once, after the
+            // whole batch, so when the second file is imported the per-file duplicate check can't yet
+            // see the first. The shared id set the batch passes in must still keep the two from
+            // landing with the same id — the collision the whole feature exists to prevent.
+            var sharedId = Guid.NewGuid().ToString();
+            var src1 = MakeBloomSourceFile("Moon", sharedId);
+            var src2 = MakeBloomSourceFile("Moon", sharedId);
+            var batchIds = new HashSet<string>();
+
+            // Neither book is in the collection, so the duplicate dialog is never consulted for
+            // either (NeverCalled throws if it is); the within-batch collision must be handled
+            // automatically, not by prompting.
+            var dest1 = _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
+                src1,
+                NeverCalled,
+                batchIds
+            );
+            var dest2 = _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
+                src2,
+                NeverCalled,
+                batchIds
+            );
+
+            Assert.That(dest1, Is.Not.Null);
+            Assert.That(dest2, Is.Not.Null);
+            Assert.That(
+                dest1,
+                Is.Not.EqualTo(dest2),
+                "the two imports must land in distinct folders"
+            );
+            var id1 = BookMetaData.FromFolder(dest1).Id;
+            var id2 = BookMetaData.FromFolder(dest2).Id;
+            Assert.That(id1, Is.EqualTo(sharedId), "the first import keeps the original id");
+            Assert.That(
+                id2,
+                Is.Not.EqualTo(id1),
+                "the second import of the same id in one batch must get a fresh id, not collide"
+            );
+        }
+
+        [Test]
         public void AnyBloomSourceIsAlreadyInCollection_MatchingId_ReturnsTrue()
         {
             // This is the pre-flight check that decides whether to show the duplicate dialog.

@@ -52,7 +52,7 @@ namespace Bloom.CollectionTab
 
         // The .bloomSource files the user chose to import, remembered between the file-picker step
         // (ChooseBloomSourceFilesToImport) and the actual import (ImportBloomSourceFiles), so the
-        // collection screen can ask edit-vs-derivative in between.
+        // collection screen can show the appropriate import dialog in between.
         private string[] _bloomSourceFilesToImport;
 
         public CollectionModel(
@@ -221,8 +221,9 @@ namespace Bloom.CollectionTab
         /// <summary>
         /// Prompts the user to pick one or more .bloomSource files, remembering them for a following
         /// <see cref="ImportBloomSourceFiles"/> call. Returns true if at least one file was chosen.
-        /// This is separate from the import itself so the collection screen can ask (once, for the
-        /// whole batch) whether to edit or make derivatives *after* the files have been chosen.
+        /// This is separate from the import itself so the collection screen can, once the files are
+        /// chosen, show the single import dialog appropriate to the batch (edit-vs-derivative when
+        /// none are already present, replace-vs-add-copy when any are).
         /// </summary>
         public bool ChooseBloomSourceFilesToImport()
         {
@@ -276,7 +277,7 @@ namespace Bloom.CollectionTab
         /// <summary>
         /// Imports the .bloomSource files previously chosen via
         /// <see cref="ChooseBloomSourceFilesToImport"/> into the current editable collection. The
-        /// user has already made two choices (in the collection screen) that apply to the whole
+        /// user has already made the choice (in the collection screen) that applies to the whole
         /// batch: when <paramref name="makeDerivatives"/> is true, each imported book is used to make
         /// a new derivative book (otherwise each is imported as an editable book); and, for the edit
         /// case, when <paramref name="replaceExistingDuplicates"/> is true any book already in the
@@ -306,6 +307,11 @@ namespace Bloom.CollectionTab
             // once per file. Each entry pairs the destination folder with its source file name so we
             // can record an accurate "Imported from" history event after that single reload.
             var importedEditFolders = new List<(string destFolder, string sourceName)>();
+            // Because the collection isn't reloaded between files, the per-file duplicate check can't
+            // see books imported earlier in this same batch. Track their ids here so two files that
+            // share a bookInstanceId don't both land with that id (which would defeat the whole point
+            // of duplicate handling).
+            var idsImportedThisBatch = new HashSet<string>();
             foreach (var path in paths)
             {
                 try
@@ -323,7 +329,8 @@ namespace Bloom.CollectionTab
                     {
                         var destFolder = ImportBloomSourceFileToCollectionFolder(
                             path,
-                            _ => duplicateChoice
+                            _ => duplicateChoice,
+                            idsImportedThisBatch
                         );
                         if (destFolder != null)
                             importedEditFolders.Add((destFolder, Path.GetFileName(path)));
@@ -414,9 +421,15 @@ namespace Bloom.CollectionTab
         /// editable collection folder. Returns the destination folder, or null if the user cancelled.
         /// This is separated from the Book-level work so it can be unit tested without loading a Book.
         /// </summary>
+        /// <param name="idsAlreadyImportedThisBatch">Ids of books already imported earlier in this
+        /// same batch. Because the collection is reloaded only once, after the whole batch, a book
+        /// whose id is in this set isn't yet visible to the in-collection check above; we treat it as
+        /// a within-batch duplicate and give the incoming book a fresh id so the two don't collide.
+        /// When null (e.g. single-file tests), within-batch tracking is skipped.</param>
         internal string ImportBloomSourceFileToCollectionFolder(
             string sourcePath,
-            Func<string, ImportDuplicateChoice> resolveDuplicate
+            Func<string, ImportDuplicateChoice> resolveDuplicate,
+            ISet<string> idsAlreadyImportedThisBatch = null
         )
         {
             var editable = TheOneEditableCollection;
@@ -425,6 +438,10 @@ namespace Bloom.CollectionTab
                 out var htmlPath,
                 out var instanceId
             );
+            // The id this book arrived with. We record it (once the import succeeds, below) so that a
+            // later file in the same batch carrying the same id is recognized as a duplicate even
+            // though the collection is only reloaded once, after the whole batch.
+            var originalInstanceId = instanceId;
             string destFolder = null;
             string folderToRecycleAfterImport = null;
             // Once the book has been moved into the collection the import has succeeded; a failure
@@ -441,6 +458,19 @@ namespace Bloom.CollectionTab
                 var existing = string.IsNullOrEmpty(instanceId)
                     ? null
                     : editable.GetBookInfos().FirstOrDefault(b => b.Id == instanceId);
+                // A book with this id isn't in the collection, but an earlier file in this same batch
+                // already brought it in (the collection is only reloaded once, after the batch, so it
+                // isn't visible above yet). Replacing a book from the same batch is meaningless, so we
+                // always make this one an independent copy so the two don't end up sharing an id.
+                var isDuplicateWithinBatch =
+                    existing == null
+                    && !string.IsNullOrEmpty(instanceId)
+                    && idsAlreadyImportedThisBatch != null
+                    && idsAlreadyImportedThisBatch.Contains(instanceId);
+
+                // Whether to turn the incoming book into an independent copy: a new id (so it can't
+                // collide) plus the " - Copy-" folder convention the Duplicate command uses.
+                var makeIndependentCopy = false;
                 if (existing != null)
                 {
                     switch (resolveDuplicate(existing.Title))
@@ -456,18 +486,24 @@ namespace Bloom.CollectionTab
                             folderToRecycleAfterImport = existing.FolderPath;
                             break;
                         case ImportDuplicateChoice.AddCopy:
-                            // Make the copy independent with a new id (so the two books don't collide),
-                            // and name its folder with the same " - Copy-" convention the Duplicate
-                            // command uses.
-                            folderSeparator = " - Copy-";
-                            instanceId = Guid.NewGuid().ToString();
-                            var meta = BookMetaData.FromFolder(tempFolder);
-                            if (meta != null)
-                            {
-                                meta.Id = instanceId;
-                                meta.WriteToFolder(tempFolder);
-                            }
+                            makeIndependentCopy = true;
                             break;
+                    }
+                }
+                else if (isDuplicateWithinBatch)
+                {
+                    makeIndependentCopy = true;
+                }
+
+                if (makeIndependentCopy)
+                {
+                    folderSeparator = " - Copy-";
+                    instanceId = Guid.NewGuid().ToString();
+                    var meta = BookMetaData.FromFolder(tempFolder);
+                    if (meta != null)
+                    {
+                        meta.Id = instanceId;
+                        meta.WriteToFolder(tempFolder);
                     }
                 }
 
@@ -485,6 +521,11 @@ namespace Bloom.CollectionTab
                     RobustFile.Move(htmlPath, renamedHtmlPath);
                 SIL.IO.RobustIO.MoveDirectory(tempFolder, destFolder);
                 importSucceeded = true;
+
+                // Remember the id this book arrived with so a later file in the same batch carrying
+                // the same id is caught as a within-batch duplicate above.
+                if (!string.IsNullOrEmpty(originalInstanceId))
+                    idsAlreadyImportedThisBatch?.Add(originalInstanceId);
 
                 // The imported book is now safely in place; for the Replace case it is finally safe
                 // to recycle the book it duplicates. The import itself has already succeeded, so a

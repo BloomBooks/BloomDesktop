@@ -340,10 +340,10 @@ namespace Bloom.web.controllers
                 {
                     // Imports the .bloomSource file(s) the user already chose (via
                     // chooseBloomSourceFilesToImport) into the current editable collection. The
-                    // collection screen has since asked the user whether they want to edit the
-                    // imported book(s) or make derivatives ("mode"), and, when editing, what to do
-                    // with any book already in the collection ("onDuplicate"). Each single choice
-                    // applies to every chosen file.
+                    // collection screen has since shown the one dialog that fit the batch: when no
+                    // chosen book was already present it asked edit-vs-derivative ("mode"); when any
+                    // was present it asked replace-vs-add-copy ("onDuplicate", always mode=edit).
+                    // Each single choice applies to every chosen file.
                     // Runs behind the collection tab's progress dialog on a background thread (not the
                     // UI thread) so a large batch neither freezes the screen nor lets this request
                     // time out.
