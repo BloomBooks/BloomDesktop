@@ -174,8 +174,7 @@ namespace BloomTests.CollectionTab
 
             var dest = _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
                 src,
-                NeverCalled,
-                out var addNumberPrefix
+                NeverCalled
             );
 
             Assert.That(dest, Is.Not.Null);
@@ -198,7 +197,6 @@ namespace BloomTests.CollectionTab
                 Is.Empty,
                 "the .bloomCollection file should have been removed"
             );
-            Assert.That(addNumberPrefix, Is.False);
         }
 
         [Test]
@@ -210,17 +208,22 @@ namespace BloomTests.CollectionTab
 
             var dest = _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
                 src,
-                title => CollectionModel.ImportDuplicateChoice.AddCopy,
-                out var addNumberPrefix
+                title => CollectionModel.ImportDuplicateChoice.AddCopy
             );
 
             Assert.That(dest, Is.Not.Null);
-            Assert.That(addNumberPrefix, Is.True, "an added copy should get a numbered caption");
             var importedId = BookMetaData.FromFolder(dest).Id;
             Assert.That(
                 importedId,
                 Is.Not.EqualTo(sharedId),
                 "an added copy should get a new instance id so it is independent"
+            );
+            // The added copy follows the same "<name> - Copy-<id>" folder convention as the
+            // Duplicate Book command.
+            Assert.That(
+                Path.GetFileName(dest),
+                Does.Contain(" - Copy-"),
+                "an added copy should use the Duplicate-style folder name"
             );
             // The original book is still there, unchanged.
             Assert.That(Directory.Exists(Path.Combine(_collection.Path, "Moon")), Is.True);
@@ -235,12 +238,10 @@ namespace BloomTests.CollectionTab
 
             var dest = _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
                 src,
-                title => CollectionModel.ImportDuplicateChoice.Replace,
-                out var addNumberPrefix
+                title => CollectionModel.ImportDuplicateChoice.Replace
             );
 
             Assert.That(dest, Is.Not.Null);
-            Assert.That(addNumberPrefix, Is.False, "replacing should not renumber the caption");
             Assert.That(
                 Directory.Exists(existingFolder),
                 Is.False,
@@ -259,8 +260,7 @@ namespace BloomTests.CollectionTab
 
             var dest = _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
                 src,
-                title => CollectionModel.ImportDuplicateChoice.Cancel,
-                out _
+                title => CollectionModel.ImportDuplicateChoice.Cancel
             );
 
             Assert.That(dest, Is.Null, "cancel should return no imported book");
@@ -283,16 +283,10 @@ namespace BloomTests.CollectionTab
 
             var dest = _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
                 src,
-                NeverCalled, // if this is called, the code wrongly treated a same-name book as a duplicate
-                out var addNumberPrefix
+                NeverCalled // if this is called, the code wrongly treated a same-name book as a duplicate
             );
 
             Assert.That(dest, Is.Not.Null);
-            Assert.That(
-                addNumberPrefix,
-                Is.False,
-                "a non-duplicate import should not be renumbered"
-            );
             Assert.That(
                 BookMetaData.FromFolder(dest).Id,
                 Is.EqualTo(importedId),
@@ -324,8 +318,7 @@ namespace BloomTests.CollectionTab
                 {
                     resolveCalled = true;
                     return CollectionModel.ImportDuplicateChoice.Replace;
-                },
-                out _
+                }
             );
 
             Assert.That(
@@ -355,8 +348,7 @@ namespace BloomTests.CollectionTab
 
             var dest = _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
                 src,
-                title => CollectionModel.ImportDuplicateChoice.AddCopy,
-                out _
+                title => CollectionModel.ImportDuplicateChoice.AddCopy
             );
 
             var originalId = BookMetaData.FromFolder(originalFolder).Id;
@@ -430,11 +422,7 @@ namespace BloomTests.CollectionTab
             File.WriteAllText(bad, "this is not a zip file");
 
             Assert.Throws<CollectionModel.BloomSourceImportException>(() =>
-                _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
-                    bad,
-                    NeverCalled,
-                    out _
-                )
+                _testCollectionModel.ImportBloomSourceFileToCollectionFolder(bad, NeverCalled)
             );
         }
 
@@ -444,11 +432,7 @@ namespace BloomTests.CollectionTab
             var src = MakeBloomSourceFile("Moon", Guid.NewGuid().ToString(), includeHtm: false);
 
             Assert.Throws<CollectionModel.BloomSourceImportException>(() =>
-                _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
-                    src,
-                    NeverCalled,
-                    out _
-                )
+                _testCollectionModel.ImportBloomSourceFileToCollectionFolder(src, NeverCalled)
             );
         }
 
@@ -467,11 +451,7 @@ namespace BloomTests.CollectionTab
             zip.Save();
 
             Assert.Throws<CollectionModel.BloomSourceImportException>(() =>
-                _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
-                    packPath,
-                    NeverCalled,
-                    out _
-                )
+                _testCollectionModel.ImportBloomSourceFileToCollectionFolder(packPath, NeverCalled)
             );
         }
 
@@ -493,39 +473,13 @@ namespace BloomTests.CollectionTab
             }
 
             Assert.Throws<CollectionModel.BloomSourceImportException>(() =>
-                _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
-                    slipPath,
-                    NeverCalled,
-                    out _
-                )
+                _testCollectionModel.ImportBloomSourceFileToCollectionFolder(slipPath, NeverCalled)
             );
             // The traversal target must never be written.
             Assert.That(
                 File.Exists(Path.Combine(_folder.Path, "evil.txt")),
                 Is.False,
                 "zip-slip entry must not be extracted outside the target folder"
-            );
-        }
-
-        [Test]
-        public void ComputeUniqueCaptionNumber_StartsAtTwoAndSkipsUsed()
-        {
-            Assert.That(
-                CollectionModel.ComputeUniqueCaptionNumber("Moon", new string[0]),
-                Is.EqualTo(2)
-            );
-            Assert.That(
-                CollectionModel.ComputeUniqueCaptionNumber("Moon", new[] { "2 Moon" }),
-                Is.EqualTo(3)
-            );
-            Assert.That(
-                CollectionModel.ComputeUniqueCaptionNumber("Moon", new[] { "2 Moon", "3 Moon" }),
-                Is.EqualTo(4)
-            );
-            // A gap at 2 is filled first.
-            Assert.That(
-                CollectionModel.ComputeUniqueCaptionNumber("Moon", new[] { "3 Moon" }),
-                Is.EqualTo(2)
             );
         }
 

@@ -334,9 +334,9 @@ namespace Bloom.web.controllers
                 true
             );
 
-            apiHandler.RegisterEndpointHandler(
+            apiHandler.RegisterAsyncEndpointHandler(
                 kApiUrlPart + "importBloomSource/",
-                (request) =>
+                async (request) =>
                 {
                     // Imports the .bloomSource file(s) the user already chose (via
                     // chooseBloomSourceFilesToImport) into the current editable collection. The
@@ -344,16 +344,19 @@ namespace Bloom.web.controllers
                     // imported book(s) or make derivatives ("mode"), and, when editing, what to do
                     // with any book already in the collection ("onDuplicate"). Each single choice
                     // applies to every chosen file.
+                    // Runs behind the collection tab's progress dialog on a background thread (not the
+                    // UI thread) so a large batch neither freezes the screen nor lets this request
+                    // time out.
                     var makeDerivatives = request.RequiredParam("mode") == "derivative";
                     var replaceExistingDuplicates =
                         request.GetParamOrNull("onDuplicate") == "replace";
-                    _collectionModel.ImportBloomSourceFiles(
+                    await _collectionModel.ImportBloomSourceFilesWithProgressAsync(
                         makeDerivatives,
                         replaceExistingDuplicates
                     );
                     request.PostSucceeded();
                 },
-                true
+                handleOnUiThread: false
             );
 
             apiHandler.RegisterEndpointHandler(

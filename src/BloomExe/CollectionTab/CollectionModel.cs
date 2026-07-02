@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
@@ -19,6 +20,7 @@ using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
@@ -254,7 +256,38 @@ namespace Bloom.CollectionTab
         /// collection is replaced (otherwise it is added as a numbered copy). The last successfully
         /// imported book is selected when done.
         /// </summary>
-        public void ImportBloomSourceFiles(bool makeDerivatives, bool replaceExistingDuplicates)
+        /// <summary>
+        /// Runs <see cref="ImportBloomSourceFiles"/> behind the embedded progress dialog on a
+        /// background thread, so a large batch neither freezes the collection screen nor lets the
+        /// awaiting browser request time out. The front-end already hosts the "collectionTab"
+        /// EmbeddedProgressDialog, so it needs no extra wiring.
+        /// </summary>
+        public async Task ImportBloomSourceFilesWithProgressAsync(
+            bool makeDerivatives,
+            bool replaceExistingDuplicates
+        )
+        {
+            await BrowserProgressDialog.DoWorkWithProgressDialogAsync(
+                _webSocketServer,
+                (progress, worker) =>
+                {
+                    ImportBloomSourceFiles(makeDerivatives, replaceExistingDuplicates, progress);
+                    return Task.FromResult(false); // false => close the dialog when we finish
+                },
+                "collectionTab",
+                LocalizationManager.GetString(
+                    "CollectionTab.ImportBloomSource.Importing",
+                    "Importing Books"
+                ),
+                showCancelButton: false
+            );
+        }
+
+        public void ImportBloomSourceFiles(
+            bool makeDerivatives,
+            bool replaceExistingDuplicates,
+            IWebSocketProgress progress = null
+        )
         {
             var paths = _bloomSourceFilesToImport;
             _bloomSourceFilesToImport = null;
@@ -272,6 +305,7 @@ namespace Bloom.CollectionTab
             {
                 try
                 {
+                    progress?.MessageWithoutLocalizing($"Importing {Path.GetFileName(path)}...");
                     var book = makeDerivatives
                         ? MakeDerivativeFromBloomSourceFile(path)
                         : ImportOneBloomSourceFile(path, _ => duplicateChoice);
@@ -304,7 +338,22 @@ namespace Bloom.CollectionTab
             }
 
             if (lastImported != null)
-                SelectBook(lastImported);
+                SelectBookOnUiThread(lastImported);
+        }
+
+        /// <summary>
+        /// Selects a book, marshaling to the UI thread when necessary. Import can run on a background
+        /// thread (behind the progress dialog), but SelectBook raises SelectionChanged synchronously
+        /// to WinForms views, so it must happen on the UI thread. When no window is open (e.g. unit
+        /// tests) this just runs inline.
+        /// </summary>
+        private void SelectBookOnUiThread(Book.Book book)
+        {
+            var form = Shell.GetShellOrOtherOpenForm();
+            if (form != null && form.InvokeRequired)
+                form.Invoke((Action)(() => _bookSelection.SelectBook(book)));
+            else
+                _bookSelection.SelectBook(book);
         }
 
         /// <summary>
@@ -319,11 +368,7 @@ namespace Bloom.CollectionTab
             Func<string, ImportDuplicateChoice> resolveDuplicate
         )
         {
-            var destFolder = ImportBloomSourceFileToCollectionFolder(
-                sourcePath,
-                resolveDuplicate,
-                out var addNumberPrefix
-            );
+            var destFolder = ImportBloomSourceFileToCollectionFolder(sourcePath, resolveDuplicate);
             if (destFolder == null)
                 return null; // user cancelled
 
@@ -336,9 +381,6 @@ namespace Bloom.CollectionTab
                     "The book was extracted but did not show up in the collection."
                 );
             var newBook = GetBookFromBookInfo(newInfo);
-
-            if (addNumberPrefix)
-                PrefixCaptionWithUniqueNumber(newBook);
 
             BookHistory.AddEvent(
                 newBook,
@@ -353,18 +395,13 @@ namespace Bloom.CollectionTab
         /// the stray .bloomCollection and any Team-Collection status files, handles the
         /// already-in-collection case (Replace/Add-a-copy/Cancel), and moves the book into the
         /// editable collection folder. Returns the destination folder, or null if the user cancelled.
-        /// <paramref name="addNumberPrefix"/> is set true when the caller should give the new book a
-        /// numbered caption (the "Add a copy" case). This is separated from the Book-level work so it
-        /// can be unit tested without loading a Book.
+        /// This is separated from the Book-level work so it can be unit tested without loading a Book.
         /// </summary>
         internal string ImportBloomSourceFileToCollectionFolder(
             string sourcePath,
-            Func<string, ImportDuplicateChoice> resolveDuplicate,
-            out bool addNumberPrefix
+            Func<string, ImportDuplicateChoice> resolveDuplicate
         )
         {
-            addNumberPrefix = false;
-
             var editable = TheOneEditableCollection;
             var tempFolder = ExtractAndPrepareBloomSourceToTemp(
                 sourcePath,
@@ -373,6 +410,10 @@ namespace Bloom.CollectionTab
             );
             string destFolder = null;
             string folderToRecycleAfterImport = null;
+            // "Add a copy" produces an independent copy exactly like the Duplicate Book command:
+            // a new id and the "<name> - Copy-<id>" folder convention (the caption is left alone,
+            // just as Duplicate leaves it).
+            var folderSeparator = "-";
             try
             {
                 var baseName = Path.GetFileNameWithoutExtension(htmlPath);
@@ -395,9 +436,10 @@ namespace Bloom.CollectionTab
                             folderToRecycleAfterImport = existing.FolderPath;
                             break;
                         case ImportDuplicateChoice.AddCopy:
-                            // Make the copy independent: new id (so the two books don't collide)
-                            // and a numbered caption (handled after the book is loaded).
-                            addNumberPrefix = true;
+                            // Make the copy independent with a new id (so the two books don't collide),
+                            // and name its folder with the same " - Copy-" convention the Duplicate
+                            // command uses.
+                            folderSeparator = " - Copy-";
                             instanceId = Guid.NewGuid().ToString();
                             var meta = BookMetaData.FromFolder(tempFolder);
                             if (meta != null)
@@ -415,7 +457,7 @@ namespace Bloom.CollectionTab
                     editable.PathToDirectory,
                     BookStorage.SanitizeNameForFileSystem(baseName),
                     instanceId,
-                    "-"
+                    folderSeparator
                 );
                 destFolder = Path.Combine(editable.PathToDirectory, destName);
                 var renamedHtmlPath = Path.Combine(tempFolder, destName + ".htm");
@@ -428,7 +470,7 @@ namespace Bloom.CollectionTab
                 if (folderToRecycleAfterImport != null)
                 {
                     if (_bookSelection.CurrentSelection?.FolderPath == folderToRecycleAfterImport)
-                        _bookSelection.SelectBook(null);
+                        SelectBookOnUiThread(null);
                     PathUtilities.DeleteToRecycleBin(folderToRecycleAfterImport);
                     editable.HandleBookDeletedFromCollection(folderToRecycleAfterImport);
                 }
@@ -522,19 +564,20 @@ namespace Bloom.CollectionTab
                 if (newBook == null)
                     return null; // e.g. the source had a configuration dialog and the user cancelled
 
-                newBook.BringBookUpToDate(new NullProgress(), false);
-                BookHistory.AddEvent(
-                    newBook,
-                    BookHistoryEventType.Created,
-                    $"Created from imported source file \"{Path.GetFileName(sourcePath)}\""
+                // Mirror the normal "make a book from this source" flow (CreateFromSourceBook):
+                // defer the "Created" history event via a pending marker so it captures the title the
+                // user eventually gives the book (and suppresses spurious "Renamed" events meanwhile),
+                // and add the new book to the collection in memory rather than reloading and looking it
+                // up again (which was the source of a silent not-found fallback).
+                newBook.PendingCreationSource = Path.GetFileName(sourcePath);
+                newBook.PendingCreationSourceTitle = newBook.BookInfo.GetTitleForLanguage(
+                    newBook.BookData.Language1Tag
                 );
 
-                var newFolderPath = newBook.FolderPath;
-                ReloadEditableCollection();
-                var newInfo = TheOneEditableCollection
-                    .GetBookInfos()
-                    .FirstOrDefault(i => i.FolderPath == newFolderPath);
-                return newInfo != null ? GetBookFromBookInfo(newInfo) : newBook;
+                newBook.BringBookUpToDate(new NullProgress(), false);
+
+                TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
+                return newBook;
             }
             finally
             {
@@ -635,6 +678,8 @@ namespace Bloom.CollectionTab
         /// Reads the bookInstanceId from a .bloomSource file's meta.json (which is at the zip root)
         /// without extracting the whole book. Returns null if it can't be read (e.g. the file is
         /// not a valid single-book source); such files simply aren't treated as duplicates here.
+        /// Parses the metadata the same way the import itself does (BookMetaData) so the pre-flight
+        /// duplicate check can't disagree with the actual import about a book's id.
         /// </summary>
         private static string ReadBookInstanceIdFromBloomSource(string sourcePath)
         {
@@ -648,8 +693,7 @@ namespace Bloom.CollectionTab
                     using (var stream = zip.GetInputStream(index))
                     using (var reader = new StreamReader(stream))
                     {
-                        var json = Newtonsoft.Json.Linq.JObject.Parse(reader.ReadToEnd());
-                        return (string)json["bookInstanceId"];
+                        return BookMetaData.FromString(reader.ReadToEnd())?.Id;
                     }
                 }
             }
@@ -657,52 +701,6 @@ namespace Bloom.CollectionTab
             {
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Prefixes the book's displayed title with the smallest unused number starting at 2
-        /// (e.g. "2 Moon and Cap") so an added copy is distinguishable from the book it duplicates.
-        /// The caption for an editable book comes from the in-HTML bookTitle, so we set that (not
-        /// just meta.json) and then save.
-        /// </summary>
-        private void PrefixCaptionWithUniqueNumber(Book.Book newBook)
-        {
-            var baseTitle = newBook.NameBestForUserDisplay;
-            var existingTitles = TheOneEditableCollection
-                .GetBookInfos()
-                .Where(i => i.FolderPath != newBook.FolderPath)
-                .Select(i => i.Title);
-            var number = ComputeUniqueCaptionNumber(baseTitle, existingTitles);
-
-            // Prefix every language form so whichever one drives the caption starts with the number.
-            var titleForms = newBook.BookData.GetMultiTextVariableOrEmpty("bookTitle");
-            foreach (var form in titleForms.Forms)
-            {
-                newBook.BookData.Set(
-                    "bookTitle",
-                    XmlString.FromXml($"{number} {form.Form}"),
-                    form.WritingSystemId
-                );
-            }
-            newBook.Save();
-            UpdateLabelOfBookInEditableCollection(newBook);
-        }
-
-        /// <summary>
-        /// Returns the smallest whole number, starting at 2, such that "{number} {baseTitle}" is not
-        /// already the title of a book in the collection. Used to give an added copy of an imported
-        /// book a distinguishable caption ("2 Moon and Cap", then "3 Moon and Cap", ...).
-        /// </summary>
-        internal static int ComputeUniqueCaptionNumber(
-            string baseTitle,
-            IEnumerable<string> existingTitles
-        )
-        {
-            var titles = new HashSet<string>(existingTitles);
-            var number = 2;
-            while (titles.Contains($"{number} {baseTitle}"))
-                number++;
-            return number;
         }
 
         public void moveBookIntoThisCollection(Book.Book origBook, BookCollection origCollection)
