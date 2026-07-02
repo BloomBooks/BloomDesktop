@@ -898,6 +898,43 @@ namespace Bloom.ImageProcessing
             }
         }
 
+        private static bool IsIndexedColorPngFile(string filePath)
+        {
+            var header = new byte[26];
+            try
+            {
+                using (var fs = RobustIO.GetFileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    if (fs.Length < 26)
+                        return false;
+                    fs.Read(header, 0, 26);
+                }
+
+                // Validate PNG Signature (First 8 bytes)
+                var isPng =
+                    header[0] == 0x89
+                    && header[1] == 0x50
+                    && // \x89PNG
+                    header[2] == 0x4E
+                    && header[3] == 0x47
+                    && header[4] == 0x0D
+                    && header[5] == 0x0A
+                    && // \r\n
+                    header[6] == 0x1A
+                    && header[7] == 0x0A; // \x1a\n
+                if (!isPng)
+                    return false;
+
+                // Validate Color Type byte (3 = indexed color) from the IHDR chunk (Offset 25)
+                var colorType = header[25];
+                return colorType == 3;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Create a display-ready processed version of an image in <paramref name="destDir"/>:
         /// resize if too large, convert format if beneficial (JPEG→PNG for transparent line art,
@@ -1820,10 +1857,25 @@ namespace Bloom.ImageProcessing
             bool makeOpaque = false
         )
         {
+            var sourcePath = imageInfo.GetCurrentFilePath();
+            var indexedPNG =
+                (imageInfo.Image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed;
+            // exact pixel information not preserved loading from clipboard, so check the file itself.
+            if (!indexedPNG && !string.IsNullOrEmpty(sourcePath))
+                indexedPNG = IsIndexedColorPngFile(sourcePath);
+            if (indexedPNG && !makeOpaque)
+            {
+                // Don't try to resize indexed PNGs unless we're making them opaque (BL-16424)
+                // Unless the shrinkage looks like it will be worthwhile.
+                // GraphicsMagick will convert indexed PNGs to non-indexed PNGs, which can make the file bigger.
+                var currentArea = imageInfo.Image.Size.Height * imageInfo.Image.Size.Width; // 1 byte per pixel for indexed PNGs
+                var newArea = size.Height * size.Width * 4; // 4 bytes per pixel for non-indexed PNGs
+                if (currentArea <= newArea)
+                    return null;
+            }
             var graphicsMagickPath = GetGraphicsMagickPath();
             if (RobustFile.Exists(graphicsMagickPath))
             {
-                var sourcePath = imageInfo.GetCurrentFilePath();
                 var isJpegImage = AppearsToBeJpeg(imageInfo);
                 // Track whether we created sourcePath ourselves so we know it's safe to delete.
                 // Pre-existing book images (including those in export staging folders under GetTempPath)
@@ -1853,7 +1905,7 @@ namespace Bloom.ImageProcessing
                         {
                             // The new file is actually larger (BL-11441) so bail out
                             Debug.WriteLine(
-                                $"New file for {Path.GetFileName(sourcePath)} at {size} is larger than original at {imageInfo.Image.Size}."
+                                $"New file for {sourcePath} at {size} is larger than original at {imageInfo.Image.Size}."
                             );
                             return null;
                         }
