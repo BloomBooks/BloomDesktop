@@ -487,13 +487,37 @@ namespace Bloom.CollectionTab
                 importSucceeded = true;
 
                 // The imported book is now safely in place; for the Replace case it is finally safe
-                // to recycle the book it duplicates.
+                // to recycle the book it duplicates. The import itself has already succeeded, so a
+                // failure recycling the old book (locked folder, recycle bin unavailable on a network
+                // drive, etc.) is reported as its own minor problem rather than being allowed to
+                // bubble up as an "import failed" error — which would both mislead the user and, since
+                // this method would then throw instead of returning destFolder, keep the
+                // successfully-imported book from being reloaded into view.
                 if (folderToRecycleAfterImport != null)
                 {
-                    if (_bookSelection.CurrentSelection?.FolderPath == folderToRecycleAfterImport)
-                        SelectBookOnUiThread(null);
-                    PathUtilities.DeleteToRecycleBin(folderToRecycleAfterImport);
-                    editable.HandleBookDeletedFromCollection(folderToRecycleAfterImport);
+                    try
+                    {
+                        if (
+                            _bookSelection.CurrentSelection?.FolderPath
+                            == folderToRecycleAfterImport
+                        )
+                            SelectBookOnUiThread(null);
+                        PathUtilities.DeleteToRecycleBin(folderToRecycleAfterImport);
+                        editable.HandleBookDeletedFromCollection(folderToRecycleAfterImport);
+                    }
+                    catch (Exception e)
+                    {
+                        NonFatalProblem.Report(
+                            ModalIf.All,
+                            PassiveIf.None,
+                            shortUserLevelMessage: string.Format(
+                                "The book was imported, but Bloom could not remove the existing copy it replaced. You may need to delete the older copy of \"{0}\" manually.",
+                                Path.GetFileName(destFolder)
+                            ),
+                            moreDetails: null,
+                            exception: e
+                        );
+                    }
                 }
                 return destFolder;
             }
