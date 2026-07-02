@@ -199,63 +199,72 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         | undefined
     >();
 
-    // The two dialogs that make up the .bloomSource import decision. The .bloomSource file(s) are
-    // chosen first (via C#); then the user is asked once (for the whole batch) whether to edit the
-    // book(s) or make derivatives; then, only in the edit case and only if any book is already in
-    // the collection, whether to replace those or add them as new copies.
+    // The .bloomSource import decision. The file(s) are chosen first (via C#); then we check (via
+    // C#) whether any chosen book is already in the collection and, based on that, show the user
+    // exactly one dialog for the whole batch. If none are present, Dialog 1 asks whether to edit
+    // the book(s) or make derivatives. If any are present, Dialog 2 asks whether to replace the
+    // existing book(s) or add the imported ones as new copies. The user never sees both.
     const [showImportSourceChoiceDialog, setShowImportSourceChoiceDialog] =
         useState(false);
     const [showImportDuplicateDialog, setShowImportDuplicateDialog] =
         useState(false);
 
-    const importTitle = useL10n(
-        "Import .bloomSource File(s)",
-        "CollectionTab.ImportBloomSource",
+    const importChoiceTitle = useL10n(
+        "Import books",
+        "CollectionTab.ImportBloomSource.ChoiceTitle",
     );
     const importEditChoiceLabel = useL10n(
-        "I want to edit the book(s) I am importing.",
+        "Import for editing",
         "CollectionTab.ImportBloomSource.EditChoice",
     );
     const importDerivativeChoiceLabel = useL10n(
-        "I want to make new book(s) based on the book(s) I am importing (derivatives).",
+        "Import as derivatives — new books based on the originals",
         "CollectionTab.ImportBloomSource.DerivativeChoice",
     );
     const importDuplicateMessage = useL10n(
-        "Some of the book(s) you are importing are already in this collection. Do you want to replace them, or add the imported book(s) as new copies?",
+        "Some of these books are already in this collection.",
         "CollectionTab.ImportBloomSource.DuplicatePrompt",
     );
     const importReplaceLabel = useL10n(
-        "Replace the existing book(s)",
+        "Replace the existing books",
         "CollectionTab.ImportBloomSource.Replace",
+    );
+    const importReplaceDescription = useL10n(
+        "The current copies will be overwritten.",
+        "CollectionTab.ImportBloomSource.ReplaceDescription",
     );
     const importAddCopyLabel = useL10n(
         "Add them as new copies",
         "CollectionTab.ImportBloomSource.AddCopy",
     );
+    const importAddCopyDescription = useL10n(
+        "The existing books stay as they are.",
+        "CollectionTab.ImportBloomSource.AddCopyDescription",
+    );
 
-    // Step 2: the user chose to edit vs. make derivatives (or cancelled). For derivatives there can
-    // be no duplicates, so import immediately. For editing, first ask C# whether any chosen book is
-    // already in the collection; if so, show the duplicate dialog, otherwise import right away.
-    const handleImportSourceChoice = (choice?: string) => {
-        setShowImportSourceChoiceDialog(false);
-        if (!choice) return;
-        if (choice === "derivative") {
-            post("collections/importBloomSource?mode=derivative");
-            return;
-        }
+    // Decide which single dialog to show after the file(s) have been chosen: Dialog 2 (replace vs.
+    // add-copy) if any chosen book is already in the collection, otherwise Dialog 1 (edit vs.
+    // derivative).
+    const chooseImportDialog = () => {
         post("collections/anyChosenBloomSourceAlreadyInCollection", (r) => {
-            if (r.data === true) {
-                setShowImportDuplicateDialog(true);
-            } else {
-                post(
-                    "collections/importBloomSource?mode=edit&onDuplicate=addCopy",
-                );
-            }
+            if (r.data === true) setShowImportDuplicateDialog(true);
+            else setShowImportSourceChoiceDialog(true);
         });
     };
 
-    // Step 3 (edit + duplicates only): the user chose to replace the existing book(s) or add the
-    // imported ones as new copies. That single choice applies to every duplicate in the batch.
+    // Dialog 1 (shown only when no chosen book is already in the collection): the user chose to
+    // edit the book(s) as-is or make derivatives (or cancelled). Neither path has a duplicate to
+    // resolve, so import immediately.
+    const handleImportSourceChoice = (choice?: string) => {
+        setShowImportSourceChoiceDialog(false);
+        if (!choice) return;
+        const mode = choice === "derivative" ? "derivative" : "edit";
+        post(`collections/importBloomSource?mode=${mode}`);
+    };
+
+    // Dialog 2 (shown only when at least one chosen book is already in the collection): the user
+    // chose to replace the existing book(s) or add the imported ones as new copies. That single
+    // choice applies to every duplicate in the batch.
     const handleImportDuplicateChoice = (choice?: string) => {
         setShowImportDuplicateDialog(false);
         if (!choice) return;
@@ -348,10 +357,10 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             icon: <ImportIcon />,
             onClick: () => {
                 handleClose();
-                // Let the user choose the file(s) first; only then ask (once) whether to edit them
-                // or make derivatives.
+                // Choose the file(s) first; then show the one dialog that fits, based on whether
+                // any chosen book is already in the collection.
                 post("collections/chooseBloomSourceFilesToImport", (r) => {
-                    if (r.data === true) setShowImportSourceChoiceDialog(true);
+                    if (r.data === true) chooseImportDialog();
                 });
             },
             addEllipsis: true,
@@ -668,7 +677,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             <MakeReaderTemplateBloomPackDialog />
             <RadioChoiceDialog
                 open={showImportSourceChoiceDialog}
-                title={importTitle}
+                title={importChoiceTitle}
                 options={[
                     { value: "edit", label: importEditChoiceLabel },
                     {
@@ -680,11 +689,19 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             />
             <RadioChoiceDialog
                 open={showImportDuplicateDialog}
-                title={importTitle}
+                title={importChoiceTitle}
                 message={importDuplicateMessage}
                 options={[
-                    { value: "replace", label: importReplaceLabel },
-                    { value: "addCopy", label: importAddCopyLabel },
+                    {
+                        value: "replace",
+                        label: importReplaceLabel,
+                        description: importReplaceDescription,
+                    },
+                    {
+                        value: "addCopy",
+                        label: importAddCopyLabel,
+                        description: importAddCopyDescription,
+                    },
                 ]}
                 onClose={handleImportDuplicateChoice}
             />

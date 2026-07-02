@@ -1,7 +1,8 @@
 import { css } from "@emotion/react";
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { Radio, RadioGroup, FormControlLabel } from "@mui/material";
+import { RadioGroup } from "@mui/material";
+import { MuiRadio } from "../react_components/muiRadio";
 import {
     BloomDialog,
     DialogTitle,
@@ -16,6 +17,7 @@ import {
 export interface IRadioChoice {
     value: string;
     label: string; // already localized
+    description?: string; // optional already-localized secondary line shown under the label
 }
 
 // A small, reusable dialog that offers a set of mutually-exclusive radio choices with OK and
@@ -65,11 +67,14 @@ export const RadioChoiceDialog: React.FunctionComponent<{
                     onChange={(e) => setChoice(e.target.value)}
                 >
                     {props.options.map((o) => (
-                        <FormControlLabel
+                        <MuiRadio
                             key={o.value}
                             value={o.value}
-                            control={<Radio />}
                             label={o.label}
+                            description={o.description}
+                            // The labels arrive already localized from the caller.
+                            alreadyLocalized={true}
+                            l10nKey=""
                         />
                     ))}
                 </RadioGroup>
