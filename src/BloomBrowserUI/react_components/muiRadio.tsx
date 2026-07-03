@@ -53,6 +53,7 @@ export const MuiRadio: React.FunctionComponent<
     // If messing with the layout, be sure you didn't break this by checking the storybook story.
     return (
         <FormControlLabel
+            disabled={props.disabled}
             css={css`
                 align-items: baseline !important; // !important needed to override MUI default
             `}

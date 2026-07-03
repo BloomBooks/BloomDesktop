@@ -478,6 +478,15 @@ namespace Bloom.CollectionTab
                         case ImportDuplicateChoice.Cancel:
                             return null;
                         case ImportDuplicateChoice.Replace:
+                            // Replacing recycles the existing book, so we must be allowed to delete
+                            // it: in a Team Collection that means it has to be checked out here. The
+                            // collection screen already disables "Replace" when any duplicate is not
+                            // (see AllChosenBloomSourceDuplicatesAreReplaceable), but guard here too
+                            // so we can never delete a book the user hasn't checked out.
+                            if (!existing.IsSaveable)
+                                throw new ApplicationException(
+                                    $"Cannot replace \"{existing.Title}\" because it is not checked out of the Team Collection."
+                                );
                             // Keep the imported book's id and recycle the existing book, but only
                             // *after* the imported book is safely in place (below); recycling first
                             // would lose the original if the move then failed. The existing book
@@ -731,6 +740,48 @@ namespace Bloom.CollectionTab
         public bool AnyChosenBloomSourceIsAlreadyInCollection()
         {
             return AnyBloomSourceIsAlreadyInCollection(_bloomSourceFilesToImport);
+        }
+
+        /// <summary>
+        /// Returns true only if every chosen .bloomSource book that is already in the collection may
+        /// currently be replaced. Replacing recycles the existing book, so in a Team Collection each
+        /// duplicate must be checked out here (BookInfo.IsSaveable); outside a Team Collection books
+        /// are always saveable. The collection screen uses this to disable the "Replace" duplicate
+        /// choice (and explain why) when any duplicate is not checked out, so the user can't delete a
+        /// book they haven't checked out. When there are no duplicates the question is moot, so this
+        /// returns true.
+        /// </summary>
+        public bool AllChosenBloomSourceDuplicatesAreReplaceable()
+        {
+            return AllBloomSourceDuplicatesAreReplaceable(_bloomSourceFilesToImport);
+        }
+
+        /// <summary>
+        /// The testable core of <see cref="AllChosenBloomSourceDuplicatesAreReplaceable"/>. Duplicates
+        /// are detected purely by bookInstanceId, exactly as in
+        /// <see cref="AnyBloomSourceIsAlreadyInCollection"/>.
+        /// </summary>
+        internal bool AllBloomSourceDuplicatesAreReplaceable(string[] paths)
+        {
+            if (paths == null || paths.Length == 0)
+                return true;
+
+            var existingById = TheOneEditableCollection
+                .GetBookInfos()
+                .Where(b => !string.IsNullOrEmpty(b.Id))
+                .GroupBy(b => b.Id)
+                .ToDictionary(g => g.Key, g => g.First());
+            foreach (var path in paths)
+            {
+                var id = ReadBookInstanceIdFromBloomSource(path);
+                if (
+                    !string.IsNullOrEmpty(id)
+                    && existingById.TryGetValue(id, out var existing)
+                    && !existing.IsSaveable
+                )
+                    return false;
+            }
+            return true;
         }
 
         /// <summary>

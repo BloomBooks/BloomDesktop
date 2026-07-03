@@ -460,6 +460,120 @@ namespace BloomTests.CollectionTab
         }
 
         [Test]
+        public void AllBloomSourceDuplicatesAreReplaceable_NoFilesChosen_ReturnsTrue()
+        {
+            // With nothing to import there is no duplicate that could block "Replace".
+            Assert.That(_testCollectionModel.AllBloomSourceDuplicatesAreReplaceable(null), Is.True);
+            Assert.That(
+                _testCollectionModel.AllBloomSourceDuplicatesAreReplaceable(new string[0]),
+                Is.True
+            );
+        }
+
+        [Test]
+        public void AllBloomSourceDuplicatesAreReplaceable_NoDuplicate_ReturnsTrue()
+        {
+            // A book that isn't already in the collection isn't a duplicate, so "Replace" is moot.
+            MakeExistingBookInCollection("Sun", Guid.NewGuid().ToString());
+            var src = MakeBloomSourceFile("Moon", Guid.NewGuid().ToString());
+
+            Assert.That(
+                _testCollectionModel.AllBloomSourceDuplicatesAreReplaceable(new[] { src }),
+                Is.True
+            );
+        }
+
+        [Test]
+        public void AllBloomSourceDuplicatesAreReplaceable_SaveableDuplicate_ReturnsTrue()
+        {
+            // Outside a Team Collection, books in the editable collection are always saveable, so a
+            // duplicate can be replaced. (The not-checked-out case that returns false requires a
+            // Team Collection; it is guarded both here and by ImportBloomSourceFileToCollectionFolder.)
+            var sharedId = Guid.NewGuid().ToString();
+            var existingFolder = MakeExistingBookInCollection("Moon", sharedId);
+            Assert.That(
+                BookMetaData.FromFolder(existingFolder).Id,
+                Is.EqualTo(sharedId),
+                "test setup: the existing book should carry the shared id"
+            );
+            var src = MakeBloomSourceFile("Moon", sharedId);
+
+            Assert.That(
+                _testCollectionModel.AllBloomSourceDuplicatesAreReplaceable(new[] { src }),
+                Is.True
+            );
+        }
+
+        // A save context that reports a book can't currently be saved, standing in for a
+        // Team-Collection book that isn't checked out here (so we can test that path without
+        // setting up a real Team Collection).
+        private class NotCheckedOutSaveContext : ISaveContext
+        {
+            public bool CanSaveChanges(BookInfo info) => false;
+
+            public bool CanChangeBookInstanceId(BookInfo info) => false;
+        }
+
+        [Test]
+        public void AllBloomSourceDuplicatesAreReplaceable_DuplicateNotCheckedOut_ReturnsFalse()
+        {
+            var sharedId = Guid.NewGuid().ToString();
+            var existingFolder = MakeExistingBookInCollection("Moon", sharedId);
+            var src = MakeBloomSourceFile("Moon", sharedId);
+
+            // Load the collection, then swap the existing book's info for one that reports it can't
+            // be saved, exactly as a Team-Collection book that isn't checked out here would.
+            var collection = _testCollectionModel.TheOneEditableCollection;
+            Assert.That(
+                collection.GetBookInfos().First(b => b.Id == sharedId).IsSaveable,
+                Is.True,
+                "test setup: the book should start out saveable (this is not a Team Collection)"
+            );
+            collection.UpdateBookInfo(
+                new BookInfo(existingFolder, true, new NotCheckedOutSaveContext())
+            );
+            Assert.That(
+                collection.GetBookInfos().First(b => b.Id == sharedId).IsSaveable,
+                Is.False,
+                "test setup: the swapped-in book should report it is not saveable"
+            );
+
+            Assert.That(
+                _testCollectionModel.AllBloomSourceDuplicatesAreReplaceable(new[] { src }),
+                Is.False,
+                "a duplicate that isn't checked out must not be replaceable"
+            );
+        }
+
+        [Test]
+        public void ImportBloomSource_Replace_NotCheckedOut_Throws()
+        {
+            // Safety net: even if the UI's "Replace" guard were bypassed, importing must never
+            // delete a book that isn't checked out.
+            var sharedId = Guid.NewGuid().ToString();
+            var existingFolder = MakeExistingBookInCollection("Moon", sharedId);
+            var src = MakeBloomSourceFile("Moon", sharedId);
+
+            var collection = _testCollectionModel.TheOneEditableCollection;
+            collection.GetBookInfos(); // build the cache before we swap an entry
+            collection.UpdateBookInfo(
+                new BookInfo(existingFolder, true, new NotCheckedOutSaveContext())
+            );
+
+            Assert.Throws<ApplicationException>(() =>
+                _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
+                    src,
+                    title => CollectionModel.ImportDuplicateChoice.Replace
+                )
+            );
+            Assert.That(
+                Directory.Exists(existingFolder),
+                Is.True,
+                "the not-checked-out book must not have been deleted"
+            );
+        }
+
+        [Test]
         public void ImportBloomSource_CorruptFile_Throws()
         {
             var bad = Path.Combine(_folder.Path, "corrupt.bloomSource");

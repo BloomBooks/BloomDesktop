@@ -18,6 +18,7 @@ export interface IRadioChoice {
     value: string;
     label: string; // already localized
     description?: string; // optional already-localized secondary line shown under the label
+    disabled?: boolean; // when true the choice can't be selected (e.g. not currently allowed)
 }
 
 // A small, reusable dialog that offers a set of mutually-exclusive radio choices with OK and
@@ -72,6 +73,7 @@ export const RadioChoiceDialog: React.FunctionComponent<{
                             value={o.value}
                             label={o.label}
                             description={o.description}
+                            disabled={o.disabled}
                             // The labels arrive already localized from the caller.
                             alreadyLocalized={true}
                             l10nKey=""

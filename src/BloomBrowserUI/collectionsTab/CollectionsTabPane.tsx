@@ -208,6 +208,9 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         useState(false);
     const [showImportDuplicateDialog, setShowImportDuplicateDialog] =
         useState(false);
+    // Whether the "Replace" duplicate choice is allowed for this batch. In a Team Collection a book
+    // can only be replaced if it is checked out here; when any duplicate isn't, Replace is disabled.
+    const [importCanReplace, setImportCanReplace] = useState(true);
 
     const importChoiceTitle = useL10n(
         "Import books",
@@ -241,6 +244,10 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         "The current copies will be overwritten.",
         "CollectionTab.ImportBloomSource.ReplaceDescription",
     );
+    const importReplaceNeedsCheckoutDescription = useL10n(
+        "All books must be checked out",
+        "CollectionTab.ImportBloomSource.ReplaceNeedsCheckout",
+    );
     const importAddCopyLabel = useL10n(
         "Add them as new copies",
         "CollectionTab.ImportBloomSource.AddCopy",
@@ -253,10 +260,18 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
     // Decide which single dialog to show after the file(s) have been chosen: Dialog 2 (replace vs.
     // add-copy) if any chosen book is already in the collection, otherwise Dialog 1 (edit vs.
     // derivative).
+    //
+    // Note that when a chosen book is already in the collection we deliberately do NOT offer the
+    // edit-vs-derivative choice: the duplicate dialog always imports in edit mode, so you can't
+    // make a derivative of a book that's already in your collection. We couldn't think of a
+    // plausible scenario where you have a book and a true derivative of it in the same collection,
+    // so this path isn't worth the extra complexity. Easy to reverse if that turns out to be wrong.
     const chooseImportDialog = () => {
-        post("collections/anyChosenBloomSourceAlreadyInCollection", (r) => {
-            if (r.data === true) setShowImportDuplicateDialog(true);
-            else setShowImportSourceChoiceDialog(true);
+        post("collections/bloomSourceImportDuplicateInfo", (r) => {
+            if (r.data.anyDuplicates) {
+                setImportCanReplace(r.data.canReplace);
+                setShowImportDuplicateDialog(true);
+            } else setShowImportSourceChoiceDialog(true);
         });
     };
 
@@ -708,7 +723,10 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                     {
                         value: "replace",
                         label: importReplaceLabel,
-                        description: importReplaceDescription,
+                        description: importCanReplace
+                            ? importReplaceDescription
+                            : importReplaceNeedsCheckoutDescription,
+                        disabled: !importCanReplace,
                     },
                     {
                         value: "addCopy",

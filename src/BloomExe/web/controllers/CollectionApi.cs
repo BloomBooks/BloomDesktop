@@ -322,13 +322,20 @@ namespace Bloom.web.controllers
             );
 
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "anyChosenBloomSourceAlreadyInCollection/",
+                kApiUrlPart + "bloomSourceImportDuplicateInfo/",
                 (request) =>
                 {
-                    // Replies true if any book the user chose to import is already in the collection,
-                    // so the collection screen knows whether to ask how duplicates should be handled.
-                    request.ReplyWithBoolean(
-                        _collectionModel.AnyChosenBloomSourceIsAlreadyInCollection()
+                    // Tells the collection screen what it needs to pick and configure the duplicate
+                    // dialog: whether any book the user chose to import is already in the collection
+                    // (so it knows whether to ask how duplicates should be handled) and, when it is,
+                    // whether every such duplicate may currently be replaced (false when, in a Team
+                    // Collection, any is not checked out here, so the screen disables "Replace").
+                    request.ReplyWithJson(
+                        new
+                        {
+                            anyDuplicates = _collectionModel.AnyChosenBloomSourceIsAlreadyInCollection(),
+                            canReplace = _collectionModel.AllChosenBloomSourceDuplicatesAreReplaceable(),
+                        }
                     );
                 },
                 true

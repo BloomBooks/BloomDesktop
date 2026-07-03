@@ -837,6 +837,11 @@
         <note>Secondary line under the "Replace the existing books" choice in the import duplicate prompt.</note>
         <note>ID: CollectionTab.ImportBloomSource.ReplaceDescription</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.ReplaceNeedsCheckout" translate="no">
+        <source xml:lang="en">All books must be checked out</source>
+        <note>Secondary line under the "Replace the existing books" choice in the import duplicate prompt, shown (and the choice disabled) when the collection is a Team Collection and one or more of the books being replaced is not checked out.</note>
+        <note>ID: CollectionTab.ImportBloomSource.ReplaceNeedsCheckout</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.ImportBloomSource.AddCopy" translate="no">
         <source xml:lang="en">Add them as new copies</source>
         <note>Radio-button choice in the import duplicate prompt: keep the existing book(s) and add the imported one(s) as new copies.</note>
