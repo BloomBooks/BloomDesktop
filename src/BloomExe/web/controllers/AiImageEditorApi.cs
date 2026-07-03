@@ -99,6 +99,10 @@ namespace Bloom.web.controllers
             _bookSelection = bookSelection;
         }
 
+        /// <summary>
+        /// Registers all of the AI Image Editor's API endpoints (launch, file persistence,
+        /// commit, credentials, OAuth, external-url) with Bloom's API handler.
+        /// </summary>
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler(
