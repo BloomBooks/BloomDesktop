@@ -21,6 +21,14 @@ namespace Bloom.TeamCollection
         CollectionLock Lock { get; }
         bool CheckConnection();
         void ConnectToTeamCollection(string repoFolderParentPath, string collectionId);
+
+        /// <summary>
+        /// Connect the current collection to a cloud-backed Team Collection identified
+        /// by <paramref name="collectionId"/>.  Not yet implemented — throws
+        /// <see cref="NotImplementedException"/> until task 01+ is complete.
+        /// </summary>
+        void ConnectToCloudCollection(string collectionId);
+
         string PlannedRepoFolderPath(string repoFolderParentPath);
 
         bool OkToEditCollectionSettings { get; }
@@ -264,15 +272,10 @@ namespace Bloom.TeamCollection
                         {
                             try
                             {
-                                var repoFolderPath = RepoFolderPathFromLinkPath(
-                                    tempCollectionLinkPath
-                                );
-                                var tempCollection = new FolderTeamCollection(
-                                    this,
-                                    _localCollectionFolder,
-                                    repoFolderPath,
-                                    bookCollectionHolder: _bookCollectionHolder,
-                                    collectionLock: Lock
+                                var tempLink = TeamCollectionLink.FromFile(tempCollectionLinkPath);
+                                var tempCollection = CreateFolderTeamCollection(
+                                    tempLink,
+                                    bookCollectionHolder
                                 );
                                 var problemWithConnection = tempCollection.CheckConnection();
                                 if (problemWithConnection == null)
@@ -335,17 +338,14 @@ namespace Bloom.TeamCollection
             var localCollectionLinkPath = GetTcLinkPathFromLcPath(_localCollectionFolder);
             if (RobustFile.Exists(localCollectionLinkPath))
             {
-                string repoFolderPath = null;
+                // repoDescription is used when falling back to a DisconnectedTeamCollection.
+                // For folder TCs it is the folder path; for cloud TCs it is the cloud URI.
+                string repoDescription = null;
                 try
                 {
-                    repoFolderPath = RepoFolderPathFromLinkPath(localCollectionLinkPath);
-                    CurrentCollection = new FolderTeamCollection(
-                        this,
-                        _localCollectionFolder,
-                        repoFolderPath,
-                        bookCollectionHolder: _bookCollectionHolder,
-                        collectionLock: Lock
-                    ); // will be replaced if CheckConnection fails
+                    var link = TeamCollectionLink.FromFile(localCollectionLinkPath);
+                    repoDescription = link?.RepoFolderPath ?? link?.ToFileContent();
+                    CurrentCollection = CreateTeamCollectionFromLink(link, bookCollectionHolder); // will be replaced if CheckConnection fails
                     // BL-10704: We set this to the CurrentCollection BEFORE checking the connection,
                     // so that there will be a valid MessageLog if we need it during CheckConnection().
                     // If CheckConnection() fails, it will reset this to a DisconnectedTeamCollection.
@@ -384,12 +384,12 @@ namespace Bloom.TeamCollection
                     // Create a DisconnectedTeamCollection so we still have a TC object that prevents
                     // undesirable operations like editing un-checked-out books. This handles cases where
                     // the TC initialization fails, not just connection problems.
-                    if (repoFolderPath != null)
+                    if (repoDescription != null)
                     {
                         var disconnectedTC = new DisconnectedTeamCollection(
                             this,
                             _localCollectionFolder,
-                            repoFolderPath
+                            repoDescription
                         );
                         disconnectedTC.SocketServer = SocketServer;
                         disconnectedTC.TCManager = this;
@@ -416,9 +416,61 @@ namespace Bloom.TeamCollection
             }
         }
 
+        /// <summary>
+        /// Reads the repo folder path from the link file at <paramref name="localCollectionLinkPath"/>.
+        /// Preserves the existing trimming behavior.
+        /// </summary>
         public static string RepoFolderPathFromLinkPath(string localCollectionLinkPath)
         {
             return RobustFile.ReadAllText(localCollectionLinkPath).Trim();
+        }
+
+        /// <summary>
+        /// Factory: create the appropriate <see cref="TeamCollection"/> subclass for the given
+        /// parsed <see cref="TeamCollectionLink"/>. For folder links this returns a
+        /// <see cref="FolderTeamCollection"/>; cloud links will be handled once task 01+ lands.
+        /// </summary>
+        /// <param name="link">Parsed link; must not be null.</param>
+        /// <param name="bookCollectionHolder">Passed through to the collection constructor.</param>
+        private TeamCollection CreateTeamCollectionFromLink(
+            TeamCollectionLink link,
+            BookCollectionHolder bookCollectionHolder
+        )
+        {
+            if (link == null)
+                throw new ArgumentNullException(nameof(link));
+
+            if (link.IsFolder)
+                return CreateFolderTeamCollection(link, bookCollectionHolder);
+
+            // Cloud support lands in task 01+.
+            throw new NotImplementedException(
+                $"Cloud-backed Team Collections are not yet implemented (collectionId={link.CloudCollectionId})."
+            );
+        }
+
+        /// <summary>
+        /// Creates a <see cref="FolderTeamCollection"/> for a folder-backed link.
+        /// </summary>
+        /// <param name="link">Must be a folder link.</param>
+        /// <param name="bookCollectionHolder">Passed through to the collection constructor.</param>
+        private FolderTeamCollection CreateFolderTeamCollection(
+            TeamCollectionLink link,
+            BookCollectionHolder bookCollectionHolder
+        )
+        {
+            if (link == null)
+                throw new ArgumentNullException(nameof(link));
+            if (!link.IsFolder)
+                throw new ArgumentException("Expected a folder-backed link.", nameof(link));
+
+            return new FolderTeamCollection(
+                this,
+                _localCollectionFolder,
+                link.RepoFolderPath,
+                bookCollectionHolder: bookCollectionHolder,
+                collectionLock: Lock
+            );
         }
 
         /// <summary>
@@ -497,6 +549,10 @@ namespace Bloom.TeamCollection
 
         public BloomWebSocketServer SocketServer => _webSocketServer;
 
+        /// <summary>
+        /// Connect the current collection to a new folder-backed Team Collection stored under
+        /// <paramref name="repoFolderParentPath"/>.
+        /// </summary>
         public void ConnectToTeamCollection(string repoFolderParentPath, string collectionId)
         {
             var repoFolderPath = PlannedRepoFolderPath(repoFolderParentPath);
@@ -504,19 +560,26 @@ namespace Bloom.TeamCollection
             // The creator of a TC is its first and, for now, usually only administrator.
             Settings.Administrators = new[] { CurrentUser };
             Settings.Save();
-            var newTc = new FolderTeamCollection(
-                this,
-                _localCollectionFolder,
-                repoFolderPath,
-                bookCollectionHolder: _bookCollectionHolder,
-                collectionLock: Lock
-            );
+            var link = TeamCollectionLink.ForFolder(repoFolderPath);
+            var newTc = CreateFolderTeamCollection(link, _bookCollectionHolder);
             newTc.CollectionId = collectionId;
             newTc.SocketServer = SocketServer;
             newTc.TCManager = this;
             newTc.SetupTeamCollectionWithProgressDialog(repoFolderPath);
             CurrentCollection = newTc;
             CurrentCollectionEvenIfDisconnected = newTc;
+        }
+
+        /// <summary>
+        /// Connect the current collection to a cloud-backed Team Collection identified by
+        /// <paramref name="collectionId"/>.  Not yet implemented — throws
+        /// <see cref="NotImplementedException"/> until task 01+ is complete.
+        /// </summary>
+        public void ConnectToCloudCollection(string collectionId)
+        {
+            throw new NotImplementedException(
+                "Cloud-backed Team Collections are not yet implemented."
+            );
         }
 
         public string PlannedRepoFolderPath(string repoFolderParentPath)

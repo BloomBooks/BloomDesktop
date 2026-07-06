@@ -13,6 +13,7 @@ namespace Bloom.SubscriptionAndFeatures
         Widget, //HTML5 Widget
         Spreadsheet,
         TeamCollection,
+        CloudTeamCollection, // S3+Supabase backed; experimental until GA
         ViewBookHistory, // Sort of tied to team collections now, but nothing says it has to be in the future...
         Motion,
         Music,
@@ -182,6 +183,14 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.TeamCollection,
                 SubscriptionTier = SubscriptionTier.LocalCommunity,
+            },
+            new FeatureInfo
+            {
+                // Cloud-backed Team Collections (S3 + Supabase). Experimental until GA;
+                // the feature flag must be enabled before any cloud TC UI becomes visible.
+                Feature = FeatureName.CloudTeamCollection,
+                SubscriptionTier = SubscriptionTier.LocalCommunity,
+                ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kCloudTeamCollections,
             },
             new FeatureInfo
             {

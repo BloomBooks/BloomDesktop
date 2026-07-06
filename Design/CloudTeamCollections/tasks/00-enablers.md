@@ -9,19 +9,19 @@ folder backend.
 `TeamCollectionManager.cs`; new `TeamCollectionLink.cs`.
 
 ## Steps
-- [ ] `TeamCollectionLink` class: parse/write folder-path and `cloud://sil.bloom/collection/<id>`
+- [x] `TeamCollectionLink` class: parse/write folder-path and `cloud://sil.bloom/collection/<id>`
       forms of `TeamCollectionLink.txt`; error on both-forms-present.
-- [ ] Backend factory replacing the three hardcoded `new FolderTeamCollection(...)` sites
+- [x] Backend factory replacing the three hardcoded `new FolderTeamCollection(...)` sites
       (manager ctor ~line 335–416, `ConnectToTeamCollection` ~500, subscription-reconnect
       handler ~260–306). Add `ConnectToCloudCollection(collectionId)` to `ITeamCollectionManager`
       (throws NotImplemented for now).
-- [ ] Virtual lock seams: `protected virtual bool TryLockInRepo(bookName)` /
+- [x] Virtual lock seams: `protected virtual bool TryLockInRepo(bookName)` /
       `UnlockInRepo(bookName, force)`; folder overrides preserve current read-modify-write
       behavior verbatim; `AttemptLock`/`UnlockBook`/`ForceUnlock` route through them.
-- [ ] Capability flags: virtual `SupportsVersionHistory` / `SupportsSharingUi` /
+- [x] Capability flags: virtual `SupportsVersionHistory` / `SupportsSharingUi` /
       `RequiresSignIn` (folder: false/false/false).
-- [ ] Audit + document the ~10 `WriteBookStatus` callers (notes for task 05's diff-dispatch).
-- [ ] Feature flag: cloud sharing behind the experimental-features setting (registration only;
+- [x] Audit + document the ~10 `WriteBookStatus` callers (notes for task 05's diff-dispatch).
+- [x] Feature flag: cloud sharing behind the experimental-features setting (registration only;
       no UI yet).
 
 ## Acceptance

@@ -559,6 +559,27 @@ namespace Bloom.TeamCollection
         public virtual bool IsDisconnected => false;
 
         /// <summary>
+        /// True if this backend supports browsing/restoring version history.
+        /// The folder backend returns false; the cloud backend will return true once implemented.
+        /// UI should branch on this flag rather than testing the concrete type.
+        /// </summary>
+        public virtual bool SupportsVersionHistory => false;
+
+        /// <summary>
+        /// True if this backend supports the Sharing panel (approved-accounts management).
+        /// The folder backend returns false; the cloud backend will return true once implemented.
+        /// UI should branch on this flag rather than testing the concrete type.
+        /// </summary>
+        public virtual bool SupportsSharingUi => false;
+
+        /// <summary>
+        /// True if this backend requires the user to be signed in before performing TC operations.
+        /// The folder backend returns false; the cloud backend will return true once implemented.
+        /// UI should branch on this flag rather than testing the concrete type.
+        /// </summary>
+        public virtual bool RequiresSignIn => false;
+
+        /// <summary>
         /// Common part of getting book status as recorded in the repo, or if it is not in the repo
         /// but there is such a book locally, treat as locked by FakeUserIndicatingNewBook.
         /// </summary>
@@ -696,7 +717,7 @@ namespace Bloom.TeamCollection
         // Unlock the book, making it available for anyone to edit.
         public void UnlockBook(string bookName)
         {
-            WriteBookStatus(bookName, GetStatus(bookName).WithLockedBy(null));
+            UnlockInRepo(bookName, force: false);
         }
 
         // Lock the book, making it available for the specified user to edit. Return true if successful.
@@ -714,7 +735,7 @@ namespace Bloom.TeamCollection
                     TeamCollectionManager.CurrentUserFirstName,
                     TeamCollectionManager.CurrentUserSurname
                 );
-                WriteBookStatus(bookName, status);
+                TryLockInRepo(bookName, status);
             }
 
             // If we succeeded, we definitely want various things to update to show it.
@@ -728,10 +749,41 @@ namespace Bloom.TeamCollection
 
         public void ForceUnlock(string bookName)
         {
-            var status = GetStatus(bookName);
-            status = status.WithLockedBy(null);
-            WriteBookStatus(bookName, status);
+            UnlockInRepo(bookName, force: true);
             UpdateBookStatus(bookName, true);
+        }
+
+        /// <summary>
+        /// Virtual seam for the lock operation. The base (folder) implementation performs a
+        /// read-modify-write of the book status in the repo. Cloud subclasses will override
+        /// this with a single conditional RPC so the checkout is race-free.
+        /// </summary>
+        /// <param name="bookName">The folder name of the book to lock.</param>
+        /// <param name="newStatus">The status object with the lock fields already set.</param>
+        /// <returns>
+        /// True if the lock was successfully recorded; false if the book was already locked
+        /// by someone else (the caller should re-read status to find out who won).
+        /// The folder implementation always returns true because it writes unconditionally.
+        /// </returns>
+        protected virtual bool TryLockInRepo(string bookName, BookStatus newStatus)
+        {
+            WriteBookStatus(bookName, newStatus);
+            return true;
+        }
+
+        /// <summary>
+        /// Virtual seam for the unlock operation. The base (folder) implementation performs a
+        /// read-modify-write of the book status in the repo. Cloud subclasses will override
+        /// this with a single RPC.
+        /// </summary>
+        /// <param name="bookName">The folder name of the book to unlock.</param>
+        /// <param name="force">
+        /// When true the unlock is a forced checkout reversal (admin operation); when false it
+        /// is a normal unlock/undo-checkout.
+        /// </param>
+        protected virtual void UnlockInRepo(string bookName, bool force)
+        {
+            WriteBookStatus(bookName, GetStatus(bookName).WithLockedBy(null));
         }
 
         // Get the email of the user, if any, who has the book locked. Returns null if not locked.
