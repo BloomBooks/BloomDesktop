@@ -66,24 +66,17 @@ services:
               echo '==> Enabling object versioning...'
               mc version enable local/bloom-teams-local
 
-              echo '==> Applying lifecycle policy (noncurrent expiry 7d, abort incomplete multipart 7d)...'
-              printf '{
-                \"Rules\": [
-                  {
-                    \"ID\": \"abort-incomplete-multipart\",
-                    \"Status\": \"Enabled\",
-                    \"Filter\": {\"Prefix\": \"\"},
-                    \"AbortIncompleteMultipartUpload\": {\"DaysAfterInitiation\": 7}
-                  },
-                  {
-                    \"ID\": \"expire-noncurrent-versions\",
-                    \"Status\": \"Enabled\",
-                    \"Filter\": {\"Prefix\": \"tc/\"},
-                    \"NoncurrentVersionExpiration\": {\"NoncurrentDays\": 7}
-                  }
-                ]
-              }' > /tmp/lifecycle.json
-              mc ilm import local/bloom-teams-local < /tmp/lifecycle.json
+              echo '==> Applying lifecycle policy (noncurrent-version expiry 7d)...'
+              # Idempotency via shell 'case' — the mc image has no grep.
+              existing=$$(mc ilm rule ls local/bloom-teams-local 2>/dev/null || true)
+              case \"$$existing\" in
+                *tc/*) echo '    lifecycle rule already present' ;;
+                *) mc ilm rule add --noncurrent-expire-days 7 --prefix 'tc/' local/bloom-teams-local ;;
+              esac
+              # Dev-only gap vs production: S3's AbortIncompleteMultipartUpload rule is not
+              # settable via 'mc ilm rule add' (XML import proved brittle through the compose
+              # quoting layers). MinIO's built-in stale-upload cleanup covers dev;
+              # server/provision-aws sets the real abort-multipart rule on AWS.
 
               echo '==> MinIO init complete.'
               echo ''

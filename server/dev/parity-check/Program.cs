@@ -325,13 +325,15 @@ internal static class Program
     /// - ServiceURL points at the local MinIO endpoint.
     /// - ForcePathStyle = true (MinIO uses path-style: http://host:port/bucket/key).
     /// - Region is set to us-east-1 (MinIO accepts this; the actual value does not matter).
-    /// - SessionToken is set to "devmode" to mirror the credential shape Bloom uses
-    ///   in production (SessionAWSCredentials always has all three fields populated).
+    /// - Static credentials with NO session token: MinIO VALIDATES session tokens (they are
+    ///   JWTs minted by its own STS), so a fabricated token is rejected with
+    ///   "security token invalid". Dev-mode edge functions must therefore either mint real
+    ///   temporary creds via MinIO's AssumeRole or return static creds with no token —
+    ///   see DEV-CREDENTIALS.md.
     /// </summary>
     private static AmazonS3Client CreateS3Client()
     {
-        // Use "devmode" as the session token, mirroring what the edge function returns.
-        var credentials = new SessionAWSCredentials(AccessKey, SecretKey, "devmode");
+        var credentials = new BasicAWSCredentials(AccessKey, SecretKey);
 
         var config = new AmazonS3Config
         {

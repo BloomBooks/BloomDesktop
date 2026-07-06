@@ -25,11 +25,16 @@
       log_event.
 - [x] Events: `BookHistoryEventType` numeric parity + incident types (WorkPreservedLocally…).
 
-## Acceptance
-- pgTAP suite authored, unrun — no Docker on this machine. Run with `supabase start` + `supabase test db`.
+## Acceptance — MET
+- pgTAP suite **GREEN: 42/42 (6 Jul 2026, `supabase test db` on local stack via Podman)**.
   Covers: RLS matrix; checkout concurrency (two racing calls, exactly one winner); claiming requires
   verified email; last-admin guard; get_changes cursor; tombstone/undelete; live-name uniqueness
   (tombstoned names reusable).
+  Orchestrator fixes to get green: plan count corrected (60 → 42 actual assertions); RLS
+  assertions now run under `SET LOCAL ROLE authenticated` — the suite's postgres superuser
+  BYPASSES row security, so unswitched RLS tests pass vacuously (keep this pattern for all
+  future RLS assertions). Migrations + seed also verified live: RPC round-trip
+  (create_collection → my_collections) via PostgREST with Content-Profile: tc succeeded.
 
 **Agent notes**: Sonnet. All timestamps `now()` server-side. User ids are text, not uuid —
 Firebase UIDs are ~28 chars (local-GoTrue dev users are uuids; text covers both).

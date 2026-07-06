@@ -14,7 +14,7 @@
 BEGIN;
 
 -- Load pgTAP
-SELECT plan(60);   -- update count when tests are added/removed
+SELECT plan(42);   -- update count when tests are added/removed
 
 -- =============================================================================
 -- 0. Sanity: schema and key tables exist
@@ -45,6 +45,8 @@ SELECT has_function('tc', 'checkout_book',        'tc.checkout_book() exists');
 -- We impersonate JWT callers via set_config so SECURITY DEFINER functions
 -- can read auth.jwt().  In real Supabase these come from the auth layer.
 
+CREATE SCHEMA IF NOT EXISTS tests;
+
 -- Helper: set a fake JWT so auth.jwt() returns a known sub/email
 CREATE OR REPLACE FUNCTION tests.set_jwt(
     p_sub   text,
@@ -74,8 +76,6 @@ BEGIN
     );
 END;
 $$;
-
-CREATE SCHEMA IF NOT EXISTS tests;
 
 -- =============================================================================
 -- 1. jwt_email_verified()
@@ -130,7 +130,10 @@ SELECT lives_ok(
     '2a: create_collection succeeds for authenticated user'
 );
 
--- Alice can see her collection via RLS
+-- Alice can see her collection via RLS. Must run as the authenticated role — the suite's
+-- postgres superuser bypasses RLS, which would make this assertion pass vacuously.
+SET LOCAL ROLE authenticated;
+
 SELECT ok(
     (SELECT count(*) = 1 FROM tc.collections WHERE id = 'a0000000-0000-0000-0000-000000000001'),
     '2b: Alice can SELECT her collection (RLS: is_member)'
@@ -144,6 +147,8 @@ SELECT ok(
     '2c: Alice is recorded as admin of her collection'
 );
 
+RESET ROLE;
+
 -- =============================================================================
 -- 3. RLS matrix: non-member cannot read
 -- =============================================================================
@@ -156,6 +161,12 @@ BEGIN
         true);
 END;
 $$;
+
+-- RLS only applies to non-superuser roles: the suite runs as postgres, which BYPASSES
+-- row security, so these direct-table assertions must run as the authenticated role
+-- (the role PostgREST uses for JWT-carrying requests). RESET ROLE afterwards so later
+-- fixture writes run as postgres again.
+SET LOCAL ROLE authenticated;
 
 SELECT ok(
     (SELECT count(*) = 0 FROM tc.collections WHERE id = 'a0000000-0000-0000-0000-000000000001'),
@@ -173,6 +184,8 @@ SELECT ok(
      WHERE collection_id = 'a0000000-0000-0000-0000-000000000001'),
     '3c: Non-member Bob cannot SELECT events in Alice''s collection (RLS)'
 );
+
+RESET ROLE;
 
 -- =============================================================================
 -- 4. claim_memberships requires verified email

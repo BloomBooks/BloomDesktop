@@ -41,21 +41,20 @@ two-instance testing, needs nothing outside this machine.
       back the stored checksum server-side, (c) capture a version-id on PUT, and (d) GET by
       (key, versionId). If any fail, record the fallback (e.g. verify sha256 via a HEAD +
       metadata convention) as a dev-mode-only deviation in server/dev/README.md.
-      **AUTHORED; BUILD VERIFIED (`dotnet build` clean on dotnet 10); UNRUN** — running
-      requires MinIO (Docker Desktop not yet installed on authoring machine). Run
-      `dotnet run --project server/dev/parity-check/ParityCheck.csproj` once Docker is up.
-- [ ] *(AUTHORED-BUT-UNRUN)* `server/dev/smoke.ps1`: stack up → sign up a random user →
+      **RUN 6 Jul 2026: 4/4 PASS** (after an orchestrator fix: MinIO VALIDATES session
+      tokens, so the tool must use BasicAWSCredentials, not a fabricated token —
+      DEV-CREDENTIALS.md spec corrected accordingly: dev mode uses MinIO AssumeRole).
+- [x] `server/dev/smoke.ps1`: stack up → sign up a random user →
       create a bucket object with a version-id → call one deployed edge function → report green.
-      Script is written and ready; requires Docker Desktop + Supabase CLI + Deno installed.
+      **GREEN 6 Jul 2026** (edge-function step reports reachable/404 until task 02 deploys).
 
-## Acceptance
-- Fresh clone + Docker: `README.md` steps bring up the full stack; `smoke` script green.
-  *(authored; unrun — see smoke.ps1 note above)*
-- Parity spike results recorded (pass, or documented fallback).
-  *(authored + compiled; unrun — see parity spike note above)*
-- Seeded users can sign in via plain HTTP calls to local GoTrue and get a JWT whose claims
-  satisfy `tc.jwt_email_verified()` (coordinate the helper with 01).
-  *(seed.sql authored; runtime verification requires Supabase CLI)*
+## Acceptance — ALL MET 6 Jul 2026, on Podman 5.8.3 (rootful) instead of Docker Desktop
+- Fresh clone + container runtime: `README.md` steps bring up the full stack; smoke green. ✅
+  (README now documents the verified Podman recipe and the bind-mount-directory quirk.)
+- Parity spike results recorded: **4/4 PASS**, results table in DEV-CREDENTIALS.md. ✅
+- Seeded users sign in via plain HTTP to local GoTrue (verified: admin@dev.local →
+  JWT with sub/email; RPC round-trip create_collection + my_collections succeeded,
+  satisfying `tc.jwt_email_verified()` via the role=authenticated path). ✅
 
 **Agent notes**: Sonnet. Nothing in this task touches Bloom application code. Keep everything
 idempotent and resettable — E2E (09) will reuse these fixtures for per-test resets.

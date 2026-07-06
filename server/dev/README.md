@@ -16,45 +16,60 @@ infrastructure locally — no AWS, no hosted Supabase, no internet connection re
 
 Install all three before proceeding.
 
-### Docker Desktop (required for MinIO and Supabase)
+### A container runtime (required for MinIO and Supabase)
 
-Download: https://www.docker.com/products/docker-desktop/
+Any Docker-API-compatible runtime works. Two verified options:
 
-Windows (winget):
-```powershell
-winget install Docker.DockerDesktop
-```
+**Podman Desktop (free/open-source — no licensing constraints; the verified reference
+setup as of Jul 2026):**
+1. Install Podman Desktop (https://podman-desktop.io or `winget install RedHat.PodmanDesktop`).
+2. In its onboarding, install the **Podman** engine extension and the **Compose** extension
+   (skip kubectl). Let it create and start the Podman machine (WSL2; may require a reboot).
+3. The machine must be **rootful** (Supabase CLI requirement). Podman Desktop's default on
+   Windows is rootful; verify with
+   `podman machine inspect --format "{{.Rootful}}"` → `true`
+   (fix with `podman machine stop; podman machine set --rootful; podman machine start`).
+4. Podman Desktop's Docker-compatibility mode exposes `\\.\pipe\docker_engine`, so the
+   Supabase CLI and docker-compose work with no `DOCKER_HOST` configuration. If tools cannot
+   connect, set `DOCKER_HOST=npipe:////./pipe/podman-machine-default`.
 
-After install, start Docker Desktop and wait for it to show "Engine running".
+Podman quirk to know: unlike Docker, Podman does NOT auto-create missing host directories
+for bind mounts — it fails with `statfs ...: no such file or directory`. The repo commits
+`.gitkeep` files in every bind-mounted directory (`server/dev/minio-data/`,
+`supabase/snippets/`, `supabase/functions/`) so fresh clones just work; if you add a new
+bind mount, commit its directory too.
+
+**Docker Desktop** (`winget install Docker.DockerDesktop`): simplest, but requires a paid
+subscription for organizations over 250 employees — check SIL licensing first. After
+install, start it and wait for "Engine running".
 
 ### Supabase CLI
 
-Windows (winget):
+Not on winget/not supported via global npm *officially*, but the npm global install is the
+path verified here and works fine:
 ```powershell
-winget install Supabase.CLI
+npm install -g supabase
 ```
-
-Or via Scoop:
-```powershell
-scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
-scoop install supabase
-```
+(Or via Scoop if you have it: `scoop bucket add supabase
+https://github.com/supabase/scoop-bucket.git; scoop install supabase`.)
 
 Verify: `supabase --version`  (expect 2.x or later)
 
-### Deno (required for `supabase functions serve`)
+### Deno (required for `supabase functions serve` and edge-function tests)
 
-Windows (PowerShell):
 ```powershell
-irm https://deno.land/install.ps1 | iex
+npm install -g deno
 ```
-
-Or via winget:
-```powershell
-winget install DenoLand.Deno
-```
+(Deno 2+ ships officially on npm. Alternatively `winget install DenoLand.Deno`.)
 
 Verify: `deno --version`
+
+### docker-compose (if your runtime did not bundle it)
+
+Podman Desktop's Compose extension provides it; otherwise:
+```powershell
+winget install Docker.DockerCompose
+```
 
 ---
 

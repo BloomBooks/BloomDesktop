@@ -17,14 +17,29 @@ NOT wired to STS and does not support `AssumeRole`. The client code (`BloomS3Cli
 `TransferUtility`) must still receive credentials in exactly the STS response shape so that
 it does not need to know whether it is talking to MinIO or AWS.
 
-## Solution: static MinIO credentials in STS shape
+## Solution: MinIO AssumeRole credentials in STS shape
+
+> **Empirical correction (6 Jul 2026, parity spike):** an earlier draft of this spec had
+> dev mode return the static root credentials with a fabricated `sessionToken: "devmode"`.
+> That DOES NOT WORK: MinIO validates the `X-Amz-Security-Token` header (session tokens
+> are JWTs minted by its own STS) and rejects fabricated ones with
+> `The security token included in the request is invalid`. Dev mode must therefore mint
+> REAL temporary credentials via MinIO's AssumeRole STS API — which is also better parity.
 
 When the edge function detects dev mode (i.e., the `BLOOM_CLOUDTC_AUTH_MODE` env var is
 `dev`, or equivalently the `BLOOM_DEV_MODE` secret is set to `true` in the Supabase
-project secrets for the local instance), it skips the STS call and returns the well-known
-MinIO root credentials directly.
+project secrets for the local instance), it calls **MinIO's AssumeRole endpoint** instead
+of AWS STS. MinIO implements the standard `AssumeRole` action on its main endpoint,
+authenticated with the root credentials:
 
-The response body is **identical in shape** to a real STS `AssumeRole` response:
+```
+POST http://minio:9000/?Action=AssumeRole&Version=2011-06-15&DurationSeconds=3600
+(AWS SigV4-signed with minioadmin/minioadmin)
+```
+
+MinIO returns genuine temporary credentials (`AccessKeyId`, `SecretAccessKey`,
+`SessionToken`, `Expiration`) that it will accept on subsequent requests. The edge
+function forwards them in the **identical shape** as the production STS response:
 
 ```json
 {
@@ -35,10 +50,10 @@ The response body is **identical in shape** to a real STS `AssumeRole` response:
     "region": "us-east-1",
     "prefix": "tc/{collectionId}/books/{bookInstanceId}/",
     "credentials": {
-      "accessKeyId":     "minioadmin",
-      "secretAccessKey": "minioadmin",
-      "sessionToken":    "devmode",
-      "expiration":      "2099-01-01T00:00:00Z"
+      "accessKeyId":     "<minted by MinIO AssumeRole>",
+      "secretAccessKey": "<minted by MinIO AssumeRole>",
+      "sessionToken":    "<real MinIO session token (JWT)>",
+      "expiration":      "<now + 1h>"
     }
   }
 }
@@ -46,19 +61,15 @@ The response body is **identical in shape** to a real STS `AssumeRole` response:
 
 ### Key points
 
-| Field | Production (STS) | Dev (MinIO) |
+| Field | Production (AWS STS) | Dev (MinIO AssumeRole) |
 |-------|-----------------|-------------|
-| `accessKeyId` | STS temporary key | `minioadmin` (MinIO root) |
-| `secretAccessKey` | STS temporary secret | `minioadmin` |
-| `sessionToken` | STS session token | `"devmode"` (literal string) |
-| `expiration` | 1 hour from now | Far future (`2099-01-01`) |
+| `accessKeyId` | STS temporary key | MinIO temporary key |
+| `secretAccessKey` | STS temporary secret | MinIO temporary secret |
+| `sessionToken` | STS session token | Real MinIO session token (validated!) |
+| `expiration` | 1 hour from now | 1 hour from now |
 | `bucket` | `bloom-teams` (production) | `bloom-teams-local` |
 | `region` | `us-east-1` (or configured) | `us-east-1` (MinIO ignores this) |
-| `prefix` | Scoped path (`tc/{cid}/...`) | Same scoped path (MinIO enforces nothing, but we keep the shape) |
-
-The `sessionToken` value of `"devmode"` is passed by the AWS SDK to MinIO as the
-`X-Amz-Security-Token` header. MinIO ignores this header when the root credentials are
-used, so the AWS SDK's standard credential handling works without modification.
+| `prefix` | Scoped path (`tc/{cid}/...`) | Same path; NOT policy-enforced in dev (scoping is a production security measure) |
 
 ### Client behavior
 
@@ -68,15 +79,16 @@ used, so the AWS SDK's standard credential handling works without modification.
 - `ForcePathStyle` = `true` (MinIO requires path-style; AWS uses virtual-hosted by default)
 - `Credentials` = `SessionAWSCredentials(accessKeyId, secretAccessKey, sessionToken)`
 
-The `sessionToken` field is always populated (even as `"devmode"`) so the client always
-uses `SessionAWSCredentials`, which is the same type it uses in production. This keeps
-the credential plumbing path identical in both environments.
+Because the dev token is real, the client uses `SessionAWSCredentials` in both
+environments — the credential plumbing path is truly identical.
+
+(For ad-hoc tooling that talks to MinIO directly with the root credentials — like
+`parity-check` — use `BasicAWSCredentials` with NO session token.)
 
 ### Expiration
 
-The far-future expiration (`2099-01-01`) means dev sessions never need to be refreshed.
-The client's credential-refresh logic is exercised by the production STS creds (1-hour
-expiry) and is invisible to the MinIO path.
+Dev credentials expire after 1 hour, same as production, so the client's refresh path
+(re-calling `checkin-start` for fresh credentials) is exercised in dev too.
 
 ### Security
 
@@ -103,18 +115,16 @@ more robust against CI environments that happen to run locally.
 
 ## MinIO S3 parity: known gaps vs production AWS
 
-These were identified during the parity spike (`parity-check/`). See that project's
-output for the authoritative run results.
+Parity spike run 6 Jul 2026 (Podman 5.8.3, MinIO latest, .NET AWSSDK.S3): **4/4 PASS** —
+sha256 checksum PUT, server-side checksum readback, version-id capture on PUT, and GET by
+`(key, versionId)` all behave as on AWS.
 
 | Feature | AWS S3 | MinIO (SNSD) | Dev-mode deviation |
 |---------|--------|-------------|-------------------|
-| `x-amz-checksum-sha256` on PUT | Stored as object attribute | Stored; `GetObjectAttributes` returns it | None expected |
-| `x-amz-version-id` on PUT response | Always present (versioning ON) | Present (versioning ON) | None expected |
-| GET by `(key, versionId)` | Supported | Supported | None expected |
-| `AssumeRole` / STS | Supported | NOT supported | Static creds (this doc) |
-| IAM bucket policies / per-prefix scoping | Enforced | Not enforced (root creds) | Accept in dev — security is production-only |
-| Multipart abort lifecycle | Supported | Supported | None expected |
-| Noncurrent-version expiry lifecycle | Supported | Supported via `mc ilm` | None expected |
-
-If the parity spike discovers any additional gaps, they are documented in the `PASS/FAIL`
-output of `server/dev/parity-check/` and added to this table.
+| `x-amz-checksum-sha256` on PUT | Stored as object attribute | **VERIFIED** — stored; readable server-side | None |
+| `x-amz-version-id` on PUT response | Always present (versioning ON) | **VERIFIED** present | None |
+| GET by `(key, versionId)` | Supported | **VERIFIED** | None |
+| `AssumeRole` / STS | Supported | Supported (MinIO's own STS; see correction above) | Session tokens are validated — fabricated tokens are REJECTED |
+| IAM bucket policies / per-prefix scoping | Enforced via session policy | Not enforced in dev | Accept in dev — scoping is a production security measure |
+| Multipart abort lifecycle | Supported (provision-aws sets it) | Not settable via `mc ilm rule add`; MinIO's built-in stale-upload cleanup applies | Dev-only gap, documented in docker-compose.yml |
+| Noncurrent-version expiry lifecycle | Supported | **VERIFIED** via `mc ilm rule add` (7d, prefix `tc/`) | None |

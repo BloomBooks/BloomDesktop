@@ -86,12 +86,14 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 
 - [x] Wave 0 complete (folder backend provably unchanged — 208/208 TC tests green)
 - [ ] Wave 1 complete (incl. local dev stack up: `supabase start` + MinIO + dev logins)
-  - [x] 01-server-schema authored + reviewed (pgTAP unrun — awaiting Docker)
-  - [x] 11-local-dev-stack authored + reviewed (smoke/parity unrun — awaiting Docker)
-  - [ ] 02-edge-functions
+  - [x] 01-server-schema DONE — pgTAP 42/42 green on the live local stack (6 Jul 2026)
+  - [x] 11-local-dev-stack DONE — full stack verified on **Podman 5.8.3** (rootful, WSL2,
+        Docker-compat pipe) instead of Docker Desktop: MinIO up w/ versioning+lifecycle,
+        dev sign-in works, parity spike 4/4, smoke green. README documents the recipe.
+  - [ ] 02-edge-functions (note: dev credential mode must use MinIO AssumeRole — fabricated
+        session tokens are REJECTED; see DEV-CREDENTIALS.md correction)
   - [ ] 03-auth
   - [ ] 07-ui-setup (shells)
-  - [ ] Docker Desktop installed → run pgTAP, seed sign-in check, smoke, parity spike
 - [ ] Wave 2 complete
 - [ ] Wave 3 complete (two-instance same-machine smoke against local stack)
 - [ ] Wave 4 complete
@@ -114,3 +116,10 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 - 6 Jul 2026 · 11-local-dev-stack · merged locally · Orchestrator fix: seed bcrypt hash was
   invalid (verified with bcryptjs); replaced with a self-verified hash. Smoke script and
   parity spike authored but UNRUN (no Docker yet); parity-check compiles clean.
+- 6 Jul 2026 (later) · runtime verification of 01+11 · direct commits · Full local stack
+  verified on Podman (not Docker Desktop). pgTAP 42/42; parity 4/4; smoke green; live RPC
+  round-trip OK. Fixes found by running: pgTAP plan count + RLS superuser-bypass (tests);
+  parity-check fabricated session token (MinIO validates tokens → DEV-CREDENTIALS spec
+  corrected to MinIO AssumeRole); smoke.ps1 PS-5.1 syntax/encoding bugs + JSON `supabase
+  status` parsing; compose lifecycle via `mc ilm rule add`; committed .gitkeep in all
+  bind-mounted dirs (Podman does not auto-create them).

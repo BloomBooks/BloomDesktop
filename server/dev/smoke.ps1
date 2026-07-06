@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Bloom Cloud Team Collections — local dev stack smoke test.
+    Bloom Cloud Team Collections - local dev stack smoke test.
 
 .DESCRIPTION
     Verifies the local dev stack is up and functional by executing three
@@ -24,19 +24,18 @@
 
 .NOTES
     Requirements:
-      - Docker Desktop running, MinIO started:
-            docker compose -f server/dev/docker-compose.yml up -d
+      - A Docker-compatible container runtime (Podman Desktop is the verified
+        reference - see README.md), MinIO started:
+            docker-compose -f server/dev/docker-compose.yml up -d
       - Supabase started:
             supabase start
-      - Edge functions running:
+      - Edge functions running (once task 02 lands):
             supabase functions serve
-      - dotnet 10 on PATH (for parity-check tool)
+      - dotnet on PATH (for parity-check tool)
 
-    *** AUTHORED-BUT-UNRUN ***
-    Docker Desktop, Supabase CLI, and Deno are not yet installed on the
-    authoring machine.  This script is ready to execute once those are
-    available.  Mark the smoke-script checkbox in the task file as run after
-    a successful first execution.
+    First green run: 6 Jul 2026 against Podman 5.8.3 (rootful WSL machine),
+    Supabase CLI 2.109.0, MinIO latest. Step 3 reports HTTP 404 until task 02
+    deploys the edge functions; that counts as reachable/pass.
 #>
 
 [CmdletBinding()]
@@ -72,12 +71,23 @@ function Invoke-Check([string]$label, [scriptblock]$body) {
 # Resolve anon key
 # ---------------------------------------------------------------------------
 if (-not $AnonKey) {
-    Write-Host "AnonKey not supplied — querying `supabase status`..."
+    Write-Host "AnonKey not supplied - querying `supabase status`..."
     try {
-        $statusOutput = supabase status 2>&1
-        $anonLine = $statusOutput | Select-String "anon key:"
-        if ($anonLine) {
-            $AnonKey = ($anonLine -split ":\s+")[1].Trim()
+        # PS 5.1: with ErrorActionPreference=Stop, capturing a native command's stderr
+        # turns any warning line into a terminating error. Relax while querying.
+        $prevEap = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
+        $statusOutput = supabase status 2>$null
+        $ErrorActionPreference = $prevEap
+        $joined = ($statusOutput -join "`n").Trim()
+        if ($joined.StartsWith("{")) {
+            # Newer CLI versions emit JSON when not attached to a TTY.
+            $AnonKey = (ConvertFrom-Json $joined).ANON_KEY
+        } else {
+            $anonLine = $statusOutput | Select-String "anon key:"
+            if ($anonLine) { $AnonKey = ($anonLine -split ":\s+")[1].Trim() }
+        }
+        if ($AnonKey) {
             Write-Host "  Retrieved anon key: $($AnonKey.Substring(0,12))..."
         } else {
             throw "Could not parse anon key from supabase status output."
@@ -89,9 +99,9 @@ if (-not $AnonKey) {
 }
 
 # ---------------------------------------------------------------------------
-# Step 1 — Auth smoke: sign up a random user via GoTrue
+# Step 1 - Auth smoke: sign up a random user via GoTrue
 # ---------------------------------------------------------------------------
-Write-Step "1. Auth smoke — sign up a random user via local GoTrue"
+Write-Step "1. Auth smoke - sign up a random user via local GoTrue"
 
 $randomEmail    = "smoke-$(([System.Guid]::NewGuid().ToString('N').Substring(0,8)))@test.local"
 $randomPassword = "BloomDev123!"
@@ -112,13 +122,13 @@ Invoke-Check "POST /auth/v1/signup returns 200 and access_token" {
         throw "No access_token in signup response."
     }
     $script:TestJwt = $response.access_token
-    Write-Host "  Signed up $randomEmail — JWT received (${($script:TestJwt.Length)} chars)."
+    Write-Host "  Signed up $randomEmail - JWT received ($($script:TestJwt.Length) chars)."
 }
 
 # ---------------------------------------------------------------------------
-# Step 2 — MinIO smoke: put a versioned object
+# Step 2 - MinIO smoke: put a versioned object
 # ---------------------------------------------------------------------------
-Write-Step "2. MinIO smoke — put a versioned object via parity-check tool"
+Write-Step "2. MinIO smoke - put a versioned object via parity-check tool"
 
 # Locate the parity-check binary (build it if needed).
 $parityProj = Join-Path $PSScriptRoot "parity-check\ParityCheck.csproj"
@@ -140,24 +150,24 @@ Invoke-Check "parity-check runs against MinIO (all 4 checks pass)" {
     $env:MINIO_SECRET_KEY = "minioadmin"
     $env:MINIO_BUCKET     = "bloom-teams-local"
 
-    $runResult = dotnet run --project $parityProj --no-build 2>&1
+    $runResult = dotnet run --project $parityProj 2>&1
     if ($LASTEXITCODE -ne 0) {
-        throw "parity-check exited with code $LASTEXITCODE.`n$runResult"
+        throw "parity-check exited with code $($LASTEXITCODE).`n$runResult"
     }
-    Write-Host "  $($runResult | Select-String 'passed')".Trim()
+    Write-Host ("  $($runResult | Select-String 'passed')".Trim())
 }
 
 # ---------------------------------------------------------------------------
-# Step 3 — Edge function smoke: call download-start
+# Step 3 - Edge function smoke: call download-start
 # ---------------------------------------------------------------------------
-Write-Step "3. Edge function smoke — call download-start with a valid JWT"
+Write-Step "3. Edge function smoke - call download-start with a valid JWT"
 
 # We need a collection-id to call download-start.  Use a well-known dev UUID.
 $testCollectionId = "00000000-aaaa-bbbb-cccc-000000000001"
 
 Invoke-Check "POST /functions/v1/download-start returns 200 or 403/404 (function reachable)" {
     if (-not $script:TestJwt) {
-        throw "No JWT from step 1 — cannot test edge function."
+        throw "No JWT from step 1 - cannot test edge function."
     }
 
     $body = @{ collectionId = $testCollectionId } | ConvertTo-Json
@@ -174,16 +184,16 @@ Invoke-Check "POST /functions/v1/download-start returns 200 or 403/404 (function
             -Body $body
         # 200 with s3 credentials = full pass
         if ($response.s3.credentials.accessKeyId) {
-            Write-Host "  Function returned S3 credentials (accessKeyId present) — dev credential mode working."
+            Write-Host "  Function returned S3 credentials (accessKeyId present) - dev credential mode working."
         } else {
-            Write-Host "  Function returned 200 but no credentials — check task 02 implementation."
+            Write-Host "  Function returned 200 but no credentials - check task 02 implementation."
         }
     } catch {
         # Accept 403/404 as "function is reachable but the collection does not exist yet."
         # A connection-refused error means the function is not running.
         $statusCode = $_.Exception.Response.StatusCode.value__
         if ($statusCode -in @(403, 404, 401)) {
-            Write-Host "  HTTP $statusCode — function is reachable; collection not seeded (expected)."
+            Write-Host "  HTTP $statusCode - function is reachable; collection not seeded (expected)."
         } else {
             throw "Unexpected error calling download-start: $_"
         }
@@ -199,7 +209,7 @@ if ($script:Failures -eq 0) {
     Write-Host "  SMOKE TEST PASSED" -ForegroundColor Green
     Write-Host "  All three checks green."
 } else {
-    Write-Host "  SMOKE TEST FAILED — $($script:Failures) check(s) failed" -ForegroundColor Red
+    Write-Host "  SMOKE TEST FAILED - $($script:Failures) check(s) failed" -ForegroundColor Red
     Write-Host "  Review output above for details."
 }
 Write-Host "=================================="
