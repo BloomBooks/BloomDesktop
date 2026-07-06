@@ -17,7 +17,9 @@ if [ -s $filesToCheck ]; then
       src/BloomExe/ProgramExit.cs) continue;;
       src/BloomTests/*) continue;;
     esac
-    if grep -H 'Application.Exit' "$file"; then
+    # Strip // line comments and /* ... */ single-line block comments before
+    # searching, so a mention of Application.Exit in a comment doesn't trip this check.
+    if sed -e 's#//.*##' -e 's#/\*.*\*/##g' "$file" | grep -H --label="$file" 'Application.Exit'; then
       status=0
       break
     fi
