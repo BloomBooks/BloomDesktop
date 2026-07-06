@@ -35,3 +35,22 @@ deferred config swap (see the master checklist's deferred-infrastructure list).
 
 **Agent notes**: Sonnet. MinIO for S3 in tests AND as the dev-mode target (task 11's stack).
 Only these functions ever hold AWS/MinIO admin creds.
+
+## Progress log
+
+- 2026-07-06 · done: new migration `20260706000004_tc_checkin_txn_functions.sql` adding
+  the internal SECURITY DEFINER transaction functions (`checkin_start_tx`,
+  `checkin_finish_tx`, `checkin_abort_tx`, `collection_files_start_tx`,
+  `collection_files_finish_tx`, `download_start_check`, expiry-reap helpers, PT###
+  HTTP-status passthrough convention) that back all 6 edge functions; applied clean via
+  `supabase db reset --local`. All 6 edge functions authored under `supabase/functions/`
+  (`checkin-start`, `checkin-finish`, `checkin-abort`, `download-start`,
+  `collection-files-start`, `collection-files-finish`) plus `_shared/` helpers
+  (env, errors, handler, rpc, s3-credential-provider-seam). `deno check` passes on all.
+  NOT YET tested against the live stack. Next action: run
+  `supabase functions serve --env-file server/dev/functions.env` (env file not yet
+  created — create it first with `BLOOM_DEV_MODE=true`, `BLOOM_S3_ENDPOINT=http://host.containers.internal:9000`,
+  `BLOOM_S3_BUCKET=bloom-teams-local`), then exercise checkin-start → checkin-finish
+  happy path end-to-end with a real dev-seed user JWT (alice@dev.local), then write Deno
+  unit tests per function and continue through the acceptance checklist (lock-held,
+  base-version-superseded, checksum failure, resume, expiry, new-book invisibility).
