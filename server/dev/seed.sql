@@ -4,7 +4,8 @@
 -- so these users are immediately confirmed and can sign in.
 --
 -- Shared password for all three dev users: BloomDev123!
--- (Hash below is bcrypt for that password, computed with GoTrue's default cost factor 10.)
+-- (Hash below is bcrypt(cost=10) for that password, generated and verified with bcryptjs;
+-- GoTrue's Go bcrypt accepts the $2b$ prefix.)
 --
 -- These rows follow the schema GoTrue uses internally in the auth schema.
 -- References:
@@ -69,7 +70,7 @@ VALUES
         'authenticated',
         'authenticated',
         'admin@dev.local',
-        '$2a$10$PW4QR5Zj5/C4VRqWV.K2pePQnPbhMqR1GG0d6f2hAvUfJfJYqCgEu',
+        '$2b$10$Zz1geIlt6N1oiMHhlfb9lOK5P/EP4Awd8BE0we75omaIjvR2rfHAa',
         '2026-01-01 00:00:00+00',
         NULL,
         NULL,
@@ -90,7 +91,7 @@ VALUES
         'authenticated',
         'authenticated',
         'alice@dev.local',
-        '$2a$10$PW4QR5Zj5/C4VRqWV.K2pePQnPbhMqR1GG0d6f2hAvUfJfJYqCgEu',
+        '$2b$10$Zz1geIlt6N1oiMHhlfb9lOK5P/EP4Awd8BE0we75omaIjvR2rfHAa',
         '2026-01-01 00:00:00+00',
         NULL,
         NULL,
@@ -111,7 +112,7 @@ VALUES
         'authenticated',
         'authenticated',
         'bob@dev.local',
-        '$2a$10$PW4QR5Zj5/C4VRqWV.K2pePQnPbhMqR1GG0d6f2hAvUfJfJYqCgEu',
+        '$2b$10$Zz1geIlt6N1oiMHhlfb9lOK5P/EP4Awd8BE0we75omaIjvR2rfHAa',
         '2026-01-01 00:00:00+00',
         NULL,
         NULL,
