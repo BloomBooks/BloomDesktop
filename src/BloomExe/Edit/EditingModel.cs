@@ -1688,7 +1688,10 @@ namespace Bloom.Edit
             _webSocketServer.SendString("pageThumbnailList", "saving", "");
             // review do we really need to be checking to see if things are loaded? If they are not, then there is nothing to save, and this doesn't thow.
             var script = $"workspaceBundle.getEditablePageBundleExports().requestPageContent()";
-            _view.Browser.RunJavascriptAsync(script);
+            // Fire-and-forget: this just asks the browser to send us the page content. The browser
+            // responds asynchronously by calling the ReceivePageContent API (which drives the state
+            // machine on to ToSavedAndStripped), so there is nothing here to wait for.
+            _view.Browser.RunJavascriptFireAndForget(script);
         }
 
         /// <summary>
@@ -2136,7 +2139,10 @@ namespace Bloom.Edit
                 _developerFileWatcher.NotifyFilter = NotifyFilters.LastWrite;
 
                 var waitingForInitialLoad = true;
-                _developerFileWatcher.Changed += async (sender, args) =>
+                // Not async: nothing in this handler awaits anything (it delegates timing to a
+                // WinForms Timer), so marking it async would just create an async-void event handler
+                // whose exceptions we couldn't observe.
+                _developerFileWatcher.Changed += (sender, args) =>
                 {
                     // oddly, there is no way to tell the file watcher that we don't want to consider the original state of the files as "changes"
                     // so we ignore events for the first 5 seconds
@@ -2181,6 +2187,9 @@ namespace Bloom.Edit
                     }
                 };
                 _developerFileWatcher.EnableRaisingEvents = true;
+                // Deliberately fire-and-forget: this is just a one-shot timer that stops us treating
+                // the initial burst of file-watcher events as real changes. Nothing depends on when
+                // it completes, so there is no reason to await the resulting Task.
                 Task.Delay(5000)
                     .ContinueWith(_ =>
                     {

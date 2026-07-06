@@ -68,7 +68,11 @@ namespace Bloom.Spreadsheet
                 SetSpreadsheetFolder(book, outputFolder);
                 string imagesFolderPath = Path.GetDirectoryName(bookPath);
 
-                exporter.ExportToFolderWithProgressAsync(
+                // Fire-and-forget: the returned Task completes once the background progress-dialog
+                // worker has been started, not when the export finishes. Completion is delivered via
+                // the resultCallback below (which opens the finished spreadsheet), so there is nothing
+                // useful to await here. The discard makes the intentional non-await explicit.
+                _ = exporter.ExportToFolderWithProgressAsync(
                     dom,
                     imagesFolderPath,
                     outputFolder,
@@ -126,7 +130,11 @@ namespace Bloom.Spreadsheet
                     _teamCollectionManager
                 );
                 importer.ControlForInvoke = Shell.GetShellOrOtherOpenForm();
-                importer.ImportWithProgressAsync(
+                // Fire-and-forget: as with the export case, the returned Task completes once the
+                // background progress worker has started, not when the import completes. The
+                // post-import work (reloading the book and refreshing the selection) runs in the
+                // doWhenProgressCloses callback below, so we intentionally don't await the Task.
+                _ = importer.ImportWithProgressAsync(
                     inputFilepath,
                     () =>
                     {
