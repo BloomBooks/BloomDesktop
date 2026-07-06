@@ -106,7 +106,6 @@ namespace Bloom.Publish
             WorkspaceView?.SetTabsEnabled(true);
             PublishHelper.InPublishTab = true;
             var hostForm = GetHostControlForInvoke() as Form;
-            BloomPubMaker.ControlForInvoke = hostForm;
             PublishEpubApi.ControlForInvoke = hostForm;
             LibraryPublishApi.Model = new BloomLibraryPublishModel(
                 _bookTransferrer,

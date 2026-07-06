@@ -183,9 +183,6 @@ namespace Bloom.CLI
                 exitCode |= CreateJsonTextsArtifact(jsonTextsOutputPath);
             }
 
-            Control control = new Control();
-            control.CreateControl();
-
             using (var countdownEvent = new CountdownEvent(1))
             {
                 // Create the ePub in the background. (Some of the ePub work needs to happen off the main thread)
@@ -193,7 +190,7 @@ namespace Bloom.CLI
                 {
                     try
                     {
-                        CreateEpubArtifact(parameters, control);
+                        CreateEpubArtifact(parameters);
                     }
                     catch (Exception ex)
                     {
@@ -391,8 +388,7 @@ namespace Bloom.CLI
         /// Creates an ePub file at the location specified by parameters
         /// </summary>
         /// <param name="parameters">BookPath and epubOutputPath should be set.</param>
-        /// <param name="control">The epub code needs a control that goes back to the main thread, in order to run some tasks that need to be on the main thread</param>
-        public static void CreateEpubArtifact(CreateArtifactsParameters parameters, Control control)
+        public static void CreateEpubArtifact(CreateArtifactsParameters parameters)
         {
             if (String.IsNullOrEmpty(parameters.EpubOutputPath))
             {
@@ -406,8 +402,6 @@ namespace Bloom.CLI
             BookThumbNailer thumbNailer = s_projectContext.ThumbNailer;
             using (var maker = new EpubMaker(thumbNailer, bookServer))
             {
-                maker.ControlForInvoke = control;
-
                 maker.Book = s_book;
                 // This is the previous default, but probably we should make it configurable, and possibly change the default.
                 // Note that it will end up Fixed if the presence of canvas elements requires it.
