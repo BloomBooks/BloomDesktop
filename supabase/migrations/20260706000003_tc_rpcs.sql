@@ -330,7 +330,7 @@ AS $$
 DECLARE
     v_user_id     text;
     v_collection  uuid;
-    v_updated     boolean;
+    v_updated     integer;   -- row count from the conditional UPDATE (0 or 1)
     v_row         tc.books%ROWTYPE;
 BEGIN
     v_user_id := tc.current_user_id();

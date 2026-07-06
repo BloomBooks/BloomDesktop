@@ -484,6 +484,12 @@ CREATE INDEX events_collection_cursor_idx ON tc.events(collection_id, id);
 -- Broadcasts a lightweight message on the private channel collection:{uuid} whenever a
 -- new event row is inserted.  Clients receive the metadata; large payloads (book content)
 -- are never pushed — clients call get_changes(since) to fetch details.
+--
+-- TODO(realtime, wave 4): pg_notify does NOT reach Supabase Realtime websockets. When the
+-- realtime optimization lands (polling ships first — CloudCollectionMonitor), replace this
+-- with realtime.send(payload, event, topic, private), topic 'collection:' || collection_id
+-- per CONTRACTS.md §Realtime, wrapped in an EXCEPTION guard so an events INSERT never fails
+-- in environments without the realtime schema (e.g. bare-Postgres pgTAP CI).
 CREATE OR REPLACE FUNCTION tc.events_realtime_broadcast()
 RETURNS trigger
 LANGUAGE plpgsql

@@ -203,7 +203,7 @@ $$;
 
 SELECT throws_ok(
     $$SELECT tc.claim_memberships()$$,
-    'P0001',    -- ERRCODE used in the function — actually 28000; adjust if needed
+    '28000',    -- invalid_authorization_specification, raised by claim_memberships
     NULL,
     '4b: claim_memberships raises when email_verified=false'
 );

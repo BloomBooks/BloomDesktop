@@ -27,6 +27,11 @@ shadow_port = 54320
 # `SHOW server_version;` on the remote database to check.
 major_version = 15
 
+# Dev seed: creates the standard dev users (admin/alice/bob@dev.local) — see server/dev/README.md
+[db.seed]
+enabled = true
+sql_paths = ["../server/dev/seed.sql"]
+
 [db.pooler]
 enabled = false
 # Port to use for the local connection pooler.
