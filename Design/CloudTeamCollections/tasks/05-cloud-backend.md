@@ -29,7 +29,9 @@ nothing shared — the manager factory seam from 00 is wired by config.
 - `CloudTeamCollectionMemberTests`, `CloudTeamCollectionLockTests`, `CloudSyncAtStartupTests`
   (ported matrix; asserts `.bloomSource` + incident events), `CloudCollectionMonitorTests`.
 - Folder-TC suite still green.
-- Manual: two machines against sandbox — checkout/Send/Receive loop works.
+- Manual: two Bloom instances on ONE machine (distinct collection folders + dev identities
+  via `BLOOM_CLOUDTC_USER`) against the local stack (task 11) — checkout/Send/Receive loop
+  works, lock state visible across instances.
 
 **Agent notes**: Sonnet, orchestrator reviews closely. Base-class code is read-only here;
 anything needing a base change goes back to the orchestrator.

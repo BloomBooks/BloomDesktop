@@ -15,8 +15,11 @@
       `checkin_transactions`.
 - [ ] RLS policies per design: member read; admin membership writes; NO direct writes to
       books/versions; realtime channel authorization.
+- [ ] `tc.jwt_email_verified()` SQL helper: the ONE place that reads verification off the
+      token — Firebase-style `email_verified` claim OR local-GoTrue auto-confirmed users
+      (dev stack, task 11). Everything else calls the helper, never the claim directly.
 - [ ] RPCs from CONTRACTS.md: create_collection, my_collections, claim_memberships
-      (requires `email_verified`), get_collection_state, get_changes, checkout_book (conditional
+      (requires `tc.jwt_email_verified()`), get_collection_state, get_changes, checkout_book (conditional
       UPDATE), unlock_book, force_unlock, delete_book (lock required), undelete_book,
       rename_check, member management (remove ⇒ force-unlock + events), add_palette_colors,
       log_event.
@@ -27,5 +30,6 @@
   exactly one winner); claiming requires verified email; last-admin guard; get_changes cursor;
   tombstone/undelete; live-name uniqueness (tombstoned names reusable).
 
-**Agent notes**: Sonnet. All timestamps `now()` server-side. Firebase UID is text (~28 chars),
-not uuid. NFC-normalize name/path comparisons.
+**Agent notes**: Sonnet. All timestamps `now()` server-side. User ids are text, not uuid —
+Firebase UIDs are ~28 chars (local-GoTrue dev users are uuids; text covers both).
+NFC-normalize name/path comparisons.

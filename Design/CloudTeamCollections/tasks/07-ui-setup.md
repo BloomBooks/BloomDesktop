@@ -11,7 +11,9 @@ Owns new `src/BloomBrowserUI/teamCollection/SharingPanel.tsx`,
 - [ ] Settings (not shared): keep folder-TC button; add "Share this collection on the Bloom
       sharing server (experimental)" behind the experimental flag + feature gate, disabled
       state explains gating.
-- [ ] Cloud create dialog: sign-in step (inline), immutable-name acknowledgement, initial Send
+- [ ] Cloud create dialog: sign-in step (inline; in dev auth mode this is a plain
+      email/password form driven by `sharing/loginState`'s reported mode — the real
+      BloomLibrary browser flow slots in later), immutable-name acknowledgement, initial Send
       progress; no folder chooser, no Dropbox checkboxes, no restart.
 - [ ] SharingPanel (cloud TCs): approved-emails list (avatar, name-when-claimed, email, role
       chip, claimed/pending), add-with-role, remove (warns: force-unlocks their checkouts),
