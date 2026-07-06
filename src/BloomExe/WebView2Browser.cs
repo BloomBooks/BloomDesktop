@@ -87,7 +87,7 @@ namespace Bloom
             // something on that thread, it's really easy to deadlock.
             // A lot of this is because of the way that WinForms works, and when we finally get away from WinForms,
             // we may be able to get to an environment where we don't need to try so hard to avoid async.)
-            InitWebView();
+            _ = InitWebView();
         }
 
         private void SetupEventHandling()
@@ -544,18 +544,16 @@ namespace Bloom
 
         public override void CopySelection()
         {
-            // I think it's fine that this is async but we aren't waiting, as long as this
-            // is only used for user actions and not by code that would immediately try to
-            // do something.
-            _webview.ExecuteScriptAsync("document.execCommand(\"Copy\")");
+            // Fire-and-forget is fine here as long as this is only used for user actions and not
+            // by code that would immediately try to do something with the result.
+            RunJavascriptFireAndForget("document.execCommand(\"Copy\")");
         }
 
         public override void SelectAll()
         {
-            // I think it's fine that this is async but we aren't waiting, as long as this
-            // is only used for user actions and not by code that would immediately try to
-            // do something.
-            _webview.ExecuteScriptAsync("document.execCommand(\"SelectAll\")");
+            // Fire-and-forget is fine here as long as this is only used for user actions and not
+            // by code that would immediately try to do something with the result.
+            RunJavascriptFireAndForget("document.execCommand(\"SelectAll\")");
         }
 
         public override void SelectBrowser()
@@ -824,8 +822,8 @@ namespace Bloom
             // This implementation is specific to our Edit tab. This is currently the only place
             // we show the paste button that uses this command, but we will have to generalize somehow if
             // that changes. I'm not sure whether the checks for existence of workspaceBundle etc are needed.
-            // I deliberately use RunJavaScriptAsync here without awaiting it, because nothing requires the
-            // result (we only care about the side effects on the document)
+            // I deliberately use the fire-and-forget variant here, because nothing requires the
+            // result (we only care about the side effects on the document).
             _pasteCommand.Implementer = () =>
             {
                 PalasoImage clipboardImage = null;
@@ -839,7 +837,7 @@ namespace Bloom
 
                 clipboardImage?.Dispose();
 
-                RunJavascriptAsync(
+                RunJavascriptFireAndForget(
                     $"workspaceBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
                 );
             };
@@ -863,6 +861,10 @@ namespace Bloom
 
         bool _currentlyInUpdateButtons = false;
 
+        // This is 'async void' rather than 'async Task' because it overrides the void
+        // IBrowser.UpdateEditButtonsAsync() and is invoked as a fire-and-forget UI update (e.g. from
+        // the edit-buttons timer). That is acceptable here only because the body wraps its awaited
+        // work in a try/catch, so an exception can't escape into the void and crash the process.
         public override async void UpdateEditButtonsAsync()
         {
             if (_currentlyInUpdateButtons)

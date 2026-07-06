@@ -315,7 +315,9 @@ namespace Bloom.Edit
         /// <summary>
         /// this is called by our model, as a result of a "SelectedTabChangedEvent". So it's a lot more reliable than the normal winforms one.
         /// </summary>
-        public async Task OnVisibleChanged(bool visible)
+        // Note: this does no asynchronous work, so it deliberately returns void rather than Task.
+        // (Its callers in EditingModel don't await it, and there is nothing here to await.)
+        public void OnVisibleChanged(bool visible)
         {
             _visible = visible;
             if (visible)
@@ -503,12 +505,6 @@ namespace Bloom.Edit
         internal async Task<string> GetStringFromJavascriptAsync(string script)
         {
             return await _mainBrowser.GetStringFromJavascriptAsync(script);
-        }
-
-        internal async Task RunJavascriptAsync(string script)
-        {
-            await _mainBrowser.RunJavascriptAsync(script);
-            return;
         }
 
         private string _fileNameOfImageBeingModified;
@@ -1369,14 +1365,18 @@ namespace Bloom.Edit
         {
             PageTemplatesApi.ForPageLayout = false;
             //if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-            RunJavascriptAsync("workspaceBundle.showPageChooserDialog(false);");
+            // Fire-and-forget: we just want the dialog to open; nothing here depends on it having finished.
+            _mainBrowser.RunJavascriptFireAndForget(
+                "workspaceBundle.showPageChooserDialog(false);"
+            );
         }
 
         internal void ShowChangeLayoutDialog()
         {
             PageTemplatesApi.ForPageLayout = true;
             //if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-            RunJavascriptAsync("workspaceBundle.showPageChooserDialog(true);");
+            // Fire-and-forget: we just want the dialog to open; nothing here depends on it having finished.
+            _mainBrowser.RunJavascriptFireAndForget("workspaceBundle.showPageChooserDialog(true);");
         }
 
         public int Zoom => EditingView.ZoomSetting;
@@ -1449,7 +1449,9 @@ namespace Bloom.Edit
             // If we just put zoom/100.0 in the setZoom call, the implicit toString()
             // uses the regional settings and can produce e.g. 1,3 when we need 1.3
             var zoomFactor = (zoom / 100.0).ToString(CultureInfo.InvariantCulture);
-            RunJavascriptAsync($"workspaceBundle.setZoom({zoomFactor});");
+            // Fire-and-forget: applying the zoom in the browser is independent of saving the
+            // setting below, so there's no reason to wait for the script to finish.
+            _mainBrowser.RunJavascriptFireAndForget($"workspaceBundle.setZoom({zoomFactor});");
             Settings.Default.PageZoom = zoom.ToString(CultureInfo.InvariantCulture);
             Settings.Default.Save();
             // Note: July 29 2025 we removed code that handled zoom by reloading the page,
