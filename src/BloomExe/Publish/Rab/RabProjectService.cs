@@ -2684,6 +2684,9 @@ namespace Bloom.Publish.Rab
                     if (process.MainWindowHandle == IntPtr.Zero)
                         continue;
 
+                    if (process.ProcessName != "java")
+                        continue; // Don't match browser tabs, for instance.
+
                     if (
                         process.MainWindowTitle.IndexOf(
                             "Reading App Builder",
@@ -2697,6 +2700,11 @@ namespace Bloom.Publish.Rab
                 catch
                 {
                     // Ignore processes that cannot be inspected.
+                }
+                finally
+                {
+                    // close the process handle to avoid leaking resources, but don't kill the process
+                    process.Dispose();
                 }
             }
 
