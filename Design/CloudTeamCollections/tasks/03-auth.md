@@ -56,3 +56,16 @@ provider tiny — it must be deletable without touching the session core.
   CloudCollectionClientTests under src/BloomTests/TeamCollection/Cloud/ covering the Acceptance
   section, then run `dotnet test --filter FullyQualifiedName~Cloud` and the TeamCollection
   regression filter.
+- 6 Jul 2026 (later) · done: full Acceptance test suite written and green —
+  CloudAuthTests/CloudCollectionClientTests/CloudEnvironmentTests (36 tests: mocked
+  ICloudAuthProvider/IRestExecutor fakes cover refresh-on-timer, refresh-on-401 success/failure,
+  account-switch, env-override-wins-over-stored-session, bearer injection, and every
+  CloudErrorCode mapping incl. ClientOutOfDate); plus one `[Explicit]` test
+  (LiveDevProvider_TwoUsersSignInConcurrently_HoldDistinctSessions) that live-verified alice/bob
+  get independent sessions + independent refreshes against the running local Supabase stack.
+  Full `FullyQualifiedName~Cloud` filter: 46/46 green. Full `FullyQualifiedName~TeamCollection`
+  regression filter: 244/244 green (no folder-TC regression). Task complete except the
+  multi-hour manual two-window/>2h-soak items in Acceptance, which need a human at a keyboard —
+  see the final report for what was substituted. · next: none for this task; ready for
+  orchestrator review/merge. Downstream: task 04 (client-core) builds the actual RPC/edge-function
+  method wrappers on top of CloudCollectionClient.CallRpc/CallEdgeFunction.

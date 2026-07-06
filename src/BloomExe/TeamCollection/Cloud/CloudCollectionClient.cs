@@ -58,11 +58,35 @@ namespace Bloom.TeamCollection.Cloud
     /// This class only owns the transport; the RPC/edge-function-specific methods (get_collection_state,
     /// checkout_book, checkin-start, etc.) are built on top of it by later tasks.
     /// </summary>
+    /// <summary>
+    /// The one thing <see cref="CloudCollectionClient"/> needs from a transport: execute a
+    /// request, get a response. Deliberately much smaller than RestSharp's own IRestClient
+    /// (which carries dozens of unrelated configuration members) so tests can substitute a fake
+    /// executor with a single method instead of stubbing an entire third-party interface.
+    /// </summary>
+    internal interface IRestExecutor
+    {
+        IRestResponse Execute(IRestRequest request);
+    }
+
+    /// <summary>Production <see cref="IRestExecutor"/>: a thin wrapper over a real RestSharp RestClient.</summary>
+    internal class RestSharpExecutor : IRestExecutor
+    {
+        private readonly RestClient _client;
+
+        public RestSharpExecutor(string baseUrl)
+        {
+            _client = new RestClient(baseUrl);
+        }
+
+        public IRestResponse Execute(IRestRequest request) => _client.Execute(request);
+    }
+
     public class CloudCollectionClient
     {
         private readonly CloudEnvironment _environment;
         private readonly CloudAuth _auth;
-        private RestClient _restClient;
+        private IRestExecutor _restClient;
 
         public CloudCollectionClient(CloudEnvironment environment, CloudAuth auth)
         {
@@ -70,8 +94,15 @@ namespace Bloom.TeamCollection.Cloud
             _auth = auth;
         }
 
-        private RestClient RestClient =>
-            _restClient ?? (_restClient = new RestClient(_environment.SupabaseUrl));
+        /// <summary>
+        /// Test-only seam: lets unit tests substitute a fake <see cref="IRestExecutor"/> so error
+        /// mapping and header injection can be verified without a live server. Production code
+        /// never needs to call this; <see cref="RestClient"/> lazily creates a real one.
+        /// </summary>
+        internal void SetRestClientForTests(IRestExecutor restClient) => _restClient = restClient;
+
+        private IRestExecutor RestClient =>
+            _restClient ?? (_restClient = new RestSharpExecutor(_environment.SupabaseUrl));
 
         /// <summary>
         /// Calls a `tc`-schema Postgres RPC (PostgREST `/rest/v1/rpc/&lt;name&gt;`). Per
