@@ -1,0 +1,96 @@
+# Bloom Cloud Team Collections — local dev infrastructure
+# Provides MinIO as an S3-compatible object store (SNSD mode, versioning ON).
+# Run alongside `supabase start` (which provides Postgres, GoTrue, PostgREST, Edge Functions).
+#
+# Usage:
+#   docker compose up -d          # start MinIO + run init job
+#   docker compose down           # stop containers (data preserved in minio-data/)
+#   docker compose down -v        # stop and remove volumes (not needed — data is bind-mounted)
+#   docker compose down && rm -rf ./minio-data   # full wipe
+
+services:
+    # -----------------------------------------------------------------------
+    # MinIO — single-node single-drive (SNSD) mode.
+    # SNSD is the supported mode for object versioning on a single node.
+    # https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html
+    # -----------------------------------------------------------------------
+    minio:
+        image: quay.io/minio/minio:latest
+        container_name: bloom-minio
+        command: server /data --console-address ":9001"
+        environment:
+            # Fixed dev credentials — NOT production secrets.
+            MINIO_ROOT_USER: minioadmin
+            MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+            - "9000:9000" # S3 API
+            - "9001:9001" # MinIO Console (web UI)
+        volumes:
+            # Bind-mount so data survives container restarts and is easy to inspect/wipe.
+            - ./minio-data:/data
+        healthcheck:
+            test: ["CMD", "mc", "ready", "local"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+            start_period: 10s
+        restart: unless-stopped
+
+    # -----------------------------------------------------------------------
+    # Init job — uses minio/mc (MinIO Client) to:
+    #   1. Wait for MinIO to be healthy.
+    #   2. Create the dev bucket "bloom-teams-local".
+    #   3. Enable object versioning on the bucket.
+    #   4. Set a lifecycle rule to expire noncurrent object versions after 7 days
+    #      (mirrors the production lifecycle; MinIO supports this via mc ilm import).
+    #
+    # This service exits after setup; it does NOT stay running.
+    # Re-running `docker compose up` is idempotent — mc mb --ignore-existing.
+    # -----------------------------------------------------------------------
+    minio-init:
+        image: quay.io/minio/mc:latest
+        container_name: bloom-minio-init
+        depends_on:
+            minio:
+                condition: service_healthy
+        entrypoint: >
+            /bin/sh -c "
+              set -e
+
+              echo '==> Configuring mc alias for local MinIO...'
+              mc alias set local http://minio:9000 minioadmin minioadmin
+
+              echo '==> Creating bucket bloom-teams-local (idempotent)...'
+              mc mb --ignore-existing local/bloom-teams-local
+
+              echo '==> Enabling object versioning...'
+              mc version enable local/bloom-teams-local
+
+              echo '==> Applying lifecycle policy (noncurrent expiry 7d, abort incomplete multipart 7d)...'
+              printf '{
+                \"Rules\": [
+                  {
+                    \"ID\": \"abort-incomplete-multipart\",
+                    \"Status\": \"Enabled\",
+                    \"Filter\": {\"Prefix\": \"\"},
+                    \"AbortIncompleteMultipartUpload\": {\"DaysAfterInitiation\": 7}
+                  },
+                  {
+                    \"ID\": \"expire-noncurrent-versions\",
+                    \"Status\": \"Enabled\",
+                    \"Filter\": {\"Prefix\": \"tc/\"},
+                    \"NoncurrentVersionExpiration\": {\"NoncurrentDays\": 7}
+                  }
+                ]
+              }' > /tmp/lifecycle.json
+              mc ilm import local/bloom-teams-local < /tmp/lifecycle.json
+
+              echo '==> MinIO init complete.'
+              echo ''
+              echo '    Bucket : bloom-teams-local'
+              echo '    Console: http://localhost:9001  (admin/minioadmin)'
+              echo '    S3 API : http://localhost:9000'
+              echo ''
+              mc ls local/
+            "
+        restart: "no"

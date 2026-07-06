@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Standalone console project — deliberately NOT added to Bloom.sln.
+         This is a one-off dev-stack verification tool, not part of the shipping product. -->
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>BloomDev.ParityCheck</RootNamespace>
+    <AssemblyName>parity-check</AssemblyName>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- AWS SDK for S3 — same package that BloomS3Client / TransferUtility will use. -->
+    <PackageReference Include="AWSSDK.S3"              Version="3.*" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.*" />
+  </ItemGroup>
+
+</Project>
