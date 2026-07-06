@@ -92,7 +92,9 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
         dev sign-in works, parity spike 4/4, smoke green. README documents the recipe.
   - [ ] 02-edge-functions (note: dev credential mode must use MinIO AssumeRole — fabricated
         session tokens are REJECTED; see DEV-CREDENTIALS.md correction)
-  - [ ] 03-auth
+  - [x] 03-auth DONE — CloudEnvironment/CloudAuth(dev provider)/CloudCollectionClient;
+        46/46 cloud + 244/244 folder-TC tests; live-verified vs local stack. Deferred:
+        persistent token store; real provider awaits Option A/B/C; human GUI smoke + 2h soak.
   - [ ] 07-ui-setup (shells)
 - [ ] Wave 2 complete
 - [ ] Wave 3 complete (two-instance same-machine smoke against local stack)
@@ -105,6 +107,14 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 ## Merge log
 
 (orchestrator appends: date · task · PR · notes)
+
+- 6 Jul 2026 · 03-auth · merged locally · Reviewed all three classes; one cosmetic fix
+  (stranded doc comment). Evidence: 46/46 cloud, 244/244 folder-TC, live GoTrue sign-in +
+  RPC error-shape verification, [Explicit] two-concurrent-sessions test green. Note for 04:
+  build RPC/edge wrappers on CallRpc/CallEdgeFunction; RPC errors carry Postgres codes
+  (typed CONTRACTS codes are edge-function-shaped). Dev default AnonKey is empty — devs set
+  BLOOM_CLOUDTC_ANON_KEY from `supabase status` (consider compiling in the stable local
+  demo key later).
 
 - 6 Jul 2026 · 00-enablers · merged locally · Reviewed diff line-by-line; seams preserve
   folder behavior; 208/208 TeamCollection tests (24 new) verified against fresh binaries.
