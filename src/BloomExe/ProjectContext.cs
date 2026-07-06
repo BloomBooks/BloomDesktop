@@ -859,9 +859,17 @@ namespace Bloom
             // We now keep BloomApiHandler alive for the application lifetime, but many endpoints are project-scoped.
             // Disposing the ProjectContext should fully shut down the project (including webviews) before we clear
             // those project-scoped endpoints.
-            var server = _scope.Resolve<BloomServer>();
             try
             {
+                // During application shutdown, WinForms can fire Application.ApplicationExit (for example as a
+                // worker thread's message context is torn down while publish artifacts are being created, as in
+                // the harvester's CreateArtifacts flow). That disposes the ApplicationContainer, which is the
+                // parent of _scope, before this Dispose runs. When that has happened, BloomServer (an
+                // application-level singleton) and all its API handlers are already gone, so resolving it throws
+                // ObjectDisposedException and there is nothing project-scoped left to clean up. In that case we
+                // just fall through to disposing our own scope.
+                var server = _scope.Resolve<BloomServer>();
+
                 // The order of these is tricky. The problem is that browsers could still be
                 // running and trying to call APIs while we are shutting down.
                 // Disposing the scope disposes the browsers, after which they shouldn't be able
@@ -877,10 +885,15 @@ namespace Bloom
                 // project is closed. A reload disposes this context before creating the next one, which
                 // sets it again, so clearing here is safe.
                 web.controllers.CommonApi.CurrentCollectionSettings = null;
-                _scope.Dispose();
+            }
+            catch (ObjectDisposedException)
+            {
+                // The application container was already disposed (see above); nothing project-scoped
+                // remains to clean up, so proceed to dispose our own scope below.
             }
             finally
             {
+                _scope.Dispose();
                 _scope = null;
             }
 
