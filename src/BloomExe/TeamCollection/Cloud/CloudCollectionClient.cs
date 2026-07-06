@@ -50,15 +50,6 @@ namespace Bloom.TeamCollection.Cloud
     }
 
     /// <summary>
-    /// RestSharp client for Cloud Team Collection Postgres RPCs (PostgREST) and edge functions,
-    /// per CONTRACTS.md. Modeled on <see cref="Bloom.WebLibraryIntegration.BloomLibraryBookApiClient"/>.
-    /// Injects the bearer token from <see cref="CloudAuth"/> on every call, retries once via
-    /// <see cref="CloudAuth.TryRefreshOn401"/> on a 401, and maps error responses to a
-    /// <see cref="CloudCollectionClientException"/> with a typed <see cref="CloudErrorCode"/>.
-    /// This class only owns the transport; the RPC/edge-function-specific methods (get_collection_state,
-    /// checkout_book, checkin-start, etc.) are built on top of it by later tasks.
-    /// </summary>
-    /// <summary>
     /// The one thing <see cref="CloudCollectionClient"/> needs from a transport: execute a
     /// request, get a response. Deliberately much smaller than RestSharp's own IRestClient
     /// (which carries dozens of unrelated configuration members) so tests can substitute a fake
@@ -82,6 +73,15 @@ namespace Bloom.TeamCollection.Cloud
         public IRestResponse Execute(IRestRequest request) => _client.Execute(request);
     }
 
+    /// <summary>
+    /// RestSharp client for Cloud Team Collection Postgres RPCs (PostgREST) and edge functions,
+    /// per CONTRACTS.md. Modeled on <see cref="Bloom.WebLibraryIntegration.BloomLibraryBookApiClient"/>.
+    /// Injects the bearer token from <see cref="CloudAuth"/> on every call, retries once via
+    /// <see cref="CloudAuth.TryRefreshOn401"/> on a 401, and maps error responses to a
+    /// <see cref="CloudCollectionClientException"/> with a typed <see cref="CloudErrorCode"/>.
+    /// This class only owns the transport; the RPC/edge-function-specific methods (get_collection_state,
+    /// checkout_book, checkin-start, etc.) are built on top of it by later tasks.
+    /// </summary>
     public class CloudCollectionClient
     {
         private readonly CloudEnvironment _environment;
