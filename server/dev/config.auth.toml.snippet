@@ -1,0 +1,50 @@
+# ============================================================================
+# ORCHESTRATOR NOTE — fold these settings into supabase/config.toml at merge.
+#
+# Task 11 cannot create or modify supabase/config.toml directly (task 01
+# owns that file). The settings below MUST be present under the [auth] section
+# in supabase/config.toml for the local dev stack to work correctly.
+#
+# Steps for the orchestrator:
+#   1. Open supabase/config.toml (created by task 01).
+#   2. Find or create the [auth] section.
+#   3. Copy the key=value lines from the "Settings to add" block below into it.
+#   4. Delete this file from the repo (it exists only to carry the settings
+#      across the task boundary).
+# ============================================================================
+#
+# Context: local GoTrue email/password auth with NO email confirmation required.
+# Any email + password combination signs up as a valid, confirmed user.
+# This is the "accepts any login" property that makes multi-instance dev testing
+# work without a real mail server.
+#
+# Security: these settings ONLY apply to the local dev Supabase project
+# (the one started by `supabase start`). Hosted/production projects have
+# separate config and are NOT affected.
+#
+# --- Settings to add under [auth] in supabase/config.toml -----------------
+
+[auth]
+# Allow new users to sign up with email+password.
+enable_signup = true
+
+# Do NOT require email confirmation before a user can sign in.
+# With this set to false, signup immediately returns a confirmed user and a
+# valid JWT — no mail server, no verification link needed.
+enable_confirmations = false
+
+# ---------------------------------------------------------------------------
+# Seed-file wiring
+# ---------------------------------------------------------------------------
+# To have `supabase db reset` apply seed.sql automatically, add this line
+# to supabase/config.toml under [db]:
+#
+#   [db]
+#   seed_sql_path = "server/dev/seed.sql"
+#
+# Alternatively, run manually after `supabase db reset`:
+#   supabase db query --file server/dev/seed.sql
+#
+# OR wire it via supabase/seed.sql (symlink or copy server/dev/seed.sql there).
+# The three approaches are equivalent; pick whichever fits task 01's layout.
+# ---------------------------------------------------------------------------
