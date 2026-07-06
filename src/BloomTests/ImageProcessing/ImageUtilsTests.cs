@@ -1171,8 +1171,10 @@ namespace BloomTests.ImageProcessing
             // This test verifies that when source and destination folders are different,
             // the original file is never deleted.
 
-            using (var sourceFolder = new TemporaryFolder("SourceFolder"))
-            using (var destFolder = new TemporaryFolder("DestFolder"))
+            using (
+                var sourceFolder = new TemporaryFolder("ReallyCropImages_DifferentFolders_Source")
+            )
+            using (var destFolder = new TemporaryFolder("ReallyCropImages_DifferentFolders_Dest"))
             {
                 var imagePath = Path.Combine(sourceFolder.Path, "original.png");
                 var _pathToTestImages = "src\\BloomTests\\ImageProcessing\\images";
