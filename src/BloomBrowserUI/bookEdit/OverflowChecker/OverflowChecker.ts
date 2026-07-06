@@ -718,7 +718,7 @@ export default class OverflowChecker {
     }
     // Make sure there are no boxes with class 'overflow' or 'thisOverflowingParent' on the page before removing
     // the page-level overflow marker 'pageOverflows', or add it if there are.
-    private static UpdatePageOverflow(page) {
+    private static UpdatePageOverflow(page: JQuery) {
         // TODO: Investigate BL-6686. It seems that it takes more clicks to propagate the pageOverflows class onto a FrontCover page than a normal page??? Repro in both 4.4 and 4.5
         const $page = $(page);
         if (
@@ -728,8 +728,14 @@ export default class OverflowChecker {
             $page.removeClass("pageOverflows");
         else $page.addClass("pageOverflows");
 
-        // BL-11949: books with device layouts can ignore overflows because we'll show a scrollbar
-        if (this.GetScrollInsteadOfOverflow(page)) {
+        // BL-11949: books with device layouts can ignore overflows because we'll show a scrollbar.
+        // GetScrollInsteadOfOverflow needs the DOM element; our caller passes a jQuery
+        // object, so unwrap it. $page can be empty here because this runs on a deferred
+        // (1s) timer — by the time it fires, the element may have been detached (page
+        // switched or deleted), leaving no .bloom-page ancestor. That's a valid "nothing
+        // to do" case the rest of this module already no-ops on, so guard rather than
+        // crash. See BL-16503.
+        if ($page[0] && this.GetScrollInsteadOfOverflow($page[0])) {
             $page.removeClass("pageOverflows");
             // note, we don't yet remove the bubble that says there is too much text. This code is already spaghetti enough, I didn't want to pay that price at this time. --JH
         }
