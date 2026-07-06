@@ -12,6 +12,12 @@ namespace Bloom
         public const string kTeamCollections = "team-collections";
         public const string kAppBuilder = "app-builder";
 
+        /// <summary>
+        /// Token for the cloud-backed Team Collections experimental feature.
+        /// Registration only for now; no UI is wired to this flag until task 01+.
+        /// </summary>
+        public const string kCloudTeamCollections = "cloud-team-collections";
+
         public static string TokensOfEnabledFeatures =>
             Settings.Default.EnabledExperimentalFeatures;
 
