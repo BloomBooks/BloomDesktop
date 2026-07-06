@@ -84,8 +84,14 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 
 ## Status
 
-- [ ] Wave 0 complete (folder backend provably unchanged)
+- [x] Wave 0 complete (folder backend provably unchanged — 208/208 TC tests green)
 - [ ] Wave 1 complete (incl. local dev stack up: `supabase start` + MinIO + dev logins)
+  - [x] 01-server-schema authored + reviewed (pgTAP unrun — awaiting Docker)
+  - [x] 11-local-dev-stack authored + reviewed (smoke/parity unrun — awaiting Docker)
+  - [ ] 02-edge-functions
+  - [ ] 03-auth
+  - [ ] 07-ui-setup (shells)
+  - [ ] Docker Desktop installed → run pgTAP, seed sign-in check, smoke, parity spike
 - [ ] Wave 2 complete
 - [ ] Wave 3 complete (two-instance same-machine smoke against local stack)
 - [ ] Wave 4 complete
@@ -97,3 +103,14 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 ## Merge log
 
 (orchestrator appends: date · task · PR · notes)
+
+- 6 Jul 2026 · 00-enablers · merged locally · Reviewed diff line-by-line; seams preserve
+  folder behavior; 208/208 TeamCollection tests (24 new) verified against fresh binaries.
+  Note: TryLockInRepo gained a BookStatus param vs the task file (avoids redundant GetStatus).
+- 6 Jul 2026 · 01-server-schema · merged locally · Orchestrator fixes: checkout_book
+  ROW_COUNT type bug; pgTAP errcode; realtime pg_notify→realtime.send TODO (wave 4);
+  seed wiring in config.toml. CONTRACTS.md bumped to v1.1 (p_ arg prefix; Content-Profile
+  header). pgTAP suite authored but UNRUN (no Docker yet).
+- 6 Jul 2026 · 11-local-dev-stack · merged locally · Orchestrator fix: seed bcrypt hash was
+  invalid (verified with bcryptjs); replaced with a self-verified hash. Smoke script and
+  parity spike authored but UNRUN (no Docker yet); parity-check compiles clean.

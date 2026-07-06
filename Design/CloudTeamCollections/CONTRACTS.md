@@ -1,7 +1,8 @@
 # Cloud Team Collections — frozen API contracts (v1)
 
 Changes to this file require an orchestrator commit and a version-note bump here.
-**Contract version: 1** (2 Jul 2026).
+**Contract version: 1.1** (6 Jul 2026 — added the two wire-format clarifications under
+"Postgres RPCs"; no semantic changes).
 
 ## Link file
 
@@ -16,6 +17,12 @@ isolates it). Claims used server-side: `sub` (user id), `email`, `email_verified
 Claiming an approval requires `email_verified = true`.
 
 ## Postgres RPCs (PostgREST `/rest/v1/rpc/...`)
+
+Wire-format clarifications (v1.1): (1) the implemented SQL functions prefix every parameter
+with `p_`, and PostgREST matches JSON keys to parameter names — so clients send
+`{"p_collection_id": ...}` etc.; the table below keeps the logical (unprefixed) names.
+(2) The `tc` schema is exposed as a separate PostgREST schema: RPC calls must carry the
+`Content-Profile: tc` header (reads: `Accept-Profile: tc`).
 
 | RPC | Args → Result |
 |-----|----------------|
