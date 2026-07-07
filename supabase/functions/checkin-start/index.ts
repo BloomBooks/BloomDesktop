@@ -26,7 +26,10 @@ const CHECKIN_ACTIONS = [
     "s3:ListMultipartUploadParts",
 ];
 
-serveJsonPost(async (req, body) => {
+// Exported (rather than only passed inline to serveJsonPost) so Deno tests can import
+// and call it directly with a mocked Request, without triggering Deno.serve — see the
+// `import.meta.main` guard below.
+export const handler = async (req: Request, body: Record<string, unknown>): Promise<Response> => {
     const collectionId = requireField<string>(body, "collectionId");
     const bookInstanceId = requireField<string>(body, "bookInstanceId");
     const proposedName = requireField<string>(body, "proposedName");
@@ -55,4 +58,8 @@ serveJsonPost(async (req, body) => {
         changedPaths: result.changedPaths,
         s3,
     });
-});
+};
+
+if (import.meta.main) {
+    serveJsonPost(handler);
+}

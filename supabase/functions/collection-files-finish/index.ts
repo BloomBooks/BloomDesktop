@@ -20,7 +20,9 @@ interface CollectionFilesFinishResult {
     manifest?: unknown;
 }
 
-serveJsonPost(async (req, body) => {
+// Exported so Deno tests can import and call it directly — see checkin-start/index.ts's
+// comment on the `import.meta.main` guard below.
+export const handler = async (req: Request, body: Record<string, unknown>): Promise<Response> => {
     const transactionId = requireField<string>(body, "transactionId");
 
     const tx = await selectTcRow<CollectionFileTransactionRow>(
@@ -56,4 +58,8 @@ serveJsonPost(async (req, body) => {
     }
 
     return jsonResponse(200, { version: result.version });
-});
+};
+
+if (import.meta.main) {
+    serveJsonPost(handler);
+}

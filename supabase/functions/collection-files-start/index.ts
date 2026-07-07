@@ -22,7 +22,9 @@ interface CollectionFilesStartResult {
     changedPaths: string[];
 }
 
-serveJsonPost(async (req, body) => {
+// Exported so Deno tests can import and call it directly — see checkin-start/index.ts's
+// comment on the `import.meta.main` guard below.
+export const handler = async (req: Request, body: Record<string, unknown>): Promise<Response> => {
     const collectionId = requireField<string>(body, "collectionId");
     const groupKey = requireField<string>(body, "groupKey");
     const expectedVersion = requireField<number>(body, "expectedVersion");
@@ -43,4 +45,8 @@ serveJsonPost(async (req, body) => {
     const s3 = await getScopedCredentials(prefix, COLLECTION_FILES_ACTIONS);
 
     return jsonResponse(200, { transactionId: result.transactionId, changedPaths: result.changedPaths, s3 });
-});
+};
+
+if (import.meta.main) {
+    serveJsonPost(handler);
+}

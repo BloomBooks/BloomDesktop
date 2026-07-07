@@ -107,7 +107,16 @@ Only these functions ever hold AWS/MinIO admin creds.
   Remaining for this task: Deno unit tests per function (mocked RPC/S3 — the live spike
   above covers integration but not fast, hermetic CI-friendly coverage), the invariant
   test (transaction lifetime 48h < noncurrent-expiry-floor 7d — config assertion), and
-  `server/provision-aws` (author + review only, no AWS account). Next action: refactor
-  each `index.ts` to export its handler behind an `import.meta.main` guard (so
-  `Deno.serve` only starts when run as the entry point, not when a test imports the
-  module) and write the Deno test suite.
+  `server/provision-aws` (author + review only, no AWS account).
+- 2026-07-06 (later still) · done: refactored all 6 `supabase/functions/*/index.ts` to
+  `export const handler = async (req, body) => {...}` + `if (import.meta.main) { serveJsonPost(handler); }`
+  instead of passing the arrow function straight into `serveJsonPost(...)`. Empirically
+  verified (via the running local stack) that the real supabase-edge-runtime still sets
+  `import.meta.main = true` and serves normally with this guard — re-ran the full 26-check
+  live-integration suite after the refactor, still 26/26. This makes each handler
+  importable and directly callable from a Deno test with a mocked `Request`, without a
+  module-load side effect of starting a real `Deno.serve` (which would collide across
+  test files). `deno check` clean on all 6. Next action: write the Deno test suite
+  (`_shared/s3.test.ts` using `aws-sdk-client-mock` for STS/S3; per-function
+  `index.test.ts` mocking `globalThis.fetch` for the RPC calls), the invariant config
+  assertion, then author `server/provision-aws`.

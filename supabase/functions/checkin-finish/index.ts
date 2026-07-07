@@ -29,7 +29,9 @@ interface CheckinFinishResult {
     manifest?: unknown;
 }
 
-serveJsonPost(async (req, body) => {
+// Exported so Deno tests can import and call it directly with a mocked Request,
+// without triggering Deno.serve — see the `import.meta.main` guard below.
+export const handler = async (req: Request, body: Record<string, unknown>): Promise<Response> => {
     const transactionId = requireField<string>(body, "transactionId");
     const comment = optionalField<string>(body, "comment");
     const keepCheckedOut = Boolean(body["keepCheckedOut"]);
@@ -81,4 +83,8 @@ serveJsonPost(async (req, body) => {
     }
 
     return jsonResponse(200, { versionId: result.versionId, seq: result.seq });
-});
+};
+
+if (import.meta.main) {
+    serveJsonPost(handler);
+}
