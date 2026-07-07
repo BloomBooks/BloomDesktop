@@ -50,3 +50,37 @@ anything needing a base change goes back to the orchestrator.
   doc comment said later tasks build these on top of it. Builds clean.
   Next action: write `Cloud/CloudTeamCollection.cs` implementing every abstract member per the
   mapping table, using `CloudRepoCache` + the new client methods + `CloudBookTransfer`.
+- 7 Jul 2026 · done · Wrote `Cloud/CloudTeamCollection.cs` (every abstract/virtual member of
+  TeamCollection implemented: status/list/presence from cache; TryLockInRepo/UnlockInRepo via
+  checkout_book/unlock_book/force_unlock; WriteBookStatusJsonToRepo diff-dispatch per the task 00
+  audit; PutBookInRepo = Send via checkin-start/upload/checkin-finish with "name2" NameConflict
+  retry and an inLostAndFound -> unified-recovery branch (.bloomSource to local Lost and Found +
+  log_event type 100 WorkPreservedLocally + distinct message per sub-case); FetchBookFromRepo =
+  Receive via get_book_manifest + pinned download into a staging folder + a two-rename atomic
+  directory swap done by this class (per the merge-log note that CloudBookTransfer's own move loop
+  isn't itself atomic); GetRepoBookFile = single pinned-file fetch, cached per sync pass; casing
+  methods against the cached book's canonical Name; collection files via collection-files-start/
+  finish (push) and a direct S3 prefix-list+download (pull, since no group manifest RPC exists);
+  color palette sync is push-only via add_palette_colors (no read-back RPC exists); CheckConnection
+  = signed-in + membership check; StartMonitoring/StopMonitoring wire a new CloudCollectionMonitor
+  instance whose polled deltas raise the same low-level events FolderTeamCollection's file watcher
+  raises. Also wrote `Cloud/CloudCollectionMonitor.cs` (60s Timer polling get_changes, PollNow() for
+  on-activation/manual triggering, self-echo suppression falls out of the shared last_seen_event_id
+  cursor). Builds clean (`dotnet build src/BloomExe/BloomExe.csproj`).
+  Contract gaps/ambiguities found while implementing (see final report for full list): (1)
+  checkin-start/finish never return the server-assigned book id for a brand-new book -- worked
+  around with a post-commit get_collection_state refresh matched on bookInstanceId; (2) no manifest
+  RPC exists for collection-file groups (only a version-bump counter) -- worked around with a direct
+  S3 ListObjectsV2, reading latest rather than a pinned version; (3) add_palette_colors has no
+  matching read-back RPC -- palette sync is currently push-only; (4) member first/last name isn't in
+  the book row shape -- lock display fields lockedByFirstName/Surname are null for cloud TCs; (5)
+  collection-files-start/finish's exact response shape isn't spelled out -- assumed
+  checkin-start-like `{transactionId, s3}` / `{version}`; (6) the `members` RPC names
+  (members_list/add/remove/set_role) are a guess at CONTRACTS.md's "members: list/add/remove/
+  set_role" shorthand.
+  Base-class change identified but NOT made (file discission): `Bloom.History.BookHistoryEventType`
+  has no `WorkPreservedLocally` member; used the literal `100` per the task brief instead of adding
+  it to that shared enum (out of this task's owned-file scope) -- recommend the orchestrator add
+  `WorkPreservedLocally = 100` there.
+  Next action: write `Cloud/CloudJoinFlow.cs`, then the one authorized
+  TeamCollectionManager.cs edit, then tests.
