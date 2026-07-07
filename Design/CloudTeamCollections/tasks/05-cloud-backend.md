@@ -102,3 +102,15 @@ anything needing a base change goes back to the orchestrator.
   cloud branch + ConnectToCloudCollection), then the test suite (CloudTeamCollectionMemberTests,
   CloudTeamCollectionLockTests, CloudSyncAtStartupTests, CloudCollectionMonitorTests), then
   build/test verification and the final report.
+- 7 Jul 2026 · done · Made the one authorized TeamCollectionManager.cs edit: replaced both
+  NotImplementedException placeholders (`CreateTeamCollectionFromLink`'s cloud branch now calls a
+  new private `CreateCloudTeamCollection` helper mirroring `CreateFolderTeamCollection`;
+  `ConnectToCloudCollection(collectionId)` now creates the server-side row via create_collection
+  -- collectionId doubles as both this Bloom collection's own CollectionId GUID and the server's
+  `collections.id`, per CONTRACTS.md's link-format note -- links the local collection, and pushes
+  existing local content up via a new `CloudTeamCollection.SetupCloudTeamCollectionWithProgressDialog`
+  mirroring FolderTeamCollection's own Setup*WithProgressDialog). Touched nothing else in the file
+  (verified via `git diff --stat` + full diff review). Builds clean.
+  Next action: write the test suite (CloudTeamCollectionMemberTests, CloudTeamCollectionLockTests,
+  CloudSyncAtStartupTests, CloudCollectionMonitorTests) under src/BloomTests/TeamCollection/Cloud/,
+  run the cloud + TC-regression filters, then write the final report.

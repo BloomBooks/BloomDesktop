@@ -23,9 +23,11 @@ namespace Bloom.TeamCollection
         void ConnectToTeamCollection(string repoFolderParentPath, string collectionId);
 
         /// <summary>
-        /// Connect the current collection to a cloud-backed Team Collection identified
-        /// by <paramref name="collectionId"/>.  Not yet implemented — throws
-        /// <see cref="NotImplementedException"/> until task 01+ is complete.
+        /// Connect the current collection to a new cloud-backed Team Collection, using
+        /// <paramref name="collectionId"/> as both this Bloom collection's own CollectionId GUID
+        /// and the server's `collections.id` (CONTRACTS.md: "&lt;collectionId&gt; = the Bloom
+        /// CollectionId GUID (also the server collections.id)"). Creates the server-side row and
+        /// pushes every existing local book and collection-level file up.
         /// </summary>
         void ConnectToCloudCollection(string collectionId);
 
@@ -428,7 +430,8 @@ namespace Bloom.TeamCollection
         /// <summary>
         /// Factory: create the appropriate <see cref="TeamCollection"/> subclass for the given
         /// parsed <see cref="TeamCollectionLink"/>. For folder links this returns a
-        /// <see cref="FolderTeamCollection"/>; cloud links will be handled once task 01+ lands.
+        /// <see cref="FolderTeamCollection"/>; for cloud links, a
+        /// <see cref="Bloom.TeamCollection.Cloud.CloudTeamCollection"/>.
         /// </summary>
         /// <param name="link">Parsed link; must not be null.</param>
         /// <param name="bookCollectionHolder">Passed through to the collection constructor.</param>
@@ -443,10 +446,7 @@ namespace Bloom.TeamCollection
             if (link.IsFolder)
                 return CreateFolderTeamCollection(link, bookCollectionHolder);
 
-            // Cloud support lands in task 01+.
-            throw new NotImplementedException(
-                $"Cloud-backed Team Collections are not yet implemented (collectionId={link.CloudCollectionId})."
-            );
+            return CreateCloudTeamCollection(link, bookCollectionHolder);
         }
 
         /// <summary>
@@ -468,6 +468,31 @@ namespace Bloom.TeamCollection
                 this,
                 _localCollectionFolder,
                 link.RepoFolderPath,
+                bookCollectionHolder: bookCollectionHolder,
+                collectionLock: Lock
+            );
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Bloom.TeamCollection.Cloud.CloudTeamCollection"/> for a cloud-backed
+        /// link.
+        /// </summary>
+        /// <param name="link">Must be a cloud link.</param>
+        /// <param name="bookCollectionHolder">Passed through to the collection constructor.</param>
+        private Bloom.TeamCollection.Cloud.CloudTeamCollection CreateCloudTeamCollection(
+            TeamCollectionLink link,
+            BookCollectionHolder bookCollectionHolder
+        )
+        {
+            if (link == null)
+                throw new ArgumentNullException(nameof(link));
+            if (!link.IsCloud)
+                throw new ArgumentException("Expected a cloud-backed link.", nameof(link));
+
+            return new Bloom.TeamCollection.Cloud.CloudTeamCollection(
+                this,
+                _localCollectionFolder,
+                link.CloudCollectionId,
                 bookCollectionHolder: bookCollectionHolder,
                 collectionLock: Lock
             );
@@ -571,15 +596,44 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
-        /// Connect the current collection to a cloud-backed Team Collection identified by
-        /// <paramref name="collectionId"/>.  Not yet implemented — throws
-        /// <see cref="NotImplementedException"/> until task 01+ is complete.
+        /// Connect the current collection to a new cloud-backed Team Collection, using
+        /// <paramref name="collectionId"/> as both this Bloom collection's own CollectionId GUID
+        /// and the server's `collections.id` (CONTRACTS.md: "&lt;collectionId&gt; = the Bloom
+        /// CollectionId GUID (also the server collections.id)"). Creates the server-side row
+        /// (create_collection), links the local collection to it, and pushes every existing local
+        /// book and collection-level file up -- the cloud counterpart of
+        /// <see cref="ConnectToTeamCollection"/>'s folder-backed flow.
         /// </summary>
         public void ConnectToCloudCollection(string collectionId)
         {
-            throw new NotImplementedException(
-                "Cloud-backed Team Collections are not yet implemented."
+            // The creator of a TC is its first and, for now, usually only administrator.
+            Settings.Administrators = new[] { CurrentUser };
+            Settings.Save();
+
+            var environment = Cloud.CloudEnvironment.Current;
+            var auth = new Cloud.CloudAuth(Cloud.CloudAuth.CreateProvider(environment));
+            auth.InitializeAtStartup(environment);
+            var client = new Cloud.CloudCollectionClient(environment, auth);
+            client.CreateCollection(collectionId, Settings.CollectionName);
+
+            var link = TeamCollectionLink.ForCloud(collectionId);
+            link.WriteToFile(GetTcLinkPathFromLcPath(_localCollectionFolder));
+
+            var newTc = new Cloud.CloudTeamCollection(
+                this,
+                _localCollectionFolder,
+                collectionId,
+                bookCollectionHolder: _bookCollectionHolder,
+                collectionLock: Lock,
+                environment: environment,
+                auth: auth,
+                client: client
             );
+            newTc.SocketServer = SocketServer;
+            newTc.TCManager = this;
+            newTc.SetupCloudTeamCollectionWithProgressDialog();
+            CurrentCollection = newTc;
+            CurrentCollectionEvenIfDisconnected = newTc;
         }
 
         public string PlannedRepoFolderPath(string repoFolderParentPath)

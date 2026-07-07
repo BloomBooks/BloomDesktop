@@ -1143,6 +1143,58 @@ namespace Bloom.TeamCollection.Cloud
         }
 
         // ------------------------------------------------------------------
+        // Converting the current local collection into a fresh cloud Team Collection
+        // (TeamCollectionManager.ConnectToCloudCollection's counterpart to
+        // FolderTeamCollection.SetupTeamCollection/SetupTeamCollectionWithProgressDialog).
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Pushes every existing local book and collection-level file up to this (freshly-linked,
+        /// still-empty) cloud collection, then starts monitoring. Called once, right after
+        /// TeamCollectionManager.ConnectToCloudCollection creates the server-side row and links the
+        /// current local collection to it.
+        /// </summary>
+        public void SetupCloudTeamCollection(Bloom.web.IWebSocketProgress progress)
+        {
+            progress.Message(
+                "StartingCopy",
+                "",
+                "Starting to set up the Team Collection",
+                Bloom.web.ProgressKind.Progress
+            );
+            CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
+            SynchronizeBooksFromLocalToRepo(progress);
+            StartMonitoring();
+        }
+
+        /// <summary>Wraps <see cref="SetupCloudTeamCollection"/> with a progress dialog, mirroring
+        /// <see cref="FolderTeamCollection.SetupTeamCollectionWithProgressDialog"/>.</summary>
+        public void SetupCloudTeamCollectionWithProgressDialog()
+        {
+            var title = "Setting Up Team Collection"; // matches FolderTeamCollection's own (un-l10n'd) title.
+            ShowProgressDialog(
+                title,
+                (progress, worker) =>
+                {
+                    try
+                    {
+                        SetupCloudTeamCollection(progress);
+                    }
+                    catch (Exception ex)
+                    {
+                        // this will ensure that progress.HaveProblemsBeenReported is true.
+                        progress.MessageWithoutLocalizing(
+                            "Something went wrong: " + ex.Message,
+                            Bloom.web.ProgressKind.Error
+                        );
+                    }
+                    progress.Message("Done", "Done");
+                    return progress.HaveProblemsBeenReported;
+                }
+            );
+        }
+
+        // ------------------------------------------------------------------
         // Connection check
         // ------------------------------------------------------------------
 
