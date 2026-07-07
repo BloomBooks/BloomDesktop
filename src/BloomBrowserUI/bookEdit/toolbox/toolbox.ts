@@ -412,7 +412,15 @@ export class ToolBox {
                         // remove any experimental tools the user doesn't want
                         // TODO: give each experimental tool it's own setting once we have any experimental tools again.
                         // Presumably use the tool id as the keyword in the list of experimental features.
-                        const toolsToLoad = enabledTools.data.split(",");
+                        const toolsToLoad = enabledTools.data
+                            .split(",")
+                            .map((toolId: string) => toolId.trim())
+                            .filter((toolId: string) => toolId.length > 0)
+                            .map((toolId: string) =>
+                                toolId.endsWith("Tool")
+                                    ? toolId.substring(0, toolId.length - 4)
+                                    : toolId,
+                            );
                         // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
                         for (let i = toolsToLoad.length - 1; i >= 0; i--) {
                             if (
@@ -1264,8 +1272,6 @@ function beginAddTool(
 
     const subpath = {
         talkingBookTool: "talkingBook/talkingBookToolboxTool.html",
-        decodableReaderTool:
-            "readers/decodableReader/decodableReaderToolboxTool.html",
         leveledReaderTool:
             "readers/leveledReader/leveledReaderToolboxTool.html",
         settingsTool: "settings/Settings.html",

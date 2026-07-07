@@ -1,7 +1,9 @@
 import {
+    getAsync,
     getWithConfig,
     getWithConfigAsync,
     postJson,
+    postJsonAsync,
 } from "../../utils/bloomApi";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
@@ -10,21 +12,24 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 
 import {
     kBackgroundImageClass,
-    theOneCanvasElementManager,
-    updateCanvasElementClass,
-} from "./CanvasElementManager";
-import {
-    kCanvasElementSelector,
     kBloomCanvasClass,
     kBloomCanvasSelector,
-} from "../toolbox/canvas/canvasElementUtils";
+    kCanvasElementSelector,
+} from "../toolbox/canvas/canvasElementConstants";
+import { updateCanvasElementClass } from "../toolbox/canvas/canvasElementDomUtils";
 
 import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
-import { showCopyrightAndLicenseDialog } from "../workspaceRoot";
-import { getCanvasElementManager } from "../toolbox/canvas/canvasElementUtils";
+import { getWorkspaceBundleExports } from "./workspaceFrames";
+import {
+    changeImage,
+    IImageInfo,
+    wrapWithRequestPageContentDelay,
+} from "./bloomEditing";
+import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
+import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import $ from "jquery";
 
 // This appears to be constant even on higher dpi screens.
@@ -235,6 +240,66 @@ export function HandleImageError(event: Event | string) {
     // console.error("Image failed to load:", target.src);
 }
 
+function getPasteImageApiErrorMessage(
+    responseOrError: unknown,
+): string | undefined {
+    const getMessageFromValue = (value: unknown): string | undefined => {
+        if (typeof value === "string" && value.trim().length > 0) {
+            return value;
+        }
+
+        if (!value || typeof value !== "object") {
+            return undefined;
+        }
+
+        const valueRecord = value as Record<string, unknown>;
+        const candidateKeys = ["message", "Message", "error", "Error", "text"];
+        for (const key of candidateKeys) {
+            const keyValue = valueRecord[key];
+            if (typeof keyValue === "string" && keyValue.trim().length > 0) {
+                return keyValue;
+            }
+        }
+
+        return undefined;
+    };
+
+    const errorLike = responseOrError as {
+        data?: unknown;
+        response?: { data?: unknown };
+        request?: { responseText?: unknown };
+        responseText?: unknown;
+    };
+
+    const messageCandidates = [
+        errorLike.response?.data,
+        errorLike.data,
+        errorLike.request?.responseText,
+        errorLike.responseText,
+    ];
+
+    for (const candidate of messageCandidates) {
+        const message = getMessageFromValue(candidate);
+        if (message) {
+            return message;
+        }
+    }
+
+    return undefined;
+}
+
+function handlePasteImageApiError(responseOrError: unknown): void {
+    const message =
+        getPasteImageApiErrorMessage(responseOrError) ??
+        theOneLocalizationManager.getText(
+            "EditTab.NoImageFoundOnClipboard",
+            "Before you can paste an image, copy one onto your 'clipboard', from another program.",
+        );
+    BloomMessageBoxSupport.CreateAndShowSimpleMessageBoxWithLocalizedText(
+        message,
+    );
+}
+
 export function doImageCommand(
     img: HTMLElement | undefined,
     command: "copy" | "paste" | "change",
@@ -242,37 +307,331 @@ export function doImageCommand(
     if (!img) {
         return;
     }
-    // get the image id attribute. If it doesn't have one, add it before calling
-    // the server api. This is needed to properly identify the image later on in the
-    // changeImage method.  The copy command doesn't need to identify the image later,
-    // as the source url is enough for that command.
-    // (An image usually shouldn't have an id to begin with.)
-    let imageId = img.getAttribute("id");
     const imageSrc = GetRawImageUrl(img);
-    if (command !== "copy") {
+
+    if (command === "paste") {
+        // A temporary id is needed so the server-side callback can find the right
+        // image element when C# calls changeImage() by id.
+        let imageId = img.getAttribute("id");
         if (!imageId) {
             imageId = EditableDivUtils.createUuid();
             img.setAttribute("id", imageId);
         }
-        // Note that the changeImage method (called from the C# code) will remove the id
-        // attribute after using it to find the correct image.  The C# code will call the
-        // removeImageId method if it doesn't call the changeImage method.  See BL-13619.
+        const topDiv = img.closest(kCanvasElementSelector);
+        const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
+        const pageBackgroundColor = getOwningPageBackgroundColor(img);
+        postJson(
+            "editView/pasteImage",
+            { imageId, imageSrc, imageIsGif, pageBackgroundColor },
+            undefined,
+            handlePasteImageApiError,
+        );
+        return;
     }
 
+    if (command === "copy") {
+        const copyTopDiv = img.closest(kCanvasElementSelector);
+        const copyImageIsGif =
+            copyTopDiv?.classList.contains("bloom-gif") ?? false;
+        postJson("editView/copyImage", {
+            imageSrc,
+            imageIsGif: copyImageIsGif,
+        });
+        return;
+    }
+
+    // command === "change"
     const topDiv = img.closest(kCanvasElementSelector);
     // Currently Gifs can only be added using the Games tool.
     // A gif is always an img in a canvas element div, and we put a special class
-    // on the canvas element
-    // and use it in various ways where GIFs need to behave differently from
-    // other imgs. (For example, currently, they can only be cut/copied as file
-    // paths, we don't support metadata, they can't be cropped,...)
+    // on the canvas element and use it in various ways where GIFs need to behave
+    // differently from other imgs.
     const imageIsGif = topDiv?.classList.contains("bloom-gif") ?? false;
 
-    postJson("editView/" + command + "Image", {
-        imageId,
-        imageSrc,
-        imageIsGif,
-    });
+    if (imageIsGif) {
+        // GIF images bypass the gallery and go straight to a native file picker.
+        // A temporary id is needed so the wrapWithRequestPageContentDelay / changeImage
+        // round-trip can locate the element.
+        let imageId = img.getAttribute("id");
+        if (!imageId) {
+            imageId = EditableDivUtils.createUuid();
+            img.setAttribute("id", imageId);
+        }
+        wrapWithRequestPageContentDelay(
+            () => doChangeGifImage(img, imageId!),
+            "doChangeGifImage",
+        );
+    } else {
+        // The gallery dialog holds a direct JS reference to img, so no temporary id
+        // is needed and requestPageContent cannot capture a stale attribute.
+        getImageSearchLanguage().then((searchLang) => {
+            getWorkspaceBundleExports().showImageGalleryDialog(img, searchLang);
+        });
+    }
+}
+
+/**
+ * Returns the preferred image search language, mirroring the old WinForms logic:
+ *   1. Settings.Default.ImageSearchLanguage (explicit user choice)
+ *   2. Settings.Default.UserInterfaceLanguage stripped to its primary subtag
+ *   3. "en" as a final fallback
+ */
+async function getImageSearchLanguage(): Promise<string> {
+    try {
+        const r = await getAsync(
+            "app/userSetting?settingName=ImageSearchLanguage",
+        );
+        const lang = r?.data?.settingValue as string;
+        if (lang) return lang;
+    } catch {
+        // fall through
+    }
+    try {
+        const r = await getAsync(
+            "app/userSetting?settingName=UserInterfaceLanguage",
+        );
+        const lang = r?.data?.settingValue as string;
+        if (lang) {
+            const idx = lang.search(/[-_]/);
+            return idx > 0 ? lang.substring(0, idx) : lang;
+        }
+    } catch {
+        // fall through
+    }
+    return "en";
+}
+
+// Handles the "change image" flow for GIF elements: picks a file via C# and applies it.
+async function doChangeGifImage(
+    img: HTMLElement,
+    imageId: string,
+): Promise<void> {
+    try {
+        const pickResponse = await postJsonAsync(
+            "imageGallery/pickLocalImageFile",
+            {
+                gifOnly: true,
+            },
+        );
+        const { filePath } = pickResponse!.data as { filePath: string };
+        if (!filePath) {
+            // User cancelled — remove the temporary id.
+            img.removeAttribute("id");
+            return;
+        }
+        const changeResponse = await postJsonAsync(
+            "imageGallery/imageGalleryResult",
+            {
+                localPath: filePath,
+            },
+        );
+        const result = changeResponse!.data as {
+            src: string;
+            copyright: string;
+            creator: string;
+            license: string;
+        };
+        const imageInfo: IImageInfo = {
+            imageId,
+            src: result.src,
+            copyright: result.copyright,
+            creator: result.creator,
+            license: result.license,
+            undoable: "true",
+        };
+        changeImage(imageInfo);
+    } catch {
+        img.removeAttribute("id");
+    }
+}
+
+export function getOwningPageBackgroundColor(element: HTMLElement): string {
+    const page = element.closest(".bloom-page") as HTMLElement | null;
+    if (!page) {
+        return "";
+    }
+
+    const marginBox = page.querySelector(".marginBox") as HTMLElement | null;
+    const pageSurface = marginBox ?? page;
+    // Enhance: I think we only have two cases: marginBox is often transparent on the cover,
+    // while it has an opaque color if a content page has color. So returning one or the
+    // other is enough. If we start using marginBoxes which are partly transparent, we may
+    // need to get smarter.
+    const result = normalizeCssColorToHexOrEmpty(
+        getComputedStyle(pageSurface).backgroundColor,
+    );
+    if (!result && marginBox) {
+        // If the marginBox has no background color, check the page itself.
+        return normalizeCssColorToHexOrEmpty(
+            getComputedStyle(page).backgroundColor,
+        );
+    }
+    return result;
+}
+
+// Transparency mode for a single img, mirroring the C# ImageTransparencyMode enum.
+// "none"  = no transparent param (bloom-opaque, or white page)
+// "auto"  = transparent=yes (auto-detect line art)
+// "force" = transparent=force (bloom-transparent: always apply, skip line-art check)
+type TransparencyMode = "none" | "auto" | "force";
+
+// Returns the transparency mode for an img element given whether the owning page
+// has a colored background. bloom-transparent/bloom-opaque are explicit user overrides
+// that take precedence over the page-background gate.
+export function getImageTransparencyMode(
+    img: HTMLElement,
+    pageNeedsTransparent: boolean,
+): TransparencyMode {
+    // bloom-opaque: explicit "never transparent" override.
+    if (img.classList.contains("bloom-opaque")) return "none";
+    // bloom-transparent: explicit "always force transparent" override, even on images
+    // that don't look (at least to our algorithm) like line art.
+    // This can also 'erase' very light-colored parts of an image, even on a white page.
+    if (img.classList.contains("bloom-transparent")) return "force";
+    if (!pageNeedsTransparent) return "none";
+    return "auto";
+}
+
+// Set (or remove) the transparent query param on a single img's src.
+// "none"  → remove any existing transparent param
+// "auto"  → transparent=yes
+// "force" → transparent=force (bypasses line-art detection on the server)
+// We add these params so that when bloom-server is asked for the image, it can apply
+// the appropriate transparency transform. Other information it needs can be obtained
+// from the image itself, but it doesn't have access to the img element whose src caused
+// the retrieval, so it can't check for itself whether the image has bloom-transparent
+// or bloom-opaque classes, or whether the page background is colored.
+// The downside of this approach is that if the raw HTML file in the book folder is
+// simply opened, images will not have transparent backgrounds. We think it is worth
+// the price to have the original image around, and maybe do a better job of making
+// the background transparent wth a better future algorithm, or if the page background
+// changes. For actual publications (BloomPubs, epubs, videos) we export files with
+// real transparent backgrounds. PDFs, of course, capture what the BloomServer returns.
+// Returns `src` with the transparent query parameter set for `mode`, or removed
+// when mode is "none". All other existing query parameters are preserved.
+export function buildSrcWithTransparentParam(
+    src: string,
+    mode: TransparencyMode,
+): string {
+    const qIndex = src.indexOf("?");
+    const path = qIndex < 0 ? src : src.substring(0, qIndex);
+    const params =
+        qIndex < 0
+            ? []
+            : src
+                  .substring(qIndex + 1)
+                  .split("&")
+                  .filter((p) => !p.startsWith("transparent="));
+
+    if (mode !== "none") {
+        params.push(`transparent=${mode === "force" ? "force" : "yes"}`);
+    }
+
+    return params.length > 0 ? `${path}?${params.join("&")}` : path;
+}
+
+// Mark the given img element's src with an appropriate transparent query parameter
+// so BloomServer can apply the correct transparency transform when asked for the image.
+export function setImgTransparentParam(
+    img: HTMLElement,
+    mode: TransparencyMode,
+): void {
+    const src = img.getAttribute("src");
+    if (!src) return;
+    const newSrc = buildSrcWithTransparentParam(src, mode);
+    if (newSrc !== src) img.setAttribute("src", newSrc);
+}
+
+// Update img src attributes on `page` to add or remove the transparent query
+// parameter. Pass the raw CSS color string just applied (empty when clearing).
+// Call immediately after changing --page-background-color so the browser
+// re-fetches images with the correct transparency setting.
+export function updateImageTransparencyForPage(
+    page: HTMLElement,
+    newColor: string,
+): void {
+    const pageNeedsTransparent = pageBackgroundNeedsTransparency(newColor);
+    for (const img of Array.from(page.querySelectorAll("img"))) {
+        const imgEl = img as HTMLElement;
+        if (
+            imgEl.classList.contains("branding") ||
+            imgEl.classList.contains("bloom-qrcode")
+        )
+            continue;
+        setImgTransparentParam(
+            imgEl,
+            getImageTransparencyMode(imgEl, pageNeedsTransparent),
+        );
+    }
+}
+
+function normalizeCssColorToHexOrEmpty(color: string): string {
+    const trimmed = color.trim();
+    if (
+        !trimmed ||
+        trimmed === "transparent" ||
+        trimmed === "rgba(0, 0, 0, 0)"
+    ) {
+        return "";
+    }
+
+    const match = trimmed.match(
+        /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/,
+    );
+    if (!match) {
+        return trimmed;
+    }
+
+    if (match[4] && Number(match[4]) === 0) {
+        return "";
+    }
+
+    return `#${[match[1], match[2], match[3]]
+        .map((component) => Number(component).toString(16).padStart(2, "0"))
+        .join("")}`.toUpperCase();
+}
+
+// Returns true when `color` represents a near-white value (every channel ≥ 253/255),
+// matching the C# ImageUtils.ShouldMakeTransparentForPageBackground threshold so that
+// white or near-white page backgrounds do not trigger image transparency.
+function isNearWhite(color: string): boolean {
+    const normalized = normalizeCssColorToHexOrEmpty(color);
+    if (!normalized) return false;
+
+    // After normalizeCssColorToHexOrEmpty, rgb/rgba values become uppercase #RRGGBB.
+    const hexMatch = normalized.match(
+        /^#([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/,
+    );
+    if (hexMatch) {
+        const r = parseInt(hexMatch[1], 16);
+        const g = parseInt(hexMatch[2], 16);
+        const b = parseInt(hexMatch[3], 16);
+        return r >= 253 && g >= 253 && b >= 253;
+    }
+
+    // Short hex (#FFF → each channel 0xFF = 255). Only #FFF reaches ≥ 253 in this form.
+    const shortHexMatch = normalized.match(
+        /^#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$/,
+    );
+    if (shortHexMatch) {
+        const r = parseInt(shortHexMatch[1] + shortHexMatch[1], 16);
+        const g = parseInt(shortHexMatch[2] + shortHexMatch[2], 16);
+        const b = parseInt(shortHexMatch[3] + shortHexMatch[3], 16);
+        return r >= 253 && g >= 253 && b >= 253;
+    }
+
+    // "white" is the only CSS named color that passes the ≥ 253 threshold (#FFFFFF).
+    return normalized.toLowerCase() === "white";
+}
+
+// Returns true when `color` is a non-empty, non-transparent, non-near-white CSS color string
+// — i.e., when a page with this background color needs image transparency applied.
+// Matches the behavior of the C# ImageUtils.ShouldMakeTransparentForPageBackground.
+export function pageBackgroundNeedsTransparency(color: string): boolean {
+    if (!color) return false;
+    const normalized = normalizeCssColorToHexOrEmpty(color);
+    if (!normalized) return false; // transparent / zero-alpha / no background
+    return !isNearWhite(normalized);
 }
 
 export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {
@@ -476,7 +835,7 @@ function DisableImageTooltip(container: HTMLElement | undefined | null) {
     }
 
     // If the canvas element manager hasn't been set up at all we can at least clear the current one.
-    const bloomCanvas = container.closest(kBloomCanvasClass) as HTMLElement; // this is the one we want to clear the title on, if any
+    const bloomCanvas = container.closest(kBloomCanvasSelector) as HTMLElement; // this is the one we want to clear the title on, if any
 
     if (bloomCanvas) {
         bloomCanvas.title = "";
@@ -662,45 +1021,53 @@ function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
         if (url.startsWith("/bloom/")) {
             return;
         }
-        getWithConfig(
-            "image/info",
-            { params: { image: GetRawImageUrl(img) } },
-            (result) => {
-                const imageInfo: any = result.data;
-                const containerAspectRatio =
-                    container.width() / Math.max(1, container.height());
-                const imageAspectRatio =
-                    imageInfo.width / Math.max(1, imageInfo.height);
+        // Fetching the image info and applying the size is ASYNCHRONOUS, so this fix-up is NOT complete
+        // when SetupElements()/bootstrap() returns. Register a requestPageContent delay around it so any
+        // save/capture in flight waits for the sizing to finish before reading the DOM. In particular
+        // the off-screen book processor's captureContentForExternalProcessing() honors these delays, so
+        // it captures the sized page rather than the un-sized one. Mirrors adjustBackgroundImageSize().
+        wrapWithRequestPageContentDelay(async () => {
+            const result = await getWithConfigAsync<IImageInfoResponse>(
+                "image/info",
+                { params: { image: GetRawImageUrl(img) } },
+            );
+            if (!result) {
+                return;
+            }
+            const imageInfo = result.data;
+            const containerAspectRatio =
+                container.width() / Math.max(1, container.height());
+            const imageAspectRatio =
+                imageInfo.width / Math.max(1, imageInfo.height);
 
-                // image is skinnier than the container
-                if (imageAspectRatio < containerAspectRatio) {
-                    $(img).css(
-                        "width",
-                        `${container.height() * imageAspectRatio}px`,
-                    );
-                    $(img).css("height", "100%");
-                }
-                // image is fatter than the container
-                else {
-                    $(img).css(
-                        "height",
-                        `${
-                            imageInfo.height *
-                            (container.width() / Math.max(1, imageInfo.width))
-                        }px`,
-                    );
-                    $(img).css("width", "100%");
-                }
-                // This isn't actually needed once we have the height and width
-                // here. However, when a new the book is previewed *before we've
-                // had a chance to set this stuff*, it will look awful unless we
-                // can put object-fit:contain on it. That won't make the border
-                // fit tightly, but at least the image won't be distorted. So we
-                // do set it that way in the stylesheet, and then overwrite that here once
-                // we have the height and width set.
-                $(img).css("object-fit", "cover");
-            },
-        );
+            // image is skinnier than the container
+            if (imageAspectRatio < containerAspectRatio) {
+                $(img).css(
+                    "width",
+                    `${container.height() * imageAspectRatio}px`,
+                );
+                $(img).css("height", "100%");
+            }
+            // image is fatter than the container
+            else {
+                $(img).css(
+                    "height",
+                    `${
+                        imageInfo.height *
+                        (container.width() / Math.max(1, imageInfo.width))
+                    }px`,
+                );
+                $(img).css("width", "100%");
+            }
+            // This isn't actually needed once we have the height and width
+            // here. However, when a new the book is previewed *before we've
+            // had a chance to set this stuff*, it will look awful unless we
+            // can put object-fit:contain on it. That won't make the border
+            // fit tightly, but at least the image won't be distorted. So we
+            // do set it that way in the stylesheet, and then overwrite that here once
+            // we have the height and width set.
+            $(img).css("object-fit", "cover");
+        }, "SetImageDisplaySizeIfCalledFor");
     }
 }
 
@@ -795,7 +1162,11 @@ export function SetupMetadataButton(parent: HTMLElement) {
         button.addEventListener("click", () => {
             // Don't do this before it gets clicked; might not be correct at the time we set up the handler.
             const url = img.getAttribute("src");
-            showCopyrightAndLicenseDialog(url ?? "");
+            // Launch via the workspace (top window) bundle, not this page iframe, so that saving
+            // the metadata — which reloads the page iframe — doesn't tear the dialog down.
+            getWorkspaceBundleExports().showCopyrightAndLicenseDialog(
+                url ?? "",
+            );
         });
         theOneLocalizationManager
             .asyncGetText(titleId, title, "tooltip text")
@@ -882,18 +1253,17 @@ export function SetupResizableElement(element) {
         // caption centered, but currently we are NOT centering it. However, it makes sense
         // to resize the picture and its captions together anyway. We at least want the text
         // boxes to stay the same size as the bloom-canvas.)
+        const canvasElementManager = getCanvasElementManager();
         const img = $(bloomCanvas).find("img");
         $(element).resizable({
             handles: "nw, ne, sw, se",
             containment: "parent",
             alsoResize: bloomCanvas,
             start(e, ui) {
-                theOneCanvasElementManager.suspendComicEditing(
-                    "forJqueryResize",
-                );
+                canvasElementManager?.suspendComicEditing("forJqueryResize");
             },
             stop(e, ui) {
-                theOneCanvasElementManager.resumeComicEditing();
+                canvasElementManager?.resumeComicEditing();
             },
         });
     }

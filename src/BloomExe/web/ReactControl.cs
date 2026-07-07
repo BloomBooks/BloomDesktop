@@ -86,6 +86,23 @@ namespace Bloom.web
 
         private Browser _browser;
 
+        private void SyncBrowserBounds()
+        {
+            if (_browser == null || _browser.IsDisposed)
+                return;
+
+            var desiredBounds = ClientRectangle;
+            if (desiredBounds.Width <= 0 || desiredBounds.Height <= 0)
+                return;
+
+            if (_browser.Bounds == desiredBounds)
+                return;
+
+            // The browser may be attached after this control has already been laid out,
+            // so DockStyle.Fill alone is not enough to guarantee it catches up.
+            _browser.Bounds = desiredBounds;
+        }
+
         protected override void OnBackColorChanged(EventArgs e)
         {
             base.OnBackColorChanged(e);
@@ -165,6 +182,7 @@ namespace Bloom.web
                 if (IsDisposed)
                     return;
                 Controls.Add(_browser);
+                SyncBrowserBounds();
 
                 // This allows us to bring up a react control/dialog with focus already set to a specific element.
                 // For example, for BloomMessageBox, we set the Cancel button to have focus so the user
@@ -177,6 +195,12 @@ namespace Bloom.web
                 _browser.ActivateFocussed();
             };
             _browser.NavigateToTempFileThenRemoveIt(tempFile.Path);
+        }
+
+        protected override void OnClientSizeChanged(EventArgs e)
+        {
+            base.OnClientSizeChanged(e);
+            SyncBrowserBounds();
         }
 
         // If given the localization changed event, the control will automatically reload
@@ -289,7 +313,10 @@ namespace Bloom.web
                 },
                 { "problemReportBundle", "/problemDialog/ProblemDialog.entry.tsx" },
                 { "progressDialogBundle", "/react_components/Progress/ProgressDialog.entry.tsx" },
-                { "registrationDialogBundle", "/react_components/registrationDialog.entry.tsx" },
+                {
+                    "registrationDialogBundle",
+                    "/react_components/registration/registrationDialog.entry.tsx"
+                },
                 { "subscriptionSettingsBundle", "/collection/subscriptionSettingsTab.entry.tsx" },
                 {
                     "teamCollectionSettingsBundle",
@@ -300,6 +327,7 @@ namespace Bloom.web
                     "/publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx"
                 },
                 { "appBundle", "/app/App.entry.tsx" },
+                { "collectionChooserBundle", "/collection/CollectionChooserDialog.entry.tsx" },
             };
             string viteModulePath = null;
             var useViteDev = ShouldUseViteDev(() =>

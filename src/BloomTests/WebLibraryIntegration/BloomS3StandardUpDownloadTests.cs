@@ -23,7 +23,7 @@ namespace BloomTests.WebLibraryIntegration
         public void SetupFixture()
         {
             // Basic setup
-            _workFolder = new TemporaryFolder("unittest2");
+            _workFolder = new TemporaryFolder("BloomS3StandardUpDownloadTests");
             var workFolderPath = _workFolder.FolderPath;
             Assert.AreEqual(
                 0,

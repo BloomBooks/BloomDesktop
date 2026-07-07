@@ -51,7 +51,6 @@ namespace BloomTests.Book
                 localizationDirectory,
                 "SIL/Bloom",
                 null,
-                "",
                 new string[] { }
             );
             _palasoLocalizationManager = LocalizationManagerWinforms.Create(
@@ -62,7 +61,6 @@ namespace BloomTests.Book
                 localizationDirectory,
                 "SIL/Bloom",
                 null,
-                "",
                 new string[] { }
             );
         }

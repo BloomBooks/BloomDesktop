@@ -41,7 +41,7 @@ import * as toastr from "toastr";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import { getActiveToolId, ToolBox } from "../toolbox";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../../utils/reactRender";
 import {
     IConfirmDialogProps,
     DialogResult,
@@ -61,7 +61,7 @@ import {
     showImageDescriptions,
 } from "../imageDescription/imageDescriptionUtils";
 import { IAudioRecorder } from "./IAudioRecorder";
-import { getCanvasElementManager } from "../canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { RecordingMode } from "./recordingMode";
 import {
     FeatureStatus,
@@ -2142,7 +2142,7 @@ export default class AudioRecording implements IAudioRecorder {
         listSize: number,
         playbackOrderInfo: IPlaybackOrderInfo,
     ): void {
-        ReactDOM.render(
+        renderRoot(
             React.createElement(PlaybackOrderControls, {
                 maxOrder: listSize,
                 orderOneBased: playbackOrderInfo.myPosition,
@@ -4525,7 +4525,7 @@ export default class AudioRecording implements IAudioRecorder {
                 haveACurrentTextboxModeRecording = false;
             }
         }
-        ReactDOM.render(
+        renderRoot(
             React.createElement(TalkingBookAdvancedSection, {
                 recordingMode: this.recordingMode,
                 haveACurrentTextboxModeRecording:

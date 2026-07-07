@@ -116,6 +116,17 @@ const run = async () => {
         cwd: contentRoot,
     });
 
+    // Type-check before bundling. Vite/esbuild strips types without checking them,
+    // so this is our only build-time guard against type errors (it fails on the
+    // blunder-class codes — grammar, missing names/modules, wrong arg counts —
+    // see scripts/typecheck.js). Run it before the Vite build so a type error
+    // fails fast rather than after a full bundle.
+    console.log("Type checking...");
+    await runCommand("node", ["scripts/typecheck.js"], {
+        cwd: browserUIRoot,
+        showOutput: true,
+    });
+
     console.log("Vite build...");
     await runCommand("node", [viteBin, "build", "--logLevel", "warn"], {
         cwd: browserUIRoot,

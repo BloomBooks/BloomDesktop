@@ -41,13 +41,18 @@ namespace Bloom.Edit
         private readonly ITemplateFinder _sourceCollectionsList;
         private bool _havePageToSave;
 
+        // Set by ReloadCurrentBookDiscardingEdits when an external tool has overwritten the current
+        // book on disk while the Edit tab is live. It tells the leaving-Edit-tab logic in
+        // OnTabAboutToChange to reload the book from disk instead of saving, so the user's unsaved
+        // page is discarded in favor of the new on-disk content rather than clobbering it.
+        private bool _reloadFromDiskOnLeavingEditTab;
+
         public bool Visible;
         private Book.Book _currentlyDisplayedBook;
         private Book.Book _bookForToolboxContent;
         private EditingView _view;
         private List<ContentLanguage> _contentLanguages;
         private IPage _previouslySelectedPage;
-        private bool _inProcessOfDeleting;
         private BloomServer _server;
         private readonly BloomWebSocketServer _webSocketServer;
         internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
@@ -73,10 +78,9 @@ namespace Bloom.Edit
         /// </summary>
         public static bool IsTextSelected;
 
-        // these 3 are used as part of automatically re-rerendering a page when a developer changes something in the supporting files
+        // these 2 are used as part of automatically re-rerendering a page when a developer changes something in the supporting files
         private FileSystemWatcher _developerFileWatcher;
         private DateTime _lastTimeWeReloadedBecauseOfDeveloperChange;
-        private bool _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles;
 
         //public event EventHandler UpdatePageList;
 
@@ -291,7 +295,7 @@ namespace Bloom.Edit
         /// probably the Javascript method that retrieves the page content).
         /// (Nicer still if cleanup didn't leave the page in an invalid state, see BL-13502.)
         /// </summary>
-        private SafeXmlDocument GetCleanCurrentPageFromBodyAndCss(
+        internal static SafeXmlDocument GetCleanCurrentPageFromBodyAndCss(
             string bodyHtml,
             string userCssContent
         )
@@ -332,7 +336,29 @@ namespace Bloom.Edit
             return dom;
         }
 
-        private void SaveCustomizedCssRules(SafeXmlDocument dom, string userCssContent)
+        /// <summary>
+        /// Given the combined "body &lt;SPLIT-DATA&gt; userCss" string that the editable-page bundle
+        /// produces (see captureContentForExternalProcessing / requestPageContent in bloomEditing.ts),
+        /// build the edited-page HtmlDom ready to hand to Book.SavePage / Book.UpdateDomFromEditedPage.
+        /// This is the same parsing the live editor does in UpdateBookDomFromBrowserPageContent(string),
+        /// factored out so the off-screen book processor (external/process-book) can reuse it without
+        /// going through the live EditingModel/state machine.
+        /// </summary>
+        public static HtmlDom GetEditedPageDomFromBrowserContent(string pageContentData)
+        {
+            if (pageContentData == null)
+                throw new ApplicationException("page content was null");
+            var endHtml = pageContentData.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
+            if (endHtml < 0)
+                throw new ApplicationException(
+                    "page content was missing the <SPLIT-DATA> delimiter"
+                );
+            var bodyHtml = pageContentData.Substring(0, endHtml);
+            var userCssContent = pageContentData.Substring(endHtml + "<SPLIT-DATA>".Length);
+            return new HtmlDom(GetCleanCurrentPageFromBodyAndCss(bodyHtml, userCssContent));
+        }
+
+        private static void SaveCustomizedCssRules(SafeXmlDocument dom, string userCssContent)
         {
             // Yes, this wipes out everything else in the head. At this point, the only things
             // we need in _pageEditDom are the user defined style sheet and the bloom-page element in the body.
@@ -358,13 +384,29 @@ namespace Bloom.Edit
         {
             if (details.FromTab == Workspace.WorkspaceTab.edit)
             {
+                // When an external tool has overwritten the current book on disk (see
+                // ReloadCurrentBookDiscardingEdits), we are leaving the Edit tab specifically to
+                // discard the unsaved page. In that case reload from disk instead of saving, so the
+                // editor's normal save-on-leave doesn't clobber what the external tool just wrote.
+                var reloadFromDiskInsteadOfSaving = _reloadFromDiskOnLeavingEditTab;
+                _reloadFromDiskOnLeavingEditTab = false;
+
                 SaveThen(
                     () =>
                     {
                         // We are setting skipSaveToDisk true so that we can do it ourselves here BEFORE
                         // the postponed work, which is going to shut everything down and would prevent
                         // the normal automatic save-to-disk from working.
-                        CurrentBook?.Save(); // we need it all the way saved before doing the PostponedWork
+                        if (reloadFromDiskInsteadOfSaving)
+                        {
+                            // Discard the page content just gathered into the in-memory DOM; disk wins.
+                            CurrentBook?.ReloadFromDisk(null);
+                            // Force OnBecomeVisible to re-display from the freshly-loaded book if the
+                            // user returns to the Edit tab.
+                            _currentlyDisplayedBook = null;
+                        }
+                        else
+                            CurrentBook?.Save(); // we need it all the way saved before doing the PostponedWork
                         // This bizarre behavior prevents BL-2313 and related problems.
                         // For some reason I cannot discover, switching tabs when focus is in the Browser window
                         // causes Bloom to get deactivated, which prevents various controls from working.
@@ -390,6 +432,17 @@ namespace Bloom.Edit
                         if (StateMachine.Navigating)
                         {
                             StateMachine.ToNoPage();
+                        }
+                        if (reloadFromDiskInsteadOfSaving)
+                        {
+                            // We reached the fallback because we couldn't take over the save (e.g. a
+                            // save was already in flight: we're in SavePending, waiting on the browser).
+                            // Tell that in-flight save to discard its content, so when it completes it
+                            // doesn't merge the edits we're throwing away and write them back over what
+                            // the external process just put on disk.
+                            StateMachine.DiscardInFlightSave();
+                            CurrentBook?.ReloadFromDisk(null);
+                            _currentlyDisplayedBook = null;
                         }
                         _oldActiveForm = Form.ActiveForm;
                         Application.Idle += ReactivateFormOnIdle;
@@ -449,8 +502,7 @@ namespace Bloom.Edit
         {
             using (var dlg = new ReactDialog("duplicateManyDlgBundle"))
             {
-                dlg.Width = 400;
-                dlg.Height = 235;
+                dlg.SetScaledSize(400, 235);
                 // This dialog is neater without a task bar. We don't need to be able to
                 // drag it around. There's nothing left to give it one if we don't set a title
                 // and remove the control box.
@@ -539,7 +591,6 @@ namespace Bloom.Edit
                 // If this happens, just abort the delete.
                 return;
             }
-            _inProcessOfDeleting = true;
             SaveThen(
                 () =>
                 {
@@ -559,10 +610,6 @@ namespace Bloom.Edit
                             "Could not delete that page. Try quiting Bloom, run it again, and then attempt to delete the page again. And please click 'details' below and report this to us."
                         );
                         return page.Id; // stay on this page.
-                    }
-                    finally
-                    {
-                        _inProcessOfDeleting = false;
                     }
                 },
                 () => { }, // wrong state, do nothing
@@ -620,9 +667,26 @@ namespace Bloom.Edit
                         page as Page,
                         e.NumberToAdd
                     );
-                    _view.Browser.RunJavascriptAsync(
-                        "document.getElementById('pageList').contentWindow.location.reload(true);"
-                    );
+                    // We deliberately do NOT force the page-list iframe to reload here.
+                    // InsertPageAfter raises pageListChangedEvent (deferred until idle), which
+                    // leads to UpdatePageList(); that either sends pageListNeedsRefresh over the
+                    // websocket (a cheap, incremental update in the React page list) or, if the
+                    // new page brought new stylesheets, regenerates the page-list document and
+                    // navigates the iframe to it. We used to also do a hard location.reload of
+                    // the iframe here, but that repainted the entire thumbnail list on every
+                    // insert and raced with those deferred notifications: a websocket message
+                    // arriving while the iframe was mid-reload was silently dropped, leaving the
+                    // list permanently stale.
+                    //
+                    // The stylesheet-change path still navigates the iframe, which does repaint
+                    // the whole list and does have a brief window during load where websocket
+                    // messages are ignored. The difference is that this navigation is no longer a
+                    // blind reload racing a separate notification: it is triggered by the deferred
+                    // event itself and loads a freshly regenerated document that already contains
+                    // the new page (and its stylesheet), so it is correct on its own. And when the
+                    // reloaded iframe's socket opens, the React code re-fetches the page list (see
+                    // the websocket/open handler in pageThumbnailList.tsx), recovering anything
+                    // missed during the load. So no stale-list race remains.
                     //_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
                     //_pageSelection.SelectPage(newPage);
                     if (e.FromTemplate)
@@ -906,11 +970,53 @@ namespace Bloom.Edit
 
             if (page != null)
                 _view.GoToPage(page);
-            _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles = false;
             if (_view != null)
             {
                 _view.UpdatePageList(false);
             }
+        }
+
+        /// <summary>
+        /// Reload the currently-selected book from disk, deliberately throwing away any unsaved edits
+        /// to the page the user might be working on. This is used when an external process (e.g.
+        /// BloomBridge) has just re-imported/overwritten the book on disk and we want the
+        /// running Bloom to show the new version. The caller is responsible for making sure this really
+        /// is the book that was changed; we only ever discard edits for the current selection.
+        /// If the Edit tab is live, rather than risk reloading the book under the editor mid-edit, we
+        /// kick the user back to the Collection tab (discarding edits and reloading from disk on the
+        /// way out); the fresh book is shown if/when they return to the Edit tab.
+        /// </summary>
+        public void ReloadCurrentBookDiscardingEdits()
+        {
+            var book = CurrentBook;
+            if (book == null)
+                return;
+
+            // Make sure we do NOT save the page the user might be editing; we are intentionally
+            // discarding those edits in favor of what is now on disk. This is the same flag the
+            // normal book-switch path clears to avoid saving the outgoing page (see OnBookSelectionChanged).
+            _havePageToSave = false;
+
+            if (!Visible)
+            {
+                // The Edit tab isn't showing, so the book isn't live in the browser and there's no
+                // editing state to unwind. Just reload from disk; OnBecomeVisible will display the
+                // fresh version when the user next switches to the Edit tab.
+                book.ReloadFromDisk(null);
+                _currentlyDisplayedBook = null;
+                return;
+            }
+
+            // The Edit tab is showing and the page is live in the browser, very possibly mid-edit.
+            // Trying to reload-and-renavigate the book in place while the editor is live proved
+            // fragile (the state machine forbids a direct re-navigation, and unwinding it under the
+            // user mid-edit could leave the editor in a bad state). The safe, predictable thing is to
+            // kick the user back to the Collection tab. We set _reloadFromDiskOnLeavingEditTab so the
+            // leaving-Edit-tab logic in OnTabAboutToChange reloads from disk instead of saving (which
+            // would clobber the external tool's content). When the user returns to the Edit tab,
+            // OnBecomeVisible will display the freshly-loaded book.
+            _reloadFromDiskOnLeavingEditTab = true;
+            _view.WorkspaceView.ChangeTab(Workspace.WorkspaceTab.collection);
         }
 
         /// <summary>
@@ -964,7 +1070,7 @@ namespace Bloom.Edit
                     PageSelectModelChangesComplete?.Invoke(this, EventArgs.Empty);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // It's very important that we succeed in navigating to SOME page; otherwise, we may well be left
                 // in a state where the page UI isn't fully set up, and the state machine is in the SavedAndStripped
@@ -1127,7 +1233,16 @@ namespace Bloom.Edit
 
         public static string GetEditPageIframeContents(Book.Book book, IPage page)
         {
-            return GetEditPageIframeDom(book, page).getHtmlStringDisplayOnly();
+            var dom = GetEditPageIframeDom(book, page);
+            var transparencyModifications = HtmlDom.AddTransparencyParamToImages(dom);
+            try
+            {
+                return dom.getHtmlStringDisplayOnly();
+            }
+            finally
+            {
+                HtmlDom.RestoreImageSrcs(transparencyModifications);
+            }
         }
 
         public static HtmlDom GetEditPageIframeDom(Book.Book book, IPage page)
@@ -1353,6 +1468,78 @@ namespace Bloom.Edit
             pageListDom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
         }
 
+        internal HtmlDom GetXmlDocumentForEditScreenWebPage(string pageUrl, string pageListUrl)
+        {
+            var path = FileLocationUtilities.GetFileDistributedWithApplication(
+                Path.Combine(
+                    BloomFileLocator.BrowserRoot,
+                    "bookEdit",
+                    ReactControl.ShouldUseViteDev()
+                        ? "WorkspaceRoot.vite-dev.html"
+                        : "WorkspaceRoot.html"
+                )
+            );
+            // {simulatedPageFileInBookFolder} is placed in the template file where we want the source file for the 'page' iframe.
+            // We don't really make a file for the page, the contents are just saved in our local server.
+            // But we give it a url that makes it seem to be in the book folder so local urls work.
+            // See BloomServer.MakeInMemoryHtmlFileInBookFolder() for more details.
+            var frameText = RobustFile
+                .ReadAllText(path, Encoding.UTF8)
+                .Replace("{simulatedPageFileInBookFolder}", pageUrl)
+                .Replace("{simulatedPageListFile}", pageListUrl);
+            var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
+
+            if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
+            {
+                // Make the toolbox initially visible.
+                // What we have to do to accomplish this is pretty non-intuitive. It's a consequence of the way
+                // the pure-drawer CSS achieves the open/close effect. This input is a check-box, so clicking it
+                // changes the state of things in a way that all the other CSS can depend on.
+                var toolboxCheckBox = dom.SelectSingleNode("//input[@id='pure-toggle-right']");
+                toolboxCheckBox?.SetAttribute("checked", "true");
+            }
+
+            return dom;
+        }
+
+        /// <summary>
+        /// Return the top-level document that should be displayed in the browser for the current page.
+        /// </summary>
+        /// <returns></returns>
+        public HtmlDom GetXmlDocumentForEditScreenWebPage()
+        {
+            var path = FileLocationUtilities.GetFileDistributedWithApplication(
+                Path.Combine(
+                    BloomFileLocator.BrowserRoot,
+                    "bookEdit",
+                    ReactControl.ShouldUseViteDev()
+                        ? "WorkspaceRoot.vite-dev.html"
+                        : "WorkspaceRoot.html"
+                )
+            );
+            // {simulatedPageFileInBookFolder} is placed in the template file where we want the source file for the 'page' iframe.
+            // We don't really make a file for the page, the contents are just saved in our local server.
+            // But we give it a url that makes it seem to be in the book folder so local urls work.
+            // See BloomServer.MakeInMemoryHtmlFileInBookFolder() for more details.
+            var frameText = RobustFile
+                .ReadAllText(path, Encoding.UTF8)
+                .Replace("{simulatedPageFileInBookFolder}", GetUrlForCurrentPage())
+                .Replace("{simulatedPageListFile}", GetUrlForPageListFile());
+            var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
+
+            if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
+            {
+                // Make the toolbox initially visible.
+                // What we have to do to accomplish this is pretty non-intuitive. It's a consequence of the way
+                // the pure-drawer CSS achieves the open/close effect. This input is a check-box, so clicking it
+                // changes the state of things in a way that all the other CSS can depend on.
+                var toolboxCheckBox = dom.SelectSingleNode("//input[@id='pure-toggle-right']");
+                toolboxCheckBox?.SetAttribute("checked", "true");
+            }
+
+            return dom;
+        }
+
         internal void SaveToolboxSettings(string data)
         {
             // ref BL-9859, BL-9912, BL-9978
@@ -1460,36 +1647,34 @@ namespace Bloom.Edit
         private bool _nextSaveMustBeFull; // review: store in state machine?
 
         /// <summary>
-        /// Request the needed data to do a save, then when the contents of the current page have been saved,
-        /// do the given action. The result of the action is a page ID which we will then navigate to, or null
-        /// to show a blank screen if we are leaving the edit tab.
-        /// If we are not in the right state to save, doAfterSaving() will not be called at all,
-        /// but instead doIfNotInRightStateToSave() will be called. Usually the latter does nothing,
-        /// but we are deliberately not making it optional to make sure it gets thought about.
-        /// Usually, the book will be saved to disk after executing the action, but before navigating to
-        /// the new page. Sometimes the action needs to save the book itself, in which case it can prevent
-        /// a further Save() by setting skipSaveToDisk to true. (Or just possibly, we might not want the Save
-        /// to go all the way to disk, especially if we aren't going to switch pages.)
-        /// Returns true if we're in a valid state to save, false if we're not. In the latter case, doAfterSaving
-        /// will not be called (even later).
+        /// Request the needed data to do a save, then when the in-memory DOM has been updated from the browser,
+        /// call doBeforeSaveToDisk. Its return value is a page ID to navigate to afterward (or null to show a
+        /// blank screen when leaving the edit tab). Unless skipSaveToDisk is true, the book is then saved to
+        /// disk. If doAfterSaveToDisk is provided, it is called after the disk save and before navigation —
+        /// useful for blocking UI (e.g. a modal dialog) that needs up-to-date files on disk.
+        /// (It is only called if skipSaveToDisk is false and the save succeeds.)
+        /// If we are not in the right state to save, doIfNotInRightStateToSave() is called instead. It is
+        /// deliberately not optional so callers think about what to do in that case.
         /// </summary>
         /// <remarks>If you are doing this in an API handler, remember that you must retrieve any data in
-        /// the request before calling SaveThen. The Request object can't be used in side the doAfterSaving function,
+        /// the request before calling SaveThen. The Request object can't be used inside doBeforeSaveToDisk,
         /// since by then the request has been marked completed.</remarks>
         public void SaveThen(
-            Func<string> doAfterSaving,
+            Func<string> doBeforeSaveToDisk,
             Action doIfNotInRightStateToSave,
             bool forceFullSave = false,
             bool skipSaveToDisk = false,
-            Action failureAction = null
+            Action failureAction = null,
+            Action doAfterSaveToDisk = null
         )
         {
             _nextSaveMustBeFull |= forceFullSave;
             if (
                 !_stateMachine.ToSavePending(
-                    doAfterSaving,
+                    doBeforeSaveToDisk,
                     saveActionHandlesSaveBook: skipSaveToDisk,
-                    failureAction
+                    failureAction,
+                    doAfterSaveToDisk
                 )
             )
                 doIfNotInRightStateToSave();
@@ -1503,7 +1688,10 @@ namespace Bloom.Edit
             _webSocketServer.SendString("pageThumbnailList", "saving", "");
             // review do we really need to be checking to see if things are loaded? If they are not, then there is nothing to save, and this doesn't thow.
             var script = $"workspaceBundle.getEditablePageBundleExports().requestPageContent()";
-            _view.Browser.RunJavascriptAsync(script);
+            // Fire-and-forget: this just asks the browser to send us the page content. The browser
+            // responds asynchronously by calling the ReceivePageContent API (which drives the state
+            // machine on to ToSavedAndStripped), so there is nothing here to wait for.
+            _view.Browser.RunJavascriptFireAndForget(script);
         }
 
         /// <summary>
@@ -1551,15 +1739,15 @@ namespace Bloom.Edit
                     );
                 }
             }
-            catch (ObjectDisposedException err) // in case even calling CanUpdate gave an error
+            catch (ObjectDisposedException) // in case even calling CanUpdate gave an error
             {
                 Logger.WriteEvent("Error: SaveNow() found that this book was disposed.");
-                throw err;
+                throw;
             }
-            catch (Exception err) // in case even calling CanUpdate gave an error
+            catch (Exception) // in case even calling CanUpdate gave an error
             {
                 Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
-                throw err;
+                throw;
             }
             //OK, looks safe, time to save.
             var editedDom = new HtmlDom(docFromBrowser);
@@ -1599,7 +1787,8 @@ namespace Bloom.Edit
         public void ChangePicture(
             string imageId,
             UrlPathString priorImageSrc,
-            PalasoImage imageInfo
+            PalasoImage imageInfo,
+            string pageBackgroundColor = null
         )
         {
             try
@@ -1612,6 +1801,7 @@ namespace Bloom.Edit
                     imageId,
                     priorImageSrc,
                     imageInfo,
+                    pageBackgroundColor,
                     undoable: true // All image changes made here are undoable.
                 );
                 UpdateImageInBrowser(args);
@@ -1714,6 +1904,29 @@ namespace Bloom.Edit
             _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
         }
 #endif
+
+        // Client context and event id used to tell the open Copyright & License dialog that an
+        // "Add this info to all images" operation has finished. These must match the constants
+        // used by the React dialog (CopyrightAndLicenseDialog.tsx).
+        public const string kCopyrightWebSocketContext = "copyrightAndLicense";
+        public const string kCopyrightWebSocketEventId_PushedToAllImages = "pushedToAllImages";
+
+        /// <summary>
+        /// Tell the (still-open) Copyright &amp; License dialog that an "Add this info to all
+        /// images" request has finished, so it can replace its "Working…" spinner with a "done"
+        /// confirmation. The image-metadata POST handler calls this for every such request,
+        /// whether or not the copy actually ran (e.g. the save failed or the image is not a
+        /// normal image), so the dialog never waits forever. We can't signal completion from the
+        /// POST response itself, which returns as soon as the save is initiated, well before the
+        /// asynchronous post-save action runs.
+        /// </summary>
+        public void NotifyCopyrightPushedToAllImages()
+        {
+            _webSocketServer.SendEvent(
+                kCopyrightWebSocketContext,
+                kCopyrightWebSocketEventId_PushedToAllImages
+            );
+        }
 
         public void CopyImageMetadataToWholeBook(Metadata metadata)
         {
@@ -1926,7 +2139,10 @@ namespace Bloom.Edit
                 _developerFileWatcher.NotifyFilter = NotifyFilters.LastWrite;
 
                 var waitingForInitialLoad = true;
-                _developerFileWatcher.Changed += async (sender, args) =>
+                // Not async: nothing in this handler awaits anything (it delegates timing to a
+                // WinForms Timer), so marking it async would just create an async-void event handler
+                // whose exceptions we couldn't observe.
+                _developerFileWatcher.Changed += (sender, args) =>
                 {
                     // oddly, there is no way to tell the file watcher that we don't want to consider the original state of the files as "changes"
                     // so we ignore events for the first 5 seconds
@@ -1971,6 +2187,9 @@ namespace Bloom.Edit
                     }
                 };
                 _developerFileWatcher.EnableRaisingEvents = true;
+                // Deliberately fire-and-forget: this is just a one-shot timer that stops us treating
+                // the initial burst of file-watcher events as real changes. Nothing depends on when
+                // it completes, so there is no reason to await the resulting Task.
                 Task.Delay(5000)
                     .ContinueWith(_ =>
                     {
@@ -2000,8 +2219,6 @@ namespace Bloom.Edit
                             // Because BringBookUpToDate will have changed page id's, we need to rebuild the page
                             // list else the next time you click on one, that page won't be found.
                             _view.UpdatePageList(true);
-                            // And also, when you click on another page, if we try to save the current page, it won't be found.
-                            _skipNextSaveBecauseDeveloperIsTweakingSupportingFiles = true;
                             _view.Refresh();
 
                             _pageSelection.SelectPage(

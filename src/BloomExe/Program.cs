@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -118,7 +117,6 @@ namespace Bloom
             );
 
         [STAThread]
-        [HandleProcessCorruptedStateExceptions]
         static int Main(string[] args1)
         {
             // AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
@@ -134,6 +132,16 @@ namespace Bloom
             // Ensure that the registration information is loaded early before Team Collection
             // needs it.
             Registration.Registration.Default.EnsureLoaded();
+
+            // This needs to be done before we create any WebView2s, so they will inherit
+            // our DPI awareness and render fonts better.
+            // Even though BloomExe.csproj sets ApplicationHighDpiMode=PerMonitorV2,
+            // that alone was not sufficient in Bloom's custom startup path. One likely
+            // reason is that Bloom does not use the standard generated WinForms startup
+            // initialization path that newer templates rely on. In testing, Bloom and
+            // its root WebView2 still came up as only System DPI aware until we made
+            // the explicit WinForms call here.
+            Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
 
             // Initializing localization can pop up a dialog if the system language
             // is not one of our supported languages. The following calls must be done
@@ -344,6 +352,7 @@ namespace Bloom
                 // by the user.
                 if (!Settings.Default.LicenseAccepted)
                 {
+                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                     using (var dlg = new LicenseDialog("license.htm"))
                         if (dlg.ShowDialog() != DialogResult.OK)
                             return 1;
@@ -1317,7 +1326,6 @@ namespace Bloom
             _projectContext = projectContext;
         }
 
-        [HandleProcessCorruptedStateExceptions]
         private static void Run(string[] args)
         {
             if (!IsInstallerLaunch(args))
@@ -1754,81 +1762,64 @@ namespace Bloom
         /// time when switching collectons.</param>
         /// <returns>true if we switched collections. (However, in this case we may exit the application, so the
         /// caller shouldn't do anything unnecessary.)</returns>
-        public static bool ChooseACollection(Shell formToClose = null)
+        /// <summary>
+        /// The collection path chosen by the user via the React collection chooser dialog at
+        /// startup (before any project is loaded). Set by CollectionChooserApi and read here
+        /// after the ReactDialog closes.
+        /// </summary>
+        internal static string CollectionChosenAtStartup { get; set; }
+
+        public static bool ChooseACollection()
         {
-            if (formToClose != null)
-            {
-                // Clear any previous value; we'll set it again only if the user clicks OK.
-                _collectionPathToOpenAfterCurrentProjectClosed = null;
-            }
+            // We normally start listening when setting up the project context. However, this
+            // method may run at startup before we have a chosen project.
+            _applicationContainer.BloomServer.EnsureListening();
+
             while (true)
             {
-                // We decided to stop doing this (BL-1229) since the wizard can feel like part
-                // of installation that might be irrevocable.
-                ////If it looks like the 1st time, put up the create collection with the welcome.
-                ////The user can cancel that if they want to go looking for a collection on disk.
-                //if(Settings.Default.MruProjects.Latest == null)
-                //{
-                //	var path = NewCollectionWizard.CreateNewCollection();
-                //	if (!string.IsNullOrEmpty(path) && RobustFile.Exists(path))
-                //	{
-                //		OpenCollection(path);
-                //		return;
-                //	}
-                //}
-
-                // We normally start listening when setting up the project context. However, this dialog might
-                // get run at startup when we don't have a chosen project from which to make a ProjectContext
-                _applicationContainer.BloomServer.EnsureListening();
-                using (var dlg = _applicationContainer.OpenAndCreateCollectionDialog())
+                CollectionChosenAtStartup = null;
+                string closeSource;
+                var dialogTitle = LocalizationManager.GetString(
+                    "OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle",
+                    "Open/Create Collections"
+                );
+                using (var dlg = new ReactDialog("collectionChooserBundle", null, dialogTitle))
                 {
-                    if (formToClose == null) // otherwise default position on same screen is fine
-                    {
-                        dlg.StartPosition = FormStartPosition.Manual; // try not to have it under the splash screen
-                        dlg.SetDesktopLocation(50, 50);
-                    }
-
-                    try
-                    {
-                        if (dlg.ShowDialog(formToClose) != DialogResult.OK)
-                        {
-                            // If there is a form to close, it means the collection chooser is not the only thing open,
-                            // and we don't want to exit the application. Otherwise, we are in initial startup and
-                            // closing the chooser should exit the application.
-                            if (formToClose == null)
-                                ProgramExit.Exit();
-                            return false;
-                        }
-
-                        if (formToClose != null)
-                        {
-                            _collectionPathToOpenAfterCurrentProjectClosed = dlg.SelectedPath;
-                            formToClose.UserWantsToOpenADifferentProject = true;
-                            formToClose.Close();
-                            formToClose = null; // can't use it after it's closed and disposed
-                            return true;
-                        }
-
-                        if (OpenCollection(dlg.SelectedPath))
-                            return true;
-                    }
-                    catch (Exception error)
-                    {
-                        if (
-                            LongPathAware.ShouldConvertToPathTooLongException(
-                                error,
-                                out string path
-                            )
-                        )
-                        {
-                            throw new Utils.PathTooLongException(path);
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
+                    dlg.SetScaledSize(700, 500);
+                    dlg.StartPosition = FormStartPosition.CenterScreen;
+                    dlg.ShowInTaskbar = true;
+                    // Ensure the dialog comes to the foreground even when opened
+                    // programmatically (e.g. after closing/reopening for a language change).
+                    dlg.TopMost = true;
+                    dlg.Activated += (s, e) => dlg.TopMost = false;
+                    dlg.ShowDialog();
+                    closeSource = dlg.CloseSource;
                 }
+
+                // Language was changed: reopen the dialog so all strings re-fetch in the new language.
+                if (closeSource == "languageChanged")
+                    continue;
+
+                var selectedPath = CollectionChosenAtStartup;
+
+                if (selectedPath == null)
+                {
+                    ProgramExit.Exit();
+                    return false;
+                }
+
+                try
+                {
+                    if (OpenCollection(selectedPath))
+                        return true;
+                }
+                catch (Exception error)
+                {
+                    if (LongPathAware.ShouldConvertToPathTooLongException(error, out string path))
+                        throw new Utils.PathTooLongException(path);
+                    throw;
+                }
+                // If OpenCollection failed, loop to show the dialog again
             }
         }
 
@@ -1841,6 +1832,18 @@ namespace Bloom
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Switches directly to the specified collection without showing the chooser dialog.
+        /// Used by the React-based collection chooser. Closes the current Shell and reopens
+        /// with the selected collection, exactly as the old dialog did on confirmation.
+        /// </summary>
+        public static void SwitchToCollection(string path, Shell formToClose)
+        {
+            _collectionPathToOpenAfterCurrentProjectClosed = path;
+            formToClose.UserWantsToOpenADifferentProject = true;
+            formToClose.Close();
         }
 
         /// ------------------------------------------------------------------------------------
@@ -1925,7 +1928,6 @@ namespace Bloom
                     fakeLocalDir,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     //the parameters that follow are namespace beginnings:
                     new string[] { "Bloom" }
                 );
@@ -1945,7 +1947,6 @@ namespace Bloom
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     //the parameters that follow are namespace beginnings:
                     new string[] { "Bloom" }
                 );
@@ -1976,7 +1977,6 @@ namespace Bloom
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     new string[] { "SIL" }
                 );
 
@@ -1988,7 +1988,6 @@ namespace Bloom
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     new string[] { "Bloom" }
                 );
 
@@ -2000,7 +1999,6 @@ namespace Bloom
                     installedStringFileFolder,
                     "SIL/Bloom",
                     Resources.BloomIcon,
-                    "issues@bloomlibrary.org",
                     new string[] { "Bloom" }
                 );
 
@@ -2016,8 +2014,6 @@ namespace Bloom
                 {
                     LocalizationManager.FallbackLanguageIds = new[] { "es", "en" };
                 }
-
-                LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = false; // BL-5111
 
                 // It's now safe to read the localized strings.  See BL-13245.
                 HtmlErrorReporter.Instance.LocalizeDefaultReportLabel();

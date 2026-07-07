@@ -37,6 +37,9 @@ export interface IUILanguageAwareProps {
     currentUILanguage?: string;
     hidden?: boolean;
     className?: string;
+    // @types/react 18 no longer adds children implicitly, so localized components
+    // (which receive their English source as children) must declare it.
+    children?: React.ReactNode;
 }
 
 export interface ILocalizationProps extends IUILanguageAwareProps {

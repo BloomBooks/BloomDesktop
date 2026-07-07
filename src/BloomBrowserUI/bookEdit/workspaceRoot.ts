@@ -50,6 +50,7 @@ export interface IWorkspaceExports {
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
     showBookSettingsDialog(initiallySelectedPageKey?: string): void;
+    showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
 }
 
 export function SayHello() {
@@ -76,10 +77,11 @@ export { showRegistrationDialogForEditTab as showRegistrationDialog };
 import { showAboutDialog } from "../react_components/aboutDialog";
 export { showAboutDialog };
 import { reportError } from "../lib/errorHandler";
-import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
+import type { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
-import * as ReactDOM from "react-dom";
+import { showImageGalleryDialog as doShowImageGalleryDialog } from "../react_components/image-gallery/ImageGalleryDialog";
+import { renderRoot } from "../utils/reactRender";
 import { FunctionComponentElement } from "react";
 import { ToastDebugInput, toastDebugEvents } from "../toast/toastUtils";
 
@@ -296,7 +298,7 @@ export function ShowEditViewDialog(dialog: FunctionComponentElement<unknown>) {
     // Note that modal dialogs actually create a sibling to this, they don't actually end up being children in the DOM.
     // Also note that if we call this twice, everything is fine: MUI doesn't seem to actually care if we remove the
     // root we called render on; it has already made a child of Body that it is using for the root of its dialog.
-    ReactDOM.render(dialog, root);
+    renderRoot(dialog, root);
 }
 
 export function showConfirmDialog(props: IConfirmDialogProps): void {
@@ -328,6 +330,13 @@ export function showRequiresSubscriptionDialog(featureName: string): void {
 
 export function showRegistrationDialogFromWorkspaceRoot() {
     showRegistrationDialogForEditTab();
+}
+
+export function showImageGalleryDialog(
+    img: HTMLElement,
+    searchLang: string,
+): void {
+    doShowImageGalleryDialog(img, searchLang);
 }
 
 const updateWorkspaceUrlParam = (name: string, value: string): void => {
@@ -373,7 +382,7 @@ export function setZoom(zoom: number): void {
         "page-scaling-container",
     );
     if (container) {
-        container.style.transform = `scale(${zoom.toString()}`;
+        container.style.transform = `scale(${zoom.toString()})`;
         // This produces something like calc((100% - 5px) / 0.8)
         const newWidth = `calc((100% - 5px) / ${zoom.toString()})`;
         // But if you read it back it will be something like calc(125% - 6.25px)
@@ -416,6 +425,7 @@ interface WorkspaceBundleApi {
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
     showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
     showAdjustTimingsDialogFromWorkspaceRoot: typeof showAdjustTimingsDialogFromWorkspaceRoot;
+    showImageGalleryDialog: typeof showImageGalleryDialog;
     setZoom: typeof setZoom;
     getToolboxBundleExports: typeof getToolboxBundleExports;
     getEditablePageBundleExports: typeof getEditablePageBundleExports;
@@ -459,6 +469,7 @@ window.workspaceBundle = {
     showRegistrationDialogFromWorkspaceRoot,
     showAdjustTimingsDialogFromWorkspaceRoot:
         showAdjustTimingsDialogFromWorkspaceRoot,
+    showImageGalleryDialog,
     setZoom,
     // re-exported cross-frame helpers
     getToolboxBundleExports,

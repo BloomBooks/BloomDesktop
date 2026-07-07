@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using SIL.IO;
 using SIL.Reporting;
@@ -31,37 +32,28 @@ namespace Bloom.ImageProcessing
 
         private string _cacheFolder;
 
-        private static ImageAttributes _convertWhiteToTransparent;
-
         public RuntimeImageProcessor(BookRenamedEvent bookRenamedEvent)
         {
             _bookRenamedEvent = bookRenamedEvent;
             _originalPathToProcessedVersionPath = new ConcurrentDictionary<string, string>();
             _imageFilesToReturnUnprocessed = new ConcurrentDictionary<string, bool>();
-            _cacheFolder = Path.Combine(Path.GetTempPath(), "Bloom");
+            // Use a dedicated subfolder so we can safely delete the whole folder on cleanup.
+            _cacheFolder = Path.Combine(Path.GetTempPath(), "Bloom", "ImageCache");
             _bookRenamedEvent.Subscribe(OnBookRenamed);
-        }
-
-        private static ImageAttributes ConvertWhiteToTransparent
-        {
-            get
-            {
-                if (_convertWhiteToTransparent == null)
-                {
-                    _convertWhiteToTransparent = new ImageAttributes();
-                    _convertWhiteToTransparent.SetColorKey(
-                        Color.FromArgb(253, 253, 253),
-                        Color.White
-                    );
-                }
-                return _convertWhiteToTransparent;
-            }
         }
 
         private void OnBookRenamed(KeyValuePair<string, string> fromPathAndToPath)
         {
-            //Note, we don't pay attention to what the change was, we just purge the whole cache
+            // Don't pay attention to what the change was; just purge the whole cache.
+            ClearAll();
+        }
 
+        /// <summary>
+        /// Clear all cached image data and delete the cached files. Call when switching books
+        /// or renaming a book so the next requests use fresh processing.
+        /// </summary>
+        public void ClearAll()
+        {
             TryToDeleteCachedImages();
             _originalPathToProcessedVersionPath = new ConcurrentDictionary<string, string>();
             _imageFilesToReturnUnprocessed = new ConcurrentDictionary<string, bool>();
@@ -75,13 +67,16 @@ namespace Bloom.ImageProcessing
             TryToDeleteCachedImages();
             _originalPathToProcessedVersionPath = null;
 
-            //NB: this turns out to be dangerous. Without it, we still delete all we can, leave some files around
-            //each time, and then deleting them on the next run
-            //			_cacheFolder.Dispose();
+            // Try to delete the entire cache folder (catches files from previous sessions
+            // that weren't tracked in _originalPathToProcessedVersionPath).
+            // This might be redundant. Bloom seems to normally delete the whole %temp%/Bloom folder on exit.
+            if (Directory.Exists(_cacheFolder))
+                RobustFileIO.TryDeleteDirectory(_cacheFolder, recursive: true);
 
             GC.SuppressFinalize(this);
         }
 
+        // This might be redundant. Bloom seems to normally delete the whole %temp%/Bloom folder on exit.
         private void TryToDeleteCachedImages()
         {
             lock (this)
@@ -108,118 +103,201 @@ namespace Bloom.ImageProcessing
         public string GetPathToAdjustedImage(
             string originalPath,
             bool getThumbnail = false,
-            bool isForCover = false
+            ImageTransparencyMode transparencyMode = ImageTransparencyMode.None,
+            bool transparencyOnly = false
         )
         {
             //don't mess with Bloom UI images
             if (new[] { "/img/", "placeHolder", "Button" }.Any(s => originalPath.Contains(s)))
                 return originalPath;
 
+            // Each combination of processing flags needs its own cache entry.
+            // transparencyOnly (Auto mode that skips resize/JPEG-conversion) gets its own prefix
+            // so it doesn't collide with normal Auto entries that may have cached a JPEG conversion.
             var cacheFileName = originalPath;
-
-            if (getThumbnail)
-            {
+            if (getThumbnail && transparencyMode == ImageTransparencyMode.Force)
+                cacheFileName = "force_thumbnail_" + cacheFileName;
+            else if (getThumbnail && transparencyMode == ImageTransparencyMode.Auto)
+                cacheFileName = "transparent_thumbnail_" + cacheFileName;
+            else if (getThumbnail)
                 cacheFileName = "thumbnail_" + cacheFileName;
-            }
+            else if (transparencyMode == ImageTransparencyMode.Force)
+                cacheFileName = "force_" + cacheFileName;
+            else if (transparencyMode == ImageTransparencyMode.Auto && transparencyOnly)
+                cacheFileName = "transparent_orig_" + cacheFileName;
+            else if (transparencyMode == ImageTransparencyMode.Auto)
+                cacheFileName = "transparent_" + cacheFileName;
 
             // check if this image is in the do-not-process list
             bool test;
             if (_imageFilesToReturnUnprocessed.TryGetValue(cacheFileName, out test))
                 return originalPath;
 
+            if (getThumbnail)
+                return GetPathToThumbnail(originalPath, cacheFileName, transparencyMode);
+
+            return GetPathToAdjustedImageUnlocked(
+                originalPath,
+                cacheFileName,
+                transparencyMode,
+                transparencyOnly
+            );
+        }
+
+        /// <summary>
+        /// Non-thumbnail image processing: check cache under lock, run AdjustImageForDisplay
+        /// OUTSIDE the lock (so different images are processed concurrently), then store under lock.
+        /// If two threads race for the same image the loser discards its file.
+        /// </summary>
+        private string GetPathToAdjustedImageUnlocked(
+            string originalPath,
+            string cacheFileName,
+            ImageTransparencyMode transparencyMode,
+            bool transparencyOnly
+        )
+        {
+            // Step 1: quick cache check under lock
             lock (this)
             {
-                // if there is a cached version, return it
-                string pathToProcessedVersion;
-                if (
-                    _originalPathToProcessedVersionPath.TryGetValue(
-                        cacheFileName,
-                        out pathToProcessedVersion
-                    )
-                )
+                if (_originalPathToProcessedVersionPath.TryGetValue(cacheFileName, out var cached))
                 {
                     if (
-                        RobustFile.Exists(pathToProcessedVersion)
+                        RobustFile.Exists(cached)
                         && new FileInfo(originalPath).LastWriteTimeUtc
-                            <= new FileInfo(pathToProcessedVersion).LastWriteTimeUtc
+                            <= new FileInfo(cached).LastWriteTimeUtc
                     )
                     {
-                        return pathToProcessedVersion;
+                        return cached;
                     }
-
                     // the file has changed, remove from cache
-                    string valueRemoved;
-                    _originalPathToProcessedVersionPath.TryRemove(cacheFileName, out valueRemoved);
+                    _originalPathToProcessedVersionPath.TryRemove(cacheFileName, out _);
                 }
+            }
 
-                // there is not a cached version, try to make one
-                var pathToProcessedImage = Path.Combine(
-                    _cacheFolder,
-                    Path.GetRandomFileName() + Path.GetExtension(originalPath)
-                );
+            // Step 2: process OUTSIDE the lock — different images run concurrently.
+            var processedPath = ImageUtils.AdjustImageForDisplay(
+                originalPath,
+                _cacheFolder,
+                transparencyMode,
+                transparencyOnly: transparencyOnly
+            );
 
-                if (!Directory.Exists(Path.GetDirectoryName(pathToProcessedImage)))
-                    Directory.CreateDirectory(Path.GetDirectoryName(pathToProcessedImage));
+            if (processedPath == null)
+            {
+                _imageFilesToReturnUnprocessed.TryAdd(cacheFileName, true);
+                return originalPath;
+            }
 
-                // BL-1112: images not loading in page thumbnails
-                var success = true;
-                var wantOriginal = !getThumbnail && !isForCover;
-                if (getThumbnail)
+            // Step 3: store under lock, discarding our file if another thread got there first.
+            lock (this)
+            {
+                if (
+                    _originalPathToProcessedVersionPath.TryGetValue(cacheFileName, out var winner)
+                    && RobustFile.Exists(winner)
+                )
                 {
-                    // The HTML div that contains the thumbnails is 80 pixels wide, so make the thumbnails 80 pixels wide
-                    success = GenerateThumbnail(originalPath, pathToProcessedImage, 80);
+                    RobustFile.Delete(processedPath);
+                    return winner;
                 }
-                else if (isForCover)
+                _originalPathToProcessedVersionPath.TryAdd(cacheFileName, processedPath);
+                return processedPath;
+            }
+        }
+
+        /// <summary>
+        /// Returns the path to an 80-pixel-wide thumbnail, generating it if not cached.
+        /// GenerateThumbnail runs OUTSIDE the global lock so different images can be processed
+        /// concurrently. If two threads race for the same image the loser discards its file.
+        /// </summary>
+        private string GetPathToThumbnail(
+            string originalPath,
+            string cacheFileName,
+            ImageTransparencyMode transparencyMode
+        )
+        {
+            // Step 1: quick cache check under lock
+            lock (this)
+            {
+                if (
+                    _originalPathToProcessedVersionPath.TryGetValue(cacheFileName, out var cached)
+                    && RobustFile.Exists(cached)
+                    && new FileInfo(originalPath).LastWriteTimeUtc
+                        <= new FileInfo(cached).LastWriteTimeUtc
+                )
                 {
-                    success = MakePngBackgroundTransparentIfDesirable(
-                        originalPath,
-                        pathToProcessedImage
-                    );
+                    return cached;
                 }
+                // stale or missing — remove so the store step can write the fresh version
+                _originalPathToProcessedVersionPath.TryRemove(cacheFileName, out _);
+            }
 
-                if (wantOriginal || !success)
+            // Step 2: generate thumbnail OUTSIDE the lock — different images run concurrently.
+            // BL-1112: page thumbnail div is 80px wide, so resize to 80px.
+            // Always use .png so the thumbnail file can carry an alpha channel; JPEG cannot.
+            // ApplyBloomTransparencyToFile (called below) also requires a .png path.
+            var pathToProcessedImage = Path.Combine(
+                _cacheFolder,
+                Path.GetRandomFileName() + ".png"
+            );
+            if (!Directory.Exists(Path.GetDirectoryName(pathToProcessedImage)))
+                Directory.CreateDirectory(Path.GetDirectoryName(pathToProcessedImage));
+
+            if (!GenerateThumbnail(originalPath, pathToProcessedImage, 80))
+            {
+                _imageFilesToReturnUnprocessed.TryAdd(cacheFileName, true);
+                return originalPath;
+            }
+
+            if (transparencyMode != ImageTransparencyMode.None)
+            {
+                // Apply transparency to the PNG thumbnail in-place.
+                // Force: always apply; Auto: apply only if line art.
+                using var tempFile = TempFile.WithExtension(".png");
+                var applied =
+                    transparencyMode == ImageTransparencyMode.Force
+                        ? ImageUtils.MakeTransparentBackground(pathToProcessedImage, tempFile.Path)
+                        : ImageUtils.MakeTransparentBackgroundIfNeeded(
+                            pathToProcessedImage,
+                            tempFile.Path
+                        );
+                if (applied)
+                    RobustFile.Copy(tempFile.Path, pathToProcessedImage, true);
+            }
+
+            // Step 3: store under lock, discarding our file if another thread got there first.
+            lock (this)
+            {
+                if (
+                    _originalPathToProcessedVersionPath.TryGetValue(cacheFileName, out var winner)
+                    && RobustFile.Exists(winner)
+                )
                 {
-                    // add this image to the do-not-process list so we don't waste time doing this again
-                    if (!success)
-                        _imageFilesToReturnUnprocessed.TryAdd(cacheFileName, true);
-                    return originalPath;
+                    RobustFile.Delete(pathToProcessedImage);
+                    return winner;
                 }
-
-                _originalPathToProcessedVersionPath.TryAdd(cacheFileName, pathToProcessedImage); //remember it so we can reuse if they show it again, and later delete
-
+                _originalPathToProcessedVersionPath.TryAdd(cacheFileName, pathToProcessedImage);
                 return pathToProcessedImage;
             }
         }
 
-        // Overload of the below method that defaults to NOT changing the background color of the thumb.
+        /// <summary>
+        /// Resize the image at <paramref name="originalPath"/> to at most <paramref name="newWidth"/>
+        /// pixels wide, preserving aspect ratio, and save the result to
+        /// <paramref name="pathToProcessedImage"/>. Transparency handling is left to the caller.
+        /// </summary>
+        /// <returns>false if the image is already no wider than <paramref name="newWidth"/> (no file written).</returns>
         public static bool GenerateThumbnail(
             string originalPath,
             string pathToProcessedImage,
             int newWidth
         )
         {
-            return GenerateThumbnail(originalPath, pathToProcessedImage, newWidth, Color.Empty);
-        }
-
-        // Make a thumbnail of the input image. newWidth and newHeight are both limits; the image will not
-        // be larger than original, but if necessary will be shrunk to fit within the indicated rectangle.
-        // If parameter 'backColor' is not Empty, we fill the background of the thumbnail with that color.
-        public static bool GenerateThumbnail(
-            string originalPath,
-            string pathToProcessedImage,
-            int newWidth,
-            Color backColor
-        )
-        {
-            using (var originalImage = ImageUtils.FromFileRobustly(originalPath))
+            using (var originalImage = PalasoImage.FromFileRobustly(originalPath))
             {
-                // check if it needs resized
                 if (originalImage.Image.Width <= newWidth)
                     return false;
 
-                // calculate dimensions
-                var newW =
-                    (originalImage.Image.Width > newWidth) ? newWidth : originalImage.Image.Width;
+                var newW = newWidth;
                 // allow for proper rounding from the division
                 var newH =
                     (newW * originalImage.Image.Height + (originalImage.Image.Width / 2))
@@ -228,32 +306,12 @@ namespace Bloom.ImageProcessing
                 using (var thumbnail = new Bitmap(newW, newH))
                 using (var g = Graphics.FromImage(thumbnail))
                 {
-                    if (backColor != Color.Empty)
-                    {
-                        using (var brush = new SolidBrush(backColor))
-                        {
-                            g.FillRectangle(brush, new Rectangle(0, 0, newW, newH));
-                        }
-                    }
-                    Image imageToDraw = originalImage.Image;
-                    bool makeTransparentImage = ImageUtils.ShouldMakeBackgroundTransparent(
-                        originalImage
-                    );
-                    if (makeTransparentImage)
-                    {
-                        imageToDraw = MakePngBackgroundTransparent(originalImage);
-                    }
-                    var destRect = new Rectangle(0, 0, newW, newH);
-                    // Note the image size may change when the background is made transparent.
-                    // See https://silbloom.myjetbrains.com/youtrack/issue/BL-5632.
                     g.DrawImage(
-                        imageToDraw,
-                        destRect,
-                        new Rectangle(0, 0, imageToDraw.Width, imageToDraw.Height),
+                        originalImage.Image,
+                        new Rectangle(0, 0, newW, newH),
+                        new Rectangle(0, 0, originalImage.Image.Width, originalImage.Image.Height),
                         GraphicsUnit.Pixel
                     );
-                    if (makeTransparentImage)
-                        imageToDraw.Dispose();
                     RobustImageIO.SaveImage(thumbnail, pathToProcessedImage);
                 }
             }
@@ -276,7 +334,7 @@ namespace Bloom.ImageProcessing
             {
                 coverImagePath = BloomFileLocator.GetFileFromDistFiles("Blank.png");
             }
-            using (var coverImage = ImageUtils.FromFileRobustly(coverImagePath))
+            using (var coverImage = PalasoImage.FromFileRobustly(coverImagePath))
             {
                 var coverImageWidth = coverImage.Image.Width;
                 var coverImageHeight = coverImage.Image.Height;
@@ -345,25 +403,36 @@ namespace Bloom.ImageProcessing
                 {
                     g.FillRectangle(brush, backgroundAndBorderRect);
 
-                    lock (ConvertWhiteToTransparent)
+                    var shouldMakeTransparent =
+                        !appearsToBeJpeg && ImageUtils.ShouldMakeBackgroundTransparent(coverImage);
+                    if (shouldMakeTransparent)
                     {
-                        var imageAttributes =
-                            (
-                                appearsToBeJpeg
-                                || !ImageUtils.ShouldMakeBackgroundTransparent(coverImage)
-                            )
-                                ? null
-                                : ConvertWhiteToTransparent;
+                        using (
+                            var transparentImage = (Bitmap)MakePngBackgroundTransparent(coverImage)
+                        )
+                        {
+                            g.DrawImage(
+                                transparentImage,
+                                destRect,
+                                0,
+                                0,
+                                transparentImage.Width,
+                                transparentImage.Height,
+                                GraphicsUnit.Pixel
+                            );
+                        }
+                    }
+                    else
+                    {
                         g.DrawImage(
-                            coverImage.Image, // finally, draw the cover image
-                            destRect, // with a scaled and centered destination
+                            coverImage.Image,
+                            destRect,
                             0,
                             0,
                             coverImageWidth,
-                            coverImageHeight, // from the entire cover image,
-                            GraphicsUnit.Pixel,
-                            imageAttributes
-                        ); // changing white to transparent if a B&W/greyscale png
+                            coverImageHeight,
+                            GraphicsUnit.Pixel
+                        );
                     }
                     if (!appearsToBeJpeg || Path.GetExtension(pathToProcessedImage) == ".png")
                         ImageUtils.SaveOrDeletePngImageToPath(thumbnail, pathToProcessedImage);
@@ -411,32 +480,154 @@ namespace Bloom.ImageProcessing
                 revisedBitmap.Palette = GivePaletteTransparentBackground(revisedBitmap);
                 return revisedBitmap;
             }
-            //impose a maximum size because in BL-2871 "Opposites" had about 6k x 6k and we got an ArgumentException
-            //from the new BitMap()
-            var destinationWidth = Math.Min(1000, originalImage.Image.Width);
-            var destinationHeight = (int)(
-                (float)originalImage.Image.Height
-                * ((float)destinationWidth / (float)originalImage.Image.Width)
-            );
-            var processedBitmap = new Bitmap(destinationWidth, destinationHeight);
-            using (var g = Graphics.FromImage(processedBitmap))
+            // Keep full resolution for alpha extraction so line-art edges are not softened by pre-scaling.
+            var destinationWidth = originalImage.Image.Width;
+            var destinationHeight = originalImage.Image.Height;
+            using (
+                var scaledSource = new Bitmap(
+                    destinationWidth,
+                    destinationHeight,
+                    PixelFormat.Format32bppArgb
+                )
+            )
+            using (var g = Graphics.FromImage(scaledSource))
             {
-                var destRect = new Rectangle(0, 0, destinationWidth, destinationHeight);
-                lock (ConvertWhiteToTransparent)
+                g.DrawImage(originalImage.Image, 0, 0, destinationWidth, destinationHeight);
+                var transparentImage = RemoveWhiteBackground(scaledSource);
+
+                // Keep the old maximum-size behavior (BL-2871), but scale after alpha extraction.
+                var scaledWidth = Math.Min(1000, transparentImage.Width);
+                if (scaledWidth >= transparentImage.Width)
+                    return transparentImage;
+
+                var scaledHeight = (int)(
+                    (float)transparentImage.Height
+                    * ((float)scaledWidth / (float)transparentImage.Width)
+                );
+                var scaledTransparentImage = new Bitmap(
+                    scaledWidth,
+                    scaledHeight,
+                    PixelFormat.Format32bppArgb
+                );
+                using (var gScaled = Graphics.FromImage(scaledTransparentImage))
                 {
-                    g.DrawImage(
-                        originalImage.Image,
-                        destRect,
-                        0,
-                        0,
-                        originalImage.Image.Width,
-                        originalImage.Image.Height,
-                        GraphicsUnit.Pixel,
-                        ConvertWhiteToTransparent
-                    );
+                    gScaled.DrawImage(transparentImage, 0, 0, scaledWidth, scaledHeight);
+                }
+                transparentImage.Dispose();
+                return scaledTransparentImage;
+            }
+        }
+
+        /// <summary>
+        /// Converts a white-background bitmap to one with a transparent background using per-pixel
+        /// alpha unmixing. Anti-aliased edge pixels get partial alpha rather than being left as
+        /// opaque white, eliminating the white fringe visible against colored page backgrounds.
+        /// </summary>
+        private static Image RemoveWhiteBackground(Bitmap source)
+        {
+            var width = source.Width;
+            var height = source.Height;
+            var result = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+            var rect = new Rectangle(0, 0, width, height);
+            var srcData = source.LockBits(
+                rect,
+                ImageLockMode.ReadOnly,
+                PixelFormat.Format32bppArgb
+            );
+            var dstData = result.LockBits(
+                rect,
+                ImageLockMode.WriteOnly,
+                PixelFormat.Format32bppArgb
+            );
+            var stride = Math.Abs(srcData.Stride);
+            var pixels = new byte[stride * height];
+            Marshal.Copy(srcData.Scan0, pixels, 0, pixels.Length);
+            source.UnlockBits(srcData);
+            // 1. Find the lightest color in the image (max R+G+B sum)
+            int maxR = 0,
+                maxG = 0,
+                maxB = 0;
+            int maxSum = 0;
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int idx = y * stride + x * 4;
+                    int b = pixels[idx];
+                    int g = pixels[idx + 1];
+                    int r = pixels[idx + 2];
+                    int sum = r + g + b;
+                    if (sum > maxSum)
+                    {
+                        maxSum = sum;
+                        maxR = r;
+                        maxG = g;
+                        maxB = b;
+                    }
                 }
             }
-            return processedBitmap;
+
+            // 2. Build brightness thresholds for a transparency ramp.
+            // t0: pixels at/above this brightness become fully transparent.
+            // t1: pixels at/below this brightness stay fully opaque.
+            // Values between t1..t0 get linearly ramped alpha.
+            //
+            // For a white background (detected ~255) t0=220, t1=180, giving the standard 40-unit ramp.
+            // For darker backgrounds t0 is pulled down to match, and t1 follows to keep the ramp
+            // kMinRampWidth wide — but t1 is never allowed below kMinOpaqueBrightnessThreshold so
+            // that dark content pixels stay fully opaque even on dark backgrounds.  This may produce
+            // a narrower ramp than kMinRampWidth on very dark images, which is the right trade-off.
+            // On extremely dark images, we may not make anything transparent.
+            const double kTransparentBrightnessThreshold = 220.0;
+            const double kOpaqueBrightnessThreshold = 180.0;
+            const double kMinRampWidth = 40.0;
+            const double kMinOpaqueBrightnessThreshold = 60.0;
+            var detectedBackgroundBrightness = 0.299 * maxR + 0.587 * maxG + 0.114 * maxB;
+            var transparentBrightnessThreshold = Math.Min(
+                kTransparentBrightnessThreshold,
+                detectedBackgroundBrightness
+            );
+            var opaqueBrightnessThreshold = Math.Max(
+                kMinOpaqueBrightnessThreshold,
+                Math.Min(kOpaqueBrightnessThreshold, transparentBrightnessThreshold - kMinRampWidth)
+            );
+
+            // 3. For each pixel, set alpha from perceptual brightness using t0/t1 ramp.
+            // Keep this pass after the two read-only analysis passes above: we mutate pixels in place.
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int idx = y * stride + x * 4;
+                    int b = pixels[idx];
+                    int g = pixels[idx + 1];
+                    int r = pixels[idx + 2];
+                    // pixels[idx + 3] is source alpha, always 255 for opaque input.
+                    var brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+                    byte newAlpha;
+                    if (brightness >= transparentBrightnessThreshold)
+                    {
+                        newAlpha = 0;
+                    }
+                    else if (brightness <= opaqueBrightnessThreshold)
+                    {
+                        newAlpha = 255;
+                    }
+                    else
+                    {
+                        newAlpha = (byte)(
+                            255.0
+                            * (transparentBrightnessThreshold - brightness)
+                            / (transparentBrightnessThreshold - opaqueBrightnessThreshold)
+                        );
+                    }
+                    pixels[idx + 3] = newAlpha;
+                    // Keep RGB as-is to preserve color intensity (e.g. pure red stays red).
+                }
+            }
+            Marshal.Copy(pixels, 0, dstData.Scan0, pixels.Length);
+            result.UnlockBits(dstData);
+            return result;
         }
 
         private static ColorPalette GivePaletteTransparentBackground(Image bitmap)
@@ -472,7 +663,7 @@ namespace Bloom.ImageProcessing
                 if (ImageUtils.HasJpegExtension(originalPath))
                     return false;
 
-                using (var originalImage = ImageUtils.FromFileRobustly(originalPath))
+                using (var originalImage = PalasoImage.FromFileRobustly(originalPath))
                 {
                     // double check whether the file extension was misleading us...
                     if (ImageUtils.AppearsToBeJpeg(originalImage))

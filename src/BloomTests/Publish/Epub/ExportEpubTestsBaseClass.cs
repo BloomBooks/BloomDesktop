@@ -303,6 +303,22 @@ namespace BloomTests.Publish.Epub
             Assert.That(entry, Is.Null, "Should not have found entry at " + path);
         }
 
+        /// <summary>
+        /// Verify that an image file exists in the epub, accepting either .png or .jpg extension
+        /// (since epub publishing may convert photographic PNGs to JPEG).
+        /// </summary>
+        /// <param name="pathWithoutExtension">Path including folder but without extension, e.g. "content/images/myImage"</param>
+        public void VerifyEpubImageExists(string pathWithoutExtension)
+        {
+            var pngEntry = _epub.GetEntry(pathWithoutExtension + ".png");
+            var jpgEntry = _epub.GetEntry(pathWithoutExtension + ".jpg");
+            Assert.That(
+                pngEntry ?? jpgEntry,
+                Is.Not.Null,
+                $"Should have found image entry at {pathWithoutExtension} (as .png or .jpg)"
+            );
+        }
+
         internal static string StripXmlHeader(string data)
         {
             var index = data.IndexOf("?>");
@@ -542,7 +558,9 @@ namespace BloomTests.Publish.Epub
             foreach (var image in images)
                 AssertThatXmlIn
                     .String(pageData)
-                    .HasAtLeastOneMatchForXpath("//img[@src='" + kImagesSlash + image + ".png']");
+                    .HasAtLeastOneMatchForXpath(
+                        $"//img[@src='{kImagesSlash}{image}.png' or @src='{kImagesSlash}{image}.jpg']"
+                    );
             AssertThatXmlIn
                 .String(pageData)
                 .HasAtLeastOneMatchForXpath(
@@ -676,13 +694,7 @@ namespace BloomTests.Publish.Epub
 
             foreach (var image in imageFiles)
                 assertThatManifest.HasAtLeastOneMatchForXpath(
-                    "package/manifest/item[@id='"
-                        + image
-                        + "' and @href='"
-                        + EpubMaker.kImagesFolder
-                        + "^slash^"
-                        + image
-                        + ".png']"
+                    $"package/manifest/item[@id='{image}' and (@href='{EpubMaker.kImagesFolder}^slash^{image}.png' or @href='{EpubMaker.kImagesFolder}^slash^{image}.jpg')]"
                 );
         }
 

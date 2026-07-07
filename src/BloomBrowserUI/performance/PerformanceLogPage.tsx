@@ -8,7 +8,7 @@ import {
     ScatterPlotDatum,
     ScatterPlotNodeProps,
 } from "@nivo/scatterplot";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../utils/reactRender";
 import { Button } from "@mui/material";
 import filesize from "filesize";
 
@@ -328,4 +328,4 @@ function getTooltip(node, measurements: IMeasurement[]) {
 // This control is used only as the top-level component of the page.
 // These lines bootstrap react and are run when the PerformanceLogPage.htm processes <script src="/performanceLogBundle.js"></script>
 const root = document.getElementById("root");
-ReactDOM.render(<PerformanceLogPage />, root);
+renderRoot(<PerformanceLogPage />, root);

@@ -4,10 +4,10 @@ files:
       languages_mapping:
           two_letters_code:
               zh-CN: zh-CN
-      update_option: update_as_unapproved
+      update_option: update_without_changes
     - source: /DistFiles/localization/*/ReadMe-en.xlf
       translation: /%original_path%/ReadMe-%two_letters_code%.xlf
       languages_mapping:
           two_letters_code:
               zh-CN: zh-CN
-      update_option: update_as_unapproved
+      update_option: update_without_changes

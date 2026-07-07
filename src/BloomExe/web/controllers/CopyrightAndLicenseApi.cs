@@ -1,9 +1,11 @@
 using System;
 using System.Drawing;
+using System.Net;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using SIL.Core.ClearShare;
+using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
@@ -33,6 +35,61 @@ namespace Bloom.web.controllers
                 HandleImageCopyrightAndLicense,
                 true
             );
+            // The next two endpoints support the "reuse metadata from another image" chooser.
+            // They are read-only and are driven one image at a time from the front-end so that
+            // gathering can be progressive and can stop when the dialog is closed.
+            apiHandler.RegisterEndpointHandler(
+                "copyrightAndLicense/imageFileNamesInBook",
+                HandleImageFileNamesInBook,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "copyrightAndLicense/imageMetadataForFile",
+                HandleImageMetadataForFile,
+                false
+            );
+        }
+
+        // Returns the file names of the "real" images in the current book (excluding license,
+        // branding, and placeholder images). The metadata chooser fetches each one's metadata
+        // separately so it can show results as they arrive.
+        private void HandleImageFileNamesInBook(ApiRequest request)
+        {
+            var domBody = Model.CurrentBook.RawDom.DocumentElement.SelectSingleNode("//body");
+            var langs = Model.CurrentBook.GetLanguagePrioritiesForLocalizedTextOnPage();
+            var names = ImageApi.GetCreditableImageFileNamesInBook(domBody, langs);
+            request.ReplyWithJson(names);
+        }
+
+        // Returns the copyright/license metadata for a single image file (by file name) in the
+        // same JSON shape that the dialog's image GET uses. Read-only: unlike
+        // HandleImageCopyrightAndLicense, this does not prepare the image for editing.
+        private void HandleImageMetadataForFile(ApiRequest request)
+        {
+            var fileName = request.RequiredParam("fileName");
+            // We don't guard fileName against path traversal here. This is a local-only API and we
+            // control both ends, so we don't care about the case where something asks to look at an
+            // image outside of the book folder.
+            var path = Model.CurrentBook.FolderPath.CombineForPath(fileName);
+            if (!RobustFile.Exists(path))
+            {
+                request.ReplyWithJson(String.Empty);
+                return;
+            }
+            try
+            {
+                var metadata = RobustFileIO.MetadataFromFile(path);
+                request.ReplyWithJson(GetJsonFromMetadata(metadata, forBook: false));
+            }
+            catch (Exception e)
+            {
+                // A corrupt or unreadable image must not break gathering. Log it and reply with
+                // empty so the chooser simply skips this image instead of surfacing an error.
+                Logger.WriteEvent(
+                    $"MetadataChooser: could not read metadata for image '{fileName}': {e.Message}"
+                );
+                request.ReplyWithJson(String.Empty);
+            }
         }
 
         private void HandleGetCCImage(ApiRequest request)
@@ -107,7 +164,15 @@ namespace Bloom.web.controllers
             {
                 case HttpMethods.Get:
                     var imageUrl = request.Parameters["imageUrl"]; // might be null
-                    metadata = View.PrepareToEditImageMetadata(imageUrl);
+                    try
+                    {
+                        metadata = View.PrepareToEditImageMetadata(imageUrl);
+                    }
+                    catch (InvalidOperationException e)
+                    {
+                        request.Failed(HttpStatusCode.BadRequest, e.Message);
+                        return;
+                    }
                     if (metadata == null)
                     {
                         request.ReplyWithJson(String.Empty);
@@ -119,45 +184,54 @@ namespace Bloom.web.controllers
                     break;
                 case HttpMethods.Post:
                     metadata = GetMetadataFromJson(request, forBook: false);
-                    if (View.MetadataEditIsFromImageToolbox)
-                    {
-                        // Invoke the palaso image toolbox's save callback directly so that the
-                        // toolbox UI immediately shows the new copyright/license information.
-                        // However, since we launched this dialog from the image chooser, and
-                        // have not yet committed to a new image, we don't want to save the page
-                        // and save the metadata to the current image file, if any.
-                        View.ApplyImageMetadataToImageToolbox(metadata);
-                        request.PostSucceeded();
-                        break;
-                    }
-
+                    // The dialog's "Copy to all other images in the book" button sets this.
+                    // (We no longer pop up a question asking whether to copy to all images.)
+                    bool applyToAllImages = request.GetParamOrNull("applyToAllImages") == "true";
                     View.Model.SaveThen(
                         () =>
                         { // Saved DOM must be up to date with possibly new imageUrl
-                            bool wasNormalSuccessfulSave = View.SaveImageMetadata(metadata);
-                            // The filename can be null if coming in from the libpalaso toolbox callback,
-                            // in which case wasNormalSuccessfulSave will be false anyway.
-                            bool isNormalImageType =
-                                View.FileNameOfImageBeingModified != null
-                                && ImageUpdater.IsNormalImagePath(
-                                    View.FileNameOfImageBeingModified
-                                );
-                            bool shouldAskUserIfCopyMetadataToAllImages =
-                                wasNormalSuccessfulSave && isNormalImageType;
-                            bool copyMetadataToAllImages = shouldAskUserIfCopyMetadataToAllImages
-                                ? View.AskUserIfCopyImageMetadataToAllImages()
-                                : false;
-                            if (copyMetadataToAllImages)
+                            try
                             {
-                                View.CopyImageMetadataToAllImages(metadata);
+                                bool wasNormalSuccessfulSave = View.SaveImageMetadata(metadata);
+                                bool isNormalImageType =
+                                    View.FileNameOfImageBeingModified != null
+                                    && ImageUpdater.IsNormalImagePath(
+                                        View.FileNameOfImageBeingModified
+                                    );
+                                if (
+                                    applyToAllImages
+                                    && wasNormalSuccessfulSave
+                                    && isNormalImageType
+                                )
+                                {
+                                    // Copies the metadata to every image (runs synchronously).
+                                    View.CopyImageMetadataToAllImages(metadata);
+                                }
+                                else if (wasNormalSuccessfulSave)
+                                {
+                                    View.UpdateMetadataForCurrentImage(); // Need to get things up to date on the current page.
+                                }
                             }
-                            else if (wasNormalSuccessfulSave)
+                            finally
                             {
-                                View.UpdateMetadataForCurrentImage(); // Need to get things up to date on the current page.
+                                // Always tell the (still-open) dialog that the "Add this info to
+                                // all images" request has finished, so it can replace its
+                                // "Working…" spinner with a "done" confirmation. We must do this
+                                // even when the copy didn't actually run (save failed, non-normal
+                                // image, or an error above) so the spinner never hangs forever.
+                                if (applyToAllImages)
+                                    View.Model.NotifyCopyrightPushedToAllImages();
                             }
                             return View.Model.CurrentPage.Id;
                         },
-                        () => { } // wrong state, do nothing
+                        () =>
+                        {
+                            // We weren't in a state to save, so nothing happened; still clear the
+                            // dialog's "Working…" spinner if it is waiting on an "Add this info to
+                            // all images" request.
+                            if (applyToAllImages)
+                                View.Model.NotifyCopyrightPushedToAllImages();
+                        }
                     );
 
                     request.PostSucceeded();
@@ -212,15 +286,16 @@ namespace Bloom.web.controllers
         private dynamic GetLicense(Metadata metadata)
         {
             dynamic creativeCommonsInfoJson = GetDefaultCreativeCommonsInfo();
-            if (metadata.License is CreativeCommonsLicenseInfo)
-                creativeCommonsInfoJson = GetCreativeCommonsInfo(
-                    (CreativeCommonsLicenseInfo)metadata.License
-                );
+            if (IsCreativeCommonsLicense(metadata.License))
+                creativeCommonsInfoJson = GetCreativeCommonsInfo(metadata.License);
             return new
             {
                 licenseType = GetLicenseType(metadata.License),
                 creativeCommonsInfo = creativeCommonsInfoJson,
                 rightsStatement = metadata.License?.RightsStatement ?? string.Empty,
+                // The exact URL (including CC version) from the stored metadata.
+                // JS uses this for the "About" link so e.g. AOR 3.0 images link correctly.
+                licenseUrl = metadata.License?.Url ?? string.Empty,
             };
         }
 
@@ -234,62 +309,72 @@ namespace Bloom.web.controllers
             };
         }
 
-        private dynamic GetCreativeCommonsInfo(CreativeCommonsLicenseInfo ccLicense)
+        private dynamic GetCreativeCommonsInfo(SIL.Core.ClearShare.LicenseInfo ccLicense)
         {
+            dynamic dynamicCcLicense = ccLicense;
+
             return new
             {
-                token = ccLicense.Token,
-                allowCommercial = ccLicense.CommercialUseAllowed ? "yes" : "no",
-                allowDerivatives = GetCcDerivativeRulesAsString(ccLicense.DerivativeRule),
-                intergovernmentalVersion = ccLicense.IntergovernmentalOrganizationQualifier,
+                token = dynamicCcLicense.Token,
+                allowCommercial = dynamicCcLicense.CommercialUseAllowed ? "yes" : "no",
+                allowDerivatives = GetCcDerivativeRulesAsString(dynamicCcLicense.DerivativeRule),
+                intergovernmentalVersion = dynamicCcLicense.IntergovernmentalOrganizationQualifier,
             };
         }
 
-        private static string GetCcDerivativeRulesAsString(
-            CreativeCommonsLicenseInfo.DerivativeRules rules
-        )
+        private static string GetCcDerivativeRulesAsString(object rules)
         {
-            switch (rules)
+            switch (rules?.ToString())
             {
-                case CreativeCommonsLicenseInfo.DerivativeRules.DerivativesWithShareAndShareAlike:
+                case "DerivativesWithShareAndShareAlike":
                     return "sharealike";
-                case CreativeCommonsLicenseInfo.DerivativeRules.Derivatives:
+                case "Derivatives":
                     return "yes";
-                case CreativeCommonsLicenseInfo.DerivativeRules.NoDerivatives:
+                case "NoDerivatives":
                     return "no";
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private CreativeCommonsLicenseInfo.DerivativeRules GetCcDerivativeRule(string jsonValue)
+        private CreativeCommonsLicense.DerivativeRules GetCcDerivativeRule(string jsonValue)
         {
             switch (jsonValue)
             {
                 case "sharealike":
-                    return CreativeCommonsLicenseInfo
-                        .DerivativeRules
-                        .DerivativesWithShareAndShareAlike;
+                    return CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike;
                 case "yes":
-                    return CreativeCommonsLicenseInfo.DerivativeRules.Derivatives;
+                    return CreativeCommonsLicense.DerivativeRules.Derivatives;
                 case "no":
-                    return CreativeCommonsLicenseInfo.DerivativeRules.NoDerivatives;
+                    return CreativeCommonsLicense.DerivativeRules.NoDerivatives;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private string GetLicenseType(LicenseInfo licenseInfo)
+        private string GetLicenseType(SIL.Core.ClearShare.LicenseInfo licenseInfo)
         {
-            if (licenseInfo is CreativeCommonsLicenseInfo)
+            if (IsCreativeCommonsLicense(licenseInfo))
             {
-                if (licenseInfo.Url == CreativeCommonsLicenseInfo.CC0Url)
+                if (licenseInfo.Url == CreativeCommonsLicense.CC0Url)
                     return "publicDomain";
                 return "creativeCommons";
             }
-            if (licenseInfo is CustomLicenseInfo)
+            if (IsCustomLicense(licenseInfo))
                 return "custom";
             return "contact";
+        }
+
+        private static bool IsCreativeCommonsLicense(SIL.Core.ClearShare.LicenseInfo licenseInfo)
+        {
+            return licenseInfo is CreativeCommonsLicense
+                || licenseInfo?.GetType().Name == "CreativeCommonsLicenseInfo";
+        }
+
+        private static bool IsCustomLicense(SIL.Core.ClearShare.LicenseInfo licenseInfo)
+        {
+            return licenseInfo is CustomLicense
+                || licenseInfo?.GetType().Name == "CustomLicenseInfo";
         }
 
         private Metadata GetMetadataFromJson(ApiRequest request, bool forBook)

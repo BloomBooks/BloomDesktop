@@ -68,7 +68,6 @@ describe("Bloom Edit Controls tests", () => {
         getTheOneReaderToolsModel().addWordsFromFile(sampleFileContents);
 
         getTheOneReaderToolsModel().addWordsToSynphony();
-        getTheOneReaderToolsModel().updateWordList();
 
         const setStageDone = getTheOneReaderToolsModel().setStageNumber(1);
         getTheOneReaderToolsModel().wordListLoaded = true;
@@ -119,31 +118,6 @@ describe("Bloom Edit Controls tests", () => {
         document.body.removeChild(levelNOfMElement);
     });
 
-    it("increments stage to limit on stage right button", () => {
-        getTheOneReaderToolsModel().incrementStage();
-        expect(stageNOfMElement.innerText).toBe("Stage 2 of 3");
-
-        getTheOneReaderToolsModel().incrementStage();
-        expect(stageNOfMElement.innerText).toBe("Stage 3 of 3");
-
-        // Expect that it doesn't change if you try to increment while at the highest value already
-        getTheOneReaderToolsModel().incrementStage();
-        expect(stageNOfMElement.innerText).toBe("Stage 3 of 3");
-    });
-
-    it("decrements stage to 1 on stage left button", () => {
-        getTheOneReaderToolsModel().setStageNumber(3);
-        getTheOneReaderToolsModel().decrementStage();
-        expect(stageNOfMElement.innerText).toBe("Stage 2 of 3");
-
-        getTheOneReaderToolsModel().decrementStage();
-        expect(stageNOfMElement.innerText).toBe("Stage 1 of 3");
-
-        // Expect that it doesn't change if you try to decrement while at the lowest value already
-        getTheOneReaderToolsModel().decrementStage();
-        expect(stageNOfMElement.innerText).toBe("Stage 1 of 3");
-    });
-
     it("increments level to limit on level right button", () => {
         getTheOneReaderToolsModel().incrementLevel();
         expect(levelNOfMElement.innerText).toBe("Level 2 of 3");
@@ -167,82 +141,6 @@ describe("Bloom Edit Controls tests", () => {
         // Expect that it doesn't change if you try to decrement while at the lowest value already
         getTheOneReaderToolsModel().decrementLevel();
         expect(levelNOfMElement.innerText).toBe("Level 1 of 3");
-    });
-
-    it("setting stage updates stage button visibility", () => {
-        getTheOneReaderToolsModel().setStageNumber(3);
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "decStage",
-                "class",
-            ),
-        ).toBe("something");
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "incStage",
-                "class",
-            ),
-        ).toBe("something disabledIcon");
-
-        // Now at Stage 2 of 3
-        getTheOneReaderToolsModel().decrementStage();
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "incStage",
-                "class",
-            ),
-        ).toBe("something");
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "decStage",
-                "class",
-            ),
-        ).toBe("something");
-
-        // Now at Stage 1 of 3
-        getTheOneReaderToolsModel().decrementStage();
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "incStage",
-                "class",
-            ),
-        ).toBe("something");
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "decStage",
-                "class",
-            ),
-        ).toBe("something disabledIcon");
-
-        // Now at Stage 2 of 3
-        getTheOneReaderToolsModel().incrementStage();
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "incStage",
-                "class",
-            ),
-        ).toBe("something");
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "decStage",
-                "class",
-            ),
-        ).toBe("something");
-
-        // Now at Stage 3 of 3
-        getTheOneReaderToolsModel().incrementStage();
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "decStage",
-                "class",
-            ),
-        ).toBe("something");
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "incStage",
-                "class",
-            ),
-        ).toBe("something disabledIcon");
     });
 
     it("updates level button visibility when setting level", () => {
@@ -322,171 +220,6 @@ describe("Bloom Edit Controls tests", () => {
         expect(levelNOfMElement.innerText).toBe("Level 3 of 3");
     });
 
-    it("sorts word list correctly when sort buttons clicked", async () => {
-        // Note: beforeEach calls setStageNumber as well... :(
-        if (beforeEachDonePromise) {
-            await beforeEachDonePromise;
-        }
-
-        await getTheOneReaderToolsModel().setStageNumber(2);
-        getTheOneReaderToolsModel().ckEditorLoaded = true; // some things only happen once the editor is loaded; pretend it is.
-
-        // Default is currently alphabetic
-        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
-        await getTheOneReaderToolsModel().setStageNumber(1);
-        expect(getTheOneReaderToolsModel().updateElementContent)
-            // 1. Set stage to 1
-            .toHaveBeenCalledWith(
-                "wordList",
-                '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>',
-            );
-
-        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
-        getTheOneReaderToolsModel().sortByLength();
-        expect(getTheOneReaderToolsModel().updateElementContent)
-            // 2. Sort by length
-            .toHaveBeenCalledWith(
-                "wordList",
-                '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>',
-            );
-
-        // Note: originally this test had feline before rate,
-        // but rate is considered to have a freq of 1 (due to its appearance in "moreWords"), whereas feline has 0,
-        // so rate is before feline
-        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
-        getTheOneReaderToolsModel().sortByFrequency();
-        expect(getTheOneReaderToolsModel().updateElementContent)
-            // 3. Sort by frequency
-            .toHaveBeenCalledWith(
-                "wordList",
-                '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>',
-            );
-
-        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
-        getTheOneReaderToolsModel().sortAlphabetically();
-        expect(getTheOneReaderToolsModel().updateElementContent)
-            // 4. Sort alphabetically
-            .toHaveBeenCalledWith(
-                "wordList",
-                '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>',
-            );
-
-        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
-        await getTheOneReaderToolsModel().setStageNumber(2);
-        expect(getTheOneReaderToolsModel().updateElementContent)
-            // 5. Set stage back to 2
-            .toHaveBeenCalledWith(
-                "wordList",
-                '<div class="word lang1InATool "> bob</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div><div class="word lang1InATool  sight-word"> two</div>',
-            );
-
-        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
-        getTheOneReaderToolsModel().sortByLength(); // same-length ones should be alphabetic
-        expect(getTheOneReaderToolsModel().updateElementContent)
-            // 6. Stage 2, Sort by length
-            .toHaveBeenCalledWith(
-                "wordList",
-                '<div class="word lang1InATool "> bob</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool "> sat</div><div class="word lang1InATool  sight-word"> two</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> rodent</div>',
-            );
-
-        // Again, note that rate is considered to have freq=1 because it appears in moreWords, so it comes before feline (freq=0)
-        (<any>getTheOneReaderToolsModel().updateElementContent).mockClear();
-        getTheOneReaderToolsModel().sortByFrequency();
-        expect(getTheOneReaderToolsModel().updateElementContent)
-            // 7. Stage 2, Sort by frequency
-            .toHaveBeenCalledWith(
-                "wordList",
-                '<div class="word lang1InATool "> sat</div><div class="word lang1InATool "> bob</div><div class="word lang1InATool "> catty</div><div class="word lang1InATool "> fob</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool  sight-word"> one</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool  sight-word"> two</div>',
-            );
-    });
-
-    it("sets selected class when sort button clicked", () => {
-        classValues.sortAlphabetic = "sortItem sortIconSelected";
-        classValues.sortLength = "sortItem";
-        classValues.sortFrequency = "sortItem";
-
-        getTheOneReaderToolsModel().sortByLength();
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "sortAlphabetic",
-                "class",
-            ),
-        ).toBe("sortItem");
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "sortLength",
-                "class",
-            ),
-        ).toBe("sortItem sortIconSelected");
-
-        getTheOneReaderToolsModel().sortByFrequency();
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "sortLength",
-                "class",
-            ),
-        ).toBe("sortItem");
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "sortFrequency",
-                "class",
-            ),
-        ).toBe("sortItem sortIconSelected");
-
-        getTheOneReaderToolsModel().sortAlphabetically();
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "sortFrequency",
-                "class",
-            ),
-        ).toBe("sortItem");
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "sortAlphabetic",
-                "class",
-            ),
-        ).toBe("sortItem sortIconSelected");
-
-        classValues.sortLength = "sortItem sortIconSelected"; // anomolous...length is also selected, though not properly current.
-        classValues.sortAlphabetic = "sortItem"; // anomolous...doesn't have property, though it is current.
-
-        getTheOneReaderToolsModel().sortByLength();
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "sortAlphabetic",
-                "class",
-            ),
-        ).toBe("sortItem");
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "sortLength",
-                "class",
-            ),
-        ).toBe("sortItem sortIconSelected");
-    });
-
-    it("updates word list on init", () => {
-        getTheOneReaderToolsModel().ckEditorLoaded = true; // some things only happen once the editor is loaded; pretend it is.
-        getTheOneReaderToolsModel().updateControlContents();
-        expect(
-            getTheOneReaderToolsModel().updateElementContent,
-        ).toHaveBeenCalledWith(
-            "wordList",
-            '<div class="word lang1InATool "> catty</div><div class="word lang1InATool  sight-word"> feline</div><div class="word lang1InATool "> rate</div><div class="word lang1InATool  sight-word"> rodent</div><div class="word lang1InATool "> sat</div>',
-        );
-    });
-
-    it("updates stage count and buttons on init", () => {
-        getTheOneReaderToolsModel().updateControlContents();
-        expect(stageNOfMElement.innerText).toBe("Stage 1 of 3");
-        expect(
-            getTheOneReaderToolsModel().getElementAttribute(
-                "decStage",
-                "class",
-            ),
-        ).toBe("something disabledIcon");
-    });
-
     it("updates level buttons on init", () => {
         getTheOneReaderToolsModel().updateControlContents();
         expect(levelNOfMElement.innerText).toBe("Level 1 of 3");
@@ -496,11 +229,6 @@ describe("Bloom Edit Controls tests", () => {
                 "class",
             ),
         ).toBe("something disabledIcon");
-    });
-
-    it("updates stage label on init", () => {
-        getTheOneReaderToolsModel().updateControlContents();
-        expect(stageNOfMElement.innerText).toBe("Stage 1 of 3");
     });
 
     it("sets level max values on init", () => {

@@ -203,6 +203,14 @@ function postBuildPlugin(): Plugin {
             const manifestPath = path.join(outputDir, ".vite/manifest.json");
 
             try {
+                if (!fs.existsSync(manifestPath)) {
+                    console.warn(
+                        `[post-build] Skipping manifest processing because ${manifestPath} does not exist. ` +
+                            "An earlier build error likely prevented manifest generation.",
+                    );
+                    return;
+                }
+
                 // Read the manifest file
                 const manifestContent = await fs.promises.readFile(
                     manifestPath,
@@ -554,6 +562,8 @@ export default defineConfig(async ({ command }) => {
         languageChooserBundle: "./collection/LanguageChooserDialog.tsx",
         newCollectionLanguageChooserBundle:
             "./collection/NewCollectionLanguageChooser.tsx",
+        collectionChooserBundle:
+            "./collection/CollectionChooserDialog.entry.tsx",
         registrationDialogBundle:
             "./react_components/registration/registrationDialog.tsx",
     };
@@ -566,6 +576,12 @@ export default defineConfig(async ({ command }) => {
             // React plugin: Enables JSX, Fast Refresh, and React-specific optimizations
             react({
                 reactRefreshHost: `http://localhost:${devServerPort}`,
+                // jsxImportSource is also set in tsconfig.json; duplicating here ensures
+                // it applies to bloom-image-gallery files (see exclude below).
+                jsxImportSource: "@emotion/react",
+                // Include bloom-image-gallery in the transform pipeline even though it's in
+                // node_modules — its TSX source uses emotion's css prop and needs this plugin.
+                exclude: /node_modules\/(?!bloom-image-gallery)/,
                 babel: {
                     parserOpts: {
                         // This enables decorators like @mobxReact.observer.
@@ -622,6 +638,9 @@ export default defineConfig(async ({ command }) => {
                                       "!**/*.bat",
                                       "!**/node_modules/**/*.*",
                                       "!**/tsconfig.json",
+                                      "!**/test-results/**/*",
+                                      "!**/playwright-report/**/*",
+                                      "!**/.playwright-artifacts-*/**/*",
                                   ],
                                   dest: ".",
                               },
@@ -642,6 +661,15 @@ export default defineConfig(async ({ command }) => {
                 port: devServerPort,
                 clientPort: devServerPort,
                 overlay: true,
+            },
+            watch: {
+                // When bloom-image-gallery is yarn-linked for local development, its files
+                // live in node_modules but resolve to a real path outside it. Allow HMR
+                // to watch them by exempting that package from the node_modules exclusion.
+                ignored: (watchPath: string) => {
+                    if (watchPath.includes("bloom-image-gallery")) return false;
+                    return /node_modules/.test(watchPath);
+                },
             },
         },
 
@@ -708,7 +736,11 @@ export default defineConfig(async ({ command }) => {
         // MODULE RESOLUTION CONFIGURATION
         // Controls how Vite finds and loads modules
         resolve: {
-            preserveSymlinks: false, // Follow symlinks to actual files
+            // When bloom-image-gallery is yarn-linked for local development, follow the
+            // symlink to its real path so Vite treats it as a first-party source file
+            // rather than a node_modules package. This lets the react plugin transform it
+            // and lets tsconfig.json in that repo supply jsxImportSource for emotion.
+            preserveSymlinks: false,
 
             // DEDUPE: Prevent duplicate copies of these packages in bundles
             // If multiple dependencies use React, only include one copy
@@ -764,7 +796,7 @@ export default defineConfig(async ({ command }) => {
                 ? ["default", "junit"]
                 : ["default"],
             outputFile: "./bloombrowserui-test-results.xml",
-            includeConsoleOutput: true,
+            includeConsoleOutput: false,
             // Uncomment to run only specific test files during development:
             // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
             exclude: [
@@ -773,12 +805,20 @@ export default defineConfig(async ({ command }) => {
                 "**/cypress/**",
                 "**/.{idea,git,cache,output,temp}/**",
                 "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+                "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via yarn e2e canvas)
                 "**/react_components/component-tester/**", // Exclude playwright component tests
                 "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
             ],
             environment: "jsdom", // Use jsdom to simulate browser DOM in Node
             globals: false, // Don't inject global test functions (use imports instead)
             testTimeout: 30000, // 30 second timeout for async operations
+            teardownTimeout: 10000, // 10s max for after-test cleanup; prevents hung workers from blocking the pool
+            // Cap parallel workers. On Windows, running too many jsdom workers simultaneously
+            // may exhaust system resources (TCP connections to localhost, libuv thread pool), causing
+            // workers to stall indefinitely. This may slightly slow things down on some computers
+            // but reduces the chance of the tests hanging altogether.
+            maxWorkers: "70%",
+            minWorkers: 2,
             sourcemap: true, // Enable source maps for debugging test code
             deps: {
                 inline: ["vitest-canvas-mock"], // Force this dep to be bundled (not externalized)
@@ -795,9 +835,7 @@ export default defineConfig(async ({ command }) => {
                 ],
             },
             environmentOptions: {
-                jsdom: {
-                    resources: "usable", // Allow jsdom to load external resources
-                },
+                jsdom: {},
             },
         },
 
@@ -808,7 +846,10 @@ export default defineConfig(async ({ command }) => {
                 "jquery", // Always pre-bundle jQuery
                 "comicaljs", // Pre-bundle comicaljs (webpack UMD bundle needs processing)
             ],
-            exclude: ["lib/localizationManager/localizationManager"], // Don't pre-bundle this
+            exclude: [
+                "lib/localizationManager/localizationManager", // Don't pre-bundle this
+                "bloom-image-gallery", // TypeScript source entry point — must go through Vite's transform pipeline, not esbuild pre-bundling
+            ],
             // Force Vite to treat comicaljs as having named exports even though it's CommonJS/UMD
             esbuildOptions: {
                 plugins: [],

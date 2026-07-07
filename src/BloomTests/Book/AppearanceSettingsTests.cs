@@ -119,10 +119,13 @@ namespace BloomTests.Book
 
             var css = appearance.ToCss();
 
+            // The theme factors the Ebook* and Device* page sizes into a single :is() per
+            // selector (see appearance-theme-rounded-border-ebook.css), so the page rule is
+            // written once for both sizes rather than duplicated per size.
             Assert.That(
                 css,
                 Does.Contain(
-                    "[class*=\"Device\"].numberedPage:not(.bloom-interactive-page) {"
+                    ":is([class*=\"Ebook\"], [class*=\"Device\"]).numberedPage:not(\r\n        .bloom-interactive-page\r\n    ) {"
                 )
             );
             Assert.That(css, Does.Contain("--pageNumber-background-color: #ffffff;"));
@@ -130,13 +133,13 @@ namespace BloomTests.Book
             Assert.That(
                 css,
                 Does.Not.Contain(
-                    "[class*=\"Device\"].numberedPage:not(.bloom-interactive-page)::after {\r\n    --pageNumber-bottom: var(--page-margin-bottom);\r\n    --pageNumber-top: unset;\r\n    --pageNumber-font-size: 11pt;\r\n    --pageNumber-border-radius: 50%;\r\n    --pageNumber-background-color: #ffffff;"
+                    ":is([class*=\"Ebook\"], [class*=\"Device\"]).numberedPage:not(\r\n        .bloom-interactive-page\r\n    )::after {\r\n    --pageNumber-bottom: var(--page-margin-bottom);\r\n    --pageNumber-top: unset;\r\n    --pageNumber-font-size: 11pt;\r\n    --pageNumber-border-radius: 50%;\r\n    --pageNumber-background-color: #ffffff;"
                 )
             );
             Assert.That(
                 css,
                 Does.Not.Contain(
-                    "[class*=\"Device\"].numberedPage:not(.bloom-interactive-page)::after {\r\n    --pageNumber-bottom: var(--page-margin-bottom);\r\n    --pageNumber-top: unset;\r\n    --pageNumber-font-size: 11pt;\r\n    --pageNumber-outline-color: white;"
+                    ":is([class*=\"Ebook\"], [class*=\"Device\"]).numberedPage:not(\r\n        .bloom-interactive-page\r\n    )::after {\r\n    --pageNumber-bottom: var(--page-margin-bottom);\r\n    --pageNumber-top: unset;\r\n    --pageNumber-font-size: 11pt;\r\n    --pageNumber-outline-color: white;"
                 )
             );
         }

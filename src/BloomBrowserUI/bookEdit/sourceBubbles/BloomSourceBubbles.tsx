@@ -8,7 +8,7 @@
 // This collectionSettings reference defines the function GetSettings(): ICollectionSettings
 // The actual function is injected by C#.
 /// <reference path="../js/collectionSettings.d.ts"/>
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../utils/reactRender";
 import $ from "jquery";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
@@ -219,7 +219,7 @@ export default class BloomSourceBubbles {
                 const buttonDiv = document.createElement("div");
                 sourceElement.append(buttonDiv);
                 if (textToCopy) {
-                    ReactDOM.render(
+                    renderRoot(
                         <CopyContentButton
                             onClick={() =>
                                 BloomSourceBubbles.handleCopyBubbleSourceClick(
@@ -447,7 +447,7 @@ export default class BloomSourceBubbles {
                 BloomHintBubbles.addHintBubbles(
                     group.get(0),
                     [group.get(0)],
-                    [divForBubble.get(0)],
+                    [divForBubble],
                 );
                 BloomSourceBubbles.MakeSourceBubblesIntoQtips(
                     group.get(0),
@@ -739,9 +739,14 @@ export default class BloomSourceBubbles {
                 //     "DEBUG BloomSourceBubbles.SetupTooltips/on blur - element=" +
                 //         (ev.target as Element).outerHTML
                 // );
-                const tipId = (ev.target.parentNode as Element).getAttribute(
-                    "aria-describedby",
-                );
+                const parentElement = (ev.target as Element)?.parentElement;
+                if (!parentElement) {
+                    return;
+                }
+                const tipId = parentElement.getAttribute("aria-describedby");
+                if (!tipId) {
+                    return;
+                }
                 const $tip = $("body").find("#" + tipId);
                 if ($tip.hasClass("qtip-focus")) {
                     // If it's the tooltip that has gotten focus, don't reset it.
@@ -765,10 +770,18 @@ export default class BloomSourceBubbles {
             if (maxHeight) $thisTip.css("max-height", parseInt(maxHeight));
         });
         // show the full tip, if needed
-        const tipId = (element.parentNode as Element).getAttribute(
-            "aria-describedby",
-        );
+        const parentElement = element.parentElement;
+        if (!parentElement) {
+            return;
+        }
+        const tipId = parentElement.getAttribute("aria-describedby");
+        if (!tipId) {
+            return;
+        }
         const $tip = $body.find("#" + tipId);
+        if ($tip.length === 0) {
+            return;
+        }
         $tip.removeClass("passive-bubble");
         const maxHeight = $tip.attr("data-max-height");
         if (maxHeight) {

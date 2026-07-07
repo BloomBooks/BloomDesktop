@@ -9,6 +9,7 @@ import { isReaderToolEnabledOnCurrentPage } from "./readerToolPageState";
 
 export const ReaderToolSwitch: React.FunctionComponent<{
     isForLeveled: boolean;
+    changeDisplayFunc?: () => void;
 }> = (props) => {
     const prefix = props.isForLeveled ? "leveled" : "decodable";
 
@@ -19,7 +20,6 @@ export const ReaderToolSwitch: React.FunctionComponent<{
         isReaderToolEnabledOnCurrentPage(props.isForLeveled),
     );
     const isFirstContentSync = React.useRef(true);
-
     // This component must update a non-React toolbox pane element, so we need an effect to keep
     // that external DOM synchronized whenever the controlled switch state changes.
     React.useEffect(() => {
@@ -27,7 +27,6 @@ export const ReaderToolSwitch: React.FunctionComponent<{
             isFirstContentSync.current = false;
             return;
         }
-
         document
             .getElementById(prefix + "-reader-tool-content")
             ?.classList.toggle("turned-off", !checked);
@@ -69,6 +68,10 @@ export const ReaderToolSwitch: React.FunctionComponent<{
                     // (Currently nothing automatically updates the classes from the page body back up to the book body,
                     //  and I don't know if adding such an update is safe.)
                     postBoolean(`toolbox/${prefix}`, checked);
+
+                    if (props.changeDisplayFunc !== undefined) {
+                        props.changeDisplayFunc();
+                    }
                 }}
             />
         </ThemeProvider>

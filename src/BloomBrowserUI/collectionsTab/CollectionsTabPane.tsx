@@ -39,6 +39,8 @@ import {
 } from "../react_components/makeReaderTemplateBloomPackDialog";
 import { AboutDialogLauncher } from "../react_components/aboutDialog";
 import { RadioChoiceDialog } from "./RadioChoiceDialog";
+import { ExternalBusyOverlay } from "./ExternalBusyOverlay";
+import { CollectionChooserDialog } from "../collection/CollectionChooserDialog";
 
 const kResizerSize = 10;
 
@@ -151,12 +153,15 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         CollectionInfo | undefined
     >();
 
-    const removeSourceFolder = (id: string) => {
-        // This opens a file explorer on the given folder, giving the user
+    const openCollectionFolderInExplorer = (collectionFolderPath: string) => {
+        // This opens a file explorer in the given folder, giving the user
         // the option of deleting it.  We can't depend on waiting long enough
         // so we just ignore the return from the post and listen on a socket
         // for any update information.
-        postString("collections/removeSourceFolder", id);
+        postString(
+            "collections/openCollectionFolderInExplorer?updateAfter=true",
+            collectionFolderPath,
+        );
     };
 
     useSubscribeToWebSocketForObject<{
@@ -167,6 +172,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
     });
 
     const [draggingSplitter, setDraggingSplitter] = useState(false);
+    const [collectionChooserOpen, setCollectionChooserOpen] = useState(false);
 
     // Initially (when Bloom first starts, until we persist splitter settings) the vertical
     // splitter between the editable collection and the others is set to give them equal space.
@@ -359,7 +365,10 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         {
             label: "Open or Create Another Collection",
             l10nId: "CollectionTab.OpenCreateCollectionMenuItem",
-            command: "workspace/openOrCreateCollection",
+            onClick: () => {
+                handleClose();
+                setCollectionChooserOpen(true);
+            },
             addEllipsis: true,
         },
         {
@@ -468,7 +477,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                 isRemovableFolder={c.isRemovableFolder}
                 manager={manager}
                 onRemoveSourceCollection={removeSourceCollection}
-                onRemoveSourceFolder={removeSourceFolder}
+                onRemoveSourceFolder={openCollectionFolderInExplorer}
                 filter={c.filter}
             />
         );
@@ -736,6 +745,11 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
                     },
                 ]}
                 onClose={handleImportDuplicateChoice}
+            />
+            <ExternalBusyOverlay />
+            <CollectionChooserDialog
+                open={collectionChooserOpen}
+                onClose={() => setCollectionChooserOpen(false)}
             />
         </div>
     );

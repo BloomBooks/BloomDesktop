@@ -7,6 +7,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.TeamCollection;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
@@ -374,10 +375,9 @@ namespace Bloom.Collection
                 )
             )
             {
-                dlg.Width = 1000;
-                dlg.Height = 580;
-
-                dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());
+                var owner = Shell.GetShellOrOtherOpenForm();
+                dlg.SetScaledSize(1000, 580);
+                dlg.ShowDialog(owner);
             }
         }
 
@@ -770,6 +770,7 @@ namespace Bloom.Collection
         public bool FontSettingsLinkClicked(int zeroBasedLanguageNumber)
         {
             var pendingLanguage = PendingLanguages[zeroBasedLanguageNumber];
+            using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
             using (var frm = new ScriptSettingsDialog())
             {
                 frm.LanguageName = pendingLanguage.Name;
@@ -777,7 +778,7 @@ namespace Bloom.Collection
                 frm.LanguageLineSpacing = pendingLanguage.LineHeight;
                 frm.UIFontSize = pendingLanguage.BaseUIFontSizeInPoints;
                 frm.BreakLinesOnlyAtSpaces = pendingLanguage.BreaksLinesOnlyAtSpaces;
-                frm.ShowDialog();
+                frm.ShowDialog(this);
 
                 // get the changes
 

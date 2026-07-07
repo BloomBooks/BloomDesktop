@@ -5,12 +5,13 @@
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import { MeasureText } from "../../utils/measureText";
-import { theOneCanvasElementManager } from "../js/CanvasElementManager";
+import { theOneCanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
-import { kBloomButtonClass } from "../toolbox/canvas/canvasElementUtils";
+import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
+import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -505,8 +506,11 @@ export default class OverflowChecker {
             }
             const isButton =
                 $editable.closest("." + kBloomButtonClass).length > 0;
-            if ($editable.parents("[class*=Device]").length === 0 || isButton) {
-                // don't show an overflow warning if we have scrolling available (unless it's a button)
+            // don't show an overflow warning if we have scrolling available (unless it's a button)
+            const scrollingWillBeAvailable =
+                !!page[0] &&
+                OverflowChecker.GetScrollInsteadOfOverflow(page[0]);
+            if (!scrollingWillBeAvailable || isButton) {
                 theOneLocalizationManager
                     .asyncGetText(
                         "EditTab.Overflow",
@@ -710,15 +714,11 @@ export default class OverflowChecker {
     }
 
     private static GetScrollInsteadOfOverflow(page: HTMLElement): boolean {
-        const $page = $(page);
-        return (
-            $page.hasClass("Device16x9Portrait") ||
-            $page.hasClass("Device16x9Landscape")
-        );
+        return pageScrollsInsteadOfOverflowing(page);
     }
     // Make sure there are no boxes with class 'overflow' or 'thisOverflowingParent' on the page before removing
     // the page-level overflow marker 'pageOverflows', or add it if there are.
-    private static UpdatePageOverflow(page) {
+    private static UpdatePageOverflow(page: JQuery) {
         // TODO: Investigate BL-6686. It seems that it takes more clicks to propagate the pageOverflows class onto a FrontCover page than a normal page??? Repro in both 4.4 and 4.5
         const $page = $(page);
         if (
@@ -728,8 +728,14 @@ export default class OverflowChecker {
             $page.removeClass("pageOverflows");
         else $page.addClass("pageOverflows");
 
-        // BL-11949: books with device layouts can ignore overflows because we'll show a scrollbar
-        if (this.GetScrollInsteadOfOverflow(page)) {
+        // BL-11949: books with device layouts can ignore overflows because we'll show a scrollbar.
+        // GetScrollInsteadOfOverflow needs the DOM element; our caller passes a jQuery
+        // object, so unwrap it. $page can be empty here because this runs on a deferred
+        // (1s) timer — by the time it fires, the element may have been detached (page
+        // switched or deleted), leaving no .bloom-page ancestor. That's a valid "nothing
+        // to do" case the rest of this module already no-ops on, so guard rather than
+        // crash. See BL-16503.
+        if ($page[0] && this.GetScrollInsteadOfOverflow($page[0])) {
             $page.removeClass("pageOverflows");
             // note, we don't yet remove the bubble that says there is too much text. This code is already spaghetti enough, I didn't want to pay that price at this time. --JH
         }

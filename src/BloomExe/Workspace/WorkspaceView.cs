@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.MiscUI;
@@ -64,6 +65,12 @@ namespace Bloom.Workspace
 
         internal Browser MainBrowser => _mainBrowser;
 
+        /// <summary>
+        /// The currently active WorkspaceView, or null when no project is loaded (e.g. at startup).
+        /// Used by CollectionChooserApi to distinguish startup mode from mid-session.
+        /// </summary>
+        public static WorkspaceView Current { get; private set; }
+
         //autofac uses this
 
         public WorkspaceView(
@@ -93,6 +100,7 @@ namespace Bloom.Workspace
             TeamCollectionApi teamCollectionApi
         )
         {
+            Current = this;
             _model = model;
             _settingsDialogFactory = settingsDialogFactory;
             _selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
@@ -781,7 +789,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             return zoomInfo;
         }
 
-        public string GetCurrentUiLanguageLabel()
+        public static string GetCurrentUiLanguageLabel()
         {
             var lang = Settings.Default.UserInterfaceLanguage;
             if (String.IsNullOrEmpty(lang))
@@ -817,13 +825,13 @@ window.showWorkspaceInitializationFailure = function(message) {
             return items;
         }
 
-        public object GetAvailableUiLanguageNames()
+        public static object GetAvailableUiLanguageNames()
         {
             var languageItems = GetLanguageItems(onlyActiveItem: false);
             return languageItems.Select(item => item.MenuText).ToList();
         }
 
-        public void HandleUiLanguageAction(string action, string languageName = null)
+        public static void HandleUiLanguageAction(string action, string languageName = null)
         {
             if (String.IsNullOrEmpty(action))
                 return;
@@ -837,7 +845,11 @@ window.showWorkspaceInitializationFailure = function(message) {
                     ?.LangTag;
                 if (String.IsNullOrEmpty(langTag))
                     return;
-                SetUiLanguage(langTag);
+                var current = Current;
+                if (current != null)
+                    current.SetUiLanguage(langTag); // reopens the project for full localization refresh
+                else
+                    ApplyUiLanguageChange(langTag); // startup: apply the change, no project to reopen
                 return;
             }
 
@@ -853,12 +865,12 @@ window.showWorkspaceInitializationFailure = function(message) {
             }
         }
 
-        public bool GetShowUnapprovedTranslations()
+        public static bool GetShowUnapprovedTranslations()
         {
             return Settings.Default.ShowUnapprovedLocalizations;
         }
 
-        public void SetShowUnapprovedTranslations(bool showUnapproved)
+        public static void SetShowUnapprovedTranslations(bool showUnapproved)
         {
             if (Settings.Default.ShowUnapprovedLocalizations == showUnapproved)
                 return;
@@ -993,7 +1005,7 @@ window.showWorkspaceInitializationFailure = function(message) {
                 ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
         }
 
-        private void ToggleShowingOnlyApprovedTranslations()
+        private static void ToggleShowingOnlyApprovedTranslations()
         {
             Settings.Default.ShowUnapprovedLocalizations = !Settings
                 .Default
@@ -1001,10 +1013,13 @@ window.showWorkspaceInitializationFailure = function(message) {
             LocalizationManager.ReturnOnlyApprovedStrings = !Settings
                 .Default
                 .ShowUnapprovedLocalizations;
-            FinishUiLanguageMenuItemClick(); // apply newly revealed/hidden localizations
-            // until L10nSharp changes to allow dynamic response to setting change
+            Current?.FinishUiLanguageMenuItemClick(); // apply newly revealed/hidden localizations
             Settings.Default.Save();
-            Program.RestartBloom(false);
+            // until L10nSharp changes to allow dynamic response to setting change
+            // Skip the restart at startup (no project loaded); CollectionChooserApi
+            // handles that case by reopening the dialog to refresh the language list.
+            if (Current != null)
+                Program.RestartBloom(false);
         }
 
         /// <summary>
@@ -1053,7 +1068,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             );
         }
 
-        private static void ApplyUiLanguageChange(string langTag)
+        internal static void ApplyUiLanguageChange(string langTag)
         {
             try
             {
@@ -1243,43 +1258,64 @@ window.showWorkspaceInitializationFailure = function(message) {
             SendBookSelectionChanged(forceNotSaveable: true);
         }
 
-        public void OpenCreateCollection()
+        /// <summary>
+        /// Switches directly to the specified collection without showing the chooser dialog.
+        /// Called from the React-based collection chooser when the user clicks a collection card.
+        /// </summary>
+        public void OpenSpecificCollection(string collectionPath)
         {
             var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
             _selectedTabAboutToChangeEvent.Raise(
                 new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
-
             _selectedTabChangedEvent.Raise(
                 new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
 
-            var oldSelectedTab = previousTab;
-
-            Invoke(
-                (Action)(
-                    () =>
-                    {
-                        var didOpen = Program.ChooseACollection(
-                            Shell.GetShellOrOtherOpenForm() as Shell
-                        );
-                        if (!didOpen)
-                        {
-                            // We want to resume whatever tab we were in.
-                            // There is some overkill here...the old tab can only be the collection tab,
-                            // and currently it doesn't care about these events. The critical thing is to
-                            // restore tab identity in subsequent tab-change event payloads.
-                            // If we're not shutting down, we're switching the previously selected tab back on.
-                            _selectedTabAboutToChangeEvent.Raise(
-                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
-                            );
-                            _selectedTabChangedEvent.Raise(
-                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
-                            );
-                        }
-                    }
-                )
+            Invoke(() =>
+                Program.SwitchToCollection(collectionPath, Shell.GetShellOrOtherOpenForm() as Shell)
             );
+        }
+
+        /// <summary>
+        /// Runs the New Collection Wizard and, if the user completes it, opens the new collection.
+        /// Called from the React-based collection chooser "Create New Collection" button.
+        /// </summary>
+        public void CreateNewCollection()
+        {
+            var shell = Shell.GetShellOrOtherOpenForm() as Shell;
+            var path = NewCollectionWizard.CreateNewCollection(null, shell);
+            if (path != null)
+                OpenSpecificCollection(path);
+        }
+
+        /// <summary>
+        /// Shows a file picker for .bloomCollection files and opens the selected collection.
+        /// Called from the React-based collection chooser "Browse" button.
+        /// </summary>
+        public void BrowseForAndOpenCollection()
+        {
+            if (!Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
+                Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
+
+            string selectedPath;
+            using (var dlg = new BloomOpenFileDialog())
+            {
+                dlg.Title = LocalizationManager.GetString(
+                    "CollectionTab.ChooseCollection",
+                    "Choose Collection",
+                    "Title of the file-open dialog for choosing a Bloom collection"
+                );
+                dlg.Filter = CollectionSettings.GetFileDialogFilterString();
+                dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
+                if (
+                    dlg.ShowDialog() == DialogResult.Cancel
+                    || MiscUtils.ReportIfInvalidCollection(dlg.FileName)
+                )
+                    return;
+                selectedPath = dlg.FileName;
+            }
+            OpenSpecificCollection(selectedPath);
         }
 
         private CollectionSettingsDialog _currentlyOpenSettingsDialog;
@@ -1315,6 +1351,7 @@ window.showWorkspaceInitializationFailure = function(message) {
                 else
                 {
                     _collectionSettingsApi.PrepareToShowDialog();
+                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                     using (var dlg = _settingsDialogFactory())
                     {
                         dlg.FixingEnterpriseSubscriptionCode = forFixingEnterpriseSubscription;
@@ -1499,7 +1536,6 @@ window.showWorkspaceInitializationFailure = function(message) {
         private void WorkspaceView_Load(object sender, EventArgs e)
         {
             _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
-            CheckDPISettings();
             ShowAutoUpdateDialogIfNeeded();
             ShowForumInvitationDialogIfNeeded();
             // Check whether the last Velopack update attempt actually succeeded. Shows a toast if not.
@@ -1533,8 +1569,7 @@ window.showWorkspaceInitializationFailure = function(message) {
                             var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle", "Auto Update")
                         )
                         {
-                            dlg.Height = 250;
-                            dlg.Width = 500;
+                            dlg.SetScaledSize(500, 250);
                             dlg.ShowDialog(this);
                         }
                     },
@@ -1602,29 +1637,6 @@ window.showWorkspaceInitializationFailure = function(message) {
                     waitForMilestone: "collectionButtonsDrawn",
                     maxTickWaitForMilestone: 100
                 );
-            }
-        }
-
-        private void CheckDPISettings()
-        {
-            Graphics g = this.CreateGraphics();
-            try
-            {
-                var dx = g.DpiX;
-                DPIOfThisAccount = dx;
-                var dy = g.DpiY;
-                if (dx != 96 || dy != 96)
-                {
-                    ErrorReport.NotifyUserOfProblem(
-                        new ShowOncePerSessionBasedOnExactMessagePolicy(),
-                        "The \"text size (DPI)\" or \"Screen Magnification\" of the display on this computer is set to a special value, {0}. With that setting, some thing won't look right in Bloom. Possibly books won't lay out correctly. If this is a problem, change the DPI back to 96 (the default on most computers), using the 'Display' Control Panel.",
-                        dx
-                    );
-                }
-            }
-            finally
-            {
-                g.Dispose();
             }
         }
 
@@ -1710,21 +1722,12 @@ window.showWorkspaceInitializationFailure = function(message) {
                 if (InEditMode)
                 {
                     _editingView.Model.SaveThen(
-                        () =>
+                        () => _editingView.Model.CurrentPage.Id,
+                        ReportAndLogProblem, // wrong state: show dialog without saving
+                        doAfterSaveToDisk: () =>
                         {
-                            // To test the Problem Dialog with a fatal error, uncomment this next line.
-                            // throw new ApplicationException("I just felt like an error!");
-
-                            // To test the Problem Dialog with a nonfatal error, uncomment this next line.
-                            // NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "My test 'yellow screen' error", "Any more details here?");
-                            // To test clicking 'Report' in a toast, uncomment the line above, but use ModalIf.None.
-
-                            // To test the old ErrorReport.NotifyUserOfProblem, uncomment this next line.
-                            // ErrorReport.NotifyUserOfProblem(new ApplicationException("internal exception message"), "My main message");
                             ReportAndLogProblem();
-                            return _editingView.Model.CurrentPage.Id;
-                        },
-                        () => { } // wrong state, do nothing
+                        }
                     );
                 }
                 else

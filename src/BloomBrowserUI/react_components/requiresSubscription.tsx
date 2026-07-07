@@ -136,6 +136,7 @@ export const BloomEnterpriseIconWithTooltip: React.FunctionComponent<{
 
 export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
     featureName: string;
+    children?: React.ReactNode;
 }> = (props) => {
     const memoizedFeatureName = React.useMemo(
         () => props.featureName,
@@ -145,6 +146,8 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
 
     return (
         <div
+            data-testid="requires-subscription-overlay-wrapper"
+            data-feature-name={memoizedFeatureName} // somehow used by tests
             css={css`
                 height: 100%;
                 box-sizing: border-box;
@@ -163,7 +166,7 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
             >
                 {props.children}
             </div>
-            {featureStatus?.enabled || (
+            {featureStatus === undefined || featureStatus.enabled || (
                 <div
                     css={css`
                         position: absolute;

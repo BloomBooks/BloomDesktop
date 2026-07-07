@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useCallback, useState } from "react";
-import * as ReactDOM from "react-dom";
+import { renderRootSync } from "../../../utils/reactRender";
 
 import {
     BloomDialog,
@@ -246,13 +246,21 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         >
             <DialogTitle title={dialogTitle} />
             <DialogMiddle>
-                <AdjustTimingsControl
-                    segments={segments!}
-                    audioFileUrl={audioFileUrl!}
-                    setEndTimes={(endTimes) => updateEndTimes(endTimes)}
-                    fontFamily={fontFamily}
-                    shouldAdjustSegments={shouldAdjustSegments}
-                />
+                {/* Don't render the control until both inputs are actually ready.
+                    They are populated asynchronously in the open effect above; rendering
+                    sooner would mount the control with undefined props (the non-null
+                    assertions would be false), causing WaveSurfer to load the literal
+                    "undefined" URL and the server to report a missing Temp/undefined
+                    file (BL-16447). */}
+                {segments && audioFileUrl && (
+                    <AdjustTimingsControl
+                        segments={segments}
+                        audioFileUrl={audioFileUrl}
+                        setEndTimes={(endTimes) => updateEndTimes(endTimes)}
+                        fontFamily={fontFamily}
+                        shouldAdjustSegments={shouldAdjustSegments}
+                    />
+                )}
                 <div
                     id={timingsMenuId}
                     css={css`
@@ -410,7 +418,7 @@ export function showAdjustTimingsDialog(
     closing: (canceling: boolean) => void,
 ) {
     try {
-        ReactDOM.render(
+        renderRootSync(
             <AdjustTimingsDialog
                 split={split}
                 editTimingsFile={editTimingsFile}

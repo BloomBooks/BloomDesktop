@@ -24,8 +24,7 @@ namespace Bloom.Registration
                 )
             )
             {
-                registrationDialog.Width = 400 + 50; // width DialogMiddle + WinWrapper size
-                registrationDialog.Height = 340 + 63 + 53 + 12; // height DialogMiddle + DialogTitle, Buttons, & WinWrapper size
+                registrationDialog.SetScaledSize(400 + 50, 340 + 63 + 53 + 12); // DialogMiddle + WinWrapper, title, buttons
 
                 // either we have the ProjectWindow, or the dialog is the only open window, so we need it in the Taskbar
                 if (projectWindow != null)

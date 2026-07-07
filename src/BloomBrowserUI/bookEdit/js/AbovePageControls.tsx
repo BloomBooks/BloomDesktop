@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot, unmountRoot } from "../../utils/reactRender";
 import { useL10n } from "../../react_components/l10nHooks";
 import { CustomPageLayoutMenu } from "../toolbox/canvas/customPageLayoutMenu";
 import {
@@ -8,7 +8,7 @@ import {
     kIdForDragActivityTabControl,
 } from "../toolbox/games/DragActivityTabControl";
 import { CogIcon } from "./CogIcon";
-import { getWorkspaceBundleExports } from "./workspaceFrames";
+import { tryGetWorkspaceBundleExports } from "./workspaceFrames";
 
 interface IAbovePageControlsState {
     isDragGamePage: boolean;
@@ -49,13 +49,15 @@ export function updateAbovePageControls(
 
 export function resetAbovePageControls(): void {
     currentState = defaultState;
-    getWorkspaceBundleExports().setToolboxEnabled(true);
+    // Off-screen (e.g. process-book) there is no workspace frame, so this is a no-op there.
+    // (Reached via removeEditingDebris() in the shared extractAndStripPageContentForSave() save path.)
+    tryGetWorkspaceBundleExports()?.setToolboxEnabled(true);
 
     const container = document.getElementsByClassName(
         "above-page-control-container",
     )[0] as HTMLElement | undefined;
     if (container) {
-        ReactDOM.unmountComponentAtNode(container);
+        unmountRoot(container);
         container.replaceChildren();
     }
 }
@@ -84,7 +86,7 @@ function renderAbovePageControls(): void {
         return;
     }
 
-    ReactDOM.render(
+    renderRoot(
         <AbovePageControls
             isDragGamePage={currentState.isDragGamePage}
             activeGameTab={currentState.activeGameTab}

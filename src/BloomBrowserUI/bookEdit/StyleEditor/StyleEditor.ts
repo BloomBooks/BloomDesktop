@@ -30,7 +30,7 @@ import axios from "axios";
 import { get, wrapAxios } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import { ensureFieldFitsOnCustomPage } from "../toolbox/canvas/derivedFieldFitting";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../utils/reactRender";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
 import * as React from "react";
 import {
@@ -41,8 +41,8 @@ import { BloomPalette } from "../../react_components/color-picking/bloomPalette"
 import { kBloomYellow } from "../../bloomMaterialUITheme";
 import { RenderRoot } from "./AudioHilitePage";
 import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
-import { CanvasElementManager } from "../js/CanvasElementManager";
-import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
+import { CanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { getPageIFrame } from "../../utils/shared";
 
 // Controls the CSS text-align value
@@ -1123,7 +1123,7 @@ export default class StyleEditor {
         fontMetadata: IFontMetaData[],
         fontName: string,
     ): void {
-        ReactDOM.render(
+        renderRoot(
             React.createElement(FontSelectComponent, {
                 fontMetadata: fontMetadata,
                 currentFontName: fontName,
@@ -1192,7 +1192,14 @@ export default class StyleEditor {
         // its nefarious work. The following block achieves this.
         // Enhance: this logic is roughly duplicated in toolbox.ts function doWhenCkEditorReadyCore.
         // There may be some way to refactor it into a common place, but I don't know where.
-        const editorInstances = (<any>window).CKEDITOR.instances;
+        // CKEditor is the rich-text editor. It can be entirely absent: off-screen book processing
+        // (external/process-book) strips it because nothing ever types into the page, yet a focusin
+        // can still reach this method during page setup. With no CKEditor there are no editor
+        // instances to coordinate with and no interactive style-editor gear worth attaching, so bail
+        // out instead of dereferencing undefined.
+        const ckeditor = (<any>window).CKEDITOR;
+        if (!ckeditor) return;
+        const editorInstances = ckeditor.instances;
         // (The instances property leads to an object in which each property is an instance of CkEditor)
         let gotOne = false;
         for (const property in editorInstances) {
@@ -1208,9 +1215,7 @@ export default class StyleEditor {
         if (!gotOne) {
             // If any editable divs exist, call us again once the page gets set up with ckeditor.
             // no instance at all...if one is later created, get us invoked.
-            (<any>window).CKEDITOR.on("instanceReady", (e) =>
-                this.AttachToBox(targetBox),
-            );
+            ckeditor.on("instanceReady", (e) => this.AttachToBox(targetBox));
             return;
         }
         const oldCog = document.getElementById("formatButton");

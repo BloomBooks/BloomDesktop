@@ -31,6 +31,10 @@ namespace Bloom
 
         public static string AlternativeWebView2Path;
         private bool _readyToNavigate;
+
+        // Exposes whether the (async) CoreWebView2 environment initialization has finished. Lets callers
+        // measure how long that init takes separately from the subsequent navigation (see BookProcessor).
+        public override bool IsReadyToNavigate => _readyToNavigate;
         private PasteCommand _pasteCommand;
         private CopyCommand _copyCommand;
         private UndoCommand _undoCommand;
@@ -83,7 +87,7 @@ namespace Bloom
             // something on that thread, it's really easy to deadlock.
             // A lot of this is because of the way that WinForms works, and when we finally get away from WinForms,
             // we may be able to get to an environment where we don't need to try so hard to avoid async.)
-            InitWebView();
+            _ = InitWebView();
         }
 
         private void SetupEventHandling()
@@ -137,7 +141,7 @@ namespace Bloom
                         RaiseDocumentCompleted(sender2, args2);
                     };
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // enhance: how to show using the winforms error dialog?
                     MessageBox.Show(
@@ -259,6 +263,50 @@ namespace Bloom
 
         static int dataFolderCounter = 0;
 
+        // When set (via BeginSharedEnvironmentBatch), all WebView2 browsers created during the batch
+        // share ONE CoreWebView2Environment — i.e. one browser process, one user-data folder, and one
+        // HTTP cache — instead of each creating its own. The first browser of the batch creates the
+        // environment; the rest reuse it. Each browser still gets its own fresh CoreWebView2 control
+        // (fresh renderer), so this does NOT reintroduce the single-control reuse-wedge. Used by
+        // BookProcessor's off-screen per-page fix-up to avoid paying environment creation per page.
+        //
+        // These statics assume the batch is UI-thread-only (which it is: all browser construction is
+        // marshalled to the UI thread, and BookProcessor drives the batch there). If another browser
+        // happens to be created during the batch (e.g. a thumbnail), it harmlessly joins the shared
+        // environment. They are NOT a mechanism for concurrent batches.
+        private static bool _useSharedEnvironment;
+        private static CoreWebView2Environment _sharedEnvironment;
+
+        public static void BeginSharedEnvironmentBatch()
+        {
+            AssertSharedEnvironmentStaticsAreUiThreadOnly();
+            _useSharedEnvironment = true;
+            _sharedEnvironment = null;
+        }
+
+        public static void EndSharedEnvironmentBatch()
+        {
+            AssertSharedEnvironmentStaticsAreUiThreadOnly();
+            _useSharedEnvironment = false;
+            // Drop our reference; the underlying browser process/profile is released once the last
+            // CoreWebView2 using this environment is disposed. (CoreWebView2Environment is not IDisposable.)
+            _sharedEnvironment = null;
+        }
+
+        // The shared-environment statics above have no synchronization; they are safe only because the
+        // batch is UI-thread-only (see the comment on _useSharedEnvironment). Assert that assumption so
+        // any future code that drives a batch off the UI thread trips here instead of silently corrupting
+        // state. Unit-test/console modes are exempt, as elsewhere in this file.
+        private static void AssertSharedEnvironmentStaticsAreUiThreadOnly()
+        {
+            Debug.Assert(
+                Program.RunningOnUiThread
+                    || Program.RunningUnitTests
+                    || Program.RunningInConsoleMode,
+                "Shared WebView2 environment batch must be driven on the UI thread (these statics are unsynchronized)"
+            );
+        }
+
         private async Task InitWebView()
         {
             // based on https://stackoverflow.com/questions/63404822/how-to-disable-cors-in-wpf-webview2
@@ -282,6 +330,22 @@ namespace Bloom
             // a change in UI language will take effect at this level.
             // See https://github.com/MicrosoftEdge/WebView2Feedback/issues/3635 (which was just opened last week!)
             var additionalBrowserArgs = "--autoplay-policy=no-user-gesture-required";
+            // Disables sleeping tabs and keeps rendering active.
+            // These were suggested by AI to prevent problems when the computer sleeps or is idle for a long
+            // time while Bloom is open. Apparently by default WebView2 will put tabs to sleep after a while,
+            // and become suspicious of some URLs when restarting. The hope is that this will help with BL-16363
+            // and similar problems. The AI also suggested --allow-insecure-localhost, but this is not relevant
+            // since we are not using https: to access our server.
+            // Not sleeping potentially allows computation to continue and drain battery, but we don't
+            // expect this to be an important factor for Bloom, as we don't have long-running
+            // animations except for things like playing motion books, which probably want to continue to the end.
+            additionalBrowserArgs += " --disable-renderer-backgrounding";
+            // Chromium only respects the last --disable-features argument, so we collect all features
+            // here and emit a single comma-separated value at the end.
+            var featuresToDisable = new List<string>
+            {
+                "msSleepingTabs", // prevent WebView2 from putting tabs to sleep after idle (BL-16363)
+            };
 
             // WebView2 can fail to initialize if we try to open a new one with different `--accept-lang` arguments.
             // This even happens if it is a different copy of Bloom running. Our hypothesis is that this is because they are sharing
@@ -305,6 +369,9 @@ namespace Bloom
                 // Expose a CDP endpoint so Playwright and other automation can attach to the real Bloom WebView2 surface.
                 additionalBrowserArgs += $" --remote-debugging-port={RemoteDebuggingPort.Value} "; // allow external inspector connect
             }
+            if (featuresToDisable.Count > 0)
+                additionalBrowserArgs +=
+                    " --disable-features=" + string.Join(",", featuresToDisable);
 
             var op = new CoreWebView2EnvironmentOptions(additionalBrowserArgs);
 
@@ -359,25 +426,36 @@ namespace Bloom
             // different instances of WebView2 using the same one, so we decided to make sure it is uniqiue.
             // Enhance: it might be a good thing to try to delete this folder if we find it already exists (on a background thread).
             // For now we'll just keep incrementing until we find an available folder.
-            string dataFolder;
-            do
-            {
-                dataFolder = Path.Combine(
-                    Path.GetTempPath(),
-                    "Bloom WV2-"
-                        + (BloomServer.portForHttp == 0 ? 8085 : BloomServer.portForHttp)
-                        + dataFolderCounter++
-                );
-            } while (Directory.Exists(dataFolder));
             // This sets up a handler for the CoreWebView2InitializationCompleted event, which will run before
             // EnsureCoreWebView2Async returns if we're awaiting properly, so we need to set up that handler
-            // before calling EnsureCoreWebView2Async.
+            // before calling EnsureCoreWebView2Async. (It must run even when we reuse a shared environment,
+            // because EnsureCoreWebView2Async still fires this control's own InitializationCompleted, which
+            // is what sets _readyToNavigate.)
             SetupEventHandling();
-            var env = await CoreWebView2Environment.CreateAsync(
-                browserExecutableFolder: AlternativeWebView2Path,
-                userDataFolder: dataFolder,
-                options: op
-            );
+            // During a shared-environment batch, reuse the one environment (and its browser process +
+            // user-data folder + HTTP cache) so we don't pay environment creation per browser. The first
+            // browser of the batch falls through and creates it; subsequent ones reuse it.
+            var env = _useSharedEnvironment ? _sharedEnvironment : null;
+            if (env == null)
+            {
+                string dataFolder;
+                do
+                {
+                    dataFolder = Path.Combine(
+                        Path.GetTempPath(),
+                        "Bloom WV2-"
+                            + (BloomServer.portForHttp == 0 ? 8085 : BloomServer.portForHttp)
+                            + dataFolderCounter++
+                    );
+                } while (Directory.Exists(dataFolder));
+                env = await CoreWebView2Environment.CreateAsync(
+                    browserExecutableFolder: AlternativeWebView2Path,
+                    userDataFolder: dataFolder,
+                    options: op
+                );
+                if (_useSharedEnvironment)
+                    _sharedEnvironment = env;
+            }
             await _webview.EnsureCoreWebView2Async(env);
             // Added as a footnote to BL-15466 to prevent popups generated from title
             // attributes being white on black, presumably because of some setting the
@@ -466,18 +544,16 @@ namespace Bloom
 
         public override void CopySelection()
         {
-            // I think it's fine that this is async but we aren't waiting, as long as this
-            // is only used for user actions and not by code that would immediately try to
-            // do something.
-            _webview.ExecuteScriptAsync("document.execCommand(\"Copy\")");
+            // Fire-and-forget is fine here as long as this is only used for user actions and not
+            // by code that would immediately try to do something with the result.
+            RunJavascriptFireAndForget("document.execCommand(\"Copy\")");
         }
 
         public override void SelectAll()
         {
-            // I think it's fine that this is async but we aren't waiting, as long as this
-            // is only used for user actions and not by code that would immediately try to
-            // do something.
-            _webview.ExecuteScriptAsync("document.execCommand(\"SelectAll\")");
+            // Fire-and-forget is fine here as long as this is only used for user actions and not
+            // by code that would immediately try to do something with the result.
+            RunJavascriptFireAndForget("document.execCommand(\"SelectAll\")");
         }
 
         public override void SelectBrowser()
@@ -746,8 +822,8 @@ namespace Bloom
             // This implementation is specific to our Edit tab. This is currently the only place
             // we show the paste button that uses this command, but we will have to generalize somehow if
             // that changes. I'm not sure whether the checks for existence of workspaceBundle etc are needed.
-            // I deliberately use RunJavaScriptAsync here without awaiting it, because nothing requires the
-            // result (we only care about the side effects on the document)
+            // I deliberately use the fire-and-forget variant here, because nothing requires the
+            // result (we only care about the side effects on the document).
             _pasteCommand.Implementer = () =>
             {
                 PalasoImage clipboardImage = null;
@@ -761,7 +837,7 @@ namespace Bloom
 
                 clipboardImage?.Dispose();
 
-                RunJavascriptAsync(
+                RunJavascriptFireAndForget(
                     $"workspaceBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
                 );
             };
@@ -785,6 +861,10 @@ namespace Bloom
 
         bool _currentlyInUpdateButtons = false;
 
+        // This is 'async void' rather than 'async Task' because it overrides the void
+        // IBrowser.UpdateEditButtonsAsync() and is invoked as a fire-and-forget UI update (e.g. from
+        // the edit-buttons timer). That is acceptable here only because the body wraps its awaited
+        // work in a try/catch, so an exception can't escape into the void and crash the process.
         public override async void UpdateEditButtonsAsync()
         {
             if (_currentlyInUpdateButtons)
