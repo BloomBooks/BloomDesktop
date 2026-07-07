@@ -38,6 +38,7 @@ import {
     signIn as sharingSignIn,
     useSharingLoginState,
 } from "./sharingApi";
+import { SignInDialog } from "./SignInDialog";
 
 // Contents of a dialog launched from TeamCollectionSettingsPanel Create Team Collection button.
 
@@ -229,8 +230,6 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         </BloomDialog>
     );
 };
-
-WireUpForWinforms(CreateTeamCollectionDialog);
 
 // -----------------------------------------------------------------------------------------
 // Cloud Team Collection creation (Wave-1 shell against mocked endpoints; see sharingApi.ts).
@@ -544,4 +543,48 @@ export const CreateCloudTeamCollectionDialog: React.FunctionComponent<{
     );
 };
 
-WireUpForWinforms(CreateCloudTeamCollectionDialog);
+// -----------------------------------------------------------------------------------------
+// This one file/bundle ("createTeamCollectionDialogBundle") hosts three distinct top-level
+// dialogs -- the folder-TC create dialog above, the cloud-TC create dialog above, and the
+// dedicated sign-in dialog (SignInDialog.tsx) -- because `WireUpForWinforms` sets a single
+// global (`window.wireUpRootComponentFromWinforms`), so at most ONE component per bundle can
+// ever call it: whichever call ran last at module load silently wins, breaking every other
+// dialog in the file (this used to be a live bug -- the cloud dialog's own
+// `WireUpForWinforms` call always overwrote the folder dialog's, so the folder-TC "Create Team
+// Collection" dialog could no longer open). CreateTeamCollectionBundleDispatcher is the ONLY
+// component in this file that may call WireUpForWinforms; C# selects which of the three to
+// show via the `dialogKind` prop it now always passes (TeamCollectionApi.cs's
+// HandleShowCreateTeamCollectionDialog/HandleShowCreateCloudTeamCollectionDialog and
+// SharingApi.cs's HandleShowSignIn).
+// -----------------------------------------------------------------------------------------
+
+export type CreateTeamCollectionBundleDialogKind =
+    | "folder"
+    | "cloud"
+    | "signIn";
+
+export const CreateTeamCollectionBundleDispatcher: React.FunctionComponent<{
+    dialogKind?: CreateTeamCollectionBundleDialogKind;
+    errorForTesting?: string;
+    defaultRepoFolder?: string;
+    dialogEnvironment?: IBloomDialogEnvironmentParams;
+}> = (props) => {
+    switch (props.dialogKind) {
+        case "cloud":
+            return (
+                <CreateCloudTeamCollectionDialog
+                    dialogEnvironment={props.dialogEnvironment}
+                />
+            );
+        case "signIn":
+            return <SignInDialog dialogEnvironment={props.dialogEnvironment} />;
+        case "folder":
+        default:
+            // Defaults to the folder dialog (today's only caller that predates the
+            // `dialogKind` prop existing) so this stays byte-identical for folder TCs even
+            // if some future caller forgets to pass it.
+            return <CreateTeamCollectionDialog {...props} />;
+    }
+};
+
+WireUpForWinforms(CreateTeamCollectionBundleDispatcher);

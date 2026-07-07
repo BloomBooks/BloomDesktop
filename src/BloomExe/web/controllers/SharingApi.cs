@@ -40,9 +40,6 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler("sharing/loginState", HandleLoginState, false);
             apiHandler.RegisterEndpointHandler("sharing/login", HandleLogin, false);
             apiHandler.RegisterEndpointHandler("sharing/logout", HandleLogout, false);
-            // Not yet backed by a dedicated sign-in dialog (none exists in the UI today -- see the
-            // final report); reuses the cloud create-collection dialog, whose first state IS a
-            // sign-in form, as the best currently-available UI surface.
             apiHandler.RegisterEndpointHandler("sharing/showSignIn", HandleShowSignIn, true);
 
             apiHandler.RegisterEndpointHandler("sharing/members", HandleMembers, false);
@@ -182,13 +179,17 @@ namespace Bloom.web.controllers
             teamCollectionApi.HandleForceUnlock(request);
         }
 
+        /// <summary>Opens the dedicated SignInDialog (SignInDialog.tsx), which shares the
+        /// "createTeamCollectionDialogBundle" bundle/entry with the folder- and cloud-TC create
+        /// dialogs -- see CreateTeamCollection.tsx's CreateTeamCollectionBundleDispatcher, which
+        /// picks the right one via this dialogKind prop.</summary>
         private void HandleShowSignIn(ApiRequest request)
         {
             ReactDialog.ShowOnIdle(
                 "createTeamCollectionDialogBundle",
-                new { },
-                600,
-                580,
+                new { dialogKind = "signIn" },
+                420,
+                320,
                 null,
                 null,
                 "Sign In"

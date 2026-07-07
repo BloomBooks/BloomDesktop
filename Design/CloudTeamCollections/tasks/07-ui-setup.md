@@ -164,3 +164,53 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   `isTeamCollection` branch; `JoinCloudCollectionDialog`'s eight-state matching logic into
   `CollectionChooser`'s `onPullDown`) once the relevant backend capability flags/matching logic
   from tasks 05/06 land — see the note at the end of the 2026-07-06 step-3 entry above.
+
+## Wave-3 UI wiring (task/ui-wiring branch, resumable per orchestration/ui-wiring.prompt.md)
+
+- 2026-07-07 · done: item 1 (the live folder-TC breakage) + item 2 (dedicated sign-in dialog).
+  Root cause confirmed: `createTeamCollectionDialogBundle` is ONE shared Vite entry
+  (`CreateTeamCollection.tsx`) that used to have both `CreateTeamCollectionDialog` (folder) and
+  `CreateCloudTeamCollectionDialog` (cloud) call `WireUpForWinforms` at module scope — that
+  function sets a single global (`window.wireUpRootComponentFromWinforms`), so whichever call
+  ran last at module load silently won, breaking the other dialog (in practice: the folder-TC
+  "Create Team Collection" dialog could no longer open, since the cloud dialog's call always
+  ran second in source order). Fixed by introducing `CreateTeamCollectionBundleDispatcher`
+  (new, in `CreateTeamCollection.tsx`) as the ONLY component in the file that calls
+  `WireUpForWinforms`; it renders one of `CreateTeamCollectionDialog` /
+  `CreateCloudTeamCollectionDialog` / the new `SignInDialog` based on a `dialogKind` prop
+  ("folder" / "cloud" / "signIn") that C# now always passes. Updated all three C# call sites to
+  pass it: `TeamCollectionApi.cs`'s `HandleShowCreateTeamCollectionDialog` (`"folder"`) and
+  `HandleShowCreateCloudTeamCollectionDialog` (`"cloud"`), and `SharingApi.cs`'s
+  `HandleShowSignIn` (`"signIn"`, also shrunk its dialog size from 600x580 to 420x320 to fit
+  the much smaller sign-in-only form). Also fixed the parallel Vite-dev-mode entry
+  (`CreateTeamCollection.entry.tsx`), which bootstrapped `CreateTeamCollectionDialog` by name
+  but — since it's the same module — was *already* silently rendering whichever dialog's
+  `WireUpForWinforms` call happened to win, the same bug in a different guise; it now
+  bootstraps the dispatcher too. New `SignInDialog.tsx` (item 2): a small dedicated sign-in
+  dialog (dev-mode email/password form per `loginState.mode`; a "Signing in ... isn't available
+  yet" message for the eventual production/"cloud" mode), replacing the old placeholder
+  behavior where `sharing/showSignIn` reused the cloud create-collection dialog's first screen
+  even in contexts unrelated to creating a collection. Auto-closes once `useSharingLoginState`
+  reports `signedIn: true` (picks up the "sharing"/"loginState" websocket event
+  `SharingApi.HandleLogin` already raises). Reuses three existing XLF keys
+  (`TeamCollection.Sharing.EmailAddress`/`Password`/`SignIn`) and adds one new one,
+  `TeamCollection.Sharing.SignInNotYetAvailable`, to `BloomMediumPriority.xlf` (secondary/error
+  text per the skill's priority table). New tests: `SignInDialog.test.tsx` (4 tests: dev-mode
+  form, dev-mode Sign In click, dev-mode error display, cloud-mode not-yet-available message —
+  the presentational `SignInDialogBody` only, same pattern as `CreateCloudTeamCollectionBody`'s
+  own tests) and `CreateTeamCollectionBundleDispatcher.test.tsx` (4 tests: a direct regression
+  test for the bug, proving the dispatcher renders the right component for every `dialogKind`
+  including the omitted/default case, which must still be the folder dialog). Full run:
+  `yarn vitest run --pool=threads teamCollection/CreateTeamCollectionBundleDispatcher.test.tsx
+  teamCollection/SignInDialog.test.tsx teamCollection/CreateCloudTeamCollection.test.tsx
+  teamCollection/SharingPanel.test.tsx teamCollection/JoinCloudCollectionDialog.test.tsx` → 5
+  files, 33 tests, all green (no regressions in the two pre-existing suites this change's
+  neighbors touch). `yarn eslint` on all touched/new files: 0 errors, 3 pre-existing warnings
+  (all on lines predating this change, in the untouched `CreateTeamCollectionDialog` body).
+  `dotnet build src/BloomExe/BloomExe.csproj`: succeeds, 0 errors (needed `./init.sh` first in
+  this fresh worktree — missing `PodcastUtilities`/`IDevice` per AGENTS.md's known-issue note).
+  Note for future sessions in this sandbox: `yarn vitest`/`yarn eslint`/`dotnet build` need
+  `dangerouslyDisableSandbox: true` on the Bash call — the default sandbox blocks
+  worker-thread/child-process spawning, which otherwise fails every vitest pool
+  ("Timeout starting threads runner") within ~5s. · next: item 3 (wire `SharingPanel` into
+  `TeamCollectionSettingsPanel`'s `isTeamCollection` branch for cloud TCs).
