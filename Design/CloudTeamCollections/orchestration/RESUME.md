@@ -41,7 +41,12 @@ All task state lives in **git branches**, never in a conversation:
   the MAIN tree (worktrees lack initialized build deps) — one C# task at a time.
 - Review before merge is MANDATORY (independently re-run the tests; see the merge log in
   IMPLEMENTATION.md for the kinds of bugs review has caught: SQL type bug, bad bcrypt
-  hash, fake-session-token spec error, ungated UI section).
+  hash, fake-session-token spec error, ungated UI section, JSON-null claimed bug).
+- C# test filter for cloud work MUST be
+  `"FullyQualifiedName~Cloud|FullyQualifiedName~TeamCollection|FullyQualifiedName~SharingApi"`
+  (exclude `~LiveTests` unless the stack is up): SharingApiTests live under
+  web.controllers and match NEITHER ~Cloud NOR ~TeamCollection — that gap let a real bug
+  merge with "all green" claims (7 Jul).
 - The local dev stack must be up for server/C#-integration verification: `supabase start`
   + `docker-compose -f server/dev/docker-compose.yml up -d` (see server/dev/README.md;
   MinIO must be on the supabase network — the compose file handles this).
