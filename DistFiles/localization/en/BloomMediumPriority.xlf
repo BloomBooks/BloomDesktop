@@ -1531,6 +1531,87 @@
         <note>ID: ImageLibrary.ThisPage</note>
         <note>Short link text used in setup instructions (e.g., as in "go to this page"). Should be lowercase as it appears mid-sentence.</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.ShareOnCloudServer.ToolTipWhenDisabled" translate="no">
+        <source xml:lang="en">Turn on the 'cloud-team-collections' experimental feature (Settings &gt; Advanced) to use this.</source>
+        <note>ID: TeamCollection.Sharing.ShareOnCloudServer.ToolTipWhenDisabled</note>
+        <note>Tooltip shown while the "Share this collection..." button is disabled, explaining how to enable the experimental feature that unlocks it.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.ReadOnlyNote" translate="no">
+        <source xml:lang="en">Only administrators can add, remove, or change the role of team members.</source>
+        <note>ID: TeamCollection.Sharing.ReadOnlyNote</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.LastAdminProtection" translate="no">
+        <source xml:lang="en">A Team Collection must always have at least one administrator.</source>
+        <note>ID: TeamCollection.Sharing.LastAdminProtection</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.RemoveWarning" translate="no">
+        <source xml:lang="en">Removing %0 will immediately force-unlock any books they currently have checked out. Continue?</source>
+        <note>ID: TeamCollection.Sharing.RemoveWarning</note>
+        <note>Confirmation shown before removing someone from a cloud Team Collection's approved-members list. %0 is replaced with the person's email address.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.ConfirmRemove" translate="no">
+        <source xml:lang="en">Remove</source>
+        <note>ID: TeamCollection.Sharing.ConfirmRemove</note>
+        <note>Button that confirms removing someone from a cloud Team Collection, in the warning described by TeamCollection.Sharing.RemoveWarning.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.EmailAddress" translate="no">
+        <source xml:lang="en">Email address</source>
+        <note>ID: TeamCollection.Sharing.EmailAddress</note>
+        <note>Label for a text field where the user types an email address; used both when adding someone to a cloud Team Collection and when signing in.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.SignInIntro" translate="no">
+        <source xml:lang="en">Sign in with your Bloom account to share this collection.</source>
+        <note>ID: TeamCollection.Sharing.SignInIntro</note>
+        <note>"Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.Password" translate="no">
+        <source xml:lang="en">Password</source>
+        <note>ID: TeamCollection.Sharing.Password</note>
+        <note>Label for the password field on the sign-in form used to create or join a cloud Team Collection.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.SignInWithBloomAccount" translate="no">
+        <source xml:lang="en">Sign in with your Bloom account</source>
+        <note>ID: TeamCollection.Sharing.SignInWithBloomAccount</note>
+        <note>Button label. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.CloudNameWillWork" translate="no">
+        <source xml:lang="en">I think the name, "%0", will be a good one for the whole team. I understand that I will not be able to change this name once this becomes a Team Collection.</source>
+        <note>ID: TeamCollection.Sharing.CloudNameWillWork</note>
+        <note>Checkbox acknowledgement shown before sharing a collection on the cloud sharing server. %0 is replaced with the current collection's name.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.SendingInitialCollection" translate="no">
+        <source xml:lang="en">Sending your collection to the cloud sharing server. This may take a while depending on the size of your collection.</source>
+        <note>ID: TeamCollection.Sharing.SendingInitialCollection</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.TryAgain" translate="no">
+        <source xml:lang="en">Try Again</source>
+        <note>ID: TeamCollection.Sharing.TryAgain</note>
+        <note>Button shown after the initial upload to the cloud sharing server fails, to retry it.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.InitialSendComplete" translate="no">
+        <source xml:lang="en">Your Team Collection is ready. Invite your team from the Sharing panel in Collection Settings.</source>
+        <note>ID: TeamCollection.Sharing.InitialSendComplete</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.MustSignInToJoin" translate="no">
+        <source xml:lang="en">Sign in with your Bloom account to join "%0".</source>
+        <note>ID: TeamCollection.Sharing.MustSignInToJoin</note>
+        <note>Shown in the join-collection dialog when the user isn't signed in yet. %0 is the Team Collection's name; "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.ApprovalRemoved" translate="no">
+        <source xml:lang="en">You are not currently on the approved list for "%0". Contact an administrator of this Team Collection to be added.</source>
+        <note>ID: TeamCollection.Sharing.ApprovalRemoved</note>
+        <note>Shown in the join-collection dialog when the signed-in user's email is not (or no longer) approved for the collection. %0 is the Team Collection's name.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.IncompleteLocalCopy" translate="no">
+        <source xml:lang="en">Bloom found an incomplete local copy of this Team Collection, probably left over from an earlier attempt to join. Bloom will download a fresh copy.</source>
+        <note>ID: TeamCollection.Sharing.IncompleteLocalCopy</note>
+        <note>"Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.BloomWillPullDown" translate="no">
+        <source xml:lang="en">Bloom will download this Team Collection so you can work together with your team.</source>
+        <note>ID: TeamCollection.Sharing.BloomWillPullDown</note>
+        <note>"Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

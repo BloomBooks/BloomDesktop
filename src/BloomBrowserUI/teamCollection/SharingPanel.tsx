@@ -389,7 +389,10 @@ const AddMemberRow: React.FunctionComponent<{
                 size="small"
                 label="Email address"
                 l10nKey="TeamCollection.Sharing.EmailAddress"
-                temporarilyDisableI18nWarning={true}
+                // Note: unlike Div/P/BloomButton, AttentionTextField's underlying MuiTextField
+                // treats temporarilyDisableI18nWarning as "skip the XLF lookup entirely" (see
+                // muiTextField.tsx), not just "suppress the warning" — so it must be omitted
+                // here for this label to actually be localized.
                 value={email}
                 onChange={setEmail}
                 isValid={(value) => isValidEmail(value.trim())}

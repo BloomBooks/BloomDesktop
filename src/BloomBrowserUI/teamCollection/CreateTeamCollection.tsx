@@ -275,7 +275,11 @@ export const CreateCloudTeamCollectionBody: React.FunctionComponent<{
                         <AttentionTextField
                             label="Email address"
                             l10nKey="TeamCollection.Sharing.EmailAddress"
-                            temporarilyDisableI18nWarning={true}
+                            // Note: unlike Div/P/BloomButton, AttentionTextField's underlying
+                            // MuiTextField treats temporarilyDisableI18nWarning as "skip the XLF
+                            // lookup entirely" (see muiTextField.tsx), not just "suppress the
+                            // warning" — so it must be omitted here for this label to actually
+                            // be localized.
                             value={props.devEmail}
                             onChange={props.onDevEmailChange}
                             isValid={(value) => isValidEmail(value.trim())}
@@ -288,7 +292,6 @@ export const CreateCloudTeamCollectionBody: React.FunctionComponent<{
                         <AttentionTextField
                             label="Password"
                             l10nKey="TeamCollection.Sharing.Password"
-                            temporarilyDisableI18nWarning={true}
                             type="password"
                             value={props.devPassword}
                             onChange={props.onDevPasswordChange}

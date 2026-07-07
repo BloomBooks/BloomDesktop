@@ -334,6 +334,29 @@
         <note>ID: CollectionChooser.UnpublishedToBloomLibrary</note>
         <note>{0} is the number of books in the collection not yet published to bloomlibrary.org.</note>
       </trans-unit>
+      <trans-unit id="CollectionChooser.GetMyTeamCollections" translate="no">
+        <source xml:lang="en">Get my Team Collections</source>
+        <note>ID: CollectionChooser.GetMyTeamCollections</note>
+        <note>Heading above the list of cloud Team Collections the signed-in user belongs to, shown in the collection chooser.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.SignInToSeeYourTeamCollections" translate="no">
+        <source xml:lang="en">Sign in to see the Team Collections you belong to.</source>
+        <note>ID: CollectionChooser.SignInToSeeYourTeamCollections</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.SignIn" translate="no">
+        <source xml:lang="en">Sign In</source>
+        <note>ID: CollectionChooser.SignIn</note>
+        <note>Button in the "Get my Team Collections" section of the collection chooser; starts sign-in so the user can see their cloud Team Collections.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.NoTeamCollectionsYet" translate="no">
+        <source xml:lang="en">You don't belong to any Team Collections yet.</source>
+        <note>ID: CollectionChooser.NoTeamCollectionsYet</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.PullDown" translate="no">
+        <source xml:lang="en">Get</source>
+        <note>ID: CollectionChooser.PullDown</note>
+        <note>Button next to a cloud Team Collection in the "Get my Team Collections" list; downloads a local copy of that collection.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
         <note>ID: CollectionSettingsDialog.AboutBloomSubscriptions</note>
@@ -5515,6 +5538,16 @@ Do you want to go ahead?</note>
         <note>ID: RegisterDialog.CheckInToChangeEmail</note>
         <note>Shown when the user must register elsewhere before changing the email field.</note>
       </trans-unit>
+      <trans-unit id="RegisterDialog.CloudAccountEmail" translate="no">
+        <source xml:lang="en">Your Bloom account email</source>
+        <note>ID: RegisterDialog.CloudAccountEmail</note>
+        <note>Label for the (locked) email field shown when registering while creating or joining a cloud Team Collection. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="RegisterDialog.CloudAccountEmailNote" translate="no">
+        <source xml:lang="en">This copy of Bloom will be registered under your signed-in Bloom account and can't be changed here.</source>
+        <note>ID: RegisterDialog.CloudAccountEmailNote</note>
+        <note>Small explanatory text below the locked email field described by RegisterDialog.CloudAccountEmail. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
       <trans-unit id="RegisterDialog.FirstName">
         <source xml:lang="en">First Name</source>
         <note>ID: RegisterDialog.FirstName</note>
@@ -5766,6 +5799,51 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TeamCollection.Available" sil:dynamic="true">
         <source xml:lang="en">This book is available for editing</source>
         <note>ID: TeamCollection.Available</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.ShareOnCloudServer" translate="no">
+        <source xml:lang="en">Share this collection on the Bloom sharing server (experimental)</source>
+        <note>ID: TeamCollection.Sharing.ShareOnCloudServer</note>
+        <note>Button in Team Collection settings that starts turning a local collection into a cloud-backed Team Collection. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.SignIn" translate="no">
+        <source xml:lang="en">Sign In</source>
+        <note>ID: TeamCollection.Sharing.SignIn</note>
+        <note>Button that submits the sign-in form (or starts account sign-in) when creating or joining a cloud Team Collection.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.ShareCollection" translate="no">
+        <source xml:lang="en">Share Collection</source>
+        <note>ID: TeamCollection.Sharing.ShareCollection</note>
+        <note>Button that starts uploading the collection to become a cloud Team Collection, after the user has acknowledged the collection name is final.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.ShareThisCollection" translate="no">
+        <source xml:lang="en">Share this Collection</source>
+        <note>ID: TeamCollection.Sharing.ShareThisCollection</note>
+        <note>Title of the dialog used to turn a local collection into a cloud Team Collection.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.AddMember" translate="no">
+        <source xml:lang="en">Add</source>
+        <note>ID: TeamCollection.Sharing.AddMember</note>
+        <note>Button that adds a new email address to a cloud Team Collection's approved-members list.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.RoleAdmin" translate="no">
+        <source xml:lang="en">Admin</source>
+        <note>ID: TeamCollection.Sharing.RoleAdmin</note>
+        <note>Role label/option for a member of a cloud Team Collection who can manage settings and other members.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.RoleMember" translate="no">
+        <source xml:lang="en">Member</source>
+        <note>ID: TeamCollection.Sharing.RoleMember</note>
+        <note>Role label/option for a regular (non-administrator) member of a cloud Team Collection.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.Claimed" translate="no">
+        <source xml:lang="en">Claimed</source>
+        <note>ID: TeamCollection.Sharing.Claimed</note>
+        <note>Status shown next to an approved email address once someone has signed in with it and linked their account.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.Pending" translate="no">
+        <source xml:lang="en">Pending</source>
+        <note>ID: TeamCollection.Sharing.Pending</note>
+        <note>Status shown next to an approved email address that no one has signed in with yet.</note>
       </trans-unit>
       <!--
 // Don't want these actually translated until things stabilize. Will need re-ordering.
