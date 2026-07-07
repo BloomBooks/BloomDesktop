@@ -735,7 +735,14 @@ namespace Bloom.TeamCollection
                     TeamCollectionManager.CurrentUserFirstName,
                     TeamCollectionManager.CurrentUserSurname
                 );
-                TryLockInRepo(bookName, status);
+                if (!TryLockInRepo(bookName, status))
+                {
+                    // The backend refused the lock (a cloud backend loses the race when someone
+                    // else checked the book out first; the folder backend never refuses). Re-read
+                    // so the status we report below reflects the repo's truth about who holds the
+                    // lock rather than the optimistic lockedBy we stamped above.
+                    status = GetStatus(bookName);
+                }
             }
 
             // If we succeeded, we definitely want various things to update to show it.
