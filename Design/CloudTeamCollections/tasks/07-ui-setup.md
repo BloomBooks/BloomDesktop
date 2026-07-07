@@ -227,6 +227,38 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   shows the old field not SharingPanel; cloud TC shows SharingPanel wired to the real
   collectionId/email/isAdmin values not the old field; not-yet-a-TC shows neither) — mocks
   `teamCollectionApi`/`sharingApi`/`SharingPanel` itself (already covered by its own
-  `SharingPanel.test.tsx`) so this file only tests the branching logic this task adds. · next:
-  item 4 (wire `JoinCloudCollectionDialog`'s state matching into `CollectionChooser`'s
-  `onPullDown`).
+  `SharingPanel.test.tsx`) so this file only tests the branching logic this task adds.
+- 2026-07-07 · done: item 4. `JoinCloudCollectionDialog`'s `handleJoinClick` now actually wires
+  `pullDownCollection`'s promise (previously fired-and-forgotten): success closes the dialog and
+  calls a new optional `onClose` prop; failure shows the server's real error message in a new
+  `ErrorBox` and re-enables the action button for retry. Added the `onClose` prop and removed
+  the dialog's own (unused, and actively dangerous once embedded — see below) `WireUpForWinforms`
+  call. `CollectionChooser.tsx`'s `onPullDown` now looks up the clicked row's full
+  `ICloudCollectionSummary` from the already-fetched `cloudCollections` list and renders
+  `JoinCloudCollectionDialog` inline (embedded directly in the tree, not as a separate WinForms
+  dialog — there never was a C# call site or bundle entry for one), passing the real
+  `signedIn`/`collectionId`/`collectionName`. Documented, deliberate scope limit: no endpoint
+  exposes the six local-vs-remote matching flags (`existingCollection` etc.) ahead of an actual
+  pull-down attempt — `CloudJoinFlow.DetermineScenario`/`JoinCollection` (task 05) resolve that
+  server-side, inside `collections/pullDown` itself, and `SharingApi.HandlePullDown` only
+  surfaces a human-readable message on conflict (via `CloudJoinConflictException.Message`), not
+  the structured `JoinScenario` enum/`LocalCollectionFolder` it also carries. So the dialog
+  defaults to the ordinary `CreateNewCollection` copy and, if a real conflict is hit, shows the
+  server's real message instead of guessing which of the eight dialog states to switch to (a
+  future task could plumb `JoinScenario`/`LocalCollectionFolder` through the failure response to
+  make this exact, but that's new backend surface, out of this wiring task's scope). Found (and
+  fixed as part of this item, since it would otherwise become live once `JoinCloudCollectionDialog`
+  is imported into `CollectionChooser`'s bundle) a second instance of item 1's bug class: the
+  dialog's leftover `WireUpForWinforms(JoinCloudCollectionDialog)` call (dead code — no C# call
+  site/bundle entry ever pointed at it) would have silently overwritten
+  `CollectionChooserDialog`'s own `WireUpForWinforms` registration in the shared
+  `collectionChooserBundle` the moment this task's import wired them into the same module graph.
+  New tests: 2 added to `JoinCloudCollectionDialog.test.tsx` (closes + calls `onClose` on
+  success; shows the server's real error and stays open, button re-enabled, on failure — updated
+  the file's `pullDownCollection` mock to return a resolved promise by default, since the
+  existing 8 state tests all synchronously assert `pullDownCollection` was called without
+  needing to await it) and new `CollectionChooser.test.tsx` (2 tests: pull-down opens the dialog
+  for the exact row clicked with real login/collection data, and `onClose` removes it; dialog
+  never renders when the cloud feature is off) — mocks `sharingApi`/`JoinCloudCollectionDialog`
+  itself. · next: item 5 (sweep sharingApi.ts/teamCollectionApi.tsx for lingering mock-only
+  defaults).

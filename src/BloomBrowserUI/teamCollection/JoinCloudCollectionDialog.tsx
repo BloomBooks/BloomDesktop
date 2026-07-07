@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState } from "react";
 import { post } from "../utils/bloomApi";
 import { Div, P, Span } from "../react_components/l10nComponents";
 import BloomButton from "../react_components/bloomButton";
@@ -15,7 +16,6 @@ import {
     DialogCancelButton,
     DialogReportButton,
 } from "../react_components/BloomDialog/commonDialogComponents";
-import { WireUpForWinforms } from "../utils/WireUpWinform";
 import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog,
@@ -27,6 +27,13 @@ import { pullDownCollection } from "./sharingApi";
 // JoinTeamCollectionDialog (see that file), extended with two states that only make sense for
 // a cloud collection where "join" means "sign in, then pull down a copy from the server" rather
 // than "point at a shared folder": NotSignedIn and ApprovalRemoved. Eight variations total.
+//
+// Embedded directly inside CollectionChooser (not opened as its own WinForms ReactDialog --
+// there is no C# call site or bundle entry for it, unlike the other top-level dialogs in this
+// folder), so it deliberately does NOT call WireUpForWinforms itself: CollectionChooser lives
+// in the same bundle as CollectionChooserDialog, which already owns that bundle's one
+// WireUpForWinforms call, and a second call here would silently overwrite it (the exact bug
+// item 1 of this task fixed elsewhere -- see CreateTeamCollection.tsx).
 enum JoinCloudCollectionState {
     // The signed-in user must sign in before Bloom can check their approval / pull anything down.
     "NotSignedIn",
@@ -61,10 +68,16 @@ export const JoinCloudCollectionDialog: React.FunctionComponent<{
     existingCollectionFolder: string; // if there's an existing local collection, a path to it
     conflictingCollection: string; // if there's a conflicting repo the existing collection is linked to
     dialogEnvironment?: IBloomDialogEnvironmentParams;
+    // Called after the dialog closes, whether via Cancel or a successful pull-down. Lets an
+    // embedding parent (CollectionChooser) unmount/hide it; optional so storybook and existing
+    // tests that don't care about this can omit it.
+    onClose?: () => void;
 }> = (props) => {
     const { closeDialog, propsForBloomDialog } = useSetupBloomDialog(
         props.dialogEnvironment,
     );
+    const [joining, setJoining] = useState(false);
+    const [joinError, setJoinError] = useState<string | undefined>(undefined);
 
     const dialogTitle = useL10n(
         'Join the Bloom Team Collection "%0"',
@@ -338,14 +351,33 @@ export const JoinCloudCollectionDialog: React.FunctionComponent<{
     // ApprovalRemoved has no useful action to offer besides closing the dialog.
     const joinButtonDisabled =
         wantReportButton ||
-        dialogState === JoinCloudCollectionState.ApprovalRemoved;
+        dialogState === JoinCloudCollectionState.ApprovalRemoved ||
+        joining;
 
     function handleJoinClick() {
         if (dialogState === JoinCloudCollectionState.NotSignedIn) {
             post("sharing/showSignIn");
             return;
         }
-        pullDownCollection(props.collectionId);
+        setJoining(true);
+        setJoinError(undefined);
+        // collections/pullDown (SharingApi.cs's HandlePullDown) either succeeds outright (the
+        // ordinary case: no local conflict) or fails with a human-readable message -- it does
+        // not report back which of the six local-vs-remote scenarios above applied ahead of
+        // time (that matching happens server-side, in CloudJoinFlow, only once the pull-down is
+        // actually attempted). So on failure we show the server's real message rather than
+        // guessing which specific state's copy to switch to.
+        pullDownCollection(props.collectionId).then(
+            () => {
+                setJoining(false);
+                closeDialog();
+                props.onClose?.();
+            },
+            (error) => {
+                setJoining(false);
+                setJoinError(String(error?.message ?? error));
+            },
+        );
     }
 
     return (
@@ -355,6 +387,11 @@ export const JoinCloudCollectionDialog: React.FunctionComponent<{
                 <div data-testid="join-cloud-collection-body">
                     {getBodyOfDialogByState()}
                 </div>
+                {joinError && (
+                    <div data-testid="join-cloud-collection-error">
+                        <ErrorBox>{joinError}</ErrorBox>
+                    </div>
+                )}
             </DialogMiddle>
             <DialogBottomButtons>
                 {wantReportButton && (
@@ -379,10 +416,13 @@ export const JoinCloudCollectionDialog: React.FunctionComponent<{
                 >
                     {joinButtonEnglish}
                 </BloomButton>
-                <DialogCancelButton onClick_DEPRECATED={closeDialog} />
+                <DialogCancelButton
+                    onClick_DEPRECATED={() => {
+                        closeDialog();
+                        props.onClose?.();
+                    }}
+                />
             </DialogBottomButtons>
         </BloomDialog>
     );
 };
-
-WireUpForWinforms(JoinCloudCollectionDialog);
