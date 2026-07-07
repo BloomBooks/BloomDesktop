@@ -122,6 +122,17 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 
 (orchestrator appends: date · task · PR · notes)
 
+- 7 Jul 2026 · 05-cloud-backend · merged locally · Live Send→Receive→lock round trip green.
+  Agent's live test found+fixed 2 integration bugs (RestSharp serializer mangling JTokens;
+  S3 keys built at wrong prefix level). Orchestrator base fixes at review: AttemptLock now
+  honors TryLockInRepo refusal; BookHistoryEventType.WorkPreservedLocally=100. Findings
+  routed forward: (a) server stamps locked_by/created_by with auth UUID — 06 adds a
+  migration surfacing lockedByEmail/Name for display; (b) collection-file groups have no
+  pinned per-file manifest RPC (client reads latest from S3) — acceptable dev-mode gap,
+  revisit before production; (c) checkin-start/finish omit the new book's server id —
+  client refreshes state post-commit (works; consider contract addition later);
+  (d) SyncAtStartup matrix only partially ported — remainder folded into task 09's scope.
+
 - 7 Jul 2026 · 08-ui-collection-tab · merged locally · Survived one session-limit
   interruption (WIP preserved). Orchestrator review fix: the capability/experimental-flag
   hooks fetched per component mount — BookButton would have issued hundreds of identical
