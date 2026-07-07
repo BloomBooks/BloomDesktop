@@ -153,6 +153,13 @@ namespace Bloom.TeamCollection.Cloud
         public long? GetRepoVersionSeq(string bookFolderName) =>
             TryGetCachedBook(bookFolderName)?.CurrentVersionSeq;
 
+        /// <summary>The server book id for a book folder name, or null if unknown -- lets
+        /// SharingApi's history endpoint match a "current book only" filter (Bloom's BookInfo has
+        /// no notion of the server's tc.books.id) without duplicating this class's private
+        /// name/instanceId -&gt; id index.</summary>
+        public string TryGetBookIdForHistoryFilter(string bookFolderName) =>
+            TryGetBookId(bookFolderName);
+
         /// <summary>
         /// Count of live, currently-unlocked books whose repo version is newer than what's on this
         /// machine -- drives the status button's "Updates Available (N books)" metadata. A book

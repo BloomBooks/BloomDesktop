@@ -72,6 +72,19 @@ namespace Bloom.TeamCollection
         /// </summary>
         public ITeamCollectionManager TcManager => _tcManager;
 
+        /// <summary>Same purpose as <see cref="TcManager"/>: lets the app-level SharingApi push
+        /// websocket events (e.g. "sharing"/"membersChanged") on the SAME socket connection the
+        /// currently-open project's UI actually listens on. BloomWebSocketServer is a per-project
+        /// singleton (see ProjectContext's registration), so SharingApi -- registered once at the
+        /// application level -- cannot resolve that same instance through DI; it must reach it via
+        /// whichever project is currently loaded, exactly like TcManager above.</summary>
+        public BloomWebSocketServer SocketServer => _socketServer;
+
+        /// <summary>The folder name of the currently selected book, or null if none -- lets
+        /// SharingApi's history endpoint implement its "current book only" filter without its own
+        /// project-scoped BookSelection dependency.</summary>
+        public string CurrentBookFolderName => BookFolderName;
+
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler(
