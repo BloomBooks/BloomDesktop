@@ -214,3 +214,19 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   worker-thread/child-process spawning, which otherwise fails every vitest pool
   ("Timeout starting threads runner") within ~5s. · next: item 3 (wire `SharingPanel` into
   `TeamCollectionSettingsPanel`'s `isTeamCollection` branch for cloud TCs).
+- 2026-07-07 · done: item 3. `TeamCollectionSettingsPanel.tsx`'s `isTeamCollection` branch now
+  renders `SharingPanel` (collectionId from `useCloudCollectionId()`, currentUserEmail from
+  `useSharingLoginState().email`, isAdmin from `useIsTeamCollectionAdmin()`) when
+  `isCloudTeamCollection(useTeamCollectionCapabilities())` is true; folder TCs keep the old
+  free-text administrator-emails field + "Cloud Storage Folder Location" link completely
+  unchanged (the link/`fileIO/showInFolder` call doesn't make sense for a cloud TC's
+  `cloud://sil.bloom/collection/{id}` `RepoDescription`, confirmed by reading
+  `CloudTeamCollection.RepoDescription` in `TeamCollection/Cloud/CloudTeamCollection.cs`). All
+  four hooks used are already gated internally on the experimental feature, so this adds zero
+  extra requests for folder TCs. New `TeamCollectionSettingsPanel.test.tsx` (3 tests: folder TC
+  shows the old field not SharingPanel; cloud TC shows SharingPanel wired to the real
+  collectionId/email/isAdmin values not the old field; not-yet-a-TC shows neither) — mocks
+  `teamCollectionApi`/`sharingApi`/`SharingPanel` itself (already covered by its own
+  `SharingPanel.test.tsx`) so this file only tests the branching logic this task adds. · next:
+  item 4 (wire `JoinCloudCollectionDialog`'s state matching into `CollectionChooser`'s
+  `onPullDown`).
