@@ -14,7 +14,7 @@
 - [x] Per-book panel: keep Check out/Check in + note field + avatars; add signedOut (with
       Sign-in action), updatesAvailable, offline-disabled-with-reason states; check-in progress
       = modal Send; "Force Unlock (Administrator Only)" wired to the audited RPC.
-- [ ] Book thumbnails: holder-avatar overlay unchanged; subtle "newer version exists" marker.
+- [x] Book thumbnails: holder-avatar overlay unchanged; subtle "newer version exists" marker.
 - [ ] History tab: server events feed for cloud TCs (incl. incident entries), local cache for
       offline; folder TCs unchanged.
 
@@ -128,3 +128,39 @@ JSON (CONTRACTS.md, book-status section).
   Next action: implement step 5 (book thumbnails: subtle "newer version exists" marker) —
   likely in the book-thumbnail/preview component that overlays the holder avatar (not yet
   identified by file name; search for the existing holder-avatar-overlay code first).
+- 7 Jul 2026 · Book thumbnails done. Found the holder-avatar overlay in
+  `collectionsTab/BookButton.tsx` (the per-book thumbnail button in the collection tab's grid,
+  NOT `TeamCollectionBookStatusPanel.tsx` which is the panel for the currently-selected book):
+  it renders `<BloomAvatar>` as a sibling of the thumbnail `<Button>` when
+  `teamCollectionStatus.who` is set, absolutely positioned (top-left) via the `.avatar` class in
+  `BooksOfCollection.less`, and `<BookOnBlorgBadge>` inside `.thumbnail-wrapper` (bottom-right,
+  `position: relative` on the wrapper) as the existing template for a small corner marker.
+  Left both completely unchanged (holder-avatar overlay confirmed still driven by the same
+  `who` field, no new branching added there). New `teamCollection/NewerVersionAvailableMarker.tsx`
+  (presentational, `show: boolean` prop): a small MUI `Update` icon with a
+  `TeamCollection.UpdatesAvailableForBook` tooltip (reused from step 4, no new XLF), positioned
+  top-right of `.thumbnail-wrapper` so it can't collide with the avatar (top-left of the whole
+  button) or the on-Blorg badge (bottom-right). Wired into `BookButton.tsx`: added
+  `isCloud = isCloudTeamCollection(useTeamCollectionCapabilities())` and
+  `hasNewerVersionAvailable = isCloud && !teamCollectionStatus?.who && repoVersionSeq >
+  localVersionSeq` (mirrors the `updatesAvailable` condition in
+  `TeamCollectionBookStatusPanel.tsx`'s state machine — same rule, "unlocked book, newer
+  version in the repo"), rendered as a new sibling of `BookOnBlorgBadge` inside
+  `.thumbnail-wrapper`. Folder Team Collections: `repoVersionSeq`/`localVersionSeq` are always
+  undefined there so the condition is false regardless, and `isCloud` is explicitly checked
+  too per the gating rule.
+  New test: `NewerVersionAvailableMarker.test.tsx` (2 tests: hidden when `show=false`, present
+  when `show=true`) — the marker itself is a pure function of its prop, so it's tested in
+  isolation the same way `SharingMembersList` is; `BookButton.tsx` is a large, complex,
+  pre-existing, currently-untested file with many unrelated concerns (renaming, context menus,
+  drag/drop, websocket label updates), so rather than write its first-ever test suite as a side
+  effect of this task, the gating condition here intentionally mirrors logic already covered by
+  `TeamCollectionBookStatusPanel.test.tsx`'s `updatesAvailable`/gating tests. The Acceptance
+  section's test list (panel state matrix, status-button states, history rendering) doesn't
+  call out thumbnail tests specifically. `yarn eslint` on both changed/added files: only
+  pre-existing warnings, confirmed via `git stash` (2 unused-var + 3 exhaustive-deps warnings
+  already present in `BookButton.tsx` before this change; new files clean). Full
+  `teamCollection` + `collectionsTab` suites: 8 files, 55 tests, all green.
+  Next action: implement step 6 (history tab: server events feed for cloud TCs incl. incident
+  entries, local cache for offline; folder TCs unchanged) in `CollectionHistoryTable.tsx` — the
+  last remaining step.
