@@ -260,5 +260,20 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   needing to await it) and new `CollectionChooser.test.tsx` (2 tests: pull-down opens the dialog
   for the exact row clicked with real login/collection data, and `onClose` removes it; dialog
   never renders when the cloud feature is off) — mocks `sharingApi`/`JoinCloudCollectionDialog`
-  itself. · next: item 5 (sweep sharingApi.ts/teamCollectionApi.tsx for lingering mock-only
-  defaults).
+  itself.
+- 2026-07-07 · done: item 5 (sweep for lingering mock-only defaults). No behavioral defaults
+  needed changing: every `get()` call in `sharingApi.ts`/`teamCollectionApi.tsx` already omits an
+  error callback, so a real endpoint failure throws (unhandled rejection, reported to
+  Sentry/console) rather than being silently swallowed into some "safe" default — already
+  fail-fast per AGENTS.md, and consistent with every other hook in this file family. The `?? []`
+  /`?? initialTeamCollectionCapabilities`-style fallbacks that exist are all inside the SUCCESS
+  callback (a 200 response with an unexpectedly-empty body), not the failure path, so they don't
+  mask anything. What WAS stale: doc comments in `sharingApi.ts` (top-of-file), `teamCollectionApi.tsx`
+  (the Cloud Team Collections section header), `CreateTeamCollection.tsx` (the cloud-dialog
+  section banner), and `TeamCollectionButton.test.tsx` claiming the relevant endpoints were
+  "not-yet-implemented" / "mocked" / task-06-pending — all now real per task 06's merge. Left as
+  a misleading residue, this is exactly the kind of thing that could make a future
+  agent/developer distrust or re-mock already-real endpoints, or skip auditing their error paths
+  on the (false) assumption they're still shells. Updated all four to say what's actually true
+  now. No production code behavior changed by this item. · next: item 6 (full component test
+  sweep + lint).

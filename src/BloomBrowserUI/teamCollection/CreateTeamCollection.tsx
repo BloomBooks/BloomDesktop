@@ -232,10 +232,11 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
 };
 
 // -----------------------------------------------------------------------------------------
-// Cloud Team Collection creation (Wave-1 shell against mocked endpoints; see sharingApi.ts).
-// Unlike CreateTeamCollectionDialog above, there is no folder chooser, no Dropbox checkboxes,
-// and no restart: sign in, acknowledge the immutable name, then Bloom uploads (Sends) the
-// current collection as the initial version of the new cloud Team Collection.
+// Cloud Team Collection creation; see sharingApi.ts for the real SharingApi/TeamCollectionApi
+// endpoints this drives. Unlike CreateTeamCollectionDialog above, there is no folder chooser,
+// no Dropbox checkboxes, and no restart: sign in, acknowledge the immutable name, then Bloom
+// uploads (Sends) the current collection as the initial version of the new cloud Team
+// Collection.
 // -----------------------------------------------------------------------------------------
 
 export type CloudSendState = "notStarted" | "sending" | "done" | "error";

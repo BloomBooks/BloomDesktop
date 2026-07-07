@@ -3,10 +3,8 @@ import { useState } from "react";
 import { get, post, postJson } from "../utils/bloomApi";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 
-// The TS end of interactions with the (not-yet-implemented, see task 06) `SharingApi` C# class.
-// Wave-1 (this task) only needs shells that call these endpoints; the endpoints themselves,
-// and the events they raise, land in task 06. Names here are kept in sync with
-// Design/CloudTeamCollections/CONTRACTS.md so that wiring up the real backend is a drop-in.
+// The TS end of interactions with the `SharingApi` C# class (task 06). Names here are kept in
+// sync with Design/CloudTeamCollections/CONTRACTS.md.
 
 // Matches CONTRACTS.md: in dev-auth mode, sign-in is a plain email/password form; in the
 // eventual production ("cloud") mode, it will be the BloomLibrary browser-based flow.
