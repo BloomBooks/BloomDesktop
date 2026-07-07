@@ -8,7 +8,7 @@
 
 ## Steps
 - [x] Status button: same chip/colors, driven by live metadata ("Updates available (3 books)").
-- [ ] Status dialog: "Receive Updates" primary action (Reload remains only for applied
+- [x] Status dialog: "Receive Updates" primary action (Reload remains only for applied
       collection-settings changes); "Send All"; message log unchanged.
 - [ ] Share button beside the status button → SharingPanel (admin manage / member read-only).
 - [ ] Per-book panel: keep Check out/Check in + note field + avatars; add signedOut (with
@@ -44,3 +44,27 @@ JSON (CONTRACTS.md, book-status section).
   unrelated to this change, in `useTColBookStatus`'s dependency array).
   Next action: implement step 2 (status dialog "Receive Updates" / "Send All"), then run its
   tests + prettier + commit.
+- 7 Jul 2026 · Status dialog done (resumed after a session-limit interruption; predecessor's
+  in-flight `TeamCollectionDialog.tsx` change and new `TeamCollectionDialog.test.tsx` had been
+  preserved by the orchestrator in a WIP commit). `checkInAll`'s l10nKey/label switches to
+  `TeamCollection.SendAll`/"Send All" and its post target to `teamCollection/sendAllBooks` when
+  `isCloudTeamCollection(useTeamCollectionCapabilities())`; a new `receiveUpdates` button
+  (`TeamCollection.ReceiveUpdates`, posts `teamCollection/receiveUpdates`) appears beside the
+  existing "Reload Collection" button only for cloud TCs and only when `showReloadButton` is
+  false, so the two are mutually exclusive (Reload stays reserved for applied collection-settings
+  changes, per the design doc). Folder Team Collections are unaffected: `isCloud` is false
+  whenever the capabilities hook's mocked endpoint is never called (flag off) or reports no cloud
+  support, so `checkInAll` keeps its exact previous key/label/endpoint and `receiveUpdates` never
+  renders. Fixed up the predecessor's WIP test file: removed leftover debug `console.log`s, made
+  its `afterEach` use the repo's established `renderedContainer`/`unmountRoot` cleanup (matching
+  `SharingPanel.test.tsx`/`JoinCloudCollectionDialog.test.tsx`) instead of a bare
+  `document.body.innerHTML = ""`, and — the actual bug blocking all but one assertion — switched
+  button lookups from matching visible English text to matching by element `id`
+  (`checkInAll`/`receiveUpdates`/`reload`), because the vitest-only localizationManager mock
+  resolves every `l10nKey` to the key itself rather than the English fallback (same gotcha
+  documented in `JoinCloudCollectionDialog.test.tsx`'s file comment); the predecessor's
+  English-text lookups could never match and were failing 4 of 5 tests before this fix.
+  `TeamCollectionDialog.test.tsx`: 5 tests, all passing. `yarn eslint` clean on both changed
+  files. No new XLF entries needed — `TeamCollection.SendAll`/`TeamCollection.ReceiveUpdates`
+  were already front-loaded into `Bloom.xlf` in the step-1 commit.
+  Next action: implement step 3 (Share button beside the status button → SharingPanel).

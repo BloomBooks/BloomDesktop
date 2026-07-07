@@ -11,14 +11,19 @@ import { ITeamCollectionCapabilities } from "./teamCollectionApi";
 // hook is mocked; bloomApi's `post` is mocked to assert calls, and `getBoolean` is mocked so the
 // dialog's tabs mount synchronously (see TeamCollectionDialog.tsx's defaultTabIndex dance) instead
 // of waiting on a real (and here, unavailable) `teamCollection/logImportant` network call.
+//
+// MUI's Dialog renders via a portal to document.body, so assertions query document rather than a
+// local render container (see JoinCloudCollectionDialog.test.tsx, which documents the same thing).
+// Also as noted there: the test-only localizationManager mock (vitest.setup.ts) resolves every
+// l10nKey to the key itself rather than the English fallback, so button lookups below use each
+// button's stable `id` (present in TeamCollectionDialog.tsx) rather than its visible text.
 
 const { mockUseTeamCollectionCapabilities } = vi.hoisted(() => ({
     mockUseTeamCollectionCapabilities: vi.fn(),
 }));
 
 vi.mock("./teamCollectionApi", async (importOriginal) => {
-    const actual =
-        await importOriginal<typeof import("./teamCollectionApi")>();
+    const actual = await importOriginal<typeof import("./teamCollectionApi")>();
     return {
         ...actual,
         useTeamCollectionCapabilities: mockUseTeamCollectionCapabilities,
@@ -54,7 +59,12 @@ const cloudCapabilities: ITeamCollectionCapabilities = {
     requiresSignIn: true,
 };
 
+let renderedContainer: HTMLDivElement | undefined;
+
 function renderDialog(showReloadButton: boolean) {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    renderedContainer = container;
     act(() => {
         renderRoot(
             <TeamCollectionDialog
@@ -65,19 +75,23 @@ function renderDialog(showReloadButton: boolean) {
                     onClose: vi.fn(),
                 }}
             />,
-            document.body.appendChild(document.createElement("div")),
+            container,
         );
     });
 }
 
-function getButtonByText(text: string): HTMLButtonElement | null {
-    const found = Array.from(document.querySelectorAll("button")).find((b) =>
-        b.textContent?.includes(text),
-    );
-    return (found as HTMLButtonElement) ?? null;
+function getButtonById(id: string): HTMLButtonElement | null {
+    return document.getElementById(id) as HTMLButtonElement | null;
 }
 
 afterEach(() => {
+    if (renderedContainer) {
+        unmountRoot(renderedContainer);
+        renderedContainer.remove();
+        renderedContainer = undefined;
+    }
+    // BloomDialog/MUI Dialog portal their content directly onto document.body, outside our
+    // mounted root, so it must be cleaned up separately between tests.
     document.body.innerHTML = "";
     mockPost.mockClear();
     mockUseTeamCollectionCapabilities.mockReset();
@@ -87,24 +101,10 @@ describe("TeamCollectionDialog", () => {
     it("folder Team Collection: keeps 'Check In All Books' and posts the folder endpoint", () => {
         mockUseTeamCollectionCapabilities.mockReturnValue(folderCapabilities);
         renderDialog(false);
-        // eslint-disable-next-line no-console
-        console.log(
-            "DEBUG checkInAll el:",
-            document.getElementById("checkInAll")?.outerHTML ?? "NOT FOUND",
-        );
-        // eslint-disable-next-line no-console
-        console.log(
-            "DEBUG all button texts:",
-            JSON.stringify(
-                Array.from(document.querySelectorAll("button")).map(
-                    (b) => b.textContent,
-                ),
-            ),
-        );
 
-        expect(getButtonByText("Send All")).toBeNull();
-        const checkInAll = getButtonByText("Check In All Books");
+        const checkInAll = getButtonById("checkInAll");
         expect(checkInAll).not.toBeNull();
+        expect(checkInAll!.textContent).toContain("TeamCollection.checkInAll");
         act(() => checkInAll!.click());
         expect(mockPost).toHaveBeenCalledWith("teamCollection/checkInAllBooks");
     });
@@ -112,16 +112,16 @@ describe("TeamCollectionDialog", () => {
     it("folder Team Collection: never shows 'Receive Updates'", () => {
         mockUseTeamCollectionCapabilities.mockReturnValue(folderCapabilities);
         renderDialog(false);
-        expect(getButtonByText("Receive Updates")).toBeNull();
+        expect(getButtonById("receiveUpdates")).toBeNull();
     });
 
     it("cloud Team Collection: renames the button to 'Send All' and posts the cloud endpoint", () => {
         mockUseTeamCollectionCapabilities.mockReturnValue(cloudCapabilities);
         renderDialog(false);
 
-        expect(getButtonByText("Check In All Books")).toBeNull();
-        const sendAll = getButtonByText("Send All");
+        const sendAll = getButtonById("checkInAll");
         expect(sendAll).not.toBeNull();
+        expect(sendAll!.textContent).toContain("TeamCollection.SendAll");
         act(() => sendAll!.click());
         expect(mockPost).toHaveBeenCalledWith("teamCollection/sendAllBooks");
     });
@@ -130,7 +130,7 @@ describe("TeamCollectionDialog", () => {
         mockUseTeamCollectionCapabilities.mockReturnValue(cloudCapabilities);
         renderDialog(false);
 
-        const receiveUpdates = getButtonByText("Receive Updates");
+        const receiveUpdates = getButtonById("receiveUpdates");
         expect(receiveUpdates).not.toBeNull();
         act(() => receiveUpdates!.click());
         expect(mockPost).toHaveBeenCalledWith("teamCollection/receiveUpdates");
@@ -140,7 +140,7 @@ describe("TeamCollectionDialog", () => {
         mockUseTeamCollectionCapabilities.mockReturnValue(cloudCapabilities);
         renderDialog(true);
 
-        expect(getButtonByText("Reload Collection")).not.toBeNull();
-        expect(getButtonByText("Receive Updates")).toBeNull();
+        expect(getButtonById("reload")).not.toBeNull();
+        expect(getButtonById("receiveUpdates")).toBeNull();
     });
 });
