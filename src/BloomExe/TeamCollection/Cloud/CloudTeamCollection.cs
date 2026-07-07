@@ -528,12 +528,21 @@ namespace Bloom.TeamCollection.Cloud
         }
 
         /// <summary>
-        /// Unified recovery (lock-lost / base-superseded / conflicting-content): saves the user's
-        /// local copy as a `.bloomSource` zip under a local "Lost and Found" folder (there is no
-        /// repo-side Lost &amp; Found for a cloud collection -- see PutBookInRepo's inLostAndFound
-        /// branch), posts a `log_event` incident, and writes a distinct message per sub-case to the
-        /// Team Collection message log. The caller (SyncAtStartup, via PutBook(..., inLostAndFound:
-        /// true)) is responsible for then Receiving the current repo version into the local folder.
+        /// Unified recovery for the inLostAndFound branch of PutBookInRepo: saves the user's local
+        /// copy as a `.bloomSource` zip under a local "Lost and Found" folder (there is no repo-side
+        /// Lost &amp; Found for a cloud collection, unlike FolderTeamCollection's), and posts a
+        /// `log_event` incident. The caller (SyncAtStartup, via PutBook(..., inLostAndFound: true))
+        /// is responsible for then Receiving the current repo version into the local folder.
+        ///
+        /// Note on "distinct messages per sub-case" (task brief): SyncAtStartup itself already logs
+        /// a sub-case-specific message via ReportProblemSyncingBook before/around calling PutBook
+        /// with inLostAndFound (e.g. "ConflictingCheckout" vs "ConflictingEdit" -- see
+        /// TeamCollection.cs, ~line 2415/2539) -- that pre-existing, unchanged base-class logic
+        /// already provides the sub-case-specific text. PutBookInRepo's own `inLostAndFound` bool
+        /// parameter does NOT itself carry which sub-case triggered it (that would need a base-class
+        /// signature change we didn't make -- see the task 05 final report), so the ONE additional
+        /// message this method logs is deliberately sub-case-agnostic: it only adds the ".bloomSource
+        /// preserved" fact, which none of the existing base messages mention.
         /// </summary>
         private void SaveLocalCopyForRecovery(
             string sourceBookFolderPath,
@@ -566,9 +575,9 @@ namespace Bloom.TeamCollection.Cloud
                 }
 
                 MessageLog.WriteMessage(
-                    MessageAndMilestoneType.ErrorNoReload,
-                    $"TeamCollection.Cloud.{subCase}",
-                    GetRecoveryMessageTemplate(subCase),
+                    MessageAndMilestoneType.NewStuff,
+                    "TeamCollection.Cloud.WorkPreservedLocally",
+                    "Your changes to \"{0}\" have been saved to the \"Lost and Found\" folder in your collection, and you now have the latest version from the team.",
                     bookFolderName,
                     null
                 );
@@ -596,29 +605,6 @@ namespace Bloom.TeamCollection.Cloud
                     + ".bloomSource";
             } while (RobustFile.Exists(path));
             return path;
-        }
-
-        // Distinct English message per unified-recovery sub-case, per the task brief. Follows
-        // .github/skills/xlf-strings/SKILL.md (en-only additions here; see task 05 final report for
-        // the priority-file placement question raised for these).
-        private static string GetRecoveryMessageTemplate(string subCase)
-        {
-            switch (subCase)
-            {
-                case "LockLost":
-                    return "Someone else started editing \"{0}\" before you checked in your changes. "
-                        + "Your work has been saved to the \"Lost and Found\" folder in your collection, "
-                        + "and you now have their latest version.";
-                case "BaseVersionSuperseded":
-                    return "\"{0}\" was changed by someone else while you were editing it. Your work has "
-                        + "been saved to the \"Lost and Found\" folder in your collection, and you now have "
-                        + "the latest version.";
-                case "ConflictingContent":
-                default:
-                    return "Bloom found a conflict with \"{0}\" in the Team Collection. Your work has been "
-                        + "saved to the \"Lost and Found\" folder in your collection, and you now have the "
-                        + "latest version.";
-            }
         }
 
         // ------------------------------------------------------------------
