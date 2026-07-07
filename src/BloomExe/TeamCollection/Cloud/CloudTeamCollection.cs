@@ -73,14 +73,10 @@ namespace Bloom.TeamCollection.Cloud
 
         private const int kMaxNameConflictRetries = 10;
 
-        /// <summary>Server-side event-type numeric for the "work preserved locally" incident, per
-        /// the task 05 brief ("log_event incident (type 100 WorkPreservedLocally)"). Deliberately a
-        /// literal, not a <see cref="Bloom.History.BookHistoryEventType"/> member: that enum is a
-        /// shared, non-owned file (its own doc comment says entries must only ever be appended, and
-        /// it's outside this task's file-discipline allowlist) -- see the task 05 final report's
-        /// "base-class change needed but not made" note recommending the orchestrator add
-        /// `WorkPreservedLocally = 100` there instead of this literal.</summary>
-        private const int kWorkPreservedLocallyEventType = 100;
+        /// <summary>Server-side event-type numeric for the "work preserved locally" incident.
+        /// Sourced from the shared enum so client and server stay in sync via one definition.</summary>
+        private const int kWorkPreservedLocallyEventType = (int)
+            Bloom.History.BookHistoryEventType.WorkPreservedLocally;
 
         /// <summary>This empty constructor allows the class to be mocked (matches
         /// <see cref="FolderTeamCollection"/>'s own pattern).</summary>
