@@ -66,3 +66,8 @@ Reusable, task-specific procedures for this repo live in `.github/skills/<name>/
 When a request matches one of these, READ the matching `SKILL.md` and follow it as the
 authoritative procedure (it may have more files alongside it). These may not be auto-loaded
 for non-copilot agents, so you may have to open the file yourself.
+
+Team-wide workflow skills that are not specific to this repo (the preflight → self-review →
+peer-review pipeline, Devin and Reviewable review handling, YouTrack operations) live in
+https://github.com/BloomBooks/bloom-team-skills — install per its README (clone + symlink
+into `~/.claude/skills`).
