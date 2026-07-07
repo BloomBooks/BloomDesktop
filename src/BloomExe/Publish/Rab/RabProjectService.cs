@@ -2684,8 +2684,23 @@ namespace Bloom.Publish.Rab
                     if (process.MainWindowHandle == IntPtr.Zero)
                         continue;
 
-                    if (process.ProcessName != "java")
-                        continue; // Don't match browser tabs, for instance.
+                    // RAB is a Java (Eclipse) app. Depending on how it is launched, its
+                    // window may belong to either java.exe or the console-less javaw.exe, so
+                    // accept both. This keeps us from matching, e.g., a browser tab whose
+                    // title happens to contain "Reading App Builder".
+                    if (
+                        !string.Equals(
+                            process.ProcessName,
+                            "java",
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                        && !string.Equals(
+                            process.ProcessName,
+                            "javaw",
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                        continue;
 
                     if (
                         process.MainWindowTitle.IndexOf(
