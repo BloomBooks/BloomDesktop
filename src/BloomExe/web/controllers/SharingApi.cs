@@ -213,7 +213,10 @@ namespace Bloom.web.controllers
                 email = (string)row["email"],
                 name = (string)null,
                 role = (string)row["role"],
-                claimed = row["user_id"] != null,
+                // The (string) cast maps a JSON-null token to a real null; a bare `!= null`
+                // check is TRUE for JTokenType.Null and made every pending invitation look
+                // claimed in the sharing panel.
+                claimed = (string)row["user_id"] != null,
             };
 
         private void HandleMembers(ApiRequest request)
