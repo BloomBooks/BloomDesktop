@@ -8,20 +8,20 @@ deferred config swap (see the master checklist's deferred-infrastructure list).
 01 (mock DB until 01 merges, then integrate). Owns `supabase/functions/**`, `server/provision-aws.*`.
 
 ## Steps
-- [ ] `checkin-start`: membership + lock + base-version checks; new-book path (bookId null ⇒
+- [x] `checkin-start`: membership + lock + base-version checks; new-book path (bookId null ⇒
       row locked-to-caller, versionless, invisible); diff proposed manifest vs current;
       transaction reuse/resume; credential issuance behind a small provider seam:
       **dev mode** (env-selected) returns static MinIO credentials, **production mode** does
       real STS via `bloom-teams-broker` with a per-request session policy scoped to the one
       book prefix — both in the identical response shape (CONTRACTS.md unchanged; clients
       can't tell the difference).
-- [ ] `checkin-finish`: verify sha256 attributes; capture s3 version-ids; single DB tx
+- [x] `checkin-finish`: verify sha256 attributes; capture s3 version-ids; single DB tx
       (version metadata row, current-manifest replacement, book update, lock release, events,
       `.manifest.json` write); MissingOrBadUploads retry path; idempotent.
-- [ ] `checkin-abort`; transaction expiry sweep (versionless-row reaping).
-- [ ] `download-start`: read-only creds (`GetObject`+`GetObjectVersion`), collection scope.
-- [ ] `collection-files-start/finish` with optimistic `expectedVersion`.
-- [ ] `ClientOutOfDate` handling (client version in requests).
+- [x] `checkin-abort`; transaction expiry sweep (versionless-row reaping).
+- [x] `download-start`: read-only creds (`GetObject`+`GetObjectVersion`), collection scope.
+- [x] `collection-files-start/finish` with optimistic `expectedVersion`.
+- [x] `ClientOutOfDate` handling (client version in requests).
 - [ ] `server/provision-aws` script (idempotent): buckets `bloom-teams-production|sandbox`,
       versioning ON, public access blocked, lifecycle (abort-multipart 7d; noncurrent expiry
       per the confirmed window), broker role + assume-only IAM user; document secrets setup
@@ -54,3 +54,60 @@ Only these functions ever hold AWS/MinIO admin creds.
   happy path end-to-end with a real dev-seed user JWT (alice@dev.local), then write Deno
   unit tests per function and continue through the acceptance checklist (lock-held,
   base-version-superseded, checksum failure, resume, expiry, new-book invisibility).
+- 2026-07-06 (later same day) · done: full LIVE integration verification against the real
+  local stack (Supabase 127.0.0.1:54321 + MinIO via `supabase functions serve --env-file
+  server/dev/functions.env`), using a scratch Deno driver script (not committed — ad hoc)
+  exercising every item in the Acceptance checklist except a real 48h expiry wait: happy
+  path (new-book checkin-start → PUT via MinIO AssumeRole creds → checkin-finish →
+  download-start GetObject round-trip), idempotent checkin-finish retry, resume of an
+  open transaction (both new-book and existing-book), lock-held (409 LockHeldByOther),
+  base-version-superseded (409), checksum failure via MissingOrBadUploads (409, upload
+  omitted), new-book invisibility until commit (verified via get_collection_state),
+  collection-files two-phase commit + VersionConflict (409). **26/26 checks passed** after
+  fixing 4 real bugs found along the way (all fixed + migrations reapplied via
+  `supabase db reset`):
+  1. **`host.containers.internal`/`host.docker.internal` DNS-resolves but the traffic
+     HANGS** (not slow — indefinite) for any Deno/edge-runtime HTTP call through Podman's
+     gvproxy host-gateway hop, even though plain `curl` over the identical URL succeeds
+     instantly (verified with raw `Deno.connect()`, native `fetch`, and the AWS SDK, both
+     from a throwaway container and the real edge-runtime container). This is almost
+     certainly what stalled the prior interrupted attempt at this task. **Fix**: MinIO
+     now also joins the Supabase CLI's own project Docker network
+     (`server/dev/docker-compose.yml`'s `networks:` block — external network
+     `supabase_network_bloom-team-collections`, created by `supabase start`) and is
+     addressed by container name (`http://bloom-minio:9000`, in `functions.env`).
+     Container-to-container traffic on a shared bridge network is instant. Documented in
+     `server/dev/README.md`'s new "Known gotchas" section.
+  2. **`supabase/config.toml`'s `[edge_runtime].policy = "oneshot"`** (the generated
+     default) re-transpiles/type-checks the whole module graph — including the heavy
+     `npm:@aws-sdk/client-s3`+`client-sts` imports in `_shared/s3.ts` — on every request,
+     which reliably exceeds the edge-runtime's ~10s worker-boot timeout
+     (`InvalidWorkerCreation: worker did not respond in time`) for any function that
+     reaches `getScopedCredentials`/`adminS3Client`. **Fix**: switched to
+     `policy = "per_worker"` (compiles once; also closer to production). Documented in the
+     same README section.
+  3. **New-book checkin-start resume was unreachable** in `checkin_start_tx`
+     (`20260706000004_...sql`): CONTRACTS.md's checkin-start response never exposes
+     `bookId` (by design — that's what makes an uncommitted book invisible), so a client
+     resuming an interrupted new-book Send has no id to send back and must re-call with
+     `bookId: null` + the same `bookInstanceId`. The old code always ran the
+     insert-a-new-row path whenever `bookId` was null, so the very row created by try #1
+     tripped the "instance_id already in use" conflict check on try #2. Fixed: the
+     new-book branch now looks up any existing row by `(collection_id, instance_id)`
+     first and treats "found, not yet committed, still locked to me" as a resume (not a
+     conflict) — see the updated comment block in the migration.
+  4. **`get_collection_state`'s full-snapshot branch leaked uncommitted new books** to
+     every collection member (`20260706000003_tc_rpcs.sql`, task 01's file — a
+     cross-cutting bug this task's acceptance criterion "new-book invisibility until
+     commit" directly depends on). The delta branch was already safe (a never-committed
+     book has no events to join against yet), but the full-snapshot branch queried
+     `tc.books` directly with no such filter. Fixed by excluding rows where
+     `current_version_id IS NULL` unless `locked_by = tc.current_user_id()` (the sender
+     still sees their own in-flight new book).
+  Remaining for this task: Deno unit tests per function (mocked RPC/S3 — the live spike
+  above covers integration but not fast, hermetic CI-friendly coverage), the invariant
+  test (transaction lifetime 48h < noncurrent-expiry-floor 7d — config assertion), and
+  `server/provision-aws` (author + review only, no AWS account). Next action: refactor
+  each `index.ts` to export its handler behind an `import.meta.main` guard (so
+  `Deno.serve` only starts when run as the entry point, not when a test imports the
+  module) and write the Deno test suite.

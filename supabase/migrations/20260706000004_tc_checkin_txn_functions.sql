@@ -294,33 +294,45 @@ BEGIN
     PERFORM tc.reap_expired_checkin_transactions();
 
     IF p_book_id IS NULL THEN
-        -- ---- New-book path -------------------------------------------------
-        IF EXISTS (
-            SELECT 1 FROM tc.books
-            WHERE collection_id = p_collection_id
-              AND deleted_at IS NULL
-              AND lower(normalize(name, NFC)) = lower(normalize(p_proposed_name, NFC))
-        ) THEN
-            RAISE EXCEPTION '%', json_build_object('error', 'NameConflict')::text
-                USING ERRCODE = 'PT409';
-        END IF;
+        -- ---- New-book path (or resume of our own not-yet-committed new-book Send) --
+        -- CONTRACTS.md's checkin-start response never exposes `bookId` (that's the
+        -- whole point of "invisible until commit") so a client resuming an
+        -- interrupted new-book Send has no id to pass back — it re-calls with
+        -- bookId=null and the SAME bookInstanceId, which is the only identity it has.
+        -- We must therefore recognize "a row already exists with this instance_id,
+        -- but it's OUR OWN never-committed, still-locked-to-us row" as a resume, not
+        -- a conflict — otherwise resume is unreachable (every retry would trip the
+        -- instance-id uniqueness check below against the row created by try #1).
+        SELECT * INTO v_book FROM tc.books
+        WHERE collection_id = p_collection_id AND instance_id = p_book_instance_id;
 
-        IF EXISTS (
-            SELECT 1 FROM tc.books
-            WHERE collection_id = p_collection_id AND instance_id = p_book_instance_id
-        ) THEN
-            RAISE EXCEPTION '%', json_build_object('error', 'NameConflict',
-                'detail', 'instance_id already in use')::text
-                USING ERRCODE = 'PT409';
-        END IF;
+        IF FOUND THEN
+            IF v_book.current_version_id IS NOT NULL OR v_book.locked_by IS DISTINCT FROM v_user_id THEN
+                -- Committed already, or in-flight under someone else's Send: genuine conflict.
+                RAISE EXCEPTION '%', json_build_object('error', 'NameConflict',
+                    'detail', 'instance_id already in use')::text
+                    USING ERRCODE = 'PT409';
+            END IF;
+            -- else: fall through with v_book already set to our own resumable row.
+        ELSE
+            IF EXISTS (
+                SELECT 1 FROM tc.books
+                WHERE collection_id = p_collection_id
+                  AND deleted_at IS NULL
+                  AND lower(normalize(name, NFC)) = lower(normalize(p_proposed_name, NFC))
+            ) THEN
+                RAISE EXCEPTION '%', json_build_object('error', 'NameConflict')::text
+                    USING ERRCODE = 'PT409';
+            END IF;
 
-        INSERT INTO tc.books (
-            collection_id, instance_id, name, locked_by, locked_at, created_by
-        )
-        VALUES (
-            p_collection_id, p_book_instance_id, p_proposed_name, v_user_id, now(), v_user_id
-        )
-        RETURNING * INTO v_book;
+            INSERT INTO tc.books (
+                collection_id, instance_id, name, locked_by, locked_at, created_by
+            )
+            VALUES (
+                p_collection_id, p_book_instance_id, p_proposed_name, v_user_id, now(), v_user_id
+            )
+            RETURNING * INTO v_book;
+        END IF;
     ELSE
         -- ---- Existing-book path ---------------------------------------------
         SELECT * INTO v_book FROM tc.books

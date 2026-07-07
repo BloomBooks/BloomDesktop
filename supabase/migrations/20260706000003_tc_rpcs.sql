@@ -162,7 +162,15 @@ BEGIN
 
     -- Books: full or delta
     IF p_since_event_id IS NULL THEN
-        -- Full snapshot: all live books
+        -- Full snapshot: all live books.
+        -- (task 02 fix, live-integration spike 6 Jul 2026): a book with
+        -- current_version_id IS NULL has never had a first checkin-finish — per
+        -- CONTRACTS.md's checkin-start spec it is "invisible to teammates until
+        -- first commit". The delta branch below gets this for free (a never-
+        -- committed book has no events yet to join against), but this full-snapshot
+        -- branch queried tc.books directly and leaked it to every member. Exclude
+        -- it unless the caller is the one who has it locked (i.e. is themselves
+        -- mid-Send) — they should still see their own in-flight new book.
         SELECT jsonb_agg(row_to_json(b)::jsonb)
         INTO v_books
         FROM (
@@ -181,6 +189,7 @@ BEGIN
                 b.created_by
             FROM tc.books b
             WHERE b.collection_id = p_collection_id
+              AND (b.current_version_id IS NOT NULL OR b.locked_by = tc.current_user_id())
             ORDER BY lower(b.name)
         ) b;
     ELSE
