@@ -35,6 +35,18 @@ services:
             retries: 10
             start_period: 10s
         restart: unless-stopped
+        networks:
+            - default
+            # Join the Supabase CLI's own project network too (see the `networks:` block
+            # below and server/dev/README.md's "MinIO endpoint from edge functions" note):
+            # edge functions reach MinIO by container name (`bloom-minio`) on this shared
+            # network. NEVER use `host.containers.internal`/`host.docker.internal` for this
+            # — task 02's live-integration spike (6 Jul 2026) found that path reliably HANGS
+            # (not just slow — indefinite) for POST/PUT/GET alike when Podman's edge-runtime
+            # container calls out through the gvproxy host gateway on Windows, even though a
+            # plain `curl` through the same path works fine. Direct container-to-container
+            # traffic on a shared bridge network does not hit this and is instant.
+            - supabase_network
 
     # -----------------------------------------------------------------------
     # Init job — uses minio/mc (MinIO Client) to:
@@ -87,3 +99,17 @@ services:
               mc ls local/
             "
         restart: "no"
+        networks:
+            - default
+            - supabase_network
+
+# `supabase_network_bloom-team-collections` is created by `supabase start` (project_id
+# "bloom-team-collections" in supabase/config.toml) — it must already exist, so run
+# `supabase start` BEFORE `docker compose -f server/dev/docker-compose.yml up -d` (the
+# README's documented bring-up order already does this).
+networks:
+    default:
+        name: dev_default
+    supabase_network:
+        name: supabase_network_bloom-team-collections
+        external: true

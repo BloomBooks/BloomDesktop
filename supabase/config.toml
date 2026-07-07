@@ -170,7 +170,14 @@ enabled = false
 enabled = true
 # Configure one of the supported request policies: `oneshot`, `per_worker`.
 # Use `oneshot` for hot reload (recommended for development), `per_worker` for production.
-policy = "oneshot"
+# NOTE (task 02, 6 Jul 2026): `oneshot` re-transpiles/type-checks the whole module graph
+# — including the heavy npm:@aws-sdk/client-s3 + client-sts imports in
+# supabase/functions/_shared/s3.ts — on EVERY request. That cold-start regularly exceeds
+# the edge-runtime's fixed ~10s worker-boot timeout (InvalidWorkerCreation: "worker did
+# not respond in time"), which made checkin-start/etc. fail every call locally. `per_worker`
+# compiles once and reuses the worker, which is also a closer match to how these functions
+# actually run in production. See server/dev/README.md.
+policy = "per_worker"
 inspector_port = 8083
 
 [analytics]

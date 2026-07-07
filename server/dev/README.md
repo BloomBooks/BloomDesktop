@@ -118,15 +118,10 @@ supabase db query --file server/dev/seed.sql
 Or if you have configured `seed_sql_path` in `supabase/config.toml` (see
 `config.auth.toml.snippet`), `supabase db reset` will run it automatically.
 
-### Step 3 — Start edge functions
-
-```bash
-supabase functions serve
-```
-
-Runs all functions under `supabase/functions/` in Deno. Keep this terminal open.
-
 ### Step 4 — Start MinIO
+
+Do this BEFORE step 5 (edge functions) — MinIO must join the Supabase CLI's project
+Docker network, which `supabase start` (step 1) has already created by this point:
 
 ```bash
 docker compose -f server/dev/docker-compose.yml up -d
@@ -140,6 +135,49 @@ On first run this also executes the `minio-init` job which:
 The init job exits after setup. MinIO itself stays running.
 
 Verify at http://localhost:9001 — log in with `minioadmin` / `minioadmin`.
+
+### Step 5 — Start edge functions
+
+```bash
+supabase functions serve --env-file server/dev/functions.env
+```
+
+Runs all functions under `supabase/functions/` in Deno. Keep this terminal open (in a
+background/detached process if driving this from a script — see "Known gotchas" below
+for why `--env-file` is required and why `[edge_runtime].policy` must be `per_worker`).
+
+---
+
+## Known gotchas (task 02, live-integration spike, 6 Jul 2026)
+
+Two things below are NOT obvious and cost real time to diagnose — read before assuming
+"it's just hanging, try again."
+
+**1. `host.containers.internal` / `host.docker.internal` DNS-resolves but the traffic
+HANGS.** An earlier draft of this doc had edge functions reach MinIO via
+`http://host.containers.internal:9000`, reasoning that Podman wires that hostname to the
+host gateway (confirmed via `podman exec ... cat /etc/hosts` — the entry IS there). That
+verification was incomplete: the DNS entry resolves, but a real HTTP request over that
+path (through Podman's gvproxy user-mode host-gateway hop) hangs indefinitely for
+Deno/edge-runtime calls — GET, POST, even a raw `Deno.connect()` + write/read — while a
+plain `curl` over the exact same URL from a throwaway container succeeds instantly. This
+is not a slow-then-succeeds situation; it never returns. **Fix**: don't route through the
+host gateway at all — put MinIO on the same Docker/Podman network as the Supabase-managed
+containers (see `docker-compose.yml`'s `networks:` block — MinIO joins
+`supabase_network_bloom-team-collections`, external, created by `supabase start`) and
+address it by container name (`http://bloom-minio:9000`, set in `functions.env`).
+Direct container-to-container traffic on a shared bridge network is instant.
+
+**2. `[edge_runtime].policy = "oneshot"` (the config.toml default, good for hot-reload)
+causes `InvalidWorkerCreation: worker did not respond in time` on every call that reaches
+`_shared/s3.ts`.** Reason: `oneshot` re-transpiles/type-checks the whole module graph —
+including the heavy `npm:@aws-sdk/client-s3` + `client-sts` imports — on every single
+request, and that cold compile reliably exceeds the edge-runtime's fixed ~10s worker-boot
+timeout. **Fix**: `supabase/config.toml`'s `[edge_runtime]` section is set to
+`policy = "per_worker"` (compiles once, reuses the worker — also closer to how these
+functions run in production). If you change it back to `oneshot` for hot-reload while
+iterating on non-S3 logic, expect `checkin-start`/`download-start`/etc. to fail until you
+flip it back.
 
 ---
 
