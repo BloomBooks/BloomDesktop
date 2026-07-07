@@ -134,6 +134,30 @@ export const BloomEnterpriseIconWithTooltip: React.FunctionComponent<{
     );
 };
 
+export const BloomEnterpriseIconWithTooltipAndDialog: React.FunctionComponent<{
+    featureName: string;
+}> = (props) => {
+    const featureStatus = useGetFeatureStatus(props.featureName);
+    const featureMessage = useGetFeatureAvailabilityMessage(featureStatus);
+
+    return (
+        <img
+            css={css`
+                height: 1.5em;
+                margin-left: 1em;
+                cursor: ${featureStatus?.enabled ? "default" : "pointer"};
+            `}
+            src={badgeUrl}
+            title={featureMessage}
+            onClick={() => {
+                if (!featureStatus?.enabled) {
+                    showRequiresSubscriptionDialogInAnyView(props.featureName);
+                }
+            }}
+        />
+    );
+};
+
 export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
     featureName: string;
     children?: React.ReactNode;

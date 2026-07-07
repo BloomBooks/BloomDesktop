@@ -70,8 +70,6 @@ const toolIconPathByToolId: Record<string, string> = {
 
 const legacyToolSubPathByToolId: Record<string, string> = {
     talkingBook: "talkingBook/talkingBookToolboxTool.html",
-    settings: "settings/Settings.html",
-    settingsTool: "settings/Settings.html",
 };
 
 const toolboxHeaderIconStyles = css`

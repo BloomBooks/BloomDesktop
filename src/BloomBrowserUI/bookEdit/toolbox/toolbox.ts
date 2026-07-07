@@ -753,6 +753,22 @@ export function getActiveToolId(): string | undefined {
     return newToolId ? newToolId : currentTool?.id();
 }
 
+export function setToolEnabledFromSettings(
+    checkBoxId: string,
+    toolId: string,
+    turnOn: boolean,
+): void {
+    postString(
+        "editView/saveToolboxSetting",
+        "active\t" + checkBoxId + "\t" + (turnOn ? "1" : "0"),
+    );
+    showOrHideTool(checkBoxId, toolId, turnOn);
+}
+
+export function isToolEnabledInToolbox(toolId: string): boolean {
+    return getTheOneToolbox().isToolActive(toolId);
+}
+
 /**
  * Handles the click event of the divs in Settings.htm that are styled to be check boxes.
  * @param chkbox
@@ -1838,12 +1854,6 @@ function loadToolboxTool(
 ) {
     const toolboxElt = $("#toolbox");
     const label = header.text();
-    if (toolId === "settingsTool" && !showExperimentalTools) {
-        content.addClass("hideExperimental");
-    }
-    if (toolId === "settingsTool") {
-        addFeatureStatusMessageTitlesToSubscriptionBadges(content);
-    }
 
     // Where to insert the new tool? We want to keep them alphabetical except for More...which is always last,
     // so insert before the first one with text alphabetically greater than this (if any).
