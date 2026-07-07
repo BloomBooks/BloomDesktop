@@ -130,6 +130,32 @@ export const initialTeamCollectionCapabilities: ITeamCollectionCapabilities = {
     requiresSignIn: false,
 };
 
+// Fetched at most ONCE per page load and shared by every caller: this hook runs in per-book
+// components (BookButton — once per book, remounting on each Collection-tab switch), so an
+// uncached per-mount request would mean hundreds of identical HTTP calls in large collections.
+// Capabilities only change when the collection's backend changes, which restarts Bloom anyway.
+let capabilitiesPromise: Promise<ITeamCollectionCapabilities> | undefined;
+
+function getTeamCollectionCapabilitiesOnce(): Promise<ITeamCollectionCapabilities> {
+    if (!capabilitiesPromise) {
+        capabilitiesPromise = new Promise((resolve) =>
+            get("teamCollection/capabilities", (result) =>
+                resolve(
+                    (result.data as ITeamCollectionCapabilities) ??
+                        initialTeamCollectionCapabilities,
+                ),
+            ),
+        );
+    }
+    return capabilitiesPromise;
+}
+
+// Test-only: forget the cached capabilities fetch so each test's endpoint mocks are
+// observed. Call from beforeEach; production code must never call this.
+export function resetTeamCollectionApiCachesForTests() {
+    capabilitiesPromise = undefined;
+}
+
 export function useTeamCollectionCapabilities(): ITeamCollectionCapabilities {
     const cloudFeatureEnabled =
         useIsCloudTeamCollectionsExperimentalFeatureEnabled();
@@ -138,12 +164,13 @@ export function useTeamCollectionCapabilities(): ITeamCollectionCapabilities {
     );
     React.useEffect(() => {
         if (!cloudFeatureEnabled) return;
-        get("teamCollection/capabilities", (result) => {
-            setCapabilities(
-                (result.data as ITeamCollectionCapabilities) ??
-                    initialTeamCollectionCapabilities,
-            );
+        let cancelled = false;
+        getTeamCollectionCapabilitiesOnce().then((result) => {
+            if (!cancelled) setCapabilities(result);
         });
+        return () => {
+            cancelled = true;
+        };
     }, [cloudFeatureEnabled]);
     return capabilities;
 }

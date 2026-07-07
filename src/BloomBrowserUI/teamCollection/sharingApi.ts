@@ -140,18 +140,48 @@ export function pullDownCollection(collectionId: string) {
 // UI; must match ExperimentalFeatures.kCloudTeamCollections in the C# code.
 const kCloudTeamCollectionsExperimentalFeatureToken = "cloud-team-collections";
 
+// The enabled-experimental-features list is fetched at most ONCE per page load and shared by
+// every caller of the hook below. This matters because the hook is used by per-book components
+// (BookButton renders once per book, and remounts on every switch to the Collection tab) — an
+// uncached per-mount request meant hundreds of identical HTTP calls. Changing experimental
+// features requires reopening dialogs/pages anyway, so page-load granularity loses nothing.
+let enabledExperimentalFeaturesPromise: Promise<string> | undefined;
+
+function getEnabledExperimentalFeaturesOnce(): Promise<string> {
+    if (!enabledExperimentalFeaturesPromise) {
+        enabledExperimentalFeaturesPromise = new Promise((resolve) =>
+            get("app/enabledExperimentalFeatures", (result) =>
+                resolve((result.data as string) ?? ""),
+            ),
+        );
+    }
+    return enabledExperimentalFeaturesPromise;
+}
+
+// Test-only: forget the cached experimental-features fetch so each test's endpoint mocks
+// are observed. Call from beforeEach; production code must never call this.
+export function resetSharingApiCachesForTests() {
+    enabledExperimentalFeaturesPromise = undefined;
+}
+
 // Whether the user has turned on the "cloud-team-collections" experimental feature. Backed by
 // the same `app/enabledExperimentalFeatures` endpoint the Talking Book toolbox already uses
 // (a comma-separated list of enabled tokens), so no new C# is required for this Wave-1 gate.
 export function useIsCloudTeamCollectionsExperimentalFeatureEnabled(): boolean {
     const [enabled, setEnabled] = useState(false);
     React.useEffect(() => {
-        get("app/enabledExperimentalFeatures", (result) => {
-            const tokens = (result.data as string) ?? "";
-            setEnabled(
-                tokens.includes(kCloudTeamCollectionsExperimentalFeatureToken),
-            );
+        let cancelled = false;
+        getEnabledExperimentalFeaturesOnce().then((tokens) => {
+            if (!cancelled)
+                setEnabled(
+                    tokens.includes(
+                        kCloudTeamCollectionsExperimentalFeatureToken,
+                    ),
+                );
         });
+        return () => {
+            cancelled = true;
+        };
     }, []);
     return enabled;
 }
