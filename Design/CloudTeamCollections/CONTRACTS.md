@@ -1,8 +1,9 @@
 # Cloud Team Collections — frozen API contracts (v1)
 
 Changes to this file require an orchestrator commit and a version-note bump here.
-**Contract version: 1.1** (6 Jul 2026 — added the two wire-format clarifications under
-"Postgres RPCs"; no semantic changes).
+**Contract version: 1.2** (7 Jul 2026 — added the `get_book_manifest` RPC, additive; the
+Receive path needs a per-book file manifest and no existing RPC carried one. v1.1, 6 Jul:
+two wire-format clarifications under "Postgres RPCs"; no semantic changes.)
 
 ## Link file
 
@@ -31,6 +32,7 @@ with `p_`, and PostgREST matches JSON keys to parameter names — so clients sen
 | `claim_memberships()` | fills user_id on rows matching caller's verified email |
 | `get_collection_state(collection_id, since_event_id?)` | full/delta snapshot: book rows (locks, current version seq + checksum), collection-file group versions, `max_event_id` |
 | `get_changes(collection_id, since_event_id)` | events + touched book rows (polling/catch-up) |
+| `get_book_manifest(book_id)` | v1.2: per-file current manifest `{bookId, versionId, seq, checksum, files:[{path, sha256, size, s3VersionId}]}` for pinned-version Receive; never-committed books invisible except to their mid-Send lock holder |
 | `checkout_book(book_id, machine text)` | conditional lock; returns resulting status (winner's identity on failure) |
 | `unlock_book(book_id)` | release own lock (undo checkout, no content change) |
 | `force_unlock(book_id)` | admin; audited; emits ForcedUnlock event |
