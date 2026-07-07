@@ -60,10 +60,40 @@ namespace BloomTests.TeamCollection.Cloud
                 environment: environment,
                 auth: auth,
                 client: client,
-                // Zero-file manifests below mean DownloadFiles is called with an empty file list,
-                // so no real S3 interaction happens -- the mock object is never actually invoked.
-                transfer: new CloudBookTransfer(_ => new Mock<Amazon.S3.IAmazonS3>().Object)
+                // The scripted manifests carry one real file entry (empty manifests are now
+                // rejected by FetchAndCacheManifest's fail-fast guard -- no real book has zero
+                // files), so the S3 mock serves fixed bytes matching that entry's sha256.
+                transfer: new CloudBookTransfer(_ => MakeScriptedS3().Object)
             );
+        }
+
+        /// <summary>The fixed content the scripted S3 serves for every key; the scripted
+        /// get_book_manifest entries carry its sha256 so pinned-download verification passes.</summary>
+        internal const string kRemoteFileContent = "remote content from scripted S3";
+
+        private static Mock<Amazon.S3.IAmazonS3> MakeScriptedS3()
+        {
+            var mock = new Mock<Amazon.S3.IAmazonS3>();
+            mock.Setup(x =>
+                    x.GetObjectAsync(
+                        It.IsAny<Amazon.S3.Model.GetObjectRequest>(),
+                        It.IsAny<System.Threading.CancellationToken>()
+                    )
+                )
+                .Returns<Amazon.S3.Model.GetObjectRequest, System.Threading.CancellationToken>(
+                    (req, ct) =>
+                        System.Threading.Tasks.Task.FromResult(
+                            new Amazon.S3.Model.GetObjectResponse
+                            {
+                                ResponseStream = new MemoryStream(
+                                    System.Text.Encoding.UTF8.GetBytes(kRemoteFileContent)
+                                ),
+                                HttpStatusCode = HttpStatusCode.OK,
+                                VersionId = req.VersionId,
+                            }
+                        )
+                );
+            return mock;
         }
 
         [TearDown]
@@ -109,7 +139,16 @@ namespace BloomTests.TeamCollection.Cloud
                         ["versionId"] = "v2",
                         ["seq"] = 2,
                         ["checksum"] = "server-side-checksum-after-remote-edit",
-                        ["files"] = new JArray(), // empty -- avoids needing real S3 mocking
+                        ["files"] = new JArray(
+                            new JObject
+                            {
+                                ["path"] = "New remote book.htm",
+                                ["sha256"] =
+                                    "3baef9a5f9108b41fff904fdcd328c6cb666712e9779d168ac2f7ffbdfc32372",
+                                ["size"] = 31,
+                                ["s3VersionId"] = "sv1",
+                            }
+                        ),
                     };
                     return FakeResponses.Make(HttpStatusCode.OK, body.ToString());
                 }

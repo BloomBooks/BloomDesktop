@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using Bloom.TeamCollection;
 using Bloom.TeamCollection.Cloud;
 using BloomTemp;
@@ -196,6 +197,17 @@ namespace BloomTests.TeamCollection.Cloud
                 secondSession.TryGetBookIdForTests("Update book")
             );
             Assert.That((long)manifest["seq"], Is.EqualTo(2), "the update should be version 2");
+            // The manifest must contain the FULL file list, not just what changed: the
+            // send-only-changed-paths client bug committed a version whose manifest was
+            // EMPTY (nothing had changed vs the stale local diff) in the smoke test, and
+            // this assertion is what would have caught it.
+            var files = (Newtonsoft.Json.Linq.JArray)manifest["files"];
+            Assert.That(
+                files.Count,
+                Is.GreaterThanOrEqualTo(2),
+                "v2's manifest must carry the unchanged files too, not just the edited one"
+            );
+            Assert.That(files.Select(f => (string)f["path"]), Does.Contain("Update book.htm"));
         }
     }
 }

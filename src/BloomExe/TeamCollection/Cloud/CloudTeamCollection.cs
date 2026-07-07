@@ -504,26 +504,24 @@ namespace Bloom.TeamCollection.Cloud
 
             var bookId = TryGetBookId(bookFolderName) ?? TryGetBookIdByInstanceId(bookInstanceId);
             var cachedBook = bookId == null ? null : _cache.TryGetBook(bookId);
-            var previousManifest = cachedBook?.Manifest ?? new BookVersionManifest();
-            var diff = previousManifest.DiffAgainstLocalFolder(sourceBookFolderPath);
-            var changedPaths = diff.Where(d =>
-                    d.Kind == ManifestDiffKind.Added || d.Kind == ManifestDiffKind.Changed
-                )
-                .Select(d => d.Path)
-                .ToList();
+            // CONTRACTS.md: checkin-start's `files` is the FULL proposed manifest; the SERVER
+            // diffs it against the current version and its response's changedPaths[] tells us
+            // what to upload. An earlier version of this method sent only a locally-computed
+            // changed-file list, which the server (correctly) treated as the complete manifest —
+            // committing versions whose manifests were missing every unchanged file (empty, in
+            // the first two-instance smoke test). The local diff is not a substitute: the server
+            // is authoritative about what its current version contains.
             var localManifest = BookVersionManifest.FromLocalFolder(sourceBookFolderPath);
             var filesJson = new JArray(
-                changedPaths.Select(p =>
-                {
-                    var entry = localManifest.Entries[p];
-                    return (JToken)
+                localManifest.Entries.Select(kvp =>
+                    (JToken)
                         new JObject
                         {
-                            ["path"] = p,
-                            ["sha256"] = entry.Sha256,
-                            ["size"] = entry.Size,
-                        };
-                })
+                            ["path"] = kvp.Key,
+                            ["sha256"] = kvp.Value.Sha256,
+                            ["size"] = kvp.Value.Size,
+                        }
+                )
             );
 
             var proposedName = GetBookNameWithoutSuffix(bookFolderName);
@@ -564,6 +562,11 @@ namespace Bloom.TeamCollection.Cloud
             var transactionId = (string)startResult["transactionId"];
             var location = ParseS3Location(startResult);
             var keepCheckedOut = !string.IsNullOrEmpty(newStatus.lockedBy);
+            // Upload what the SERVER says changed relative to its current version (see the
+            // manifest comment above) — not a local guess.
+            var changedPaths =
+                ((JArray)startResult["changedPaths"])?.Select(t => (string)t).ToList()
+                ?? new List<string>();
 
             try
             {
@@ -886,6 +889,19 @@ namespace Bloom.TeamCollection.Cloud
             }
             var manifest = BookVersionManifest.FromJson((JArray)manifestResponse["files"]);
             versionSeq = (long?)manifestResponse["seq"];
+            // Fail fast on a committed-but-empty manifest rather than "receiving" it, which
+            // would atomically swap an EMPTY folder over the local book. No real book has zero
+            // files; the only known way to get one is the fixed send-only-changed-paths client
+            // bug (7 Jul 2026), but any future cause deserves a loud stop, not silent data loss.
+            if (
+                manifest.Entries.Count == 0
+                && (long?)manifestResponse["seq"] != null
+                && manifestResponse["versionId"]?.Type != JTokenType.Null
+            )
+                throw new ApplicationException(
+                    $"The cloud Team Collection's current version of this book (seq {versionSeq}) has an empty file manifest. "
+                        + "Refusing to Receive it over the local copy. Someone should check this book in again from a good copy."
+                );
             _cache.RecordManifest(bookId, manifest);
             return manifest;
         }
