@@ -272,6 +272,40 @@ namespace BloomTests.TeamCollection
             Assert.That((bool)json["isUserAdmin"], Is.True);
         }
 
+        // Regression for the first two-instance smoke test (7 Jul 2026): the base status JSON's
+        // currentUser is Bloom's REGISTRATION email, but cloud locks are stamped with the
+        // signed-in account -- so the panel's who === currentUser check called the user's own
+        // checkout "someone else". For cloud TCs, currentUser must be the account email.
+        [Test]
+        public void AddCloudBookStatusFields_SignedIn_OverridesCurrentUserWithAccountEmail()
+        {
+            HydrateWith(Book("book-1", "My Book", currentVersionSeq: 5));
+            _auth.SignIn("alice@dev.local", "irrelevant");
+            const string original =
+                "{\"who\":\"alice@dev.local\",\"currentUser\":\"registration@example.com\"}";
+
+            var result = _api.AddCloudBookStatusFields(original, "My Book");
+
+            var json = JObject.Parse(result);
+            Assert.That((string)json["currentUser"], Is.EqualTo("alice@dev.local"));
+        }
+
+        [Test]
+        public void AddCloudBookStatusFields_SignedOut_LeavesCurrentUserAlone()
+        {
+            HydrateWith(Book("book-1", "My Book", currentVersionSeq: 5));
+            const string original = "{\"currentUser\":\"registration@example.com\"}";
+
+            var result = _api.AddCloudBookStatusFields(original, "My Book");
+
+            var json = JObject.Parse(result);
+            Assert.That(
+                (string)json["currentUser"],
+                Is.EqualTo("registration@example.com"),
+                "with no account email available there is nothing better to report"
+            );
+        }
+
         [Test]
         public void AddCloudBookStatusFields_NoBookFolderName_OnlyAddsCollectionWideFlags()
         {

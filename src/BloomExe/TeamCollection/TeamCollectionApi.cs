@@ -879,6 +879,14 @@ namespace Bloom.TeamCollection
             var json = Newtonsoft.Json.Linq.JObject.Parse(baseJson);
             json["signedIn"] = cloudCollection.Auth.IsSignedIn;
             json["requiresSignIn"] = cloudCollection.RequiresSignIn;
+            // In a cloud TC, identity is the signed-in ACCOUNT, not Bloom's registration email
+            // (CONTRACTS.md identity model; the server stamps locks from the token). The base
+            // JSON's currentUser is the registration email, so the panel's who === currentUser
+            // check called the user's own checkout "someone else" in the first two-instance
+            // smoke test (registration was john_thomson@sil.org; the lock was alice@dev.local).
+            var accountEmail = cloudCollection.Auth.CurrentEmail;
+            if (!string.IsNullOrEmpty(accountEmail))
+                json["currentUser"] = accountEmail;
             if (bookFolderName != null)
             {
                 var repoVersionSeq = cloudCollection.GetRepoVersionSeq(bookFolderName);

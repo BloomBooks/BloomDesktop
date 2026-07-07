@@ -91,7 +91,12 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
         props.who !== "" &&
         props.who === props.currentUser &&
         props.where === props.currentMachine;
-    const lockedByFullName = `${props.whoFirstName} ${props.whoSurname}`.trim();
+    // Null-coalesce the name parts: cloud backends have no first/surname split (the server
+    // knows only the account email), and template-interpolating null renders a literal
+    // "null null" (seen in the first two-instance smoke test). Empty name falls back to
+    // the email in `who`.
+    const lockedByFullName =
+        `${props.whoFirstName ?? ""} ${props.whoSurname ?? ""}`.trim();
     const lockedByDisplay =
         lockedByFullName !== "" ? lockedByFullName : props.who;
 
