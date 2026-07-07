@@ -114,3 +114,27 @@ anything needing a base change goes back to the orchestrator.
   Next action: write the test suite (CloudTeamCollectionMemberTests, CloudTeamCollectionLockTests,
   CloudSyncAtStartupTests, CloudCollectionMonitorTests) under src/BloomTests/TeamCollection/Cloud/,
   run the cloud + TC-regression filters, then write the final report.
+- 7 Jul 2026 · done · Wrote the four acceptance-criteria test files under
+  src/BloomTests/TeamCollection/Cloud/ (CloudTeamCollectionMemberTests, CloudTeamCollectionLockTests,
+  CloudSyncAtStartupTests, CloudCollectionMonitorTests), reusing the FakeRestExecutor/
+  StubCloudAuthProvider/FakeResponses harness already established in CloudCollectionClientTests.cs
+  (same namespace, no duplication). `dotnet test src/BloomTests/BloomTests.csproj --filter
+  "FullyQualifiedName~Cloud"` → 102 passed, 0 failed. `--filter "FullyQualifiedName~TeamCollection"`
+  (folder-TC regression + all cloud) → 300 passed, 0 failed.
+  CloudSyncAtStartupTests ports the single highest-value scenario from the folder suite (checked-out
+  + locally-edited book whose repo checksum ALSO changed remotely -> SyncAtStartup's
+  PutBook(inLostAndFound: true) path) and asserts all three unified-recovery effects: a `.bloomSource`
+  file appears in a local "Lost and Found" folder, a `log_event` RPC fires, and a
+  "TeamCollection.Cloud.WorkPreservedLocally" message lands in the log; plus a simpler "new book
+  fetched from repo" case. Porting the full ~15-case SyncAtStartupTests.cs matrix is flagged as
+  follow-up work in the final report (needs a fuller scripted-server fake for rename/id-conflict
+  detection via GetRepoBookFile).
+  Real bug/behavior found while writing CloudTeamCollectionLockTests: `TeamCollection.AttemptLock`
+  (base class, unchanged) discards `TryLockInRepo`'s bool return value and returns based on the LOCAL
+  status it optimistically set to "locked by me" BEFORE calling TryLockInRepo -- it never re-reads
+  status afterward. So AttemptLock's own return value can be `true` even when the cloud server denied
+  the lock; only a separate `WhoHasBookLocked`/`GetStatus` call afterward reliably reflects who won
+  (which TryLockInRepo's own doc comment already anticipates: "the caller should re-read status to
+  find out who won"). Not fixed (TeamCollection.cs is read-only for this task) -- flagged in the
+  final report as a base-class change worth considering.
+  Next action: build/test verification is done; write the final report.
