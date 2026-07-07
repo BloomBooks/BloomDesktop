@@ -22,7 +22,7 @@ deferred config swap (see the master checklist's deferred-infrastructure list).
 - [x] `download-start`: read-only creds (`GetObject`+`GetObjectVersion`), collection scope.
 - [x] `collection-files-start/finish` with optimistic `expectedVersion`.
 - [x] `ClientOutOfDate` handling (client version in requests).
-- [ ] `server/provision-aws` script (idempotent): buckets `bloom-teams-production|sandbox`,
+- [x] `server/provision-aws` script (idempotent): buckets `bloom-teams-production|sandbox`,
       versioning ON, public access blocked, lifecycle (abort-multipart 7d; noncurrent expiry
       per the confirmed window), broker role + assume-only IAM user; document secrets setup
       (`supabase secrets set`). **Written and reviewed now; RUN later** when real AWS access
@@ -143,3 +143,24 @@ Only these functions ever hold AWS/MinIO admin creds.
   needed. **32/32 Deno tests pass**
   (`deno test --allow-net --allow-env --allow-sys --allow-read supabase/functions/`).
   Remaining for this task: `server/provision-aws` (author + review only).
+- 2026-07-06 (final) · done: authored `server/provision-aws.ps1` (PowerShell, matching
+  the only existing `server/` script convention — `server/dev/smoke.ps1`). Idempotent:
+  checks-then-creates S3 buckets (`bloom-teams-<environment>`, default
+  production+sandbox) with versioning ON, all-public-access blocked, and lifecycle
+  rules (noncurrent-version-expiry 7d + abort-incomplete-multipart-upload 7d under
+  `tc/`, both parameterized); an IAM role `bloom-teams-broker` (permission-policy
+  ceiling: PutObject/GetObject/GetObjectVersion/AbortMultipartUpload/
+  ListMultipartUploadParts on both buckets — the edge function's per-request session
+  Policy narrows further, per `_shared/s3.ts`'s `buildSessionPolicy`); an assume-only
+  IAM user `bloom-teams-broker-caller` (sole permission: `sts:AssumeRole` on that
+  role — this is the identity behind `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` in
+  `_shared/env.ts`'s `prodBrokerConfig`); an IAM admin user `bloom-teams-admin` with
+  direct S3 permissions (`BLOOM_S3_ADMIN_ACCESS_KEY`/`SECRET`, backing
+  `adminS3Client()`). Ends by printing the exact `supabase secrets set` command block
+  (including `BLOOM_S3_ENDPOINT=https://s3.<region>.amazonaws.com` and
+  `BLOOM_S3_FORCE_PATH_STYLE=false`, since `_shared/env.ts`'s `s3Env()` requires an
+  explicit endpoint even for real AWS). Supports `-WhatIf`. Verified with
+  `[System.Management.Automation.Language.Parser]::ParseFile` (no syntax errors) —
+  NOT run against a real AWS account (none available; matches the task's explicit
+  "written and reviewed now; RUN later" acceptance bar). All 5 steps of task 02 are
+  now complete.
