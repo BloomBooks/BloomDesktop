@@ -18,7 +18,7 @@ Owns new `src/BloomBrowserUI/teamCollection/SharingPanel.tsx`,
 - [x] SharingPanel (cloud TCs): approved-emails list (avatar, name-when-claimed, email, role
       chip, claimed/pending), add-with-role, remove (warns: force-unlocks their checkouts),
       change role; last-admin protections; member read-only view. Folder TCs keep old panel.
-- [ ] Collection chooser: "Get my Team Collections" (signed-out state included); pull-down join
+- [x] Collection chooser: "Get my Team Collections" (signed-out state included); pull-down join
       via the six-scenario dialog (new states: NotSignedIn, ApprovalRemoved).
 - [ ] Registration dialog: email unlock for cloud TCs (identity = account).
 - [ ] All strings via XLF (DistFiles/localization/en only), Send/Receive terminology.
@@ -85,3 +85,26 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   ApprovalRemoved (8 states total), to complete step 3; `onPullDown` in `CollectionChooser.tsx`
   will eventually need to open it once it exists (Wave-1 shell can leave the direct
   `pullDownCollection` call as the placeholder action for now).
+- 2026-07-06 · done (step 3 complete): added `JoinCloudCollectionDialog.tsx` (new) — the
+  pull-down-join dialog, structurally mirroring the folder-TC `JoinTeamCollectionDialog.tsx`'s
+  six scenarios (CreateNewCollection, MatchesExistingNonTeamCollection,
+  MatchesExistingTeamCollection[Elsewhere], MatchesDifferentTeamCollection,
+  IncompleteLocalCopy — renamed from IncompleteTeamCollection since the cloud failure mode is a
+  corrupt local pull-down cache, not a missing ".txt" file) plus two new states unique to cloud
+  collections: NotSignedIn (action button becomes "Sign In", posts `sharing/showSignIn`) and
+  ApprovalRemoved (action button disabled, explains the user isn't on the approved list). The
+  join/pull-down action calls `pullDownCollection` from `sharingApi.ts`. Added
+  `JoinCloudCollectionDialog.test.tsx` (8 tests, all green) covering all eight states; had to
+  query `document.body` rather than the local render container since MUI's `Dialog` portals its
+  content, and to assert on l10n *keys* rather than English text because the test-only
+  `localizationManager` mock resolves every key to itself (same trap noted in
+  `SharingPanel.test.tsx`). Not wired into `CollectionChooser.tsx`'s `onPullDown` yet — knowing
+  which of the eight states applies requires the six-scenario matching logic that task
+  05-cloud-backend.md says lives server/backend-side and doesn't exist until later; the chooser
+  keeps calling `pullDownCollection` directly for now (Wave-1 shell). Similarly, `SharingPanel`
+  is not wired into `TeamCollectionSettingsPanel.tsx`'s `isTeamCollection` branch yet — that
+  needs a "is this a cloud TC" signal that isn't available until the backend capability flags
+  land; both are complete, tested, standalone shells ready for that wiring. `yarn eslint`
+  clean on all touched files · next: Registration dialog email unlock for cloud TCs (step 4),
+  then XLF strings for everything added in this task (step 5, follow
+  `.github/skills/xlf-strings/SKILL.md`, only `DistFiles/localization/en/`).
