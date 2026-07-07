@@ -185,15 +185,29 @@ namespace Bloom.Spreadsheet
                         using (Image image = Image.FromFile(imageSrcPath))
                         {
                             string imageName = Path.GetFileNameWithoutExtension(imageSrcPath);
-                            // Image.jpg and image.png are different files, but the same name for storing here. (BL-16498)
-                            // Names are treated as case-insensitive (this is Windows after all!), so we need to allow for that.
-                            // Image reuse might conceivably happen as well, and this allows for that too.
-                            if (
+                            // Image.jpg and image.png are different files, but reduce to the same name for storing here. (BL-16498)
+                            // EPPlus treats drawing names as case-insensitive (this is Windows after all!) and rejects
+                            // duplicates, so we must ensure the name we use is unique without regard to case. Image reuse
+                            // might conceivably happen as well, and this handles that too. Because more than two images
+                            // can reduce to the same name (even within one row), we keep incrementing the suffix until
+                            // the name really is unique; otherwise AddPicture below would still throw.
+                            bool NameIsTaken(string candidate) =>
                                 worksheet.Drawings.Any(xx =>
-                                    xx.Name.ToLowerInvariant() == imageName.ToLowerInvariant()
-                                )
-                            )
-                                imageName = $"{imageName}-{rowNum}";
+                                    xx.Name.Equals(
+                                        candidate,
+                                        StringComparison.InvariantCultureIgnoreCase
+                                    )
+                                );
+                            if (NameIsTaken(imageName))
+                            {
+                                string baseName = imageName;
+                                int suffix = rowNum;
+                                do
+                                {
+                                    imageName = $"{baseName}-{suffix}";
+                                    suffix++;
+                                } while (NameIsTaken(imageName));
+                            }
                             var origImageHeight = image.Size.Height;
                             var origImageWidth = image.Size.Width;
                             int finalWidth = defaultImageWidth;
