@@ -62,6 +62,16 @@ namespace Bloom.TeamCollection
 
         public WorkspaceView WorkspaceView { get; set; }
 
+        /// <summary>
+        /// Exposes this project's <see cref="ITeamCollectionManager"/> so the app-level
+        /// <see cref="Bloom.web.controllers.SharingApi"/> (which, unlike this class, is registered
+        /// once at the application level so it also works before any project is loaded -- see
+        /// SharingApi's own file comment) can reach whichever project happens to be currently open
+        /// via <see cref="TheOneInstance"/>, without SharingApi needing its own project-scoped
+        /// dependencies. Read-only; task 06 addition.
+        /// </summary>
+        public ITeamCollectionManager TcManager => _tcManager;
+
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler(
@@ -182,6 +192,201 @@ namespace Bloom.TeamCollection
                 null,
                 false
             );
+
+            // --- Cloud Team Collections (task 06, Wave 3): additive endpoints. Folder Team
+            // Collections continue to use every endpoint above completely unchanged. ---
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/capabilities",
+                HandleCapabilities,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/tcStatusMetadata",
+                HandleTcStatusMetadata,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/cloudCollectionId",
+                HandleCloudCollectionId,
+                false
+            );
+            apiHandler.RegisterBooleanEndpointHandler(
+                "teamCollection/isUserAdmin",
+                HandleIsUserAdmin,
+                null,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/receiveUpdates",
+                HandleReceiveUpdates,
+                true
+            );
+            // "Send All" (cloud terminology) is exactly checkInAllBooks under a name that matches
+            // the cloud UI's button label -- same handler, so there is exactly one implementation
+            // of "check in every checked-out book" to keep in sync.
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/sendAllBooks",
+                HandleCheckInAllBooks,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/createCloudTeamCollection",
+                HandleCreateCloudTeamCollection,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/showCreateCloudTeamCollectionDialog",
+                HandleShowCreateCloudTeamCollectionDialog,
+                true
+            );
+        }
+
+        // ------------------------------------------------------------------
+        // Cloud Team Collections (task 06): additive endpoint handlers. Every one of these reads
+        // ONLY from the currently-open collection (never mutates TeamCollectionApi's own folder-TC
+        // code paths above), and every field/flag defaults to exactly today's folder-TC behavior
+        // (false/empty/null) when there is no cloud collection open -- see CONTRACTS.md's
+        // "Book-status JSON" section and ITeamCollectionCapabilities in teamCollectionApi.tsx.
+        // ------------------------------------------------------------------
+
+        /// <summary>Backend capability flags (CONTRACTS.md, additive): tells the UI what the
+        /// current Team Collection's backend can do, so components branch on capability rather
+        /// than concrete backend type. All false for a folder TC or no collection at all.</summary>
+        private void HandleCapabilities(ApiRequest request)
+        {
+            var collection = _tcManager.CurrentCollection;
+            request.ReplyWithJson(
+                new
+                {
+                    supportsVersionHistory = collection?.SupportsVersionHistory ?? false,
+                    supportsSharingUi = collection?.SupportsSharingUi ?? false,
+                    requiresSignIn = collection?.RequiresSignIn ?? false,
+                }
+            );
+        }
+
+        /// <summary>Live metadata behind the status button/chip (e.g. "Updates Available (3
+        /// books)"). Cloud-only; a folder TC (or no collection) simply reports no count.</summary>
+        private void HandleTcStatusMetadata(ApiRequest request)
+        {
+            var updatesAvailableCount = (
+                _tcManager.CurrentCollection as Cloud.CloudTeamCollection
+            )?.GetUpdatesAvailableCount();
+            request.ReplyWithJson(new { updatesAvailableCount });
+        }
+
+        /// <summary>The cloud collection id (server `collections.id`) of the currently open
+        /// collection, needed by SharingApi calls. Empty string for a folder TC or none open.</summary>
+        private void HandleCloudCollectionId(ApiRequest request)
+        {
+            request.ReplyWithText(
+                (_tcManager.CurrentCollection as Cloud.CloudTeamCollection)?.CollectionIdForCloud
+                    ?? ""
+            );
+        }
+
+        /// <summary>Whether the current user administers the currently open Team Collection.
+        /// Reuses the same flag folder TCs already compute (collection-settings-edit permission),
+        /// since "administrator" means the same thing for both backends from the UI's point of
+        /// view (drives the collection-tab Share button's manage-vs-read-only mode).</summary>
+        private bool HandleIsUserAdmin(ApiRequest request) => _tcManager.OkToEditCollectionSettings;
+
+        /// <summary>"Receive Updates": pulls every book with a newer repo version than what's on
+        /// this machine down to disk. Thin pass-through to the same Receive path folder TCs use
+        /// (CopyBookFromRepoToLocal) -- no cloud-specific business logic here; the branching
+        /// (what's newer) already lives in CloudTeamCollection's cache.</summary>
+        private void HandleReceiveUpdates(ApiRequest request)
+        {
+            // This can take a while (multiple book downloads), so reply immediately like
+            // checkInAllBooks does and report progress via the existing progress websocket.
+            request.PostSucceeded();
+
+            var collection = _tcManager.CurrentCollection;
+            var cloudCollection = collection as Cloud.CloudTeamCollection;
+            if (cloudCollection == null)
+                return; // Not a cloud TC (or disconnected); nothing to receive.
+
+            var progress = new WebSocketProgress(_socketServer, "teamCollection-status");
+            progress.LogAllMessages = true;
+            cloudCollection.PollNow();
+            foreach (var bookName in collection.GetBookList())
+            {
+                var status = collection.GetStatus(bookName);
+                if (collection.IsCheckedOutHereBy(status))
+                    continue; // Checked out here; Receive would conflict with local edits.
+                var repoSeq = cloudCollection.GetRepoVersionSeq(bookName);
+                var localSeq = cloudCollection.GetLocalVersionSeq(bookName);
+                if (!repoSeq.HasValue || (localSeq ?? -1) >= repoSeq.Value)
+                    continue; // Already current.
+                progress.MessageWithoutLocalizing($"Receiving updates for '{bookName}'...");
+                collection.CopyBookFromRepoToLocal(bookName, dialogOnError: false);
+            }
+            progress.MessageWithoutLocalizing("Done receiving updates.");
+            UpdateUiForBook();
+        }
+
+        /// <summary>Kicks off the cloud Team Collection creation flow: uploads the current local
+        /// collection as the initial version of a new cloud-backed Team Collection, using this
+        /// collection's own CollectionId GUID as the server's `collections.id` (CONTRACTS.md).
+        /// Mirrors HandleCreateTeamCollection's folder-TC counterpart.</summary>
+        public void HandleCreateCloudTeamCollection(ApiRequest request)
+        {
+            try
+            {
+                Debug.Assert(!string.IsNullOrWhiteSpace(CurrentUser));
+
+                _tcManager.ConnectToCloudCollection(_settings.CollectionId);
+                _callbackToReopenCollection?.Invoke();
+
+                Analytics.Track(
+                    "TeamCollectionCreate",
+                    new Dictionary<string, string>()
+                    {
+                        { "CollectionId", _settings?.CollectionId },
+                        { "CollectionName", _settings?.CollectionName },
+                        { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
+                        { "User", CurrentUser },
+                    }
+                );
+
+                request.PostSucceeded();
+            }
+            catch (Exception e)
+            {
+                var msgEnglish = "Error creating cloud Team Collection: {0}";
+                var msgFmt = LocalizationManager.GetString(
+                    "TeamCollection.ErrorCreatingCloud",
+                    msgEnglish
+                );
+                ErrorReport.NotifyUserOfProblem(e, msgFmt, e.Message);
+                Logger.WriteError(String.Format(msgEnglish, e.Message), e);
+                NonFatalProblem.ReportSentryOnly(
+                    e,
+                    $"Something went wrong for {request.LocalPath()}"
+                );
+
+                // Since we have already informed the user above, it is better to just report a
+                // success here. Otherwise, they will also get a toast.
+                request.PostSucceeded();
+            }
+        }
+
+        /// <summary>Shows the cloud create-collection dialog (sign-in -> immutable-name ack ->
+        /// initial Send), the cloud counterpart of HandleShowCreateTeamCollectionDialog. Reuses the
+        /// same React bundle/entry file (CreateTeamCollection.tsx hosts both the folder and cloud
+        /// dialog components) -- see that file's own WireUpForWinforms wiring.</summary>
+        private void HandleShowCreateCloudTeamCollectionDialog(ApiRequest request)
+        {
+            ReactDialog.ShowOnIdle(
+                "createTeamCollectionDialogBundle",
+                new { },
+                600,
+                580,
+                null,
+                null,
+                "Create Team Collection"
+            );
+            request.PostSucceeded();
         }
 
         private bool HandleLogImportant(ApiRequest arg)
@@ -196,7 +401,16 @@ namespace Bloom.TeamCollection
             request.ReplyWithEnum(_tcManager?.CollectionStatus ?? TeamCollectionStatus.None);
         }
 
-        private void HandleForceUnlock(ApiRequest request)
+        /// <summary>
+        /// Force-unlocks the currently selected book. Backend-agnostic: <c>ForceUnlock</c> already
+        /// dispatches to <c>UnlockInRepo(force: true)</c>, which a cloud backend overrides to call
+        /// the audited <c>force_unlock</c> RPC (CONTRACTS.md) -- so this one implementation is
+        /// already correct for both. Internal (not private) so the app-level
+        /// <see cref="Bloom.web.controllers.SharingApi"/> can register the exact same handler under
+        /// "sharing/forceUnlock" (the endpoint name the cloud UI posts to; task 06) without
+        /// duplicating this logic.
+        /// </summary>
+        internal void HandleForceUnlock(ApiRequest request)
         {
             if (!_tcManager.CheckConnection())
             {
@@ -514,7 +728,7 @@ namespace Bloom.TeamCollection
 
             if (bookFolderName == null)
             {
-                return JsonConvert.SerializeObject(
+                var noBookJson = JsonConvert.SerializeObject(
                     new
                     {
                         // Keep this in sync with IBookTeamCollectionStatus defined in TeamCollectionApi.tsx
@@ -536,6 +750,7 @@ namespace Bloom.TeamCollection
                         isUserAdmin = _tcManager.OkToEditCollectionSettings,
                     }
                 );
+                return AddCloudBookStatusFields(noBookJson, null);
             }
 
             bool isNewLocalBook = false;
@@ -592,7 +807,7 @@ namespace Bloom.TeamCollection
                 book == null || !Directory.Exists(book.FolderPath)
                     ? ""
                     : BookHistory.GetPendingCheckinMessage(book);
-            return JsonConvert.SerializeObject(
+            var bookJson = JsonConvert.SerializeObject(
                 new
                 {
                     // Keep this in sync with IBookTeamCollectionStatus defined in TeamCollectionApi.tsx
@@ -622,6 +837,42 @@ namespace Bloom.TeamCollection
                     isUserAdmin = _tcManager.OkToEditCollectionSettings,
                 }
             );
+            return AddCloudBookStatusFields(bookJson, bookFolderName);
+        }
+
+        /// <summary>
+        /// Additively merges CONTRACTS.md's cloud-only book-status JSON fields
+        /// (localVersionSeq/repoVersionSeq/signedIn/requiresSignIn/offlineDisabledReason) into an
+        /// already-serialized status JSON string. Returns <paramref name="baseJson"/> completely
+        /// UNCHANGED (not even re-parsed) whenever the current collection isn't a cloud one, so
+        /// folder-TC responses stay byte-identical to before this task.
+        /// <paramref name="bookFolderName"/> null means the "no book selected" shape, which only
+        /// gets the collection-wide signedIn/requiresSignIn flags (there's no specific book to
+        /// report a version/offline status for).
+        /// </summary>
+        private string AddCloudBookStatusFields(string baseJson, string bookFolderName)
+        {
+            if (!(_tcManager.CurrentCollection is Cloud.CloudTeamCollection cloudCollection))
+                return baseJson;
+
+            var json = Newtonsoft.Json.Linq.JObject.Parse(baseJson);
+            json["signedIn"] = cloudCollection.Auth.IsSignedIn;
+            json["requiresSignIn"] = cloudCollection.RequiresSignIn;
+            if (bookFolderName != null)
+            {
+                var repoVersionSeq = cloudCollection.GetRepoVersionSeq(bookFolderName);
+                var localVersionSeq = cloudCollection.GetLocalVersionSeq(bookFolderName);
+                json["repoVersionSeq"] = repoVersionSeq;
+                json["localVersionSeq"] = localVersionSeq;
+                if (cloudCollection.IsDisconnected && !localVersionSeq.HasValue)
+                {
+                    // Non-localized, matching the precedent of this same method's pre-existing
+                    // `error`/`invalidRepoDataErrorMsg` fields (see their own comments above).
+                    json["offlineDisabledReason"] =
+                        "This book has never been downloaded to this computer, so it can't be used while offline.";
+                }
+            }
+            return json.ToString(Newtonsoft.Json.Formatting.None);
         }
 
         public void HandleSelectedBookStatus(ApiRequest request)

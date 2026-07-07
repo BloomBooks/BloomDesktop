@@ -1432,6 +1432,14 @@ namespace Bloom.TeamCollection.Cloud
 
             if (changes["groups"] is JArray groupsArray && groupsArray.Count > 0)
                 RaiseRepoCollectionFilesChanged();
+
+            // Task 06: the status button's "Updates Available (N books)" metadata
+            // (teamCollection/tcStatusMetadata) can only have changed if this poll actually touched
+            // any book -- push the same "reuse existing contexts" websocket plumbing the rest of
+            // this class already uses (RaiseBookStateChange/etc. above) so the UI refreshes without
+            // waiting for its own next poll.
+            if (changes["books"] is JArray booksArray && booksArray.Count > 0)
+                SocketServer?.SendEvent("teamCollection", "statusMetadataChanged");
         }
 
         /// <summary>Lets UI code (e.g. a "Receive Updates" button, or Bloom regaining focus) trigger
