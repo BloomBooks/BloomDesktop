@@ -11,7 +11,7 @@
 - [x] Status dialog: "Receive Updates" primary action (Reload remains only for applied
       collection-settings changes); "Send All"; message log unchanged.
 - [x] Share button beside the status button → SharingPanel (admin manage / member read-only).
-- [ ] Per-book panel: keep Check out/Check in + note field + avatars; add signedOut (with
+- [x] Per-book panel: keep Check out/Check in + note field + avatars; add signedOut (with
       Sign-in action), updatesAvailable, offline-disabled-with-reason states; check-in progress
       = modal Send; "Force Unlock (Administrator Only)" wired to the audited RPC.
 - [ ] Book thumbnails: holder-avatar overlay unchanged; subtle "newer version exists" marker.
@@ -90,3 +90,41 @@ JSON (CONTRACTS.md, book-status section).
   `TeamCollectionButton` + new `ShareButton` in a flex div) didn't regress it.
   Next action: implement step 4 (per-book panel states: signedOut/updatesAvailable/
   offline-disabled-with-reason, Force Unlock wiring) in `TeamCollectionBookStatusPanel.tsx`.
+- 7 Jul 2026 · Per-book panel done. `TeamCollectionBookStatusPanel.tsx`: added
+  `isCloud = isCloudTeamCollection(useTeamCollectionCapabilities())` and three new
+  `StatusPanelState` values, all cloud-gated in the state-derivation effect (folder TCs never
+  produce them, since their driving fields are always undefined there, but the effect also
+  explicitly checks `isCloud` per the gating rule): `offlineDisabled` (from
+  `props.offlineDisabledReason`, checked right after the existing `invalidRepoDataErrorMsg`
+  check — a book that can't be used offline at all takes priority over lock state) renders the
+  server-supplied reason verbatim (unlocalized, same precedent as `props.error` elsewhere in
+  this file); `signedOut` (from `requiresSignIn && !signedIn`, checked where the book would
+  otherwise be "unlocked") shows `TeamCollection.SignedOut`/`SignedOutDescription` with a
+  `TeamCollection.Sharing.SignIn` button posting `sharing/showSignIn` (same action
+  `JoinCloudCollectionDialog`'s NotSignedIn case uses); `updatesAvailable` (from
+  `repoVersionSeq > localVersionSeq` on an otherwise-unlocked book) shows
+  `TeamCollection.UpdatesAvailableForBook(Description)` with the existing
+  `TeamCollection.ReceiveUpdates` button/endpoint reused from step 2. Check-in progress "modal
+  Send": for cloud TCs, the `lockedByMe` case's inline yellow progress bar is replaced by a
+  `BloomDialog` (title reuses the existing `checkingIn` string) with an MUI `LinearProgress`
+  driven by the same `checkInProgress` websocket-driven state folder TCs already use; folder
+  TCs keep the exact inline bar. Force Unlock: `ForceUnlockDialog.tsx` now posts
+  `sharing/forceUnlock` instead of `teamCollection/forceUnlock` when `isCloud` — per
+  CONTRACTS.md this maps (Wave-3) to the audited `force_unlock(book_id)` RPC ("admin; audited;
+  emits ForcedUnlock event"); no client-side audit logic needed since the RPC handles that
+  server-side. No new XLF: every string above (`SignedOut`, `SignedOutDescription`, `Sharing.SignIn`,
+  `UpdatesAvailableForBook`, `UpdatesAvailableForBookDescription`, `ReceiveUpdates`,
+  `OfflineDisabled`, and the reused `CheckingIn`) was already front-loaded or pre-existing.
+  New test: `TeamCollectionBookStatusPanel.test.tsx` (11 tests) covering the folder-TC state
+  matrix (unlocked/locked/lockedByMe/hasInvalidRepoData unchanged, plus an explicit
+  gating regression test proving cloud-shaped fields are ignored when capabilities are all
+  false) and the three new cloud states (signedOut incl. its Sign In action,
+  signedIn-so-normal-checkout, updatesAvailable incl. its Receive Updates action and the
+  no-update-when-current case, offlineDisabled's priority + verbatim reason, and the cloud
+  modal not appearing at rest). All 11 passing. `yarn eslint` clean (only the one
+  pre-existing, unrelated `checkInProgress` exhaustive-deps warning, confirmed present before
+  this change too via `git stash`). Re-ran the full `teamCollection` + `CollectionTopBarControls`
+  suites (7 files, 53 tests) — all green, no regressions.
+  Next action: implement step 5 (book thumbnails: subtle "newer version exists" marker) —
+  likely in the book-thumbnail/preview component that overlays the holder avatar (not yet
+  identified by file name; search for the existing holder-avatar-overlay code first).
