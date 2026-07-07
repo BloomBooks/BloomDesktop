@@ -275,5 +275,25 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   a misleading residue, this is exactly the kind of thing that could make a future
   agent/developer distrust or re-mock already-real endpoints, or skip auditing their error paths
   on the (false) assumption they're still shells. Updated all four to say what's actually true
-  now. No production code behavior changed by this item. · next: item 6 (full component test
-  sweep + lint).
+  now. No production code behavior changed by this item.
+- 2026-07-07 · done: item 6 (final sweep). `yarn vitest run --pool=threads teamCollection
+  collectionsTab collection react_components/TopBar`: this sandbox's vitest pool is slow enough
+  (each file's "collect" phase alone often 40-100s+) that the single combined invocation the
+  task brief names hung at final teardown past this session's tool timeout before printing its
+  summary line (no failures were reported by any individual file before that point, and no
+  hanging-process reporter was needed to diagnose it: `ps aux | grep vitest` showed the process
+  already gone, so it was killed externally, not deadlocked) — split into per-directory/file runs
+  instead to get a clean result within the timeout, then cross-checked file counts (`find
+  teamCollection -name "*.test.tsx"` etc.) against what each run actually reported to make sure
+  nothing silently dropped. Full accounting: `teamCollection` (11 files, 65 tests: ShareButton 4,
+  JoinCloudCollectionDialog 10, CollectionHistoryTable 5, CreateTeamCollectionBundleDispatcher 4,
+  TeamCollectionBookStatusPanel 11, SharingPanel 7, CreateCloudTeamCollection 10, SignInDialog 4,
+  TeamCollectionDialog 5, TeamCollectionSettingsPanel 3, NewerVersionAvailableMarker 2),
+  `collectionsTab` (0 test files -- nothing to run there), `collection` (2 files, 6 tests:
+  MyCloudCollectionsSection 4, CollectionChooser 2), `react_components/TopBar` (1 file, 8 tests:
+  TeamCollectionButton). **Total: 14 files, 79 tests, all green, zero failures.** `yarn lint`
+  (whole project, one process, no pool-timeout issue): 0 errors, 777 warnings -- the exact same
+  count task 07's own final wrap-up entry reported before this branch's work started, confirming
+  zero new warnings introduced across all six items. `dotnet build src/BloomExe/BloomExe.csproj`
+  re-verified clean (0 errors) after the last commit. All six work items from
+  `orchestration/ui-wiring.prompt.md` are now complete.
