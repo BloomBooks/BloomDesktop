@@ -84,3 +84,21 @@ anything needing a base change goes back to the orchestrator.
   `WorkPreservedLocally = 100` there.
   Next action: write `Cloud/CloudJoinFlow.cs`, then the one authorized
   TeamCollectionManager.cs edit, then tests.
+- 7 Jul 2026 · done · Wrote `Cloud/CloudJoinFlow.cs`: `ListMyCollections()` (my_collections),
+  `DetermineScenario()` (the six-scenario local-vs-remote matrix ported from
+  `FolderTeamCollection.ShowJoinCollectionTeamDialog`'s boolean logic: FreshJoin/
+  AlreadyJoinedSameCollection/LinkedToDifferentCloudCollection/LinkedToFolderTeamCollection/
+  PlainCollectionSameGuid/PlainCollectionDifferentGuid), `JoinCollection()` (creates the local
+  folder + link file + CloudTeamCollection + first Receive of collection files and every book;
+  throws `CloudJoinConflictException` for the three human-decision scenarios), and
+  `CreateAndJoinCollection()` (create_collection + join). Key design point: a cloud collection's
+  `.bloomCollection` file travels with it in the "other" collection-file group (same as a folder
+  TC's zipped settings), so joining does not need to fabricate a fresh CollectionSettings --
+  downloading collection files brings the real settings file down. Builds clean.
+  Scope note: the interactive resolution dialog for the three conflict scenarios (the cloud
+  equivalent of ShowJoinCollectionTeamDialog's React dialog) is UI-layer work outside this task's
+  file ownership; CloudJoinConflictException.Message is ready for a future dialog to display.
+  Next action: the one authorized TeamCollectionManager.cs edit (CreateTeamCollectionFromLink's
+  cloud branch + ConnectToCloudCollection), then the test suite (CloudTeamCollectionMemberTests,
+  CloudTeamCollectionLockTests, CloudSyncAtStartupTests, CloudCollectionMonitorTests), then
+  build/test verification and the final report.
