@@ -10,7 +10,7 @@
 - [x] Status button: same chip/colors, driven by live metadata ("Updates available (3 books)").
 - [x] Status dialog: "Receive Updates" primary action (Reload remains only for applied
       collection-settings changes); "Send All"; message log unchanged.
-- [ ] Share button beside the status button → SharingPanel (admin manage / member read-only).
+- [x] Share button beside the status button → SharingPanel (admin manage / member read-only).
 - [ ] Per-book panel: keep Check out/Check in + note field + avatars; add signedOut (with
       Sign-in action), updatesAvailable, offline-disabled-with-reason states; check-in progress
       = modal Send; "Force Unlock (Administrator Only)" wired to the audited RPC.
@@ -68,3 +68,25 @@ JSON (CONTRACTS.md, book-status section).
   files. No new XLF entries needed — `TeamCollection.SendAll`/`TeamCollection.ReceiveUpdates`
   were already front-loaded into `Bloom.xlf` in the step-1 commit.
   Next action: implement step 3 (Share button beside the status button → SharingPanel).
+- 7 Jul 2026 · Share button done. New `teamCollection/ShareButton.tsx`: gated on
+  `isCloudTeamCollection(useTeamCollectionCapabilities())` — folder Team Collections render
+  nothing (not even a hidden node), so this is strictly additive UI. For cloud TCs, renders a
+  `TeamCollection.Sharing.ShareButton` ("Share") button next to `TeamCollectionButton` (wired
+  into `CollectionTopBarControls.tsx`, which isn't reserved by any other Wave-2 task per
+  IMPLEMENTATION.md's shared-file schedule); clicking it opens an MUI `Popover` anchored under
+  the button containing the existing `SharingPanel` (task 07), fed by
+  `useCloudCollectionId()`/`useIsTeamCollectionAdmin()`/`useSharingLoginState().email` — so an
+  admin gets the manage view and a regular member gets SharingPanel's own read-only view, with
+  no new branching needed here. No new XLF: `TeamCollection.Sharing.ShareButton` was already
+  front-loaded in the step-1 commit; used `@mui/icons-material/Share` (no dialog title needed,
+  so no new string). New test: `ShareButton.test.tsx` (4 tests: folder TC renders nothing;
+  cloud TC shows the button without opening the panel; admin click opens SharingPanel with
+  `isAdmin: true`; non-admin click opens it with `isAdmin: false` and the member's own email) —
+  SharingPanel itself is mocked (already unit-tested in `SharingPanel.test.tsx`) to a
+  prop-recording stub; MUI's Popover portals to `document.body` like MUI Dialog, so assertions
+  query `document` (same pattern as `JoinCloudCollectionDialog.test.tsx`). All 4 passing.
+  `yarn eslint` clean on the 3 changed/added files. Re-ran `TeamCollectionButton.test.tsx` (8
+  tests) to confirm the `CollectionTopBarControls.tsx` layout change (wrapped
+  `TeamCollectionButton` + new `ShareButton` in a flex div) didn't regress it.
+  Next action: implement step 4 (per-book panel states: signedOut/updatesAvailable/
+  offline-disabled-with-reason, Force Unlock wiring) in `TeamCollectionBookStatusPanel.tsx`.

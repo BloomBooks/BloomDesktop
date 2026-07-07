@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { TopBarButton } from "../../TopBarButton";
 import { TeamCollectionButton } from "./TeamCollectionButton";
+import { ShareButton } from "../../../teamCollection/ShareButton";
 import { TeamCollectionStatus } from "../../../teamCollection/TeamCollectionStatus";
 import {
     getBloomApiPrefix,
@@ -54,7 +55,16 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                     width: 100%;
                 `}
             >
-                <TeamCollectionButton status={teamCollectionStatus} />
+                <div
+                    css={css`
+                        display: flex;
+                        gap: 8px;
+                        align-items: center;
+                    `}
+                >
+                    <TeamCollectionButton status={teamCollectionStatus} />
+                    <ShareButton />
+                </div>
                 <div
                     css={css`
                         display: flex;
