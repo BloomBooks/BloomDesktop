@@ -213,14 +213,14 @@ describe("EditableDivUtils Tests", () => {
 
     it("safelyReplaceContentWithCkEditorData strips orphaned filling chars", () => {
         const zwsp = String.fromCharCode(0x200b);
-        const div = document.createElement("div");
-        // sanity check: the filling char really is present before we call the method.
-        div.innerHTML = `<p>before</p>`;
-        expect(div.innerHTML.indexOf(zwsp)).toEqual(-1);
+        const ckEditorData = `<p>ca${zwsp}t${zwsp}</p>`;
+        // sanity check: our input really does contain the filling char we expect to be stripped.
+        expect(ckEditorData.indexOf(zwsp)).toBeGreaterThan(-1);
 
+        const div = document.createElement("div");
         EditableDivUtils.safelyReplaceContentWithCkEditorData(
             div,
-            `<p>ca${zwsp}t${zwsp}</p>`,
+            ckEditorData,
         );
 
         expect(div.innerHTML.indexOf(zwsp)).toEqual(-1);
