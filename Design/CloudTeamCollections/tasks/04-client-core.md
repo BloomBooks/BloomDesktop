@@ -22,9 +22,9 @@
       needed — don't disturb the publish path).
 
 ## Acceptance
-- [ ] `CloudRepoCacheTests` (concurrency, snapshot round-trip, delta, cursor).
-- [ ] `BookVersionManifestTests` (diff matrix with data sanity pre-checks; junk exclusion; NFC).
-- [ ] `CloudBookTransferTests` (mock S3): skip logic both directions; resume skips done files;
+- [x] `CloudRepoCacheTests` (concurrency, snapshot round-trip, delta, cursor).
+- [x] `BookVersionManifestTests` (diff matrix with data sanity pre-checks; junk exclusion; NFC).
+- [x] `CloudBookTransferTests` (mock S3): skip logic both directions; resume skips done files;
   checksum-mismatch retry; interrupted download leaves the working folder untouched;
   **assert no code path issues an unversioned GET**.
 
@@ -47,7 +47,16 @@
   will accept it once wired up in a later task. Recommend (not done here — BloomExe.csproj is
   orchestrator-owned at merge time per the shared-file schedule): bump AWSSDK.S3 so future
   code can use the native properties instead of a raw header string.
-  Next action: write CloudRepoCacheTests.cs, BookVersionManifestTests.cs,
-  CloudBookTransferTests.cs in src/BloomTests/TeamCollection/Cloud/ per the Acceptance list
-  above (mock IAmazonS3 via Moq, already a test dependency), then run the Cloud + TeamCollection
-  regression test filters and report verbatim counts.
+- 7 Jul 2026 · Added BookVersionManifestTests.cs (10), CloudRepoCacheTests.cs (16),
+  CloudBookTransferTests.cs (11, mocking IAmazonS3 via Moq) in
+  src/BloomTests/TeamCollection/Cloud/. `dotnet test --filter FullyQualifiedName~Cloud`:
+  83/83 green (37 new + 46 pre-existing from task 03). `dotnet test --filter
+  FullyQualifiedName~TeamCollection`: 281/281 green (full folder+cloud TC regression). No
+  apphost/MSB3027 issue hit this run (clean 0-error build both times). Contract gap found (not
+  fixed — out of this task's file scope): CONTRACTS.md v1.1 defines no RPC returning a book's
+  per-file manifest (path/sha256/size/s3VersionId) for Receive/download — get_collection_state
+  only returns the aggregate current_checksum/current_version_seq. CloudRepoCache.
+  CloudCachedBook.Manifest and CloudRepoCache.RecordManifest are written with this gap in mind
+  (nullable, populated whenever a caller obtains a manifest by any means) so 05/06 aren't
+  blocked, but whoever wires up Receive will need either a new RPC or to read the S3
+  `.manifest.json` backup. Task complete; no further action needed from this agent.
