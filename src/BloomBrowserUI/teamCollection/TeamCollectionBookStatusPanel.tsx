@@ -22,10 +22,20 @@ import { AvatarDialog } from "./AvatarDialog";
 import { ForgetChangesDialog } from "./ForgetChangesDialog";
 import { createTheme, adaptV4Theme } from "@mui/material/styles";
 import WarningIcon from "@mui/icons-material/Warning";
-import { IBookTeamCollectionStatus } from "./teamCollectionApi";
+import LinearProgress from "@mui/material/LinearProgress";
+import {
+    IBookTeamCollectionStatus,
+    isCloudTeamCollection,
+    useTeamCollectionCapabilities,
+} from "./teamCollectionApi";
 import { ForceUnlockDialog } from "./ForceUnlockDialog";
 import { kBloomRed } from "../utils/colorUtils";
 import { showRegistrationDialog } from "../react_components/registration/registrationDialog";
+import {
+    BloomDialog,
+    DialogMiddle,
+    DialogTitle,
+} from "../react_components/BloomDialog/BloomDialog";
 
 interface CheckInProgressEvent extends IBloomWebSocketEvent {
     fraction: number;
@@ -44,11 +54,23 @@ export type StatusPanelState =
     | "hasInvalidRepoData" // the book has a catastrophic problem: the repo version is unreadable.
     | "disconnected" // Can't tell what's going on, because we don't have a good connection to the repo
     | "lockedByMeDisconnected" // We're disconnected, but before that happened the book was checked out to me, here
-    | "error"; // we couldn't get the IBookTeamCollectionStatus; should never happen.
+    | "error" // we couldn't get the IBookTeamCollectionStatus; should never happen.
+    // --- Cloud Team Collections additions (see CONTRACTS.md, book-status JSON) ---
+    // Folder Team Collections never produce these: the fields that drive them
+    // (signedIn/requiresSignIn/offlineDisabledReason) are always undefined there.
+    | "signedOut" // cloud TC, book otherwise available, but the user isn't signed in yet
+    | "updatesAvailable" // cloud TC, book otherwise available, but a newer version is in the repo
+    | "offlineDisabled"; // cloud TC book that cannot be used at all while offline (e.g. never downloaded)
 
 export const TeamCollectionBookStatusPanel: React.FunctionComponent<
     IBookTeamCollectionStatus
 > = (props) => {
+    // Cloud Team Collections: gates the signedOut/updatesAvailable/offlineDisabled states and
+    // the modal check-in-progress dialog below. Branches on capability (never on concrete
+    // backend type); folder Team Collections keep every previous state/behavior unchanged.
+    const capabilities = useTeamCollectionCapabilities();
+    const isCloud = isCloudTeamCollection(capabilities);
+
     const [tcPanelState, setTcPanelState] =
         useState<StatusPanelState>("initializing");
     // Indicates how far along the check-in bar should be (0-100).
@@ -81,6 +103,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
             );
         } else if (props.invalidRepoDataErrorMsg) {
             setTcPanelState("hasInvalidRepoData");
+        } else if (isCloud && props.offlineDisabledReason) {
+            // This book has never been downloaded (or is otherwise unusable offline); nothing
+            // else about lock state matters until that's resolved.
+            setTcPanelState("offlineDisabled");
         } else if (props.hasConflictingChange) {
             setTcPanelState("conflictingChange");
         } else if (props.isChangedRemotely) {
@@ -96,10 +122,24 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         : "locked",
                 );
             }
+        } else if (isCloud && props.requiresSignIn && !props.signedIn) {
+            // Book would otherwise be available, but checking it out requires an authenticated
+            // user.
+            setTcPanelState("signedOut");
+        } else if (
+            isCloud &&
+            typeof props.repoVersionSeq === "number" &&
+            typeof props.localVersionSeq === "number" &&
+            props.repoVersionSeq > props.localVersionSeq
+        ) {
+            // Book is unlocked and available, but someone else's newer version hasn't been
+            // pulled down to this computer yet.
+            setTcPanelState("updatesAvailable");
         } else {
             setTcPanelState("unlocked");
         }
     }, [
+        isCloud,
         props.isDisconnected,
         props.hasConflictingChange,
         props.isChangedRemotely,
@@ -107,6 +147,11 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
         lockedByMe,
         props.currentUser,
         props.invalidRepoDataErrorMsg,
+        props.offlineDisabledReason,
+        props.requiresSignIn,
+        props.signedIn,
+        props.repoVersionSeq,
+        props.localVersionSeq,
     ]);
 
     React.useEffect(() => {
@@ -312,6 +357,48 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
         "You can edit this book, but you will need to reconnect in order to send your changes to your team.",
         "TeamCollection.DisconnectedCheckedOut",
         "",
+        undefined,
+        undefined,
+        true,
+    );
+
+    // --- Cloud Team Collections additions (only ever shown when isCloud is true) ---
+    const mainTitleSignedOut = useL10n(
+        "Sign in to work with this book",
+        "TeamCollection.SignedOut",
+        undefined,
+        undefined,
+        undefined,
+        true,
+    );
+    const subTitleSignedOut = useL10n(
+        "You must sign in to your account before you can check out or edit this book.",
+        "TeamCollection.SignedOutDescription",
+        undefined,
+        undefined,
+        undefined,
+        true,
+    );
+    const mainTitleUpdatesAvailableForBook = useL10n(
+        "A newer version of this book is available",
+        "TeamCollection.UpdatesAvailableForBook",
+        undefined,
+        undefined,
+        undefined,
+        true,
+    );
+    const subTitleUpdatesAvailableForBook = useL10n(
+        "Receive updates to get the latest version before you check it out.",
+        "TeamCollection.UpdatesAvailableForBookDescription",
+        undefined,
+        undefined,
+        undefined,
+        true,
+    );
+    const mainTitleOfflineDisabled = useL10n(
+        "Not available offline",
+        "TeamCollection.OfflineDisabled",
+        undefined,
         undefined,
         undefined,
         true,
@@ -547,6 +634,12 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                                     }}
                                 />
                             </div>
+                        ) : isCloud ? (
+                            // Cloud Team Collections: the check-in ("Send") progress bar moves to
+                            // a modal dialog (below, alongside the other dialogs) instead of this
+                            // inline bar, since uploading to the cloud repo can take noticeably
+                            // longer than a folder-TC check-in.
+                            <div />
                         ) : (
                             <div
                                 css={css`
@@ -646,6 +739,53 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         menu={menu}
                     />
                 );
+            // --- Cloud Team Collections additions (see the StatusPanelState comments above) ---
+            case "signedOut":
+                return (
+                    <StatusPanelCommon
+                        title={mainTitleSignedOut}
+                        subTitle={subTitleSignedOut}
+                        icon={<TeamCollectionIcon color="white" />}
+                        button={getBloomButton(
+                            "Sign In",
+                            "TeamCollection.Sharing.SignIn",
+                            "sign-in-button",
+                            undefined,
+                            () => post("sharing/showSignIn"),
+                        )}
+                    />
+                );
+            case "updatesAvailable":
+                return (
+                    <StatusPanelCommon
+                        title={mainTitleUpdatesAvailableForBook}
+                        subTitle={subTitleUpdatesAvailableForBook}
+                        icon={<TeamCollectionIcon color="white" />}
+                        button={getBloomButton(
+                            "Receive Updates",
+                            "TeamCollection.ReceiveUpdates",
+                            "receive-updates-button",
+                            undefined,
+                            () => post("teamCollection/receiveUpdates"),
+                        )}
+                    />
+                );
+            case "offlineDisabled":
+                return (
+                    <StatusPanelCommon
+                        title={mainTitleOfflineDisabled}
+                        // props.offlineDisabledReason is a server-supplied, dynamic message (like
+                        // props.error/props.invalidRepoDataErrorMsg elsewhere in this file); it is
+                        // not localized on the client.
+                        subTitle={props.offlineDisabledReason ?? ""}
+                        icon={
+                            <img
+                                src={"/bloom/images/Disconnected.svg"}
+                                alt="offline"
+                            />
+                        }
+                    />
+                );
         }
     };
 
@@ -667,6 +807,30 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                     open={forceUnlockDialogOpen}
                     close={() => setForceUnlockDialogOpen(false)}
                 ></ForceUnlockDialog>
+                {/* Cloud Team Collections: check-in ("Send") progress shows as a modal instead of
+                    the inline bar folder Team Collections use (see the "lockedByMe" case above).
+                    No close button: like the inline bar, this just tracks an in-progress
+                    operation the user already started. */}
+                {isCloud && (
+                    <BloomDialog
+                        open={
+                            tcPanelState === "lockedByMe" && checkInProgress > 0
+                        }
+                        onClose={() => {}}
+                        css={css`
+                            max-width: 400px;
+                        `}
+                    >
+                        <DialogTitle title={checkingIn} />
+                        <DialogMiddle>
+                            <LinearProgress
+                                variant="determinate"
+                                value={Math.min(checkInProgress * 100, 100)}
+                                data-testid="cloud-checkin-progress"
+                            />
+                        </DialogMiddle>
+                    </BloomDialog>
+                )}
             </ThemeProvider>
         </StyledEngineProvider>
     );

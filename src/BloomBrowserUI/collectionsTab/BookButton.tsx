@@ -9,7 +9,12 @@ import {
 } from "../utils/bloomApi";
 import { Button, Menu } from "@mui/material";
 import TruncateMarkup from "react-truncate-markup";
-import { useTColBookStatus } from "../teamCollection/teamCollectionApi";
+import {
+    isCloudTeamCollection,
+    useTColBookStatus,
+    useTeamCollectionCapabilities,
+} from "../teamCollection/teamCollectionApi";
+import { NewerVersionAvailableMarker } from "../teamCollection/NewerVersionAvailableMarker";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import {
     kBloomBlue,
@@ -125,6 +130,22 @@ export const BookButton: React.FunctionComponent<{
         folderName,
         props.collection.isEditableCollection,
     );
+
+    // Cloud Team Collections: gates the "newer version exists" thumbnail marker below. Branches
+    // on capability (never on concrete backend type); folder Team Collections never populate
+    // repoVersionSeq/localVersionSeq (see IBookTeamCollectionStatus's comment), so this is
+    // effectively always false there even without the explicit isCloud check, but the check is
+    // kept for the same reason it's used elsewhere in this task: gating must never rely solely
+    // on the mere presence of a field.
+    const capabilities = useTeamCollectionCapabilities();
+    const isCloud = isCloudTeamCollection(capabilities);
+    const hasNewerVersionAvailable =
+        isCloud &&
+        !teamCollectionStatus?.who &&
+        typeof teamCollectionStatus?.repoVersionSeq === "number" &&
+        typeof teamCollectionStatus?.localVersionSeq === "number" &&
+        teamCollectionStatus.repoVersionSeq >
+            teamCollectionStatus.localVersionSeq;
 
     // BL-16199
     // Starting in 6.4, the Collection Tab no longer existing in the background when we
@@ -540,6 +561,9 @@ export const BookButton: React.FunctionComponent<{
                         {props.collection.isEditableCollection && (
                             <BookOnBlorgBadge book={props.book} />
                         )}
+                        <NewerVersionAvailableMarker
+                            show={hasNewerVersionAvailable}
+                        />
                     </div>
                 }
             >

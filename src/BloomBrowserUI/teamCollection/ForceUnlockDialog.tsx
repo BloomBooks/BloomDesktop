@@ -15,6 +15,10 @@ import {
 } from "../react_components/BloomDialog/BloomDialog";
 import { kBloomRed } from "../utils/colorUtils";
 import { WarningBox } from "../react_components/boxes";
+import {
+    isCloudTeamCollection,
+    useTeamCollectionCapabilities,
+} from "./teamCollectionApi";
 
 // Dialog shown (when props.open is true) in response to the "Force Unlock (Administrator Only)..." menu item
 // in the TeamCollectionBookStatusPanel.
@@ -22,6 +26,13 @@ export const ForceUnlockDialog: React.FunctionComponent<{
     open: boolean;
     close: () => void;
 }> = (props) => {
+    // Cloud Team Collections: force-unlock is an audited server RPC (CONTRACTS.md's
+    // `force_unlock(book_id)`, exposed here as the "sharing/forceUnlock" endpoint), not the
+    // plain local-file operation folder Team Collections use. Branches on capability, never on
+    // concrete backend type.
+    const capabilities = useTeamCollectionCapabilities();
+    const isCloud = isCloudTeamCollection(capabilities);
+
     const title = useL10n(
         "Force Unlock (Administrator Only)",
         "TeamCollection.ForceUnlockTitle",
@@ -99,7 +110,11 @@ export const ForceUnlockDialog: React.FunctionComponent<{
                         onClick={() => {
                             props.close();
                             // Do nothing here on either success or failure. (C# code will have already reported failure).
-                            post("teamCollection/forceUnlock");
+                            post(
+                                isCloud
+                                    ? "sharing/forceUnlock"
+                                    : "teamCollection/forceUnlock",
+                            );
                         }}
                         hasText={true}
                     >

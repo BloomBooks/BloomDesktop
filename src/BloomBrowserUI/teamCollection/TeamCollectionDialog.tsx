@@ -27,6 +27,10 @@ import "react-tabs/style/react-tabs.less";
 import { useEffect, useState } from "react";
 import { BloomTabs } from "../react_components/BloomTabs";
 import { useEventLaunchedBloomDialog } from "../react_components/BloomDialog/BloomDialogPlumbing";
+import {
+    isCloudTeamCollection,
+    useTeamCollectionCapabilities,
+} from "./teamCollectionApi";
 
 export const TeamCollectionDialogLauncher: React.FunctionComponent = () => {
     const { openingEvent, closeDialog, propsForBloomDialog } =
@@ -41,7 +45,7 @@ export const TeamCollectionDialogLauncher: React.FunctionComponent = () => {
     ) : null;
 };
 
-const TeamCollectionDialog: React.FunctionComponent<{
+export const TeamCollectionDialog: React.FunctionComponent<{
     showReloadButton: boolean;
     closeDialog: () => void;
     propsForBloomDialog: IBloomDialogProps;
@@ -50,6 +54,12 @@ const TeamCollectionDialog: React.FunctionComponent<{
         "Team Collection",
         "TeamCollection.TeamCollection",
     );
+
+    // Cloud Team Collections: gates the "Receive Updates"/"Send All" cloud terminology below.
+    // Branches on capability (never on concrete backend type), and defaults to false (today's
+    // folder-TC behavior) until the cloud-team-collections experimental feature is on.
+    const capabilities = useTeamCollectionCapabilities();
+    const isCloud = isCloudTeamCollection(capabilities);
 
     const events = useApiData<IBloomWebSocketProgressEvent[]>(
         "teamCollection/getLog",
@@ -153,7 +163,11 @@ const TeamCollectionDialog: React.FunctionComponent<{
                                         />
                                         <BloomButton
                                             id="checkInAll"
-                                            l10nKey="TeamCollection.checkInAll"
+                                            l10nKey={
+                                                isCloud
+                                                    ? "TeamCollection.SendAll"
+                                                    : "TeamCollection.checkInAll"
+                                            }
                                             temporarilyDisableI18nWarning={true}
                                             // Arguably we could also disable when there is nothing to check in, but it might
                                             // not be obvious why, and it's a pain to figure out whether that is the case.
@@ -165,11 +179,15 @@ const TeamCollectionDialog: React.FunctionComponent<{
                                                 // however currently BloomTabs is in "uncontrolled mode" and
                                                 // react-tabs says "In this mode you cannot force a tab change during runtime."
                                                 post(
-                                                    "teamCollection/checkInAllBooks",
+                                                    isCloud
+                                                        ? "teamCollection/sendAllBooks"
+                                                        : "teamCollection/checkInAllBooks",
                                                 );
                                             }}
                                         >
-                                            Check In All Books
+                                            {isCloud
+                                                ? "Send All"
+                                                : "Check In All Books"}
                                         </BloomButton>
                                     </div>
                                 </TabPanel>
@@ -195,6 +213,25 @@ const TeamCollectionDialog: React.FunctionComponent<{
                                     }
                                 >
                                     Reload Collection
+                                </BloomButton>
+                            )}
+                            {/* Cloud Team Collections: "Receive Updates" is the successor of "Reload
+                                Collection" for pulling the latest changes from the repo. "Reload
+                                Collection" above is kept, but only ever shown for the unrelated case
+                                of an applied collection-settings change requiring a full app reload
+                                (folder or cloud), which is why the two are mutually exclusive here. */}
+                            {!props.showReloadButton && isCloud && (
+                                <BloomButton
+                                    id="receiveUpdates"
+                                    l10nKey="TeamCollection.ReceiveUpdates"
+                                    temporarilyDisableI18nWarning={true}
+                                    enabled={!disconnected}
+                                    hasText={true}
+                                    onClick={() =>
+                                        post("teamCollection/receiveUpdates")
+                                    }
+                                >
+                                    Receive Updates
                                 </BloomButton>
                             )}
                         </DialogBottomLeftButtons>
