@@ -328,5 +328,29 @@ namespace BloomTests.TeamCollection.Cloud
             );
             return param == null ? null : (string)param.Value;
         }
+
+        // Regression for the first two-instance smoke test (7 Jul 2026): the live members_add
+        // RPC returns a bare bigint scalar (PostgREST serializes it as e.g. "3"), and the
+        // wrapper's old (JObject) cast crashed with InvalidCastException AFTER the row had
+        // already committed server-side. Mocked shapes must match the live wire shape.
+        [Test]
+        public void MembersAdd_ScalarBigintResponse_ReturnsId()
+        {
+            var (client, executor, _) = MakeSignedInClient();
+            executor.Handler = _ => FakeResponses.Make(HttpStatusCode.OK, "3");
+
+            Assert.That(client.MembersAdd("c-1", "bob@dev.local"), Is.EqualTo(3L));
+        }
+
+        [Test]
+        public void MembersAdd_NullResponseForAlreadyApprovedEmail_ReturnsNull()
+        {
+            // members_add is idempotent: on conflict it inserts nothing and returns SQL NULL,
+            // which PostgREST serializes as the JSON literal null.
+            var (client, executor, _) = MakeSignedInClient();
+            executor.Handler = _ => FakeResponses.Make(HttpStatusCode.OK, "null");
+
+            Assert.That(client.MembersAdd("c-1", "bob@dev.local"), Is.Null);
+        }
     }
 }

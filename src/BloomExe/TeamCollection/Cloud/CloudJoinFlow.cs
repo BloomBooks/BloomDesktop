@@ -168,6 +168,15 @@ namespace Bloom.TeamCollection.Cloud
             IWebSocketProgress progress = null
         )
         {
+            // An approved-but-unclaimed member (admin added their EMAIL; members.user_id is
+            // still NULL) can SEE the collection via my_collections (email match) but is not
+            // yet a member for RLS purposes: every member-gated RPC the join needs fails with
+            // not_a_member until claim_memberships() stamps their user_id. Claiming here is
+            // idempotent and covers the by-design first-contact moment (CONTRACTS.md: claiming
+            // requires a verified email, which sign-in has already established).
+            // Found by the first live two-instance smoke test, 7 Jul 2026.
+            _client.ClaimMemberships();
+
             var scenario = DetermineScenario(
                 collectionId,
                 collectionName,

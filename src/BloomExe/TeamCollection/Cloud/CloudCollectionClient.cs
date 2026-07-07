@@ -247,10 +247,15 @@ namespace Bloom.TeamCollection.Cloud
 
         /// <summary>
         /// Adds an approved-account email (admin-only). <paramref name="role"/> defaults to
-        /// "member" server-side if omitted.
+        /// "member" server-side if omitted. Returns the new member row's id, or null when the
+        /// email was already approved (the RPC is idempotent: on conflict it does nothing and
+        /// returns SQL NULL). NOTE the live RPC returns a bare bigint scalar (a JValue), not an
+        /// object -- casting the result to JObject crashed the first real two-instance smoke
+        /// test (7 Jul 2026) even though the row committed fine.
         /// </summary>
-        public JObject MembersAdd(string collectionId, string email, string role = "member") =>
-            (JObject)CallRpc(
+        public long? MembersAdd(string collectionId, string email, string role = "member")
+        {
+            var result = CallRpc(
                 "members_add",
                 new
                 {
@@ -259,6 +264,10 @@ namespace Bloom.TeamCollection.Cloud
                     p_role = role,
                 }
             );
+            return result == null || result.Type == JTokenType.Null
+                ? (long?)null
+                : result.Value<long>();
+        }
 
         /// <summary>
         /// Removes an approved-account (admin-only; force-unlocks their checkouts server-side).
