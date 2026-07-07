@@ -245,26 +245,50 @@ namespace Bloom.TeamCollection.Cloud
                 CallRpc("members_list", new { p_collection_id = collectionId }) ?? new JArray()
             );
 
-        public JObject MembersAdd(string collectionId, string email) =>
+        /// <summary>
+        /// Adds an approved-account email (admin-only). <paramref name="role"/> defaults to
+        /// "member" server-side if omitted.
+        /// </summary>
+        public JObject MembersAdd(string collectionId, string email, string role = "member") =>
             (JObject)CallRpc(
                 "members_add",
-                new { p_collection_id = collectionId, p_email = email }
-            );
-
-        public JObject MembersRemove(string collectionId, string email) =>
-            (JObject)CallRpc(
-                "members_remove",
-                new { p_collection_id = collectionId, p_email = email }
-            );
-
-        public JObject MembersSetRole(string collectionId, string email, string role) =>
-            (JObject)CallRpc(
-                "members_set_role",
                 new
                 {
                     p_collection_id = collectionId,
                     p_email = email,
                     p_role = role,
+                }
+            );
+
+        /// <summary>
+        /// Removes an approved-account (admin-only; force-unlocks their checkouts server-side).
+        /// Task 06 live-verification fix: the deployed RPC's real signature is
+        /// <c>members_remove(p_collection_id, p_member_id bigint)</c> -- task 05's original
+        /// <c>p_email</c> guess (flagged there as a "contract ambiguity") does not match and fails
+        /// with PGRST202 ("could not find the function"). <paramref name="memberId"/> is the row id
+        /// from <see cref="MembersList"/>; callers that only have an email must resolve it via a
+        /// MembersList lookup first (see SharingApi).
+        /// </summary>
+        public JObject MembersRemove(string collectionId, long memberId) =>
+            (JObject)CallRpc(
+                "members_remove",
+                new { p_collection_id = collectionId, p_member_id = memberId }
+            );
+
+        /// <summary>
+        /// Changes an approved-account's role (admin-only; last-admin guard enforced server-side).
+        /// Task 06 live-verification fix: same <c>p_member_id</c> mismatch as
+        /// <see cref="MembersRemove"/> -- the deployed RPC is
+        /// <c>members_set_role(p_collection_id, p_member_id bigint, p_new_role)</c>.
+        /// </summary>
+        public JObject MembersSetRole(string collectionId, long memberId, string role) =>
+            (JObject)CallRpc(
+                "members_set_role",
+                new
+                {
+                    p_collection_id = collectionId,
+                    p_member_id = memberId,
+                    p_new_role = role,
                 }
             );
 
