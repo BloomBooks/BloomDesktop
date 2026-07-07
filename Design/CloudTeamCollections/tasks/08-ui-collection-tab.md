@@ -7,7 +7,7 @@
 `statusPanelCommon.tsx`, `CollectionHistoryTable.tsx` during its waves.
 
 ## Steps
-- [ ] Status button: same chip/colors, driven by live metadata ("Updates available (3 books)").
+- [x] Status button: same chip/colors, driven by live metadata ("Updates available (3 books)").
 - [ ] Status dialog: "Receive Updates" primary action (Reload remains only for applied
       collection-settings changes); "Send All"; message log unchanged.
 - [ ] Share button beside the status button → SharingPanel (admin manage / member read-only).
@@ -25,3 +25,22 @@
 
 **Agent notes**: Sonnet. `StatusPanelState` additions must stay in sync with the C# status
 JSON (CONTRACTS.md, book-status section).
+
+## Progress log
+
+- 7 Jul 2026 · Status button done. Added `teamCollectionApi.tsx` shared plumbing for Wave 2:
+  `ITeamCollectionCapabilities`/`useTeamCollectionCapabilities` (mocked `teamCollection/capabilities`),
+  `isCloudTeamCollection()` helper (branch on capability, not concrete type),
+  `useTeamCollectionStatusMetadata` (mocked `teamCollection/tcStatusMetadata`),
+  `useCloudCollectionId`/`useIsTeamCollectionAdmin` (mocked, for the upcoming Share button), and
+  the additive `IBookTeamCollectionStatus` fields from CONTRACTS.md
+  (localVersionSeq/repoVersionSeq/signedIn/requiresSignIn/offlineDisabledReason). All these hooks
+  only call their endpoint when the cloud-team-collections experimental feature is on, so folder
+  Team Collections make zero extra requests and see zero UI change. `TeamCollectionButton.tsx` now
+  shows "Updates Available (N books)" when the metadata provides a count. Also front-loaded the
+  full Wave-2 XLF string set into `Bloom.xlf` (steps 1-4's strings) in this commit, since they were
+  designed together; later steps consume already-added ids rather than adding more XLF. New test:
+  `TeamCollectionButton.test.tsx` (8 tests, passing). `yarn eslint` clean (1 pre-existing warning
+  unrelated to this change, in `useTColBookStatus`'s dependency array).
+  Next action: implement step 2 (status dialog "Receive Updates" / "Send All"), then run its
+  tests + prettier + commit.

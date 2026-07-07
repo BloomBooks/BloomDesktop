@@ -5845,6 +5845,50 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TeamCollection.Sharing.Pending</note>
         <note>Status shown next to an approved email address that no one has signed in with yet.</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.UpdatesAvailableWithCount" translate="no">
+        <source xml:lang="en">Updates Available (%0 books)</source>
+        <note>ID: TeamCollection.UpdatesAvailableWithCount</note>
+        <note>Label on the collection-tab status button/chip for a cloud Team Collection, replacing the generic "Updates Available" label when the number of books with a newer version in the repo is known. %0 is that count.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ReceiveUpdates" translate="no">
+        <source xml:lang="en">Receive Updates</source>
+        <note>ID: TeamCollection.ReceiveUpdates</note>
+        <note>Button in the Team Collection status dialog for a cloud Team Collection; pulls the latest changes from the repo. Successor of "Reload Collection", which is now used only after a collection-settings change requires a full app reload.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.SendAll" translate="no">
+        <source xml:lang="en">Send All</source>
+        <note>ID: TeamCollection.SendAll</note>
+        <note>Button in the Team Collection status dialog for a cloud Team Collection; check-in-and-upload every book currently checked out to this user. Cloud-terminology successor of "Check In All Books".</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.SignedOut" translate="no">
+        <source xml:lang="en">Sign in to work with this book</source>
+        <note>ID: TeamCollection.SignedOut</note>
+        <note>Main heading in the per-book status panel for a cloud Team Collection when the user is not signed in.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.SignedOutDescription" translate="no">
+        <source xml:lang="en">You must sign in to your account before you can check out or edit this book.</source>
+        <note>ID: TeamCollection.SignedOutDescription</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.UpdatesAvailableForBook" translate="no">
+        <source xml:lang="en">A newer version of this book is available</source>
+        <note>ID: TeamCollection.UpdatesAvailableForBook</note>
+        <note>Main heading in the per-book status panel when someone else has checked in a newer version of this (currently unlocked) book.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.UpdatesAvailableForBookDescription" translate="no">
+        <source xml:lang="en">Receive updates to get the latest version before you check it out.</source>
+        <note>ID: TeamCollection.UpdatesAvailableForBookDescription</note>
+        <note>"Receive updates" refers to the "Receive Updates" button; keep consistent with TeamCollection.ReceiveUpdates.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.OfflineDisabled" translate="no">
+        <source xml:lang="en">Not available offline</source>
+        <note>ID: TeamCollection.OfflineDisabled</note>
+        <note>Main heading in the per-book status panel for a cloud Team Collection book that cannot be used at all while offline (e.g. it has never been downloaded to this computer).</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.ShareButton" translate="no">
+        <source xml:lang="en">Share</source>
+        <note>ID: TeamCollection.Sharing.ShareButton</note>
+        <note>Button in the collection tab, beside the Team Collection status button, that opens the cloud Team Collection's Sharing panel (approved-accounts list).</note>
+      </trans-unit>
       <!--
 // Don't want these actually translated until things stabilize. Will need re-ordering.
       <trans-unit id="TeamCollection.DropboxSettingsAcknowledgement" sil:dynamic="true">
