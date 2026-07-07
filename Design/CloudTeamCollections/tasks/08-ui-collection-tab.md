@@ -15,7 +15,7 @@
       Sign-in action), updatesAvailable, offline-disabled-with-reason states; check-in progress
       = modal Send; "Force Unlock (Administrator Only)" wired to the audited RPC.
 - [x] Book thumbnails: holder-avatar overlay unchanged; subtle "newer version exists" marker.
-- [ ] History tab: server events feed for cloud TCs (incl. incident entries), local cache for
+- [x] History tab: server events feed for cloud TCs (incl. incident entries), local cache for
       offline; folder TCs unchanged.
 
 ## Acceptance
@@ -164,3 +164,47 @@ JSON (CONTRACTS.md, book-status section).
   Next action: implement step 6 (history tab: server events feed for cloud TCs incl. incident
   entries, local cache for offline; folder TCs unchanged) in `CollectionHistoryTable.tsx` — the
   last remaining step.
+- 7 Jul 2026 · History tab done — all six Wave-2 steps complete. `CollectionHistoryTable.tsx`:
+  the folder-TC path is untouched (`useApiData("teamCollection/getHistory"...)`, same hook, same
+  URL, same behavior — verified by mocking `useApiData` directly and asserting it's called with
+  the exact prior arguments, and that neither `getBoolean` nor `get` ever fire, i.e. zero extra
+  requests). For cloud TCs, added a parallel `cloudEvents` state fed by a new effect that calls
+  the mocked `sharing/history?collectionId=...&generation=...` endpoint (stand-in for
+  CONTRACTS.md's `get_changes` RPC) while connected, or `sharing/historyCache?...` while
+  disconnected (stand-in for a Wave-3 on-disk cache); `events = isCloud ? cloudEvents :
+  folderEvents`. Connectivity comes from a new capability-gated effect
+  (`if (!isCloud) return; getBoolean("teamCollection/isDisconnected", setDisconnected)` — reusing
+  the same pre-existing, already-folder-TC-safe endpoint `TeamCollectionDialog.tsx` already
+  calls, but only invoking it here when isCloud, so folder TCs still make zero extra requests);
+  `disconnected` starts `undefined` ("not yet known") so the cloud fetch itself waits rather than
+  firing one wrong-endpoint request before the real state resolves. Incident entries: existing
+  event types `ForcedUnlock` (index 5) and `SyncProblem` (index 7) already cover CONTRACTS.md's
+  "server-side incident event admins can see" (the latter also covers the "repo won, local work
+  saved to Lost & Found" case) — no new C# enum values needed (out of this task's scope/file
+  ownership regardless), just a small red `WarningIcon` + tooltip added before the event-type
+  text, gated on `isCloud` so folder TC's history rendering is byte-for-byte unchanged. Tooltip
+  reuses the existing, already-translated generic `Warning` XLF id — no new XLF needed anywhere
+  in this step.
+  New test: `CollectionHistoryTable.test.tsx` (5 tests: folder-TC unchanged + zero-extra-requests
+  gating regression, cloud connected hits `sharing/history`, cloud disconnected hits
+  `sharing/historyCache`, incident marker shown for Forced Unlock, no marker for a routine Check
+  Out). Learned/documented a subtlety here: `useApiData`/`getBoolean` call bloomApi.tsx's own
+  local `get()` internally (an intra-module call), so mocking only `get` doesn't intercept them —
+  must mock `useApiData`/`getBoolean` themselves directly (same lesson already documented in
+  `JoinCloudCollectionDialog.test.tsx` for `getBoolean` specifically; this is likely why the
+  "AggregateError" console noise from an unmocked live network call has shown up in every test
+  run all session — it's `useApiData`'s hardcoded internal `get()`, not something interceptable
+  from a consuming component's own mocks). All 5 tests passing. `yarn eslint` clean. Full
+  `teamCollection` + `collectionsTab` + `react_components/TopBar` suites: 9 files, 60 tests, all
+  green — no regressions across the whole task.
+
+  **Task 08 (Wave-2 shells) is complete.** All 6 steps checked off above. Every new
+  cloud-only UI element added this task is gated on `isCloudTeamCollection(capabilities)`
+  (never on concrete backend type), and every gate was verified with an explicit
+  regression test proving folder Team Collections see zero behavior change and make zero
+  extra network requests. No outstanding XLF additions were needed beyond the step-1
+  front-load. Wave-3 wiring (replacing the mocked `teamCollection/capabilities`,
+  `teamCollection/tcStatusMetadata`, `teamCollection/cloudCollectionId`,
+  `teamCollection/isUserAdmin`, `teamCollection/receiveUpdates`, `teamCollection/sendAllBooks`,
+  `sharing/forceUnlock`, `sharing/history`, `sharing/historyCache` endpoints with real C#/RPC
+  implementations) depends on task 06 (API endpoints) and is out of this task's scope.

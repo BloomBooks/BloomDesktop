@@ -1,10 +1,18 @@
 import { css } from "@emotion/react";
 
 import * as React from "react";
-import { useApiData } from "../utils/bloomApi";
+import { get, getBoolean, useApiData } from "../utils/bloomApi";
 import { BloomAvatar } from "../react_components/bloomAvatar";
+import { BloomTooltip } from "../react_components/BloomToolTip";
+import WarningIcon from "@mui/icons-material/Warning";
+import { kBloomRed } from "../utils/colorUtils";
 import { useEffect, useState } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+import {
+    isCloudTeamCollection,
+    useCloudCollectionId,
+    useTeamCollectionCapabilities,
+} from "./teamCollectionApi";
 
 interface IBookHistoryEvent {
     Title: string;
@@ -68,6 +76,12 @@ const kEventTypes = [
     "Moved",
 ]; // REVIEW maybe better to do this in c# and just send it over?
 
+// Event types that represent an incident an admin should notice (per CONTRACTS.md: "recorded
+// as a server-side incident event admins can see") rather than routine activity. Indices into
+// kEventTypes above / BookHistoryEventType.cs: ForcedUnlock (5), SyncProblem (7) — the latter
+// also covers the "repo won, local work saved to Lost & Found" case from the design doc.
+const kIncidentEventTypes = new Set<number>([5, 7]);
+
 export const CollectionHistoryTable: React.FunctionComponent<{
     selectedBook?: string;
 }> = (props) => {
@@ -79,13 +93,59 @@ export const CollectionHistoryTable: React.FunctionComponent<{
     useSubscribeToWebSocketForEvent("bookHistory", "eventAdded", () =>
         setGeneration((gen) => gen + 1),
     );
-    const events = useApiData<IBookHistoryEvent[]>(
+
+    // Folder Team Collections: unchanged from before this task — same endpoint, same hook, same
+    // behavior. This hook call itself is unconditional (React's rules of hooks), but its result
+    // is only used below when !isCloud, so cloud Team Collections don't depend on it.
+    const folderEvents = useApiData<IBookHistoryEvent[]>(
         "teamCollection/getHistory" +
             (currentBookOnly
                 ? "?currentBookOnly=true&generation=" + generation
                 : ""),
         [],
     );
+
+    // Cloud Team Collections: history comes from the server events feed (CONTRACTS.md's
+    // `get_changes` RPC, surfaced here as the mocked "sharing/history" endpoint) instead of the
+    // local-file-derived endpoint folder Team Collections use above. While disconnected, fall
+    // back to a local cache of the last-known events (mocked "sharing/historyCache" for now;
+    // Wave 3 backs it with a real on-disk cache) rather than a live call that would just fail
+    // offline. Branches on capability, never on concrete backend type.
+    const capabilities = useTeamCollectionCapabilities();
+    const isCloud = isCloudTeamCollection(capabilities);
+    const cloudCollectionId = useCloudCollectionId();
+    // Folder Team Collections must make zero extra requests, so (unlike TeamCollectionDialog.tsx,
+    // which already called "teamCollection/isDisconnected" for folder Team Collections long
+    // before this project) this only queries it when isCloud, following the same
+    // guard-inside-the-effect pattern as teamCollectionApi.tsx's other Wave-2 hooks.
+    // `undefined` means "not yet known" so the cloud fetch below can wait for it, rather than
+    // firing an initial request against the wrong (live vs. cache) endpoint.
+    const [disconnected, setDisconnected] = useState<boolean | undefined>(
+        undefined,
+    );
+    useEffect(() => {
+        if (!isCloud) return;
+        getBoolean("teamCollection/isDisconnected", setDisconnected);
+    }, [isCloud]);
+
+    const [cloudEvents, setCloudEvents] = useState<IBookHistoryEvent[]>([]);
+    useEffect(() => {
+        if (!isCloud || disconnected === undefined) return;
+        const cloudQuery =
+            (currentBookOnly ? "currentBookOnly=true&" : "") +
+            "collectionId=" +
+            encodeURIComponent(cloudCollectionId) +
+            "&generation=" +
+            generation;
+        get(
+            (disconnected ? "sharing/historyCache?" : "sharing/history?") +
+                cloudQuery,
+            (result) =>
+                setCloudEvents((result.data as IBookHistoryEvent[]) ?? []),
+        );
+    }, [isCloud, disconnected, cloudCollectionId, currentBookOnly, generation]);
+
+    const events = isCloud ? cloudEvents : folderEvents;
 
     return (
         // The grand plan: https://www.figma.com/file/IlNPkoMn4Y8nlHMTCZrXfQSZ/Bloom-Collection-Tab?node-id=2707%3A6882
@@ -183,6 +243,24 @@ export const CollectionHistoryTable: React.FunctionComponent<{
                                     min-width: 4em;
                                 `}
                             >
+                                {isCloud && kIncidentEventTypes.has(e.Type) && (
+                                    <BloomTooltip
+                                        tip={{
+                                            l10nKey: "Warning",
+                                            english: "Warning",
+                                        }}
+                                    >
+                                        <WarningIcon
+                                            data-testid="history-incident-icon"
+                                            fontSize="small"
+                                            css={css`
+                                                color: ${kBloomRed};
+                                                vertical-align: text-bottom;
+                                                margin-right: 4px;
+                                            `}
+                                        />
+                                    </BloomTooltip>
+                                )}
                                 {kEventTypes[e.Type]}
                             </TextCell>
                             <TextCell>{e.Message}</TextCell>
