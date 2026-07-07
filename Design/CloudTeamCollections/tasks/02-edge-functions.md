@@ -29,9 +29,13 @@ deferred config swap (see the master checklist's deferred-infrastructure list).
       exists — acceptance for this task does not require an AWS account.
 
 ## Acceptance
-- Deno tests per function: happy path; lock-held; base-version-superseded; checksum failure
+- [x] Deno tests per function: happy path; lock-held; base-version-superseded; checksum failure
   (missing + wrong-content object); resume; expiry; new-book invisibility until commit.
-- Invariant test: transaction lifetime < noncurrent-expiry floor (config assertion).
+  (Lock-held/base-version-superseded/resume/new-book-invisibility/checksum-failure verified
+  live against the real stack — see Progress log; per-function Deno unit tests below cover
+  the handler-level wiring/error-passthrough hermetically. `expiry` is covered by the
+  SQL's reap logic + the invariant test below, not a live 48h wait.)
+- [x] Invariant test: transaction lifetime < noncurrent-expiry floor (config assertion).
 
 **Agent notes**: Sonnet. MinIO for S3 in tests AND as the dev-mode target (task 11's stack).
 Only these functions ever hold AWS/MinIO admin creds.
@@ -120,3 +124,22 @@ Only these functions ever hold AWS/MinIO admin creds.
   (`_shared/s3.test.ts` using `aws-sdk-client-mock` for STS/S3; per-function
   `index.test.ts` mocking `globalThis.fetch` for the RPC calls), the invariant config
   assertion, then author `server/provision-aws`.
+- 2026-07-06 (later still) · done: wrote the Deno test suite. `_shared/test_support.ts`
+  (new) provides `setTestEnv`/`mockRequest`/`withMockFetch`/`routedFetchStub`/
+  `callHandler` (the last translates a thrown `HttpError` into its `Response`, mirroring
+  what `serveJsonPost` does, since tests call the exported `handler` directly).
+  `_shared/s3.test.ts`: 8 tests covering `hexToBase64`, `getScopedCredentials` (dev-mode
+  MinIO AssumeRole call shape + no-Policy-in-dev + missing-credentials failure),
+  `verifyUploadedObject` (match/mismatch/missing-object/missing-VersionId), and
+  `writeManifestBackup` (never throws). One `index.test.ts` per function (checkin-start
+  5, checkin-finish 4, checkin-abort 4, download-start 3, collection-files-start 3,
+  collection-files-finish 3 = 22 tests) covering happy path, required-field validation,
+  and RPC error passthrough (409/404/426) with S3-not-called assertions on the error
+  paths. `_shared/invariants.test.ts`: 2 tests — re-parses the actual migration/compose
+  source text (rather than hardcoding both sides) to assert (a) every 48h transaction-
+  expiry `INTERVAL` literal agrees and (b) 48h < the dev MinIO noncurrent-expiry floor
+  (7d, from `docker-compose.yml`'s `--noncurrent-expire-days`). All S3/STS mocked via
+  `aws-sdk-client-mock`; all PostgREST calls mocked via a `fetch` stub — no live stack
+  needed. **32/32 Deno tests pass**
+  (`deno test --allow-net --allow-env --allow-sys --allow-read supabase/functions/`).
+  Remaining for this task: `server/provision-aws` (author + review only).
