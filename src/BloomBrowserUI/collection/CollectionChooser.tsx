@@ -5,6 +5,7 @@ import { ICollectionInfo } from "./CollectionCard";
 import { MyCloudCollectionsSection } from "./MyCloudCollectionsSection";
 import {
     pullDownCollection,
+    useIsCloudTeamCollectionsExperimentalFeatureEnabled,
     useMyCloudCollections,
     useSharingLoginState,
 } from "../teamCollection/sharingApi";
@@ -21,9 +22,13 @@ export const CollectionChooser: React.FunctionComponent<{
 
     // "Get my Team Collections": the cloud collections the signed-in user is approved for,
     // with a pull-down-to-join action. See Design/CloudTeamCollections/tasks/07-ui-setup.md.
+    // The whole section (and its queries) exists only when the cloud-team-collections
+    // experimental feature is on; everyone else gets the pre-cloud chooser unchanged.
+    const cloudFeatureEnabled =
+        useIsCloudTeamCollectionsExperimentalFeatureEnabled();
     const loginState = useSharingLoginState();
     const { collections: cloudCollections, loading: cloudCollectionsLoading } =
-        useMyCloudCollections(loginState.signedIn);
+        useMyCloudCollections(cloudFeatureEnabled && loginState.signedIn);
 
     return (
         <div
@@ -42,13 +47,17 @@ export const CollectionChooser: React.FunctionComponent<{
                     overflow-y: auto;
                 `}
             />
-            <MyCloudCollectionsSection
-                loginState={loginState}
-                collections={cloudCollections}
-                loading={cloudCollectionsLoading}
-                onSignInClick={() => post("sharing/showSignIn")}
-                onPullDown={(collectionId) => pullDownCollection(collectionId)}
-            />
+            {cloudFeatureEnabled && (
+                <MyCloudCollectionsSection
+                    loginState={loginState}
+                    collections={cloudCollections}
+                    loading={cloudCollectionsLoading}
+                    onSignInClick={() => post("sharing/showSignIn")}
+                    onPullDown={(collectionId) =>
+                        pullDownCollection(collectionId)
+                    }
+                />
+            )}
         </div>
     );
 };
