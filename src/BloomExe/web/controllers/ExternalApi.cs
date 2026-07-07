@@ -24,16 +24,21 @@ namespace Bloom.web.controllers
         private readonly CollectionSettings _collectionSettings;
         private readonly AvatarCache _avatarCache;
 
-        // Re-entrancy guard for process-book. ProcessBook occupies the UI thread but pumps the
-        // Windows message loop via Application.DoEvents() (both the pre-loop below and the per-page
-        // waits in BookProcessor). Because external/* handlers are dispatched on the UI thread via
-        // message posts, a second process-book request that arrives mid-run could be delivered
-        // re-entrantly during one of those DoEvents pumps. The shared-environment statics in
-        // WebView2Browser (_useSharedEnvironment/_sharedEnvironment) are explicitly NOT designed for
-        // overlapping batches, so we reject the re-entrant call rather than let the two corrupt each
-        // other. A plain bool is sufficient: everything here is single-threaded on the UI thread, so
-        // there is no cross-thread race to lock against.
-        private bool _processBookInProgress;
+        // Re-entrancy guard for process-book. A process-book request is validated and dispatched on
+        // the UI thread (HandleProcessBook), which sets this flag true, kicks off the heavy work on a
+        // background thread (see the Task.Run in HandleProcessBook), and returns immediately. We
+        // reject a second process-book that arrives while one is still running, because the
+        // shared-environment statics in WebView2Browser (_useSharedEnvironment/_sharedEnvironment) are
+        // explicitly NOT designed for overlapping batches and would corrupt each other.
+        //
+        // The UI thread is the only writer of 'true', and it reads the flag (to reject overlaps) and
+        // then sets it with no message pumping in between, so that check-then-set is atomic against
+        // UI-thread re-entrancy. The background job clears the flag to false when it finishes. Because
+        // that clear happens on the background thread while the UI thread reads the flag, it is marked
+        // volatile so the UI thread reliably sees the cleared value rather than caching a stale 'true'
+        // (which would wrongly reject every later process-book). A full lock isn't needed because the
+        // only cross-thread write is that release to false.
+        private volatile bool _processBookInProgress;
 
         // The most recent (or in-progress) external/process-book job. process-book replies
         // immediately with a jobId and runs the heavy work asynchronously on the UI thread; the
@@ -397,6 +402,8 @@ namespace Bloom.web.controllers
             // Run on a background thread, NOT the UI thread: ProcessBook drives its WebView2 on the
             // OffScreenBrowser's own thread and just blocks on it, so keeping this off the UI thread leaves
             // the UI free to paint the "processing" overlay and stay responsive for the whole run.
+            // The parts of the job that touch WinForms (the editor/collection refresh) are marshaled
+            // back to the UI thread via InvokeOnUiThread.
             _ = System.Threading.Tasks.Task.Run(() =>
                 RunProcessBookJob(jobId, folderPath, id, fitImageTextSplits)
             );
@@ -474,6 +481,28 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// Run <paramref name="action"/> on the UI thread and wait for it to finish. The process-book
+        /// job runs on a background thread (see the Task.Run in HandleProcessBook) so the heavy
+        /// BookProcessor.ProcessBook() work doesn't freeze the UI, but the surrounding reconciliation
+        /// of live editor/collection state (ReloadCurrentBookDiscardingEdits / ReloadEditableCollection
+        /// / UpdateThumbnailAsync) touches WinForms and so must happen on the UI thread. We use the
+        /// synchronous Invoke (not BeginInvoke) so the refresh has completed before we report the job
+        /// "done" and so its ordering relative to the rest of the job is preserved.
+        /// </summary>
+        private void InvokeOnUiThread(Action action)
+        {
+            var shell = Shell.GetShellOrNull();
+            if (shell == null || shell.IsDisposed)
+                throw new InvalidOperationException(
+                    "external/process-book: cannot refresh the UI because Bloom's main window is gone."
+                );
+            if (shell.InvokeRequired)
+                shell.Invoke(action);
+            else
+                action();
+        }
+
+        /// <summary>
         /// Report the state of the most recent process-book job. The client polls this (with short,
         /// independent requests) until State is a terminal "done"/"failed", rather than waiting on one
         /// long-held process-book response. An optional jobId query param scopes the answer to a
@@ -541,10 +570,18 @@ namespace Bloom.web.controllers
             // isInEditableCollection:true + AlwaysEditSaveContext makes Book.IsSaveable true
             // (Book.IsSaveable => IsInEditableCollection && BookInfo.IsSaveable), matching the semantics
             // of the old flow where the book was first copied into the editable collection.
-            var selectedBeforeProcessing = _collectionModel.GetSelectedBookOrNull();
-            var processingSelectedBook =
-                selectedBeforeProcessing != null
-                && AreSameFolder(selectedBeforeProcessing.FolderPath, folderPath);
+            // Whether we're about to reprocess the book currently open in the editor. Read the
+            // _collectionModel/_bookSelection state on the UI thread that owns it; this job otherwise
+            // runs on a background thread (only the heavy BookProcessor.ProcessBook() call below runs
+            // off the UI thread).
+            var processingSelectedBook = false;
+            InvokeOnUiThread(() =>
+            {
+                var selectedBeforeProcessing = _collectionModel.GetSelectedBookOrNull();
+                processingSelectedBook =
+                    selectedBeforeProcessing != null
+                    && AreSameFolder(selectedBeforeProcessing.FolderPath, folderPath);
+            });
 
             var bookInfo = new BookInfo(folderPath, true, new AlwaysEditSaveContext());
             var book = _bookServer.GetBookFromBookInfo(bookInfo);
@@ -560,8 +597,13 @@ namespace Bloom.web.controllers
             {
                 try
                 {
-                    _editingModel.ReloadCurrentBookDiscardingEdits();
-                    _collectionModel.ReloadEditableCollection();
+                    // These reconcile live editor/collection state and touch WinForms, so they must
+                    // run on the UI thread even though this job runs on a background thread.
+                    InvokeOnUiThread(() =>
+                    {
+                        _editingModel.ReloadCurrentBookDiscardingEdits();
+                        _collectionModel.ReloadEditableCollection();
+                    });
                 }
                 catch (Exception e)
                 {
@@ -616,15 +658,28 @@ namespace Bloom.web.controllers
         /// </summary>
         private ProcessBookResult ProcessBookById(string id, bool fitImageTextSplits)
         {
-            var editableCollection = _collectionModel.TheOneEditableCollection;
-            var collectionPath = editableCollection.PathToDirectory;
-            var bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+            // Look up the book's BookInfo in the editable collection. Read _collectionModel's collection
+            // state on the UI thread that owns it; this job otherwise runs on a background thread (only the
+            // heavy BookProcessor.ProcessBook() call below runs off the UI thread).
+            string collectionPath = null;
+            BookInfo bookInfo = null;
+            InvokeOnUiThread(() =>
+            {
+                collectionPath = _collectionModel.TheOneEditableCollection.PathToDirectory;
+                bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+            });
             if (bookInfo == null)
             {
                 // The book may have just been written to disk and our in-memory collection cache
                 // doesn't know about it yet. Rescan from disk and look again before giving up.
-                _collectionModel.ReloadEditableCollection();
-                bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+                // ReloadEditableCollection touches WinForms state, so (along with the re-lookup that
+                // depends on the reloaded collection) it must run on the UI thread even though this
+                // job runs on a background thread.
+                InvokeOnUiThread(() =>
+                {
+                    _collectionModel.ReloadEditableCollection();
+                    bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+                });
             }
             if (bookInfo == null)
             {
@@ -649,20 +704,25 @@ namespace Bloom.web.controllers
                 // copy and reload it from disk so a later trip through the Edit tab can't clobber what we
                 // just wrote, then refresh the collection's view of it (list metadata + thumbnail). This
                 // mirrors how external/update-book handles re-import of the selected book.
-                var selected = _collectionModel.GetSelectedBookOrNull();
-                if (selected != null && selected.ID == id)
+                // All of this reconciles live editor/collection state and touches WinForms, so it must
+                // run on the UI thread even though this job runs on a background thread.
+                InvokeOnUiThread(() =>
                 {
-                    _editingModel.ReloadCurrentBookDiscardingEdits();
-                    _collectionModel.ReloadEditableCollection();
-                    var refreshedInfo = _collectionModel.BookInfoFromCollectionAndId(
-                        collectionPath,
-                        id
-                    );
-                    if (refreshedInfo != null)
-                        _collectionModel.UpdateThumbnailAsync(
-                            _collectionModel.GetBookFromBookInfo(refreshedInfo)
+                    var selected = _collectionModel.GetSelectedBookOrNull();
+                    if (selected != null && selected.ID == id)
+                    {
+                        _editingModel.ReloadCurrentBookDiscardingEdits();
+                        _collectionModel.ReloadEditableCollection();
+                        var refreshedInfo = _collectionModel.BookInfoFromCollectionAndId(
+                            collectionPath,
+                            id
                         );
-                }
+                        if (refreshedInfo != null)
+                            _collectionModel.UpdateThumbnailAsync(
+                                _collectionModel.GetBookFromBookInfo(refreshedInfo)
+                            );
+                    }
+                });
             }
             catch (Exception e)
             {

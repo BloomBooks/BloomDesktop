@@ -69,7 +69,8 @@ namespace Bloom
             var browser = new WebView2Browser("dummy");
             browser._injectedEnvironment = environment;
             browser.InitializeComponent();
-            browser.InitWebView();
+            // Kicked off unawaited (like the default constructor); callers wait on IsReadyToNavigate.
+            _ = browser.InitWebView();
             return browser;
         }
 
