@@ -195,5 +195,60 @@ namespace BloomTests.TeamCollection.Cloud
 
             Assert.That(message, Is.Null);
         }
+
+        // Regression for the first two-instance smoke test (7 Jul 2026): the "other"
+        // collection-file group downloads into the COLLECTION ROOT, and its naive
+        // mirror-delete removed TeamCollectionLink.txt (never uploaded, by design),
+        // silently un-teaming the collection for the next Bloom session.
+        [Test]
+        public void FilesEligibleForDeleteExtras_OtherGroup_NeverTouchesUnsharedRootFiles()
+        {
+            using (var folder = new TemporaryFolder("DeleteExtrasPolicy"))
+            {
+                System.IO.File.WriteAllText(
+                    folder.Combine("My Collection.bloomCollection"),
+                    "<Collection/>"
+                );
+                System.IO.File.WriteAllText(folder.Combine("customCollectionStyles.css"), "x");
+                System.IO.File.WriteAllText(folder.Combine("TeamCollectionLink.txt"), "cloud://x");
+                System.IO.File.WriteAllText(folder.Combine(".bloom-cloud-repo-cache.json"), "{}");
+                System.IO.File.WriteAllText(folder.Combine("lastCollectionFileSyncData.txt"), "x");
+                System.IO.File.WriteAllText(folder.Combine("log.txt"), "x");
+
+                // Server group contains only the .bloomCollection: the css was deleted on
+                // the server, so it (and ONLY it) is eligible for delete-extras.
+                var kept = new System.Collections.Generic.HashSet<string>
+                {
+                    "My Collection.bloomCollection",
+                };
+
+                var doomed = CloudTeamCollection
+                    .FilesEligibleForDeleteExtras("other", folder.FolderPath, kept)
+                    .Select(System.IO.Path.GetFileName)
+                    .ToList();
+
+                Assert.That(doomed, Is.EquivalentTo(new[] { "customCollectionStyles.css" }));
+            }
+        }
+
+        [Test]
+        public void FilesEligibleForDeleteExtras_DedicatedGroupFolder_MirrorsExactly()
+        {
+            using (var folder = new TemporaryFolder("DeleteExtrasAllowedWords"))
+            {
+                System.IO.File.WriteAllText(folder.Combine("words1.txt"), "x");
+                System.IO.File.WriteAllText(folder.Combine("words2.txt"), "x");
+                var kept = new System.Collections.Generic.HashSet<string> { "words1.txt" };
+
+                var doomed = CloudTeamCollection
+                    .FilesEligibleForDeleteExtras("allowed-words", folder.FolderPath, kept)
+                    .Select(System.IO.Path.GetFileName)
+                    .ToList();
+
+                // Allowed Words/Sample Texts folders belong wholly to their group: a file the
+                // server no longer has really should be removed locally.
+                Assert.That(doomed, Is.EquivalentTo(new[] { "words2.txt" }));
+            }
+        }
     }
 }

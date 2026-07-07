@@ -1179,11 +1179,18 @@ namespace Bloom.TeamCollection.Cloud
                     RobustFile.Move(tempPath, destPath);
                 }
 
-                // Mirrors FolderTeamCollection's ExtractFolder "delete extras" behavior.
-                foreach (var existing in Directory.EnumerateFiles(destFolder))
+                // Mirrors FolderTeamCollection's ExtractFolder "delete extras" behavior --
+                // but see FilesEligibleForDeleteExtras: for the "other" group the destination
+                // is the COLLECTION ROOT, which also holds files that are deliberately never
+                // shared (TeamCollectionLink.txt itself, the repo cache, sync bookkeeping,
+                // logs, PDFs...). A naive mirror-delete stripped TeamCollectionLink.txt on
+                // every join/Receive, silently un-teaming the collection on next open (found
+                // by the first two-instance smoke test, 7 Jul 2026).
+                foreach (
+                    var doomed in FilesEligibleForDeleteExtras(groupKey, destFolder, keptFileNames)
+                )
                 {
-                    if (!keptFileNames.Contains(Path.GetFileName(existing)))
-                        RobustFile.Delete(existing);
+                    RobustFile.Delete(doomed);
                 }
             }
             catch (Exception e)
@@ -1195,6 +1202,34 @@ namespace Bloom.TeamCollection.Cloud
                     exception: e
                 );
             }
+        }
+
+        /// <summary>
+        /// Which local files the "delete extras" step of a collection-file-group download may
+        /// remove: files present locally, absent from the server's group, AND belonging to the
+        /// group's own domain. For allowed-words/sample-texts the destination folder belongs
+        /// entirely to the group, so every file qualifies. For "other" the destination is the
+        /// collection ROOT, so deletion is limited to the same shareable-file allowlist the
+        /// upload side uses (<see cref="TeamCollection.RootLevelCollectionFilesIn"/>) — anything
+        /// else there (TeamCollectionLink.txt, .bloom-cloud-repo-cache.json, log.txt,
+        /// lastCollectionFileSyncData.txt, generated PDFs...) is local-only and untouchable.
+        /// Internal static + pure so tests can pin the policy without an S3 server.
+        /// </summary>
+        internal static List<string> FilesEligibleForDeleteExtras(
+            string groupKey,
+            string destFolder,
+            HashSet<string> keptFileNames
+        )
+        {
+            var candidates = Directory
+                .EnumerateFiles(destFolder)
+                .Where(path => !keptFileNames.Contains(Path.GetFileName(path)));
+            if (groupKey == "other")
+            {
+                var shareable = new HashSet<string>(RootLevelCollectionFilesIn(destFolder));
+                candidates = candidates.Where(path => shareable.Contains(Path.GetFileName(path)));
+            }
+            return candidates.ToList();
         }
 
         private static IAmazonS3 BuildS3Client(CloudS3Location location)
