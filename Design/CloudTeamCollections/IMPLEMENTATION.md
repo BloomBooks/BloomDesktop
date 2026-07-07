@@ -109,7 +109,8 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
   - [x] 07-ui-setup (shells) DONE — SharingPanel, cloud create dialog, chooser
         "Get my Team Collections", registration email lock; 29/29 component tests;
         XLF en-only. Wiring to real endpoints deferred to Wave 3 (after 06) as planned.
-- [ ] Wave 2 complete
+- [x] Wave 2 complete 7 Jul 2026 — 04 client core (83/83 cloud, 281/281 folder-TC);
+      08 collection-tab shells (60/60 component tests; folder path zero-extra-requests)
 - [ ] Wave 3 complete (two-instance same-machine smoke against local stack)
 - [ ] Wave 4 complete
 - [ ] Real-infrastructure cutover complete (deferred list above)
@@ -120,6 +121,13 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 ## Merge log
 
 (orchestrator appends: date · task · PR · notes)
+
+- 7 Jul 2026 · 08-ui-collection-tab · merged locally · Survived one session-limit
+  interruption (WIP preserved). Orchestrator review fix: the capability/experimental-flag
+  hooks fetched per component mount — BookButton would have issued hundreds of identical
+  requests per Collection-tab visit; now cached once per page load with test-reset seams
+  in vitest.setup. 60/60 re-verified. Wiring of the ~9 mocked endpoints lands with task 06.
+  WAVE 2 COMPLETE.
 
 - 7 Jul 2026 · 04-client-core · merged locally · 83/83 cloud (re-verified) + 281/281
   folder-TC. Three findings for later tasks: (1) CONTRACT GAP — no RPC returns a book's
