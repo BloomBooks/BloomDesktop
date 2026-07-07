@@ -20,7 +20,7 @@ Owns new `src/BloomBrowserUI/teamCollection/SharingPanel.tsx`,
       change role; last-admin protections; member read-only view. Folder TCs keep old panel.
 - [x] Collection chooser: "Get my Team Collections" (signed-out state included); pull-down join
       via the six-scenario dialog (new states: NotSignedIn, ApprovalRemoved).
-- [ ] Registration dialog: email unlock for cloud TCs (identity = account).
+- [x] Registration dialog: email unlock for cloud TCs (identity = account).
 - [ ] All strings via XLF (DistFiles/localization/en only), Send/Receive terminology.
 
 ## Acceptance
@@ -108,3 +108,26 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   clean on all touched files · next: Registration dialog email unlock for cloud TCs (step 4),
   then XLF strings for everything added in this task (step 5, follow
   `.github/skills/xlf-strings/SKILL.md`, only `DistFiles/localization/en/`).
+- 2026-07-06 · done: step 4 (Registration dialog). Added `cloudAccountEmail?: string` to
+  `IRegistrationContentsProps` (registrationTypes.ts) and `IRegistrationDialogProps`
+  (registrationDialogLauncher.tsx), threaded through `RegistrationDialog` and both launchers
+  (`RegistrationDialogLauncher`, `RegistrationDialogEventLauncher`). In
+  `registrationContents.tsx`, when `cloudAccountEmail` is set: the email field is force-synced
+  to it and always locked (`mayChangeEmail` becomes `false` regardless of the prop — identity is
+  the signed-in account, not a free-text field), with a distinct label
+  ("RegisterDialog.CloudAccountEmail") and an explanatory note
+  ("RegisterDialog.CloudAccountEmailNote") instead of the folder-TC "Check in to change email"
+  message (which means something different — "already registered" rather than
+  "tied to your account"). Wired this into `CreateCloudTeamCollectionDialog` in
+  `CreateTeamCollection.tsx`: `startSend` now checks `registration/userInfo` first (same pattern
+  as the folder dialog's `tryToCreate`) and shows the registration dialog with
+  `cloudAccountEmail: loginState.email` if not yet registered, only calling the actual
+  `createCloudTeamCollection()` (renamed the old body to `doSend`) once registered. No new test
+  file added (no pre-existing vitest coverage for the registration components in this repo —
+  only Playwright `.uitest.ts` files, which are excluded from the vitest run and out of scope
+  here); re-ran the full task test suite (29 tests across
+  SharingPanel/CreateCloudTeamCollection/MyCloudCollectionsSection/JoinCloudCollectionDialog) to
+  confirm no regressions. `yarn eslint` clean on all touched files · next: step 5 — XLF strings
+  for every new user-visible string added across this whole task (follow
+  `.github/skills/xlf-strings/SKILL.md`; only `DistFiles/localization/en/`). This is the last
+  step before final report.

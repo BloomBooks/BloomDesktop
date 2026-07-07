@@ -5,7 +5,7 @@ import {
     DialogBottomLeftButtons,
     DialogMiddle,
 } from "../BloomDialog/BloomDialog";
-import { H1 } from "../l10nComponents";
+import { H1, Span } from "../l10nComponents";
 import { AttentionTextField } from "../AttentionTextField";
 import BloomButton from "../bloomButton";
 import { isValidEmail } from "../../utils/emailUtils";
@@ -74,7 +74,12 @@ export const RegistrationContents: React.FunctionComponent<
     const [submitAttempts, setSubmitAttempts] = React.useState(0);
     const [info, setInfo] = React.useState<RegistrationInfo>(props.initialInfo);
 
-    const mayChangeEmail = props.mayChangeEmail ?? true;
+    // For cloud Team Collections, identity is the signed-in account: the email field is always
+    // locked to it (never freely editable), regardless of mayChangeEmail.
+    const cloudAccountEmail = props.cloudAccountEmail;
+    const mayChangeEmail = cloudAccountEmail
+        ? false
+        : (props.mayChangeEmail ?? true);
     const emailRequiredForTeamCollection =
         props.emailRequiredForTeamCollection ?? false;
 
@@ -82,6 +87,13 @@ export const RegistrationContents: React.FunctionComponent<
     React.useEffect(() => {
         setInfo(props.initialInfo);
     }, [props.initialInfo]);
+
+    // Keep the email locked to the cloud account's email, overriding anything else.
+    React.useEffect(() => {
+        if (cloudAccountEmail) {
+            setInfo((previous) => ({ ...previous, email: cloudAccountEmail }));
+        }
+    }, [cloudAccountEmail]);
 
     const updateInfo = React.useCallback(
         (changes: Partial<RegistrationInfo>) => {
@@ -240,14 +252,18 @@ export const RegistrationContents: React.FunctionComponent<
                             margin="normal"
                             fullWidth={true}
                             label={
-                                mayChangeEmail
-                                    ? "Email Address"
-                                    : "Check in to change email"
+                                cloudAccountEmail
+                                    ? "Your Bloom account email"
+                                    : mayChangeEmail
+                                      ? "Email Address"
+                                      : "Check in to change email"
                             }
                             l10nKey={
-                                mayChangeEmail
-                                    ? "RegisterDialog.Email"
-                                    : "RegisterDialog.CheckInToChangeEmail"
+                                cloudAccountEmail
+                                    ? "RegisterDialog.CloudAccountEmail"
+                                    : mayChangeEmail
+                                      ? "RegisterDialog.Email"
+                                      : "RegisterDialog.CheckInToChangeEmail"
                             }
                             value={info.email}
                             disabled={!mayChangeEmail}
@@ -263,6 +279,21 @@ export const RegistrationContents: React.FunctionComponent<
                             submitAttempts={submitAttempts}
                             data-testid="email"
                         />
+                        {cloudAccountEmail && (
+                            <Span
+                                l10nKey="RegisterDialog.CloudAccountEmailNote"
+                                temporarilyDisableI18nWarning={true}
+                                css={css`
+                                    display: block;
+                                    font-size: 11px;
+                                    color: #666;
+                                `}
+                            >
+                                This copy of Bloom will be registered under your
+                                signed-in Bloom account and can't be changed
+                                here.
+                            </Span>
+                        )}
                     </div>
                     <div
                         css={css`

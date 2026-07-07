@@ -451,7 +451,7 @@ export const CreateCloudTeamCollectionDialog: React.FunctionComponent<{
         true,
     );
 
-    const startSend = () => {
+    const doSend = () => {
         setSendState("sending");
         setSendError(undefined);
         createCloudTeamCollection().then(
@@ -461,6 +461,25 @@ export const CreateCloudTeamCollectionDialog: React.FunctionComponent<{
                 setSendState("error");
             },
         );
+    };
+
+    // Cloud TCs tie registration identity to the signed-in account (see registrationTypes.ts'
+    // cloudAccountEmail), so make sure this copy of Bloom is registered under that email before
+    // sending, same as the folder-TC dialog's tryToCreate() does for its own registration check.
+    const startSend = () => {
+        get("registration/userInfo", (userInfo) => {
+            if (userInfo?.data?.email) {
+                doSend();
+            } else {
+                showRegistrationDialog({
+                    emailRequiredForTeamCollection: true,
+                    cloudAccountEmail: loginState.email,
+                    onSave: (hasValidEmail: boolean) => {
+                        if (hasValidEmail) doSend();
+                    },
+                });
+            }
+        });
     };
 
     return (
