@@ -103,7 +103,20 @@ namespace Bloom.TeamCollection.Cloud
             CollectionId = collectionId;
             _collectionLock = collectionLock ?? new CollectionLock();
             _environment = environment ?? CloudEnvironment.Current;
-            _auth = auth ?? new CloudAuth(CloudAuth.CreateProvider(_environment));
+            // Only when WE create the default auth (no auth was injected) do we also initialize
+            // it at startup. This fixes a real gap: TeamCollectionManager.CreateCloudTeamCollection
+            // (the "open an already-joined cloud collection" path, e.g. on ordinary Bloom startup)
+            // passes no auth, so without this the session would never pick up
+            // BLOOM_CLOUDTC_USER/PASSWORD or a stored token, and the collection would always open
+            // signed out. Callers that inject their own CloudAuth (ConnectToCloudCollection, which
+            // already calls InitializeAtStartup itself before constructing us; every unit test)
+            // are unaffected -- they own their auth's lifecycle already.
+            if (auth == null)
+            {
+                auth = new CloudAuth(CloudAuth.CreateProvider(_environment));
+                auth.InitializeAtStartup(_environment);
+            }
+            _auth = auth;
             _client = client ?? new CloudCollectionClient(_environment, _auth);
             _transfer = transfer ?? new CloudBookTransfer();
             _cache = CloudRepoCache.LoadOrCreate(localCollectionFolder);
@@ -111,6 +124,53 @@ namespace Bloom.TeamCollection.Cloud
         }
 
         public string CollectionIdForCloud => _collectionId;
+
+        // ------------------------------------------------------------------
+        // Accessors for task 06 (SharingApi / TeamCollectionApi): thin, read-only exposure of
+        // this collection's own auth/client/cache state, so those API classes can be simple
+        // pass-throughs instead of duplicating Cloud-backend business logic. Mirrors the existing
+        // pattern of TeamCollectionApi downcasting to FolderTeamCollection for folder-specific
+        // members (e.g. GetPathToBookFileInRepo).
+        // ------------------------------------------------------------------
+
+        /// <summary>The auth session actually driving this collection's own RPC/edge-function
+        /// calls -- the single source of truth for "am I signed in" while this collection is the
+        /// open one (see SharingApi's CurrentAuth/CurrentClient helpers).</summary>
+        public CloudAuth Auth => _auth;
+
+        /// <summary>The RPC/edge-function client this collection uses for everything -- exposed so
+        /// SharingApi can call collection-scoped RPCs (members list/add/remove/setRole, force
+        /// unlock, history) without this class needing to grow business logic for them.</summary>
+        public CloudCollectionClient Client => _client;
+
+        /// <summary>The version seq of what's currently on THIS machine's disk for a book, or null
+        /// if never Sent/Received here (book-status JSON's "localVersionSeq").</summary>
+        public long? GetLocalVersionSeq(string bookFolderName) =>
+            TryGetCachedBook(bookFolderName)?.LocalVersionSeq;
+
+        /// <summary>The latest version seq known to be in the repo for a book, or null if the book
+        /// isn't cached at all (book-status JSON's "repoVersionSeq").</summary>
+        public long? GetRepoVersionSeq(string bookFolderName) =>
+            TryGetCachedBook(bookFolderName)?.CurrentVersionSeq;
+
+        /// <summary>
+        /// Count of live, currently-unlocked books whose repo version is newer than what's on this
+        /// machine -- drives the status button's "Updates Available (N books)" metadata. A book
+        /// this machine has never Received (LocalVersionSeq null) counts too: from this machine's
+        /// point of view it equally needs a Receive before it's current.
+        /// </summary>
+        public int GetUpdatesAvailableCount()
+        {
+            EnsureCacheHydrated();
+            return _cache
+                .GetAllBooks()
+                .Count(b =>
+                    !b.DeletedAt.HasValue
+                    && b.CurrentVersionSeq.HasValue
+                    && string.IsNullOrEmpty(b.LockedBy)
+                    && (b.LocalVersionSeq ?? -1) < b.CurrentVersionSeq.Value
+                );
+        }
 
         // ------------------------------------------------------------------
         // Capability flags / simple identity members
@@ -218,10 +278,13 @@ namespace Bloom.TeamCollection.Cloud
             return new BookStatus
             {
                 checksum = book.CurrentChecksum,
-                lockedBy = ResolveLockedByForDisplay(book.LockedBy),
-                // The server book row (CONTRACTS.md get_collection_state/get_changes shape) does not
-                // carry the lock holder's first/last name today -- only their email (LockedBy) and
-                // machine. Left null here; see the task 05 final report's contract-ambiguity note.
+                lockedBy = ResolveLockedByForDisplay(book),
+                // The server book row has no reliable first/last-name split (task 06's
+                // 20260707000006 migration adds a best-effort whole display name -- surfaced via
+                // the book-status JSON's separate lockedByEmail/lockedByName fields instead, since
+                // stuffing a whole name into "FirstName" with a null Surname would render as
+                // "Name null" in the existing TS template `${whoFirstName} ${whoSurname}`).
+                // Left null here; see the task 05 final report's contract-ambiguity note.
                 lockedByFirstName = null,
                 lockedBySurname = null,
                 lockedWhen = book.LockedAt.HasValue
@@ -233,21 +296,24 @@ namespace Bloom.TeamCollection.Cloud
         }
 
         /// <summary>
-        /// Live-testing discovery (see the task 05 final report): the server currently stamps
+        /// Live-testing discovery (see the task 05 final report): the server stamps
         /// `locked_by`/`created_by` with the raw auth user id (JWT `sub`), not the email
-        /// CONTRACTS.md's identity model describes ("account email is the identity in cloud TCs") --
-        /// confirmed by decoding a real dev-stack session token and comparing it to a live
-        /// checkout_book response. That's a server-side RPC issue (task 01's SQL functions, out of
-        /// this task's file scope), not something fixable here. This client-side workaround resolves
-        /// only OUR OWN user id back to our own email -- the one comparison that actually matters for
-        /// every IsCheckedOutHereBy / "is this checked out to me" check throughout the (unchanged)
-        /// base class. A teammate's id is left as a raw id, since there is no RPC to resolve someone
-        /// else's id to an email; their lock still shows correctly as "not me", just not with a
-        /// friendly display name yet.
+        /// CONTRACTS.md's identity model describes ("account email is the identity in cloud TCs").
+        /// Task 06's 20260707000006 migration fixes this server-side for every member (not just the
+        /// caller) by joining tc.members in get_collection_state/get_changes and reporting the
+        /// result as <see cref="CloudCachedBook.LockedByEmail"/> -- preferred here whenever present.
+        /// The original client-side workaround (resolve only OUR OWN id, since that's all a plain
+        /// JWT comparison can do) is kept as a fallback for a cache snapshot saved before that
+        /// migration landed (an old <c>.bloom-cloud-repo-cache.json</c> with no LockedByEmail yet).
         /// </summary>
-        private string ResolveLockedByForDisplay(string lockedBy)
+        private string ResolveLockedByForDisplay(CloudCachedBook book)
         {
-            if (!string.IsNullOrEmpty(lockedBy) && lockedBy == _auth.CurrentUserId)
+            var lockedBy = book.LockedBy;
+            if (string.IsNullOrEmpty(lockedBy))
+                return lockedBy;
+            if (!string.IsNullOrEmpty(book.LockedByEmail))
+                return book.LockedByEmail;
+            if (lockedBy == _auth.CurrentUserId)
                 return _auth.CurrentEmail;
             return lockedBy;
         }
@@ -525,6 +591,9 @@ namespace Bloom.TeamCollection.Cloud
                         keepCheckedOut ? TeamCollectionManager.CurrentUser : null,
                         keepCheckedOut ? TeamCollectionManager.CurrentMachine : null
                     );
+                    // We just successfully uploaded this exact version, so the local folder IS this
+                    // version now (task 06's "localVersionSeq").
+                    _cache.RecordLocalVersionSeq(bookId, seq);
                     _cache.Save();
                     RefreshIndexFromCache();
                 }
@@ -640,7 +709,7 @@ namespace Bloom.TeamCollection.Cloud
             string stagingPath = null;
             try
             {
-                var manifest = FetchAndCacheManifest(bookId);
+                var manifest = FetchAndCacheManifest(bookId, out var fetchedVersionSeq);
                 if (manifest == null)
                     return $"Could not read the file list for \"{bookName}\" from the cloud Team Collection.";
 
@@ -691,6 +760,17 @@ namespace Bloom.TeamCollection.Cloud
                 if (backupPath != null)
                     RobustIO.DeleteDirectoryAndContents(backupPath, true);
 
+                // The whole-book folder now matches the version whose manifest we just fetched and
+                // downloaded from -- record it as this machine's local version (book-status JSON's
+                // "localVersionSeq"; task 06). Deliberately only done here (a completed whole-book
+                // swap), never in GetRepoBookFile's single-file peek, which doesn't update the local
+                // folder at all.
+                if (fetchedVersionSeq.HasValue)
+                {
+                    _cache.RecordLocalVersionSeq(bookId, fetchedVersionSeq.Value);
+                    _cache.Save();
+                }
+
                 return null;
             }
             catch (Exception e)
@@ -717,7 +797,8 @@ namespace Bloom.TeamCollection.Cloud
             string tempFolder = null;
             try
             {
-                var manifest = _cache.TryGetBook(bookId)?.Manifest ?? FetchAndCacheManifest(bookId);
+                var manifest =
+                    _cache.TryGetBook(bookId)?.Manifest ?? FetchAndCacheManifest(bookId, out _);
                 if (
                     manifest == null
                     || !manifest.Entries.TryGetValue(
@@ -774,12 +855,19 @@ namespace Bloom.TeamCollection.Cloud
             }
         }
 
-        private BookVersionManifest FetchAndCacheManifest(string bookId)
+        /// <summary>Fetches and caches a book's current manifest, out-parameter also reporting the
+        /// version seq it belongs to (get_book_manifest's "seq", v1.2) so Receive can record what
+        /// ended up on disk (task 06's "localVersionSeq") without a second round trip.</summary>
+        private BookVersionManifest FetchAndCacheManifest(string bookId, out long? versionSeq)
         {
             var manifestResponse = _client.GetBookManifest(bookId);
             if (manifestResponse == null)
+            {
+                versionSeq = null;
                 return null;
+            }
             var manifest = BookVersionManifest.FromJson((JArray)manifestResponse["files"]);
+            versionSeq = (long?)manifestResponse["seq"];
             _cache.RecordManifest(bookId, manifest);
             return manifest;
         }
