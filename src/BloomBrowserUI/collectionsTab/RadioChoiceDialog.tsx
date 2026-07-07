@@ -35,6 +35,10 @@ export const RadioChoiceDialog: React.FunctionComponent<{
     const [choice, setChoice] = useState<string>();
 
     // Start with nothing selected each time the dialog opens, so OK is disabled until the user picks.
+    // A useEffect is warranted here (per the repo's useEffect guidance) rather than the usual
+    // key-prop remount: this dialog is rendered inline and permanently mounted by its parent, which
+    // toggles `open` rather than mounting/unmounting us, so there is no remount to hang a key on.
+    // Keying the reset off `open` keeps that concern owned by the component that holds the state.
     useEffect(() => {
         if (props.open) setChoice(undefined);
     }, [props.open]);

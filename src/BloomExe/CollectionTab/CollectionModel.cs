@@ -443,7 +443,7 @@ namespace Bloom.CollectionTab
             // though the collection is only reloaded once, after the whole batch.
             var originalInstanceId = instanceId;
             string destFolder = null;
-            string folderToRecycleAfterImport = null;
+            string replaceTargetFolder = null;
             // Once the book has been moved into the collection the import has succeeded; a failure
             // after that point (e.g. recycling the replaced duplicate) must not delete it.
             var importSucceeded = false;
@@ -478,21 +478,22 @@ namespace Bloom.CollectionTab
                         case ImportDuplicateChoice.Cancel:
                             return null;
                         case ImportDuplicateChoice.Replace:
-                            // Replacing recycles the existing book, so we must be allowed to delete
-                            // it: in a Team Collection that means it has to be checked out here. The
-                            // collection screen already disables "Replace" when any duplicate is not
-                            // (see AllChosenBloomSourceDuplicatesAreReplaceable), but guard here too
-                            // so we can never delete a book the user hasn't checked out.
+                            // Replacing overwrites the existing book in place, so we must be allowed
+                            // to modify it: in a Team Collection that means it has to be checked out
+                            // here. The collection screen already disables "Replace" when any
+                            // duplicate is not (see AllChosenBloomSourceDuplicatesAreReplaceable), but
+                            // guard here too so we can never overwrite a book the user hasn't checked
+                            // out.
                             if (!existing.IsSaveable)
                                 throw new ApplicationException(
                                     $"Cannot replace \"{existing.Title}\" because it is not checked out of the Team Collection."
                                 );
-                            // Keep the imported book's id and recycle the existing book, but only
-                            // *after* the imported book is safely in place (below); recycling first
-                            // would lose the original if the move then failed. The existing book
-                            // (same id) stays on disk for now, so GetUniqueBookFolderName just picks
-                            // a fresh folder name to avoid the transient collision.
-                            folderToRecycleAfterImport = existing.FolderPath;
+                            // Overwrite this book's folder in place (below), keeping its folder name
+                            // and — in a Team Collection — its checkout status, so it stays the same
+                            // checked-out repo book (the new content is pushed to the shared repo on
+                            // the next check-in) rather than becoming a new local book while the old
+                            // one resurrects from the repo. The imported book keeps the same id.
+                            replaceTargetFolder = existing.FolderPath;
                             break;
                         case ImportDuplicateChoice.AddCopy:
                             makeIndependentCopy = true;
@@ -516,6 +517,30 @@ namespace Bloom.CollectionTab
                     }
                 }
 
+                if (replaceTargetFolder != null)
+                {
+                    // "Replace" overwrites the existing book's folder in place rather than making a
+                    // new folder and deleting the old one. This keeps the folder name and (in a Team
+                    // Collection) the checkout status, so it stays the same checked-out repo book; see
+                    // the Replace case above.
+                    //
+                    // If the book we're about to overwrite is the current selection, deselect it first
+                    // so its files aren't locked (e.g. open in a preview) while we swap the folder.
+                    if (_bookSelection.CurrentSelection?.FolderPath == replaceTargetFolder)
+                        SelectBookOnUiThread(null);
+                    destFolder = ReplaceBookInPlaceKeepingTeamStatus(
+                        tempFolder,
+                        htmlPath,
+                        replaceTargetFolder
+                    );
+                    importSucceeded = true;
+                    // Remember the id this book arrived with so a later file in the same batch carrying
+                    // the same id is caught as a within-batch duplicate above.
+                    if (!string.IsNullOrEmpty(originalInstanceId))
+                        idsAlreadyImportedThisBatch?.Add(originalInstanceId);
+                    return destFolder;
+                }
+
                 // Pick a folder name that doesn't collide with an existing book on disk, and make
                 // the main htm file match it (Bloom's convention: folder name == book htm name).
                 var destName = BookStorage.GetUniqueBookFolderName(
@@ -536,47 +561,14 @@ namespace Bloom.CollectionTab
                 if (!string.IsNullOrEmpty(originalInstanceId))
                     idsAlreadyImportedThisBatch?.Add(originalInstanceId);
 
-                // The imported book is now safely in place; for the Replace case it is finally safe
-                // to recycle the book it duplicates. The import itself has already succeeded, so a
-                // failure recycling the old book (locked folder, recycle bin unavailable on a network
-                // drive, etc.) is reported as its own minor problem rather than being allowed to
-                // bubble up as an "import failed" error — which would both mislead the user and, since
-                // this method would then throw instead of returning destFolder, keep the
-                // successfully-imported book from being reloaded into view.
-                if (folderToRecycleAfterImport != null)
-                {
-                    try
-                    {
-                        if (
-                            _bookSelection.CurrentSelection?.FolderPath
-                            == folderToRecycleAfterImport
-                        )
-                            SelectBookOnUiThread(null);
-                        PathUtilities.DeleteToRecycleBin(folderToRecycleAfterImport);
-                        editable.HandleBookDeletedFromCollection(folderToRecycleAfterImport);
-                    }
-                    catch (Exception e)
-                    {
-                        NonFatalProblem.Report(
-                            ModalIf.All,
-                            PassiveIf.None,
-                            shortUserLevelMessage: string.Format(
-                                "The book was imported, but Bloom could not remove the existing copy it replaced. You may need to delete the older copy of \"{0}\" manually.",
-                                Path.GetFileName(destFolder)
-                            ),
-                            moreDetails: null,
-                            exception: e
-                        );
-                    }
-                }
                 return destFolder;
             }
             catch
             {
                 // If we failed partway through creating the destination folder, don't leave a
-                // half-imported book behind in the collection. But once the import has succeeded
-                // (the book is fully moved into place), a later failure such as recycling the
-                // replaced duplicate must not delete the book we just imported.
+                // half-imported book behind in the collection. (The Replace/overwrite path handles
+                // its own rollback in ReplaceBookInPlaceKeepingTeamStatus and only sets destFolder
+                // once it has fully succeeded, so this never deletes a restored original.)
                 if (!importSucceeded && destFolder != null && Directory.Exists(destFolder))
                     SIL.IO.RobustIO.DeleteDirectoryAndContents(destFolder);
                 throw;
@@ -586,6 +578,90 @@ namespace Bloom.CollectionTab
                 if (Directory.Exists(tempFolder))
                     SIL.IO.RobustIO.DeleteDirectoryAndContents(tempFolder);
             }
+        }
+
+        /// <summary>
+        /// Replaces the book in <paramref name="targetFolder"/> with the freshly-extracted imported
+        /// book in <paramref name="tempFolder"/>, overwriting its content in place. The target folder
+        /// keeps its name and its Team Collection files (checkout status etc.), so in a Team
+        /// Collection it stays the same checked-out book — the new content is pushed to the shared
+        /// repo on the next check-in — rather than becoming a new local book while the old one
+        /// resurrects from the repo. The imported book already carries the same bookInstanceId
+        /// (Replace keeps the id). The swap goes through a set-aside backup so a mid-swap failure
+        /// restores the original rather than losing the book.
+        /// </summary>
+        /// <returns>the target folder path, now holding the imported book</returns>
+        private string ReplaceBookInPlaceKeepingTeamStatus(
+            string tempFolder,
+            string htmlPath,
+            string targetFolder
+        )
+        {
+            // Bloom's convention is folder name == main htm name; keep the target's existing folder
+            // name (which is what maps it to its Team Collection repo entry), so rename the incoming
+            // htm to match it.
+            var targetName = Path.GetFileName(targetFolder);
+            var renamedHtmlPath = Path.Combine(tempFolder, targetName + ".htm");
+            if (!string.Equals(htmlPath, renamedHtmlPath, StringComparison.OrdinalIgnoreCase))
+                RobustFile.Move(htmlPath, renamedHtmlPath);
+
+            // Swap on the same volume: move the existing book aside, move the imported content into
+            // its place, then carry the Team Collection files over from the original so the book stays
+            // checked out. If anything fails mid-swap, restore the original and rethrow so we never
+            // lose the book. (Outside a Team Collection there are no TC files, so that step does
+            // nothing.)
+            // The set-aside name is dot-prefixed so that, if final cleanup ever fails and it lingers,
+            // the collection scan ignores it (it only skips dot-prefixed folders) rather than picking
+            // it up as a book — which, since it holds the old content with the same bookInstanceId,
+            // would be a duplicate-id book.
+            var backupFolder = Path.Combine(
+                Path.GetDirectoryName(targetFolder),
+                "." + Path.GetFileName(targetFolder) + ".replacing-" + Guid.NewGuid()
+            );
+            SIL.IO.RobustIO.MoveDirectory(targetFolder, backupFolder);
+            try
+            {
+                SIL.IO.RobustIO.MoveDirectory(tempFolder, targetFolder);
+                var teamFiles = new List<string>();
+                Bloom.TeamCollection.TeamCollection.AddTCSpecificFiles(backupFolder, teamFiles);
+                foreach (var teamFile in teamFiles)
+                    RobustFile.Copy(
+                        teamFile,
+                        Path.Combine(targetFolder, Path.GetFileName(teamFile)),
+                        true
+                    );
+            }
+            catch
+            {
+                if (Directory.Exists(targetFolder))
+                    SIL.IO.RobustIO.DeleteDirectoryAndContents(targetFolder);
+                SIL.IO.RobustIO.MoveDirectory(backupFolder, targetFolder);
+                throw;
+            }
+            // The replace has fully succeeded; deleting the set-aside old content is just cleanup. If
+            // it fails (locked files, flaky network/removable drive, AV), don't let that turn a
+            // successful replace into an "import failed" error and keep the replaced book from being
+            // reloaded into view — report it as a minor problem instead. (The backup is dot-prefixed,
+            // so even if it lingers the collection scan ignores it.)
+            try
+            {
+                SIL.IO.RobustIO.DeleteDirectoryAndContents(backupFolder);
+            }
+            catch (Exception e)
+            {
+                NonFatalProblem.Report(
+                    ModalIf.All,
+                    PassiveIf.None,
+                    shortUserLevelMessage: string.Format(
+                        "The book \"{0}\" was replaced, but Bloom could not remove a temporary copy of the old version. You may delete the folder \"{1}\" manually.",
+                        Path.GetFileName(targetFolder),
+                        Path.GetFileName(backupFolder)
+                    ),
+                    moreDetails: null,
+                    exception: e
+                );
+            }
+            return targetFolder;
         }
 
         /// <summary>
@@ -611,10 +687,13 @@ namespace Bloom.CollectionTab
             // temp folder is frequently on a different drive than the user's collection (e.g. %TEMP%
             // on C: but the collection on D: or a removable/network drive), which would make every
             // edit-mode import fail. Staging in the collection's parent guarantees a same-volume move.
+            // If the collection is at a filesystem root (e.g. "D:\"), it has no parent directory, so
+            // stage inside the collection folder itself instead — still same-volume, and never %TEMP%
+            // (which could be on another drive and reintroduce the cross-volume failure).
             // The name is dot-prefixed so it is ignored by the collection's book scan if it ever ends
             // up inside a scanned folder.
             var collectionDir = TheOneEditableCollection.PathToDirectory;
-            var stagingParent = Directory.GetParent(collectionDir)?.FullName ?? Path.GetTempPath();
+            var stagingParent = Directory.GetParent(collectionDir)?.FullName ?? collectionDir;
             var tempFolder = Path.Combine(stagingParent, ".BloomImport-" + Guid.NewGuid());
             try
             {
@@ -661,11 +740,17 @@ namespace Bloom.CollectionTab
                 if (newBook == null)
                     return null; // e.g. the source had a configuration dialog and the user cancelled
 
-                // Mirror the normal "make a book from this source" flow (CreateFromSourceBook):
-                // defer the "Created" history event via a pending marker so it captures the title the
-                // user eventually gives the book (and suppresses spurious "Renamed" events meanwhile),
-                // and add the new book to the collection in memory rather than reloading and looking it
+                // Add the new book to the collection in memory rather than reloading and looking it
                 // up again (which was the source of a silent not-found fallback).
+                //
+                // The normal "make a book from this source" flow (CreateFromSourceBook) defers the
+                // "Created" history event via a pending marker and flushes it when the book is later
+                // deselected, so it can capture a title the user types afterward. That does not work
+                // for a batch import: only the last-imported book is ever selected, so every earlier
+                // book's pending event would be lost once its Book object is discarded (a freshly
+                // rebuilt Book has no pending marker). An imported book already has its title, so we
+                // set the marker and flush it immediately, giving every imported derivative its own
+                // "Created" history entry.
                 newBook.PendingCreationSource = Path.GetFileName(sourcePath);
                 newBook.PendingCreationSourceTitle = newBook.BookInfo.GetTitleForLanguage(
                     newBook.BookData.Language1Tag
@@ -674,6 +759,7 @@ namespace Bloom.CollectionTab
                 newBook.BringBookUpToDate(new NullProgress(), false);
 
                 TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
+                newBook.RecordPendingCreatedHistoryEvent();
                 return newBook;
             }
             finally

@@ -230,10 +230,13 @@ namespace BloomTests.CollectionTab
         }
 
         [Test]
-        public void ImportBloomSource_DuplicateId_Replace_RecyclesExistingBook()
+        public void ImportBloomSource_DuplicateId_Replace_OverwritesInPlace()
         {
             var sharedId = Guid.NewGuid().ToString();
             var existingFolder = MakeExistingBookInCollection("Moon", sharedId);
+            // A file that exists only in the old book, to prove the folder is overwritten, not merged.
+            File.WriteAllText(Path.Combine(existingFolder, "old-only.txt"), "old");
+            var foldersBefore = Directory.GetDirectories(_collection.Path).Length;
             var src = MakeBloomSourceFile("Moon", sharedId);
 
             var dest = _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
@@ -241,13 +244,72 @@ namespace BloomTests.CollectionTab
                 title => CollectionModel.ImportDuplicateChoice.Replace
             );
 
-            Assert.That(dest, Is.Not.Null);
+            // Replace overwrites the existing book in place: same folder, no second folder, the old
+            // content is gone, the imported content is present, and the id is unchanged.
+            Assert.That(
+                dest,
+                Is.EqualTo(existingFolder),
+                "replace should overwrite the existing folder in place"
+            );
             Assert.That(
                 Directory.Exists(existingFolder),
+                Is.True,
+                "the existing folder should be kept, not recycled"
+            );
+            Assert.That(
+                Directory.GetDirectories(_collection.Path).Length,
+                Is.EqualTo(foldersBefore),
+                "replace should not create a second book folder"
+            );
+            Assert.That(
+                File.Exists(Path.Combine(existingFolder, "old-only.txt")),
                 Is.False,
-                "the existing book should have been recycled"
+                "the old book's content should have been replaced, not merged"
+            );
+            Assert.That(
+                File.Exists(Path.Combine(existingFolder, "book.css")),
+                Is.True,
+                "the imported book's content should now be in the folder"
             );
             Assert.That(BookMetaData.FromFolder(dest).Id, Is.EqualTo(sharedId));
+        }
+
+        [Test]
+        public void ImportBloomSource_DuplicateId_Replace_PreservesTeamCollectionStatus()
+        {
+            var sharedId = Guid.NewGuid().ToString();
+            var existingFolder = MakeExistingBookInCollection("Moon", sharedId);
+            // Simulate a checked-out Team Collection book by giving it a TeamCollection.status file.
+            var statusPath = Path.Combine(existingFolder, "TeamCollection.status");
+            File.WriteAllText(statusPath, "{\"lockedBy\":\"me@example.com\"}");
+            var src = MakeBloomSourceFile("Moon", sharedId);
+
+            var dest = _testCollectionModel.ImportBloomSourceFileToCollectionFolder(
+                src,
+                title => CollectionModel.ImportDuplicateChoice.Replace
+            );
+
+            Assert.That(dest, Is.EqualTo(existingFolder));
+            // The checkout status must survive the replace, so the book stays the same checked-out
+            // repo book rather than becoming a new local book (which would let the old one resurrect
+            // from the shared repo).
+            var newStatusPath = Path.Combine(existingFolder, "TeamCollection.status");
+            Assert.That(
+                File.Exists(newStatusPath),
+                Is.True,
+                "the Team Collection status (checkout) file must be preserved across a replace"
+            );
+            Assert.That(
+                File.ReadAllText(newStatusPath),
+                Does.Contain("lockedBy"),
+                "the preserved status file should keep its original content"
+            );
+            // Sanity check that the content really was replaced by the import.
+            Assert.That(
+                File.Exists(Path.Combine(existingFolder, "book.css")),
+                Is.True,
+                "the imported book's content should now be in the folder"
+            );
         }
 
         [Test]
@@ -328,9 +390,14 @@ namespace BloomTests.CollectionTab
             );
             Assert.That(dest, Is.Not.Null);
             Assert.That(
+                dest,
+                Is.EqualTo(existingFolder),
+                "Replace should overwrite the existing (same-id) book in place, keeping its folder"
+            );
+            Assert.That(
                 Directory.Exists(existingFolder),
-                Is.False,
-                "Replace should have recycled the existing (same-id) book"
+                Is.True,
+                "Replace overwrites in place, so the existing folder is kept"
             );
         }
 
