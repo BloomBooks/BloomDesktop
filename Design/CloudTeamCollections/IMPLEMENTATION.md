@@ -93,7 +93,8 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 ## Status
 
 - [x] Wave 0 complete (folder backend provably unchanged — 208/208 TC tests green)
-- [ ] Wave 1 complete (incl. local dev stack up: `supabase start` + MinIO + dev logins)
+- [x] Wave 1 complete 7 Jul 2026 (local dev stack live; schema+RPCs pgTAP-green; edge
+      functions live-verified; auth skeleton w/ dev provider; UI shells tested)
   - [x] 01-server-schema DONE — pgTAP 42/42 green on the live local stack (6 Jul 2026)
   - [x] 11-local-dev-stack DONE — full stack verified on **Podman 5.8.3** (rootful, WSL2,
         Docker-compat pipe) instead of Docker Desktop: MinIO up w/ versioning+lifecycle,
@@ -105,7 +106,9 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
   - [x] 03-auth DONE — CloudEnvironment/CloudAuth(dev provider)/CloudCollectionClient;
         46/46 cloud + 244/244 folder-TC tests; live-verified vs local stack. Deferred:
         persistent token store; real provider awaits Option A/B/C; human GUI smoke + 2h soak.
-  - [ ] 07-ui-setup (shells)
+  - [x] 07-ui-setup (shells) DONE — SharingPanel, cloud create dialog, chooser
+        "Get my Team Collections", registration email lock; 29/29 component tests;
+        XLF en-only. Wiring to real endpoints deferred to Wave 3 (after 06) as planned.
 - [ ] Wave 2 complete
 - [ ] Wave 3 complete (two-instance same-machine smoke against local stack)
 - [ ] Wave 4 complete
@@ -117,6 +120,13 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 ## Merge log
 
 (orchestrator appends: date · task · PR · notes)
+
+- 7 Jul 2026 · 07-ui-setup · merged locally · Orchestrator review fix: the chooser's cloud
+  section rendered UNGATED for all users — now behind the experimental feature (re-verified
+  29/29 after fix). Registration/settings changes are additive and folder-safe. Deferred to
+  Wave 3 wiring (documented in task file): SharingPanel into settings' isTeamCollection
+  branch; JoinCloudCollectionDialog's matching logic into the chooser's onPullDown.
+  WAVE 1 COMPLETE.
 
 - 7 Jul 2026 · 02-edge-functions · merged locally · Two agent interruptions survived via
   per-step commits (the gvproxy hang the agent later diagnosed was likely the stall cause).
