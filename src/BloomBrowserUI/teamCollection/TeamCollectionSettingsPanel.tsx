@@ -22,6 +22,7 @@ import { useEffect } from "react";
 import { Label } from "../react_components/l10nComponents";
 import { TextField } from "@mui/material";
 import { DialogHelpButton } from "../react_components/BloomDialog/commonDialogComponents";
+import { useIsCloudTeamCollectionsExperimentalFeatureEnabled } from "./sharingApi";
 
 // The contents of the Team Collection panel of the Settings dialog.
 
@@ -39,6 +40,9 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
             setAdminstratorEmail(result.data);
         });
     }, []);
+
+    const cloudSharingExperimentalFeatureEnabled =
+        useIsCloudTeamCollectionsExperimentalFeatureEnabled();
 
     const intro: JSX.Element = (
         <div>
@@ -139,6 +143,33 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
                     temporarilyDisableI18nWarning={true}
                 >
                     Create a Team Collection
+                </BloomButton>
+            </div>
+            <div
+                className="align-right"
+                css={css`
+                    margin-top: 8px;
+                `}
+            >
+                <BloomButton
+                    className="align-right"
+                    l10nKey="TeamCollection.Sharing.ShareOnCloudServer"
+                    enabled={cloudSharingExperimentalFeatureEnabled}
+                    hasText={true}
+                    variant="outlined"
+                    onClick={() =>
+                        post(
+                            "teamCollection/showCreateCloudTeamCollectionDialog",
+                        )
+                    }
+                    temporarilyDisableI18nWarning={true}
+                    // Explains the gating when disabled; no tooltip is needed once enabled.
+                    // Localized under TeamCollection.Sharing.ShareOnCloudServer.ToolTipWhenDisabled.
+                    l10nTipEnglishDisabled="Turn on the 'cloud-team-collections' experimental feature (Settings > Advanced) to use this."
+                    data-testid="share-on-cloud-button"
+                >
+                    Share this collection on the Bloom sharing server
+                    (experimental)
                 </BloomButton>
             </div>
             <P

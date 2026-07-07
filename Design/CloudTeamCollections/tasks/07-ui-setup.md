@@ -8,7 +8,7 @@ Owns new `src/BloomBrowserUI/teamCollection/SharingPanel.tsx`,
 `TeamCollectionSettingsPanel.tsx`, `CollectionChooserDialog` during its waves.
 
 ## Steps
-- [ ] Settings (not shared): keep folder-TC button; add "Share this collection on the Bloom
+- [x] Settings (not shared): keep folder-TC button; add "Share this collection on the Bloom
       sharing server (experimental)" behind the experimental flag + feature gate, disabled
       state explains gating.
 - [ ] Cloud create dialog: sign-in step (inline; in dev auth mode this is a plain
@@ -39,3 +39,18 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   `localizationManager` mock, which crashed any test rendering `Div`/`BloomButton`/etc.) ·
   next: wire the "Share this collection..." experimental-gated entry point into
   TeamCollectionSettingsPanel.tsx (step 1).
+- 2026-07-06 · done: resumed session; re-verified WIP files are prettier-clean (no changes)
+  and `SharingPanel.test.tsx` (7 tests) still passes — `yarn vitest run` in default `forks`
+  pool hit "Timeout starting forks runner" on this machine, so re-ran with `--pool=threads`,
+  which passed cleanly in 37.8s; will use `--pool=threads` for the rest of this session.
+- 2026-07-06 · done: step 1 (Settings). Added
+  `useIsCloudTeamCollectionsExperimentalFeatureEnabled()` to `sharingApi.ts` (reads
+  `app/enabledExperimentalFeatures`, checks for the `cloud-team-collections` token — matches
+  `ExperimentalFeatures.kCloudTeamCollections` in C#) and a new "Share this collection on the
+  Bloom sharing server (experimental)" `BloomButton` in `TeamCollectionSettingsPanel.tsx`'s
+  not-yet-a-TC branch, disabled until the experimental flag is on, with
+  `l10nTipEnglishDisabled` explaining the gate; posts
+  `teamCollection/showCreateCloudTeamCollectionDialog` (new Wave-3 endpoint) when enabled.
+  Also added `createCloudTeamCollection()` to `sharingApi.ts` for the next step · next: cloud
+  create dialog (sign-in → immutable-name ack → initial Send progress) in
+  `CreateTeamCollection.tsx` (step 2).

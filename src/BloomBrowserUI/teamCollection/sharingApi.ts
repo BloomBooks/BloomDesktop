@@ -135,3 +135,29 @@ export function useMyCloudCollections(shouldQuery: boolean): {
 export function pullDownCollection(collectionId: string) {
     return postJson("collections/pullDown", { collectionId });
 }
+
+// Token used in Settings > Advanced Settings > Experimental Features to gate the cloud-sharing
+// UI; must match ExperimentalFeatures.kCloudTeamCollections in the C# code.
+const kCloudTeamCollectionsExperimentalFeatureToken = "cloud-team-collections";
+
+// Whether the user has turned on the "cloud-team-collections" experimental feature. Backed by
+// the same `app/enabledExperimentalFeatures` endpoint the Talking Book toolbox already uses
+// (a comma-separated list of enabled tokens), so no new C# is required for this Wave-1 gate.
+export function useIsCloudTeamCollectionsExperimentalFeatureEnabled(): boolean {
+    const [enabled, setEnabled] = useState(false);
+    React.useEffect(() => {
+        get("app/enabledExperimentalFeatures", (result) => {
+            const tokens = (result.data as string) ?? "";
+            setEnabled(
+                tokens.includes(kCloudTeamCollectionsExperimentalFeatureToken),
+            );
+        });
+    }, []);
+    return enabled;
+}
+
+// Kicks off the (Wave-3) cloud Team Collection creation flow: uploads the current local
+// collection as the initial version of a new cloud-backed Team Collection.
+export function createCloudTeamCollection() {
+    return post("teamCollection/createCloudTeamCollection");
+}
