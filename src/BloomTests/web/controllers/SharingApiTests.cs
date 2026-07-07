@@ -118,7 +118,10 @@ namespace BloomTests.web.controllers
             Assert.That(result.Type, Is.EqualTo(BookHistoryEventType.ForcedUnlock));
             Assert.That(result.UserId, Is.EqualTo("user-1"));
             Assert.That(result.UserName, Is.EqualTo("Sara"));
-            Assert.That(result.When, Is.EqualTo(when));
+            // The (DateTime) JToken cast (matching this codebase's existing
+            // (DateTime?)row["locked_at"]-style casts elsewhere) converts to local kind, so compare
+            // in UTC rather than assuming the cast preserves Z/UTC as-is.
+            Assert.That(result.When.ToUniversalTime(), Is.EqualTo(when));
             Assert.That(result.BloomVersion, Is.EqualTo("6.2.100"));
         }
 
