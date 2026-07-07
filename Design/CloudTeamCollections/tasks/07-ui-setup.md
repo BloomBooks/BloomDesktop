@@ -71,3 +71,17 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   "Get my Team Collections" (signed-in listing + signed-out state) in `CollectionChooser.tsx`
   (step 3), then `JoinCloudCollectionDialog.tsx` (new, six-scenario + NotSignedIn +
   ApprovalRemoved) for pull-down join.
+- 2026-07-06 · done (partial step 3 — listing half; pull-down-join dialog still to do): added
+  `MyCloudCollectionsSection.tsx` (new; presentational "Get my Team Collections" sidebar of the
+  collection chooser: signed-out sign-in prompt, loading, empty state, and a listing with a
+  per-row pull-down button) and wired it into `CollectionChooser.tsx` alongside the existing
+  recent-collections grid, backed by `useSharingLoginState`/`useMyCloudCollections`/
+  `pullDownCollection` from `sharingApi.ts`. Added `MyCloudCollectionsSection.test.tsx` (4
+  tests, all green) covering signed-out/loading/empty/listing+pull-down-click. Found and fixed
+  the same "l10n `Div`/`P`/`Span` don't forward `data-testid`" trap as elsewhere in this task —
+  wrapped in a plain `<div data-testid=...>` for the loading/empty states. `yarn eslint` clean
+  on all touched files · next: `JoinCloudCollectionDialog.tsx` (new) — the pull-down-join dialog
+  with the six folder-TC scenarios adapted to cloud collections plus NotSignedIn and
+  ApprovalRemoved (8 states total), to complete step 3; `onPullDown` in `CollectionChooser.tsx`
+  will eventually need to open it once it exists (Wave-1 shell can leave the direct
+  `pullDownCollection` call as the placeholder action for now).
