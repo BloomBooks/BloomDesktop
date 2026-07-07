@@ -35,3 +35,18 @@ nothing shared — the manager factory seam from 00 is wired by config.
 
 **Agent notes**: Sonnet, orchestrator reviews closely. Base-class code is read-only here;
 anything needing a base change goes back to the orchestrator.
+
+## Progress log
+
+- 7 Jul 2026 · done · Read task brief, CONTRACTS.md v1.2, architecture doc, write-book-status
+  audit, and surveyed (via sub-agent) the full abstract-member surface of TeamCollection.cs,
+  TeamCollectionManager.cs's two NotImplementedException seams, and the Wave 3/4 support
+  classes (CloudCollectionClient/CloudRepoCache/BookVersionManifest/CloudBookTransfer/CloudAuth/
+  CloudEnvironment). Added typed RPC/edge-function wrapper methods to CloudCollectionClient.cs
+  (create_collection, my_collections, claim_memberships, get_collection_state, get_changes,
+  get_book_manifest, checkout_book, unlock_book, force_unlock, delete_book, undelete_book,
+  rename_check, members list/add/remove/set_role, add_palette_colors, log_event,
+  checkin-start/finish/abort, download-start, collection-files-start/finish) — this file's own
+  doc comment said later tasks build these on top of it. Builds clean.
+  Next action: write `Cloud/CloudTeamCollection.cs` implementing every abstract member per the
+  mapping table, using `CloudRepoCache` + the new client methods + `CloudBookTransfer`.

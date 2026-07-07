@@ -145,6 +145,227 @@ namespace Bloom.TeamCollection.Cloud
             });
         }
 
+        // ---------------------------------------------------------------
+        // Typed wrappers over CallRpc/CallEdgeFunction, one per RPC/edge
+        // function in CONTRACTS.md v1.2. Added by task 05 (CloudCollectionClient's
+        // own doc comment above said these belong here). Each just builds the
+        // p_-prefixed (RPC) or camelCase (edge function) body and casts the
+        // result to the shape callers expect; CloudTeamCollection/CloudCollectionMonitor/
+        // CloudJoinFlow parse the returned JToken with Newtonsoft, matching the
+        // pattern CloudRepoCache already uses for JObject snapshots.
+        // ---------------------------------------------------------------
+
+        /// <summary>Creates a new collection, with the caller as its sole claimed admin.</summary>
+        public JToken CreateCollection(string collectionId, string name) =>
+            CallRpc("create_collection", new { p_id = collectionId, p_name = name });
+
+        /// <summary>Lists the collections where the caller's email is approved (claimed or not).</summary>
+        public JArray MyCollections() =>
+            (JArray)(CallRpc("my_collections", new { }) ?? new JArray());
+
+        /// <summary>Fills user_id on membership rows matching the caller's verified email.</summary>
+        public JToken ClaimMemberships() => CallRpc("claim_memberships", new { });
+
+        /// <summary>
+        /// Full snapshot (sinceEventId null) or delta (sinceEventId set) of book rows, collection-file
+        /// group versions, and max_event_id. Feeds <see cref="CloudRepoCache.ApplyFullSnapshot"/>/
+        /// <see cref="CloudRepoCache.ApplyDelta"/>.
+        /// </summary>
+        public JObject GetCollectionState(string collectionId, long? sinceEventId = null) =>
+            (JObject)CallRpc(
+                "get_collection_state",
+                new { p_collection_id = collectionId, p_since_event_id = sinceEventId }
+            );
+
+        /// <summary>Events + touched book rows since <paramref name="sinceEventId"/> (polling/catch-up).</summary>
+        public JObject GetChanges(string collectionId, long sinceEventId) =>
+            (JObject)CallRpc(
+                "get_changes",
+                new { p_collection_id = collectionId, p_since_event_id = sinceEventId }
+            );
+
+        /// <summary>
+        /// v1.2: per-file current manifest for the pinned-version Receive path. Never-committed
+        /// books are invisible except to their mid-Send lock holder.
+        /// </summary>
+        public JObject GetBookManifest(string bookId) =>
+            (JObject)CallRpc("get_book_manifest", new { p_book_id = bookId });
+
+        /// <summary>Conditional lock; result includes the winning holder's identity on failure.</summary>
+        public JObject CheckoutBook(string bookId, string machine) =>
+            (JObject)CallRpc("checkout_book", new { p_book_id = bookId, p_machine = machine });
+
+        /// <summary>Releases the caller's own lock (undo checkout; no content change).</summary>
+        public JObject UnlockBookRpc(string bookId) =>
+            (JObject)CallRpc("unlock_book", new { p_book_id = bookId });
+
+        /// <summary>Admin-only forced unlock; audited server-side, emits a ForcedUnlock event.</summary>
+        public JObject ForceUnlockRpc(string bookId) =>
+            (JObject)CallRpc("force_unlock", new { p_book_id = bookId });
+
+        /// <summary>Requires the caller holds the lock; sets deleted_at and emits a Deleted event.</summary>
+        public JObject DeleteBookRpc(string bookId) =>
+            (JObject)CallRpc("delete_book", new { p_book_id = bookId });
+
+        /// <summary>Admin-only; clears a tombstone (name-uniqueness re-enforced).</summary>
+        public JObject UndeleteBookRpc(string bookId) =>
+            (JObject)CallRpc("undelete_book", new { p_book_id = bookId });
+
+        /// <summary>Advisory uniqueness pre-check for a proposed rename.</summary>
+        public JObject RenameCheck(string bookId, string newName) =>
+            (JObject)CallRpc("rename_check", new { p_book_id = bookId, p_new_name = newName });
+
+        /// <summary>
+        /// Admin-only approved-accounts list. RPC name is our best reading of CONTRACTS.md's
+        /// "members: list/add/remove/set_role" shorthand (not spelled out precisely there) --
+        /// flagged in the task 05 final report as a contract ambiguity to confirm with the server.
+        /// </summary>
+        public JArray MembersList(string collectionId) =>
+            (JArray)(
+                CallRpc("members_list", new { p_collection_id = collectionId }) ?? new JArray()
+            );
+
+        public JObject MembersAdd(string collectionId, string email) =>
+            (JObject)CallRpc(
+                "members_add",
+                new { p_collection_id = collectionId, p_email = email }
+            );
+
+        public JObject MembersRemove(string collectionId, string email) =>
+            (JObject)CallRpc(
+                "members_remove",
+                new { p_collection_id = collectionId, p_email = email }
+            );
+
+        public JObject MembersSetRole(string collectionId, string email, string role) =>
+            (JObject)CallRpc(
+                "members_set_role",
+                new
+                {
+                    p_collection_id = collectionId,
+                    p_email = email,
+                    p_role = role,
+                }
+            );
+
+        /// <summary>Union merge (insert ... on conflict do nothing) of palette colors.</summary>
+        public JObject AddPaletteColors(string collectionId, string palette, string[] colors) =>
+            (JObject)CallRpc(
+                "add_palette_colors",
+                new
+                {
+                    p_collection_id = collectionId,
+                    p_palette = palette,
+                    p_colors = colors,
+                }
+            );
+
+        /// <summary>
+        /// Client-originated history entry. <paramref name="eventType"/> uses the same numeric
+        /// values as <see cref="Bloom.History.BookHistoryEventType"/> (extended server-side with
+        /// incident types such as WorkPreservedLocally). Exact parameter names are our best
+        /// reading of CONTRACTS.md's "log_event(...)" shorthand -- flagged as a contract
+        /// ambiguity in the task 05 final report.
+        /// </summary>
+        public JObject LogEvent(
+            string collectionId,
+            string bookId,
+            int eventType,
+            string comment = null
+        ) =>
+            (JObject)CallRpc(
+                "log_event",
+                new
+                {
+                    p_collection_id = collectionId,
+                    p_book_id = bookId,
+                    p_type = eventType,
+                    p_comment = comment,
+                }
+            );
+
+        /// <summary>
+        /// Opens (or refreshes, if called again with the same open transaction) a check-in
+        /// transaction. <paramref name="bookId"/> null means "first Send of a new book".
+        /// <paramref name="files"/> is the diff (added/changed paths only) as
+        /// [{path,sha256,size}]. Throws <see cref="CloudCollectionClientException"/> with
+        /// LockHeldByOther/BaseVersionSuperseded/NameConflict/ClientOutOfDate on the documented
+        /// 409/426s.
+        /// </summary>
+        public JObject CheckinStart(
+            string collectionId,
+            string bookId,
+            string bookInstanceId,
+            string proposedName,
+            string baseVersionId,
+            string checksum,
+            string clientVersion,
+            JArray files
+        ) =>
+            (JObject)CallEdgeFunction(
+                "checkin-start",
+                new
+                {
+                    collectionId,
+                    bookId,
+                    bookInstanceId,
+                    proposedName,
+                    baseVersionId,
+                    checksum,
+                    clientVersion,
+                    files,
+                }
+            );
+
+        /// <summary>
+        /// Commits a check-in transaction: verifies uploads, writes the version/manifest rows,
+        /// releases the lock (unless <paramref name="keepCheckedOut"/>), emits events.
+        /// </summary>
+        public JObject CheckinFinish(
+            string transactionId,
+            string comment = null,
+            bool keepCheckedOut = false
+        ) =>
+            (JObject)CallEdgeFunction(
+                "checkin-finish",
+                new
+                {
+                    transactionId,
+                    comment,
+                    keepCheckedOut,
+                }
+            );
+
+        /// <summary>Abandons an open check-in transaction (nothing was committed).</summary>
+        public void CheckinAbort(string transactionId) =>
+            CallEdgeFunction("checkin-abort", new { transactionId });
+
+        /// <summary>Read-only STS creds (GetObject + GetObjectVersion) scoped to the collection prefix.</summary>
+        public JObject DownloadStart(string collectionId) =>
+            (JObject)CallEdgeFunction("download-start", new { collectionId });
+
+        /// <summary>Phase 1 of the two-phase collection-files write (repo-wins on 409 VersionConflict).</summary>
+        public JObject CollectionFilesStart(
+            string collectionId,
+            string groupKey,
+            long expectedVersion,
+            JArray files
+        ) =>
+            (JObject)CallEdgeFunction(
+                "collection-files-start",
+                new
+                {
+                    collectionId,
+                    groupKey,
+                    expectedVersion,
+                    files,
+                }
+            );
+
+        /// <summary>Phase 2: bumps the collection-file group version atomically.</summary>
+        public JObject CollectionFilesFinish(string transactionId) =>
+            (JObject)CallEdgeFunction("collection-files-finish", new { transactionId });
+
         /// <summary>
         /// The apikey header is required by PostgREST/edge-functions regardless of sign-in state;
         /// the bearer token (when we have one) is what RLS/edge functions actually authorize
