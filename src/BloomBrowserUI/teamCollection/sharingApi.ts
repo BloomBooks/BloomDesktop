@@ -158,6 +158,8 @@ export function useIsCloudTeamCollectionsExperimentalFeatureEnabled(): boolean {
 
 // Kicks off the (Wave-3) cloud Team Collection creation flow: uploads the current local
 // collection as the initial version of a new cloud-backed Team Collection.
+// Uses postJson (rather than post, which is fire-and-forget and does not return a promise)
+// so callers can await/`.then()` completion to drive the initial-Send progress UI.
 export function createCloudTeamCollection() {
-    return post("teamCollection/createCloudTeamCollection");
+    return postJson("teamCollection/createCloudTeamCollection", {});
 }

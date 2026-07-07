@@ -11,7 +11,7 @@ Owns new `src/BloomBrowserUI/teamCollection/SharingPanel.tsx`,
 - [x] Settings (not shared): keep folder-TC button; add "Share this collection on the Bloom
       sharing server (experimental)" behind the experimental flag + feature gate, disabled
       state explains gating.
-- [ ] Cloud create dialog: sign-in step (inline; in dev auth mode this is a plain
+- [x] Cloud create dialog: sign-in step (inline; in dev auth mode this is a plain
       email/password form driven by `sharing/loginState`'s reported mode — the real
       BloomLibrary browser flow slots in later), immutable-name acknowledgement, initial Send
       progress; no folder chooser, no Dropbox checkboxes, no restart.
@@ -54,3 +54,20 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   Also added `createCloudTeamCollection()` to `sharingApi.ts` for the next step · next: cloud
   create dialog (sign-in → immutable-name ack → initial Send progress) in
   `CreateTeamCollection.tsx` (step 2).
+- 2026-07-06 · done: step 2 (Cloud create dialog). Added `CreateCloudTeamCollectionBody`
+  (presentational, four states derived from props: sign-in [dev-mode email/password form or a
+  cloud-mode "Sign in with your Bloom account" placeholder button per `loginState.mode`] →
+  immutable-name-acknowledgement checkbox gating the Share button → sending [LinearProgress] →
+  done/error) and `CreateCloudTeamCollectionDialog` (container wiring it to
+  `useSharingLoginState`/`signIn`/`createCloudTeamCollection` from `sharingApi.ts` and the
+  BloomDialog frame; no folder chooser, no Dropbox checkboxes; bottom button is Cancel until
+  done, then Close — no restart) in `CreateTeamCollection.tsx`. Fixed `createCloudTeamCollection`
+  to use `postJson` instead of `post` (the latter is fire-and-forget and returns no promise —
+  would have crashed the `.then()` chain). Added `CreateCloudTeamCollection.test.tsx` (10
+  tests, all green, same raw-DOM-render pattern as `SharingPanel.test.tsx`) covering sign-in
+  gating (dev vs cloud mode), email/password field wiring, name-ack gating of the Share button,
+  sending/error/done states. `yarn eslint` on all touched files: 0 errors, pre-existing warnings
+  only (unrelated lines in the original `CreateTeamCollectionDialog`) · next: Collection chooser
+  "Get my Team Collections" (signed-in listing + signed-out state) in `CollectionChooser.tsx`
+  (step 3), then `JoinCloudCollectionDialog.tsx` (new, six-scenario + NotSignedIn +
+  ApprovalRemoved) for pull-down join.
