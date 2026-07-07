@@ -724,7 +724,7 @@ namespace Bloom.TeamCollection
         // We must ensure that the user has registered a valid email address before making the call to the API endpoint which calls this.
         public bool AttemptLock(string bookName, string email = null)
         {
-            var whoBy = email ?? TeamCollectionManager.CurrentUser;
+            var whoBy = email ?? CurrentUserIdentity;
             Debug.Assert(!string.IsNullOrWhiteSpace(whoBy));
 
             var status = GetStatus(bookName);
@@ -1318,7 +1318,7 @@ namespace Bloom.TeamCollection
                         var localStatus = GetLocalStatus(Path.GetFileName(path));
                         if (localStatus.lockedBy == TeamCollection.FakeUserIndicatingNewBook)
                             continue;
-                        if (localStatus.IsCheckedOutHereBy(TeamCollectionManager.CurrentUser))
+                        if (localStatus.IsCheckedOutHereBy(CurrentUserIdentity))
                             return true;
                     }
                     catch (Exception)
@@ -1352,7 +1352,7 @@ namespace Bloom.TeamCollection
             }
 
             var status = GetLocalStatus(bookBaseName);
-            if (status.IsCheckedOutHereBy(TeamCollectionManager.CurrentUser))
+            if (status.IsCheckedOutHereBy(CurrentUserIdentity))
             {
                 //Debug.WriteLine("Deleted checked out book: " + bookBaseName);
                 // Argh! Somebody deleted the book I'm working on! This is an error, but Reloading the collection
@@ -1987,11 +1987,21 @@ namespace Bloom.TeamCollection
         /// <returns></returns>
         internal bool IsCheckedOutHereBy(BookStatus status, string email = null)
         {
-            var whoBy = email ?? TeamCollectionManager.CurrentUser;
+            var whoBy = email ?? CurrentUserIdentity;
             if (whoBy == null)
                 return false;
             return status.IsCheckedOutHereBy(whoBy);
         }
+
+        /// <summary>
+        /// The identity that checkout ownership is compared against (and stamped with, absent an
+        /// explicit email). Folder TCs use Bloom's registration email, as always. The cloud
+        /// backend overrides this with the signed-in ACCOUNT email: the server stamps locks from
+        /// the auth token, so comparing against anything else calls the user's own checkout
+        /// someone else's — which is exactly what disabled editing in the first two-instance
+        /// smoke test (registration john_thomson@sil.org vs lock owner alice@dev.local).
+        /// </summary>
+        protected internal virtual string CurrentUserIdentity => TeamCollectionManager.CurrentUser;
 
         bool IsBloomBookFolder(string folderPath)
         {

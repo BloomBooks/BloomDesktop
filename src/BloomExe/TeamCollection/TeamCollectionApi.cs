@@ -31,6 +31,15 @@ namespace Bloom.TeamCollection
         private BookSelection _bookSelection; // configured by autofac, tells us what book is selected
         private BookServer _bookServer;
         private string CurrentUser => TeamCollectionManager.CurrentUser;
+
+        /// <summary>
+        /// The identity checkout ownership is compared against in status JSON: the collection's
+        /// own notion (cloud: the signed-in account; folder: the registration email). Must match
+        /// what TeamCollection.CurrentUserIdentity uses for the C#-side editability checks, or
+        /// the UI and the edit gate disagree about whose checkout this is.
+        /// </summary>
+        private string CurrentUserForStatus =>
+            _tcManager?.CurrentCollectionEvenIfDisconnected?.CurrentUserIdentity ?? CurrentUser;
         private BloomWebSocketServer _socketServer;
         private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
         private CollectionSettings _settings;
@@ -758,7 +767,7 @@ namespace Bloom.TeamCollection
                         whoSurname = "",
                         when = DateTime.Now.ToShortDateString(),
                         where = "",
-                        currentUser = CurrentUser,
+                        currentUser = CurrentUserForStatus,
                         currentUserName = TeamCollectionManager.CurrentUserFirstName,
                         currentMachine = TeamCollectionManager.CurrentMachine,
                         hasAProblem = false,
@@ -800,7 +809,7 @@ namespace Bloom.TeamCollection
                     // of all books. In that case, book is null, but it's fairly safe to assume it's a new local book.
                     if (book?.IsSaveable ?? true)
                     {
-                        whoHasBookLocked = CurrentUser;
+                        whoHasBookLocked = CurrentUserForStatus;
                         isNewLocalBook = true;
                     }
                     else
@@ -843,7 +852,7 @@ namespace Bloom.TeamCollection
                     where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(
                         bookFolderName
                     ),
-                    currentUser = CurrentUser,
+                    currentUser = CurrentUserForStatus,
                     currentUserName = TeamCollectionManager.CurrentUserFirstName,
                     currentMachine = TeamCollectionManager.CurrentMachine,
                     hasConflictingChange,

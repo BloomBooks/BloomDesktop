@@ -522,7 +522,14 @@ export const BookButton: React.FunctionComponent<{
             {teamCollectionStatus?.who && (
                 <BloomAvatar
                     email={teamCollectionStatus.who}
-                    name={teamCollectionStatus.whoFirstName}
+                    // Cloud backends have no first/surname split (only the account email),
+                    // and a null name makes BloomAvatar draw its anonymous fallback instead
+                    // of an initial. Fall back to the email so the book-list overlay matches
+                    // the status panel's avatar.
+                    name={
+                        teamCollectionStatus.whoFirstName ||
+                        teamCollectionStatus.who
+                    }
                     avatarSizeInt={32}
                     borderColor={
                         teamCollectionStatus.who ===

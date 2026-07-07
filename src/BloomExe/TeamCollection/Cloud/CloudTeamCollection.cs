@@ -125,6 +125,14 @@ namespace Bloom.TeamCollection.Cloud
 
         public string CollectionIdForCloud => _collectionId;
 
+        /// <summary>In a cloud TC the identity that owns checkouts is the signed-in ACCOUNT
+        /// (the server stamps locks from the auth token), not Bloom's registration email.
+        /// Falls back to the base (registration) identity when signed out, where nothing can
+        /// be checked out here anyway. See the base property's doc for the smoke-test failure
+        /// this fixes (own checkout uneditable).</summary>
+        protected internal override string CurrentUserIdentity =>
+            _auth?.CurrentEmail ?? base.CurrentUserIdentity;
+
         // ------------------------------------------------------------------
         // Accessors for task 06 (SharingApi / TeamCollectionApi): thin, read-only exposure of
         // this collection's own auth/client/cache state, so those API classes can be simple
