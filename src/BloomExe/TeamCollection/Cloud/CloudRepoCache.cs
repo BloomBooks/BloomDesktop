@@ -33,6 +33,24 @@ namespace Bloom.TeamCollection.Cloud
         public DateTime? CreatedAt;
         public string CreatedBy;
 
+        /// <summary>Display-friendly resolution of <see cref="LockedBy"/> (task 06's
+        /// 20260707000006 migration: tc.resolve_member_display, joined server-side since
+        /// LockedBy is the raw auth user id, not an email). Null when not locked or when the
+        /// server doesn't know a display name (common in dev-auth mode).</summary>
+        public string LockedByEmail;
+        public string LockedByDisplayName;
+
+        /// <summary>
+        /// The version seq of what is CURRENTLY on this machine's disk for this book, as of the
+        /// last successful Send or Receive (task 06, CONTRACTS.md's book-status JSON
+        /// "localVersionSeq"). Null if this book has never been fetched/sent from this machine
+        /// this cache has known about -- e.g. a book a teammate created that we haven't Received
+        /// yet. Deliberately NOT touched by <see cref="ApplyServerRow"/> (which only carries
+        /// repo-side truth); only <see cref="CloudRepoCache.RecordLocalVersionSeq"/> writes it, so
+        /// it survives repeated polling/hydration untouched until we actually move bytes.
+        /// </summary>
+        public long? LocalVersionSeq;
+
         /// <summary>
         /// The book's current per-file manifest (path → sha256/size/s3VersionId), once known.
         /// CONTRACTS.md v1.1 does not yet define an RPC that returns a book's per-file manifest (only
@@ -62,6 +80,9 @@ namespace Bloom.TeamCollection.Cloud
                 DeletedAt = DeletedAt,
                 CreatedAt = CreatedAt,
                 CreatedBy = CreatedBy,
+                LockedByEmail = LockedByEmail,
+                LockedByDisplayName = LockedByDisplayName,
+                LocalVersionSeq = LocalVersionSeq,
                 Manifest = Manifest,
             };
 
@@ -84,6 +105,10 @@ namespace Bloom.TeamCollection.Cloud
                 CreatedAt = (DateTime?)row["created_at"];
             if (row["created_by"] != null)
                 CreatedBy = (string)row["created_by"];
+            // Present since the 20260707000006 migration; older cached snapshots / server
+            // versions simply leave these null, which is exactly "no display name available".
+            LockedByEmail = (string)row["locked_by_email"];
+            LockedByDisplayName = (string)row["locked_by_name"];
         }
 
         internal JObject ToSnapshotJson() =>
@@ -101,6 +126,9 @@ namespace Bloom.TeamCollection.Cloud
                 ["deletedAt"] = DeletedAt,
                 ["createdAt"] = CreatedAt,
                 ["createdBy"] = CreatedBy,
+                ["lockedByEmail"] = LockedByEmail,
+                ["lockedByDisplayName"] = LockedByDisplayName,
+                ["localVersionSeq"] = LocalVersionSeq,
                 ["manifest"] = Manifest?.ToJson(),
             };
 
@@ -119,6 +147,9 @@ namespace Bloom.TeamCollection.Cloud
                 DeletedAt = (DateTime?)json["deletedAt"],
                 CreatedAt = (DateTime?)json["createdAt"],
                 CreatedBy = (string)json["createdBy"],
+                LockedByEmail = (string)json["lockedByEmail"],
+                LockedByDisplayName = (string)json["lockedByDisplayName"],
+                LocalVersionSeq = (long?)json["localVersionSeq"],
                 Manifest = json["manifest"] is JArray filesArray
                     ? BookVersionManifest.FromJson(filesArray)
                     : null,
@@ -363,6 +394,22 @@ namespace Bloom.TeamCollection.Cloud
                     book.LockedByMachine = null;
                     book.LockedAt = null;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Write-through: records the version seq now actually present on THIS machine's disk for
+        /// a book, immediately after a successful Send or Receive (task 06, book-status JSON's
+        /// "localVersionSeq"). Adds the book row if it isn't cached yet (shouldn't normally happen,
+        /// since a Send/Receive implies we already know the book id, but mirrors the other
+        /// write-through methods' defensiveness).
+        /// </summary>
+        public void RecordLocalVersionSeq(string bookId, long versionSeq)
+        {
+            lock (_gate)
+            {
+                var book = GetOrAddLocked(bookId);
+                book.LocalVersionSeq = versionSeq;
             }
         }
 

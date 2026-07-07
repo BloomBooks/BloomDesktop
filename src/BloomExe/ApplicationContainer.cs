@@ -76,6 +76,7 @@ namespace Bloom
                         typeof(NewCollectionWizardApi),
                         typeof(CollectionChooserApi),
                         typeof(I18NApi),
+                        typeof(SharingApi),
                     }.Contains(t)
                 );
 
@@ -95,6 +96,11 @@ namespace Bloom
             _container.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(server.ApiHandler);
             _container.Resolve<CollectionChooserApi>().RegisterWithApiHandler(server.ApiHandler);
             _container.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);
+            // Cloud Team Collections (task 06): SharingApi is application-level, not project-level
+            // (unlike TeamCollectionApi), because collections/mine, collections/pullDown, and
+            // sharing/loginState/login/logout must all work from the collection chooser BEFORE any
+            // project is loaded -- see SharingApi's own file comment.
+            _container.Resolve<SharingApi>().RegisterWithApiHandler(server.ApiHandler);
             server.ApiHandler.RecordApplicationLevelHandlers();
         }
 
