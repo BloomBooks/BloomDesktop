@@ -81,6 +81,14 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 - [ ] Flip edge functions from static-MinIO-credential dev mode to real STS (env switch).
 - [ ] Re-verify MinIO/AWS parity assumptions against the real bucket (sha256 checksum headers,
       s3 version-id capture, lifecycle behavior) and re-run the E2E matrix against sandbox.
+- [ ] **Security hardening (REQUIRED before production):** the internal `tc.*_tx` RPCs are
+      currently EXECUTE-granted to `authenticated` because edge functions forward the
+      caller's JWT (identity stamping via auth.jwt()). A member could therefore call e.g.
+      `checkin_finish_tx` directly, bypassing the edge function's S3 checksum verification
+      (blast radius: corrupting manifests in their own collection only — membership/lock
+      still enforced). Before cutover: switch edge functions to the service-role key +
+      explicit verified-user-id parameter, then revoke `authenticated` from all `*_tx`
+      functions.
 
 ## Status
 
@@ -90,8 +98,10 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
   - [x] 11-local-dev-stack DONE — full stack verified on **Podman 5.8.3** (rootful, WSL2,
         Docker-compat pipe) instead of Docker Desktop: MinIO up w/ versioning+lifecycle,
         dev sign-in works, parity spike 4/4, smoke green. README documents the recipe.
-  - [ ] 02-edge-functions (note: dev credential mode must use MinIO AssumeRole — fabricated
-        session tokens are REJECTED; see DEV-CREDENTIALS.md correction)
+  - [x] 02-edge-functions DONE — six functions live-verified (26/26 integration checks on
+        the local stack incl. MinIO AssumeRole dev creds); Deno 32/32; provision-aws
+        authored-not-run. Found+fixed: get_collection_state new-book leak (01's file);
+        edge_runtime per_worker; MinIO joined to the supabase network (gvproxy hang).
   - [x] 03-auth DONE — CloudEnvironment/CloudAuth(dev provider)/CloudCollectionClient;
         46/46 cloud + 244/244 folder-TC tests; live-verified vs local stack. Deferred:
         persistent token store; real provider awaits Option A/B/C; human GUI smoke + 2h soak.
@@ -107,6 +117,13 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 ## Merge log
 
 (orchestrator appends: date · task · PR · notes)
+
+- 7 Jul 2026 · 02-edge-functions · merged locally · Two agent interruptions survived via
+  per-step commits (the gvproxy hang the agent later diagnosed was likely the stall cause).
+  Independently re-verified Deno 32/32 + pgTAP 42/42. In-place edit of applied migration
+  20260706000003 accepted THIS TIME (nothing deployed anywhere yet); convention from now
+  on: schema changes to merged migrations arrive as NEW migration files. Deferred-infra
+  list gains the *_tx grant hardening item.
 
 - 6 Jul 2026 · 03-auth · merged locally · Reviewed all three classes; one cosmetic fix
   (stranded doc comment). Evidence: 46/46 cloud, 244/244 folder-TC, live GoTrue sign-in +
