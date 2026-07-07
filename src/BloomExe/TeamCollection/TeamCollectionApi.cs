@@ -863,7 +863,7 @@ namespace Bloom.TeamCollection
         /// gets the collection-wide signedIn/requiresSignIn flags (there's no specific book to
         /// report a version/offline status for).
         /// </summary>
-        private string AddCloudBookStatusFields(string baseJson, string bookFolderName)
+        internal string AddCloudBookStatusFields(string baseJson, string bookFolderName)
         {
             if (!(_tcManager.CurrentCollection is Cloud.CloudTeamCollection cloudCollection))
                 return baseJson;

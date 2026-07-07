@@ -205,8 +205,9 @@ namespace Bloom.web.controllers
         /// IApprovedMember shape sharingApi.ts expects. There is no display-name data source for
         /// members server-side (see the 20260707000006 migration's own comment on this same gap for
         /// book locks) -- name is always omitted/null here, exactly as CONTRACTS.md documents
-        /// ("Only known once claimed" -- in practice, not known at all yet).</summary>
-        private static object ToApprovedMember(JObject row) =>
+        /// ("Only known once claimed" -- in practice, not known at all yet). Internal (not private)
+        /// so SharingApiTests can verify the mapping without a live server.</summary>
+        internal static object ToApprovedMember(JObject row) =>
             new
             {
                 email = (string)row["email"],
@@ -246,12 +247,17 @@ namespace Bloom.web.controllers
         /// row id, not email (see CloudCollectionClient.MembersRemove/MembersSetRole's own doc
         /// comments on this task-06 live-verification fix). Throws if the email isn't an approved
         /// member of the collection -- a genuine caller error (AGENTS.md: fail fast rather than
-        /// silently swallow), not something to report as an ordinary "not found" JSON result.
+        /// silently swallow), not something to report as an ordinary "not found" JSON result. Takes
+        /// the already-fetched member list rather than a collectionId so SharingApiTests can
+        /// exercise the resolution logic without a live server.
         /// </summary>
-        private static long ResolveMemberId(string collectionId, string email)
+        internal static long ResolveMemberIdFromList(
+            JArray members,
+            string collectionId,
+            string email
+        )
         {
-            var row = CurrentClient()
-                .MembersList(collectionId)
+            var row = members
                 .OfType<JObject>()
                 .FirstOrDefault(m =>
                     string.Equals((string)m["email"], email, StringComparison.OrdinalIgnoreCase)
@@ -262,6 +268,9 @@ namespace Bloom.web.controllers
                 );
             return (long)row["id"];
         }
+
+        private static long ResolveMemberId(string collectionId, string email) =>
+            ResolveMemberIdFromList(CurrentClient().MembersList(collectionId), collectionId, email);
 
         private void HandleRemoveApproval(ApiRequest request)
         {
@@ -288,7 +297,7 @@ namespace Bloom.web.controllers
         // so the UI's rendering code is unchanged either way.
         // ------------------------------------------------------------------
 
-        private static BookHistoryEvent ToBookHistoryEvent(JObject e) =>
+        internal static BookHistoryEvent ToBookHistoryEvent(JObject e) =>
             new BookHistoryEvent
             {
                 BookId = (string)e["book_id"],
@@ -401,7 +410,7 @@ namespace Bloom.web.controllers
 
         /// <summary>Maps one my_collections() row (snake_case RPC shape, incl. its "my_role" alias)
         /// to the camelCase ICloudCollectionSummary shape sharingApi.ts expects.</summary>
-        private static object ToCollectionSummary(JObject row) =>
+        internal static object ToCollectionSummary(JObject row) =>
             new
             {
                 collectionId = (string)row["id"],
