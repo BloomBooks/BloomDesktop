@@ -130,6 +130,20 @@ vi.mock("./lib/localizationManager/localizationManager", () => {
                     fail: () => promise,
                 });
             },
+            // Mirrors the real localizationManager.processSimpleMarkdown (lib/localizationManager/localizationManager.ts):
+            // components built on l10nComponents.tsx's LocalizableElement (Div, Span, BloomButton, etc.)
+            // call this unconditionally while rendering, so it must exist here even in tests that never
+            // put markdown in their strings.
+            processSimpleMarkdown: (text: string): string => {
+                if (text.indexOf("*") < 0 && text.indexOf("[") < 0) return text;
+                const reStrong = /(^|[^*])\*\*([^*]+)\*\*([^*]|$)/g;
+                let newstr = text.replace(reStrong, "$1<strong>$2</strong>$3");
+                const reEm = /(^|[^*])\*([^*]+)\*([^*]|$)/g;
+                newstr = newstr.replace(reEm, "$1<em>$2</em>$3");
+                const reA = /\[([^\]]*)\]\(([^)]*)\)/g;
+                newstr = newstr.replace(reA, '<a href="$2">$1</a>');
+                return newstr;
+            },
             isBypassEnabled: () => true, // Bypass localization in tests to avoid server calls
             getVernacularLang: () => "en", // Default vernacular language for tests
             getLanguage2Code: () => "tpi", // Matches GetSettings currentCollectionLanguage2

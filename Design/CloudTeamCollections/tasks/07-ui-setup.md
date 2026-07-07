@@ -15,7 +15,7 @@ Owns new `src/BloomBrowserUI/teamCollection/SharingPanel.tsx`,
       email/password form driven by `sharing/loginState`'s reported mode — the real
       BloomLibrary browser flow slots in later), immutable-name acknowledgement, initial Send
       progress; no folder chooser, no Dropbox checkboxes, no restart.
-- [ ] SharingPanel (cloud TCs): approved-emails list (avatar, name-when-claimed, email, role
+- [x] SharingPanel (cloud TCs): approved-emails list (avatar, name-when-claimed, email, role
       chip, claimed/pending), add-with-role, remove (warns: force-unlocks their checkouts),
       change role; last-admin protections; member read-only view. Folder TCs keep old panel.
 - [ ] Collection chooser: "Get my Team Collections" (signed-out state included); pull-down join
@@ -30,3 +30,12 @@ Owns new `src/BloomBrowserUI/teamCollection/SharingPanel.tsx`,
 
 **Agent notes**: Sonnet. Emotion `css` prop styling; arrow-function components; no prop
 destructuring — follow src/BloomBrowserUI/AGENTS.md.
+
+## Progress log
+- 2026-07-06 · done: `sharingApi.ts` (shells for the Wave-3 SharingApi endpoints) and
+  `SharingPanel.tsx`/`SharingMembersList` (approved-accounts CRUD, claimed/pending, last-admin
+  protection, member read-only view) with `SharingPanel.test.tsx` (7 tests, all green); also
+  fixed a pre-existing vitest gap (`processSimpleMarkdown` missing from the
+  `localizationManager` mock, which crashed any test rendering `Div`/`BloomButton`/etc.) ·
+  next: wire the "Share this collection..." experimental-gated entry point into
+  TeamCollectionSettingsPanel.tsx (step 1).
