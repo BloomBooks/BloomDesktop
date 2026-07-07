@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { get, post, postString } from "../utils/bloomApi";
+import { get, post, postData, postString } from "../utils/bloomApi";
 import { BooksOfCollection, IBookInfo } from "./BooksOfCollection";
 import { makeMenuItems, MenuItemSpec } from "./menuHelpers";
 import { Transition } from "react-transition-group";
@@ -199,11 +199,14 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         | undefined
     >();
 
-    // The .bloomSource import decision. The file(s) are chosen first (via C#); then we check (via
-    // C#) whether any chosen book is already in the collection and, based on that, show the user
-    // exactly one dialog for the whole batch. If none are present, Dialog 1 asks whether to edit
+    // The .bloomSource import decision. The file(s) are chosen first (via C#), which in the same
+    // reply tells us whether any chosen book is already in the collection; based on that we show the
+    // user exactly one dialog for the whole batch. If none are present, Dialog 1 asks whether to edit
     // the book(s) or make derivatives. If any are present, Dialog 2 asks whether to replace the
-    // existing book(s) or add the imported ones as new copies. The user never sees both.
+    // existing book(s) or add the imported ones as new copies. The user never sees both. We hold the
+    // chosen paths here and pass them back to the import call; the backend keeps no state between
+    // calls.
+    const [importFiles, setImportFiles] = useState<string[]>([]);
     const [showImportSourceChoiceDialog, setShowImportSourceChoiceDialog] =
         useState(false);
     const [showImportDuplicateDialog, setShowImportDuplicateDialog] =
@@ -257,24 +260,6 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         "CollectionTab.ImportBloomSource.AddCopyDescription",
     );
 
-    // Decide which single dialog to show after the file(s) have been chosen: Dialog 2 (replace vs.
-    // add-copy) if any chosen book is already in the collection, otherwise Dialog 1 (edit vs.
-    // derivative).
-    //
-    // Note that when a chosen book is already in the collection we deliberately do NOT offer the
-    // edit-vs-derivative choice: the duplicate dialog always imports in edit mode, so you can't
-    // make a derivative of a book that's already in your collection. We couldn't think of a
-    // plausible scenario where you have a book and a true derivative of it in the same collection,
-    // so this path isn't worth the extra complexity. Easy to reverse if that turns out to be wrong.
-    const chooseImportDialog = () => {
-        post("collections/bloomSourceImportDuplicateInfo", (r) => {
-            if (r.data.anyDuplicates) {
-                setImportCanReplace(r.data.canReplace);
-                setShowImportDuplicateDialog(true);
-            } else setShowImportSourceChoiceDialog(true);
-        });
-    };
-
     // Dialog 1 (shown only when no chosen book is already in the collection): the user chose to
     // edit the book(s) as-is or make derivatives (or cancelled). Neither path has a duplicate to
     // resolve, so import immediately.
@@ -282,7 +267,7 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
         setShowImportSourceChoiceDialog(false);
         if (!choice) return;
         const mode = choice === "derivative" ? "derivative" : "edit";
-        post(`collections/importBloomSource?mode=${mode}`);
+        postData(`collections/importBloomSource?mode=${mode}`, importFiles);
     };
 
     // Dialog 2 (shown only when at least one chosen book is already in the collection): the user
@@ -291,7 +276,10 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
     const handleImportDuplicateChoice = (choice?: string) => {
         setShowImportDuplicateDialog(false);
         if (!choice) return;
-        post(`collections/importBloomSource?mode=edit&onDuplicate=${choice}`);
+        postData(
+            `collections/importBloomSource?mode=edit&onDuplicate=${choice}`,
+            importFiles,
+        );
     };
 
     const setAdjustedContextMenuPoint = (x: number, y: number) => {
@@ -380,10 +368,23 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             icon: <ImportIcon />,
             onClick: () => {
                 handleClose();
-                // Choose the file(s) first; then show the one dialog that fits, based on whether
-                // any chosen book is already in the collection.
+                // Choose the file(s) first; the reply tells us both the chosen paths and whether any
+                // chosen book is already in the collection, so we can show the one dialog that fits.
+                //
+                // Note that when a chosen book is already in the collection we deliberately do NOT
+                // offer the edit-vs-derivative choice: the duplicate dialog always imports in edit
+                // mode, so you can't make a derivative of a book that's already in your collection. We
+                // couldn't think of a plausible scenario where you have a book and a true derivative
+                // of it in the same collection, so this path isn't worth the extra complexity. Easy
+                // to reverse if that turns out to be wrong.
                 post("collections/chooseBloomSourceFilesToImport", (r) => {
-                    if (r.data === true) chooseImportDialog();
+                    const files: string[] = r.data.files;
+                    if (!files || files.length === 0) return; // the user cancelled the picker
+                    setImportFiles(files);
+                    if (r.data.anyDuplicates) {
+                        setImportCanReplace(r.data.canReplace);
+                        setShowImportDuplicateDialog(true);
+                    } else setShowImportSourceChoiceDialog(true);
                 });
             },
             addEllipsis: true,
