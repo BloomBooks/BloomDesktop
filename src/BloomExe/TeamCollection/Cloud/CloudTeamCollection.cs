@@ -217,12 +217,12 @@ namespace Bloom.TeamCollection.Cloud
             return id == null ? null : _cache.TryGetBook(id);
         }
 
-        private static BookStatus StatusFromCachedBook(CloudCachedBook book, string collectionId)
+        private BookStatus StatusFromCachedBook(CloudCachedBook book, string collectionId)
         {
             return new BookStatus
             {
                 checksum = book.CurrentChecksum,
-                lockedBy = book.LockedBy,
+                lockedBy = ResolveLockedByForDisplay(book.LockedBy),
                 // The server book row (CONTRACTS.md get_collection_state/get_changes shape) does not
                 // carry the lock holder's first/last name today -- only their email (LockedBy) and
                 // machine. Left null here; see the task 05 final report's contract-ambiguity note.
@@ -234,6 +234,26 @@ namespace Bloom.TeamCollection.Cloud
                 lockedWhere = book.LockedByMachine,
                 collectionId = collectionId,
             };
+        }
+
+        /// <summary>
+        /// Live-testing discovery (see the task 05 final report): the server currently stamps
+        /// `locked_by`/`created_by` with the raw auth user id (JWT `sub`), not the email
+        /// CONTRACTS.md's identity model describes ("account email is the identity in cloud TCs") --
+        /// confirmed by decoding a real dev-stack session token and comparing it to a live
+        /// checkout_book response. That's a server-side RPC issue (task 01's SQL functions, out of
+        /// this task's file scope), not something fixable here. This client-side workaround resolves
+        /// only OUR OWN user id back to our own email -- the one comparison that actually matters for
+        /// every IsCheckedOutHereBy / "is this checked out to me" check throughout the (unchanged)
+        /// base class. A teammate's id is left as a raw id, since there is no RPC to resolve someone
+        /// else's id to an email; their lock still shows correctly as "not me", just not with a
+        /// friendly display name yet.
+        /// </summary>
+        private string ResolveLockedByForDisplay(string lockedBy)
+        {
+            if (!string.IsNullOrEmpty(lockedBy) && lockedBy == _auth.CurrentUserId)
+                return _auth.CurrentEmail;
+            return lockedBy;
         }
 
         // ------------------------------------------------------------------
@@ -629,7 +649,9 @@ namespace Bloom.TeamCollection.Cloud
                     return $"Could not read the file list for \"{bookName}\" from the cloud Team Collection.";
 
                 var download = _client.DownloadStart(_collectionId);
-                var location = ParseS3Location(download);
+                var collectionLocation = ParseS3Location(download);
+                var instanceId = _cache.TryGetBook(bookId)?.InstanceId;
+                var location = BuildBookS3Location(collectionLocation, instanceId);
                 var pinnedFiles = manifest
                     .Entries.Select(kvp => new PinnedFileDownload
                     {
@@ -710,7 +732,9 @@ namespace Bloom.TeamCollection.Cloud
                     return null;
 
                 var download = _client.DownloadStart(_collectionId);
-                var location = ParseS3Location(download);
+                var collectionLocation = ParseS3Location(download);
+                var instanceId = _cache.TryGetBook(bookId)?.InstanceId;
+                var location = BuildBookS3Location(collectionLocation, instanceId);
                 tempFolder = Path.Combine(
                     Path.GetTempPath(),
                     "BloomCloudFile-" + Guid.NewGuid().ToString("N")
@@ -776,6 +800,38 @@ namespace Bloom.TeamCollection.Cloud
                 AccessKeyId = (string)creds["accessKeyId"],
                 SecretAccessKey = (string)creds["secretAccessKey"],
                 SessionToken = (string)creds["sessionToken"],
+            };
+        }
+
+        /// <summary>
+        /// download-start's credentials are scoped to the WHOLE collection prefix (`tc/{cid}/`,
+        /// covering every book, per CONTRACTS.md: "read: the collection prefix incl.
+        /// GetObjectVersion") -- unlike checkin-start's creds, which are already scoped to one
+        /// book's own `tc/{cid}/books/{bookInstanceId}/` prefix. A book's manifest entries are bare
+        /// relative paths within that book's own folder (e.g. "meta.json"), so any Receive-path
+        /// download must insert the `books/{bookInstanceId}/` segment itself before combining with
+        /// the collection-level prefix -- CloudBookTransfer builds each S3 key as exactly
+        /// `location.Prefix + file.RelativePath`, with no other place that segment could come from.
+        /// Discovered via the live round-trip test (a mocked/unit test can't catch this, since it
+        /// would have to fake real S3 key-not-found semantics to notice the missing segment).
+        /// </summary>
+        private static CloudS3Location BuildBookS3Location(
+            CloudS3Location collectionLocation,
+            string bookInstanceId
+        )
+        {
+            if (string.IsNullOrEmpty(bookInstanceId))
+                throw new ApplicationException(
+                    "Cannot build a book-scoped S3 location without a bookInstanceId (the book is not yet known to the local cache)."
+                );
+            return new CloudS3Location
+            {
+                Bucket = collectionLocation.Bucket,
+                Region = collectionLocation.Region,
+                Prefix = $"{collectionLocation.Prefix}books/{bookInstanceId}/",
+                AccessKeyId = collectionLocation.AccessKeyId,
+                SecretAccessKey = collectionLocation.SecretAccessKey,
+                SessionToken = collectionLocation.SessionToken,
             };
         }
 

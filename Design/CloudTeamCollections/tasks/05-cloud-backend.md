@@ -138,3 +138,35 @@ anything needing a base change goes back to the orchestrator.
   find out who won"). Not fixed (TeamCollection.cs is read-only for this task) -- flagged in the
   final report as a base-class change worth considering.
   Next action: build/test verification is done; write the final report.
+- 7 Jul 2026 · done · Added `Cloud/CloudTeamCollectionLiveTests.cs` ([Explicit] Send-then-Receive
+  round trip against the REAL local dev stack: `supabase start` + `supabase functions serve
+  --env-file server/dev/functions.env`, started in the background per the anti-hang rules) and ran
+  it to green. It found and fixed TWO real bugs that no mocked test could have caught:
+  (1) **JSON serialization bug** in `CloudCollectionClient.CallRpc`/`CallEdgeFunction`: RestSharp's
+  own default JSON serializer doesn't know how to serialize a `Newtonsoft.Json.Linq.JArray`/
+  `JObject` embedded in the anonymous body object (it reflects over JToken's own CLR properties
+  instead of writing a native array/object), which silently produced a malformed `files` array and
+  a cryptic Postgres "jsonb_to_recordset must be an array of objects" error on the very first live
+  checkin-start call. Fixed by serializing the body with Newtonsoft ourselves and attaching the
+  resulting JSON text as a raw request-body parameter (`CloudCollectionClient.AddJsonBody` private
+  helper), rather than handing RestSharp a raw object to serialize itself.
+  (2) **Missing book-instance path segment on Receive**: `download-start`'s credentials are scoped
+  to the whole COLLECTION prefix (`tc/{cid}/`), not the book-specific one (`tc/{cid}/books/
+  {bookInstanceId}/`) that `checkin-start` returns for uploads -- `FetchBookFromRepo`/
+  `GetRepoBookFile` were building S3 keys directly under the collection prefix, producing
+  `NoSuchVersion` (confirmed via a manual Node/aws-sdk repro against the live MinIO). Fixed with a
+  new `CloudTeamCollection.BuildBookS3Location` helper that inserts `books/{bookInstanceId}/`
+  (looked up from the cache) before combining with `download-start`'s prefix.
+  Also confirmed a THIRD issue that is NOT fixable in this task's files: the live server currently
+  stamps `locked_by`/`created_by` with the raw auth user id (JWT `sub`, confirmed by decoding a
+  real session token) rather than the email CONTRACTS.md's identity model specifies ("account email
+  is the identity in cloud TCs") -- a task-01 SQL-function issue, out of scope here. Added a
+  client-side `ResolveLockedByForDisplay` workaround that resolves OUR OWN id back to our own email
+  (fixes every IsCheckedOutHereBy/"is this checked out to me" check, the case that matters most),
+  leaving a teammate's id unresolved to a friendly name pending the server-side fix.
+  Re-ran `--filter "FullyQualifiedName~TeamCollection&FullyQualifiedName!~LiveTests"` after all
+  three fixes: still 300 passed, 0 failed. Live test: 1 passed (run manually with
+  `BLOOM_CLOUDTC_ANON_KEY` exported, `supabase functions serve --env-file server/dev/functions.env`
+  running in the background).
+  Next action: none for this task; final report follows. Recommend the orchestrator route the
+  locked_by-is-a-uuid finding to whoever owns task 01's SQL functions.

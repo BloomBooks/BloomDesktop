@@ -37,7 +37,7 @@ namespace BloomTests.TeamCollection.Cloud
                 var bodyParam = req.Parameters.Find(p =>
                     p.Type == RestSharp.ParameterType.RequestBody
                 );
-                var sentBody = JObject.FromObject(bodyParam.Value);
+                var sentBody = JObject.Parse((string)bodyParam.Value);
                 sentSinceEventId = (long?)sentBody["p_since_event_id"];
                 var response = new JObject { ["books"] = new JArray(), ["max_event_id"] = 42 };
                 return FakeResponses.Make(HttpStatusCode.OK, response.ToString());
@@ -73,7 +73,7 @@ namespace BloomTests.TeamCollection.Cloud
                 var bodyParam = req.Parameters.Find(p =>
                     p.Type == RestSharp.ParameterType.RequestBody
                 );
-                var sentBody = JObject.FromObject(bodyParam.Value);
+                var sentBody = JObject.Parse((string)bodyParam.Value);
                 sinceValuesSeen.Add((long?)sentBody["p_since_event_id"]);
                 var response = new JObject
                 {

@@ -206,7 +206,7 @@ namespace BloomTests.TeamCollection.Cloud
             if (request == null)
                 return null;
             var bodyParam = request.Parameters.Find(p => p.Type == ParameterType.RequestBody);
-            return bodyParam == null ? new JObject() : JObject.FromObject(bodyParam.Value);
+            return bodyParam == null ? new JObject() : JObject.Parse((string)bodyParam.Value);
         }
 
         [Test]

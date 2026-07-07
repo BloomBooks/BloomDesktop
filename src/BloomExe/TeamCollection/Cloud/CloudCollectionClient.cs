@@ -122,7 +122,7 @@ namespace Bloom.TeamCollection.Cloud
                 // call must say so on both the request and response side (CONTRACTS.md v1.1).
                 request.AddHeader("Content-Profile", "tc");
                 request.AddHeader("Accept-Profile", "tc");
-                request.AddJsonBody(parametersWithPPrefixedKeys ?? new object());
+                AddJsonBody(request, parametersWithPPrefixedKeys);
                 return request;
             });
         }
@@ -140,9 +140,29 @@ namespace Bloom.TeamCollection.Cloud
             {
                 var request = new RestRequest($"functions/v1/{functionName}", Method.POST);
                 AddCommonHeaders(request);
-                request.AddJsonBody(body ?? new object());
+                AddJsonBody(request, body);
                 return request;
             });
+        }
+
+        /// <summary>
+        /// Serializes <paramref name="body"/> with Newtonsoft ourselves and attaches the resulting
+        /// JSON text as a raw request-body parameter, rather than using RestSharp's own
+        /// <c>AddJsonBody</c> (which defers serialization to RestSharp's own default JSON
+        /// serializer). That matters here because several typed wrapper methods below (e.g.
+        /// CheckinStart, CollectionFilesStart) embed a Newtonsoft <see cref="JArray"/>/
+        /// <see cref="JObject"/> directly inside the anonymous body object -- RestSharp's default
+        /// serializer does not know how to serialize a JToken as a native JSON array/object (it
+        /// reflects over JToken's own CLR properties instead), which silently produced a malformed
+        /// `files` payload and a cryptic Postgres "jsonb_to_recordset must be an array of objects"
+        /// error. Discovered via the live round-trip test against the real local dev stack -- the
+        /// FakeRestExecutor-based unit tests never actually serialize a request, so they couldn't
+        /// have caught this.
+        /// </summary>
+        private static void AddJsonBody(RestRequest request, object body)
+        {
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(body ?? new object());
+            request.AddParameter("application/json", json, ParameterType.RequestBody);
         }
 
         // ---------------------------------------------------------------
