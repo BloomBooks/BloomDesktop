@@ -185,8 +185,14 @@ namespace Bloom.Spreadsheet
                         using (Image image = Image.FromFile(imageSrcPath))
                         {
                             string imageName = Path.GetFileNameWithoutExtension(imageSrcPath);
-                            // Allow for image reuse even though it shouldn't happen.
-                            if (worksheet.Drawings.Any(xx => xx.Name == imageName))
+                            // Image.jpg and image.png are different files, but the same name for storing here. (BL-16498)
+                            // Names are treated as case-insensitive (this is Windows after all!), so we need to allow for that.
+                            // Image reuse might conceivably happen as well, and this allows for that too.
+                            if (
+                                worksheet.Drawings.Any(xx =>
+                                    xx.Name.ToLowerInvariant() == imageName.ToLowerInvariant()
+                                )
+                            )
                                 imageName = $"{imageName}-{rowNum}";
                             var origImageHeight = image.Size.Height;
                             var origImageWidth = image.Size.Width;
