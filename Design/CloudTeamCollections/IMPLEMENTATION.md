@@ -121,6 +121,16 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 
 (orchestrator appends: date · task · PR · notes)
 
+- 7 Jul 2026 · 04-client-core · merged locally · 83/83 cloud (re-verified) + 281/281
+  folder-TC. Three findings for later tasks: (1) CONTRACT GAP — no RPC returns a book's
+  per-file manifest for Receive; decide at 05 launch (likely additive get_book_manifest
+  RPC, CONTRACTS bump) vs reading S3 .manifest.json. (2) AWSSDK.S3 3.5.3.10 predates
+  native checksum properties; manual x-amz-checksum-sha256 header live-verified — SDK bump
+  is a deliberate SEPARATE follow-up (publish path shares the package). (3) Task 05 must
+  point CloudBookTransfer.DownloadFiles at a temp book folder and do the final whole-
+  directory swap itself (the class's per-file move loop after full verification is not a
+  single atomic dir swap).
+
 - 7 Jul 2026 · 07-ui-setup · merged locally · Orchestrator review fix: the chooser's cloud
   section rendered UNGATED for all users — now behind the experimental feature (re-verified
   29/29 after fix). Registration/settings changes are additive and folder-safe. Deferred to
