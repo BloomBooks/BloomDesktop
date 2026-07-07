@@ -111,7 +111,8 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
         XLF en-only. Wiring to real endpoints deferred to Wave 3 (after 06) as planned.
 - [x] Wave 2 complete 7 Jul 2026 — 04 client core (83/83 cloud, 281/281 folder-TC);
       08 collection-tab shells (60/60 component tests; folder path zero-extra-requests)
-- [ ] Wave 3 complete (two-instance same-machine smoke against local stack)
+- [ ] Wave 3 complete — all three steps (05, 06, UI wiring) MERGED 7 Jul 2026;
+      remaining: the two-instance same-machine manual smoke (John)
 - [ ] Wave 4 complete
 - [ ] Real-infrastructure cutover complete (deferred list above)
 - [ ] Auth option decided (colleague review — see design doc Open items; **not blocking** —
@@ -121,6 +122,16 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 ## Merge log
 
 (orchestrator appends: date · task · PR · notes)
+
+- 7 Jul 2026 · ui-wiring · merged locally · Dispatcher fixes a live folder-TC create-dialog
+  breakage (WireUpForWinforms last-caller-wins; three instances of the bug class fixed,
+  regression-tested). Sign-in dialog; SharingPanel + pull-down wiring done. Orchestrator
+  fix on cloud-collections: SharingApi claimed-detection treated JSON-null user_id as
+  claimed (JTokenType.Null gotcha) — found because SharingApiTests match NO task's filter;
+  the widened mandatory filter is now recorded in orchestration/RESUME.md. Post-rebase
+  full suite 318/318. Known smoke-test limitations: pull-down doesn't auto-open the new
+  collection; join-conflict states show generic errors (matching-flags endpoint TBD);
+  real-auth mode intentionally still a placeholder.
 
 - 7 Jul 2026 · 05-cloud-backend · merged locally · Live Send→Receive→lock round trip green.
   Agent's live test found+fixed 2 integration bugs (RestSharp serializer mangling JTokens;
