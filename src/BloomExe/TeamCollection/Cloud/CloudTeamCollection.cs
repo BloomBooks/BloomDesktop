@@ -151,6 +151,9 @@ namespace Bloom.TeamCollection.Cloud
         /// unlock, history) without this class needing to grow business logic for them.</summary>
         public CloudCollectionClient Client => _client;
 
+        /// <summary>Test-only: resolve a book folder name to its server book id (null if unknown).</summary>
+        internal string TryGetBookIdForTests(string bookFolderName) => TryGetBookId(bookFolderName);
+
         /// <summary>The version seq of what's currently on THIS machine's disk for a book, or null
         /// if never Sent/Received here (book-status JSON's "localVersionSeq").</summary>
         public long? GetLocalVersionSeq(string bookFolderName) =>
@@ -416,7 +419,7 @@ namespace Bloom.TeamCollection.Cloud
 
             if (
                 string.IsNullOrEmpty(cachedBook.LockedBy)
-                && newStatus.lockedBy == TeamCollectionManager.CurrentUser
+                && newStatus.lockedBy == CurrentUserIdentity
                 && newStatus.checksum == cachedBook.CurrentChecksum
             )
             {
@@ -603,7 +606,7 @@ namespace Bloom.TeamCollection.Cloud
                         newStatus.checksum,
                         localManifest,
                         keepCheckedOut,
-                        keepCheckedOut ? TeamCollectionManager.CurrentUser : null,
+                        keepCheckedOut ? CurrentUserIdentity : null,
                         keepCheckedOut ? TeamCollectionManager.CurrentMachine : null
                     );
                     // We just successfully uploaded this exact version, so the local folder IS this

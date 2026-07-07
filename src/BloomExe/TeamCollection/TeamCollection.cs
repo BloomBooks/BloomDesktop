@@ -181,7 +181,7 @@ namespace Bloom.TeamCollection
             }
 
             if (
-                repoStatus.lockedBy == TeamCollectionManager.CurrentUser
+                repoStatus.lockedBy == CurrentUserIdentity
                 && repoStatus.lockedWhere == TeamCollectionManager.CurrentMachine
             )
             {
@@ -2244,7 +2244,7 @@ namespace Bloom.TeamCollection
                             continue;
                         // It's now missing from the repo. Explore more options.
                         if (
-                            statusLocal.lockedBy == TeamCollectionManager.CurrentUser
+                            statusLocal.lockedBy == CurrentUserIdentity
                             && statusLocal.lockedWhere == TeamCollectionManager.CurrentMachine
                         )
                         {

@@ -124,5 +124,78 @@ namespace BloomTests.TeamCollection.Cloud
 
             receiver.UnlockBook("Live book");
         }
+
+        // Replicates the first two-instance smoke test's check-in failure (7 Jul 2026): an
+        // UPDATE Send of an existing book, performed by a FRESH CloudTeamCollection whose cache
+        // was hydrated from the server (so cached books have no per-file Manifest) -- i.e.
+        // exactly what happens when a user reopens a cloud collection and checks in an edit.
+        // The original round-trip test above only exercises the first-ever Send of a new book.
+        [Test]
+        [Explicit(
+            "Requires the local Supabase dev stack running, INCLUDING `supabase functions serve --env-file server/dev/functions.env` (not started by `supabase start` alone)."
+        )]
+        public void LiveStack_UpdateSendAfterFreshHydrate_Succeeds()
+        {
+            var environment = CloudEnvironment.FromEnvironment();
+            var auth = new CloudAuth(new DevCloudAuthProvider(environment));
+            auth.SignIn("alice@dev.local", "BloomDev123!");
+            var client = new CloudCollectionClient(environment, auth);
+
+            var collectionId = Guid.NewGuid().ToString();
+            client.CreateCollection(
+                collectionId,
+                "Live update send " + collectionId.Substring(0, 8)
+            );
+
+            TeamCollectionManager.ForceCurrentUserForTests("alice@dev.local");
+            var mockManager = new Mock<ITeamCollectionManager>();
+
+            using var folder = new TemporaryFolder("CloudLive_UpdateSend");
+            var firstSession = new CloudTeamCollection(
+                mockManager.Object,
+                folder.FolderPath,
+                collectionId,
+                environment: environment,
+                auth: auth,
+                client: client
+            );
+            var bookFolderPath = new BookFolderBuilder()
+                .WithRootFolder(folder.FolderPath)
+                .WithTitle("Update book")
+                .WithHtm("<html><body>version one</body></html>")
+                .Build()
+                .BuiltBookFolderPath;
+            firstSession.PutBook(bookFolderPath, checkin: true);
+
+            // A brand-new instance over the same local folder: rebuilds its cache from the
+            // server (books have version rows but NO per-file manifests), like reopening Bloom.
+            var secondSession = new CloudTeamCollection(
+                mockManager.Object,
+                folder.FolderPath,
+                collectionId,
+                environment: environment,
+                auth: auth,
+                client: client
+            );
+            secondSession.HydrateFromServer();
+
+            Assert.That(secondSession.AttemptLock("Update book"), Is.True, "sanity: checkout");
+            Assert.That(
+                secondSession.OkToCheckIn("Update book"),
+                Is.True,
+                "OkToCheckIn must recognize the signed-in account's own checkout "
+                    + "(it compared against the registration email in the smoke-test failure)"
+            );
+            var htmPath = Path.Combine(bookFolderPath, "Update book.htm");
+            RobustFile.WriteAllText(htmPath, "<html><body>version two</body></html>");
+
+            var status = secondSession.PutBook(bookFolderPath, checkin: true);
+
+            Assert.That(status.lockedBy, Is.Null.Or.Empty, "check-in should release the lock");
+            var manifest = secondSession.Client.GetBookManifest(
+                secondSession.TryGetBookIdForTests("Update book")
+            );
+            Assert.That((long)manifest["seq"], Is.EqualTo(2), "the update should be version 2");
+        }
     }
 }
