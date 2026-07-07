@@ -386,13 +386,14 @@ namespace Bloom.TeamCollection
 
         /// <summary>Shows the cloud create-collection dialog (sign-in -> immutable-name ack ->
         /// initial Send), the cloud counterpart of HandleShowCreateTeamCollectionDialog. Reuses the
-        /// same React bundle/entry file (CreateTeamCollection.tsx hosts both the folder and cloud
-        /// dialog components) -- see that file's own WireUpForWinforms wiring.</summary>
+        /// same React bundle/entry file (CreateTeamCollection.tsx hosts the folder dialog, the
+        /// cloud dialog, and the sign-in dialog, selected via the dialogKind prop) -- see that
+        /// file's own CreateTeamCollectionBundleDispatcher/WireUpForWinforms wiring.</summary>
         private void HandleShowCreateCloudTeamCollectionDialog(ApiRequest request)
         {
             ReactDialog.ShowOnIdle(
                 "createTeamCollectionDialogBundle",
-                new { },
+                new { dialogKind = "cloud" },
                 600,
                 580,
                 null,
@@ -530,7 +531,14 @@ namespace Bloom.TeamCollection
         {
             ReactDialog.ShowOnIdle(
                 "createTeamCollectionDialogBundle",
-                new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() },
+                // dialogKind tells the shared bundle (see CreateTeamCollection.tsx's
+                // CreateTeamCollectionBundleDispatcher) which of its three top-level dialogs to
+                // render -- required now that the bundle hosts more than one.
+                new
+                {
+                    dialogKind = "folder",
+                    defaultRepoFolder = DropboxUtils.GetDropboxFolderPath(),
+                },
                 600,
                 580,
                 null,

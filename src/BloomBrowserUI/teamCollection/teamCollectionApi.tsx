@@ -107,12 +107,12 @@ export function useIsTeamCollection() {
     return isTeamCollection;
 }
 
-// --- Cloud Team Collections: Wave-2 shells against mocked endpoints (see task 08) ---
+// --- Cloud Team Collections (see task 08's shells, task 06's real endpoints, this task's wiring) ---
 // The endpoints referenced below (teamCollection/capabilities, teamCollection/tcStatusMetadata,
-// teamCollection/cloudCollectionId, teamCollection/isUserAdmin) do not exist in the C# code yet;
-// they land with task 06/Wave-3 wiring. Every hook here only calls its endpoint when the
-// cloud-team-collections experimental feature is on, so folder Team Collections (the overwhelming
-// majority of current usage) never make the extra request and never see any UI difference.
+// teamCollection/cloudCollectionId, teamCollection/isUserAdmin) are real, implemented in
+// TeamCollectionApi.cs. Every hook here only calls its endpoint when the cloud-team-collections
+// experimental feature is on, so folder Team Collections (the overwhelming majority of current
+// usage) never make the extra request and never see any UI difference.
 
 // Backend capability flags (CONTRACTS.md, additive to the book-status JSON): tell the UI what the
 // current Team Collection's backend can do, so components branch on capability rather than on
@@ -177,7 +177,7 @@ export function useTeamCollectionCapabilities(): ITeamCollectionCapabilities {
 
 // True if any capability flag indicates a cloud (S3 + Supabase) backend rather than a folder one.
 // Prefer this over checking a single flag, so callers that just want "is this a cloud TC" stay
-// correct even if a future capability is added or one of the mocked defaults changes.
+// correct even if a future capability is added or the initial (pre-fetch) defaults change.
 export function isCloudTeamCollection(
     capabilities: ITeamCollectionCapabilities,
 ): boolean {

@@ -5,10 +5,10 @@ import { TeamCollectionButton } from "./TeamCollectionButton";
 import { TeamCollectionStatus } from "../../../teamCollection/TeamCollectionStatus";
 
 // Tests the status button's label/color state matrix, including the Wave-2 addition: a live
-// "Updates Available (N books)" count for cloud Team Collections. Per Wave-2 scope (shells
-// against mocked endpoints), teamCollectionApi's status-metadata hook is mocked here rather than
-// exercising the real (not-yet-implemented) `teamCollection/tcStatusMetadata` endpoint or the
-// experimental-feature gate that guards it.
+// "Updates Available (N books)" count for cloud Team Collections. teamCollectionApi's
+// status-metadata hook is mocked here (rather than exercising the real
+// `teamCollection/tcStatusMetadata` endpoint and the experimental-feature gate that guards it)
+// to isolate this component's own label/color logic as a unit test.
 //
 // l10nHooks' useL10n2 is also mocked: the project-wide test-only localizationManager mock
 // (vitest.setup.ts) resolves every l10nKey to the key itself, ignoring the `english` fallback and

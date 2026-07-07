@@ -1,5 +1,5 @@
 import { act } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderRoot, unmountRoot } from "../utils/reactRender";
 import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { JoinCloudCollectionDialog } from "./JoinCloudCollectionDialog";
@@ -63,6 +63,15 @@ function renderDialog(
     });
 }
 
+// Flushes the microtask queue so a clicked button's pullDownCollection().then(...) chain has
+// run before the next assertion.
+async function flushPromises() {
+    await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+    });
+}
+
 function getActionButton(): HTMLButtonElement {
     const button = document.querySelector(
         '[data-testid="join-cloud-collection-action-button"]',
@@ -79,6 +88,12 @@ function getBodyText(): string {
     return body!.textContent ?? "";
 }
 
+beforeEach(() => {
+    // Default: pullDownCollection succeeds. Individual tests override with mockRejectedValue
+    // to exercise the failure path.
+    mockPullDownCollection.mockResolvedValue(undefined);
+});
+
 afterEach(() => {
     if (mountedRoot) {
         unmountRoot(mountedRoot);
@@ -88,7 +103,7 @@ afterEach(() => {
     // BloomDialog/MUI Dialog portal their content directly onto document.body, outside our
     // mounted root, so it must be cleaned up separately between tests.
     document.body.innerHTML = "";
-    mockPullDownCollection.mockClear();
+    mockPullDownCollection.mockReset();
     mockPost.mockClear();
 });
 
@@ -212,5 +227,46 @@ describe("JoinCloudCollectionDialog", () => {
         expect(getBodyText()).toContain("TeamCollection.ConflictingCollection");
         // The Report button (DialogBottomLeftButtons) is a sibling of the body, not inside it.
         expect(document.body.textContent).toContain("ErrorReport.Report");
+    });
+
+    it("calls onClose (so an embedding parent can unmount it) once pullDownCollection succeeds", async () => {
+        const onClose = vi.fn();
+        renderDialog({ onClose });
+
+        act(() => getActionButton().click());
+        await flushPromises();
+
+        expect(mockPullDownCollection).toHaveBeenCalledWith("collection-123");
+        expect(onClose).toHaveBeenCalled();
+        expect(
+            document.querySelector(
+                '[data-testid="join-cloud-collection-error"]',
+            ),
+        ).toBeNull();
+    });
+
+    it("shows the server's real error message and stays open when pullDownCollection fails", async () => {
+        mockPullDownCollection.mockRejectedValue(
+            new Error(
+                'There is already a different Team Collection called "My Team\'s Collection" on this computer.',
+            ),
+        );
+        const onClose = vi.fn();
+        renderDialog({ onClose });
+
+        act(() => getActionButton().click());
+        await flushPromises();
+
+        expect(onClose).not.toHaveBeenCalled();
+        const error = document.querySelector(
+            '[data-testid="join-cloud-collection-error"]',
+        );
+        expect(error).not.toBeNull();
+        expect(error!.textContent).toContain(
+            "There is already a different Team Collection",
+        );
+        // The action button is re-enabled so the user can retry (e.g. after picking a
+        // different name/removing the conflicting collection).
+        expect(getActionButton().disabled).toBe(false);
     });
 });

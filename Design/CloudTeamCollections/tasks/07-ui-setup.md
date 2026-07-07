@@ -164,3 +164,136 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   `isTeamCollection` branch; `JoinCloudCollectionDialog`'s eight-state matching logic into
   `CollectionChooser`'s `onPullDown`) once the relevant backend capability flags/matching logic
   from tasks 05/06 land — see the note at the end of the 2026-07-06 step-3 entry above.
+
+## Wave-3 UI wiring (task/ui-wiring branch, resumable per orchestration/ui-wiring.prompt.md)
+
+- 2026-07-07 · done: item 1 (the live folder-TC breakage) + item 2 (dedicated sign-in dialog).
+  Root cause confirmed: `createTeamCollectionDialogBundle` is ONE shared Vite entry
+  (`CreateTeamCollection.tsx`) that used to have both `CreateTeamCollectionDialog` (folder) and
+  `CreateCloudTeamCollectionDialog` (cloud) call `WireUpForWinforms` at module scope — that
+  function sets a single global (`window.wireUpRootComponentFromWinforms`), so whichever call
+  ran last at module load silently won, breaking the other dialog (in practice: the folder-TC
+  "Create Team Collection" dialog could no longer open, since the cloud dialog's call always
+  ran second in source order). Fixed by introducing `CreateTeamCollectionBundleDispatcher`
+  (new, in `CreateTeamCollection.tsx`) as the ONLY component in the file that calls
+  `WireUpForWinforms`; it renders one of `CreateTeamCollectionDialog` /
+  `CreateCloudTeamCollectionDialog` / the new `SignInDialog` based on a `dialogKind` prop
+  ("folder" / "cloud" / "signIn") that C# now always passes. Updated all three C# call sites to
+  pass it: `TeamCollectionApi.cs`'s `HandleShowCreateTeamCollectionDialog` (`"folder"`) and
+  `HandleShowCreateCloudTeamCollectionDialog` (`"cloud"`), and `SharingApi.cs`'s
+  `HandleShowSignIn` (`"signIn"`, also shrunk its dialog size from 600x580 to 420x320 to fit
+  the much smaller sign-in-only form). Also fixed the parallel Vite-dev-mode entry
+  (`CreateTeamCollection.entry.tsx`), which bootstrapped `CreateTeamCollectionDialog` by name
+  but — since it's the same module — was *already* silently rendering whichever dialog's
+  `WireUpForWinforms` call happened to win, the same bug in a different guise; it now
+  bootstraps the dispatcher too. New `SignInDialog.tsx` (item 2): a small dedicated sign-in
+  dialog (dev-mode email/password form per `loginState.mode`; a "Signing in ... isn't available
+  yet" message for the eventual production/"cloud" mode), replacing the old placeholder
+  behavior where `sharing/showSignIn` reused the cloud create-collection dialog's first screen
+  even in contexts unrelated to creating a collection. Auto-closes once `useSharingLoginState`
+  reports `signedIn: true` (picks up the "sharing"/"loginState" websocket event
+  `SharingApi.HandleLogin` already raises). Reuses three existing XLF keys
+  (`TeamCollection.Sharing.EmailAddress`/`Password`/`SignIn`) and adds one new one,
+  `TeamCollection.Sharing.SignInNotYetAvailable`, to `BloomMediumPriority.xlf` (secondary/error
+  text per the skill's priority table). New tests: `SignInDialog.test.tsx` (4 tests: dev-mode
+  form, dev-mode Sign In click, dev-mode error display, cloud-mode not-yet-available message —
+  the presentational `SignInDialogBody` only, same pattern as `CreateCloudTeamCollectionBody`'s
+  own tests) and `CreateTeamCollectionBundleDispatcher.test.tsx` (4 tests: a direct regression
+  test for the bug, proving the dispatcher renders the right component for every `dialogKind`
+  including the omitted/default case, which must still be the folder dialog). Full run:
+  `yarn vitest run --pool=threads teamCollection/CreateTeamCollectionBundleDispatcher.test.tsx
+  teamCollection/SignInDialog.test.tsx teamCollection/CreateCloudTeamCollection.test.tsx
+  teamCollection/SharingPanel.test.tsx teamCollection/JoinCloudCollectionDialog.test.tsx` → 5
+  files, 33 tests, all green (no regressions in the two pre-existing suites this change's
+  neighbors touch). `yarn eslint` on all touched/new files: 0 errors, 3 pre-existing warnings
+  (all on lines predating this change, in the untouched `CreateTeamCollectionDialog` body).
+  `dotnet build src/BloomExe/BloomExe.csproj`: succeeds, 0 errors (needed `./init.sh` first in
+  this fresh worktree — missing `PodcastUtilities`/`IDevice` per AGENTS.md's known-issue note).
+  Note for future sessions in this sandbox: `yarn vitest`/`yarn eslint`/`dotnet build` need
+  `dangerouslyDisableSandbox: true` on the Bash call — the default sandbox blocks
+  worker-thread/child-process spawning, which otherwise fails every vitest pool
+  ("Timeout starting threads runner") within ~5s. · next: item 3 (wire `SharingPanel` into
+  `TeamCollectionSettingsPanel`'s `isTeamCollection` branch for cloud TCs).
+- 2026-07-07 · done: item 3. `TeamCollectionSettingsPanel.tsx`'s `isTeamCollection` branch now
+  renders `SharingPanel` (collectionId from `useCloudCollectionId()`, currentUserEmail from
+  `useSharingLoginState().email`, isAdmin from `useIsTeamCollectionAdmin()`) when
+  `isCloudTeamCollection(useTeamCollectionCapabilities())` is true; folder TCs keep the old
+  free-text administrator-emails field + "Cloud Storage Folder Location" link completely
+  unchanged (the link/`fileIO/showInFolder` call doesn't make sense for a cloud TC's
+  `cloud://sil.bloom/collection/{id}` `RepoDescription`, confirmed by reading
+  `CloudTeamCollection.RepoDescription` in `TeamCollection/Cloud/CloudTeamCollection.cs`). All
+  four hooks used are already gated internally on the experimental feature, so this adds zero
+  extra requests for folder TCs. New `TeamCollectionSettingsPanel.test.tsx` (3 tests: folder TC
+  shows the old field not SharingPanel; cloud TC shows SharingPanel wired to the real
+  collectionId/email/isAdmin values not the old field; not-yet-a-TC shows neither) — mocks
+  `teamCollectionApi`/`sharingApi`/`SharingPanel` itself (already covered by its own
+  `SharingPanel.test.tsx`) so this file only tests the branching logic this task adds.
+- 2026-07-07 · done: item 4. `JoinCloudCollectionDialog`'s `handleJoinClick` now actually wires
+  `pullDownCollection`'s promise (previously fired-and-forgotten): success closes the dialog and
+  calls a new optional `onClose` prop; failure shows the server's real error message in a new
+  `ErrorBox` and re-enables the action button for retry. Added the `onClose` prop and removed
+  the dialog's own (unused, and actively dangerous once embedded — see below) `WireUpForWinforms`
+  call. `CollectionChooser.tsx`'s `onPullDown` now looks up the clicked row's full
+  `ICloudCollectionSummary` from the already-fetched `cloudCollections` list and renders
+  `JoinCloudCollectionDialog` inline (embedded directly in the tree, not as a separate WinForms
+  dialog — there never was a C# call site or bundle entry for one), passing the real
+  `signedIn`/`collectionId`/`collectionName`. Documented, deliberate scope limit: no endpoint
+  exposes the six local-vs-remote matching flags (`existingCollection` etc.) ahead of an actual
+  pull-down attempt — `CloudJoinFlow.DetermineScenario`/`JoinCollection` (task 05) resolve that
+  server-side, inside `collections/pullDown` itself, and `SharingApi.HandlePullDown` only
+  surfaces a human-readable message on conflict (via `CloudJoinConflictException.Message`), not
+  the structured `JoinScenario` enum/`LocalCollectionFolder` it also carries. So the dialog
+  defaults to the ordinary `CreateNewCollection` copy and, if a real conflict is hit, shows the
+  server's real message instead of guessing which of the eight dialog states to switch to (a
+  future task could plumb `JoinScenario`/`LocalCollectionFolder` through the failure response to
+  make this exact, but that's new backend surface, out of this wiring task's scope). Found (and
+  fixed as part of this item, since it would otherwise become live once `JoinCloudCollectionDialog`
+  is imported into `CollectionChooser`'s bundle) a second instance of item 1's bug class: the
+  dialog's leftover `WireUpForWinforms(JoinCloudCollectionDialog)` call (dead code — no C# call
+  site/bundle entry ever pointed at it) would have silently overwritten
+  `CollectionChooserDialog`'s own `WireUpForWinforms` registration in the shared
+  `collectionChooserBundle` the moment this task's import wired them into the same module graph.
+  New tests: 2 added to `JoinCloudCollectionDialog.test.tsx` (closes + calls `onClose` on
+  success; shows the server's real error and stays open, button re-enabled, on failure — updated
+  the file's `pullDownCollection` mock to return a resolved promise by default, since the
+  existing 8 state tests all synchronously assert `pullDownCollection` was called without
+  needing to await it) and new `CollectionChooser.test.tsx` (2 tests: pull-down opens the dialog
+  for the exact row clicked with real login/collection data, and `onClose` removes it; dialog
+  never renders when the cloud feature is off) — mocks `sharingApi`/`JoinCloudCollectionDialog`
+  itself.
+- 2026-07-07 · done: item 5 (sweep for lingering mock-only defaults). No behavioral defaults
+  needed changing: every `get()` call in `sharingApi.ts`/`teamCollectionApi.tsx` already omits an
+  error callback, so a real endpoint failure throws (unhandled rejection, reported to
+  Sentry/console) rather than being silently swallowed into some "safe" default — already
+  fail-fast per AGENTS.md, and consistent with every other hook in this file family. The `?? []`
+  /`?? initialTeamCollectionCapabilities`-style fallbacks that exist are all inside the SUCCESS
+  callback (a 200 response with an unexpectedly-empty body), not the failure path, so they don't
+  mask anything. What WAS stale: doc comments in `sharingApi.ts` (top-of-file), `teamCollectionApi.tsx`
+  (the Cloud Team Collections section header), `CreateTeamCollection.tsx` (the cloud-dialog
+  section banner), and `TeamCollectionButton.test.tsx` claiming the relevant endpoints were
+  "not-yet-implemented" / "mocked" / task-06-pending — all now real per task 06's merge. Left as
+  a misleading residue, this is exactly the kind of thing that could make a future
+  agent/developer distrust or re-mock already-real endpoints, or skip auditing their error paths
+  on the (false) assumption they're still shells. Updated all four to say what's actually true
+  now. No production code behavior changed by this item.
+- 2026-07-07 · done: item 6 (final sweep). `yarn vitest run --pool=threads teamCollection
+  collectionsTab collection react_components/TopBar`: this sandbox's vitest pool is slow enough
+  (each file's "collect" phase alone often 40-100s+) that the single combined invocation the
+  task brief names hung at final teardown past this session's tool timeout before printing its
+  summary line (no failures were reported by any individual file before that point, and no
+  hanging-process reporter was needed to diagnose it: `ps aux | grep vitest` showed the process
+  already gone, so it was killed externally, not deadlocked) — split into per-directory/file runs
+  instead to get a clean result within the timeout, then cross-checked file counts (`find
+  teamCollection -name "*.test.tsx"` etc.) against what each run actually reported to make sure
+  nothing silently dropped. Full accounting: `teamCollection` (11 files, 65 tests: ShareButton 4,
+  JoinCloudCollectionDialog 10, CollectionHistoryTable 5, CreateTeamCollectionBundleDispatcher 4,
+  TeamCollectionBookStatusPanel 11, SharingPanel 7, CreateCloudTeamCollection 10, SignInDialog 4,
+  TeamCollectionDialog 5, TeamCollectionSettingsPanel 3, NewerVersionAvailableMarker 2),
+  `collectionsTab` (0 test files -- nothing to run there), `collection` (2 files, 6 tests:
+  MyCloudCollectionsSection 4, CollectionChooser 2), `react_components/TopBar` (1 file, 8 tests:
+  TeamCollectionButton). **Total: 14 files, 79 tests, all green, zero failures.** `yarn lint`
+  (whole project, one process, no pool-timeout issue): 0 errors, 777 warnings -- the exact same
+  count task 07's own final wrap-up entry reported before this branch's work started, confirming
+  zero new warnings introduced across all six items. `dotnet build src/BloomExe/BloomExe.csproj`
+  re-verified clean (0 errors) after the last commit. All six work items from
+  `orchestration/ui-wiring.prompt.md` are now complete.

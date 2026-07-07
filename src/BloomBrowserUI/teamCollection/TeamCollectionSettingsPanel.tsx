@@ -22,7 +22,17 @@ import { useEffect } from "react";
 import { Label } from "../react_components/l10nComponents";
 import { TextField } from "@mui/material";
 import { DialogHelpButton } from "../react_components/BloomDialog/commonDialogComponents";
-import { useIsCloudTeamCollectionsExperimentalFeatureEnabled } from "./sharingApi";
+import {
+    useIsCloudTeamCollectionsExperimentalFeatureEnabled,
+    useSharingLoginState,
+} from "./sharingApi";
+import {
+    isCloudTeamCollection,
+    useCloudCollectionId,
+    useIsTeamCollectionAdmin,
+    useTeamCollectionCapabilities,
+} from "./teamCollectionApi";
+import { SharingPanel } from "./SharingPanel";
 
 // The contents of the Team Collection panel of the Settings dialog.
 
@@ -43,6 +53,15 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
 
     const cloudSharingExperimentalFeatureEnabled =
         useIsCloudTeamCollectionsExperimentalFeatureEnabled();
+
+    // Cloud vs folder Team Collection: branch on capability, never on a concrete backend type
+    // (per the gating rule in Design/CloudTeamCollections). All these hooks are already gated
+    // internally on the experimental feature being on, so folder TCs (the overwhelming
+    // majority) make zero extra requests here, same as everywhere else this pattern is used.
+    const isCloud = isCloudTeamCollection(useTeamCollectionCapabilities());
+    const cloudCollectionId = useCloudCollectionId();
+    const isCloudAdmin = useIsTeamCollectionAdmin();
+    const loginState = useSharingLoginState();
 
     const intro: JSX.Element = (
         <div>
@@ -70,61 +89,78 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
             >
                 This is a Team Collection
             </P>
-            <P
-                l10nKey="TeamCollection.CloudLocation"
-                temporarilyDisableI18nWarning={true}
-                className="no-space-below"
-            >
-                Cloud Storage Folder Location:
-            </P>
-            <a
-                className="directory-link"
-                href=""
-                onClick={(e) => {
-                    e.preventDefault();
-                    postJson("fileIO/showInFolder", {
-                        folderPath: repoFolderPath,
-                    });
-                }}
-            >
-                {repoFolderPath}
-            </a>
-            <Label
-                l10nKey="TeamCollection.AdministratorEmails"
-                htmlFor="adminstratorEmails"
-            >
-                Administrator Emails:
-            </Label>
-            <TextField
-                id="adminstratorEmails"
-                value={adminstratorEmail}
-                onChange={(event) => {
-                    const newAdminString: string = event.target.value;
-                    setAdminstratorEmail(newAdminString);
-                    postString("settings/administrators", newAdminString);
-                }}
-                required={false}
-                css={css`
-                    width: 100%;
-                    margin-top: 5px;
-                `}
-            ></TextField>
-
-            <P
-                l10nKey="TeamCollection.AddingHelp"
-                temporarilyDisableI18nWarning={true}
-            >
-                Need help adding someone to your Team Collection?
-            </P>
-            <div className="align-right">
-                <DialogHelpButton
-                    l10nKey="TeamCollection.HowToAddSomeone"
-                    temporarilyDisableI18nWarning={true}
-                    variant="text"
-                    helpId="Tasks/Basic_tasks/Team_Collections/Add_someone_to_a_Team_Collection.htm"
-                    buttonText="How to add someone to this Team Collection"
+            {isCloud ? (
+                // Cloud TCs: the old free-text administrator-emails field doesn't apply (there's
+                // no folder to browse to, and membership/roles are managed server-side) --
+                // SharingPanel (task 07's Wave-1 shell) replaces it entirely. Folder TCs below
+                // keep the old panel unchanged.
+                <SharingPanel
+                    collectionId={cloudCollectionId}
+                    currentUserEmail={loginState.email ?? ""}
+                    isAdmin={isCloudAdmin}
                 />
-            </div>
+            ) : (
+                <React.Fragment>
+                    <P
+                        l10nKey="TeamCollection.CloudLocation"
+                        temporarilyDisableI18nWarning={true}
+                        className="no-space-below"
+                    >
+                        Cloud Storage Folder Location:
+                    </P>
+                    <a
+                        className="directory-link"
+                        href=""
+                        onClick={(e) => {
+                            e.preventDefault();
+                            postJson("fileIO/showInFolder", {
+                                folderPath: repoFolderPath,
+                            });
+                        }}
+                    >
+                        {repoFolderPath}
+                    </a>
+                    <Label
+                        l10nKey="TeamCollection.AdministratorEmails"
+                        htmlFor="adminstratorEmails"
+                    >
+                        Administrator Emails:
+                    </Label>
+                    <TextField
+                        id="adminstratorEmails"
+                        value={adminstratorEmail}
+                        onChange={(event) => {
+                            const newAdminString: string = event.target.value;
+                            setAdminstratorEmail(newAdminString);
+                            postString(
+                                "settings/administrators",
+                                newAdminString,
+                            );
+                        }}
+                        required={false}
+                        css={css`
+                            width: 100%;
+                            margin-top: 5px;
+                        `}
+                    ></TextField>
+
+                    <P
+                        l10nKey="TeamCollection.AddingHelp"
+                        temporarilyDisableI18nWarning={true}
+                    >
+                        Need help adding someone to your Team Collection?
+                    </P>
+                    <div className="align-right">
+                        <DialogHelpButton
+                            l10nKey="TeamCollection.HowToAddSomeone"
+                            temporarilyDisableI18nWarning={true}
+                            variant="text"
+                            helpId="Tasks/Basic_tasks/Team_Collections/Add_someone_to_a_Team_Collection.htm"
+                            buttonText="How to add someone to this Team Collection"
+                        />
+                    </div>
+                </React.Fragment>
+            )}
         </div>
     );
 
