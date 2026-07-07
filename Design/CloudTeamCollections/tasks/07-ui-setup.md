@@ -21,7 +21,7 @@ Owns new `src/BloomBrowserUI/teamCollection/SharingPanel.tsx`,
 - [x] Collection chooser: "Get my Team Collections" (signed-out state included); pull-down join
       via the six-scenario dialog (new states: NotSignedIn, ApprovalRemoved).
 - [x] Registration dialog: email unlock for cloud TCs (identity = account).
-- [ ] All strings via XLF (DistFiles/localization/en only), Send/Receive terminology.
+- [x] All strings via XLF (DistFiles/localization/en only), Send/Receive terminology.
 
 ## Acceptance
 - vitest browser-mode component tests: SharingPanel CRUD/pending/last-admin/read-only;
@@ -131,3 +131,36 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   for every new user-visible string added across this whole task (follow
   `.github/skills/xlf-strings/SKILL.md`; only `DistFiles/localization/en/`). This is the last
   step before final report.
+- 2026-07-07 · done: step 5 (XLF strings) was already completed in the prior WIP commit
+  (`8c82b4b37`) but not yet logged/verified — closing out the task. Confirmed every new
+  user-facing string across `CollectionChooser`/`MyCloudCollectionsSection`, `SharingPanel`,
+  `CreateTeamCollection`'s cloud dialog, `JoinCloudCollectionDialog`, and the registration
+  cloud-account additions goes through `l10nKey`/`Div`/`P`/`Span`/`BloomButton`/
+  `AttentionTextField` (no hardcoded UI text), and that every one of those keys has a matching
+  `translate="no"` entry with an `ID:` note in `DistFiles/localization/en/Bloom.xlf` or
+  `BloomMediumPriority.xlf` (priority split follows the SKILL.md table: primary actions/labels
+  in `Bloom.xlf`, secondary/help/error text in `BloomMediumPriority.xlf`), each with a second
+  translator-context note wherever the string is short/generic, a fragment, or contains a
+  placeholder or product name — including the auto-derived
+  `TeamCollection.Sharing.ShareOnCloudServer.ToolTipWhenDisabled` key consumed via
+  `l10nTipEnglishDisabled` on the Settings button. No existing entries were modified. Only
+  `DistFiles/localization/en/` was touched. Terminology check: the initial collection upload
+  uses "Send"/"Sending" (matching folder-TC Send/Receive language), and the join/pull-down flow
+  uses "Get"/"download" — consistent with the existing folder-TC `JoinTeamCollectionDialog`'s
+  own wording, so no new/conflicting terminology was introduced.
+- 2026-07-07 · done: final wrap-up for task 07. Ran `yarn prettier --write` on every file this
+  branch touched (`git diff --name-only 087e9a725..HEAD`); all 16 already matched (the two WIP
+  commits that skipped the pre-commit hook turned out to be prettier-clean already, so no
+  reformatting was needed). Re-ran the full component-test suite in single-run mode:
+  `yarn vitest run --pool=threads teamCollection/SharingPanel.test.tsx
+  teamCollection/CreateCloudTeamCollection.test.tsx
+  collection/MyCloudCollectionsSection.test.tsx teamCollection/JoinCloudCollectionDialog.test.tsx`
+  → 4 test files, 29 tests, all passing. Ran `yarn lint` across the whole project: 0 errors,
+  777 warnings, none of them on lines this branch added or in files newly created by this
+  branch (checked `CreateTeamCollection.tsx`'s two reported warnings and `vitest.setup.ts`'s
+  one — both sit on pre-existing lines outside this branch's diff hunks). All five task steps
+  are now checked off. Task 07 (Wave-1 shells) is complete and ready for Wave-3 wiring per the
+  "next" notes left in each shell (SharingPanel into `TeamCollectionSettingsPanel`'s
+  `isTeamCollection` branch; `JoinCloudCollectionDialog`'s eight-state matching logic into
+  `CollectionChooser`'s `onPullDown`) once the relevant backend capability flags/matching logic
+  from tasks 05/06 land — see the note at the end of the 2026-07-06 step-3 entry above.
