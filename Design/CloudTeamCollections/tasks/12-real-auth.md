@@ -78,12 +78,20 @@ one new migration + pgTAP additions if the email_verified check needs it.
       local-GoTrue) plus their effect on `claim_memberships()` (cases 4a/4b). Re-ran
       `supabase test db` against the local stack: `Files=1, Tests=42 ... All tests
       successful.` No code change; this bullet's only output is this verification note.
-- [ ] **Reference Firebase Admin artifacts** under `server/firebase/` (clearly labeled
+- [x] **Reference Firebase Admin artifacts** under `server/firebase/` (clearly labeled
       "deploy lives in BloomLibrary infrastructure — this is the reviewed reference"):
       (a) an auth-trigger cloud function adding the static `role: "authenticated"` custom
       claim on user creation; (b) a one-time backfill script over existing users;
       (c) README covering deploy + backfill steps and the claim's purpose (Supabase requires
       it on third-party JWTs).
+      DONE 8 Jul 2026: `server/firebase/setAuthenticatedClaim.js` (1st-gen
+      `functions.auth.user().onCreate` trigger -- no Identity Platform upgrade needed, and
+      eventual consistency is fine here), `server/firebase/backfillAuthenticatedClaim.js`
+      (paginated `listUsers()` walk, idempotent, dry-run by default / `--apply` to write),
+      `server/firebase/README.md` (why the claim exists, deploy+backfill steps, sanity
+      check). Not built/tested/linted by this repo (no root JS toolchain covers
+      `server/firebase/`; correctly out of scope per the file headers) -- reviewed reference
+      only, exactly as the task specifies.
 - [x] **Sign-in dialog behavior in cloud mode**: the existing sharing sign-in UI is
       dev-mode email/password. In `CloudAuthMode.Cloud` it must instead route to the
       browser-hosted BloomLibrary login (the same flow the token receipt endpoint completes).
@@ -127,4 +135,9 @@ one new migration + pgTAP additions if the email_verified check needs it.
   42/42) · next: step 5, reference Firebase Admin artifacts under `server/firebase/` (auth
   trigger claim function + backfill script + README), then the final full-suite verification
   pass and report.
+- 8 Jul 2026 · done: step 5 (server/firebase/ reference artifacts) -- ALL SIX STEPS COMPLETE.
+  Final verification: mandatory C# filter 359/359 green, pgTAP 42/42 green, vitest green,
+  yarn lint 0 errors · next: none -- task complete; see the final report for what's still
+  deferred to GOING-LIVE.md Phase 3 (live wiring: hosted Supabase third-party-auth config,
+  BloomLibrary2 editor.ts change, actual Firebase deploy+backfill).
 ## Progress log
