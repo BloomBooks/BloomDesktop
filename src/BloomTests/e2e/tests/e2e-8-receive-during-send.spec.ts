@@ -41,7 +41,11 @@ const V2_MARKER = "ALICE-V2-INFLIGHT-MARKER";
 // Bloom does NOT image-process (a large fake `.png` makes external/select-book hang 30s+ as
 // Bloom tries to decode it). `.txt` is in BookLevelFileExtensionsLowerCase and never decoded.
 const BIG_ASSET_NAME = "big-v2-asset.txt";
-const BIG_ASSET_BYTES = 40 * 1024 * 1024;
+// Sized so the upload phase lasts SECONDS against warm localhost MinIO, not tens of
+// milliseconds: the kill must land between checkin-start's tx-open and checkin-finish, and
+// its end-to-end latency (pg poll + signal delivery) is ~100ms+. 40 MB lost that race on a
+// warm full-matrix run (the Send committed first); 256 MB gives an order-of-magnitude margin.
+const BIG_ASSET_BYTES = 256 * 1024 * 1024;
 
 const waitForCloudConnectionReady = async (httpPort: number): Promise<void> => {
     await expect
@@ -207,7 +211,7 @@ test.describe("E2E-8 Receive-during-Send coherence", () => {
             );
             expect(
                 frozen.rows[0].tx_status,
-                "the Send committed before the kill landed; widen BIG_FILE_BYTES",
+                "the Send committed before the kill landed; widen BIG_ASSET_BYTES",
             ).toBe("open");
             expect(Number(frozen.rows[0].current_version_seq)).toBe(1);
         } finally {

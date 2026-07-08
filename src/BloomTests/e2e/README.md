@@ -72,6 +72,20 @@ yarn test          # builds Bloom once (globalSetup), then runs every scenario, 
 
 Single file: `yarn playwright test tests/e2e-1-create-share.spec.ts`.
 
+**Confining Bloom windows to one monitor**: set `BLOOM_E2E_SCREEN` to a screen number
+(1-based, counting monitors left-to-right by X coordinate) and every launched instance's
+windows — including the splash, the post-reopen replacement main window, and WinForms
+dialogs — get kept on that screen by a per-instance watcher (`harness/windowPlacement.ts` +
+`watchWindowScreen.ps1`). List your screens in that order with:
+
+```powershell
+powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Screen]::AllScreens | Sort-Object {$_.Bounds.X} | ForEach-Object {$i=1} { \"$i. $($_.DeviceName) $($_.Bounds) primary=$($_.Primary)\"; $i++ }"
+```
+
+Caveat: Bloom saves window position to the shared user.config on exit, so your own next
+manual Bloom launch may open on the E2E screen once — just drag it back. Test behavior is
+unaffected by window position (CDP input is page-relative).
+
 ## Design
 
 - **Build once, launch many** (`harness/launch.ts`): `globalSetup` runs `dotnet build

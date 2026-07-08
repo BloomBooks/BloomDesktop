@@ -32,6 +32,7 @@ import { chromium, Browser, Page } from "@playwright/test";
 import { repoRoot, bloomExeCsproj, bloomAutomationSkillDir } from "./paths";
 import { DevUser, cloudTcEnv } from "./devStack";
 import { ensureExperimentalFeatureEnabled } from "./experimentalFlag";
+import { startWindowPlacementWatcher } from "./windowPlacement";
 
 const execFileAsync = promisify(execFile);
 
@@ -220,13 +221,21 @@ export const launchBloom = async (
     }
 
     const readyInfo = ready;
+    // Opt-in (BLOOM_E2E_SCREEN): keep this instance's windows on a designated monitor so E2E
+    // runs don't take over the developer's working screens. No-op when the variable is unset.
+    const stopWindowPlacement = startWindowPlacementWatcher(
+        readyInfo.processId,
+    );
     return {
         processId: readyInfo.processId,
         httpPort: readyInfo.httpPort,
         cdpPort: readyInfo.cdpPort,
         collectionFolder: path.dirname(options.collectionFilePath),
         logPath,
-        kill: () => killByHttpPort(readyInfo.httpPort, readyInfo.processId),
+        kill: () => {
+            stopWindowPlacement();
+            return killByHttpPort(readyInfo.httpPort, readyInfo.processId);
+        },
         connect: () => connectOverCdp(readyInfo.cdpPort),
     };
 };
