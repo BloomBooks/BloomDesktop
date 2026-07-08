@@ -2694,7 +2694,7 @@ namespace Bloom.Book
                         RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                     );
                 // Replace doubled (nested) markup with single markup.  This shouldn't happen, but it
-                // has been seen in the wild, possibly as a result of pasting text. (BL-16378)
+                // has been seen in the wild, possibly as a result of pasting text. (BL-16387)
                 // Only one level of nesting is handled, but that should (almost always) be enough.
                 inner = Regex.Replace(
                     inner,
