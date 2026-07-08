@@ -130,6 +130,13 @@ export function useMyCloudCollections(shouldQuery: boolean): {
     return { collections, loading };
 }
 
+// Result of a successful collections/pullDown: the local folder the collection was pulled down
+// into, so the caller can open it directly (see JoinCloudCollectionDialog's handleJoinClick)
+// instead of leaving the user to find the new collection in the chooser themselves.
+export interface IPullDownResult {
+    collectionFolder: string;
+}
+
 export function pullDownCollection(collectionId: string) {
     return postJson("collections/pullDown", { collectionId });
 }

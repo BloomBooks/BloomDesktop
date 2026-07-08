@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Bloom.Api;
@@ -6,6 +7,7 @@ using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.TeamCollection.Cloud;
+using DesktopAnalytics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SIL.IO;
@@ -442,7 +444,12 @@ namespace Bloom.web.controllers
         /// only sends the id), then delegates to CloudJoinFlow -- the six-scenario matching logic
         /// (task 05) already handles "already joined"/name-collision cases by throwing
         /// CloudJoinConflictException, surfaced here as a plain failure message pending the
-        /// dedicated resolution dialog noted in task 07's final report.</summary>
+        /// dedicated resolution dialog noted in task 07's final report.
+        ///
+        /// Replies with the local collection folder path (task 10: "pull-down auto-open") so the
+        /// caller (JoinCloudCollectionDialog) can invoke the same "workspace/openCollection"
+        /// action the chooser's own cards use, instead of leaving the user to hunt for the newly
+        /// pulled-down collection themselves.</summary>
         private void HandlePullDown(ApiRequest request)
         {
             var body = request.RequiredPostObject<PullDownBody>();
@@ -470,8 +477,28 @@ namespace Bloom.web.controllers
                 // either. See the final report for a recommended live smoke test of this specific
                 // path.
                 var manager = TeamCollectionApi.TheOneInstance?.TcManager;
-                joinFlow.JoinCollection(body.collectionId, (string)summary["name"], manager);
-                request.PostSucceeded();
+                var cloudTc = joinFlow.JoinCollection(
+                    body.collectionId,
+                    (string)summary["name"],
+                    manager
+                );
+
+                // Analytics audit (task 10): the folder-TC join path tracks "TeamCollectionJoin"
+                // from TeamCollectionApi.HandleJoinTeamCollection; this is that event's cloud
+                // counterpart -- pull-down had no analytics at all before this.
+                Analytics.Track(
+                    "TeamCollectionJoin",
+                    new Dictionary<string, string>()
+                    {
+                        { "CollectionId", body.collectionId },
+                        { "CollectionName", (string)summary["name"] },
+                        { "Backend", cloudTc.GetBackendType() },
+                        { "User", CurrentAuth().GetLoginState(CloudEnvironment.Current).Email },
+                        { "JoinType", "pullDown" },
+                    }
+                );
+
+                request.ReplyWithJson(new { collectionFolder = cloudTc.LocalCollectionFolder });
             }
             catch (CloudJoinConflictException e)
             {

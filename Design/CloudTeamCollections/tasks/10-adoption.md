@@ -45,3 +45,28 @@
   it's a narrow, mechanical mirror of the already-shipped `allowTeamCollection` code path so risk
   is low, but please double check `AllowCloudTeamCollectionOptionEnabled`'s `is CloudTeamCollection`
   check compiles (needed `using Bloom.TeamCollection.Cloud;` added to CollectionSettingsDialog.cs).
+
+- 8 Jul 2026 · done · Prompt item 2 (pull-down auto-open): `SharingApi.HandlePullDown` now
+  replies with `{ collectionFolder }` (the joined `CloudTeamCollection.LocalCollectionFolder`,
+  `internal` and already same-assembly-visible) instead of a bare `PostSucceeded()`.
+  `sharingApi.ts` gains `IPullDownResult`; `JoinCloudCollectionDialog.handleJoinClick` now calls
+  `postString("workspace/openCollection", result.collectionFolder)` on success — the exact same
+  action `CollectionCard`'s `onClick` uses for the chooser's own cards — before closing the
+  dialog. Updated `JoinCloudCollectionDialog.test.tsx` to mock `postString` and added two tests
+  (auto-opens the returned folder; no-op when the response carries no `collectionFolder`, e.g. in
+  tests that only `mockResolvedValue(undefined)`). `yarn vitest run
+  collection/AdvancedSettingsPanel.test.tsx teamCollection/JoinCloudCollectionDialog.test.tsx
+  collection/CollectionChooser.test.tsx --pool=threads` → 19/19 passed (CollectionChooser's own
+  test stubs JoinCloudCollectionDialog entirely so it's unaffected by this change; included here
+  as a regression check since it's the dialog's embedding parent).
+  Note for whoever runs E2E-9/E2E-7 live: `--pool=threads` was needed to work around a
+  "[vitest-pool]: Timeout starting forks runner" error with the default fork pool in this
+  worktree/session; not investigated further since `--pool=threads` reliably worked, but flag it
+  if CI or another dev also hits it. C# side (SharingApi.cs) authored but not build-verified here
+  — orchestrator verifies at merge. Bundled into the same `HandlePullDown` edit (item 7's
+  analytics audit, done early since it's the same method): added the missing
+  `Analytics.Track("TeamCollectionJoin", ...)` call for the cloud pull-down path — previously
+  ZERO analytics fired for cloud join, unlike the folder-TC join path
+  (`TeamCollectionApi.HandleJoinTeamCollection`'s own "TeamCollectionJoin" event). Uses
+  `CurrentAuth().GetLoginState(CloudEnvironment.Current).Email` for `User` since SharingApi is
+  app-level (no per-project `_settings`/`CurrentUser` available there).
