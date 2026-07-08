@@ -307,7 +307,10 @@ namespace Bloom.web
         /// </summary>
         protected virtual async Task<FetchResult> FetchAsync(string url)
         {
-            var response = await s_httpClient.GetAsync(url);
+            // Dispose the response on every path: HttpResponseMessage owns the response stream and its
+            // pooled network connection, and we fetch one per person (a Team Collection can have many),
+            // so leaking these would eventually starve the shared HttpClient's connection pool.
+            using var response = await s_httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
                 return null;
             var bytes = await response.Content.ReadAsByteArrayAsync();
