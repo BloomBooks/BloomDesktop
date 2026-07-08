@@ -192,6 +192,9 @@ namespace Bloom
                                 typeof(BulkBloomPubCreator),
                                 typeof(PublishApi),
                                 typeof(LibraryPublishApi),
+                                typeof(AccountApi),
+                                typeof(AvatarApi),
+                                typeof(AvatarCache),
                                 typeof(WorkspaceApi),
                                 typeof(BookCollectionHolder),
                                 typeof(WorkspaceTabSelection),
@@ -439,6 +442,13 @@ namespace Bloom
             _scope.Resolve<EditingViewApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ImageGalleryApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<LibraryPublishApi>().RegisterWithApiHandler(server.ApiHandler);
+            var accountApi = _scope.Resolve<AccountApi>();
+            accountApi.RegisterWithApiHandler(server.ApiHandler);
+            accountApi.RestoreSavedLoginIfAny();
+            // Register the avatar endpoint. (The persisted known-photo map that gives a previously
+            // logged-in user their nicer avatar source across restarts is loaded lazily by AvatarCache
+            // on its first use -- serving the first avatar request -- not eagerly here.)
+            _scope.Resolve<AvatarApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<WorkspaceApi>().RegisterWithApiHandler(server.ApiHandler);

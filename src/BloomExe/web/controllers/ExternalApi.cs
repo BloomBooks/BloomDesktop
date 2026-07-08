@@ -16,14 +16,13 @@ namespace Bloom.web.controllers
     /// </summary>
     public class ExternalApi
     {
-        public static event EventHandler LoginSuccessful;
-
         private BloomLibraryBookApiClient _bloomLibraryBookApiClient;
         private readonly CollectionModel _collectionModel;
         private readonly EditingModel _editingModel;
         private readonly WorkspaceTabSelection _tabSelection;
         private readonly BookServer _bookServer;
         private readonly CollectionSettings _collectionSettings;
+        private readonly AvatarCache _avatarCache;
 
         // Re-entrancy guard for process-book. ProcessBook occupies the UI thread but pumps the
         // Windows message loop via Application.DoEvents() (both the pre-loop below and the per-page
@@ -71,7 +70,8 @@ namespace Bloom.web.controllers
             EditingModel editingModel,
             WorkspaceTabSelection tabSelection,
             BookServer bookServer,
-            CollectionSettings collectionSettings
+            CollectionSettings collectionSettings,
+            AvatarCache avatarCache
         )
         {
             _bloomLibraryBookApiClient = bloomLibraryBookApiClient;
@@ -80,6 +80,7 @@ namespace Bloom.web.controllers
             _tabSelection = tabSelection;
             _bookServer = bookServer;
             _collectionSettings = collectionSettings;
+            _avatarCache = avatarCache;
         }
 
         /// <summary>
@@ -117,14 +118,33 @@ namespace Bloom.web.controllers
                         string token = requestData.sessionToken;
                         string email = requestData.email;
                         string userId = requestData.userId;
+                        // photoUrl (the user's Google/Firebase profile picture) is OPTIONAL and read
+                        // defensively: the website and desktop deploy independently, so an older blorg
+                        // build will not send this field at all. A missing/null value is normal and
+                        // simply means "no picture" (the avatar falls back to Gravatar/initials). Only
+                        // THIS field gets this lenient treatment; the others keep the fail-fast behavior.
+                        string photoUrl = requestData.IsDefined("photoUrl")
+                            ? (string)requestData.photoUrl
+                            : null;
                         //Debug.WriteLine("Got login data " + email + " with token " + token + " and id " + userId);
+
+                        // Register the logged-in user's profile picture (if any) in the person-keyed
+                        // avatar cache BEFORE SetLoginData, because SetLoginData broadcasts the new login
+                        // state, which prompts the front end to request the avatar. Registering first
+                        // guarantees that request resolves to the Google photo rather than racing ahead
+                        // and caching Gravatar. When photoUrl is absent/empty this is a no-op and the
+                        // avatar falls back to Gravatar/initials.
+                        if (!string.IsNullOrEmpty(photoUrl))
+                        {
+                            _avatarCache.SetKnownPhotoUrl(AvatarCache.Md5OfEmail(email), photoUrl);
+                        }
+
                         _bloomLibraryBookApiClient.SetLoginData(
                             email,
                             userId,
                             token,
                             BookUpload.Destination
                         );
-                        LoginSuccessful?.Invoke(this, null);
 
                         request.PostSucceeded();
 
