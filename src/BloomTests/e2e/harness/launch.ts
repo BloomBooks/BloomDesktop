@@ -62,9 +62,13 @@ export const buildBloomOnce = async (): Promise<void> => {
     await ensureExperimentalFeatureEnabled();
 };
 
-/** FAILS LOUDLY (throws) if any Bloom.exe is already running anywhere on the machine at
- * session start. Never silently proceed against a foreign instance — the caller could end up
- * testing against a stale binary or clobbering someone else's debugging session. */
+/** FAILS LOUDLY (throws) if a Bloom.exe from THIS repo tree is already running at session
+ * start. Never silently proceed against such an instance — the caller could end up testing
+ * against a stale binary or clobbering someone else's debugging session, and its process locks
+ * this tree's build output. An instance from a DIFFERENT worktree (a developer debugging in
+ * e.g. BloomDesktop.worktrees/CodeReview while the harness runs here) is only WARNED about:
+ * it locks its own output tree, serves its own port block, and per
+ * .claude/skills/run-bloom/SKILL.md is not ours to kill. */
 export const assertNoForeignBloomRunning = async (): Promise<void> => {
     const { stdout } = await execFileAsync(
         "node",
@@ -76,12 +80,34 @@ export const assertNoForeignBloomRunning = async (): Promise<void> => {
         { cwd: repoRoot, timeout: 20_000, windowsHide: true },
     );
     const status = JSON.parse(stdout);
-    const running: unknown[] = status.runningBloomInstances ?? [];
-    if (running.length > 0) {
+    const running: Array<{
+        detectedRepoRoot?: string;
+        executablePath?: string;
+    }> = status.runningBloomInstances ?? [];
+    const normalize = (p?: string) =>
+        (p ?? "")
+            .replace(/[\\/]+/g, "\\")
+            .replace(/\\$/, "")
+            .toLowerCase();
+    const thisRepo = normalize(repoRoot);
+    const sameRepo = running.filter(
+        (instance) =>
+            normalize(instance.detectedRepoRoot) === thisRepo ||
+            normalize(instance.executablePath).startsWith(thisRepo + "\\"),
+    );
+    if (sameRepo.length > 0) {
         throw new Error(
-            `Refusing to build/launch: ${running.length} Bloom.exe instance(s) already running ` +
-                `(${JSON.stringify(running)}). Kill them first (see .github/skills/bloom-automation/SKILL.md) ` +
-                `so the harness never tests against a stale or foreign instance.`,
+            `Refusing to build/launch: ${sameRepo.length} Bloom.exe instance(s) from THIS repo tree already running ` +
+                `(${JSON.stringify(sameRepo)}). Kill them first (see .github/skills/bloom-automation/SKILL.md) ` +
+                `so the harness never tests against a stale binary or fights the build for locked output files.`,
+        );
+    }
+    const foreign = running.filter((instance) => !sameRepo.includes(instance));
+    if (foreign.length > 0) {
+        console.warn(
+            `[harness] NOTE: ${foreign.length} Bloom.exe instance(s) from OTHER worktrees are running ` +
+                `(${foreign.map((instance) => instance.detectedRepoRoot).join(", ")}). ` +
+                `Leaving them alone; they hold their own port blocks, so harness instances will take later ports.`,
         );
     }
 };
