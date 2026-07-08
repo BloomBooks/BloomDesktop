@@ -226,16 +226,24 @@ export const launchBloom = async (
         cdpPort: readyInfo.cdpPort,
         collectionFolder: path.dirname(options.collectionFilePath),
         logPath,
-        kill: () => killByHttpPort(readyInfo.httpPort),
+        kill: () => killByHttpPort(readyInfo.httpPort, readyInfo.processId),
         connect: () => connectOverCdp(readyInfo.cdpPort),
     };
 };
 
 /** Kills the exact Bloom instance bound to `httpPort` using the skill's HTTP-based exact-target
  * kill (never a broad kill-everything, so concurrent harness instances aren't disturbed), then
- * verifies the port went dark, falling back to Stop-Process for a stubborn survivor (see
- * .claude/skills/run-bloom/SKILL.md Gotchas — killBloomProcess.mjs has under-killed before). */
-export const killByHttpPort = async (httpPort: number): Promise<void> => {
+ * verifies the port went dark AND — when the caller knows it — that `processId` itself is gone.
+ * The PID check matters: a Bloom stuck showing a modal error dialog (E2E-7's guard test
+ * provokes one deliberately) can have its port go dark while Bloom.exe survives holding open
+ * file handles, which broke the NEXT scenario's scratch-folder wipe with EBUSY during the
+ * first full-matrix run. Port-dark is necessary but not sufficient; process-dead is the real
+ * postcondition. (killBloomProcess.mjs has also plain under-killed before — see
+ * .claude/skills/run-bloom/SKILL.md Gotchas.) */
+export const killByHttpPort = async (
+    httpPort: number,
+    processId?: number,
+): Promise<void> => {
     let killedProcessIds: number[] = [];
     try {
         const { stdout } = await execFileAsync(
@@ -250,26 +258,53 @@ export const killByHttpPort = async (httpPort: number): Promise<void> => {
         );
         killedProcessIds = JSON.parse(stdout).killedProcessIds ?? [];
     } catch {
-        // fall through to port-dark verification / PowerShell fallback below
+        // fall through to the direct-PID / port-dark verification below
+    }
+
+    // Belt and braces: whatever the script reported, make sure the actual Bloom PID dies.
+    const pidsToEnsureDead = [
+        ...(processId ? [processId] : []),
+        ...killedProcessIds,
+    ];
+    for (const pid of pidsToEnsureDead) {
+        await execFileAsync("powershell", [
+            "-NoProfile",
+            "-Command",
+            `Stop-Process -Id ${pid} -Force -ErrorAction SilentlyContinue`,
+        ]).catch(() => {});
     }
 
     const wentDark = await waitForPortDark(httpPort, 10_000);
     if (!wentDark) {
-        // Fallback: find the PID still owning the port and Stop-Process it directly.
-        for (const pid of killedProcessIds) {
-            await execFileAsync("powershell", [
-                "-NoProfile",
-                "-Command",
-                `Stop-Process -Id ${pid} -Force -ErrorAction SilentlyContinue`,
-            ]).catch(() => {});
-        }
-        const stillDark = await waitForPortDark(httpPort, 10_000);
-        if (!stillDark) {
+        throw new Error(
+            `Bloom instance on HTTP port ${httpPort} would not die (pid=${processId}, killedProcessIds=${JSON.stringify(killedProcessIds)}).`,
+        );
+    }
+    if (processId) {
+        const gone = await waitForProcessGone(processId, 10_000);
+        if (!gone) {
             throw new Error(
-                `Bloom instance on HTTP port ${httpPort} would not die (killedProcessIds=${JSON.stringify(killedProcessIds)}).`,
+                `Bloom PID ${processId} (port ${httpPort}) survived Stop-Process — it will hold ` +
+                    `file handles and break later scenarios' resets. Investigate before rerunning.`,
             );
         }
     }
+};
+
+const waitForProcessGone = async (
+    pid: number,
+    timeoutMs: number,
+): Promise<boolean> => {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+        try {
+            process.kill(pid, 0); // signal 0 = existence probe, kills nothing
+        } catch {
+            return true; // ESRCH: no such process
+        }
+        await sleep(500);
+    }
+    return false;
 };
 
 /** Kills every Bloom.exe the harness can find (used at session start/end to guarantee a clean

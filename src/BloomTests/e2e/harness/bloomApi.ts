@@ -62,6 +62,25 @@ export const postApi = async (
     return lastResponse;
 };
 
+/** POSTs teamCollection/createCloudTeamCollection with a much longer per-attempt timeout
+ * (120s vs the default 30s). This one call runs create_collection + the FULL initial upload +
+ * a workspace-reopen on the UI thread; during the first full-matrix run it twice exceeded 30s
+ * on a healthy instance (E2E-5, E2E-6) while six sibling scenarios' creates were fine —
+ * sporadic slowness, not deadlock. The genuine deadlock modes we know (locked desktop,
+ * pre-workspace-init call) hang FOREVER, so a 120s bound still fails loudly on those. Do not
+ * retry on timeout: the server side keeps processing after a client abort, so a retry would
+ * race its own first attempt. */
+export const postCreateCloudTeamCollection = (
+    httpPort: number,
+): Promise<Response> =>
+    postApi(
+        httpPort,
+        "teamCollection/createCloudTeamCollection",
+        "{}",
+        DEFAULT_REGISTRATION_TIMEOUT_MS,
+        120_000,
+    );
+
 /** GETs `route`, retrying on 404 for the same post-startup registration race `postApi`
  * guards against, with the same per-attempt timeout. */
 export const getApi = async (

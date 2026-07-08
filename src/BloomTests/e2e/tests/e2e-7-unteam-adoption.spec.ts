@@ -1,4 +1,4 @@
-// E2E-7: un-team adoption (stale artifacts cleaned; books upload as v1).
+﻿// E2E-7: un-team adoption (stale artifacts cleaned; books upload as v1).
 //
 // The adoption path (task 10): a collection that used to belong to a folder-based Team
 // Collection gets "un-teamed" (the user deletes TeamCollectionLink.txt per the user docs) and
@@ -30,7 +30,11 @@ import { resetStack } from "../harness/reset";
 import { createScratchCollection } from "../harness/collectionFixture";
 import { launchBloom, LaunchedBloom } from "../harness/launch";
 import { ALICE } from "../harness/devStack";
-import { postApi, getApi } from "../harness/bloomApi";
+import {
+    postApi,
+    getApi,
+    postCreateCloudTeamCollection,
+} from "../harness/bloomApi";
 import { bookStatus } from "../harness/bookStatus";
 import { selectBookByName } from "../harness/selectBook";
 import { queryDb } from "../harness/db";
@@ -122,10 +126,8 @@ test.describe("E2E-7 un-team adoption", () => {
         ).json()) as { supportsSharingUi: boolean };
         expect(capsBefore.supportsSharingUi).toBe(false);
 
-        const createResponse = await postApi(
+        const createResponse = await postCreateCloudTeamCollection(
             instance.httpPort,
-            "teamCollection/createCloudTeamCollection",
-            "{}",
         );
         expect(createResponse.status).toBe(200);
         await expect
@@ -257,11 +259,9 @@ test.describe("E2E-7 un-team adoption", () => {
         // whatever the HTTP reply does (the handler shows a modal error dialog before replying,
         // which nothing in an automated session can click -- see the file header), the durable
         // state below is the contract. Tolerate either a reply or a timeout.
-        await postApi(
-            instance.httpPort,
-            "teamCollection/createCloudTeamCollection",
-            "{}",
-        ).catch(() => undefined);
+        await postCreateCloudTeamCollection(instance.httpPort).catch(
+            () => undefined,
+        );
 
         // No server-side collection row was ever created.
         const collectionRows = await queryDb(

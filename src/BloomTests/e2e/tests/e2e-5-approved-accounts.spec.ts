@@ -1,4 +1,4 @@
-// E2E-5: approved accounts on two fresh profiles ("another computer").
+﻿// E2E-5: approved accounts on two fresh profiles ("another computer").
 //
 // The approved-accounts model (CONTRACTS.md; tc.members): access is granted per ACCOUNT EMAIL,
 // not per machine or per Bloom registration. An admin approves an email; the row sits UNCLAIMED
@@ -27,7 +27,11 @@ import {
 } from "../harness/collectionFixture";
 import { launchBloom, LaunchedBloom } from "../harness/launch";
 import { ALICE, BOB, ADMIN } from "../harness/devStack";
-import { postApi, getApi } from "../harness/bloomApi";
+import {
+    postApi,
+    getApi,
+    postCreateCloudTeamCollection,
+} from "../harness/bloomApi";
 import { bookStatus } from "../harness/bookStatus";
 import { selectBookByName } from "../harness/selectBook";
 import { queryDb } from "../harness/db";
@@ -68,10 +72,8 @@ test.describe("E2E-5 approved accounts on two fresh profiles", () => {
             }),
         );
         await alice.connect(); // connect-before-trigger (finding #7)
-        const createResponse = await postApi(
+        const createResponse = await postCreateCloudTeamCollection(
             alice.httpPort,
-            "teamCollection/createCloudTeamCollection",
-            "{}",
         );
         expect(createResponse.status).toBe(200);
         await expect

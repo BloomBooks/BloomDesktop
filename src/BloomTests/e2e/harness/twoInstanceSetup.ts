@@ -12,7 +12,7 @@ import {
 } from "./collectionFixture";
 import { launchBloom, LaunchedBloom } from "./launch";
 import { ALICE, BOB, DevUser } from "./devStack";
-import { postApi, getApi } from "./bloomApi";
+import { postApi, getApi, postCreateCloudTeamCollection } from "./bloomApi";
 
 export interface SharedCloudCollection {
     alice: LaunchedBloom;
@@ -44,11 +44,7 @@ export const setUpAliceAndBobOnSharedCollection = async (
     // see E2E-2's header comment for why a fresh connectOverCDP after the reopen is unreliable.
     const { page: alicePage } = await alice.connect();
 
-    const createResponse = await postApi(
-        alice.httpPort,
-        "teamCollection/createCloudTeamCollection",
-        "{}",
-    );
+    const createResponse = await postCreateCloudTeamCollection(alice.httpPort);
     expect(createResponse.status).toBe(200);
     await expect
         .poll(

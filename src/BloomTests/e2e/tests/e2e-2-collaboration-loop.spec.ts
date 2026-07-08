@@ -1,4 +1,4 @@
-// E2E-2: two-instance collaboration loop (checkout visible; Send/Receive; byte-equal).
+﻿// E2E-2: two-instance collaboration loop (checkout visible; Send/Receive; byte-equal).
 // Automates the Wave-3 manual two-instance smoke test end to end: Alice shares a collection,
 // approves Bob, Bob joins ("pulls down") the same cloud collection on his own local folder,
 // Alice checks out the one book (Bob must see it locked), Alice checks it back in (Send), and
@@ -20,7 +20,11 @@ import {
 } from "../harness/collectionFixture";
 import { launchBloom, LaunchedBloom } from "../harness/launch";
 import { ALICE, BOB } from "../harness/devStack";
-import { postApi, getApi } from "../harness/bloomApi";
+import {
+    postApi,
+    getApi,
+    postCreateCloudTeamCollection,
+} from "../harness/bloomApi";
 
 const LOG_DIR = "C:\\BloomE2E-logs\\e2e-2";
 
@@ -34,7 +38,7 @@ const bookStatus = async (httpPort: number, folderName: string) => {
 };
 
 // CloudCollectionMonitor only polls the server every 60s by default
-// (CloudCollectionMonitor.DefaultPollInterval) — an instance sitting idle would take up to a
+// (CloudCollectionMonitor.DefaultPollInterval) â€” an instance sitting idle would take up to a
 // minute to notice a remote change organically. `teamCollection/receiveUpdates` internally
 // calls `CloudTeamCollection.PollNow()` before doing anything else, so calling it is the
 // harness's way of forcing an immediate poll instead of waiting out the timer.
@@ -85,10 +89,8 @@ test.describe("E2E-2 two-instance collaboration loop", () => {
         // connection across the reopen is the reliable path; reconnecting afterward is not.
         const { page: alicePage } = await alice.connect();
 
-        const createResponse = await postApi(
+        const createResponse = await postCreateCloudTeamCollection(
             alice.httpPort,
-            "teamCollection/createCloudTeamCollection",
-            "{}",
         );
         expect(createResponse.status).toBe(200);
         await expect
