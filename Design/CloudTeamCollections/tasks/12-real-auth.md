@@ -62,10 +62,22 @@ one new migration + pgTAP additions if the email_verified check needs it.
       SharingApiTests.cs's own scope note) -- the logic underneath it
       (`CloudAuth.SignInWithExternalTokens`/`FirebaseCloudAuthProvider.AcceptExternalSession`)
       is fully covered by step 1's tests.
-- [ ] **`tc.jwt_email_verified()` vs the Firebase claim shape**: Firebase ID tokens carry a
+- [x] **`tc.jwt_email_verified()` vs the Firebase claim shape**: Firebase ID tokens carry a
       top-level boolean `email_verified` claim; GoTrue's shape differs. Read the current
       helper; if it does not already handle both, add a NEW migration (never edit merged
       ones) + pgTAP tests feeding both claim shapes via `request.jwt.claims`.
+      DONE 8 Jul 2026 -- NO migration needed: `20260706000001_tc_schema.sql`'s
+      `tc.jwt_email_verified()` already special-cases exactly this. It checks, in order: (1)
+      a top-level `email_verified` claim present (Firebase's real shape -- a real Firebase ID
+      token always carries this as a top-level boolean, both before and after the Option A
+      role-claim backfill, since that only adds `role`) -- casts it to boolean, which handles
+      both a JSON boolean and a JSON string `"true"`/`"false"` since `->>'` always yields the
+      claim's text form; (2) else, `role = 'authenticated'` (local GoTrue's auto-confirm
+      shape, no `email_verified` claim at all). `supabase/tests/01_tc_schema_test.sql`
+      already pgTAP-covers both shapes (cases 1a Firebase-true, 1b Firebase-false, 1c
+      local-GoTrue) plus their effect on `claim_memberships()` (cases 4a/4b). Re-ran
+      `supabase test db` against the local stack: `Files=1, Tests=42 ... All tests
+      successful.` No code change; this bullet's only output is this verification note.
 - [ ] **Reference Firebase Admin artifacts** under `server/firebase/` (clearly labeled
       "deploy lives in BloomLibrary infrastructure — this is the reviewed reference"):
       (a) an auth-trigger cloud function adding the static `role: "authenticated"` custom
@@ -111,4 +123,8 @@ one new migration + pgTAP additions if the email_verified check needs it.
   (`tc.jwt_email_verified()` vs Firebase claim shape -- read the migration, likely already
   correct per its own 1a/1b pgTAP cases, confirm by re-running `supabase test db`) then step 5
   (reference Firebase Admin artifacts under `server/firebase/`).
+- 8 Jul 2026 · done: step 4 (verified only -- no migration needed; `supabase test db` green,
+  42/42) · next: step 5, reference Firebase Admin artifacts under `server/firebase/` (auth
+  trigger claim function + backfill script + README), then the final full-suite verification
+  pass and report.
 ## Progress log
