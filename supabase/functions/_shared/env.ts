@@ -16,9 +16,14 @@ export const requireEnv = (name: string): string => {
 export const optionalEnv = (name: string, fallback: string): string =>
     Deno.env.get(name) ?? fallback;
 
-/** True when running against the local dev stack (MinIO via AssumeRole) rather than
- * real AWS. Mirrors server/dev/DEV-CREDENTIALS.md's `BLOOM_DEV_MODE` secret. */
-export const isDevMode = (): boolean => optionalEnv("BLOOM_DEV_MODE", "false") === "true";
+/** True when running against the LOCAL stack (MinIO via AssumeRole, on the developer's own
+ * machine) rather than real AWS. Mirrors server/dev/DEV-CREDENTIALS.md's
+ * `BLOOM_CLOUD_LOCAL_MODE` secret. Named "local", not "dev": in the Bloom ecosystem "dev"
+ * conventionally means a REAL, hosted, reserved-for-testing deployment (dev.bloomlibrary.org),
+ * and a future cloud-collections project will likely carry "dev" in its name — a hosted "dev"
+ * deployment runs with this flag FALSE. */
+export const isLocalMode = (): boolean =>
+    optionalEnv("BLOOM_CLOUD_LOCAL_MODE", "false") === "true";
 
 /** Supabase project URL + anon key, auto-injected by the Supabase CLI/platform into
  * every edge function's environment — used to call PostgREST RPCs with the caller's
@@ -39,13 +44,15 @@ export const s3Env = (): S3Env => ({
     endpoint: requireEnv("BLOOM_S3_ENDPOINT"),
     bucket: requireEnv("BLOOM_S3_BUCKET"),
     region: optionalEnv("BLOOM_S3_REGION", "us-east-1"),
-    // MinIO requires path-style; real AWS uses virtual-hosted style. Dev mode always
+    // MinIO requires path-style; real AWS uses virtual-hosted style. Local mode always
     // forces path-style; production can opt out via BLOOM_S3_FORCE_PATH_STYLE=false.
-    forcePathStyle: isDevMode() || optionalEnv("BLOOM_S3_FORCE_PATH_STYLE", "true") === "true",
+    forcePathStyle:
+        isLocalMode() ||
+        optionalEnv("BLOOM_S3_FORCE_PATH_STYLE", "true") === "true",
 });
 
 /** Root/admin credentials used ONLY server-side (never sent to a client) to call
- * MinIO's AssumeRole STS endpoint in dev mode, and for admin S3 operations
+ * MinIO's AssumeRole STS endpoint in local mode, and for admin S3 operations
  * (HeadObject / GetObjectAttributes verification, .manifest.json writes). */
 export const minioRootCredentials = () => ({
     accessKeyId: optionalEnv("BLOOM_S3_ROOT_ACCESS_KEY", "minioadmin"),
@@ -62,11 +69,11 @@ export const prodBrokerConfig = () => ({
 });
 
 /** Admin S3 credentials for server-side verification/writes (HeadObject,
- * GetObjectAttributes, .manifest.json PUT). In dev this is the MinIO root user; in
+ * GetObjectAttributes, .manifest.json PUT). In local mode this is the MinIO root user; in
  * production a dedicated admin/broker identity with full bucket access (distinct
  * from the narrowly-scoped session credentials handed to clients). */
 export const adminS3Credentials = () => {
-    if (isDevMode()) {
+    if (isLocalMode()) {
         return minioRootCredentials();
     }
     return {

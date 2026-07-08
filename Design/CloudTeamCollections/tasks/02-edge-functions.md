@@ -53,7 +53,8 @@ Only these functions ever hold AWS/MinIO admin creds.
   (env, errors, handler, rpc, s3-credential-provider-seam). `deno check` passes on all.
   NOT YET tested against the live stack. Next action: run
   `supabase functions serve --env-file server/dev/functions.env` (env file not yet
-  created — create it first with `BLOOM_DEV_MODE=true`, `BLOOM_S3_ENDPOINT=http://host.containers.internal:9000`,
+  created — create it first with `BLOOM_DEV_MODE=true` [historical name; renamed
+  `BLOOM_CLOUD_LOCAL_MODE` 8 Jul 2026], `BLOOM_S3_ENDPOINT=http://host.containers.internal:9000`,
   `BLOOM_S3_BUCKET=bloom-teams-local`), then exercise checkin-start → checkin-finish
   happy path end-to-end with a real dev-seed user JWT (alice@dev.local), then write Deno
   unit tests per function and continue through the acceptance checklist (lock-held,

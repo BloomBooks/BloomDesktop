@@ -78,7 +78,7 @@ and read the AWS credentials from Supabase **secrets** (next step). Nothing else
 For each project:
 
 ```bash
-supabase secrets set BLOOM_DEV_MODE=false
+supabase secrets set BLOOM_CLOUD_LOCAL_MODE=false
 supabase secrets set AWS_ACCESS_KEY_ID=<bloom-teams-broker-caller key>
 supabase secrets set AWS_SECRET_ACCESS_KEY=<bloom-teams-broker-caller secret>
 supabase secrets set BLOOM_S3_ADMIN_ACCESS_KEY=<bloom-teams-admin key>
@@ -88,9 +88,11 @@ supabase secrets set BLOOM_S3_REGION=us-east-1
 # do NOT set BLOOM_S3_ENDPOINT in production — its absence selects real AWS endpoints
 ```
 
-`BLOOM_DEV_MODE=false` flips `_shared/env.ts`/`s3.ts` from MinIO-AssumeRole dev credentials to
-real AWS STS. The names mirror the local `server/dev/functions.env` (which is the committed,
-local-only-constants version of this same set).
+`BLOOM_CLOUD_LOCAL_MODE=false` flips `_shared/env.ts`/`s3.ts` from MinIO-AssumeRole local
+credentials to real AWS STS (false is also the default when unset — hosted deployments,
+including any future "dev"-named project, never set it). The names mirror the local
+`server/dev/functions.env` (which is the committed, local-only-constants version of this
+same set).
 
 ### 2.4 [AGENT] Security hardening: lock down the `tc.*_tx` RPCs  ← REQUIRED before production
 Currently the internal transaction RPCs are EXECUTE-granted to `authenticated` because edge

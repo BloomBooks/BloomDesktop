@@ -11,7 +11,7 @@ import {
 } from "npm:@aws-sdk/client-s3@3";
 import {
     adminS3Credentials,
-    isDevMode,
+    isLocalMode,
     minioRootCredentials,
     prodBrokerConfig,
     s3Env,
@@ -34,10 +34,14 @@ export interface S3Descriptor {
 const DEFAULT_DURATION_SECONDS = 3600;
 
 /** Builds an IAM-style session policy scoped to one prefix. MinIO's AssumeRole
- * accepts a Policy parameter but — per DEV-CREDENTIALS.md — dev mode deliberately
- * does NOT pass one (prefix scoping is a production security measure; MinIO dev
+ * accepts a Policy parameter but — per DEV-CREDENTIALS.md — local mode deliberately
+ * does NOT pass one (prefix scoping is a production security measure; MinIO local
  * creds get the parent/root identity's full access). Only used in prod mode. */
-const buildSessionPolicy = (bucket: string, prefix: string, actions: string[]): string =>
+const buildSessionPolicy = (
+    bucket: string,
+    prefix: string,
+    actions: string[],
+): string =>
     JSON.stringify({
         Version: "2012-10-17",
         Statement: [
@@ -50,9 +54,9 @@ const buildSessionPolicy = (bucket: string, prefix: string, actions: string[]): 
     });
 
 /** Issues short-lived, per-request S3 credentials scoped to `prefix`, in the
- * IDENTICAL shape whether backed by MinIO (dev) or real AWS STS (production) — see
+ * IDENTICAL shape whether backed by MinIO (local) or real AWS STS (production) — see
  * DEV-CREDENTIALS.md. `actions` is only enforced in production (a real IAM session
- * policy); dev mode gets full-bucket dev-root-derived temp credentials. */
+ * policy); local mode gets full-bucket root-derived temp credentials. */
 export const getScopedCredentials = async (
     prefix: string,
     actions: string[],
@@ -60,25 +64,33 @@ export const getScopedCredentials = async (
 ): Promise<S3Descriptor> => {
     const env = s3Env();
 
-    if (isDevMode()) {
+    if (isLocalMode()) {
         const root = minioRootCredentials();
         const sts = new STSClient({
             endpoint: env.endpoint,
             region: env.region,
-            credentials: { accessKeyId: root.accessKeyId, secretAccessKey: root.secretAccessKey },
+            credentials: {
+                accessKeyId: root.accessKeyId,
+                secretAccessKey: root.secretAccessKey,
+            },
         });
         // MinIO's AssumeRole ignores RoleArn/RoleSessionName content but the AWS SDK's
         // TS types require them — see DEV-CREDENTIALS.md's "empirical correction":
-        // dev mode MUST mint real MinIO temp creds (fabricated tokens are rejected).
+        // local mode MUST mint real MinIO temp creds (fabricated tokens are rejected).
         const result = await sts.send(
             new AssumeRoleCommand({
-                RoleArn: "arn:aws:iam::000000000000:role/bloom-teams-dev-placeholder",
+                RoleArn:
+                    "arn:aws:iam::000000000000:role/bloom-teams-dev-placeholder",
                 RoleSessionName: `bloom-dev-${crypto.randomUUID()}`,
                 DurationSeconds: durationSeconds,
             }),
         );
         const creds = result.Credentials;
-        if (!creds?.AccessKeyId || !creds.SecretAccessKey || !creds.SessionToken) {
+        if (
+            !creds?.AccessKeyId ||
+            !creds.SecretAccessKey ||
+            !creds.SessionToken
+        ) {
             throw new Error("MinIO AssumeRole did not return credentials");
         }
         return {
@@ -89,8 +101,10 @@ export const getScopedCredentials = async (
                 accessKeyId: creds.AccessKeyId,
                 secretAccessKey: creds.SecretAccessKey,
                 sessionToken: creds.SessionToken,
-                expiration: (creds.Expiration ?? new Date(Date.now() + durationSeconds * 1000))
-                    .toISOString(),
+                expiration: (
+                    creds.Expiration ??
+                    new Date(Date.now() + durationSeconds * 1000)
+                ).toISOString(),
             },
         };
     }
@@ -98,7 +112,10 @@ export const getScopedCredentials = async (
     const broker = prodBrokerConfig();
     const sts = new STSClient({
         region: broker.region,
-        credentials: { accessKeyId: broker.accessKeyId, secretAccessKey: broker.secretAccessKey },
+        credentials: {
+            accessKeyId: broker.accessKeyId,
+            secretAccessKey: broker.secretAccessKey,
+        },
     });
     const result = await sts.send(
         new AssumeRoleCommand({
@@ -120,8 +137,10 @@ export const getScopedCredentials = async (
             accessKeyId: creds.AccessKeyId,
             secretAccessKey: creds.SecretAccessKey,
             sessionToken: creds.SessionToken,
-            expiration: (creds.Expiration ?? new Date(Date.now() + durationSeconds * 1000))
-                .toISOString(),
+            expiration: (
+                creds.Expiration ??
+                new Date(Date.now() + durationSeconds * 1000)
+            ).toISOString(),
         },
     };
 };
@@ -135,7 +154,10 @@ export const adminS3Client = (): S3Client => {
         endpoint: env.endpoint,
         region: env.region,
         forcePathStyle: env.forcePathStyle,
-        credentials: { accessKeyId: creds.accessKeyId, secretAccessKey: creds.secretAccessKey },
+        credentials: {
+            accessKeyId: creds.accessKeyId,
+            secretAccessKey: creds.secretAccessKey,
+        },
     });
 };
 
@@ -166,7 +188,11 @@ export const verifyUploadedObject = async (
 ): Promise<VerifiedUpload | null> => {
     try {
         const head = await client.send(
-            new HeadObjectCommand({ Bucket: bucket, Key: key, ChecksumMode: "ENABLED" }),
+            new HeadObjectCommand({
+                Bucket: bucket,
+                Key: key,
+                ChecksumMode: "ENABLED",
+            }),
         );
         const actual = head.ChecksumSHA256;
         const expected = hexToBase64(expectedSha256Hex);

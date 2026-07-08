@@ -485,7 +485,7 @@ Write-Step "Supabase secrets"
 Write-Host "Run against the hosted Supabase project (once it exists - see IMPLEMENTATION.md's" -ForegroundColor Cyan
 Write-Host "'Deferred until real infrastructure is available' list):" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "  supabase secrets set BLOOM_DEV_MODE=false"
+Write-Host "  supabase secrets set BLOOM_CLOUD_LOCAL_MODE=false"
 Write-Host "  supabase secrets set BLOOM_TEAMS_BROKER_ROLE_ARN=$($brokerResult.RoleArn)"
 Write-Host "  supabase secrets set BLOOM_S3_REGION=$Region"
 Write-Host "  supabase secrets set BLOOM_S3_BUCKET=<bloom-teams-production or bloom-teams-sandbox, per project>"

@@ -18,7 +18,7 @@
 export const setTestEnv = (): void => {
     Deno.env.set("SUPABASE_URL", "http://127.0.0.1:54321");
     Deno.env.set("SUPABASE_ANON_KEY", "test-anon-key");
-    Deno.env.set("BLOOM_DEV_MODE", "true");
+    Deno.env.set("BLOOM_CLOUD_LOCAL_MODE", "true");
     Deno.env.set("BLOOM_S3_ENDPOINT", "http://minio.invalid:9000");
     Deno.env.set("BLOOM_S3_BUCKET", "bloom-teams-test");
     Deno.env.set("BLOOM_S3_REGION", "us-east-1");
@@ -32,7 +32,10 @@ export const setTestEnv = (): void => {
 export const mockRequest = (body: unknown, token = "test-jwt"): Request =>
     new Request("http://localhost/test", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
         body: JSON.stringify(body),
     });
 
@@ -59,12 +62,18 @@ export const callHandler = async (
     }
 };
 
-export type FetchStub = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
+export type FetchStub = (
+    input: string | URL | Request,
+    init?: RequestInit,
+) => Promise<Response>;
 
 /** Replaces `globalThis.fetch` with `stub` for the duration of `fn`, always restoring
  * the original afterward (even if `fn` throws) — used to fake PostgREST responses from
  * `_shared/rpc.ts`'s `callTcRpc`/`selectTcRow`, which call the real `fetch`. */
-export const withMockFetch = async <T>(stub: FetchStub, fn: () => Promise<T>): Promise<T> => {
+export const withMockFetch = async <T>(
+    stub: FetchStub,
+    fn: () => Promise<T>,
+): Promise<T> => {
     const original = globalThis.fetch;
     // deno-lint-ignore no-explicit-any
     globalThis.fetch = stub as any;
@@ -83,14 +92,22 @@ export const routedFetchStub = (
     routes: { when: string; status: number; body: unknown }[],
 ): FetchStub => {
     return (input) => {
-        const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+        const url =
+            typeof input === "string"
+                ? input
+                : input instanceof URL
+                  ? input.href
+                  : input.url;
         const route = routes.find((r) => url.includes(r.when));
         if (!route) {
             throw new Error(`routedFetchStub: no route matched for ${url}`);
         }
         const text = route.body === null ? "" : JSON.stringify(route.body);
         return Promise.resolve(
-            new Response(text, { status: route.status, headers: { "Content-Type": "application/json" } }),
+            new Response(text, {
+                status: route.status,
+                headers: { "Content-Type": "application/json" },
+            }),
         );
     };
 };

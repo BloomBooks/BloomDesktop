@@ -26,10 +26,11 @@ it does not need to know whether it is talking to MinIO or AWS.
 > `The security token included in the request is invalid`. Dev mode must therefore mint
 > REAL temporary credentials via MinIO's AssumeRole STS API — which is also better parity.
 
-When the edge function detects dev mode (i.e., the `BLOOM_CLOUDTC_AUTH_MODE` env var is
-`dev`, or equivalently the `BLOOM_DEV_MODE` secret is set to `true` in the Supabase
-project secrets for the local instance), it calls **MinIO's AssumeRole endpoint** instead
-of AWS STS. MinIO implements the standard `AssumeRole` action on its main endpoint,
+When the edge function detects local mode (the `BLOOM_CLOUD_LOCAL_MODE` secret set to
+`true` in the Supabase project secrets for the local instance — named "local", not "dev",
+because in the Bloom ecosystem "dev" means a real hosted reserved-for-testing deployment
+like dev.bloomlibrary.org, which would run with this flag FALSE), it calls **MinIO's
+AssumeRole endpoint** instead of AWS STS. MinIO implements the standard `AssumeRole` action on its main endpoint,
 authenticated with the root credentials:
 
 ```
@@ -102,11 +103,12 @@ Task 02 implements the switching. The recommended approach is a Supabase secret:
 
 ```bash
 # Set when initializing the local project (supabase secrets set writes to .env.local)
-supabase secrets set BLOOM_DEV_MODE=true
+supabase secrets set BLOOM_CLOUD_LOCAL_MODE=true
 ```
 
-The function reads `Deno.env.get("BLOOM_DEV_MODE")` at startup. If `"true"`, it uses the
-static credential path. In production, this secret is simply not set (or set to `"false"`).
+The function reads `Deno.env.get("BLOOM_CLOUD_LOCAL_MODE")` at startup. If `"true"`, it
+uses the MinIO credential path. On any HOSTED deployment — production, sandbox, or a future
+"dev"-named project with real AWS endpoints — this secret is simply not set (or `"false"`).
 
 Alternative: infer from `SUPABASE_URL` containing `localhost` — but the explicit secret is
 more robust against CI environments that happen to run locally.
