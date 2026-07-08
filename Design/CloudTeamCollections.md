@@ -87,16 +87,16 @@ model. The check-in/check-out editorial model is preserved.
 - **Realtime**: one private broadcast channel per collection driven by an events-table
   trigger; clients keep a `last_seen_event_id` cursor; `get_changes(since)` is both reconnect
   catch-up and the 60s polling fallback (polling ships first; realtime is an optimization).
-- **Auth** (decision delegated to reviewing colleague; brief in the artifact, grounded in the
-  BloomLibrary2 + bloom-parse-server code): recommended Option A = Supabase third-party
-  Firebase auth — login page forwards the Firebase ID+refresh tokens it already holds
-  (~5 lines in BloomLibrary2 `src/editor.ts`), plus one NEW small Firebase Admin cloud
-  function adding the static `role:"authenticated"` claim (+ backfill; no claims infra exists
-  today). Alternatives: B = exchange the legacy Parse session token (welds us to the server
-  being decommissioned); C = hand-validate Firebase JWTs per the stale
-  `bloom-parse-server/supabase/` docs. `CloudAuth` isolates the choice. Claiming an approval
-  requires `email_verified` (all BloomLibrary accounts are verified — the existing parse
-  adapter already enforces this).
+- **Auth** (DECIDED 8 Jul 2026: **Option A** — Supabase third-party Firebase auth; brief was
+  grounded in the BloomLibrary2 + bloom-parse-server code): the login page forwards the
+  Firebase ID+refresh tokens it already holds (~5 lines in BloomLibrary2 `src/editor.ts`),
+  plus one NEW small Firebase Admin cloud function adding the static `role:"authenticated"`
+  claim (+ backfill; no claims infra exists today). Rejected alternatives: B = exchange the
+  legacy Parse session token (welds us to the server being decommissioned); C = hand-validate
+  Firebase JWTs per the stale `bloom-parse-server/supabase/` docs. `CloudAuth` isolates the
+  choice. Claiming an approval requires `email_verified` (all BloomLibrary accounts are
+  verified — the existing parse adapter already enforces this). Go-live steps:
+  `CloudTeamCollections/GOING-LIVE.md` Phase 3.
 - **Identity/account rules**: account email is the identity in cloud TCs (server stamps lock
   identity from the token; client sends only machine name). Sign-out/in as the same account
   is always safe. Switching accounts with unsent checked-out changes is **blocked** with
