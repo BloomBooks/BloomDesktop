@@ -116,6 +116,12 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
       automatic status propagation via polling). Twelve real bugs found+fixed+pinned during
       the smoke; see merge log.
 - [ ] Wave 4 complete
+  - [x] 09 harness + E2E-1/E2E-2 DONE 8 Jul 2026 — Playwright-over-CDP harness at
+        `src/BloomTests/e2e/` (build-once/launch-many, per-scenario DB+MinIO+scratch reset,
+        DB/S3 verification, experimental-flag automation); E2E-1 (1.4 min) and E2E-2
+        (2.5 min, the automated two-instance smoke) green on orchestrator re-runs.
+        E2E-3..10 still to come (continues on `task/09-e2e` patterns).
+  - [x] 10-adoption DONE 8 Jul 2026 — all 7 polish items; see merge log.
 - [ ] Real-infrastructure cutover complete (deferred list above)
 - [ ] Auth option decided (colleague review — see design doc Open items; **not blocking** —
       dev auth provider ships first)
@@ -124,6 +130,35 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 ## Merge log
 
 (orchestrator appends: date · task · PR · notes)
+
+- 8 Jul 2026 · 09-e2e (harness + E2E-1/2) · merged locally · Harness encodes every smoke-test
+  environment rule (Release build MANDATORY — Debug shows a blocking attach-debugger dialog on
+  any positional arg; build-once/launch-many; foreign-Bloom fail-loud; per-scenario
+  `supabase db reset` + `mc` bucket clear + scratch wipe; user.config flag automation).
+  E2E-1 and E2E-2 green on orchestrator re-runs after the agent's runs were starved by
+  concurrent sessions (~6GB free RAM — diagnosis confirmed by clean re-run). Two product
+  findings REPORTED for follow-up, not fixed: (1) every ReactDialog-hosted WebView2 requests
+  the same fixed remote-debugging port, so secondary dialogs are never CDP-reachable —
+  harness drives their backend endpoints directly instead; (2) checkout/check-in buttons
+  ignore CDP-synthesized clicks (root cause undiagnosed; direct API used). Also found:
+  WebView2 temp-profile folders leak per launch (harness cleans them in globalSetup);
+  ~1s endpoint-registration race after BLOOM_AUTOMATION_READY (harness retries 404s).
+  E2E-3..10 remain; E2E-4 must reproduce the recovery-path NRE.
+
+- 8 Jul 2026 · 10-adoption (+ Wave-3 polish list) · merged locally · All 7 items: proper
+  "Cloud Team Collections (experimental)" checkbox in Settings→Advanced (ends the
+  user.config hack); pull-down auto-opens the joined collection; un-team cleanup
+  (CleanStaleTeamCollectionArtifacts) + TeamCollectionLinkConflictException guard with
+  fix-instructions message; first-Receive reconcile verified-by-reading (no checksum
+  reconcile happens — matches folder-TC behavior, documented as known limitation);
+  user walkthrough doc (Design/CloudTeamCollections/docs/user-walkthrough.md); XLF sweep
+  (11 en entries; fixed a TeamCollection.ConflictingCollection id collision); analytics
+  audit (cloud join + Receive Updates events added, Backend=Cloud verified elsewhere).
+  Agent also found+fixed: Team Collection settings tab was invisible when ONLY the cloud
+  flag was on. Orchestrator review fixes: pullDown replied with the collection FOLDER but
+  workspace/openCollection needs the .bloomCollection FILE path (renamed field to
+  collectionPath); doc-comment placement. Verified: C# widened filter 332/332; vitest
+  29/29 on touched files.
 
 - 7 Jul 2026 · two-instance smoke (Wave-3 gate) · direct commits · PASSED after fixing 12
   live-found bugs: members_add scalar-response crash; missing claim_memberships in join;
