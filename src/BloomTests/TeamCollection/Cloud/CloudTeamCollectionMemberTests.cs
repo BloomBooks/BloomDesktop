@@ -196,6 +196,70 @@ namespace BloomTests.TeamCollection.Cloud
             Assert.That(message, Is.Null);
         }
 
+        // Regression for the first two-instance smoke test (7 Jul 2026): poll-detected changes
+        // must be raised with the folder backend's repo FILE name (".bloom" suffix) — the base
+        // HandleModifiedFile starts with EndsWith(".bloom") and silently DISCARDS anything else,
+        // which left teammates' UIs permanently stale even though the cache had fresh data.
+        [Test]
+        public void PolledChanges_RaiseBookStateChange_WithBloomSuffixedFileName()
+        {
+            ScriptCollectionState(("book-1", "My Book", false));
+            _collection.HydrateFromServer();
+
+            string raisedFileName = null;
+            _collection.BookRepoChange += (sender, args) => raisedFileName = args.BookFileName;
+
+            // Script the next get_changes poll: same book, now at seq 2 (someone checked in).
+            _executor.Handler = req =>
+            {
+                Assert.That(req.Resource, Is.EqualTo("rest/v1/rpc/get_changes"));
+                var body = new JObject
+                {
+                    ["events"] = new JArray(
+                        new JObject
+                        {
+                            ["id"] = 2,
+                            ["type"] = 1,
+                            ["book_id"] = "book-1",
+                        }
+                    ),
+                    ["books"] = new JArray(
+                        new JObject
+                        {
+                            ["id"] = "book-1",
+                            ["instance_id"] = "instance-book-1",
+                            ["name"] = "My Book",
+                            ["current_version_id"] = "v2",
+                            ["current_version_seq"] = 2,
+                            ["current_checksum"] = "checksum-2",
+                            ["locked_by"] = null,
+                            ["locked_by_machine"] = null,
+                            ["locked_at"] = null,
+                            ["deleted_at"] = null,
+                        }
+                    ),
+                    ["max_event_id"] = 2,
+                };
+                return FakeResponses.Make(HttpStatusCode.OK, body.ToString());
+            };
+
+            try
+            {
+                _collection.StartMonitoring();
+                _collection.PollNow();
+            }
+            finally
+            {
+                _collection.StopMonitoring();
+            }
+
+            Assert.That(
+                raisedFileName,
+                Is.EqualTo("My Book.bloom"),
+                "the event contract wants the repo file name incl. suffix; the bare name is ignored by HandleModifiedFile"
+            );
+        }
+
         // Regression for the first two-instance smoke test (7 Jul 2026): the "other"
         // collection-file group downloads into the COLLECTION ROOT, and its naive
         // mirror-delete removed TeamCollectionLink.txt (never uploaded, by design),

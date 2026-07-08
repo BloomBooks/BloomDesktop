@@ -345,6 +345,11 @@ namespace Bloom.TeamCollection
             }
             progress.MessageWithoutLocalizing("Done receiving updates.");
             UpdateUiForBook();
+            // Tell javascript-land to re-query book statuses NOW (same event
+            // CollectionTabView/WorkspaceView send): the poll above also queued base-class
+            // change events, but those only surface at the next Application.Idle, and a user
+            // who just clicked "Receive Updates" deserves an immediate refresh.
+            _socketServer.SendEvent("bookTeamCollectionStatus", "reload");
         }
 
         /// <summary>Kicks off the cloud Team Collection creation flow: uploads the current local

@@ -1478,15 +1478,22 @@ namespace Bloom.TeamCollection.Cloud
             {
                 if (string.IsNullOrEmpty(book.Name))
                     continue;
+                // The Raise* event contract (and the base handlers behind it) use the folder
+                // backend's repo FILE name, i.e. WITH the ".bloom" suffix — HandleModifiedFile
+                // literally starts with EndsWith(".bloom") and silently ignores anything else.
+                // Passing the bare book name here meant every cloud change notification was
+                // discarded before reaching the UI (found by the first two-instance smoke test:
+                // teammates' screens never updated even though the cache/API had fresh data).
+                var bookFileName = book.Name + ".bloom";
                 if (!previousBooksById.TryGetValue(book.Id, out var previous))
                 {
                     if (book.CurrentVersionSeq.HasValue)
-                        RaiseNewBook(book.Name);
+                        RaiseNewBook(bookFileName);
                     continue;
                 }
                 if (book.DeletedAt.HasValue && !previous.DeletedAt.HasValue)
                 {
-                    RaiseDeleteRepoBookFile(book.Name);
+                    RaiseDeleteRepoBookFile(bookFileName);
                     continue;
                 }
                 if (
@@ -1495,7 +1502,7 @@ namespace Bloom.TeamCollection.Cloud
                     || book.Name != previous.Name
                 )
                 {
-                    RaiseBookStateChange(book.Name);
+                    RaiseBookStateChange(bookFileName);
                 }
             }
 
