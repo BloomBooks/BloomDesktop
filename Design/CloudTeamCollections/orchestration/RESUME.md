@@ -9,9 +9,9 @@ All task state lives in **git branches**, never in a conversation:
 
 - One branch per task, named `task/<NN>-<name>`, based on `cloud-collections`. The
   currently in-flight set = whatever `git branch --list "task/*"` shows unmerged into
-  `cloud-collections`. As of the Wave-2 launch that is `task/04-client-core` and
-  `task/08-ui-collection-tab` (all Wave-0/1 branches are merged; see IMPLEMENTATION.md's
-  Status + Merge log).
+  `cloud-collections`. As of the Wave-4 launch that is `task/09-e2e` (MAIN tree — builds C#
+  and launches Bloom instances) and `task/10-adoption` (worktree). All Wave-0/1/2/3
+  branches are merged; see IMPLEMENTATION.md's Status + Merge log.
 - Agents commit after EVERY completed checklist step — small, coherent commits; never one
   big commit at the end. Tick the step's checkbox in the task file in the same commit.
 - Each task file ends with a `## Progress log` section; every commit appends/updates one
