@@ -138,8 +138,10 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
   - [x] 10-adoption DONE 8 Jul 2026 — all 7 polish items; see merge log.
   - [ ] Dogfood (needs GOING-LIVE.md phases 2–4 for real-infra, or a local-stack pilot).
 - [ ] Real-infrastructure cutover complete (deferred list above)
-- [ ] Auth option decided (colleague review — see design doc Open items; **not blocking** —
-      dev auth provider ships first)
+- [x] Auth option DECIDED 8 Jul 2026: **Option A** (Supabase third-party Firebase auth).
+      Bloom-side provider work unblocked (see GOING-LIVE.md Phase 3 and task 12); the
+      BloomLibrary2 token-forwarding change and the Firebase custom-claim function/backfill
+      remain other-repo/[HUMAN] items.
 - [ ] Safety-window duration confirmed (7 days vs 1 day)
 
 ## Merge log

@@ -13,23 +13,20 @@ Design context: `../CloudTeamCollections.md` · Contracts: `CONTRACTS.md` · Pro
 
 ## Phase 1 — Decisions (block everything else in Phase 2+)
 
-### 1.1 [HUMAN] Choose the auth option (A/B/C)
-The design doc recommends **Option A: Supabase third-party Firebase auth** — Supabase is
-configured to trust Firebase-issued JWTs directly, so the Bloom user signs in with the same
-BloomLibrary (Firebase) account they already have, and that token IS the Supabase credential.
-- **A (recommended)**: BloomLibrary2's login page forwards the Firebase ID + refresh tokens it
+### 1.1 [DECIDED 8 Jul 2026] Auth option: **A**
+**Option A: Supabase third-party Firebase auth** — Supabase is configured to trust
+Firebase-issued JWTs directly, so the Bloom user signs in with the same BloomLibrary
+(Firebase) account they already have, and that token IS the Supabase credential. Phase 3
+below is therefore actionable; the Bloom-side provider work (3.4) started the same day.
+- **A (chosen)**: BloomLibrary2's login page forwards the Firebase ID + refresh tokens it
   already holds to Bloom (~5 lines in BloomLibrary2 `src/editor.ts`), and Supabase is set to
   accept Firebase as a third-party auth provider. Requires one NEW small Firebase Admin cloud
   function that adds the static `role: "authenticated"` custom claim to every user (plus a
   one-time backfill over existing users — no custom-claims infrastructure exists today).
-- **B**: exchange the legacy Parse session token — rejected direction; welds us to
-  bloom-parse-server, which is being decommissioned.
-- **C**: hand-validate Firebase JWTs ourselves per the stale `bloom-parse-server/supabase/`
-  docs — more code we own, no benefit over A.
-
-This was delegated to a reviewing colleague (see design doc "Open items"). Nothing in Phase 2
-can be finished without it, though 2.1–2.3 (AWS + Supabase provisioning) can proceed in
-parallel with the decision.
+- ~~B~~: exchange the legacy Parse session token — rejected; welds us to bloom-parse-server,
+  which is being decommissioned.
+- ~~C~~: hand-validate Firebase JWTs ourselves per the stale `bloom-parse-server/supabase/`
+  docs — rejected; more code we own, no benefit over A.
 
 ### 1.2 [HUMAN] Confirm the safety-window duration
 `provision-aws.ps1` defaults noncurrent-version expiry to **7 days** (CONTRACTS.md). The open
