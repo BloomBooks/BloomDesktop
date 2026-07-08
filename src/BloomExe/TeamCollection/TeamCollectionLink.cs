@@ -141,4 +141,21 @@ namespace Bloom.TeamCollection
         public InvalidTeamCollectionLinkException(string message)
             : base(message) { }
     }
+
+    /// <summary>
+    /// Thrown by <see cref="TeamCollectionManager.ConnectToCloudCollection"/> when the local
+    /// collection folder already has a TeamCollectionLink.txt pointing somewhere else (a folder
+    /// TC that hasn't actually been disconnected, or a different cloud collection). Since the
+    /// link file can only ever describe ONE Team Collection at a time, the two links can never
+    /// coexist -- this is not a race, it's a sign the "un-team" step wasn't finished before
+    /// trying to enable Cloud Team Collections. The message always includes concrete fix
+    /// instructions since it is shown to the end user verbatim (see
+    /// TeamCollectionApi.HandleCreateCloudTeamCollection's catch block).
+    /// </summary>
+    public class TeamCollectionLinkConflictException : Exception
+    {
+        /// <inheritdoc />
+        public TeamCollectionLinkConflictException(string message)
+            : base(message) { }
+    }
 }

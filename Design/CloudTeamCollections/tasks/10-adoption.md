@@ -5,7 +5,7 @@
 **Dependencies**: waves 0–3. Touches: cloud-create flow (cleanup step), docs.
 
 ## Steps
-- [ ] Enabling cloud on a formerly-folder-TC collection cleans stale artifacts: per-book
+- [x] Enabling cloud on a formerly-folder-TC collection cleans stale artifacts: per-book
       `TeamCollection.status`, `lastCollectionFileSyncData.txt`, `log.txt`; simultaneous
       folder-link + cloud-link = error with fix instructions.
 - [ ] Members' existing local copies reconcile by checksum on first Receive (verify the
@@ -70,3 +70,33 @@
   (`TeamCollectionApi.HandleJoinTeamCollection`'s own "TeamCollectionJoin" event). Uses
   `CurrentAuth().GetLoginState(CloudEnvironment.Current).Email` for `User` since SharingApi is
   app-level (no per-project `_settings`/`CurrentUser` available there).
+
+- 8 Jul 2026 · done · Task-file step 1 / prompt item 3 (un-team cleanup):
+  `TeamCollectionManager.ConnectToCloudCollection` (the "enable cloud" entry point, called from
+  `TeamCollectionApi.HandleCreateCloudTeamCollection`) now: (1) calls new static
+  `ThrowIfConflictingTeamCollectionLink(localCollectionFolder)` FIRST — throws the new
+  `TeamCollectionLinkConflictException` (in TeamCollectionLink.cs) with concrete fix instructions
+  if TeamCollectionLink.txt still describes a folder TC ("delete TeamCollectionLink.txt from this
+  collection's folder, then try again") or a different/existing cloud TC. This is the
+  "simultaneous folder-link + cloud-link" conflict the task file calls out — a sign the user
+  started "un-teaming" (their term for disconnecting from a Dropbox-style shared TC folder, which
+  has no dedicated Bloom UI today — confirmed by grep, it's a manual/DIY step the user-docs in
+  item 5 need to spell out) but didn't finish removing the old link file. (2) Otherwise calls new
+  `TeamCollection.CleanStaleTeamCollectionArtifacts(localCollectionFolder)`, which deletes every
+  per-book `TeamCollection.status` file plus collection-level `lastCollectionFileSyncData.txt`
+  and `log.txt` (deliberately leaves TeamCollectionLink.txt alone -- ConnectToCloudCollection
+  overwrites it with the fresh cloud link right after). This matters because
+  `TeamCollection.PutBook`/`GetStatus` fall back to LOCAL status whenever the repo has no record
+  for a book yet — true for every book on a brand-new cloud collection's first upload — so a
+  stale leftover status file (wrong checksum, or `lockedBy` some old folder-TC teammate) would
+  otherwise leak into that book's very first cloud version.
+  Both new methods are pure/file-system-only (no network calls), refactored out specifically so
+  they're unit-testable without standing up a full TeamCollectionManager/CloudCollectionClient.
+  Tests authored in `TeamCollectionManagerTests.cs` (was an empty stub): 3 tests for
+  `ThrowIfConflictingTeamCollectionLink` (no link → no-op; folder link → throws with the folder
+  path and "TeamCollectionLink.txt" in the message; cloud link → throws with the collection id),
+  5 tests for `CleanStaleTeamCollectionArtifacts` (deletes per-book status files; deletes the two
+  collection-level files; leaves TeamCollectionLink.txt alone; no-op on a plain never-was-a-TC
+  folder). C# authored but NOT build/test-verified in this worktree (no build deps here) —
+  **orchestrator: please run** `dotnet test --filter FullyQualifiedName~TeamCollectionManagerTests`
+  (full build, not `--no-build`) to confirm before merging.

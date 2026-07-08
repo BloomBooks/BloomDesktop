@@ -603,9 +603,58 @@ namespace Bloom.TeamCollection
         /// (create_collection), links the local collection to it, and pushes every existing local
         /// book and collection-level file up -- the cloud counterpart of
         /// <see cref="ConnectToTeamCollection"/>'s folder-backed flow.
+        ///
+        /// Guards the "adoption path" from a formerly-folder-based Team Collection (task 10):
+        /// throws <see cref="TeamCollectionLinkConflictException"/> if TeamCollectionLink.txt
+        /// still describes a different (folder or cloud) Team Collection -- a sign the user
+        /// hasn't finished "un-teaming" this local collection yet -- and otherwise cleans up any
+        /// stale per-book/per-collection artifacts the old TC left behind before pushing
+        /// everything to the new cloud collection (<see
+        /// cref="TeamCollection.CleanStaleTeamCollectionArtifacts"/>).
         /// </summary>
+        /// <summary>
+        /// Throws <see cref="TeamCollectionLinkConflictException"/> if
+        /// <paramref name="localCollectionFolder"/> already has a TeamCollectionLink.txt
+        /// describing some OTHER Team Collection (folder- or cloud-backed) -- see
+        /// <see cref="ConnectToCloudCollection"/>'s doc comment for why this situation means the
+        /// "un-team" step wasn't finished. Static and file-system-only (no network calls) so it
+        /// can be unit tested directly against a temp folder, unlike ConnectToCloudCollection as
+        /// a whole, which also creates the server-side collection.
+        /// Does nothing if there is no link file (the ordinary case: a plain local collection,
+        /// or one already fully un-teamed).
+        /// </summary>
+        internal static void ThrowIfConflictingTeamCollectionLink(string localCollectionFolder)
+        {
+            var linkPath = GetTcLinkPathFromLcPath(localCollectionFolder);
+            var existingLink = TeamCollectionLink.FromFile(linkPath);
+            if (existingLink == null)
+                return;
+
+            if (existingLink.IsFolder)
+                throw new TeamCollectionLinkConflictException(
+                    "This collection still has an active Team Collection link to the "
+                        + $"shared folder \"{existingLink.RepoFolderPath}\". Before enabling "
+                        + "Cloud Team Collections, finish disconnecting from the old "
+                        + $"(folder-based) Team Collection: delete \"{TeamCollectionLinkFileName}\" "
+                        + "from this collection's folder, then try again."
+                );
+            // existingLink.IsCloud: already linked to some cloud collection (possibly this
+            // very one, if this got called twice). Either way there's nothing to set up.
+            throw new TeamCollectionLinkConflictException(
+                "This collection is already linked to a cloud Team Collection "
+                    + $"(id {existingLink.CloudCollectionId})."
+            );
+        }
+
         public void ConnectToCloudCollection(string collectionId)
         {
+            ThrowIfConflictingTeamCollectionLink(_localCollectionFolder);
+            // No conflicting link -- but the folder may still carry stale per-book status files,
+            // lastCollectionFileSyncData.txt, or log.txt from a Team Collection this local folder
+            // used to belong to before being un-teamed. Clear those before the first Send so
+            // every book uploads as a clean v1, not a stale checksum/lockedBy from the old TC.
+            TeamCollection.CleanStaleTeamCollectionArtifacts(_localCollectionFolder);
+
             // The creator of a TC is its first and, for now, usually only administrator.
             Settings.Administrators = new[] { CurrentUser };
             Settings.Save();
