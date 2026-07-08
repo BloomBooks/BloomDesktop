@@ -111,8 +111,10 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
         XLF en-only. Wiring to real endpoints deferred to Wave 3 (after 06) as planned.
 - [x] Wave 2 complete 7 Jul 2026 — 04 client core (83/83 cloud, 281/281 folder-TC);
       08 collection-tab shells (60/60 component tests; folder path zero-extra-requests)
-- [ ] Wave 3 complete — all three steps (05, 06, UI wiring) MERGED 7 Jul 2026;
-      remaining: the two-instance same-machine manual smoke (John)
+- [x] Wave 3 complete 7 Jul 2026 — GATE PASSED: two-instance manual smoke on one machine
+      (checkout contention visible immediately; Send/Receive round trip with real content;
+      automatic status propagation via polling). Twelve real bugs found+fixed+pinned during
+      the smoke; see merge log.
 - [ ] Wave 4 complete
 - [ ] Real-infrastructure cutover complete (deferred list above)
 - [ ] Auth option decided (colleague review — see design doc Open items; **not blocking** —
@@ -122,6 +124,19 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 ## Merge log
 
 (orchestrator appends: date · task · PR · notes)
+
+- 7 Jul 2026 · two-instance smoke (Wave-3 gate) · direct commits · PASSED after fixing 12
+  live-found bugs: members_add scalar-response crash; missing claim_memberships in join;
+  identity-model registration-vs-account comparisons (4 sites incl. OkToCheckIn, whose
+  false conflict ALSO exposed the unified-recovery clobber + .bloomSource save working);
+  'null null' display; BookButton anonymous avatar; missing experimental-feature checkbox
+  (flag set via user.config for now — proper Advanced-settings checkbox still owed);
+  collection-file mirror-delete stripping TeamCollectionLink.txt; update-Send committing
+  changed-files-only manifests (data-loss class — server was right, client wrong; Receive
+  now also refuses empty manifests); cloud change events discarded by the .bloom-suffix
+  contract; Receive Updates now refreshes UI immediately. Deferred niceties logged:
+  selected-book PREVIEW pane doesn't refresh on Receive until reselect (old base-code
+  ENHANCE); pull-down doesn't auto-open; recovery-path NRE reproduction (E2E-4).
 
 - 7 Jul 2026 · ui-wiring · merged locally · Dispatcher fixes a live folder-TC create-dialog
   breakage (WireUpForWinforms last-caller-wins; three instances of the bug class fixed,
