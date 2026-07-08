@@ -15,12 +15,14 @@ namespace BloomTests.TeamCollection.Cloud
     {
         public int SignInCallCount;
         public int RefreshCallCount;
+        public int AcceptExternalSessionCallCount;
         public List<string> RefreshTokensSeen = new List<string>();
 
         // When set, SignIn returns this session (ignoring the email/password given) unless
         // NextSignInException is also set, in which case the exception wins.
         public Func<string, string, CloudSession> SignInHandler;
         public Func<string, CloudSession> RefreshHandler;
+        public Func<string, string, CloudSession> AcceptExternalSessionHandler;
 
         public CloudSession SignIn(string email, string password)
         {
@@ -33,6 +35,12 @@ namespace BloomTests.TeamCollection.Cloud
             RefreshCallCount++;
             RefreshTokensSeen.Add(refreshToken);
             return RefreshHandler(refreshToken);
+        }
+
+        public CloudSession AcceptExternalSession(string idToken, string refreshToken)
+        {
+            AcceptExternalSessionCallCount++;
+            return AcceptExternalSessionHandler(idToken, refreshToken);
         }
     }
 
@@ -414,6 +422,100 @@ namespace BloomTests.TeamCollection.Cloud
 
             Assert.That(signedInState.SignedIn, Is.True);
             Assert.That(signedInState.Email, Is.EqualTo("alice@dev.local"));
+        }
+
+        [Test]
+        public void GetLoginState_CloudMode_ReportsCloudNotReal()
+        {
+            // Regression guard for the "real" vs "cloud" naming mismatch found while
+            // implementing task 12: BloomBrowserUI's sharingApi.ts SharingLoginMode type only
+            // ever declared "dev" | "cloud", so the C# side must actually send "cloud".
+            var auth = new CloudAuth(new FakeCloudAuthProvider(), new FakeCloudTokenStore());
+            var env = new CloudEnvironment(name =>
+                name == "BLOOM_CLOUDTC_AUTH_MODE" ? "cloud" : null
+            );
+
+            Assert.That(auth.GetLoginState(env).AuthMode, Is.EqualTo("cloud"));
+        }
+
+        [Test]
+        public void GetLoginState_EmailVerifiedReflectsSessionAndClearsOnSignOut()
+        {
+            var provider = new FakeCloudAuthProvider
+            {
+                SignInHandler = (email, password) =>
+                {
+                    var session = MakeSession(email);
+                    session.EmailVerified = false;
+                    return session;
+                },
+            };
+            var auth = new CloudAuth(provider, new FakeCloudTokenStore());
+            var env = new CloudEnvironment(name => null);
+
+            // Sanity check: signed-out state must never claim a verified email.
+            Assert.That(auth.GetLoginState(env).EmailVerified, Is.False);
+
+            auth.SignIn("alice@dev.local", "BloomDev123!");
+            Assert.That(
+                auth.GetLoginState(env).EmailVerified,
+                Is.False,
+                "the fake session was built with EmailVerified=false"
+            );
+
+            auth.SignOut();
+            Assert.That(auth.GetLoginState(env).EmailVerified, Is.False);
+        }
+
+        [Test]
+        public void SignInWithExternalTokens_Success_SetsIdentityAndAccessToken()
+        {
+            var provider = new FakeCloudAuthProvider
+            {
+                AcceptExternalSessionHandler = (idToken, refreshToken) =>
+                    new CloudSession
+                    {
+                        AccessToken = idToken,
+                        RefreshToken = refreshToken,
+                        Email = "alice@example.com",
+                        UserId = "firebase-uid-1",
+                        ExpiresAtUtc = DateTime.UtcNow.AddHours(1),
+                        EmailVerified = true,
+                    },
+            };
+            var auth = new CloudAuth(provider, new FakeCloudTokenStore());
+
+            Assert.That(
+                auth.IsSignedIn,
+                Is.False,
+                "should not be signed in before SignInWithExternalTokens is called"
+            );
+
+            auth.SignInWithExternalTokens("fake-id-token", "fake-refresh-token");
+
+            Assert.That(auth.IsSignedIn, Is.True);
+            Assert.That(auth.CurrentEmail, Is.EqualTo("alice@example.com"));
+            Assert.That(auth.CurrentEmailVerified, Is.True);
+            Assert.That(auth.GetAccessTokenOrNull(), Is.EqualTo("fake-id-token"));
+            Assert.That(provider.AcceptExternalSessionCallCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void SignInWithExternalTokens_Failure_LeavesAuthSignedOut()
+        {
+            var provider = new FakeCloudAuthProvider
+            {
+                AcceptExternalSessionHandler = (idToken, refreshToken) =>
+                    throw new CloudAuthException("malformed token"),
+            };
+            var auth = new CloudAuth(provider, new FakeCloudTokenStore());
+
+            Assert.Throws<CloudAuthException>(() =>
+                auth.SignInWithExternalTokens("bad-token", "bad-refresh")
+            );
+
+            Assert.That(auth.IsSignedIn, Is.False);
+            Assert.That(auth.GetAccessTokenOrNull(), Is.Null);
         }
     }
 }

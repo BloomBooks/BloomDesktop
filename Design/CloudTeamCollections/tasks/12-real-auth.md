@@ -10,7 +10,7 @@ backfill) stays in GOING-LIVE.md Phases 3.1–3.3.
 one new migration + pgTAP additions if the email_verified check needs it.
 
 ## Steps
-- [ ] **Firebase token provider** behind the existing `CloudAuth`/provider seam
+- [x] **Firebase token provider** behind the existing `CloudAuth`/provider seam
       (`CloudAuthMode.Cloud`): holds a Firebase ID token + refresh token; refreshes via the
       Google securetoken API (`https://securetoken.googleapis.com/v1/token?key=<apiKey>`)
       when the ID token is near/at expiry; exposes the same login-state surface the dev
@@ -18,10 +18,29 @@ one new migration + pgTAP additions if the email_verified check needs it.
       NOT by trusting the caller). API key + Firebase project id become CloudEnvironment
       values (env-var override + compiled default placeholder). All HTTP mockable; unit
       tests for refresh, expiry parsing, claim extraction, and failure modes.
-- [ ] **Persistent token store**: refresh token survives Bloom restarts. Windows DPAPI
+      DONE 8 Jul 2026: `FirebaseCloudAuthProvider` in CloudAuth.cs (renamed from the
+      `RealCloudAuthProvider` stub); `SessionFromIdToken` decodes the JWT payload locally
+      (no signature verification -- Supabase verifies server-side on every actual use, see
+      the class doc comment) for email/sub/email_verified/exp. Found + fixed in passing: the
+      enum was `CloudAuthMode.Real`/"real" but BloomBrowserUI's `sharingApi.ts`
+      `SharingLoginMode` type (and this very task file/GOING-LIVE.md) all say "cloud" --
+      renamed the enum, wire string, and env var value to `Cloud`/"cloud" throughout so the
+      two ends of the API actually agree. `CloudLoginState`/`ISharingLoginState` gained the
+      `emailVerified` field the TS side had already declared but C# never populated.
+      Tests: FirebaseCloudAuthProviderTests.cs (14 tests, all HTTP mocked via the existing
+      FakeRestExecutor) + CloudAuthTests.cs additions for SignInWithExternalTokens/
+      EmailVerified/cloud-mode wiring.
+- [x] **Persistent token store**: refresh token survives Bloom restarts. Windows DPAPI
       (`ProtectedData`, CurrentUser scope) in a file under the Bloom app-data folder —
       NOT plain text, NOT in user.config. Store/load/clear unit-tested (DPAPI itself may
       need `[Platform(Include = "Win")]`-style guards consistent with existing tests).
+      DONE 8 Jul 2026: `DpapiCloudTokenStore` in new file CloudTokenStore.cs, file at
+      `ProjectContext.GetBloomAppDataFolder()/CloudTeamCollectionSession.dat`. No
+      `[Platform(Include="Win")]` guard needed -- BloomExe and BloomTests both target
+      `net8.0-windows` already, so every test run is on Windows; added
+      `System.Security.Cryptography.ProtectedData` 6.0.0 (already in the local NuGet
+      cache) to BloomExe.csproj. Tests: CloudTokenStoreTests.cs (round-trip, corrupted-file
+      recovery, on-disk-encrypted sanity check, clear/no-file-yet).
 - [ ] **Token receipt endpoint**: the Bloom-side half of BloomLibrary2's ~5-line
       `editor.ts` forwarding. STUDY FIRST how Bloom already hosts the BloomLibrary login
       page and receives its results (WebLibraryIntegration / the existing sign-in flows) and
@@ -53,4 +72,9 @@ one new migration + pgTAP additions if the email_verified check needs it.
 
 **Agent notes**: Sonnet, MAIN tree (C# build/test), branch `task/12-real-auth`.
 
+## Progress log
+- 8 Jul 2026 · done: steps 1-2 (Firebase token provider + DPAPI persistent token store), plus
+  the CloudAuthMode.Real->Cloud rename found along the way (see step 1's note) · next: token
+  receipt endpoint (step 3) -- study ExternalApi.cs's existing `external/login` handler first,
+  then add the new endpoint + CONTRACTS.md "Auth (Option A)" section.
 ## Progress log

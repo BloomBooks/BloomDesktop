@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,6 +20,14 @@ namespace Bloom.TeamCollection.Cloud
         public string Email { get; set; }
         public string UserId { get; set; }
         public DateTime ExpiresAtUtc { get; set; }
+
+        /// <summary>
+        /// Whether the provider considers this identity's email verified, read from the
+        /// provider's own token/claims (never from anything a caller merely asserts). Null
+        /// means "this provider doesn't track the concept" (the dev provider's accounts are all
+        /// auto-confirmed, so it always sets true -- see DevCloudAuthProvider.ToSession).
+        /// </summary>
+        public bool? EmailVerified { get; set; }
     }
 
     /// <summary>
@@ -33,6 +42,12 @@ namespace Bloom.TeamCollection.Cloud
         public string AuthMode { get; set; }
         public bool SignedIn { get; set; }
         public string Email { get; set; }
+
+        /// <summary>False when signed out or when the current session's provider left it
+        /// unknown (see <see cref="CloudSession.EmailVerified"/>). Mirrors what
+        /// tc.jwt_email_verified() decides server-side, so the client can show/withhold
+        /// approval-dependent UI without waiting on a round trip.</summary>
+        public bool EmailVerified { get; set; }
     }
 
     /// <summary>Raised by <see cref="CloudAuth.AccountSwitched"/> when a new sign-in changes the identity.</summary>
@@ -63,7 +78,7 @@ namespace Bloom.TeamCollection.Cloud
     /// provider-agnostic session lifecycle (storage, proactive refresh, sign-out, account-switch
     /// detection) and delegates the actual network exchange to one of these. There are two
     /// implementations: <see cref="DevCloudAuthProvider"/> (local GoTrue) and
-    /// <see cref="RealCloudAuthProvider"/> (a stub until the Option A/B/C decision lands).
+    /// <see cref="FirebaseCloudAuthProvider"/> (Option A, decided 8 Jul 2026).
     /// </summary>
     public interface ICloudAuthProvider
     {
@@ -72,14 +87,31 @@ namespace Bloom.TeamCollection.Cloud
 
         /// <summary>Exchanges a still-valid refresh token for a new session. Throws CloudAuthException on failure.</summary>
         CloudSession Refresh(string refreshToken);
+
+        /// <summary>
+        /// Accepts an externally-obtained ID token + refresh token (e.g. the Firebase tokens
+        /// BloomLibrary2's login page forwards to Bloom's token-receipt endpoint -- see
+        /// CONTRACTS.md's "Auth (Option A)" section) as a brand-new session. Implementations
+        /// MUST derive identity (email/userId/emailVerified/expiry) from the token's own claims,
+        /// never from anything the caller separately asserts. Throws CloudAuthException on
+        /// failure. Default implementation is "not supported": only a provider that actually
+        /// receives externally-minted tokens (the Firebase/cloud provider) needs to override
+        /// this, so the dev password-based provider and any test doubles predating this method
+        /// don't have to change.
+        /// </summary>
+        CloudSession AcceptExternalSession(string idToken, string refreshToken) =>
+            throw new NotSupportedException(
+                $"{GetType().Name} does not accept externally-obtained tokens."
+            );
     }
 
     /// <summary>
     /// Where a signed-in session is remembered between sign-ins (e.g. so a single Bloom instance
-    /// can restart without asking the user to sign in again). The default
-    /// <see cref="InMemoryCloudTokenStore"/> is process-lifetime only; a persistent
-    /// implementation (Settings-backed or OS credential store) is a follow-up, not required for
-    /// this skeleton, and callers must not assume tokens survive a restart.
+    /// can restart without asking the user to sign in again). <see cref="InMemoryCloudTokenStore"/>
+    /// is process-lifetime only (used by the dev provider and by tests); the persistent,
+    /// DPAPI-backed implementation a real cloud session needs is
+    /// <see cref="DpapiCloudTokenStore"/> in CloudTokenStore.cs. Callers that use
+    /// InMemoryCloudTokenStore must not assume tokens survive a restart.
     /// </summary>
     public interface ICloudTokenStore
     {
@@ -134,8 +166,8 @@ namespace Bloom.TeamCollection.Cloud
         {
             switch (environment.AuthMode)
             {
-                case CloudAuthMode.Real:
-                    return new RealCloudAuthProvider();
+                case CloudAuthMode.Cloud:
+                    return new FirebaseCloudAuthProvider(environment);
                 case CloudAuthMode.Dev:
                 default:
                     return new DevCloudAuthProvider(environment);
@@ -171,6 +203,17 @@ namespace Bloom.TeamCollection.Cloud
             }
         }
 
+        /// <summary>See <see cref="CloudSession.EmailVerified"/>; false when signed out or the
+        /// provider left it unknown.</summary>
+        public bool CurrentEmailVerified
+        {
+            get
+            {
+                lock (_lock)
+                    return _session?.EmailVerified ?? false;
+            }
+        }
+
         /// <summary>
         /// Explicit sign-in (e.g. the user submitted the dev-mode email/password form). Throws
         /// CloudAuthException on failure; the caller decides how to surface that to the user.
@@ -178,6 +221,19 @@ namespace Bloom.TeamCollection.Cloud
         public void SignIn(string email, string password)
         {
             var newSession = _provider.SignIn(email, password);
+            ApplyNewSession(newSession);
+        }
+
+        /// <summary>
+        /// Explicit sign-in from an externally-obtained token pair (the Bloom-side half of
+        /// BloomLibrary2's login forwarding -- see the token-receipt endpoint in
+        /// ExternalApi.cs and CONTRACTS.md's "Auth (Option A)" section). Throws
+        /// CloudAuthException on failure (e.g. a malformed token); the caller decides how to
+        /// surface that.
+        /// </summary>
+        public void SignInWithExternalTokens(string idToken, string refreshToken)
+        {
+            var newSession = _provider.AcceptExternalSession(idToken, refreshToken);
             ApplyNewSession(newSession);
         }
 
@@ -268,9 +324,10 @@ namespace Bloom.TeamCollection.Cloud
         public CloudLoginState GetLoginState(CloudEnvironment environment) =>
             new CloudLoginState
             {
-                AuthMode = environment.AuthMode == CloudAuthMode.Dev ? "dev" : "real",
+                AuthMode = environment.AuthMode == CloudAuthMode.Dev ? "dev" : "cloud",
                 SignedIn = IsSignedIn,
                 Email = CurrentEmail,
+                EmailVerified = IsSignedIn && CurrentEmailVerified,
             };
 
         private void RefreshWith(string refreshToken)
@@ -455,28 +512,204 @@ namespace Bloom.TeamCollection.Cloud
                 Email = (string)user["email"],
                 UserId = (string)user["id"],
                 ExpiresAtUtc = DateTime.UtcNow.AddSeconds(expiresIn),
+                // The dev stack auto-confirms every signup (server/dev/config.auth.toml.snippet),
+                // so every dev session is, by definition, verified.
+                EmailVerified = true,
             };
         }
     }
 
     /// <summary>
-    /// Real auth provider (`BLOOM_CLOUDTC_AUTH_MODE=real`): a placeholder for the BloomLibrary/
-    /// Firebase sign-in that the pending Option A/B/C decision (see the design doc) will select.
-    /// The `external/login` payload hook (ExternalApi.LoginSuccessful) already exists from the
-    /// BloomLibrary integration and is expected to feed this provider once implemented; until
-    /// then it is simply not available, and callers should treat that as "please sign in" rather
-    /// than a crash.
+    /// Real (Option A) auth provider (`BLOOM_CLOUDTC_AUTH_MODE=cloud`): the user signs in on the
+    /// BloomLibrary-hosted browser page (the same one Bloom already opens for BloomLibrary
+    /// account sign-in, see BloomLibraryAuthentication.LogIn/SharingApi.HandleShowSignIn), which
+    /// forwards the resulting Firebase ID + refresh tokens to Bloom's token-receipt endpoint
+    /// (ExternalApi.cs; CONTRACTS.md's "Auth (Option A)" section documents the exact shape).
+    /// There is no password flow -- Firebase already authenticated the user in the browser --
+    /// so <see cref="SignIn"/> always throws; the only ways into a session are
+    /// <see cref="AcceptExternalSession"/> (the token-receipt endpoint) and <see cref="Refresh"/>
+    /// (CloudAuth's proactive-refresh timer / 401 retry, restoring a persisted session, etc.).
+    /// Identity (email/userId/emailVerified/expiry) is always read from the token's own claims,
+    /// never trusted from a caller -- see <see cref="SessionFromIdToken"/>.
     /// </summary>
-    public class RealCloudAuthProvider : ICloudAuthProvider
+    public class FirebaseCloudAuthProvider : ICloudAuthProvider
     {
+        // Google's Identity Toolkit "securetoken" REST endpoint. Not a Supabase/GoTrue URL --
+        // under Option A, Bloom talks to Firebase directly to keep the session alive; Supabase
+        // only ever sees the resulting Firebase ID token as a bearer credential, never mints or
+        // refreshes one itself.
+        private const string SecureTokenBaseUrl = "https://securetoken.googleapis.com";
+
+        private readonly CloudEnvironment _environment;
+        private IRestExecutor _restExecutor;
+
+        public FirebaseCloudAuthProvider(CloudEnvironment environment)
+        {
+            _environment = environment;
+        }
+
+        /// <summary>Test-only seam: lets unit tests substitute a fake <see cref="IRestExecutor"/>
+        /// (the same one CloudCollectionClient's tests use) so Refresh's HTTP call can be
+        /// exercised without a live network. Production code never needs to call this.</summary>
+        internal void SetRestExecutorForTests(IRestExecutor executor) => _restExecutor = executor;
+
+        private IRestExecutor RestExecutor =>
+            _restExecutor ?? (_restExecutor = new RestSharpExecutor(SecureTokenBaseUrl));
+
         public CloudSession SignIn(string email, string password) =>
             throw new CloudAuthException(
-                "Real Cloud Team Collection sign-in is not yet available (Option A/B/C decision pending)."
+                "Cloud Team Collections have no password sign-in; use the BloomLibrary "
+                    + "browser sign-in (SharingApi.HandleShowSignIn) instead."
             );
 
-        public CloudSession Refresh(string refreshToken) =>
-            throw new CloudAuthException(
-                "Real Cloud Team Collection sign-in is not yet available (Option A/B/C decision pending)."
+        /// <summary>The Bloom-side half of the token-receipt endpoint: turns a freshly-forwarded
+        /// Firebase ID+refresh token pair into a session. See the class doc comment.</summary>
+        public CloudSession AcceptExternalSession(string idToken, string refreshToken)
+        {
+            if (string.IsNullOrEmpty(idToken) || string.IsNullOrEmpty(refreshToken))
+                throw new CloudAuthException(
+                    "AcceptExternalSession requires both a non-empty idToken and refreshToken."
+                );
+            return SessionFromIdToken(idToken, refreshToken);
+        }
+
+        /// <summary>
+        /// Exchanges a refresh token for a new ID token via Google's securetoken API
+        /// (https://firebase.google.com/docs/reference/rest/auth#section-refresh-token), the
+        /// mechanism CloudAuth's proactive-refresh timer and 401-retry rely on to keep a
+        /// long-lived session alive without ever prompting the user again.
+        /// </summary>
+        public CloudSession Refresh(string refreshToken)
+        {
+            if (string.IsNullOrEmpty(_environment.FirebaseApiKey))
+                throw new CloudAuthException(
+                    "BLOOM_CLOUDTC_FIREBASE_API_KEY is not configured; cannot refresh a "
+                        + "Cloud Team Collection session."
+                );
+
+            var request = new RestRequest(
+                $"/v1/token?key={Uri.EscapeDataString(_environment.FirebaseApiKey)}",
+                Method.POST
             );
+            // Google's securetoken endpoint takes a form-encoded body, unlike the Supabase/
+            // GoTrue JSON endpoints DevCloudAuthProvider talks to.
+            request.AddParameter("grant_type", "refresh_token");
+            request.AddParameter("refresh_token", refreshToken);
+            var response = RestExecutor.Execute(request);
+
+            if (response.StatusCode != HttpStatusCode.OK)
+                throw new CloudAuthException(
+                    $"Firebase token refresh failed: {(int)response.StatusCode} ({response.Content})"
+                );
+
+            JObject json;
+            try
+            {
+                json = JObject.Parse(response.Content);
+            }
+            catch (JsonException e)
+            {
+                throw new CloudAuthException(
+                    "Firebase token refresh response was not valid JSON: " + response.Content,
+                    e
+                );
+            }
+
+            // The securetoken response's "id_token" is the refreshed JWT carrying the claims
+            // SessionFromIdToken reads identity from ("access_token" is documented to carry the
+            // same value, kept only as a fallback in case that ever changes).
+            var newIdToken = (string)json["id_token"] ?? (string)json["access_token"];
+            var newRefreshToken = (string)json["refresh_token"];
+            if (string.IsNullOrEmpty(newIdToken) || string.IsNullOrEmpty(newRefreshToken))
+                throw new CloudAuthException(
+                    "Firebase token refresh response was missing id_token/refresh_token: "
+                        + response.Content
+                );
+
+            return SessionFromIdToken(newIdToken, newRefreshToken);
+        }
+
+        /// <summary>
+        /// Builds a CloudSession entirely from the ID token's own claims -- per the class doc
+        /// comment, identity is never trusted from a caller. Deliberately does NOT verify the
+        /// token's signature: that would require fetching and caching Google's rotating public
+        /// certs for no real benefit here, because every actual USE of the resulting
+        /// AccessToken is independently verified server-side (Supabase, configured for Firebase
+        /// third-party auth, checks the signature on every request) -- a forged/expired token
+        /// would simply fail there with a 401, which CloudAuth already treats as "please sign
+        /// in". This method only trusts the token enough to populate local, display-only state
+        /// (whoami / sign-in status / the emailVerified flag CONTRACTS.md's loginState surfaces).
+        /// </summary>
+        private static CloudSession SessionFromIdToken(string idToken, string refreshToken)
+        {
+            JObject claims;
+            try
+            {
+                claims = DecodeJwtPayload(idToken);
+            }
+            catch (Exception e) when (!(e is CloudAuthException))
+            {
+                throw new CloudAuthException("Could not parse the Firebase ID token.", e);
+            }
+
+            var email = (string)claims["email"];
+            var userId = (string)claims["sub"] ?? (string)claims["user_id"];
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(userId))
+                throw new CloudAuthException(
+                    "Firebase ID token is missing the required 'email'/'sub' claims."
+                );
+
+            var expSeconds = (long?)claims["exp"];
+            var expiresAtUtc = expSeconds.HasValue
+                ? DateTimeOffset.FromUnixTimeSeconds(expSeconds.Value).UtcDateTime
+                : DateTime.UtcNow.AddHours(1);
+
+            return new CloudSession
+            {
+                AccessToken = idToken,
+                RefreshToken = refreshToken,
+                Email = email,
+                UserId = userId,
+                ExpiresAtUtc = expiresAtUtc,
+                // Firebase ID tokens always carry a top-level boolean email_verified claim (the
+                // same shape tc.jwt_email_verified() already special-cases in
+                // 20260706000001_tc_schema.sql) -- absence would mean a malformed/unexpected
+                // token, not "unverified", so this only ever resolves to a real true/false here.
+                EmailVerified = (bool?)claims["email_verified"] ?? false,
+            };
+        }
+
+        /// <summary>Decodes a JWT's middle (payload) segment into its claims. Does not verify
+        /// the signature -- see <see cref="SessionFromIdToken"/>'s doc comment for why that's
+        /// acceptable here.</summary>
+        private static JObject DecodeJwtPayload(string jwt)
+        {
+            var parts = jwt?.Split('.') ?? Array.Empty<string>();
+            if (parts.Length < 2)
+                throw new CloudAuthException(
+                    "Malformed JWT: expected header.payload.signature, got "
+                        + parts.Length
+                        + " segment(s)."
+                );
+            var payloadJson = Encoding.UTF8.GetString(Base64UrlDecode(parts[1]));
+            return JObject.Parse(payloadJson);
+        }
+
+        /// <summary>Decodes JWT-flavored base64url (`-`/`_` in place of `+`/`/`, padding
+        /// stripped) into raw bytes.</summary>
+        private static byte[] Base64UrlDecode(string input)
+        {
+            var base64 = input.Replace('-', '+').Replace('_', '/');
+            switch (base64.Length % 4)
+            {
+                case 2:
+                    base64 += "==";
+                    break;
+                case 3:
+                    base64 += "=";
+                    break;
+            }
+            return Convert.FromBase64String(base64);
+        }
     }
 }

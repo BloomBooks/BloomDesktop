@@ -5,13 +5,15 @@ namespace Bloom.TeamCollection.Cloud
     /// <summary>
     /// Which backend a Cloud Team Collection authenticates against. "Dev" talks to the local
     /// GoTrue instance bundled with the local Supabase dev stack (accepts any email/password);
-    /// "Real" is the not-yet-implemented BloomLibrary/Firebase sign-in (Option A/B/C, see the
-    /// design doc). See Design/CloudTeamCollections/tasks/03-auth.md.
+    /// "Cloud" is the real BloomLibrary/Firebase sign-in (Option A, decided 8 Jul 2026 -- see
+    /// Design/CloudTeamCollections.md and GOING-LIVE.md Phase 3). The string value ("dev"/
+    /// "cloud") is also what travels over the wire in CloudLoginState/sharing/loginState, and
+    /// must keep matching BloomBrowserUI's SharingLoginMode type in sharingApi.ts.
     /// </summary>
     public enum CloudAuthMode
     {
         Dev,
-        Real,
+        Cloud,
     }
 
     /// <summary>
@@ -32,6 +34,13 @@ namespace Bloom.TeamCollection.Cloud
         private const string DefaultS3Endpoint = "http://127.0.0.1:9000";
         private const string DefaultS3Bucket = "bloom-teams-local";
         private const CloudAuthMode DefaultAuthMode = CloudAuthMode.Dev;
+
+        // Firebase Web API key + project id (Option A): compiled defaults are empty
+        // placeholders (never call the securetoken API before an override is set); production
+        // values are set via GOING-LIVE.md Phase 3.5's client-defaults change, sandbox/dev via
+        // the env-var overrides below.
+        private const string DefaultFirebaseApiKey = "";
+        private const string DefaultFirebaseProjectId = "";
 
         /// <summary>The Supabase (or PostgREST/GoTrue-compatible) API base URL.</summary>
         public string SupabaseUrl { get; }
@@ -55,6 +64,19 @@ namespace Bloom.TeamCollection.Cloud
 
         /// <summary>Which auth provider CloudAuth should use. See <see cref="CloudAuthMode"/>.</summary>
         public CloudAuthMode AuthMode { get; }
+
+        /// <summary>
+        /// The Firebase Web API key used to call the Google securetoken refresh endpoint
+        /// (`BLOOM_CLOUDTC_FIREBASE_API_KEY`). Firebase Web API keys are not secret (they only
+        /// identify the project to Google's client APIs; the actual authorization is the
+        /// refresh/ID token itself), so committing a real default here later is fine -- see
+        /// GOING-LIVE.md Phase 3.5.
+        /// </summary>
+        public string FirebaseApiKey { get; }
+
+        /// <summary>The Firebase project id (`BLOOM_CLOUDTC_FIREBASE_PROJECT_ID`), used only for
+        /// sanity-checking a decoded ID token's `aud`/`iss` claims match the project we expect.</summary>
+        public string FirebaseProjectId { get; }
 
         /// <summary>
         /// Optional email to silently auto-sign-in as, bypassing any stored session tokens. Set
@@ -106,14 +128,16 @@ namespace Bloom.TeamCollection.Cloud
 
             var authModeRaw = Get(
                 "BLOOM_CLOUDTC_AUTH_MODE",
-                DefaultAuthMode == CloudAuthMode.Dev ? "dev" : "real"
+                DefaultAuthMode == CloudAuthMode.Dev ? "dev" : "cloud"
             );
-            AuthMode = string.Equals(authModeRaw, "real", StringComparison.OrdinalIgnoreCase)
-                ? CloudAuthMode.Real
+            AuthMode = string.Equals(authModeRaw, "cloud", StringComparison.OrdinalIgnoreCase)
+                ? CloudAuthMode.Cloud
                 : CloudAuthMode.Dev;
 
             DevUser = Get("BLOOM_CLOUDTC_USER", null);
             DevPassword = Get("BLOOM_CLOUDTC_PASSWORD", null);
+            FirebaseApiKey = Get("BLOOM_CLOUDTC_FIREBASE_API_KEY", DefaultFirebaseApiKey);
+            FirebaseProjectId = Get("BLOOM_CLOUDTC_FIREBASE_PROJECT_ID", DefaultFirebaseProjectId);
         }
     }
 }

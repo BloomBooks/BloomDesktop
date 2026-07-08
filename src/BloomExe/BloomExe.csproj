@@ -279,6 +279,7 @@
 		<PackageReference Include="System.Management" Version="9.0.7" />
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 		<PackageReference Include="System.Runtime" Version="4.3.0" />
+		<PackageReference Include="System.Security.Cryptography.ProtectedData" Version="6.0.0" />
 		<PackageReference Include="TagLibSharp" Version="2.3.0" />
 		<PackageReference Include="PolySharp" Version="1.13.2">
 			<PrivateAssets>all</PrivateAssets>
