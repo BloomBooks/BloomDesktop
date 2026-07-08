@@ -148,6 +148,20 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 
 (orchestrator appends: date · task · PR · notes)
 
+- 8 Jul 2026 · 12-real-auth (Option A seams) · merged locally · Same-day implementation of
+  everything the Option A decision unblocked in this repo: FirebaseCloudAuthProvider
+  (identity strictly from ID-token claims; securetoken refresh; signature verification
+  deliberately delegated to Supabase per the provider's doc comment), DPAPI-persistent
+  token store, `POST external/cloudLogin` receipt endpoint (CONTRACTS.md v1.3 documents the
+  exact shape the BloomLibrary2 editor.ts change must target — note it should POST to this
+  NEW endpoint, not add fields to external/login), tc.jwt_email_verified() verified
+  Firebase-ready (no migration needed), reference Firebase Admin claim function + backfill
+  under server/firebase/. Agent found+fixed a real cross-end mismatch: CloudAuthMode was
+  "real" in C# but "cloud" in the TS contract; also populated the emailVerified field TS
+  had declared but C# never sent. Verified independently: C# widened filter 359/359;
+  pgTAP 42/42; vitest 5/5. Still deferred (GOING-LIVE 3.1–3.3): hosted-Supabase Firebase
+  config, the BloomLibrary2 change itself, Firebase deploy + backfill run.
+
 - 8 Jul 2026 · post-merge E2E gate · direct commits · The gate caught ONE real merge bug:
   task 10's new XLF `<note>` texts contained double hyphens, which L10NSharp parses as
   illegal XML-comment content — EVERY Bloom launch crashed at startup in SetUpLocalization
