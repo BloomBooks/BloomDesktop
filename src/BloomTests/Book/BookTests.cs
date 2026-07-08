@@ -3183,12 +3183,12 @@ namespace BloomTests.Book
         public void UpdateCharacterStyleMarkup_ReducesNestingOfSameTags()
         {
             var dom = new HtmlDom(
-                "<html><body><div class='bloom-editable'><p><b><b style='color:red'>text</b></b></p></div></body></html>"
+                "<html><body><div class='bloom-editable'><p><b>some <b style='color:red'>text</b> here</b></p></div></body></html>"
             );
             Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
             Assert.That(
                 GetFirstEditableParagraph(dom).InnerXml,
-                Is.EqualTo("<strong>text</strong>")
+                Is.EqualTo("<strong>some text here</strong>")
             );
             var dom1 = new HtmlDom(
                 "<html><body><div class='bloom-editable'><p><i><i style='color:red'>text</i></i></p></div></body></html>"
@@ -3199,7 +3199,11 @@ namespace BloomTests.Book
                 "<html><body><div class='bloom-editable'><p><sup><sup style='color:red'>text</sup></sup></p></div></body></html>"
             );
             Bloom.Book.Book.UpdateCharacterStyleMarkup(dom2);
-            Assert.That(GetFirstEditableParagraph(dom2).InnerXml, Is.EqualTo("<sup>text</sup>"));
+            // <sup> does have a nesting effect, so we don't collapse them. We just remove the attributes from the inner tag.
+            Assert.That(
+                GetFirstEditableParagraph(dom2).InnerXml,
+                Is.EqualTo("<sup><sup>text</sup></sup>")
+            );
             var dom3 = new HtmlDom(
                 "<html><body><div class='bloom-editable'><p>This is <u><u style='color:red'>some text.</u></u></p></div></body></html>"
             );

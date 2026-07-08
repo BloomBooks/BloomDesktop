@@ -2698,8 +2698,8 @@ namespace Bloom.Book
                 // Only one level of nesting is handled, but that should (almost always) be enough.
                 inner = Regex.Replace(
                     inner,
-                    @"<(strong|em|sup|u)><\1>(.*?)</\1></\1>",
-                    "<$1>$2</$1>",
+                    @"<(strong|em|u)>([^<>]*)<\1>([^<>]*)</\1>([^<>]*)</\1>",
+                    "<$1>$2$3$4</$1>",
                     RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                 );
                 // Remove empty (or essentially empty) character markup tags.  (BL-16387)
