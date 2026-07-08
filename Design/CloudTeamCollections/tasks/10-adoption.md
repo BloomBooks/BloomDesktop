@@ -13,7 +13,7 @@
 - [ ] User documentation: the un-team + enable + invite-team walkthrough (docs site), incl.
       "everyone check in first".
 - [ ] Localization sweep of all new strings (xlf-strings skill rules).
-- [ ] Analytics review: create/join/send (bytes uploaded vs skipped)/receive/force-unlock/
+- [x] Analytics review: create/join/send (bytes uploaded vs skipped)/receive/force-unlock/
       incident events flowing with Backend="Cloud".
 - [ ] Dogfood with a real team; triage findings.
 
@@ -100,3 +100,43 @@
   folder). C# authored but NOT build/test-verified in this worktree (no build deps here) —
   **orchestrator: please run** `dotnet test --filter FullyQualifiedName~TeamCollectionManagerTests`
   (full build, not `--no-build`) to confirm before merging.
+
+- 8 Jul 2026 · done · Prompt item 7 (analytics audit), concluding the piece started opportunistically
+  in the item-2 commit. Read every `Analytics.Track` call reachable from cloud code paths
+  (`TeamCollectionApi.cs`, `TeamCollection.cs`, `SharingApi.cs`, `CloudJoinFlow.cs`,
+  `CloudTeamCollection.cs`) plus their call sites. Findings:
+  - **create** ("TeamCollectionCreate", both `HandleCreateTeamCollection` folder path and
+    `HandleCreateCloudTeamCollection` cloud path) — OK, `Backend` already reads
+    `_tcManager.CurrentCollection.GetBackendType()` dynamically (`"Cloud"` for
+    `CloudTeamCollection.GetBackendType()`), so it was already correct for cloud with no change
+    needed.
+  - **join** — folder path ("TeamCollectionJoin" from `HandleJoinTeamCollection`) OK, same dynamic
+    `Backend`. **Cloud path (pull-down) had ZERO analytics** — fixed in the item-2 commit
+    (`SharingApi.HandlePullDown` now tracks "TeamCollectionJoin" with `Backend="Cloud"`,
+    `JoinType="pullDown"`).
+  - **send** (per-book check-in, "TeamCollectionCheckinBook" in `HandleCompleteCheckinOfCurrentBook`
+    or similar) — OK, dynamic `Backend`, fires for both backends identically since `PutBook` is
+    backend-agnostic at the `TeamCollectionApi` layer.
+  - **receive** — per-book checkout ("TeamCollectionCheckoutBook") OK, dynamic `Backend`. But the
+    cloud-only bulk **"Receive Updates" button (`HandleReceiveUpdates`) had ZERO analytics** —
+    fixed here: added `Analytics.Track("TeamCollectionReceiveUpdates", ...)` with `BooksReceived`
+    and `BooksSkippedCheckedOutHere` counts. Byte-level uploaded-vs-skipped counts (explicitly
+    flagged as a nice-to-have in the task prompt) are NOT cheaply available on this path today:
+    `CopyBookFromRepoToLocal`/S3 download don't expose per-book byte counts without extra
+    HEAD/GetObjectAttributes calls per book — **flagging as a future enhancement**, not done here.
+  - **force-unlock** ("TeamCollectionRevertOtherCheckout" in `HandleForceUnlock`, shared by both
+    `teamCollection/forceUnlock` and `sharing/forceUnlock`) — OK, dynamic `Backend`, already
+    correct for cloud, no change needed.
+  - **incident** ("TeamCollectionConflictingEditOrCheckout" in the check-in conflict branch) — OK,
+    dynamic `Backend`, no change needed.
+  - Also noted but explicitly NOT in this prompt's event list, so left alone: `SharingApi.cs`'s
+    `addApproval`/`removeApproval`/`setRole`/members endpoints (the "invite team" workflow) have
+    zero analytics today. Flagging as a gap for a future task if invite-funnel metrics become
+    wanted; the docs (item 5) still work fine without it.
+  Net: two real gaps found and fixed (cloud join, Receive Updates); everything else was already
+  correctly wired via the existing `GetBackendType()`-based dynamic `Backend` pattern. No new unit
+  tests added for the two new `Analytics.Track` calls — consistent with this codebase's existing
+  convention (grep confirms no test anywhere asserts on an `Analytics.Track` call; `Analytics` is
+  evidently safe/no-op-tolerant to call from code paths that ARE covered by tests, e.g.
+  `HandleForceUnlock`/`HandleAttemptLockOfCurrentBook`, which have existing green tests in
+  `TeamCollectionApiTests.cs` despite their own preexisting `Analytics.Track` calls).

@@ -331,17 +331,23 @@ namespace Bloom.TeamCollection
             var progress = new WebSocketProgress(_socketServer, "teamCollection-status");
             progress.LogAllMessages = true;
             cloudCollection.PollNow();
+            var receivedCount = 0;
+            var skippedCheckedOutCount = 0;
             foreach (var bookName in collection.GetBookList())
             {
                 var status = collection.GetStatus(bookName);
                 if (collection.IsCheckedOutHereBy(status))
+                {
+                    skippedCheckedOutCount++;
                     continue; // Checked out here; Receive would conflict with local edits.
+                }
                 var repoSeq = cloudCollection.GetRepoVersionSeq(bookName);
                 var localSeq = cloudCollection.GetLocalVersionSeq(bookName);
                 if (!repoSeq.HasValue || (localSeq ?? -1) >= repoSeq.Value)
                     continue; // Already current.
                 progress.MessageWithoutLocalizing($"Receiving updates for '{bookName}'...");
                 collection.CopyBookFromRepoToLocal(bookName, dialogOnError: false);
+                receivedCount++;
             }
             progress.MessageWithoutLocalizing("Done receiving updates.");
             UpdateUiForBook();
@@ -350,6 +356,24 @@ namespace Bloom.TeamCollection
             // change events, but those only surface at the next Application.Idle, and a user
             // who just clicked "Receive Updates" deserves an immediate refresh.
             _socketServer.SendEvent("bookTeamCollectionStatus", "reload");
+
+            // Analytics audit (task 10): "Receive Updates" had no analytics at all before this,
+            // unlike per-book checkout/checkin. Byte-level uploaded-vs-skipped counts would be a
+            // nice future enhancement, but the current download path (CopyBookFromRepoToLocal)
+            // doesn't cheaply expose per-book byte counts without extra S3 requests -- book
+            // counts are a cheap, still-useful proxy for now.
+            Analytics.Track(
+                "TeamCollectionReceiveUpdates",
+                new Dictionary<string, string>()
+                {
+                    { "CollectionId", _settings?.CollectionId },
+                    { "CollectionName", _settings?.CollectionName },
+                    { "Backend", collection.GetBackendType() },
+                    { "User", CurrentUser },
+                    { "BooksReceived", receivedCount.ToString() },
+                    { "BooksSkippedCheckedOutHere", skippedCheckedOutCount.ToString() },
+                }
+            );
         }
 
         /// <summary>Kicks off the cloud Team Collection creation flow: uploads the current local
