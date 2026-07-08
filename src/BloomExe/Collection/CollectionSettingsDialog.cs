@@ -133,6 +133,14 @@ namespace Bloom.Collection
 
             if (
                 !ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
+                // A user adopting ONLY the cloud flavor (leaving the folder-based
+                // "Team Collections" flag off) must still see this tab -- otherwise the
+                // "Share this collection on the Bloom sharing server" button
+                // (TeamCollectionSettingsPanel.tsx) would be unreachable. Found while writing
+                // the task 10 adoption-path user docs.
+                && !ExperimentalFeatures.IsFeatureEnabled(
+                    ExperimentalFeatures.kCloudTeamCollections
+                )
                 && tcManager.CurrentCollectionEvenIfDisconnected == null
             )
             {

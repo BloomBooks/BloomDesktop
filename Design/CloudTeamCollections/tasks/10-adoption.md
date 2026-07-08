@@ -12,7 +12,7 @@
       first-time-join merge path). -- verified by reading; see progress log (no checksum-based
       reconciliation actually happens; documented as a known, pre-existing-pattern limitation,
       mitigated procedurally by "everyone check in first" in the item-5 docs).
-- [ ] User documentation: the un-team + enable + invite-team walkthrough (docs site), incl.
+- [x] User documentation: the un-team + enable + invite-team walkthrough (docs site), incl.
       "everyone check in first".
 - [ ] Localization sweep of all new strings (xlf-strings skill rules).
 - [x] Analytics review: create/join/send (bytes uploaded vs skipped)/receive/force-unlock/
@@ -177,3 +177,27 @@
   documented as a known limitation in the user walkthrough (item 5) instead, which is why "make
   sure everyone checks in all their work to the OLD Team Collection before enabling cloud" is
   called out as a MUST, not a nice-to-have, in that doc.
+
+- 8 Jul 2026 · done · Prompt item 5 (user documentation): authored
+  `Design/CloudTeamCollections/docs/user-walkthrough.md`, an end-user walkthrough (not
+  agent/dev-facing) covering: turning on the experimental feature; "everyone checks in first"
+  (called out as a MUST, tied directly to item 4's finding above); un-teaming the old folder TC
+  by deleting `TeamCollectionLink.txt` (there is no dedicated Bloom UI for this today — confirmed
+  by grep across `src/BloomExe` — so the doc has to teach the manual file-delete step, and
+  explains the new clear error from item 3 as a safety net if this step gets skipped); enabling
+  cloud sharing via **Settings > Team Collection > "Share this collection on the Bloom sharing
+  server (experimental)"** (button text/location verified against
+  `TeamCollectionSettingsPanel.tsx`); inviting teammates by email/role via the same tab's
+  approved-accounts list (`SharingPanel.tsx`); each member joining via **Get my Team
+  Collections** on the collection-chooser startup screen (`MyCloudCollectionsSection.tsx`);
+  and a troubleshooting section covering the item-3 conflict error message verbatim.
+  While verifying the "Settings > Team Collection" tab is actually reachable after turning on
+  ONLY the cloud checkbox (not the older folder-TC one), found and fixed a real bug:
+  `CollectionSettingsDialog`'s tab-visibility check
+  (`this._tab.Controls.Remove(this._teamCollectionTab)`) only tested
+  `ExperimentalFeatures.kTeamCollections`, never `kCloudTeamCollections` — so a user who enabled
+  ONLY the new cloud checkbox (exactly the walkthrough's Step 1) would never see the Team
+  Collection tab at all, making the "Share this collection" button permanently unreachable.
+  Fixed with a one-line additional condition. C# change authored but not build-verified in this
+  worktree; low risk (adds an OR-style exclusion to an existing boolean condition, no other logic
+  touched) but please double-check it compiles at merge.
