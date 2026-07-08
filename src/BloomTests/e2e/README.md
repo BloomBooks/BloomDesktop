@@ -4,7 +4,50 @@ Playwright-over-CDP tests that drive **real Bloom.exe instances** against the lo
 (local Supabase + MinIO, see `server/dev/README.md`). This automates the Wave-3 manual
 two-instance smoke test and pins the bugs found during it.
 
-## Prerequisites
+(For what the *unit* tests need — much less — see
+`Design/CloudTeamCollections/docs/unit-test-setup.md`.)
+
+## Machine setup (fresh dev machine)
+
+Everything below is once-per-machine. Windows 10/11 assumed (the harness launches the real
+WinForms/WebView2 Bloom.exe, so Windows is required).
+
+1. **Normal Bloom dev setup** — clone, then `./init.sh` at the repo root (fetches C#
+   dependencies, yarn installs, initial front-end build). Provides the .NET SDK usage,
+   Volta-managed node + yarn 1.22, and the WebView2 runtime that a working Bloom dev machine
+   already has. If `dotnet build src/BloomExe/BloomExe.csproj -c Release` succeeds, this
+   layer is done.
+2. **Container runtime** — either Docker Desktop or **Podman** (what this harness was built
+   against: Podman 5.8.3, Podman Desktop, a *rootful* WSL2 podman machine, with the
+   Docker-compatibility named pipe enabled so `docker-compose` works). WSL2 must be enabled
+   (needs virtualization; on a VM that means nested virtualization). See
+   `server/dev/README.md` for the exact Podman recipe and its gotchas (bind-mount dirs must
+   pre-exist; edge-runtime containers must reach MinIO as `bloom-minio:9000`, never
+   `host.containers.internal`, which hangs).
+3. **Supabase CLI + docker-compose** — `npm i -g supabase` (Volta shim lands on PATH) and
+   `winget install Docker.DockerCompose` (or use `podman compose`).
+4. **Bring the stack up** (each boot / when containers are down):
+   ```powershell
+   supabase start                                          # local Postgres/GoTrue/PostgREST/edge runtime
+   docker-compose -f server/dev/docker-compose.yml up -d   # MinIO on the supabase network
+   ```
+   Verify with `server/dev/smoke.ps1`. Dev users (alice@dev.local etc., password
+   BloomDev123!) come from `server/dev/seed.sql` automatically.
+5. **Interactive, UNLOCKED desktop session.** Hard requirement: a locked session (or a
+   service session with no interactive desktop) stalls WebView2 at `about:blank`
+   indefinitely and every scenario times out. Check: `Get-Process LogonUI
+   -ErrorAction SilentlyContinue` — if it returns a process, the session is locked. Keep the
+   machine unlocked for the whole run (set screen lock/sleep policy accordingly).
+6. **(Recommended) Defender exclusions** for the repo folder, `C:\BloomE2E\`, and the WSL2
+   VHD — real-time scanning of WebView2 profile churn and container disk was measured making
+   launches dramatically slower on the original dev machine.
+
+Nothing else is needed: the harness itself builds Bloom (Release) once per run, enables the
+`cloud-team-collections` experimental flag in user.config idempotently, and resets the
+DB/bucket/scratch folders per scenario. There are no secrets — the committed dev credentials
+are local-only constants.
+
+## Prerequisites (per run)
 
 - The local dev stack must already be up: `supabase start`, MinIO (`docker compose -f
   server/dev/docker-compose.yml up -d` — actually run via `podman compose` on this machine,
@@ -16,6 +59,8 @@ two-instance smoke test and pins the bugs found during it.
 - `supabase` CLI on PATH (Volta shim on Windows — see the shell-quoting note below).
 - `dotnet` SDK (builds `src/BloomExe/BloomExe.csproj`).
 - Yarn 1.22 (`yarn install` in this directory once).
+- No Bloom.exe from THIS repo tree running (the harness fails loudly if one is; instances
+  from other worktrees are tolerated with a warning).
 
 ## Running
 
@@ -125,6 +170,35 @@ cleans these up — see `harness/reset.ts`'s `resetLeakedWebView2Profiles` doc c
 of them had accumulated by the end of this harness's development session and were measurably
 slow to even enumerate. This is a real, worth-keeping fix, but on its own it did not resolve
 the memory-pressure-driven flakiness above.
+
+## TeamCity build agent — feasibility notes
+
+Running this harness on a TeamCity agent is feasible but has non-standard requirements, all
+stemming from the fact that it launches a real GUI app with WebView2:
+
+- **The agent must run as an interactive desktop process, NOT a Windows service.** Install
+  the TeamCity agent in "start via Windows logon" mode with automatic logon of a dedicated
+  build user, and keep that session unlocked (group policy: no lock screen / no screensaver
+  lock; if RDP is ever used to inspect the box, disconnect with `tscon <session> /dest:console`
+  rather than plain disconnect, which locks the console session and stalls WebView2 — see
+  "Machine setup" item 5).
+- **Virtualization**: the agent machine needs WSL2 for Podman/Docker; on a VM host that means
+  nested virtualization enabled.
+- **Resources**: ≥16 GB RAM recommended. The known flakiness mode of this harness is memory
+  pressure (see "Known flakiness" above); an agent that also runs other heavy builds
+  concurrently will produce false failures.
+- **Runtime**: the full matrix is roughly 35–45 minutes at workers=1 (mandatory — scenarios
+  share the DB/bucket and launch multiple Bloom instances). Budget the build configuration
+  accordingly; consider a nightly schedule rather than per-commit.
+- **State**: per-machine mutable state the harness touches: `%LOCALAPPDATA%\SIL\Bloom\<ver>\
+  user.config` (experimental flag, edited idempotently), `%MyDocuments%\Bloom\BloomE2E-*`
+  (pull-down destinations, cleaned by prefix), `C:\BloomE2E\` (scratch), `%TEMP%\Bloom WV2-*`
+  (WebView2 profiles, cleaned in globalSetup). A dedicated build user keeps all of this away
+  from human users' real settings.
+- **No secrets**: everything runs against the local stack with committed dev-only constants.
+- **Stack bring-up**: the build script must ensure `supabase start` + the MinIO compose file
+  are up before `yarn test` (they survive between builds on a persistent agent; a
+  bring-up-if-down step plus `server/dev/smoke.ps1` as a health gate is the robust shape).
 
 ## Scenario status
 
