@@ -473,11 +473,12 @@ namespace Bloom.TeamCollection.Cloud
 
         /// <summary>
         /// Classifies an error response into a <see cref="CloudCollectionClientException"/>.
-        /// Postgres RPC errors arrive as `{code, message, details, hint}` (the RAISE EXCEPTION
-        /// `code`/message set in the SQL functions); edge functions are expected to return
-        /// `{code: "LockHeldByOther", ...}`-shaped bodies for the documented 409s and a plain
-        /// error for 426 ClientOutOfDate. Anything we don't recognize maps to
-        /// <see cref="CloudErrorCode.Unknown"/> with the server's own message preserved.
+        /// Edge functions return CONTRACTS.md's standard envelope `{error: "<Code>", ...extra}`
+        /// (built by supabase/functions/_shared/errors.ts) for the documented 409s/426s;
+        /// Postgres RPC errors arrive as `{code, message, details, hint}` (PostgREST's shape,
+        /// where `code` is the SQLSTATE from the RAISE EXCEPTION in the SQL functions). Anything
+        /// we don't recognize maps to <see cref="CloudErrorCode.Unknown"/> with the server's own
+        /// message preserved.
         /// </summary>
         private CloudCollectionClientException MapError(IRestResponse response)
         {
@@ -489,7 +490,14 @@ namespace Bloom.TeamCollection.Cloud
                 if (!string.IsNullOrWhiteSpace(response.Content))
                 {
                     body = JToken.Parse(response.Content);
-                    serverCode = (string)body["code"];
+                    // The `error` key is the CONTRACTS.md envelope every edge function actually
+                    // uses; `code` is kept as a fallback for PostgREST RPC error bodies. An
+                    // earlier version of this method read ONLY `code`, which classified every
+                    // documented edge-function 409 (NameConflict/LockHeldByOther/
+                    // BaseVersionSuperseded/MissingOrBadUploads/VersionConflict) as Unknown --
+                    // found live by E2E-9's same-name race, where PutBookInRepo's NameConflict
+                    // retry loop never engaged because its exception filter never matched.
+                    serverCode = (string)body["error"] ?? (string)body["code"];
                     message = (string)body["message"] ?? message;
                 }
             }

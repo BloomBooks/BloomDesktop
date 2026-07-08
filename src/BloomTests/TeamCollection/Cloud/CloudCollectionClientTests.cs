@@ -245,11 +245,18 @@ namespace BloomTests.TeamCollection.Cloud
             CloudErrorCode expected
         )
         {
+            // `{error: "<Code>"}` is CONTRACTS.md's standard envelope, and the shape every edge
+            // function REALLY sends (supabase/functions/_shared/errors.ts's errorResponse). An
+            // earlier version of this test asserted against `{code: "<Code>"}` -- a shape the
+            // real server never produces -- which is exactly how MapError's matching `code`-only
+            // lookup shipped broken: the test validated the client's wrong assumption instead of
+            // the server's actual contract. E2E-9's same-name race caught it live (the
+            // NameConflict retry loop in PutBookInRepo never engaged).
             var (client, executor, _) = MakeSignedInClient();
             executor.Handler = req =>
                 FakeResponses.Make(
                     HttpStatusCode.Conflict,
-                    $"{{\"code\":\"{serverCode}\",\"message\":\"conflict\"}}"
+                    $"{{\"error\":\"{serverCode}\",\"message\":\"conflict\"}}"
                 );
 
             var ex = Assert.Throws<CloudCollectionClientException>(() =>
@@ -258,6 +265,25 @@ namespace BloomTests.TeamCollection.Cloud
 
             Assert.That(ex.Code, Is.EqualTo(expected));
             Assert.That(ex.Details, Is.Not.Null);
+        }
+
+        [Test]
+        public void CallEdgeFunction_CodeShapedErrorBody_StillMapsAsFallback()
+        {
+            // MapError keeps `code` as a fallback key (PostgREST RPC bodies use it, and any
+            // hypothetical old server build might); make sure that path still classifies.
+            var (client, executor, _) = MakeSignedInClient();
+            executor.Handler = req =>
+                FakeResponses.Make(
+                    HttpStatusCode.Conflict,
+                    "{\"code\":\"NameConflict\",\"message\":\"conflict\"}"
+                );
+
+            var ex = Assert.Throws<CloudCollectionClientException>(() =>
+                client.CallEdgeFunction("checkin-start", new { })
+            );
+
+            Assert.That(ex.Code, Is.EqualTo(CloudErrorCode.NameConflict));
         }
 
         [Test]

@@ -29,3 +29,13 @@ export const queryDb = async <
         await client.end();
     }
 };
+
+/** Opens a connection the caller keeps open across many queries. Only worth the extra
+ * connect()/end() bookkeeping when a scenario needs a TIGHT polling loop (e.g. E2E-9's
+ * "kill mid-Send" race) where `queryDb`'s per-call connect overhead (tens of ms) would itself
+ * dominate the narrow window between a checkin transaction's row-insert and its completion. */
+export const openPersistentClient = async (): Promise<Client> => {
+    const client = new Client({ connectionString: CONNECTION_STRING });
+    await client.connect();
+    return client;
+};
