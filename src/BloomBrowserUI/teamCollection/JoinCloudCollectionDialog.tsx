@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
-import { post } from "../utils/bloomApi";
+import { AxiosResponse } from "axios";
+import { post, postString } from "../utils/bloomApi";
 import { Div, P, Span } from "../react_components/l10nComponents";
 import BloomButton from "../react_components/bloomButton";
 
@@ -21,7 +22,7 @@ import {
     useSetupBloomDialog,
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { ErrorBox, NoteBoxSansBorder } from "../react_components/boxes";
-import { pullDownCollection } from "./sharingApi";
+import { IPullDownResult, pullDownCollection } from "./sharingApi";
 
 // The pull-down-join dialog for cloud Team Collections: same shape as the folder-TC
 // JoinTeamCollectionDialog (see that file), extended with two states that only make sense for
@@ -277,7 +278,7 @@ export const JoinCloudCollectionDialog: React.FunctionComponent<{
                 {getMatchingCollection()}
                 <p>
                     <Span
-                        l10nKey="TeamCollection.ConflictingCollection"
+                        l10nKey="TeamCollection.ConflictingCollectionLabel"
                         temporarilyDisableI18nWarning={true}
                     >
                         Conflicting Team collection:
@@ -368,10 +369,22 @@ export const JoinCloudCollectionDialog: React.FunctionComponent<{
         // actually attempted). So on failure we show the server's real message rather than
         // guessing which specific state's copy to switch to.
         pullDownCollection(props.collectionId).then(
-            () => {
+            (response) => {
                 setJoining(false);
                 closeDialog();
                 props.onClose?.();
+                // Auto-open the collection we just pulled down (task 10), the same action the
+                // chooser's own cards use (CollectionCard's onClick), instead of leaving the
+                // user to hunt for it themselves.
+                const result = (
+                    response as AxiosResponse<IPullDownResult> | undefined
+                )?.data;
+                if (result?.collectionPath) {
+                    postString(
+                        "workspace/openCollection",
+                        result.collectionPath,
+                    );
+                }
             },
             (error) => {
                 setJoining(false);

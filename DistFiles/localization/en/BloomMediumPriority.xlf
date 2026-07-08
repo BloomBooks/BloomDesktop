@@ -39,6 +39,11 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
         <note>This checkbox enables the experimental publish-to-apps workflow.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.CloudTeamCollections" translate="no">
+        <source xml:lang="en">Cloud Team Collections (experimental)</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.CloudTeamCollections</note>
+        <note>Checkbox label in Settings > Advanced > Experimental Features. Enables the cloud-backed (internet-synced) flavor of Team Collections, as opposed to the existing shared-folder-based one. "Team Collections" and "Cloud" should be treated as this feature's name; do not translate "(experimental)" as a technical caveat, just as normal descriptive text.</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>
@@ -1616,6 +1621,51 @@
         <source xml:lang="en">Bloom will download this Team Collection so you can work together with your team.</source>
         <note>ID: TeamCollection.Sharing.BloomWillPullDown</note>
         <note>"Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AlreadyJoined" translate="no">
+        <source xml:lang="en">This computer is already connected to this collection. Bloom will open it for you.</source>
+        <note>ID: TeamCollection.AlreadyJoined</note>
+        <note>Shown in the join-collection dialog when this computer already has a local copy linked to this same cloud Team Collection at the expected location. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AlreadyJoinedElsewhere" translate="no">
+        <source xml:lang="en">This computer is already connected to this collection, which appears to have moved. Bloom will fix things up and open it for you.</source>
+        <note>ID: TeamCollection.AlreadyJoinedElsewhere</note>
+        <note>Shown in the join-collection dialog when this computer already has a local copy linked to this same cloud Team Collection, but the local folder has moved since it was last used. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MatchingLocal" translate="no">
+        <source xml:lang="en">Matching local collection:</source>
+        <note>ID: TeamCollection.MatchingLocal</note>
+        <note>Short label in the join-collection dialog, immediately followed by a local folder path. Appears whenever a local collection folder matches the one being joined.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConflictingCollection" translate="no">
+        <source xml:lang="en">Bloom found another collection with this same name that is already connected to a different Team Collection. Click REPORT to get help from the Bloom team.</source>
+        <note>ID: TeamCollection.ConflictingCollection</note>
+        <note>Error shown in the join-collection dialog when a local collection with the same name exists but is linked to a DIFFERENT Team Collection than the one being joined. "REPORT" refers to the Report button shown alongside this message; "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConflictingCollectionLabel" translate="no">
+        <source xml:lang="en">Conflicting Team collection:</source>
+        <note>ID: TeamCollection.ConflictingCollectionLabel</note>
+        <note>Short label in the join-collection dialog's conflict error, immediately followed by a description of the other Team Collection the local folder is linked to.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.SameIds" translate="no">
+        <source xml:lang="en">(Different TC IDs)</source>
+        <note>ID: TeamCollection.SameIds</note>
+        <note>Short technical detail shown in the join-collection dialog's conflict error, for the rare case where a local collection has the same name as the one being joined but a different internal Team Collection identifier. "TC" abbreviates "Team Collection"; mainly seen by users contacting Bloom support about this specific conflict, so a literal/technical translation is fine.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CloudLocation" translate="no">
+        <source xml:lang="en">Cloud Storage Folder Location:</source>
+        <note>ID: TeamCollection.CloudLocation</note>
+        <note>Label above a link to the shared folder location for a FOLDER-based (not the newer server-hosted cloud) Team Collection -- "Cloud" here refers to a cloud-sync service like Dropbox or Google Drive that the shared folder happens to live in, not Bloom's own Cloud Team Collections feature.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AddingHelp" translate="no">
+        <source xml:lang="en">Need help adding someone to your Team Collection?</source>
+        <note>ID: TeamCollection.AddingHelp</note>
+        <note>Prompt shown above a help-link button, in the Team Collection tab of Collection Settings (folder-based Team Collections).</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.HowToAddSomeone" translate="no">
+        <source xml:lang="en">How to add someone to this Team Collection</source>
+        <note>ID: TeamCollection.HowToAddSomeone</note>
+        <note>Text of a button/link that opens Bloom's help documentation on adding a team member to a folder-based Team Collection.</note>
       </trans-unit>
     </body>
   </file>

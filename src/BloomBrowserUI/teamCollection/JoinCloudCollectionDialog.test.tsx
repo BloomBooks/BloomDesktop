@@ -17,9 +17,10 @@ import { JoinCloudCollectionDialog } from "./JoinCloudCollectionDialog";
 // SharingPanel.test.tsx), so text assertions here check for the l10nKey rather than the English
 // string the component declares as a child.
 
-const { mockPullDownCollection, mockPost } = vi.hoisted(() => ({
+const { mockPullDownCollection, mockPost, mockPostString } = vi.hoisted(() => ({
     mockPullDownCollection: vi.fn(),
     mockPost: vi.fn(),
+    mockPostString: vi.fn(),
 }));
 
 vi.mock("./sharingApi", () => ({
@@ -31,6 +32,7 @@ vi.mock("../utils/bloomApi", async (importOriginal) => {
     return {
         ...actual,
         post: mockPost,
+        postString: mockPostString,
     };
 });
 
@@ -105,6 +107,7 @@ afterEach(() => {
     document.body.innerHTML = "";
     mockPullDownCollection.mockReset();
     mockPost.mockClear();
+    mockPostString.mockClear();
 });
 
 describe("JoinCloudCollectionDialog", () => {
@@ -243,6 +246,34 @@ describe("JoinCloudCollectionDialog", () => {
                 '[data-testid="join-cloud-collection-error"]',
             ),
         ).toBeNull();
+    });
+
+    it("auto-opens the pulled-down .bloomCollection file the server returns, the same action the chooser's cards use (task 10)", async () => {
+        mockPullDownCollection.mockResolvedValue({
+            data: {
+                collectionPath:
+                    "C:\\Users\\me\\Bloom Collections\\Foo\\Foo.bloomCollection",
+            },
+        });
+        renderDialog({});
+
+        act(() => getActionButton().click());
+        await flushPromises();
+
+        expect(mockPostString).toHaveBeenCalledWith(
+            "workspace/openCollection",
+            "C:\\Users\\me\\Bloom Collections\\Foo\\Foo.bloomCollection",
+        );
+    });
+
+    it("does not try to auto-open anything when the server response carries no collectionPath", async () => {
+        mockPullDownCollection.mockResolvedValue(undefined);
+        renderDialog({});
+
+        act(() => getActionButton().click());
+        await flushPromises();
+
+        expect(mockPostString).not.toHaveBeenCalled();
     });
 
     it("shows the server's real error message and stays open when pullDownCollection fails", async () => {

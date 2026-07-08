@@ -316,6 +316,10 @@ namespace Bloom.web.controllers
                         ?? ExperimentalFeatures.IsFeatureEnabled(
                             ExperimentalFeatures.kTeamCollections
                         ),
+                    allowCloudTeamCollection = dialog?.PendingAllowCloudTeamCollection
+                        ?? ExperimentalFeatures.IsFeatureEnabled(
+                            ExperimentalFeatures.kCloudTeamCollections
+                        ),
                     allowAppBuilder = dialog?.PendingAllowAppBuilder
                         ?? ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kAppBuilder),
                     showQrCode = dialog?.PendingShowQrCode
@@ -327,6 +331,8 @@ namespace Bloom.web.controllers
                 showExperimentalBookSourcesOption = dialog?.ShowExperimentalBookSourcesOption
                     ?? false,
                 allowTeamCollectionEnabled = dialog?.AllowTeamCollectionOptionEnabled ?? true,
+                allowCloudTeamCollectionEnabled = dialog?.AllowCloudTeamCollectionOptionEnabled
+                    ?? true,
             };
         }
 
@@ -350,6 +356,16 @@ namespace Bloom.web.controllers
                 var previousValue = dialog.PendingAllowTeamCollection;
                 dialog.PendingAllowTeamCollection = allowTeamCollection;
                 if (allowTeamCollection != previousValue)
+                    dialog.ChangeThatRequiresRestart();
+            }
+
+            var allowCloudTeamCollectionToken = data["allowCloudTeamCollection"];
+            if (allowCloudTeamCollectionToken != null)
+            {
+                var allowCloudTeamCollection = allowCloudTeamCollectionToken.Value<bool>();
+                var previousValue = dialog.PendingAllowCloudTeamCollection;
+                dialog.PendingAllowCloudTeamCollection = allowCloudTeamCollection;
+                if (allowCloudTeamCollection != previousValue)
                     dialog.ChangeThatRequiresRestart();
             }
 

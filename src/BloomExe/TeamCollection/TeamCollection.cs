@@ -1942,6 +1942,40 @@ namespace Bloom.TeamCollection
             }
         }
 
+        /// <summary>
+        /// Deletes per-book and per-collection artifacts left behind by a Team Collection that
+        /// this local collection folder used to belong to (typically a folder-based TC the user
+        /// has since disconnected from -- "un-teamed" -- by removing TeamCollectionLink.txt, but
+        /// whose local files were never cleaned up). Called before converting a plain local
+        /// collection into a fresh cloud Team Collection
+        /// (<see cref="TeamCollectionManager.ConnectToCloudCollection"/>), so the very first
+        /// upload of each book starts from a clean slate rather than carrying over a stale
+        /// checksum or lockedBy value from the old TC: <see cref="PutBook"/>/<see cref="GetStatus"/>
+        /// fall back to local status whenever the repo has no record for a book yet, which is
+        /// true for every book in the collection on its first cloud Send.
+        /// Deliberately does NOT touch TeamCollectionLink.txt -- callers decide separately
+        /// whether an existing link is a conflict that should block the conversion entirely.
+        /// Safe to call on a collection that was never a Team Collection (no matching files
+        /// found, so this is a no-op).
+        /// </summary>
+        public static void CleanStaleTeamCollectionArtifacts(string localCollectionFolder)
+        {
+            foreach (var bookFolder in Directory.EnumerateDirectories(localCollectionFolder))
+            {
+                var statusFile = GetStatusFilePathFromBookFolderPath(bookFolder);
+                if (RobustFile.Exists(statusFile))
+                    RobustFile.Delete(statusFile);
+            }
+
+            var lastSyncFile = Path.Combine(localCollectionFolder, kLastcollectionfilesynctimeTxt);
+            if (RobustFile.Exists(lastSyncFile))
+                RobustFile.Delete(lastSyncFile);
+
+            var logFile = Path.Combine(localCollectionFolder, "log.txt");
+            if (RobustFile.Exists(logFile))
+                RobustFile.Delete(logFile);
+        }
+
         internal BookStatus GetLocalStatus(string bookFolderName, string collectionFolder = null)
         {
             var statusFilePath = GetStatusFilePath(
