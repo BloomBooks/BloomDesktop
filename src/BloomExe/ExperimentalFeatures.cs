@@ -13,8 +13,9 @@ namespace Bloom
         public const string kAppBuilder = "app-builder";
 
         /// <summary>
-        /// Token for the cloud-backed Team Collections experimental feature.
-        /// Registration only for now; no UI is wired to this flag until task 01+.
+        /// Token for the cloud-backed Team Collections experimental feature. Wired to the
+        /// "Cloud Team Collections (experimental)" checkbox in Settings -> Advanced (see
+        /// CollectionSettingsDialog.PendingAllowCloudTeamCollection / CollectionSettingsApi).
         /// </summary>
         public const string kCloudTeamCollections = "cloud-team-collections";
 

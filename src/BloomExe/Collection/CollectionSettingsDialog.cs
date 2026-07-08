@@ -7,6 +7,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.TeamCollection;
+using Bloom.TeamCollection.Cloud;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
@@ -52,6 +53,11 @@ namespace Bloom.Collection
         internal bool PendingAllowTeamCollection;
         internal bool PendingAllowAppBuilder;
         internal bool AllowTeamCollectionOptionEnabled = false;
+
+        // The "Cloud Team Collections (experimental)" checkbox: gates the S3+Supabase-backed
+        // Team Collection UI, wired end-to-end the same way as PendingAllowTeamCollection above.
+        internal bool PendingAllowCloudTeamCollection;
+        internal bool AllowCloudTeamCollectionOptionEnabled = false;
 
         // "Internal" so CollectionSettingsApi can update these.
         internal readonly string[] PendingFontSelections = new[] { "", "", "" };
@@ -118,6 +124,9 @@ namespace Bloom.Collection
             PendingAllowTeamCollection = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kTeamCollections
             );
+            PendingAllowCloudTeamCollection = ExperimentalFeatures.IsFeatureEnabled(
+                ExperimentalFeatures.kCloudTeamCollections
+            );
             PendingAllowAppBuilder = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kAppBuilder
             );
@@ -138,6 +147,12 @@ namespace Bloom.Collection
             // Don't allow the user to disable the Team Collection feature if we're currently in a Team Collection.
             AllowTeamCollectionOptionEnabled = !(
                 PendingAllowTeamCollection && tcManager.CurrentCollectionEvenIfDisconnected != null
+            );
+            // Same idea, but specifically for the cloud-backed flavor: don't allow disabling the
+            // cloud experimental flag while the currently-open collection is itself a cloud TC.
+            AllowCloudTeamCollectionOptionEnabled = !(
+                PendingAllowCloudTeamCollection
+                && tcManager.CurrentCollectionEvenIfDisconnected is CloudTeamCollection
             );
 
             if (AutoUpdateSupportedOnThisPlatform)
@@ -409,6 +424,7 @@ namespace Bloom.Collection
                 PendingAutomaticallyUpdate && AutoUpdateSupportedOnThisPlatform;
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
+            UpdateCloudTeamCollectionAllowed();
             UpdateAppBuilderAllowed();
 
             _collectionSettings.Country = _countryText.Text.Trim();
@@ -821,6 +837,21 @@ namespace Bloom.Collection
             );
 
             if (wasTeamCollectionsEnabled != PendingAllowTeamCollection)
+                ChangeThatRequiresRestart();
+        }
+
+        private void UpdateCloudTeamCollectionAllowed()
+        {
+            var wasCloudTeamCollectionsEnabled = ExperimentalFeatures.IsFeatureEnabled(
+                ExperimentalFeatures.kCloudTeamCollections
+            );
+
+            ExperimentalFeatures.SetValue(
+                ExperimentalFeatures.kCloudTeamCollections,
+                PendingAllowCloudTeamCollection
+            );
+
+            if (wasCloudTeamCollectionsEnabled != PendingAllowCloudTeamCollection)
                 ChangeThatRequiresRestart();
         }
 
