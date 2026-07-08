@@ -9,7 +9,11 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { randomUUID } from "node:crypto";
 import { repoRoot } from "./paths";
-import { E2E_SCRATCH_ROOT } from "./reset";
+import {
+    E2E_SCRATCH_ROOT,
+    JOINED_COLLECTION_NAME_PREFIX,
+    documentsBloomFolder,
+} from "./reset";
 
 const templateCollectionDir = path.join(
     repoRoot,
@@ -59,7 +63,11 @@ const copyDirExcluding = async (
 export const createScratchCollection = async (
     groupName: string,
     instanceName: string,
-    collectionName = "E2ECollection",
+    // Defaults to a name carrying JOINED_COLLECTION_NAME_PREFIX: any collection this harness
+    // shares to the cloud might later be pulled down by another instance, which always lands
+    // in the real `%MyDocuments%\Bloom\<name>` folder (see reset.ts) — the prefix is what lets
+    // cleanup find and remove it without ever touching a developer's real collections.
+    collectionName = `${JOINED_COLLECTION_NAME_PREFIX}${groupName}`,
 ): Promise<ScratchCollection> => {
     const instanceRoot = path.join(E2E_SCRATCH_ROOT, groupName, instanceName);
     const collectionFolder = path.join(instanceRoot, collectionName);
@@ -110,4 +118,16 @@ export const createScratchCollection = async (
         collectionName,
         bookName: templateBookName,
     };
+};
+
+/** Where `collections/pullDown` puts a collection named `collectionName` (Bloom's own fixed,
+ * non-configurable destination — see reset.ts's `documentsBloomFolder` doc comment). */
+export const pulledDownCollectionFilePath = async (
+    collectionName: string,
+): Promise<string> => {
+    const bloomDocsFolder = path.join(
+        await documentsBloomFolder(),
+        collectionName,
+    );
+    return path.join(bloomDocsFolder, `${collectionName}.bloomCollection`);
 };

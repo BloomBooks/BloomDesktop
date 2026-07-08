@@ -16,6 +16,63 @@ const execFileAsync = promisify(execFile);
 // harness-owned if a human finds it.
 export const E2E_SCRATCH_ROOT = "C:\\BloomE2E";
 
+// `collections/pullDown` (the "join a cloud collection" API) has no configurable destination:
+// CloudJoinFlow.DetermineLocalCollectionFolder always resolves to
+// `NewCollectionWizard.DefaultParentDirectoryForCollections` (= `%MyDocuments%\Bloom`) + the
+// collection's display name — the SAME real folder a human's Bloom would use. There is no env
+// var or API param to redirect it. To keep the harness from ever touching a developer's real
+// collections, every collection this harness creates (and therefore ever pulls down) MUST use
+// a display name starting with this prefix, and `resetJoinedCollections` only ever deletes
+// folders matching it.
+export const JOINED_COLLECTION_NAME_PREFIX = "BloomE2E-";
+
+// Resolved via the same Windows shell-folder API .NET's Environment.SpecialFolder.MyDocuments
+// uses (NOT `%USERPROFILE%\Documents` — Documents is commonly redirected to OneDrive, as it is
+// on the machine this harness was built on: `[Environment]::GetFolderPath('MyDocuments')` is
+// the only reliable way to match what Bloom itself will resolve).
+let cachedDocumentsFolder: string | undefined;
+/** The real `%MyDocuments%\Bloom` folder (see the doc comment above `JOINED_COLLECTION_NAME_PREFIX`
+ * for why this must be resolved via PowerShell rather than `%USERPROFILE%\Documents`). Exported
+ * for collectionFixture.ts's `pulledDownCollectionFilePath`, which needs the same resolution. */
+export const documentsBloomFolder = async (): Promise<string> => {
+    if (!cachedDocumentsFolder) {
+        const { stdout } = await execFileAsync(
+            "powershell",
+            [
+                "-NoProfile",
+                "-Command",
+                "[Environment]::GetFolderPath('MyDocuments')",
+            ],
+            { timeout: 10_000, windowsHide: true },
+        );
+        cachedDocumentsFolder = stdout.trim();
+    }
+    return path.join(cachedDocumentsFolder, "Bloom");
+};
+
+/** Deletes any `%MyDocuments%\Bloom\<name>` folder this harness could have created via
+ * `collections/pullDown` — restricted to names starting with `JOINED_COLLECTION_NAME_PREFIX`
+ * so this can never touch a developer's real collections. */
+export const resetJoinedCollections = async (): Promise<void> => {
+    const bloomDocsFolder = await documentsBloomFolder();
+    let entries: string[];
+    try {
+        entries = await fs.readdir(bloomDocsFolder);
+    } catch {
+        return; // folder doesn't exist yet — nothing to clean
+    }
+    await Promise.all(
+        entries
+            .filter((name) => name.startsWith(JOINED_COLLECTION_NAME_PREFIX))
+            .map((name) =>
+                fs.rm(path.join(bloomDocsFolder, name), {
+                    recursive: true,
+                    force: true,
+                }),
+            ),
+    );
+};
+
 /** Runs `supabase db reset`, which drops+recreates the DB, replays all migrations, and reruns
  * server/dev/seed.sql (wired via supabase/config.toml's `seed_sql_path`). Wipes all tc.* rows. */
 export const resetDatabase = async (): Promise<void> => {
@@ -100,5 +157,6 @@ export const resetStack = async (): Promise<void> => {
         resetDatabase(),
         resetMinioBucket(),
         resetScratchCollections(),
+        resetJoinedCollections(),
     ]);
 };

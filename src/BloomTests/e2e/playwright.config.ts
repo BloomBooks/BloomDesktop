@@ -7,7 +7,7 @@ import type { PlaywrightTestConfig } from "@playwright/test";
 const config: PlaywrightTestConfig = {
     testDir: "tests",
     globalSetup: require.resolve("./harness/globalSetup.ts"),
-    timeout: 180_000,
+    timeout: 480_000,
     workers: 1,
     retries: 0,
     fullyParallel: false,

@@ -303,16 +303,39 @@ export const connectOverCdp = async (
         15_000,
         `Could not connect over CDP to ${endpoint}`,
     );
-    const pages = browser.contexts().flatMap((context) => context.pages());
-    const page = pages.find(
-        (candidate) =>
-            candidate.url().includes("/bloom/") &&
-            !candidate.url().startsWith("devtools://"),
-    );
+    // Actions that make Bloom tear down and recreate its workspace WebView2 controls (e.g.
+    // createCloudTeamCollection's reopen-collection callback) leave a window where no matching
+    // page exists yet even though the browser-level CDP connection itself succeeds. Retry the
+    // page lookup rather than failing on the first miss.
+    const findPage = () => {
+        const pages = browser.contexts().flatMap((context) => context.pages());
+        return pages.find(
+            (candidate) =>
+                candidate.url().includes("/bloom/") &&
+                !candidate.url().startsWith("devtools://"),
+        );
+    };
+    let page = findPage();
+    // Generous: under load (multiple Bloom instances + a live local Supabase/MinIO stack, and
+    // possibly other processes competing for the machine's CPU/disk in a shared dev
+    // environment) both fresh-launch startup and the workspace-reopen churn a cloud-collection
+    // action triggers have been observed taking well over a minute before the main page
+    // finishes navigating away from `about:blank` and becomes attachable.
+    const deadline = Date.now() + 120_000;
+    while (!page && Date.now() < deadline) {
+        await sleep(500);
+        page = findPage();
+    }
     if (!page) {
         await browser.close();
+        // Diagnostic: dump the raw CDP target list (bypassing Playwright entirely) so a
+        // failure here shows whether the target is genuinely gone or Playwright just isn't
+        // attaching to it.
+        const rawTargets = await fetch(`${endpoint}/json/list`)
+            .then((response) => response.json())
+            .catch((error) => `<raw /json/list fetch failed: ${error}>`);
         throw new Error(
-            `Could not find a Bloom WebView2 target on ${endpoint}.`,
+            `Could not find a Bloom WebView2 target on ${endpoint}. Raw CDP targets: ${JSON.stringify(rawTargets)}`,
         );
     }
     await page.waitForLoadState("domcontentloaded");
