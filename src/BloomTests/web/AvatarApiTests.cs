@@ -176,5 +176,34 @@ namespace BloomTests.web
             Assert.That(result, Is.EqualTo("OK"));
             Assert.That(_cache.GetKnownPhotoUrlOrNull(md5), Is.Null);
         }
+
+        [Test]
+        public void ExternalLogin_WithPhotoUrlCapitalUrl_RegistersKnownPhotoMapping()
+        {
+            var client = new BloomLibraryBookApiClient();
+            new ExternalApi(client, null, null, null, null, null, _cache).RegisterWithApiHandler(
+                _server.ApiHandler
+            );
+
+            var md5 = AvatarCache.Md5OfEmail("user@example.com");
+            // Sanity: no mapping before login.
+            Assert.That(_cache.GetKnownPhotoUrlOrNull(md5), Is.Null);
+
+            // The website forwards Firebase's own property name, `photoURL` (capital URL), rather than
+            // our camelCase `photoUrl`. The login handler must tolerate that casing and still register
+            // the mapping, otherwise the Google avatar silently never appears.
+            var result = ApiTest.PostString(
+                _server,
+                "external/login",
+                "{\"sessionToken\":\"t\",\"email\":\"user@example.com\",\"userId\":\"u\",\"photoURL\":\"https://photos.example/pic.jpg\"}",
+                ApiTest.ContentType.JSON
+            );
+
+            Assert.That(result, Is.EqualTo("OK"));
+            Assert.That(
+                _cache.GetKnownPhotoUrlOrNull(md5),
+                Is.EqualTo("https://photos.example/pic.jpg")
+            );
+        }
     }
 }

@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
 using Bloom.web;
 using NUnit.Framework;
 using SIL.TestUtilities;
@@ -282,6 +284,51 @@ namespace BloomTests.web
                 "should fall back to the cached copy when the fetch fails"
             );
             Assert.That(second.Bytes, Is.EqualTo(new byte[] { 9 }));
+        }
+
+        [Test]
+        public void ProductionRegistration_UsesAppDataFolder_NotAnUnrelatedRegisteredString()
+        {
+            // Reproduces ProjectContext's container shape: a plain string is registered (there it is
+            // the editable collection directory). AvatarCache's constructor has an OPTIONAL
+            // `string cacheFolder = null` parameter, and Autofac injects a registered service into an
+            // optional parameter when one exists. This guards the ProjectContext fix (register via a
+            // `new AvatarCache()` factory, NOT RegisterType) against being "cleaned up" back into the
+            // bug, which would scatter the avatar cache into the user's collection folder.
+            var unrelatedDir = _folder.Path; // stands in for editableCollectionDirectory
+
+            // Sanity check that the gotcha is real: RegisterType DOES adopt the registered string as
+            // the cache folder. If this ever stops happening, the guard below would pass vacuously.
+            var buggyBuilder = new ContainerBuilder();
+            buggyBuilder.Register(c => unrelatedDir).InstancePerLifetimeScope();
+            buggyBuilder.RegisterType<AvatarCache>().AsSelf().SingleInstance();
+            using (var buggy = buggyBuilder.Build())
+            {
+                Assert.That(
+                    buggy.Resolve<AvatarCache>().CacheFolder,
+                    Is.EqualTo(unrelatedDir),
+                    "sanity: RegisterType is expected to (mis)inject the registered string here"
+                );
+            }
+
+            // The production registration must NOT adopt that string; it uses the app-data folder.
+            var fixedBuilder = new ContainerBuilder();
+            fixedBuilder.Register(c => unrelatedDir).InstancePerLifetimeScope();
+            fixedBuilder.Register(c => new AvatarCache()).AsSelf().SingleInstance();
+            using (var fixedContainer = fixedBuilder.Build())
+            {
+                var folder = fixedContainer.Resolve<AvatarCache>().CacheFolder;
+                Assert.That(
+                    folder,
+                    Is.Not.EqualTo(unrelatedDir),
+                    "AvatarCache must not adopt an unrelated registered string as its cache folder"
+                );
+                Assert.That(
+                    folder,
+                    Does.EndWith(Path.Combine("Bloom", "AvatarCache")),
+                    "AvatarCache should default to the app-data AvatarCache folder"
+                );
+            }
         }
     }
 }

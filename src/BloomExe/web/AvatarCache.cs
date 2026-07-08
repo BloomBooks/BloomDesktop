@@ -101,6 +101,13 @@ namespace Bloom.web
         }
 
         /// <summary>
+        /// The folder this cache persists into. Exposed for the DI regression test that verifies the
+        /// container gives the production (parameterless) instance the app-data folder, rather than
+        /// accidentally injecting some other registered string as the cacheFolder argument.
+        /// </summary>
+        internal string CacheFolder => _cacheFolder;
+
+        /// <summary>
         /// The MD5 (lowercase hex) of the normalized (trimmed, lowercased) email. This matches the
         /// Gravatar scheme (and what react-avatar/md5Util use), so the logged-in user and a teammate
         /// with the same email share one key.

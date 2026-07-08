@@ -330,7 +330,16 @@ namespace Bloom
                     // the app (account menu + Team Collection avatars); it must be a single shared
                     // instance, not one-per-lifetime-scope, so a child-scope resolve can't get a second
                     // copy with a stale map.
-                    builder.RegisterType<AvatarCache>().AsSelf().SingleInstance();
+                    //
+                    // Register with an explicit factory rather than RegisterType<AvatarCache>(). Its
+                    // constructor has an OPTIONAL `string cacheFolder = null` parameter (a test seam),
+                    // and a plain string IS registered in this container (editableCollectionDirectory,
+                    // just below). Autofac injects a registered service into an optional parameter when
+                    // one exists, so RegisterType would hand AvatarCache the collection directory as its
+                    // cache folder -- scattering avatar cache files into the user's collection folder and
+                    // defeating the "app-wide, survives restart" design. `new AvatarCache()` forces the
+                    // parameterless path so it uses the intended app-data folder.
+                    builder.Register(c => new AvatarCache()).AsSelf().SingleInstance();
 
                     // Enhance: may need some way to test a release build in the sandbox.
                     builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();

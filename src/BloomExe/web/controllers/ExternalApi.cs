@@ -123,8 +123,15 @@ namespace Bloom.web.controllers
                         // build will not send this field at all. A missing/null value is normal and
                         // simply means "no picture" (the avatar falls back to Gravatar/initials). Only
                         // THIS field gets this lenient treatment; the others keep the fail-fast behavior.
-                        string photoUrl = requestData.IsDefined("photoUrl")
-                            ? (string)requestData.photoUrl
+                        //
+                        // Accept either casing. Firebase's own user property is `photoURL` (capital URL)
+                        // while our other fields are camelCase, so a website build that forwards
+                        // `user.photoURL` verbatim is an easy and likely mismatch. Tolerating both spellings
+                        // (checking IsDefined, which is case-sensitive, for each) means the nicer avatar
+                        // lights up regardless of which the website happens to send.
+                        string photoUrl =
+                            requestData.IsDefined("photoUrl") ? (string)requestData.photoUrl
+                            : requestData.IsDefined("photoURL") ? (string)requestData.photoURL
                             : null;
                         //Debug.WriteLine("Got login data " + email + " with token " + token + " and id " + userId);
 
