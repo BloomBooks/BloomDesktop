@@ -55,6 +55,19 @@ test.describe("E2E-1 create/share an existing collection", () => {
             logDir: LOG_DIR,
         });
 
+        // Wait for the workspace WebView2 to finish initializing before triggering
+        // createCloudTeamCollection (the same connect-before-trigger pattern E2E-2 uses, but
+        // for a different reason): the endpoint's handler runs ON the UI thread and opens a
+        // modal BrowserProgressDialog. If the request arrives while the workspace browser is
+        // still inside EnsureBrowserReadyToNavigate's nested message pump, the dialog's OWN
+        // WebView2 initialization deadlocks against it, the dialog's React page never POSTs
+        // progress/ready, DoWorkWithProgressDialog's worker spins forever on
+        // _readyForProgressReports, and the HTTP request never returns (diagnosed 8 Jul 2026
+        // from a dotnet-stack dump of the hung process; reproducible whenever the desktop
+        // session is locked, which slows WebView2 startup enough to lose the race every time).
+        // A CDP-attachable, dom-loaded workspace page proves initialization is complete.
+        await instance.connect();
+
         const capsBefore = await (
             await getApi(instance.httpPort, "teamCollection/capabilities")
         ).json();
