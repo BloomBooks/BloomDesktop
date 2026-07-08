@@ -69,6 +69,11 @@ start. Setup and details live in [tasks/11-local-dev-stack.md](tasks/11-local-de
 
 ## Deferred until real infrastructure is available (tracked, NOT blocking)
 
+**The detailed go-live runbook — ordered steps, each tagged [HUMAN] or [AGENT], covering AWS
+provisioning, hosted Supabase, the Supabase↔S3 secret handshake, Firebase auth (Option A),
+sandbox verification, remaining product gaps, and the merge-to-master checklist — is
+[GOING-LIVE.md](GOING-LIVE.md).** The list below remains as the summary index.
+
 Each of these is a config/provisioning swap, not a code change, thanks to the seams above.
 
 - [ ] Auth Option A/B/C decision (colleague review) and, for Option A: the BloomLibrary2

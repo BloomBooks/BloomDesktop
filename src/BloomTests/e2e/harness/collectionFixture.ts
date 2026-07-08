@@ -101,10 +101,29 @@ export const createScratchCollection = async (
         "utf8",
     );
     const collectionId = randomUUID();
-    const stampedXml = templateXml.replace(
-        /<CollectionId>[^<]*<\/CollectionId>/,
-        `<CollectionId>${collectionId}</CollectionId>`,
-    );
+    const stampedXml = templateXml
+        .replace(
+            /<CollectionId>[^<]*<\/CollectionId>/,
+            `<CollectionId>${collectionId}</CollectionId>`,
+        )
+        // Stamp a valid LocalCommunity-tier subscription code. This is load-bearing, not
+        // decorative: TeamCollectionManager.CheckDisablingTeamCollections disconnects ANY Team
+        // Collection when FeatureName.TeamCollection isn't enabled for the collection's
+        // subscription tier (requires LocalCommunity; the template's empty code = Basic).
+        // DISCOVERED LIVE (E2E-9 name-race): whether that check actually fires for a CLOUD TC is
+        // a startup RACE -- the check early-returns when TCManager.CurrentCollection is still
+        // null, and the cloud connection usually isn't established yet at that point in workspace
+        // load, so most launches sail through... but a launch where sign-in/connection completes
+        // fast enough gets disconnected with "Team Collections require a Bloom subscription tier
+        // of at least 'LocalCommunity'" (observed once in ~40 launches; broke every subsequent
+        // teamCollection/* call in that instance with empty-body 503s). The same test code the
+        // unit suite uses ("Fake-LC-006273-1463", SubscriptionTests.cs) encodes an expiry of
+        // ~Sep 2026 -- when it expires, SubscriptionTests will start failing too and both must
+        // be updated together.
+        .replace(
+            /<SubscriptionCode\s*\/>|<SubscriptionCode>[^<]*<\/SubscriptionCode>/,
+            "<SubscriptionCode>Fake-LC-006273-1463</SubscriptionCode>",
+        );
     const collectionFilePath = path.join(
         collectionFolder,
         `${collectionName}.bloomCollection`,
@@ -118,6 +137,66 @@ export const createScratchCollection = async (
         collectionName,
         bookName: templateBookName,
     };
+};
+
+/**
+ * Seeds a SECOND book folder named `bookName` directly into an already-existing collection
+ * folder, by copying the same template book used for the collection's original book, stamped
+ * with a fresh bookInstanceId and its main .htm file renamed to match (mirroring
+ * `BookStorage.Duplicate`'s own folder-name/htm-name convention).
+ *
+ * Used by E2E-9's concurrent-same-name-creation scenario: `CollectionModel.DuplicateBook`
+ * deliberately gives every duplicate a GUID-suffixed folder name specifically so two
+ * Team-Collection members' independent duplicates of the SAME source book never collide
+ * locally (see BookStorage.Duplicate's own comment) -- which means it can't be used to
+ * construct a genuine same-*proposed*-name race. Seeding two collections' book folders with
+ * the IDENTICAL name directly on disk (each with its own distinct bookInstanceId, so they are
+ * unrelated books that merely happen to share a display name) reproduces the race
+ * `CloudTeamCollection.PutBookInRepo`'s name-conflict retry loop exists to resolve. Must be
+ * done while the collection's Bloom instance is NOT running (or before its first launch) --
+ * the caller is responsible for relaunching afterward so the new folder is picked up by the
+ * normal collection-load scan, since this only writes files and does not talk to any running
+ * Bloom process.
+ */
+export const seedAdditionalBookIntoCollection = async (
+    collectionFolder: string,
+    bookName: string,
+): Promise<{ bookInstanceId: string }> => {
+    const bookFolder = path.join(collectionFolder, bookName);
+    await copyDirExcluding(
+        path.join(templateCollectionDir, templateBookName),
+        bookFolder,
+        ["history.db"],
+    );
+
+    // Rename the main .htm file to match the new folder name (BookStorage.Duplicate's own
+    // convention -- Bloom expects <folder>/<folder>.htm) AND stamp the book's TITLE (the
+    // data-book="bookTitle" divs in the htm, plus meta.json's "title") to match too.
+    // The title stamping is load-bearing, not cosmetic: Bloom renames a book's folder to match
+    // its title on save (Book.Save -> SetBookName), and checkInCurrentBook saves first -- so a
+    // seeded folder named "RaceBook" whose content still says "A5 Portrait" would get renamed
+    // (uniquified against the collection's existing "A5 Portrait" book) BEFORE the Send, and
+    // the server would never see the "RaceBook" name this helper's caller is trying to race
+    // (discovered live: E2E-9's name-race test committed title-derived names instead).
+    const htmPath = path.join(bookFolder, `${bookName}.htm`);
+    await fs.rename(path.join(bookFolder, `${templateBookName}.htm`), htmPath);
+    const htmContent = await fs.readFile(htmPath, "utf8");
+    await fs.writeFile(
+        htmPath,
+        htmContent.split(templateBookName).join(bookName),
+        "utf8",
+    );
+
+    // Stamp a fresh bookInstanceId so this counts as an unrelated book that merely shares a
+    // display name with its counterpart on the other side, not a duplicate/re-import of it.
+    const metaPath = path.join(bookFolder, "meta.json");
+    const meta = JSON.parse(await fs.readFile(metaPath, "utf8"));
+    const bookInstanceId = randomUUID();
+    meta.bookInstanceId = bookInstanceId;
+    meta.title = bookName;
+    await fs.writeFile(metaPath, JSON.stringify(meta, null, 2), "utf8");
+
+    return { bookInstanceId };
 };
 
 /** Where `collections/pullDown` puts a collection named `collectionName` (Bloom's own fixed,

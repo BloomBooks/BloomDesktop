@@ -1,4 +1,4 @@
-// E2E-1: create/share an existing collection (verify rows + objects).
+﻿// E2E-1: create/share an existing collection (verify rows + objects).
 //
 // The UI path for this (Settings dialog -> Team Collection tab -> "Share this collection on
 // the Bloom sharing server" -> CreateCloudTeamCollectionDialog) is NOT automatable over CDP:
@@ -25,7 +25,11 @@ import { resetStack } from "../harness/reset";
 import { createScratchCollection } from "../harness/collectionFixture";
 import { launchBloom, LaunchedBloom } from "../harness/launch";
 import { ALICE } from "../harness/devStack";
-import { postApi, getApi } from "../harness/bloomApi";
+import {
+    postApi,
+    getApi,
+    postCreateCloudTeamCollection,
+} from "../harness/bloomApi";
 import { queryDb } from "../harness/db";
 import { listS3Objects } from "../harness/s3";
 
@@ -73,11 +77,7 @@ test.describe("E2E-1 create/share an existing collection", () => {
         ).json();
         expect(capsBefore.supportsSharingUi).toBe(false);
 
-        const createResponse = await postApi(
-            instance.httpPort,
-            "teamCollection/createCloudTeamCollection",
-            "{}",
-        );
+        const createResponse = await postCreateCloudTeamCollection(instance);
         expect(createResponse.status).toBe(200);
 
         // ConnectToCloudCollection + the reopen callback + the initial upload are not

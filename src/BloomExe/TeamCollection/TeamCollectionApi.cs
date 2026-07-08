@@ -1602,6 +1602,16 @@ namespace Bloom.TeamCollection
                         return;
                     }
                 }
+                // E2E-9 discovery: if NO open form is the active one AND none of them is a Shell
+                // (observed for a Bloom window that has never received OS focus -- e.g. a
+                // background/automated instance, but plausible any time the app is minimized or
+                // another window has focus at the moment a check-in completes), the code used to
+                // fall through to `Form.ActiveForm.Invoke(...)` below with `Form.ActiveForm` still
+                // null, throwing a NullReferenceException. That NRE propagated out of a successful
+                // check-in (this method runs AFTER PutBook already committed) and was reported to
+                // the caller as a check-in FAILURE -- a real, misleading regression, not just a
+                // missed UI refresh. There is no window to update in this case, so just skip it.
+                return;
             }
             Form.ActiveForm.Invoke(
                 (Action)(
