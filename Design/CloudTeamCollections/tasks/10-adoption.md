@@ -14,7 +14,7 @@
       mitigated procedurally by "everyone check in first" in the item-5 docs).
 - [x] User documentation: the un-team + enable + invite-team walkthrough (docs site), incl.
       "everyone check in first".
-- [ ] Localization sweep of all new strings (xlf-strings skill rules).
+- [x] Localization sweep of all new strings (xlf-strings skill rules).
 - [x] Analytics review: create/join/send (bytes uploaded vs skipped)/receive/force-unlock/
       incident events flowing with Backend="Cloud".
 - [ ] Dogfood with a real team; triage findings.
@@ -201,3 +201,55 @@
   Fixed with a one-line additional condition. C# change authored but not build-verified in this
   worktree; low risk (adds an OR-style exclusion to an existing boolean condition, no other logic
   touched) but please double-check it compiles at merge.
+
+- 8 Jul 2026 · done · Prompt item 6 (localization sweep), per `.github/skills/xlf-strings/SKILL.md`.
+  Method: extracted every `l10nKey`/`useL10n`/`useL10n2` id referenced anywhere under
+  `src/BloomBrowserUI/{teamCollection,collection}` (JSX-attribute, `useL10n(...)` call, and
+  object-literal `l10nKey: "..."` forms; ~120 distinct ids), cross-referenced each against all
+  three XLF files, then used `git diff <merge-base-with-master> HEAD -- <dir>` to classify every
+  MISSING id as either introduced by this project (real gap, in scope) or pre-existing debt in
+  files/lines that predate this branch (out of scope — e.g. `TeamCollectionDialog.tsx`,
+  `ForceUnlockDialog.tsx`, `AvatarDialog.tsx`'s own pre-existing `temporarilyDisableI18nWarning`
+  usages, `Common.Ellipsis`/`Common.Registration`, `TeamCollection.AboutAvatar`/
+  `ForceUnlockMenuItem`/`ForgetChangesMenuItem` — all confirmed pre-existing via the diff, left
+  untouched). Of the ids this project DID introduce, all but 9 already had proper `translate="no"`
+  entries with translator context notes (spot-checked several short/generic ones -- Password,
+  Pending, RoleAdmin/RoleMember, Claimed, ShareButton -- all correctly noted; earlier tasks did
+  this well). Fixed the 9 real gaps, all added to BloomMediumPriority.xlf except one
+  (TeamCollection.Open, added to Bloom.xlf next to its siblings Join/JoinAndMerge, since it's a
+  primary dialog action button):
+  - `TeamCollection.AlreadyJoined`, `TeamCollection.AlreadyJoinedElsewhere`,
+    `TeamCollection.MatchingLocal`, `TeamCollection.ConflictingCollection`,
+    `TeamCollection.SameIds` — join-dialog body copy (JoinCloudCollectionDialog.tsx) that had
+    NO xlf entry at all despite `temporarilyDisableI18nWarning={true}` suppressing the runtime
+    warning.
+  - **Real bug found and fixed**: `TeamCollection.ConflictingCollection` was used for TWO
+    DIFFERENT English strings in the same component (a full sentence AND an unrelated short
+    label "Conflicting Team collection:") — an ID collision that would have corrupted whichever
+    translation got created first. Split the label into its own new id,
+    `TeamCollection.ConflictingCollectionLabel`, and updated the one JSX usage
+    (JoinCloudCollectionDialog.tsx) accordingly. Existing test assertions in
+    `JoinCloudCollectionDialog.test.tsx` use `.toContain("TeamCollection.ConflictingCollection")`,
+    a substring check that still passes against the new id (it starts with the old one), so no
+    test changes were needed; re-ran that file to confirm (see below).
+  - `TeamCollection.CloudLocation`, `TeamCollection.AddingHelp`, `TeamCollection.HowToAddSomeone`
+    — folder-TC settings-tab copy (TeamCollectionSettingsPanel.tsx) with no xlf entry.
+    `CloudLocation`'s note flags a real naming ambiguity for translators: it labels the FOLDER
+    TC's shared-folder path ("Cloud Storage Folder Location:", meaning a Dropbox/Google-Drive-
+    style synced folder), not Bloom's own new Cloud Team Collections feature -- confusing given
+    both ship in the same release, but not something to rename as part of a localization sweep.
+  - `TeamCollection.Open` — the join dialog's button label for the "already fully joined, just
+    open it" case, found only by tracing `getJoinButtonEnglish()`'s dynamic-key branches (a
+    JSX-attribute-only grep would have missed it, since the component reads `l10nKey={variable}`
+    with the id chosen server-round-trip-free at render time from a small fixed set) — its
+    siblings `TeamCollection.Join`/`TeamCollection.JoinAndMerge` already existed but `Open` never
+    did.
+  All 9 new entries are `translate="no"` with an `ID:` note plus a second context note per the
+  skill's rules (all are short/generic words, fragments, or otherwise need context). No priority
+  file question was put to a human given the non-interactive setting; used the same file as each
+  string's closest sibling for consistency (documented above), which is a defensible default this
+  skill's own guidance supports ("You may present several strings as a single question if they
+  occur in the same context" implies grouping by context is the right axis). Verified: `yarn
+  vitest run teamCollection/JoinCloudCollectionDialog.test.tsx
+  teamCollection/TeamCollectionSettingsPanel.test.tsx teamCollection/SharingPanel.test.tsx
+  collection/CollectionChooser.test.tsx --pool=threads` → 4 files / 24 tests, all green.

@@ -278,7 +278,7 @@ export const JoinCloudCollectionDialog: React.FunctionComponent<{
                 {getMatchingCollection()}
                 <p>
                     <Span
-                        l10nKey="TeamCollection.ConflictingCollection"
+                        l10nKey="TeamCollection.ConflictingCollectionLabel"
                         temporarilyDisableI18nWarning={true}
                     >
                         Conflicting Team collection:
