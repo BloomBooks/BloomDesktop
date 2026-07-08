@@ -9,13 +9,15 @@ All task state lives in **git branches**, never in a conversation:
 
 - One branch per task, named `task/<NN>-<name>`, based on `cloud-collections`. The
   currently in-flight set = whatever `git branch --list "task/*"` shows unmerged into
-  `cloud-collections`. As of 8 Jul 2026 BOTH Wave-4 branches (`task/09-e2e` harness +
-  E2E-1/2, `task/10-adoption` all 7 items) are reviewed and MERGED; the remaining Wave-4
-  work is E2E-3 through E2E-10, which continues as a fresh agent run of
-  `09-e2e.prompt.md` in the MAIN tree (the prompt is resume-aware: the branch and its
-  progress log carry everything forward; re-branch `task/09-e2e` from `cloud-collections`
-  if it was deleted after merge). All Wave-0/1/2/3 branches are merged; see
-  IMPLEMENTATION.md's Status + Merge log.
+  `cloud-collections`. As of 8 Jul 2026 (evening) ALL Wave-4 code is merged and pushed:
+  harness, scenarios E2E-1..9 (E2E-4 partial, E2E-10 blocked — both are product decisions,
+  see tasks/09-e2e.md findings + GOING-LIVE.md Phase 5), task 10's 7 polish items, the
+  go-live/test-setup docs, and 3 product fixes from the scenario work. NO agent work is in
+  flight. What remains for Wave 4: (a) one 12/12 acceptance run of the full E2E matrix on
+  an IDLE machine (`cd src/BloomTests/e2e && yarn test`, desktop unlocked, ~30 min — five
+  runs on the busy dev machine each passed a different 8–11/12, all failures
+  load-correlated, worst offender = finding 9's problem-report modal); (b) John's product
+  decisions; (c) dogfood. All Wave-0/1/2/3 branches are merged; see IMPLEMENTATION.md.
 - Agents commit after EVERY completed checklist step — small, coherent commits; never one
   big commit at the end. Tick the step's checkbox in the task file in the same commit.
 - Each task file ends with a `## Progress log` section; every commit appends/updates one
