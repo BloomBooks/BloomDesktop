@@ -115,10 +115,16 @@ Single file: `yarn playwright test tests/e2e-1-create-share.spec.ts`.
 
 E2E-2 (two-instance) intermittently times out at varying steps (Bloom launch, `connectOverCdp`,
 or an individual API call) when the machine is under heavy concurrent load — observed with only
-~18% free RAM while multiple other VS Code + language-server + browser processes were running
-(e.g. other agents working in parallel `.claude/worktrees/`). Every individual step has been
-independently verified correct in isolation; see the task's progress log for detail. If this
-harness is flaky in CI, check available memory/CPU before assuming a logic regression.
+~18-20% free RAM while multiple other VS Code + language-server + browser processes were
+running (e.g. other agents working in parallel `.claude/worktrees/`). Every individual step has
+been independently verified correct in isolation; see the task's progress log for detail. If
+this harness is flaky in CI, check available memory/CPU before assuming a logic regression.
+
+`globalSetup` also clears leaked `%TEMP%\Bloom WV2-*` profile folders (Bloom itself never
+cleans these up — see `harness/reset.ts`'s `resetLeakedWebView2Profiles` doc comment) since 117
+of them had accumulated by the end of this harness's development session and were measurably
+slow to even enumerate. This is a real, worth-keeping fix, but on its own it did not resolve
+the memory-pressure-driven flakiness above.
 
 ## Scenario status
 

@@ -150,6 +150,41 @@ export const resetScratchCollections = async (): Promise<void> => {
     await fs.mkdir(E2E_SCRATCH_ROOT, { recursive: true });
 };
 
+// DISCOVERED (see progress log): WebView2Browser.cs never deletes its per-environment
+// `%TEMP%\Bloom WV2-<port><counter>` profile folder on exit ("Enhance: it might be a good
+// thing to try to delete this folder if we find it already exists" — an acknowledged gap in
+// Bloom itself). Across a long harness session (many Bloom launches, 2+ WebView2 environments
+// each) these accumulate into the hundreds, and environment creation does a linear
+// `Directory.Exists` scan to find a free name — combined with antivirus real-time scanning of
+// each newly-created profile's files, this was observed to make later launches in the same
+// session dramatically slower (a fresh single-instance launch sitting at `about:blank` for 2+
+// minutes with 117 leaked folders present; disk usage of the leaked folders was large enough
+// that even `du` over them didn't finish in 60s). Not fixable from outside Bloom's process
+// while it runs, so the harness proactively cleans these up itself.
+const webView2TempFolderGlobPrefix = "Bloom WV2-";
+export const resetLeakedWebView2Profiles = async (): Promise<void> => {
+    const tempDir = process.env.TEMP ?? process.env.TMP;
+    if (!tempDir) return;
+    let entries: string[];
+    try {
+        entries = await fs.readdir(tempDir);
+    } catch {
+        return;
+    }
+    await Promise.all(
+        entries
+            .filter((name) => name.startsWith(webView2TempFolderGlobPrefix))
+            .map((name) =>
+                fs
+                    .rm(path.join(tempDir, name), {
+                        recursive: true,
+                        force: true,
+                    })
+                    .catch(() => {}),
+            ),
+    );
+};
+
 /** Full per-scenario reset: DB + bucket + local scratch folders. Call this in `test.beforeEach`
  * (or once in `beforeAll` for scenarios that intentionally chain steps within one test). */
 export const resetStack = async (): Promise<void> => {
