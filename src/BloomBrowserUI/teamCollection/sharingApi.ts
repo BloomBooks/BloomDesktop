@@ -130,11 +130,13 @@ export function useMyCloudCollections(shouldQuery: boolean): {
     return { collections, loading };
 }
 
-// Result of a successful collections/pullDown: the local folder the collection was pulled down
-// into, so the caller can open it directly (see JoinCloudCollectionDialog's handleJoinClick)
-// instead of leaving the user to find the new collection in the chooser themselves.
+// Result of a successful collections/pullDown: the local .bloomCollection file path the
+// collection was pulled down to, so the caller can open it directly (see
+// JoinCloudCollectionDialog's handleJoinClick) instead of leaving the user to find the new
+// collection in the chooser themselves. A settings-file path, not a folder, because
+// workspace/openCollection expects what the chooser's cards pass it.
 export interface IPullDownResult {
-    collectionFolder: string;
+    collectionPath: string;
 }
 
 export function pullDownCollection(collectionId: string) {

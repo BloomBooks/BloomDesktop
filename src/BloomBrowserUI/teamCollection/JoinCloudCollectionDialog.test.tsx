@@ -248,9 +248,12 @@ describe("JoinCloudCollectionDialog", () => {
         ).toBeNull();
     });
 
-    it("auto-opens the pulled-down collection folder the server returns, the same action the chooser's cards use (task 10)", async () => {
+    it("auto-opens the pulled-down .bloomCollection file the server returns, the same action the chooser's cards use (task 10)", async () => {
         mockPullDownCollection.mockResolvedValue({
-            data: { collectionFolder: "C:\\Users\\me\\Bloom Collections\\Foo" },
+            data: {
+                collectionPath:
+                    "C:\\Users\\me\\Bloom Collections\\Foo\\Foo.bloomCollection",
+            },
         });
         renderDialog({});
 
@@ -259,11 +262,11 @@ describe("JoinCloudCollectionDialog", () => {
 
         expect(mockPostString).toHaveBeenCalledWith(
             "workspace/openCollection",
-            "C:\\Users\\me\\Bloom Collections\\Foo",
+            "C:\\Users\\me\\Bloom Collections\\Foo\\Foo.bloomCollection",
         );
     });
 
-    it("does not try to auto-open anything when the server response carries no collectionFolder", async () => {
+    it("does not try to auto-open anything when the server response carries no collectionPath", async () => {
         mockPullDownCollection.mockResolvedValue(undefined);
         renderDialog({});
 

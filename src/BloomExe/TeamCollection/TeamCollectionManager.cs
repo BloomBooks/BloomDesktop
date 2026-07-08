@@ -596,23 +596,6 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
-        /// Connect the current collection to a new cloud-backed Team Collection, using
-        /// <paramref name="collectionId"/> as both this Bloom collection's own CollectionId GUID
-        /// and the server's `collections.id` (CONTRACTS.md: "&lt;collectionId&gt; = the Bloom
-        /// CollectionId GUID (also the server collections.id)"). Creates the server-side row
-        /// (create_collection), links the local collection to it, and pushes every existing local
-        /// book and collection-level file up -- the cloud counterpart of
-        /// <see cref="ConnectToTeamCollection"/>'s folder-backed flow.
-        ///
-        /// Guards the "adoption path" from a formerly-folder-based Team Collection (task 10):
-        /// throws <see cref="TeamCollectionLinkConflictException"/> if TeamCollectionLink.txt
-        /// still describes a different (folder or cloud) Team Collection -- a sign the user
-        /// hasn't finished "un-teaming" this local collection yet -- and otherwise cleans up any
-        /// stale per-book/per-collection artifacts the old TC left behind before pushing
-        /// everything to the new cloud collection (<see
-        /// cref="TeamCollection.CleanStaleTeamCollectionArtifacts"/>).
-        /// </summary>
-        /// <summary>
         /// Throws <see cref="TeamCollectionLinkConflictException"/> if
         /// <paramref name="localCollectionFolder"/> already has a TeamCollectionLink.txt
         /// describing some OTHER Team Collection (folder- or cloud-backed) -- see
@@ -646,6 +629,23 @@ namespace Bloom.TeamCollection
             );
         }
 
+        /// <summary>
+        /// Connect the current collection to a new cloud-backed Team Collection, using
+        /// <paramref name="collectionId"/> as both this Bloom collection's own CollectionId GUID
+        /// and the server's `collections.id` (CONTRACTS.md: "&lt;collectionId&gt; = the Bloom
+        /// CollectionId GUID (also the server collections.id)"). Creates the server-side row
+        /// (create_collection), links the local collection to it, and pushes every existing local
+        /// book and collection-level file up -- the cloud counterpart of
+        /// <see cref="ConnectToTeamCollection"/>'s folder-backed flow.
+        ///
+        /// Guards the "adoption path" from a formerly-folder-based Team Collection (task 10):
+        /// throws <see cref="TeamCollectionLinkConflictException"/> if TeamCollectionLink.txt
+        /// still describes a different (folder or cloud) Team Collection -- a sign the user
+        /// hasn't finished "un-teaming" this local collection yet -- and otherwise cleans up any
+        /// stale per-book/per-collection artifacts the old TC left behind before pushing
+        /// everything to the new cloud collection (<see
+        /// cref="TeamCollection.CleanStaleTeamCollectionArtifacts"/>).
+        /// </summary>
         public void ConnectToCloudCollection(string collectionId)
         {
             ThrowIfConflictingTeamCollectionLink(_localCollectionFolder);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Bloom.Api;
+using Bloom.Collection;
 using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
@@ -446,10 +447,12 @@ namespace Bloom.web.controllers
         /// CloudJoinConflictException, surfaced here as a plain failure message pending the
         /// dedicated resolution dialog noted in task 07's final report.
         ///
-        /// Replies with the local collection folder path (task 10: "pull-down auto-open") so the
-        /// caller (JoinCloudCollectionDialog) can invoke the same "workspace/openCollection"
+        /// Replies with the local .bloomCollection file path (task 10: "pull-down auto-open") so
+        /// the caller (JoinCloudCollectionDialog) can invoke the same "workspace/openCollection"
         /// action the chooser's own cards use, instead of leaving the user to hunt for the newly
-        /// pulled-down collection themselves.</summary>
+        /// pulled-down collection themselves. It must be the settings FILE, not the folder --
+        /// that path flows through Program.SwitchToCollection, which expects what the chooser's
+        /// MRU cards pass.</summary>
         private void HandlePullDown(ApiRequest request)
         {
             var body = request.RequiredPostObject<PullDownBody>();
@@ -498,7 +501,14 @@ namespace Bloom.web.controllers
                     }
                 );
 
-                request.ReplyWithJson(new { collectionFolder = cloudTc.LocalCollectionFolder });
+                request.ReplyWithJson(
+                    new
+                    {
+                        collectionPath = CollectionSettings.FindSettingsFileInFolder(
+                            cloudTc.LocalCollectionFolder
+                        ),
+                    }
+                );
             }
             catch (CloudJoinConflictException e)
             {

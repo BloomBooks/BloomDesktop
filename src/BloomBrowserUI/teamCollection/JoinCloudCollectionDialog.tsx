@@ -379,10 +379,10 @@ export const JoinCloudCollectionDialog: React.FunctionComponent<{
                 const result = (
                     response as AxiosResponse<IPullDownResult> | undefined
                 )?.data;
-                if (result?.collectionFolder) {
+                if (result?.collectionPath) {
                     postString(
                         "workspace/openCollection",
-                        result.collectionFolder,
+                        result.collectionPath,
                     );
                 }
             },
