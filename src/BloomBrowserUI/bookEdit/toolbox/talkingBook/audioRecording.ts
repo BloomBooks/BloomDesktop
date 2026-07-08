@@ -3603,7 +3603,15 @@ export default class AudioRecording implements IAudioRecorder {
         const ckeditorOfThisBox = (<any>editableDiv).bloomCkEditor;
         if (!ckeditorOfThisBox) return;
 
-        if (editableDiv.innerHTML !== ckeditorOfThisBox.getData()) {
+        // Strip stray ckeditor filling chars before comparing: an orphaned one that
+        // getData() didn't remove would otherwise make both sides equal, skip the
+        // cleanup below, and leave the zero-width space in the copy we analyze. See BL-16490.
+        if (
+            editableDiv.innerHTML !==
+            EditableDivUtils.removeCkEditorFillingChars(
+                ckeditorOfThisBox.getData(),
+            )
+        ) {
             // Flag the element we are processing so we can find it in the version we make from ckeditor's getData().
             element.setAttribute("data-element-we-are-processing", "this-one");
 
