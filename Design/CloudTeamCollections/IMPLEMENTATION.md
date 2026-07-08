@@ -131,6 +131,18 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 
 (orchestrator appends: date · task · PR · notes)
 
+- 8 Jul 2026 · post-merge E2E gate · direct commits · The gate caught ONE real merge bug:
+  task 10's new XLF `<note>` texts contained double hyphens, which L10NSharp parses as
+  illegal XML-comment content — EVERY Bloom launch crashed at startup in SetUpLocalization
+  (no unit/component test can catch this; only a real launch reads the installed XLF).
+  Fixed + rule pinned in .github/skills/xlf-strings/SKILL.md. Remaining gate failures were
+  environmental, proven by a pre-merge control run failing identically: (a) a locked Windows
+  session stalls WebView2 at about:blank indefinitely (E2E needs an unlocked desktop);
+  (b) createCloudTeamCollection deadlocks if posted while the workspace WebView2 is still
+  initializing (UI-thread handler + modal progress dialog vs nested message pump — E2E-1
+  now uses E2E-2's connect-before-trigger pattern as a guard). Full diagnosis in task 09's
+  progress log, findings 7–8.
+
 - 8 Jul 2026 · 09-e2e (harness + E2E-1/2) · merged locally · Harness encodes every smoke-test
   environment rule (Release build MANDATORY — Debug shows a blocking attach-debugger dialog on
   any positional arg; build-once/launch-many; foreign-Bloom fail-loud; per-scenario
