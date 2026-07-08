@@ -6,8 +6,9 @@ import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 // The TS end of interactions with the `SharingApi` C# class (task 06). Names here are kept in
 // sync with Design/CloudTeamCollections/CONTRACTS.md.
 
-// Matches CONTRACTS.md: in dev-auth mode, sign-in is a plain email/password form; in the
-// eventual production ("cloud") mode, it will be the BloomLibrary browser-based flow.
+// Matches CONTRACTS.md: in dev-auth mode, sign-in is a plain email/password form; in "cloud"
+// mode (Option A, decided 8 Jul 2026) it is the BloomLibrary browser-based flow -- see
+// openBrowserSignIn() below and CONTRACTS.md's "Auth (Option A)" section.
 export type SharingLoginMode = "dev" | "cloud";
 
 export interface ISharingLoginState {
@@ -65,6 +66,16 @@ export function signIn(email: string, password: string) {
 
 export function signOut() {
     return post("sharing/logout");
+}
+
+// "cloud" mode's sign-in action: there is no password form, so this just tells Bloom to open
+// the BloomLibrary-hosted login page in the user's browser (SharingApi.HandleOpenBrowserSignIn
+// -> BloomLibraryAuthentication.LogIn). That page forwards the resulting tokens back to Bloom
+// directly (CONTRACTS.md's "Auth (Option A)" token-receipt endpoint); the caller does not await
+// a result here -- watch useSharingLoginState() (or the "sharing"/"loginState" event) instead,
+// exactly as the "dev" mode signIn() callers already do.
+export function openBrowserSignIn() {
+    return post("sharing/openBrowserSignIn");
 }
 
 // Fetches the approved-accounts list for a cloud Team Collection.

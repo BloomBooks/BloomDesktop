@@ -4,6 +4,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.TeamCollection.Cloud;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
@@ -129,6 +130,56 @@ namespace Bloom.web.controllers
                         request.PostSucceeded();
 
                         Shell.ComeToFront();
+                    }
+                    else if (request.HttpMethod == HttpMethods.Options)
+                    {
+                        // blorg will send an OPTIONS request; if we don't respond successfully, things go badly.
+                        request.PostSucceeded();
+                    }
+                },
+                false
+            );
+
+            // This is called from the same BloomLibrary-hosted login page as external/login
+            // above, forwarding the Firebase ID + refresh tokens Cloud Team Collections need
+            // (Option A -- see CONTRACTS.md's "Auth (Option A)" section and
+            // SharingApi.HandleCloudLoginTokens, which owns the actual sign-in). A separate
+            // endpoint rather than adding fields to external/login because the two payloads are
+            // independent (a BloomLibrary/Parse sign-in does not imply a Cloud Team Collection
+            // one, and vice versa) and arrive from a page that may call either or both.
+            apiHandler.RegisterEndpointHandler(
+                "external/cloudLogin",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Post)
+                    {
+                        string idToken = null;
+                        string refreshToken = null;
+                        try
+                        {
+                            var data = Newtonsoft.Json.Linq.JObject.Parse(
+                                request.RequiredPostJson()
+                            );
+                            idToken = (string)data["idToken"];
+                            refreshToken = (string)data["refreshToken"];
+                            if (string.IsNullOrEmpty(idToken) || string.IsNullOrEmpty(refreshToken))
+                            {
+                                request.Failed(
+                                    "external/cloudLogin requires both 'idToken' and 'refreshToken'"
+                                );
+                                return;
+                            }
+
+                            SharingApi.HandleCloudLoginTokens(idToken, refreshToken);
+                            request.PostSucceeded();
+
+                            Shell.ComeToFront();
+                        }
+                        catch (CloudAuthException e)
+                        {
+                            Logger.WriteError("external/cloudLogin: sign-in failed", e);
+                            request.Failed(e.Message);
+                        }
                     }
                     else if (request.HttpMethod == HttpMethods.Options)
                     {

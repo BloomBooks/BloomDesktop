@@ -24,6 +24,7 @@ import {
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     ISharingLoginState,
+    openBrowserSignIn,
     signIn as sharingSignIn,
     useSharingLoginState,
 } from "./sharingApi";
@@ -32,9 +33,11 @@ import {
 // (see SharingApi.cs). Replaces the earlier placeholder, which reused the cloud
 // create-collection dialog's sign-in step even in contexts that had nothing to do with
 // creating a collection (e.g. signing in to see "Get my Team Collections", or to join one).
-// In dev-auth mode this is a plain email/password form; in the eventual production ("cloud")
-// mode, the real BloomLibrary browser-based sign-in flow slots in later (task 06's note) --
-// for now this just explains that it isn't available yet.
+// In dev-auth mode this is a plain email/password form; in "cloud" mode (Option A, decided
+// 8 Jul 2026) it is a single button that opens the real BloomLibrary browser-based sign-in
+// flow (see onOpenBrowserSignIn/CONTRACTS.md's "Auth (Option A)" section) -- the dialog closes
+// itself once that flow completes and useSharingLoginState() picks up the resulting
+// "sharing"/"loginState" event, same as the dev-mode form below.
 
 // Presentational: a pure function of its props, so both modes can be unit-tested without any
 // network layer (same approach as CreateCloudTeamCollectionBody).
@@ -45,10 +48,42 @@ export const SignInDialogBody: React.FunctionComponent<{
     onEmailChange: (value: string) => void;
     onPasswordChange: (value: string) => void;
     onSignIn: () => void;
+    onOpenBrowserSignIn: () => void;
     submitAttempts: number;
     signInError?: string;
 }> = (props) => {
+    if (props.loginState.mode === "cloud") {
+        return (
+            <div data-testid="signin-cloud-browser">
+                <P
+                    l10nKey="TeamCollection.Sharing.SignInViaBrowser"
+                    temporarilyDisableI18nWarning={true}
+                >
+                    Click &quot;Sign In&quot; to sign in with your Bloom account
+                    in your web browser. Come back to this window when you're
+                    done.
+                </P>
+                <BloomButton
+                    enabled={true}
+                    hasText={true}
+                    l10nKey="TeamCollection.Sharing.SignIn"
+                    temporarilyDisableI18nWarning={true}
+                    data-testid="signin-open-browser-button"
+                    onClick={props.onOpenBrowserSignIn}
+                    css={css`
+                        margin-top: 10px;
+                    `}
+                >
+                    Sign In
+                </BloomButton>
+            </div>
+        );
+    }
+
     if (props.loginState.mode !== "dev") {
+        // Defensive fallback: SharingLoginMode only ever declares "dev" | "cloud" today, so
+        // this is unreachable in practice, but keeps this component total over its prop type
+        // rather than silently rendering nothing if a third mode is ever added.
         return (
             <div data-testid="signin-not-available">
                 <P
@@ -175,6 +210,7 @@ export const SignInDialog: React.FunctionComponent<{
                                 setSignInError(String(error?.message ?? error)),
                         );
                     }}
+                    onOpenBrowserSignIn={() => openBrowserSignIn()}
                 />
             </DialogMiddle>
             <DialogBottomButtons>

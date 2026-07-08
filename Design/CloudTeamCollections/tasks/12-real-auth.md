@@ -41,13 +41,27 @@ one new migration + pgTAP additions if the email_verified check needs it.
       `System.Security.Cryptography.ProtectedData` 6.0.0 (already in the local NuGet
       cache) to BloomExe.csproj. Tests: CloudTokenStoreTests.cs (round-trip, corrupted-file
       recovery, on-disk-encrypted sanity check, clear/no-file-yet).
-- [ ] **Token receipt endpoint**: the Bloom-side half of BloomLibrary2's ~5-line
+- [x] **Token receipt endpoint**: the Bloom-side half of BloomLibrary2's ~5-line
       `editor.ts` forwarding. STUDY FIRST how Bloom already hosts the BloomLibrary login
       page and receives its results (WebLibraryIntegration / the existing sign-in flows) and
       reuse that channel's conventions; the endpoint accepts `{idToken, refreshToken}`,
       hands them to the provider, persists, and raises the existing loginState change
       notifications. Document the exact request shape in CONTRACTS.md (new "Auth (Option A)"
       section) so the BloomLibrary2 change can be written against it verbatim.
+      DONE 8 Jul 2026: studied `ExternalApi.cs`'s existing `external/login` (the Parse-session
+      channel BloomLibraryAuthentication.LogIn's `login-for-editor?port=` page already posts
+      back to) and reused its exact conventions -- new sibling endpoint
+      `POST /bloom/api/external/cloudLogin` (separate from external/login since the two
+      payloads are independent), same OPTIONS/CORS handling and `Shell.ComeToFront()`.
+      Delegates the actual sign-in to a new `SharingApi.HandleCloudLoginTokens` (public
+      static) so it reuses `CurrentAuth()`/`NotifyClients()` rather than duplicating that
+      identity plumbing; fires the same `sharing`/`loginState` websocket event `HandleLogin`
+      already does. CONTRACTS.md v1.3: new "Auth (Option A)" section with the exact route/
+      body/reply (see below). Not directly unit-tested (SharingApi's other handlers that
+      touch the global `CurrentAuth()`/`CurrentClient()` statics aren't either, per
+      SharingApiTests.cs's own scope note) -- the logic underneath it
+      (`CloudAuth.SignInWithExternalTokens`/`FirebaseCloudAuthProvider.AcceptExternalSession`)
+      is fully covered by step 1's tests.
 - [ ] **`tc.jwt_email_verified()` vs the Firebase claim shape**: Firebase ID tokens carry a
       top-level boolean `email_verified` claim; GoTrue's shape differs. Read the current
       helper; if it does not already handle both, add a NEW migration (never edit merged
@@ -58,12 +72,27 @@ one new migration + pgTAP additions if the email_verified check needs it.
       claim on user creation; (b) a one-time backfill script over existing users;
       (c) README covering deploy + backfill steps and the claim's purpose (Supabase requires
       it on third-party JWTs).
-- [ ] **Sign-in dialog behavior in cloud mode**: the existing sharing sign-in UI is
+- [x] **Sign-in dialog behavior in cloud mode**: the existing sharing sign-in UI is
       dev-mode email/password. In `CloudAuthMode.Cloud` it must instead route to the
       browser-hosted BloomLibrary login (the same flow the token receipt endpoint completes).
       Wire what is wireable now behind the mode switch; if the full browser flow cannot be
       completed without live pieces, leave a clearly-marked seam + component test of the
       mode switch itself.
+      DONE 8 Jul 2026: `SignInDialogBody`'s "cloud" branch now shows a real "Sign In" button
+      (was: a static "not available yet" message) that posts to a new
+      `sharing/openBrowserSignIn` endpoint, which just calls the existing
+      `BloomLibraryAuthentication.LogIn()` (the same browser flow already used for
+      BloomLibrary/Parse sign-in -- fully wireable today with no live Firebase/Supabase
+      pieces; the dialog closes itself once `external/cloudLogin` completes the sign-in, via
+      the same `useSharingLoginState()` mechanism the dev form already relies on). Old
+      "SignInNotYetAvailable" string marked obsolete-as-of-6.5 in BloomMediumPriority.xlf;
+      new `TeamCollection.Sharing.SignInViaBrowser` string added there (recommended priority:
+      medium, since this is feature-specific instructional text for an experimental,
+      flag-gated feature -- flagging for confirmation since the xlf-strings skill calls for
+      asking, but this session runs autonomously). Vitest: SignInDialog.test.tsx (2 new
+      tests: cloud-mode button renders, click calls onOpenBrowserSignIn) -- 5/5 green,
+      `--pool=threads` single run. `yarn lint`: 0 errors (778 pre-existing warnings,
+      unrelated to these files).
 
 ## Acceptance
 - All new C# unit-tested (mocked HTTP; no live services); full widened-filter suite green;
@@ -77,4 +106,9 @@ one new migration + pgTAP additions if the email_verified check needs it.
   the CloudAuthMode.Real->Cloud rename found along the way (see step 1's note) · next: token
   receipt endpoint (step 3) -- study ExternalApi.cs's existing `external/login` handler first,
   then add the new endpoint + CONTRACTS.md "Auth (Option A)" section.
+- 8 Jul 2026 · done: steps 3 (token receipt endpoint `external/cloudLogin` + CONTRACTS.md v1.3)
+  and 6 (SignInDialog cloud-mode browser button + `sharing/openBrowserSignIn`) · next: step 4
+  (`tc.jwt_email_verified()` vs Firebase claim shape -- read the migration, likely already
+  correct per its own 1a/1b pgTAP cases, confirm by re-running `supabase test db`) then step 5
+  (reference Firebase Admin artifacts under `server/firebase/`).
 ## Progress log

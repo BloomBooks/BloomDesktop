@@ -1582,7 +1582,12 @@
       <trans-unit id="TeamCollection.Sharing.SignInNotYetAvailable" translate="no">
         <source xml:lang="en">Signing in with your Bloom account isn't available yet. Check back in a future version of Bloom.</source>
         <note>ID: TeamCollection.Sharing.SignInNotYetAvailable</note>
-        <note>Shown in the dedicated sign-in dialog when the collection uses the eventual production ("cloud") sign-in mode, which is not implemented yet (only the developer/testing "dev" mode is). "Bloom" is a product name and must not be translated.</note>
+        <note>obsolete as of 6.5; "cloud" sign-in mode now routes to the browser-based sign-in flow (see TeamCollection.Sharing.SignInViaBrowser) instead of showing this message.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.SignInViaBrowser" translate="no">
+        <source xml:lang="en">Click "Sign In" to sign in with your Bloom account in your web browser. Come back to this window when you're done.</source>
+        <note>ID: TeamCollection.Sharing.SignInViaBrowser</note>
+        <note>Shown in the dedicated sign-in dialog when the collection uses the production ("cloud") sign-in mode. "Sign In" refers to the button below this text, labeled with the existing TeamCollection.Sharing.SignIn string. "Bloom" is a product name and must not be translated.</note>
       </trans-unit>
       <trans-unit id="TeamCollection.Sharing.CloudNameWillWork" translate="no">
         <source xml:lang="en">I think the name, "%0", will be a good one for the whole team. I understand that I will not be able to change this name once this becomes a Team Collection.</source>
