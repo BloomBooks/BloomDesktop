@@ -54,6 +54,7 @@ import {
     getToolboxBundleExports,
 } from "./workspaceFrames";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
+import { attachKeymanWebIfNeeded } from "./keymanWebIntegration";
 
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
@@ -166,6 +167,27 @@ function Cleanup() {
 
     $("div.bloom-editable").each(function () {
         TrimTrailingLineBreaksInDivs(this);
+    });
+
+    // Scrub KeymanWeb attach artifacts (see keymanWebIntegration.ts). The engine
+    // decorates every control it attaches to: it adds the "keymanweb-font" class,
+    // sets inputmode="none", forces dir="ltr", and can leave an empty style="".
+    // None of these belong in the saved book, so remove them here. This runs
+    // unconditionally (not only when Keyman loaded this session) so books already
+    // polluted by an earlier session get cleaned on their next save.
+    $("div.bloom-editable").each(function () {
+        $(this).removeClass("keymanweb-font");
+        $(this).removeAttr("inputmode");
+        // Bloom itself only ever sets dir="rtl" (via C# TranslationGroupManager),
+        // never "ltr", so a "ltr" value can only be KeymanWeb's; leave "rtl" alone.
+        if ($(this).attr("dir") === "ltr") {
+            $(this).removeAttr("dir");
+        }
+        // Remove the empty style attribute Keyman can leave behind, but keep any
+        // real inline styles.
+        if ($(this).attr("style") === "") {
+            $(this).removeAttr("style");
+        }
     });
 
     cleanupImages();
@@ -957,6 +979,9 @@ export function SetupElements(
             editBox.closest(".bloom-userCannotModifyStyles").length === 0
         ) {
             editor.AttachToBox(editBox.get(0));
+            attachKeymanWebIfNeeded(editBox.get(0)!).catch((err) =>
+                console.error("attachKeymanWebIfNeeded failed", err),
+            );
         }
     });
 
