@@ -126,9 +126,7 @@ test.describe("E2E-7 un-team adoption", () => {
         ).json()) as { supportsSharingUi: boolean };
         expect(capsBefore.supportsSharingUi).toBe(false);
 
-        const createResponse = await postCreateCloudTeamCollection(
-            instance.httpPort,
-        );
+        const createResponse = await postCreateCloudTeamCollection(instance);
         expect(createResponse.status).toBe(200);
         await expect
             .poll(

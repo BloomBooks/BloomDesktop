@@ -72,9 +72,7 @@ test.describe("E2E-5 approved accounts on two fresh profiles", () => {
             }),
         );
         await alice.connect(); // connect-before-trigger (finding #7)
-        const createResponse = await postCreateCloudTeamCollection(
-            alice.httpPort,
-        );
+        const createResponse = await postCreateCloudTeamCollection(alice);
         expect(createResponse.status).toBe(200);
         await expect
             .poll(

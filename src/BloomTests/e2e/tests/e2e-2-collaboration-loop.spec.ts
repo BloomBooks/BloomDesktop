@@ -89,9 +89,7 @@ test.describe("E2E-2 two-instance collaboration loop", () => {
         // connection across the reopen is the reliable path; reconnecting afterward is not.
         const { page: alicePage } = await alice.connect();
 
-        const createResponse = await postCreateCloudTeamCollection(
-            alice.httpPort,
-        );
+        const createResponse = await postCreateCloudTeamCollection(alice);
         expect(createResponse.status).toBe(200);
         await expect
             .poll(

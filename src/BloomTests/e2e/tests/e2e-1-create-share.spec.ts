@@ -77,9 +77,7 @@ test.describe("E2E-1 create/share an existing collection", () => {
         ).json();
         expect(capsBefore.supportsSharingUi).toBe(false);
 
-        const createResponse = await postCreateCloudTeamCollection(
-            instance.httpPort,
-        );
+        const createResponse = await postCreateCloudTeamCollection(instance);
         expect(createResponse.status).toBe(200);
 
         // ConnectToCloudCollection + the reopen callback + the initial upload are not
