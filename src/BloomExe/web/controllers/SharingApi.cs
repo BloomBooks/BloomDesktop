@@ -8,6 +8,7 @@ using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
 using Bloom.TeamCollection.Cloud;
+using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -44,6 +45,11 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler("sharing/login", HandleLogin, false);
             apiHandler.RegisterEndpointHandler("sharing/logout", HandleLogout, false);
             apiHandler.RegisterEndpointHandler("sharing/showSignIn", HandleShowSignIn, true);
+            apiHandler.RegisterEndpointHandler(
+                "sharing/openBrowserSignIn",
+                HandleOpenBrowserSignIn,
+                false
+            );
 
             apiHandler.RegisterEndpointHandler("sharing/members", HandleMembers, false);
             apiHandler.RegisterEndpointHandler("sharing/addApproval", HandleAddApproval, false);
@@ -169,6 +175,25 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
+        /// <summary>
+        /// The Bloom-side half of the token-receipt endpoint (ExternalApi's
+        /// `external/cloudLogin`, task 12): turns a Firebase ID+refresh token pair -- forwarded
+        /// by the BloomLibrary-hosted login page after a real sign-in, per CONTRACTS.md's "Auth
+        /// (Option A)" section -- into a signed-in CloudAuth session, then notifies the UI
+        /// exactly like <see cref="HandleLogin"/> does for the dev-mode password flow. Public
+        /// and static (rather than an endpoint handler here) so ExternalApi.cs -- which already
+        /// owns the browser-facing `external/*` conventions (CORS OPTIONS handling,
+        /// Shell.ComeToFront) for the pre-existing Parse `external/login` -- can reuse this
+        /// class's CurrentAuth()/NotifyClients() identity plumbing without duplicating it.
+        /// Throws CloudAuthException on failure (e.g. a malformed token); the caller (ExternalApi)
+        /// decides how to surface that over HTTP.
+        /// </summary>
+        public static void HandleCloudLoginTokens(string idToken, string refreshToken)
+        {
+            CurrentAuth().SignInWithExternalTokens(idToken, refreshToken);
+            NotifyClients("sharing", "loginState");
+        }
+
         /// <summary>Delegates to TeamCollectionApi's own HandleForceUnlock (see its doc comment):
         /// exactly one implementation, registered under two endpoint names.</summary>
         private void HandleForceUnlock(ApiRequest request)
@@ -197,6 +222,23 @@ namespace Bloom.web.controllers
                 null,
                 "Sign In"
             );
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// The "cloud" (Option A) sign-in mode's entry point from SignInDialog.tsx: there is no
+        /// password form to submit, so the button there posts here instead, which just opens the
+        /// same BloomLibrary-hosted login page Bloom already opens for BloomLibrary account
+        /// sign-in (BloomLibraryAuthentication.LogIn -- see its own doc comment for the exact
+        /// URL). That page forwards the resulting Firebase tokens back to Bloom's
+        /// external/cloudLogin endpoint (CONTRACTS.md's "Auth (Option A)" section), which is what
+        /// actually completes the sign-in; SignInDialog closes itself once that lands, via the
+        /// same useSharingLoginState()/loginState websocket subscription every other sign-in path
+        /// already relies on.
+        /// </summary>
+        private void HandleOpenBrowserSignIn(ApiRequest request)
+        {
+            BloomLibraryAuthentication.LogIn();
             request.PostSucceeded();
         }
 

@@ -216,9 +216,11 @@ launching Bloom (or in your IDE's launch profile / `.env.local`).
 | `BLOOM_CLOUDTC_ANON_KEY` | *(printed by `supabase start`)* | Supabase anon/public JWT key |
 | `BLOOM_CLOUDTC_S3_ENDPOINT` | `http://localhost:9000` | MinIO S3-compatible endpoint (path-style) |
 | `BLOOM_CLOUDTC_S3_BUCKET` | `bloom-teams-local` | Dev bucket name |
-| `BLOOM_CLOUDTC_AUTH_MODE` | `dev` | `dev` = local GoTrue email/pw; `real` = Firebase/BloomLibrary |
+| `BLOOM_CLOUDTC_AUTH_MODE` | `dev` | `dev` = local GoTrue email/pw; `cloud` = Firebase/BloomLibrary (Option A) |
 | `BLOOM_CLOUDTC_USER` | *(optional)* | Email to auto-sign-in as (multi-instance testing) |
 | `BLOOM_CLOUDTC_PASSWORD` | *(optional)* | Password for `BLOOM_CLOUDTC_USER` |
+| `BLOOM_CLOUDTC_FIREBASE_API_KEY` | *(unset)* | Firebase Web API key, for `cloud` mode's securetoken refresh calls |
+| `BLOOM_CLOUDTC_FIREBASE_PROJECT_ID` | *(unset)* | Firebase project id, for `cloud` mode's ID-token sanity checks |
 
 `CloudEnvironment.cs` (task 03) is the single place that reads these variables and exposes
 typed properties to the rest of the app. Do not read them directly from other code.

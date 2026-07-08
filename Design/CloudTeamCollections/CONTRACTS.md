@@ -1,9 +1,11 @@
 # Cloud Team Collections — frozen API contracts (v1)
 
 Changes to this file require an orchestrator commit and a version-note bump here.
-**Contract version: 1.2** (7 Jul 2026 — added the `get_book_manifest` RPC, additive; the
-Receive path needs a per-book file manifest and no existing RPC carried one. v1.1, 6 Jul:
-two wire-format clarifications under "Postgres RPCs"; no semantic changes.)
+**Contract version: 1.3** (8 Jul 2026 — added the "Auth (Option A)" section: the
+token-receipt endpoint BloomLibrary2's `src/editor.ts` forwards Firebase tokens to. v1.2,
+7 Jul: added the `get_book_manifest` RPC, additive; the Receive path needs a per-book file
+manifest and no existing RPC carried one. v1.1, 6 Jul: two wire-format clarifications under
+"Postgres RPCs"; no semantic changes.)
 
 ## Link file
 
@@ -13,9 +15,50 @@ CollectionId GUID (also the server `collections.id`).
 
 ## Auth
 
-Bearer JWT on every request (mechanism per pending Option A/B/C decision; `CloudAuth`
-isolates it). Claims used server-side: `sub` (user id), `email`, `email_verified`.
-Claiming an approval requires `email_verified = true`.
+Bearer JWT on every request (**Option A, decided 8 Jul 2026**: Supabase third-party Firebase
+auth — the JWT is the Firebase ID token itself, unmodified; `CloudAuth` isolates the client
+side of this). Claims used server-side: `sub` (user id), `email`, `email_verified`. Claiming
+an approval requires `email_verified = true`.
+
+## Auth (Option A): token-receipt endpoint
+
+The Bloom-side half of BloomLibrary2's forwarding change (`src/editor.ts`, GOING-LIVE.md
+Phase 3.2, not yet written against this file's *previous* prose — this section is the
+precise text to write it against). Reuses the exact conventions of the pre-existing
+`external/login` endpoint (ExternalApi.cs) that the same BloomLibrary-hosted login page
+already posts back to for the legacy Parse session: same host/port
+(`http://127.0.0.1:{port}/bloom/api/...`, `port` is the query param the login page was opened
+with — see `BloomLibraryAuthentication.LogIn`'s `login-for-editor?port=` URL), same
+CORS/OPTIONS handling, same "POST it and move on" shape. It is a **separate** endpoint, not
+new fields on `external/login`, because the two payloads are independent (a legacy Parse
+sign-in does not imply a Cloud Team Collection one, and vice versa) and the login page may
+call either or both.
+
+**Route**: `POST /bloom/api/external/cloudLogin`
+
+**Request body** (JSON):
+```json
+{ "idToken": "<firebase-id-token-jwt>", "refreshToken": "<firebase-refresh-token>" }
+```
+Both fields are required, non-empty strings. `idToken` is the raw Firebase ID token JWT
+(the login page's own Firebase SDK session already holds this after sign-in); `refreshToken`
+is its paired Firebase refresh token. Bloom derives identity (email/user id/email_verified/
+expiry) **only** from decoding `idToken`'s own claims — it never trusts a separately-supplied
+email or verified flag (see `FirebaseCloudAuthProvider.AcceptExternalSession` /
+`SessionFromIdToken`).
+
+**Reply**: `200` with an empty body on success (`request.PostSucceeded()`, matching
+`external/login`); a non-2xx status with a plain-text error message on failure (e.g. a
+malformed/unparseable token). An `OPTIONS` preflight always succeeds with an empty 200, same
+as every other `external/*` endpoint.
+
+**Side effects on success**: the same as the dev-mode `sharing/login` endpoint —
+`CloudAuth`'s in-memory session is replaced (persisted via `DpapiCloudTokenStore` once the
+production wiring in GOING-LIVE.md Phase 3.5 selects it), the `sharing`/`loginState`
+websocket event fires so any open `useSharingLoginState()` subscriber (e.g. `SignInDialog`)
+re-queries and updates/closes itself, and the Bloom window is brought to the front (matching
+`external/login`'s `Shell.ComeToFront()` — the user's attention is already on the browser tab
+that just finished signing in).
 
 ## Postgres RPCs (PostgREST `/rest/v1/rpc/...`)
 
