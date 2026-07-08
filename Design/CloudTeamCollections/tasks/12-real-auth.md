@@ -136,8 +136,12 @@ one new migration + pgTAP additions if the email_verified check needs it.
   trigger claim function + backfill script + README), then the final full-suite verification
   pass and report.
 - 8 Jul 2026 · done: step 5 (server/firebase/ reference artifacts) -- ALL SIX STEPS COMPLETE.
-  Final verification: mandatory C# filter 359/359 green, pgTAP 42/42 green, vitest green,
-  yarn lint 0 errors · next: none -- task complete; see the final report for what's still
-  deferred to GOING-LIVE.md Phase 3 (live wiring: hosted Supabase third-party-auth config,
+  Final verification: mandatory C# filter 359/359 green, pgTAP 42/42 green,
+  SignInDialog.test.tsx 5/5 green (`--pool=threads` single run), `yarn lint` 0 errors. NOTE:
+  a repo-wide `yarn vitest run teamCollection` (broader than what this task touched) hung
+  twice and was killed -- consistent with the known pre-existing Windows vitest-hang issue
+  (memory note: parallel vitest hangs after ~15 files; WebSocketManager handles), not a
+  regression from this task's changes; not investigated further as out of scope · next: none
+  -- task complete; see the final report for what's still deferred to GOING-LIVE.md Phase 3
+  (live wiring: hosted Supabase third-party-auth config,
   BloomLibrary2 editor.ts change, actual Firebase deploy+backfill).
-## Progress log
