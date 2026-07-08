@@ -70,12 +70,7 @@ namespace Bloom.WebLibraryIntegration
             get
             {
 #if DEBUG
-                // TEMPORARY: the dev/sandbox backend (dev-server.bloomlibrary.org) is returning
-                // HTTP 500 for all requests, which breaks login and library queries. Point debug
-                // builds at production (bloomlibrary.org) until the dev backend is healthy again.
-                // Revert this to `return true;` once the sandbox is back so debug uploads don't
-                // hit production.
-                return false;
+                return true;
 #else
                 var temp = Environment.GetEnvironmentVariable("BloomSandbox");
                 if (string.IsNullOrWhiteSpace(temp))

@@ -194,7 +194,6 @@ namespace Bloom
                                 typeof(LibraryPublishApi),
                                 typeof(AccountApi),
                                 typeof(AvatarApi),
-                                typeof(AvatarCache),
                                 typeof(WorkspaceApi),
                                 typeof(BookCollectionHolder),
                                 typeof(WorkspaceTabSelection),
@@ -326,6 +325,12 @@ namespace Bloom
                         .InstancePerLifetimeScope();
 
                     builder.RegisterType<BloomLibraryBookApiClient>().AsSelf().SingleInstance();
+
+                    // The avatar cache holds an in-memory known-photo map and disk cache shared across
+                    // the app (account menu + Team Collection avatars); it must be a single shared
+                    // instance, not one-per-lifetime-scope, so a child-scope resolve can't get a second
+                    // copy with a stale map.
+                    builder.RegisterType<AvatarCache>().AsSelf().SingleInstance();
 
                     // Enhance: may need some way to test a release build in the sandbox.
                     builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();
