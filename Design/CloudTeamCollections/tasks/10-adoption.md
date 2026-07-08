@@ -8,8 +8,10 @@
 - [x] Enabling cloud on a formerly-folder-TC collection cleans stale artifacts: per-book
       `TeamCollection.status`, `lastCollectionFileSyncData.txt`, `log.txt`; simultaneous
       folder-link + cloud-link = error with fix instructions.
-- [ ] Members' existing local copies reconcile by checksum on first Receive (verify the
-      first-time-join merge path).
+- [x] Members' existing local copies reconcile by checksum on first Receive (verify the
+      first-time-join merge path). -- verified by reading; see progress log (no checksum-based
+      reconciliation actually happens; documented as a known, pre-existing-pattern limitation,
+      mitigated procedurally by "everyone check in first" in the item-5 docs).
 - [ ] User documentation: the un-team + enable + invite-team walkthrough (docs site), incl.
       "everyone check in first".
 - [ ] Localization sweep of all new strings (xlf-strings skill rules).
@@ -140,3 +142,38 @@
   evidently safe/no-op-tolerant to call from code paths that ARE covered by tests, e.g.
   `HandleForceUnlock`/`HandleAttemptLockOfCurrentBook`, which have existing green tests in
   `TeamCollectionApiTests.cs` despite their own preexisting `Analytics.Track` calls).
+
+- 8 Jul 2026 · done (verify-by-reading, no code change) · Task-file step 2 / prompt item 4
+  (First-Receive reconcile). Traced `CloudJoinFlow.JoinCollection`'s full first-join path for
+  every scenario with a pre-existing local copy (`AlreadyJoinedSameCollection`,
+  `PlainCollectionSameGuid`, and — via `JoinCloudCollectionDialog`'s
+  `MatchesExistingNonTeamCollection` merge copy — the general "you already have a local
+  collection with this name" case): all of them fall through to the same
+  `cloudTc.CopyRepoCollectionFilesToLocal(...)` + `cloudTc.CopyAllBooksFromRepoToLocalFolder(...)`
+  call. `CopyAllBooksFromRepoToLocalFolder` (TeamCollection.cs, shared base class) calls
+  `CopyBookFromRepoToLocal` -> `FetchBookFromRepo` for EVERY book in the repo's list
+  UNCONDITIONALLY — there is no checksum comparison anywhere in this path. Concretely:
+  `CloudTeamCollection.FetchBookFromRepo` downloads to a staging folder, verified per-file, then
+  does a two-rename atomic-ish swap of the whole book folder, and **deletes** whatever was
+  previously at that path (no backup/Lost-and-Found capture of pre-existing local content, no
+  checksum-match short-circuit to skip an unnecessary download).
+  This is NOT a cloud-specific regression: `FolderTeamCollection.FetchBookFromRepo`
+  (`RobustZip.UnzipDirectory(destFolder, bookPath)`) has the exact same "always overwrite, never
+  compare checksums" behavior for its own first-join path — this is long-standing, symmetric
+  behavior across both backends, not something introduced by this project.
+  Net effect for a member with a genuinely pre-existing local copy of the same collection: (a) if
+  their local content already matches the repo (the expected case when the whole team checked in
+  before the admin ran "enable cloud" — see item 5's docs, "everyone check in first" is written
+  as a load-bearing instruction precisely because of this), every book still gets wastefully
+  re-downloaded and re-written byte-for-byte identical — inefficient but harmless; (b) if their
+  local content had DIVERGED (they kept editing after un-teaming, or another un-synced local
+  change), that divergent content is silently discarded with no salvage step. (b) is a real gap,
+  but fixing it properly needs new merge/conflict UX (detect divergence, offer Lost-and-Found
+  preservation like the checked-in-conflict path already does elsewhere in TeamCollection.cs) —
+  not a "trivial" fix per this item's own instructions, and risky to author here without build
+  verification given it would touch the shared `CopyAllBooksFromRepoToLocalFolder`/
+  `FetchBookFromRepo` contract used by both backends' join flows. Recommending this as a
+  follow-up task if dogfooding (item 7 of the Steps list) surfaces it as a real-world problem;
+  documented as a known limitation in the user walkthrough (item 5) instead, which is why "make
+  sure everyone checks in all their work to the OLD Team Collection before enabling cloud" is
+  called out as a MUST, not a nice-to-have, in that doc.
