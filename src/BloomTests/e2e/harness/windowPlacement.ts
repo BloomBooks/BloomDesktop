@@ -15,14 +15,44 @@
 // Caveat worth knowing: Bloom saves its window position to the shared per-machine user.config
 // on exit, so after an E2E run the developer's OWN next Bloom launch may open on the E2E
 // screen once. Harmless, but surprising the first time.
-import { spawn } from "node:child_process";
+import { spawn, execFileSync } from "node:child_process";
 import * as path from "node:path";
 
 const watcherScript = path.join(__dirname, "watchWindowScreen.ps1");
 
-/** The 1-based screen index from BLOOM_E2E_SCREEN, or undefined when the feature is off. */
+// Fallback for a real footgun: setting BLOOM_E2E_SCREEN as a Windows user/machine
+// environment variable does NOT reach processes whose parent shell started before the
+// variable was set (long-lived agent shells, IDE terminals, service-launched runners). When
+// the inherited environment lacks the variable, ask the registry-backed stores directly so
+// "I set the variable, why is it ignored?" can't happen. Read once per test process.
+let registryLookupDone = false;
+let registryValue: string | undefined;
+const envOrRegistry = (): string | undefined => {
+    if (process.env.BLOOM_E2E_SCREEN) return process.env.BLOOM_E2E_SCREEN;
+    if (!registryLookupDone) {
+        registryLookupDone = true;
+        try {
+            const value = execFileSync(
+                "powershell",
+                [
+                    "-NoProfile",
+                    "-Command",
+                    "[Environment]::GetEnvironmentVariable('BLOOM_E2E_SCREEN','User'), [Environment]::GetEnvironmentVariable('BLOOM_E2E_SCREEN','Machine') | Where-Object { $_ } | Select-Object -First 1",
+                ],
+                { timeout: 15_000, encoding: "utf8" },
+            ).trim();
+            registryValue = value || undefined;
+        } catch {
+            registryValue = undefined;
+        }
+    }
+    return registryValue;
+};
+
+/** The 1-based screen index from BLOOM_E2E_SCREEN (inherited environment, falling back to
+ * the user/machine registry value), or undefined when the feature is off. */
 export const configuredScreenIndex = (): number | undefined => {
-    const raw = process.env.BLOOM_E2E_SCREEN;
+    const raw = envOrRegistry();
     if (!raw) return undefined;
     const index = Number(raw);
     if (!Number.isInteger(index) || index < 1) {
