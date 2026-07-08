@@ -5988,7 +5988,7 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TeamCollection.Open" translate="no">
         <source xml:lang="en">Open</source>
         <note>ID: TeamCollection.Open</note>
-        <note>Action button in the cloud Team Collection join dialog, shown instead of "Join" when this computer is already fully connected to the collection being joined -- clicking it just opens the already-local collection rather than pulling anything down again.</note>
+        <note>Action button in the cloud Team Collection join dialog, shown instead of "Join" when this computer is already fully connected to the collection being joined. Clicking it just opens the already-local collection rather than pulling anything down again.</note>
       </trans-unit>
       <trans-unit id="TeamCollection.JoinHeading" sil:dynamic="true">
         <source xml:lang="en">Join the Team Collection "%0"</source>

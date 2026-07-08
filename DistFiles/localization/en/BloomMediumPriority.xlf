@@ -1655,7 +1655,7 @@
       <trans-unit id="TeamCollection.CloudLocation" translate="no">
         <source xml:lang="en">Cloud Storage Folder Location:</source>
         <note>ID: TeamCollection.CloudLocation</note>
-        <note>Label above a link to the shared folder location for a FOLDER-based (not the newer server-hosted cloud) Team Collection -- "Cloud" here refers to a cloud-sync service like Dropbox or Google Drive that the shared folder happens to live in, not Bloom's own Cloud Team Collections feature.</note>
+        <note>Label above a link to the shared folder location for a FOLDER-based (not the newer server-hosted cloud) Team Collection. "Cloud" here refers to a cloud-sync service like Dropbox or Google Drive that the shared folder happens to live in, not Bloom's own Cloud Team Collections feature.</note>
       </trans-unit>
       <trans-unit id="TeamCollection.AddingHelp" translate="no">
         <source xml:lang="en">Need help adding someone to your Team Collection?</source>
