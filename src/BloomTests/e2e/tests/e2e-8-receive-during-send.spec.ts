@@ -35,14 +35,11 @@ import { queryDb, openPersistentClient } from "../harness/db";
 
 const LOG_DIR = "C:\\BloomE2E-logs\\e2e-8";
 const V2_MARKER = "ALICE-V2-INFLIGHT-MARKER";
-// An image already IN the book (and its upload manifest): bloating it to ~64 MB makes the v2
-// Send's upload phase long enough to reliably kill the sender mid-upload (before checkin-finish).
-// An arbitrary new .bin would be filtered out of the manifest by BookFileFilter and never
-// uploaded -- so it must be a file type/name the filter already includes.
-// A large NEW book-root `.txt` (an extension BookFileFilter includes in the upload manifest, but
-// which Bloom does NOT image-process on select/open -- a big fake .png makes select-book hang for
-// 30s+ as Bloom tries to decode it) makes the v2 Send's upload phase long enough to reliably kill
-// the sender mid-upload, before checkin-finish.
+// A large NEW book-root `.txt` widens the v2 Send's upload phase enough to reliably kill the
+// sender mid-upload (before checkin-finish). It must be an extension BookFileFilter INCLUDES in
+// the upload manifest (an arbitrary `.bin` is silently excluded -> zero upload time) but which
+// Bloom does NOT image-process (a large fake `.png` makes external/select-book hang 30s+ as
+// Bloom tries to decode it). `.txt` is in BookLevelFileExtensionsLowerCase and never decoded.
 const BIG_ASSET_NAME = "big-v2-asset.txt";
 const BIG_ASSET_BYTES = 40 * 1024 * 1024;
 
