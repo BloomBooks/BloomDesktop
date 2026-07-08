@@ -302,6 +302,31 @@ namespace BloomTests.TeamCollection.Cloud
         }
 
         [Test]
+        public void LogEvent_PostsMessageUnderPMessageNotPComment()
+        {
+            // Regression guard for the E2E-4 finding: tc.log_event's message parameter is
+            // `p_message`; posting `p_comment` (the original guess) makes PostgREST reject the
+            // call (no function with that argument name), silently dropping the
+            // WorkPreservedLocally incident. Assert on the actual serialized request body.
+            var (client, executor, _) = MakeSignedInClient();
+            // LogEvent casts the RPC result to JObject, so hand back an object body.
+            executor.Handler = req => FakeResponses.Make(HttpStatusCode.OK, "{\"id\":1}");
+
+            client.LogEvent("col-1", "book-1", 100, "recovery note");
+
+            var request = executor.RequestsSeen[0];
+            var body = (string)
+                request.Parameters.Find(p => p.Type == ParameterType.RequestBody).Value;
+            Assert.That(body, Does.Contain("p_message"), "must post the RPC's real parameter name");
+            Assert.That(body, Does.Contain("recovery note"));
+            Assert.That(
+                body,
+                Does.Not.Contain("p_comment"),
+                "the old wrong parameter name must be gone"
+            );
+        }
+
+        [Test]
         public void CallRpc_PostgrestStyleError_MapsToUnknownWithServerMessagePreserved()
         {
             // This is the actual shape live-verified against the local Supabase stack: RAISE

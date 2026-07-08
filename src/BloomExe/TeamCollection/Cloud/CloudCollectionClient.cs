@@ -333,7 +333,15 @@ namespace Bloom.TeamCollection.Cloud
                     p_collection_id = collectionId,
                     p_book_id = bookId,
                     p_type = eventType,
-                    p_comment = comment,
+                    // The deployed tc.log_event RPC's message parameter is `p_message`, NOT
+                    // `p_comment` (CONTRACTS.md's "log_event(...)" shorthand was ambiguous -- this
+                    // class's own doc comment flagged the guess). PostgREST matches functions by
+                    // argument NAME, so the wrong key made every log_event call 404 (no function
+                    // with that signature); the only caller (CloudTeamCollection.
+                    // SaveLocalCopyForRecovery) wraps it in a Sentry-only catch, so the
+                    // WorkPreservedLocally incident silently never reached the server's history.
+                    // Found live by E2E-4's forced-check-in recovery scenario.
+                    p_message = comment,
                 }
             );
 
