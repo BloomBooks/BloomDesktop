@@ -125,8 +125,18 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
         `src/BloomTests/e2e/` (build-once/launch-many, per-scenario DB+MinIO+scratch reset,
         DB/S3 verification, experimental-flag automation); E2E-1 (1.4 min) and E2E-2
         (2.5 min, the automated two-instance smoke) green on orchestrator re-runs.
-        E2E-3..10 still to come (continues on `task/09-e2e` patterns).
+  - [x] 09 scenarios E2E-3..9 DONE 8 Jul 2026 — all green individually AND each has passed
+        in matrix context; found+fixed 3 product bugs (UpdateUiForBook NRE = the Wave-3
+        latent recovery NRE; MapError error-envelope mismatch; LogEvent p_message). E2E-4
+        partial (`.bloomSource` recovery unreachable via cloud — product decision needed);
+        E2E-10 blocked (account-switch safety unimplemented — product decision needed).
+        See tasks/09-e2e.md findings 1–10.
+  - [ ] Acceptance: full matrix green in ONE run on an idle machine. Five runs on the
+        (actively used) dev machine each passed a different 8–11/12; remaining failures are
+        load-correlated (worst offender: Bloom's problem-report modal freezes automated
+        instances on any under-load error — finding 9, product fix recommended).
   - [x] 10-adoption DONE 8 Jul 2026 — all 7 polish items; see merge log.
+  - [ ] Dogfood (needs GOING-LIVE.md phases 2–4 for real-infra, or a local-stack pilot).
 - [ ] Real-infrastructure cutover complete (deferred list above)
 - [ ] Auth option decided (colleague review — see design doc Open items; **not blocking** —
       dev auth provider ships first)
