@@ -205,7 +205,11 @@ test.describe("E2E-8 Receive-during-Send coherence", () => {
             // committed before the kill landed, the big asset wasn't big enough -- re-run/enlarge.)
             const frozen = await dbClient.query(
                 "select b.current_version_seq, " +
-                    "(select status from tc.checkin_transactions where book_id = b.id order by id desc limit 1) as tx_status " +
+                    // started_at, NOT id: the id is gen_random_uuid(), which has no temporal
+                    // order — sorting by it returned the FINISHED v1 transaction instead of
+                    // the frozen-open v2 one on a literal coin flip, making this test's
+                    // pass/fail random (three false failures before the post-mortem caught it).
+                    "(select status from tc.checkin_transactions where book_id = b.id order by started_at desc limit 1) as tx_status " +
                     "from tc.books b where b.id = $1",
                 [bookId],
             );

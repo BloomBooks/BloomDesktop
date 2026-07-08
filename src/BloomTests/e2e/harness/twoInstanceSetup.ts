@@ -1,4 +1,4 @@
-// Shared "Alice shares a collection, approves Bob, Bob joins" setup, factored out of E2E-2 once
+﻿// Shared "Alice shares a collection, approves Bob, Bob joins" setup, factored out of E2E-2 once
 // E2E-3 needed the identical sequence. Every scenario below E2E-2 that needs two instances on the
 // same cloud collection should use this instead of re-deriving the create/approve/pullDown/
 // relaunch dance (see E2E-2's header comment for why each individual step is shaped the way it
@@ -44,7 +44,7 @@ export const setUpAliceAndBobOnSharedCollection = async (
     // see E2E-2's header comment for why a fresh connectOverCDP after the reopen is unreliable.
     const { page: alicePage } = await alice.connect();
 
-    const createResponse = await postCreateCloudTeamCollection(alice.httpPort);
+    const createResponse = await postCreateCloudTeamCollection(alice);
     expect(createResponse.status).toBe(200);
     await expect
         .poll(

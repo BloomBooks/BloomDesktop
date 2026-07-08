@@ -259,9 +259,7 @@ test.describe("E2E-7 un-team adoption", () => {
         // whatever the HTTP reply does (the handler shows a modal error dialog before replying,
         // which nothing in an automated session can click -- see the file header), the durable
         // state below is the contract. Tolerate either a reply or a timeout.
-        await postCreateCloudTeamCollection(instance.httpPort).catch(
-            () => undefined,
-        );
+        await postCreateCloudTeamCollection(instance).catch(() => undefined);
 
         // No server-side collection row was ever created.
         const collectionRows = await queryDb(
