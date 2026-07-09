@@ -28,11 +28,11 @@ below is therefore actionable; the Bloom-side provider work (3.4) started the sa
 - ~~C~~: hand-validate Firebase JWTs ourselves per the stale `bloom-parse-server/supabase/`
   docs — rejected; more code we own, no benefit over A.
 
-### 1.2 [HUMAN] Confirm the safety-window duration
-`provision-aws.ps1` defaults noncurrent-version expiry to **7 days** (CONTRACTS.md). The open
-question in IMPLEMENTATION.md ("7 days vs 1 day") must be settled before provisioning, because
-the lifecycle rule is created in step 2.1. Constraint: it MUST stay strictly greater than the
-48-hour checkin-transaction lifetime (`tc.checkin_transactions.expires_at`).
+### 1.2 [DECIDED 9 Jul 2026] Safety-window duration: **7 days**
+John confirmed the `provision-aws.ps1` default of 7 days for noncurrent-version expiry
+("keeping noncurrent objects for 7 days seems plenty"). Constraint honored: strictly greater
+than the 48-hour checkin-transaction lifetime (`tc.checkin_transactions.expires_at`). No
+script change needed — step 2.1 runs as written.
 
 ---
 
@@ -169,25 +169,28 @@ Found during Wave-4 E2E work (see `tasks/09-e2e.md` progress log for full detail
 experimental-feature flag gates all of this UI, so merging to master does NOT require these —
 but giving the feature to real testers does:
 
-- **[AGENT + design decision] Account-switch safety (E2E-10, currently unimplemented).**
-  The design mandates: switching accounts with unsent checked-out changes is blocked with
-  explicit choices (Send first, or preserve `.bloomSource` + release). Today `HandleLogout`
-  signs out unconditionally. Building blocks exist (`CloudAuth.AccountSwitched`/`SignedOut`
-  events have zero subscribers). E2E-10 is written as blocked and becomes the acceptance test.
-- **[AGENT + design decision] Cloud recovery preconditions (E2E-4's blocked half).** The
-  `.bloomSource`-in-Lost-and-Found recovery path is unreachable via the cloud backend: cloud
-  `AttemptLock` never persists `lockedBy` to the local status file, so `SyncAtStartup`'s
-  recovery loop skips cloud books after a restart. Decide: persist local checkout status for
-  cloud (symmetry with folder TCs) or teach the shared recovery loop to consult the cloud
-  cache. Touches the shared base-class contract — needs review by someone who knows folder-TC
-  history.
+- **[DECIDED 9 Jul 2026 → AGENT] Account-switch behavior (E2E-10).** John's full spec is
+  recorded as item 9 in `orchestration/DOGFOOD-BATCH-1.md`: local access is unrestricted and
+  only shared-data operations are gated by the CURRENT logon; opening a collection joined
+  under another account REFUSES (with admin emails + last local editor named) when the new
+  logon is not a member, and opens CONNECTED (with atomic checkout takeover on first edit)
+  when it is. Supersedes the earlier "block logout with unsent changes" sketch. E2E-10
+  becomes the acceptance test once implemented.
+- **[DECIDED + IMPLEMENTED 9 Jul 2026] Cloud recovery (E2E-4's blocked half).** John's
+  decision (batch item 8): a sync that must overwrite locally-changed content goes ahead but
+  first preserves the previous local version as a `.bloomSource` in Lost and Found (+ server
+  incident). Implemented as a pure checksum guard in the auto-apply worker and the Sync
+  loop (commit e0526fa30); deliberately NOT the persist-checkout-state-to-local-file
+  alternative, which was only needed to reproduce folder-TC blocking semantics. Remaining
+  [AGENT] follow-up: extend E2E-4's spec to cover the now-reachable preserve path.
 - **[AGENT] Subscription-tier check timing.** `CheckDisablingTeamCollections` can
   intermittently disconnect a cloud TC when the subscription check races cloud sign-in
   (harness works around it with a test subscription code). Make the check deterministic for
   cloud TCs (product policy: which tier is required?).
-- **[AGENT, nice-to-have] Preview pane doesn't refresh on Receive** until the book is
-  reselected (old base-code ENHANCE); join-conflict states show generic errors (dedicated
-  resolution dialog was deferred from task 07).
+- **[DONE 9 Jul 2026] Preview pane refresh on Receive** — fixed by batch item 4+5's
+  auto-apply (the worker refreshes the preview when the applied book is selected). Still
+  open, nice-to-have: join-conflict states show generic errors (dedicated resolution dialog
+  was deferred from task 07).
 
 ---
 
