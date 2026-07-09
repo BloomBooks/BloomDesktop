@@ -1,5 +1,8 @@
 # Cloud TC — agent orchestration & resume protocol
 
+> **In-flight batch (9 Jul 2026):** John's dogfood bug/improvement list is being worked
+> per [DOGFOOD-BATCH-1.md](DOGFOOD-BATCH-1.md) — resume THAT file's checklist first.
+
 This folder holds the launch prompts for in-flight implementation tasks and the protocol
 that makes them resumable across work sessions (including AI-session token limits).
 
