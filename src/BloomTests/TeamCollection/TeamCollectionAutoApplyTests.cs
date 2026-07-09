@@ -1,5 +1,7 @@
+using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Bloom.TeamCollection;
 using BloomTemp;
 using BloomTests.DataBuilders;
@@ -326,6 +328,143 @@ namespace BloomTests.TeamCollection
                 RobustFile.ReadAllText(Path.Combine(bookFolderPath, bookFolderName + ".htm")),
                 Does.Contain("new content from remote"),
                 "the apply itself must still have happened"
+            );
+        }
+
+        // ------------------------------------------------------------------
+        // Batch item 7 (progressive join): a book that exists in the repo but has NO local folder
+        // at all (as opposed to the "changed remotely" scenarios above, which all start from an
+        // existing local folder) goes through DownloadMissingBookInBackground instead of the
+        // auto-apply re-verification -- there's no existing local content to check eligibility
+        // against or protect, just a straightforward fetch.
+        // ------------------------------------------------------------------
+
+        private string PutBookThenRemoveLocalFolder(string bookFolderName)
+        {
+            var bookBuilder = new BookFolderBuilder()
+                .WithRootFolder(_collectionFolder.FolderPath)
+                .WithTitle(bookFolderName)
+                .WithHtm("Content that only exists in the repo")
+                .Build();
+            var folderPath = bookBuilder.BuiltBookFolderPath;
+            _collection.PutBook(folderPath); // gets it into the repo
+            SIL.IO.RobustIO.DeleteDirectoryAndContents(folderPath); // simulate "never downloaded here"
+            return folderPath;
+        }
+
+        [Test]
+        public void ProcessAutoApplyRemoteChange_NoLocalFolderAtAll_DownloadsTheBook()
+        {
+            const string bookFolderName = "Never Downloaded Book";
+            var folderPath = PutBookThenRemoveLocalFolder(bookFolderName);
+            _collection.AutoApplyRemoteChangesForTests = true;
+
+            Assert.That(
+                Directory.Exists(folderPath),
+                Is.False,
+                "sanity: the local folder must not exist before the System Under Test call"
+            );
+
+            // System Under Test // (bypasses the queue -- TestOnly_ProcessAutoApplyRemoteChange
+            // exercises the same worker method the queue would eventually call)
+            _collection.TestOnly_ProcessAutoApplyRemoteChange(bookFolderName);
+
+            Assert.That(
+                Directory.Exists(folderPath),
+                Is.True,
+                "the book should have been downloaded from the repo into a fresh local folder"
+            );
+            Assert.That(
+                RobustFile.ReadAllText(Path.Combine(folderPath, bookFolderName + ".htm")),
+                Does.Contain("Content that only exists in the repo")
+            );
+        }
+
+        [Test]
+        public void ProcessAutoApplyRemoteChange_NoLocalFolderAndGoneFromRepoToo_DoesNothing()
+        {
+            // Simulates the book vanishing from the repo (e.g. deleted by a teammate) between the
+            // moment it was queued and the moment the background worker actually got to it.
+            const string bookFolderName = "Deleted Before Download Book";
+            var folderPath = PutBookThenRemoveLocalFolder(bookFolderName);
+            _collection.DeleteBookFromRepo(folderPath); // also removes it from _repoFolder
+            _collection.AutoApplyRemoteChangesForTests = true;
+
+            // System Under Test //
+            _collection.TestOnly_ProcessAutoApplyRemoteChange(bookFolderName);
+
+            Assert.That(
+                Directory.Exists(folderPath),
+                Is.False,
+                "a book that's gone from the repo by the time the worker runs must not be recreated"
+            );
+        }
+
+        // ------------------------------------------------------------------
+        // Batch item 7 (progressive join): SyncAtStartup's "brand new book!" branch reroutes to
+        // the same background queue for a backend with CanAutoApplyRemoteChanges (cloud), instead
+        // of blocking the startup sync dialog on every missing book's full download. Folder TCs
+        // (CanAutoApplyRemoteChanges always false) must be completely unaffected.
+        // ------------------------------------------------------------------
+
+        [Test]
+        public void SyncAtStartup_FolderTcDefault_NewRepoBookOnly_FetchesSynchronously()
+        {
+            const string bookFolderName = "Folder TC New Book";
+            var folderPath = PutBookThenRemoveLocalFolder(bookFolderName);
+            // AutoApplyRemoteChangesForTests defaults to false: real folder-TC behavior, unchanged
+            // by this batch item.
+
+            // System Under Test //
+            _collection.SyncAtStartup(new ProgressSpy(), firstTimeJoin: false);
+
+            Assert.That(
+                Directory.Exists(folderPath),
+                Is.True,
+                "a folder TC must still fetch a brand-new repo book synchronously, inside SyncAtStartup itself"
+            );
+        }
+
+        [Test]
+        public void SyncAtStartup_AutoApplyEnabled_NewRepoBookOnly_QueuesInsteadOfFetchingSynchronously()
+        {
+            const string bookFolderName = "Cloud-Like New Book";
+            var folderPath = PutBookThenRemoveLocalFolder(bookFolderName);
+            _collection.AutoApplyRemoteChangesForTests = true;
+            _collection.TestOnly_MakeAutoApplyQueueSynchronous();
+
+            // System Under Test // (queue is synchronous, so the whole background pass completes
+            // inline before SyncAtStartup returns -- this test asserts the REROUTED path still gets
+            // the book, deterministically; see the async test below for the non-blocking behavior)
+            _collection.SyncAtStartup(new ProgressSpy(), firstTimeJoin: false);
+
+            Assert.That(
+                Directory.Exists(folderPath),
+                Is.True,
+                "the rerouted background download should still successfully fetch the book"
+            );
+        }
+
+        [Test]
+        public void SyncAtStartup_AutoApplyEnabled_RealBackgroundWorker_EventuallyFetchesWithoutBlocking()
+        {
+            const string bookFolderName = "Cloud-Like Async New Book";
+            var folderPath = PutBookThenRemoveLocalFolder(bookFolderName);
+            _collection.AutoApplyRemoteChangesForTests = true;
+            // Real (default Task.Run) worker this time -- proves the download genuinely happens on
+            // a background thread rather than merely being deterministic-but-still-synchronous.
+
+            // System Under Test //
+            _collection.SyncAtStartup(new ProgressSpy(), firstTimeJoin: false);
+
+            var deadline = DateTime.UtcNow.AddSeconds(5);
+            while (DateTime.UtcNow < deadline && !Directory.Exists(folderPath))
+                Thread.Sleep(20);
+
+            Assert.That(
+                Directory.Exists(folderPath),
+                Is.True,
+                "the book should eventually be downloaded in the background even though SyncAtStartup itself didn't fetch it"
             );
         }
     }

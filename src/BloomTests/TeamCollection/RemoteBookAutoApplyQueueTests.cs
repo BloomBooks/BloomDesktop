@@ -134,6 +134,134 @@ namespace BloomTests.TeamCollection
             );
         }
 
+        // ------------------------------------------------------------------
+        // Batch item 7 (progressive join): EnqueueFront lets a caller (e.g. the user selecting a
+        // not-yet-downloaded placeholder) jump a book to the head of the line.
+        // ------------------------------------------------------------------
+
+        [Test]
+        public void EnqueueFront_BookNotYetQueued_ProcessesBeforeOthersQueuedFirst()
+        {
+            // Simulate: two books already queued in the background, then the user selects a third
+            // book that was never queued at all -- it should still jump ahead of the first two.
+            var processed = new List<string>();
+            RemoteBookAutoApplyQueue queue = null;
+            queue = new RemoteBookAutoApplyQueue(
+                bookName =>
+                {
+                    processed.Add(bookName);
+                    // Queue the other background books from inside the first book's processing so
+                    // they're PENDING (not yet started) when EnqueueFront is called below, mirroring
+                    // production timing (the whole point of a priority queue only matters while
+                    // something is still pending).
+                    if (bookName == "Background Book One")
+                    {
+                        queue.Enqueue("Background Book Two");
+                        queue.EnqueueFront("Prioritized Book");
+                    }
+                },
+                runWorker: action => action()
+            );
+
+            queue.Enqueue("Background Book One");
+
+            Assert.That(
+                processed,
+                Is.EqualTo(
+                    new[] { "Background Book One", "Prioritized Book", "Background Book Two" }
+                ),
+                "a book bumped to the front should be processed before books merely queued earlier"
+            );
+        }
+
+        [Test]
+        public void EnqueueFront_BookAlreadyPending_MovesToFrontRatherThanDuplicating()
+        {
+            var processed = new List<string>();
+            RemoteBookAutoApplyQueue queue = null;
+            queue = new RemoteBookAutoApplyQueue(
+                bookName =>
+                {
+                    processed.Add(bookName);
+                    if (bookName == "First")
+                    {
+                        queue.Enqueue("Already Pending");
+                        queue.Enqueue("Other");
+                        // "Already Pending" is queued (not in flight) at this point -- bumping it
+                        // should move it ahead of "Other" without adding a second entry.
+                        queue.EnqueueFront("Already Pending");
+                    }
+                },
+                runWorker: action => action()
+            );
+
+            queue.Enqueue("First");
+
+            Assert.That(
+                processed,
+                Is.EqualTo(new[] { "First", "Already Pending", "Other" }),
+                "moving an already-pending book to the front must not process it twice"
+            );
+        }
+
+        [Test]
+        public void EnqueueFront_BookCurrentlyInFlight_DoesNotInterruptOrDuplicate()
+        {
+            // Per the queue's contract: the book actually being processed right now always runs to
+            // completion first, even if EnqueueFront is called for it re-entrantly.
+            var callCount = 0;
+            RemoteBookAutoApplyQueue queue = null;
+            queue = new RemoteBookAutoApplyQueue(
+                bookName =>
+                {
+                    callCount++;
+                    if (callCount == 1)
+                        queue.EnqueueFront(bookName); // re-entrant: this book is "in flight" now
+                },
+                runWorker: action => action()
+            );
+
+            queue.EnqueueFront("In Flight Book");
+
+            Assert.That(
+                callCount,
+                Is.EqualTo(1),
+                "EnqueueFront for a book already being processed must be a no-op, not interrupt or duplicate it"
+            );
+        }
+
+        [Test]
+        public void EnqueueFront_RealBackgroundWorker_EventuallyProcessesTheBook()
+        {
+            // Sanity check against the REAL default (Task.Run) worker, not just the synchronous
+            // test double used above.
+            var processed = new List<string>();
+            var gate = new object();
+            var queue = new RemoteBookAutoApplyQueue(bookName =>
+            {
+                lock (gate)
+                    processed.Add(bookName);
+            });
+
+            queue.EnqueueFront("Prioritized Async Book");
+
+            var deadline = DateTime.UtcNow.AddSeconds(5);
+            while (DateTime.UtcNow < deadline)
+            {
+                lock (gate)
+                {
+                    if (processed.Count >= 1)
+                        break;
+                }
+                Thread.Sleep(20);
+            }
+
+            lock (gate)
+            {
+                Assert.That(processed, Is.EqualTo(new[] { "Prioritized Async Book" }));
+            }
+        }
+
         [Test]
         public void Enqueue_RealBackgroundWorker_EventuallyProcessesAllQueuedBooks()
         {

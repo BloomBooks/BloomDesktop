@@ -252,6 +252,16 @@ namespace BloomTests.TeamCollection.Cloud
         public void SyncAtStartup_NewBookOnlyInRepo_IsFetchedToLocal()
         {
             // A book that exists in the repo but not locally at all (the ordinary "Add me" case).
+            //
+            // Batch item 7 (progressive join) changed this scenario's WIRING: cloud SyncAtStartup
+            // now reroutes a repo-only book to the background auto-apply queue instead of fetching
+            // it synchronously inline (so a half-joined collection's next open stays fast). This
+            // test's ASSERTION ("the book ends up on disk") is deliberately kept unchanged --
+            // TestOnly_MakeAutoApplyQueueSynchronous makes the queue's worker run inline instead of
+            // via a background Task.Run, so the download still completes, deterministically, before
+            // SyncAtStartup returns. See TeamCollectionAutoApplyTests for tests that exercise the
+            // genuinely-asynchronous, non-blocking behavior this rerouting exists for.
+            _collection.TestOnly_MakeAutoApplyQueueSynchronous();
             _bookInstanceId = Guid.NewGuid().ToString();
             _executor.Handler = req =>
             {
