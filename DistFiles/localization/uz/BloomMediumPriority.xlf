@@ -844,6 +844,71 @@
         <target xml:lang="uz" state="needs-translation">Problem</target>
         <note>CollectionTab.OnBlorgBadge.Problem</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource" translate="no">
+        <source xml:lang="en">Import .bloomSource File(s)</source>
+        <target xml:lang="uz" state="needs-translation">Import .bloomSource File(s)</target>
+        <note>ID: CollectionTab.ImportBloomSource</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.ChoiceTitle" translate="no">
+        <source xml:lang="en">Import books</source>
+        <target xml:lang="uz" state="needs-translation">Import books</target>
+        <note>ID: CollectionTab.ImportBloomSource.ChoiceTitle</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.EditChoice" translate="no">
+        <source xml:lang="en">Import for editing</source>
+        <target xml:lang="uz" state="needs-translation">Import for editing</target>
+        <note>ID: CollectionTab.ImportBloomSource.EditChoice</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.EditChoiceDescription" translate="no">
+        <source xml:lang="en">Preserve everything.</source>
+        <target xml:lang="uz" state="needs-translation">Preserve everything.</target>
+        <note>ID: CollectionTab.ImportBloomSource.EditChoiceDescription</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoice" translate="no">
+        <source xml:lang="en">Import as derivatives — new books based on the originals</source>
+        <target xml:lang="uz" state="needs-translation">Import as derivatives — new books based on the originals</target>
+        <note>ID: CollectionTab.ImportBloomSource.DerivativeChoice</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoiceDescription" translate="no">
+        <source xml:lang="en">Use a new book ID &amp; make room for new copyright and credits while preserving those of the original.</source>
+        <target xml:lang="uz" state="needs-translation">Use a new book ID &amp; make room for new copyright and credits while preserving those of the original.</target>
+        <note>ID: CollectionTab.ImportBloomSource.DerivativeChoiceDescription</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.DuplicatePrompt" translate="no">
+        <source xml:lang="en">Some of these books are already in this collection.</source>
+        <target xml:lang="uz" state="needs-translation">Some of these books are already in this collection.</target>
+        <note>ID: CollectionTab.ImportBloomSource.DuplicatePrompt</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.Replace" translate="no">
+        <source xml:lang="en">Replace the existing books</source>
+        <target xml:lang="uz" state="needs-translation">Replace the existing books</target>
+        <note>ID: CollectionTab.ImportBloomSource.Replace</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.ReplaceDescription" translate="no">
+        <source xml:lang="en">The current copies will be overwritten.</source>
+        <target xml:lang="uz" state="needs-translation">The current copies will be overwritten.</target>
+        <note>ID: CollectionTab.ImportBloomSource.ReplaceDescription</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.ReplaceNeedsCheckout" translate="no">
+        <source xml:lang="en">All books must be checked out</source>
+        <target xml:lang="uz" state="needs-translation">All books must be checked out</target>
+        <note>ID: CollectionTab.ImportBloomSource.ReplaceNeedsCheckout</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.AddCopy" translate="no">
+        <source xml:lang="en">Add them as new copies</source>
+        <target xml:lang="uz" state="needs-translation">Add them as new copies</target>
+        <note>ID: CollectionTab.ImportBloomSource.AddCopy</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.AddCopyDescription" translate="no">
+        <source xml:lang="en">The existing books stay as they are.</source>
+        <target xml:lang="uz" state="needs-translation">The existing books stay as they are.</target>
+        <note>ID: CollectionTab.ImportBloomSource.AddCopyDescription</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.Importing" translate="no">
+        <source xml:lang="en">Importing Books</source>
+        <target xml:lang="uz" state="needs-translation">Importing Books</target>
+        <note>ID: CollectionTab.ImportBloomSource.Importing</note>
+      </trans-unit>
       <trans-unit id="BookSettings.LockedByBranding" sil:dynamic="true">
         <source xml:lang="en">Locked by {0} Branding</source>
         <target xml:lang="uz" state="needs-translation">Locked by {0} Branding</target>
