@@ -174,6 +174,30 @@ namespace Bloom.Keyboarding
         }
 
         /// <summary>
+        /// True if this keyboard is fully cached and ready to use offline: its manifest exists and all
+        /// the files it names (the .js and every font) are present on disk. The edit-time endpoint uses
+        /// this to decide whether it can tell the browser to attach the keyboard yet.
+        /// </summary>
+        /// <param name="keyboardId">The keyboard id, e.g. "sil_myanmar_my3".</param>
+        public bool IsCached(string keyboardId)
+        {
+            var manifest = TryGetInfo(keyboardId);
+            return manifest != null && AllFilesPresent(manifest);
+        }
+
+        /// <summary>
+        /// The localhost URL the browser can use to load a cached font file (from the <c>fonts/</c>
+        /// subfolder), served by BloomServer from disk. Does not check that the file exists.
+        /// </summary>
+        /// <param name="fontFileName">The font file name as stored in the manifest, e.g. "Pyidaungsu-Regular.ttf".</param>
+        public string GetFontUrl(string fontFileName)
+        {
+            if (string.IsNullOrWhiteSpace(fontFileName))
+                throw new ArgumentException("A font file name is required.", nameof(fontFileName));
+            return Path.Combine(_keyboardsFolder, "fonts", fontFileName).ToLocalhost();
+        }
+
+        /// <summary>
         /// True if the .js and every font file named by the manifest are present on disk.
         /// </summary>
         private bool AllFilesPresent(KeyboardCacheManifest manifest)
