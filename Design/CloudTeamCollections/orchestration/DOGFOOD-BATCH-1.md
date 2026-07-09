@@ -31,43 +31,46 @@ Chosen order: quick wins first, then the propagation cluster (items 4+5 are one 
 item), then the two larger UI features. Items 1–3 are independent of everything else.
 
 ### 1. "Bloom is busy" missing localization  `[quick]`
-Status: CODE DONE (commit 2d74d280f) — e2e-1 launch gate QUEUED (needs unlocked screen)
+Status: DONE (commit 2d74d280f; e2e-1 GREEN in the 9 Jul PM 4-spec queue)
 - [x] Found: ExternalBusyOverlay.tsx's fallback message already had id Common.BloomIsBusy
       but no XLF entry; the useL10n lookup logged the complaint on every collection-tab
       mount. (The specific BloomBridge message the overlay usually shows is intentionally
       unlocalized; only the fallback needed an entry.)
 - [x] Added to BloomLowPriority.xlf (John's choice) with translate="no" + context note.
-- [ ] Verify: `e2e-1-create-share` (launch gate for XLF changes). First attempt failed
-      ONLY because the desktop locked mid-run (WebView2 stuck at about:blank — the known
-      signature); re-run when unlocked.
+- [x] Verify: `e2e-1-create-share` GREEN (9 Jul PM 4-spec queue, 4/4 in 9.5 min). An
+      earlier attempt failed ONLY because the desktop locked mid-run (WebView2 stuck at
+      about:blank — the known signature).
 
 ### 2. Poll immediately on book selection  `[quick]`
-Status: CODE DONE (commit 6f0c4a068) — e2e-2 verification QUEUED (needs unlocked screen)
+Status: DONE (commit 6f0c4a068; e2e-2 GREEN in the 9 Jul PM queue)
 - [x] TeamCollectionManager ctor now subscribes BookSelection.SelectionChanged → if the
       current collection is a CloudTeamCollection, Task.Run(PollNow). Results flow through
       the existing change-event pipeline (same as timer polls).
 - [x] Guard: PollNow's own in-flight coalescing covers rapid selection changes; null
       bookSelection guard for unit-test constructions (caught by test run: 10 failures,
       fixed, 363/363 green).
-- [ ] `e2e-2-collaboration-loop` re-run when screen unlocked (note: E2E uses a 5s poll, so
-      the speedup itself is mostly invisible there — the run guards against regressions;
-      the real check is John's manual test at the default 60s poll).
+- [x] `e2e-2-collaboration-loop` GREEN (9 Jul PM queue) (note: E2E uses a 5s poll, so the
+      speedup itself is mostly invisible there — the run guards against regressions; the
+      real check is John's manual test at the default 60s poll).
 
 ### 3. Center the checkin-progress dialog in the status panel  `[quick]`
-Status: CODE DONE (commit 207cc1d0) — visual verification QUEUED (needs unlocked screen)
+Status: CODE DONE + e2e-2 GREEN — remaining: John's VISUAL check of the centered dialog
+during his next manual checkin
 - [x] It's the React BloomDialog in TeamCollectionBookStatusPanel (not BrowserProgressDialog):
       now positioned via PaperProps over the #teamCollection div's center, vertically
       clamped so the paper stays on-screen (the panel hugs the window bottom). Falls back
       to default whole-window centering when #teamCollection is absent (unit tests).
       Panel vitest suite 11/11.
-- [ ] Visual check + `e2e-2-collaboration-loop` when screen unlocked.
+- [x] `e2e-2-collaboration-loop` GREEN (9 Jul PM queue).
+- [ ] [HUMAN, John] Visual check that the checkin-progress dialog appears centered over the
+      status panel during a manual checkin.
 
 ### 4+5. Automatic remote-update application + in-place Sync (one work item)  `[medium]`
-Status: MERGED into cloud-collections (9 Jul; orchestrator re-ran C# 375/375 + both vitest
-files green, reviewed queue/wiring/panel/XLF line by line) — E2E verification QUEUED
-(desktop locked). Residual risk noted at review: a checkout racing the download window
-between re-verify and swap is possible but tiny (swap is two directory renames; E2E-2/3
-exercise contention) — watch for it in the E2E pass.
+Status: MERGED + E2E VERIFIED (9 Jul PM queue: e2e-2 + e2e-8 GREEN with auto-apply active;
+earlier: orchestrator re-ran C# 375/375 + both vitest files green, reviewed
+queue/wiring/panel/XLF line by line). Residual risk (checkout racing the download window)
+did not surface in the contention-heavy e2e-8 run; keep an eye on it in the pre-push full
+matrix.
 Observed bug: after a remote checkin, the other instance updated lock state (avatar +
 status panel) but the TC button showed no "updates available" and the preview did not
 refresh; book folder content update unverified.
@@ -273,6 +276,13 @@ Status: NOT STARTED
 - 9 Jul 2026 · Batch plan created; full-matrix baseline run in progress (validates
   checkin-comment fix + 5s poll live) · Next: item 1 ("Bloom is busy" l10n) code work
   while the matrix runs.
+- 9 Jul 2026 (PM) · 4-spec verification queue GREEN 4/4 in 9.5 min (e2e-1, join-auto-open,
+  e2e-2, e2e-8) on the merged state incl. items 1–6 and 8 — items 1/2 fully DONE, 4+5 E2E
+  verified, 6 join-flow regression clear. John decisions recorded: safety window 7d;
+  subscription tier same as folder TCs; AWSSDK bump on this branch (item 10) with [HUMAN]
+  web up/download check; account-switch spec (item 9); recovery spec (item 8, implemented,
+  382/382). Remaining: item 7 (agent next), items 9/10, John's dogfood-plan decision +
+  visual dialog check · Next: launch item 7 implementation agent.
 - 9 Jul 2026 (later) · Baseline matrix 13/13 GREEN (31 min). Items 1–3 code done +
   committed (2d74d280f, 6f0c4a068, 207cc1d0); unit suites green (C# 363/363, panel vitest
   11/11). Screen NOW LOCKED (John away): all Bloom-launching verification queued — e2e-1
