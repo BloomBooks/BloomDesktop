@@ -129,10 +129,11 @@ namespace Bloom.web.controllers
                         // `user.photoURL` verbatim is an easy and likely mismatch. Tolerating both spellings
                         // (checking IsDefined, which is case-sensitive, for each) means the nicer avatar
                         // lights up regardless of which the website happens to send.
-                        string photoUrl =
-                            requestData.IsDefined("photoUrl") ? (string)requestData.photoUrl
-                            : requestData.IsDefined("photoURL") ? (string)requestData.photoURL
-                            : null;
+                        string photoUrl = null;
+                        if (requestData.IsDefined("photoUrl"))
+                            photoUrl = (string)requestData.photoUrl;
+                        else if (requestData.IsDefined("photoURL"))
+                            photoUrl = (string)requestData.photoURL;
                         //Debug.WriteLine("Got login data " + email + " with token " + token + " and id " + userId);
 
                         // Register the logged-in user's profile picture (if any) in the person-keyed
