@@ -815,7 +815,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                 {/* Cloud Team Collections: check-in ("Send") progress shows as a modal instead of
                     the inline bar folder Team Collections use (see the "lockedByMe" case above).
                     No close button: like the inline bar, this just tracks an in-progress
-                    operation the user already started. */}
+                    operation the user already started. It is centered over the status panel
+                    (the div this component renders into) rather than the whole window, so the
+                    progress appears where the user just clicked Check in. */}
                 {isCloud && (
                     <BloomDialog
                         open={
@@ -825,6 +827,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         css={css`
                             max-width: 400px;
                         `}
+                        PaperProps={{
+                            style: getPaperStyleCenteredOnStatusPanel(),
+                        }}
                     >
                         <DialogTitle title={checkingIn} />
                         <DialogMiddle>
@@ -839,6 +844,28 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
             </ThemeProvider>
         </StyledEngineProvider>
     );
+};
+
+// Positions the cloud checkin-progress dialog's paper so it is centered on the TC status
+// panel (the #teamCollection div this panel renders into) instead of the whole window.
+// Returns undefined (= MUI's default whole-window centering) if the panel isn't in the DOM,
+// which can happen in unit tests that render the panel standalone.
+const getPaperStyleCenteredOnStatusPanel = ():
+    | React.CSSProperties
+    | undefined => {
+    const panel = document.getElementById("teamCollection");
+    if (!panel) return undefined;
+    const rect = panel.getBoundingClientRect();
+    return {
+        position: "fixed",
+        left: rect.left + rect.width / 2,
+        // The panel sits at the bottom of the window and the dialog is taller than it, so a
+        // raw center could push the dialog's lower edge off-screen; the clamp keeps the whole
+        // paper (~130px tall) visible while staying as close to the panel's center as it can.
+        top: `clamp(80px, ${rect.top + rect.height / 2}px, calc(100vh - 80px))`,
+        transform: "translate(-50%, -50%)",
+        margin: 0,
+    };
 };
 
 export const getBloomButton = (
