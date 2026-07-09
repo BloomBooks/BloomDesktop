@@ -150,6 +150,14 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
 
 (orchestrator appends: date · task · PR · notes)
 
+- 9 Jul 2026 · dogfood bug: checkin comment lost · direct commit · The user's
+  "what did you change?" message was written only to the book's local history.db (correct
+  and sufficient for folder TCs, where history.db rides inside the .bloom file), but cloud
+  history is displayed from the server's event log — and PutBookInRepo never forwarded the
+  comment to checkin-finish, so it silently vanished for everyone. Fix: checkinComment
+  threaded through PutBook/PutBookInRepo into CheckinFinish (server p_comment was already
+  fully plumbed into tc.versions.comment and the event message). Live round-trip test now
+  asserts the comment appears in get_changes. Found by John while dogfooding.
 - 8 Jul 2026 · 12-real-auth (Option A seams) · merged locally · Same-day implementation of
   everything the Option A decision unblocked in this repo: FirebaseCloudAuthProvider
   (identity strictly from ID-token claims; securetoken refresh; signature verification
