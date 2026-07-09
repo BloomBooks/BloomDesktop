@@ -316,6 +316,46 @@ namespace Bloom.TeamCollection.Cloud
             return id == null ? null : _cache.TryGetBook(id);
         }
 
+        /// <summary>
+        /// Batch item 7 (progressive join): the stable per-book instance id (matches BookInfo.Id
+        /// once the book is actually downloaded) for a repo book, keyed by its folder name. Used
+        /// by CollectionApi's HandleBooksRequest merge to give a not-yet-downloaded placeholder
+        /// entry a client-visible id that stays the same across the download, so React doesn't
+        /// remount the book button when the placeholder swaps for the real one.
+        /// </summary>
+        public string TryGetBookInstanceIdForName(string bookName)
+        {
+            EnsureCacheHydrated();
+            return TryGetCachedBook(bookName)?.InstanceId;
+        }
+
+        /// <summary>
+        /// Batch item 7 (progressive join): the reverse of <see cref="TryGetBookInstanceIdForName"/>
+        /// -- resolves a not-yet-downloaded placeholder's client-visible id back to its repo book
+        /// folder name. Used by CollectionApi's selected-book handler to find which book to
+        /// prioritize when the user clicks a placeholder (there is no local BookInfo to look it up
+        /// by folder name the normal way).
+        /// </summary>
+        public string TryGetBookNameForInstanceId(string instanceId)
+        {
+            EnsureCacheHydrated();
+            var bookId = TryGetBookIdByInstanceId(instanceId);
+            return bookId == null ? null : _cache.TryGetBook(bookId)?.Name;
+        }
+
+        /// <summary>
+        /// Batch item 7 (progressive join): bumps a not-yet-downloaded book's background download
+        /// to the front of the queue -- called when the user selects its placeholder, so the book
+        /// they're waiting for arrives before others that were merely queued in the background. A
+        /// no-op if the book already has a local folder (nothing left to prioritize).
+        /// </summary>
+        public void PrioritizeDownload(string bookName)
+        {
+            if (Directory.Exists(Path.Combine(LocalCollectionFolder, bookName)))
+                return;
+            PrioritizeBackgroundDownload(bookName);
+        }
+
         private BookStatus StatusFromCachedBook(CloudCachedBook book, string collectionId)
         {
             return new BookStatus

@@ -149,6 +149,37 @@ namespace Bloom.TeamCollection
             ProcessAutoApplyRemoteChange(bookBaseName);
         }
 
+        /// <summary>
+        /// Batch item 7 (progressive join): queues a repo book (by folder name) for background
+        /// download via the same single-consumer queue <see cref="CanAutoApplyRemoteChanges"/>
+        /// backends use to auto-apply remote changes. Used by <see cref="Cloud.CloudJoinFlow"/>
+        /// right after joining (instead of blocking the join on every book's full download) and by
+        /// <see cref="SyncAtStartup"/>'s cloud rerouting for books that are still missing locally.
+        /// A no-op for backends that don't set <see cref="CanAutoApplyRemoteChanges"/> true (every
+        /// folder TC): a folder TC has no use for background-downloading a book with no local
+        /// folder at all, so this simply does nothing rather than spinning up queueing machinery it
+        /// will never need.
+        /// </summary>
+        internal void QueueBookForBackgroundDownload(string bookName)
+        {
+            if (!CanAutoApplyRemoteChanges)
+                return;
+            AutoApplyQueue.Enqueue(bookName);
+        }
+
+        /// <summary>
+        /// Like <see cref="QueueBookForBackgroundDownload"/>, but jumps the book to the front of
+        /// the queue (see <see cref="RemoteBookAutoApplyQueue.EnqueueFront"/>) -- used when the
+        /// user explicitly selects a not-yet-downloaded book, so it arrives before books that were
+        /// only queued in the background.
+        /// </summary>
+        internal void PrioritizeBackgroundDownload(string bookName)
+        {
+            if (!CanAutoApplyRemoteChanges)
+                return;
+            AutoApplyQueue.EnqueueFront(bookName);
+        }
+
         public TeamCollection(
             ITeamCollectionManager manager,
             string localCollectionFolder,
@@ -1749,11 +1780,21 @@ namespace Bloom.TeamCollection
         /// refresh so the user sees the new content without reselecting. On failure, or if the book
         /// is no longer eligible, falls back to exactly the same NewStuff message an
         /// auto-apply-incapable backend (e.g. a folder TC) would have written instead.
+        ///
+        /// Batch item 7 (progressive join): this same queue also carries books that have NO local
+        /// folder at all yet (queued by <see cref="QueueBookForBackgroundDownload"/> from
+        /// <see cref="Cloud.CloudJoinFlow"/> or <see cref="SyncAtStartup"/>'s cloud rerouting).
+        /// That case is simpler -- there's no existing local content to re-verify eligibility
+        /// against or protect -- so it's handled by <see cref="DownloadMissingBookInBackground"/>
+        /// instead of the auto-apply re-verification below.
         /// </summary>
         private void ProcessAutoApplyRemoteChange(string bookBaseName)
         {
             if (!Directory.Exists(Path.Combine(_localCollectionFolder, bookBaseName)))
-                return; // book is gone locally (e.g. deleted meanwhile); nothing to apply
+            {
+                DownloadMissingBookInBackground(bookBaseName);
+                return;
+            }
 
             // Re-verify eligibility: none of these should be true, or auto-applying now would be
             // wrong -- e.g. the user might have checked the book out here, or a conflicting local
@@ -1803,6 +1844,42 @@ namespace Bloom.TeamCollection
             {
                 _tcManager.SendBookContentReload();
             }
+        }
+
+        /// <summary>
+        /// Batch item 7 (progressive join): downloads a repo book that has no local folder at all
+        /// yet (queued by <see cref="QueueBookForBackgroundDownload"/>/<see cref="PrioritizeBackgroundDownload"/>,
+        /// e.g. right after joining a cloud collection, or by <see cref="SyncAtStartup"/>'s cloud
+        /// rerouting for a half-joined collection's next open). Unlike
+        /// <see cref="ProcessAutoApplyRemoteChange"/>'s re-verification, there is no existing local
+        /// content to check eligibility against or protect -- the only thing that could have
+        /// changed since queueing is that the book itself vanished from the repo (e.g. deleted
+        /// before its background download ran), which <see cref="IsBookPresentInRepo"/> catches.
+        /// On success, invalidates the cached book list and tells the collection-tab UI to reload
+        /// it so the not-yet-downloaded placeholder (see CollectionApi.HandleBooksRequest) swaps
+        /// for the real book button.
+        /// </summary>
+        private void DownloadMissingBookInBackground(string bookBaseName)
+        {
+            if (!IsBookPresentInRepo(bookBaseName))
+                return; // gone from the repo by the time the queue got to it; nothing to fetch
+
+            var error = CopyBookFromRepoToLocal(bookBaseName);
+            if (error != null)
+            {
+                Logger.WriteEvent(
+                    $"Background download of new book '{bookBaseName}' failed: {error}"
+                );
+                return;
+            }
+            UpdateBookStatus(bookBaseName, true);
+
+            // Swap the placeholder for the real book button: the JSON collections/books merge
+            // (CollectionApi.HandleBooksRequest) only shows a placeholder while GetBookInfos()
+            // finds no matching local folder, so the cached book list must be invalidated before
+            // the client re-fetches it.
+            _bookCollectionHolder?.TheOneEditableCollection?.InvalidateBookList();
+            SocketServer?.SendEvent("editableCollectionList", "reload:" + _localCollectionFolder);
         }
 
         /// <summary>
@@ -2577,25 +2654,51 @@ namespace Bloom.TeamCollection
                             continue;
                         }
 
-                        // brand new book! Get it.
-                        hasProblems |= !CopyBookFromRepoToLocalAndReport(
-                            progress,
-                            bookName,
-                            () =>
+                        if (CanAutoApplyRemoteChanges)
+                        {
+                            // Cloud (batch item 7, progressive join): don't block the startup
+                            // sync dialog waiting for a full download here -- hand it to the same
+                            // background queue CloudJoinFlow uses for a fresh join and
+                            // HandleModifiedFile uses to auto-apply remote changes, so a
+                            // half-joined collection's next open stays fast and downloads keep
+                            // resuming in the background (DownloadMissingBookInBackground).
+                            // Folder TCs (CanAutoApplyRemoteChanges is always false there) are
+                            // completely unaffected -- they keep the original synchronous fetch
+                            // in the else branch below.
+                            QueueBookForBackgroundDownload(bookName);
+                            if (!remotelyRenamedBooks.Contains(bookName))
                             {
-                                if (!remotelyRenamedBooks.Contains(bookName))
-                                {
-                                    // Report the new book, unless we already reported it as a rename.
-                                    ReportProgressAndLog(
-                                        progress,
-                                        ProgressKind.Progress,
-                                        "FetchedNewBook",
-                                        "Fetching a new book '{0}' from the Team Collection",
-                                        bookName
-                                    );
-                                }
+                                ReportProgressAndLog(
+                                    progress,
+                                    ProgressKind.Progress,
+                                    "FetchingNewBookInBackground",
+                                    "The book '{0}' will finish downloading in the background",
+                                    bookName
+                                );
                             }
-                        );
+                        }
+                        else
+                        {
+                            // brand new book! Get it.
+                            hasProblems |= !CopyBookFromRepoToLocalAndReport(
+                                progress,
+                                bookName,
+                                () =>
+                                {
+                                    if (!remotelyRenamedBooks.Contains(bookName))
+                                    {
+                                        // Report the new book, unless we already reported it as a rename.
+                                        ReportProgressAndLog(
+                                            progress,
+                                            ProgressKind.Progress,
+                                            "FetchedNewBook",
+                                            "Fetching a new book '{0}' from the Team Collection",
+                                            bookName
+                                        );
+                                    }
+                                }
+                            );
+                        }
 
                         continue;
                     }

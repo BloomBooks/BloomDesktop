@@ -230,7 +230,14 @@ namespace Bloom.TeamCollection.Cloud
             );
             cloudTc.HydrateFromServer();
             cloudTc.CopyRepoCollectionFilesToLocal(localCollectionFolder);
-            cloudTc.CopyAllBooksFromRepoToLocalFolder(localCollectionFolder);
+            // Batch item 7 (progressive join): open the collection immediately instead of
+            // blocking here until every book has fully downloaded. Settings and the book list
+            // (titles) are already available from HydrateFromServer/CopyRepoCollectionFilesToLocal
+            // above; each repo book is queued for the same background queue SyncAtStartup and
+            // remote-change auto-apply already use (CollectionApi.HandleBooksRequest shows a
+            // not-yet-downloaded placeholder for each until its download completes).
+            foreach (var bookName in cloudTc.GetBookList())
+                cloudTc.QueueBookForBackgroundDownload(bookName);
             return cloudTc;
         }
 

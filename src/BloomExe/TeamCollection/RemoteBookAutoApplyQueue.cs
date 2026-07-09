@@ -7,20 +7,25 @@ namespace Bloom.TeamCollection
 {
     /// <summary>
     /// A minimal single-consumer work queue used to apply automatically-detected remote book
-    /// changes off the UI thread (see <see cref="TeamCollection.CanAutoApplyRemoteChanges"/>).
+    /// changes off the UI thread (see <see cref="TeamCollection.CanAutoApplyRemoteChanges"/>), and
+    /// (batch item 7, progressive join) to background-download repo books that have no local
+    /// folder at all yet, e.g. right after joining a cloud collection.
     /// Enqueuing a book that is already queued or currently being processed is a no-op -- the
     /// eventual processing pass re-reads whatever is CURRENT in the repo/local state itself (see
     /// TeamCollection's re-verification in its auto-apply processing method), so no information is
     /// lost by not queuing a duplicate. Books are otherwise processed strictly one at a time, in
     /// the order they were first queued, so a big download for one book can't be interleaved with
     /// (and possibly corrupted by) another book's download.
+    /// <see cref="EnqueueFront"/> lets a caller (e.g. the user selecting a not-yet-downloaded book)
+    /// jump an already-pending book to the head of the line without disturbing whatever book is
+    /// currently being processed -- the in-flight book always runs to completion first.
     /// </summary>
     public class RemoteBookAutoApplyQueue
     {
         private readonly Action<string> _processBook;
         private readonly Action<Action> _runWorker;
         private readonly object _gate = new object();
-        private readonly Queue<string> _pending = new Queue<string>();
+        private readonly LinkedList<string> _pending = new LinkedList<string>();
         private readonly HashSet<string> _pendingOrInFlight = new HashSet<string>(
             StringComparer.OrdinalIgnoreCase
         );
@@ -48,11 +53,48 @@ namespace Bloom.TeamCollection
         /// </summary>
         public void Enqueue(string bookName)
         {
+            EnqueueInternal(bookName, front: false);
+        }
+
+        /// <summary>
+        /// Like <see cref="Enqueue"/>, but a book that is merely PENDING (not yet the one being
+        /// processed) jumps to the front of the line instead of the back -- used when the user
+        /// explicitly asks for a book (e.g. selecting a not-yet-downloaded placeholder), so it
+        /// arrives before books that were only queued in the background. A book already being
+        /// processed right now is left to finish undisturbed (its dedupe entry is already in
+        /// <see cref="_pendingOrInFlight"/>, so this is a no-op for it, same as a plain
+        /// <see cref="Enqueue"/> would be).
+        /// </summary>
+        public void EnqueueFront(string bookName)
+        {
+            EnqueueInternal(bookName, front: true);
+        }
+
+        private void EnqueueInternal(string bookName, bool front)
+        {
             lock (_gate)
             {
                 if (!_pendingOrInFlight.Add(bookName))
-                    return; // already queued or being processed; the eventual pass will see current state
-                _pending.Enqueue(bookName);
+                {
+                    // Already queued or currently being processed. If it's only queued (not the
+                    // book actually in flight right now, which was already removed from _pending
+                    // when the worker dequeued it), honor the priority request by moving it to
+                    // the front.
+                    if (front)
+                    {
+                        var node = _pending.Find(bookName);
+                        if (node != null)
+                        {
+                            _pending.Remove(node);
+                            _pending.AddFirst(bookName);
+                        }
+                    }
+                    return; // the eventual pass will see current state
+                }
+                if (front)
+                    _pending.AddFirst(bookName);
+                else
+                    _pending.AddLast(bookName);
                 if (_workerRunning)
                     return; // a worker loop is already draining the queue
                 _workerRunning = true;
@@ -82,7 +124,8 @@ namespace Bloom.TeamCollection
                         _workerRunning = false;
                         return;
                     }
-                    bookName = _pending.Dequeue();
+                    bookName = _pending.First.Value;
+                    _pending.RemoveFirst();
                 }
                 try
                 {
