@@ -6,6 +6,12 @@
 #    can't be pulled into a build until it has had time to be noticed/yanked.
 #  - savePrefix "": save exact versions so `pnpm add` keeps installs reproducible.
 minimumReleaseAge: 10080
+# Our own packages are exempt from the age gate: we publish them ourselves and
+# often need to consume a release immediately.
+minimumReleaseAgeExclude:
+    - bloom-player
+    - comicaljs
+    - "@ethnolib/language-chooser-react-mui"
 savePrefix: ""
 
 # Formerly the yarn "resolutions" block: force a single @types/react across the
