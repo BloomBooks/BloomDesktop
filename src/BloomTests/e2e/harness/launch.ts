@@ -71,40 +71,45 @@ export const buildBloomOnce = async (): Promise<void> => {
  * it locks its own output tree, serves its own port block, and per
  * .claude/skills/run-bloom/SKILL.md is not ours to kill. */
 export const assertNoForeignBloomRunning = async (): Promise<void> => {
-    // Two documented failure modes of this probe, both survivable
-    // (.github/skills/bloom-automation + .claude/skills/run-bloom gotchas):
-    //  - it can exceed a tight timeout on its first run after the machine idles
-    //    (generous 60s + one retry below);
-    //  - it can CRASH with a libuv assertion ("!(handle->flags & UV_HANDLE_CLOSING)")
-    //    AFTER printing its complete, valid JSON — a non-zero exit whose stdout is
-    //    perfectly usable, which killed two matrix runs in globalSetup before this
-    //    salvage was added. If the salvaged stdout doesn't parse, the error was real.
+    // This probe is fragile about HOW it is spawned (documented in the automation skills,
+    // rediscovered the hard way killing three matrix runs in globalSetup):
+    //  - when its stdout is a PIPE (execFile's default), it can die instantly with exit 1
+    //    and ZERO output — the same run succeeds with inherited/console stdio (verified
+    //    empirically 8 Jul 2026: node-parent + pipe = silent exit 1 every time, while
+    //    stdio:'inherit' and a PowerShell parent both work);
+    //  - it can also crash with a libuv assertion AFTER printing complete valid JSON.
+    // Both are dodged the same way: never give it a pipe. Redirect its stdout to a temp
+    // FILE via cmd, then read the file; parse errors after that are genuine failures.
+    // Generous 60s timeout + one retry for the slow-first-run-after-idle mode.
     const runProbe = async (): Promise<string> => {
+        const os = await import("node:os");
+        const tempOut = path.join(
+            os.tmpdir(),
+            `bloom-probe-${process.pid}-${Math.random().toString(36).slice(2)}.json`,
+        );
+        const script = path.join(
+            bloomAutomationSkillDir,
+            "bloomProcessStatus.mjs",
+        );
         try {
-            const { stdout } = await execFileAsync(
-                "node",
+            await execFileAsync(
+                "cmd",
                 [
-                    path.join(
-                        bloomAutomationSkillDir,
-                        "bloomProcessStatus.mjs",
-                    ),
-                    "--running-bloom",
-                    "--json",
+                    "/d",
+                    "/s",
+                    "/c",
+                    `node "${script}" --running-bloom --json > "${tempOut}" 2>nul`,
                 ],
                 { cwd: repoRoot, timeout: 60_000, windowsHide: true },
-            );
-            return stdout;
-        } catch (error) {
-            const salvaged = (error as { stdout?: string }).stdout;
-            if (salvaged) {
-                try {
-                    JSON.parse(salvaged);
-                    return salvaged; // crashed after printing valid JSON — use it
-                } catch {
-                    // fall through: stdout was incomplete, this was a real failure
-                }
-            }
-            throw error;
+            ).catch(() => {
+                // Non-zero exit is fine IF the JSON landed in the file (the post-print
+                // libuv crash); the parse below is the real arbiter.
+            });
+            const output = await fsp.readFile(tempOut, "utf8");
+            JSON.parse(output); // throws -> caller retries/fails
+            return output;
+        } finally {
+            await fsp.rm(tempOut, { force: true }).catch(() => {});
         }
     };
     let stdout: string;
