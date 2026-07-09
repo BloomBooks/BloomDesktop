@@ -475,7 +475,8 @@ namespace Bloom.TeamCollection.Cloud
             string sourceBookFolderPath,
             BookStatus newStatus,
             bool inLostAndFound = false,
-            Action<float> progressCallback = null
+            Action<float> progressCallback = null,
+            string checkinComment = null
         )
         {
             var bookFolderName = Path.GetFileName(sourceBookFolderPath);
@@ -582,8 +583,12 @@ namespace Bloom.TeamCollection.Cloud
                         : new Progress<CloudTransferProgress>(_ => progressCallback(-1f)),
                     CancellationToken.None
                 );
+                // The comment must reach the server: unlike folder TCs (where the message rides
+                // inside history.db within the .bloom file), cloud history is displayed from the
+                // server's event log, so a comment we don't send here is invisible to everyone.
                 var finishResult = _client.CheckinFinish(
                     transactionId,
+                    comment: string.IsNullOrEmpty(checkinComment) ? null : checkinComment,
                     keepCheckedOut: keepCheckedOut
                 );
                 var versionId = (string)finishResult["versionId"];

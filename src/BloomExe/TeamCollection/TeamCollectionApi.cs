@@ -1295,7 +1295,8 @@ namespace Bloom.TeamCollection
                             bookInfo.FolderPath,
                             true,
                             false,
-                            reportProgressFraction
+                            reportProgressFraction,
+                            checkinComment: message
                         );
                     }
                     catch (Exception)

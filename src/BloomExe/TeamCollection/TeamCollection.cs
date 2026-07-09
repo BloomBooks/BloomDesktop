@@ -149,7 +149,8 @@ namespace Bloom.TeamCollection
             string sourceBookFolderPath,
             BookStatus newStatus,
             bool inLostAndFound = false,
-            Action<float> progressCallback = null
+            Action<float> progressCallback = null,
+            string checkinComment = null
         );
 
         public abstract bool KnownToHaveBeenDeleted(string oldName);
@@ -282,12 +283,17 @@ namespace Bloom.TeamCollection
         /// <param name="inLostAndFound">If true, put the book into the Lost-and-found folder,
         ///     if necessary generating a unique name for it. If false, put it into the main repo
         ///     folder, overwriting any existing book.</param>
+        /// <param name="checkinComment">The user's "what did you change?" message for a checkin.
+        ///     Folder TCs ignore it (the message travels inside the book's history.db, which is
+        ///     part of the .bloom file), but cloud TCs must send it explicitly because remote
+        ///     users read history from the server's event log, not from history.db.</param>
         /// <returns>Updated book status</returns>
         public BookStatus PutBook(
             string folderPath,
             bool checkin = false,
             bool inLostAndFound = false,
-            Action<float> progressCallback = null
+            Action<float> progressCallback = null,
+            string checkinComment = null
         )
         {
             var bookFolderName = Path.GetFileName(folderPath);
@@ -318,7 +324,7 @@ namespace Bloom.TeamCollection
                 // This is essential for the case when oldName is missing. See BL-16226.
                 status = status.WithOldName(null);
             }
-            PutBookInRepo(folderPath, status, inLostAndFound, progressCallback);
+            PutBookInRepo(folderPath, status, inLostAndFound, progressCallback, checkinComment);
             // If this is true, we're about to delete or overwrite the book, so no point
             // in updating its status (and we never call with this true in regard to a rename).
             if (inLostAndFound)

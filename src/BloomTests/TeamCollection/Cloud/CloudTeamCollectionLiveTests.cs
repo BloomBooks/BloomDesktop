@@ -70,13 +70,40 @@ namespace BloomTests.TeamCollection.Cloud
                 .BuiltBookFolderPath;
 
             // Act: Send (checked in, so the lock is released -- a teammate should see it immediately).
-            var sentStatus = sender.PutBook(bookFolderPath, checkin: true);
+            // The checkinComment must reach the SERVER's event log: cloud history is displayed
+            // from get_changes, not from the local history.db (found live 9 Jul 2026 -- the
+            // comment was silently dropped because PutBookInRepo never forwarded it).
+            const string checkinComment = "live-test checkin comment";
+            var sentStatus = sender.PutBook(
+                bookFolderPath,
+                checkin: true,
+                checkinComment: checkinComment
+            );
 
             Assert.That(sentStatus.checksum, Is.Not.Null.And.Not.Empty);
             Assert.That(
                 sentStatus.lockedBy,
                 Is.Null.Or.Empty,
                 "checked-in Send should leave the book unlocked"
+            );
+
+            var checkinEvents = (
+                (Newtonsoft.Json.Linq.JArray)senderClient.GetChanges(collectionId, 0)["events"]
+            )
+                .OfType<Newtonsoft.Json.Linq.JObject>()
+                .Select(Bloom.web.controllers.SharingApi.ToBookHistoryEvent)
+                .Where(e => e.Type == Bloom.History.BookHistoryEventType.CheckIn)
+                .ToList();
+            Assert.That(
+                checkinEvents,
+                Has.Count.EqualTo(1),
+                "the Send should have produced exactly one server-side check-in event"
+            );
+            Assert.That(
+                checkinEvents[0].Message,
+                Is.EqualTo(checkinComment),
+                "the user's checkin comment must appear in the server-side history event, "
+                    + "since that is what the cloud history UI displays"
             );
 
             // Act: Receive, from a second local folder / CloudTeamCollection instance (simulating a
