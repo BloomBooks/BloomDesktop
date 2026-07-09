@@ -477,6 +477,27 @@ namespace Bloom.web.controllers
             request.ReplyWithJson(collections);
         }
 
+        /// <summary>Used by CollectionChooserApi.HandleGetJoinCards to compute join cards for the
+        /// collection chooser (dogfood batch 1, item 6): the cloud collections the signed-in user
+        /// is approved for, in the minimal Id/Name shape CloudJoinFlow already defines. Returns an
+        /// empty list WITHOUT any network call when not signed in (GetLoginState is a local check,
+        /// not an RPC) -- required so the chooser degrades silently for signed-out/folder-only
+        /// users instead of making a doomed cloud call on every chooser render.</summary>
+        public static IReadOnlyList<CloudCollectionSummary> GetMyCollectionsForJoinCards()
+        {
+            if (!CurrentAuth().GetLoginState(CloudEnvironment.Current).SignedIn)
+                return Array.Empty<CloudCollectionSummary>();
+            return CurrentClient()
+                .MyCollections()
+                .OfType<JObject>()
+                .Select(o => new CloudCollectionSummary
+                {
+                    Id = (string)o["id"],
+                    Name = (string)o["name"],
+                })
+                .ToList();
+        }
+
         private class PullDownBody
         {
             public string collectionId;

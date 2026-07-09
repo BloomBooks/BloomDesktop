@@ -10,6 +10,7 @@ using Bloom.CollectionCreating;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.TeamCollection;
+using Bloom.TeamCollection.Cloud;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
@@ -111,6 +112,14 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 "collections/getUnpublishedCount",
                 HandleGetUnpublishedCount,
+                false,
+                false
+            );
+            // Allow background thread; this makes a network call to the cloud server (when
+            // signed in -- see SharingApi.GetMyCollectionsForJoinCards).
+            apiHandler.RegisterEndpointHandler(
+                "collections/getJoinCards",
+                HandleGetJoinCards,
                 false,
                 false
             );
@@ -400,6 +409,93 @@ namespace Bloom.web.controllers
                 );
                 request.Failed("Could not reach BloomLibrary");
             }
+        }
+
+        /// <summary>
+        /// Dogfood batch 1, item 6: returns one "join card" entry per cloud Team Collection the
+        /// signed-in user belongs to but has no local copy of yet, for the collection chooser to
+        /// append after its normal MRU card list. Degrades silently (empty list, no cloud call)
+        /// when signed out -- see SharingApi.GetMyCollectionsForJoinCards -- so this endpoint is
+        /// safe to call unconditionally from a folder-only user's chooser.
+        /// </summary>
+        private static void HandleGetJoinCards(ApiRequest request)
+        {
+            var myCloudCollections = SharingApi.GetMyCollectionsForJoinCards();
+            var joinCards =
+                myCloudCollections.Count == 0
+                    ? new List<dynamic>()
+                    : ComputeJoinCards(myCloudCollections, GetLocalCloudCollectionIds());
+            request.ReplyWithJson(joinCards);
+        }
+
+        /// <summary>
+        /// Pure matching logic (unit-tested by CollectionChooserApiTests, no filesystem/network):
+        /// a cloud collection gets a join card iff none of the given local cloud-collection ids
+        /// (gathered by <see cref="GetLocalCloudCollectionIds"/>, which reads TeamCollectionLink.txt
+        /// files) matches its id. Per the batch's decision, matching is by cloud id ONLY -- a local
+        /// folder with the same name that is NOT itself a cloud TC (e.g. a plain or folder-TC
+        /// collection) still gets a join card; CloudJoinFlow's own scenario matching handles the
+        /// merge-or-conflict decision once the user actually tries to join.
+        /// </summary>
+        internal static List<dynamic> ComputeJoinCards(
+            IEnumerable<CloudCollectionSummary> myCloudCollections,
+            ISet<string> localCloudCollectionIds
+        )
+        {
+            return myCloudCollections
+                .Where(c => !localCloudCollectionIds.Contains(c.Id))
+                .Select(c => (dynamic)new { collectionId = c.Id, title = c.Name })
+                .ToList();
+        }
+
+        /// <summary>
+        /// Scans the same candidate collection folders <see cref="HandleGetMostRecentlyUsedCollections"/>
+        /// considers (MRU list + collections discovered in the default parent directory), reading
+        /// each one's TeamCollectionLink.txt (if any) to find which cloud collection ids already
+        /// have a local copy on this machine. Uncapped (unlike the MRU display list's maxMruItems)
+        /// since a join card should be suppressed even if the local copy has scrolled out of the
+        /// visible MRU list.
+        /// </summary>
+        private static HashSet<string> GetLocalCloudCollectionIds()
+        {
+            var ids = new HashSet<string>();
+            foreach (var folderPath in GetCandidateCollectionFolders())
+            {
+                var linkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(folderPath);
+                if (!RobustFile.Exists(linkPath))
+                    continue;
+                TeamCollectionLink link;
+                try
+                {
+                    link = TeamCollectionLink.FromFile(linkPath);
+                }
+                catch (InvalidTeamCollectionLinkException)
+                {
+                    // Unparseable link content; treat as "not a recognizable cloud TC" rather than
+                    // crashing the whole join-card computation over one bad folder.
+                    continue;
+                }
+                if (link != null && link.IsCloud)
+                    ids.Add(link.CloudCollectionId);
+            }
+            return ids;
+        }
+
+        /// <summary>
+        /// All local collection FOLDER paths worth checking for a TeamCollectionLink.txt: every
+        /// MRU entry plus every collection discovered in the default parent directory (the same two
+        /// sources <see cref="HandleGetMostRecentlyUsedCollections"/> draws from, but not capped at
+        /// maxMruItems -- see that method's own cap comment).
+        /// </summary>
+        private static IEnumerable<string> GetCandidateCollectionFolders()
+        {
+            var mruFolders = Settings.Default.MruProjects.Paths.Select(Path.GetDirectoryName);
+            var discovered = Directory.Exists(
+                NewCollectionWizard.DefaultParentDirectoryForCollections
+            )
+                ? Directory.GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
+                : Array.Empty<string>();
+            return mruFolders.Concat(discovered).Distinct();
         }
 
         /// <summary>
