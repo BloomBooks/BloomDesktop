@@ -197,21 +197,100 @@ Implementation notes (scouted 9 Jul, read-only — verified paths/lines):
   with its component; `JoinCloudCollectionDialog.test.tsx` stays valid.
 
 ### 7. Progressive join: open the collection before all books download  `[large]`
-Status: NOT STARTED
-- [ ] On join, fetch collection settings + book list (titles) first, open the collection
+Status: CODE DONE on branch `task/b1-7-progressive-join` (created from origin/cloud-collections;
+not yet merged) — E2E verification QUEUED (orchestrator's job per this task's hard rules)
+- [x] On join, fetch collection settings + book list (titles) first, open the collection
       immediately; books not yet downloaded show a placeholder icon suggesting an
-      in-progress download.
-- [ ] Background-download books; swap each placeholder for the real icon as its download
-      completes.
-- [ ] Selecting a not-yet-downloaded book bumps it to the front of the download queue;
-      status panel shows a "downloading" message until it arrives.
-- [ ] Same SAFETY rule as item 4+5: a book appears in the collection only as placeholder
-      (no dangerous actions possible) or fully downloaded — never as a half-populated
-      folder the user can act on. Temp-folder staging + atomic swap.
-- [ ] Handle interruption: Bloom closed mid-join resumes/completes downloads on next open
-      (SyncAtStartup should already fetch missing books — verify).
+      in-progress download. CloudJoinFlow.JoinCollection: removed the blocking
+      CopyAllBooksFromRepoToLocalFolder call; every repo book is now queued via the new
+      TeamCollection.QueueBookForBackgroundDownload right after settings download.
+      CollectionApi.HandleBooksRequest merges CloudTeamCollection's repo book list against local
+      folders (new pure ComputeNotYetDownloadedBookEntries + BookListEntry DTO) so repo-only
+      books appear with `notYetDownloaded: true`; BookButton.tsx renders these as a simple
+      dashed-border placeholder (cloud-download icon + title, no thumbnail request) instead of
+      the normal interactive button.
+- [x] Background-download books; swap each placeholder for the real icon as its download
+      completes. New TeamCollection.DownloadMissingBookInBackground (the RemoteBookAutoApplyQueue
+      worker's new branch for books with no local folder at all) downloads, updates status, then
+      invalidates the cached book list and sends the existing "editableCollectionList"/"reload:"
+      websocket event so BooksOfCollection.tsx's collections/books re-fetch swaps the placeholder
+      for the real button automatically.
+- [x] Selecting a not-yet-downloaded book bumps it to the front of the download queue; status
+      panel shows a "downloading" message until it arrives. RemoteBookAutoApplyQueue gained
+      EnqueueFront (priority, dedupe-preserving, never interrupts an in-flight download);
+      CollectionApi's selected-book POST handler gracefully detects a placeholder click
+      (TryPrioritizeNotYetDownloadedBook, via new CloudTeamCollection.TryGetBookNameForInstanceId
+      + PrioritizeDownload) and bumps it to the front instead of crashing on the missing
+      BookInfo. DEVIATION (flagged for John/orchestrator): the "downloading" indicator is shown
+      as a persistent placeholder icon on the book button itself (visible for every
+      not-yet-downloaded book) rather than routing through the real BookSelection/preview-pane
+      and TeamCollectionBookStatusPanel.tsx's StatusPanelState union, per the scout notes' exact
+      seam — faking a "selected" placeholder book (no real local folder/Book object exists yet)
+      risked destabilizing the preview iframe and the lock/checkout endpoints that also key off
+      BookSelection.CurrentSelection. The functionally important, tested part (priority bump) IS
+      implemented; only the panel-specific visual treatment was simplified.
+- [x] Same SAFETY rule as item 4+5: a book appears in the collection only as placeholder
+      (no dangerous actions possible) or fully downloaded — never as a half-populated folder the
+      user can act on. Temp-folder staging + atomic swap. The placeholder branch in BookButton.tsx
+      is a completely separate render path with no context menu, no rename, no double-click-edit;
+      the only action is a click that posts to collections/selected-book (priority bump, graceful,
+      never a real selection). CopyBookFromRepoToLocal's existing stage-then-atomic-swap (unchanged)
+      still guarantees a book is placeholder-only or fully downloaded, never half-populated.
+- [x] Handle interruption: Bloom closed mid-join resumes/completes downloads on next open
+      (SyncAtStartup should already fetch missing books — verify). Verified AND changed: cloud
+      SyncAtStartup's "brand new book!" branch now reroutes to the same background queue
+      (QueueBookForBackgroundDownload) instead of fetching synchronously inline, when
+      CanAutoApplyRemoteChanges is true (cloud only) — so a half-joined collection's next open
+      stays fast and downloads keep resuming in the background, instead of blocking the startup
+      sync dialog on every still-missing book. Folder TCs are completely unaffected (unchanged
+      synchronous fetch, pinned by a new regression test).
 - [ ] Verify: `join-auto-open` + `e2e-9-new-book-lifecycle`; consider a new spec for the
-      placeholder/priority behavior if cheap.
+      placeholder/priority behavior if cheap. NOT run — this task's hard rules forbid launching
+      Bloom/e2e (orchestrator's job after merge, serialized with other E2E runs).
+
+Implementation notes (9 Jul, agent report):
+- Files changed: RemoteBookAutoApplyQueue.cs (EnqueueFront + LinkedList-based priority queue,
+  dedupe-preserving); TeamCollection.cs (QueueBookForBackgroundDownload/PrioritizeBackgroundDownload,
+  DownloadMissingBookInBackground, ProcessAutoApplyRemoteChange's new missing-folder branch,
+  SyncAtStartup's cloud rerouting); CloudJoinFlow.cs (blocking call removed, enqueue loop added);
+  CloudTeamCollection.cs (TryGetBookInstanceIdForName/TryGetBookNameForInstanceId/PrioritizeDownload);
+  CollectionApi.cs (BookListEntry DTO, ComputeNotYetDownloadedBookEntries pure merge function +
+  GetNotYetDownloadedBookEntries wiring via TeamCollectionApi.TheOneInstance -- no new constructor
+  dependency needed, following SharingApi's existing precedent -- and TryPrioritizeNotYetDownloadedBook
+  for the graceful selected-book handling); BookButton.tsx (placeholder render branch + new
+  CollectionTab.BookNotYetDownloaded tooltip string); BooksOfCollection.tsx (IBookInfo.notYetDownloaded).
+- New XLF string CollectionTab.BookNotYetDownloaded added to Bloom.xlf, translate="no", flagged as
+  provisional placement pending John's priority confirmation (note in the entry itself suggests
+  BloomMediumPriority.xlf as a likely alternative). The pre-existing sibling progress-message ids in
+  this same code path (JoiningCloudCollection, FetchedNewBook, and this task's new
+  FetchingNewBookInBackground) have NO XLF entries at all -- an established (if arguably
+  incomplete) precedent for TeamCollection sync-dialog progress text in this codebase; the new one
+  was left unlocalized to match, flagged here rather than silently deviating.
+- Tests: C# required filter 393/393 green (15 new: 4 EnqueueFront tests + 1 real-async EnqueueFront
+  sanity test in RemoteBookAutoApplyQueueTests.cs; 2 missing-folder ProcessAutoApplyRemoteChange
+  tests + 3 SyncAtStartup rerouting tests in TeamCollectionAutoApplyTests.cs, using
+  TestFolderTeamCollection's existing AutoApplyRemoteChangesForTests toggle so the shared
+  base-class logic is exercised without needing a full CloudTeamCollection; 6 new
+  CollectionApiTests.cs tests for the pure ComputeNotYetDownloadedBookEntries merge function).
+  CloudSyncAtStartupTests.SyncAtStartup_NewBookOnlyInRepo_IsFetchedToLocal updated per this item's
+  own instruction (TestOnly_MakeAutoApplyQueueSynchronous added, assertion kept, reasoning
+  documented in the test). BookButton.test.tsx (new, 5/5 green) covers the placeholder
+  render/label/click-priority-bump behavior and the unaffected normal-button paths. yarn typecheck
+  and eslint show no NEW errors/warnings introduced (compared before/after via git stash) beyond
+  this codebase's large pre-existing unrelated baseline of typecheck errors.
+- Deliberate omissions/risks for the orchestrator to re-verify live: (1) the status-panel
+  simplification noted above; (2) no dedicated CloudJoinFlow test file was added (no existing
+  FakeRestExecutor-based harness for it, and the diff there is a small, low-risk 3-line change
+  covered indirectly by the queue's own tests) -- the orchestrator's join-auto-open E2E run is the
+  real coverage for this path; (3) CollectionApi.HandleBooksRequest now calls
+  CloudTeamCollection.GetBookList()/EnsureCacheHydrated() on every collections/books request for a
+  cloud TC, which may trigger a network hydrate call the first time (idempotent afterwards) --
+  minor latency risk, not previously present in this endpoint; (4) the placeholder's "id" is the
+  book's stable InstanceId (matches BookInfo.Id once downloaded) so the React key doesn't change
+  across the download -- worth an E2E spot-check that the placeholder truly swaps in place rather
+  than flickering/remounting; (5) no dedicated E2E spec for the placeholder/priority behavior was
+  added (existing join-auto-open + e2e-9-new-book-lifecycle only) -- consider one if the live
+  verification surfaces gaps.
 
 ### 8. Recovery safety net (John decision, 9 Jul — replaces the old "recovery preconditions"
 question)  `[quick-medium]`
@@ -327,3 +406,37 @@ Status: NOT STARTED
   + `e2e-1-create-share` (XLF gate) queued · Next: orchestrator review + merge of
   task/b1-6-join-cards into cloud-collections, then item 7 (progressive join) once the queued
   E2E pass covering items 1–6 runs.
+- 9 Jul 2026 (agent) · Item 7 (progressive join) CODE DONE on branch
+  `task/b1-7-progressive-join` (created from origin/cloud-collections; not yet merged):
+  CloudJoinFlow no longer blocks on CopyAllBooksFromRepoToLocalFolder -- every repo book is
+  queued via the new TeamCollection.QueueBookForBackgroundDownload right after settings download,
+  so the collection opens immediately. CollectionApi.HandleBooksRequest merges the cloud repo book
+  list into the collections/books JSON (new BookListEntry DTO + pure
+  ComputeNotYetDownloadedBookEntries, unit-tested) so repo-only books show `notYetDownloaded:
+  true`; BookButton.tsx renders those as a simple placeholder (dashed border, cloud-download icon,
+  title, no thumbnail request, no context menu -- SAFETY: no dangerous action reachable).
+  RemoteBookAutoApplyQueue gained EnqueueFront (priority, never interrupts an in-flight download);
+  selecting a placeholder (CollectionApi's selected-book handler) gracefully bumps its download to
+  the queue front instead of crashing on the missing BookInfo. Each background download
+  (TeamCollection.DownloadMissingBookInBackground, the queue worker's new no-local-folder branch)
+  invalidates the cached book list and re-sends the existing editableCollectionList/reload
+  websocket event so the placeholder swaps for the real button automatically. SyncAtStartup's
+  "brand new book!" branch now reroutes to the same background queue for cloud
+  (CanAutoApplyRemoteChanges) instead of fetching synchronously, so a half-joined collection's
+  next open stays fast (folder TCs completely unaffected, pinned by a new regression test).
+  DEVIATION flagged for John/orchestrator: the "downloading" status indicator is a persistent
+  placeholder icon on the book button itself, not routed through the real BookSelection/preview
+  pane and TeamCollectionBookStatusPanel.tsx's StatusPanelState union as the scout notes'
+  exact seam suggested -- judged too risky (no real Book/local folder exists yet to fake a
+  selection with) for the value added; the functionally important part (priority bump) IS
+  implemented and tested. New XLF string CollectionTab.BookNotYetDownloaded added to Bloom.xlf,
+  provisional/translate="no", flagged for John's priority-file confirmation. Tests: C# required
+  filter 393/393 green (15 new across RemoteBookAutoApplyQueueTests, TeamCollectionAutoApplyTests,
+  and new CollectionApiTests.cs); CloudSyncAtStartupTests.SyncAtStartup_NewBookOnlyInRepo_IsFetchedToLocal
+  updated per this item's own instruction (queue now made synchronous for the test, assertion
+  unchanged, reasoning documented inline); new BookButton.test.tsx 5/5 green. yarn typecheck/eslint
+  show no NEW issues (verified via git-stash before/after diff against this codebase's large
+  pre-existing unrelated typecheck-error baseline). E2E NOT run (this task's hard rules forbid
+  launching Bloom/e2e) — `join-auto-open` + `e2e-9-new-book-lifecycle` queued for the orchestrator
+  · Next: orchestrator review + merge of task/b1-7-progressive-join into cloud-collections, then
+  the queued E2E pass, then items 9/10.
