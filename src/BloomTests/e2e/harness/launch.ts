@@ -91,24 +91,38 @@ export const assertNoForeignBloomRunning = async (): Promise<void> => {
             bloomAutomationSkillDir,
             "bloomProcessStatus.mjs",
         );
+        const outHandle = await fsp.open(tempOut, "w");
         try {
-            await execFileAsync(
-                "cmd",
-                [
-                    "/d",
-                    "/s",
-                    "/c",
-                    `node "${script}" --running-bloom --json > "${tempOut}" 2>nul`,
-                ],
-                { cwd: repoRoot, timeout: 60_000, windowsHide: true },
-            ).catch(() => {
-                // Non-zero exit is fine IF the JSON landed in the file (the post-print
-                // libuv crash); the parse below is the real arbiter.
+            // Real file descriptor for stdout — no pipe (the crash trigger), no shell
+            // (whose argument re-quoting mangled a cmd-redirect variant of this).
+            await new Promise<void>((resolve) => {
+                const child = spawn(
+                    "node",
+                    [script, "--running-bloom", "--json"],
+                    {
+                        cwd: repoRoot,
+                        stdio: ["ignore", outHandle.fd, "ignore"],
+                        windowsHide: true,
+                    },
+                );
+                const timer = setTimeout(() => child.kill(), 60_000);
+                // Exit code deliberately ignored: non-zero is fine IF the JSON landed in
+                // the file (the post-print libuv crash); the parse below is the arbiter.
+                child.once("exit", () => {
+                    clearTimeout(timer);
+                    resolve();
+                });
+                child.once("error", () => {
+                    clearTimeout(timer);
+                    resolve();
+                });
             });
+            await outHandle.close();
             const output = await fsp.readFile(tempOut, "utf8");
             JSON.parse(output); // throws -> caller retries/fails
             return output;
         } finally {
+            await outHandle.close().catch(() => {});
             await fsp.rm(tempOut, { force: true }).catch(() => {});
         }
     };
