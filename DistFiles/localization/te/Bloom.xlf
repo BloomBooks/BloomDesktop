@@ -122,6 +122,21 @@
         <target xml:lang="te" state="needs-translation">Bloom Accessibility Checker</target>
         <note>ID: AccessibilityCheck.WindowTitle</note>
       </trans-unit>
+      <trans-unit id="AccountMenu.Account" translate="no">
+        <source xml:lang="en">Account</source>
+        <target xml:lang="te" state="needs-translation">Account</target>
+        <note>ID: AccountMenu.Account</note>
+      </trans-unit>
+      <trans-unit id="AccountMenu.SignIn" translate="no">
+        <source xml:lang="en">Sign in</source>
+        <target xml:lang="te" state="needs-translation">Sign in</target>
+        <note>ID: AccountMenu.SignIn</note>
+      </trans-unit>
+      <trans-unit id="AccountMenu.SignOut" translate="no">
+        <source xml:lang="en">Sign out</source>
+        <target xml:lang="te" state="needs-translation">Sign out</target>
+        <note>ID: AccountMenu.SignOut</note>
+      </trans-unit>
       <trans-unit id="AutoUpdateSoftwareDialog.SoftwareUpdates" sil:dynamic="true">
         <source xml:lang="en">Software Updates</source>
         <target xml:lang="te" state="needs-translation">Software Updates</target>
