@@ -99,6 +99,31 @@ Status: NOT STARTED
 - [ ] Omit any card info not available for an unjoined TC (thumbnail, languages, …).
 - [ ] Verify: `join-auto-open` + `e2e-1-create-share`; vitest for the card-list logic.
 
+Implementation notes (scouted 9 Jul, read-only — verified paths/lines):
+- Chooser: `collection/CollectionChooserDialog.tsx` wraps `CollectionChooser.tsx` (MRU via
+  `collections/getMostRecentlyUsedCollections`; cloud list via `useMyCloudCollections` →
+  GET `collections/mine`; `joinTarget` state opens `JoinCloudCollectionDialog`).
+- The separate list to REMOVE: `collection/MyCloudCollectionsSection.tsx` (+ its test);
+  its "Get" button → `pullDownCollection` → POST `collections/pullDown` →
+  `SharingApi.HandlePullDown` → `CloudJoinFlow.JoinCollection` (keep all of that; join
+  cards reuse `JoinCloudCollectionDialog` and the pull-down + auto-open flow unchanged).
+- MRU card cap: `CollectionCardList.tsx` `maxCardCount = 10` slice — join cards must be
+  appended AFTER the slice. Card shape: `ICollectionInfo` in `CollectionCard.tsx`
+  (path/title/bookCount/checkedOutCount/unpublishedCount/isTeamCollection) — join-card
+  variant needs `collectionId`, a join flag, minimal info, no per-card unpublished fetch.
+- "Has local copy of cloud collection X": for each MRU/local folder,
+  `TeamCollectionManager.GetTcLinkPathFromLcPath` + `TeamCollectionLink.FromFile`
+  (`IsCloud`, `CloudCollectionId`); a summary from `collections/mine` gets a join card iff
+  no local cloud link matches its id. `CloudJoinFlow.DetermineScenario` (CloudJoinFlow.cs
+  ~128) already does this matching — reference/reuse. Same-name non-TC local collections
+  STILL get a join card (CloudJoinFlow's PlainCollectionSameGuid/DifferentGuid handles the
+  merge-or-error; the card test keys off cloud links ONLY, not names).
+- Server-side merge preferred: extend `CollectionChooserApi` (application-level, like
+  SharingApi) with an `internal static` pure matching helper (SharingApiTests' pattern —
+  no CollectionChooserApiTests file exists yet).
+- Tests to rewrite: `CollectionChooser.test.tsx`; delete `MyCloudCollectionsSection.test.tsx`
+  with its component; `JoinCloudCollectionDialog.test.tsx` stays valid.
+
 ### 7. Progressive join: open the collection before all books download  `[large]`
 Status: NOT STARTED
 - [ ] On join, fetch collection settings + book list (titles) first, open the collection
