@@ -146,30 +146,6 @@ div.checkbox {
     -moz-user-select: none;
 }
 
-div.toolbox-checkbox-label {
-    position: relative;
-    -moz-user-select: none;
-    cursor: default;
-    margin: 2px 0px 0px 0px;
-    width: 100%;
-    display: flex;
-    gap: 12px;
-    padding-right: calc(12px - @toolboxContentPaddingThin);
-}
-
-.toolbox-checkbox-label-text {
-    flex-grow: 1;
-}
-
-.toolbox-settings-content {
-    padding: @toolboxContentPadding @toolboxContentPaddingThin;
-    height: @toolboxContentHeight;
-}
-
-div.checkbox-and-label {
-    display: flex;
-}
-
 .ui-accordion h3 {
     padding-left: 28px;
 }
@@ -236,12 +212,6 @@ div.checkbox-and-label {
     height: @bloomEnterpriseBadgeSize;
     width: @bloomEnterpriseBadgeSize;
     flex-shrink: 0;
-}
-
-.toolbox-settings-content .subscription-badge {
-    position: relative;
-    // a tweak to make them look aligned.
-    top: -5px;
 }
 
 // Dialogs launched from the toolbox need to be in front of everything,
