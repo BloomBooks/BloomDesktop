@@ -2,29 +2,27 @@ import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderRoot, unmountRoot } from "../utils/reactRender";
 import { CollectionChooser } from "./CollectionChooser";
-import {
-    ICloudCollectionSummary,
-    ISharingLoginState,
-} from "../teamCollection/sharingApi";
+import { ISharingLoginState } from "../teamCollection/sharingApi";
+import { IJoinCollectionInfo } from "./CollectionCardList";
 
-// Tests the wiring this task adds: clicking "Get" on a row in "Get my Team Collections" opens
-// JoinCloudCollectionDialog for that exact collection (matched by id out of the already-fetched
-// cloudCollections list), and the dialog disappears again once it reports onClose. Mocks every
-// hook (no network layer) plus JoinCloudCollectionDialog itself (already covered by its own
-// JoinCloudCollectionDialog.test.tsx) so this file only tests the chooser's own glue.
+// Tests the wiring this task's rewrite adds (dogfood batch 1, item 6): join cards (fetched from
+// collections/getJoinCards, gated on the cloud feature + being signed in) render in the main card
+// list, and clicking one opens JoinCloudCollectionDialog for that exact card, closing again on
+// onClose. Replaces the old MyCloudCollectionsSection sidebar wiring test (that component + its
+// test file are deleted; see CollectionCardList.test.tsx for the append-after-slice card-list
+// logic itself). Mocks every hook/endpoint (no network layer) plus JoinCloudCollectionDialog
+// itself (already covered by its own JoinCloudCollectionDialog.test.tsx).
 
 const {
     mockUseApiData,
+    mockGet,
     mockUseIsCloudFeatureEnabled,
-    mockUseMyCloudCollections,
     mockUseSharingLoginState,
-    mockPost,
 } = vi.hoisted(() => ({
     mockUseApiData: vi.fn(),
+    mockGet: vi.fn(),
     mockUseIsCloudFeatureEnabled: vi.fn(),
-    mockUseMyCloudCollections: vi.fn(),
     mockUseSharingLoginState: vi.fn(),
-    mockPost: vi.fn(),
 }));
 
 vi.mock("../utils/bloomApi", async (importOriginal) => {
@@ -32,14 +30,13 @@ vi.mock("../utils/bloomApi", async (importOriginal) => {
     return {
         ...actual,
         useApiData: mockUseApiData,
-        post: mockPost,
+        get: mockGet,
     };
 });
 
 vi.mock("../teamCollection/sharingApi", () => ({
     useIsCloudTeamCollectionsExperimentalFeatureEnabled:
         mockUseIsCloudFeatureEnabled,
-    useMyCloudCollections: mockUseMyCloudCollections,
     useSharingLoginState: mockUseSharingLoginState,
 }));
 
@@ -84,16 +81,26 @@ const signedIn: ISharingLoginState = {
     email: "me@example.com",
 };
 
-const collectionA: ICloudCollectionSummary = {
+const joinCardA: IJoinCollectionInfo = {
     collectionId: "aaa-111",
-    name: "Team A Collection",
-    role: "admin",
+    title: "Team A Collection",
 };
-const collectionB: ICloudCollectionSummary = {
+const joinCardB: IJoinCollectionInfo = {
     collectionId: "bbb-222",
-    name: "Team B Collection",
-    role: "member",
+    title: "Team B Collection",
 };
+
+// Makes mockGet respond to collections/getJoinCards with the given join cards; any other
+// endpoint (e.g. sign-in state, if ever queried this way) gets an empty array.
+function mockJoinCardsResponse(joinCards: IJoinCollectionInfo[]) {
+    mockGet.mockImplementation(
+        (url: string, callback: (r: unknown) => void) => {
+            if (url === "collections/getJoinCards") {
+                callback({ data: joinCards });
+            }
+        },
+    );
+}
 
 afterEach(() => {
     if (renderedContainer) {
@@ -106,14 +113,11 @@ afterEach(() => {
 });
 
 describe("CollectionChooser", () => {
-    it("opens JoinCloudCollectionDialog for the exact row clicked, and closes it on onClose", () => {
+    it("opens JoinCloudCollectionDialog for the exact join card clicked, and closes it on onClose", () => {
         mockUseApiData.mockReturnValue([]);
         mockUseIsCloudFeatureEnabled.mockReturnValue(true);
         mockUseSharingLoginState.mockReturnValue(signedIn);
-        mockUseMyCloudCollections.mockReturnValue({
-            collections: [collectionA, collectionB],
-            loading: false,
-        });
+        mockJoinCardsResponse([joinCardA, joinCardB]);
 
         const container = render();
 
@@ -123,28 +127,24 @@ describe("CollectionChooser", () => {
             ),
         ).toBeNull();
 
-        const rows = container.querySelectorAll(
-            '[data-testid="my-cloud-collection-row"]',
+        const joinCards = container.querySelectorAll(
+            '[data-testid="join-collection-card"]',
         );
-        const rowB = Array.from(rows).find(
-            (row) =>
-                row.getAttribute("data-collection-id") ===
-                collectionB.collectionId,
+        expect(joinCards.length).toBe(2);
+        const cardB = Array.from(joinCards).find((card) =>
+            card.textContent?.includes(joinCardB.title),
         ) as HTMLElement;
-        const pullDownButton = rowB.querySelector(
-            '[data-testid="my-cloud-collection-pulldown-button"]',
-        ) as HTMLButtonElement;
-        act(() => pullDownButton.click());
+        act(() => (cardB.querySelector("h5") as HTMLElement).click());
 
         const dialog = document.querySelector(
             '[data-testid="join-cloud-collection-dialog-stub"]',
         );
         expect(dialog).not.toBeNull();
         expect(dialog!.getAttribute("data-collection-id")).toBe(
-            collectionB.collectionId,
+            joinCardB.collectionId,
         );
         expect(dialog!.getAttribute("data-collection-name")).toBe(
-            collectionB.name,
+            joinCardB.title,
         );
         expect(dialog!.getAttribute("data-signed-in")).toBe("true");
 
@@ -160,29 +160,48 @@ describe("CollectionChooser", () => {
         ).toBeNull();
     });
 
-    it("does not render the dialog when the cloud feature is off", () => {
+    it("does not query for join cards, render any, or show the dialog when the cloud feature is off", () => {
         mockUseApiData.mockReturnValue([]);
         mockUseIsCloudFeatureEnabled.mockReturnValue(false);
         mockUseSharingLoginState.mockReturnValue({
             mode: "dev",
             signedIn: false,
         });
-        mockUseMyCloudCollections.mockReturnValue({
-            collections: [],
-            loading: false,
-        });
+        mockJoinCardsResponse([joinCardA]);
 
         const container = render();
 
+        expect(mockGet).not.toHaveBeenCalledWith(
+            "collections/getJoinCards",
+            expect.anything(),
+        );
         expect(
-            container.querySelector(
-                '[data-testid="my-cloud-collections-section"]',
-            ),
+            container.querySelector('[data-testid="join-collection-card"]'),
         ).toBeNull();
         expect(
             container.querySelector(
                 '[data-testid="join-cloud-collection-dialog-stub"]',
             ),
+        ).toBeNull();
+    });
+
+    it("does not query for join cards or render any when the cloud feature is on but signed out", () => {
+        mockUseApiData.mockReturnValue([]);
+        mockUseIsCloudFeatureEnabled.mockReturnValue(true);
+        mockUseSharingLoginState.mockReturnValue({
+            mode: "dev",
+            signedIn: false,
+        });
+        mockJoinCardsResponse([joinCardA]);
+
+        const container = render();
+
+        expect(mockGet).not.toHaveBeenCalledWith(
+            "collections/getJoinCards",
+            expect.anything(),
+        );
+        expect(
+            container.querySelector('[data-testid="join-collection-card"]'),
         ).toBeNull();
     });
 });

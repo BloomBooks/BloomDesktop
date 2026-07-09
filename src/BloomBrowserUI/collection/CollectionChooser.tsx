@@ -1,16 +1,32 @@
 import { css } from "@emotion/react";
-import { useState } from "react";
-import { post, useApiData } from "../utils/bloomApi";
-import { CollectionCardList } from "./CollectionCardList";
+import { useEffect, useState } from "react";
+import { get, useApiData } from "../utils/bloomApi";
+import { CollectionCardList, IJoinCollectionInfo } from "./CollectionCardList";
 import { ICollectionInfo } from "./CollectionCard";
-import { MyCloudCollectionsSection } from "./MyCloudCollectionsSection";
 import {
-    ICloudCollectionSummary,
     useIsCloudTeamCollectionsExperimentalFeatureEnabled,
-    useMyCloudCollections,
     useSharingLoginState,
 } from "../teamCollection/sharingApi";
 import { JoinCloudCollectionDialog } from "../teamCollection/JoinCloudCollectionDialog";
+
+// Fetches collections/getJoinCards (dogfood batch 1, item 6): one entry per cloud Team
+// Collection the signed-in user belongs to but has no local copy of yet -- the server does the
+// local-copy matching (CollectionChooserApi.ComputeJoinCards), so this hook is a thin fetch, no
+// different in shape from useApiData except that it must NOT query at all when shouldQuery is
+// false (folder-only or signed-out users must never trigger a cloud call from the chooser).
+function useJoinCards(shouldQuery: boolean): IJoinCollectionInfo[] {
+    const [joinCards, setJoinCards] = useState<IJoinCollectionInfo[]>([]);
+    useEffect(() => {
+        if (!shouldQuery) {
+            setJoinCards([]);
+            return;
+        }
+        get("collections/getJoinCards", (result) => {
+            setJoinCards((result.data as IJoinCollectionInfo[]) ?? []);
+        });
+    }, [shouldQuery]);
+    return joinCards;
+}
 
 export const CollectionChooser: React.FunctionComponent<{
     collections?: ICollectionInfo[];
@@ -22,22 +38,21 @@ export const CollectionChooser: React.FunctionComponent<{
     );
     if (!props.collections?.length) collections = collectionsFromApi;
 
-    // "Get my Team Collections": the cloud collections the signed-in user is approved for,
-    // with a pull-down-to-join action. See Design/CloudTeamCollections/tasks/07-ui-setup.md.
-    // The whole section (and its queries) exists only when the cloud-team-collections
-    // experimental feature is on; everyone else gets the pre-cloud chooser unchanged.
+    // Join cards (replaces the old "Get my Team Collections" sidebar -- see
+    // Design/CloudTeamCollections/orchestration/DOGFOOD-BATCH-1.md item 6): cards appended to
+    // the main list for cloud collections the user belongs to but hasn't joined locally yet.
+    // Gated on the cloud-team-collections experimental feature (as the old sidebar was) and on
+    // being signed in, so folder-only and signed-out users never trigger a cloud call here.
     const cloudFeatureEnabled =
         useIsCloudTeamCollectionsExperimentalFeatureEnabled();
     const loginState = useSharingLoginState();
-    const { collections: cloudCollections, loading: cloudCollectionsLoading } =
-        useMyCloudCollections(cloudFeatureEnabled && loginState.signedIn);
+    const joinCards = useJoinCards(cloudFeatureEnabled && loginState.signedIn);
 
-    // The collection a pull-down was requested for, or undefined when the join dialog should
-    // be hidden. Embedded directly here (not opened as a separate WinForms dialog -- see
-    // JoinCloudCollectionDialog.tsx's own comment) so it shares CollectionChooser's already-
-    // fetched `loginState`/`cloudCollections`.
+    // The join card clicked, or undefined when the join dialog should be hidden. Embedded
+    // directly here (not opened as a separate WinForms dialog -- see JoinCloudCollectionDialog's
+    // own comment) so it shares CollectionChooser's already-fetched `loginState`.
     const [joinTarget, setJoinTarget] = useState<
-        ICloudCollectionSummary | undefined
+        { collectionId: string; name: string } | undefined
     >(undefined);
 
     return (
@@ -51,35 +66,24 @@ export const CollectionChooser: React.FunctionComponent<{
         >
             <CollectionCardList
                 collections={collections}
+                joinCollections={joinCards}
+                onJoinCardClick={(collectionId, title) =>
+                    setJoinTarget({ collectionId, name: title })
+                }
                 css={css`
                     flex-grow: 1;
                     min-width: 0;
                     overflow-y: auto;
                 `}
             />
-            {cloudFeatureEnabled && (
-                <MyCloudCollectionsSection
-                    loginState={loginState}
-                    collections={cloudCollections}
-                    loading={cloudCollectionsLoading}
-                    onSignInClick={() => post("sharing/showSignIn")}
-                    onPullDown={(collectionId) => {
-                        const target = cloudCollections.find(
-                            (c) => c.collectionId === collectionId,
-                        );
-                        // Should always be found: the button that triggers this is only ever
-                        // rendered for a row from this same cloudCollections list.
-                        if (target) setJoinTarget(target);
-                    }}
-                />
-            )}
             {joinTarget && (
                 <JoinCloudCollectionDialog
                     collectionId={joinTarget.collectionId}
                     collectionName={joinTarget.name}
                     signedIn={loginState.signedIn}
-                    // Listed in "Get my Team Collections" at all only because the signed-in
-                    // user is approved for it (collections/mine), so this is known-true here.
+                    // Listed as a join card at all only because the signed-in user is approved
+                    // for it (collections/getJoinCards, backed by collections/mine), so this is
+                    // known-true here.
                     isApproved={true}
                     // No endpoint exposes the six local-vs-remote matching flags below ahead of
                     // a real pull-down attempt (CloudJoinFlow resolves them server-side, inside
