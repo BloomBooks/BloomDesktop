@@ -41,6 +41,9 @@ jobs:
                   node-version: lts/*
 
             - name: Install Playwright driver (no browser download)
+              # npm (not pnpm) is deliberate here: this job runs without a repo checkout,
+              # so the repo's pnpm policy doesn't apply. It only needs playwright-core in
+              # a throwaway directory on the runner, and npm is preinstalled there.
               run: |
                   npm init -y
                   npm install playwright-core

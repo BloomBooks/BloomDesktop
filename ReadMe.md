@@ -48,6 +48,8 @@ For fast hot-reloading, first do one pnpm build, to get all the (so-far) static 
 
 It may be helpful before submitting a PR to turn off pnpm dev and run pnpm build, then do a quick smoke test of your work. pnpm build creates the transpiled files that will be used by Bloom in production.
 
+If you have the team's agent skills installed (see the Skills section of AGENTS.md), the `/preflight` skill automates the rest of the pre-review checklist: typecheck, lint, tests, draft PR, and the bot review gauntlet.
+
 ### Windows Defender exclusions
 
 For performance reasons, you probably want to exclude at least the following in the Windows Defender settings:
