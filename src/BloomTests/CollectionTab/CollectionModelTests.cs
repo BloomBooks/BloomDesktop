@@ -123,8 +123,8 @@ namespace BloomTests.CollectionTab
             return $"{{\"bookInstanceId\":\"{instanceId}\",\"title\":\"{title}\"}}";
         }
 
-        // Build a .bloomSource file the same way Bloom's export does: a zip of a book folder's
-        // contents (flat at the root) plus a .bloomCollection settings file at the root.
+        // Create a .bloomSource file for unit testing from a minimal set of dummy files, using
+        // Bloom's real export method (SaveAsBloomSourceFile) so the result matches production.
         private string MakeBloomSourceFile(string title, string instanceId, bool includeHtm = true)
         {
             var src = Path.Combine(_folder.Path, "srcbook-" + Guid.NewGuid());
