@@ -9,8 +9,8 @@ When working in the front-end, cd to src/BloomBrowserUI
 - react
 - MUI
 - Emotion
-- yarn 1.22.22
-- Never use npm commands
+- pnpm 11.5.2
+- Never use npm or yarn commands
 - Never use CDNs. This is an offline app.
 - WebView2 112
 

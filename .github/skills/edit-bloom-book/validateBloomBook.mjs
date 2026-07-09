@@ -22,7 +22,7 @@ const loadJSDOM = () => {
     } catch (error) {
         const details = error instanceof Error ? error.message : String(error);
         console.error(
-            "Failed to load jsdom from src/BloomBrowserUI. Run yarn in src/BloomBrowserUI if dependencies are missing.",
+            "Failed to load jsdom from src/BloomBrowserUI. Run pnpm install in src/BloomBrowserUI if dependencies are missing.",
         );
         console.error(details);
         process.exitCode = 2;

@@ -1,8 +1,8 @@
 # How to run this successfully
 
-0. `yarn install`
+0. `pnpm install`
 1. Open Bloom with `collections/basic/basic.bloomCollection`` (The auto-run currently hits a bunch of errors)
-2. In the terminal, run `yarn test` or `yarn testPatient`
+2. In the terminal, run `pnpm test` or `pnpm testPatient`
 3. To re-run, save the index.spec.ts.
 
 # Test Failures

@@ -1,7 +1,7 @@
 /**
  * Tests for LinkTargetChooser - Error Handling
  * Covers: Missing book/page detection and error display
- * Run with: yarn test
+ * Run with: pnpm test
  */
 
 import { test, expect } from "../../component-tester/playwrightTest";

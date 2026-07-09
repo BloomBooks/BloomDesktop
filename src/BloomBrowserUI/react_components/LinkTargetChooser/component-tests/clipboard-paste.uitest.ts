@@ -1,7 +1,7 @@
 /**
  * Tests for LinkTargetChooser - Clipboard Paste Functionality
  * Covers: Paste button behavior with various clipboard content formats
- * Run with: yarn test
+ * Run with: pnpm test
  */
 
 import { test, expect } from "../../component-tester/playwrightTest";

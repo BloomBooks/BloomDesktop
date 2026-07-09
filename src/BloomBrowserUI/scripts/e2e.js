@@ -57,7 +57,7 @@ const suiteCommands = {
 const printUsage = () => {
     const suites = Object.keys(suiteCommands).join(", ");
     console.error(
-        `Usage: yarn e2e <suite> [--isolated|--shared] [playwright args]`,
+        `Usage: pnpm e2e <suite> [--isolated|--shared] [playwright args]`,
     );
     console.error(`Available suites: ${suites}`);
     console.error(
@@ -80,7 +80,7 @@ const assertCurrentPageAvailable = async () => {
         }
     } catch (error) {
         console.error(
-            `Cannot reach ${url}. Start Bloom so the canvas test page is available, then rerun \'yarn e2e canvas\'.`,
+            `Cannot reach ${url}. Start Bloom so the canvas test page is available, then rerun \'pnpm e2e canvas\'.`,
         );
         console.error(error instanceof Error ? error.message : String(error));
         process.exit(1);

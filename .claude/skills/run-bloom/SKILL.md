@@ -18,13 +18,13 @@ verified quick path.
 
 ## Prerequisites
 
-Dev machines already have: volta (provides node + yarn 1.22), .NET SDK 10,
-WebView2 runtime. On a machine missing dependencies, run `./init.sh`
-(fetches C# deps, yarn installs, initial `yarn build`) — documented but not
-re-verified here; a failed C# build with CS0246 errors (missing
-`PodcastUtilities` etc.) means `./init.sh` is needed.
+Dev machines already have: node 22 + pnpm 11.5.2 (see .node-version and the
+packageManager field), .NET SDK 10, WebView2 runtime. On a machine missing
+dependencies, run `./init.sh` (fetches C# deps, pnpm installs, initial
+`pnpm build`) — documented but not re-verified here; a failed C# build with
+CS0246 errors (missing `PodcastUtilities` etc.) means `./init.sh` is needed.
 
-Never run `yarn build` while a watch/dev build is running (see AGENTS.md).
+Never run `pnpm build` while a watch/dev build is running (see AGENTS.md).
 Never launch a previously built `Bloom.exe` directly — it can be stale.
 
 ## Step 1: Is Bloom already running?
@@ -160,5 +160,5 @@ the whole flow down.
 Exe-backed Playwright suite (not re-run this session; see
 `.github/skills/bloom-automation/SKILL.md` for detail): from
 `src/BloomBrowserUI/react_components/component-tester`,
-`BLOOM_HTTP_PORT=<httpPort> yarn playwright test --config playwright.bloom-exe.config.ts`.
-TypeScript unit tests: `yarn test` in `src/BloomBrowserUI` (Vitest).
+`BLOOM_HTTP_PORT=<httpPort> pnpm playwright test --config playwright.bloom-exe.config.ts`.
+TypeScript unit tests: `pnpm test` in `src/BloomBrowserUI` (Vitest).

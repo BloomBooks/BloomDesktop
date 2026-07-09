@@ -147,7 +147,7 @@ Notes:
 6. Use `node .github/skills/bloom-automation/switchWorkspaceTab.mjs --http-port <httpPort> --tab <collection|edit|publish>` for top bar interactions, or attach another confirmed client to `http://localhost:<cdpPort>` if you need lower-level inspection.
 7. Manipulate the UI by clicking or typing in the attached browser context. Do not use Bloom API endpoints to simulate the user action itself.
 8. Use browser-native inspection for DOM, console, and network.
-9. If the task is test-related, run the exe-backed Playwright suite with `BLOOM_HTTP_PORT=<httpPort> yarn playwright test --config playwright.bloom-exe.config.ts`.
+9. If the task is test-related, run the exe-backed Playwright suite with `BLOOM_HTTP_PORT=<httpPort> pnpm exec playwright test --config playwright.bloom-exe.config.ts`.
 
 ## Running Bloom Workflow
 Use this when the user says to reuse the already-running Bloom.
@@ -217,8 +217,8 @@ Reason: the current MCP wrappers in this environment control their own browser i
 
 ## Tests
 - Run from `src/BloomBrowserUI/react_components/component-tester`.
-- Use `BLOOM_HTTP_PORT=<httpPort> yarn playwright test --config playwright.bloom-exe.config.ts`.
-- Run one file with `BLOOM_HTTP_PORT=<httpPort> yarn playwright test --config playwright.bloom-exe.config.ts ../TopBar/component-tests/bloom-exe-tabs.uitest.ts`.
+- Use `BLOOM_HTTP_PORT=<httpPort> pnpm exec playwright test --config playwright.bloom-exe.config.ts`.
+- Run one file with `BLOOM_HTTP_PORT=<httpPort> pnpm exec playwright test --config playwright.bloom-exe.config.ts ../TopBar/component-tests/bloom-exe-tabs.uitest.ts`.
 
 These tests attach to the real Bloom.exe target over CDP and verify tab switching plus console and network observation.
 
