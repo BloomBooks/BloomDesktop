@@ -23,6 +23,7 @@ import {
 } from "../../react_components/Progress/progressBox";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { useL10n } from "../../react_components/l10nHooks";
+import { useLoginState } from "../../react_components/useLoginState";
 import { kWebSocketContext } from "./LibraryPublishScreen";
 import {
     useSubscribeToWebSocketForEvent,
@@ -60,7 +61,6 @@ interface IReadonlyBookInfo {
 
 const kWebSocketEventId_uploadSuccessful: string = "uploadSuccessful";
 const kWebSocketEventId_uploadCanceled: string = "uploadCanceled";
-const kWebSocketEventId_loginSuccessful: string = "loginSuccessful";
 
 export const LibraryPublishSteps: React.FunctionComponent = () => {
     const selectedBookContext = React.useContext(SelectedBookContext);
@@ -128,7 +128,6 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [bookInfo, setBookInfo] = useState<IReadonlyBookInfo>();
     useEffect(() => {
-        post("libraryPublish/checkForLoggedInUser");
         getBoolean("libraryPublish/agreementsAccepted", (result) => {
             setAgreedPreviously(result);
             setAgreementsAccepted(result);
@@ -191,15 +190,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         else hasRenderedRef.current = true;
     }, [agreementsAccepted]);
 
-    const [loggedInEmail, setLoggedInEmail] = useState<string>();
-
-    useSubscribeToWebSocketForStringMessage(
-        kWebSocketContext,
-        kWebSocketEventId_loginSuccessful,
-        (email) => {
-            setLoggedInEmail(email);
-        },
-    );
+    const { email: loggedInEmail, signIn, signOut } = useLoginState();
 
     function isReadyForUpload(): boolean {
         return isReadyForAgreements() && agreementsAccepted;
@@ -593,7 +584,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                         isReadyForUpload() && !isPlaygroundBook
                                     }
                                     l10nKey="PublishTab.Upload.SignIn"
-                                    onClick={() => post("libraryPublish/login")}
+                                    onClick={signIn}
                                 >
                                     Sign in or sign up to BloomLibrary.org
                                 </BloomButton>
@@ -622,10 +613,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                     l10nKey="PublishTab.Upload.SignOut"
                                     l10nComment="The %0 will be replaced with the email address of the user."
                                     l10nParam0={loggedInEmail}
-                                    onClick={() => {
-                                        post("libraryPublish/logout");
-                                        setLoggedInEmail(undefined);
-                                    }}
+                                    onClick={signOut}
                                 >
                                     Sign out (%0)
                                 </BloomButton>

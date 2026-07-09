@@ -24,6 +24,8 @@ The front-end uses yarn 1.22.22. Never ever use npm.
 
 - Where possible style things using @emotion/react rather than using sx objects.
 
+- Avoid stacking/nesting ternary (`? :`) operators (e.g. `a ? x : b ? y : z`). They're too hard for humans to read. Use an if/else-if chain (or a switch) instead. A single, non-nested ternary is fine.
+
 - For Typescript coding style, see ./src/BloomBrowserUI/AGENTS.md
 
 # Testing
