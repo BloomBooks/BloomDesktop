@@ -237,6 +237,20 @@ namespace Bloom.TeamCollection
             _localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
             _bookCollectionHolder = bookCollectionHolder;
             BookSelection = bookSelection;
+            // For cloud TCs, poll the server the moment a book is selected, so its checkout
+            // status is current when the user is looking at it rather than up to a full poll
+            // interval stale. The poll runs on a background thread (GetChanges is a network
+            // round trip; SelectionChanged fires on the UI thread) and its results flow through
+            // the same change-event pipeline as the timer-driven polls. PollNow itself coalesces:
+            // a poll already in flight makes this a no-op, so rapid selection changes cannot
+            // stack up server requests.
+            // (bookSelection is null in several unit-test constructions of this class.)
+            if (bookSelection != null)
+                bookSelection.SelectionChanged += (sender, args) =>
+                {
+                    if (CurrentCollection is Cloud.CloudTeamCollection cloudCollection)
+                        System.Threading.Tasks.Task.Run(() => cloudCollection.PollNow());
+                };
             collectionClosingEvent?.Subscribe(
                 (x) =>
                 {
