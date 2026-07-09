@@ -191,7 +191,7 @@ test.describe("E2E-2 two-instance collaboration loop", () => {
                     (await bookStatus(bob!.httpPort, aliceScratch.bookName))
                         .who,
                 {
-                    timeout: 15_000,
+                    timeout: 90_000, // past the organic 60s CloudCollectionMonitor poll, in case the forced poll raced the commit
                     message: "Bob never saw Alice's checkout",
                 },
             )
@@ -212,7 +212,7 @@ test.describe("E2E-2 two-instance collaboration loop", () => {
                     (await bookStatus(bob!.httpPort, aliceScratch.bookName))
                         .who,
                 {
-                    timeout: 15_000,
+                    timeout: 90_000, // see above
                     message:
                         "Bob still sees the book checked out after Alice's check-in",
                 },

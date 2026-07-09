@@ -686,6 +686,21 @@ namespace Bloom.web.controllers
             int height = 616
         )
         {
+            if (Program.StartupAutomation)
+            {
+                // In automation mode (--automation: E2E harnesses, CI) there is no human to
+                // dismiss a modal problem report, so showing one blocks the UI thread forever
+                // and every under-load error masquerades as a hang (diagnosed from a
+                // dotnet-stack dump of a hung instance -- see
+                // Design/CloudTeamCollections/tasks/09-e2e.md finding 9). Log the problem
+                // instead so the driving test surfaces a readable failure. The fallback
+                // dialogs are equally modal, so they are skipped too.
+                SIL.Reporting.Logger.WriteError(
+                    $"Problem report suppressed in automation mode: {reactDialogHeader}",
+                    exception ?? new ApplicationException("(no exception provided)")
+                );
+                return;
+            }
             SafeInvoke.InvokeIfPossible(
                 "Show Problem Dialog",
                 control,

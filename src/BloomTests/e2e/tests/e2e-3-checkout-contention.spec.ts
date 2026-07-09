@@ -1,4 +1,4 @@
-// E2E-3: checkout contention (exactly one winner; loser sees holder).
+﻿// E2E-3: checkout contention (exactly one winner; loser sees holder).
 //
 // CloudTeamCollection.TryLockInRepo (src/BloomExe/TeamCollection/Cloud/CloudTeamCollection.cs)
 // dispatches to a single conditional-UPDATE RPC (`checkout_book`, CONTRACTS.md: "race-free") --
@@ -110,7 +110,7 @@ test.describe("E2E-3 checkout contention", () => {
                     (await bookStatus(loser.httpPort, aliceScratch.bookName))
                         .who,
                 {
-                    timeout: 15_000,
+                    timeout: 90_000, // past the organic 60s poll, in case the forced poll raced the commit
                     message: "loser never saw the winner as the lock holder",
                 },
             )

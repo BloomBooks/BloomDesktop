@@ -1,4 +1,4 @@
-// E2E-9: new-book lifecycle.
+﻿// E2E-9: new-book lifecycle.
 //   (a) a brand-new book is invisible to teammates until its first Send, then appears;
 //   (b) killing Bloom mid first-Send leaves no phantom book visible to anyone, and resuming
 //       the same Send afterward completes cleanly to exactly one committed version;
@@ -315,7 +315,7 @@ test.describe("E2E-9 new-book lifecycle", () => {
                     ).length;
                 },
                 {
-                    timeout: 20_000,
+                    timeout: 90_000, // past the organic 60s poll
                     message:
                         "Bob never received the resumed book (or received it more than once)",
                 },

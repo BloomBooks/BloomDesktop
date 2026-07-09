@@ -394,6 +394,20 @@ namespace Bloom.ErrorReporter
             // Before we do anything that might be "risky", put the problem in the log.
             ProblemReportApi.LogProblem(exception, messageText, severity);
 
+            if (Program.StartupAutomation)
+            {
+                // In automation mode (--automation: E2E harnesses, CI) there is no human to
+                // dismiss this modal, so showing it would hang the automated run forever (see
+                // the matching gates in ProblemReportApi.ShowProblemReactDialogWithFallbacks
+                // and BrowserProgressDialog). The problem is already in the log (above), which
+                // is how the driving test learns about it.
+                Logger.WriteEvent(
+                    "HtmlErrorReporter: notify dialog suppressed in automation mode (see the "
+                        + "problem logged just before this)."
+                );
+                return;
+            }
+
             // ENHANCE: Allow the caller to pass in the control, which would be at the front of this.
             //System.Windows.Forms.Control control = Form.ActiveForm ?? FatalExceptionHandler.ControlOnUIThread;
             var control = GetControlToUse();

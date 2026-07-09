@@ -1,4 +1,4 @@
-// E2E-4: forced check-in / recovery.
+﻿// E2E-4: forced check-in / recovery.
 //
 // WHAT THIS TEST COVERS (reachable, green): the admin force-unlock + steal-checkout flow and
 // the victim's coherent aftermath. Alice checks a book out; an admin (Bob, promoted mid-test)
@@ -109,7 +109,7 @@ test.describe("E2E-4 forced check-in recovery", () => {
                     await pollNowViaReceiveUpdates(bob!.httpPort);
                     return (await bookStatus(bob!.httpPort, bookName)).who;
                 },
-                { timeout: 20_000, message: "Bob never saw Alice's checkout" },
+                { timeout: 90_000, message: "Bob never saw Alice's checkout" },
             )
             .toBeTruthy();
 

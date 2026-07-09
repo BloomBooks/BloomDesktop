@@ -82,6 +82,10 @@ namespace Bloom.MiscUI
                         // depending on the nature of the problem, we might want to do more or less than this.
                         // But at least this lets the dialog reach one of the states where it can be closed,
                         // and gives the user some idea things are not right.
+                        SIL.Reporting.Logger.WriteError(
+                            "BrowserProgressDialog: the work behind a progress dialog failed",
+                            ex
+                        );
                         socketServer.SendEvent(socketContext, "finished");
                         waitForUserToCloseDialogOrReportProblems = true;
                         progress.MessageWithoutLocalizing(
@@ -92,7 +96,22 @@ namespace Bloom.MiscUI
 
                     // stop the spinner
                     socketServer.SendEvent(socketContext, "finished");
-                    if (waitForUserToCloseDialogOrReportProblems)
+                    if (waitForUserToCloseDialogOrReportProblems && Program.StartupAutomation)
+                    {
+                        // In automation mode (--automation: E2E harnesses, CI) there is no human
+                        // to click the Close/Report buttons, so the wait-for-user state below
+                        // would hang the run forever (diagnosed twice from dotnet-stack dumps of
+                        // hung instances -- see Design/CloudTeamCollections/tasks/09-e2e.md
+                        // finding 9). Log that problems were reported and close, so the failure
+                        // surfaces to the driving test as an error it can read instead of a hang.
+                        SIL.Reporting.Logger.WriteEvent(
+                            "BrowserProgressDialog: problems were reported during progress-dialog "
+                                + "work; auto-closing because Bloom is in automation mode (see "
+                                + "preceding log entries for the actual error)."
+                        );
+                        dlg.Invoke((Action)(() => dlg.Close()));
+                    }
+                    else if (waitForUserToCloseDialogOrReportProblems)
                     {
                         // Now the user is allowed to close the dialog or report problems.
                         // (ProgressDialog in JS-land is watching for this message, which causes it to turn
@@ -223,6 +242,10 @@ namespace Bloom.MiscUI
                     // depending on the nature of the problem, we might want to do more or less than this.
                     // But at least this lets the dialog reach one of the states where it can be closed,
                     // and gives the user some idea things are not right.
+                    SIL.Reporting.Logger.WriteError(
+                        "BrowserProgressDialog: the work behind a progress dialog failed",
+                        ex
+                    );
                     socketServer.SendEvent(socketContext, "finished");
                     waitForUserToCloseDialogOrReportProblems = true;
                     _progress.MessageWithoutLocalizing(
@@ -233,7 +256,18 @@ namespace Bloom.MiscUI
 
                 // stop the spinner
                 socketServer.SendEvent(socketContext, "finished");
-                if (waitForUserToCloseDialogOrReportProblems)
+                if (waitForUserToCloseDialogOrReportProblems && Program.StartupAutomation)
+                {
+                    // See the matching branch in DoWorkWithProgressDialog above: no human exists
+                    // to click the buttons in automation mode, so close instead of hanging.
+                    SIL.Reporting.Logger.WriteEvent(
+                        "BrowserProgressDialog: problems were reported during progress-dialog "
+                            + "work; auto-closing because Bloom is in automation mode (see "
+                            + "preceding log entries for the actual error)."
+                    );
+                    socketServer.SendBundle(socketContext, "close-progress", new DynamicJson());
+                }
+                else if (waitForUserToCloseDialogOrReportProblems)
                 {
                     // Now the user is allowed to close the dialog or report problems.
                     // (ProgressDialog in JS-land is watching for this message, which causes it to turn
