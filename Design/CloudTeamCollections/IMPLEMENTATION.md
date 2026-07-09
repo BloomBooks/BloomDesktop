@@ -131,10 +131,12 @@ Each of these is a config/provisioning swap, not a code change, thanks to the se
         partial (`.bloomSource` recovery unreachable via cloud — product decision needed);
         E2E-10 blocked (account-switch safety unimplemented — product decision needed).
         See tasks/09-e2e.md findings 1–10.
-  - [ ] Acceptance: full matrix green in ONE run on an idle machine. Five runs on the
-        (actively used) dev machine each passed a different 8–11/12; remaining failures are
-        load-correlated (worst offender: Bloom's problem-report modal freezes automated
-        instances on any under-load error — finding 9, product fix recommended).
+  - [x] Acceptance PASSED 9 Jul 2026: **full matrix 13/13 green in one run** (29.7 min,
+        idle machine) — all ten planned scenarios plus the join-auto-open pin. What made it
+        converge after five 8–11/12 runs: the finding-9 product fix (automation mode logs
+        errors instead of hanging on modal problem-report/notify/progress dialogs — approved
+        by John, gated strictly on --automation) plus harness hardening (kill-by-PID,
+        propagation polls budgeted past the organic 60s cycle, status-probe fallback).
   - [x] 10-adoption DONE 8 Jul 2026 — all 7 polish items; see merge log.
   - [ ] Dogfood (needs GOING-LIVE.md phases 2–4 for real-infra, or a local-stack pilot).
 - [ ] Real-infrastructure cutover complete (deferred list above)

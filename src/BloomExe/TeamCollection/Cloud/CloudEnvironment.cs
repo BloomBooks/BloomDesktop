@@ -89,6 +89,16 @@ namespace Bloom.TeamCollection.Cloud
         public string DevPassword { get; }
 
         /// <summary>
+        /// How often CloudCollectionMonitor polls the server for remote changes, from
+        /// BLOOM_CLOUDTC_POLL_SECONDS. The 60s default is right for real users (change
+        /// visibility within a minute at negligible server load); E2E tests and hands-on
+        /// testing of a freshly-deployed server want a much shorter interval so cross-instance
+        /// changes show up promptly. Fail-fast on an unparsable/non-positive value: a silently
+        /// ignored typo here would make tests subtly slow instead of obviously misconfigured.
+        /// </summary>
+        public TimeSpan PollInterval { get; }
+
+        /// <summary>
         /// The one process-wide instance, built from the real environment the first time it is
         /// asked for. Tests should use the constructor directly (with a fake variable lookup)
         /// rather than touching this singleton.
@@ -123,6 +133,13 @@ namespace Bloom.TeamCollection.Cloud
             AnonKey = Get("BLOOM_CLOUDTC_ANON_KEY", DefaultAnonKey);
             S3Endpoint = Get("BLOOM_CLOUDTC_S3_ENDPOINT", DefaultS3Endpoint);
             S3Bucket = Get("BLOOM_CLOUDTC_S3_BUCKET", DefaultS3Bucket);
+
+            var pollSecondsRaw = Get("BLOOM_CLOUDTC_POLL_SECONDS", "60");
+            if (!int.TryParse(pollSecondsRaw, out var pollSeconds) || pollSeconds <= 0)
+                throw new ApplicationException(
+                    $"BLOOM_CLOUDTC_POLL_SECONDS must be a positive whole number of seconds; got '{pollSecondsRaw}'."
+                );
+            PollInterval = TimeSpan.FromSeconds(pollSeconds);
             // Real AWS never sets this override; only local/sandbox dev stacks (MinIO) do.
             S3ForcePathStyle = !string.IsNullOrEmpty(S3Endpoint);
 

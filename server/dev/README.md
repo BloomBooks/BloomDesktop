@@ -221,6 +221,7 @@ launching Bloom (or in your IDE's launch profile / `.env.local`).
 | `BLOOM_CLOUDTC_PASSWORD` | *(optional)* | Password for `BLOOM_CLOUDTC_USER` |
 | `BLOOM_CLOUDTC_FIREBASE_API_KEY` | *(unset)* | Firebase Web API key, for `cloud` mode's securetoken refresh calls |
 | `BLOOM_CLOUDTC_FIREBASE_PROJECT_ID` | *(unset)* | Firebase project id, for `cloud` mode's ID-token sanity checks |
+| `BLOOM_CLOUDTC_POLL_SECONDS` | *(optional; default `60`)* | How often CloudCollectionMonitor polls for remote changes. 60s is right for real users; a few seconds makes E2E runs and hands-on testing of a fresh deployment much snappier. Positive integer; Bloom fails fast on junk. |
 
 `CloudEnvironment.cs` (task 03) is the single place that reads these variables and exposes
 typed properties to the rest of the app. Do not read them directly from other code.

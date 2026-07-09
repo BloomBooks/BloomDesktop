@@ -38,6 +38,11 @@ export const cloudTcEnv = (user?: DevUser): NodeJS.ProcessEnv => ({
     BLOOM_CLOUDTC_S3_ENDPOINT: S3_ENDPOINT,
     BLOOM_CLOUDTC_S3_BUCKET: S3_BUCKET,
     BLOOM_CLOUDTC_AUTH_MODE: "dev",
+    // Fast change-propagation for tests: real users poll every 60s, but scenarios that wait
+    // for a second instance to notice a remote change converge in seconds instead of relying
+    // on explicit pollNow calls racing the server commit (see server/dev/README.md's env
+    // table). The 90s expect.poll budgets stay as generous ceilings.
+    BLOOM_CLOUDTC_POLL_SECONDS: "5",
     ...(user
         ? {
               BLOOM_CLOUDTC_USER: user.email,

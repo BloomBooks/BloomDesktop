@@ -1445,7 +1445,8 @@ namespace Bloom.TeamCollection.Cloud
                 _client,
                 _collectionId,
                 _cache.LastSeenEventId,
-                OnPolledChanges
+                OnPolledChanges,
+                pollInterval: _environment.PollInterval
             );
             _monitor.Start();
         }

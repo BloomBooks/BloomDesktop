@@ -19,6 +19,30 @@ namespace BloomTests.TeamCollection.Cloud
             Assert.That(env.AuthMode, Is.EqualTo(CloudAuthMode.Dev));
             Assert.That(env.DevUser, Is.Null);
             Assert.That(env.DevPassword, Is.Null);
+            // The real-user default: change visibility within a minute at negligible load.
+            Assert.That(env.PollInterval, Is.EqualTo(System.TimeSpan.FromSeconds(60)));
+        }
+
+        [Test]
+        public void PollSeconds_Override_ShortensThePollInterval()
+        {
+            var env = new CloudEnvironment(name =>
+                name == "BLOOM_CLOUDTC_POLL_SECONDS" ? "5" : null
+            );
+
+            Assert.That(env.PollInterval, Is.EqualTo(System.TimeSpan.FromSeconds(5)));
+        }
+
+        [TestCase("abc")]
+        [TestCase("0")]
+        [TestCase("-3")]
+        public void PollSeconds_Invalid_ThrowsInsteadOfSilentlyIgnoring(string badValue)
+        {
+            // Fail fast: a typo here silently reverting to 60s would make E2E runs subtly
+            // slow instead of obviously misconfigured.
+            Assert.Throws<System.ApplicationException>(() =>
+                new CloudEnvironment(name => name == "BLOOM_CLOUDTC_POLL_SECONDS" ? badValue : null)
+            );
         }
 
         [Test]
