@@ -51,9 +51,6 @@ namespace Bloom.Edit
         private PageListApi _pageListApi;
         private Timer _editButtonsUpdateTimer;
         private Browser _mainBrowser => WorkspaceView?.MainBrowser;
-
-        /// <summary>Exposes the main browser so API handlers can inject JS or hook iframe messages.</summary>
-        public Browser MainBrowser => _mainBrowser;
         private WorkspaceView _workspaceView;
         private Form _hostFormForEvents;
         private int _modalDialogDepth;

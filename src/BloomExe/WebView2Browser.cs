@@ -470,21 +470,8 @@ namespace Bloom
             // e.g. (window as any).chrome.webview.postMessage("browser-clicked");
             _webview.WebMessageReceived += (o, e) =>
             {
-                // Plain-string messages use TryGetWebMessageAsString; JSON-object messages throw there.
-                try
-                {
-                    if (e.TryGetWebMessageAsString() == "browser-clicked")
-                    {
-                        RaiseBrowserClick(null, null);
-                        return;
-                    }
-                }
-                catch (InvalidOperationException)
-                { /* message was sent as JSON, not a plain string */
-                }
-
-                // Raise the general event so listeners (e.g. Bloom's React UI) can handle JSON messages.
-                WebMessageReceived?.Invoke(this, e.WebMessageAsJson);
+                if (IsBrowserClickedMessage(e))
+                    RaiseBrowserClick(null, null);
             };
 
             // Now do the same thing for any iframes. When an iframe is created...
@@ -498,15 +485,8 @@ namespace Bloom
                 // and thus tell us when it regained it.
                 e.Frame.WebMessageReceived += (a, b) =>
                 {
-                    try
-                    {
-                        if (b.TryGetWebMessageAsString() == "browser-clicked")
-                        {
-                            RaiseBrowserClick(null, null);
-                            return;
-                        }
-                    }
-                    catch (InvalidOperationException) { }
+                    if (IsBrowserClickedMessage(b))
+                        RaiseBrowserClick(null, null);
                 };
             };
 
@@ -781,20 +761,15 @@ namespace Bloom
             await _webview.ExecuteScriptAsync(script);
         }
 
-        /// <summary>
-        /// Fired for every main-frame web message that is not the built-in "browser-clicked" string.
-        /// The event argument is the raw JSON payload (e.WebMessageAsJson).
-        /// </summary>
-        public event Action<object, string> WebMessageReceived;
+        // The only web message Bloom currently listens for is the plain "browser-clicked"
+        // string our JS posts. WebView2 has no non-throwing "is this a string message?" check
+        // (TryGetWebMessageAsString throws for JSON-object messages), but WebMessageAsJson always
+        // returns the JSON form — a string message arrives as the quoted literal — so we compare
+        // against that instead of catching an exception on every message.
+        private const string BrowserClickedMessageJson = "\"browser-clicked\"";
 
-        /// <summary>
-        /// Post a JSON message to the hosted main-frame web content.
-        /// On the JS side it arrives via window.chrome.webview.addEventListener("message", ...).
-        /// </summary>
-        public void PostWebMessageAsJson(string json)
-        {
-            _webview?.CoreWebView2?.PostWebMessageAsJson(json);
-        }
+        private static bool IsBrowserClickedMessage(CoreWebView2WebMessageReceivedEventArgs e) =>
+            e.WebMessageAsJson == BrowserClickedMessageJson;
 
         /// <summary>
         /// Run a javascript script asynchronously.

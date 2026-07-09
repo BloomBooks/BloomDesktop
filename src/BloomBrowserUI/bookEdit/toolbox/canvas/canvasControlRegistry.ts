@@ -694,20 +694,21 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                         oldSrc?: string;
                         newSrc?: string;
                     }>,
-                ) => {
-                    if (!results) return;
+                ): { applied: number; expected: number } => {
+                    const toApply = (results ?? []).filter(
+                        (r) =>
+                            r &&
+                            r.ok &&
+                            r.isCurrentPage &&
+                            r.newSrc &&
+                            r.oldSrc,
+                    );
+                    if (toApply.length === 0)
+                        return { applied: 0, expected: 0 };
                     const pageDoc = img.ownerDocument;
                     const pageRoot =
                         (pageDoc.querySelector(".bloom-page") as HTMLElement) ||
                         pageDoc;
-                    const decode = (s?: string | null) => {
-                        if (!s) return "";
-                        try {
-                            return decodeURIComponent(s);
-                        } catch {
-                            return s;
-                        }
-                    };
                     const srcOf = (el: Element) => {
                         if (el.tagName === "IMG")
                             return el.getAttribute("src") || "";
@@ -716,58 +717,56 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                         );
                         return m ? m[1] : "";
                     };
+                    // Look up the page's image-bearing elements once, not per replacement.
+                    const candidates = Array.from(
+                        pageRoot.querySelectorAll(
+                            'img, [style*="background-image"]',
+                        ),
+                    );
                     // A page can have several slots sharing the same source (e.g. multiple
                     // empty placeholders). Consume each matched element once so distinct
                     // replacements land on distinct elements instead of collapsing onto the
-                    // first match.
+                    // first match. Match by filename (as the clicked-image lookup does),
+                    // not full src, so a cache-busting query string or path prefix on the
+                    // live element doesn't cause a silent miss.
                     const usedElements = new Set<Element>();
-                    results
-                        .filter(
-                            (r) =>
-                                r &&
-                                r.ok &&
-                                r.isCurrentPage &&
-                                r.newSrc &&
-                                r.oldSrc,
-                        )
-                        .forEach((r) => {
-                            const target = Array.from(
-                                pageRoot.querySelectorAll(
-                                    'img, [style*="background-image"]',
-                                ),
-                            ).find(
-                                (el) =>
-                                    !usedElements.has(el) &&
-                                    decode(srcOf(el)) === decode(r.oldSrc),
-                            ) as HTMLElement | undefined;
-                            if (!target) return;
-                            usedElements.add(target);
-                            if (!target.id) {
-                                target.id =
-                                    "bloom-ai-" +
-                                    Math.random().toString(36).slice(2, 10);
-                            }
-                            const creator =
-                                target.getAttribute("data-creator") || "";
-                            const newCreator = /Edited with AI/i.test(creator)
-                                ? creator
-                                : creator
-                                  ? creator + ", Edited with AI"
-                                  : "Edited with AI";
-                            changeImage({
-                                imageId: target.id,
-                                src: r.newSrc as string,
-                                creator: newCreator,
-                                copyright:
-                                    target.getAttribute("data-copyright") || "",
-                                license:
-                                    target.getAttribute("data-license") || "",
-                                // The AI commit applies replacements book-wide in C#
-                                // (saved directly, not undoable), so don't register a
-                                // separate per-image undo for the current-page piece.
-                                undoable: "false",
-                            });
+                    let applied = 0;
+                    toApply.forEach((r) => {
+                        const wanted = fileNameOf(r.oldSrc);
+                        const target = candidates.find(
+                            (el) =>
+                                !usedElements.has(el) &&
+                                fileNameOf(srcOf(el)) === wanted,
+                        ) as HTMLElement | undefined;
+                        if (!target) return;
+                        usedElements.add(target);
+                        if (!target.id) {
+                            target.id =
+                                "bloom-ai-" +
+                                Math.random().toString(36).slice(2, 10);
+                        }
+                        const creator =
+                            target.getAttribute("data-creator") || "";
+                        const newCreator = /Edited with AI/i.test(creator)
+                            ? creator
+                            : creator
+                              ? creator + ", Edited with AI"
+                              : "Edited with AI";
+                        changeImage({
+                            imageId: target.id,
+                            src: r.newSrc as string,
+                            creator: newCreator,
+                            copyright:
+                                target.getAttribute("data-copyright") || "",
+                            license: target.getAttribute("data-license") || "",
+                            // The AI commit applies replacements book-wide in C#
+                            // (saved directly, not undoable), so don't register a
+                            // separate per-image undo for the current-page piece.
+                            undoable: "false",
                         });
+                        applied++;
+                    });
+                    return { applied, expected: toApply.length };
                 };
 
                 const handleMessage = (event: MessageEvent) => {
@@ -859,18 +858,38 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                                               }>;
                                           }
                                         | undefined;
-                                    applyCurrentPageReplacements(
-                                        result?.results,
-                                    );
-                                    const ok = result?.ok !== false;
-                                    ackEditor(
-                                        ok,
-                                        ok
-                                            ? undefined
-                                            : "Some images could not be replaced.",
-                                    );
-                                    if (ok) {
-                                        cleanup();
+                                    // The server reports whether it staged every replacement;
+                                    // for current-page slots only this live DOM knows if the
+                                    // edit actually landed. Combine both so the editor's ack
+                                    // reflects the true outcome, and always ack (even on an
+                                    // apply exception) so the editor overlay can't hang.
+                                    let finalOk = false;
+                                    let message: string | undefined;
+                                    try {
+                                        const cp = applyCurrentPageReplacements(
+                                            result?.results,
+                                        );
+                                        const serverOk = result?.ok !== false;
+                                        finalOk =
+                                            serverOk &&
+                                            cp.applied === cp.expected;
+                                        if (!finalOk) {
+                                            message = serverOk
+                                                ? `Only ${cp.applied} of ${cp.expected} image(s) on the current page could be updated.`
+                                                : "Some images could not be replaced.";
+                                        }
+                                    } catch (e) {
+                                        finalOk = false;
+                                        message =
+                                            "Failed to apply current-page replacements: " +
+                                            (e instanceof Error
+                                                ? e.message
+                                                : String(e));
+                                    } finally {
+                                        ackEditor(finalOk, message);
+                                        if (finalOk) {
+                                            cleanup();
+                                        }
                                     }
                                 },
                                 () => {

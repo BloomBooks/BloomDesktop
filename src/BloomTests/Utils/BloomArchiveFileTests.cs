@@ -73,6 +73,54 @@ namespace BloomTests.Utils
                 CollectionAssert.AreEqual(new float[] { 0.5f, 1f }, progressUpdates);
             }
         }
+
+        [Test]
+        public void AddDirectory_DotPrefixedSubfolder_ExcludedFromArchive()
+        {
+            // Setup: a normal file at the root and in a normal subfolder should be archived,
+            // but anything under a dot-prefixed metadata folder (e.g. the AI image editor's
+            // .ai-image-editor working folder, or .git) must be skipped.
+            using (var testFolder = new TemporaryFolder(kTestFolderName))
+            {
+                RobustFile.Create(Path.Combine(testFolder.Path, "root.txt")).Dispose();
+
+                var normalSub = Directory.CreateDirectory(Path.Combine(testFolder.Path, "images"));
+                RobustFile.Create(Path.Combine(normalSub.FullName, "pic.png")).Dispose();
+
+                var hiddenSub = Directory.CreateDirectory(
+                    Path.Combine(testFolder.Path, ".ai-image-editor")
+                );
+                RobustFile.Create(Path.Combine(hiddenSub.FullName, "state.json")).Dispose();
+
+                var archive = new MockBloomArchiveSubclass();
+
+                // System under test
+                archive.AddDirectory(testFolder.Path, testFolder.Path.Length, null);
+
+                // Verification
+                var entryNames = archive
+                    .AddFileCallParams.Select(tuple => tuple.Item2.Replace('\\', '/'))
+                    .ToList();
+                // Sanity check: the normal files did get archived, so a negative result below
+                // means "excluded", not "AddDirectory added nothing".
+                Assert.That(
+                    entryNames.Any(n => n.EndsWith("root.txt")),
+                    Is.True,
+                    "root file should have been archived"
+                );
+                Assert.That(
+                    entryNames.Any(n => n.EndsWith("images/pic.png")),
+                    Is.True,
+                    "normal subfolder contents should have been archived"
+                );
+                // The dot-folder's contents must NOT be archived.
+                Assert.That(
+                    entryNames.Any(n => n.Contains(".ai-image-editor")),
+                    Is.False,
+                    "dot-prefixed metadata folders must be excluded from the archive"
+                );
+            }
+        }
     }
 
     /// <summary>

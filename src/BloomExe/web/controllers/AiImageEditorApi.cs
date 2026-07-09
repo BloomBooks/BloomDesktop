@@ -86,11 +86,38 @@ namespace Bloom.web.controllers
         private string _pendingOAuthCode;
         private string _pendingOAuthError;
 
+        // The image formats the editor may store and that we serve/commit. Single source of
+        // truth: both AllowedFileName (below) and IsImageFileName derive from this set so the
+        // two lists can't drift apart.
+        private static readonly HashSet<string> AllowedImageExtensions = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase
+        )
+        {
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".gif",
+            ".webp",
+            ".svg",
+            ".bmp",
+            ".tif",
+            ".tiff",
+        };
+
+        // Regex alternation of the allowed extensions without the leading dot
+        // (e.g. "png|jpg|jpeg|..."), derived from AllowedImageExtensions.
+        private static readonly string AllowedImageExtensionPattern = string.Join(
+            "|",
+            AllowedImageExtensions.Select(e => Regex.Escape(e.TrimStart('.')))
+        );
+
         // Files the /file endpoint may read/write/delete: the two top-level json files,
         // history image bytes (any supported raster extension), and the per-image
         // history sidecars (history/<id>.json) that travel with each image.
         private static readonly Regex AllowedFileName = new Regex(
-            @"^(state\.json|connection\.json|history/[a-zA-Z0-9_\-]+\.(png|jpe?g|gif|webp|bmp|tiff?|svg|json))$",
+            @"^(state\.json|connection\.json|history/[a-zA-Z0-9_\-]+\.(?:"
+                + AllowedImageExtensionPattern
+                + @"|json))$",
             RegexOptions.Compiled | RegexOptions.IgnoreCase
         );
 
@@ -448,23 +475,34 @@ namespace Bloom.web.controllers
 
         private const string EditedWithAiCredit = "Edited with AI";
 
-        private static readonly HashSet<string> AllowedImageExtensions = new HashSet<string>(
-            StringComparer.OrdinalIgnoreCase
-        )
-        {
-            ".png",
-            ".jpg",
-            ".jpeg",
-            ".gif",
-            ".webp",
-            ".svg",
-            ".bmp",
-            ".tif",
-            ".tiff",
-        };
-
         private static bool IsImageFileName(string name) =>
             AllowedImageExtensions.Contains(Path.GetExtension(name));
+
+        /// <summary>
+        /// Locates the bytes for a history result by id. The editor may store a result under
+        /// any supported raster extension, so we probe history/&lt;resultId&gt;.&lt;ext&gt; across
+        /// <see cref="AllowedImageExtensions"/> and return the first match. The caller must
+        /// have already validated resultId against <see cref="SafeId"/>.
+        /// </summary>
+        private static bool TryFindHistoryResultFile(
+            string editorFolder,
+            string resultId,
+            out string path
+        )
+        {
+            var historyFolder = Path.Combine(editorFolder, "history");
+            foreach (var extension in AllowedImageExtensions)
+            {
+                var candidate = Path.Combine(historyFolder, resultId + extension);
+                if (RobustFile.Exists(candidate))
+                {
+                    path = candidate;
+                    return true;
+                }
+            }
+            path = null;
+            return false;
+        }
 
         private class CommitRequest
         {
@@ -665,6 +703,8 @@ namespace Bloom.web.controllers
             var pagesToSyncToDataDiv = new HashSet<SafeXmlElement>();
             var appliedCount = 0;
             var savedAnyOffPage = false;
+            // Reused across replacements so a page's whole-document lookup happens only once.
+            var pageCache = new Dictionary<string, SafeXmlElement>();
 
             foreach (var replacement in replacements)
             {
@@ -673,6 +713,7 @@ namespace Bloom.web.controllers
                     editorFolder,
                     replacement,
                     currentPageId,
+                    pageCache,
                     out var error,
                     out var isCurrentPage,
                     out var oldSrc,
@@ -728,6 +769,7 @@ namespace Bloom.web.controllers
             string editorFolder,
             CommitReplacement replacement,
             string currentPageId,
+            Dictionary<string, SafeXmlElement> pageCache,
             out string error,
             out bool isCurrentPage,
             out string oldSrc,
@@ -763,12 +805,16 @@ namespace Bloom.web.controllers
                 return false;
             }
 
-            if (
-                !(
+            // Resolve the page by id at most once per commit: the //div[@id=...] lookup is a
+            // whole-document scan, and a commit often targets several images on the same page.
+            if (!pageCache.TryGetValue(pageId, out var page))
+            {
+                page =
                     book.OurHtmlDom.RawDom.SelectSingleNode("//div[@id='" + pageId + "']")
-                    is SafeXmlElement page
-                )
-            )
+                    as SafeXmlElement;
+                pageCache[pageId] = page; // cache misses too, so a repeat bad id doesn't rescan
+            }
+            if (page == null)
             {
                 error = "Page not found: " + pageId;
                 return false;
@@ -809,12 +855,16 @@ namespace Bloom.web.controllers
                     error = "Invalid resultId";
                     return false;
                 }
-                sourceBytesPath = Path.Combine(
-                    editorFolder,
-                    "history",
-                    replacement.resultId + ".png"
-                );
-                if (!RobustFile.Exists(sourceBytesPath))
+                // The editor may save a result in any supported raster format, so look it up
+                // by id across the allowed extensions rather than assuming .png (which would
+                // fail to commit a .jpg/.webp result that EnumerateHistoryImages happily lists).
+                if (
+                    !TryFindHistoryResultFile(
+                        editorFolder,
+                        replacement.resultId,
+                        out sourceBytesPath
+                    )
+                )
                 {
                     error = "Result image not found";
                     return false;
