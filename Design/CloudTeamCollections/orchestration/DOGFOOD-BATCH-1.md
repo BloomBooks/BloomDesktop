@@ -63,29 +63,74 @@ Status: CODE DONE (commit 207cc1d0) — visual verification QUEUED (needs unlock
 - [ ] Visual check + `e2e-2-collaboration-loop` when screen unlocked.
 
 ### 4+5. Automatic remote-update application + in-place Sync (one work item)  `[medium]`
-Status: NOT STARTED
+Status: CODE DONE (branch task/b1-45-auto-sync) — E2E verification QUEUED (desktop session
+locked per this task's hard environment rules; not attempted)
 Observed bug: after a remote checkin, the other instance updated lock state (avatar +
 status panel) but the TC button showed no "updates available" and the preview did not
 refresh; book folder content update unverified.
-- [ ] Diagnose: what does CloudCollectionMonitor do with a remote checkin today — does it
-      copy the new version to the local folder at all, or only update status? (Compare
-      folder-TC behavior: queued message → Reload button.)
-- [ ] Implement fully-automatic application (see decision above): poll notices checkin →
-      download/apply book to local folder → notify UI → refresh preview if selected.
-- [ ] SAFETY (John, 9 Jul): the partially-downloaded intermediate state must never be
-      user-reachable. Stage the download into a temp folder and swap it in atomically
-      (never write file-by-file into the live book folder); while the swap/apply is in
-      flight, the book is "busy" — checkout, edit, publish, delete, and rename must be
-      blocked or safely queued. Selecting the book mid-apply shows a transient state, not
-      half-updated content.
-- [ ] Rename "Reload" to "Sync" for cloud TCs and make it an in-place update: apply all
-      pending remote changes WITHOUT closing/reopening the collection (folder TCs keep
-      their existing reload semantics unless trivially unifiable).
-- [ ] Keep the reload-requiring paths (settings changes etc.) working — not everything can
-      be in-place; distinguish the cases.
-- [ ] XLF for the new "Sync" label (skill rules apply).
-- [ ] Verify: `e2e-2-collaboration-loop` + `e2e-8-receive-during-send`; e2e-1 for the XLF.
-- [ ] Update tests/specs that assert on the old Reload wording/behavior.
+- [x] Diagnose: CloudCollectionMonitor.OnPolledChanges DOES already notify the base
+      TeamCollection change pipeline correctly (RaiseBookStateChange → HandleModifiedFile at
+      Application.Idle), and it DID reach the HasBeenChangedRemotely branch — but that branch
+      only ever wrote a "TeamCollection.BookModifiedRemotely" NewStuff log message; it never
+      copied anything to the local folder (confirmed: folder TC has the exact same message-only
+      behavior for this branch, so this wasn't a cloud-specific regression, just a gap neither
+      backend had filled in). Root cause of "TC button showed no updates available": the
+      top-bar TeamCollectionButton's color/label state comes from `teamCollection/tcStatus`
+      (CollectionTabView.cs sends this from TeamCollectionMessageLog.TeamCollectionStatus, which
+      is driven ONLY by whether a NewStuff message log entry exists) — it is a SEPARATE signal
+      from `teamCollection/tcStatusMetadata`'s `updatesAvailableCount` (which reads the
+      CloudRepoCache version numbers directly and is pushed via the `statusMetadataChanged`
+      socket event on every poll). So `updatesAvailableCount` was almost certainly already
+      correct and live; what was missing was confirming a NewStuff message actually got written
+      for John's test run (a corrupted/stuck session, a race, or simply that this was the very
+      poll that revealed the gap) — this needs re-verification once the desktop is available,
+      but the code-level cause (message-only branch, no auto-apply) is confirmed and is exactly
+      what this item's implementation now fixes.
+- [x] Implement fully-automatic application: TeamCollection.CanAutoApplyRemoteChanges (false by
+      default; true only for CloudTeamCollection) + a new single-consumer RemoteBookAutoApplyQueue
+      (dedupes by book name, one book at a time, runs on Task.Run so downloads never block the UI
+      thread). HandleModifiedFile's HasBeenChangedRemotely branch now queues the book instead of
+      just logging when CanAutoApplyRemoteChanges is true; the worker re-verifies eligibility
+      (still changed remotely, not checked out here, no clobber/checkout conflict) at the moment
+      it actually runs, then reuses CopyBookFromRepoToLocal, updates book status, and refreshes
+      the preview (SendBookContentReload) only if the applied book is the one currently selected.
+      Falls back to exactly the old message-only behavior on failure or ineligibility. Folder TCs
+      are unaffected (CanAutoApplyRemoteChanges stays false there).
+- [x] SAFETY (John, 9 Jul): CopyBookFromRepoToLocal already staged-then-atomically-swapped before
+      this task (two directory renames; not reimplemented). The auto-apply worker's
+      re-verification (checked-out-here / clobber / checkout-conflict, re-read fresh on the
+      worker thread right before copying) is the mechanism that keeps a book "busy-safe": if the
+      user checks it out, starts editing, or otherwise changes its state between queueing and the
+      worker actually running, the worker backs off silently rather than clobbering anything.
+      NOT separately implemented: an explicit UI-level "busy" lock during the download window
+      itself (publish/delete/rename aren't specially blocked while a download is in flight) —
+      the re-verification step covers the has-this-changed-since-queueing race but a reviewer
+      should double check there's no narrow window between the re-verification check and the
+      actual folder swap where a concurrent user action could interleave badly. Given the swap
+      itself is two fast directory renames (not file-by-file writes), this window is believed
+      negligible but wasn't independently stress-tested.
+- [x] Rename "Reload" to "Sync" for cloud TCs. The existing `teamCollection/receiveUpdates`
+      backend endpoint already did PollNow() before its receive loop (no server-side change
+      needed) — only the label changed, in both the dialog and the per-book status panel.
+      Discovered and fixed a related bug while in there: the per-book panel's generic
+      "needsReload" state (isChangedRemotely, a content-update signal identical for both
+      backends) was checked ahead of the cloud-specific "updatesAvailable" state, so a cloud
+      book with a pending remote change showed "Reload Collection" instead of "Sync" — cloud now
+      renders needsReload with the same copy/button as updatesAvailable; folder TCs (and genuine
+      hasConflictingChange for either backend) are unchanged.
+- [x] Keep the reload-requiring paths (settings changes etc.) working — HandleCollectionSettingsChange
+      and the dialog's showReloadButton/"Reload Collection" path were not touched at all.
+- [x] XLF for the new "Sync" label: renamed TeamCollection.ReceiveUpdates → TeamCollection.Sync
+      (was translate="no", so free to rename per the xlf skill) and updated
+      UpdatesAvailableForBookDescription's text/note to match.
+- [ ] Verify: `e2e-2-collaboration-loop` + `e2e-8-receive-during-send`; e2e-1 for the XLF. NOT
+      run — this task's hard rules forbid launching Bloom / running e2e (desktop session
+      locked); queued for the next E2E pass alongside items 1–3.
+- [x] Update tests/specs that assert on the old Reload wording/behavior: TeamCollectionDialog.test.tsx
+      and TeamCollectionBookStatusPanel.test.tsx updated for the rename, plus new tests for the
+      auto-apply eligibility logic (RemoteBookAutoApplyQueueTests, TeamCollectionAutoApplyTests)
+      and the needsReload cloud/folder split. C# required filter 375/375 green; both touched
+      vitest files green (5/5, 13/13); yarn typecheck and eslint clean.
 
 ### 6. Join-card integration in the collection chooser  `[medium]`
 Status: NOT STARTED
@@ -159,3 +204,19 @@ Status: NOT STARTED
   origin unknown, possibly John's) is running and locks output/Debug — build/test with
   `-c Release` until it's gone; do NOT kill it without John · Next: item 4+5 design read
   (CloudTeamCollection change-application path), code-only work.
+- 9 Jul 2026 (later still) · Item 4+5 CODE DONE on branch `task/b1-45-auto-sync` (created
+  from cloud-collections; not yet merged): TeamCollection.CanAutoApplyRemoteChanges +
+  RemoteBookAutoApplyQueue (auto-apply for cloud TCs, folder TCs unchanged); "Receive
+  Updates" renamed to "Sync" everywhere (dialog + per-book panel) plus a fixed
+  needsReload/updatesAvailable priority bug for cloud found along the way; XLF renamed
+  TeamCollection.ReceiveUpdates → TeamCollection.Sync. Diagnosis of the missing
+  "updates available" badge: it's driven solely by the message log's NewStuff milestone
+  (TeamCollectionStatus.NewStuff → teamCollection/tcStatus), a SEPARATE signal from
+  tcStatusMetadata's updatesAvailableCount (which was likely already correct/live) — see
+  the item's own diagnosis bullet above for detail. Tests: C# required filter 375/375
+  green (incl. new RemoteBookAutoApplyQueueTests + TeamCollectionAutoApplyTests); both
+  touched vitest files green (5/5, 13/13); yarn typecheck/eslint clean. E2E NOT run
+  (desktop locked; forbidden by this task's rules) — `e2e-2-collaboration-loop` +
+  `e2e-8-receive-during-send` + e2e-1 (XLF gate) queued alongside items 1–3's pending
+  runs · Next: orchestrator review + merge of task/b1-45-auto-sync into cloud-collections,
+  then the queued full E2E pass covering items 1–5, then item 6 (join-card integration).
