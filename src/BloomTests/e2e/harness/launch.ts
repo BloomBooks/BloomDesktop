@@ -71,31 +71,47 @@ export const buildBloomOnce = async (): Promise<void> => {
  * it locks its own output tree, serves its own port block, and per
  * .claude/skills/run-bloom/SKILL.md is not ours to kill. */
 export const assertNoForeignBloomRunning = async (): Promise<void> => {
-    // Generous timeout + one retry: the probe shells out to wmic/port scans, and its very
-    // first run on a just-idled machine has been seen exceeding 20s (killing an entire
-    // matrix run in globalSetup before any test started). A genuinely wedged probe still
-    // fails loudly after the retry.
+    // Two documented failure modes of this probe, both survivable
+    // (.github/skills/bloom-automation + .claude/skills/run-bloom gotchas):
+    //  - it can exceed a tight timeout on its first run after the machine idles
+    //    (generous 60s + one retry below);
+    //  - it can CRASH with a libuv assertion ("!(handle->flags & UV_HANDLE_CLOSING)")
+    //    AFTER printing its complete, valid JSON — a non-zero exit whose stdout is
+    //    perfectly usable, which killed two matrix runs in globalSetup before this
+    //    salvage was added. If the salvaged stdout doesn't parse, the error was real.
+    const runProbe = async (): Promise<string> => {
+        try {
+            const { stdout } = await execFileAsync(
+                "node",
+                [
+                    path.join(
+                        bloomAutomationSkillDir,
+                        "bloomProcessStatus.mjs",
+                    ),
+                    "--running-bloom",
+                    "--json",
+                ],
+                { cwd: repoRoot, timeout: 60_000, windowsHide: true },
+            );
+            return stdout;
+        } catch (error) {
+            const salvaged = (error as { stdout?: string }).stdout;
+            if (salvaged) {
+                try {
+                    JSON.parse(salvaged);
+                    return salvaged; // crashed after printing valid JSON — use it
+                } catch {
+                    // fall through: stdout was incomplete, this was a real failure
+                }
+            }
+            throw error;
+        }
+    };
     let stdout: string;
     try {
-        ({ stdout } = await execFileAsync(
-            "node",
-            [
-                path.join(bloomAutomationSkillDir, "bloomProcessStatus.mjs"),
-                "--running-bloom",
-                "--json",
-            ],
-            { cwd: repoRoot, timeout: 60_000, windowsHide: true },
-        ));
+        stdout = await runProbe();
     } catch {
-        ({ stdout } = await execFileAsync(
-            "node",
-            [
-                path.join(bloomAutomationSkillDir, "bloomProcessStatus.mjs"),
-                "--running-bloom",
-                "--json",
-            ],
-            { cwd: repoRoot, timeout: 60_000, windowsHide: true },
-        ));
+        stdout = await runProbe();
     }
     const status = JSON.parse(stdout);
     const running: Array<{
