@@ -2677,30 +2677,60 @@ namespace Bloom.Publish.Rab
 
         internal virtual bool TryBringRunningRabToFront()
         {
-            foreach (var process in Process.GetProcesses())
+            var processes = Process.GetProcesses();
+            try
             {
-                try
+                foreach (var process in processes)
                 {
-                    if (process.MainWindowHandle == IntPtr.Zero)
-                        continue;
+                    try
+                    {
+                        if (process.MainWindowHandle == IntPtr.Zero)
+                            continue;
 
-                    if (
-                        process.MainWindowTitle.IndexOf(
-                            "Reading App Builder",
-                            StringComparison.OrdinalIgnoreCase
-                        ) < 0
-                    )
-                        continue;
+                        // RAB is a Java (Eclipse) app. Depending on how it is launched, its
+                        // window may belong to either java.exe or the console-less javaw.exe, so
+                        // accept both. This keeps us from matching, e.g., a browser tab whose
+                        // title happens to contain "Reading App Builder".
+                        if (
+                            !string.Equals(
+                                process.ProcessName,
+                                "java",
+                                StringComparison.OrdinalIgnoreCase
+                            )
+                            && !string.Equals(
+                                process.ProcessName,
+                                "javaw",
+                                StringComparison.OrdinalIgnoreCase
+                            )
+                        )
+                            continue;
 
-                    return ProcessExtra.SetForegroundWindow(process.MainWindowHandle);
+                        if (
+                            process.MainWindowTitle.IndexOf(
+                                "Reading App Builder",
+                                StringComparison.OrdinalIgnoreCase
+                            ) < 0
+                        )
+                            continue;
+
+                        return ProcessExtra.SetForegroundWindow(process.MainWindowHandle);
+                    }
+                    catch
+                    {
+                        // Ignore processes that cannot be inspected.
+                    }
                 }
-                catch
-                {
-                    // Ignore processes that cannot be inspected.
-                }
+
+                return false;
             }
-
-            return false;
+            finally
+            {
+                // Close every process handle we obtained to avoid leaking resources, but
+                // don't kill the processes. This includes any processes we never got to
+                // inspect because a match was found and we returned early.
+                foreach (var process in processes)
+                    process.Dispose();
+            }
         }
 
         internal virtual string GetRabSettingsFilePath()
