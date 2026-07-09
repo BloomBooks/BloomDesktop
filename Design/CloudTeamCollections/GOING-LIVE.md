@@ -157,9 +157,13 @@ a sandbox-reset path (`supabase db reset --linked` is destructive and slow; an a
 add a `tc`-schema truncate + bucket-prefix-clear script instead). Also re-run the two
 `[Explicit]` C# live tests (`CloudTeamCollectionLiveTests`) with sandbox env vars.
 
-### 4.3 [HUMAN] AWSSDK.S3 version bump decision
-The client pins an older AWSSDK.S3; a bump was deferred as a separate follow-up (Wave-2 note).
-Decide whether to take it before or after go-live; [AGENT] executes + runs the suites.
+### 4.3 [DECIDED 9 Jul 2026] AWSSDK.S3 version bump: **on this branch, before go-live**
+John: "It's fine for this branch to bump the S3 sdk version." [AGENT] executes the bump and
+runs the full suites (cloud filter + FULL BloomTests once + the E2E matrix — AWSSDK is also
+used by the BloomLibrary web-upload code, so the blast radius is wider than cloud TCs).
+**[HUMAN] added to the test plan at John's request: after the bump, manually verify that web
+book UPLOAD (publish to bloomlibrary.org) and DOWNLOAD (get a book from bloomlibrary.org
+into Bloom) are unaffected.** Queued as item 10 in `orchestration/DOGFOOD-BATCH-1.md`.
 
 ---
 

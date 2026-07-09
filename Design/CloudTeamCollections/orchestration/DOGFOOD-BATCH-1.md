@@ -250,6 +250,18 @@ signed in as B:
   such a book, atomically switch the checkout everywhere to B. If B checks it in (even
   without editing), history records the checkin by B.
 
+### 10. AWSSDK.S3 version bump (John decision, 9 Jul: take it on this branch)  `[quick-medium]`
+Status: NOT STARTED
+- [ ] Bump AWSSDK.S3 (and its AWSSDK.Core pair) to current stable in the csproj(s); check
+      whether BloomHarvester/other projects pin the same package family and must move in
+      lockstep.
+- [ ] Suites: cloud filter + ONE full BloomTests run (AWSSDK is used by the BloomLibrary
+      web-upload code — WebLibraryIntegration — so cloud-only filters are NOT sufficient).
+- [ ] E2E: at least e2e-1 + e2e-2 (S3 up/down through MinIO exercises the new SDK's
+      path-style + AssumeRole handling — the risky surface for a bump).
+- [ ] [HUMAN, John] Manual check that web book upload (publish to bloomlibrary.org) and
+      download (into Bloom) still work — recorded in GOING-LIVE.md 4.3.
+
 ## Also queued from dogfooding (not in John's list, orchestrator-flagged)
 - Administrators field shows the REGISTRATION email (john_thomson@sil.org) instead of the
   signed-in account email for cloud TCs (`ConnectToCloudCollection` sets
