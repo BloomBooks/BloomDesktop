@@ -310,6 +310,63 @@ namespace Bloom.web.controllers
             );
 
             apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "chooseBloomSourceFilesToImport/",
+                (request) =>
+                {
+                    // Opens the file picker so the user can select the .bloomSource file(s) to import,
+                    // and replies with everything the collection screen needs to show the one dialog
+                    // that fits the batch: the chosen file paths (empty if the user cancelled),
+                    // whether any chosen book is already in the collection (so it knows whether to ask
+                    // how duplicates should be handled), and — when it is — whether every such
+                    // duplicate may currently be replaced (false when, in a Team Collection, any is
+                    // not checked out here, so the screen disables "Replace"). The front-end holds the
+                    // returned paths and passes them back to importBloomSource; nothing is remembered
+                    // on this side between calls.
+                    var files = _collectionModel.ChooseBloomSourceFilesToImport();
+                    request.ReplyWithJson(
+                        new
+                        {
+                            files,
+                            anyDuplicates = _collectionModel.AnyBloomSourceIsAlreadyInCollection(
+                                files
+                            ),
+                            canReplace = _collectionModel.AllBloomSourceDuplicatesAreReplaceable(
+                                files
+                            ),
+                        }
+                    );
+                },
+                true
+            );
+
+            apiHandler.RegisterAsyncEndpointHandler(
+                kApiUrlPart + "importBloomSource/",
+                async (request) =>
+                {
+                    // Imports the .bloomSource file(s) whose paths the front-end passes in the POST
+                    // body (the ones it got from chooseBloomSourceFilesToImport) into the current
+                    // editable collection. The collection screen has since shown the one dialog that
+                    // fit the batch: when no chosen book was already present it asked
+                    // edit-vs-derivative ("mode"); when any was present it asked replace-vs-add-copy
+                    // ("onDuplicate", always mode=edit). Each single choice applies to every chosen
+                    // file. Runs behind the collection tab's progress dialog on a background thread
+                    // (not the UI thread) so a large batch neither freezes the screen nor lets this
+                    // request time out.
+                    var paths = request.RequiredPostObject<string[]>();
+                    var makeDerivatives = request.RequiredParam("mode") == "derivative";
+                    var replaceExistingDuplicates =
+                        request.GetParamOrNull("onDuplicate") == "replace";
+                    await _collectionModel.ImportBloomSourceFilesWithProgressAsync(
+                        paths,
+                        makeDerivatives,
+                        replaceExistingDuplicates
+                    );
+                    request.PostSucceeded();
+                },
+                handleOnUiThread: false
+            );
+
+            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "doChecksOfAllBooks/",
                 (request) =>
                 {
