@@ -596,6 +596,7 @@ div[data-book*="branding"] {
 }
 
 .Device16x9Landscape,
+.Ebook7x5Landscape,
 .PictureStoryLandscape {
     //TODO: This is only for videos
     // Why is this not used for Device16x9Portrait too?!
@@ -707,7 +708,8 @@ div.bloom-page.coverColor {
 // pages that are symmetrical left vs. right, so that we only use --page-margin-left
 // (or --cover-margin-side).
 // --------------------------------------------------------------------------------------
-// if the page is set to a Device one
+// if the page is set to a Device or ebook one
+.bloom-page[class*="Ebook"],
 .bloom-page[class*="Device"],
 .calendarFold,
 // this name "screen-only" is rather out of date now, but what it means is that the page is only shown

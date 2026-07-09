@@ -33,6 +33,7 @@
     // Make comic book pages have no margin or page number.  See BL-13602.
     --page-margin: 0mm;
     --pageNumber-show: none;
+    &.numberedPage[class*="Ebook"],
     &.numberedPage[class*="Device"] {
         --pageNumber-extra-height: 0mm !important;
     }
