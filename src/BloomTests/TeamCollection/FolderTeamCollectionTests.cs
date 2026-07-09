@@ -559,6 +559,16 @@ namespace BloomTests.TeamCollection
             var samples1 = Path.Combine(sampleTextsSource, "texts1.txt");
             File.WriteAllText(samples1, "this is the first sample text for tok pisin");
 
+            // Make a Keyboards folder (cached KeymanWeb keyboards, incl. a fonts/ subfolder)
+            var keyboardsSource = Path.Combine(_collectionFolder.FolderPath, "Keyboards");
+            Directory.CreateDirectory(keyboardsSource);
+            var keyboardManifest = Path.Combine(keyboardsSource, "thai_kedmanee.json");
+            File.WriteAllText(keyboardManifest, "this is a fake keyboard manifest");
+            var keyboardFontsSource = Path.Combine(keyboardsSource, "fonts");
+            Directory.CreateDirectory(keyboardFontsSource);
+            var keyboardFont = Path.Combine(keyboardFontsSource, "Pyidaungsu-Regular.ttf");
+            File.WriteAllText(keyboardFont, "these are fake font bytes");
+
             // First SUT: copy from local to repo
             _collection.CopyRepoCollectionFilesFromLocal(_collectionFolder.FolderPath);
 
@@ -640,6 +650,25 @@ namespace BloomTests.TeamCollection
                     ),
                     Is.EqualTo("this is the first sample text for tok pisin"),
                     "copied the sample texts file"
+                );
+                Assert.That(
+                    File.ReadAllText(
+                        Path.Combine(tempDest.FolderPath, "Keyboards", "thai_kedmanee.json")
+                    ),
+                    Is.EqualTo("this is a fake keyboard manifest"),
+                    "copied the keyboard manifest"
+                );
+                Assert.That(
+                    File.ReadAllText(
+                        Path.Combine(
+                            tempDest.FolderPath,
+                            "Keyboards",
+                            "fonts",
+                            "Pyidaungsu-Regular.ttf"
+                        )
+                    ),
+                    Is.EqualTo("these are fake font bytes"),
+                    "copied the keyboard font from the fonts/ subfolder"
                 );
             }
         }

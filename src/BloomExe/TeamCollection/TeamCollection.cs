@@ -484,7 +484,11 @@ namespace Bloom.TeamCollection
             // If it's in a book folder (any subfolder except the two we save as settings) ignore it.
             if (e.Name.Contains(Path.DirectorySeparatorChar))
             {
-                if (!e.Name.StartsWith("Allowed Words") && !e.Name.StartsWith("Sample Texts"))
+                if (
+                    !e.Name.StartsWith("Allowed Words")
+                    && !e.Name.StartsWith("Sample Texts")
+                    && !e.Name.StartsWith("Keyboards")
+                )
                     return;
             }
 
@@ -887,6 +891,7 @@ namespace Bloom.TeamCollection
             var files = RootLevelCollectionFilesIn(_localCollectionFolder);
             AddFiles(files, "Allowed Words");
             AddFiles(files, "Sample Texts");
+            AddFiles(files, "Keyboards");
             return files.Select(f => Path.Combine(_localCollectionFolder, f)).ToList();
         }
 
@@ -1145,6 +1150,7 @@ namespace Bloom.TeamCollection
                 PutCollectionFiles(files.ToArray());
                 CopyLocalFolderToRepo("Allowed Words");
                 CopyLocalFolderToRepo("Sample Texts");
+                CopyLocalFolderToRepo("Keyboards");
                 RecordCollectionFilesSyncData();
             }
             finally
