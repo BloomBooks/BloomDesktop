@@ -393,7 +393,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
         true,
     );
     const subTitleUpdatesAvailableForBook = useL10n(
-        "Receive updates to get the latest version before you check it out.",
+        "Sync to get the latest version before you check it out.",
         "TeamCollection.UpdatesAvailableForBookDescription",
         undefined,
         undefined,
@@ -688,8 +688,35 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         {getLockedInfoChild(lockedInfo)}
                     </StatusPanelCommon>
                 );
-            case "conflictingChange":
             case "needsReload":
+                // Batch item 4+5: for a cloud Team Collection, this state is purely about
+                // content (isChangedRemotely -- someone else's checkin hasn't been picked up
+                // here yet), never about settings, so it gets the same Sync treatment as
+                // "updatesAvailable" instead of a full "Reload Collection". A folder TC (or any
+                // future cloud edge case not otherwise covered) falls through to share
+                // conflictingChange's Reload-Collection rendering below, unchanged.
+                if (isCloud) {
+                    return (
+                        <StatusPanelCommon
+                            title={mainTitleUpdatesAvailableForBook}
+                            subTitle={subTitleUpdatesAvailableForBook}
+                            icon={avatar}
+                            button={getBloomButton(
+                                "Sync",
+                                "TeamCollection.Sync",
+                                "sync-button",
+                                undefined,
+                                () => post("teamCollection/receiveUpdates"),
+                            )}
+                            menu={menu}
+                        >
+                            {getLockedInfoChild("")}
+                        </StatusPanelCommon>
+                    );
+                }
+            // falls through intentionally for folder Team Collections
+            // eslint-disable-next-line no-fallthrough
+            case "conflictingChange":
                 return (
                     <StatusPanelCommon
                         title={mainTitleRemoteChanged}
@@ -767,9 +794,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         subTitle={subTitleUpdatesAvailableForBook}
                         icon={<TeamCollectionIcon color="white" />}
                         button={getBloomButton(
-                            "Receive Updates",
-                            "TeamCollection.ReceiveUpdates",
-                            "receive-updates-button",
+                            "Sync",
+                            "TeamCollection.Sync",
+                            "sync-button",
                             undefined,
                             () => post("teamCollection/receiveUpdates"),
                         )}

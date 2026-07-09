@@ -114,6 +114,19 @@ describe("TeamCollectionBookStatusPanel: folder Team Collection state matrix (un
         ).toBeNull();
     });
 
+    it("needsReload (isChangedRemotely), folder: keeps the Reload Collection button (unchanged by batch item 4+5)", () => {
+        mockUseTeamCollectionCapabilities.mockReturnValue(folderCapabilities);
+        const container = renderPanel({
+            ...initialBookStatus,
+            isChangedRemotely: true,
+        });
+        const reloadButton = container.querySelector(".reload-button");
+        expect(reloadButton).not.toBeNull();
+        expect(container.querySelector(".sync-button")).toBeNull();
+        act(() => (reloadButton as HTMLButtonElement).click());
+        expect(mockPost).toHaveBeenCalledWith("common/reloadCollection");
+    });
+
     it("hasInvalidRepoData: shows the book-problem UI with the server's error message", () => {
         mockUseTeamCollectionCapabilities.mockReturnValue(folderCapabilities);
         const container = renderPanel({
@@ -186,11 +199,9 @@ describe("TeamCollectionBookStatusPanel: cloud Team Collection additions (Wave 2
         expect(container.textContent).toContain(
             "TeamCollection.UpdatesAvailableForBook",
         );
-        const receiveUpdatesButton = container.querySelector(
-            ".receive-updates-button",
-        );
-        expect(receiveUpdatesButton).not.toBeNull();
-        act(() => (receiveUpdatesButton as HTMLButtonElement).click());
+        const syncButton = container.querySelector(".sync-button");
+        expect(syncButton).not.toBeNull();
+        act(() => (syncButton as HTMLButtonElement).click());
         expect(mockPost).toHaveBeenCalledWith("teamCollection/receiveUpdates");
     });
 
@@ -207,6 +218,27 @@ describe("TeamCollectionBookStatusPanel: cloud Team Collection additions (Wave 2
             "TeamCollection.UpdatesAvailableForBook",
         );
         expect(container.querySelector(".checkout-button")).not.toBeNull();
+    });
+
+    it("needsReload (isChangedRemotely), cloud: shows Sync instead of Reload Collection", () => {
+        // Batch item 4+5: for a cloud Team Collection this is purely a content-update state (a
+        // remote checkin not yet picked up here), not a settings-reload state, so it should offer
+        // the same in-place Sync as "updatesAvailable" rather than a full collection reload.
+        mockUseTeamCollectionCapabilities.mockReturnValue(cloudCapabilities);
+        const container = renderPanel({
+            ...initialBookStatus,
+            requiresSignIn: true,
+            signedIn: true,
+            isChangedRemotely: true,
+        });
+        expect(container.textContent).toContain(
+            "TeamCollection.UpdatesAvailableForBook",
+        );
+        expect(container.querySelector(".reload-button")).toBeNull();
+        const syncButton = container.querySelector(".sync-button");
+        expect(syncButton).not.toBeNull();
+        act(() => (syncButton as HTMLButtonElement).click());
+        expect(mockPost).toHaveBeenCalledWith("teamCollection/receiveUpdates");
     });
 
     it("offlineDisabled: takes priority over other states and shows the server-supplied reason verbatim", () => {

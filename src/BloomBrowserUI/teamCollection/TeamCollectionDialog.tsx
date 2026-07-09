@@ -215,15 +215,18 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                                     Reload Collection
                                 </BloomButton>
                             )}
-                            {/* Cloud Team Collections: "Receive Updates" is the successor of "Reload
-                                Collection" for pulling the latest changes from the repo. "Reload
-                                Collection" above is kept, but only ever shown for the unrelated case
-                                of an applied collection-settings change requiring a full app reload
-                                (folder or cloud), which is why the two are mutually exclusive here. */}
+                            {/* Cloud Team Collections: most remote changes now apply
+                                automatically (batch item 4+5), so "Sync" (successor of "Receive
+                                Updates", itself the successor of "Reload Collection") is really a
+                                manual force-check: poll immediately, then pull anything still
+                                outstanding. "Reload Collection" above is kept, but only ever shown
+                                for the unrelated case of an applied collection-settings change
+                                requiring a full app reload (folder or cloud), which is why the two
+                                are mutually exclusive here. */}
                             {!props.showReloadButton && isCloud && (
                                 <BloomButton
-                                    id="receiveUpdates"
-                                    l10nKey="TeamCollection.ReceiveUpdates"
+                                    id="sync"
+                                    l10nKey="TeamCollection.Sync"
                                     temporarilyDisableI18nWarning={true}
                                     enabled={!disconnected}
                                     hasText={true}
@@ -231,7 +234,7 @@ export const TeamCollectionDialog: React.FunctionComponent<{
                                         post("teamCollection/receiveUpdates")
                                     }
                                 >
-                                    Receive Updates
+                                    Sync
                                 </BloomButton>
                             )}
                         </DialogBottomLeftButtons>

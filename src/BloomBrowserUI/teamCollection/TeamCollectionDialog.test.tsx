@@ -5,9 +5,10 @@ import { TeamCollectionDialog } from "./TeamCollectionDialog";
 import { ITeamCollectionCapabilities } from "./teamCollectionApi";
 
 // Tests the Wave-2 addition to the Team Collection status dialog: for a cloud Team Collection,
-// "Check In All Books" becomes "Send All" and a new "Receive Updates" button (successor of
-// "Reload Collection") appears; folder Team Collections must keep the exact previous labels and
-// endpoints. Per Wave-2 scope (shells against mocked endpoints), teamCollectionApi's capabilities
+// "Check In All Books" becomes "Send All" and a new "Sync" button (batch item 4+5's rename of
+// "Receive Updates", itself the successor of "Reload Collection") appears; folder Team
+// Collections must keep the exact previous labels and endpoints. Per Wave-2 scope (shells against
+// mocked endpoints), teamCollectionApi's capabilities
 // hook is mocked; bloomApi's `post` is mocked to assert calls, and `getBoolean` is mocked so the
 // dialog's tabs mount synchronously (see TeamCollectionDialog.tsx's defaultTabIndex dance) instead
 // of waiting on a real (and here, unavailable) `teamCollection/logImportant` network call.
@@ -109,10 +110,10 @@ describe("TeamCollectionDialog", () => {
         expect(mockPost).toHaveBeenCalledWith("teamCollection/checkInAllBooks");
     });
 
-    it("folder Team Collection: never shows 'Receive Updates'", () => {
+    it("folder Team Collection: never shows 'Sync'", () => {
         mockUseTeamCollectionCapabilities.mockReturnValue(folderCapabilities);
         renderDialog(false);
-        expect(getButtonById("receiveUpdates")).toBeNull();
+        expect(getButtonById("sync")).toBeNull();
     });
 
     it("cloud Team Collection: renames the button to 'Send All' and posts the cloud endpoint", () => {
@@ -126,21 +127,21 @@ describe("TeamCollectionDialog", () => {
         expect(mockPost).toHaveBeenCalledWith("teamCollection/sendAllBooks");
     });
 
-    it("cloud Team Collection without a pending reload: shows 'Receive Updates' and posts its endpoint", () => {
+    it("cloud Team Collection without a pending reload: shows 'Sync' and posts its endpoint", () => {
         mockUseTeamCollectionCapabilities.mockReturnValue(cloudCapabilities);
         renderDialog(false);
 
-        const receiveUpdates = getButtonById("receiveUpdates");
-        expect(receiveUpdates).not.toBeNull();
-        act(() => receiveUpdates!.click());
+        const sync = getButtonById("sync");
+        expect(sync).not.toBeNull();
+        act(() => sync!.click());
         expect(mockPost).toHaveBeenCalledWith("teamCollection/receiveUpdates");
     });
 
-    it("cloud Team Collection with a pending settings reload: shows only 'Reload Collection', not 'Receive Updates'", () => {
+    it("cloud Team Collection with a pending settings reload: shows only 'Reload Collection', not 'Sync'", () => {
         mockUseTeamCollectionCapabilities.mockReturnValue(cloudCapabilities);
         renderDialog(true);
 
         expect(getButtonById("reload")).not.toBeNull();
-        expect(getButtonById("receiveUpdates")).toBeNull();
+        expect(getButtonById("sync")).toBeNull();
     });
 });
