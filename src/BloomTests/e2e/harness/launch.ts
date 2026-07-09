@@ -71,15 +71,32 @@ export const buildBloomOnce = async (): Promise<void> => {
  * it locks its own output tree, serves its own port block, and per
  * .claude/skills/run-bloom/SKILL.md is not ours to kill. */
 export const assertNoForeignBloomRunning = async (): Promise<void> => {
-    const { stdout } = await execFileAsync(
-        "node",
-        [
-            path.join(bloomAutomationSkillDir, "bloomProcessStatus.mjs"),
-            "--running-bloom",
-            "--json",
-        ],
-        { cwd: repoRoot, timeout: 20_000, windowsHide: true },
-    );
+    // Generous timeout + one retry: the probe shells out to wmic/port scans, and its very
+    // first run on a just-idled machine has been seen exceeding 20s (killing an entire
+    // matrix run in globalSetup before any test started). A genuinely wedged probe still
+    // fails loudly after the retry.
+    let stdout: string;
+    try {
+        ({ stdout } = await execFileAsync(
+            "node",
+            [
+                path.join(bloomAutomationSkillDir, "bloomProcessStatus.mjs"),
+                "--running-bloom",
+                "--json",
+            ],
+            { cwd: repoRoot, timeout: 60_000, windowsHide: true },
+        ));
+    } catch {
+        ({ stdout } = await execFileAsync(
+            "node",
+            [
+                path.join(bloomAutomationSkillDir, "bloomProcessStatus.mjs"),
+                "--running-bloom",
+                "--json",
+            ],
+            { cwd: repoRoot, timeout: 60_000, windowsHide: true },
+        ));
+    }
     const status = JSON.parse(stdout);
     const running: Array<{
         detectedRepoRoot?: string;
