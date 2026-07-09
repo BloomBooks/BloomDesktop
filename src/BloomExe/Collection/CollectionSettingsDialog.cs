@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.Keyboarding;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.SubscriptionAndFeatures;
@@ -55,6 +56,7 @@ namespace Bloom.Collection
 
         // "Internal" so CollectionSettingsApi can update these.
         internal readonly string[] PendingFontSelections = new[] { "", "", "" };
+        internal readonly string[] PendingKeyboardSelections = new[] { "", "", "" };
         internal string PendingNumberingStyle { get; set; }
         internal bool PendingShowQrCode;
         internal string PendingBadgeQrCodeCaption;
@@ -98,6 +100,11 @@ namespace Bloom.Collection
             var have3rdLanguage = _collectionSettings.AllLanguages[2] != null;
             PendingFontSelections[2] = have3rdLanguage
                 ? _collectionSettings.AllLanguages[2].FontName
+                : "";
+            PendingKeyboardSelections[0] = _collectionSettings.AllLanguages[0].Keyboard;
+            PendingKeyboardSelections[1] = _collectionSettings.AllLanguages[1].Keyboard;
+            PendingKeyboardSelections[2] = have3rdLanguage
+                ? _collectionSettings.AllLanguages[2].Keyboard
                 : "";
             PendingNumberingStyle = _collectionSettings.PageNumberStyle;
             PendingShowQrCode = _collectionSettings.ShowBlorgLanguageQrCode;
@@ -476,11 +483,15 @@ namespace Bloom.Collection
                 PendingLanguage3.SetName(String.Empty, false);
             }
 
-            UpdateLanguageSettings(
+            var keyboardSettingsChanged = UpdateLanguageSettings(
                 _collectionSettings.AllLanguages,
                 PendingLanguages,
-                PendingFontSelections
+                PendingFontSelections,
+                PendingKeyboardSelections,
+                EnsureKeyboardCachedInBackground
             );
+            if (keyboardSettingsChanged)
+                ChangeThatRequiresRestart();
 
             _collectionSettings.SignLanguage.ChangeTag(PendingSignLanguage.Tag);
             if (!String.IsNullOrEmpty(PendingSignLanguage.Tag))
@@ -587,11 +598,38 @@ namespace Bloom.Collection
             return false;
         }
 
+        /// <summary>
+        /// Kicks off a background download of a pinned KeymanWeb keyboard's files into the collection's
+        /// Keyboards cache, so it's ready before the impending restart. Fire-and-forget: a failed/offline
+        /// attempt is silently retried later (by the edit-time resolver), same as the Automatic fallback.
+        /// </summary>
+        private void EnsureKeyboardCachedInBackground(string keyboardId, string bcp47Tag)
+        {
+            var collectionFolder = _collectionSettings.FolderPath;
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                new CollectionKeyboardCache(collectionFolder).EnsureDownloaded(
+                    keyboardId,
+                    bcp47Tag
+                );
+            });
+        }
+
         // internal and static to facilitate unit testing
-        internal static void UpdateLanguageSettings(
+        /// <summary>
+        /// Reconciles the pending language edits (tags/names/fonts/keyboards/etc.) into the live
+        /// <paramref name="languages"/> list. Returns true if any of the first three languages' keyboard
+        /// setting actually changed (the caller uses this to trigger a restart), and calls
+        /// <paramref name="ensureKeyboardCached"/> for any newly-pinned KeymanWeb keyboard so its files
+        /// are cached before the restart. <paramref name="pendingKeyboards"/> is optional so existing
+        /// callers/tests that don't care about keyboards need not change.
+        /// </summary>
+        internal static bool UpdateLanguageSettings(
             List<WritingSystem> languages,
             WritingSystem[] pendingLanguages,
-            string[] pendingFonts
+            string[] pendingFonts,
+            string[] pendingKeyboards = null,
+            Action<string, string> ensureKeyboardCached = null
         )
         {
             Debug.Assert(languages.Count >= 3);
@@ -662,6 +700,7 @@ namespace Bloom.Collection
                 }
             }
             // Update the values in the first three languages.
+            var keyboardChanged = false;
             for (int i = 0; i < 3; i++)
             {
                 if (languages[i] == null)
@@ -671,6 +710,19 @@ namespace Bloom.Collection
                 languages[i].LineHeight = pendingLanguages[i].LineHeight;
                 languages[i].BaseUIFontSizeInPoints = pendingLanguages[i].BaseUIFontSizeInPoints;
                 languages[i].BreaksLinesOnlyAtSpaces = pendingLanguages[i].BreaksLinesOnlyAtSpaces;
+
+                if (pendingKeyboards != null)
+                {
+                    var newKeyboard = pendingKeyboards[i] ?? "";
+                    if (newKeyboard != languages[i].Keyboard)
+                    {
+                        keyboardChanged = true;
+                        var setting = KeyboardSetting.Parse(newKeyboard);
+                        if (setting.SettingKind == KeyboardSetting.Kind.KeymanWeb)
+                            ensureKeyboardCached?.Invoke(setting.Id, setting.LanguageTag);
+                    }
+                    languages[i].Keyboard = newKeyboard;
+                }
             }
 
             Language1.ChangeTag(PendingLanguage1.Tag);
@@ -681,6 +733,8 @@ namespace Bloom.Collection
             Language3.ChangeTag(PendingLanguage3.Tag);
             if (!String.IsNullOrEmpty(PendingLanguage3.Tag))
                 Language3.SetName(PendingLanguage3.Name, PendingLanguage3.IsCustomName);
+
+            return keyboardChanged;
         }
 
         private bool XMatterChangePending

@@ -428,6 +428,11 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.Keyboard.DownloadCount</note>
         <note>Small subtext shown under a Keyman online keyboard's name in the per-language Keyboard dropdown. {0} is a number of times that keyboard has been downloaded.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Keyboard.NoneResolvesTo" translate="no">
+        <source xml:lang="en">Default</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Keyboard.NoneResolvesTo</note>
+        <note>Used as the "Currently: {0}" value under "Automatic" in the per-language Keyboard dropdown, when this machine has no matching OS input method and no Keyman keyboard has been suggested yet for this language.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>

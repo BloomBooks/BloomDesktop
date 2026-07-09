@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Keyboarding;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
@@ -33,6 +35,11 @@ namespace Bloom.web.controllers
         private readonly List<object> _numberingStyles = new List<object>();
         private readonly XMatterPackFinder _xmatterPackFinder;
         private readonly BookSelection _bookSelection;
+
+        // Built lazily on first use of a keyboard-settings endpoint (see EnsureKeyboardServicesBuilt).
+        private KeymanCloudClient _keymanCloudClient;
+        private CollectionKeyboardCache _keyboardCache;
+        private OsKeyboards _osKeyboards;
 
         public static event EventHandler<LanguageChangeEventArgs> LanguageChange;
 
@@ -174,6 +181,35 @@ namespace Bloom.web.controllers
                     var languageNumber = (int)data.languageNumber;
                     var fontName = (string)data.fontName;
                     UpdatePendingFontName(fontName, languageNumber);
+                    request.PostSucceeded();
+                },
+                true
+            );
+            // Calls to handle communication with the KeyboardSection control on the Book Making tab
+            // (plan item 6). GET does OS keyboard enumeration, which needs the UI thread.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "keyboardsForLanguage",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Post)
+                        return; // Should be a get
+                    var languageNumber = int.Parse(request.Parameters["languageNumber"]);
+                    request.ReplyWithJson(GetKeyboardsForLanguage(languageNumber));
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "setKeyboardForLanguage",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Get)
+                        return; // Should be a post
+
+                    // Should contain a 1-based language number and the raw keyboard setting string.
+                    var data = DynamicJson.Parse(request.RequiredPostJson());
+                    var languageNumber = (int)data.languageNumber;
+                    var keyboard = (string)data.keyboard;
+                    UpdatePendingKeyboard(keyboard, languageNumber);
                     request.PostSucceeded();
                 },
                 true
@@ -588,6 +624,125 @@ namespace Bloom.web.controllers
                 DialogBeingEdited.PendingFontSelections[zeroBasedLanguageNumber] = fontName;
             if (fontName != _collectionSettings.AllLanguages[zeroBasedLanguageNumber].FontName)
                 DialogBeingEdited.ChangeThatRequiresRestart();
+        }
+
+        /// <summary>
+        /// Wire up the Keyman cloud client, collection keyboard cache, and OS keyboard enumerator the
+        /// first time a keyboard-settings endpoint is used. Mirrors the lazy setup in
+        /// KeyboardingConfigApi, which serves the analogous edit-view endpoint.
+        /// </summary>
+        private void EnsureKeyboardServicesBuilt()
+        {
+            if (_osKeyboards != null)
+                return;
+            _keymanCloudClient = new KeymanCloudClient();
+            _keyboardCache = new CollectionKeyboardCache(
+                _collectionSettings.FolderPath,
+                _keymanCloudClient
+            );
+            _osKeyboards = new OsKeyboards();
+        }
+
+        // languageNumber is 1-based
+        private object GetKeyboardsForLanguage(int languageNumber)
+        {
+            Guard.Against(
+                languageNumber == 0,
+                "'languageNumber' should be 1-based index, but is 0"
+            );
+            var zeroBasedLanguageNumber = languageNumber - 1;
+            var writingSystem = _collectionSettings.AllLanguages[zeroBasedLanguageNumber];
+
+            EnsureKeyboardServicesBuilt();
+            var tag = writingSystem.Tag;
+
+            var current =
+                DialogBeingEdited?.PendingKeyboardSelections[zeroBasedLanguageNumber]
+                ?? writingSystem.Keyboard
+                ?? "";
+
+            var installed = _osKeyboards
+                .GetInstalledKeyboardsForLanguage(tag)
+                .Select(k => new
+                {
+                    id = k.Id,
+                    name = string.IsNullOrEmpty(k.LocalizedName) ? k.Name : k.LocalizedName,
+                })
+                .ToArray();
+
+            // SearchKeyboardsForLanguage already treats offline/failure as "no results" internally, so
+            // no extra try/catch is needed here to keep this endpoint responsive.
+            var cloudResults = _keymanCloudClient.SearchKeyboardsForLanguage(tag);
+            var cloud = cloudResults
+                .Select(k => new
+                {
+                    id = k.Id,
+                    name = k.Name,
+                    downloads = k.Downloads,
+                })
+                .ToArray();
+
+            object automaticResolvesTo;
+            var bestOsKeyboard = _osKeyboards.FindBestForLanguage(tag);
+            if (bestOsKeyboard != null)
+            {
+                var name =
+                    installed.FirstOrDefault(k => k.id == bestOsKeyboard.Id)?.name
+                    ?? bestOsKeyboard.Id;
+                automaticResolvesTo = new { kind = "system", displayName = name };
+            }
+            else if (!string.IsNullOrEmpty(writingSystem.CachedKmwFallbackKeyboard))
+            {
+                var match = cloudResults.FirstOrDefault(k =>
+                    k.Id == writingSystem.CachedKmwFallbackKeyboard
+                );
+                automaticResolvesTo = new
+                {
+                    kind = "kmw",
+                    displayName = match?.Name ?? writingSystem.CachedKmwFallbackKeyboard,
+                };
+            }
+            else
+            {
+                automaticResolvesTo = new
+                {
+                    kind = "none",
+                    displayName = LocalizationManager.GetString(
+                        "CollectionSettingsDialog.BookMakingTab.Keyboard.NoneResolvesTo",
+                        "Default"
+                    ),
+                };
+            }
+
+            return new
+            {
+                current,
+                languageTag = tag,
+                automaticResolvesTo,
+                installed,
+                cloud,
+            };
+        }
+
+        // languageNumber is 1-based. Unlike UpdatePendingFontName, this does NOT flag
+        // ChangeThatRequiresRestart(): that decision is deferred to dialog OK-commit time (see
+        // CollectionSettingsDialog.UpdateLanguageSettings), since only then do we know the pending
+        // value is actually final (the user may pick several keyboards before settling on one).
+        private void UpdatePendingKeyboard(string keyboard, int languageNumber)
+        {
+            Guard.Against(
+                languageNumber == 0,
+                "'languageNumber' should be 1-based index, but is 0"
+            );
+
+            var zeroBasedLanguageNumber = languageNumber - 1;
+            if (
+                zeroBasedLanguageNumber == 2
+                && _collectionSettings.AllLanguages[zeroBasedLanguageNumber] == null
+            )
+                return;
+            if (DialogBeingEdited != null)
+                DialogBeingEdited.PendingKeyboardSelections[zeroBasedLanguageNumber] = keyboard;
         }
 
         private void UpdatePendingNumberingStyle(string numberingStyle)
