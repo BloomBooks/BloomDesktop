@@ -138,6 +138,17 @@ namespace Bloom.TeamCollection
             _autoApplyQueueSynchronousForTests = true;
         }
 
+        /// <summary>
+        /// For testing only. Directly invokes the auto-apply worker's eligibility re-verification
+        /// and copy logic for one book, bypassing the queue entirely -- lets a test exercise
+        /// ProcessAutoApplyRemoteChange's behavior for a specific state without needing to win a
+        /// real race between queueing and background processing.
+        /// </summary>
+        internal void TestOnly_ProcessAutoApplyRemoteChange(string bookBaseName)
+        {
+            ProcessAutoApplyRemoteChange(bookBaseName);
+        }
+
         public TeamCollection(
             ITeamCollectionManager manager,
             string localCollectionFolder,
