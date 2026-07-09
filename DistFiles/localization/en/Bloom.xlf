@@ -709,6 +709,11 @@
         <note>ID: CollectionTab.BookMenu.MustCheckOutTooltip</note>
         <note>This tooltip pops up when the user hovers over a disabled menu item.</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.BookNotYetDownloaded" translate="no">
+        <source xml:lang="en">This book hasn't been downloaded to this computer yet. It will download automatically in the background.</source>
+        <note>ID: CollectionTab.BookNotYetDownloaded</note>
+        <note>Tooltip shown when hovering over a book's placeholder tile in the collection tab, for a Cloud Team Collection book that a teammate has added but that hasn't finished downloading to this computer yet (progressive join, dogfood batch 1 item 7). Provisional placement in Bloom.xlf pending priority confirmation -- may belong in BloomMediumPriority.xlf instead.</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.RenameBook">
         <source xml:lang="en">Rename Book</source>
         <note>ID: CollectionTab.BookMenu.RenameBook</note>

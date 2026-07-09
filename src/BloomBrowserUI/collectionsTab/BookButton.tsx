@@ -33,6 +33,7 @@ import { makeMenuItems, MenuItemSpec } from "./menuHelpers";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useL10n } from "../react_components/l10nHooks";
 import SettingsIcon from "@mui/icons-material/Settings";
+import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import { showBookSettingsDialog } from "../bookEdit/bookAndPageSettings/BookAndPageSettingsDialog";
 import { BookOnBlorgBadge } from "../react_components/BookOnBlorgBadge";
 
@@ -470,6 +471,74 @@ export const BookButton: React.FunctionComponent<{
         "CollectionTab.BookMenu.MustCheckOutTooltip",
         "This tooltip pops up when the user hovers over a disabled menu item.",
     );
+
+    // Batch item 7 (progressive join): tooltip for a not-yet-downloaded placeholder book. Called
+    // unconditionally (with the other hooks above) even though it's only used in the early-return
+    // placeholder branch below, per the rules of hooks.
+    const notYetDownloadedTooltip = useL10n(
+        "This book hasn't been downloaded to this computer yet. It will download automatically in the background.",
+        "CollectionTab.BookNotYetDownloaded",
+    );
+
+    // Batch item 7 (progressive join): a repo book with no local folder yet renders as a simple,
+    // non-interactive-looking placeholder instead of the normal book button -- no thumbnail (there
+    // is no local file to make one from), no context menu, no rename/edit/delete (SAFETY: no
+    // dangerous action must be reachable on a placeholder). Clicking it still posts to
+    // collections/selected-book like a normal click; CollectionApi gracefully treats that as "bump
+    // this book's download to the front of the queue" instead of a real selection (see
+    // CollectionApi.TryPrioritizeNotYetDownloadedBook).
+    if (props.book.notYetDownloaded) {
+        return (
+            <div
+                className="book-button not-yet-downloaded"
+                css={css`
+                    position: relative;
+                    height: ${bookButtonHeight}px;
+                    width: ${bookButtonWidth}px;
+                    box-sizing: border-box;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    border: 1px dashed rgba(255, 255, 255, 0.4);
+                    border-radius: 4px;
+                    cursor: pointer;
+                    color: white;
+                `}
+                data-book-id={props.book.id}
+                title={notYetDownloadedTooltip}
+                onClick={() => setSelectedBookIdWithApi(props.book.id)}
+            >
+                <CloudDownloadIcon
+                    css={css`
+                        color: rgba(255, 255, 255, 0.7);
+                        font-size: 28px;
+                    `}
+                />
+                <span
+                    css={css`
+                        color: white;
+                        text-transform: none;
+                        font-size: 12px;
+                        font-family:
+                            ${kDefaultLanguageFontStack},
+                            ${props.collection.languageFont};
+                        line-height: 14px;
+                        margin-top: 5px;
+                        width: 75px;
+                        text-align: center;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        display: -webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                    `}
+                >
+                    {bookLabel}
+                </span>
+            </div>
+        );
+    }
 
     // If relevant, compute the menu items for a right-click on this button.
     // contextMenuPoint has a value if this button has been right-clicked.
