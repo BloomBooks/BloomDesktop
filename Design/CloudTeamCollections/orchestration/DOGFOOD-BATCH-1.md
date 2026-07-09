@@ -210,6 +210,46 @@ Status: NOT STARTED
 - [ ] Verify: `join-auto-open` + `e2e-9-new-book-lifecycle`; consider a new spec for the
       placeholder/priority behavior if cheap.
 
+### 8. Recovery safety net (John decision, 9 Jul — replaces the old "recovery preconditions"
+question)  `[quick-medium]`
+Status: NOT STARTED
+John's spec: when a sync operation brings a remote version of a book to local but the local
+copy has somehow changed (rare — e.g. force-steal while edited, or any unexplained local
+drift), GO AHEAD and make local consistent with the TC, but FIRST save the previous local
+version as a .bloomSource so nothing is lost. SaveLocalCopyForRecovery (CloudTeamCollection,
+~line 668: zips to <collection>/Lost and Found/<name>.bloomSource + logs an incident)
+already does exactly this and the STARTUP sync path already uses it (pinned by
+CloudSyncAtStartupTests.SyncAtStartup_LocalEditConflictsWithRemoteChange_...). The gap is
+the two RUNTIME overwrite paths, made urgent by item 4+5's auto-apply (whose eligibility
+gates use IsCheckedOutHereBy(GetLocalStatus) — dead-false for cloud, since cloud checkout
+never writes the local status file; see tasks/09-e2e.md E2E-4 finding):
+- [ ] In ProcessAutoApplyRemoteChange (TeamCollection.cs): before CopyBookFromRepoToLocal,
+      if the local folder's current checksum differs from the local status checksum (local
+      changed since last sync), preserve via a new virtual seam (base no-op; cloud override
+      → SaveLocalCopyForRecovery) — then apply as normal.
+- [ ] Same guard in TeamCollectionApi.HandleReceiveUpdates (the Sync button loop).
+- [ ] Unit tests through TestFolderTeamCollection (seam already has the synchronous-queue
+      test hooks); assert preserve-called-iff-locally-modified.
+- [ ] NOT needed (per John): persisting cloud checkout state to the local status file —
+      that was only required to reproduce folder-TC *blocking* semantics; John chose
+      apply-and-preserve instead.
+- [ ] E2E: this unblocks E2E-4's blocked .bloomSource sub-requirement — extend that spec
+      when convenient.
+
+### 9. Account-switch behavior (John decision, 9 Jul — unblocks E2E-10)  `[medium-large]`
+Status: NOT STARTED (decision recorded verbatim; implement after items 7/8)
+John's spec: local machine access is unrestricted; only shared-data operations are gated by
+the CURRENT logon's server permissions. Collection was joined under account A, Bloom now
+signed in as B:
+- B NOT a member of the TC → REFUSE to open the collection. Message must name the current
+  logon, say it is not a member, give the admin email(s) to ask for membership, and name
+  the last team member who edited this collection on this machine.
+- B IS a member → open CONNECTED. Books locally checked out by A show as checked out by A
+  but may be edited as if checked out by B — ONLY if the server state would have let A edit
+  here (i.e. A's lock is for THIS machine; not if A holds it elsewhere). On first edit of
+  such a book, atomically switch the checkout everywhere to B. If B checks it in (even
+  without editing), history records the checkin by B.
+
 ## Also queued from dogfooding (not in John's list, orchestrator-flagged)
 - Administrators field shows the REGISTRATION email (john_thomson@sil.org) instead of the
   signed-in account email for cloud TCs (`ConnectToCloudCollection` sets
