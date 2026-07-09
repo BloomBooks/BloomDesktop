@@ -10,7 +10,7 @@ vi.mock("../longPressShared", () => ({
 
 import { postJsonAsync } from "../../utils/bloomApi";
 import { setKmwAttached } from "../longPressShared";
-import { attachKeymanWebIfNeeded } from "./keymanWebIntegration";
+import type { attachKeymanWebIfNeeded as AttachFn } from "./keymanWebIntegration";
 
 const postJsonAsyncMock = vi.mocked(postJsonAsync);
 const setKmwAttachedMock = vi.mocked(setKmwAttached);
@@ -54,8 +54,9 @@ const nativeCreateElement = document.createElement.bind(document);
 
 describe("keymanWebIntegration", () => {
     let fakeKeyman: ReturnType<typeof makeFakeKeyman>;
+    let attachKeymanWebIfNeeded: typeof AttachFn;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         document.body.innerHTML = "";
         delete (window as any).keyman;
@@ -84,6 +85,17 @@ describe("keymanWebIntegration", () => {
                 return el;
             },
         );
+
+        // keymanWebIntegration.ts memoizes its engine-load promise (and the
+        // registered-keyboard/attached-editable caches) in module-level
+        // state, exactly once per real page load. Reset the module registry
+        // and re-import fresh for every test so that state doesn't leak
+        // between tests — otherwise a later test's assertions against a
+        // NEW fakeKeyman would silently check the wrong object, since
+        // ensureEngineLoaded() would still be resolving to whichever
+        // fakeKeyman was current the first time any test reached useKmw:true.
+        vi.resetModules();
+        ({ attachKeymanWebIfNeeded } = await import("./keymanWebIntegration"));
     });
 
     afterEach(() => {
@@ -137,6 +149,51 @@ describe("keymanWebIntegration", () => {
             },
         );
         expect((window as any).keyman).toBeUndefined();
+    });
+
+    it("passes font/oskFont into the addKeyboards language spec when the server supplies them", async () => {
+        postJsonAsyncMock.mockResolvedValue({
+            data: {
+                ...kmwInfo,
+                fontFamily: "Padauk",
+                fontUrls: ["/fonts/padauk.woff"],
+                oskFontFamily: "Mmrtext",
+                oskFontUrls: ["/fonts/mmrtext.ttf"],
+            },
+        } as any);
+
+        const editable = makeEditable("th");
+        await attachKeymanWebIfNeeded(editable);
+
+        expect(fakeKeyman.addKeyboards).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: "thai_kedmanee",
+                languages: [
+                    expect.objectContaining({
+                        id: "th",
+                        font: {
+                            family: "Padauk",
+                            source: ["/fonts/padauk.woff"],
+                        },
+                        oskFont: {
+                            family: "Mmrtext",
+                            source: ["/fonts/mmrtext.ttf"],
+                        },
+                    }),
+                ],
+            }),
+        );
+    });
+
+    it("omits font/oskFont from the language spec when the server doesn't supply them", async () => {
+        postJsonAsyncMock.mockResolvedValue({ data: kmwInfo } as any);
+
+        const editable = makeEditable("th");
+        await attachKeymanWebIfNeeded(editable);
+
+        const call = fakeKeyman.addKeyboards.mock.calls[0][0];
+        expect(call.languages[0]).not.toHaveProperty("font");
+        expect(call.languages[0]).not.toHaveProperty("oskFont");
     });
 
     it("disables long-press only on fields KMW actually attaches to", async () => {

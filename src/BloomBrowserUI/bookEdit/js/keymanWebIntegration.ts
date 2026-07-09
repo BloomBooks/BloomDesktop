@@ -137,10 +137,37 @@ async function attachKmwKeyboard(
         // Register the stub for the EXACT keyboard the server chose, using a
         // local file (object form = local stub, no cloud lookup) — the
         // collection has already cached this keyboard's .js (plan item 3).
+        //
+        // font/oskFont property names verified against the vendored engine
+        // itself (src/BloomBrowserUI/keymanweb/keymanweb.js is a minified
+        // bundle, no separate typings ship with it): its internal
+        // "internalizeFont" helper reads `family` and `filename || source`
+        // off exactly these two language-spec properties, e.g.
+        //   function ps(g,n){if(g)return{family:g.family,path:n,files:g.filename||g.source}}
+        // called as ps(i.languages.font, ...) / ps(i.languages.oskFont, ...).
+        // We pass `source` (an array of font URLs) rather than `filename`
+        // since fontUrls/oskFontUrls are arrays.
         keyman.addKeyboards({
             id: info.keyboardId,
             filename: info.keyboardFileUrl,
-            languages: [{ id: info.languageTag, name: info.languageTag }],
+            languages: [
+                {
+                    id: info.languageTag,
+                    name: info.languageTag,
+                    ...(info.fontFamily && {
+                        font: {
+                            family: info.fontFamily,
+                            source: info.fontUrls,
+                        },
+                    }),
+                    ...(info.oskFontFamily && {
+                        oskFont: {
+                            family: info.oskFontFamily,
+                            source: info.oskFontUrls,
+                        },
+                    }),
+                },
+            ],
         });
         await waitForKeyboardLoaded(keyman, info);
         registeredKeyboardByLang.set(lang, info);

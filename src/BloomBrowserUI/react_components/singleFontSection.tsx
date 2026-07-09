@@ -8,6 +8,7 @@ import FontSelectComponent, {
 import { Link } from "./link";
 import { useL10n } from "./l10nHooks";
 import { Typography } from "@mui/material";
+import KeyboardSection from "./keyboardSection";
 
 const SingleFontSection: React.FunctionComponent<{
     languageNumber: number;
@@ -65,6 +66,12 @@ const SingleFontSection: React.FunctionComponent<{
             >
                 Special Script Settings
             </Link>
+            {/* L4+ languages don't get a row here (v1); this component is only
+                instantiated for languages 1-3 (see fontScriptSettingsControl.tsx). */}
+            <KeyboardSection
+                languageNumber={props.languageNumber}
+                languageName={props.languageName}
+            />
         </React.Fragment>
     );
 };
