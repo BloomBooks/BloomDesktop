@@ -31,28 +31,36 @@ Chosen order: quick wins first, then the propagation cluster (items 4+5 are one 
 item), then the two larger UI features. Items 1–3 are independent of everything else.
 
 ### 1. "Bloom is busy" missing localization  `[quick]`
-Status: NOT STARTED
-- [ ] Find the source of the "Bloom is busy" message (grep C# + TS; likely surfaced during
-      cloud operations); determine whether the string is needed at all.
-- [ ] If needed: give it a proper l10n id + XLF entry per `.github/skills/xlf-strings/SKILL.md`
-      (en only; NEVER `--` inside `<note>` — crashes every launch).
-- [ ] Verify: `e2e-1-create-share` (launch gate for XLF changes).
+Status: CODE DONE (commit 2d74d280f) — e2e-1 launch gate QUEUED (needs unlocked screen)
+- [x] Found: ExternalBusyOverlay.tsx's fallback message already had id Common.BloomIsBusy
+      but no XLF entry; the useL10n lookup logged the complaint on every collection-tab
+      mount. (The specific BloomBridge message the overlay usually shows is intentionally
+      unlocalized; only the fallback needed an entry.)
+- [x] Added to BloomLowPriority.xlf (John's choice) with translate="no" + context note.
+- [ ] Verify: `e2e-1-create-share` (launch gate for XLF changes). First attempt failed
+      ONLY because the desktop locked mid-run (WebView2 stuck at about:blank — the known
+      signature); re-run when unlocked.
 
 ### 2. Poll immediately on book selection  `[quick]`
-Status: NOT STARTED
-- [ ] When a book is selected in a cloud TC, immediately refresh its checkout status from
-      the server (targeted status fetch or PollNow — decide by cost; the monitor's poll
-      loop already exists: CloudCollectionMonitor).
-- [ ] Guard: no spam when rapidly changing selection (coalesce/in-flight check).
-- [ ] Unit test if seam allows; verify with `e2e-2-collaboration-loop`.
+Status: CODE DONE (commit 6f0c4a068) — e2e-2 verification QUEUED (needs unlocked screen)
+- [x] TeamCollectionManager ctor now subscribes BookSelection.SelectionChanged → if the
+      current collection is a CloudTeamCollection, Task.Run(PollNow). Results flow through
+      the existing change-event pipeline (same as timer polls).
+- [x] Guard: PollNow's own in-flight coalescing covers rapid selection changes; null
+      bookSelection guard for unit-test constructions (caught by test run: 10 failures,
+      fixed, 363/363 green).
+- [ ] `e2e-2-collaboration-loop` re-run when screen unlocked (note: E2E uses a 5s poll, so
+      the speedup itself is mostly invisible there — the run guards against regressions;
+      the real check is John's manual test at the default 60s poll).
 
 ### 3. Center the checkin-progress dialog in the status panel  `[quick]`
-Status: NOT STARTED
-- [ ] The cloud checkin ("Send") progress dialog (BrowserProgressDialog, launched from the
-      TC status panel path) currently appears elsewhere; position it centered over the TC
-      status panel area.
-- [ ] Verify visually via a manual/scripted launch + `e2e-2-collaboration-loop` (which
-      exercises checkin).
+Status: CODE DONE (commit 207cc1d0) — visual verification QUEUED (needs unlocked screen)
+- [x] It's the React BloomDialog in TeamCollectionBookStatusPanel (not BrowserProgressDialog):
+      now positioned via PaperProps over the #teamCollection div's center, vertically
+      clamped so the paper stays on-screen (the panel hugs the window bottom). Falls back
+      to default whole-window centering when #teamCollection is absent (unit tests).
+      Panel vitest suite 11/11.
+- [ ] Visual check + `e2e-2-collaboration-loop` when screen unlocked.
 
 ### 4+5. Automatic remote-update application + in-place Sync (one work item)  `[medium]`
 Status: NOT STARTED
@@ -119,3 +127,10 @@ Status: NOT STARTED
 - 9 Jul 2026 · Batch plan created; full-matrix baseline run in progress (validates
   checkin-comment fix + 5s poll live) · Next: item 1 ("Bloom is busy" l10n) code work
   while the matrix runs.
+- 9 Jul 2026 (later) · Baseline matrix 13/13 GREEN (31 min). Items 1–3 code done +
+  committed (2d74d280f, 6f0c4a068, 207cc1d0); unit suites green (C# 363/363, panel vitest
+  11/11). Screen NOW LOCKED (John away): all Bloom-launching verification queued — e2e-1
+  (item 1 gate), e2e-2 (items 2+3), plus item 3 visual check. A Debug Bloom (PID 48012,
+  origin unknown, possibly John's) is running and locks output/Debug — build/test with
+  `-c Release` until it's gone; do NOT kill it without John · Next: item 4+5 design read
+  (CloudTeamCollection change-application path), code-only work.
