@@ -126,23 +126,43 @@ export const assertNoForeignBloomRunning = async (): Promise<void> => {
             await fsp.rm(tempOut, { force: true }).catch(() => {});
         }
     };
-    let stdout: string;
-    try {
-        stdout = await runProbe();
-    } catch {
-        stdout = await runProbe();
-    }
-    const status = JSON.parse(stdout);
-    const running: Array<{
-        detectedRepoRoot?: string;
-        executablePath?: string;
-    }> = status.runningBloomInstances ?? [];
     const normalize = (p?: string) =>
         (p ?? "")
             .replace(/[\\/]+/g, "\\")
             .replace(/\\$/, "")
             .toLowerCase();
     const thisRepo = normalize(repoRoot);
+
+    let running: Array<{ detectedRepoRoot?: string; executablePath?: string }>;
+    try {
+        const status = JSON.parse(await runProbe());
+        running = status.runningBloomInstances ?? [];
+    } catch {
+        // FALLBACK (8 Jul 2026): on an idling machine (scheduled AV scan crawling process
+        // enumeration is the leading suspect) the probe never completes when spawned
+        // without a console, in any stdio configuration tried — it burned four matrix-run
+        // attempts. The safety property only needs "which Bloom.exe processes exist and
+        // where from", which Get-Process answers directly. If even THIS fails, something
+        // is genuinely wrong and we still fail loudly.
+        const { stdout: psOut } = await execFileAsync(
+            "powershell",
+            [
+                "-NoProfile",
+                "-Command",
+                "Get-Process Bloom -ErrorAction SilentlyContinue | ForEach-Object { $_.Path }",
+            ],
+            { cwd: repoRoot, timeout: 60_000, windowsHide: true },
+        );
+        running = psOut
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter(Boolean)
+            .map((exePath) => ({ executablePath: exePath }));
+        console.warn(
+            `[harness] NOTE: bloomProcessStatus.mjs probe failed; used Get-Process fallback ` +
+                `(${running.length} Bloom.exe found).`,
+        );
+    }
     const sameRepo = running.filter(
         (instance) =>
             normalize(instance.detectedRepoRoot) === thisRepo ||
