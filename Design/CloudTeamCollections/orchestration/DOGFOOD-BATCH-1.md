@@ -64,6 +64,12 @@ refresh; book folder content update unverified.
       folder-TC behavior: queued message → Reload button.)
 - [ ] Implement fully-automatic application (see decision above): poll notices checkin →
       download/apply book to local folder → notify UI → refresh preview if selected.
+- [ ] SAFETY (John, 9 Jul): the partially-downloaded intermediate state must never be
+      user-reachable. Stage the download into a temp folder and swap it in atomically
+      (never write file-by-file into the live book folder); while the swap/apply is in
+      flight, the book is "busy" — checkout, edit, publish, delete, and rename must be
+      blocked or safely queued. Selecting the book mid-apply shows a transient state, not
+      half-updated content.
 - [ ] Rename "Reload" to "Sync" for cloud TCs and make it an in-place update: apply all
       pending remote changes WITHOUT closing/reopening the collection (folder TCs keep
       their existing reload semantics unless trivially unifiable).
@@ -94,6 +100,9 @@ Status: NOT STARTED
       completes.
 - [ ] Selecting a not-yet-downloaded book bumps it to the front of the download queue;
       status panel shows a "downloading" message until it arrives.
+- [ ] Same SAFETY rule as item 4+5: a book appears in the collection only as placeholder
+      (no dangerous actions possible) or fully downloaded — never as a half-populated
+      folder the user can act on. Temp-folder staging + atomic swap.
 - [ ] Handle interruption: Bloom closed mid-join resumes/completes downloads on next open
       (SyncAtStartup should already fetch missing books — verify).
 - [ ] Verify: `join-auto-open` + `e2e-9-new-book-lifecycle`; consider a new spec for the
