@@ -334,28 +334,10 @@
         <note>ID: CollectionChooser.UnpublishedToBloomLibrary</note>
         <note>{0} is the number of books in the collection not yet published to bloomlibrary.org.</note>
       </trans-unit>
-      <trans-unit id="CollectionChooser.GetMyTeamCollections" translate="no">
-        <source xml:lang="en">Get my Team Collections</source>
-        <note>ID: CollectionChooser.GetMyTeamCollections</note>
-        <note>Heading above the list of cloud Team Collections the signed-in user belongs to, shown in the collection chooser.</note>
-      </trans-unit>
-      <trans-unit id="CollectionChooser.SignInToSeeYourTeamCollections" translate="no">
-        <source xml:lang="en">Sign in to see the Team Collections you belong to.</source>
-        <note>ID: CollectionChooser.SignInToSeeYourTeamCollections</note>
-      </trans-unit>
-      <trans-unit id="CollectionChooser.SignIn" translate="no">
-        <source xml:lang="en">Sign In</source>
-        <note>ID: CollectionChooser.SignIn</note>
-        <note>Button in the "Get my Team Collections" section of the collection chooser; starts sign-in so the user can see their cloud Team Collections.</note>
-      </trans-unit>
-      <trans-unit id="CollectionChooser.NoTeamCollectionsYet" translate="no">
-        <source xml:lang="en">You don't belong to any Team Collections yet.</source>
-        <note>ID: CollectionChooser.NoTeamCollectionsYet</note>
-      </trans-unit>
       <trans-unit id="CollectionChooser.PullDown" translate="no">
         <source xml:lang="en">Get</source>
         <note>ID: CollectionChooser.PullDown</note>
-        <note>Button next to a cloud Team Collection in the "Get my Team Collections" list; downloads a local copy of that collection.</note>
+        <note>Join cue shown on a "join card" in the collection chooser's card list, for a cloud Team Collection the signed-in user belongs to but hasn't joined locally yet; clicking the card downloads a local copy.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
