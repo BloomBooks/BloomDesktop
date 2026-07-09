@@ -52,7 +52,8 @@ namespace Bloom.web.controllers
                         );
                     }
                 },
-                false
+                false,
+                requiresSync: false
             );
         }
     }

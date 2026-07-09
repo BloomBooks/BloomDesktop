@@ -187,6 +187,7 @@ namespace Bloom
                                 typeof(FileIOApi),
                                 typeof(ProgressDialogApi),
                                 typeof(EditingViewApi),
+                                typeof(ImageGalleryApi),
                                 typeof(ProblemReportApi),
                                 typeof(FontsApi),
                                 typeof(BulkBloomPubCreator),
@@ -381,7 +382,12 @@ namespace Bloom
             }
 
             var server = parentContainer.Resolve<BloomServer>();
-            server.SetCollectionSettingsDuringInitialization(_scope.Resolve<CollectionSettings>());
+            var collectionSettings = _scope.Resolve<CollectionSettings>();
+            server.SetCollectionSettingsDuringInitialization(collectionSettings);
+            // Let the application-level CommonApi (which can't take a project dependency in its
+            // constructor) report this collection's folder via common/instanceInfo, so external tools
+            // can pick the right running Bloom when several are open.
+            web.controllers.CommonApi.CurrentCollectionSettings = collectionSettings;
             server.EnsureListening();
 
             // A few APIs are now registered in the constructor of ApplicationContainer
@@ -433,6 +439,7 @@ namespace Bloom
             _scope.Resolve<FileIOApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ProgressDialogApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<EditingViewApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<ImageGalleryApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<LibraryPublishApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -854,9 +861,17 @@ namespace Bloom
             // We now keep BloomApiHandler alive for the application lifetime, but many endpoints are project-scoped.
             // Disposing the ProjectContext should fully shut down the project (including webviews) before we clear
             // those project-scoped endpoints.
-            var server = _scope.Resolve<BloomServer>();
             try
             {
+                // During application shutdown, WinForms can fire Application.ApplicationExit (for example as a
+                // worker thread's message context is torn down while publish artifacts are being created, as in
+                // the harvester's CreateArtifacts flow). That disposes the ApplicationContainer, which is the
+                // parent of _scope, before this Dispose runs. When that has happened, BloomServer (an
+                // application-level singleton) and all its API handlers are already gone, so resolving it throws
+                // ObjectDisposedException and there is nothing project-scoped left to clean up. In that case we
+                // just fall through to disposing our own scope.
+                var server = _scope.Resolve<BloomServer>();
+
                 // The order of these is tricky. The problem is that browsers could still be
                 // running and trying to call APIs while we are shutting down.
                 // Disposing the scope disposes the browsers, after which they shouldn't be able
@@ -867,10 +882,20 @@ namespace Bloom
                 // disposed. On the whole, I think it's best to clear the handlers first; that way,
                 // at least we avoid mysterious errors in the API handlers due to disposed objects.
                 server.ApiHandler.ClearProjectLevelHandlers();
-                _scope.Dispose();
+                // Clear the project-scoped collection settings we set on the application-level CommonApi
+                // (see constructor), so common/instanceInfo doesn't report stale collection info after the
+                // project is closed. A reload disposes this context before creating the next one, which
+                // sets it again, so clearing here is safe.
+                web.controllers.CommonApi.CurrentCollectionSettings = null;
+            }
+            catch (ObjectDisposedException)
+            {
+                // The application container was already disposed (see above); nothing project-scoped
+                // remains to clean up, so proceed to dispose our own scope below.
             }
             finally
             {
+                _scope.Dispose();
                 _scope = null;
             }
 

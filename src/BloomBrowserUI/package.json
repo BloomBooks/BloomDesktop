@@ -44,6 +44,8 @@
         "gitSemiClean": "git clean -X --dry-run --exclude='!node_modules'",
         "gitSemiCleanForReal": "git clean -fX --exclude='!node_modules'",
         "lint": "eslint \"./**/!(*.d).ts{,x}\"",
+        "// 'typecheck': runs tsgo (TypeScript native preview) --noEmit and fails on blunder-class type errors (grammar, missing names/modules, wrong arg counts) that esbuild/eslint don't catch, e.g. bad parameter ordering. Ignores pre-existing strictness/assignability errors by design; see scripts/typecheck.js": " ",
+        "typecheck": "node scripts/typecheck.js",
         "// use output/browser as the root of the storybook-provided server": " ",
         "// specify the port (-p 58886) so we can have special logic in bloomApi.ts for storybook": " ",
         "storybook": "storybook dev -p 58886 ",
@@ -135,6 +137,7 @@
         "@types/react-transition-group": "^4.4.1",
         "@use-it/event-listener": "^0.1.7",
         "axios": "^0.21.1",
+        "bloom-image-gallery": "BloomBooks/bloom-image-gallery",
         "bloom-player": "^2.19.4",
         "calculate-aspect-ratio": "^0.1.3",
         "clsx": "^1.0.4",
@@ -215,8 +218,9 @@
         "@types/underscore": "^1.10.24",
         "@types/webpack-env": "^1.13.9",
         "@types/webrtc": "^0.0.25",
-        "@typescript-eslint/eslint-plugin": "^8.39.0",
-        "@typescript-eslint/parser": "^8.39.0",
+        "@typescript-eslint/eslint-plugin": "^8.62.0",
+        "@typescript-eslint/parser": "^8.62.0",
+        "@typescript/native-preview": "^7.0.0-dev.20260624.1",
         "@vitejs/plugin-react": "^5.0.4",
         "@vitest/browser-playwright": "^4.0.8",
         "@vitest/ui": "4.0.8",
@@ -253,8 +257,8 @@
         "run-sequence": "^2.2.1",
         "semver": "^7.3.4",
         "storybook": "10.0.2",
-        "typescript": "^5.7.3",
-        "typescript-eslint": "^8.39.0",
+        "typescript": "^6.0.3",
+        "typescript-eslint": "^8.62.0",
         "vi-canvas-mock": "^1.0.0",
         "vite": "^7.1.5",
         "vite-plugin-pug": "^0.4.1",
@@ -267,7 +271,7 @@
     },
     "husky": {
         "hooks": {
-            "pre-commit": "pretty-quick --staged && lint-staged --no-stash && ../../build/check-csharp-robustfile.sh && ../../build/check-csharp-xmlclasses.sh && ../../build/check-csharp-ApplicationExit.sh &&../../build/run-csharpier.sh",
+            "pre-commit": "pretty-quick --staged && lint-staged --no-stash && node scripts/typecheck.js && ../../build/check-csharp-robustfile.sh && ../../build/check-csharp-xmlclasses.sh && ../../build/check-csharp-ApplicationExit.sh &&../../build/run-csharpier.sh",
             "pre-commit-comments": "// The '--no-stash' option makes linting much faster and is safe since our lint-staged doesn't currently modify any files. If it did modify files, you could still use --no-stash but there are some corner cases where you'd need to manually resolve conflicts."
         }
     },

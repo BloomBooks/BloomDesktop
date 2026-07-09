@@ -50,6 +50,7 @@ export interface IWorkspaceExports {
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
     showBookSettingsDialog(initiallySelectedPageKey?: string): void;
+    showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
 }
 
 export function SayHello() {
@@ -79,6 +80,7 @@ import { reportError } from "../lib/errorHandler";
 import type { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
+import { showImageGalleryDialog as doShowImageGalleryDialog } from "../react_components/image-gallery/ImageGalleryDialog";
 import { renderRoot } from "../utils/reactRender";
 import { FunctionComponentElement } from "react";
 import { ToastDebugInput, toastDebugEvents } from "../toast/toastUtils";
@@ -330,6 +332,13 @@ export function showRegistrationDialogFromWorkspaceRoot() {
     showRegistrationDialogForEditTab();
 }
 
+export function showImageGalleryDialog(
+    img: HTMLElement,
+    searchLang: string,
+): void {
+    doShowImageGalleryDialog(img, searchLang);
+}
+
 const updateWorkspaceUrlParam = (name: string, value: string): void => {
     const url = new URL(window.location.href);
     url.searchParams.set(name, value);
@@ -416,6 +425,7 @@ interface WorkspaceBundleApi {
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
     showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
     showAdjustTimingsDialogFromWorkspaceRoot: typeof showAdjustTimingsDialogFromWorkspaceRoot;
+    showImageGalleryDialog: typeof showImageGalleryDialog;
     setZoom: typeof setZoom;
     getToolboxBundleExports: typeof getToolboxBundleExports;
     getEditablePageBundleExports: typeof getEditablePageBundleExports;
@@ -459,6 +469,7 @@ window.workspaceBundle = {
     showRegistrationDialogFromWorkspaceRoot,
     showAdjustTimingsDialogFromWorkspaceRoot:
         showAdjustTimingsDialogFromWorkspaceRoot,
+    showImageGalleryDialog,
     setZoom,
     // re-exported cross-frame helpers
     getToolboxBundleExports,

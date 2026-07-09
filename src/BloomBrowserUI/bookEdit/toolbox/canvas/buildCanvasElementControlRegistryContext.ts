@@ -172,7 +172,7 @@ export const buildCanvasElementControlRegistryContext = (
         page,
         elementType,
         hasImage,
-        hasRealImage: hasRealImage(img),
+        hasRealImage: hasRealImage(img ?? undefined),
         hasVideo,
         hasPreviousVideoContainer: videoContainer
             ? !!findPreviousVideoContainer(videoContainer)

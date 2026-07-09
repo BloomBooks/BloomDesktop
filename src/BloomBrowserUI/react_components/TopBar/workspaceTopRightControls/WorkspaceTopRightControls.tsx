@@ -5,24 +5,26 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { ZoomControl } from "./ZoomControl";
 import { UiLanguageMenu } from "./UiLanguageMenu";
 import { HelpMenu } from "./HelpMenu";
-import { kTextOnPurple } from "../../../bloomMaterialUITheme";
+
+// Every affordance in this group -- text, menu-button labels, the help icon, and the
+// dropdown arrows -- is drawn in black at 80% opacity. The tab-bar background these sit
+// on isn't always the same color, and black-at-80% reads well across those backgrounds.
+const kTopRightControlColor = "rgba(0, 0, 0, 0.8)";
 
 export const WorkspaceTopRightControls: React.FunctionComponent = () => {
     const lightThemeOverride = React.useMemo(
         () =>
             createTheme(lightTheme, {
                 components: {
-                    // kTextOnPurple: The background isn't always purple,
-                    // but this matches what the original winforms control was doing.
-                    // Without the override, we get Bloom blue.
+                    // Without this override, MUI buttons in this group would be Bloom blue.
                     MuiButton: {
                         styleOverrides: {
                             root: {
-                                color: kTextOnPurple,
+                                color: kTopRightControlColor,
                                 fontWeight: "normal",
                             },
                             text: {
-                                color: kTextOnPurple,
+                                color: kTopRightControlColor,
                                 fontWeight: "normal",
                             },
                         },
@@ -42,10 +44,14 @@ export const WorkspaceTopRightControls: React.FunctionComponent = () => {
                     align-items: end;
                     font-size: 12px;
 
-                    // kTextOnPurple: see comment above
-                    color: ${kTextOnPurple};
+                    // See comment on kTopRightControlColor above.
+                    color: ${kTopRightControlColor};
                     button {
-                        color: ${kTextOnPurple};
+                        color: ${kTopRightControlColor};
+                    }
+                    // Make SVG icons (help icon, dropdown arrows) match the text color.
+                    svg {
+                        fill: currentColor;
                     }
                 `}
             >

@@ -590,6 +590,12 @@ export default defineConfig(async ({ command }) => {
             // React plugin: Enables JSX, Fast Refresh, and React-specific optimizations
             react({
                 reactRefreshHost: `http://localhost:${devServerPort}`,
+                // jsxImportSource is also set in tsconfig.json; duplicating here ensures
+                // it applies to bloom-image-gallery files (see exclude below).
+                jsxImportSource: "@emotion/react",
+                // Include bloom-image-gallery in the transform pipeline even though it's in
+                // node_modules — its TSX source uses emotion's css prop and needs this plugin.
+                exclude: /node_modules\/(?!bloom-image-gallery)/,
                 babel: {
                     parserOpts: {
                         // This enables decorators like @mobxReact.observer.
@@ -677,6 +683,15 @@ export default defineConfig(async ({ command }) => {
                 clientPort: devServerPort,
                 overlay: true,
             },
+            watch: {
+                // When bloom-image-gallery is yarn-linked for local development, its files
+                // live in node_modules but resolve to a real path outside it. Allow HMR
+                // to watch them by exempting that package from the node_modules exclusion.
+                ignored: (watchPath: string) => {
+                    if (watchPath.includes("bloom-image-gallery")) return false;
+                    return /node_modules/.test(watchPath);
+                },
+            },
         },
 
         // BUILD CONFIGURATION
@@ -742,7 +757,11 @@ export default defineConfig(async ({ command }) => {
         // MODULE RESOLUTION CONFIGURATION
         // Controls how Vite finds and loads modules
         resolve: {
-            preserveSymlinks: false, // Follow symlinks to actual files
+            // When bloom-image-gallery is yarn-linked for local development, follow the
+            // symlink to its real path so Vite treats it as a first-party source file
+            // rather than a node_modules package. This lets the react plugin transform it
+            // and lets tsconfig.json in that repo supply jsxImportSource for emotion.
+            preserveSymlinks: false,
 
             // DEDUPE: Prevent duplicate copies of these packages in bundles
             // If multiple dependencies use React, only include one copy
@@ -850,7 +869,10 @@ export default defineConfig(async ({ command }) => {
                 "jquery", // Always pre-bundle jQuery
                 "comicaljs", // Pre-bundle comicaljs (webpack UMD bundle needs processing)
             ],
-            exclude: ["lib/localizationManager/localizationManager"], // Don't pre-bundle this
+            exclude: [
+                "lib/localizationManager/localizationManager", // Don't pre-bundle this
+                "bloom-image-gallery", // TypeScript source entry point — must go through Vite's transform pipeline, not esbuild pre-bundling
+            ],
             // Force Vite to treat comicaljs as having named exports even though it's CommonJS/UMD
             esbuildOptions: {
                 plugins: [],

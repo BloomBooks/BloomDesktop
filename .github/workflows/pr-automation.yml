@@ -1,10 +1,15 @@
-name: run-devin
+name: PR Automation
 
-# On each PR open and new commit (synchronize), loads the matching
-# devinreview.com URL in the Google Chrome preinstalled on the runner, driven by
-# Playwright. Chrome runs the page's JavaScript so it can kick off a review,
-# just as opening the URL in a browser would. Using playwright-core with
-# channel:"chrome" keeps each run to a small npm install.
+# Runs housekeeping when a PR is opened or gets new commits (synchronize):
+#   - assign the PR to its author (so the author shows up on the PR Review
+#     Tracker board)
+#   - kick off a devinreview.com review and add its link to the PR description
+#
+# The devin step loads the matching devinreview.com URL in the Google Chrome
+# preinstalled on the runner, driven by Playwright. Chrome runs the page's
+# JavaScript so it can kick off a review, just as opening the URL in a browser
+# would. Using playwright-core with channel:"chrome" keeps each run to a small
+# npm install.
 # SECURITY: keep this as `pull_request` (NOT `pull_request_target`). With
 # `pull_request`, fork PRs get a read-only token and no access to secrets, and
 # we never check out or run PR code here. Switching to `pull_request_target`
@@ -14,13 +19,23 @@ on:
         types: [opened, synchronize]
 
 jobs:
-    open-devin-review:
+    pr-automation:
         # Internal PRs only: skip PRs that come from forks.
         if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-latest
         permissions:
             pull-requests: write
         steps:
+            # Done first so a later (flaky) browser step can't cause us to skip it.
+            - name: Assign the PR to its author
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  # gh can't infer the repo without a checkout, so pass it explicitly.
+                  GH_REPO: ${{ github.repository }}
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+              run: gh pr edit "$PR_NUMBER" --add-assignee "$PR_AUTHOR"
+
             - uses: actions/setup-node@v6
               with:
                   node-version: lts/*

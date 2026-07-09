@@ -15,7 +15,7 @@ describe("ImageUndoManager crop preservation", () => {
         // Set up a mock host
         hostMock = {
             getCurrentPage: () =>
-                document.querySelector(".bloom-page") || undefined,
+                document.querySelector<HTMLElement>(".bloom-page") || undefined,
             updateCanvasElementForChangedImage: vi.fn(
                 (
                     imgOrImageContainer: HTMLElement,

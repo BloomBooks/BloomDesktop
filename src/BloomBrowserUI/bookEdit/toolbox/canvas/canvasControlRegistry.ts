@@ -39,7 +39,7 @@ import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { default as SearchIcon } from "@mui/icons-material/Search";
 import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
-import { showCopyrightAndLicenseDialog } from "../../workspaceRoot";
+import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
 import {
     doImageCommand,
     getImageFromCanvasElement,
@@ -483,7 +483,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             }
 
             runtime.closeMenu(true);
-            showCopyrightAndLicenseDialog(
+            // Launch via the workspace (top window) bundle, not this page iframe, so that saving
+            // the metadata — which reloads the page iframe — doesn't tear the dialog down.
+            getWorkspaceBundleExports().showCopyrightAndLicenseDialog(
                 getImageUrlFromImageContainer(imageContainer),
             );
         },
@@ -1128,8 +1130,8 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     imageBackground: {
         kind: "command",
         id: "imageBackground",
-        l10nId: "EditTab.Image.Background",
-        englishLabel: "Background",
+        l10nId: "EditTab.Image.Transparency",
+        englishLabel: "Transparency",
         action: () => {},
         menu: {
             buildMenuItem: (ctx, _runtime) => {
@@ -1155,12 +1157,12 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
 
                 return {
                     id: "imageBackground",
-                    l10nId: "EditTab.Image.Background",
-                    englishLabel: "Background",
+                    l10nId: "EditTab.Image.Transparency",
+                    englishLabel: "Transparency",
                     onSelect: () => {},
                     subMenuItems: [
                         {
-                            l10nId: "EditTab.Image.Background.Auto",
+                            l10nId: "EditTab.Image.Transparency.Auto",
                             englishLabel: "Auto",
                             icon: isAuto
                                 ? React.createElement(CheckIcon, null)
@@ -1175,7 +1177,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                             },
                         },
                         {
-                            l10nId: "EditTab.Image.Background.Transparent",
+                            l10nId: "EditTab.Image.Transparency.Transparent",
                             englishLabel: "Transparent",
                             icon: isTransparent
                                 ? React.createElement(CheckIcon, null)
@@ -1188,7 +1190,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                             },
                         },
                         {
-                            l10nId: "EditTab.Image.Background.Opaque",
+                            l10nId: "EditTab.Image.Transparency.Opaque",
                             englishLabel: "Opaque",
                             icon: isOpaque
                                 ? React.createElement(CheckIcon, null)

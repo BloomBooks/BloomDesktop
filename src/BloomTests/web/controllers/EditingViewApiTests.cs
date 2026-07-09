@@ -1,6 +1,6 @@
 using System;
-using System.IO;
 using System.Net;
+using System.Net.Http;
 using Bloom;
 using Bloom.Api;
 using Bloom.Book;
@@ -67,7 +67,7 @@ namespace BloomTests.web.controllers
             _api.PasteImageAction = (_, __, ___) =>
                 throw new InvalidOperationException("No image on clipboard for paste image.");
 
-            var exception = Assert.Throws<WebException>(() =>
+            var exception = Assert.Throws<HttpRequestException>(() =>
                 ApiTest.PostString(
                     _server,
                     "editView/pasteImage",
@@ -76,9 +76,7 @@ namespace BloomTests.web.controllers
                 )
             );
 
-            var response = exception.Response as HttpWebResponse;
-            Assert.That(response, Is.Not.Null);
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(exception.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         }
 
         private class TestEditingViewApi : EditingViewApi

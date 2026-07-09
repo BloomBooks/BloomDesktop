@@ -77,7 +77,9 @@ body {
         pointer-events: auto; // start up clicks again a the next level
     }
 
-    :not(.Device16x9Portrait):not(.Device16x9Landscape)&::before {
+    :not(.Device16x9Portrait):not(.Device16x9Landscape):not(
+            .Ebook2x3Portrait
+        ):not(.Ebook7x5Landscape)&::before {
         // show bleed area
         content: "";
         position: absolute;
@@ -90,7 +92,9 @@ body {
         z-index: 1;
     }
 
-    :not(.Device16x9Portrait):not(.Device16x9Landscape)&:after {
+    :not(.Device16x9Portrait):not(.Device16x9Landscape):not(
+            .Ebook2x3Portrait
+        ):not(.Ebook7x5Landscape)&:after {
         // show safety area (the area inside of the trim box that still could get cut)
         content: "";
         position: absolute;
@@ -793,9 +797,9 @@ div.bloom-templateMode {
     border: 3px dashed black;
 }
 
-// We only make a big deal out of "overflow" if the layout is a *paper* size, rather than a *device* size.
+// We only make a big deal out of "overflow" if the layout is a *paper* size, rather than a *device* or *ebook* size.
 // Or the overflowing text is on a button
-.bloom-page:not([class*="Device"]),
+.bloom-page:not([class*="Device"]):not([class*="Ebook"]),
 .bloom-page .bloom-canvas-button.bloom-canvas-button {
     // We need this three times to beat a rule that gives the focusd editable box a blue outline
     // And for buttons we need to beat the rule on .bloom-canvas-element[data-bloom-active="true"] div.bloom-editable

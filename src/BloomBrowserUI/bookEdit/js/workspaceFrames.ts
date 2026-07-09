@@ -49,6 +49,14 @@ export function getWorkspaceBundleExports(): IWorkspaceExports {
     return workspaceBundle as IWorkspaceExports;
 }
 
+// Like getWorkspaceBundleExports(), but returns null instead of throwing when there is no workspace
+// bundle. Use this from code that can legitimately run with no surrounding workspace frame, e.g. the
+// off-screen process-book context, where a page is loaded standalone with no parent workspace root.
+export function tryGetWorkspaceBundleExports(): IWorkspaceExports | null {
+    const rootWindow = getRootWindow() as Window & { [key: string]: unknown };
+    return (rootWindow["workspaceBundle"] as IWorkspaceExports) ?? null;
+}
+
 // Do this task when the workspace bundle is loaded. If it isn't loaded already, we set a timeout and do it when we can.
 // There is a similar doWhenToolboxLoaded in workspaceRoot.ts.
 export function doWhenWorkspaceBundleLoaded(

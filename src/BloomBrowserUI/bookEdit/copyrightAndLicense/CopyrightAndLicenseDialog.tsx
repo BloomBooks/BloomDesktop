@@ -1,20 +1,24 @@
 import { css } from "@emotion/react";
 
 import * as React from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { renderRootSync } from "../../utils/reactRender";
 import { Tab, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.less";
+import { CircularProgress } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { get, postBoolean, postData } from "../../utils/bloomApi";
-import { kBloomBlue } from "../../bloomMaterialUITheme";
+import { useSubscribeToWebSocketForEvent } from "../../utils/WebSocketManager";
+import { kBloomBlue, kMutedTextGray } from "../../bloomMaterialUITheme";
 import {
     BloomDialog,
     DialogBottomButtons,
     DialogTitle,
     DialogMiddle,
 } from "../../react_components/BloomDialog/BloomDialog";
+import BloomButton from "../../react_components/bloomButton";
 import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog,
@@ -29,6 +33,8 @@ import { useL10n } from "../../react_components/l10nHooks";
 import { CopyrightPanel, ICopyrightInfo } from "./CopyrightPanel";
 import { ILicenseInfo, LicensePanel } from "./LicensePanel";
 import { LicenseBadge } from "./LicenseBadge";
+import { MetadataChooser } from "./MetadataChooser";
+import { computePackageKey } from "./metadataReuseUtils";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 
 export interface ICopyrightAndLicenseData {
@@ -85,6 +91,55 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
     const [isCopyrightValid, setIsCopyrightValid] = useState(false);
     const [isLicenseValid, setIsLicenseValid] = useState(true);
 
+    // The single condition that gates saving. The OK button is enabled only when this is true;
+    // the "Add to all images" and "copy" buttons are hidden entirely when it is false (rather
+    // than shown disabled). Anything keyed to "can we save?" should use this, not the OK button.
+    const canSave = isCopyrightValid && isLicenseValid;
+
+    // The CopyrightPanel and LicensePanel seed their internal state from props only at mount.
+    // To refill their fields when the user picks a metadata package, we update the data state
+    // here and bump this version, which is used as the panels' `key` to force a remount.
+    const [appliedVersion, setAppliedVersion] = useState(0);
+
+    function applyMetadataPackage(data: ICopyrightAndLicenseData) {
+        setCopyrightInfo(data.copyrightInfo);
+        setLicenseInfo(data.licenseInfo);
+        setAppliedVersion((v) => v + 1);
+        // Picking a shortcut changes the fields just like a manual edit, so any prior "pushed to
+        // all images" confirmation is now stale: re-offer the button (but leave an in-flight
+        // push's spinner alone).
+        markEditedSincePush();
+    }
+
+    // Header for the image reuse chooser.
+    const ReuseMetadataShortcutLabelHeader = useL10n(
+        "Shortcuts:",
+        "CopyrightAndLicense.ReuseMetadataShortcutLabel",
+    );
+
+    // Tracks the "Add this info to all images" operation. It can take a while on a book with
+    // many images, so instead of closing the dialog (and leaving the UI seemingly frozen) we
+    // stay open and show progress: a spinner while working, then a "done" confirmation.
+    const [pushState, setPushState] = useState<"idle" | "working" | "done">(
+        "idle",
+    );
+    const pushWorkingLabel = useL10n("Working…", "Common.Working");
+    const pushDoneLabel = useL10n("Done", "Common.Done");
+
+    // The package key of the values submitted by the most recent "Add to all images" push, so
+    // that when the completion event arrives we can tell whether the user has edited since. (null
+    // means no push has been initiated.)
+    const pushedKeyRef = useRef<string | null>(null);
+
+    // Editing makes a prior "pushed to all images" confirmation stale, so offer the button
+    // again. But if a push is still running ("working"), leave the spinner alone: resetting to
+    // "idle" mid-operation would hide the spinner and re-enable the button for redundant clicks.
+    // (The completion handler below still notices that the values changed and avoids a stale
+    // "done".)
+    function markEditedSincePush() {
+        setPushState((prev) => (prev === "working" ? prev : "idle"));
+    }
+
     function onCopyrightChange(
         copyrightInfo: ICopyrightInfo,
         useOriginalCopyrightAndLicense: boolean,
@@ -93,28 +148,72 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
         setCopyrightInfo(copyrightInfo);
         setUseOriginalCopyrightAndLicense(useOriginalCopyrightAndLicense);
         setIsCopyrightValid(isValid);
+        markEditedSincePush();
     }
 
     function onLicenseChange(licenseInfo: ILicenseInfo, isValid: boolean) {
         setLicenseInfo(licenseInfo);
         setIsLicenseValid(isValid);
+        markEditedSincePush();
     }
 
-    function handleOk() {
+    // The current dialog values, in the shape the backend expects.
+    function gatherData(): ICopyrightAndLicenseData {
         const derivativeInfo: IDerivativeInfo = {
             isBookDerivative:
                 !!props.data.derivativeInfo &&
                 props.data.derivativeInfo.isBookDerivative,
             useOriginalCopyright: useOriginalCopyrightAndLicense,
         };
-        const data: ICopyrightAndLicenseData = {
+        return {
             copyrightInfo,
             licenseInfo,
             derivativeInfo,
         };
-        postData(getApiUrlSuffix(props.isForBook), data);
+    }
+
+    function handleOk() {
+        // Save just the current image/book and close.
+        postData(getApiUrlSuffix(props.isForBook), gatherData());
         closeDialog();
     }
+
+    // Push the current metadata to every other image in the book. This can be slow, so we keep
+    // the dialog open and show a "Working…" spinner. We do NOT switch to "done" when the POST
+    // resolves — that happens as soon as the save is *initiated*, before the copy actually runs.
+    // Instead the backend sends a websocket event (see useSubscribeToWebSocketForEvent below)
+    // when the copy has finished, and that flips us to "done".
+    function handlePushToAllImages() {
+        setPushState("working");
+        // Remember exactly which values we are pushing, so the completion handler can tell whether
+        // the user has edited since (in which case the values that finished copying are stale and
+        // we must not show "done" for the current, un-pushed values).
+        pushedKeyRef.current = computePackageKey(gatherData());
+        postData(
+            getApiUrlSuffix(props.isForBook) + "?applyToAllImages=true",
+            gatherData(),
+            undefined,
+            // If the POST itself fails before reaching the server, no "pushedToAllImages"
+            // websocket event will ever arrive, so reset to "idle" rather than leaving the
+            // spinner running forever.
+            () => setPushState("idle"),
+        );
+    }
+
+    // The backend fires this when a "Add to all images" operation has actually finished. Only
+    // show "done" if the dialog's current values still match what we pushed; if the user edited
+    // while the push was in flight, those edits were not copied, so we drop back to "idle" and
+    // offer the button again rather than claiming the new values are done.
+    useSubscribeToWebSocketForEvent(
+        "copyrightAndLicense",
+        "pushedToAllImages",
+        () =>
+            setPushState(
+                computePackageKey(gatherData()) === pushedKeyRef.current
+                    ? "done"
+                    : "idle",
+            ),
+    );
 
     return (
         <BloomDialog {...propsForBloomDialog}>
@@ -145,6 +244,10 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                             }
                             onChange={(newLicenseInfo: ILicenseInfo) => {
                                 setLicenseInfo(newLicenseInfo);
+                                // Like the other edit handlers, a license change via the badge
+                                // means the fields no longer match a completed push-to-all, so
+                                // clear any stale "Done" indicator.
+                                markEditedSincePush();
                             }}
                             disabled={useOriginalCopyrightAndLicense}
                         />
@@ -186,27 +289,142 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                     </TabList>
                     <TabPanel>
                         {copyrightInfo && (
-                            <CopyrightPanel
-                                isForBook={props.isForBook}
-                                derivativeInfo={props.data.derivativeInfo}
-                                copyrightInfo={copyrightInfo}
-                                onChange={(
-                                    copyrightInfo,
-                                    useOriginalCopyrightAndLicense,
-                                    isValid,
-                                ) =>
-                                    onCopyrightChange(
+                            <div
+                                css={css`
+                                    display: flex;
+                                    flex-direction: column;
+                                    // Fill the tab so the chooser can hug the bottom (it uses
+                                    // margin-top: auto) while the copyright fields stay at top.
+                                    height: 100%;
+                                    box-sizing: border-box;
+                                `}
+                            >
+                                <CopyrightPanel
+                                    key={appliedVersion}
+                                    isForBook={props.isForBook}
+                                    derivativeInfo={props.data.derivativeInfo}
+                                    copyrightInfo={copyrightInfo}
+                                    onChange={(
                                         copyrightInfo,
                                         useOriginalCopyrightAndLicense,
                                         isValid,
+                                    ) =>
+                                        onCopyrightChange(
+                                            copyrightInfo,
+                                            useOriginalCopyrightAndLicense,
+                                            isValid,
+                                        )
+                                    }
+                                />
+                                {
+                                    // The image-only "Add to all images" button, sitting just
+                                    // below the copyright fields. Shown only for images, and only
+                                    // when the metadata can be saved (or a push is in progress/done).
+                                    !props.isForBook &&
+                                        (canSave || pushState !== "idle") && (
+                                            <div
+                                                css={css`
+                                                    display: flex;
+                                                    align-items: center;
+                                                    // Right-align the button/progress.
+                                                    justify-content: flex-end;
+                                                    min-height: 36px;
+                                                `}
+                                            >
+                                                {pushState === "idle" && (
+                                                    <BloomButton
+                                                        l10nKey="CopyrightAndLicense.CopyToAllImages"
+                                                        hasText={true}
+                                                        enabled={true}
+                                                        variant="outlined"
+                                                        css={css`
+                                                            // Outlined button.
+                                                            text-transform: none;
+                                                        `}
+                                                        onClick={
+                                                            handlePushToAllImages
+                                                        }
+                                                    >
+                                                        Add this info to all
+                                                        images in this book
+                                                    </BloomButton>
+                                                )}
+                                                {pushState === "working" && (
+                                                    <div
+                                                        css={css`
+                                                            display: flex;
+                                                            align-items: center;
+                                                            gap: 8px;
+                                                            color: ${kMutedTextGray};
+                                                        `}
+                                                    >
+                                                        <CircularProgress
+                                                            size={16}
+                                                        />
+                                                        {pushWorkingLabel}
+                                                    </div>
+                                                )}
+                                                {pushState === "done" && (
+                                                    <div
+                                                        css={css`
+                                                            display: flex;
+                                                            align-items: center;
+                                                            gap: 6px;
+                                                        `}
+                                                    >
+                                                        <CheckCircleIcon
+                                                            fontSize="small"
+                                                            css={css`
+                                                                color: #4caf50;
+                                                            `}
+                                                        />
+                                                        {pushDoneLabel}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                }
+                                {
+                                    // A bottom-hugging group: the reuse chooser, shown only when
+                                    // editing an image (not for the book's own copyright/license).
+                                    // It is a sibling of (not keyed like) CopyrightPanel, so
+                                    // applying a package remounts the panel to refill its fields
+                                    // without resetting the chooser. (copyrightInfo is already
+                                    // guaranteed truthy by the enclosing block.)
+                                    !props.isForBook && licenseInfo && (
+                                        <div
+                                            css={css`
+                                                margin-top: auto;
+                                                display: flex;
+                                                flex-direction: column;
+                                            `}
+                                        >
+                                            <MetadataChooser
+                                                currentData={{
+                                                    copyrightInfo,
+                                                    licenseInfo,
+                                                }}
+                                                onChoose={applyMetadataPackage}
+                                                headerText={
+                                                    ReuseMetadataShortcutLabelHeader
+                                                }
+                                                listEndpoint="copyrightAndLicense/imageFileNamesInBook"
+                                                getItemEndpoint={(file) =>
+                                                    "copyrightAndLicense/imageMetadataForFile?fileName=" +
+                                                    encodeURIComponent(file)
+                                                }
+                                                alsoOfferBookMetadata={true}
+                                            />
+                                        </div>
                                     )
                                 }
-                            />
+                            </div>
                         )}
                     </TabPanel>
                     <TabPanel>
                         {licenseInfo && (
                             <LicensePanel
+                                key={appliedVersion}
                                 isForBook={props.isForBook}
                                 licenseInfo={licenseInfo}
                                 derivativeInfo={props.data.derivativeInfo}
@@ -222,7 +440,10 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                 <DialogOkButton
                     onClick={handleOk}
                     default={true}
-                    enabled={isCopyrightValid && isLicenseValid}
+                    // Disable OK while a push is in flight, so the user can't fire a
+                    // redundant save and unmount the dialog before the "pushedToAllImages"
+                    // websocket event arrives (which would set state on an unmounted component).
+                    enabled={canSave && pushState !== "working"}
                 />
                 <DialogCancelButton onClick_DEPRECATED={closeDialog} />
             </DialogBottomButtons>
@@ -251,9 +472,10 @@ function showCopyrightAndLicenseDialog(
     show();
 }
 
-// Either the `get` call will show info to the user
-// (e.g. read-only info if he can't modify the image or a message stating images cannot be changed unless unlocked)
-// or we will display the dialog.
+// The `get` call either returns the image's copyright/license data (so we display the dialog),
+// returns nothing (e.g. the image file wasn't found, so there is nothing to show), or fails with
+// a message we surface to the user (e.g. the image is embedded data rather than a file, so its
+// information can't be edited).
 export function showCopyrightAndLicenseInfoOrDialog(imageUrl?: string) {
     const isForBook: boolean = !imageUrl;
     get(
