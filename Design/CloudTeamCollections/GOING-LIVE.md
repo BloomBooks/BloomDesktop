@@ -214,8 +214,11 @@ Prerequisites (mostly already true; verify at merge time):
    `<note>`** (crashes every launch; rule + history in `.github/skills/xlf-strings/SKILL.md`).
 4. [HUMAN] Normal PR review + team heads-up that `server/`, `supabase/`, and
    `src/BloomTests/e2e/` are new top-level areas.
-5. [HUMAN] Decide dogfood plan: which team/collection pilots it against sandbox, and the
-   channel for feedback. (Task 10's `docs/user-walkthrough.md` is the tester-facing doc.)
+5. [DECIDED 9 Jul 2026] Dogfood plan: NO existing team collections are touched. Create
+   fresh test collections, turn them into cloud TCs, have various testers join and try
+   things out (against the sandbox infra from Phases 2–4). (Task 10's
+   `docs/user-walkthrough.md` is the tester-facing doc; feedback channel: whatever is
+   convenient — nothing formal was mandated.)
 
 Merging BEFORE Phases 2–5 are done is fine and useful (code is flag-gated and local-stack
 self-sufficient); real-user testing needs Phases 2–4 plus at least the account-switch and
