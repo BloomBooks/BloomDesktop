@@ -183,10 +183,12 @@ but giving the feature to real testers does:
   loop (commit e0526fa30); deliberately NOT the persist-checkout-state-to-local-file
   alternative, which was only needed to reproduce folder-TC blocking semantics. Remaining
   [AGENT] follow-up: extend E2E-4's spec to cover the now-reachable preserve path.
-- **[AGENT] Subscription-tier check timing.** `CheckDisablingTeamCollections` can
-  intermittently disconnect a cloud TC when the subscription check races cloud sign-in
-  (harness works around it with a test subscription code). Make the check deterministic for
-  cloud TCs (product policy: which tier is required?).
+- **[POLICY DECIDED 9 Jul 2026 → AGENT] Subscription-tier check timing.** John: cloud TCs
+  require the SAME subscription tier as folder Team Collections — no new policy, reuse the
+  existing FeatureName.TeamCollection gate. Remaining [AGENT] work is purely the timing bug:
+  `CheckDisablingTeamCollections` can intermittently disconnect a cloud TC when the
+  subscription check races cloud sign-in (harness works around it with a test subscription
+  code); make the check deterministic for cloud TCs.
 - **[DONE 9 Jul 2026] Preview pane refresh on Receive** — fixed by batch item 4+5's
   auto-apply (the worker refreshes the preview when the applied book is selected). Still
   open, nice-to-have: join-conflict states show generic errors (dedicated resolution dialog
