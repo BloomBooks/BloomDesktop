@@ -63,8 +63,11 @@ Status: CODE DONE (commit 207cc1d0) — visual verification QUEUED (needs unlock
 - [ ] Visual check + `e2e-2-collaboration-loop` when screen unlocked.
 
 ### 4+5. Automatic remote-update application + in-place Sync (one work item)  `[medium]`
-Status: CODE DONE (branch task/b1-45-auto-sync) — E2E verification QUEUED (desktop session
-locked per this task's hard environment rules; not attempted)
+Status: MERGED into cloud-collections (9 Jul; orchestrator re-ran C# 375/375 + both vitest
+files green, reviewed queue/wiring/panel/XLF line by line) — E2E verification QUEUED
+(desktop locked). Residual risk noted at review: a checkout racing the download window
+between re-verify and swap is possible but tiny (swap is two directory renames; E2E-2/3
+exercise contention) — watch for it in the E2E pass.
 Observed bug: after a remote checkin, the other instance updated lock state (avatar +
 status panel) but the TC button showed no "updates available" and the preview did not
 refresh; book folder content update unverified.
