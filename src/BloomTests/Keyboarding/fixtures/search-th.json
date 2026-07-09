@@ -1,0 +1,314 @@
+{
+    "keyboards": [
+        {
+            "id": "thai_kedmanee_mattix",
+            "name": "Thai Kedmanee (Mattix)",
+            "license": "mit",
+            "authorName": "Samuel A. Mattix",
+            "description": "<p>Thai Kedmanee (Mattix) is a Thai script Unicode keyboard based on the standard Thai Kedmanee layout. This keyboard is fully compliant with the Unicode Standard.</p>",
+            "languages": {
+                "th": {
+                    "examples": [],
+                    "languageName": "Thai",
+                    "displayName": "Thai"
+                }
+            },
+            "lastModifiedDate": "2026-03-27T01:51:08.000Z",
+            "packageFilename": "thai_kedmanee_mattix.kmp",
+            "packageFileSize": 338017,
+            "jsFilename": "thai_kedmanee_mattix.js",
+            "jsFileSize": 13424,
+            "packageIncludes": ["visualKeyboard", "documentation", "welcome"],
+            "version": "2.0",
+            "encodings": ["unicode"],
+            "platformSupport": {
+                "windows": "full",
+                "macos": "full",
+                "linux": "full",
+                "desktopWeb": "full",
+                "ios": "full",
+                "android": "full",
+                "mobileWeb": "full"
+            },
+            "minKeymanVersion": "17.0",
+            "sourcePath": "release/t/thai_kedmanee_mattix",
+            "helpLink": "https://help.keyman.com/keyboard/thai_kedmanee_mattix",
+            "related": { "thai-uni": { "deprecates": true } },
+            "match": {
+                "name": "th",
+                "type": "language_bcp47_tag",
+                "weight": 1,
+                "downloads": 161,
+                "totalDownloads": 1007,
+                "finalWeight": 6.087596335232384,
+                "tag": "th"
+            }
+        },
+        {
+            "id": "basic_kbdth0",
+            "name": "Thai Kedmanee Basic",
+            "license": "mit",
+            "description": "<p>Thai Kedmanee Basic generated from template</p>",
+            "languages": {
+                "th": {
+                    "examples": [
+                        {
+                            "keys": "4 k K k w m p",
+                            "note": "Name of language",
+                            "text": "\u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22"
+                        }
+                    ],
+                    "languageName": "Thai",
+                    "displayName": "Thai"
+                }
+            },
+            "lastModifiedDate": "2019-11-18T16:45:00.000Z",
+            "packageFilename": "basic_kbdth0.kmp",
+            "packageFileSize": 42619,
+            "jsFilename": "basic_kbdth0.js",
+            "jsFileSize": 20787,
+            "packageIncludes": ["visualKeyboard", "documentation", "welcome"],
+            "version": "1.1",
+            "encodings": ["unicode"],
+            "platformSupport": {
+                "windows": "full",
+                "macos": "full",
+                "linux": "full",
+                "desktopWeb": "full",
+                "ios": "full",
+                "android": "full",
+                "mobileWeb": "full"
+            },
+            "minKeymanVersion": "10.0",
+            "sourcePath": "release/basic/basic_kbdth0",
+            "helpLink": "https://help.keyman.com/keyboard/basic_kbdth0",
+            "related": {
+                "thai_kedmanee": { "deprecates": true },
+                "kbdth0": { "deprecates": true }
+            },
+            "match": {
+                "name": "th",
+                "type": "language_bcp47_tag",
+                "weight": 1,
+                "downloads": 59,
+                "totalDownloads": 4664,
+                "finalWeight": 5.0943445622221,
+                "tag": "th"
+            }
+        },
+        {
+            "id": "basic_kbdth1",
+            "name": "Thai Pattachote Basic",
+            "license": "mit",
+            "description": "<p>Thai Pattachote Basic generated from template</p>",
+            "languages": {
+                "th": {
+                    "examples": [
+                        {
+                            "keys": "V j T j ; s e",
+                            "note": "Name of language",
+                            "text": "\u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22"
+                        }
+                    ],
+                    "languageName": "Thai",
+                    "displayName": "Thai"
+                }
+            },
+            "lastModifiedDate": "2019-11-18T17:06:57.000Z",
+            "packageFilename": "basic_kbdth1.kmp",
+            "packageFileSize": 34456,
+            "jsFilename": "basic_kbdth1.js",
+            "jsFileSize": 18866,
+            "packageIncludes": ["visualKeyboard", "documentation", "welcome"],
+            "version": "1.1",
+            "encodings": ["unicode"],
+            "platformSupport": {
+                "windows": "full",
+                "macos": "full",
+                "linux": "full",
+                "desktopWeb": "full",
+                "ios": "full",
+                "android": "full",
+                "mobileWeb": "full"
+            },
+            "minKeymanVersion": "10.0",
+            "sourcePath": "release/basic/basic_kbdth1",
+            "helpLink": "https://help.keyman.com/keyboard/basic_kbdth1",
+            "related": {
+                "thai_pattachote": { "deprecates": true },
+                "kbdth1": { "deprecates": true }
+            },
+            "match": {
+                "name": "th",
+                "type": "language_bcp47_tag",
+                "weight": 1,
+                "downloads": 44,
+                "totalDownloads": 1592,
+                "finalWeight": 4.80666248977032,
+                "tag": "th"
+            }
+        },
+        {
+            "id": "basic_kbdth2",
+            "name": "Thai Kedmanee (non-ShiftLock) Basic",
+            "license": "mit",
+            "description": "<p>Thai Kedmanee (non-ShiftLock) Basic generated from template</p>",
+            "languages": {
+                "th": {
+                    "examples": [
+                        {
+                            "keys": "4 k K k w m p",
+                            "note": "Name of language",
+                            "text": "\u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22"
+                        }
+                    ],
+                    "languageName": "Thai",
+                    "displayName": "Thai"
+                }
+            },
+            "lastModifiedDate": "2019-11-18T17:15:47.000Z",
+            "packageFilename": "basic_kbdth2.kmp",
+            "packageFileSize": 33346,
+            "jsFilename": "basic_kbdth2.js",
+            "jsFileSize": 12164,
+            "packageIncludes": ["visualKeyboard", "documentation", "welcome"],
+            "version": "1.1",
+            "encodings": ["unicode"],
+            "platformSupport": {
+                "windows": "full",
+                "macos": "full",
+                "linux": "full",
+                "desktopWeb": "full",
+                "ios": "full",
+                "android": "full",
+                "mobileWeb": "full"
+            },
+            "minKeymanVersion": "10.0",
+            "sourcePath": "release/basic/basic_kbdth2",
+            "helpLink": "https://help.keyman.com/keyboard/basic_kbdth2",
+            "related": {
+                "thai_kedmanee_nsl": { "deprecates": true },
+                "kbdth2": { "deprecates": true }
+            },
+            "match": {
+                "name": "th",
+                "type": "language_bcp47_tag",
+                "weight": 1,
+                "downloads": 35,
+                "totalDownloads": 1925,
+                "finalWeight": 4.58351893845611,
+                "tag": "th"
+            }
+        },
+        {
+            "id": "basic_kbdth3",
+            "name": "Thai Pattachote (non-ShiftLock) Basic",
+            "license": "mit",
+            "description": "<p>Thai Pattachote (non-ShiftLock) Basic generated from template</p>",
+            "languages": {
+                "th": {
+                    "examples": [
+                        {
+                            "keys": "V j T j ; s e",
+                            "note": "Name of language",
+                            "text": "\u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22"
+                        }
+                    ],
+                    "languageName": "Thai",
+                    "displayName": "Thai"
+                }
+            },
+            "lastModifiedDate": "2019-11-18T17:25:13.000Z",
+            "packageFilename": "basic_kbdth3.kmp",
+            "packageFileSize": 33005,
+            "jsFilename": "basic_kbdth3.js",
+            "jsFileSize": 12154,
+            "packageIncludes": ["visualKeyboard", "documentation", "welcome"],
+            "version": "1.1",
+            "encodings": ["unicode"],
+            "platformSupport": {
+                "windows": "full",
+                "macos": "full",
+                "linux": "full",
+                "desktopWeb": "full",
+                "ios": "full",
+                "android": "full",
+                "mobileWeb": "full"
+            },
+            "minKeymanVersion": "10.0",
+            "sourcePath": "release/basic/basic_kbdth3",
+            "helpLink": "https://help.keyman.com/keyboard/basic_kbdth3",
+            "related": {
+                "thai_pattachote_nsl": { "deprecates": true },
+                "kbdth3": { "deprecates": true }
+            },
+            "match": {
+                "name": "th",
+                "type": "language_bcp47_tag",
+                "weight": 1,
+                "downloads": 30,
+                "totalDownloads": 1048,
+                "finalWeight": 4.433987204485146,
+                "tag": "th"
+            }
+        },
+        {
+            "id": "qwerty_farang",
+            "name": "QWERTY Farang",
+            "license": "mit",
+            "authorName": "Sebastian Restrepo",
+            "authorEmail": "seb@sebrestrepo.com",
+            "description": "<p>QWERTY Farang keyboard created for Thai learners who are more familiar\nwith the QWERTY layout. It uses &quot;longpress&quot; and &quot;rota&quot; to house\ncharacters with identical phonetics by order of frequency.</p>",
+            "languages": {
+                "th": {
+                    "examples": [
+                        {
+                            "keys": "[ [ a a s s s s a a O z y",
+                            "note": "Thai language",
+                            "text": "\u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22"
+                        }
+                    ],
+                    "languageName": "Thai",
+                    "displayName": "Thai"
+                }
+            },
+            "lastModifiedDate": "2021-05-10T08:53:29.000Z",
+            "packageFilename": "qwerty_farang.kmp",
+            "packageFileSize": 221301,
+            "jsFilename": "qwerty_farang.js",
+            "jsFileSize": 26571,
+            "packageIncludes": ["visualKeyboard", "documentation", "welcome"],
+            "version": "1.0",
+            "encodings": ["unicode"],
+            "platformSupport": {
+                "windows": "full",
+                "macos": "full",
+                "linux": "full",
+                "desktopWeb": "full",
+                "ios": "full",
+                "android": "full",
+                "mobileWeb": "full"
+            },
+            "minKeymanVersion": "10.0",
+            "sourcePath": "release/q/qwerty_farang",
+            "helpLink": "https://help.keyman.com/keyboard/qwerty_farang",
+            "match": {
+                "name": "th",
+                "type": "language_bcp47_tag",
+                "weight": 1,
+                "downloads": 27,
+                "totalDownloads": 1206,
+                "finalWeight": 4.332204510175204,
+                "tag": "th"
+            }
+        }
+    ],
+    "context": {
+        "range": "Keyboards for language with BCP 47 tag 'th'",
+        "text": "th",
+        "pageSize": 10,
+        "pageNumber": 1,
+        "totalRows": 6,
+        "totalPages": 1
+    }
+}
