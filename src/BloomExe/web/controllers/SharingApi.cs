@@ -487,15 +487,26 @@ namespace Bloom.web.controllers
         {
             if (!CurrentAuth().GetLoginState(CloudEnvironment.Current).SignedIn)
                 return Array.Empty<CloudCollectionSummary>();
-            return CurrentClient()
-                .MyCollections()
-                .OfType<JObject>()
-                .Select(o => new CloudCollectionSummary
-                {
-                    Id = (string)o["id"],
-                    Name = (string)o["name"],
-                })
-                .ToList();
+            try
+            {
+                return CurrentClient()
+                    .MyCollections()
+                    .OfType<JObject>()
+                    .Select(o => new CloudCollectionSummary
+                    {
+                        Id = (string)o["id"],
+                        Name = (string)o["name"],
+                    })
+                    .ToList();
+            }
+            catch (Exception e)
+            {
+                // Signed in but the server is unreachable (offline, outage, ...). Join cards are
+                // decorative: the chooser must render its normal card list regardless, so this is
+                // "no join cards right now", never an error surfaced to the user.
+                Logger.WriteError("SharingApi: could not fetch collections for join cards", e);
+                return Array.Empty<CloudCollectionSummary>();
+            }
         }
 
         private class PullDownBody
