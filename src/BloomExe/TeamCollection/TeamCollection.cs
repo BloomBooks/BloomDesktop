@@ -104,6 +104,40 @@ namespace Bloom.TeamCollection
             _syncIsRunning = true;
         }
 
+        /// <summary>
+        /// True for backends where a remote change to a book that is safe to apply (not checked
+        /// out here, no local edits that would be clobbered) should be downloaded and swapped in
+        /// automatically, rather than merely reported via a "click Reload/Sync" message. False (the
+        /// default) preserves every folder-TC behavior exactly. See
+        /// <see cref="Cloud.CloudTeamCollection"/>'s override and <see cref="HandleModifiedFile"/>'s
+        /// use of this flag.
+        /// </summary>
+        protected virtual bool CanAutoApplyRemoteChanges => false;
+
+        private RemoteBookAutoApplyQueue _autoApplyQueue;
+        private bool _autoApplyQueueSynchronousForTests;
+
+        /// <summary>
+        /// Lazily-created so a backend that never sets <see cref="CanAutoApplyRemoteChanges"/> true
+        /// (every folder TC) never spins up any queueing machinery at all.
+        /// </summary>
+        private RemoteBookAutoApplyQueue AutoApplyQueue =>
+            _autoApplyQueue ??= new RemoteBookAutoApplyQueue(
+                ProcessAutoApplyRemoteChange,
+                _autoApplyQueueSynchronousForTests ? (Action<Action>)(action => action()) : null
+            );
+
+        /// <summary>
+        /// For testing only. Makes the auto-apply queue's worker run synchronously (on the calling
+        /// thread, immediately, inside Enqueue) instead of via a background task, so a test can
+        /// assert on the outcome of HandleModifiedFile's auto-apply path without needing to wait
+        /// for a real background thread. Must be called before the first book is queued.
+        /// </summary>
+        internal void TestOnly_MakeAutoApplyQueueSynchronous()
+        {
+            _autoApplyQueueSynchronousForTests = true;
+        }
+
         public TeamCollection(
             ITeamCollectionManager manager,
             string localCollectionFolder,
@@ -1628,6 +1662,16 @@ namespace Bloom.TeamCollection
                             );
                         }
                     }
+                    else if (CanAutoApplyRemoteChanges)
+                    {
+                        // This backend (currently only CloudTeamCollection) applies safe remote
+                        // changes automatically instead of merely reporting them. Queue the actual
+                        // download/swap on a background thread (HandleModifiedFile itself runs at
+                        // Application.Idle, on the UI thread, and cloud downloads can be slow) --
+                        // see ProcessAutoApplyRemoteChange, which re-verifies eligibility before
+                        // touching anything, since state may have moved on by the time it runs.
+                        AutoApplyQueue.Enqueue(bookBaseName);
+                    }
                     else
                     {
                         _tcLog.WriteMessage(
@@ -1643,6 +1687,68 @@ namespace Bloom.TeamCollection
                 //Debug.WriteLine("Updated status for " + bookBaseName);
                 // This needs to be AFTER we update the message log, data which it may use.
                 UpdateBookStatus(bookBaseName, true);
+            }
+        }
+
+        /// <summary>
+        /// Runs on a background thread (see <see cref="AutoApplyQueue"/> and
+        /// <see cref="CanAutoApplyRemoteChanges"/>): re-verifies that it is still safe to apply this
+        /// book's remote change -- the state at the time this runs may differ from the state at the
+        /// time HandleModifiedFile queued it, since queueing and processing happen at different
+        /// times -- and if so, downloads and atomically swaps in the new content
+        /// (CopyBookFromRepoToLocal already stages to a temp folder and swaps via directory
+        /// renames, so there is no user-visible half-written state). On success, updates the book's
+        /// status icon and, if this book is the one currently selected, tells the preview to
+        /// refresh so the user sees the new content without reselecting. On failure, or if the book
+        /// is no longer eligible, falls back to exactly the same NewStuff message an
+        /// auto-apply-incapable backend (e.g. a folder TC) would have written instead.
+        /// </summary>
+        private void ProcessAutoApplyRemoteChange(string bookBaseName)
+        {
+            if (!Directory.Exists(Path.Combine(_localCollectionFolder, bookBaseName)))
+                return; // book is gone locally (e.g. deleted meanwhile); nothing to apply
+
+            // Re-verify eligibility: none of these should be true, or auto-applying now would be
+            // wrong -- e.g. the user might have checked the book out here, or a conflicting local
+            // edit might have appeared, since this book was queued.
+            if (
+                !HasBeenChangedRemotely(bookBaseName)
+                || IsCheckedOutHereBy(GetLocalStatus(bookBaseName))
+                || HasLocalChangesThatMustBeClobbered(bookBaseName)
+                || HasCheckoutConflict(bookBaseName)
+            )
+                return; // no longer (or not yet) safe/needed; leave it for the normal handling
+
+            var error = CopyBookFromRepoToLocal(bookBaseName);
+            if (error != null)
+            {
+                // Fall back to exactly the message-only path so the user at least knows to Sync/Reload.
+                _tcLog.WriteMessage(
+                    MessageAndMilestoneType.NewStuff,
+                    "TeamCollection.BookModifiedRemotely",
+                    "One of your teammates has made changes to the book '{0}'",
+                    bookBaseName,
+                    null
+                );
+                UpdateBookStatus(bookBaseName, true);
+                return;
+            }
+
+            UpdateBookStatus(bookBaseName, true);
+
+            // If the book we just updated is the one currently selected, refresh the preview so the
+            // user sees the new content without having to reselect the book.
+            var selectedFolder = _tcManager?.BookSelection?.CurrentSelection?.FolderPath;
+            if (
+                !string.IsNullOrEmpty(selectedFolder)
+                && string.Equals(
+                    Path.GetFileName(selectedFolder),
+                    bookBaseName,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            {
+                _tcManager.SendBookContentReload();
             }
         }
 

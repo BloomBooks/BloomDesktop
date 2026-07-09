@@ -204,6 +204,16 @@ namespace Bloom.TeamCollection.Cloud
 
         public override bool RequiresSignIn => true;
 
+        /// <summary>
+        /// Cloud Team Collections apply safe remote book changes automatically (batch item 4+5,
+        /// decision 9 Jul 2026): a poll that notices a checkin for a book that isn't checked out
+        /// here downloads and swaps it in without the user having to click anything, instead of
+        /// just showing a "click to get updates" message. See TeamCollection.HandleModifiedFile and
+        /// ProcessAutoApplyRemoteChange for the actual logic; this flag is the only thing that
+        /// differs from a folder Team Collection.
+        /// </summary>
+        protected override bool CanAutoApplyRemoteChanges => true;
+
         // ------------------------------------------------------------------
         // Cache hydration (get_collection_state) and the name/instanceId <-> id index
         // ------------------------------------------------------------------

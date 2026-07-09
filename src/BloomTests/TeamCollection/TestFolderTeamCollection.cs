@@ -39,5 +39,14 @@ namespace BloomTests.TeamCollection
             base.OnCollectionFilesChanged(sender, e);
             OnCollectionChangedCalled?.Invoke();
         }
+
+        /// <summary>
+        /// Test-only toggle so a FolderTeamCollection-based test can exercise the auto-apply code
+        /// path in TeamCollection.HandleModifiedFile (normally only CloudTeamCollection sets this
+        /// true) without needing the whole cloud stack.
+        /// </summary>
+        public bool AutoApplyRemoteChangesForTests { get; set; }
+
+        protected override bool CanAutoApplyRemoteChanges => AutoApplyRemoteChangesForTests;
     }
 }
