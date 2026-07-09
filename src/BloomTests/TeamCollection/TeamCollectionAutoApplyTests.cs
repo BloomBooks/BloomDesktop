@@ -262,5 +262,71 @@ namespace BloomTests.TeamCollection
                 "a copy failure must still leave the user with the fallback 'click to see updates' message"
             );
         }
+
+        // ------------------------------------------------------------------
+        // Batch item 8 (John's recovery decision, 9 Jul 2026): before a sync overwrite, local
+        // content that changed since the last sync is preserved (cloud: .bloomSource in Lost and
+        // Found); clean local content is overwritten without ceremony. The preserve DECISION is
+        // base-class logic, recorded here via TestFolderTeamCollection's hook override.
+        // ------------------------------------------------------------------
+
+        [Test]
+        public void ProcessAutoApplyRemoteChange_LocalModifiedSinceLastSync_PreservesBeforeApplying()
+        {
+            const string bookFolderName = "Locally Drifted Book";
+            SetUpBookChangedRemotely(bookFolderName, out var bookFolderPath);
+            // On top of the remote change, the LOCAL copy has also drifted from what the last sync
+            // recorded (the force-stolen-checkout shape: local edits the status file knows nothing
+            // about, since cloud checkouts never write it).
+            RobustFile.WriteAllText(
+                Path.Combine(bookFolderPath, bookFolderName + ".htm"),
+                "precious local work the sync must not silently discard"
+            );
+            _collection.AutoApplyRemoteChangesForTests = true;
+
+            // System Under Test //
+            _collection.TestOnly_ProcessAutoApplyRemoteChange(bookFolderName);
+
+            Assert.That(
+                _collection.PreservedForRecovery,
+                Is.EqualTo(new[] { bookFolderName }),
+                "the drifted local copy must be preserved exactly once, before the overwrite"
+            );
+            Assert.That(
+                RobustFile.ReadAllText(Path.Combine(bookFolderPath, bookFolderName + ".htm")),
+                Does.Contain("new content from remote"),
+                "after preserving, the sync must still make local consistent with the repo (John's decision: apply, don't block)"
+            );
+        }
+
+        [Test]
+        public void ProcessAutoApplyRemoteChange_LocalCleanSinceLastSync_DoesNotPreserve()
+        {
+            const string bookFolderName = "Clean Local Book";
+            // SetUpBookChangedRemotely leaves the local copy EXACTLY matching its recorded local
+            // status checksum (only the repo differs), i.e. the everyday "teammate checked in a
+            // change" case -- overwriting loses nothing, so nothing should go to Lost and Found.
+            SetUpBookChangedRemotely(bookFolderName, out var bookFolderPath);
+            _collection.AutoApplyRemoteChangesForTests = true;
+            Assert.That(
+                _collection.HasBeenChangedRemotely(bookFolderName),
+                Is.True,
+                "sanity: the repo version differs, so the apply itself must still happen"
+            );
+
+            // System Under Test //
+            _collection.TestOnly_ProcessAutoApplyRemoteChange(bookFolderName);
+
+            Assert.That(
+                _collection.PreservedForRecovery,
+                Is.Empty,
+                "an unmodified local copy must be overwritten without a Lost and Found entry"
+            );
+            Assert.That(
+                RobustFile.ReadAllText(Path.Combine(bookFolderPath, bookFolderName + ".htm")),
+                Does.Contain("new content from remote"),
+                "the apply itself must still have happened"
+            );
+        }
     }
 }

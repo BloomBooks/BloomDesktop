@@ -48,5 +48,18 @@ namespace BloomTests.TeamCollection
         public bool AutoApplyRemoteChangesForTests { get; set; }
 
         protected override bool CanAutoApplyRemoteChanges => AutoApplyRemoteChangesForTests;
+
+        /// <summary>
+        /// Records the books passed to the preserve-before-overwrite hook (batch item 8), so tests
+        /// can assert it fires exactly when the local copy changed since the last sync. The real
+        /// cloud override zips a .bloomSource to Lost and Found; recording is enough here because
+        /// the DECISION (fire or not) is the base-class logic under test.
+        /// </summary>
+        public List<string> PreservedForRecovery = new List<string>();
+
+        protected override void PreserveLocalCopyForRecoveryBeforeOverwrite(string bookFolderName)
+        {
+            PreservedForRecovery.Add(bookFolderName);
+        }
     }
 }

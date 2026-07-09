@@ -346,6 +346,9 @@ namespace Bloom.TeamCollection
                 if (!repoSeq.HasValue || (localSeq ?? -1) >= repoSeq.Value)
                     continue; // Already current.
                 progress.MessageWithoutLocalizing($"Receiving updates for '{bookName}'...");
+                // Batch item 8: same preserve-before-overwrite guard as the auto-apply worker --
+                // Sync must never silently discard local content that changed since the last sync.
+                collection.PreserveLocalCopyIfModifiedSinceLastSync(bookName);
                 collection.CopyBookFromRepoToLocal(bookName, dialogOnError: false);
                 receivedCount++;
             }

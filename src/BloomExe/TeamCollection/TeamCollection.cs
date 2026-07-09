@@ -1702,6 +1702,42 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
+        /// A hook for backends that can preserve a doomed local copy before a sync overwrites it
+        /// (cloud saves a .bloomSource to Lost and Found and logs an incident; see
+        /// CloudTeamCollection's override). Base implementation does nothing: folder TCs never
+        /// reach the call sites (auto-apply and cloud Receive Updates are cloud-only paths).
+        /// </summary>
+        protected virtual void PreserveLocalCopyForRecoveryBeforeOverwrite(
+            string bookFolderName
+        ) { }
+
+        /// <summary>
+        /// John's recovery decision (9 Jul 2026, dogfood batch item 8): when a sync is about to
+        /// replace the local copy of a book with the repo version, but the local copy has somehow
+        /// changed since the last sync (rare -- e.g. a force-stolen checkout that was edited, or
+        /// unexplained local drift), we still go ahead and make local consistent with the Team
+        /// Collection, but FIRST preserve the previous local content so nothing is silently lost.
+        /// "Changed since the last sync" is a pure content comparison (current checksum vs the
+        /// checksum the local status recorded), deliberately NOT gated on checked-out-here: cloud
+        /// checkouts never write the local status file, which is exactly why the older
+        /// HasLocalChangesThatMustBeClobbered gate can't see this case (tasks/09-e2e.md, E2E-4).
+        /// </summary>
+        public void PreserveLocalCopyIfModifiedSinceLastSync(string bookFolderName)
+        {
+            var bookPath = Path.Combine(_localCollectionFolder, bookFolderName);
+            if (!Directory.Exists(bookPath))
+                return; // nothing local to preserve
+            var currentChecksum = MakeChecksum(bookPath);
+            if (string.IsNullOrEmpty(currentChecksum))
+                return; // can't checksum it (e.g. no .htm); nothing meaningful to preserve
+            // A missing/empty recorded checksum counts as "modified": a local folder the sync
+            // never recorded is exactly the kind of content we must not silently discard.
+            if (currentChecksum == GetLocalStatus(bookFolderName).checksum)
+                return; // unchanged since last sync; overwriting loses nothing
+            PreserveLocalCopyForRecoveryBeforeOverwrite(bookFolderName);
+        }
+
+        /// <summary>
         /// Runs on a background thread (see <see cref="AutoApplyQueue"/> and
         /// <see cref="CanAutoApplyRemoteChanges"/>): re-verifies that it is still safe to apply this
         /// book's remote change -- the state at the time this runs may differ from the state at the
@@ -1729,6 +1765,12 @@ namespace Bloom.TeamCollection
                 || HasCheckoutConflict(bookBaseName)
             )
                 return; // no longer (or not yet) safe/needed; leave it for the normal handling
+
+            // Batch item 8: if the local copy somehow changed since the last sync (e.g. a
+            // force-stolen checkout that had local edits -- a case the eligibility gates above
+            // cannot see for cloud, since cloud checkouts don't write the local status file),
+            // preserve it before the swap below discards it.
+            PreserveLocalCopyIfModifiedSinceLastSync(bookBaseName);
 
             var error = CopyBookFromRepoToLocal(bookBaseName);
             if (error != null)

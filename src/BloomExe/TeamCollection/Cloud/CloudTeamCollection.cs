@@ -214,6 +214,21 @@ namespace Bloom.TeamCollection.Cloud
         /// </summary>
         protected override bool CanAutoApplyRemoteChanges => true;
 
+        /// <summary>
+        /// Batch item 8 (John's recovery decision, 9 Jul 2026): before a sync overwrites a local
+        /// book copy that changed since the last sync, zip it to Lost and Found as a .bloomSource
+        /// and log the WorkPreservedLocally incident -- then the overwrite proceeds, making local
+        /// consistent with the Team Collection without silently losing anything.
+        /// </summary>
+        protected override void PreserveLocalCopyForRecoveryBeforeOverwrite(string bookFolderName)
+        {
+            SaveLocalCopyForRecovery(
+                Path.Combine(_localCollectionFolder, bookFolderName),
+                bookFolderName,
+                "LocalChangesOverwrittenBySync"
+            );
+        }
+
         // ------------------------------------------------------------------
         // Cache hydration (get_collection_state) and the name/instanceId <-> id index
         // ------------------------------------------------------------------
