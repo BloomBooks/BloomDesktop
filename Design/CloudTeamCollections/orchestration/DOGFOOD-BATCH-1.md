@@ -136,16 +136,37 @@ refresh; book folder content update unverified.
       vitest files green (5/5, 13/13); yarn typecheck and eslint clean.
 
 ### 6. Join-card integration in the collection chooser  `[medium]`
-Status: NOT STARTED
-- [ ] In the collection chooser dialog, remove the separate "team collections to join"
+Status: CODE DONE on branch `task/b1-6-join-cards` (288e4057e, 9fe1c4de4, 8a3a01130,
+f59dc6ea3, 5e572a84d; not yet merged into cloud-collections) — E2E verification QUEUED
+(desktop locked; forbidden by this task's rules)
+- [x] In the collection chooser dialog, remove the separate "team collections to join"
       list; instead add extra cards to the MAIN collection list for collections the user
       is invited to (server membership exists) but has no local copy of.
-- [ ] NO join card when the user already joined + has a local copy. DO show a join card
+      MyCloudCollectionsSection.tsx + its test deleted; CollectionChooser now fetches the
+      new `collections/getJoinCards` endpoint and passes results to CollectionCardList.
+- [x] NO join card when the user already joined + has a local copy. DO show a join card
       when a same-named local collection exists that is NOT a TC (existing join-conflict
-      code handles the actual join).
-- [ ] Join cards do not count against the MRU-list card limit.
-- [ ] Omit any card info not available for an unjoined TC (thumbnail, languages, …).
-- [ ] Verify: `join-auto-open` + `e2e-1-create-share`; vitest for the card-list logic.
+      code handles the actual join). CollectionChooserApi.ComputeJoinCards matches by
+      cloud collection id ONLY (via TeamCollectionLink.txt scan of MRU + discovered local
+      folders, GetLocalCloudCollectionIds) -- a same-named non-cloud-linked local folder
+      still gets a join card; CloudJoinFlow's own scenario matching resolves merge-or-
+      conflict once the user actually tries to join, unchanged.
+- [x] Join cards do not count against the MRU-list card limit. CollectionCardList slices
+      `collections` at maxCardCount=10 first, then appends `joinCollections` (unsliced).
+- [x] Omit any card info not available for an unjoined TC (thumbnail, languages, …).
+      CollectionCard's isJoinCard variant shows only title + TeamCollectionIcon + a "Get"
+      join cue (reusing CollectionChooser.PullDown's wording); no per-card fetch (the
+      unpublished-count effect is skipped) and the "..." Show-in-Explorer menu is hidden
+      (no local folder exists yet).
+- [ ] Verify: `join-auto-open` + `e2e-1-create-share`; vitest for the card-list logic. The
+      vitest half is DONE (CollectionCardList.test.tsx: 4/4; CollectionChooser.test.tsx
+      rewritten: 3/3) -- only the E2E launches remain queued (desktop locked; this task's
+      hard rules forbid launching Bloom/e2e). `join-auto-open.spec.ts` exists under
+      src/BloomTests/e2e/tests; checked its content -- it drives collections/pullDown and
+      workspace/openCollection directly via HTTP (not through any chooser UI selector), so
+      it does not touch MyCloudCollectionsSection/join cards at all and should be
+      unaffected by this change. Still queued to actually run (desktop locked) as a
+      regression check, per this task's hard rules.
 
 Implementation notes (scouted 9 Jul, read-only — verified paths/lines):
 - Chooser: `collection/CollectionChooserDialog.tsx` wraps `CollectionChooser.tsx` (MRU via
@@ -223,3 +244,24 @@ Status: NOT STARTED
   `e2e-8-receive-during-send` + e2e-1 (XLF gate) queued alongside items 1–3's pending
   runs · Next: orchestrator review + merge of task/b1-45-auto-sync into cloud-collections,
   then the queued full E2E pass covering items 1–5, then item 6 (join-card integration).
+- 9 Jul 2026 (even later) · Item 6 CODE DONE on branch `task/b1-6-join-cards` (created from
+  cloud-collections; not yet merged): removed MyCloudCollectionsSection.tsx (+ test);
+  CollectionChooserApi gains `collections/getJoinCards` (SharingApi.GetMyCollectionsForJoinCards
+  for the signed-in check + cloud list, no network call when signed out; ComputeJoinCards is the
+  pure id-matching helper, internal static, unit-tested in new CollectionChooserApiTests.cs;
+  GetLocalCloudCollectionIds scans MRU + discovered local folders' TeamCollectionLink.txt files
+  the same way CloudJoinFlow.DetermineScenario does, but across ALL known folders rather than one
+  expected name, since a join card is about "has ANY local copy", not "would this name collide").
+  CollectionCard grows an isJoinCard variant (title + TC icon + reused "Get" cue only, no per-card
+  fetch, no Show-in-Explorer menu); CollectionCardList appends joinCollections AFTER its
+  maxCardCount(10) slice so they're never capped. CollectionChooser.test.tsx rewritten for the
+  card-based flow; new CollectionCardList.test.tsx covers the append-after-slice logic; new
+  CollectionCardList.stories.tsx "WithJoinCards" story. Removed 4 now-orphaned untranslated XLF
+  entries from the deleted sidebar (kept + repurposed CollectionChooser.PullDown, "Get", as the
+  join cue). C# required filter 380/380 green; CollectionCardList.test.tsx 4/4 and
+  CollectionChooser.test.tsx 3/3 green; yarn typecheck and eslint (changed files) clean. E2E NOT
+  run (desktop locked; forbidden by this task's rules) — `join-auto-open` (checked: drives
+  pullDown/openCollection directly via HTTP, doesn't touch the chooser UI, should be unaffected)
+  + `e2e-1-create-share` (XLF gate) queued · Next: orchestrator review + merge of
+  task/b1-6-join-cards into cloud-collections, then item 7 (progressive join) once the queued
+  E2E pass covering items 1–6 runs.
