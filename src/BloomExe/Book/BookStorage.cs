@@ -3809,8 +3809,13 @@ namespace Bloom.Book
             string proposedName;
             do
             {
-                // Use first 8 characters of the instance ID (without hyphens) as the unique suffix
-                var instanceSuffix = instanceId.Replace("-", "").Substring(0, 8).ToLowerInvariant();
+                // Use up to the first 8 characters of the instance ID (without hyphens) as the
+                // unique suffix. Normal ids are GUIDs, but an imported book could carry a
+                // malformed/short id, so guard the length rather than throwing.
+                var idDigits = instanceId.Replace("-", "");
+                var instanceSuffix = idDigits
+                    .Substring(0, Math.Min(8, idDigits.Length))
+                    .ToLowerInvariant();
                 proposedName = baseName + separator + instanceSuffix;
 
                 if (!Directory.Exists(Path.Combine(parentPath, proposedName)))
