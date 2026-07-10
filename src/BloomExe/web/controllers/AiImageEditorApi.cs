@@ -417,6 +417,12 @@ namespace Bloom.web.controllers
 
             if (!string.IsNullOrEmpty(error))
             {
+                // We echo OpenRouter's `error` string back to the browser. This is safe
+                // without HTML-encoding because ReplyWithText responds as text/plain, which
+                // browsers render literally rather than parsing as HTML — so a crafted error
+                // value can't inject markup or script (no reflected-XSS). Decision: left
+                // as-is intentionally; do not "fix" by switching this to an HTML response
+                // without also encoding the value.
                 request.ReplyWithText(
                     $"OpenRouter sign-in failed: {error}. You can return to Bloom."
                 );
@@ -454,6 +460,18 @@ namespace Bloom.web.controllers
         /// </summary>
         private void HandleFile(ApiRequest request)
         {
+            // Answer the CORS preflight before the session gate: the browser sends OPTIONS
+            // automatically with none of our application query params (including "session"),
+            // so if HasValidSession ran first it would 401 the preflight and block the real
+            // cross-origin request. This only matters for the LINKED dev workflow, where the
+            // editor's own Vite dev server (localhost:3000) fetches this endpoint from a
+            // different origin; the shipped product serves the editor same-origin.
+            if (request.HttpMethod == HttpMethods.Options)
+            {
+                request.ReplyWithText("");
+                return;
+            }
+
             if (!HasValidSession(request))
             {
                 return;
@@ -517,12 +535,6 @@ namespace Bloom.web.controllers
                     if (RobustFile.Exists(fullPath))
                         RobustFile.Delete(fullPath);
                     request.PostSucceeded();
-                    break;
-
-                case HttpMethods.Options:
-                    // Handle CORS preflight so that the dev Vite server (localhost:3000)
-                    // can fetch this endpoint cross-origin from the main Bloom server.
-                    request.ReplyWithText("");
                     break;
 
                 default:
@@ -838,7 +850,7 @@ namespace Bloom.web.controllers
             // ai-image file we generated earlier that nothing references any more is safe to
             // remove. This runs against the current book DOM, so a file still used by another
             // slot — or by the current page (which the front-end has yet to repoint) — survives.
-            DeleteSupersededAiImageFiles(book, supersededOffPageFiles);
+            DeleteSupersededAiImageFiles(book.FolderPath, book.OurHtmlDom, supersededOffPageFiles);
 
             request.ReplyWithJson(
                 new
@@ -1055,14 +1067,16 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Deletes the now-superseded image files we generated ("ai-image*") that no image
-        /// element anywhere in the book still references. Without this, editing an
-        /// already-AI-edited slot again would leave the previous ai-image file orphaned in
+        /// element anywhere in <paramref name="dom"/> still references. Without this, editing
+        /// an already-AI-edited slot again would leave the previous ai-image file orphaned in
         /// the book folder, and they would accumulate. Only our own generated files are
         /// considered, and only when nothing references them, so a file shared by another
-        /// slot (or a user's original image) is never removed.
+        /// slot (or a user's original image) is never removed. Internal for testing; callers
+        /// pass the book's folder path and its (already-edited, already-saved) DOM.
         /// </summary>
-        private static void DeleteSupersededAiImageFiles(
-            Bloom.Book.Book book,
+        internal static void DeleteSupersededAiImageFiles(
+            string bookFolderPath,
+            HtmlDom dom,
             IEnumerable<string> candidateFileNames
         )
         {
@@ -1075,13 +1089,13 @@ namespace Bloom.web.controllers
             if (candidates.Count == 0)
                 return;
 
-            var stillReferenced = CollectReferencedImageFileNames(book);
+            var stillReferenced = CollectReferencedImageFileNames(dom);
 
             foreach (var fileName in candidates)
             {
                 if (stillReferenced.Contains(fileName))
                     continue;
-                var fullPath = Path.Combine(book.FolderPath, fileName);
+                var fullPath = Path.Combine(bookFolderPath, fileName);
                 if (RobustFile.Exists(fullPath))
                     RobustFile.Delete(fullPath);
             }
@@ -1089,14 +1103,14 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// The set of image file names (no path) referenced by any &lt;img&gt; or
-        /// background-image element anywhere in the book's DOM, including the data-div.
-        /// Used to decide whether a superseded file is safe to delete.
+        /// background-image element anywhere in the DOM, including the data-div. Used to
+        /// decide whether a superseded file is safe to delete. Internal for testing.
         /// </summary>
-        private static HashSet<string> CollectReferencedImageFileNames(Bloom.Book.Book book)
+        internal static HashSet<string> CollectReferencedImageFileNames(HtmlDom dom)
         {
             var referenced = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var holders = HtmlDom.SelectChildImgAndBackgroundImageElements(
-                book.OurHtmlDom.RawDom.DocumentElement
+                dom.RawDom.DocumentElement
             );
             foreach (var holder in holders.OfType<SafeXmlElement>())
             {
