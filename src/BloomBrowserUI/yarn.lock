@@ -4335,6 +4335,10 @@ bindings@^1.5.0:
   dependencies:
     file-uri-to-path "1.0.0"
 
+bloom-ai-image-tools@BloomBooks/bloom-ai-image-tools#dist-v0.1.0:
+  version "0.1.0"
+  resolved "https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/0c57d9ad1b2cee224856ccb2da1edc88fafe2afa"
+
 bloom-image-gallery@BloomBooks/bloom-image-gallery:
   version "0.0.2"
   resolved "https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/51c5a75bb611c51dd24b40c9162929c6e75473eb"

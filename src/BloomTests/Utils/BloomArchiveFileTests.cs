@@ -75,11 +75,12 @@ namespace BloomTests.Utils
         }
 
         [Test]
-        public void AddDirectory_DotPrefixedSubfolder_ExcludedFromArchive()
+        public void AddDirectory_AiImageEditorSubfolder_ExcludedFromArchive()
         {
-            // Setup: a normal file at the root and in a normal subfolder should be archived,
-            // but anything under a dot-prefixed metadata folder (e.g. the AI image editor's
-            // .ai-image-editor working folder, or .git) must be skipped.
+            // Setup: a normal file at the root and in a normal subfolder should be archived —
+            // including one under some OTHER dot-prefixed folder, which is legitimate content
+            // when archiving arbitrary user folders (e.g. widget sources) — but anything under
+            // the AI image editor's .ai-image-editor working folder must be skipped.
             using (var testFolder = new TemporaryFolder(kTestFolderName))
             {
                 RobustFile.Create(Path.Combine(testFolder.Path, "root.txt")).Dispose();
@@ -87,10 +88,15 @@ namespace BloomTests.Utils
                 var normalSub = Directory.CreateDirectory(Path.Combine(testFolder.Path, "images"));
                 RobustFile.Create(Path.Combine(normalSub.FullName, "pic.png")).Dispose();
 
-                var hiddenSub = Directory.CreateDirectory(
+                var otherDotSub = Directory.CreateDirectory(
+                    Path.Combine(testFolder.Path, ".well-known")
+                );
+                RobustFile.Create(Path.Combine(otherDotSub.FullName, "asset.txt")).Dispose();
+
+                var editorSub = Directory.CreateDirectory(
                     Path.Combine(testFolder.Path, ".ai-image-editor")
                 );
-                RobustFile.Create(Path.Combine(hiddenSub.FullName, "state.json")).Dispose();
+                RobustFile.Create(Path.Combine(editorSub.FullName, "state.json")).Dispose();
 
                 var archive = new MockBloomArchiveSubclass();
 
@@ -113,11 +119,17 @@ namespace BloomTests.Utils
                     Is.True,
                     "normal subfolder contents should have been archived"
                 );
-                // The dot-folder's contents must NOT be archived.
+                // Other dot-folders are legitimate archive content (widgets, backups...).
+                Assert.That(
+                    entryNames.Any(n => n.EndsWith(".well-known/asset.txt")),
+                    Is.True,
+                    "dot-folders other than .ai-image-editor should still be archived"
+                );
+                // The AI editor working folder's contents must NOT be archived.
                 Assert.That(
                     entryNames.Any(n => n.Contains(".ai-image-editor")),
                     Is.False,
-                    "dot-prefixed metadata folders must be excluded from the archive"
+                    ".ai-image-editor must be excluded from the archive"
                 );
             }
         }

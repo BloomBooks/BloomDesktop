@@ -66,17 +66,10 @@ export const DEV_LIBRARIES = [
         // build:dev = `tsc && vite build --mode development ... --watch` -> dist/configr.es.js
         watchCommands: ["yarn build:dev"],
     },
-    {
-        name: "react-grid-layout",
-        kind: "bundled",
-        // We consume a custom fork via a GitHub dependency; a local checkout isn't part of
-        // the standard layout, so --with requires an explicit path until one exists.
-        checkoutCandidates: ["../react-grid-layout", "../../react-grid-layout"],
-        aliasTo: ".",
-        // NOTE: unverified against a checkout (none present). The fork builds with the
-        // standard react-grid-layout scripts; adjust if linking it for real.
-        watchCommands: ["npm run build -- --watch"],
-    },
+    // NOTE: we also consume a custom react-grid-layout fork (via a GitHub dependency),
+    // but no entry is registered for it: no local checkout layout or watch command has
+    // ever been verified. Whoever first links the fork for live development should add
+    // (and test) an entry here.
 ];
 
 // Look up a registry entry by package name (e.g. "bloom-player", "@sillsdev/config-r").

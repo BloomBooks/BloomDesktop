@@ -160,8 +160,13 @@ namespace Bloom.Utils
                     if (dirName == null)
                         continue; // Don't want to bundle these up
 
-                    // Skip hidden/metadata folders (e.g. .ai-image-editor, .git).
-                    if (dirName.StartsWith(".", StringComparison.Ordinal))
+                    // Skip the AI Image Editor's per-book working folder: its state/history
+                    // is regenerable working data that must not ship inside team-collection
+                    // books, .bloomSource backups, or other archives of a book folder.
+                    // Deliberately narrow — a blanket "skip all dot-folders" rule here would
+                    // silently change what every archive producer includes (e.g. user-supplied
+                    // widget folders can legitimately contain dot-folders like .well-known).
+                    if (dirName.Equals(".ai-image-editor", StringComparison.OrdinalIgnoreCase))
                         continue;
 
                     count += AddDirectory(folder, dirNameOffest, extensionsToExclude, justCount);

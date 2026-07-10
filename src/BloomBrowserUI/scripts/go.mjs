@@ -893,15 +893,31 @@ const main = async () => {
         process.env[iframe.entry.devUrlEnv] = url;
         console.log(`[go] AI editor: live dev server at ${url} (HMR).`);
     } else {
-        // Default staging is best-effort and lightweight, so run it alongside Vite startup.
-        [dev] = await Promise.all([
-            startDevServer(),
-            stageAiEditorForDefault({
-                repoRoot,
-                browserUIRoot,
-                log: (message) => console.log(`[go] ${message}`),
-            }),
-        ]);
+        // Default staging is best-effort and usually lightweight, so run it alongside
+        // Vite startup — but its checkout fallback can run a full editor build, and a
+        // slow or hung build must never keep Bloom itself from starting. If staging
+        // outlasts the grace period, start Bloom anyway and let staging finish (or
+        // fail) in the background; only "Edit with AI" is affected until it lands.
+        const staging = stageAiEditorForDefault({
+            repoRoot,
+            browserUIRoot,
+            log: (message) => console.log(`[go] ${message}`),
+        });
+        const stagingGraceMs = 120_000;
+        const stagingOrTimeout = new Promise((resolve) => {
+            const timer = setTimeout(() => {
+                console.log(
+                    "[go] AI editor: staging is still running after " +
+                        `${stagingGraceMs / 1000}s; starting Bloom without waiting for it.`,
+                );
+                resolve();
+            }, stagingGraceMs);
+            staging.finally(() => {
+                clearTimeout(timer);
+                resolve();
+            });
+        });
+        [dev] = await Promise.all([startDevServer(), stagingOrTimeout]);
     }
     console.log(
         `[go] Vite is reachable and quiet on port ${dev.port}. Starting Bloom...`,

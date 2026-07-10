@@ -83,6 +83,12 @@ namespace Bloom.web.controllers
         // `cancel`/`commit` are handled in the overlay JS, which removes the overlay.
         private string _sessionToken;
 
+        // The folder of the book the session was launched for. Every session-gated request
+        // re-resolves _bookSelection.CurrentSelection, so if the user somehow switches books
+        // while an overlay is still up, requests from that overlay must fail rather than
+        // read/write the newly selected book's files or commit against its DOM.
+        private string _sessionBookFolderPath;
+
         private string _pendingOAuthCode;
         private string _pendingOAuthError;
 
@@ -121,6 +127,10 @@ namespace Bloom.web.controllers
             RegexOptions.Compiled | RegexOptions.IgnoreCase
         );
 
+        /// <summary>
+        /// Created per project (see ProjectContext); the selected book is resolved from
+        /// <paramref name="bookSelection"/> at request time, not stored.
+        /// </summary>
         public AiImageEditorApi(BookSelection bookSelection)
         {
             _bookSelection = bookSelection;
@@ -176,6 +186,10 @@ namespace Bloom.web.controllers
             );
         }
 
+        /// <summary>
+        /// The selected book's ".ai-image-editor" working folder (state, history images,
+        /// sidecars), or null when no book is selected.
+        /// </summary>
         private string GetEditorFolderPath()
         {
             var folderPath = _bookSelection.CurrentSelection?.FolderPath;
@@ -201,6 +215,11 @@ namespace Bloom.web.controllers
             return $"{BloomServer.ServerUrl}/bloom/aiImageEditor/index.html";
         }
 
+        /// <summary>
+        /// Starts an editor session for the selected book: mints the session token, ensures
+        /// the .ai-image-editor folders exist, and replies with everything the overlay JS
+        /// needs to boot the editor iframe (editor URL, book image list, history, credentials).
+        /// </summary>
         private void HandleLaunch(ApiRequest request)
         {
             var book = _bookSelection.CurrentSelection;
@@ -210,10 +229,25 @@ namespace Bloom.web.controllers
                 return;
             }
 
+            // The editor app is a separate package staged into browser/aiImageEditor at
+            // build/dev time (see GetEditorUrl); until it is published and added as a real
+            // dependency, a build can end up without it. Fail the launch with a clear
+            // message rather than opening an overlay whose iframe would just 404.
+            if (
+                string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("BLOOM_AI_EDITOR_URL"))
+                && BloomFileLocator.GetBrowserFile(optional: true, "aiImageEditor", "index.html")
+                    == null
+            )
+            {
+                request.Failed("The AI Image Editor is not included in this build of Bloom.");
+                return;
+            }
+
             // Tear down any previous session.
             EndSession();
 
             _sessionToken = Guid.NewGuid().ToString("N");
+            _sessionBookFolderPath = book.FolderPath;
             _pendingOAuthCode = null;
             _pendingOAuthError = null;
 
@@ -336,16 +370,32 @@ namespace Bloom.web.controllers
         private void EndSession()
         {
             _sessionToken = null;
+            _sessionBookFolderPath = null;
             _pendingOAuthCode = null;
             _pendingOAuthError = null;
         }
 
+        /// <summary>
+        /// True if the request carries the current session token AND the selected book is
+        /// still the one the session was launched for; otherwise fails the request. The book
+        /// check matters because the handlers resolve the book at request time, so a stale
+        /// overlay must not operate on a different book than it was launched on.
+        /// </summary>
         private bool HasValidSession(ApiRequest request)
         {
             var session = request.GetParamOrNull("session");
             if (_sessionToken == null || session != _sessionToken)
             {
                 request.Failed(HttpStatusCode.Unauthorized, "Invalid or expired session");
+                return false;
+            }
+
+            if (_bookSelection.CurrentSelection?.FolderPath != _sessionBookFolderPath)
+            {
+                request.Failed(
+                    HttpStatusCode.Unauthorized,
+                    "The selected book changed since the editor was launched"
+                );
                 return false;
             }
 
@@ -382,6 +432,10 @@ namespace Bloom.web.controllers
             request.ReplyWithText("OpenRouter sign-in completed. You can return to Bloom.");
         }
 
+        /// <summary>
+        /// Polled by the editor after openExternal: hands over (and clears) the OAuth code
+        /// or error that HandleOAuthCallback captured from the user's external browser.
+        /// </summary>
         private void HandleOAuthResult(ApiRequest request)
         {
             if (!HasValidSession(request))
@@ -393,6 +447,11 @@ namespace Bloom.web.controllers
             request.ReplyWithJson(answer);
         }
 
+        /// <summary>
+        /// The editor's persistence endpoint: GET/POST/DELETE of individual files under the
+        /// book's .ai-image-editor folder. File names are restricted to the AllowedFileName
+        /// allow-list, so the editor can only ever touch its own state/history files.
+        /// </summary>
         private void HandleFile(ApiRequest request)
         {
             if (!HasValidSession(request))
@@ -435,9 +494,22 @@ namespace Bloom.web.controllers
                     var dir = Path.GetDirectoryName(fullPath);
                     if (!Directory.Exists(dir))
                         Directory.CreateDirectory(dir);
-                    var bytes = request.RawPostData;
-                    if (bytes != null && bytes.Length > 0)
-                        RobustFile.WriteAllBytes(fullPath, bytes);
+                    // Stream the body straight to disk: history images are multi-MB, so
+                    // don't buffer them whole in memory (RawPostData would). Land the bytes
+                    // in a temp file and swap it in, so an upload that dies partway can't
+                    // leave a truncated file where a previous good one was. An empty body
+                    // is a valid save of an empty file, not a no-op: the editor must never
+                    // be told "saved" while stale content survives on disk.
+                    var tempPath = fullPath + ".tmp";
+                    using (var input = request.RawPostStream)
+                    using (var output = RobustFile.Create(tempPath))
+                    {
+                        // RawPostStream is null for an empty body (no entity body); that
+                        // still means "save an empty file" here, so just leave the freshly
+                        // created temp file empty rather than copying.
+                        input?.CopyTo(output);
+                    }
+                    RobustFile.Move(tempPath, fullPath, true); // true: overwrite
                     request.PostSucceeded();
                     break;
 
@@ -764,6 +836,14 @@ namespace Bloom.web.controllers
             );
         }
 
+        /// <summary>
+        /// Applies one replacement to the slot named by incomingId ("{pageId}:{ordinal}"),
+        /// copying the new image bytes (from history or a reused book file) into the book
+        /// folder under a fresh name. An off-page slot is edited here in the storage DOM
+        /// (caller saves); a current-page slot is left untouched — we return oldSrc/newSrc
+        /// (via the out params) for the front-end to apply to the live DOM. Returns false
+        /// with <paramref name="error"/> set when the replacement can't be applied.
+        /// </summary>
         private bool TryApplyReplacement(
             Bloom.Book.Book book,
             string editorFolder,
@@ -885,10 +965,12 @@ namespace Bloom.web.controllers
 
             // Write the new image under a fresh name (preserving the source extension) so
             // we never clobber a file shared by another slot or serve stale cached bytes.
+            // GetUnusedFilename guarantees fresh while keeping the name human-readable
+            // (filenames surface in image metadata and problem reports).
             var extension = Path.GetExtension(sourceBytesPath);
             if (string.IsNullOrEmpty(extension))
                 extension = ".png";
-            var newFileName = "ai-" + Guid.NewGuid().ToString("N") + extension;
+            var newFileName = ImageUtils.GetUnusedFilename(book.FolderPath, "ai-image", extension);
             RobustFile.Copy(sourceBytesPath, Path.Combine(book.FolderPath, newFileName), true);
             newSrc = newFileName;
 

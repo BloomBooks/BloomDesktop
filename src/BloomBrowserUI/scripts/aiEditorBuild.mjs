@@ -1,5 +1,5 @@
 /* eslint-env node */
-/* global process */
+/* global clearTimeout, process, setTimeout */
 
 // Stage the AI Image Editor for the DEFAULT `./go.sh` (i.e. when you are NOT actively
 // developing the editor with `--with bloom-ai-image-tools`).
@@ -23,6 +23,7 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { getLibrary, resolveCheckoutDir } from "./devLibraries.mjs";
+import { killProcessTree } from "./processTree.mjs";
 
 // Directory names that never contain editable editor source; skipping them keeps the
 // staleness scan fast and stops generated output from looking "newer" than the build.
@@ -111,11 +112,24 @@ const runBuild = (libraryDir, log) =>
             stdio: "inherit",
             shell: true,
         });
+        // go.mjs awaits this staging step before launching Bloom.exe, so a build that
+        // hangs (unlike one that fails) would block Bloom's startup forever. A normal
+        // editor build takes well under a minute; after a generous cap, kill it and let
+        // Bloom start without the editor.
+        const timeoutMs = 5 * 60 * 1000;
+        const timeout = setTimeout(() => {
+            log(
+                "AI editor: build did not finish within 5 minutes; abandoning it so Bloom can start.",
+            );
+            killProcessTree(child.pid);
+        }, timeoutMs);
         child.on("error", (error) => {
+            clearTimeout(timeout);
             log(`AI editor: build failed to start: ${error.message}`);
             resolve(false);
         });
         child.on("exit", (code) => {
+            clearTimeout(timeout);
             if (code === 0) {
                 resolve(true);
             } else {
@@ -183,7 +197,32 @@ export const stageAiEditorForDefault = async ({
             ...entry.installedDistApp.split("/"),
         );
         if (fs.existsSync(path.join(installedDistApp, "index.html"))) {
+            // Skip the delete-and-recopy when the staged tree already came from this
+            // package version. Mtimes can't tell us that (cpSync stamps copy time, and
+            // package managers extract tarballs with arbitrary mtimes), so record the
+            // version we staged in a marker file inside the target.
+            const packageVersion = JSON.parse(
+                fs.readFileSync(
+                    path.join(installedDistApp, "..", "package.json"),
+                    "utf8",
+                ),
+            ).version;
+            const versionMarker = path.join(target, ".staged-package-version");
+            let stagedVersion = null;
+            try {
+                stagedVersion = fs.readFileSync(versionMarker, "utf8");
+            } catch {
+                // never staged (or marker missing): fall through and copy
+            }
+            if (
+                stagedVersion === packageVersion &&
+                fs.existsSync(path.join(target, "index.html"))
+            ) {
+                log("AI editor: staged copy is up to date.");
+                return;
+            }
             copyTree(installedDistApp, target);
+            fs.writeFileSync(versionMarker, packageVersion);
             log(`AI editor: staged from installed package into ${target}.`);
             return;
         }

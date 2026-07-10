@@ -46,6 +46,7 @@ import {
     getImageFromContainer,
     getImageTransparencyMode,
     getImageUrlFromImageContainer,
+    GetRawImageUrl,
     HandleImageError,
     getOwningPageBackgroundColor,
     isPlaceHolderImage,
@@ -55,7 +56,7 @@ import {
 } from "../../js/bloomImages";
 import { doVideoCommand } from "../../js/bloomVideo";
 import {
-    changeImage,
+    changeImageByElement,
     copySelection,
     GetEditor,
     pasteClipboard,
@@ -522,7 +523,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     //      over HTTP via aiImageEditor/file; the editor references results by id.
     //   4. On `commit` we POST aiImageEditor/commit; C# applies replacements to all
     //      non-current pages and returns {oldSrc,newSrc} for any on the live page, which
-    //      we apply here via Bloom's changeImage(). `cancel`/close just tear the overlay
+    //      we apply here via Bloom's changeImageByElement(). `cancel`/close just tear the overlay
     //      down. (There is intentionally no C#->iframe message channel; init flows from
     //      here, the overlay JS, because only the browser can postMessage to the iframe.)
     editWithAi: {
@@ -597,13 +598,23 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                 // open with it already in the "Image to Edit" slot. We match by page +
                 // filename rather than DOM ordinal, because the live page has extra
                 // injected UI images that would throw positional indices off.
-                const fileNameOf = (url?: string | null) => {
+                // `encoded` says whether the url is percent-encoded: live DOM srcs and
+                // host-served URLs are, but oldSrc in commit results arrives from C#
+                // already decoded (PathOnly.NotEncoded) — decoding it again corrupts
+                // (or throws on) filenames containing a literal '%'. On a failed decode
+                // fall back to the raw name rather than "", so an oddly-encoded src
+                // degrades to a possible mismatch instead of matching nothing ever.
+                const fileNameOf = (
+                    url?: string | null,
+                    encoded: boolean = true,
+                ) => {
+                    const raw =
+                        (url ?? "").split("?")[0].split("/").pop() ?? "";
+                    if (!encoded) return raw;
                     try {
-                        return decodeURIComponent(
-                            (url ?? "").split("?")[0].split("/").pop() ?? "",
-                        );
+                        return decodeURIComponent(raw);
                     } catch {
-                        return "";
+                        return raw;
                     }
                 };
                 const clickedUrl = imgContainer
@@ -684,11 +695,12 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
 
                 // Apply replacements the host flagged as being on the currently-edited
                 // page. The host can't change that page itself (the live browser owns
-                // it), so it returns oldSrc/newSrc and we use Bloom's changeImage() on
-                // the live DOM. We match by oldSrc rather than index because the live
+                // it), so it returns oldSrc/newSrc and we use Bloom's changeImageByElement()
+                // on the live DOM. We match by oldSrc rather than index because the live
                 // page has extra UI images that would throw off positional ordinals.
                 const applyCurrentPageReplacements = (
                     results?: Array<{
+                        incomingId?: string;
                         ok?: boolean;
                         isCurrentPage?: boolean;
                         oldSrc?: string;
@@ -709,14 +721,6 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                     const pageRoot =
                         (pageDoc.querySelector(".bloom-page") as HTMLElement) ||
                         pageDoc;
-                    const srcOf = (el: Element) => {
-                        if (el.tagName === "IMG")
-                            return el.getAttribute("src") || "";
-                        const m = (el.getAttribute("style") || "").match(
-                            /url\(['"]?([^'")]+)/,
-                        );
-                        return m ? m[1] : "";
-                    };
                     // Look up the page's image-bearing elements once, not per replacement.
                     const candidates = Array.from(
                         pageRoot.querySelectorAll(
@@ -728,44 +732,52 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                     // replacements land on distinct elements instead of collapsing onto the
                     // first match. Match by filename (as the clicked-image lookup does),
                     // not full src, so a cache-busting query string or path prefix on the
-                    // live element doesn't cause a silent miss.
+                    // live element doesn't cause a silent miss. Within a same-filename
+                    // group, filename matching alone can't tell the slots apart — so apply
+                    // in the host's slot order (the ordinal in incomingId "{pageId}:{n}"
+                    // counts the saved page's image holders in document order, which is the
+                    // live candidates' order too), pairing each result with the right slot
+                    // instead of whichever same-filename element comes first.
+                    const ordinalOf = (r: { incomingId?: string }) =>
+                        parseInt(
+                            (r.incomingId ?? "").split(":").pop() ?? "",
+                            10,
+                        ) || 0;
                     const usedElements = new Set<Element>();
                     let applied = 0;
-                    toApply.forEach((r) => {
-                        const wanted = fileNameOf(r.oldSrc);
-                        const target = candidates.find(
-                            (el) =>
-                                !usedElements.has(el) &&
-                                fileNameOf(srcOf(el)) === wanted,
-                        ) as HTMLElement | undefined;
-                        if (!target) return;
-                        usedElements.add(target);
-                        if (!target.id) {
-                            target.id =
-                                "bloom-ai-" +
-                                Math.random().toString(36).slice(2, 10);
-                        }
-                        const creator =
-                            target.getAttribute("data-creator") || "";
-                        const newCreator = /Edited with AI/i.test(creator)
-                            ? creator
-                            : creator
-                              ? creator + ", Edited with AI"
-                              : "Edited with AI";
-                        changeImage({
-                            imageId: target.id,
-                            src: r.newSrc as string,
-                            creator: newCreator,
-                            copyright:
-                                target.getAttribute("data-copyright") || "",
-                            license: target.getAttribute("data-license") || "",
-                            // The AI commit applies replacements book-wide in C#
-                            // (saved directly, not undoable), so don't register a
-                            // separate per-image undo for the current-page piece.
-                            undoable: "false",
+                    [...toApply]
+                        .sort((a, b) => ordinalOf(a) - ordinalOf(b))
+                        .forEach((r) => {
+                            // oldSrc arrives from C# already decoded; the live srcs are encoded.
+                            const wanted = fileNameOf(r.oldSrc, false);
+                            const target = candidates.find(
+                                (el) =>
+                                    !usedElements.has(el) &&
+                                    fileNameOf(GetRawImageUrl(el)) === wanted,
+                            ) as HTMLElement | undefined;
+                            if (!target) return;
+                            usedElements.add(target);
+                            const creator =
+                                target.getAttribute("data-creator") || "";
+                            const newCreator = /Edited with AI/i.test(creator)
+                                ? creator
+                                : creator
+                                  ? creator + ", Edited with AI"
+                                  : "Edited with AI";
+                            changeImageByElement(target, {
+                                src: r.newSrc as string,
+                                creator: newCreator,
+                                copyright:
+                                    target.getAttribute("data-copyright") || "",
+                                license:
+                                    target.getAttribute("data-license") || "",
+                                // The AI commit applies replacements book-wide in C#
+                                // (saved directly, not undoable), so don't register a
+                                // separate per-image undo for the current-page piece.
+                                undoable: "false",
+                            });
+                            applied++;
                         });
-                        applied++;
-                    });
                     return { applied, expected: toApply.length };
                 };
 
@@ -851,6 +863,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                                               ok?: boolean;
                                               appliedCount?: number;
                                               results?: Array<{
+                                                  incomingId?: string;
                                                   ok?: boolean;
                                                   isCurrentPage?: boolean;
                                                   oldSrc?: string;
