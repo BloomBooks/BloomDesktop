@@ -217,11 +217,12 @@ namespace Bloom.TeamCollection
 
             // --- Cloud Team Collections (task 06, Wave 3): additive endpoints. Folder Team
             // Collections continue to use every endpoint above completely unchanged. ---
-            apiHandler.RegisterEndpointHandler(
-                "teamCollection/capabilities",
-                HandleCapabilities,
-                false
-            );
+            // NOTE: teamCollection/capabilities is deliberately NOT registered here. It is an
+            // application-level endpoint (registered by SharingApi) because callers legitimately
+            // probe it when no project is open -- e.g. the E2E harness's readiness poll, or a
+            // late request from a closing collection tab while the chooser is on screen -- and a
+            // project-level registration made every such probe raise a "Cannot Find API Endpoint"
+            // toast (post-batch defect, 10 Jul 2026).
             apiHandler.RegisterEndpointHandler(
                 "teamCollection/tcStatusMetadata",
                 HandleTcStatusMetadata,
@@ -271,21 +272,8 @@ namespace Bloom.TeamCollection
         // "Book-status JSON" section and ITeamCollectionCapabilities in teamCollectionApi.tsx.
         // ------------------------------------------------------------------
 
-        /// <summary>Backend capability flags (CONTRACTS.md, additive): tells the UI what the
-        /// current Team Collection's backend can do, so components branch on capability rather
-        /// than concrete backend type. All false for a folder TC or no collection at all.</summary>
-        private void HandleCapabilities(ApiRequest request)
-        {
-            var collection = _tcManager.CurrentCollection;
-            request.ReplyWithJson(
-                new
-                {
-                    supportsVersionHistory = collection?.SupportsVersionHistory ?? false,
-                    supportsSharingUi = collection?.SupportsSharingUi ?? false,
-                    requiresSignIn = collection?.RequiresSignIn ?? false,
-                }
-            );
-        }
+        // (teamCollection/capabilities' handler moved to the app-level SharingApi -- see the note
+        // in RegisterWithApiHandler above.)
 
         /// <summary>Live metadata behind the status button/chip (e.g. "Updates Available (3
         /// books)"). Cloud-only; a folder TC (or no collection) simply reports no count.</summary>

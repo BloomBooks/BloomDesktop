@@ -88,6 +88,11 @@ namespace BloomTests.TeamCollection
                 .WithBookSelection(new BookSelection());
             _api = apiBuilder.Build(); // _cloudCollection is null here regardless -- see above.
             _api.RegisterWithApiHandler(_server.ApiHandler);
+            // teamCollection/capabilities moved to the app-level SharingApi (post-batch defect
+            // fix, 10 Jul 2026 -- see the note in TeamCollectionApi.RegisterWithApiHandler).
+            // SharingApi's handler reaches this fixture's collection through
+            // TeamCollectionApi.TheOneInstance, which building _api above just set.
+            new Bloom.web.controllers.SharingApi().RegisterWithApiHandler(_server.ApiHandler);
 
             _environment = new CloudEnvironment(name =>
                 name == "BLOOM_CLOUDTC_ANON_KEY" ? "test-anon-key" : null

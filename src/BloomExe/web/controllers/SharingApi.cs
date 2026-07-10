@@ -70,6 +70,38 @@ namespace Bloom.web.controllers
 
             apiHandler.RegisterEndpointHandler("collections/mine", HandleMyCollections, false);
             apiHandler.RegisterEndpointHandler("collections/pullDown", HandlePullDown, true);
+
+            // Application-level ON PURPOSE (moved out of the project-level TeamCollectionApi;
+            // post-batch defect, 10 Jul 2026): callers legitimately probe capabilities when no
+            // project is open -- the E2E harness's readiness poll, or a late request from a
+            // closing collection tab while the chooser is on screen -- and the project-level
+            // registration made every such probe raise a "Cannot Find API Endpoint" toast.
+            // Answering "no capabilities" (all false) is correct whenever no project is open.
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/capabilities",
+                HandleCapabilities,
+                false
+            );
+        }
+
+        /// <summary>Backend capability flags (CONTRACTS.md, additive): tells the UI what the
+        /// current Team Collection's backend can do, so components branch on capability rather
+        /// than concrete backend type. All false for a folder TC, no collection, or no open
+        /// project. Reaches the current project the same way this class's other handlers do
+        /// (TeamCollectionApi.TheOneInstance); like them, it can briefly report the LAST project's
+        /// capabilities between closing one collection and opening another, which is harmless for
+        /// boolean capability flags.</summary>
+        private void HandleCapabilities(ApiRequest request)
+        {
+            var collection = TeamCollectionApi.TheOneInstance?.TcManager?.CurrentCollection;
+            request.ReplyWithJson(
+                new
+                {
+                    supportsVersionHistory = collection?.SupportsVersionHistory ?? false,
+                    supportsSharingUi = collection?.SupportsSharingUi ?? false,
+                    requiresSignIn = collection?.RequiresSignIn ?? false,
+                }
+            );
         }
 
         // ------------------------------------------------------------------
