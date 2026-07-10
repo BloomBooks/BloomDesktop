@@ -24,12 +24,37 @@ import * as path from "node:path";
 import { expect } from "@playwright/test";
 import { postApi } from "./bloomApi";
 
-/** Reads `bookInstanceId` out of `<collectionFolder>/<bookName>/meta.json`. */
+/** Waits until `filePath` exists (progressive join, batch item 7: a freshly joined
+ * collection opens IMMEDIATELY with placeholder tiles while each book's folder downloads in
+ * the background — so specs must not assume a book's files are on disk the moment pullDown
+ * or a join-time relaunch returns). Rejects with a pointed message after `timeoutMs`. */
+export const waitForBookFile = async (
+    filePath: string,
+    timeoutMs = 90_000,
+): Promise<void> => {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+        try {
+            await fs.access(filePath);
+            return;
+        } catch {
+            await new Promise((r) => setTimeout(r, 500));
+        }
+    }
+    throw new Error(
+        `${filePath} did not appear within ${timeoutMs}ms — background book download ` +
+            `(progressive join) never delivered it.`,
+    );
+};
+
+/** Reads `bookInstanceId` out of `<collectionFolder>/<bookName>/meta.json`, first waiting for
+ * the file to exist (see waitForBookFile — joined books now download in the background). */
 export const readBookInstanceId = async (
     collectionFolder: string,
     bookName: string,
 ): Promise<string> => {
     const metaPath = path.join(collectionFolder, bookName, "meta.json");
+    await waitForBookFile(metaPath);
     const meta = JSON.parse(await fs.readFile(metaPath, "utf8"));
     if (!meta.bookInstanceId) {
         throw new Error(`${metaPath} has no bookInstanceId.`);

@@ -170,7 +170,11 @@ test.describe("E2E-10 account-switch behavior", () => {
                     const log = await fs
                         .readFile(adminReopen.logPath, "utf8")
                         .catch(() => "");
-                    return log.includes("Refused to open collection");
+                    // Printed to stdout (this harness log) by Program.cs's refusal branch in
+                    // automation mode; the SIL Logger file the refusal ALSO goes to lives in a
+                    // per-session temp folder a test can't reliably find. (First live run of
+                    // this spec found the original assertion watching the wrong log.)
+                    return log.includes("BLOOM_AUTOMATION_REFUSED_COLLECTION");
                 },
                 { timeout: 30_000 },
             )

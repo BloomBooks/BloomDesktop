@@ -240,6 +240,20 @@ export const launchBloom = async (
         },
     );
 
+    // Start the window-placement watcher at SPAWN time, not at ready: Bloom.exe is spawned
+    // directly (child.pid IS the Bloom PID), and the splash screen / collection chooser can
+    // appear well before BLOOM_AUTOMATION_READY — starting late left those early windows on
+    // the developer's screens for seconds (reported live, 10 Jul 2026).
+    const stopWindowPlacement = child.pid
+        ? startWindowPlacementWatcher(
+              child.pid,
+              path.join(
+                  options.logDir,
+                  `${sanitizeFileName(options.label)}.windowPlacement.log`,
+              ),
+          )
+        : () => {};
+
     let stdoutBuffer = "";
     let ready:
         | { processId: number; httpPort: number; cdpPort: number }
@@ -293,11 +307,8 @@ export const launchBloom = async (
     }
 
     const readyInfo = ready;
-    // Opt-in (BLOOM_E2E_SCREEN): keep this instance's windows on a designated monitor so E2E
-    // runs don't take over the developer's working screens. No-op when the variable is unset.
-    const stopWindowPlacement = startWindowPlacementWatcher(
-        readyInfo.processId,
-    );
+    // (The window-placement watcher was already started at spawn time, above — child.pid is
+    // the Bloom PID since Bloom.exe is spawned directly; readyInfo.processId always matches.)
     return {
         processId: readyInfo.processId,
         httpPort: readyInfo.httpPort,

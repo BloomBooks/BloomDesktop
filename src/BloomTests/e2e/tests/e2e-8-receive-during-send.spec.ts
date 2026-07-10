@@ -30,7 +30,7 @@ import { launchBloom, LaunchedBloom } from "../harness/launch";
 import { ALICE } from "../harness/devStack";
 import { postApi, getApi } from "../harness/bloomApi";
 import { pollNowViaReceiveUpdates } from "../harness/bookStatus";
-import { selectBookByName } from "../harness/selectBook";
+import { selectBookByName, waitForBookFile } from "../harness/selectBook";
 import { queryDb, openPersistentClient } from "../harness/db";
 
 const LOG_DIR = "C:\\BloomE2E-logs\\e2e-8";
@@ -110,6 +110,9 @@ test.describe("E2E-8 Receive-during-Send coherence", () => {
         expect(Number(bookRows[0].current_version_seq)).toBe(1);
 
         await pollNowViaReceiveUpdates(bob.httpPort);
+        // Progressive join (batch item 7): Bob's copy of the book downloads in the background
+        // after his join, so wait for the file rather than assuming it's already on disk.
+        await waitForBookFile(bobHtmPath);
         const v1Bytes = await fs.readFile(bobHtmPath);
         expect(v1Bytes.includes(Buffer.from(V2_MARKER, "utf8"))).toBe(false);
         // The big asset is NEW in v2 -- confirm it's absent from Bob's v1 so its absence during

@@ -1714,6 +1714,13 @@ namespace Bloom
                 Logger.WriteEvent(
                     $"*** Refused to open collection {Path.GetFileNameWithoutExtension(projectPath)}: {refusalException.Message}"
                 );
+                // In automation mode, stdout is the harness's per-instance log (the same channel
+                // BLOOM_AUTOMATION_READY uses) — the SIL Logger file above lives in a per-session
+                // temp folder a test can't reliably find. E2E-10 polls for this line.
+                if (StartupAutomation)
+                    Console.WriteLine(
+                        $"BLOOM_AUTOMATION_REFUSED_COLLECTION Refused to open collection: {refusalException.Message}"
+                    );
                 SIL.Reporting.ErrorReport.NotifyUserOfProblem(refusalException.Message);
                 return;
             }

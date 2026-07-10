@@ -69,24 +69,29 @@ export const configuredScreenIndex = (): number | undefined => {
  * watcher exits when the Bloom PID dies). */
 export const startWindowPlacementWatcher = (
     bloomProcessId: number,
+    logPath?: string,
 ): (() => void) => {
     const screenIndex = configuredScreenIndex();
     if (!screenIndex) return () => {};
-    const watcher = spawn(
-        "powershell",
-        [
-            "-NoProfile",
-            "-ExecutionPolicy",
-            "Bypass",
-            "-File",
-            watcherScript,
-            "-TargetPid",
-            String(bloomProcessId),
-            "-ScreenIndex",
-            String(screenIndex),
-        ],
-        { detached: true, stdio: "ignore", windowsHide: true },
-    );
+    const args = [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        watcherScript,
+        "-TargetPid",
+        String(bloomProcessId),
+        "-ScreenIndex",
+        String(screenIndex),
+    ];
+    // The watcher appends its decisions (target screen resolution, every move) here, so
+    // misplacement is diagnosable from artifacts instead of live observation.
+    if (logPath) args.push("-LogPath", logPath);
+    const watcher = spawn("powershell", args, {
+        detached: true,
+        stdio: "ignore",
+        windowsHide: true,
+    });
     watcher.unref(); // never keep the test process alive on its account
     return () => {
         try {
