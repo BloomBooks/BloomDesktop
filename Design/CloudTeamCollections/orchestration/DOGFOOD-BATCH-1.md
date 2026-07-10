@@ -472,6 +472,31 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 10 Jul 2026 (EOD — SHUTDOWN STATE; machine going to sleep; next session may be a different
+  agent: read this entry + OUTSTANDING BUGS + SQUASH-PLAN.md and you have everything) ·
+  FULL MATRIX under HEAVY LOAD: 10/14 (40 min, ran concurrently with the 16-min full C#
+  suite + review agents — the known load-correlated-flake regime). Failures: e2e-4
+  (EXPECTED — bug #0, John's pending decision), e2e-3 / e2e-6 / e2e-9 (all three are
+  suspected LOAD FLAKES: e2e-3 passed standalone TWICE earlier today on this exact tree;
+  e2e-6/e2e-9 were green in the last pre-batch matrix; artifacts in
+  src/BloomTests/e2e/test-results/). BOT GAUNTLET at cutoff: CI 2/2 pass (pr-automation +
+  track; heavy CI doesn't run on this draft); CodeRabbit TIMED OUT after 35 min (no
+  review/comment via API); Devin TIMED OUT this session (huge PR — only the diff tree
+  renders on its page, no findings pass yet for HEAD; it keeps analyzing server-side).
+  Devin/CodeRabbit results will simply be waiting on PR #8048 whenever checked next.
+  SQUASH-PLAN.md committed (d8ff5c830e): review-grained packaging branch design, 9 grouped
+  commits, regenerable, byte-identical-verified · NEXT SESSION, in order: (1) rerun e2e-3,
+  e2e-6, e2e-9 STANDALONE on an idle machine (expect green; investigate for real if any
+  fails again), (2) John: bug #0 decision (options in OUTSTANDING BUGS #0; ready-to-implement
+  option-(a) sketch in BUG0-OPTION-A-SKETCH.md, same folder), implement + rerun e2e-4,
+  (3) gather bots: run the devin-review skill against PR 8048 (it mirrors findings to the
+  PR) + read CodeRabbit's review if posted; fix/reply per preflight rules, (4) execute
+  SQUASH-PLAN.md once 1–3 are done, open the new PR from cloud-tc-for-review, close 8048
+  with a pointer, (5) John's [HUMAN] tests: item 3 centered dialog, item 10 web
+  up/download (GOING-LIVE.md 4.3). Environment reminders for the resumer: functions-serve
+  zombie rule (server/dev/README.md) after any sleep/restart of the stack; E2E needs
+  BLOOM_E2E_SCREEN=1 and an unlocked desktop; front-end is pnpm now (e2e harness stays
+  yarn).
 - 10 Jul 2026 (PM, gauntlet running) · John authenticated gh. DRAFT PR CREATED:
   https://github.com/BloomBooks/BloomDesktop/pull/8048 (cloud-collections → master, draft).
   Devin triggered for HEAD 24b0f5c740 via the pr-automation workflow (completed = trigger
