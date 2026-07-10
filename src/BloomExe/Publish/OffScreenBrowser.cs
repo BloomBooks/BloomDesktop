@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
+using Microsoft.Web.WebView2.Core;
 
 namespace Bloom.Publish
 {
@@ -17,6 +18,14 @@ namespace Bloom.Publish
     /// The first use is PublishHelper's "page checks" (which elements are visible, what fonts are used), but
     /// nothing here is specific to that; it suits any task that needs to ask a real browser questions about a
     /// document off-screen.
+    ///
+    /// One instance can manage a SERIES of inner browsers over its lifetime, all sharing a single
+    /// CoreWebView2Environment: call <see cref="StartFreshBrowser"/> to discard the current browser and
+    /// continue with a clean one (a fresh renderer with no residual page state) while keeping that
+    /// environment — so the browser process, user-data folder, and HTTP cache stay warm across the series.
+    /// The environment is created lazily with the first browser and belongs to this instance alone (it is
+    /// deliberately not static/shared between instances, so instances on different threads never contend).
+    /// A caller that only needs one browser simply never calls StartFreshBrowser.
     ///
     /// How it stays safe: the browser is owned by a private, dedicated STA thread with its own Windows Forms
     /// message loop, and THAT thread — not the caller — services the browser's callbacks. So a caller can
@@ -34,6 +43,11 @@ namespace Bloom.Publish
     {
         private readonly Thread _thread;
         private WebView2Browser _browser;
+
+        // The one CoreWebView2Environment (browser process + user-data folder + HTTP cache) shared across
+        // every inner browser this instance creates. Captured from the first browser and reused for each
+        // fresh browser (see StartFreshBrowser), so we don't pay environment creation each time.
+        private CoreWebView2Environment _environment;
 
         // The message loop we run on the dedicated thread; ExitThread() on it ends the loop at Dispose.
         private ApplicationContext _appContext;
@@ -88,16 +102,9 @@ namespace Bloom.Publish
                 SynchronizationContext.SetSynchronizationContext(ctx);
                 _ctx = ctx;
 
-                // The constructor kicks off CoreWebView2 initialization unawaited; it completes via the message
-                // loop we start below.
-                _browser = new WebView2Browser();
-                // Realize the HWND now; CoreWebView2 initialization can only complete once the control has a
-                // window handle, and nothing else (no parent Form) will create it for us. Same trick as
-                // BookProcessor's off-screen browser.
-                _browser.CreateControl();
-
-                // Poll for readiness once the loop is pumping, then signal the constructor.
-                ctx.Post(_ => WaitUntilReadyThenSignal(), null);
+                // Create the browser and wait for it to become ready once the loop is pumping (its async
+                // CoreWebView2 initialization completes via that loop), then signal the constructor.
+                ctx.Post(_ => InitializeAsync(), null);
 
                 _appContext = new ApplicationContext();
                 Application.Run(_appContext); // pump until the context's loop is ended in Dispose
@@ -109,19 +116,14 @@ namespace Bloom.Publish
             }
         }
 
-        private async void WaitUntilReadyThenSignal()
+        private async void InitializeAsync()
         {
             try
             {
-                var timer = Stopwatch.StartNew();
-                while (!_browser.IsReadyToNavigate)
-                {
-                    if (timer.ElapsedMilliseconds > kInitTimeoutMs)
-                        throw new ApplicationException(
-                            "Timed out initializing the off-screen WebView2."
-                        );
-                    await Task.Delay(20);
-                }
+                await CreateInnerBrowserAndWaitReadyAsync();
+                // Capture the environment the first browser created, so each later fresh browser can reuse it
+                // (see StartFreshBrowser) instead of paying environment creation again.
+                _environment = _browser.CoreEnvironment;
             }
             catch (Exception e)
             {
@@ -133,14 +135,60 @@ namespace Bloom.Publish
             }
         }
 
+        // Creates the inner browser — reusing our shared environment once we have captured one — and waits
+        // until it is ready to navigate. Runs on the dedicated thread.
+        private async Task CreateInnerBrowserAndWaitReadyAsync()
+        {
+            _browser =
+                _environment == null
+                    ? new WebView2Browser()
+                    : WebView2Browser.CreateWithInjectedEnvironment(_environment);
+            // Realize the HWND now; CoreWebView2 initialization can only complete once the control has a
+            // window handle, and nothing else (no parent Form) will create it for us. Same trick as
+            // BookProcessor's off-screen browser.
+            _browser.CreateControl();
+
+            var timer = Stopwatch.StartNew();
+            while (!_browser.IsReadyToNavigate)
+            {
+                if (timer.ElapsedMilliseconds > kInitTimeoutMs)
+                    throw new ApplicationException(
+                        "Timed out initializing the off-screen WebView2."
+                    );
+                await Task.Delay(20);
+            }
+        }
+
         /// <summary>
         /// Navigates the browser to the given DOM (served via BloomServer) and blocks the calling thread until
         /// navigation completes, times out, or is cancelled. Returns true on successful navigation, false on
-        /// timeout or cancellation — matching NavigateAndWaitTillDone's contract for the caller.
+        /// timeout or cancellation — matching NavigateAndWaitTillDone's contract for the caller. The source
+        /// controls how BloomServer serves the page (e.g. JustCheckingPage swaps videos for placeholders,
+        /// Frame serves the page as-is for the editing bundle).
         /// </summary>
-        public bool Navigate(HtmlDom htmlDom, int timeoutMs, Func<bool> cancelCheck)
+        public bool Navigate(
+            HtmlDom htmlDom,
+            int timeoutMs,
+            Func<bool> cancelCheck,
+            InMemoryHtmlFileSource source = InMemoryHtmlFileSource.JustCheckingPage
+        )
         {
-            return RunAndBlock(() => NavigateAsync(htmlDom, timeoutMs, cancelCheck));
+            return RunAndBlock(() => NavigateAsync(htmlDom, timeoutMs, cancelCheck, source));
+        }
+
+        /// <summary>
+        /// Starts navigating to the given DOM but does NOT wait for the navigation-completed ('load') event;
+        /// blocks only until the navigation has been dispatched. Use this for full editing pages whose 'load'
+        /// is unreliable off-screen (document.readyState can stick at "interactive"); the caller instead polls
+        /// a window flag the page's own script sets when it is actually ready (see BookProcessor).
+        /// </summary>
+        public void NavigateWithoutWaitingForLoad(HtmlDom htmlDom, InMemoryHtmlFileSource source)
+        {
+            RunAndBlock(() =>
+            {
+                _browser.Navigate(htmlDom, source: source);
+                return Task.FromResult(true);
+            });
         }
 
         // Async navigation using only the public Browser API (DocumentCompleted is raised on the WebView2's
@@ -149,7 +197,8 @@ namespace Bloom.Publish
         private async Task<bool> NavigateAsync(
             HtmlDom htmlDom,
             int timeoutMs,
-            Func<bool> cancelCheck
+            Func<bool> cancelCheck,
+            InMemoryHtmlFileSource source
         )
         {
             var navigated = new TaskCompletionSource<bool>();
@@ -157,7 +206,7 @@ namespace Bloom.Publish
             _browser.DocumentCompleted += Handler;
             try
             {
-                _browser.Navigate(htmlDom, source: InMemoryHtmlFileSource.JustCheckingPage);
+                _browser.Navigate(htmlDom, source: source);
                 var timer = Stopwatch.StartNew();
                 while (!navigated.Task.IsCompleted)
                 {
@@ -183,6 +232,38 @@ namespace Bloom.Publish
         public string RunJavascript(string script)
         {
             return RunAndBlock(() => _browser.GetStringFromJavascriptAsync(script));
+        }
+
+        /// <summary>
+        /// Runs the given script without waiting for it to finish (beyond its synchronous kickoff). Use this
+        /// for scripts that start asynchronous work and stash their result on a window global that the caller
+        /// then polls for (via <see cref="RunJavascript"/>). Blocks only until the script has been dispatched
+        /// on the browser's thread.
+        /// </summary>
+        public void RunJavascriptFireAndForget(string script)
+        {
+            RunAndBlock(() =>
+            {
+                _browser.RunJavascriptFireAndForget(script);
+                return Task.FromResult(true);
+            });
+        }
+
+        /// <summary>
+        /// Discards the current inner browser and continues with a fresh one — a clean renderer with no
+        /// residual page state — reusing the same environment, then blocks until it is ready. Use this
+        /// whenever you need a clean browser (for example, to isolate one navigation from the previous one's
+        /// leftover state) without paying to recreate the environment: the browser process, user-data folder,
+        /// and HTTP cache stay warm across the series.
+        /// </summary>
+        public void StartFreshBrowser()
+        {
+            RunAndBlock(async () =>
+            {
+                _browser?.Dispose();
+                await CreateInnerBrowserAndWaitReadyAsync();
+                return true;
+            });
         }
 
         // Marshals an async function onto the dedicated thread and BLOCKS the calling thread for its result.
