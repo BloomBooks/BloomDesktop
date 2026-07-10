@@ -435,6 +435,21 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 10 Jul 2026 (PM, master integration) · cloud-collections is now UP TO DATE with
+  origin/master (c41fcfd2bd) — as a MERGE, not the planned rebase, deliberately: a true
+  rebase meant replaying 189 commits over a master that already contains cherry-picked
+  batch commits (e.g. the Common.BloomIsBusy l10n fix is master's tip), and it started
+  conflicting at commit 4/189 (add/add on files master partially has); cloud-collections
+  also already has merge-style history (task merges), so linearizing + force-pushing a
+  shared branch was worse than integrating. The merge itself completed with ZERO conflicts
+  (the feared overlap files — 2 XLF, CollectionApi.cs, ExternalApi.cs — all auto-merged;
+  the cherry-picked l10n fix was byte-identical on both sides). A safety branch
+  `cloud-collections-pre-rebase-2026-07-10` marks the pre-merge state. PNPM: the front-end
+  (src/BloomBrowserUI, BloomVisualRegressionTests, src/content) is now pnpm 11.5.2 — NEVER
+  yarn/npm there anymore (root AGENTS.md updated by master); the E2E harness
+  (src/BloomTests/e2e) deliberately KEEPS its own yarn.lock (unaffected by the migration)
+  · Next: pnpm install + C# cloud filter on the merged tree (running), push
+  cloud-collections, then OUTSTANDING BUGS #1 (e2e-4) and the remaining test pipeline.
 - 10 Jul 2026 (PM, later) · e2e-4 rerun FAILED with a NEW, fully-diagnosed signature (see
   OUTSTANDING BUGS #1 above — fixed shared download staging folder + over-broad locked-book
   skip in the new retry pass). Per John's live instruction: pausing the test loop here,
