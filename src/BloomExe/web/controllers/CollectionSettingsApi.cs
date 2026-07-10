@@ -186,7 +186,10 @@ namespace Bloom.web.controllers
                 true
             );
             // Calls to handle communication with the KeyboardSection control on the Book Making tab
-            // (plan item 6). GET does OS keyboard enumeration, which needs the UI thread.
+            // (plan item 6). Registered handleOnUiThread:false so the Keyman cloud search (network I/O,
+            // up to a multi-second timeout when offline) doesn't freeze the settings dialog; the
+            // UI-thread-only OS keyboard enumeration is marshalled back to the UI thread inside
+            // GetKeyboardsForLanguage.
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "keyboardsForLanguage",
                 request =>
@@ -196,7 +199,7 @@ namespace Bloom.web.controllers
                     var languageNumber = int.Parse(request.Parameters["languageNumber"]);
                     request.ReplyWithJson(GetKeyboardsForLanguage(languageNumber));
                 },
-                true
+                false
             );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "setKeyboardForLanguage",
@@ -656,22 +659,10 @@ namespace Bloom.web.controllers
             EnsureKeyboardServicesBuilt();
             var tag = writingSystem.Tag;
 
-            var current =
-                DialogBeingEdited?.PendingKeyboardSelections[zeroBasedLanguageNumber]
-                ?? writingSystem.Keyboard
-                ?? "";
-
-            var installed = _osKeyboards
-                .GetInstalledKeyboardsForLanguage(tag)
-                .Select(k => new
-                {
-                    id = k.Id,
-                    name = string.IsNullOrEmpty(k.LocalizedName) ? k.Name : k.LocalizedName,
-                })
-                .ToArray();
-
-            // SearchKeyboardsForLanguage already treats offline/failure as "no results" internally, so
-            // no extra try/catch is needed here to keep this endpoint responsive.
+            // Keyman cloud search does network I/O (up to a multi-second timeout when offline). This
+            // endpoint runs off the UI thread (see the handler registration), so this call happens on a
+            // server worker thread and never freezes the settings dialog. Offline/failure is treated as
+            // "no results" internally, so no try/catch is needed here.
             var cloudResults = _keymanCloudClient.SearchKeyboardsForLanguage(tag);
             var cloud = cloudResults
                 .Select(k => new
@@ -682,37 +673,60 @@ namespace Bloom.web.controllers
                 })
                 .ToArray();
 
-            object automaticResolvesTo;
-            var bestOsKeyboard = _osKeyboards.FindBestForLanguage(tag);
-            if (bestOsKeyboard != null)
+            // Reading the dialog's pending selection and enumerating OS keyboards are UI-thread-only
+            // (libpalaso's KeyboardController and Win32 input state), so marshal just those to the UI
+            // thread. automaticResolvesTo depends on the best OS keyboard, so it is computed here too.
+            string current = null;
+            object installed = null;
+            object automaticResolvesTo = null;
+            RunOnUiThread(() =>
             {
-                var name =
-                    installed.FirstOrDefault(k => k.id == bestOsKeyboard.Id)?.name
-                    ?? bestOsKeyboard.Id;
-                automaticResolvesTo = new { kind = "system", displayName = name };
-            }
-            else if (!string.IsNullOrEmpty(writingSystem.CachedKmwFallbackKeyboard))
-            {
-                var match = cloudResults.FirstOrDefault(k =>
-                    k.Id == writingSystem.CachedKmwFallbackKeyboard
-                );
-                automaticResolvesTo = new
+                current =
+                    DialogBeingEdited?.PendingKeyboardSelections[zeroBasedLanguageNumber]
+                    ?? writingSystem.Keyboard
+                    ?? "";
+
+                var installedList = _osKeyboards
+                    .GetInstalledKeyboardsForLanguage(tag)
+                    .Select(k => new
+                    {
+                        id = k.Id,
+                        name = string.IsNullOrEmpty(k.LocalizedName) ? k.Name : k.LocalizedName,
+                    })
+                    .ToArray();
+                installed = installedList;
+
+                var bestOsKeyboard = _osKeyboards.FindBestForLanguage(tag);
+                if (bestOsKeyboard != null)
                 {
-                    kind = "kmw",
-                    displayName = match?.Name ?? writingSystem.CachedKmwFallbackKeyboard,
-                };
-            }
-            else
-            {
-                automaticResolvesTo = new
+                    var name =
+                        installedList.FirstOrDefault(k => k.id == bestOsKeyboard.Id)?.name
+                        ?? bestOsKeyboard.Id;
+                    automaticResolvesTo = new { kind = "system", displayName = name };
+                }
+                else if (!string.IsNullOrEmpty(writingSystem.CachedKmwFallbackKeyboard))
                 {
-                    kind = "none",
-                    displayName = LocalizationManager.GetString(
-                        "CollectionSettingsDialog.BookMakingTab.Keyboard.NoneResolvesTo",
-                        "Default"
-                    ),
-                };
-            }
+                    var match = cloudResults.FirstOrDefault(k =>
+                        k.Id == writingSystem.CachedKmwFallbackKeyboard
+                    );
+                    automaticResolvesTo = new
+                    {
+                        kind = "kmw",
+                        displayName = match?.Name ?? writingSystem.CachedKmwFallbackKeyboard,
+                    };
+                }
+                else
+                {
+                    automaticResolvesTo = new
+                    {
+                        kind = "none",
+                        displayName = LocalizationManager.GetString(
+                            "CollectionSettingsDialog.BookMakingTab.Keyboard.NoneResolvesTo",
+                            "Default"
+                        ),
+                    };
+                }
+            });
 
             return new
             {
@@ -722,6 +736,22 @@ namespace Bloom.web.controllers
                 installed,
                 cloud,
             };
+        }
+
+        /// <summary>
+        /// Run <paramref name="action"/> on the WinForms UI thread. The keyboardsForLanguage endpoint is
+        /// served off the UI thread so its Keyman cloud search can't freeze the settings dialog, but OS
+        /// keyboard enumeration is UI-thread-only, so we marshal just that part back via the settings
+        /// dialog (which is the window this endpoint serves, so it is present here). Runs inline if we are
+        /// already on the UI thread or the dialog is unexpectedly absent.
+        /// </summary>
+        private static void RunOnUiThread(Action action)
+        {
+            var dialog = DialogBeingEdited;
+            if (dialog != null && dialog.InvokeRequired)
+                dialog.Invoke(action);
+            else
+                action();
         }
 
         // languageNumber is 1-based. Like UpdatePendingFontName, this flags
