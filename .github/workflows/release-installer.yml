@@ -20,11 +20,12 @@
 #       without it, dry runs still work but produce unsigned output.
 #   secrets.AWS_ACCESS_KEY_ID / secrets.AWS_SECRET_ACCESS_KEY
 #       Credentials with write access to the bloomlibrary.org bucket (only needed when publishing).
-#   vars.RELEASE_BUILD_COUNTER_BASE
-#       Offset added to github.run_number to form the third field of the version
-#       (Version = 6.5.<counter>). MUST be set higher than the last TeamCity build counter
-#       for any channel this workflow publishes to, because Velopack requires strictly
-#       increasing versions within a channel.
+#
+# Version numbers are per channel: each channel's sequence advances independently, and
+# Velopack only requires strictly increasing versions within a channel. So the build counter
+# (the patch part of Version = 6.5.<counter>) is derived from the channel's own feed --
+# latest published version + 1 -- which also continues seamlessly from the TeamCity history.
+# github.run_number is only a fallback for a brand-new channel that has no feed yet.
 
 name: Release Installer
 
@@ -100,24 +101,15 @@ jobs:
                   (cd src/BloomBrowserUI && pnpm install --frozen-lockfile) &
                   wait
 
-            # ----- Front-end production build -----
+            # ----- Front-end production build + tests -----
 
             - name: Build browser UI (production)
               working-directory: src/BloomBrowserUI
               run: pnpm run build-prod
 
-            # ----- Version number -----
-            # Bloom.proj's VersionNumbers target parses BUILD_NUMBER as <ignored>.<ignored>.<counter>.<hash>
-            # and produces Version = 6.5.<counter> (the major.minor lives in Bloom.proj, not here).
-            - name: Compute BUILD_NUMBER
-              shell: pwsh
-              run: |
-                  $base = [int]"${{ vars.RELEASE_BUILD_COUNTER_BASE || '0' }}"
-                  $counter = $base + ${{ github.run_number }}
-                  $hash = (git rev-parse --short HEAD).Trim()
-                  $buildNumber = "0.0.$counter.$hash"
-                  Write-Host "BUILD_NUMBER: $buildNumber (counter base $base + run number ${{ github.run_number }})"
-                  "BUILD_NUMBER=$buildNumber" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+            - name: Run browser UI tests
+              working-directory: src/BloomBrowserUI
+              run: pnpm test
 
             # ----- Velopack CLI -----
             # Install the exact version from Directory.Build.props up front. (Bloom.proj's
@@ -150,6 +142,39 @@ jobs:
                     }
                     Write-Warning "Could not download previous release state from $url. Continuing without it (no delta will be generated). This is expected only for a brand-new channel."
                   }
+
+            # ----- Version number -----
+            # Bloom.proj's VersionNumbers target parses BUILD_NUMBER as
+            # <ignored>.<ignored>.<counter>.<hash> and produces Version = 6.5.<counter>
+            # (the major.minor lives in Bloom.proj, not here). Version sequences are per
+            # channel, so continue from the channel feed we just downloaded: the highest
+            # published counter + 1.
+            - name: Compute BUILD_NUMBER from the channel feed
+              shell: pwsh
+              run: |
+                  $counters = @()
+                  $feed = Join-Path $env:INSTALLER_RESULT_DIR 'releases.win.json'
+                  if (Test-Path $feed) {
+                    $counters += (Get-Content $feed -Raw | ConvertFrom-Json).Assets | ForEach-Object {
+                      if ($_.Version -match '^\d+\.\d+\.(\d+)') { [int]$Matches[1] }
+                    }
+                  }
+                  # Also consider downloaded package file names, in case the hydrated dir has
+                  # packages but no feed file.
+                  $counters += Get-ChildItem $env:INSTALLER_RESULT_DIR -Filter *.nupkg | ForEach-Object {
+                    if ($_.Name -match '-\d+\.\d+\.(\d+)(?:-[^-]*)?-(?:full|delta)\.nupkg$') { [int]$Matches[1] }
+                  }
+                  if ($counters) {
+                    $counter = ($counters | Measure-Object -Maximum).Maximum + 1
+                    Write-Host "Highest published counter for channel '$env:CHANNEL' is $($counter - 1); using $counter."
+                  } else {
+                    $counter = ${{ github.run_number }}
+                    Write-Warning "No previous releases found for this channel; falling back to the workflow run number ($counter)."
+                  }
+                  $hash = (git rev-parse --short HEAD).Trim()
+                  $buildNumber = "0.0.$counter.$hash"
+                  Write-Host "BUILD_NUMBER: $buildNumber"
+                  "BUILD_NUMBER=$buildNumber" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
             # ----- Code signing (Microsoft Trusted Signing) -----
             # Decodes the same base64 credentials JSON that sillsdev/codesign/trusted-signing-action
@@ -222,6 +247,28 @@ jobs:
                     /p:channel=$env:CHANNEL `
                     /p:InstallerOutputFolder=$env:INSTALLER_RESULT_DIR `
                     /p:OkIfSigningFails=true
+
+            # ----- C# tests -----
+            # TestOnly runs NUnit against BloomTests.dll, which BuildInternal built alongside
+            # the app in the step above. Excluding SkipOnTeamCity matches what the TeamCity
+            # agents exclude: those tests cannot run in a CI environment. A failure here
+            # blocks the publish steps below.
+            - name: Run C# tests
+              working-directory: build
+              shell: pwsh
+              run: |
+                  msbuild Bloom.proj /t:TestOnly `
+                    /p:BUILD_NUMBER=$env:BUILD_NUMBER `
+                    /p:channel=$env:CHANNEL `
+                    /p:excludedCategories=SkipOnTeamCity
+
+            - name: Upload C# test results
+              if: ${{ always() }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: test-results
+                  path: output\Tests\Release\x64\TestResults.xml
+                  retention-days: 7
 
             # Bloom.proj tolerates signing failures off-TeamCity, so before anything goes public,
             # verify that everything we sign actually got a valid signature.
