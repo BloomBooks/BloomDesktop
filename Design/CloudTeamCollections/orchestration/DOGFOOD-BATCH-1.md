@@ -472,6 +472,16 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 10 Jul 2026 (PM, gauntlet running) · John authenticated gh. DRAFT PR CREATED:
+  https://github.com/BloomBooks/BloomDesktop/pull/8048 (cloud-collections → master, draft).
+  Devin triggered for HEAD 24b0f5c740 via the pr-automation workflow (completed = trigger
+  loaded); CodeRabbit + CI self-triggered on the PR. FULL E2E MATRIX running concurrently
+  (expected: 13/14, e2e-4's takeover assertion the only known failure — bug #0 pending
+  John's decision). If this session is cut off mid-gauntlet: re-run `/preflight` in a fresh
+  session — it re-enters wherever the PR/bots currently are (the devin-review skill gathers
+  + mirrors any finished Devin findings; matrix results land in the next entry) · Next:
+  poll bots (~30 min cap) → mirror Devin findings → fix/reply → matrix verdict → John's
+  decisions (bug #0, human tests).
 - 10 Jul 2026 (PM, preflight — END-OF-SESSION STATE) · Preflight (John's request) ran to the
   limit of what the session could do: LOCAL HALF COMPLETE — light-review sub-agent over the
   day's diff found 2 valid adjacent holes, both FIXED + unit-tested + pushed (72246c2975:
