@@ -4211,9 +4211,9 @@ bindings@^1.5.0:
     file-uri-to-path "1.0.0"
 
 bloom-player@^2.19.4:
-  version "2.20.0"
-  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.20.0.tgz#5b75324643a9e6d136e848e32ddba49eae3ecae5"
-  integrity sha512-9WAd1LZ1h2HP+G1CjzMRSbR8eOWAwd7brVm7WFQxn7IRpaUJUzctWP7qxaYK6S4p1WXNGCMXQ2pHoKGRAcBFvg==
+  version "2.20.1"
+  resolved "https://registry.yarnpkg.com/bloom-player/-/bloom-player-2.20.1.tgz#4e0193b798df0b91fb020787a16d769293174e7d"
+  integrity sha512-OgcZQYYBSmY1UhrmJhM7mcBbjvj/JyVQxymdOJYDfb0sLTRJGTl4xOCQFtmiqQ4yVyCq7nYeTZpPxBQHytwx8A==
 
 boom@2.x.x:
   version "2.10.1"
