@@ -88,13 +88,6 @@ namespace Bloom.ImageProcessing
             return false;
         }
 
-        private class ColorInfo
-        {
-            public Color color;
-            public bool isGrayish;
-            public bool isNearWhite;
-        }
-
         // Thresholds for the in-process dominant-color line-art check.
         // To be a line-art background, a color must have a perceptual brightness
         // of at least LineArtBackgroundMinBrightness and a chroma (max-min channel) of at

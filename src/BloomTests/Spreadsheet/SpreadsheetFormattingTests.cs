@@ -735,7 +735,13 @@ namespace BloomTests.Spreadsheet
             ExcelRange fifthCell = _worksheet.Cells[5, 5];
             string xmlString = SpreadsheetIO.BuildXmlString(fifthCell);
             Assert.That(xmlString.Length, Is.EqualTo(possibleExpected.Length));
-            Assert.That(Regex.IsMatch(xmlString, supRegex));
+            // The tag nesting order can vary, so accept either <sup><span>...
+            // or <span><sup>... for the colored superscript run.
+            Assert.That(
+                Regex.IsMatch(xmlString, supRegex) || Regex.IsMatch(xmlString, colorRegex),
+                Is.True,
+                "BuildXmlString result did not match either expected nesting order: " + xmlString
+            );
         }
 
         [Test]
