@@ -1,11 +1,13 @@
 # Cloud Team Collections — frozen API contracts (v1)
 
 Changes to this file require an orchestrator commit and a version-note bump here.
-**Contract version: 1.3** (8 Jul 2026 — added the "Auth (Option A)" section: the
-token-receipt endpoint BloomLibrary2's `src/editor.ts` forwards Firebase tokens to. v1.2,
-7 Jul: added the `get_book_manifest` RPC, additive; the Receive path needs a per-book file
-manifest and no existing RPC carried one. v1.1, 6 Jul: two wire-format clarifications under
-"Postgres RPCs"; no semantic changes.)
+**Contract version: 1.4** (9 Jul 2026 — added the `checkout_book_takeover` RPC, additive
+(account-switch behavior, dogfood batch item 9); `checkin_start_tx`/`checkin_finish_tx`
+unchanged. v1.3, 8 Jul: added the "Auth (Option A)" section: the token-receipt endpoint
+BloomLibrary2's `src/editor.ts` forwards Firebase tokens to. v1.2, 7 Jul: added the
+`get_book_manifest` RPC, additive; the Receive path needs a per-book file manifest and no
+existing RPC carried one. v1.1, 6 Jul: two wire-format clarifications under "Postgres
+RPCs"; no semantic changes.)
 
 ## Link file
 
@@ -77,6 +79,7 @@ with `p_`, and PostgREST matches JSON keys to parameter names — so clients sen
 | `get_changes(collection_id, since_event_id)` | events + touched book rows (polling/catch-up) |
 | `get_book_manifest(book_id)` | v1.2: per-file current manifest `{bookId, versionId, seq, checksum, files:[{path, sha256, size, s3VersionId}]}` for pinned-version Receive; never-committed books invisible except to their mid-Send lock holder |
 | `checkout_book(book_id, machine text)` | conditional lock; returns resulting status (winner's identity on failure) |
+| `checkout_book_takeover(book_id, machine text)` | v1.4: atomically reassigns another account's lock to the caller ONLY when the existing lock is recorded for the same machine (account-switch, batch item 9); returns `{success, locked_by, locked_by_machine, locked_at}` (same shape as checkout_book); emits a CheckOut event only on a genuine handover; safe to call speculatively — no-ops (success:false) when unlocked, already the caller's, or locked on a different machine. Note: `machine` is client-asserted, consistent with checkout_book's existing trust model. |
 | `unlock_book(book_id)` | release own lock (undo checkout, no content change) |
 | `force_unlock(book_id)` | admin; audited; emits ForcedUnlock event |
 | `delete_book(book_id)` | requires caller holds the lock; sets `deleted_at`; emits Deleted |
