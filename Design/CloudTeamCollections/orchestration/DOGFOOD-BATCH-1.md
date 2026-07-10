@@ -410,6 +410,15 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 10 Jul 2026 (resumed again after VS Code restart) · Verified state: main tree clean on
+  `task/b1-postbatch-defects` at b0941db62, no worktree WIP. Dev stack was BROKEN at resume:
+  edge-runtime container missing entirely and no `supabase functions serve` process (several
+  supabase containers had restarted ~45 min prior) — restarted functions serve with
+  server/dev/functions.env, endpoint now answering (401 on bare probe = healthy), edge
+  container up. Relaunched the three-defect diagnosis/fix agent (defects 1–3 from the 10 Jul
+  AM entry) on the existing branch in the main tree · Next: review + merge that branch, then
+  rerun e2e-3/4/5/8/10, then full matrix → rebase onto origin/master → post-rebase matrix →
+  John's visual checks.
 - 10 Jul 2026 (resumed after VS Code restart) · Verified resume state: working tree clean
   at ff6c5a6f8, no uncommitted worktree work, dev stack healthy (edge-runtime container
   restarted ~15 min prior but has its BLOOM_* env — NOT a functions-serve zombie).
