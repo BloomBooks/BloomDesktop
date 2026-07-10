@@ -56,13 +56,25 @@ namespace Bloom.TeamCollection
         /// Records <paramref name="email"/> as the last confirmed member to use this collection
         /// on this machine. Safe/cheap to call on every successful connection check; does
         /// nothing if <paramref name="email"/> is null/empty (so a caller can pass through an
-        /// unresolved identity without special-casing it).
+        /// unresolved identity without special-casing it), and does NOT rewrite the file when
+        /// the recorded value is already current. That last point is load-bearing, not an
+        /// optimization: CheckConnection runs from the UI thread's idle-time collection-file
+        /// sync, and an unconditional write here retriggers the local FileSystemWatcher that
+        /// SCHEDULES that sync -- an infinite idle-loop of network calls that starved the UI
+        /// thread (found live, 10 Jul 2026: every checkInCurrentBook request timed out because
+        /// the UI thread never got free). TeamCollection.OnChanged also now ignores this file
+        /// by name; both guards are deliberate (either alone would break the loop, but the
+        /// watcher exclusion also stops the file from being treated as a syncable collection
+        /// file, and this check also protects any future non-watcher caller).
         /// </summary>
         public static void Record(string localCollectionFolder, string email)
         {
             if (string.IsNullOrEmpty(email))
                 return;
-            RobustFile.WriteAllText(GetPath(localCollectionFolder), email.Trim());
+            var trimmed = email.Trim();
+            if (Read(localCollectionFolder) == trimmed)
+                return;
+            RobustFile.WriteAllText(GetPath(localCollectionFolder), trimmed);
         }
     }
 }

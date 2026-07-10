@@ -580,6 +580,12 @@ namespace Bloom.TeamCollection
 
             if (e.Name == kLastcollectionfilesynctimeTxt)
                 return; // side effect of doing a sync!
+            if (e.Name == TeamCollectionLastKnownUser.FileName)
+                return; // local-only sidecar, written from CheckConnection -- which the idle sync
+            // this handler schedules itself calls, so reacting to it here creates an infinite
+            // idle-loop of network calls that starves the UI thread (found live, 10 Jul 2026).
+            // It must also never be treated as a syncable collection file: it is per-machine
+            // state, not shared content.
             if (Directory.Exists(e.FullPath))
                 return; // we seem to get frequent notifications that seem to be spurious for book folders.
             // We'll wait for the system to be idle before writing to the repo. This helps to ensure things

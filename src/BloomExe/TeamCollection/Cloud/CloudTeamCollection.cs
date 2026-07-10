@@ -1298,7 +1298,12 @@ namespace Bloom.TeamCollection.Cloud
                         )
                         .GetAwaiter()
                         .GetResult();
-                    keys.AddRange(response.S3Objects.Select(o => o.Key));
+                    // AWSSDK v4 returns null (not empty) response collections when the prefix has
+                    // no objects — routine for the allowed-words/sample-texts groups, which most
+                    // collections never populate. (Same v4 change S3Extensions.ListAllObjects
+                    // guards; found live by the first post-bump E2E pass.)
+                    if (response.S3Objects != null)
+                        keys.AddRange(response.S3Objects.Select(o => o.Key));
                     continuationToken =
                         response.IsTruncated == true ? response.NextContinuationToken : null;
                 } while (continuationToken != null);
