@@ -333,8 +333,9 @@ signed in as B:
   without editing), history records the checkin by B.
 
 ### 10. AWSSDK.S3 version bump (John decision, 9 Jul: take it on this branch)  `[quick-medium]`
-Status: IN PROGRESS on branch `task/b1-10-awssdk-bump` (bump committed 9b81c6040; cloud filter
-387/387 green; full-suite verification running)
+Status: CODE DONE + SUITES GREEN on branch `task/b1-10-awssdk-bump` (bump 9b81c6040; not yet
+merged) — remaining: orchestrator's e2e-1 + e2e-2 through MinIO, then John's [HUMAN] web
+up/download check
 - [x] Bump AWSSDK.S3 (and its AWSSDK.Core pair) to current stable in the csproj(s); check
       whether BloomHarvester/other projects pin the same package family and must move in
       lockstep. DONE: BloomExe.csproj Core 3.5.1.32 -> 4.0.100.3, S3 3.5.3.10 -> 4.0.100.3
@@ -352,8 +353,17 @@ Status: IN PROGRESS on branch `task/b1-10-awssdk-bump` (bump committed 9b81c6040
       in S3Extensions.ListAllObjects and BloomS3ClientTests.DeleteFromUnitTestBucketAsync;
       removed two orphaned usings that broke the v4 compile (ThirdParty.Json.LitJson was
       embedded in AWSSDK.Core v3 and is gone in v4).
-- [ ] Suites: cloud filter + ONE full BloomTests run (AWSSDK is used by the BloomLibrary
+- [x] Suites: cloud filter + ONE full BloomTests run (AWSSDK is used by the BloomLibrary
       web-upload code — WebLibraryIntegration — so cloud-only filters are NOT sufficient).
+      DONE: baseline full run on UNMODIFIED cloud-collections FIRST (so pre-existing
+      failures can't be blamed on the bump): 3036 passed / 0 failed / 13 skipped / 3049
+      total. Post-bump: cloud filter 387/387; full run 3036 passed / 0 failed / 13 skipped
+      / 3049 total — identical to baseline, zero regressions. S3-specific fixtures called
+      out explicitly: CloudBookTransferTests 11/11, BloomS3ClientTests +
+      CloudEnvironmentTests' S3ForcePathStyle test, 44/44 in the combined ~S3/~
+      CloudBookTransfer/~BloomS3Client filter, including the LIVE
+      DownloadBook_DoesNotExist_Throws which hit the real BloomLibraryBooks-UnitTests
+      bucket with the v4 client (validating the null-S3Objects fix against real AWS).
 - [ ] E2E: at least e2e-1 + e2e-2 (S3 up/down through MinIO exercises the new SDK's
       path-style + AssumeRole handling — the risky surface for a bump).
 - [ ] [HUMAN, John] Manual check that web book upload (publish to bloomlibrary.org) and
@@ -455,3 +465,20 @@ Status: IN PROGRESS on branch `task/b1-10-awssdk-bump` (bump committed 9b81c6040
   launching Bloom/e2e) — `join-auto-open` + `e2e-9-new-book-lifecycle` queued for the orchestrator
   · Next: orchestrator review + merge of task/b1-7-progressive-join into cloud-collections, then
   the queued E2E pass, then items 9/10.
+- 9 Jul 2026 (agent) · Item 10 (AWSSDK bump) CODE DONE + SUITES GREEN on branch
+  `task/b1-10-awssdk-bump` (created from origin/cloud-collections; not yet merged): AWSSDK.Core
+  3.5.1.32 -> 4.0.100.3 and AWSSDK.S3 3.5.3.10 -> 4.0.100.3 in BloomExe.csproj (major v4);
+  parity-check tool floats 3.* -> 4.*; no other project pins the family, AWSSDK.SecurityToken is
+  not referenced anywhere, no transitive SIL pin conflicts. v4 adjustments:
+  RequestChecksumCalculation/ResponseChecksumValidation=WHEN_REQUIRED on the two MinIO-facing
+  client builders (CloudBookTransfer, CloudTeamCollection) — v4's WHEN_SUPPORTED default sends
+  CRC32/CRC64 trailing checksums S3-compatible endpoints may reject; BloomS3Client (real AWS)
+  keeps v4 defaults. Null-collection/bool? fixes in S3Extensions.ListAllObjects +
+  BloomS3ClientTests; removed 2 orphaned usings (LitJson embedded in v3 Core, gone in v4).
+  Baseline full BloomTests on UNMODIFIED cloud-collections FIRST: 3036/0/13 (3049 total);
+  post-bump: cloud filter 387/387, full suite 3036/0/13 — identical, zero regressions;
+  S3-specific fixtures 44/44 incl. the LIVE DownloadBook_DoesNotExist_Throws against real AWS.
+  E2E NOT run (orchestrator's job): e2e-1 + e2e-2 through MinIO queued — watch for checksum
+  (should be silent now), path-style, and AuthenticationRegion behavior; then John's [HUMAN]
+  web up/download check (GOING-LIVE.md 4.3) · Next: orchestrator review + merge of
+  task/b1-10-awssdk-bump, then the queued E2E pass.
