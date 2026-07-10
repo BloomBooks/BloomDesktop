@@ -2,9 +2,9 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Edit;
+using Bloom.Publish;
 using Bloom.ToPalaso;
 using SIL.Progress;
 
@@ -39,7 +39,9 @@ namespace Bloom.Book
         /// end is skipped, and nothing is persisted. The caller (external/process-book) surfaces this
         /// as an error so BloomBridge can re-run, rather than leaving a half-processed book on disk.
         ///
-        /// Must be called on the UI thread: it creates and pumps a WebView2 browser.
+        /// Can run on any thread (and the caller runs it on a background thread so the UI stays responsive):
+        /// the WebView2 it drives lives on the OffScreenBrowser's own dedicated thread, and this method just
+        /// blocks on it. The book, however, must not be touched by another thread while we process it.
         ///
         /// When <paramref name="fitImageTextSplits"/> is true, simple two-pane origami pages with a
         /// single illustration in the first pane and a single text block in the second pane have their
@@ -51,11 +53,6 @@ namespace Bloom.Book
         /// </summary>
         public static int ProcessBook(Book book, bool fitImageTextSplits = false)
         {
-            Debug.Assert(
-                Program.RunningOnUiThread || Program.RunningUnitTests,
-                "BookProcessor.ProcessBook must run on the UI thread (it drives a WebView2)."
-            );
-
             // 1. Structural "make it right" pass. Besides migrations, this ensures stylesheet links
             //    (and, when we Save below, the actual CSS files) that BloomBridge's raw HTML may
             //    be missing. See BookStorage.EnsureHasLinksToStylesheets.
@@ -85,57 +82,48 @@ namespace Bloom.Book
 
             var pageIndex = 0;
 
-            // Create a FRESH WebView2 control per page, but share ONE CoreWebView2Environment across them.
+            // Process every page with an off-screen browser that lives on its own dedicated thread, so we can
+            // drive it with blocking calls that never pump the main UI message loop.
             //
-            // Fresh control per page: we must NOT reuse a single control. Each editing page is a full
+            // Fresh renderer per page: we must NOT reuse a single browser control. Each editing page is a full
             // live-edit page (it opens the edit WebSocket channel and fires editView/* API calls on load);
             // that residual state wedges the next top-level navigation in the same control, which hangs or
-            // crashes Bloom on the 2nd page. A fresh control gives each page a clean renderer, torn down on
-            // dispose, so every page behaves like the always-working first one.
+            // crashes Bloom on the 2nd page. StartFreshBrowser() gives each page a clean renderer, so every
+            // page behaves like the always-working first one.
             //
-            // Shared environment: left to itself, each control would also create its OWN environment — a new
-            // browser process and a cold HTTP cache — costing ~300ms+ per page. Sharing one environment
-            // (one process, one user-data folder, one cache) across the batch removes that per-page cost and
-            // warms the cache so later pages navigate faster. Measured ~31s -> ~18s for a 22-page book
-            // (per-page init ~315ms -> ~100ms, nav ~940ms -> ~550ms after page 1).
-            WebView2Browser.BeginSharedEnvironmentBatch();
-            try
+            // Shared environment: OffScreenBrowser keeps ONE CoreWebView2Environment (one browser process,
+            // user-data folder, and HTTP cache) alive across those fresh renderers, so we don't pay
+            // environment creation per page and later pages navigate against a warm cache. (Measured, with the
+            // previous shared-environment approach, ~31s -> ~18s for a 22-page book.)
+            using (var browser = new OffScreenBrowser())
             {
-                foreach (var page in pages)
+                try
                 {
-                    pageIndex++;
-                    Browser browser = null;
-                    try
-                    {
-                        browser = BrowserMaker.MakeBrowser();
-                        // Force the control's window handle into existence. The WebView2's CoreWebView2
-                        // initialization (kicked off unawaited in the browser constructor) can only complete
-                        // once the control has a realized HWND; until it does, _readyToNavigate never becomes
-                        // true and navigation just times out. HtmlThumbNailer does the same thing for its
-                        // off-screen browser. (We never add this browser to a Form, so nothing else would
-                        // create the handle for us.)
-                        browser.CreateControl();
+                    // If realizing the off-screen browser pulled Bloom to the front, put the previous window
+                    // back so we keep processing quietly in the background.
+                    RestoreForeground(priorForeground);
 
-                        // If realizing the off-screen browser pulled Bloom to the front, put the
-                        // previous window back so we keep processing quietly in the background.
-                        RestoreForeground(priorForeground);
+                    foreach (var page in pages)
+                    {
+                        pageIndex++;
+                        if (pageIndex > 1)
+                        {
+                            // Fresh renderer for this page (see above); the shared environment stays warm.
+                            browser.StartFreshBrowser();
+                            RestoreForeground(priorForeground);
+                        }
 
                         ProcessOnePage(book, browser, page, fitImageTextSplits);
 
                         Log($"page {pageIndex}/{pages.Count} [{page.Id}] done");
                     }
-                    finally
-                    {
-                        browser?.Dispose();
-                    }
                 }
-            }
-            finally
-            {
-                WebView2Browser.EndSharedEnvironmentBatch();
-                // Final safety net: make sure we leave the foreground where we found it, even if a
-                // page threw partway through the batch.
-                RestoreForeground(priorForeground);
+                finally
+                {
+                    // Final safety net: make sure we leave the foreground where we found it, even if a
+                    // page threw partway through the batch.
+                    RestoreForeground(priorForeground);
+                }
             }
 
             // 3. One full save now that every page's in-memory DOM has been updated.
@@ -175,7 +163,7 @@ namespace Bloom.Book
 
         private static void ProcessOnePage(
             Book book,
-            Browser browser,
+            OffScreenBrowser browser,
             IPage page,
             bool fitImageTextSplits
         )
@@ -197,31 +185,15 @@ namespace Bloom.Book
             // Frame == "Editing View is updating single displayed page": serves the page as-is.
             // (Unlike JustCheckingPage, it does not swap videos for placeholder images.)
             //
-            // We deliberately do NOT use NavigateAndWaitTillDone here. That waits for the WebView2
-            // NavigationCompleted event (the window 'load' event), which is unreliable for a full
-            // editing page loaded off-screen: the editing bundle opens the edit WebSocket channel and
-            // fires editView/* API calls on load, and we have observed document.readyState getting
-            // stuck at "interactive" (load never firing) even though bootstrap()/SetupElements() has
-            // fully run and there are no pending sub-resources. Waiting for 'load' just burns the whole
-            // timeout. Instead we fire the navigation and then poll for __bloomEditablePageReady, which
-            // is the signal we actually care about (the load-time DOM fix-ups are in place).
-            //
-            // Navigate() blocks internally until the control is ready to navigate, so we pre-wait here.
-            // With the shared environment the heavy browser-process/cache warm-up is paid once for the
-            // batch, so after the first page this mostly waits on the control's handle/CoreWebView2
-            // initialization.
-            var readyTimer = Stopwatch.StartNew();
-            while (!browser.IsReadyToNavigate)
-            {
-                if (readyTimer.ElapsedMilliseconds >= kReadyTimeoutMs)
-                    throw new ApplicationException(
-                        $"process-book: timed out waiting for the browser to become ready to navigate on page {page.Id}."
-                    );
-                Application.DoEvents();
-                Thread.Sleep(5);
-            }
-
-            browser.Navigate(dom, source: InMemoryHtmlFileSource.Frame);
+            // We navigate WITHOUT waiting for the 'load' event, which is unreliable for a full editing page
+            // loaded off-screen: the editing bundle opens the edit WebSocket channel and fires editView/* API
+            // calls on load, and we have observed document.readyState getting stuck at "interactive" (load
+            // never firing) even though bootstrap()/SetupElements() has fully run and there are no pending
+            // sub-resources. Waiting for 'load' would just burn the whole timeout. Instead we fire the
+            // navigation and then poll for __bloomEditablePageReady, which is the signal we actually care
+            // about (the load-time DOM fix-ups are in place). The browser is already ready to navigate (the
+            // OffScreenBrowser blocked until it was) so there is no ready-wait to do here.
+            browser.NavigateWithoutWaitingForLoad(dom, InMemoryHtmlFileSource.Frame);
 
             // Wait until bootstrap()/SetupElements() has actually run (signaled by
             // __bloomEditablePageReady), not merely until the bundle's exports exist, so the load-time
@@ -230,7 +202,7 @@ namespace Bloom.Book
                 browser,
                 "(window.__bloomEditablePageReady && window.editablePageBundle) ? 'ready' : ''",
                 "the editing bundle to initialize",
-                page
+                page.Id
             );
 
             // Ask the bundle to gather the (now browser-processed) page content. It stashes the
@@ -239,9 +211,7 @@ namespace Bloom.Book
             // The boolean tells the bundle whether to auto-fit simple image/text origami splits before
             // capturing (see fitImageOverTextSplits in bloomEditing.ts).
             // Fire-and-forget: capture is asynchronous (it stashes onto window.__bloomExternalPageContent
-            // when it finishes) and we poll for that below, so there is no result to wait for here. The
-            // sync RunJavascriptWithStringResult_Sync_Dangerous would only block until the script's
-            // synchronous kickoff returned, which buys us nothing.
+            // when it finishes) and we poll for that below, so there is no result to wait for here.
             browser.RunJavascriptFireAndForget(
                 $"window.editablePageBundle.captureContentForExternalProcessing({(fitImageTextSplits ? "true" : "false")})"
             );
@@ -250,7 +220,7 @@ namespace Bloom.Book
                 browser,
                 "window.__bloomExternalPageContent || ''",
                 "the page content to be captured",
-                page
+                page.Id
             );
 
             if (pageContent.StartsWith("ERROR:", StringComparison.Ordinal))
@@ -268,35 +238,36 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Polls a javascript expression (which evaluates to a non-empty string when "ready") until
-        /// it is non-empty or we time out, returning the result.
+        /// Polls a javascript expression (which evaluates to a non-empty string when "ready") against the
+        /// given off-screen browser until it is non-empty or we time out, returning the result.
         ///
-        /// We deliberately keep this "poll a window global" approach for the off-screen processor
-        /// rather than the async editView/pageContent API callback the live editor uses: that callback
-        /// pattern needs the live EditingModel and edit WebSocket channel, which a throwaway off-screen
-        /// browser doesn't have, and the per-page loop here wants a deterministic in-line result. We are
-        /// aware RunJavascriptWithStringResult_Sync_Dangerous is the same family of call implicated in
-        /// past page-content deadlocks (BL-13120 etc.); moving this to an async/callback design is
-        /// deferred. That method already pumps the message loop while it waits for each script to
-        /// return, so we do NOT pump again between polls (just sleep briefly).
+        /// We deliberately keep this "poll a window global" approach for the off-screen processor rather than
+        /// the async editView/pageContent API callback the live editor uses: that callback pattern needs the
+        /// live EditingModel and edit WebSocket channel, which a throwaway off-screen browser doesn't have,
+        /// and the per-page loop here wants a deterministic in-line result. Each poll blocks the calling
+        /// thread while the browser's OWN thread runs the script, so we never pump the main UI message loop
+        /// between polls (just sleep briefly) — this is what replaced the old
+        /// RunJavascriptWithStringResult_Sync_Dangerous, which pumped the main loop and risked the reentrancy
+        /// behind past page-content deadlocks (BL-13120 etc.).
         /// </summary>
-        private static string WaitForJavascriptResult(
-            Browser browser,
+        internal static string WaitForJavascriptResult(
+            OffScreenBrowser browser,
             string script,
             string whatWeAreWaitingFor,
-            IPage page
+            string pageId,
+            int timeoutMs = kReadyTimeoutMs
         )
         {
             var timer = Stopwatch.StartNew();
-            while (timer.ElapsedMilliseconds < kReadyTimeoutMs)
+            while (timer.ElapsedMilliseconds < timeoutMs)
             {
-                var result = browser.RunJavascriptWithStringResult_Sync_Dangerous(script);
+                var result = browser.RunJavascript(script);
                 if (!string.IsNullOrEmpty(result))
                     return result;
                 Thread.Sleep(20);
             }
             throw new ApplicationException(
-                $"process-book: timed out waiting for {whatWeAreWaitingFor} on page {page.Id}."
+                $"process-book: timed out waiting for {whatWeAreWaitingFor} on page {pageId}."
             );
         }
     }

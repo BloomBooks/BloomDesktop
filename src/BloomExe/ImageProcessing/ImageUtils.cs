@@ -751,7 +751,8 @@ namespace Bloom.ImageProcessing
         public static string ProcessAndSaveImageIntoFolder(
             PalasoImage imageInfo,
             string bookFolderPath,
-            bool isSameFile
+            bool isSameFile,
+            bool resizeFileIfNeeded = true
         )
         {
             // As of BL-15441, we aren't using real placeHolder image files anymore. But if one is there,
@@ -808,21 +809,24 @@ namespace Bloom.ImageProcessing
                 // In that case, we don't need to save it again.
                 if (!reusingSameFilename)
                 {
-                    // Resize if the image is larger than our limit.
-                    var importSize = GetDesiredImageSize(
-                        imageInfo.Image.Width,
-                        imageInfo.Image.Height
-                    );
-                    if (
-                        importSize.Width < imageInfo.Image.Width
-                        || importSize.Height < imageInfo.Image.Height
-                    )
+                    if (resizeFileIfNeeded)
                     {
-                        var resized = TryResizeImageWithGraphicsMagick(imageInfo, importSize);
-                        if (resized != null)
+                        // Resize if the image is larger than our limit.
+                        var importSize = GetDesiredImageSize(
+                            imageInfo.Image.Width,
+                            imageInfo.Image.Height
+                        );
+                        if (
+                            importSize.Width < imageInfo.Image.Width
+                            || importSize.Height < imageInfo.Image.Height
+                        )
                         {
-                            imageInfo.Image = resized;
-                            sourcePath = imageInfo.GetCurrentFilePath();
+                            var resized = TryResizeImageWithGraphicsMagick(imageInfo, importSize);
+                            if (resized != null)
+                            {
+                                imageInfo.Image = resized;
+                                sourcePath = imageInfo.GetCurrentFilePath();
+                            }
                         }
                     }
 
@@ -895,6 +899,39 @@ namespace Bloom.ImageProcessing
                         + imageInfo.FileName,
                     error
                 );
+            }
+        }
+
+        private static bool IsIndexedColorPngFile(string filePath)
+        {
+            var header = new byte[26];
+            try
+            {
+                using (var file = RobustFile.OpenRead(filePath))
+                {
+                    file.Read(header, 0, 26);
+                }
+
+                // Check PNG Signature (First 8 bytes == "\x89PNG\r\n\x1a\n")
+                var isPng =
+                    header[0] == 0x89
+                    && header[1] == 0x50
+                    && header[2] == 0x4E
+                    && header[3] == 0x47
+                    && header[4] == 0x0D
+                    && header[5] == 0x0A
+                    && header[6] == 0x1A
+                    && header[7] == 0x0A;
+                if (!isPng)
+                    return false;
+
+                // Check Color Type byte (3 = indexed color) from the IHDR chunk (Offset 25)
+                var colorType = header[25];
+                return colorType == 3;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -1820,10 +1857,30 @@ namespace Bloom.ImageProcessing
             bool makeOpaque = false
         )
         {
+            var sourcePath = imageInfo.GetCurrentFilePath();
+            var indexedPNG =
+                (imageInfo.Image.RawFormat.Guid == ImageFormat.Png.Guid)
+                && (imageInfo.Image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed;
+            // pixel information is not preserved loading from clipboard, so check the file itself.
+            if (!indexedPNG && !string.IsNullOrEmpty(sourcePath))
+                indexedPNG = IsIndexedColorPngFile(sourcePath);
+            if (indexedPNG && !makeOpaque)
+            {
+                // Don't try to resize indexed PNGs unless we're making them opaque, or unless the shrinkage
+                // looks like it will be worthwhile. (BL-16424)
+                // GraphicsMagick will convert indexed PNGs to non-indexed PNGs, which can make the file bigger.
+                // We compare the raw image sizes based on dimensions and pixel size.  These estimates are very
+                // approximate, and may overestimate the size of the indexed PNGs (which may have 1, 2, 4, or 8
+                // bits per pixel), but it should be good enough to avoid most unnecessary conversions.
+                var currentArea =
+                    (long)imageInfo.Image.Size.Height * (long)imageInfo.Image.Size.Width; // 1 byte per pixel for indexed PNGs
+                var newArea = (long)size.Height * (long)size.Width * 4; // 4 bytes per pixel for non-indexed PNGs (assume alpha channel)
+                if (currentArea <= newArea)
+                    return null; // don't bother trying to shrink the image: it probably isn't worth the effort.
+            }
             var graphicsMagickPath = GetGraphicsMagickPath();
             if (RobustFile.Exists(graphicsMagickPath))
             {
-                var sourcePath = imageInfo.GetCurrentFilePath();
                 var isJpegImage = AppearsToBeJpeg(imageInfo);
                 // Track whether we created sourcePath ourselves so we know it's safe to delete.
                 // Pre-existing book images (including those in export staging folders under GetTempPath)

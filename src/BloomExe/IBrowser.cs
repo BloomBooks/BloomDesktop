@@ -324,11 +324,6 @@ namespace Bloom
                 PortableClipboard.SetText(html);
         }
 
-        [Obsolete(
-            "This method is dangerous because it has to loop Application.DoEvents(). RunJavaScriptAsync() is preferred."
-        )]
-        public abstract string RunJavascriptWithStringResult_Sync_Dangerous(string script);
-
         public abstract Task<string> GetStringFromJavascriptAsync(string script);
         public abstract Task<string> GetObjectFromJavascriptAsync(string script);
         public abstract Task RunJavascriptAsync(string script);

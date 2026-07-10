@@ -3,7 +3,7 @@
  * For licensing, see LICENSE.md or http://ckeditor.com/license
  */
 
-// Warning: this file may not be processed by yarn watch. A full build or manual copy may be needed
+// Warning: this file may not be processed by pnpm watch. A full build or manual copy may be needed
 // to get changes to take effect during debugging.
 
 // Note: I determined (by searching for 'revision' in ckeditor.js, as some doc suggests) that we are using

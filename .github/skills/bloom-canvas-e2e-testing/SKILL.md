@@ -30,15 +30,15 @@ Use the `src/BloomBrowserUI` package and run the canvas suite via the root e2e s
 
 1) Install once (or when deps change):
 - `cd src/BloomBrowserUI`
-- `yarn install`
+- `pnpm install`
 
 2) Run one canvas test:
 - `cd src/BloomBrowserUI`
-- `yarn e2e canvas specs/01-toolbox-drag-to-canvas.spec.ts`
+- `pnpm e2e canvas specs/01-toolbox-drag-to-canvas.spec.ts`
 
 3) Run the full canvas suite:
 - `cd src/BloomBrowserUI`
-- `yarn e2e canvas`
+- `pnpm e2e canvas`
 
 ## Frame model (critical)
 Bloom Edit Tab has multiple iframes. Use frame names first:
@@ -89,7 +89,7 @@ A valid non-trivial proof test should:
 
 ## Troubleshooting
 - If test says "No tests found": verify path filter is relative to the config `testDir`.
-- If command says `playwright: not found`: run `yarn install` in `src/BloomBrowserUI`.
+- If command says `playwright: not found`: run `pnpm install` in `src/BloomBrowserUI`.
 - If canvas waits time out: confirm you selected the `page` frame, not top frame.
 - If canvas tab click times out: check whether Canvas controls are already visible and skip click in that case.
 
