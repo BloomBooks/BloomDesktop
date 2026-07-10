@@ -188,6 +188,28 @@ namespace BloomTests.Keyboarding
         }
 
         [Test]
+        public void BuildDownloadInfoUrl_IncludesVendoredEngineVersion()
+        {
+            // Regression guard: without an explicit `version`, the cloud API filters for engine
+            // version "2.0" and 404s any keyboard needing a modern engine (e.g. thai_kedmanee_mattix
+            // needs 17.0). That bug made keyboard downloads fail silently for most current keyboards.
+            var url = KeymanCloudClient.BuildDownloadInfoUrl("thai_kedmanee_mattix", "th");
+            Assert.That(
+                url,
+                Is.EqualTo(
+                    "https://api.keyman.com/cloud/4.0/keyboards/thai_kedmanee_mattix/th"
+                        + "?languageidtype=bcp47&version="
+                        + KeymanCloudClient.kVendoredEngineVersion
+                )
+            );
+            Assert.That(
+                KeymanCloudClient.kVendoredEngineVersion,
+                Is.Not.EqualTo("2.0"),
+                "the whole point is to override the API's ancient default"
+            );
+        }
+
+        [Test]
         public void GetDownloadInfo_BadArgs_Throw()
         {
             var client = new KeymanCloudClient();

@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import {
+    render,
+    screen,
+    fireEvent,
+    cleanup,
+    within,
+} from "@testing-library/react";
 
 vi.mock("../utils/bloomApi", () => ({
     get: vi.fn(),
@@ -97,19 +103,85 @@ describe("KeyboardSection", () => {
 
         fireEvent.mouseDown(screen.getByRole("combobox"));
 
-        expect(screen.getByText("Automatic")).toBeInTheDocument();
+        // "Automatic" also appears in the closed control's display (renderValue),
+        // so scope the group assertions to the open dropdown list.
+        const list = within(screen.getByRole("listbox"));
+        expect(list.getByText("Automatic")).toBeInTheDocument();
         expect(
-            screen.getByText("Currently: No keyboard on this machine"),
+            list.getByText("Currently: No keyboard on this machine"),
         ).toBeInTheDocument();
 
-        expect(screen.getByText("Installed input methods")).toBeInTheDocument();
-        expect(screen.getByText("Thai Kedmanee (Windows)")).toBeInTheDocument();
+        expect(list.getByText("Off")).toBeInTheDocument();
 
-        expect(
-            screen.getByText("Keyman (online) keyboards"),
-        ).toBeInTheDocument();
-        expect(screen.getByText("Thai Kedmanee (Keyman)")).toBeInTheDocument();
-        expect(screen.getByText("4,321 downloads")).toBeInTheDocument();
+        expect(list.getByText("Installed input methods")).toBeInTheDocument();
+        expect(list.getByText("Thai Kedmanee (Windows)")).toBeInTheDocument();
+
+        expect(list.getByText("Keyman (online) keyboards")).toBeInTheDocument();
+        expect(list.getByText("Thai Kedmanee (Keyman)")).toBeInTheDocument();
+        expect(list.getByText("4,321 downloads")).toBeInTheDocument();
+    });
+
+    it("shows the Automatic label in the closed control when current is the empty (Automatic) value", () => {
+        mockKeyboardData(baseData); // baseData.current === ""
+        render(<KeyboardSection languageNumber={1} languageName="Thai" />);
+
+        // Sanity check: the dropdown is closed (no list open), so the only
+        // "Automatic" on screen is the one rendered inside the closed control.
+        expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+        // renderValue maps the empty (Automatic) value to the Automatic label
+        // in the closed control; without it MUI would render a blank.
+        expect(screen.getByRole("combobox")).toHaveTextContent("Automatic");
+    });
+
+    it("shows only the keyboard name (not the download count) in the closed control for a selected cloud keyboard", () => {
+        mockKeyboardData({ ...baseData, current: "kmw:thai_kedmanee@th" });
+        render(<KeyboardSection languageNumber={1} languageName="Thai" />);
+
+        // Sanity check: the dropdown is closed, so we are inspecting the
+        // selected-value display, not an open menu item.
+        expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+        const combobox = screen.getByRole("combobox");
+        expect(combobox).toHaveTextContent("Thai Kedmanee (Keyman)");
+        // The "162 downloads"-style secondary line belongs in the menu, not the
+        // chosen result.
+        expect(combobox).not.toHaveTextContent("downloads");
+    });
+
+    it("shows the installed keyboard name in the closed control for a selected system keyboard", () => {
+        mockKeyboardData({
+            ...baseData,
+            current: "system:thai_kedmanee_win",
+        });
+        render(<KeyboardSection languageNumber={1} languageName="Thai" />);
+
+        expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+        expect(screen.getByRole("combobox")).toHaveTextContent(
+            "Thai Kedmanee (Windows)",
+        );
+    });
+
+    it("renders an Off option and posts the 'off' setting string when chosen", () => {
+        mockKeyboardData(baseData);
+        render(<KeyboardSection languageNumber={2} languageName="Thai" />);
+
+        fireEvent.mouseDown(screen.getByRole("combobox"));
+        fireEvent.click(screen.getByText("Off"));
+
+        expect(postDataMock).toHaveBeenCalledWith(
+            "settings/setKeyboardForLanguage",
+            {
+                languageNumber: 2,
+                keyboard: "off",
+            },
+        );
+    });
+
+    it("shows the Off label in the closed control when current is 'off'", () => {
+        mockKeyboardData({ ...baseData, current: "off" });
+        render(<KeyboardSection languageNumber={1} languageName="Thai" />);
+
+        expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+        expect(screen.getByRole("combobox")).toHaveTextContent("Off");
     });
 
     it("posts the raw setting string for the language number when a different keyboard is chosen", () => {

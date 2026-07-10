@@ -724,10 +724,12 @@ namespace Bloom.web.controllers
             };
         }
 
-        // languageNumber is 1-based. Unlike UpdatePendingFontName, this does NOT flag
-        // ChangeThatRequiresRestart(): that decision is deferred to dialog OK-commit time (see
-        // CollectionSettingsDialog.UpdateLanguageSettings), since only then do we know the pending
-        // value is actually final (the user may pick several keyboards before settling on one).
+        // languageNumber is 1-based. Like UpdatePendingFontName, this flags
+        // ChangeThatRequiresRestart() as soon as the selection differs from the saved setting, so the
+        // dialog's OK button switches to "Restart" immediately (the change genuinely needs a restart;
+        // flagging it here means the user is not surprised by one after clicking OK). The authoritative
+        // "did it actually change" check still runs at OK-commit time in
+        // CollectionSettingsDialog.UpdateLanguageSettings.
         private void UpdatePendingKeyboard(string keyboard, int languageNumber)
         {
             Guard.Against(
@@ -742,7 +744,15 @@ namespace Bloom.web.controllers
             )
                 return;
             if (DialogBeingEdited != null)
+            {
                 DialogBeingEdited.PendingKeyboardSelections[zeroBasedLanguageNumber] = keyboard;
+                // Normalize null to "" so switching between the two null/empty forms of Automatic is
+                // not mistaken for a change.
+                var currentKeyboard =
+                    _collectionSettings.AllLanguages[zeroBasedLanguageNumber].Keyboard ?? "";
+                if ((keyboard ?? "") != currentKeyboard)
+                    DialogBeingEdited.ChangeThatRequiresRestart();
+            }
         }
 
         private void UpdatePendingNumberingStyle(string numberingStyle)

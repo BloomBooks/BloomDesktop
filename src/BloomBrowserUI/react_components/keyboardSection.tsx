@@ -8,6 +8,7 @@ import { get, postData } from "../utils/bloomApi";
 import { useL10n } from "./l10nHooks";
 import { useMountEffect } from "../utils/useMountEffect";
 import WinFormsStyleSelect from "./winFormsStyleSelect";
+import { bookMakingSelectCss } from "../collection/commonTabSettings";
 
 interface IAutomaticResolvesTo {
     kind: "system" | "kmw" | "none";
@@ -40,6 +41,7 @@ interface IKeyboardsForLanguage {
 
 // The raw setting string forms, per Design/Keyboards/keyboard-setting-plan.md.
 const kAutomaticValue = "";
+const kOffValue = "off";
 const kCloudUnavailableValue = "__cloud_unavailable__";
 
 function systemValue(id: string): string {
@@ -91,6 +93,12 @@ const KeyboardSection: React.FunctionComponent<{
         "CollectionSettingsDialog.BookMakingTab.Keyboard.Automatic",
     );
 
+    const offLabel = useL10n(
+        "Off",
+        "CollectionSettingsDialog.BookMakingTab.Keyboard.Off",
+        "Chooser option meaning Bloom should not change or supply a keyboard for this language; it leaves whatever keyboard the user has active.",
+    );
+
     const automaticResolvesToLabel = useL10n(
         "Currently: {0}",
         "CollectionSettingsDialog.BookMakingTab.Keyboard.AutomaticResolvesTo",
@@ -136,6 +144,25 @@ const KeyboardSection: React.FunctionComponent<{
     // gates SingleFontSection on its font data being available.
     if (!data) return null;
 
+    // Render the closed-control display for the selected value. Unlike the menu
+    // items, this shows only the keyboard's primary name: the secondary lines
+    // (Automatic's "Currently:" resolves-to text, and a cloud keyboard's
+    // download count) help while choosing but only clutter the chosen result.
+    const renderSelectedValue = (value: string): React.ReactNode => {
+        if (value === kOffValue) return offLabel;
+        const installedMatch = data.installed.find(
+            (k) => systemValue(k.id) === value,
+        );
+        if (installedMatch) return installedMatch.name;
+        const cloudMatch = data.cloud.find(
+            (k) => cloudValue(k.id, data.languageTag) === value,
+        );
+        if (cloudMatch) return cloudMatch.name;
+        // kAutomaticValue ("") and any unrecognized/legacy value alike resolve
+        // to Automatic at edit time, so show Automatic in the control too.
+        return automaticLabel;
+    };
+
     const menuItems: JSX.Element[] = [
         <MenuItem key="automatic" value={kAutomaticValue}>
             <div
@@ -147,6 +174,9 @@ const KeyboardSection: React.FunctionComponent<{
                 <span>{automaticLabel}</span>
                 <span css={secondaryTextCss}>{automaticResolvesToLabel}</span>
             </div>
+        </MenuItem>,
+        <MenuItem key="off" value={kOffValue}>
+            {offLabel}
         </MenuItem>,
     ];
 
@@ -212,6 +242,7 @@ const KeyboardSection: React.FunctionComponent<{
             <Typography
                 css={css`
                     font-weight: 700 !important;
+                    margin-top: 8px !important;
                 `}
             >
                 {keyboardForLabel}
@@ -220,6 +251,9 @@ const KeyboardSection: React.FunctionComponent<{
                 idKey={`keyboard-${props.languageNumber}`}
                 currentValue={current}
                 onChangeHandler={handleChange}
+                displayEmpty
+                renderValue={renderSelectedValue}
+                css={bookMakingSelectCss}
             >
                 {menuItems}
             </WinFormsStyleSelect>

@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Keyboarding;
+using Bloom.Properties;
 using SIL.Windows.Forms.Keyboarding;
 
 namespace Bloom.web.controllers
@@ -83,6 +84,34 @@ namespace Bloom.web.controllers
                 HandleFieldFocused,
                 handleOnUiThread: true
             );
+
+            // The user's remembered on-screen-keyboard visibility. The browser shows the KeymanWeb OSK
+            // automatically for KMW fields, but once the user closes it we must not keep re-opening it on
+            // every field focus. The browser POSTs false when the user closes the OSK and true when they
+            // ask for it again (via the keyboard indicator), and GETs the remembered value on startup.
+            // Stored as a global user preference so the choice persists across sessions. No UI-thread work.
+            apiHandler.RegisterEndpointHandler(
+                "keyboarding/oskVisible",
+                HandleOskVisible,
+                handleOnUiThread: false
+            );
+        }
+
+        /// <summary>
+        /// Get or set the remembered on-screen-keyboard visibility user preference (see registration).
+        /// </summary>
+        private void HandleOskVisible(ApiRequest request)
+        {
+            if (request.HttpMethod == HttpMethods.Get)
+            {
+                request.ReplyWithBoolean(Settings.Default.KeymanOskVisible);
+            }
+            else
+            {
+                Settings.Default.KeymanOskVisible = request.RequiredPostBooleanAsJson();
+                Settings.Default.Save();
+                request.PostSucceeded();
+            }
         }
 
         /// <summary>
@@ -127,6 +156,9 @@ namespace Bloom.web.controllers
         {
             if (useKmw)
                 return; // KMW handles typing for this field; leave the OS input language alone.
+
+            if (resolution.Kind == KeyboardResolutionKind.Off)
+                return; // "Off": Bloom does not manage this language's keyboard; leave the OS input alone.
 
             if (resolution.Kind == KeyboardResolutionKind.OsKeyboard)
             {

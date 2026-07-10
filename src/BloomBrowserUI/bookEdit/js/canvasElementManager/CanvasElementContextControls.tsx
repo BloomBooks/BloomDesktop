@@ -35,6 +35,7 @@ import {
     getMenuSections,
     getToolbarItems,
 } from "../../toolbox/canvas/canvasControlResolution";
+import { getLanguageDisplayName } from "../../editableControls/editableControlsManager";
 
 interface IMenuItemWithSubmenu extends ILocalizableMenuItemProps {
     subMenu?: ILocalizableMenuItemProps[];
@@ -63,7 +64,12 @@ const CanvasElementContextControls: React.FunctionComponent<{
     const editable = props.canvasElement.getElementsByClassName(
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement | undefined;
-    const langName = editable?.getAttribute("data-languagetipcontent");
+    // Formerly read from a data-languageTipContent attribute set by the old
+    // AddLanguageTags. That mechanism is gone (the corner tag is now a React
+    // control); compute the same display name from the editable's lang here.
+    const langName = getLanguageDisplayName(
+        editable?.getAttribute("lang") ?? null,
+    );
     const setMenuOpen = (open: boolean, launchingDialog?: boolean) => {
         // Even though we've done our best to tell the MUI menu NOT to steal focus, it seems it still does...
         // or some other code somewhere is doing it when we choose a menu item. So we tell the CanvasElementManager

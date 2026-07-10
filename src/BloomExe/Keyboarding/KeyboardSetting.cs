@@ -10,6 +10,7 @@ namespace Bloom.Keyboarding
     /// <remarks>
     /// String forms:
     ///   ""                         -> Automatic
+    ///   "off"                      -> Off (Bloom leaves the keyboard alone for this language)
     ///   "system:&lt;libpalaso keyboard Id&gt;" -> System (a specific installed OS/TSF input method)
     ///   "kmw:&lt;keyboardId&gt;@&lt;bcp47&gt;"   -> KeymanWeb (a specific pinned Keyman-cloud keyboard)
     /// Parsing is tolerant of malformed/unrecognized input: it degrades to Automatic rather than
@@ -25,6 +26,9 @@ namespace Bloom.Keyboarding
             /// <summary>Resolve per-machine at edit time: OS keyboard if installed, else the cached KeymanWeb fallback.</summary>
             Automatic,
 
+            /// <summary>Bloom does not manage the keyboard for this language: it neither switches the OS input method nor attaches KeymanWeb, leaving whatever the user has active.</summary>
+            Off,
+
             /// <summary>A specific installed OS/TSF input method, identified by its libpalaso keyboard Id.</summary>
             System,
 
@@ -34,6 +38,7 @@ namespace Bloom.Keyboarding
 
         private const string SystemPrefix = "system:";
         private const string KeymanWebPrefix = "kmw:";
+        private const string OffValue = "off";
 
         /// <summary>
         /// The singleton Automatic setting (empty string form).
@@ -43,6 +48,11 @@ namespace Bloom.Keyboarding
             "",
             ""
         );
+
+        /// <summary>
+        /// The singleton Off setting.
+        /// </summary>
+        public static readonly KeyboardSetting Off = new KeyboardSetting(Kind.Off, "", "");
 
         /// <summary>
         /// Which kind of setting this instance represents.
@@ -91,6 +101,9 @@ namespace Bloom.Keyboarding
             if (string.IsNullOrEmpty(value))
                 return Automatic;
 
+            if (string.Equals(value, OffValue, StringComparison.Ordinal))
+                return Off;
+
             if (value.StartsWith(SystemPrefix, StringComparison.Ordinal))
             {
                 var id = value.Substring(SystemPrefix.Length);
@@ -121,6 +134,8 @@ namespace Bloom.Keyboarding
         {
             switch (SettingKind)
             {
+                case Kind.Off:
+                    return OffValue;
                 case Kind.System:
                     return SystemPrefix + Id;
                 case Kind.KeymanWeb:

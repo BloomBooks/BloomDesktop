@@ -177,6 +177,31 @@ namespace BloomTests.Keyboarding
         }
 
         [Test]
+        public void Resolve_Off_ReturnsOffAndDoesNotConsultOsOrCloud()
+        {
+            var os = new FakeOsKeyboards();
+            // Sanity: an OS keyboard and a cloud suggestion both exist; "Off" must ignore them.
+            os.ByLanguage["th"] = OsInfo("th-TH_Thai", "th-TH");
+            var fallback = new FakeFallback();
+            fallback.Suggestions["th"] = "thai_kedmanee";
+            var resolver = MakeResolver(
+                SettingsWith(MakeWs("th", keyboard: "off")),
+                os,
+                fallback,
+                new List<WritingSystem>()
+            );
+
+            var r = resolver.Resolve("th");
+
+            Assert.That(r.Kind, Is.EqualTo(KeyboardResolutionKind.Off));
+            Assert.That(
+                fallback.EnsureCachedCalls,
+                Is.Empty,
+                "Off must not do any KMW caching work"
+            );
+        }
+
+        [Test]
         public void Resolve_PinnedSystem_Installed_UsesThatOsKeyboard()
         {
             var os = new FakeOsKeyboards();

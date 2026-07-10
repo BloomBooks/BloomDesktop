@@ -403,6 +403,11 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.Keyboard.Automatic</note>
         <note>First item of the per-language Keyboard dropdown in the Book Making tab of Settings. Means "let Bloom figure out the best keyboard for this language on this machine".</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Keyboard.Off" translate="no">
+        <source xml:lang="en">Off</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Keyboard.Off</note>
+        <note>An item in the per-language Keyboard dropdown in the Book Making tab of Settings. Means Bloom should not change or supply a keyboard for this language; it leaves whatever keyboard the user has active.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Keyboard.AutomaticResolvesTo" translate="no">
         <source xml:lang="en">Currently: {0}</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Keyboard.AutomaticResolvesTo</note>
@@ -1587,6 +1592,11 @@
       <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true">
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
+      </trans-unit>
+      <trans-unit id="EditTab.EditableControls.ShowOnScreenKeyboard" translate="no">
+        <source xml:lang="en">Show on-screen keyboard</source>
+        <note>ID: EditTab.EditableControls.ShowOnScreenKeyboard</note>
+        <note>Tooltip on a small keyboard icon that appears at the corner of a text box when that box is focused and uses a Keyman on-screen keyboard. Clicking the icon re-opens the on-screen keyboard.</note>
       </trans-unit>
       <trans-unit id="EditTab.SubscriptionEnabled" sil:dynamic="true">
         <source xml:lang="en">Your subscription includes this feature.</source>

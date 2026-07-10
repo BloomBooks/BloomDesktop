@@ -265,6 +265,7 @@ namespace BloomTests.Collection
         }
 
         [TestCase("", KeyboardSetting.Kind.Automatic, "", "")]
+        [TestCase("off", KeyboardSetting.Kind.Off, "", "")]
         [TestCase("system:mykeyboard", KeyboardSetting.Kind.System, "mykeyboard", "")]
         [TestCase("kmw:thai_kedmanee@th", KeyboardSetting.Kind.KeymanWeb, "thai_kedmanee", "th")]
         [TestCase("system:", KeyboardSetting.Kind.Automatic, "", "")] // malformed: no id
@@ -303,6 +304,12 @@ namespace BloomTests.Collection
             );
 
             Assert.That(KeyboardSetting.Automatic.ToString(), Is.EqualTo(""));
+
+            Assert.That(KeyboardSetting.Off.ToString(), Is.EqualTo("off"));
+            Assert.That(
+                KeyboardSetting.Parse(KeyboardSetting.Off.ToString()).SettingKind,
+                Is.EqualTo(KeyboardSetting.Kind.Off)
+            );
         }
 
         [Test]

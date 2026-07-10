@@ -84,6 +84,13 @@ namespace Bloom.Keyboarding
     /// </summary>
     public class KeymanCloudClient
     {
+        // The KeymanWeb engine version we vendor (src/BloomBrowserUI/keymanweb, 18.0.x). The cloud
+        // API's `version` parameter filters results to keyboards compatible with this ENGINE version
+        // and defaults to "2.0" (ancient) when omitted — which silently 404s any keyboard requiring
+        // a modern engine (e.g. thai_kedmanee_mattix needs 17.0). Keep this in sync when the vendored
+        // engine is upgraded.
+        internal const string kVendoredEngineVersion = "18.0";
+
         // A single shared HttpClient is the recommended pattern; reusing it avoids socket exhaustion.
         // 5s timeout: metadata queries are best-effort enrichment, so we fail fast to "offline"
         // rather than making the user wait.
@@ -141,16 +148,25 @@ namespace Bloom.Keyboarding
             if (string.IsNullOrWhiteSpace(bcp47))
                 throw new ArgumentException("A language tag is required.", nameof(bcp47));
 
-            var url =
-                "https://api.keyman.com/cloud/4.0/keyboards/"
-                + Uri.EscapeDataString(keyboardId)
-                + "/"
-                + Uri.EscapeDataString(bcp47)
-                + "?languageidtype=bcp47";
-            var json = TryGetString(url);
+            var json = TryGetString(BuildDownloadInfoUrl(keyboardId, bcp47));
             if (json == null)
                 return null;
             return ParseDownloadInfo(json, keyboardId, bcp47);
+        }
+
+        /// <summary>
+        /// The cloud/4.0 URL for a keyboard/language's download metadata. Factored out (and
+        /// internal) so a test can pin the `version` parameter: omitting it makes the API filter
+        /// for the default engine version "2.0", which silently excludes most modern keyboards.
+        /// </summary>
+        internal static string BuildDownloadInfoUrl(string keyboardId, string bcp47)
+        {
+            return "https://api.keyman.com/cloud/4.0/keyboards/"
+                + Uri.EscapeDataString(keyboardId)
+                + "/"
+                + Uri.EscapeDataString(bcp47)
+                + "?languageidtype=bcp47&version="
+                + kVendoredEngineVersion;
         }
 
         /// <summary>

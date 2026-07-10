@@ -14,6 +14,9 @@ namespace Bloom.Keyboarding
         /// <summary>No Bloom-supplied keyboard; switch the OS input language back to the default (English).</summary>
         Default,
 
+        /// <summary>Bloom leaves the keyboard alone: no OS switch, no KeymanWeb (the "Off" setting).</summary>
+        Off,
+
         /// <summary>Switch the OS input language to an installed input method (no KeymanWeb).</summary>
         OsKeyboard,
 
@@ -148,6 +151,11 @@ namespace Bloom.Keyboarding
 
             var setting = KeyboardSetting.Parse(ws.Keyboard);
 
+            // 0. Off: Bloom does not manage the keyboard for this language. Don't switch the OS input
+            // and don't attach KeymanWeb; leave whatever the user has active.
+            if (setting.SettingKind == KeyboardSetting.Kind.Off)
+                return OffResolution(tag);
+
             // 1. Pinned system keyboard: use it if installed here, else fall through to Automatic.
             if (setting.SettingKind == KeyboardSetting.Kind.System)
             {
@@ -235,6 +243,11 @@ namespace Bloom.Keyboarding
                 Kind = KeyboardResolutionKind.Default,
                 LanguageTag = tag,
             };
+        }
+
+        private static KeyboardResolution OffResolution(string tag)
+        {
+            return new KeyboardResolution { Kind = KeyboardResolutionKind.Off, LanguageTag = tag };
         }
 
         private static KeyboardResolution OsResolution(string tag, OsKeyboardInfo os)

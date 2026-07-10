@@ -2,6 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../utils/bloomApi", () => ({
     postJsonAsync: vi.fn(),
+    postBoolean: vi.fn(),
+    // The keyboarding/oskVisible endpoint doesn't exist yet; simulate that by
+    // invoking the error callback, which leaves the desired-visible default
+    // (true) in place.
+    get: vi.fn((_url, _success, error?: () => void) => error?.()),
 }));
 
 vi.mock("../longPressShared", () => ({
@@ -22,20 +27,54 @@ const setKmwAttachedMock = vi.mocked(setKmwAttached);
 function makeFakeKeyman() {
     return {
         init: vi.fn().mockResolvedValue(undefined),
-        addKeyboards: vi.fn(),
+        // The real engine resolves with one {keyboard, error?} entry per
+        // registered keyboard; an entry with `error` means that stub was
+        // rejected (it does NOT reject the promise).
+        addKeyboards: vi
+            .fn()
+            .mockResolvedValue([
+                { keyboard: { id: "Keyboard_thai_kedmanee" } },
+            ]),
         getKeyboards: vi.fn(() => [
             { InternalName: "Keyboard_thai_kedmanee", HasLoaded: true },
         ]),
+        getActiveKeyboard: vi.fn(() => "Keyboard_thai_kedmanee"),
         setActiveKeyboard: vi.fn().mockResolvedValue(undefined),
         attachToControl: vi.fn(),
         setKeyboardForControl: vi.fn(),
-        osk: { show: vi.fn(), hide: vi.fn() },
+        osk: makeFakeOsk(),
+    };
+}
+
+// The OSK exposes show/hide plus an addEventListener the integration uses to
+// learn when the USER closes the keyboard. fireHide() lets tests simulate that
+// close (HiddenByUser: true) or a programmatic hide (false).
+function makeFakeOsk() {
+    const hideHandlers: ((obj: { HiddenByUser: boolean }) => void)[] = [];
+    const fireHide = (hiddenByUser: boolean) =>
+        hideHandlers.forEach((h) => h({ HiddenByUser: hiddenByUser }));
+    return {
+        show: vi.fn(),
+        // Mirror the real engine: on desktop the public hide() is a "user-level"
+        // hide, so it fires the "hide" event with HiddenByUser:true even though
+        // WE called it. This is exactly the ambiguity the integration must handle.
+        hide: vi.fn(() => fireHide(true)),
+        addEventListener: vi.fn(
+            (event: string, handler: (obj: any) => void) => {
+                if (event === "hide") hideHandlers.push(handler);
+            },
+        ),
+        // Simulate the user clicking the OSK's own close button.
+        fireHide,
     };
 }
 
 function makeEditable(lang: string): HTMLElement {
     const el = document.createElement("div");
     el.setAttribute("lang", lang);
+    // Focusable so tests can make it document.activeElement — the OSK is only
+    // shown while focus is still in the field being attached.
+    el.tabIndex = 0;
     document.body.appendChild(el);
     return el;
 }
@@ -168,9 +207,14 @@ describe("keymanWebIntegration", () => {
         expect(fakeKeyman.addKeyboards).toHaveBeenCalledWith(
             expect.objectContaining({
                 id: "thai_kedmanee",
+                // The engine's custom-keyboard validation requires a keyboard
+                // name and a language region; without them registration is
+                // rejected (see attachKmwKeyboard).
+                name: "thai_kedmanee",
                 languages: [
                     expect.objectContaining({
                         id: "th",
+                        region: expect.any(String),
                         font: {
                             family: "Padauk",
                             source: ["/fonts/padauk.woff"],
@@ -183,6 +227,25 @@ describe("keymanWebIntegration", () => {
                 ],
             }),
         );
+    });
+
+    it("throws when the engine rejects the keyboard stub", async () => {
+        postJsonAsyncMock.mockResolvedValue({ data: kmwInfo } as any);
+        // The real engine reports a bad stub via an `error` entry in the
+        // RESOLVED array (it does not reject), e.g. when required fields are
+        // missing. That must surface as a failure, not vanish silently.
+        fakeKeyman.addKeyboards.mockResolvedValue([
+            {
+                keyboard: { id: "Keyboard_thai_kedmanee" },
+                error: new Error("To use a custom keyboard, ..."),
+            },
+        ]);
+
+        const editable = makeEditable("th");
+        await expect(attachKeymanWebIfNeeded(editable)).rejects.toThrow(
+            /rejected keyboard thai_kedmanee/,
+        );
+        expect(fakeKeyman.attachToControl).not.toHaveBeenCalled();
     });
 
     it("omits font/oskFont from the language spec when the server doesn't supply them", async () => {
@@ -208,5 +271,53 @@ describe("keymanWebIntegration", () => {
         const osFallbackField = makeEditable("fr");
         await attachKeymanWebIfNeeded(osFallbackField);
         expect(setKmwAttachedMock).not.toHaveBeenCalledWith(osFallbackField);
+    });
+
+    it("stops auto-showing the OSK once the user has closed it, but still shows it the first time", async () => {
+        postJsonAsyncMock.mockResolvedValue({ data: kmwInfo } as any);
+
+        // First KMW focus: the OSK is shown automatically (default desired state).
+        const field1 = makeEditable("th");
+        field1.focus();
+        await attachKeymanWebIfNeeded(field1);
+        expect(fakeKeyman.osk.show).toHaveBeenCalledTimes(1);
+
+        // The user closes the OSK themselves (HiddenByUser).
+        fakeKeyman.osk.fireHide(true);
+
+        // Focusing another KMW field must NOT pop the OSK back up.
+        const field2 = makeEditable("th");
+        field2.focus();
+        await attachKeymanWebIfNeeded(field2);
+        expect(fakeKeyman.osk.show).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps auto-showing the OSK when Bloom hides it for a non-KMW field (Thai → English → Thai)", async () => {
+        // Reproduces the reported bug: after clicking English (which makes Bloom
+        // hide the OSK) the Thai OSK must still come back.
+        postJsonAsyncMock.mockImplementation((_url: string, body: any) =>
+            Promise.resolve({
+                data: body.lang === "th" ? kmwInfo : { useKmw: false },
+            } as any),
+        );
+
+        const thai1 = makeEditable("th");
+        thai1.focus();
+        await attachKeymanWebIfNeeded(thai1);
+        expect(fakeKeyman.osk.show).toHaveBeenCalledTimes(1);
+
+        // Click into English: Bloom hides the OSK. On desktop this goes through
+        // the engine's user-level hide() (HiddenByUser:true) — but it's OUR hide,
+        // not a user close, so it must not disable auto-showing.
+        const english = makeEditable("en");
+        english.focus();
+        await attachKeymanWebIfNeeded(english);
+        expect(fakeKeyman.osk.hide).toHaveBeenCalled();
+
+        // Back into Thai: the OSK should reappear.
+        const thai2 = makeEditable("th");
+        thai2.focus();
+        await attachKeymanWebIfNeeded(thai2);
+        expect(fakeKeyman.osk.show).toHaveBeenCalledTimes(2);
     });
 });
