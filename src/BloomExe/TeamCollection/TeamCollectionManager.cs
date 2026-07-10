@@ -777,9 +777,12 @@ namespace Bloom.TeamCollection
 
         /// <summary>
         /// Disable most TC functionality under various conditions. Put a warning in
-        /// the log.
+        /// the log. Virtual only so a test-only subclass can record when it's called relative to
+        /// TeamCollection.SynchronizeRepoAndLocal, pinning WorkspaceModel's call-ordering fix for
+        /// the "tier-timing" bug (see the ordering tests alongside
+        /// TeamCollectionTierTimingTests).
         /// </summary>
-        public void CheckDisablingTeamCollections(CollectionSettings settings)
+        public virtual void CheckDisablingTeamCollections(CollectionSettings settings)
         {
             if (CurrentCollection == null)
                 return; // already disabled, or not a TC

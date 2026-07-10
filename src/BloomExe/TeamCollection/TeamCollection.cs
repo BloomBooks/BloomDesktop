@@ -3159,10 +3159,13 @@ namespace Bloom.TeamCollection
 
         /// <summary>
         /// Main entry point called before creating CollectionSettings; updates local folder to match
-        /// repo one, if any. Not unit tested, as it mainly handles wrapping SyncAtStartup with a
-        /// progress dialog.
+        /// repo one, if any. The real implementation itself isn't unit tested (it mainly handles
+        /// wrapping SyncAtStartup with a progress dialog), but it's virtual so a test-only
+        /// subclass can override it to pin down WorkspaceModel.HandleTeamStuffBeforeGetBookCollections'
+        /// call-ordering around it (see the "tier-timing" fix's ordering tests) without ever
+        /// showing a real dialog.
         /// </summary>
-        public void SynchronizeRepoAndLocal(Action whenDone = null)
+        public virtual void SynchronizeRepoAndLocal(Action whenDone = null)
         {
             Analytics.Track(
                 "TeamCollectionOpen",
