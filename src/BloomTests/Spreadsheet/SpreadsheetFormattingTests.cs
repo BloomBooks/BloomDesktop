@@ -731,7 +731,7 @@ namespace BloomTests.Spreadsheet
             string supRegex =
                 "<p>Head.*<sup>.* shoulders.*</sup>.*<sup> knees</sup><span style=\"color:#ABCABC;\"> and toes</span></p>";
             string colorRegex =
-                "<p>Head.*<span  style=\"color:#DEF123;\">.* shoulders.*</span>.*<sup> knees</sup><span style=\"color:#ABCABC;\"> and toes</span></p>";
+                "<p>Head.*<span style=\"color:#DEF123;\">.* shoulders.*</span>.*<sup> knees</sup><span style=\"color:#ABCABC;\"> and toes</span></p>";
             ExcelRange fifthCell = _worksheet.Cells[5, 5];
             string xmlString = SpreadsheetIO.BuildXmlString(fifthCell);
             Assert.That(xmlString.Length, Is.EqualTo(possibleExpected.Length));
