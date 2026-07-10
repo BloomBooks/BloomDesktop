@@ -420,7 +420,6 @@ namespace Bloom.TeamCollection
                 var collectionFilesModTime = new FileInfo(repoProjectFilesZipPath).LastWriteTime;
                 GetMaxModifyTime("Allowed Words", ref collectionFilesModTime);
                 GetMaxModifyTime("Sample Texts", ref collectionFilesModTime);
-                GetMaxModifyTime("Keyboards", ref collectionFilesModTime);
                 return collectionFilesModTime;
             }
         }
@@ -440,18 +439,16 @@ namespace Bloom.TeamCollection
             }
         }
 
-        // Make a zip file (in our standard location in the Other directory) of the files in the
-        // specified folder, including any subfolders (recursively). The zip file has the same name
-        // as the folder. Recursion matters for the Keyboards folder, which has a fonts/ subfolder;
-        // the other synced folders (Allowed Words, Sample Texts) are flat, so they behave the same
-        // as before.
+        // Make a zip file (in our standard location in the Other directory) of the top-level
+        // files in the specified folder. The zip file has the same name as the folder.
+        // At this point, we are not handling child folders.
         protected override void CopyLocalFolderToRepo(string folderName)
         {
             var sourceDir = Path.Combine(_localCollectionFolder, folderName);
             if (!Directory.Exists(sourceDir))
                 return;
             var destPath = GetZipFileForFolder(folderName, _repoFolderPath);
-            RobustZip.WriteAllFilesToZip(destPath, sourceDir);
+            RobustZip.WriteAllTopLevelFilesToZip(destPath, sourceDir);
         }
 
         /// <summary>
@@ -588,7 +585,6 @@ namespace Bloom.TeamCollection
             _collectionLock.UnlockFor(() => CopyRepoCollectionFilesTo(destFolder, _repoFolderPath));
             ExtractFolder(destFolder, _repoFolderPath, "Allowed Words");
             ExtractFolder(destFolder, _repoFolderPath, "Sample Texts");
-            ExtractFolder(destFolder, _repoFolderPath, "Keyboards");
             SyncColorPaletteFileWithRepo(destFolder);
         }
 

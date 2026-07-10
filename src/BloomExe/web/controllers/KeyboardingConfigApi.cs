@@ -285,7 +285,7 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// The real <see cref="IKmwFallbackService"/>: looks up the top Keyman-cloud suggestion for a
-        /// language and pre-caches keyboards into the collection's Keyboards folder.
+        /// language and pre-caches keyboards into the collection's .keyboards folder.
         /// </summary>
         private class KmwFallbackService : IKmwFallbackService
         {

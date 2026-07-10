@@ -43,12 +43,14 @@ namespace Bloom.Keyboarding
     /// Manages the per-collection cache of KeymanWeb keyboards so typing works offline. Layout under
     /// the collection folder:
     /// <code>
-    ///   Keyboards/
+    ///   .keyboards/
     ///     &lt;id&gt;.js       -- the KeymanWeb keyboard stub
     ///     &lt;id&gt;.json     -- the KeyboardCacheManifest
     ///     fonts/          -- downloaded font files (ttf/woff) referenced by manifests
     /// </code>
-    /// The whole <c>Keyboards/</c> folder syncs via Team Collections. Downloads are written with a
+    /// The <c>.keyboards/</c> folder is a per-machine local cache and is deliberately NOT synced via
+    /// Team Collections (the leading dot marks it as local-only): each machine acquires keyboards on
+    /// demand, so a teammate does not need the lead's cached files. Downloads are written with a
     /// temp-file-then-rename dance so a crash mid-download never leaves a half-written file that
     /// looks valid, and the manifest is written LAST so its presence implies the other files exist.
     /// </summary>
@@ -58,10 +60,10 @@ namespace Bloom.Keyboarding
         private readonly KeymanCloudClient _client;
 
         /// <summary>
-        /// Create a cache rooted at the given collection folder. The <c>Keyboards/</c> subfolder is
+        /// Create a cache rooted at the given collection folder. The <c>.keyboards/</c> subfolder is
         /// created lazily on first download.
         /// </summary>
-        /// <param name="collectionFolder">The collection folder that will hold <c>Keyboards/</c>.</param>
+        /// <param name="collectionFolder">The collection folder that will hold <c>.keyboards/</c>.</param>
         /// <param name="client">The Keyman cloud client to fetch metadata/files with; a default is
         /// created if null.</param>
         public CollectionKeyboardCache(string collectionFolder, KeymanCloudClient client = null)
@@ -71,11 +73,11 @@ namespace Bloom.Keyboarding
                     "A collection folder is required.",
                     nameof(collectionFolder)
                 );
-            _keyboardsFolder = Path.Combine(collectionFolder, "Keyboards");
+            _keyboardsFolder = Path.Combine(collectionFolder, ".keyboards");
             _client = client ?? new KeymanCloudClient();
         }
 
-        /// <summary>The absolute path of the <c>Keyboards/</c> folder.</summary>
+        /// <summary>The absolute path of the <c>.keyboards/</c> folder.</summary>
         public string KeyboardsFolder => _keyboardsFolder;
 
         /// <summary>

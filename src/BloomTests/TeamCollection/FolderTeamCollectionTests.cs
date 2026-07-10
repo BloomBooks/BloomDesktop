@@ -559,8 +559,9 @@ namespace BloomTests.TeamCollection
             var samples1 = Path.Combine(sampleTextsSource, "texts1.txt");
             File.WriteAllText(samples1, "this is the first sample text for tok pisin");
 
-            // Make a Keyboards folder (cached KeymanWeb keyboards, incl. a fonts/ subfolder)
-            var keyboardsSource = Path.Combine(_collectionFolder.FolderPath, "Keyboards");
+            // Make a local .keyboards cache folder (with a fonts/ subfolder). It starts with a dot,
+            // marking it local-only, so the assertions below prove it is NOT synced to teammates.
+            var keyboardsSource = Path.Combine(_collectionFolder.FolderPath, ".keyboards");
             Directory.CreateDirectory(keyboardsSource);
             var keyboardManifest = Path.Combine(keyboardsSource, "thai_kedmanee.json");
             File.WriteAllText(keyboardManifest, "this is a fake keyboard manifest");
@@ -651,24 +652,13 @@ namespace BloomTests.TeamCollection
                     Is.EqualTo("this is the first sample text for tok pisin"),
                     "copied the sample texts file"
                 );
+                // The .keyboards folder is a per-machine local cache, deliberately NOT synced via
+                // Team Collections (its leading dot marks it local-only): each machine acquires the
+                // keyboards it needs on demand, so nothing here should be copied to a teammate.
                 Assert.That(
-                    File.ReadAllText(
-                        Path.Combine(tempDest.FolderPath, "Keyboards", "thai_kedmanee.json")
-                    ),
-                    Is.EqualTo("this is a fake keyboard manifest"),
-                    "copied the keyboard manifest"
-                );
-                Assert.That(
-                    File.ReadAllText(
-                        Path.Combine(
-                            tempDest.FolderPath,
-                            "Keyboards",
-                            "fonts",
-                            "Pyidaungsu-Regular.ttf"
-                        )
-                    ),
-                    Is.EqualTo("these are fake font bytes"),
-                    "copied the keyboard font from the fonts/ subfolder"
+                    Directory.Exists(Path.Combine(tempDest.FolderPath, ".keyboards")),
+                    Is.False,
+                    ".keyboards is a local-only cache and must not be synced to teammates"
                 );
             }
         }

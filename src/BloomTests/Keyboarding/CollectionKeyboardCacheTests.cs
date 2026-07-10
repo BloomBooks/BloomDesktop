@@ -121,7 +121,7 @@ namespace BloomTests.Keyboarding
             Assert.That(manifest.FontFiles, Is.EqualTo(new[] { "Pyidaungsu-Regular.ttf" }));
 
             // The files should be on disk in the documented layout.
-            var keyboardsFolder = Path.Combine(_collectionFolder.FolderPath, "Keyboards");
+            var keyboardsFolder = Path.Combine(_collectionFolder.FolderPath, ".keyboards");
             var jsPath = Path.Combine(keyboardsFolder, "sil_myanmar_my3.js");
             var jsonPath = Path.Combine(keyboardsFolder, "sil_myanmar_my3.json");
             var fontPath = Path.Combine(keyboardsFolder, "fonts", "Pyidaungsu-Regular.ttf");
@@ -181,7 +181,7 @@ namespace BloomTests.Keyboarding
             // The atomic-write dance uses ".tmp" files; none should survive a successful download.
             var strays = Directory
                 .EnumerateFiles(
-                    Path.Combine(_collectionFolder.FolderPath, "Keyboards"),
+                    Path.Combine(_collectionFolder.FolderPath, ".keyboards"),
                     "*.tmp",
                     SearchOption.AllDirectories
                 )
@@ -193,7 +193,7 @@ namespace BloomTests.Keyboarding
         public void EnsureDownloaded_OverwritesStaleFileAtomically()
         {
             UseCannedNetwork();
-            var keyboardsFolder = Path.Combine(_collectionFolder.FolderPath, "Keyboards");
+            var keyboardsFolder = Path.Combine(_collectionFolder.FolderPath, ".keyboards");
             Directory.CreateDirectory(keyboardsFolder);
             // Pre-seed a stale .js so the write path must replace an existing destination.
             var jsPath = Path.Combine(keyboardsFolder, "sil_myanmar_my3.js");
@@ -231,9 +231,9 @@ namespace BloomTests.Keyboarding
 
             Assert.That(manifest, Is.Null, "offline download should return null");
             Assert.That(
-                Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "Keyboards"))
+                Directory.Exists(Path.Combine(_collectionFolder.FolderPath, ".keyboards"))
                     && Directory
-                        .EnumerateFiles(Path.Combine(_collectionFolder.FolderPath, "Keyboards"))
+                        .EnumerateFiles(Path.Combine(_collectionFolder.FolderPath, ".keyboards"))
                         .Any(),
                 Is.False,
                 "offline download should not leave any files behind"
@@ -258,7 +258,7 @@ namespace BloomTests.Keyboarding
                 Does.StartWith("http"),
                 "should be a localhost http url the browser can load"
             );
-            Assert.That(url, Does.Contain("Keyboards"));
+            Assert.That(url, Does.Contain(".keyboards"));
         }
 
         private sealed class AlwaysFailHandler : HttpMessageHandler

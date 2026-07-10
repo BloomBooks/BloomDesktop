@@ -166,27 +166,6 @@ namespace Bloom.Utils
         }
 
         /// <summary>
-        /// Write all files in the source directory, INCLUDING those in subfolders (recursively), to
-        /// the specified zip file. Subfolder structure is preserved as relative entry names (e.g.
-        /// "fonts/MyFont.ttf"), which ExtractFolderFromZip/UnzipDirectory recreate on extraction.
-        /// Unlike WriteAllTopLevelFilesToZip, this is suitable for folders that contain subfolders,
-        /// such as the collection's Keyboards folder with its fonts/ subfolder.
-        /// </summary>
-        public static void WriteAllFilesToZip(string destPath, string sourceDir)
-        {
-            RetryUtility.Retry(() =>
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(destPath));
-                var zipFile = new BloomZipFile(destPath);
-                // AddDirectoryContents adds all files and subdirectories (but not the directory
-                // itself), using paths relative to sourceDir as the zip entry names, and it already
-                // skips hidden/system files via ShouldFileBeIgnored.
-                zipFile.AddDirectoryContents(sourceDir);
-                zipFile.Save();
-            });
-        }
-
-        /// <summary>
         /// Extract the files in the zip to the specified destination. Then, call filesToDeleteIfNotInZip
         /// and if any of the files it returned were not in the zip, delete them from the destFolder.
         /// </summary>
