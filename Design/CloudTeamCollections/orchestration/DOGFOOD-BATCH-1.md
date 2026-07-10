@@ -409,7 +409,34 @@ up/download check
   timing unchanged. See branch for full diagnosis + tests.
 
 ## OUTSTANDING BUGS (10 Jul 2026 PM — the current work list)
-1. **e2e-4 background download fails + retry skipped (OPEN, diagnosed, not fixed).** Evidence
+0. **[NEEDS JOHN — product decision] Item 9's same-machine takeover can steal ANY same-machine
+   lock, even across separate collection folders (found by e2e-4 after its download bugs were
+   fixed).** Scenario: Bob (admin) force-unlocks Alice's checkout and takes the lock himself;
+   Alice's later attemptLockOfCurrentBook RETURNS FALSE — but the server lock silently ends up
+   reassigned to ALICE, because item 9's takeover path (AttemptLock → TryTakeOverLock →
+   checkout_book_takeover) fires whenever the existing lock's MACHINE matches, and in E2E (and
+   any genuinely shared computer) every user is on the same machine. The machine-match gate
+   cannot distinguish John's intended scenario ("collection was joined under account A, B opens
+   the SAME local folder") from two users with SEPARATE local folders on one computer (two
+   'seats', which is what e2e-4 simulates and what a shared lab machine would really be).
+   Design options sketched for John:
+   (a) Server-side 'seat': checkout_book/checkout_book_takeover store+compare a per-local-folder
+       id (e.g. hash of folder path) alongside machine — cleanest semantics, needs a migration +
+       pgTAP + client change;
+   (b) Client-side gate on the LOCAL folder's own state: only allow takeover if THIS folder
+       shows evidence the lock holder was using THIS folder. TeamCollectionLastKnownUser.txt
+       does NOT work for this as-is (CheckConnection overwrites it with the NEW user at open
+       time, before any takeover); writing a minimal local status record at cloud checkout would
+       work but John earlier decided cloud checkouts deliberately DON'T write local status;
+   (c) Accept the behavior (any same-machine user can take over any same-machine lock) and fix
+       e2e-4's expectation — probably wrong: it makes force-unlock semantics unreliable on
+       shared machines, and the takeover is SILENT (attemptLock even reported false while the
+       server lock changed hands — at minimum that inconsistency is a bug in any option).
+   Suggested: (a). Until decided, e2e-4 fails at its 'server lock is exactly Bob's' assertion
+   (spec line ~166). The e2e-4 DOWNLOAD failures that motivated the original bug #1 are FIXED
+   (see below).
+1. **e2e-4 background download fails + retry skipped (FIXED 10 Jul PM, verified by rerun —
+   the book now downloads in ~5s; kept for the record).** Evidence
    (bob-joined SIL log, 14:51, preserved by the new durable logging): the one real download
    attempt failed with `Could not find file 'C:\Users\<user>\AppData\Local\Temp\
    BloomCloudTCDownload\A5 Portrait.htm'` — the cloud download STAGING FOLDER IS A FIXED
