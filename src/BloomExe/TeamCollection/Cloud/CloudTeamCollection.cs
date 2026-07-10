@@ -263,6 +263,14 @@ namespace Bloom.TeamCollection.Cloud
                     : _client.GetCollectionState(_collectionId);
             if (state == null)
             {
+                // A 2xx response with an empty body -- not an error the client maps (those throw),
+                // but not the contract shape either. Don't fail here (callers run on background
+                // threads and the poll will re-try), but never be SILENT about it: an empty cache
+                // wrongly marked hydrated makes every IsBookPresentInRepo answer false, which
+                // silently drops queued background downloads.
+                Logger.WriteEvent(
+                    $"CloudTeamCollection: get_collection_state returned no data (since_event_id={sinceEventId}); cache left as-is with {_cache.GetAllBooks().Count()} book(s)."
+                );
                 _hydrated = true;
                 return;
             }
@@ -1672,6 +1680,11 @@ namespace Bloom.TeamCollection.Cloud
         {
             base.StartMonitoring();
             EnsureCacheHydrated();
+            // Self-healing pass (see the method's own doc): monitoring starts right after the
+            // startup sync, so this catches any repo book the sync failed to queue for download
+            // (e.g. the in-memory queue lost to a kill/crash between a progressive join's pullDown
+            // and the relaunch).
+            QueueMissingRepoBooksForBackgroundDownload();
             _monitor = new CloudCollectionMonitor(
                 _client,
                 _collectionId,
@@ -1748,6 +1761,11 @@ namespace Bloom.TeamCollection.Cloud
             // waiting for its own next poll.
             if (changes["books"] is JArray booksArray && booksArray.Count > 0)
                 SocketServer?.SendEvent("teamCollection", "statusMetadataChanged");
+
+            // Self-healing pass: a repo book missing locally whose repo state did NOT change this
+            // poll raises none of the events above, so without this it would never be retried
+            // (found the hard way -- see QueueMissingRepoBooksForBackgroundDownload's doc).
+            QueueMissingRepoBooksForBackgroundDownload();
         }
 
         /// <summary>Lets UI code (e.g. a "Receive Updates" button, or Bloom regaining focus) trigger

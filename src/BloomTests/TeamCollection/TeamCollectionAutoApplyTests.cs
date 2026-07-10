@@ -445,6 +445,110 @@ namespace BloomTests.TeamCollection
             );
         }
 
+        // ------------------------------------------------------------------
+        // Post-batch defect fix (10 Jul 2026): QueueMissingRepoBooksForBackgroundDownload is the
+        // self-healing retry pass -- the in-memory queue does not survive a Bloom restart (e.g.
+        // the join flow's pullDown-then-relaunch pattern), and the poll only raises events for
+        // books whose repo state CHANGED, so a locally-missing repo book that slipped past the
+        // startup sync was previously never retried. CloudTeamCollection calls this when
+        // monitoring starts and after every poll.
+        // ------------------------------------------------------------------
+
+        [Test]
+        public void QueueMissingRepoBooks_AutoApplyEnabled_DownloadsMissingBook()
+        {
+            const string bookFolderName = "Dropped Download Book";
+            var folderPath = PutBookThenRemoveLocalFolder(bookFolderName);
+            _collection.AutoApplyRemoteChangesForTests = true;
+            _collection.TestOnly_MakeAutoApplyQueueSynchronous();
+
+            // System Under Test //
+            _collection.QueueMissingRepoBooksForBackgroundDownload();
+
+            Assert.That(
+                Directory.Exists(folderPath),
+                Is.True,
+                "a repo book with no local folder should be queued and downloaded by the retry pass"
+            );
+            Assert.That(
+                RobustFile.ReadAllText(Path.Combine(folderPath, bookFolderName + ".htm")),
+                Does.Contain("Content that only exists in the repo")
+            );
+        }
+
+        [Test]
+        public void QueueMissingRepoBooks_BookLockedInRepo_SkipsIt()
+        {
+            const string bookFolderName = "Locked Missing Book";
+            // Lock it while the local copy still exists (locking is simplest then), THEN remove
+            // the local folder to simulate "missing locally but someone is mid-edit elsewhere".
+            var bookBuilder = new BookFolderBuilder()
+                .WithRootFolder(_collectionFolder.FolderPath)
+                .WithTitle(bookFolderName)
+                .WithHtm("Content that only exists in the repo")
+                .Build();
+            var folderPath = bookBuilder.BuiltBookFolderPath;
+            _collection.PutBook(folderPath);
+            _collection.AttemptLock(bookFolderName, "fred@somewhere.org");
+            SIL.IO.RobustIO.DeleteDirectoryAndContents(folderPath);
+            Assert.That(
+                _collection.WhoHasBookLocked(bookFolderName),
+                Is.EqualTo("fred@somewhere.org"),
+                "sanity: the repo copy must be locked before the System Under Test call"
+            );
+            _collection.AutoApplyRemoteChangesForTests = true;
+            _collection.TestOnly_MakeAutoApplyQueueSynchronous();
+
+            // System Under Test //
+            _collection.QueueMissingRepoBooksForBackgroundDownload();
+
+            Assert.That(
+                Directory.Exists(folderPath),
+                Is.False,
+                "a locked repo book must be left for the eventual checkin's own change event, not downloaded mid-edit"
+            );
+        }
+
+        [Test]
+        public void QueueMissingRepoBooks_BookAlreadyLocal_LeavesItAlone()
+        {
+            const string bookFolderName = "Already Local Book";
+            SetUpBookChangedRemotely(bookFolderName, out var bookFolderPath);
+            // Local content now deliberately differs from the repo ("old content" vs "new content
+            // from remote") -- if the retry pass wrongly re-downloaded an EXISTING book, the local
+            // text would change, which the assertion below would catch.
+            _collection.AutoApplyRemoteChangesForTests = true;
+            _collection.TestOnly_MakeAutoApplyQueueSynchronous();
+
+            // System Under Test //
+            _collection.QueueMissingRepoBooksForBackgroundDownload();
+
+            Assert.That(
+                RobustFile.ReadAllText(Path.Combine(bookFolderPath, bookFolderName + ".htm")),
+                Does.Contain("pretending to be old content"),
+                "a book that already has a local folder must not be touched by the missing-books pass"
+            );
+        }
+
+        [Test]
+        public void QueueMissingRepoBooks_AutoApplyDisabled_FolderTcDefault_DoesNothing()
+        {
+            const string bookFolderName = "Folder TC Missing Book";
+            var folderPath = PutBookThenRemoveLocalFolder(bookFolderName);
+            // AutoApplyRemoteChangesForTests defaults to false: folder TCs have no background
+            // download pipeline, so the retry pass must be a complete no-op there.
+            _collection.TestOnly_MakeAutoApplyQueueSynchronous();
+
+            // System Under Test //
+            _collection.QueueMissingRepoBooksForBackgroundDownload();
+
+            Assert.That(
+                Directory.Exists(folderPath),
+                Is.False,
+                "a folder TC (CanAutoApplyRemoteChanges false) must not background-download anything"
+            );
+        }
+
         [Test]
         public void SyncAtStartup_AutoApplyEnabled_RealBackgroundWorker_EventuallyFetchesWithoutBlocking()
         {

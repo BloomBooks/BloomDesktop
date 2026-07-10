@@ -180,6 +180,37 @@ namespace Bloom.TeamCollection
             AutoApplyQueue.EnqueueFront(bookName);
         }
 
+        /// <summary>
+        /// Queues a background download for every repo book that has no local folder and is not
+        /// checked out by anyone. This is the self-healing safety net for the progressive-join
+        /// pipeline (batch item 7): the in-memory download queue does not survive a Bloom restart
+        /// (the join flow's pullDown-then-relaunch pattern, or a crash mid-join), and a book the
+        /// queue somehow dropped would otherwise never be retried, because the poll only raises
+        /// change events for books whose repo state CHANGED since the last poll. Called when
+        /// monitoring starts (right after the startup sync) and again after every poll, so any
+        /// locally-missing repo book is re-queued within one poll interval no matter how it was
+        /// missed. Enqueue's dedupe makes repeat calls cheap and safe.
+        /// Books with a repo lock are skipped: a lock means someone is mid-edit (including a local
+        /// rename mid-checkin, where the OLD repo name intentionally has no local folder), and the
+        /// eventual checkin raises an ordinary change event that downloads the final content.
+        /// </summary>
+        internal void QueueMissingRepoBooksForBackgroundDownload()
+        {
+            if (!CanAutoApplyRemoteChanges)
+                return;
+            foreach (var bookName in GetBookList())
+            {
+                if (Directory.Exists(Path.Combine(_localCollectionFolder, bookName)))
+                    continue;
+                if (!string.IsNullOrEmpty(WhoHasBookLocked(bookName)))
+                    continue;
+                Logger.WriteEvent(
+                    $"TeamCollection: repo book '{bookName}' has no local folder; queueing background download."
+                );
+                QueueBookForBackgroundDownload(bookName);
+            }
+        }
+
         public TeamCollection(
             ITeamCollectionManager manager,
             string localCollectionFolder,
@@ -1928,7 +1959,17 @@ namespace Bloom.TeamCollection
         private void DownloadMissingBookInBackground(string bookBaseName)
         {
             if (!IsBookPresentInRepo(bookBaseName))
-                return; // gone from the repo by the time the queue got to it; nothing to fetch
+            {
+                // Usually the book was deleted/renamed remotely between queueing and now; but a
+                // cache problem would look identical, so never skip SILENTLY (the first post-batch
+                // full matrix, 10 Jul 2026, lost a book to an undiagnosable silent drop here --
+                // this log line plus the QueueMissingRepoBooksForBackgroundDownload retry pass are
+                // the fix).
+                Logger.WriteEvent(
+                    $"Background download of '{bookBaseName}' skipped: the current repo cache does not list it (deleted remotely, renamed, or a cache problem)."
+                );
+                return;
+            }
 
             var error = CopyBookFromRepoToLocal(bookBaseName);
             if (error != null)
@@ -1938,6 +1979,7 @@ namespace Bloom.TeamCollection
                 );
                 return;
             }
+            Logger.WriteEvent($"Background download of new book '{bookBaseName}' completed.");
             UpdateBookStatus(bookBaseName, true);
 
             // Swap the placeholder for the real book button: the JSON collections/books merge
