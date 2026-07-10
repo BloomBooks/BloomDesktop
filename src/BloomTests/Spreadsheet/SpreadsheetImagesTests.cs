@@ -490,5 +490,167 @@ namespace BloomTests.Spreadsheet
             );
             Assert.That(svgRow.GetCell(thumbnailColumn).Text, Is.EqualTo("Can't display SVG"));
         }
+
+        // A minimal book whose three images all reduce to the same EPPlus drawing name once the
+        // extension is dropped: "conflict.png" and "conflict.gif" match exactly, and "Conflict.jpg"
+        // matches them case-insensitively. EPPlus treats drawing names as case-insensitive and
+        // rejects duplicates, so this is the situation that used to throw during export (BL-16498).
+        private const string conflictingImageNamesBook =
+            @"
+<html>
+<head>
+</head>
+<body data-l1=""en"" data-l2="""" data-l3="""">
+    <div id=""bloomDataDiv""></div>
+    <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""aaaaaaaa-1111-1111-1111-111111111111"" data-page-number=""1"" lang="""">
+        <div class=""pageLabel"" lang=""en"">Image</div>
+        <div class=""pageDescription"" lang=""en""></div>
+        <div class=""marginBox"">
+            <div class=""bloom-canvas bloom-leadingElement bloom-has-canvas-element"">
+                <div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+                    <div class=""bloom-imageContainer"">
+                        <img src=""conflict.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-left bloom-monolingual"" data-page="""" id=""bbbbbbbb-2222-2222-2222-222222222222"" data-page-number=""2"" lang="""">
+        <div class=""pageLabel"" lang=""en"">Image</div>
+        <div class=""pageDescription"" lang=""en""></div>
+        <div class=""marginBox"">
+            <div class=""bloom-canvas bloom-leadingElement bloom-has-canvas-element"">
+                <div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+                    <div class=""bloom-imageContainer"">
+                        <img src=""Conflict.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""cccccccc-3333-3333-3333-333333333333"" data-page-number=""3"" lang="""">
+        <div class=""pageLabel"" lang=""en"">Image</div>
+        <div class=""pageDescription"" lang=""en""></div>
+        <div class=""marginBox"">
+            <div class=""bloom-canvas bloom-leadingElement bloom-has-canvas-element"">
+                <div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+                    <div class=""bloom-imageContainer"">
+                        <img src=""conflict.gif"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+";
+
+        /// <summary>
+        /// Regression test for BL-16498: exporting a book whose image file names collide once the
+        /// extension is dropped (including names that differ only in case) must embed every image
+        /// without error. Before the fix, the second colliding image threw inside EPPlus's
+        /// AddPicture (which treats drawing names as case-insensitive and rejects duplicates); the
+        /// exporter caught the throw and reported the image as a "Bad image file".
+        /// </summary>
+        [Test]
+        public void Export_ImagesWithConflictingNames_AllEmbeddedWithoutError()
+        {
+            using (var bookFolder = new TemporaryFolder("SpreadsheetImageConflict_Book"))
+            using (var outputFolder = new TemporaryFolder("SpreadsheetImageConflict_Out"))
+            {
+                // Copy one known-good image to three names that collide once the extension is dropped.
+                var sourceImage = Path.Combine(
+                    SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                        _pathToTestImages
+                    ),
+                    "man.jpg"
+                );
+                var conflictingNames = new[] { "conflict.png", "Conflict.jpg", "conflict.gif" };
+                foreach (var name in conflictingNames)
+                    RobustFile.Copy(sourceImage, Path.Combine(bookFolder.FolderPath, name));
+
+                // Sanity check: the setup really did create three distinct, non-empty image files
+                // whose names collide case-insensitively once the extension is removed.
+                Assert.That(
+                    conflictingNames
+                        .Select(n => Path.GetFileNameWithoutExtension(n).ToLowerInvariant())
+                        .Distinct()
+                        .Count(),
+                    Is.EqualTo(1),
+                    "Setup sanity check: all test image names should reduce to the same case-insensitive base name."
+                );
+                foreach (var name in conflictingNames)
+                {
+                    var path = Path.Combine(bookFolder.FolderPath, name);
+                    Assert.That(
+                        RobustFile.Exists(path),
+                        $"Setup sanity check: {name} should exist."
+                    );
+                    Assert.That(
+                        new FileInfo(path).Length,
+                        Is.GreaterThan(0),
+                        $"Setup sanity check: {name} should not be empty."
+                    );
+                }
+
+                var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+                mockLangDisplayNameResolver
+                    .Setup(x => x.GetLanguageDisplayName("en"))
+                    .Returns("English");
+                var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
+                var progressSpy = new ProgressSpy();
+
+                var sheet = exporter.ExportToFolder(
+                    new HtmlDom(conflictingImageNamesBook, true),
+                    bookFolder.FolderPath,
+                    outputFolder.FolderPath,
+                    out string outputPath,
+                    progressSpy,
+                    OverwriteOptions.Overwrite
+                );
+
+                // Sanity check: all three images made it into the export as image content rows.
+                var imageSourceColumn = sheet.GetColumnForTag(
+                    InternalSpreadsheet.ImageSourceColumnLabel
+                );
+                var exportedImageRows = sheet
+                    .ContentRows.Where(r =>
+                        r.GetCell(imageSourceColumn).Text.ToLowerInvariant().Contains("conflict")
+                    )
+                    .ToList();
+                Assert.That(
+                    exportedImageRows.Count,
+                    Is.EqualTo(3),
+                    "Setup sanity check: expected all three conflicting images to be exported as content rows."
+                );
+
+                // The images are actually embedded (and any errors recorded) while the .xlsx file is
+                // written, so read the file back to check the results.
+                var sheetFromFile = InternalSpreadsheet.ReadFromFile(outputPath);
+                var thumbnailColumn = sheetFromFile.GetColumnForTag(
+                    InternalSpreadsheet.ImageThumbnailColumnLabel
+                );
+                foreach (
+                    var row in sheetFromFile.ContentRows.Where(r =>
+                        r.GetCell(imageSourceColumn).Text.ToLowerInvariant().Contains("conflict")
+                    )
+                )
+                {
+                    Assert.That(
+                        row.GetCell(thumbnailColumn).Text,
+                        Is.EqualTo(""),
+                        $"Image '{row.GetCell(imageSourceColumn).Text}' should have embedded without an error, "
+                            + "but its thumbnail cell holds an error message (the duplicate-name collision was not resolved)."
+                    );
+                }
+
+                // And no warning should have been reported about embedding these images.
+                Assert.That(
+                    progressSpy.Warnings,
+                    Is.Empty,
+                    "Exporting images with conflicting names should not report any warnings."
+                );
+            }
+        }
     }
 }
