@@ -21,6 +21,9 @@ importers:
             "@dnd-kit/sortable":
                 specifier: 8.0.0
                 version: 8.0.0(@dnd-kit/core@6.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+            "@dnd-kit/utilities":
+                specifier: 3.2.2
+                version: 3.2.2(react@18.3.1)
             "@emotion/core":
                 specifier: 11.0.0
                 version: 11.0.0
@@ -31,8 +34,8 @@ importers:
                 specifier: 11.14.1
                 version: 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
             "@ethnolib/language-chooser-react-mui":
-                specifier: 0.1.24
-                version: 0.1.24(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+                specifier: 0.3.2
+                version: 0.3.2(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
             "@fortawesome/fontawesome-svg-core":
                 specifier: 6.4.0
                 version: 6.4.0
@@ -45,9 +48,15 @@ importers:
             "@mui/material":
                 specifier: 5.18.0
                 version: 5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+            "@mui/private-theming":
+                specifier: 5.17.1
+                version: 5.17.1(@types/react@18.3.31)(react@18.3.1)
             "@mui/styles":
                 specifier: 5.11.7
                 version: 5.11.7(@types/react@18.3.31)(react@18.3.1)
+            "@mui/system":
+                specifier: 5.18.0
+                version: 5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
             "@mui/utils":
                 specifier: 5.17.1
                 version: 5.17.1(@types/react@18.3.31)(react@18.3.1)
@@ -79,8 +88,8 @@ importers:
                 specifier: github:BloomBooks/bloom-image-gallery
                 version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/51c5a75bb611c51dd24b40c9162929c6e75473eb(@types/react@18.3.31)(supports-color@5.5.0)
             bloom-player:
-                specifier: 2.19.8
-                version: 2.19.8
+                specifier: 2.20.1-alpha.2
+                version: 2.20.1-alpha.2
             calculate-aspect-ratio:
                 specifier: 0.1.3
                 version: 0.1.3
@@ -250,6 +259,9 @@ importers:
             "@eslint/js":
                 specifier: 9.21.0
                 version: 9.21.0
+            "@mui/types":
+                specifier: 7.2.24
+                version: 7.2.24(@types/react@18.3.31)
             "@storybook/addon-a11y":
                 specifier: 10.0.2
                 version: 10.0.2(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))
@@ -409,6 +421,9 @@ importers:
             pretty-quick:
                 specifier: 4.2.2
                 version: 4.2.2(prettier@3.6.2)
+            pug:
+                specifier: 3.0.4
+                version: 3.0.4
             replace-ext:
                 specifier: 2.0.0
                 version: 2.0.0
@@ -1895,22 +1910,22 @@ packages:
             }
         engines: { node: ^18.18.0 || ^20.9.0 || >=21.1.0 }
 
-    "@ethnolib/find-language@0.1.20":
+    "@ethnolib/find-language@0.3.2":
         resolution:
             {
-                integrity: sha512-RQ7exFKFIK9mnj7M4FA2IOZ21sLZRF7y0624TeMaRhnbL0dikyyBkRqiXcSDkIgwsrR+/2B+leIW3lDcnJ5MZw==,
+                integrity: sha512-NbaOW7ji8dzsC/mtylac7H9BB1YKPiQzWd+uXIOkygwq/xWOGMGWewlv44EpR3g+un2Y6FO+TCZaHy8mFmpTcw==,
             }
 
-    "@ethnolib/language-chooser-react-hook@0.1.22":
+    "@ethnolib/language-chooser-react-hook@0.3.2":
         resolution:
             {
-                integrity: sha512-Bcim8jHpp8Iu9j7HiYCZnmZAY8Uk/u91vxXQcpFE2axADQHHBs+sKOZBd+9ypbm2D6UcJq7SLJrTxAAlK+mGqQ==,
+                integrity: sha512-gISOxUFHM3KiZU+H+psAE7pbaWBVWv6MlnwZRFK60K1LCCxaAEnVA8Z/tsFj1dLepYukXfzj6ND0IUre3W+0Sw==,
             }
 
-    "@ethnolib/language-chooser-react-mui@0.1.24":
+    "@ethnolib/language-chooser-react-mui@0.3.2":
         resolution:
             {
-                integrity: sha512-9wqVD2so8QPjgaOlyg+ZTYf2SFaa4chyA3GtwNu60BZXMOxdEppzDEI7FtJAgtdXOOJrhdJBVhvk24jFDRnMGQ==,
+                integrity: sha512-lyX5n/8OMyI5t9rUtoNuoLCd5y5Wpew9EvkLBgg5X5M+AXken9AHlpoBQy5+D4jYP0E1izK1ZolvLr2v3g79qQ==,
             }
         peerDependencies:
             "@emotion/react": ^11.11.4
@@ -3899,10 +3914,10 @@ packages:
                 integrity: sha512-dKQiRHxGD9PPRIUNIWvZhPTPpl1rf/OxTYKsqKUDjBwYylTvV7SjSHJb9ratfyzM6wCdLCOYLzs73qpg5c4iGA==,
             }
 
-    axios@1.18.0:
+    axios@1.18.1:
         resolution:
             {
-                integrity: sha512-E32NzpYKp++W7XRe52rHiXV2ehxmh3wbdgO7MHeFM+vqxLBYHzt0ElkiImtOBxtOmyp0yoC8C6uESVV84Y2/hw==,
+                integrity: sha512-3nTvFlvpn9Zu/RkHUqtc7/+al4UpRW5az71ap5zccp6e8RAYEzhMTecX8Dz1wWDYrPpUoB1HAQEGEAEvUr7S9g==,
             }
 
     babel-plugin-macros@3.1.0:
@@ -4034,10 +4049,10 @@ packages:
             }
         version: 0.0.2
 
-    bloom-player@2.19.8:
+    bloom-player@2.20.1-alpha.2:
         resolution:
             {
-                integrity: sha512-iAMz9g9AsxosiQs9Mfyc8KUJZ6vQkJu7BjSP0m1uROkXM/JJ9y0rjZsJBe/1DXsz+AxP9Hsi34YFhUpUxqRSug==,
+                integrity: sha512-oH0/GyItJqbmP9PJuC5OOm6S5O4VnqQCXNgV6ObgZMTbVOTrcoRNHza0TjZdiVuspifyHKNpa6jvzaykf1rZgw==,
             }
 
     body-parser@1.20.5:
@@ -8555,10 +8570,10 @@ packages:
             }
         engines: { node: ">=6" }
 
-    qs@6.15.2:
+    qs@6.15.3:
         resolution:
             {
-                integrity: sha512-Rzq0KEyX/w/tEybncDgdkZrJgVUsUMk3xjh3t5bv3S1HTAtg+uOYt72+ZfwiQwKdysThkTBdL/rTi6HDmX9Ddw==,
+                integrity: sha512-O9gl3zCl5h5blw1KGUzQKhA5oUXSl8rwUIM5o0S3nCXMliSvy5Dzx7/DJcI+SwgICv+IneSZwhBh1oSyEHA71A==,
             }
         engines: { node: ">=0.6" }
 
@@ -9410,6 +9425,13 @@ packages:
         resolution:
             {
                 integrity: sha512-VsC6n6vz1ihYYyZZwX7YZSF5l5x36ca17OC+a69h94YqB7X6XLwf+5MOgynYir2SLFUbl8gIYvBo8K8RoNQ6bQ==,
+            }
+        engines: { node: ">= 0.4" }
+
+    shell-quote@1.9.0:
+        resolution:
+            {
+                integrity: sha512-Iov+JwFv/2HcTpcwNMKd8+IWNb8tboQJNQTkAY/LLVK7gGH9jy+LGkVqPxfekHl+yMmiqXszdGWXgkfml7hjqA==,
             }
         engines: { node: ">= 0.4" }
 
@@ -11932,25 +11954,25 @@ snapshots:
             "@eslint/core": 0.15.2
             levn: 0.4.1
 
-    "@ethnolib/find-language@0.1.20":
+    "@ethnolib/find-language@0.3.2":
         dependencies:
             fuse.js: 7.4.2
             iso-15924: 3.2.0
             iso-3166: 4.4.0
 
-    "@ethnolib/language-chooser-react-hook@0.1.22":
+    "@ethnolib/language-chooser-react-hook@0.3.2":
         dependencies:
-            "@ethnolib/find-language": 0.1.20
+            "@ethnolib/find-language": 0.3.2
             fuse.js: 7.4.2
             iso-15924: 3.2.0
             iso-3166: 4.4.0
 
-    "@ethnolib/language-chooser-react-mui@0.1.24(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)":
+    "@ethnolib/language-chooser-react-mui@0.3.2(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)":
         dependencies:
             "@emotion/react": 11.14.0(@types/react@18.3.31)(react@18.3.1)
             "@emotion/styled": 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
-            "@ethnolib/find-language": 0.1.20
-            "@ethnolib/language-chooser-react-hook": 0.1.22
+            "@ethnolib/find-language": 0.3.2
+            "@ethnolib/language-chooser-react-hook": 0.3.2
             "@mui/icons-material": 5.18.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
             "@mui/material": 5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
             lodash: 4.18.1
@@ -13272,7 +13294,7 @@ snapshots:
         transitivePeerDependencies:
             - debug
 
-    axios@1.18.0(supports-color@5.5.0):
+    axios@1.18.1(supports-color@5.5.0):
         dependencies:
             follow-redirects: 1.16.0
             form-data: 4.0.6
@@ -13377,7 +13399,7 @@ snapshots:
             "@emotion/styled": 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
             "@mui/icons-material": 5.18.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
             "@mui/material": 5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-            axios: 1.18.0(supports-color@5.5.0)
+            axios: 1.18.1(supports-color@5.5.0)
             concurrently: 7.6.0
             cors: 2.8.6
             express: 4.22.2
@@ -13390,7 +13412,7 @@ snapshots:
             - debug
             - supports-color
 
-    bloom-player@2.19.8: {}
+    bloom-player@2.20.1-alpha.2: {}
 
     body-parser@1.20.5:
         dependencies:
@@ -13402,7 +13424,7 @@ snapshots:
             http-errors: 2.0.1
             iconv-lite: 0.4.24
             on-finished: 2.4.1
-            qs: 6.15.2
+            qs: 6.15.3
             raw-body: 2.5.3
             type-is: 1.6.18
             unpipe: 1.0.0
@@ -13687,7 +13709,7 @@ snapshots:
             date-fns: 2.30.0
             lodash: 4.18.1
             rxjs: 7.8.2
-            shell-quote: 1.8.4
+            shell-quote: 1.9.0
             spawn-command: 0.0.2
             supports-color: 8.1.1
             tree-kill: 1.2.2
@@ -13721,7 +13743,7 @@ snapshots:
             lodash.isplainobject: 4.0.6
             lodash.isstring: 4.0.1
             p-throttle: 4.1.1
-            qs: 6.15.2
+            qs: 6.15.3
 
     contentful@8.3.7:
         dependencies:
@@ -14419,7 +14441,7 @@ snapshots:
             parseurl: 1.3.3
             path-to-regexp: 0.1.13
             proxy-addr: 2.0.7
-            qs: 6.15.2
+            qs: 6.15.3
             range-parser: 1.2.1
             safe-buffer: 5.2.1
             send: 0.19.2
@@ -16296,8 +16318,9 @@ snapshots:
 
     punycode@2.3.1: {}
 
-    qs@6.15.2:
+    qs@6.15.3:
         dependencies:
+            es-define-property: 1.0.1
             side-channel: 1.1.1
 
     qs@6.4.3:
@@ -16978,6 +17001,8 @@ snapshots:
     shebang-regex@3.0.0: {}
 
     shell-quote@1.8.4: {}
+
+    shell-quote@1.9.0: {}
 
     shelljs@0.10.0:
         dependencies:
