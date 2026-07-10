@@ -391,7 +391,19 @@ namespace Bloom.TeamCollection.Cloud
             if (toDownload.Count == 0)
                 return result;
 
-            using (var staging = new TemporaryFolder("BloomCloudTCDownload"))
+            // The staging folder name must be UNIQUE PER CALL: TemporaryFolder("fixed-name") is a
+            // fixed %TEMP% path shared by every download in every Bloom process, and its Dispose
+            // deletes the whole folder -- so two concurrent downloads (two Bloom instances on one
+            // machine, e.g. a shared-machine Team Collection or the two-instance E2E scenarios)
+            // clobbered each other mid-copy: e2e-4 failed with "Could not find file ...\
+            // BloomCloudTCDownload\<book>.htm" when the other instance's download completed first
+            // and swept the folder away (10 Jul 2026).
+            using (
+                var staging = new TemporaryFolder(
+                    "BloomCloudTCDownload-"
+                        + Path.GetFileNameWithoutExtension(Path.GetRandomFileName())
+                )
+            )
             {
                 try
                 {

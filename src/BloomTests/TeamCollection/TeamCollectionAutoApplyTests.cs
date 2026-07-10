@@ -476,12 +476,10 @@ namespace BloomTests.TeamCollection
             );
         }
 
-        [Test]
-        public void QueueMissingRepoBooks_BookLockedInRepo_SkipsIt()
+        // Puts a book in the repo, locks it as `lockedBy`, then removes the local folder --
+        // the "missing locally but checked out" setup both lock-guard tests below need.
+        private string PutLockedBookThenRemoveLocalFolder(string bookFolderName, string lockedBy)
         {
-            const string bookFolderName = "Locked Missing Book";
-            // Lock it while the local copy still exists (locking is simplest then), THEN remove
-            // the local folder to simulate "missing locally but someone is mid-edit elsewhere".
             var bookBuilder = new BookFolderBuilder()
                 .WithRootFolder(_collectionFolder.FolderPath)
                 .WithTitle(bookFolderName)
@@ -489,12 +487,26 @@ namespace BloomTests.TeamCollection
                 .Build();
             var folderPath = bookBuilder.BuiltBookFolderPath;
             _collection.PutBook(folderPath);
-            _collection.AttemptLock(bookFolderName, "fred@somewhere.org");
+            _collection.AttemptLock(bookFolderName, lockedBy);
             SIL.IO.RobustIO.DeleteDirectoryAndContents(folderPath);
             Assert.That(
                 _collection.WhoHasBookLocked(bookFolderName),
-                Is.EqualTo("fred@somewhere.org"),
+                Is.EqualTo(lockedBy),
                 "sanity: the repo copy must be locked before the System Under Test call"
+            );
+            return folderPath;
+        }
+
+        [Test]
+        public void QueueMissingRepoBooks_BookLockedByCurrentUser_SkipsIt()
+        {
+            // Locked BY ME + no local folder = the local-rename-mid-checkin edge (the old repo
+            // name intentionally has no local folder); downloading it would resurrect the
+            // pre-rename book.
+            const string bookFolderName = "My Locked Missing Book";
+            var folderPath = PutLockedBookThenRemoveLocalFolder(
+                bookFolderName,
+                "me@somewhere.org" // the ForceCurrentUserForTests identity from Setup
             );
             _collection.AutoApplyRemoteChangesForTests = true;
             _collection.TestOnly_MakeAutoApplyQueueSynchronous();
@@ -505,7 +517,36 @@ namespace BloomTests.TeamCollection
             Assert.That(
                 Directory.Exists(folderPath),
                 Is.False,
-                "a locked repo book must be left for the eventual checkin's own change event, not downloaded mid-edit"
+                "a repo book locked by the current user must not be downloaded (rename-mid-checkin edge)"
+            );
+        }
+
+        [Test]
+        public void QueueMissingRepoBooks_BookLockedBySomeoneElse_StillDownloadsIt()
+        {
+            // A teammate's lock must NOT block downloading the committed content (that is
+            // exactly what Receive fetches for a locked book). e2e-4 (10 Jul 2026): an any-lock
+            // skip turned one transient download failure into "book missing for as long as the
+            // teammate held the lock".
+            const string bookFolderName = "Teammate Locked Missing Book";
+            var folderPath = PutLockedBookThenRemoveLocalFolder(
+                bookFolderName,
+                "fred@somewhere.org"
+            );
+            _collection.AutoApplyRemoteChangesForTests = true;
+            _collection.TestOnly_MakeAutoApplyQueueSynchronous();
+
+            // System Under Test //
+            _collection.QueueMissingRepoBooksForBackgroundDownload();
+
+            Assert.That(
+                Directory.Exists(folderPath),
+                Is.True,
+                "a repo book locked by someone ELSE must still be downloaded by the retry pass"
+            );
+            Assert.That(
+                RobustFile.ReadAllText(Path.Combine(folderPath, bookFolderName + ".htm")),
+                Does.Contain("Content that only exists in the repo")
             );
         }
 

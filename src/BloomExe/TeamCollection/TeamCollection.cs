@@ -182,17 +182,21 @@ namespace Bloom.TeamCollection
 
         /// <summary>
         /// Queues a background download for every repo book that has no local folder and is not
-        /// checked out by anyone. This is the self-healing safety net for the progressive-join
-        /// pipeline (batch item 7): the in-memory download queue does not survive a Bloom restart
-        /// (the join flow's pullDown-then-relaunch pattern, or a crash mid-join), and a book the
-        /// queue somehow dropped would otherwise never be retried, because the poll only raises
-        /// change events for books whose repo state CHANGED since the last poll. Called when
-        /// monitoring starts (right after the startup sync) and again after every poll, so any
-        /// locally-missing repo book is re-queued within one poll interval no matter how it was
-        /// missed. Enqueue's dedupe makes repeat calls cheap and safe.
-        /// Books with a repo lock are skipped: a lock means someone is mid-edit (including a local
-        /// rename mid-checkin, where the OLD repo name intentionally has no local folder), and the
-        /// eventual checkin raises an ordinary change event that downloads the final content.
+        /// checked out by the current user. This is the self-healing safety net for the
+        /// progressive-join pipeline (batch item 7): the in-memory download queue does not survive
+        /// a Bloom restart (the join flow's pullDown-then-relaunch pattern, or a crash mid-join),
+        /// and a book the queue somehow dropped would otherwise never be retried, because the poll
+        /// only raises change events for books whose repo state CHANGED since the last poll.
+        /// Called when monitoring starts (right after the startup sync) and again after every
+        /// poll, so any locally-missing repo book is re-queued within one poll interval no matter
+        /// how it was missed. Enqueue's dedupe makes repeat calls cheap and safe.
+        /// Books locked by the CURRENT USER are skipped: that is the local-rename-mid-checkin
+        /// edge, where the OLD repo name intentionally has no local folder and downloading it
+        /// would resurrect the pre-rename book. A book locked by someone ELSE is still safely
+        /// downloadable -- its committed content is exactly what Receive would fetch -- and must
+        /// NOT be skipped: in e2e-4 (10 Jul 2026) a teammate checked the book out seconds after a
+        /// transient download failure, and an any-lock skip turned that into "book missing for as
+        /// long as the teammate holds the lock".
         /// </summary>
         internal void QueueMissingRepoBooksForBackgroundDownload()
         {
@@ -202,7 +206,15 @@ namespace Bloom.TeamCollection
             {
                 if (Directory.Exists(Path.Combine(_localCollectionFolder, bookName)))
                     continue;
-                if (!string.IsNullOrEmpty(WhoHasBookLocked(bookName)))
+                var lockedBy = WhoHasBookLocked(bookName);
+                if (
+                    !string.IsNullOrEmpty(lockedBy)
+                    && string.Equals(
+                        lockedBy,
+                        CurrentUserIdentity,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
                     continue;
                 Logger.WriteEvent(
                     $"TeamCollection: repo book '{bookName}' has no local folder; queueing background download."
