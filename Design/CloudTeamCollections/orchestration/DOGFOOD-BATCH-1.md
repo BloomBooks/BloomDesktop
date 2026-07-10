@@ -408,8 +408,97 @@ up/download check
   fresh from disk at that point instead of trusting the in-memory snapshot. Folder-TC behavior/
   timing unchanged. See branch for full diagnosis + tests.
 
+## OUTSTANDING BUGS (10 Jul 2026 PM — the current work list)
+1. **e2e-4 background download fails + retry skipped (OPEN, diagnosed, not fixed).** Evidence
+   (bob-joined SIL log, 14:51, preserved by the new durable logging): the one real download
+   attempt failed with `Could not find file 'C:\Users\<user>\AppData\Local\Temp\
+   BloomCloudTCDownload\A5 Portrait.htm'` — the cloud download STAGING FOLDER IS A FIXED
+   SHARED TEMP PATH (`Temp\BloomCloudTCDownload`), so concurrent instances (two Blooms run in
+   every two-instance spec, plus any leftover files from earlier runs/specs) can clobber or
+   half-empty each other's staging area mid-copy. FIX: make the staging dir unique per
+   download (e.g. `BloomCloudTCDownload-<pid>-<random>`), clean up after. Secondly: after
+   that failure, Alice's checkout made QueueMissingRepoBooksForBackgroundDownload skip every
+   retry (books locked by ANYONE are skipped). The skip is TOO BROAD — a book locked by
+   someone ELSE is still safely downloadable (that is exactly what Receive does); the skip
+   only needs to cover books locked BY THE CURRENT USER (the local-rename-mid-checkin edge,
+   where the old repo name intentionally has no local folder). FIX: change the guard in
+   TeamCollection.QueueMissingRepoBooksForBackgroundDownload from "locked by anyone" to
+   "locked by me", and add a unit test mirroring QueueMissingRepoBooks_BookLockedInRepo_SkipsIt
+   but with a foreign lock expecting download. Then rerun e2e-4.
+2. **e2e-5 + e2e-8 singles not yet rerun** after the defect fixes (both failures in the 10 Jul
+   AM matrix were believed transient infra — podman/db-reset under load — and passed clean
+   in isolation before; re-verify after the rebase).
+3. **Full E2E matrix** not yet run on the post-defect-fix state (was 8/14 before the fixes;
+   e2e-3 and e2e-10 now pass individually).
+4. Cosmetic (tracked): Administrators field shows registration email, not signed-in email
+   (see "Also queued from dogfooding").
+
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 10 Jul 2026 (PM, later) · e2e-4 rerun FAILED with a NEW, fully-diagnosed signature (see
+  OUTSTANDING BUGS #1 above — fixed shared download staging folder + over-broad locked-book
+  skip in the new retry pass). Per John's live instruction: pausing the test loop here,
+  merging the defect-fix branch, then REBASING cloud-collections onto current origin/master
+  (~62 commits incl. the pnpm migration) before returning to test fixes · Next: merge
+  task/b1-postbatch-defects (fast-forward) + push, rebase, post-rebase build sanity, then
+  fix OUTSTANDING BUGS #1 and rerun e2e-4/5/8 + full matrix, then John's [HUMAN] checks.
+- 10 Jul 2026 (PM — HANDOFF ENTRY; possibly the last session with this agent for a while;
+  written for human/agent resumers weeks later) · ALL THREE post-batch defects DIAGNOSED,
+  FIXED, COMMITTED on `task/b1-postbatch-defects`, unit suites green (cloud filter 418/418),
+  and E2E-verified per the fail-fast protocol (one failing spec at a time, no full-suite
+  reruns until each passed). Root causes, for the record:
+  · DEFECT 1 (books never arrived after join-relaunch; e2e-3/e2e-4): the pullDown→kill→
+    relaunch pattern guarantees the in-memory RemoteBookAutoApplyQueue dies with the process;
+    the relaunch's SyncAtStartup rerouting was the only redelivery path and every failure in
+    that pipeline was SILENT, while the poll only raises events for books whose repo state
+    CHANGED — so one miss = book missing forever. Fix (4339e02d60): new
+    TeamCollection.QueueMissingRepoBooksForBackgroundDownload (queues every unlocked repo
+    book with no local folder), called from CloudTeamCollection.StartMonitoring (post-sync)
+    and after every OnPolledChanges — any drop now self-heals within one poll interval; plus
+    durable SIL logging on all previously-silent paths (incl. ReportProgressAndLog, whose
+    startup-sync record previously vanished with the collection folder). 4 new unit tests.
+    VERIFIED: e2e-3 PASSED (was the failing waitForBookFile signature).
+  · DEFECT 2 (e2e-10 bob-takeover: alive 90s, empty stdout, no window/server): dotnet-stack
+    dump of the live hung process showed the UI thread blocked in MessageBox.Show inside
+    TeamCollectionManager's ctor. Chain: an APPROVED-but-never-CLAIMED membership (bob opens
+    ALICE's local folder — item 9's shared-computer scenario — so bob never ran the join flow,
+    the only place claim_memberships was called) passes CheckConnection's EMAIL-based
+    my_collections check, then get_collection_state throws not_a_member (RLS gates are
+    user_id-based) during the ctor's first sync; the generic catch shows a MODAL MessageBox
+    no automation can dismiss. Fix (ae35b87c34): CheckConnection now calls ClaimMemberships
+    (idempotent, once per session) on membership confirm; NonFatalProblem.Report in
+    --automation mode writes BLOOM_AUTOMATION_NONFATAL_PROBLEM + stack to stdout and returns
+    instead of blocking (mirrors the RunningInConsoleMode guard) — any future startup report
+    is a readable harness-log line, never a silent hang. New unit test pins the claim call.
+    VERIFIED: e2e-10 PASSED end-to-end (refusal + takeover-checkin attribution).
+  · DEFECT 3 (Cannot Find API Endpoint teamCollection/capabilities toast): the endpoint was
+    project-level but is legitimately probed with no project open — the E2E harness readiness
+    poll (proven: a probe landed BEFORE any WebView2 existed in bob's 10:11 log) and late
+    calls from a closing collection tab while the chooser is up (John's sighting; the item-6
+    "chooser bundle hook" hypothesis was DISPROVEN — no chooser component calls it). Fix
+    (4819eda881): registration moved to the app-level SharingApi (TheOneInstance precedent),
+    all-false when no project/TC is current. Fallout fix (c24af86042): two harness call
+    sites that single-shot-asserted supportsSharingUi===true right after a relaunch now use
+    the same 20s expect.poll as every other site (the app-level endpoint answers
+    truthfully-false while the project is still opening; the old one-shots only ever passed
+    because a project-level registration race hid the timing). VERIFIED by the e2e-3/e2e-10
+    passes above (both exercise the polled path).
+  Also noteworthy: the window-placement watcher (7029006d5) is CONFIRMED working now
+  (windowPlacement.log files written, windows moved to the spare screen); the missing SIL
+  Log-tmp files for hard-killed instances are expected (SIL Logger doesn't flush on kill) —
+  stdout via the NonFatalProblem automation line is now the reliable channel · NEXT ACTIONS,
+  in order: (1) e2e-4 + e2e-5 + e2e-8 singles (running/queued at handoff time — see the next
+  entry if one was added, else run them first), (2) merge `task/b1-postbatch-defects` into
+  `cloud-collections` (fast-forward; branch is strictly ahead) + push, (3) FULL E2E MATRIX
+  (cd src/BloomTests/e2e && yarn test; ~30 min, desktop unlocked, stack up — remember the
+  functions-serve zombie rule in server/dev/README.md), (4) rebase cloud-collections onto
+  origin/master — now ~62 commits behind incl. the pnpm migration; only ~4 overlapping files
+  expected (2 XLF, CollectionApi.cs, ExternalApi.cs); after rebasing, remember the front-end
+  package manager may switch from yarn to pnpm on the rebased branch — re-read the rebased
+  AGENTS.md before running front-end commands, (5) post-rebase full matrix, (6) John's
+  [HUMAN] checks: item 3 centered-dialog visual, item 10 web upload/download
+  (GOING-LIVE.md 4.3), John's dogfood-plan decision. Open cosmetic item: Administrators
+  shows registration email (see "Also queued from dogfooding").
 - 10 Jul 2026 (resumed again after VS Code restart) · Verified state: main tree clean on
   `task/b1-postbatch-defects` at b0941db62, no worktree WIP. Dev stack was BROKEN at resume:
   edge-runtime container missing entirely and no `supabase functions serve` process (several
