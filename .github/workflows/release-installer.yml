@@ -30,6 +30,12 @@
 name: Release Installer
 
 on:
+    # TEMPORARY - REMOVE BEFORE MERGING TO MASTER: workflow_dispatch only works once this
+    # file is on the default branch, so this push trigger is how we exercise the workflow
+    # from the feature branch. Push runs are always dry runs: with no inputs, every
+    # publish-gated step is skipped, and the channel defaults to Alpha.
+    push:
+        branches: [GhaReleaseInstaller]
     workflow_dispatch:
         inputs:
             channel:
@@ -44,7 +50,7 @@ on:
 # Never build the same channel concurrently: two builds would both delta against the same
 # "previous" release and one would clobber the other's releases.win.json on S3.
 concurrency:
-    group: release-installer-${{ inputs.channel }}
+    group: release-installer-${{ github.event_name == 'push' && 'Alpha' || inputs.channel }}
     cancel-in-progress: false
 
 jobs:
@@ -53,7 +59,9 @@ jobs:
         timeout-minutes: 120
 
         env:
-            CHANNEL: ${{ inputs.channel }}
+            # On push (test) runs there are no inputs, so fall back to Alpha; an explicitly
+            # empty channel on workflow_dispatch still means the stable Release channel.
+            CHANNEL: ${{ github.event_name == 'push' && 'Alpha' || inputs.channel }}
             INSTALLER_RESULT_DIR: ${{ github.workspace }}\output\installer\result
             # Secrets are not allowed in step `if:` expressions, so surface presence as a boolean here.
             HAS_SIGNING_CREDENTIALS: ${{ secrets.TRUSTED_SIGNING_CREDENTIALS != '' }}
@@ -308,7 +316,7 @@ jobs:
             - name: Upload result as workflow artifact
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
-                  name: bloom-installer-${{ inputs.channel || 'Release' }}-${{ env.BUILD_NUMBER }}
+                  name: bloom-installer-${{ env.CHANNEL || 'Release' }}-${{ env.BUILD_NUMBER }}
                   path: |
                       ${{ env.INSTALLER_RESULT_DIR }}\BloomInstaller.*.exe
                       ${{ env.INSTALLER_RESULT_DIR }}\*.nupkg
