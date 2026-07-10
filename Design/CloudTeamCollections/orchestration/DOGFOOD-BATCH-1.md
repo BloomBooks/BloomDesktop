@@ -417,6 +417,15 @@ up/download check
   note) on branch `task/b1-postbatch-defects` in the main tree · Next: review + merge that
   branch, then rerun e2e-3/4/5/8/10, then full matrix → rebase onto origin/master →
   post-rebase matrix → John's visual checks.
+- 10 Jul 2026 (PAUSED again for another restart, John's request) · The three-defect agent
+  was stopped while still in its read-only diagnosis phase — NO code work or commits lost
+  (branch `task/b1-postbatch-defects` contains only the two orchestrator log commits; main
+  tree is checked out on it, clean). The three defect descriptions in the 10 Jul AM entry
+  remain the full open work list; stack was verified healthy at resume time · Next action:
+  relaunch the three-defect diagnosis/fix agent on the existing
+  `task/b1-postbatch-defects` branch (defect descriptions above are self-sufficient), then
+  the unchanged pipeline: review/merge → e2e-3/4/5/8/10 → full matrix → rebase onto
+  origin/master → post-rebase matrix → John's visual checks.
 - 10 Jul 2026 (AM, PAUSED for VS Code restart) · State: all batch items 1–10 + tier-timing
   fix MERGED and pushed (through commit 7029006d5). Post-batch E2E stabilization in
   progress — full matrix run 1 was 8/14. Fixed + pushed since: AWSSDK-v4 null S3Objects
