@@ -410,6 +410,13 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 10 Jul 2026 (resumed after VS Code restart) · Verified resume state: working tree clean
+  at ff6c5a6f8, no uncommitted worktree work, dev stack healthy (edge-runtime container
+  restarted ~15 min prior but has its BLOOM_* env — NOT a functions-serve zombie).
+  Relaunched the three-defect diagnosis/fix agent (defects 1–3 from the 10 Jul AM pause
+  note) on branch `task/b1-postbatch-defects` in the main tree · Next: review + merge that
+  branch, then rerun e2e-3/4/5/8/10, then full matrix → rebase onto origin/master →
+  post-rebase matrix → John's visual checks.
 - 10 Jul 2026 (AM, PAUSED for VS Code restart) · State: all batch items 1–10 + tier-timing
   fix MERGED and pushed (through commit 7029006d5). Post-batch E2E stabilization in
   progress — full matrix run 1 was 8/14. Fixed + pushed since: AWSSDK-v4 null S3Objects
