@@ -64,7 +64,7 @@ export const DEV_LIBRARIES = [
         checkoutCandidates: ["../config-r", "../../config-r"],
         aliasTo: ".",
         // build:dev = `tsc && vite build --mode development ... --watch` -> dist/configr.es.js
-        watchCommands: ["yarn build:dev"],
+        watchCommands: ["pnpm run build:dev"],
     },
     // NOTE: we also consume a custom react-grid-layout fork (via a GitHub dependency),
     // but no entry is registered for it: no local checkout layout or watch command has

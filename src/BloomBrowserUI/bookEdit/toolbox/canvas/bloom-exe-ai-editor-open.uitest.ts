@@ -8,7 +8,7 @@ import { connectToBloomExe } from "../../../react_components/component-tester/bl
 //
 // PRECONDITION: Bloom is running in the Edit tab with a book selected (the launch
 // endpoint needs a current book). Run it with the app up, e.g. from src/BloomBrowserUI:
-//   yarn playwright test --config react_components/component-tester/playwright.bloom-exe.config.ts \
+//   pnpm exec playwright test --config react_components/component-tester/playwright.bloom-exe.config.ts \
 //       bookEdit/toolbox/canvas/bloom-exe-ai-editor-open.uitest.ts
 //
 // It deliberately stops short of driving the right-click menu (that is the heavier

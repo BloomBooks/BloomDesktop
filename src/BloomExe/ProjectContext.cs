@@ -193,6 +193,8 @@ namespace Bloom
                                 typeof(BulkBloomPubCreator),
                                 typeof(PublishApi),
                                 typeof(LibraryPublishApi),
+                                typeof(AccountApi),
+                                typeof(AvatarApi),
                                 typeof(WorkspaceApi),
                                 typeof(BookCollectionHolder),
                                 typeof(WorkspaceTabSelection),
@@ -325,6 +327,21 @@ namespace Bloom
 
                     builder.RegisterType<BloomLibraryBookApiClient>().AsSelf().SingleInstance();
 
+                    // The avatar cache holds an in-memory known-photo map and disk cache shared across
+                    // the app (account menu + Team Collection avatars); it must be a single shared
+                    // instance, not one-per-lifetime-scope, so a child-scope resolve can't get a second
+                    // copy with a stale map.
+                    //
+                    // Register with an explicit factory rather than RegisterType<AvatarCache>(). Its
+                    // constructor has an OPTIONAL `string cacheFolder = null` parameter (a test seam),
+                    // and a plain string IS registered in this container (editableCollectionDirectory,
+                    // just below). Autofac injects a registered service into an optional parameter when
+                    // one exists, so RegisterType would hand AvatarCache the collection directory as its
+                    // cache folder -- scattering avatar cache files into the user's collection folder and
+                    // defeating the "app-wide, survives restart" design. `new AvatarCache()` forces the
+                    // parameterless path so it uses the intended app-data folder.
+                    builder.Register(c => new AvatarCache()).AsSelf().SingleInstance();
+
                     // Enhance: may need some way to test a release build in the sandbox.
                     builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();
                     builder.RegisterType<BookUpload>().AsSelf().SingleInstance();
@@ -441,6 +458,13 @@ namespace Bloom
             _scope.Resolve<EditingViewApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ImageGalleryApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<LibraryPublishApi>().RegisterWithApiHandler(server.ApiHandler);
+            var accountApi = _scope.Resolve<AccountApi>();
+            accountApi.RegisterWithApiHandler(server.ApiHandler);
+            accountApi.RestoreSavedLoginIfAny();
+            // Register the avatar endpoint. (The persisted known-photo map that gives a previously
+            // logged-in user their nicer avatar source across restarts is loaded lazily by AvatarCache
+            // on its first use -- serving the first avatar request -- not eagerly here.)
+            _scope.Resolve<AvatarApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<WorkspaceApi>().RegisterWithApiHandler(server.ApiHandler);

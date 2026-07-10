@@ -111,7 +111,7 @@ const loadPlaywright = () => {
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         throw new Error(
-            `Could not load Playwright from ${componentTesterDir}. Run 'yarn install' there if dependencies are missing. Original error: ${message}`,
+            `Could not load Playwright from ${componentTesterDir}. Run 'pnpm install' there if dependencies are missing. Original error: ${message}`,
         );
     }
 };

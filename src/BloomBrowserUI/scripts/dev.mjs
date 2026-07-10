@@ -508,8 +508,10 @@ async function main() {
     const available = await isPortAvailable(port);
     if (!available) {
         console.error(`Port ${port} is already in use.`);
+        // Suggest a neighboring port, staying within the valid range parsePortValue accepts.
+        const suggestedPort = port < 65535 ? port + 1 : port - 1;
         console.error(
-            `Stop the other dev server, or run: yarn dev --port=${port + 1}`,
+            `Stop the other dev server, or run: pnpm dev --port=${suggestedPort}`,
         );
         process.exit(1);
     }

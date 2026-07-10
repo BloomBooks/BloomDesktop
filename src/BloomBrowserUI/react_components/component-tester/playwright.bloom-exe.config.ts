@@ -6,7 +6,7 @@ import { defineConfig } from "playwright/test";
 // suite — no NODE_PATH/@playwright/test juggling is needed here.
 //
 // Run it from src/BloomBrowserUI with Bloom already running, e.g.:
-//   yarn playwright test --config react_components/component-tester/playwright.bloom-exe.config.ts
+//   pnpm exec playwright test --config react_components/component-tester/playwright.bloom-exe.config.ts
 export default defineConfig({
     // Discover bloom-exe CDP tests anywhere under BloomBrowserUI (not just
     // react_components) so a feature's e2e can live next to its code. testMatch keeps

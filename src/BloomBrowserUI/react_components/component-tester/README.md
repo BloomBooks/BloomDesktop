@@ -51,15 +51,15 @@ These are fine. This system tells the bloom l10n system to just return English.
 cd src/BloomBrowserUI/react_components/component-tester
 
 # Install dependencies (first time only)
-yarn install
+pnpm install
 
 # Start the dev server
-yarn dev
+pnpm dev
 
 # Run automated tests
-yarn test              # headless
-yarn test:headed       # see browser
-yarn test:ui          # interactive UI
+pnpm test              # headless
+pnpm test:headed       # see browser
+pnpm test:ui          # interactive UI
 
 # Play with a component manually
 ./show.sh
