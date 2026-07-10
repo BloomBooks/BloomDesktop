@@ -355,6 +355,9 @@ namespace Bloom.CollectionTab
             }
         }
 
+        // The .bloomSource import feature (choosing files, the duplicate pre-flight check, and the
+        // import itself) lives in CollectionModel.BloomSourceImport.cs.
+
         public void moveBookIntoThisCollection(Book.Book origBook, BookCollection origCollection)
         {
             var possibleTCFilePath = TeamCollectionManager.GetTcLinkPathFromLcPath(

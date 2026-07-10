@@ -1,7 +1,7 @@
 /**
  * Tests for LinkTargetChooser - URL Synchronization and Preselection
  * Covers: URL box syncs with book/page selections, preselection from URL prop
- * Run with: yarn test
+ * Run with: pnpm test
  */
 
 import { test, expect } from "../../component-tester/playwrightTest";

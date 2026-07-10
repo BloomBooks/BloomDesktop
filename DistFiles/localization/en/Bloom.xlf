@@ -107,6 +107,21 @@
         <source xml:lang="en">Bloom Accessibility Checker</source>
         <note>ID: AccessibilityCheck.WindowTitle</note>
       </trans-unit>
+      <trans-unit id="AccountMenu.Account" translate="no">
+        <source xml:lang="en">Account</source>
+        <note>ID: AccountMenu.Account</note>
+        <note>Tooltip and accessible label for the round avatar button in the top bar of the main window.</note>
+      </trans-unit>
+      <trans-unit id="AccountMenu.SignIn" translate="no">
+        <source xml:lang="en">Sign in</source>
+        <note>ID: AccountMenu.SignIn</note>
+        <note>Button in the top bar of the main window. Clicking it opens the web browser to sign in to BloomLibrary.org.</note>
+      </trans-unit>
+      <trans-unit id="AccountMenu.SignOut" translate="no">
+        <source xml:lang="en">Sign out</source>
+        <note>ID: AccountMenu.SignOut</note>
+        <note>Menu item shown under the user's avatar in the top bar; signs the user out of BloomLibrary.org.</note>
+      </trans-unit>
       <trans-unit id="AutoUpdateSoftwareDialog.SoftwareUpdates" sil:dynamic="true">
         <source xml:lang="en">Software Updates</source>
         <note>ID: AutoUpdateSoftwareDialog.SoftwareUpdates</note>

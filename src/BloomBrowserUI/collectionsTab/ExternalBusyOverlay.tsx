@@ -7,7 +7,6 @@ import {
     useSubscribeToWebSocketForObject,
 } from "../utils/WebSocketManager";
 import { kBloomBlue, kPanelBackground } from "../bloomMaterialUITheme";
-import { useL10n } from "../react_components/l10nHooks";
 
 // A modal "busy" dialog shown while Bloom is doing a long-running external operation
 // (currently external/process-book, which processes a book off-screen for ~20-30s). The C# side
@@ -28,13 +27,12 @@ export const ExternalBusyOverlay: React.FunctionComponent = () => {
     const [open, setOpen] = useState(false);
     const [message, setMessage] = useState<string | undefined>();
 
-    // Localized fallback shown if the C# side ever raises the overlay without supplying a message.
-    // Applied at render time (rather than captured in the websocket callback) so it reflects the
-    // localized value even though useL10n resolves asynchronously.
-    const defaultBusyMessage = useL10n(
-        "Bloom is busy, please wait…",
-        "Common.BloomIsBusy",
-    );
+    // Fallback shown if the C# side ever raises the overlay without supplying a message.
+    // Intentionally NOT localized: the only flow that raises this overlay (external/process-book)
+    // always supplies its own message, which is itself deliberately unlocalized because it is
+    // operator-facing (a BloomBridge-driven run). This fallback can therefore only appear due to
+    // a code bug, so it does not warrant an XLF entry.
+    const defaultBusyMessage = "Bloom is busy, please wait…";
 
     useSubscribeToWebSocketForObject<{ message?: string }>(
         "externalProcessing",

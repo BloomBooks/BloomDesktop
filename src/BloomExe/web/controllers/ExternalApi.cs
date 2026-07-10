@@ -17,25 +17,29 @@ namespace Bloom.web.controllers
     /// </summary>
     public class ExternalApi
     {
-        public static event EventHandler LoginSuccessful;
-
         private BloomLibraryBookApiClient _bloomLibraryBookApiClient;
         private readonly CollectionModel _collectionModel;
         private readonly EditingModel _editingModel;
         private readonly WorkspaceTabSelection _tabSelection;
         private readonly BookServer _bookServer;
         private readonly CollectionSettings _collectionSettings;
+        private readonly AvatarCache _avatarCache;
 
-        // Re-entrancy guard for process-book. ProcessBook occupies the UI thread but pumps the
-        // Windows message loop via Application.DoEvents() (both the pre-loop below and the per-page
-        // waits in BookProcessor). Because external/* handlers are dispatched on the UI thread via
-        // message posts, a second process-book request that arrives mid-run could be delivered
-        // re-entrantly during one of those DoEvents pumps. The shared-environment statics in
-        // WebView2Browser (_useSharedEnvironment/_sharedEnvironment) are explicitly NOT designed for
-        // overlapping batches, so we reject the re-entrant call rather than let the two corrupt each
-        // other. A plain bool is sufficient: everything here is single-threaded on the UI thread, so
-        // there is no cross-thread race to lock against.
-        private bool _processBookInProgress;
+        // Re-entrancy guard for process-book. A process-book request is validated and dispatched on
+        // the UI thread (HandleProcessBook), which sets this flag true, kicks off the heavy work on a
+        // background thread (see the Task.Run in HandleProcessBook), and returns immediately. We
+        // reject a second process-book that arrives while one is still running, because the
+        // shared-environment statics in WebView2Browser (_useSharedEnvironment/_sharedEnvironment) are
+        // explicitly NOT designed for overlapping batches and would corrupt each other.
+        //
+        // The UI thread is the only writer of 'true', and it reads the flag (to reject overlaps) and
+        // then sets it with no message pumping in between, so that check-then-set is atomic against
+        // UI-thread re-entrancy. The background job clears the flag to false when it finishes. Because
+        // that clear happens on the background thread while the UI thread reads the flag, it is marked
+        // volatile so the UI thread reliably sees the cleared value rather than caching a stale 'true'
+        // (which would wrongly reject every later process-book). A full lock isn't needed because the
+        // only cross-thread write is that release to false.
+        private volatile bool _processBookInProgress;
 
         // The most recent (or in-progress) external/process-book job. process-book replies
         // immediately with a jobId and runs the heavy work asynchronously on the UI thread; the
@@ -72,7 +76,8 @@ namespace Bloom.web.controllers
             EditingModel editingModel,
             WorkspaceTabSelection tabSelection,
             BookServer bookServer,
-            CollectionSettings collectionSettings
+            CollectionSettings collectionSettings,
+            AvatarCache avatarCache
         )
         {
             _bloomLibraryBookApiClient = bloomLibraryBookApiClient;
@@ -81,6 +86,7 @@ namespace Bloom.web.controllers
             _tabSelection = tabSelection;
             _bookServer = bookServer;
             _collectionSettings = collectionSettings;
+            _avatarCache = avatarCache;
         }
 
         /// <summary>
@@ -118,14 +124,41 @@ namespace Bloom.web.controllers
                         string token = requestData.sessionToken;
                         string email = requestData.email;
                         string userId = requestData.userId;
+                        // photoUrl (the user's Google/Firebase profile picture) is OPTIONAL and read
+                        // defensively: the website and desktop deploy independently, so an older blorg
+                        // build will not send this field at all. A missing/null value is normal and
+                        // simply means "no picture" (the avatar falls back to Gravatar/initials). Only
+                        // THIS field gets this lenient treatment; the others keep the fail-fast behavior.
+                        //
+                        // Accept either casing. Firebase's own user property is `photoURL` (capital URL)
+                        // while our other fields are camelCase, so a website build that forwards
+                        // `user.photoURL` verbatim is an easy and likely mismatch. Tolerating both spellings
+                        // (checking IsDefined, which is case-sensitive, for each) means the nicer avatar
+                        // lights up regardless of which the website happens to send.
+                        string photoUrl = null;
+                        if (requestData.IsDefined("photoUrl"))
+                            photoUrl = (string)requestData.photoUrl;
+                        else if (requestData.IsDefined("photoURL"))
+                            photoUrl = (string)requestData.photoURL;
                         //Debug.WriteLine("Got login data " + email + " with token " + token + " and id " + userId);
+
+                        // Register the logged-in user's profile picture (if any) in the person-keyed
+                        // avatar cache BEFORE SetLoginData, because SetLoginData broadcasts the new login
+                        // state, which prompts the front end to request the avatar. Registering first
+                        // guarantees that request resolves to the Google photo rather than racing ahead
+                        // and caching Gravatar. When photoUrl is absent/empty this is a no-op and the
+                        // avatar falls back to Gravatar/initials.
+                        if (!string.IsNullOrEmpty(photoUrl))
+                        {
+                            _avatarCache.SetKnownPhotoUrl(AvatarCache.Md5OfEmail(email), photoUrl);
+                        }
+
                         _bloomLibraryBookApiClient.SetLoginData(
                             email,
                             userId,
                             token,
                             BookUpload.Destination
                         );
-                        LoginSuccessful?.Invoke(this, null);
 
                         request.PostSucceeded();
 
@@ -397,14 +430,11 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            // The heavy work needs the UI thread (it creates and pumps an off-screen WebView2). We
-            // are on the UI thread now, but we must NOT do that work here: holding the HTTP response
-            // open for the whole ~20-30s run is exactly what leaves the client hung if the connection
-            // is dropped (e.g. a stale keep-alive socket). Instead reply immediately with a jobId and
-            // BeginInvoke the work to run after this response is sent — it queues on this same UI
-            // thread's message loop and runs once this handler returns. The client polls
-            // external/process-book-status for the outcome. _processBookInProgress stays true for the
-            // whole async run, so the re-entrancy guard still rejects an overlapping process-book.
+            // We must NOT do the heavy work here: holding the HTTP response open for the whole ~20-30s run
+            // is exactly what leaves the client hung if the connection is dropped (e.g. a stale keep-alive
+            // socket). Instead reply immediately with a jobId and run the work on a background thread; the
+            // client polls external/process-book-status for the outcome. _processBookInProgress stays true for
+            // the whole async run, so the re-entrancy guard still rejects an overlapping process-book.
             var shell = Shell.GetShellOrNull();
             if (shell == null || shell.IsDisposed)
             {
@@ -420,17 +450,21 @@ namespace Bloom.web.controllers
             }
             request.ReplyWithJson(new { jobId, state = "running" });
 
-            shell.BeginInvoke(
-                (Action)(() => RunProcessBookJob(jobId, folderPath, id, fitImageTextSplits))
+            // Run on a background thread, NOT the UI thread: ProcessBook drives its WebView2 on the
+            // OffScreenBrowser's own thread and just blocks on it, so keeping this off the UI thread leaves
+            // the UI free to paint the "processing" overlay and stay responsive for the whole run.
+            // The parts of the job that touch WinForms (the editor/collection refresh) are marshaled
+            // back to the UI thread via InvokeOnUiThread.
+            _ = System.Threading.Tasks.Task.Run(() =>
+                RunProcessBookJob(jobId, folderPath, id, fitImageTextSplits)
             );
         }
 
         /// <summary>
-        /// Runs the heavy process-book work on the UI thread. Posted via BeginInvoke from
-        /// HandleProcessBook so it executes after that request's reply has already been sent, then
-        /// records the outcome on _processBookJob for the client to poll via
-        /// external/process-book-status. Never throws to the caller (it is a fire-and-forget UI
-        /// message); any failure is captured as the job's "failed" state.
+        /// Runs the heavy process-book work on a background thread (dispatched from HandleProcessBook after
+        /// that request's reply has already been sent), then records the outcome on _processBookJob for the
+        /// client to poll via external/process-book-status. Never throws to the caller (it is a fire-and-forget
+        /// background task); any failure is captured as the job's "failed" state.
         /// </summary>
         private void RunProcessBookJob(
             string jobId,
@@ -441,17 +475,14 @@ namespace Bloom.web.controllers
         {
             try
             {
-                // The overlay 'show', the DoEvents/Sleep spin-up loop, and the processing all run
-                // inside this try so that an exception anywhere after we raise the overlay still runs
-                // the finally and sends 'hide'; otherwise the modal overlay would be stuck opaque
-                // until the user navigates away. (Sending 'hide' when 'show' never succeeded is a
-                // harmless no-op.)
+                // The overlay 'show' and the processing both run inside this try so that an exception anywhere
+                // after we raise the overlay still runs the finally and sends 'hide'; otherwise the modal
+                // overlay would be stuck opaque until the user navigates away. (Sending 'hide' when 'show'
+                // never succeeded is a harmless no-op.)
                 try
                 {
-                    // Let the user know Bloom is busy. The work below pumps the message loop via
-                    // Application.DoEvents(), so the main WebView2 keeps painting and this overlay
-                    // (with its CSS spinner) stays visible/animated for the whole run. Pump a few
-                    // events first so it actually appears before the heavy work ties up the thread.
+                    // Let the user know Bloom is busy. We run off the UI thread, so the UI thread is free to
+                    // paint this overlay (with its CSS spinner) and keep it animated for the whole run.
                     dynamic overlay = new DynamicJson();
                     // Intentionally NOT localized, like the add-book/update-book toasts: this is an
                     // operator-facing message shown only during a BloomBridge-driven processing run.
@@ -461,11 +492,6 @@ namespace Bloom.web.controllers
                         "show",
                         overlay
                     );
-                    for (var i = 0; i < 10; i++)
-                    {
-                        System.Windows.Forms.Application.DoEvents();
-                        System.Threading.Thread.Sleep(15);
-                    }
 
                     var result = !string.IsNullOrEmpty(folderPath)
                         ? ProcessBookByPath(folderPath, fitImageTextSplits)
@@ -503,6 +529,28 @@ namespace Bloom.web.controllers
             {
                 _processBookInProgress = false;
             }
+        }
+
+        /// <summary>
+        /// Run <paramref name="action"/> on the UI thread and wait for it to finish. The process-book
+        /// job runs on a background thread (see the Task.Run in HandleProcessBook) so the heavy
+        /// BookProcessor.ProcessBook() work doesn't freeze the UI, but the surrounding reconciliation
+        /// of live editor/collection state (ReloadCurrentBookDiscardingEdits / ReloadEditableCollection
+        /// / UpdateThumbnailAsync) touches WinForms and so must happen on the UI thread. We use the
+        /// synchronous Invoke (not BeginInvoke) so the refresh has completed before we report the job
+        /// "done" and so its ordering relative to the rest of the job is preserved.
+        /// </summary>
+        private void InvokeOnUiThread(Action action)
+        {
+            var shell = Shell.GetShellOrNull();
+            if (shell == null || shell.IsDisposed)
+                throw new InvalidOperationException(
+                    "external/process-book: cannot refresh the UI because Bloom's main window is gone."
+                );
+            if (shell.InvokeRequired)
+                shell.Invoke(action);
+            else
+                action();
         }
 
         /// <summary>
@@ -573,10 +621,18 @@ namespace Bloom.web.controllers
             // isInEditableCollection:true + AlwaysEditSaveContext makes Book.IsSaveable true
             // (Book.IsSaveable => IsInEditableCollection && BookInfo.IsSaveable), matching the semantics
             // of the old flow where the book was first copied into the editable collection.
-            var selectedBeforeProcessing = _collectionModel.GetSelectedBookOrNull();
-            var processingSelectedBook =
-                selectedBeforeProcessing != null
-                && AreSameFolder(selectedBeforeProcessing.FolderPath, folderPath);
+            // Whether we're about to reprocess the book currently open in the editor. Read the
+            // _collectionModel/_bookSelection state on the UI thread that owns it; this job otherwise
+            // runs on a background thread (only the heavy BookProcessor.ProcessBook() call below runs
+            // off the UI thread).
+            var processingSelectedBook = false;
+            InvokeOnUiThread(() =>
+            {
+                var selectedBeforeProcessing = _collectionModel.GetSelectedBookOrNull();
+                processingSelectedBook =
+                    selectedBeforeProcessing != null
+                    && AreSameFolder(selectedBeforeProcessing.FolderPath, folderPath);
+            });
 
             var bookInfo = new BookInfo(folderPath, true, new AlwaysEditSaveContext());
             var book = _bookServer.GetBookFromBookInfo(bookInfo);
@@ -592,8 +648,13 @@ namespace Bloom.web.controllers
             {
                 try
                 {
-                    _editingModel.ReloadCurrentBookDiscardingEdits();
-                    _collectionModel.ReloadEditableCollection();
+                    // These reconcile live editor/collection state and touch WinForms, so they must
+                    // run on the UI thread even though this job runs on a background thread.
+                    InvokeOnUiThread(() =>
+                    {
+                        _editingModel.ReloadCurrentBookDiscardingEdits();
+                        _collectionModel.ReloadEditableCollection();
+                    });
                 }
                 catch (Exception e)
                 {
@@ -648,15 +709,28 @@ namespace Bloom.web.controllers
         /// </summary>
         private ProcessBookResult ProcessBookById(string id, bool fitImageTextSplits)
         {
-            var editableCollection = _collectionModel.TheOneEditableCollection;
-            var collectionPath = editableCollection.PathToDirectory;
-            var bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+            // Look up the book's BookInfo in the editable collection. Read _collectionModel's collection
+            // state on the UI thread that owns it; this job otherwise runs on a background thread (only the
+            // heavy BookProcessor.ProcessBook() call below runs off the UI thread).
+            string collectionPath = null;
+            BookInfo bookInfo = null;
+            InvokeOnUiThread(() =>
+            {
+                collectionPath = _collectionModel.TheOneEditableCollection.PathToDirectory;
+                bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+            });
             if (bookInfo == null)
             {
                 // The book may have just been written to disk and our in-memory collection cache
                 // doesn't know about it yet. Rescan from disk and look again before giving up.
-                _collectionModel.ReloadEditableCollection();
-                bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+                // ReloadEditableCollection touches WinForms state, so (along with the re-lookup that
+                // depends on the reloaded collection) it must run on the UI thread even though this
+                // job runs on a background thread.
+                InvokeOnUiThread(() =>
+                {
+                    _collectionModel.ReloadEditableCollection();
+                    bookInfo = _collectionModel.BookInfoFromCollectionAndId(collectionPath, id);
+                });
             }
             if (bookInfo == null)
             {
@@ -681,20 +755,25 @@ namespace Bloom.web.controllers
                 // copy and reload it from disk so a later trip through the Edit tab can't clobber what we
                 // just wrote, then refresh the collection's view of it (list metadata + thumbnail). This
                 // mirrors how external/update-book handles re-import of the selected book.
-                var selected = _collectionModel.GetSelectedBookOrNull();
-                if (selected != null && selected.ID == id)
+                // All of this reconciles live editor/collection state and touches WinForms, so it must
+                // run on the UI thread even though this job runs on a background thread.
+                InvokeOnUiThread(() =>
                 {
-                    _editingModel.ReloadCurrentBookDiscardingEdits();
-                    _collectionModel.ReloadEditableCollection();
-                    var refreshedInfo = _collectionModel.BookInfoFromCollectionAndId(
-                        collectionPath,
-                        id
-                    );
-                    if (refreshedInfo != null)
-                        _collectionModel.UpdateThumbnailAsync(
-                            _collectionModel.GetBookFromBookInfo(refreshedInfo)
+                    var selected = _collectionModel.GetSelectedBookOrNull();
+                    if (selected != null && selected.ID == id)
+                    {
+                        _editingModel.ReloadCurrentBookDiscardingEdits();
+                        _collectionModel.ReloadEditableCollection();
+                        var refreshedInfo = _collectionModel.BookInfoFromCollectionAndId(
+                            collectionPath,
+                            id
                         );
-                }
+                        if (refreshedInfo != null)
+                            _collectionModel.UpdateThumbnailAsync(
+                                _collectionModel.GetBookFromBookInfo(refreshedInfo)
+                            );
+                    }
+                });
             }
             catch (Exception e)
             {

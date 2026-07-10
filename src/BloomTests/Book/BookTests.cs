@@ -3180,6 +3180,82 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void UpdateCharacterStyleMarkup_ReducesNestingOfSameTags()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><b>some <b style='color:red'>text</b> here</b></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo("<strong>some text here</strong>")
+            );
+            var dom1 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><i><i style='color:red'>text</i></i></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom1);
+            Assert.That(GetFirstEditableParagraph(dom1).InnerXml, Is.EqualTo("<em>text</em>"));
+            var dom2 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><sup><sup style='color:red'>text</sup></sup></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom2);
+            // <sup> does have a nesting effect, so we don't collapse them. We just remove the attributes from the inner tag.
+            Assert.That(
+                GetFirstEditableParagraph(dom2).InnerXml,
+                Is.EqualTo("<sup><sup>text</sup></sup>")
+            );
+            var dom3 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>This is <u><u style='color:red'>some text.</u></u></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom3);
+            Assert.That(
+                GetFirstEditableParagraph(dom3).InnerXml,
+                Is.EqualTo("This is <u>some text.</u>")
+            );
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_HandlesMultipleTags()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><b>text</b>, <b><i>more text</i></b> and <i><b>yet more.</b></i></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo(
+                    "<strong>text</strong>, <strong><em>more text</em></strong> and <em><strong>yet more.</strong></em>"
+                )
+            );
+            var dom1 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><i><i>text</i></i> with <i><i>more text</i></i></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom1);
+            Assert.That(
+                GetFirstEditableParagraph(dom1).InnerXml,
+                Is.EqualTo("<em>text</em> with <em>more text</em>")
+            );
+            var dom2 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><sup>number</sup> of <sup style='color:red'>text</sup> with <sup>xyz</sup></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom2);
+            Assert.That(
+                GetFirstEditableParagraph(dom2).InnerXml,
+                Is.EqualTo("<sup>number</sup> of <sup>text</sup> with <sup>xyz</sup>")
+            );
+            var dom3 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>This is <b><b>some text.</b></b> x <b>More stuff</b> of <b>sorts</b></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom3);
+            Assert.That(
+                GetFirstEditableParagraph(dom3).InnerXml,
+                Is.EqualTo(
+                    "This is <strong>some text.</strong> x <strong>More stuff</strong> of <strong>sorts</strong>"
+                )
+            );
+        }
+
+        [Test]
         public void BringBookUpToDate_FixesDuplicateAudioIds_SentenceRecording()
         {
             _bookDom = new HtmlDom(

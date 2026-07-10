@@ -49,6 +49,38 @@ namespace Bloom
         // to work the old way.
         private WebView2Browser(string dummy) { }
 
+        // When set (via CreateWithInjectedEnvironment), InitWebView uses this already-created environment
+        // instead of making its own. Lets OffScreenBrowser share one environment — one browser process,
+        // user-data folder, and HTTP cache — across the fresh browser it makes per page, thread-safely and
+        // without the global shared-environment batch statics.
+        private CoreWebView2Environment _injectedEnvironment;
+
+        /// <summary>
+        /// Create a browser that reuses the given already-created CoreWebView2Environment instead of making its
+        /// own. As with the default constructor, initialization is kicked off unawaited; callers wait on
+        /// <see cref="IsReadyToNavigate"/> before navigating.
+        /// </summary>
+        internal static WebView2Browser CreateWithInjectedEnvironment(
+            CoreWebView2Environment environment
+        )
+        {
+            // The string argument selects the do-nothing private constructor so we can set the injected
+            // environment before InitWebView runs, then initialize exactly as the normal constructor does.
+            var browser = new WebView2Browser("dummy");
+            browser._injectedEnvironment = environment;
+            browser.InitializeComponent();
+            // Kicked off unawaited (like the default constructor); callers wait on IsReadyToNavigate.
+            _ = browser.InitWebView();
+            return browser;
+        }
+
+        /// <summary>
+        /// The CoreWebView2Environment this browser was initialized with, or null if it is not yet ready.
+        /// A caller can capture this from one browser and pass it to CreateWithInjectedEnvironment to make
+        /// further browsers that share the same environment.
+        /// </summary>
+        internal CoreWebView2Environment CoreEnvironment => _webview?.CoreWebView2?.Environment;
+
         /// <summary>
         /// This gives us a way to create a WebView2Browser with the async init properly awaited.
         /// It would be good to use this everywhere, but I think a lot of stuff would have to become async.
@@ -432,10 +464,13 @@ namespace Bloom
             // because EnsureCoreWebView2Async still fires this control's own InitializationCompleted, which
             // is what sets _readyToNavigate.)
             SetupEventHandling();
-            // During a shared-environment batch, reuse the one environment (and its browser process +
-            // user-data folder + HTTP cache) so we don't pay environment creation per browser. The first
-            // browser of the batch falls through and creates it; subsequent ones reuse it.
-            var env = _useSharedEnvironment ? _sharedEnvironment : null;
+            // Reuse an existing environment (and its browser process + user-data folder + HTTP cache) when we
+            // can, so we don't pay environment creation per browser:
+            //  - _injectedEnvironment: an environment handed to this instance (OffScreenBrowser shares one
+            //    environment across the fresh browser it creates per page — see CreateWithInjectedEnvironment);
+            //  - _sharedEnvironment: the legacy on-UI-thread shared-environment batch (BookProcessor's old path).
+            // Otherwise we fall through and create a fresh one.
+            var env = _injectedEnvironment ?? (_useSharedEnvironment ? _sharedEnvironment : null);
             if (env == null)
             {
                 string dataFolder;
@@ -735,30 +770,6 @@ namespace Bloom
         {
             var html = await GetStringFromJavascriptAsync("document.documentElement.outerHTML");
             RobustFile.WriteAllText(path, html, Encoding.UTF8);
-        }
-
-        public override string RunJavascriptWithStringResult_Sync_Dangerous(string script)
-        {
-            Task<string> task = GetStringFromJavascriptAsync(script);
-            // This is dangerous. E.g. it caused this bug: https://issues.bloomlibrary.org/youtrack/issue/BL-12614
-            // Came from an answer in https://stackoverflow.com/questions/65327263/how-to-get-sync-return-from-executescriptasync-in-webview2'
-            // It's quite possible for the user to initiate a new command while we are trying to run the
-            // javascript before completing the last thing the user requested.
-            // Note: at one point, I thought making our code async all the way would solve this, but now I'm not so sure.
-            // A click event handler can be async, but it is "void" async (no task to await), so I think it can still
-            // return control to the main message loop before all the async stuff it started has completed.
-            // The reentrancy possibly caused BL-13120 and friends, when we were using this method to get the page content
-            // to save.
-            // We tried using a message filter to suppress messages that might cause reentrancy, but found
-            // that somehow it didn't fully solve the problem, AND things could get stuck in a state where
-            // everything got filtered.
-            while (!task.IsCompleted)
-            {
-                Application.DoEvents();
-                Thread.Sleep(10);
-            }
-
-            return task.Result;
         }
 
         public override async Task RunJavascriptAsync(string script)
