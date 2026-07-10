@@ -272,6 +272,14 @@ namespace Bloom.TeamCollection
                 // the book. We can go ahead.
                 return true;
             }
+
+            // Account-switch takeover (batch item 9): it's locked to someone else, but that lock
+            // is for THIS machine, and this backend allows handing it over instead of blocking.
+            // PutBookInRepo performs the actual server-side handover before this check-in
+            // proceeds, so by the time the repo is touched the lock legitimately belongs to us.
+            if (CanTakeOverLockOnThisMachine(repoStatus))
+                return true;
+
             // It's checked out somewhere else according to the repo. They haven't changed it yet,
             // but the repo says they have the right to.
             return false;
@@ -596,14 +604,52 @@ namespace Bloom.TeamCollection
 
         /// <summary>
         /// Returns true if the book must be checked out before editing it (etc.),
-        /// that is, if it is NOT already checked out on this machine by this user.
+        /// that is, if it is NOT already editable here (see <see cref="IsEditableHere"/>).
         /// </summary>
         /// <param name="bookFolderPath"></param>
         /// <returns></returns>
         public bool NeedCheckoutToEdit(string bookFolderPath)
         {
-            return !IsCheckedOutHereBy(GetStatus(Path.GetFileName(bookFolderPath)));
+            return !IsEditableHere(GetStatus(Path.GetFileName(bookFolderPath)));
         }
+
+        /// <summary>
+        /// Virtual seam for "is this book editable by the CURRENT user right now" -- deliberately
+        /// distinct from <see cref="IsCheckedOutHereBy(BookStatus, string)"/>, which asks "is it
+        /// checked out by exactly this identity" and is relied on elsewhere (sync-at-startup
+        /// conflict/clobber reconciliation, delete gating, etc.) for a strict identity match that
+        /// must NOT be loosened. The default here is the same strict check. CloudTeamCollection
+        /// overrides it for the account-switch scenario (batch item 9,
+        /// Design/CloudTeamCollections/orchestration/DOGFOOD-BATCH-1.md): a book left checked out
+        /// HERE (this machine) by a DIFFERENT signed-in team member is still editable by the
+        /// current member -- John's decision: "local machine access is unrestricted; only
+        /// shared-data operations are gated by the CURRENT logon's server permissions." The
+        /// server-side lock itself only actually moves to the current user lazily, the first time
+        /// we need to push a change (see CanTakeOverLockOnThisMachine/TryTakeOverLock).
+        /// </summary>
+        protected internal virtual bool IsEditableHere(BookStatus status) =>
+            IsCheckedOutHereBy(status);
+
+        /// <summary>
+        /// Virtual seam: true if <paramref name="repoStatus"/> represents a lock this backend is
+        /// willing to atomically hand over to the current user instead of treating it as a
+        /// conflict. The base (folder) implementation never allows this. CloudTeamCollection
+        /// overrides it to allow same-machine, different-account takeover (batch item 9) --
+        /// never across machines, which remains a genuine conflict. Used by both
+        /// <see cref="OkToCheckIn"/> (so an account-switched check-in isn't blocked) and
+        /// <see cref="AttemptLock"/> (so an explicit "check out" click on such a book performs
+        /// the handover instead of silently failing).
+        /// </summary>
+        protected internal virtual bool CanTakeOverLockOnThisMachine(BookStatus repoStatus) =>
+            false;
+
+        /// <summary>
+        /// Virtual seam: actually perform the atomic same-machine lock takeover
+        /// <see cref="CanTakeOverLockOnThisMachine"/> judged eligible. Base (folder) does nothing
+        /// (and should never be asked to, since CanTakeOverLockOnThisMachine is always false
+        /// there). Returns true if the current user now holds the lock.
+        /// </summary>
+        protected internal virtual bool TryTakeOverLock(string bookName) => false;
 
         public abstract void DeleteBookFromRepo(string bookFolderPath, bool makeTombstone = true);
 
@@ -825,6 +871,20 @@ namespace Bloom.TeamCollection
                     // lock rather than the optimistic lockedBy we stamped above.
                     status = GetStatus(bookName);
                 }
+            }
+            else if (
+                !IsDisconnected
+                && status.lockedBy != whoBy
+                && CanTakeOverLockOnThisMachine(status)
+            )
+            {
+                // Account-switch takeover (batch item 9): an explicit "check out" click on a book
+                // that's already editable-here-by-a-different-account (see IsEditableHere)
+                // performs the same atomic server-side handover that PutBookInRepo otherwise does
+                // lazily on first check-in. Re-read afterwards so the return value below reflects
+                // the repo's truth (whether we won the handover or someone else changed it first).
+                if (TryTakeOverLock(bookName))
+                    status = GetStatus(bookName);
             }
 
             // If we succeeded, we definitely want various things to update to show it.

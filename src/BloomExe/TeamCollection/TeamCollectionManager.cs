@@ -366,7 +366,12 @@ namespace Bloom.TeamCollection
                     // so that there will be a valid MessageLog if we need it during CheckConnection().
                     // If CheckConnection() fails, it will reset this to a DisconnectedTeamCollection.
                     CurrentCollectionEvenIfDisconnected = CurrentCollection;
-                    if (CheckConnection())
+                    // allowHardRefusal: true -- batch item 9 (account-switch behavior): opening a
+                    // collection under an account that's not a server member of it must abort the
+                    // open entirely (TeamCollectionAccessRefusedException, caught in
+                    // Program.HandleErrorOpeningProjectWindow), not silently fall back to
+                    // Disconnected mode like any other connection problem.
+                    if (CheckConnection(allowHardRefusal: true))
                     {
                         CurrentCollection.SocketServer = SocketServer;
                         CurrentCollection.TCManager = this;
@@ -385,6 +390,15 @@ namespace Bloom.TeamCollection
                         }
                     }
                     // else CheckConnection has set up a DisconnectedRepo if that is relevant.
+                }
+                catch (TeamCollectionAccessRefusedException)
+                {
+                    // Batch item 9 (account-switch behavior): let this propagate all the way up
+                    // to Program.cs (through ProjectContext's constructor), which aborts opening
+                    // the collection entirely and shows the composed refusal message -- unlike
+                    // every other exception here, this one must NOT be swallowed into an ordinary
+                    // "TC initialization failed, fall back to Disconnected mode" outcome.
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -517,7 +531,19 @@ namespace Bloom.TeamCollection
         /// as well as switching things to the disconnected state.
         /// </summary>
         /// <returns></returns>
-        public bool CheckConnection()
+        public bool CheckConnection() => CheckConnection(allowHardRefusal: false);
+
+        /// <summary>
+        /// As <see cref="CheckConnection()"/>, but when <paramref name="allowHardRefusal"/> is
+        /// true, a connection problem flagged as <see cref="TeamCollectionMessage.IsAccessRefusal"/>
+        /// (currently: CloudTeamCollection.CheckConnection's non-member case, batch item 9) throws
+        /// <see cref="TeamCollectionAccessRefusedException"/> instead of falling back to
+        /// Disconnected mode. Only the initial open (this class's constructor, below) passes
+        /// true -- a membership loss discovered LATER in the session (e.g. via
+        /// TeamCollectionApi's ordinary CheckConnection() calls) must still just disconnect, not
+        /// crash the running app.
+        /// </summary>
+        public bool CheckConnection(bool allowHardRefusal)
         {
             if (CurrentCollection == null)
                 return false; // we're already disconnected, or not a TC at all.
@@ -536,6 +562,10 @@ namespace Bloom.TeamCollection
 
             if (connectionProblem != null)
             {
+                if (allowHardRefusal && connectionProblem.IsAccessRefusal)
+                    throw new TeamCollectionAccessRefusedException(
+                        connectionProblem.TextForDisplay
+                    );
                 MakeDisconnected(connectionProblem, CurrentCollection.RepoDescription);
                 return false;
             }

@@ -1701,6 +1701,23 @@ namespace Bloom
             string errorFilePath = FileException.GetFilePathIfPresent(error);
             // We want to skip over exceptions thrown by Autofac.
             originalError = MiscUtils.UnwrapUntilInterestingException(originalError);
+
+            // Batch item 9 (account-switch behavior): this is an expected, handled refusal (the
+            // current logon is not a server member of this Team Collection), not a bug -- show
+            // the already-composed message plainly and return, instead of falling into the
+            // generic "Report this crash" flow below. OpenProjectWindow's caller (e.g.
+            // StartUpShellBasedOnMostRecentUsedIfPossible/ChooseACollection's own loop) already
+            // reopens the collection chooser whenever this method's caller returns false, exactly
+            // like any other failure to open a project.
+            if (originalError is TeamCollectionAccessRefusedException refusalException)
+            {
+                Logger.WriteEvent(
+                    $"*** Refused to open collection {Path.GetFileNameWithoutExtension(projectPath)}: {refusalException.Message}"
+                );
+                SIL.Reporting.ErrorReport.NotifyUserOfProblem(refusalException.Message);
+                return;
+            }
+
             Logger.WriteError(
                 $"*** Error loading collection {Path.GetFileNameWithoutExtension(projectPath)}, on filepath: {errorFilePath}",
                 originalError

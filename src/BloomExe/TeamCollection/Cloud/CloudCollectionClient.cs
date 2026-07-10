@@ -94,6 +94,11 @@ namespace Bloom.TeamCollection.Cloud
             _auth = auth;
         }
 
+        /// <summary>The signed-in cloud account's email, or null if signed out. Read-only
+        /// pass-through of the auth this client was built with; used by callers (e.g.
+        /// CloudJoinFlow) that only hold a client, not the auth itself.</summary>
+        public string CurrentUserEmail => _auth?.CurrentEmail;
+
         /// <summary>
         /// Test-only seam: lets unit tests substitute a fake <see cref="IRestExecutor"/> so error
         /// mapping and header injection can be verified without a live server. Production code
@@ -214,6 +219,18 @@ namespace Bloom.TeamCollection.Cloud
         /// <summary>Conditional lock; result includes the winning holder's identity on failure.</summary>
         public JObject CheckoutBook(string bookId, string machine) =>
             (JObject)CallRpc("checkout_book", new { p_book_id = bookId, p_machine = machine });
+
+        /// <summary>Account-switch takeover (batch item 9, CONTRACTS.md addition -- flagged, not
+        /// yet added to CONTRACTS.md itself; see this task's report): atomically reassigns a
+        /// book's lock from a DIFFERENT account to the caller, but ONLY when the existing lock is
+        /// recorded for the SAME machine. Returns the same {success, locked_by, locked_by_machine,
+        /// locked_at} shape as checkout_book, so callers can reuse
+        /// CloudRepoCache.RecordCheckoutResult unchanged.</summary>
+        public JObject CheckoutBookTakeover(string bookId, string machine) =>
+            (JObject)CallRpc(
+                "checkout_book_takeover",
+                new { p_book_id = bookId, p_machine = machine }
+            );
 
         /// <summary>Releases the caller's own lock (undo checkout; no content change).</summary>
         public JObject UnlockBookRpc(string bookId) =>

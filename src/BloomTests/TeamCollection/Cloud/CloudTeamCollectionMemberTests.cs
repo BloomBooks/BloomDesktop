@@ -168,15 +168,22 @@ namespace BloomTests.TeamCollection.Cloud
         }
 
         [Test]
-        public void CheckConnection_SignedInButNotAMember_ReturnsMessage()
+        public void CheckConnection_SignedInButNotAMember_ReturnsRefusalMessage()
         {
+            // Batch item 9 (account-switch behavior): non-membership is now a hard refusal
+            // (IsAccessRefusal), not just an ordinary Disconnected-mode message. The renamed
+            // L10NId ("NotAMemberRefusal") reflects that this message text changed shape (it now
+            // composes admin/last-known-user detail, see ComposeNotAMemberRefusalDetail's own
+            // tests below) -- there was no existing XLF entry for the old id to migrate.
             _auth.SignIn("test@somewhere.org", "irrelevant");
             _executor.Handler = req => FakeResponses.Make(HttpStatusCode.OK, "[]"); // my_collections: empty
 
             var message = _collection.CheckConnection();
 
             Assert.That(message, Is.Not.Null);
-            Assert.That(message.L10NId, Is.EqualTo("TeamCollection.Cloud.NotAMember"));
+            Assert.That(message.L10NId, Is.EqualTo("TeamCollection.Cloud.NotAMemberRefusal"));
+            Assert.That(message.IsAccessRefusal, Is.True);
+            Assert.That(message.Param0, Is.EqualTo("test@somewhere.org"));
         }
 
         [Test]
@@ -194,6 +201,35 @@ namespace BloomTests.TeamCollection.Cloud
             var message = _collection.CheckConnection();
 
             Assert.That(message, Is.Null);
+        }
+
+        [Test]
+        public void CheckConnection_SignedInAndAMember_RecordsLastKnownUser()
+        {
+            // Batch item 9 (account-switch behavior): every successful membership confirmation
+            // records the current user as the last known local user of this collection, so a
+            // FUTURE non-member's refusal message can name them.
+            Assert.That(
+                TeamCollectionLastKnownUser.Read(_collectionFolder.FolderPath),
+                Is.Null,
+                "sanity check: nothing recorded before any successful connection check"
+            );
+
+            _auth.SignIn("test@somewhere.org", "irrelevant");
+            _executor.Handler = req =>
+                FakeResponses.Make(
+                    HttpStatusCode.OK,
+                    new JArray(
+                        new JObject { ["id"] = kCollectionId, ["name"] = "Some Collection" }
+                    ).ToString()
+                );
+
+            _collection.CheckConnection();
+
+            Assert.That(
+                TeamCollectionLastKnownUser.Read(_collectionFolder.FolderPath),
+                Is.EqualTo("test@somewhere.org")
+            );
         }
 
         // Regression for the first two-instance smoke test (7 Jul 2026): poll-detected changes
@@ -313,6 +349,69 @@ namespace BloomTests.TeamCollection.Cloud
                 // server no longer has really should be removed locally.
                 Assert.That(doomed, Is.EquivalentTo(new[] { "words2.txt" }));
             }
+        }
+
+        // ------------------------------------------------------------------
+        // Batch item 9 (account-switch behavior): ComposeNotAMemberRefusalDetail matrix.
+        // Pure function -- no fake server needed.
+        // ------------------------------------------------------------------
+
+        [Test]
+        public void ComposeNotAMemberRefusalDetail_BothKnown_NamesBothAdminsAndLastKnownUser()
+        {
+            var detail = CloudTeamCollection.ComposeNotAMemberRefusalDetail(
+                new[] { "admin1@example.com", "admin2@example.com" },
+                "alice@example.com"
+            );
+
+            Assert.That(detail, Does.Contain("admin1@example.com"));
+            Assert.That(detail, Does.Contain("admin2@example.com"));
+            Assert.That(detail, Does.Contain("alice@example.com"));
+        }
+
+        [Test]
+        public void ComposeNotAMemberRefusalDetail_OnlyAdminsKnown_NamesOnlyAdmins()
+        {
+            var detail = CloudTeamCollection.ComposeNotAMemberRefusalDetail(
+                new[] { "admin1@example.com" },
+                null
+            );
+
+            Assert.That(detail, Does.Contain("admin1@example.com"));
+        }
+
+        [Test]
+        public void ComposeNotAMemberRefusalDetail_OnlyLastKnownUserKnown_NamesThem()
+        {
+            var detail = CloudTeamCollection.ComposeNotAMemberRefusalDetail(
+                null,
+                "alice@example.com"
+            );
+
+            Assert.That(detail, Does.Contain("alice@example.com"));
+        }
+
+        [Test]
+        public void ComposeNotAMemberRefusalDetail_NeitherKnown_StillProducesUsableSentence()
+        {
+            var detail = CloudTeamCollection.ComposeNotAMemberRefusalDetail(null, null);
+
+            Assert.That(detail, Is.Not.Null.And.Not.Empty);
+            Assert.That(detail, Does.Contain("administrator"));
+        }
+
+        [Test]
+        public void ComposeNotAMemberRefusalDetail_EmptyAdministratorsArray_TreatedAsUnknown()
+        {
+            // A legacy/empty Administrators array (not null, but no entries) should behave the
+            // same as "not known" rather than producing an empty "()" list in the message.
+            var detail = CloudTeamCollection.ComposeNotAMemberRefusalDetail(
+                new string[0],
+                "alice@example.com"
+            );
+
+            Assert.That(detail, Does.Contain("alice@example.com"));
+            Assert.That(detail, Does.Not.Contain("()"));
         }
     }
 }

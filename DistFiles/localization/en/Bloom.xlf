@@ -5871,6 +5871,11 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TeamCollection.OfflineDisabled</note>
         <note>Main heading in the per-book status panel for a cloud Team Collection book that cannot be used at all while offline (e.g. it has never been downloaded to this computer).</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.Cloud.NotAMemberRefusal" translate="no">
+        <source xml:lang="en">Bloom cannot open this Team Collection here because {0} is not a member of it. {1}</source>
+        <note>ID: TeamCollection.Cloud.NotAMemberRefusal</note>
+        <note>Shown in a plain message box (no other UI is reachable) when Bloom is signed in as a cloud account that is not a server member of the Team Collection a local folder is linked to (e.g. the collection was joined under a different account on this computer). {0} is the signed-in account's email. {1} is a second, already-assembled sentence naming who to ask for access (an administrator's email and/or the last team member known to have used this collection on this computer, whichever is locally known); it is composed in code from plain untranslated English, since it is built from a variable list of email addresses/names rather than a single fixed phrase. PROVISIONAL: flagged pending John's priority-file confirmation and a decision on whether/how to localize that second sentence.</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.Sharing.ShareButton" translate="no">
         <source xml:lang="en">Share</source>
         <note>ID: TeamCollection.Sharing.ShareButton</note>

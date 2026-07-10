@@ -221,6 +221,11 @@ namespace Bloom.TeamCollection.Cloud
             var linkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder);
             if (!RobustFile.Exists(linkPath))
                 TeamCollectionLink.ForCloud(collectionId).WriteToFile(linkPath);
+            // Account-switch behavior (batch item 9): record who joined, so a later refusal (if
+            // Bloom is ever reopened here signed in as a non-member) can name the last known team
+            // member. Harmless no-op if we don't know the signed-in email for some reason (e.g.
+            // a test double client with no auth attached).
+            TeamCollectionLastKnownUser.Record(localCollectionFolder, _client.CurrentUserEmail);
 
             var cloudTc = new CloudTeamCollection(
                 manager,

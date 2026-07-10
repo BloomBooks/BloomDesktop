@@ -534,6 +534,49 @@ namespace Bloom.TeamCollection.Cloud
         }
 
         // ------------------------------------------------------------------
+        // Account-switch takeover (batch item 9)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// A book locked to a DIFFERENT account is still editable here (see IsEditableHere) as
+        /// long as that lock is recorded for THIS machine -- John's decision: local machine
+        /// access is unrestricted; only shared-data operations are gated by the current logon's
+        /// server permissions. Never across machines: that remains a genuine conflict, exactly
+        /// like today's ordinary checkout_book/checkin_start_tx behavior.
+        /// </summary>
+        protected internal override bool IsEditableHere(BookStatus status)
+        {
+            if (base.IsEditableHere(status))
+                return true;
+            return status.IsCheckedOut()
+                && status.lockedWhere == TeamCollectionManager.CurrentMachine;
+        }
+
+        /// <inheritdoc />
+        protected internal override bool CanTakeOverLockOnThisMachine(BookStatus repoStatus) =>
+            !string.IsNullOrEmpty(repoStatus.lockedBy)
+            && repoStatus.lockedWhere == TeamCollectionManager.CurrentMachine;
+
+        /// <summary>
+        /// Calls the new tc.checkout_book_takeover RPC (CONTRACTS.md addition -- flagged, not yet
+        /// added to CONTRACTS.md itself; see this task's report) to atomically reassign the
+        /// book's server lock to the current user. Purely additive server-side: checkin_start_tx
+        /// itself is untouched, so calling this before check-in is what lets its existing
+        /// "LockHeldByOther" gate pass cleanly for an account-switched checkin.
+        /// </summary>
+        protected internal override bool TryTakeOverLock(string bookName)
+        {
+            var bookId = TryGetBookId(bookName);
+            if (bookId == null)
+                return true; // brand-new, never-committed local book; nothing to take over.
+
+            var result = _client.CheckoutBookTakeover(bookId, TeamCollectionManager.CurrentMachine);
+            _cache.RecordCheckoutResult(bookId, result);
+            _cache.Save();
+            return (bool?)result["success"] ?? false;
+        }
+
+        // ------------------------------------------------------------------
         // Send (PutBookInRepo) and the unified recovery path
         // ------------------------------------------------------------------
 
@@ -546,6 +589,21 @@ namespace Bloom.TeamCollection.Cloud
         )
         {
             var bookFolderName = Path.GetFileName(sourceBookFolderPath);
+
+            // Account-switch takeover (batch item 9): if the repo still shows this book locked
+            // to a DIFFERENT account but for THIS machine, take the server lock over BEFORE
+            // checking in, so checkin_start_tx's existing (unmodified) "LockHeldByOther" gate
+            // sees OUR lock. This is the primary place the takeover actually happens in
+            // practice: there is no per-keystroke "book was just edited" hook anywhere in this
+            // codebase today (saves are local-only until check-in), so "on first edit" is
+            // implemented as "on first check-in of that edit" -- the earliest point a
+            // takeover has any observable effect on the shared system anyway. Also covers "B
+            // checks in without editing first": OkToCheckIn already allows it (via the same
+            // CanTakeOverLockOnThisMachine seam) and this call makes sure the server lock -- not
+            // just history attribution -- ends up correctly on B.
+            var repoStatusBeforeCheckin = GetStatus(bookFolderName);
+            if (CanTakeOverLockOnThisMachine(repoStatusBeforeCheckin))
+                TryTakeOverLock(bookFolderName);
 
             if (inLostAndFound)
             {
@@ -1484,12 +1542,33 @@ namespace Bloom.TeamCollection.Cloud
                 var collections = _client.MyCollections();
                 var isMember = collections.Any(c => (string)c["id"] == _collectionId);
                 if (!isMember)
+                {
+                    // Account-switch behavior (batch item 9): the current logon is not a server
+                    // member of this Team Collection -- e.g. it was joined under a different
+                    // account. TeamCollectionManager.CheckConnection(allowHardRefusal: true), the
+                    // ONLY caller that sets IsAccessRefusal-aware behavior, turns this into a
+                    // hard "refuse to open" rather than the ordinary Disconnected fallback; a
+                    // membership loss discovered later in the session (this same code path,
+                    // called with allowHardRefusal defaulting to false) still just disconnects.
                     return new TeamCollectionMessage(
                         MessageAndMilestoneType.Error,
-                        "TeamCollection.Cloud.NotAMember",
-                        "Your account ({0}) is not approved for this Team Collection.",
-                        _auth.CurrentEmail
-                    );
+                        "TeamCollection.Cloud.NotAMemberRefusal",
+                        "Bloom cannot open this Team Collection here because {0} is not a member of it. {1}",
+                        _auth.CurrentEmail,
+                        ComposeNotAMemberRefusalDetail(
+                            ReadLocalAdministrators(),
+                            TeamCollectionLastKnownUser.Read(_localCollectionFolder)
+                        )
+                    )
+                    {
+                        IsAccessRefusal = true,
+                    };
+                }
+                // Confirmed as a member: record ourselves as the last known local user of this
+                // collection on this machine, so a FUTURE non-member's refusal message (above)
+                // can name us. Doubles as "who joined" for a collection nobody has reopened
+                // since (see TeamCollectionLastKnownUser's own doc comment).
+                TeamCollectionLastKnownUser.Record(_localCollectionFolder, _auth.CurrentEmail);
             }
             catch (CloudCollectionClientException e) when (e.Code == CloudErrorCode.NotSignedIn)
             {
@@ -1509,6 +1588,75 @@ namespace Bloom.TeamCollection.Cloud
                 );
             }
             return null;
+        }
+
+        /// <summary>
+        /// Best-effort read of the locally-known Administrators list (from the last-synced
+        /// .bloomCollection file), for use in the non-member refusal message: a non-member
+        /// cannot query the server's members/admin list (tc.members_list's RLS gate filters out
+        /// all rows for a non-member -- verified in the members_list migration), so this is
+        /// "whatever is locally known" as the batch item's spec anticipates. NOTE (documented
+        /// limitation, tracked separately -- see the batch file's "Also queued from dogfooding"
+        /// item): ConnectToCloudCollection currently stamps Administrators with the CREATOR's
+        /// Bloom REGISTRATION email rather than their signed-in cloud email, so this list may not
+        /// exactly match the admin's cloud logon; fixing that identity mismatch is out of scope
+        /// here and is tracked as a separate opportunistic fix.
+        /// </summary>
+        private string[] ReadLocalAdministrators()
+        {
+            try
+            {
+                var settingsPath = Bloom.Collection.CollectionSettings.GetSettingsFilePath(
+                    _localCollectionFolder
+                );
+                var settings = Bloom.ProjectContext.GetCollectionSettings(settingsPath);
+                return settings?.Administrators;
+            }
+            catch (Exception)
+            {
+                // No usable local .bloomCollection file yet (e.g. this machine has never
+                // synced collection files at all) -- ComposeNotAMemberRefusalDetail already
+                // handles "administrators unknown" gracefully, falling back to naming only
+                // the last known local user (if that's known) or a generic "an administrator".
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Pure, unit-testable composition of the second sentence of the non-member refusal
+        /// message: names admin(s) to ask, and/or the last known local team member, depending on
+        /// what's actually known locally (both may be unavailable -- e.g. a legacy collection
+        /// with no recorded Administrators and no TeamCollectionLastKnownUser.txt yet).
+        /// </summary>
+        internal static string ComposeNotAMemberRefusalDetail(
+            IReadOnlyCollection<string> administrators,
+            string lastKnownUser
+        )
+        {
+            var adminList =
+                administrators == null
+                    ? null
+                    : string.Join(", ", administrators.Where(a => !string.IsNullOrWhiteSpace(a)));
+            var haveAdmins = !string.IsNullOrEmpty(adminList);
+            var haveLastKnownUser = !string.IsNullOrEmpty(lastKnownUser);
+
+            if (haveAdmins && haveLastKnownUser)
+                return string.Format(
+                    "Ask an administrator of this Team Collection ({0}) to add you as a member, or ask {1}, the last team member known to have used this collection on this computer.",
+                    adminList,
+                    lastKnownUser
+                );
+            if (haveAdmins)
+                return string.Format(
+                    "Ask an administrator of this Team Collection ({0}) to add you as a member.",
+                    adminList
+                );
+            if (haveLastKnownUser)
+                return string.Format(
+                    "Ask {0}, the last team member known to have used this collection on this computer, or another administrator of this Team Collection, to add you as a member.",
+                    lastKnownUser
+                );
+            return "Ask an administrator of this Team Collection to add you as a member.";
         }
 
         // ------------------------------------------------------------------
