@@ -773,6 +773,10 @@ namespace Bloom.web.controllers
             var replacements = payload?.replacements ?? new List<CommitReplacement>();
             var results = new List<object>();
             var pagesToSyncToDataDiv = new HashSet<SafeXmlElement>();
+            // The old image files displaced by off-page replacements. After the book is saved
+            // we delete the ones we generated ("ai-image*") that nothing references any more,
+            // so repeated AI edits of the same slot don't pile up orphaned files (BL-16523/G1).
+            var supersededOffPageFiles = new List<string>();
             var appliedCount = 0;
             var savedAnyOffPage = false;
             // Reused across replacements so a page's whole-document lookup happens only once.
@@ -811,6 +815,10 @@ namespace Bloom.web.controllers
                         savedAnyOffPage = true;
                         if (pageNeedingDataDivSync != null)
                             pagesToSyncToDataDiv.Add(pageNeedingDataDivSync);
+                        // Remember the file this off-page slot used to point at; it may now be
+                        // orphaned. (Current-page slots are repointed by the front-end via
+                        // changeImage(), so their old files are not ours to delete here.)
+                        supersededOffPageFiles.Add(oldSrc);
                     }
                 }
             }
@@ -825,6 +833,12 @@ namespace Bloom.web.controllers
 
                 book.Save();
             }
+
+            // The off-page slots now point at their new files (and the book is saved), so any
+            // ai-image file we generated earlier that nothing references any more is safe to
+            // remove. This runs against the current book DOM, so a file still used by another
+            // slot — or by the current page (which the front-end has yet to repoint) — survives.
+            DeleteSupersededAiImageFiles(book, supersededOffPageFiles);
 
             request.ReplyWithJson(
                 new
@@ -1037,6 +1051,60 @@ namespace Bloom.web.controllers
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Deletes the now-superseded image files we generated ("ai-image*") that no image
+        /// element anywhere in the book still references. Without this, editing an
+        /// already-AI-edited slot again would leave the previous ai-image file orphaned in
+        /// the book folder, and they would accumulate. Only our own generated files are
+        /// considered, and only when nothing references them, so a file shared by another
+        /// slot (or a user's original image) is never removed.
+        /// </summary>
+        private static void DeleteSupersededAiImageFiles(
+            Bloom.Book.Book book,
+            IEnumerable<string> candidateFileNames
+        )
+        {
+            var candidates = candidateFileNames
+                .Where(name => !string.IsNullOrEmpty(name))
+                .Select(Path.GetFileName)
+                .Where(name => name.StartsWith("ai-image", StringComparison.OrdinalIgnoreCase))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            if (candidates.Count == 0)
+                return;
+
+            var stillReferenced = CollectReferencedImageFileNames(book);
+
+            foreach (var fileName in candidates)
+            {
+                if (stillReferenced.Contains(fileName))
+                    continue;
+                var fullPath = Path.Combine(book.FolderPath, fileName);
+                if (RobustFile.Exists(fullPath))
+                    RobustFile.Delete(fullPath);
+            }
+        }
+
+        /// <summary>
+        /// The set of image file names (no path) referenced by any &lt;img&gt; or
+        /// background-image element anywhere in the book's DOM, including the data-div.
+        /// Used to decide whether a superseded file is safe to delete.
+        /// </summary>
+        private static HashSet<string> CollectReferencedImageFileNames(Bloom.Book.Book book)
+        {
+            var referenced = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var holders = HtmlDom.SelectChildImgAndBackgroundImageElements(
+                book.OurHtmlDom.RawDom.DocumentElement
+            );
+            foreach (var holder in holders.OfType<SafeXmlElement>())
+            {
+                var url = HtmlDom.GetImageElementUrl(holder).PathOnly.NotEncoded;
+                if (!string.IsNullOrEmpty(url))
+                    referenced.Add(Path.GetFileName(url));
+            }
+            return referenced;
         }
 
         private static void AppendEditedWithAiCredit(SafeXmlElement element)

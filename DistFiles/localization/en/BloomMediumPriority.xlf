@@ -49,7 +49,7 @@
         <note>ID: Feature.AiImageEditing</note>
         <note>Name of the AI image editing feature, used in subscription messages.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.EditWithAI" translate="no">
+      <trans-unit id="EditTab.Image.EditWithAI">
         <source xml:lang="en">Edit with AI...</source>
         <note>ID: EditTab.Image.EditWithAI</note>
         <note>Context-menu item on an image in the Edit tab; opens the AI image editor in an overlay. The "..." indicates further UI will open, as in the sibling item "Choose image from your computer...".</note>
