@@ -87,8 +87,14 @@ export const startWindowPlacementWatcher = (
     // The watcher appends its decisions (target screen resolution, every move) here, so
     // misplacement is diagnosable from artifacts instead of live observation.
     if (logPath) args.push("-LogPath", logPath);
+    // detached MUST be false: spawning powershell with detached+windowsHide makes it exit
+    // code 0 within ~1s having executed NOTHING (empirically bisected 10 Jul 2026 — the
+    // DETACHED_PROCESS and CREATE_NO_WINDOW console flags conflict for a console app). This
+    // silent failure meant the watcher NEVER ran from the day this feature was added; every
+    // "windows on the wrong monitor" report traces back to it. Non-detached loses nothing:
+    // the watcher still self-exits when the Bloom PID dies, and stop() still kills it.
     const watcher = spawn("powershell", args, {
-        detached: true,
+        detached: false,
         stdio: "ignore",
         windowsHide: true,
     });
