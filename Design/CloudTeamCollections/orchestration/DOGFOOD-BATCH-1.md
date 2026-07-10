@@ -333,10 +333,25 @@ signed in as B:
   without editing), history records the checkin by B.
 
 ### 10. AWSSDK.S3 version bump (John decision, 9 Jul: take it on this branch)  `[quick-medium]`
-Status: NOT STARTED
-- [ ] Bump AWSSDK.S3 (and its AWSSDK.Core pair) to current stable in the csproj(s); check
+Status: IN PROGRESS on branch `task/b1-10-awssdk-bump` (bump committed 9b81c6040; cloud filter
+387/387 green; full-suite verification running)
+- [x] Bump AWSSDK.S3 (and its AWSSDK.Core pair) to current stable in the csproj(s); check
       whether BloomHarvester/other projects pin the same package family and must move in
-      lockstep.
+      lockstep. DONE: BloomExe.csproj Core 3.5.1.32 -> 4.0.100.3, S3 3.5.3.10 -> 4.0.100.3
+      (major v4 jump); server/dev/parity-check floats 3.* -> 4.*. No other project in this
+      repo pins the family (BloomHarvester is a separate repo; there is no central
+      Directory.Packages.props — per-csproj pins are the convention). AWSSDK.SecurityToken
+      is not referenced anywhere (per-book session creds arrive as plain strings from the
+      edge functions), so only S3+Core move. project.assets.json confirms no SIL package
+      transitively pins AWSSDK.Core. v4 adjustments (details in commit 9b81c6040): checksum
+      config RequestChecksumCalculation/ResponseChecksumValidation=WHEN_REQUIRED on the two
+      MinIO-facing client builders (CloudBookTransfer.BuildDefaultClient,
+      CloudTeamCollection.BuildS3Client) because v4's WHEN_SUPPORTED default sends CRC32/
+      CRC64 trailing checksums S3-compatible endpoints may reject; BloomS3Client (real AWS
+      only) deliberately keeps the v4 defaults. Null-collection/bool? compile+runtime fixes
+      in S3Extensions.ListAllObjects and BloomS3ClientTests.DeleteFromUnitTestBucketAsync;
+      removed two orphaned usings that broke the v4 compile (ThirdParty.Json.LitJson was
+      embedded in AWSSDK.Core v3 and is gone in v4).
 - [ ] Suites: cloud filter + ONE full BloomTests run (AWSSDK is used by the BloomLibrary
       web-upload code — WebLibraryIntegration — so cloud-only filters are NOT sufficient).
 - [ ] E2E: at least e2e-1 + e2e-2 (S3 up/down through MinIO exercises the new SDK's
