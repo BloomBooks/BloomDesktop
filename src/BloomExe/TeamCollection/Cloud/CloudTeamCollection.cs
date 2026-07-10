@@ -43,6 +43,11 @@ namespace Bloom.TeamCollection.Cloud
         private CloudCollectionMonitor _monitor;
         private bool _hydrated;
 
+        // Once per session (see CheckConnection): whether claim_memberships has been called for
+        // the current signed-in account, converting an approved-by-email membership row into a
+        // claimed (user_id-filled) one that every data RPC's RLS gate accepts.
+        private bool _membershipsClaimed;
+
         // Most TeamCollection abstract members are keyed by book folder *name*; the cache (and the
         // server) key everything by the immutable server "books.id". These two indexes translate.
         // Guarded by _indexGate rather than being rebuilt from the (already thread-safe) cache on
@@ -1577,7 +1582,22 @@ namespace Bloom.TeamCollection.Cloud
                         IsAccessRefusal = true,
                     };
                 }
-                // Confirmed as a member: record ourselves as the last known local user of this
+                // Confirmed as a member: make sure the membership is CLAIMED (user_id filled on
+                // the membership row). my_collections above matches by EMAIL, approved-or-claimed,
+                // but every data RPC's RLS gate (get_collection_state etc.) matches by user_id --
+                // an approved-but-never-claimed account passes this check and then throws
+                // not_a_member on the very first sync. That is exactly the batch item 9
+                // shared-computer scenario: the account opening the collection never ran the join
+                // flow (which is where ClaimMemberships was otherwise called -- CloudJoinFlow),
+                // because a different account joined this folder. Found live: e2e-10's member
+                // reopen hit the not_a_member throw inside TeamCollectionManager's constructor.
+                // Idempotent and cheap; once per session.
+                if (!_membershipsClaimed)
+                {
+                    _client.ClaimMemberships();
+                    _membershipsClaimed = true;
+                }
+                // Record ourselves as the last known local user of this
                 // collection on this machine, so a FUTURE non-member's refusal message (above)
                 // can name us. Doubles as "who joined" for a collection nobody has reopened
                 // since (see TeamCollectionLastKnownUser's own doc comment).

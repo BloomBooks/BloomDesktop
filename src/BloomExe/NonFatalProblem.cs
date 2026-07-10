@@ -116,6 +116,21 @@ namespace Bloom
                     return;
                 }
 
+                if (Program.StartupAutomation)
+                {
+                    // In automation mode there is no human to dismiss a modal MessageBox, so a
+                    // modal report silently hangs the whole instance -- possibly before any
+                    // window or server exists (found via a live stack dump: an E2E-relaunched
+                    // instance sat blocked in MessageBox.Show inside TeamCollectionManager's
+                    // constructor for the full ready-timeout with EMPTY stdout, 10 Jul 2026).
+                    // Report to stdout (the harness's per-instance log, the same channel
+                    // BLOOM_AUTOMATION_READY uses) and keep going.
+                    Console.WriteLine(
+                        $"BLOOM_AUTOMATION_NONFATAL_PROBLEM {fullDetailedMessage}\n{exception}"
+                    );
+                    return;
+                }
+
                 //just convert from PassiveIf to ModalIf so that we don't have to duplicate code
                 var passive = (ModalIf)ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
                 var formForSynchronizing = Shell.GetShellOrOtherOpenForm();

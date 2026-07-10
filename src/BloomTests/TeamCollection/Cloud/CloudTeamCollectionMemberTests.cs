@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Bloom.TeamCollection;
@@ -229,6 +230,41 @@ namespace BloomTests.TeamCollection.Cloud
             Assert.That(
                 TeamCollectionLastKnownUser.Read(_collectionFolder.FolderPath),
                 Is.EqualTo("test@somewhere.org")
+            );
+        }
+
+        [Test]
+        public void CheckConnection_SignedInAndAMember_ClaimsMembershipsOncePerSession()
+        {
+            // Post-batch defect fix (10 Jul 2026): my_collections matches by EMAIL
+            // (approved-or-claimed) but every data RPC's RLS gate matches by user_id, so an
+            // approved-but-never-claimed account (batch item 9's shared-computer reopen, which
+            // never runs the join flow that otherwise calls ClaimMemberships) passed
+            // CheckConnection's member check and then threw not_a_member on the very first
+            // sync's get_collection_state call -- inside TeamCollectionManager's constructor.
+            _auth.SignIn("test@somewhere.org", "irrelevant");
+            var requestedResources = new List<string>();
+            _executor.Handler = req =>
+            {
+                requestedResources.Add(req.Resource);
+                return FakeResponses.Make(
+                    HttpStatusCode.OK,
+                    req.Resource.EndsWith("claim_memberships")
+                        ? "{}"
+                        : new JArray(
+                            new JObject { ["id"] = kCollectionId, ["name"] = "Some Collection" }
+                        ).ToString()
+                );
+            };
+
+            _collection.CheckConnection();
+            _collection.CheckConnection();
+
+            Assert.That(
+                requestedResources.Count(r => r.EndsWith("claim_memberships")),
+                Is.EqualTo(1),
+                "claim_memberships should be called on the first successful member check and "
+                    + "not repeated within the session (it is idempotent server-side)"
             );
         }
 
