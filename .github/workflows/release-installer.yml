@@ -1,0 +1,270 @@
+# Builds the Bloom Windows installer with Velopack and (optionally) publishes it to S3.
+#
+# This replicates what the TeamCity installer build does (build/Bloom.proj), with one key
+# difference: TeamCity keeps the Velopack release history on a persistent Z: drive, but GHA
+# runners are ephemeral. Instead, we hydrate the release directory from the existing public
+# S3 feed (bloomlibrary.org/deltas<channel>) using `vpk download` before packing, so vpk can
+# generate a delta against the previous release. S3 remains the single source of truth.
+#
+# Code signing uses Microsoft Trusted Signing with the same secret as
+# BloomBooks/bloompub-viewer (sillsdev/codesign/trusted-signing-action). We can't use that
+# action directly because Bloom.proj must sign mid-build: Bloom.exe and BloomPdfMaker.exe
+# before vpk packs them into the nupkg, and the installer exe after packing. Instead we
+# decode the same credentials secret and put a `sign` command (build/gha/sign.cmd) on PATH,
+# which is exactly what Bloom.proj's signing targets invoke on TeamCity.
+#
+# Required repo configuration:
+#   secrets.TRUSTED_SIGNING_CREDENTIALS
+#       Base64-encoded JSON with tenant-id, client-id, client-secret, endpoint, account-name
+#       (same secret sillsdev/codesign/trusted-signing-action consumes). Required to publish;
+#       without it, dry runs still work but produce unsigned output.
+#   secrets.AWS_ACCESS_KEY_ID / secrets.AWS_SECRET_ACCESS_KEY
+#       Credentials with write access to the bloomlibrary.org bucket (only needed when publishing).
+#   vars.RELEASE_BUILD_COUNTER_BASE
+#       Offset added to github.run_number to form the third field of the version
+#       (Version = 6.5.<counter>). MUST be set higher than the last TeamCity build counter
+#       for any channel this workflow publishes to, because Velopack requires strictly
+#       increasing versions within a channel.
+
+name: Release Installer
+
+on:
+    workflow_dispatch:
+        inputs:
+            channel:
+                description: "Release channel (empty = stable Release channel). Controls packId Bloom<channel> and the S3 folders installers<channel>/deltas<channel>."
+                type: string
+                default: "Alpha"
+            publish:
+                description: "Upload to S3 (installers, deltas, RELEASES, releases.win.json, download pointers). If false, just build and attach the result as a workflow artifact."
+                type: boolean
+                default: false
+
+# Never build the same channel concurrently: two builds would both delta against the same
+# "previous" release and one would clobber the other's releases.win.json on S3.
+concurrency:
+    group: release-installer-${{ inputs.channel }}
+    cancel-in-progress: false
+
+jobs:
+    build-installer:
+        runs-on: windows-latest
+        timeout-minutes: 120
+
+        env:
+            CHANNEL: ${{ inputs.channel }}
+            INSTALLER_RESULT_DIR: ${{ github.workspace }}\output\installer\result
+            # Secrets are not allowed in step `if:` expressions, so surface presence as a boolean here.
+            HAS_SIGNING_CREDENTIALS: ${{ secrets.TRUSTED_SIGNING_CREDENTIALS != '' }}
+
+        steps:
+            - uses: actions/checkout@v4
+
+            # Fail fast rather than after an hour of building: publishing unsigned binaries to a
+            # public channel is never OK.
+            - name: Fail if publishing without signing credentials
+              if: ${{ inputs.publish && env.HAS_SIGNING_CREDENTIALS == 'false' }}
+              shell: pwsh
+              run: throw "Publishing requires the TRUSTED_SIGNING_CREDENTIALS secret (same one bloompub-viewer uses)."
+
+            # ----- Toolchains -----
+
+            - uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: 8.0.x
+
+            - uses: microsoft/setup-msbuild@v2
+
+            - uses: pnpm/action-setup@v4
+              with:
+                  package_json_file: src/BloomBrowserUI/package.json
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
+                  cache-dependency-path: |
+                      src/BloomBrowserUI/pnpm-lock.yaml
+                      src/content/pnpm-lock.yaml
+
+            # ----- Dependencies (mirrors init.sh) -----
+
+            - name: Get binary dependencies (TeamCity artifacts, chm, ffmpeg, etc.)
+              shell: bash
+              run: ./build/getDependencies-windows.sh
+
+            - name: pnpm install
+              shell: bash
+              run: |
+                  (cd src/content && pnpm install --frozen-lockfile) &
+                  (cd src/BloomBrowserUI && pnpm install --frozen-lockfile) &
+                  wait
+
+            # ----- Front-end production build -----
+
+            - name: Build browser UI (production)
+              working-directory: src/BloomBrowserUI
+              run: pnpm run build-prod
+
+            # ----- Version number -----
+            # Bloom.proj's VersionNumbers target parses BUILD_NUMBER as <ignored>.<ignored>.<counter>.<hash>
+            # and produces Version = 6.5.<counter> (the major.minor lives in Bloom.proj, not here).
+            - name: Compute BUILD_NUMBER
+              shell: pwsh
+              run: |
+                  $base = [int]"${{ vars.RELEASE_BUILD_COUNTER_BASE || '0' }}"
+                  $counter = $base + ${{ github.run_number }}
+                  $hash = (git rev-parse --short HEAD).Trim()
+                  $buildNumber = "0.0.$counter.$hash"
+                  Write-Host "BUILD_NUMBER: $buildNumber (counter base $base + run number ${{ github.run_number }})"
+                  "BUILD_NUMBER=$buildNumber" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+            # ----- Velopack CLI -----
+            # Install the exact version from Directory.Build.props up front. (Bloom.proj's
+            # EnsureVelopackCli target would otherwise take its install path, which runs
+            # `dotnet tool uninstall --global vpk` and fails on a machine that never had it.)
+            - name: Install Velopack CLI (our fork)
+              shell: pwsh
+              run: |
+                  $props = Get-Content Directory.Build.props -Raw
+                  $vpkVersion = [regex]::Match($props, '<VelopackVersion>([^<]+)</VelopackVersion>').Groups[1].Value
+                  if (-not $vpkVersion) { throw "Could not parse VelopackVersion from Directory.Build.props" }
+                  Write-Host "Installing BloomBooks.Velopack.Cli $vpkVersion"
+                  dotnet tool install --global BloomBooks.Velopack.Cli --version $vpkVersion
+                  vpk --version
+
+            # ----- Hydrate release history from the existing S3 feed -----
+            # Downloads releases.win.json and the latest full nupkg for this channel into the
+            # output dir, which is all vpk pack needs to generate a delta against the previous
+            # release. The feed is public-read, so no credentials are needed here.
+            - name: Download previous release (for delta generation)
+              shell: pwsh
+              run: |
+                  New-Item -ItemType Directory -Force $env:INSTALLER_RESULT_DIR | Out-Null
+                  $url = "https://s3.amazonaws.com/bloomlibrary.org/deltas$env:CHANNEL"
+                  Write-Host "Hydrating release dir from $url"
+                  vpk download http --url $url --outputDir $env:INSTALLER_RESULT_DIR
+                  if ($LASTEXITCODE -ne 0) {
+                    if ('${{ inputs.publish }}' -eq 'true') {
+                      throw "Could not download previous release state from $url. Refusing to publish without it: packing would produce no delta and overwrite the channel's releases.win.json with a single-entry file."
+                    }
+                    Write-Warning "Could not download previous release state from $url. Continuing without it (no delta will be generated). This is expected only for a brand-new channel."
+                  }
+
+            # ----- Code signing (Microsoft Trusted Signing) -----
+            # Decodes the same base64 credentials JSON that sillsdev/codesign/trusted-signing-action
+            # consumes in bloompub-viewer, installs the TrustedSigning PowerShell module that
+            # azure/trusted-signing-action@v0.5.1 uses under the hood, and puts build/gha (which
+            # contains a `sign` shim) on PATH so Bloom.proj's existing `sign "<file>"` Exec calls
+            # work here just like on TeamCity.
+            - name: Set up code signing
+              if: ${{ env.HAS_SIGNING_CREDENTIALS == 'true' }}
+              shell: pwsh
+              env:
+                  TRUSTED_SIGNING_CREDENTIALS: ${{ secrets.TRUSTED_SIGNING_CREDENTIALS }}
+              run: |
+                  $creds = [System.Text.Encoding]::UTF8.GetString(
+                    [Convert]::FromBase64String($env:TRUSTED_SIGNING_CREDENTIALS)) | ConvertFrom-Json
+                  foreach ($key in 'tenant-id', 'client-id', 'client-secret') {
+                    Write-Host "::add-mask::$($creds.$key)"
+                  }
+                  @(
+                    "AZURE_TENANT_ID=$($creds.'tenant-id')"
+                    "AZURE_CLIENT_ID=$($creds.'client-id')"
+                    "AZURE_CLIENT_SECRET=$($creds.'client-secret')"
+                    "TRUSTED_SIGNING_ENDPOINT=$($creds.endpoint)"
+                    "TRUSTED_SIGNING_ACCOUNT=$($creds.'account-name')"
+                  ) | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+                  # Same module version azure/trusted-signing-action@v0.5.1 installs.
+                  Install-Module TrustedSigning -RequiredVersion 0.5.3 -Force -Scope CurrentUser
+                  Add-Content $env:GITHUB_PATH "$env:GITHUB_WORKSPACE\build\gha"
+
+            # ----- AWS credentials for S3BuildPublisher (publish only) -----
+            # Bloom.proj's UploadCore uses the SIL.BuildTasks.AWS S3BuildPublisher task with
+            # CredentialStoreProfileName=BloomLibrary, so we register that profile in the shared
+            # credentials file where the AWS SDK's profile chain can find it.
+            - name: Configure AWS credential profile
+              if: ${{ inputs.publish }}
+              shell: pwsh
+              run: |
+                  New-Item -ItemType Directory -Force "$env:USERPROFILE\.aws" | Out-Null
+                  @"
+                  [BloomLibrary]
+                  aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  "@ | Out-File "$env:USERPROFILE\.aws\credentials" -Encoding ascii
+
+            # ----- Restore MSBuild build tasks -----
+            # VersionNumbers and the S3 upload need SIL.BuildTasks(.AWS), which the UsingTask
+            # declarations only load if the dlls already exist, so this must be a separate msbuild
+            # invocation (on TeamCity it is a separate build step too). When the dlls are missing,
+            # RestoreBuildTasks also runs BuildInternal, so pass the real version properties.
+            - name: Restore MSBuild build tasks
+              working-directory: build
+              shell: pwsh
+              run: |
+                  msbuild Bloom.proj /t:RestoreBuildTasks /m `
+                    /p:BUILD_NUMBER=$env:BUILD_NUMBER `
+                    /p:channel=$env:CHANNEL `
+                    /p:InstallerOutputFolder=$env:INSTALLER_RESULT_DIR
+
+            # ----- Build + pack + sign -----
+            # SignIfPossible = Installer (build, sign exes, assemble content, vpk pack) + signing
+            # the installer exe, with all sign failures tolerated (we're not on TeamCity, so
+            # Bloom.proj's sign steps are ContinueOnError). That tolerance is why the separate
+            # verification step below gates publishing.
+            - name: Build and sign installer
+              working-directory: build
+              shell: pwsh
+              run: |
+                  msbuild Bloom.proj /t:SignIfPossible /m `
+                    /p:BUILD_NUMBER=$env:BUILD_NUMBER `
+                    /p:channel=$env:CHANNEL `
+                    /p:InstallerOutputFolder=$env:INSTALLER_RESULT_DIR `
+                    /p:OkIfSigningFails=true
+
+            # Bloom.proj tolerates signing failures off-TeamCity, so before anything goes public,
+            # verify that everything we sign actually got a valid signature.
+            - name: Verify signatures
+              if: ${{ inputs.publish }}
+              shell: pwsh
+              run: |
+                  $files = @(
+                    "output\Release\x64\Bloom$env:CHANNEL.exe",
+                    "output\Release\x64\BloomPdfMaker.exe"
+                  ) + (Get-ChildItem "$env:INSTALLER_RESULT_DIR\BloomInstaller.*.exe").FullName
+                  $bad = @()
+                  foreach ($file in $files) {
+                    $sig = Get-AuthenticodeSignature $file
+                    Write-Host "$($sig.Status): $file"
+                    if ($sig.Status -ne 'Valid') { $bad += $file }
+                  }
+                  if ($bad) { throw "Refusing to publish; unsigned or invalidly signed: $($bad -join ', ')" }
+
+            # ----- Publish to S3 (publish only) -----
+            # UploadCore uploads the installer exe, delta/full nupkgs, RELEASES, and
+            # releases.win.json, regenerates the download pointers, and cleans up obsolete local
+            # files. VersionNumbers must run in the same invocation to define the properties
+            # (Version, package names) UploadCore uses.
+            - name: Publish to S3
+              if: ${{ inputs.publish }}
+              working-directory: build
+              shell: pwsh
+              run: |
+                  msbuild Bloom.proj "/t:VersionNumbers;UploadCore" `
+                    /p:BUILD_NUMBER=$env:BUILD_NUMBER `
+                    /p:channel=$env:CHANNEL `
+                    /p:InstallerOutputFolder=$env:INSTALLER_RESULT_DIR
+
+            # ----- Workflow artifact -----
+            # Keep a copy of what was produced regardless of publishing, for inspection/testing.
+            - name: Upload result as workflow artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: bloom-installer-${{ inputs.channel || 'Release' }}-${{ env.BUILD_NUMBER }}
+                  path: |
+                      ${{ env.INSTALLER_RESULT_DIR }}\BloomInstaller.*.exe
+                      ${{ env.INSTALLER_RESULT_DIR }}\*.nupkg
+                      ${{ env.INSTALLER_RESULT_DIR }}\releases.win.json
+                      ${{ env.INSTALLER_RESULT_DIR }}\RELEASES
+                  retention-days: 7
