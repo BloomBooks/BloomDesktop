@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Bloom.WebLibraryIntegration;
@@ -133,6 +134,17 @@ namespace Bloom.TeamCollection.Cloud
                 ServiceURL = env.S3Endpoint,
                 ForcePathStyle = env.S3ForcePathStyle,
                 AuthenticationRegion = location.Region,
+                // AWSSDK v4 defaults both of these to WHEN_SUPPORTED, which makes the SDK add its
+                // own CRC32/CRC64 request checksum (and validate a response checksum) on every
+                // supported operation. This endpoint is always MinIO (dev/sandbox) or another
+                // S3-compatible store (CloudEnvironment.S3Endpoint is never empty), and older/
+                // differently-configured S3-compatible servers don't support the newer checksum
+                // trailer format the SDK sends by default -- forcing WHEN_REQUIRED restores the
+                // pre-v4 behavior (only compute/validate a checksum when the operation truly
+                // requires one) and keeps this class's own explicit x-amz-checksum-sha256 header
+                // (below, in UploadOneFileWithRetry) as the only checksum actually sent.
+                RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
+                ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED,
             };
             var credentials = new AmazonS3Credentials
             {
@@ -278,16 +290,18 @@ namespace Bloom.TeamCollection.Cloud
                             Key = location.Prefix + relativePath,
                             InputStream = stream,
                         };
-                        // The AWSSDK.S3 version this project is pinned to predates the native
-                        // ChecksumAlgorithm/ChecksumSHA256 request properties, so the checksum is
-                        // set as a plain request header instead. Live-verified against the local
-                        // MinIO dev stack (task 04): S3/MinIO store and correctly return this via
-                        // GetObjectAttributes/HeadObject(ChecksumMode: ENABLED) exactly as if the
-                        // newer SDK API had set it — which is what
-                        // supabase/functions/_shared/s3.ts's verifyUploadedObject reads back at
-                        // checkin-finish. See the task 04 final report for the recommendation to
-                        // bump AWSSDK.S3 (BloomExe.csproj is orchestrator-owned at merge time, so
-                        // this class doesn't depend on that bump to work correctly).
+                        // The checksum is set as a plain request header rather than via the SDK's
+                        // native ChecksumSHA256/ChecksumAlgorithm request properties. This dates
+                        // from when the project pinned an AWSSDK.S3 that predated those properties;
+                        // now that we're on v4 they exist, but the header form is kept deliberately:
+                        // it is live-verified against the local MinIO dev stack (task 04) — S3/MinIO
+                        // store and correctly return it via GetObjectAttributes/HeadObject
+                        // (ChecksumMode: ENABLED) exactly as if the property had set it, which is
+                        // what supabase/functions/_shared/s3.ts's verifyUploadedObject reads back at
+                        // checkin-finish — and switching to the property would also flip the SDK
+                        // into its trailing-checksum/chunked-encoding path, an unnecessary behavior
+                        // change for S3-compatible endpoints (see the WHEN_REQUIRED config in
+                        // BuildDefaultClient above).
                         request.Headers["x-amz-checksum-sha256"] = HexToBase64(sha256Hex);
                         client.PutObjectAsync(request, cancellationToken).GetAwaiter().GetResult();
                     }

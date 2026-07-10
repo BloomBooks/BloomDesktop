@@ -30,12 +30,15 @@ namespace Bloom.WebLibraryIntegration
             do
             {
                 matchingItemsResponse = s3.ListObjectsV2Async(request).GetAwaiter().GetResult();
-                allMatchingItems.AddRange(matchingItemsResponse.S3Objects);
+                // AWSSDK v4: response collections default to null (not empty) when the server
+                // returns no items, and IsTruncated is now bool? — hence the null checks here.
+                if (matchingItemsResponse.S3Objects != null)
+                    allMatchingItems.AddRange(matchingItemsResponse.S3Objects);
                 // matchingItemsResponse.ContinuationToken indicates where the request that generated the response started
                 // matchingItemsResponse.NextContinuationToken indicates where the next request (if needed) should start
                 // request.ContinuationToken indicates where the request starts the next time it is used
                 request.ContinuationToken = matchingItemsResponse.NextContinuationToken;
-            } while (matchingItemsResponse.IsTruncated); // IsTruncated returns true if it's not at the end
+            } while (matchingItemsResponse.IsTruncated == true); // IsTruncated returns true if it's not at the end
 
             return allMatchingItems;
         }

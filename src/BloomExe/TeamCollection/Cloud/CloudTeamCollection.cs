@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Bloom.Book;
@@ -1337,6 +1338,13 @@ namespace Bloom.TeamCollection.Cloud
                 ServiceURL = env.S3Endpoint,
                 ForcePathStyle = env.S3ForcePathStyle,
                 AuthenticationRegion = location.Region,
+                // See the matching comment in CloudBookTransfer.BuildDefaultClient: this endpoint
+                // is always MinIO or another S3-compatible store, never real AWS, so we opt back
+                // into AWSSDK v4's pre-v4 checksum behavior (only when an operation requires one)
+                // rather than the new WHEN_SUPPORTED default, which not every S3-compatible server
+                // understands.
+                RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
+                ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED,
             };
             var credentials = new AmazonS3Credentials
             {

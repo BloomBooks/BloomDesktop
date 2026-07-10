@@ -13,9 +13,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- AWS SDK for S3 — same package that BloomS3Client / TransferUtility will use. -->
-    <PackageReference Include="AWSSDK.S3"              Version="3.*" />
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.*" />
+    <!-- AWS SDK for S3 — same package family that BloomS3Client / TransferUtility use (kept in
+         lockstep with BloomExe.csproj's pin as of the task-10 AWSSDK v4 bump; this project floats
+         to the latest 4.x patch rather than pinning exactly, since it isn't part of the shipping
+         product or its build/test suites). -->
+    <PackageReference Include="AWSSDK.S3"              Version="4.*" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.*" />
   </ItemGroup>
 
 </Project>

@@ -233,8 +233,8 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Autofac" Version="6.0.0" />
-		<PackageReference Include="AWSSDK.Core" Version="3.5.1.32" />
-		<PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
+		<PackageReference Include="AWSSDK.Core" Version="4.0.100.3" />
+		<PackageReference Include="AWSSDK.S3" Version="4.0.100.3" />
 		<PackageReference Include="CairoSharp-signed" Version="3.22.24.37" />
 		<PackageReference Include="CommandLineParser" Version="2.8.0" />
 		<PackageReference Include="EPPlus" Version="6.2.4" />
