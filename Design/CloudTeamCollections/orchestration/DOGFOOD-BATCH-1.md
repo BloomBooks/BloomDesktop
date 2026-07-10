@@ -398,6 +398,15 @@ up/download check
   signed-in account email for cloud TCs (`ConnectToCloudCollection` sets
   `Settings.Administrators = new[] { CurrentUser }`) — cosmetic identity-model
   inconsistency, fix opportunistically with item 4+5 or 6.
+- Tier-timing fix (GOING-LIVE.md Phase 5, `task/b1-tier-timing`): `CheckDisablingTeamCollections`
+  gated solely on `CurrentCollection == null`, which for a cloud TC doesn't mean
+  "Settings.Subscription is trustworthy" (CurrentCollection is set before the connect-and-sync
+  sequence completes, and that sequence's success depends on cloud sign-in timing plus an S3
+  download that silently swallows exceptions) — so a healthy cloud TC could be permanently
+  disabled for the session on a stale/blank subscription snapshot. Fixed by deferring the cloud
+  check (WorkspaceModel) until after the collection-file sync, and re-reading the SubscriptionCode
+  fresh from disk at that point instead of trusting the in-memory snapshot. Folder-TC behavior/
+  timing unchanged. See branch for full diagnosis + tests.
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
@@ -556,3 +565,34 @@ up/download check
   own takeover behavior was not separately tested since CanTakeOverLockOnThisMachine's folder
   default is `false` (unchanged behavior, no new folder-TC surface to test) · Next: orchestrator
   review + merge of task/b1-9-account-switch, then the queued E2E pass including e2e-10.
+- 10 Jul 2026 (agent) · Tier-timing fix ("Also queued from dogfooding") CODE + TESTS DONE on
+  branch `task/b1-tier-timing` (created from origin/cloud-collections; not yet merged): diagnosis
+  — `TeamCollectionManager.CheckDisablingTeamCollections` (TeamCollectionManager.cs ~782) gates
+  solely on `CurrentCollection == null`; for a cloud TC that's set (TeamCollectionManager.cs ~364)
+  BEFORE the connect-and-sync sequence (~374-391) that is the only thing able to deliver a fresh,
+  repo-authoritative SubscriptionCode into `Settings.Subscription` — an in-memory CollectionSettings
+  snapshot captured once at ProjectContext startup and never reloaded mid-session. That sequence's
+  success depends on cloud sign-in readiness (`CloudTeamCollection.CheckConnection` short-circuits
+  on `!_auth.IsSignedIn`) and an S3 download that silently swallows exceptions
+  (`CloudTeamCollection.DownloadCollectionFileGroup`'s catch-and-report-only handler) rather than
+  propagating failure — so a cloud TC's subscription snapshot can still be stale/blank when the
+  check runs, permanently disconnecting a healthy collection for the session (matches the E2E-9
+  harness's observed ~1-in-40 misfire, tasks/09-e2e.md). Fix: `WorkspaceModel.HandleTeamStuffBeforeGetBookCollections`
+  now defers the check for cloud TCs to run inside `SynchronizeRepoAndLocal`'s `whenDone` callback
+  (after sync), and `TeamCollectionManager.GetSubscriptionForDisablingCheck` (new) re-reads the
+  SubscriptionCode fresh from the on-disk `.bloomCollection` file for a cloud TC instead of
+  trusting the in-memory snapshot; folder TCs (and the no-TC case) keep the original immediate
+  check, byte-identical. `TeamCollectionManager.CheckDisablingTeamCollections` and
+  `TeamCollection.SynchronizeRepoAndLocal` marked `virtual` (previously plain `public void`) purely
+  so test subclasses can observe call order/behavior without invoking a real progress dialog. New
+  tests: `TeamCollectionTierTimingTests` (misfire no longer disables; genuinely insufficient tier
+  still disables for cloud via fresh disk read; non-cloud path unaffected, in both directions) and
+  `WorkspaceModelTierTimingOrderingTests` (folder TC still checks-then-syncs; cloud TC now
+  syncs-then-checks) — 7 new tests, all green. Full required filter
+  `(~Cloud|~TeamCollection|~SharingApi)&!~LiveTests`: 413/413 (406 baseline + 7 new), zero
+  regressions. Risk for the orchestrator's E2E pass: the harness's `createScratchCollection`
+  (collectionFixture.ts) stamps a fake valid subscription code onto every scratch collection as a
+  workaround for this exact bug — with the fix merged, that workaround is likely safe to REMOVE
+  (or at least no longer load-bearing), but flagged for the orchestrator to verify live before
+  touching the harness, since removing it now means every E2E cloud-TC scenario exercises the real
+  timing path for the first time · Next: orchestrator review + merge of task/b1-tier-timing.
