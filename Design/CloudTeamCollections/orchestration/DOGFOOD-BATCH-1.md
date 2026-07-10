@@ -452,11 +452,13 @@ up/download check
    TeamCollection.QueueMissingRepoBooksForBackgroundDownload from "locked by anyone" to
    "locked by me", and add a unit test mirroring QueueMissingRepoBooks_BookLockedInRepo_SkipsIt
    but with a foreign lock expecting download. Then rerun e2e-4.
-2. **e2e-5 + e2e-8 singles not yet rerun** after the defect fixes (both failures in the 10 Jul
-   AM matrix were believed transient infra — podman/db-reset under load — and passed clean
-   in isolation before; re-verify after the rebase).
-3. **Full E2E matrix** not yet run on the post-defect-fix state (was 8/14 before the fixes;
-   e2e-3 and e2e-10 now pass individually).
+2. **e2e-5 + e2e-8 singles: BOTH PASSED (10 Jul PM, post-merge tree)** — confirms their 10 Jul
+   AM matrix failures were transient infra as suspected. Current single-spec scoreboard on the
+   merged + defect-fixed tree: e2e-3 ✅, e2e-5 ✅, e2e-8 ✅, e2e-10 ✅; e2e-4 ❌ blocked solely
+   on bug #0 (its download failures are fixed; it now fails at the takeover-semantics
+   assertion, spec line ~166).
+3. **Full E2E matrix** not yet run on the post-defect-fix, master-merged state (was 8/14
+   before the fixes). Run it after John decides bug #0 (or accept one known e2e-4 failure).
 4. Cosmetic (tracked): Administrators field shows registration email, not signed-in email
    (see "Also queued from dogfooding").
 

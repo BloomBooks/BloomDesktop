@@ -268,6 +268,41 @@ namespace BloomTests.TeamCollection.Cloud
             );
         }
 
+        [Test]
+        public void CheckConnection_AccountSwitchMidSession_ClaimsAgainForTheNewAccount()
+        {
+            // Preflight review finding (10 Jul 2026): the claimed-flag must be per ACCOUNT, not
+            // per instance -- this CloudTeamCollection survives an in-session sign-out +
+            // sign-in as a different approved member (nothing disposes it on
+            // CloudAuth.AccountSwitched), and skipping the second account's claim resurrects
+            // the not_a_member startup failure the claim call exists to prevent.
+            var requestedResources = new List<string>();
+            _executor.Handler = req =>
+            {
+                requestedResources.Add(req.Resource);
+                return FakeResponses.Make(
+                    HttpStatusCode.OK,
+                    req.Resource.EndsWith("claim_memberships")
+                        ? "{}"
+                        : new JArray(
+                            new JObject { ["id"] = kCollectionId, ["name"] = "Some Collection" }
+                        ).ToString()
+                );
+            };
+
+            _auth.SignIn("first@somewhere.org", "irrelevant");
+            _collection.CheckConnection();
+            _auth.SignOut();
+            _auth.SignIn("second@somewhere.org", "irrelevant");
+            _collection.CheckConnection();
+
+            Assert.That(
+                requestedResources.Count(r => r.EndsWith("claim_memberships")),
+                Is.EqualTo(2),
+                "each distinct signed-in account must claim its own memberships"
+            );
+        }
+
         // Regression for the first two-instance smoke test (7 Jul 2026): poll-detected changes
         // must be raised with the folder backend's repo FILE name (".bloom" suffix) — the base
         // HandleModifiedFile starts with EndsWith(".bloom") and silently DISCARDS anything else,

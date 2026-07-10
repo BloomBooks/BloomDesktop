@@ -43,10 +43,15 @@ namespace Bloom.TeamCollection.Cloud
         private CloudCollectionMonitor _monitor;
         private bool _hydrated;
 
-        // Once per session (see CheckConnection): whether claim_memberships has been called for
-        // the current signed-in account, converting an approved-by-email membership row into a
-        // claimed (user_id-filled) one that every data RPC's RLS gate accepts.
-        private bool _membershipsClaimed;
+        // The account (email) claim_memberships was last called for (see CheckConnection):
+        // claiming converts an approved-by-email membership row into a claimed (user_id-filled)
+        // one that every data RPC's RLS gate accepts. Keyed by EMAIL, not a once-per-session
+        // bool (preflight review finding, 10 Jul 2026): this instance survives an in-session
+        // sign-out + sign-in as a DIFFERENT approved member (nothing disposes it on
+        // CloudAuth.AccountSwitched), and a stale "already claimed" bool would skip claiming for
+        // the new account -- resurrecting the not_a_member startup failure this field exists to
+        // prevent.
+        private string _membershipsClaimedForEmail;
 
         // Most TeamCollection abstract members are keyed by book folder *name*; the cache (and the
         // server) key everything by the immutable server "books.id". These two indexes translate.
@@ -1591,11 +1596,19 @@ namespace Bloom.TeamCollection.Cloud
                 // flow (which is where ClaimMemberships was otherwise called -- CloudJoinFlow),
                 // because a different account joined this folder. Found live: e2e-10's member
                 // reopen hit the not_a_member throw inside TeamCollectionManager's constructor.
-                // Idempotent and cheap; once per session.
-                if (!_membershipsClaimed)
+                // Idempotent and cheap; once per ACCOUNT (not per session -- an in-session
+                // sign-out + sign-in as a different approved member must claim again; see the
+                // field's own comment).
+                if (
+                    !string.Equals(
+                        _membershipsClaimedForEmail,
+                        _auth.CurrentEmail,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
                 {
                     _client.ClaimMemberships();
-                    _membershipsClaimed = true;
+                    _membershipsClaimedForEmail = _auth.CurrentEmail;
                 }
                 // Record ourselves as the last known local user of this
                 // collection on this machine, so a FUTURE non-member's refusal message (above)

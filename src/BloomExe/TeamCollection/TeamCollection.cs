@@ -190,13 +190,16 @@ namespace Bloom.TeamCollection
         /// Called when monitoring starts (right after the startup sync) and again after every
         /// poll, so any locally-missing repo book is re-queued within one poll interval no matter
         /// how it was missed. Enqueue's dedupe makes repeat calls cheap and safe.
-        /// Books locked by the CURRENT USER are skipped: that is the local-rename-mid-checkin
-        /// edge, where the OLD repo name intentionally has no local folder and downloading it
-        /// would resurrect the pre-rename book. A book locked by someone ELSE is still safely
-        /// downloadable -- its committed content is exactly what Receive would fetch -- and must
-        /// NOT be skipped: in e2e-4 (10 Jul 2026) a teammate checked the book out seconds after a
-        /// transient download failure, and an any-lock skip turned that into "book missing for as
-        /// long as the teammate holds the lock".
+        /// Books locked by the CURRENT USER ON THIS MACHINE are skipped: that is the
+        /// local-rename-mid-checkin edge, where the OLD repo name intentionally has no local
+        /// folder and downloading it would resurrect the pre-rename book. Any other lock must NOT
+        /// suppress the download -- a teammate's lock (e2e-4, 10 Jul 2026: an any-lock skip
+        /// turned one transient download failure into "book missing for as long as the teammate
+        /// held the lock") and even the current user's own lock taken on a DIFFERENT machine
+        /// (preflight review finding, same day: the rename edge is machine-local, "checked out
+        /// here" everywhere else in this file means lockedBy AND lockedWhere match, and
+        /// SyncAtStartup happily fetches such a book on restart -- the retry pass must agree
+        /// with it) both describe committed content that is exactly what Receive would fetch.
         /// </summary>
         internal void QueueMissingRepoBooksForBackgroundDownload()
         {
@@ -214,6 +217,7 @@ namespace Bloom.TeamCollection
                         CurrentUserIdentity,
                         StringComparison.OrdinalIgnoreCase
                     )
+                    && WhatComputerHasBookLocked(bookName) == TeamCollectionManager.CurrentMachine
                 )
                     continue;
                 Logger.WriteEvent(

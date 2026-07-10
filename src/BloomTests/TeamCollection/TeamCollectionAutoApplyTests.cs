@@ -522,6 +522,50 @@ namespace BloomTests.TeamCollection
         }
 
         [Test]
+        public void QueueMissingRepoBooks_BookLockedByCurrentUserOnAnotherMachine_StillDownloadsIt()
+        {
+            // Preflight review finding (10 Jul 2026): the rename-mid-checkin edge the skip
+            // protects is MACHINE-local. A book the current user has checked out on a DIFFERENT
+            // machine must still be downloaded here (SyncAtStartup already fetches it on
+            // restart; the retry pass must agree).
+            const string bookFolderName = "My Other Machine Book";
+            var bookBuilder = new BookFolderBuilder()
+                .WithRootFolder(_collectionFolder.FolderPath)
+                .WithTitle(bookFolderName)
+                .WithHtm("Content that only exists in the repo")
+                .Build();
+            var folderPath = bookBuilder.BuiltBookFolderPath;
+            var status = _collection.PutBook(folderPath);
+            // Stamp a lock held by the current user but recorded for a DIFFERENT machine
+            // (WithLockedBy always stamps CurrentMachine, so overwrite lockedWhere directly).
+            var lockedStatus = status.WithLockedBy("me@somewhere.org");
+            lockedStatus.lockedWhere = "SomeOtherComputer";
+            _collection.WriteBookStatus(bookFolderName, lockedStatus);
+            SIL.IO.RobustIO.DeleteDirectoryAndContents(folderPath);
+            Assert.That(
+                _collection.WhoHasBookLocked(bookFolderName),
+                Is.EqualTo("me@somewhere.org"),
+                "sanity: the repo copy must be locked by the current user"
+            );
+            Assert.That(
+                _collection.WhatComputerHasBookLocked(bookFolderName),
+                Is.EqualTo("SomeOtherComputer"),
+                "sanity: the lock must be recorded for a different machine"
+            );
+            _collection.AutoApplyRemoteChangesForTests = true;
+            _collection.TestOnly_MakeAutoApplyQueueSynchronous();
+
+            // System Under Test //
+            _collection.QueueMissingRepoBooksForBackgroundDownload();
+
+            Assert.That(
+                Directory.Exists(folderPath),
+                Is.True,
+                "a book the current user checked out on a DIFFERENT machine must still download here"
+            );
+        }
+
+        [Test]
         public void QueueMissingRepoBooks_BookLockedBySomeoneElse_StillDownloadsIt()
         {
             // A teammate's lock must NOT block downloading the committed content (that is
