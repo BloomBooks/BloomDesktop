@@ -271,6 +271,36 @@ namespace BloomTests.Keyboarding
         }
 
         [Test]
+        public void Resolve_PinnedKmw_EnsuresAcquiredOnEveryFocus_SoADeletedCacheIsReacquired()
+        {
+            var os = new FakeOsKeyboards();
+            var fallback = new FakeFallback();
+            var resolver = MakeResolver(
+                SettingsWith(MakeWs("th", keyboard: "kmw:thai_kedmanee@th")),
+                os,
+                fallback,
+                new List<WritingSystem>()
+            );
+
+            // Sanity: nothing acquired before we resolve.
+            Assert.That(fallback.EnsureCachedCalls, Is.Empty, "precondition: nothing acquired yet");
+
+            resolver.Resolve("th");
+            // A later focus of the same field: e.g. the .keyboards files were just deleted, or a
+            // teammate has the setting but never had the files. The decision is cached, but acquisition
+            // must re-fire so the keyboard is (re)downloaded.
+            resolver.Resolve("th");
+
+            Assert.That(
+                fallback.EnsureCachedCalls.Count(c => c == ("thai_kedmanee", "th")),
+                Is.EqualTo(2),
+                "acquisition is keyed off whether the files are present, not off whether we've resolved "
+                    + "before, so it must re-fire on every focus (EnsureCached itself is a no-op when the "
+                    + "files already exist)"
+            );
+        }
+
+        [Test]
         public void Resolve_Automatic_OsKeyboardExists_UsesOsNotKmw()
         {
             var os = new FakeOsKeyboards();

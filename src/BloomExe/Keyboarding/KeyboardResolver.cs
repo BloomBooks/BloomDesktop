@@ -69,6 +69,11 @@ namespace Bloom.Keyboarding
     /// this is safe because changing a keyboard setting triggers a Bloom restart. The one decision we do
     /// NOT cache is a temporary "default" returned while a background fallback fetch is in flight, so the
     /// next focus can pick up the freshly-fetched fallback.
+    ///
+    /// Note the split between resolution and acquisition: the *decision* (which keyboard) is cached, but
+    /// *acquisition* (getting a KeymanWeb keyboard's files onto disk) is deliberately not — see
+    /// <see cref="EnsureAcquired"/>, which re-checks on every focus so a keyboard can be (re)downloaded on
+    /// demand whenever it is needed but missing.
     /// </summary>
     public class KeyboardResolver
     {
@@ -130,12 +135,31 @@ namespace Bloom.Keyboarding
                 return Default(tag); // not a real writing system
 
             if (_sessionCache.TryGetValue(tag, out var cached))
+            {
+                EnsureAcquired(cached);
                 return cached;
+            }
 
             var resolution = ResolveUncached(tag, out var cacheable);
             if (cacheable)
                 _sessionCache[tag] = resolution;
+            EnsureAcquired(resolution);
             return resolution;
+        }
+
+        /// <summary>
+        /// Acquisition, deliberately separated from the resolution/configuration above: whenever a
+        /// focused field needs a KeymanWeb keyboard, make sure its files are on disk, re-checking on
+        /// EVERY focus rather than once per session. This is what lets a keyboard be (re)acquired on
+        /// demand: if the cache was never populated (e.g. a teammate who has the setting but not the
+        /// files, or a first focus made while offline) or was deleted, the next focus fetches it.
+        /// <see cref="IKmwFallbackService.EnsureCached"/> is a cheap no-op when the files are already
+        /// present and never blocks (it downloads in the background), so calling it every focus is safe.
+        /// </summary>
+        private void EnsureAcquired(KeyboardResolution resolution)
+        {
+            if (resolution.Kind == KeyboardResolutionKind.KeymanWeb)
+                _fallback.EnsureCached(resolution.KmwKeyboardId, resolution.KmwLanguageTag);
         }
 
         /// <summary>
@@ -165,11 +189,12 @@ namespace Bloom.Keyboarding
                 // not installed on this machine: fall through to Automatic
             }
 
-            // 2. Pinned KeymanWeb keyboard.
+            // 2. Pinned KeymanWeb keyboard. Getting its files onto disk is acquisition, handled by
+            // EnsureAcquired on every focus (not here) so it also covers a cache that was deleted,
+            // never downloaded, or never synced to this machine.
             if (setting.SettingKind == KeyboardSetting.Kind.KeymanWeb)
             {
                 var kmwTag = string.IsNullOrEmpty(setting.LanguageTag) ? tag : setting.LanguageTag;
-                _fallback.EnsureCached(setting.Id, kmwTag); // background retry when online
                 return KmwResolution(tag, setting.Id, kmwTag);
             }
 
@@ -178,11 +203,9 @@ namespace Bloom.Keyboarding
             if (best != null)
                 return OsResolution(tag, best); // an OS keyboard exists -> use it, no KMW
 
+            // Acquisition of the fallback's files is handled by EnsureAcquired on every focus.
             if (!string.IsNullOrEmpty(ws.CachedKmwFallbackKeyboard))
-            {
-                _fallback.EnsureCached(ws.CachedKmwFallbackKeyboard, tag);
                 return KmwResolution(tag, ws.CachedKmwFallbackKeyboard, tag);
-            }
 
             // No OS keyboard and no cached fallback yet: try to fetch a suggestion in the background,
             // then fall back to the default for now. Don't cache this transient decision.

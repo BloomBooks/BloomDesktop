@@ -158,6 +158,13 @@ const KeyboardSection: React.FunctionComponent<{
             (k) => cloudValue(k.id, data.languageTag) === value,
         );
         if (cloudMatch) return cloudMatch.name;
+        // A pinned Keyman (cloud) keyboard whose friendly name we can't look up
+        // because the cloud list is empty (typically offline). Show its id, parsed
+        // from the "kmw:<id>@<tag>" setting, so the closed control reflects the
+        // actual saved keyboard instead of misreporting "Automatic". It self-heals
+        // to the friendly name once the cloud list is available again.
+        if (value.startsWith("kmw:"))
+            return value.slice("kmw:".length).split("@")[0];
         // kAutomaticValue ("") and any unrecognized/legacy value alike resolve
         // to Automatic at edit time, so show Automatic in the control too.
         return automaticLabel;
