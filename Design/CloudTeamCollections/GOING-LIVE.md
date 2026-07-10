@@ -164,6 +164,13 @@ used by the BloomLibrary web-upload code, so the blast radius is wider than clou
 **[HUMAN] added to the test plan at John's request: after the bump, manually verify that web
 book UPLOAD (publish to bloomlibrary.org) and DOWNLOAD (get a book from bloomlibrary.org
 into Bloom) are unaffected.** Queued as item 10 in `orchestration/DOGFOOD-BATCH-1.md`.
+EXECUTED 9 Jul 2026 (merged): AWSSDK.S3/Core 3.5.x → 4.0.100.3; MinIO-facing clients pin
+checksum behavior to WHEN_REQUIRED (v4's WHEN_SUPPORTED default breaks S3-compatibles);
+real-AWS BloomS3Client keeps v4 defaults; full BloomTests baseline-identical (3036/0).
+**[HUMAN/cross-repo] BloomHarvester extends BloomS3Client in its own repo — it must take a
+matching AWSSDK v4 bump before consuming a Bloom release containing this change.**
+Also worth a quick [HUMAN] smoke when convenient: problem-report book upload (YouTrack /
+bloom-problem-books bucket) rides the same SDK.
 
 ---
 
