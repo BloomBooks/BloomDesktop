@@ -785,8 +785,9 @@ namespace Bloom.TeamCollection
                 return; // already disabled, or not a TC
             string msg = null;
             string l10nId = null;
+            var subscriptionForCheck = GetSubscriptionForDisablingCheck();
             var tcFeatureStatus = FeatureStatus.GetFeatureStatus(
-                Settings.Subscription,
+                subscriptionForCheck,
                 FeatureName.TeamCollection
             );
             if (!tcFeatureStatus.Enabled)
@@ -811,12 +812,64 @@ namespace Bloom.TeamCollection
                 );
                 if (
                     !FeatureStatus
-                        .GetFeatureStatus(Settings.Subscription, FeatureName.TeamCollection)
+                        .GetFeatureStatus(subscriptionForCheck, FeatureName.TeamCollection)
                         .Enabled
                 )
                     (
                         CurrentCollectionEvenIfDisconnected as DisconnectedTeamCollection
                     ).DisconnectedBecauseOfSubscriptionTier = true;
+            }
+        }
+
+        /// <summary>
+        /// The Subscription value to use for the tier check above. Ordinarily that's just
+        /// Settings.Subscription -- the in-memory CollectionSettings snapshot, which for a FOLDER
+        /// Team Collection is already trustworthy by the time this runs (its collection files live
+        /// in the same synchronously-read local folder with no sign-in or network round trip
+        /// standing between it and the shared file: see FolderTeamCollection's own
+        /// LastRepoCollectionFileModifyTime, a plain file-timestamp read).
+        ///
+        /// A cloud Team Collection is different: Settings is captured ONCE, synchronously, before
+        /// this check ever runs (ProjectContext resolves TeamCollectionManager, which pulls fresh
+        /// collection files from the repo, before it resolves the CollectionSettings that reads
+        /// them -- see ProjectContext's CollectionSettings registration), and is never reloaded for
+        /// the rest of the session. But pulling those collection files (the only thing that can
+        /// deliver an up-to-date SubscriptionCode into that snapshot) requires a signed-in cloud
+        /// session (CloudTeamCollection.CheckConnection short-circuits on !_auth.IsSignedIn) and a
+        /// successful S3 download that can silently no-op on failure
+        /// (CloudTeamCollection.DownloadCollectionFileGroup reports-and-swallows exceptions rather
+        /// than propagating them). Depending on ambient state at that moment (a persisted auth
+        /// token being ready yet, this machine's first-ever sync of this collection, a transient
+        /// network hiccup), Settings.Subscription can therefore still be blank/stale here even
+        /// though CurrentCollection is already non-null (CurrentCollection is deliberately set
+        /// BEFORE the connect-and-sync sequence completes; see CreateTeamCollectionFromLink's
+        /// caller). That is the "subscription-tier check timing" bug (GOING-LIVE.md Phase 5):
+        /// CheckDisablingTeamCollections' only readiness gate, CurrentCollection == null, does not
+        /// mean the same thing for cloud TCs that it does for folder ones.
+        ///
+        /// The fix: for a cloud TC, re-read the SubscriptionCode directly from the on-disk
+        /// .bloomCollection file instead of trusting the stale in-memory snapshot. Combined with
+        /// WorkspaceModel.HandleTeamStuffBeforeGetBookCollections deferring the cloud call of this
+        /// check until AFTER the collection-file sync (SynchronizeRepoAndLocal) has had a chance to
+        /// run, this makes the check deterministic: it reflects whatever the sync actually
+        /// delivered, not a snapshot that predates it.
+        /// </summary>
+        private Subscription GetSubscriptionForDisablingCheck()
+        {
+            if (!(CurrentCollection is Cloud.CloudTeamCollection))
+                return Settings.Subscription;
+            try
+            {
+                var settingsPath = CollectionSettings.GetSettingsFilePath(_localCollectionFolder);
+                return ProjectContext.GetCollectionSettings(settingsPath).Subscription;
+            }
+            catch (Exception)
+            {
+                // No usable local .bloomCollection file to re-read (shouldn't normally happen once
+                // we get this far, since CurrentCollection being a CloudTeamCollection implies we
+                // already found one) -- fall back to the in-memory snapshot rather than crash a
+                // startup check.
+                return Settings.Subscription;
             }
         }
 
