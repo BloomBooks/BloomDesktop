@@ -96,7 +96,7 @@ namespace Bloom.Collection
 			this._tab.Location = new System.Drawing.Point(1, 2);
 			this._tab.Name = "_tab";
 			this._tab.SelectedIndex = 0;
-			this._tab.Size = new System.Drawing.Size(650, 482);
+			this._tab.Size = new System.Drawing.Size(650, 504);
 			this._tab.TabIndex = 0;
 			//
 			// tabPage1
@@ -593,7 +593,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._restartReminder, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._restartReminder, null);
 			this._L10NSharpExtender.SetLocalizingId(this._restartReminder, "CollectionSettingsDialog.RestartMessage");
-			this._restartReminder.Location = new System.Drawing.Point(305, 489);
+			this._restartReminder.Location = new System.Drawing.Point(305, 510);
 			this._restartReminder.MaximumSize = new System.Drawing.Size(380, 0);
 			this._restartReminder.Name = "_restartReminder";
 			this._restartReminder.Size = new System.Drawing.Size(344, 38);

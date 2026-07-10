@@ -9,10 +9,7 @@ import { Link } from "./link";
 import { useL10n } from "./l10nHooks";
 import { Typography } from "@mui/material";
 import KeyboardSection from "./keyboardSection";
-import {
-    bookMakingSelectCss,
-    kBookMakingSectionGap,
-} from "../collection/commonTabSettings";
+import { bookMakingSelectCss } from "../collection/commonTabSettings";
 
 const SingleFontSection: React.FunctionComponent<{
     languageNumber: number;
@@ -40,13 +37,10 @@ const SingleFontSection: React.FunctionComponent<{
     );
 
     return (
-        // The bottom gap separates this language's block from the next language
-        // (and the last block from the Page Numbering Style below the list).
-        <div
-            css={css`
-                margin-bottom: ${kBookMakingSectionGap};
-            `}
-        >
+        // One language's block: font, then keyboard, then Special Script
+        // Settings. Blocks are separated by dividers rendered by the parent
+        // (see fontScriptSettingsControl.tsx).
+        <React.Fragment>
             <Typography
                 css={css`
                     font-weight: 700 !important;
@@ -87,7 +81,7 @@ const SingleFontSection: React.FunctionComponent<{
             >
                 Special Script Settings
             </Link>
-        </div>
+        </React.Fragment>
     );
 };
 

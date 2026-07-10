@@ -80,7 +80,10 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
                     bookMakingSelectCss,
                     css`
                         background-color: white;
-                        border: 1px solid #bbb;
+                        // Match the rounded, light border of the outlined font
+                        // and keyboard selects (design 1A).
+                        border: 1px solid #c8ccd1;
+                        border-radius: 6px;
                         padding-left: 7px;
                         div {
                             padding: 4px 0 4px;
