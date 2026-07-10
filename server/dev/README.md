@@ -168,6 +168,20 @@ containers (see `docker-compose.yml`'s `networks:` block — MinIO joins
 address it by container name (`http://bloom-minio:9000`, set in `functions.env`).
 Direct container-to-container traffic on a shared bridge network is instant.
 
+**1b. After ANY `supabase stop`/`start` cycle, an already-running `supabase functions
+serve` process becomes a silent ZOMBIE — restart it.** (Found 9 Jul 2026: it cost two E2E
+rounds.) The serve process keeps running and the functions endpoint keeps answering, but
+requests are now handled by the freshly-created edge_runtime container, which does NOT
+have `server/dev/functions.env` — so every S3-touching function fails with
+`Missing required environment variable: BLOOM_S3_ENDPOINT` (surfacing client-side as
+"could not download the collection files" and pullDown 503s). A bare
+`POST /functions/v1/<fn>` health check CANNOT distinguish the two (both return 400 on an
+empty body). **Fix**: after restarting the stack, always kill the old serve process and
+re-run Step 5. Related: if `supabase db reset` fails with `failed to create volume ...
+volume already exists`, Podman's volume state is wedged — `supabase stop`, `podman volume
+rm supabase_db_bloom-team-collections`, `supabase start`, then (per this gotcha) restart
+functions serve.
+
 **2. `[edge_runtime].policy = "oneshot"` (the config.toml default, good for hot-reload)
 causes `InvalidWorkerCreation: worker did not respond in time` on every call that reaches
 `_shared/s3.ts`.** Reason: `oneshot` re-transpiles/type-checks the whole module graph —
