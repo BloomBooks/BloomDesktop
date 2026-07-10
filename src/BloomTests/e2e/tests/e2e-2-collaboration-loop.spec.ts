@@ -150,10 +150,23 @@ test.describe("E2E-2 two-instance collaboration loop", () => {
             label: "e2e2-bob-joined",
             logDir: LOG_DIR,
         });
-        const bobCaps = await (
-            await getApi(bob.httpPort, "teamCollection/capabilities")
-        ).json();
-        expect(bobCaps.supportsSharingUi).toBe(true);
+        // POLL, don't single-shot: teamCollection/capabilities is an application-level
+        // endpoint (post-batch defect 3 fix) that answers truthfully-false while the project
+        // is still opening — see twoInstanceSetup.ts's identical wait.
+        await expect
+            .poll(
+                async () =>
+                    (
+                        await (
+                            await getApi(
+                                bob.httpPort,
+                                "teamCollection/capabilities",
+                            )
+                        ).json()
+                    ).supportsSharingUi,
+                { timeout: 20_000 },
+            )
+            .toBe(true);
 
         // Before checkout, nobody has the book locked.
         const statusBeforeCheckout = await bookStatus(

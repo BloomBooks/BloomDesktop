@@ -103,10 +103,24 @@ export const setUpAliceAndBobOnSharedCollection = async (
         label: `${scenarioName}-bob-joined`,
         logDir,
     });
-    const bobCaps = await (
-        await getApi(bob.httpPort, "teamCollection/capabilities")
-    ).json();
-    expect(bobCaps.supportsSharingUi).toBe(true);
+    // POLL, don't single-shot: teamCollection/capabilities is an application-level endpoint
+    // (post-batch defect 3 fix) that answers truthfully-false while the project is still
+    // opening, and BLOOM_AUTOMATION_READY fires when the server starts listening — which can
+    // be before the Team Collection has finished connecting.
+    await expect
+        .poll(
+            async () =>
+                (
+                    await (
+                        await getApi(
+                            bob.httpPort,
+                            "teamCollection/capabilities",
+                        )
+                    ).json()
+                ).supportsSharingUi,
+            { timeout: 20_000 },
+        )
+        .toBe(true);
 
     return { alice, alicePage, aliceScratch, bob, bobCollectionFilePath };
 };
