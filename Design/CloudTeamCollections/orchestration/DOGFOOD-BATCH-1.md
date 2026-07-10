@@ -410,6 +410,33 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 10 Jul 2026 (AM, PAUSED for VS Code restart) · State: all batch items 1–10 + tier-timing
+  fix MERGED and pushed (through commit 7029006d5). Post-batch E2E stabilization in
+  progress — full matrix run 1 was 8/14. Fixed + pushed since: AWSSDK-v4 null S3Objects
+  second site (DownloadCollectionFileGroup); item-9 sidecar idle-loop that starved the UI
+  thread (checkin timeouts; watcher-file feedback loop — see commit f451aa865); harness
+  waitForBookFile for progressive-join; e2e-10 refusal line to stdout
+  (BLOOM_AUTOMATION_REFUSED_COLLECTION); window watcher NEVER RAN (node detached spawn
+  kills powershell instantly — fixed non-detached + DPI-aware + spawn-time + placement
+  logs, commits 80b333c4c/7029006d5). THREE OPEN DEFECTS, diagnosis agent was killed
+  before starting (no work lost):
+  (1) background book download silently dropped after join-relaunch — hypothesis:
+  DownloadMissingBookInBackground's IsBookPresentInRepo pre-check on an unhydrated cache
+  returns false → silent return → dedupe means never re-queued (e2e-3/e2e-4 failures; no
+  RemoteBookAutoApplyQueue error lines in SIL logs = silent drop confirmed);
+  (2) e2e-10 'bob-takeover' relaunch never reaches BLOOM_AUTOMATION_READY (empty stdout;
+  check SIL Log-tmp*.txt ~10:0x AM Jul 10);
+  (3) collection chooser triggers 'Cannot Find API Endpoint teamCollection/capabilities'
+  toast (project-level endpoint called at app level; John saw it on screen; suspect a
+  hook item 6 pulled into the chooser bundle).
+  ALSO PENDING: full matrix re-run → rebase onto origin/master (47 commits incl. pnpm
+  migration; only 4 overlapping files: 2 XLF, CollectionApi.cs, ExternalApi.cs) →
+  post-rebase matrix → John's visual checks. e2e-5/e2e-8 retest failures were TRANSIENT
+  infra (podman/db-reset under load; verified clean after). Stack is up; remember the
+  functions-serve zombie rule (server/dev/README.md) after any supabase stop/start ·
+  Next action: relaunch the three-defect diagnosis/fix agent (its full brief is in the
+  orchestrator conversation; the three defect descriptions above are self-sufficient),
+  then rerun e2e-3/4/5/8/10, then the full pipeline above.
 - 9 Jul 2026 · Batch plan created; full-matrix baseline run in progress (validates
   checkin-comment fix + 5s poll live) · Next: item 1 ("Bloom is busy" l10n) code work
   while the matrix runs.
