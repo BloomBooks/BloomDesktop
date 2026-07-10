@@ -319,18 +319,42 @@ never writes the local status file; see tasks/09-e2e.md E2E-4 finding):
       when convenient.
 
 ### 9. Account-switch behavior (John decision, 9 Jul — unblocks E2E-10)  `[medium-large]`
-Status: NOT STARTED (decision recorded verbatim; implement after items 7/8)
+Status: CODE DONE on branch `task/b1-9-account-switch` (created from origin/cloud-collections;
+not yet merged) — E2E verification QUEUED (orchestrator's job; hard rules forbade
+launching Bloom/e2e for this task)
 John's spec: local machine access is unrestricted; only shared-data operations are gated by
 the CURRENT logon's server permissions. Collection was joined under account A, Bloom now
 signed in as B:
-- B NOT a member of the TC → REFUSE to open the collection. Message must name the current
-  logon, say it is not a member, give the admin email(s) to ask for membership, and name
-  the last team member who edited this collection on this machine.
-- B IS a member → open CONNECTED. Books locally checked out by A show as checked out by A
-  but may be edited as if checked out by B — ONLY if the server state would have let A edit
-  here (i.e. A's lock is for THIS machine; not if A holds it elsewhere). On first edit of
-  such a book, atomically switch the checkout everywhere to B. If B checks it in (even
-  without editing), history records the checkin by B.
+- [x] B NOT a member of the TC → REFUSE to open the collection. Message must name the current
+      logon, say it is not a member, give the admin email(s) to ask for membership, and name
+      the last team member who edited this collection on this machine.
+      TeamCollectionManager.CheckConnection gained an `allowHardRefusal` parameter (default
+      false, preserving every existing mid-session caller); only the constructor's initial
+      open-time call passes true. CloudTeamCollection.CheckConnection's non-member branch now
+      sets a new TeamCollectionMessage.IsAccessRefusal flag and composes the full detail text
+      (admins + last-known-user, see ComposeNotAMemberRefusalDetail) instead of the old
+      one-line message; a hard-refusal message throws the new
+      TeamCollectionAccessRefusedException, which propagates up through Autofac/ProjectContext
+      to Program.HandleErrorOpeningProjectWindow (new early special-case: plain message box,
+      no "Report this crash" flow, then falls through to the existing chooser-reopen path
+      exactly like any other failed project open).
+- [x] B IS a member → open CONNECTED. Books locally checked out by A show as checked out by A
+      but may be edited as if checked out by B — ONLY if the server state would have let A edit
+      here (i.e. A's lock is for THIS machine; not if A holds it elsewhere). On first edit of
+      such a book, atomically switch the checkout everywhere to B. If B checks it in (even
+      without editing), history records the checkin by B.
+      New virtual seams on TeamCollection (IsEditableHere, CanTakeOverLockOnThisMachine,
+      TryTakeOverLock) default to today's strict behavior for folder TCs; CloudTeamCollection
+      overrides them for the same-machine-different-account case. New RPC
+      tc.checkout_book_takeover (migration 20260709000007) atomically reassigns a lock from a
+      different account to the caller ONLY when the existing lock's machine matches — purely
+      additive, does NOT modify checkin_start_tx/checkin_finish_tx. The takeover call happens
+      in PutBookInRepo just before check-in (there is no per-keystroke "edit happened" hook
+      anywhere in this codebase — confirmed by research — so "on first edit" is implemented as
+      "on first check-in of that edit", the earliest point a takeover has any observable
+      effect) and in AttemptLock (for an explicit "check out" click, though the UI is unlikely
+      to show that affordance here since IsEditableHere already reports the book as usable).
+      Checkin attribution already falls out for free (checkin_finish_tx uses the caller's JWT).
 
 ### 10. AWSSDK.S3 version bump (John decision, 9 Jul: take it on this branch)  `[quick-medium]`
 Status: CODE DONE + SUITES GREEN on branch `task/b1-10-awssdk-bump` (bump 9b81c6040; not yet
@@ -482,3 +506,53 @@ up/download check
   (should be silent now), path-style, and AuthenticationRegion behavior; then John's [HUMAN]
   web up/download check (GOING-LIVE.md 4.3) · Next: orchestrator review + merge of
   task/b1-10-awssdk-bump, then the queued E2E pass.
+- 9 Jul 2026 (agent) · Item 9 (account-switch behavior) CODE DONE on branch
+  `task/b1-9-account-switch` (created from origin/cloud-collections; not yet merged): refusal
+  path — TeamCollectionManager.CheckConnection(allowHardRefusal) (default false, only the
+  constructor's initial open-time call passes true) throws the new
+  TeamCollectionAccessRefusedException when CloudTeamCollection.CheckConnection's non-member
+  branch sets the new TeamCollectionMessage.IsAccessRefusal flag; Program.HandleErrorOpeningProjectWindow
+  special-cases that exception (plain message box, no crash-report flow) before falling through
+  to the existing chooser-reopen path. The refusal message composes admin email(s) (read from
+  the local .bloomCollection's Administrators field — flagged risk: this inherits the
+  already-tracked "Administrators shows registration email not signed-in email" bug from the
+  "Also queued from dogfooding" list, since that fix was out of this item's scope) and "last
+  known team member on this machine" from a NEW durable local record,
+  TeamCollectionLastKnownUser.txt (sidecar file next to TeamCollectionLink.txt; chosen over
+  extending TeamCollectionLink.txt's tightly-scoped tested format; written at join time
+  (CloudJoinFlow) and refreshed on every successful membership confirmation
+  (CloudTeamCollection.CheckConnection), so it doubles as "who joined" and "last confirmed
+  local user" — documented as an approximation, not literally "last edited"). Takeover path —
+  new virtual seams on TeamCollection (IsEditableHere/CanTakeOverLockOnThisMachine/
+  TryTakeOverLock, all no-op/strict by default so folder TCs are unaffected) let
+  CloudTeamCollection treat a book locked to a DIFFERENT account on THIS machine as editable
+  and checkin-able; new additive RPC tc.checkout_book_takeover (migration
+  20260709000007_tc_checkout_takeover.sql) atomically reassigns the lock, called from
+  PutBookInRepo just before check-in (no per-keystroke "edit happened" hook exists anywhere in
+  this codebase, confirmed by research, so "on first edit" == "on first check-in of that edit")
+  and from AttemptLock (explicit checkout click, likely unreachable in the UI here but kept for
+  symmetry). checkin_start_tx/checkin_finish_tx are UNTOUCHED — purely additive, so no existing
+  RPC's contract changed. CONTRACTS.md addition flagged, NOT applied (orchestrator decision per
+  this task's rules): a `checkout_book_takeover(book_id, machine) -> {success, locked_by,
+  locked_by_machine, locked_at}` row alongside checkout_book/unlock_book/force_unlock. Tests: 55
+  pgTAP (42 existing + 13 new in 02_tc_checkout_takeover_test.sql, actually run against the
+  local dev stack — same-machine takeover, cross-machine rejection, no-op re-takeover,
+  non-member rejection all green); C# required filter (Cloud|TeamCollection|SharingApi) 406/406
+  green (17 new: 5 ComposeNotAMemberRefusalDetail + 2 CheckConnection refusal/last-known-user in
+  CloudTeamCollectionMemberTests.cs, 9 in new CloudAccountSwitchTakeoverTests.cs, 3 in new
+  TeamCollectionAccountSwitchRefusalTests.cs). One new XLF string,
+  TeamCollection.Cloud.NotAMemberRefusal, added to Bloom.xlf (translate="no"), FLAGGED
+  PROVISIONAL for John's priority-file confirmation — it's shown in a plain MessageBox, arguably
+  more user-facing than most existing unlocalized TC internal strings, so may deserve a
+  different priority file or eventual real translation. New (non-run) E2E spec
+  `e2e-10-account-switch.spec.ts` written for the orchestrator's next pass, replacing the old
+  blocked task-09 scenario of the same number (different shape now — open-time refuse/takeover,
+  not in-session block-with-choices); flags that the refusal MessageBox is a native Win32 dialog
+  invisible to CDP entirely, so the spec verifies it via the instance's own log file instead.
+  Known omissions/risks for the orchestrator: (1) the Administrators-email identity bug noted
+  above; (2) no automated test exercises PutBookInRepo's pre-checkin takeover call end-to-end
+  (would need a full book-folder + checkin-start/finish edge-function mock harness) — covered
+  indirectly by direct unit tests of the virtual seams plus the new E2E spec; (3) TestFolderTeamCollection's
+  own takeover behavior was not separately tested since CanTakeOverLockOnThisMachine's folder
+  default is `false` (unchanged behavior, no new folder-TC surface to test) · Next: orchestrator
+  review + merge of task/b1-9-account-switch, then the queued E2E pass including e2e-10.
