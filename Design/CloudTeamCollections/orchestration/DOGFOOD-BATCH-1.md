@@ -461,9 +461,34 @@ up/download check
    before the fixes). Run it after John decides bug #0 (or accept one known e2e-4 failure).
 4. Cosmetic (tracked): Administrators field shows registration email, not signed-in email
    (see "Also queued from dogfooding").
+5. **Preflight (10 Jul PM, John's request):** light-review pass over the day's diff found 2
+   valid adjacent holes, BOTH FIXED + tested (72246c2975): per-account (not per-instance)
+   claim_memberships guard; machine-aware lock skip in the requeue pass. The GitHub half of
+   preflight (draft PR, Devin, Greptile/CodeRabbit, CI gauntlet) is BLOCKED: `gh` is not
+   authenticated in the agent session — John must run `gh auth login`, then re-run
+   `/preflight` to create the draft PR and run the bot gauntlet.
+6. **Full C# suite: RESOLVED AS FLAKE** — the first run's single failure (1/3131) did not
+   reproduce on the identification rerun (3120 passed / 0 failed / 3133 total, merged tree).
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 10 Jul 2026 (PM, preflight — END-OF-SESSION STATE) · Preflight (John's request) ran to the
+  limit of what the session could do: LOCAL HALF COMPLETE — light-review sub-agent over the
+  day's diff found 2 valid adjacent holes, both FIXED + unit-tested + pushed (72246c2975:
+  per-account claim_memberships guard — an in-session account switch would have resurrected
+  defect 2; machine-aware lock skip — your own other-machine checkout no longer blocks the
+  self-heal download). Gate results: cloud filter 422/422; FULL C# suite 3120/0/13 of 3133
+  (first run's single failure did NOT reproduce → flake); pnpm lint 0 errors; targeted vitest
+  14/14; mergeability with origin/master clean (0 behind, 0 conflicts). E2E singles on the
+  final tree: e2e-3/5/8/10 ALL PASS; e2e-4 fails ONLY at the takeover-semantics assertion
+  (OUTSTANDING BUGS #0, John's decision — options a/b/c documented there, recommend (a)
+  server-side seat). GITHUB HALF BLOCKED: `gh` unauthenticated in the agent session, so no
+  draft PR / Devin / CodeRabbit / CI ran — after `gh auth login`, re-run `/preflight`.
+  Preflight report artifact (decisions + copy-back form) published for John · NEXT, in
+  order: (1) John: gh auth login + answer the report's decisions (esp. bug #0), (2) implement
+  bug #0 as decided + rerun e2e-4, (3) full E2E matrix, (4) re-run /preflight for the bot
+  gauntlet, (5) John's [HUMAN] tests: item 3 centered dialog, item 10 web up/download
+  (GOING-LIVE.md 4.3).
 - 10 Jul 2026 (PM, master integration) · cloud-collections is now UP TO DATE with
   origin/master (c41fcfd2bd) — as a MERGE, not the planned rebase, deliberately: a true
   rebase meant replaying 189 commits over a master that already contains cherry-picked
