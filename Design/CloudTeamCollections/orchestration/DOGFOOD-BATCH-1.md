@@ -489,6 +489,18 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 11 Jul 2026 (afternoon — human-test launch failure diagnosed + fixed) · John's `pnpm go`
+  timed out ("Bloom did not emit BLOOM_AUTOMATION_READY within 120000 ms"). Cause: the E2E
+  harness launches write to the SHARED per-machine user.config, so the last matrix left
+  `BloomE2E-join-auto-open` (a cloud TC whose server rows the per-scenario DB resets wiped)
+  at the top of MruProjects; pnpm go auto-opened it and the connection-refusal MessageBox
+  (native, blocking, invisible to the launcher) hung startup. FIX: removed the BloomE2E/
+  BobPlaceholder MRU entries (backup: user.config.bak-pre-mru-clean). **HARNESS FOLLOW-UP
+  (queued):** the E2E harness must stop polluting the human's MRU — snapshot+restore
+  MruProjects around a run (globalSetup/globalTeardown), or launch instances with an
+  isolated profile. Same class of hazard as the experimental-flag manipulation, but this
+  one actively breaks the next manual launch · Next: John's human tests proceed
+  (alice@dev.local / BloomDev123!; fresh collection required — old server rows are gone).
 - 11 Jul 2026 (morning — **GOLD STAMP: FULL MATRIX 14/14**, 34.4 min, one run, zero
   failures) · The desktop-unlock watcher fired, environment verified clean, and the
   matrix ran green end to end on the final tree (af8a92a516 = PR #8052's content +
