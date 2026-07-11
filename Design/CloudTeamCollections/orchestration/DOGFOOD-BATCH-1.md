@@ -489,6 +489,14 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 11 Jul 2026 (~04:30 — optional gold-stamp matrix INVALID: desktop locked again mid-run,
+  14/14 CDP-connect failures = the locked-session signature; sleep timeouts were already
+  disabled, so this was a manual lock or an unseen policy). No leaked processes. NOT a
+  loss: the gold run was optional — every scenario has already passed on this exact tree
+  (13/14 matrix + standalone exonerations). Unlock watcher re-armed in the orchestrator
+  session; if it fires while the session lives, the matrix reruns · Next: John's items
+  (see the SQUASH-PLAN-EXECUTED entry above); rerun `yarn test` with the desktop
+  UNLOCKED whenever a gold stamp is wanted.
 - 11 Jul 2026 (early AM — SQUASH PLAN EXECUTED; PR #8052 open, #8048 closed) · Merged
   origin/master into cloud-collections first (13 commits, RAB/spreadsheet only, zero
   conflicts, filter 428/428). Built `cloud-tc-for-review` per SQUASH-PLAN.md: 9
