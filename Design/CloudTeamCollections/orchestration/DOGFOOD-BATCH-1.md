@@ -409,7 +409,21 @@ up/download check
   timing unchanged. See branch for full diagnosis + tests.
 
 ## OUTSTANDING BUGS (10 Jul 2026 PM — the current work list)
-0. **[NEEDS JOHN — product decision] Item 9's same-machine takeover can steal ANY same-machine
+0. **RESOLVED 11 Jul 2026 — implemented as option (a), per John's ruling (recorded verbatim in
+   the 11 Jul progress entry): editing/takeover of a checkout is only legitimate in the local
+   copy of the collection where the book is checked out.** Implementation: migration
+   20260711000003 adds `tc.books.locked_seat` (client-computed hash of the local collection
+   folder path — the "seat"), recorded by checkout_book/checkout_book_takeover; takeover
+   requires machine AND seat match, and a NULL stored seat never matches (fail-safe); a
+   trigger clears the seat with every unlock path. Client: CloudTeamCollection.SeatId;
+   IsEditableHere/CanTakeOverLockOnThisMachine seat-gated (own pre-seat locks grandfathered;
+   other accounts strict). CONTRACTS.md bumped to v1.5. pgTAP 65/65, C# filter 428/428,
+   e2e-4 PASSES. FOLLOW-UP flagged for John (not blocking): checkin_start_tx still accepts a
+   same-user check-in regardless of seat/machine (pre-existing behavior; the client-side
+   editable gate is the enforcement point today) — decide whether the server should also
+   refuse cross-seat check-ins by the SAME user. Original problem statement follows for the
+   record.
+   **[Original — NEEDS JOHN] Item 9's same-machine takeover can steal ANY same-machine
    lock, even across separate collection folders (found by e2e-4 after its download bugs were
    fixed).** Scenario: Bob (admin) force-unlocks Alice's checkout and takes the lock himself;
    Alice's later attemptLockOfCurrentBook RETURNS FALSE — but the server lock silently ends up
@@ -475,6 +489,29 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 11 Jul 2026 (early AM — BUG #0 FIXED AND VERIFIED; bot gauntlet fully closed) · John's
+  ruling (his words, from the in-session Q&A): "we should only be allowed to edit (either as
+  the original user checking the book out, or taking it over) if it is being worked on here,
+  in this copy of the collection… as long as the book is checked out here (this local copy)
+  and the logged-in user is a member, editing and take-over of the checkout should be
+  allowed. (A different user who has a different copy of the collection open, like our bob
+  and alice collections, definitely can't do this.)" — i.e. option (a) extended to the
+  "checked out here" determination. IMPLEMENTED (details in OUTSTANDING BUGS #0): server
+  seat column + gated takeover + auto-clear trigger (migration 20260711000003), client
+  SeatId + seat-gated IsEditableHere/CanTakeOverLockOnThisMachine (seams now take bookName),
+  CONTRACTS.md v1.5. VERDICTS: pgTAP 65/65 (10 new seat cases incl. e2e-4's
+  same-machine-different-seat refusal), C# filter 428/428 (6 new), **e2e-4 PASS** (first
+  time since the defect hunt began), **e2e-10 PASS** (same-seat takeover intact). Earlier
+  same night: full matrix 12/14 (37 min, desktop unlocked after John returned; sleep
+  timeouts disabled via powercfg — the mid-run locks were the 120-min AC idle-sleep timer);
+  the two failures were e2e-4 (now fixed) and e2e-7 (standalone 2/2 = load flake; its 20s
+  first-commit poll bumped to 90s). GREPTILE RE-REVIEW: "all three findings correctly
+  resolved. No new blocking issues." Gauntlet state: Greptile complete+clean, Devin
+  size-failed (terminal), CodeRabbit not installed, CI green · Next: (1) final full matrix
+  (expect 14/14 — first ever fully-green matrix if it holds), (2) execute SQUASH-PLAN.md →
+  cloud-tc-for-review PR, close #8048 with pointer, (3) John: follow-up decision in
+  OUTSTANDING BUGS #0 (server-side same-user cross-seat check-in) + [HUMAN] tests (item 3
+  centered dialog, item 10 web up/download, GOING-LIVE.md 4.3).
 - 10 Jul 2026 (night) · FULL MATRIX ATTEMPT INVALID — 14/14 failed because the Windows
   desktop LOCKED sometime after the standalone runs (LogonUI confirmed running afterward;
   every failure is at connectOverCdp / launch, the locked-session signature the E2E rules

@@ -76,11 +76,17 @@ namespace BloomTests.TeamCollection.Cloud
             TeamCollectionManager.ForceCurrentUserForTests(null);
         }
 
+        /// <summary>The seat id of THIS test's own collection copy — what the production code
+        /// computes for _collectionFolder. Locks scripted with this seat are "checked out in
+        /// this copy"; any other value (or null) simulates another copy / a pre-seat lock.</summary>
+        private string ThisSeat => CloudTeamCollection.ComputeSeatId(_collectionFolder.FolderPath);
+
         private void ScriptCollectionState(
             string bookId,
             string bookName,
             string lockedBy,
-            string lockedByMachine
+            string lockedByMachine,
+            string lockedSeat = null
         )
         {
             _executor.Handler = req =>
@@ -99,6 +105,7 @@ namespace BloomTests.TeamCollection.Cloud
                             ["current_checksum"] = "checksum-" + bookId,
                             ["locked_by"] = lockedBy,
                             ["locked_by_machine"] = lockedByMachine,
+                            ["locked_seat"] = lockedSeat,
                             ["locked_at"] =
                                 lockedBy == null ? null : (JToken)DateTime.UtcNow.ToString("o"),
                             ["deleted_at"] = null,
@@ -116,22 +123,28 @@ namespace BloomTests.TeamCollection.Cloud
         // ------------------------------------------------------------------
 
         [Test]
-        public void NeedCheckoutToEdit_LockedByOtherAccount_SameMachine_ReturnsFalse_IsEditable()
+        public void NeedCheckoutToEdit_LockedByOtherAccount_SameMachineAndSeat_ReturnsFalse_IsEditable()
         {
-            ScriptCollectionState("book-1", "My Book", "some-other-user-id", ThisMachine);
+            ScriptCollectionState("book-1", "My Book", "some-other-user-id", ThisMachine, ThisSeat);
 
             var bookFolderPath = _collectionFolder.Combine("My Book");
             Assert.That(
                 _collection.NeedCheckoutToEdit(bookFolderPath),
                 Is.False,
-                "a book locked to a different account on THIS machine must be editable without an explicit checkout"
+                "a book locked to a different account in THIS copy on THIS machine must be editable without an explicit checkout"
             );
         }
 
         [Test]
         public void NeedCheckoutToEdit_LockedByOtherAccount_DifferentMachine_ReturnsTrue()
         {
-            ScriptCollectionState("book-1", "My Book", "some-other-user-id", kOtherMachine);
+            ScriptCollectionState(
+                "book-1",
+                "My Book",
+                "some-other-user-id",
+                kOtherMachine,
+                ThisSeat
+            );
 
             var bookFolderPath = _collectionFolder.Combine("My Book");
             Assert.That(
@@ -139,6 +152,66 @@ namespace BloomTests.TeamCollection.Cloud
                 Is.True,
                 "a lock held on a DIFFERENT machine must remain a genuine conflict, not editable"
             );
+        }
+
+        [Test]
+        public void NeedCheckoutToEdit_LockedByOtherAccount_SameMachineDifferentSeat_ReturnsTrue()
+        {
+            // Bug #0 (e2e-4's scenario): same machine, but the lock belongs to a DIFFERENT local
+            // copy of the collection. Editing here risks conflicting changes — not editable.
+            ScriptCollectionState(
+                "book-1",
+                "My Book",
+                "some-other-user-id",
+                ThisMachine,
+                "someone-elses-seat"
+            );
+
+            var bookFolderPath = _collectionFolder.Combine("My Book");
+            Assert.That(
+                _collection.NeedCheckoutToEdit(bookFolderPath),
+                Is.True,
+                "a lock held in a DIFFERENT local copy (seat) must remain a genuine conflict even on the same machine"
+            );
+        }
+
+        [Test]
+        public void NeedCheckoutToEdit_LockedByOtherAccount_SameMachineUnknownSeat_ReturnsTrue()
+        {
+            // Fail-safe: a lock with no recorded seat (pre-seat checkout) is never treated as
+            // takeover-eligible for a DIFFERENT account, matching the server-side gate.
+            ScriptCollectionState("book-1", "My Book", "some-other-user-id", ThisMachine, null);
+
+            var bookFolderPath = _collectionFolder.Combine("My Book");
+            Assert.That(_collection.NeedCheckoutToEdit(bookFolderPath), Is.True);
+        }
+
+        [Test]
+        public void NeedCheckoutToEdit_OwnLock_SameMachineUnknownSeat_ReturnsFalse_Grandfathered()
+        {
+            // The CURRENT USER's own pre-seat lock keeps working (otherwise the seat migration
+            // would brick every checkout taken before it).
+            ScriptCollectionState("book-1", "My Book", kCurrentUserEmail, ThisMachine, null);
+
+            var bookFolderPath = _collectionFolder.Combine("My Book");
+            Assert.That(_collection.NeedCheckoutToEdit(bookFolderPath), Is.False);
+        }
+
+        [Test]
+        public void NeedCheckoutToEdit_OwnLock_SameMachineDifferentSeat_ReturnsTrue()
+        {
+            // John's ruling covers the same user's OTHER copy too: the book is being worked on
+            // in the copy that holds the lock, not this one.
+            ScriptCollectionState(
+                "book-1",
+                "My Book",
+                kCurrentUserEmail,
+                ThisMachine,
+                "my-other-copys-seat"
+            );
+
+            var bookFolderPath = _collectionFolder.Combine("My Book");
+            Assert.That(_collection.NeedCheckoutToEdit(bookFolderPath), Is.True);
         }
 
         [Test]
@@ -157,7 +230,7 @@ namespace BloomTests.TeamCollection.Cloud
         [Test]
         public void OkToCheckIn_LockedByOtherAccount_SameMachine_ReturnsTrue()
         {
-            ScriptCollectionState("book-1", "My Book", "some-other-user-id", ThisMachine);
+            ScriptCollectionState("book-1", "My Book", "some-other-user-id", ThisMachine, ThisSeat);
             // OkToCheckIn compares repo checksum to LOCAL status checksum; make them match so
             // that check doesn't independently fail this test. (Local status's own lockedBy is
             // irrelevant to OkToCheckIn -- it only reads its checksum -- so it's left at
@@ -173,7 +246,32 @@ namespace BloomTests.TeamCollection.Cloud
         [Test]
         public void OkToCheckIn_LockedByOtherAccount_DifferentMachine_ReturnsFalse()
         {
-            ScriptCollectionState("book-1", "My Book", "some-other-user-id", kOtherMachine);
+            ScriptCollectionState(
+                "book-1",
+                "My Book",
+                "some-other-user-id",
+                kOtherMachine,
+                ThisSeat
+            );
+            System.IO.Directory.CreateDirectory(_collectionFolder.Combine("My Book"));
+            var localStatus = _collection.GetStatus("My Book").WithChecksum("checksum-book-1");
+            _collection.WriteLocalStatus("My Book", localStatus);
+
+            Assert.That(_collection.OkToCheckIn("My Book"), Is.False);
+        }
+
+        [Test]
+        public void OkToCheckIn_LockedByOtherAccount_SameMachineDifferentSeat_ReturnsFalse()
+        {
+            // Bug #0: the takeover path must not unblock a check-in when the lock belongs to a
+            // different local copy of the collection on this same machine.
+            ScriptCollectionState(
+                "book-1",
+                "My Book",
+                "some-other-user-id",
+                ThisMachine,
+                "someone-elses-seat"
+            );
             System.IO.Directory.CreateDirectory(_collectionFolder.Combine("My Book"));
             var localStatus = _collection.GetStatus("My Book").WithChecksum("checksum-book-1");
             _collection.WriteLocalStatus("My Book", localStatus);
@@ -188,7 +286,7 @@ namespace BloomTests.TeamCollection.Cloud
         [Test]
         public void TryTakeOverLock_ServerAccepts_UpdatesStatusToCurrentUser()
         {
-            ScriptCollectionState("book-1", "My Book", "some-other-user-id", ThisMachine);
+            ScriptCollectionState("book-1", "My Book", "some-other-user-id", ThisMachine, ThisSeat);
             // Force hydration/index so TryGetBookId can resolve "My Book" -> "book-1".
             _collection.IsBookPresentInRepo("My Book");
 
@@ -200,6 +298,7 @@ namespace BloomTests.TeamCollection.Cloud
                     ["success"] = true,
                     ["locked_by"] = kCurrentUserEmail,
                     ["locked_by_machine"] = ThisMachine,
+                    ["locked_seat"] = ThisSeat,
                     ["locked_at"] = DateTime.UtcNow.ToString("o"),
                 };
                 return FakeResponses.Make(HttpStatusCode.OK, body.ToString());
@@ -247,7 +346,7 @@ namespace BloomTests.TeamCollection.Cloud
         [Test]
         public void AttemptLock_LockedByOtherAccount_SameMachine_TakesOverAndSucceeds()
         {
-            ScriptCollectionState("book-1", "My Book", "some-other-user-id", ThisMachine);
+            ScriptCollectionState("book-1", "My Book", "some-other-user-id", ThisMachine, ThisSeat);
             _collection.IsBookPresentInRepo("My Book");
 
             _executor.Handler = req =>
@@ -259,6 +358,7 @@ namespace BloomTests.TeamCollection.Cloud
                         ["success"] = true,
                         ["locked_by"] = kCurrentUserEmail,
                         ["locked_by_machine"] = ThisMachine,
+                        ["locked_seat"] = ThisSeat,
                         ["locked_at"] = DateTime.UtcNow.ToString("o"),
                     };
                     return FakeResponses.Make(HttpStatusCode.OK, body.ToString());
@@ -271,6 +371,35 @@ namespace BloomTests.TeamCollection.Cloud
 
             Assert.That(success, Is.True);
             Assert.That(_collection.GetStatus("My Book").lockedBy, Is.EqualTo(kCurrentUserEmail));
+        }
+
+        [Test]
+        public void AttemptLock_LockedByOtherAccount_SameMachineDifferentSeat_DoesNotAttemptTakeover()
+        {
+            // Bug #0 (e2e-4's exact scenario): an explicit checkout attempt on a book locked in
+            // a DIFFERENT local copy on this same machine must not fire the takeover RPC at all
+            // (previously it did — and the server, gating only on machine, silently reassigned
+            // the lock even as AttemptLock reported false).
+            ScriptCollectionState(
+                "book-1",
+                "My Book",
+                "some-other-user-id",
+                ThisMachine,
+                "someone-elses-seat"
+            );
+            _collection.IsBookPresentInRepo("My Book");
+
+            _executor.Handler = req =>
+            {
+                Assert.Fail(
+                    $"Should not have called any RPC for a different-seat lock; got {req.Resource}"
+                );
+                return null;
+            };
+
+            var success = _collection.AttemptLock("My Book");
+
+            Assert.That(success, Is.False);
         }
 
         [Test]

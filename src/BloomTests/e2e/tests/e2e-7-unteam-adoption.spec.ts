@@ -192,7 +192,7 @@ test.describe("E2E-7 un-team adoption", () => {
                         )
                     ).length,
                 {
-                    timeout: 20_000,
+                    timeout: 90_000, // first-Send upload can exceed 20s under load (11 Jul matrix)
                     message: "the book's first version never committed",
                 },
             )

@@ -216,20 +216,35 @@ namespace Bloom.TeamCollection.Cloud
         public JObject GetBookManifest(string bookId) =>
             (JObject)CallRpc("get_book_manifest", new { p_book_id = bookId });
 
-        /// <summary>Conditional lock; result includes the winning holder's identity on failure.</summary>
-        public JObject CheckoutBook(string bookId, string machine) =>
-            (JObject)CallRpc("checkout_book", new { p_book_id = bookId, p_machine = machine });
+        /// <summary>Conditional lock; result includes the winning holder's identity on failure.
+        /// v1.5 (20260711000003): also records which local copy of the collection ("seat") took
+        /// the lock — see CloudTeamCollection.SeatId.</summary>
+        public JObject CheckoutBook(string bookId, string machine, string seat) =>
+            (JObject)CallRpc(
+                "checkout_book",
+                new
+                {
+                    p_book_id = bookId,
+                    p_machine = machine,
+                    p_seat = seat,
+                }
+            );
 
-        /// <summary>Account-switch takeover (batch item 9, CONTRACTS.md addition -- flagged, not
-        /// yet added to CONTRACTS.md itself; see this task's report): atomically reassigns a
-        /// book's lock from a DIFFERENT account to the caller, but ONLY when the existing lock is
-        /// recorded for the SAME machine. Returns the same {success, locked_by, locked_by_machine,
-        /// locked_at} shape as checkout_book, so callers can reuse
-        /// CloudRepoCache.RecordCheckoutResult unchanged.</summary>
-        public JObject CheckoutBookTakeover(string bookId, string machine) =>
+        /// <summary>Account-switch takeover (batch item 9, CONTRACTS.md v1.4/v1.5): atomically
+        /// reassigns a book's lock from a DIFFERENT account to the caller, but ONLY when the
+        /// existing lock is recorded for the SAME machine AND the SAME seat (local collection
+        /// copy — bug #0, John's ruling: two local copies on one computer are two seats). Returns
+        /// the same {success, locked_by, locked_by_machine, locked_seat, locked_at} shape as
+        /// checkout_book, so callers can reuse CloudRepoCache.RecordCheckoutResult unchanged.</summary>
+        public JObject CheckoutBookTakeover(string bookId, string machine, string seat) =>
             (JObject)CallRpc(
                 "checkout_book_takeover",
-                new { p_book_id = bookId, p_machine = machine }
+                new
+                {
+                    p_book_id = bookId,
+                    p_machine = machine,
+                    p_seat = seat,
+                }
             );
 
         /// <summary>Releases the caller's own lock (undo checkout; no content change).</summary>

@@ -28,6 +28,12 @@ namespace Bloom.TeamCollection.Cloud
         public string CurrentChecksum;
         public string LockedBy; // email; null when not checked out
         public string LockedByMachine;
+
+        /// <summary>Which local copy of the collection ("seat", 20260711000003: a stable hash of
+        /// the local collection folder path) holds the lock. Null = unknown (legacy lock, or one
+        /// acquired via checkin_start_tx's take-if-free path); a null seat can never be taken
+        /// over (fail-safe) — see CloudTeamCollection.SeatId and bug #0 in the batch doc.</summary>
+        public string LockedSeat;
         public DateTime? LockedAt;
         public DateTime? DeletedAt;
         public DateTime? CreatedAt;
@@ -76,6 +82,7 @@ namespace Bloom.TeamCollection.Cloud
                 CurrentChecksum = CurrentChecksum,
                 LockedBy = LockedBy,
                 LockedByMachine = LockedByMachine,
+                LockedSeat = LockedSeat,
                 LockedAt = LockedAt,
                 DeletedAt = DeletedAt,
                 CreatedAt = CreatedAt,
@@ -99,6 +106,8 @@ namespace Bloom.TeamCollection.Cloud
             CurrentChecksum = (string)row["current_checksum"];
             LockedBy = (string)row["locked_by"];
             LockedByMachine = (string)row["locked_by_machine"];
+            // Present since the 20260711000003 migration; older rows leave it null (= unknown seat).
+            LockedSeat = (string)row["locked_seat"];
             LockedAt = (DateTime?)row["locked_at"];
             DeletedAt = (DateTime?)row["deleted_at"];
             if (row["created_at"] != null)
@@ -122,6 +131,7 @@ namespace Bloom.TeamCollection.Cloud
                 ["currentChecksum"] = CurrentChecksum,
                 ["lockedBy"] = LockedBy,
                 ["lockedByMachine"] = LockedByMachine,
+                ["lockedSeat"] = LockedSeat,
                 ["lockedAt"] = LockedAt,
                 ["deletedAt"] = DeletedAt,
                 ["createdAt"] = CreatedAt,
@@ -143,6 +153,7 @@ namespace Bloom.TeamCollection.Cloud
                 CurrentChecksum = (string)json["currentChecksum"],
                 LockedBy = (string)json["lockedBy"],
                 LockedByMachine = (string)json["lockedByMachine"],
+                LockedSeat = (string)json["lockedSeat"],
                 LockedAt = (DateTime?)json["lockedAt"],
                 DeletedAt = (DateTime?)json["deletedAt"],
                 CreatedAt = (DateTime?)json["createdAt"],
@@ -334,6 +345,7 @@ namespace Bloom.TeamCollection.Cloud
                 var book = GetOrAddLocked(bookId);
                 book.LockedBy = (string)checkoutResult["locked_by"];
                 book.LockedByMachine = (string)checkoutResult["locked_by_machine"];
+                book.LockedSeat = (string)checkoutResult["locked_seat"];
                 book.LockedAt = (DateTime?)checkoutResult["locked_at"];
             }
         }
@@ -348,6 +360,7 @@ namespace Bloom.TeamCollection.Cloud
                 {
                     book.LockedBy = null;
                     book.LockedByMachine = null;
+                    book.LockedSeat = null;
                     book.LockedAt = null;
                 }
             }

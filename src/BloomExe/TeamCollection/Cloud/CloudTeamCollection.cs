@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Amazon.Runtime;
@@ -531,7 +532,7 @@ namespace Bloom.TeamCollection.Cloud
             if (bookId == null)
                 return true; // brand-new, never-committed local book; nothing to lock server-side yet.
 
-            var result = _client.CheckoutBook(bookId, TeamCollectionManager.CurrentMachine);
+            var result = _client.CheckoutBook(bookId, TeamCollectionManager.CurrentMachine, SeatId);
             _cache.RecordCheckoutResult(bookId, result);
             _cache.Save();
             return (bool?)result["success"] ?? false;
@@ -556,31 +557,88 @@ namespace Bloom.TeamCollection.Cloud
         // ------------------------------------------------------------------
 
         /// <summary>
-        /// A book locked to a DIFFERENT account is still editable here (see IsEditableHere) as
-        /// long as that lock is recorded for THIS machine -- John's decision: local machine
-        /// access is unrestricted; only shared-data operations are gated by the current logon's
-        /// server permissions. Never across machines: that remains a genuine conflict, exactly
-        /// like today's ordinary checkout_book/checkin_start_tx behavior.
+        /// The stable id of THIS local copy of the collection (its "seat", bug #0 — John's
+        /// ruling, 11 Jul 2026: editing/takeover of a checkout is only legitimate in the local
+        /// copy where the book is checked out; two copies on one machine are two seats). A hash
+        /// of the folder path rather than the path itself so the server rows never carry local
+        /// paths (privacy).
         /// </summary>
-        protected internal override bool IsEditableHere(BookStatus status)
+        internal string SeatId => _seatId ?? (_seatId = ComputeSeatId(LocalCollectionFolder));
+        private string _seatId;
+
+        /// <summary>First 16 hex digits of SHA256 of the normalized (full, lowercased,
+        /// no-trailing-separator) local collection folder path.</summary>
+        internal static string ComputeSeatId(string localCollectionFolder)
         {
-            if (base.IsEditableHere(status))
-                return true;
-            return status.IsCheckedOut()
-                && status.lockedWhere == TeamCollectionManager.CurrentMachine;
+            var normalized = Path.GetFullPath(localCollectionFolder)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .ToLowerInvariant();
+            using (var sha = System.Security.Cryptography.SHA256.Create())
+            {
+                var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(normalized));
+                var builder = new StringBuilder(16);
+                for (var i = 0; i < 8; i++)
+                    builder.Append(hash[i].ToString("x2"));
+                return builder.ToString();
+            }
+        }
+
+        /// <summary>
+        /// True when the repo lock's recorded seat is THIS local copy of the collection.
+        /// <paramref name="allowUnknownSeat"/> grandfathers locks with no recorded seat (taken
+        /// before the 20260711000003 migration, or via checkin_start_tx's take-if-free path,
+        /// which records no seat): the CURRENT USER's own such locks must keep working, but a
+        /// different account must never treat an unknown-seat lock as takeover-eligible
+        /// (fail-safe, mirroring the server-side takeover gate).
+        /// </summary>
+        private bool IsLockSeatHere(string bookName, bool allowUnknownSeat)
+        {
+            var seat = TryGetCachedBook(bookName)?.LockedSeat;
+            if (seat == null)
+                return allowUnknownSeat;
+            return seat == SeatId;
+        }
+
+        /// <summary>
+        /// A book locked to a DIFFERENT account is still editable here (see IsEditableHere) as
+        /// long as that lock is recorded for THIS machine AND THIS local copy of the collection
+        /// (the "seat") -- John's decisions: local machine access is unrestricted (item 9), but
+        /// only where the book is actually checked out; a second copy of the collection on the
+        /// same machine risks conflicting changes and stays a genuine conflict (bug #0). The
+        /// same seat gate applies to the current user's OWN lock seen from another copy, except
+        /// that a lock with no recorded seat (pre-seat checkout) is grandfathered for its owner.
+        /// </summary>
+        protected internal override bool IsEditableHere(string bookName, BookStatus status)
+        {
+            if (status.lockedBy == FakeUserIndicatingNewBook)
+                return true; // a new local-only book is always editable
+            if (
+                !status.IsCheckedOut()
+                || status.lockedWhere != TeamCollectionManager.CurrentMachine
+            )
+                return false;
+            var isOwnLock = status.lockedBy == CurrentUserIdentity;
+            return IsLockSeatHere(bookName, allowUnknownSeat: isOwnLock);
         }
 
         /// <inheritdoc />
-        protected internal override bool CanTakeOverLockOnThisMachine(BookStatus repoStatus) =>
+        protected internal override bool CanTakeOverLockOnThisMachine(
+            string bookName,
+            BookStatus repoStatus
+        ) =>
             !string.IsNullOrEmpty(repoStatus.lockedBy)
-            && repoStatus.lockedWhere == TeamCollectionManager.CurrentMachine;
+            && repoStatus.lockedWhere == TeamCollectionManager.CurrentMachine
+            // Bug #0: takeover is only legitimate within the same local copy ("seat"); an
+            // unknown seat never qualifies, matching checkout_book_takeover's own gate.
+            && IsLockSeatHere(bookName, allowUnknownSeat: false);
 
         /// <summary>
-        /// Calls the new tc.checkout_book_takeover RPC (CONTRACTS.md addition -- flagged, not yet
-        /// added to CONTRACTS.md itself; see this task's report) to atomically reassign the
-        /// book's server lock to the current user. Purely additive server-side: checkin_start_tx
-        /// itself is untouched, so calling this before check-in is what lets its existing
-        /// "LockHeldByOther" gate pass cleanly for an account-switched checkin.
+        /// Calls the tc.checkout_book_takeover RPC (CONTRACTS.md v1.4/v1.5) to atomically
+        /// reassign the book's server lock to the current user; the server only permits this
+        /// when the existing lock is recorded for THIS machine and THIS seat (local collection
+        /// copy). Purely additive server-side: checkin_start_tx itself is untouched, so calling
+        /// this before check-in is what lets its existing "LockHeldByOther" gate pass cleanly
+        /// for an account-switched checkin.
         /// </summary>
         protected internal override bool TryTakeOverLock(string bookName)
         {
@@ -588,7 +646,11 @@ namespace Bloom.TeamCollection.Cloud
             if (bookId == null)
                 return true; // brand-new, never-committed local book; nothing to take over.
 
-            var result = _client.CheckoutBookTakeover(bookId, TeamCollectionManager.CurrentMachine);
+            var result = _client.CheckoutBookTakeover(
+                bookId,
+                TeamCollectionManager.CurrentMachine,
+                SeatId
+            );
             _cache.RecordCheckoutResult(bookId, result);
             _cache.Save();
             return (bool?)result["success"] ?? false;
@@ -620,7 +682,7 @@ namespace Bloom.TeamCollection.Cloud
             // CanTakeOverLockOnThisMachine seam) and this call makes sure the server lock -- not
             // just history attribution -- ends up correctly on B.
             var repoStatusBeforeCheckin = GetStatus(bookFolderName);
-            if (CanTakeOverLockOnThisMachine(repoStatusBeforeCheckin))
+            if (CanTakeOverLockOnThisMachine(bookFolderName, repoStatusBeforeCheckin))
                 TryTakeOverLock(bookFolderName);
 
             if (inLostAndFound)

@@ -1,7 +1,12 @@
 # Cloud Team Collections — frozen API contracts (v1)
 
 Changes to this file require an orchestrator commit and a version-note bump here.
-**Contract version: 1.4** (9 Jul 2026 — added the `checkout_book_takeover` RPC, additive
+**Contract version: 1.5** (11 Jul 2026 — per-collection-copy "seat" on checkouts, additive
+(bug #0, John's ruling): `checkout_book`/`checkout_book_takeover` gain an optional third
+`seat` parameter (client-computed stable hash of the local collection folder path) and
+return `locked_seat`; `get_collection_state`/`get_changes` book rows carry `locked_seat`;
+takeover requires machine AND seat to match, and a NULL stored seat never matches
+(fail-safe). v1.4, 9 Jul: added the `checkout_book_takeover` RPC, additive
 (account-switch behavior, dogfood batch item 9); `checkin_start_tx`/`checkin_finish_tx`
 unchanged. v1.3, 8 Jul: added the "Auth (Option A)" section: the token-receipt endpoint
 BloomLibrary2's `src/editor.ts` forwards Firebase tokens to. v1.2, 7 Jul: added the
@@ -78,8 +83,8 @@ with `p_`, and PostgREST matches JSON keys to parameter names — so clients sen
 | `get_collection_state(collection_id, since_event_id?)` | full/delta snapshot: book rows (locks, current version seq + checksum), collection-file group versions, `max_event_id` |
 | `get_changes(collection_id, since_event_id)` | events + touched book rows (polling/catch-up) |
 | `get_book_manifest(book_id)` | v1.2: per-file current manifest `{bookId, versionId, seq, checksum, files:[{path, sha256, size, s3VersionId}]}` for pinned-version Receive; never-committed books invisible except to their mid-Send lock holder |
-| `checkout_book(book_id, machine text)` | conditional lock; returns resulting status (winner's identity on failure) |
-| `checkout_book_takeover(book_id, machine text)` | v1.4: atomically reassigns another account's lock to the caller ONLY when the existing lock is recorded for the same machine (account-switch, batch item 9); returns `{success, locked_by, locked_by_machine, locked_at}` (same shape as checkout_book); emits a CheckOut event only on a genuine handover; safe to call speculatively — no-ops (success:false) when unlocked, already the caller's, or locked on a different machine. Note: `machine` is client-asserted, consistent with checkout_book's existing trust model. |
+| `checkout_book(book_id, machine text, seat text?)` | conditional lock; returns resulting status (winner's identity on failure). v1.5: also records the caller's `seat` — a stable hash of the local collection folder path identifying WHICH local copy took the lock (never the raw path); returns `locked_seat`. |
+| `checkout_book_takeover(book_id, machine text, seat text?)` | v1.4/v1.5: atomically reassigns another account's lock to the caller ONLY when the existing lock is recorded for the same machine AND the same seat (account-switch, batch item 9 + bug #0: two local copies on one computer are two seats); a NULL stored seat never matches (fail-safe). Returns `{success, locked_by, locked_by_machine, locked_seat, locked_at}` (same shape as checkout_book); emits a CheckOut event only on a genuine handover; safe to call speculatively — no-ops (success:false) when unlocked, already the caller's, locked on a different machine, or locked in a different/unknown seat. Note: `machine` and `seat` are client-asserted, consistent with checkout_book's existing trust model. |
 | `unlock_book(book_id)` | release own lock (undo checkout, no content change) |
 | `force_unlock(book_id)` | admin; audited; emits ForcedUnlock event |
 | `delete_book(book_id)` | requires caller holds the lock; sets `deleted_at`; emits Deleted |

@@ -1,16 +1,15 @@
 -- =============================================================================
 -- pgTAP tests: tc.checkout_book_takeover (dogfood batch 1, item 9 -- account-switch
--- checkout takeover)
+-- checkout takeover; extended by 20260711000003's per-collection-copy "seat", bug #0)
 -- =============================================================================
--- NOTE: authored but UNRUN in this environment -- see 01_tc_schema_test.sql's header for the
--- same caveat and how to run these against a local Supabase stack:
+-- Run against a local Supabase stack:
 --   supabase start
 --   supabase test db
 -- =============================================================================
 
 BEGIN;
 
-SELECT plan(13);
+SELECT plan(23);
 
 SELECT has_function('tc', 'checkout_book_takeover', 'tc.checkout_book_takeover() exists');
 
@@ -43,8 +42,9 @@ $$;
 
 -- =============================================================================
 -- Fixture: a collection with Alice (admin) and Bob (member, claimed), a book Alice has
--- checked out on "SharedMachine". Uses the public RPCs (create_collection/members_add/
--- claim_memberships), matching 01_tc_schema_test.sql's own fixture convention.
+-- checked out on "SharedMachine" in her own local copy ("seat-alice-copy"). Uses the
+-- public RPCs (create_collection/members_add/claim_memberships), matching
+-- 01_tc_schema_test.sql's own fixture convention.
 -- =============================================================================
 
 SELECT tests.set_jwt('user-alice-tko', 'alice-tko@example.com', true);
@@ -79,18 +79,23 @@ VALUES (
     'user-alice-tko'
 );
 
--- Alice checks the book out on SharedMachine (ordinary checkout_book, already tested
--- elsewhere -- used here purely as fixture setup).
-SELECT tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'SharedMachine');
+-- Alice checks the book out on SharedMachine, seat "seat-alice-copy" (ordinary
+-- checkout_book, already tested elsewhere -- used here purely as fixture setup).
+SELECT tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'SharedMachine', 'seat-alice-copy');
+
+SELECT ok(
+    (SELECT locked_seat FROM tc.books WHERE id = 'b0000000-0000-0000-0000-00000000a001') = 'seat-alice-copy',
+    '0d: checkout_book records the caller''s seat with the lock'
+);
 
 -- =============================================================================
--- 1. Bob (different account) CANNOT take over a lock held on a DIFFERENT machine
+-- 1. Bob (different account) CANNOT take over across machines or across seats
 -- =============================================================================
 
 SELECT tests.set_jwt('user-bob-tko', 'bob-tko@example.com', true);
 
 SELECT ok(
-    (SELECT (tc.checkout_book_takeover('b0000000-0000-0000-0000-00000000a001', 'BobsOwnMachine')) ->> 'success' = 'false'),
+    (SELECT (tc.checkout_book_takeover('b0000000-0000-0000-0000-00000000a001', 'BobsOwnMachine', 'seat-alice-copy')) ->> 'success' = 'false'),
     '1a: Bob cannot take over Alice''s lock from a DIFFERENT machine'
 );
 
@@ -99,13 +104,31 @@ SELECT ok(
     '1b: the lock still belongs to Alice after the cross-machine attempt'
 );
 
+-- bug #0 (e2e-4's scenario): same machine but a DIFFERENT local copy of the collection.
+SELECT ok(
+    (SELECT (tc.checkout_book_takeover('b0000000-0000-0000-0000-00000000a001', 'SharedMachine', 'seat-bob-copy')) ->> 'success' = 'false'),
+    '1c: Bob cannot take over from the SAME machine but a DIFFERENT seat (separate local copy)'
+);
+
+SELECT ok(
+    (SELECT locked_by FROM tc.books WHERE id = 'b0000000-0000-0000-0000-00000000a001') = 'user-alice-tko',
+    '1d: the lock still belongs to Alice after the wrong-seat attempt'
+);
+
+-- A pre-seat caller (p_seat defaults to NULL) can never take over.
+SELECT ok(
+    (SELECT (tc.checkout_book_takeover('b0000000-0000-0000-0000-00000000a001', 'SharedMachine')) ->> 'success' = 'false'),
+    '1e: a caller supplying no seat cannot take over'
+);
+
 -- =============================================================================
--- 2. Bob (different account) CAN take over a lock held on the SAME machine
+-- 2. Bob CAN take over a lock held on the SAME machine in the SAME seat (the true
+--    shared-computer scenario: account B opens the exact local folder account A used)
 -- =============================================================================
 
 SELECT ok(
-    (SELECT (tc.checkout_book_takeover('b0000000-0000-0000-0000-00000000a001', 'SharedMachine')) ->> 'success' = 'true'),
-    '2a: Bob takes over Alice''s same-machine lock'
+    (SELECT (tc.checkout_book_takeover('b0000000-0000-0000-0000-00000000a001', 'SharedMachine', 'seat-alice-copy')) ->> 'success' = 'true'),
+    '2a: Bob takes over Alice''s same-machine same-seat lock'
 );
 
 SELECT ok(
@@ -119,11 +142,16 @@ SELECT ok(
 );
 
 SELECT ok(
+    (SELECT locked_seat FROM tc.books WHERE id = 'b0000000-0000-0000-0000-00000000a001') = 'seat-alice-copy',
+    '2d: the seat is unchanged (still the shared local copy)'
+);
+
+SELECT ok(
     (SELECT count(*) = 1 FROM tc.events
      WHERE book_id = 'b0000000-0000-0000-0000-00000000a001'
        AND type = 0
        AND by_user_id = 'user-bob-tko'),
-    '2d: exactly one CheckOut event (type=0) recorded for Bob''s takeover'
+    '2e: exactly one CheckOut event (type=0) recorded for Bob''s takeover'
 );
 
 -- =============================================================================
@@ -131,7 +159,7 @@ SELECT ok(
 -- =============================================================================
 
 SELECT ok(
-    (SELECT (tc.checkout_book_takeover('b0000000-0000-0000-0000-00000000a001', 'SharedMachine')) ->> 'success' = 'false'),
+    (SELECT (tc.checkout_book_takeover('b0000000-0000-0000-0000-00000000a001', 'SharedMachine', 'seat-alice-copy')) ->> 'success' = 'false'),
     '3a: re-calling takeover when the caller already holds the lock reports no change'
 );
 
@@ -152,10 +180,50 @@ SELECT tests.set_jwt('user-carol-tko', 'carol-tko@example.com', true);
 -- PT403 (not 42501): checkout_book_takeover raises the schema-wide PT### passthrough
 -- codes as of 20260711000002.
 SELECT throws_ok(
-    $$SELECT tc.checkout_book_takeover('b0000000-0000-0000-0000-00000000a001', 'SharedMachine')$$,
+    $$SELECT tc.checkout_book_takeover('b0000000-0000-0000-0000-00000000a001', 'SharedMachine', 'seat-alice-copy')$$,
     'PT403',
     NULL,
     '4a: a non-member cannot take over a lock (not_a_member)'
+);
+
+-- =============================================================================
+-- 5. Unlock clears the seat (books_clear_seat_on_unlock trigger)
+-- =============================================================================
+
+SELECT tests.set_jwt('user-bob-tko', 'bob-tko@example.com', true);
+
+SELECT lives_ok(
+    $$SELECT tc.unlock_book('b0000000-0000-0000-0000-00000000a001')$$,
+    '5a: the current holder can unlock'
+);
+
+SELECT ok(
+    (SELECT locked_seat IS NULL FROM tc.books WHERE id = 'b0000000-0000-0000-0000-00000000a001'),
+    '5b: locked_seat is cleared with the lock (trigger)'
+);
+
+-- =============================================================================
+-- 6. A lock with NO recorded seat (legacy/pre-seat, or checkin_start_tx's take-if-free
+--    path) can never be taken over — fail-safe.
+-- =============================================================================
+
+SELECT tests.set_jwt('user-alice-tko', 'alice-tko@example.com', true);
+
+SELECT ok(
+    (SELECT (tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'SharedMachine')) ->> 'success' = 'true'),
+    '6a: a pre-seat checkout (no seat argument) still succeeds'
+);
+
+SELECT tests.set_jwt('user-bob-tko', 'bob-tko@example.com', true);
+
+SELECT ok(
+    (SELECT (tc.checkout_book_takeover('b0000000-0000-0000-0000-00000000a001', 'SharedMachine', 'seat-bob-copy')) ->> 'success' = 'false'),
+    '6b: a NULL stored seat never matches — takeover refused (fail-safe)'
+);
+
+SELECT ok(
+    (SELECT locked_by FROM tc.books WHERE id = 'b0000000-0000-0000-0000-00000000a001') = 'user-alice-tko',
+    '6c: the null-seat lock still belongs to Alice'
 );
 
 SELECT * FROM finish();

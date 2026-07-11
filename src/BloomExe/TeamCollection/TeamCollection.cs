@@ -324,7 +324,7 @@ namespace Bloom.TeamCollection
             // is for THIS machine, and this backend allows handing it over instead of blocking.
             // PutBookInRepo performs the actual server-side handover before this check-in
             // proceeds, so by the time the repo is touched the lock legitimately belongs to us.
-            if (CanTakeOverLockOnThisMachine(repoStatus))
+            if (CanTakeOverLockOnThisMachine(bookName, repoStatus))
                 return true;
 
             // It's checked out somewhere else according to the repo. They haven't changed it yet,
@@ -663,7 +663,8 @@ namespace Bloom.TeamCollection
         /// <returns></returns>
         public bool NeedCheckoutToEdit(string bookFolderPath)
         {
-            return !IsEditableHere(GetStatus(Path.GetFileName(bookFolderPath)));
+            var bookName = Path.GetFileName(bookFolderPath);
+            return !IsEditableHere(bookName, GetStatus(bookName));
         }
 
         /// <summary>
@@ -679,22 +680,27 @@ namespace Bloom.TeamCollection
         /// shared-data operations are gated by the CURRENT logon's server permissions." The
         /// server-side lock itself only actually moves to the current user lazily, the first time
         /// we need to push a change (see CanTakeOverLockOnThisMachine/TryTakeOverLock).
+        /// The bookName parameter lets the cloud override consult per-book state its BookStatus
+        /// doesn't carry (the lock's "seat" — which local copy of the collection holds it; bug #0).
         /// </summary>
-        protected internal virtual bool IsEditableHere(BookStatus status) =>
+        protected internal virtual bool IsEditableHere(string bookName, BookStatus status) =>
             IsCheckedOutHereBy(status);
 
         /// <summary>
         /// Virtual seam: true if <paramref name="repoStatus"/> represents a lock this backend is
         /// willing to atomically hand over to the current user instead of treating it as a
         /// conflict. The base (folder) implementation never allows this. CloudTeamCollection
-        /// overrides it to allow same-machine, different-account takeover (batch item 9) --
-        /// never across machines, which remains a genuine conflict. Used by both
+        /// overrides it to allow same-machine, same-seat, different-account takeover (batch
+        /// item 9 + bug #0) -- never across machines or across local collection copies, which
+        /// remain genuine conflicts. Used by both
         /// <see cref="OkToCheckIn"/> (so an account-switched check-in isn't blocked) and
         /// <see cref="AttemptLock"/> (so an explicit "check out" click on such a book performs
         /// the handover instead of silently failing).
         /// </summary>
-        protected internal virtual bool CanTakeOverLockOnThisMachine(BookStatus repoStatus) =>
-            false;
+        protected internal virtual bool CanTakeOverLockOnThisMachine(
+            string bookName,
+            BookStatus repoStatus
+        ) => false;
 
         /// <summary>
         /// Virtual seam: actually perform the atomic same-machine lock takeover
@@ -928,7 +934,7 @@ namespace Bloom.TeamCollection
             else if (
                 !IsDisconnected
                 && status.lockedBy != whoBy
-                && CanTakeOverLockOnThisMachine(status)
+                && CanTakeOverLockOnThisMachine(bookName, status)
             )
             {
                 // Account-switch takeover (batch item 9): an explicit "check out" click on a book
