@@ -475,6 +475,16 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 10 Jul 2026 (night) · FULL MATRIX ATTEMPT INVALID — 14/14 failed because the Windows
+  desktop LOCKED sometime after the standalone runs (LogonUI confirmed running afterward;
+  every failure is at connectOverCdp / launch, the locked-session signature the E2E rules
+  warn about). NOT a code regression: e2e-3/6/9 had passed standalone within the previous
+  hour on the same tree. Orchestrator error to not repeat: re-check LogonUI immediately
+  BEFORE every launch, not just at session start. No leaked Bloom processes; stack healthy
+  (functions serve re-served itself cleanly after the pgTAP db reset). Greptile thread
+  replies posted (all 3 findings fixed in b93d0c9d82) · Next: rerun `yarn test` (full
+  matrix) as the FIRST action once the desktop is unlocked — expect 13/14 (e2e-4 = bug #0);
+  a desktop-unlock watcher is armed in the orchestrator session to catch the moment.
 - 10 Jul 2026 (late evening — runbook step 1 COMPLETE + Greptile findings fixed) ·
   **e2e-3/6/9 ALL GREEN STANDALONE.** e2e-3 passed as-is (pure load flake). e2e-6 FAILED
   standalone and was a REAL spec bug: since item 7 (progressive join), a book new to an
