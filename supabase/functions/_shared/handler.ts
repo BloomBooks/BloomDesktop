@@ -3,11 +3,17 @@
 // response. Keeps each function's index.ts focused on its own request shape.
 import { CORS_HEADERS, errorResponse, HttpError } from "./errors.ts";
 
-export type JsonHandler = (req: Request, body: Record<string, unknown>) => Promise<Response>;
+export type JsonHandler = (
+    req: Request,
+    body: Record<string, unknown>,
+) => Promise<Response>;
 
 /** Fails fast (throws HttpError 400) if `value` is missing/empty — used for the
  * required fields in each function's request body. */
-export const requireField = <T>(body: Record<string, unknown>, name: string): T => {
+export const requireField = <T>(
+    body: Record<string, unknown>,
+    name: string,
+): T => {
     const value = body[name];
     if (value === undefined || value === null || value === "") {
         throw new HttpError(400, { error: "invalid_request", field: name });
@@ -15,8 +21,10 @@ export const requireField = <T>(body: Record<string, unknown>, name: string): T 
     return value as T;
 };
 
-export const optionalField = <T>(body: Record<string, unknown>, name: string): T | null =>
-    (body[name] as T | undefined) ?? null;
+export const optionalField = <T>(
+    body: Record<string, unknown>,
+    name: string,
+): T | null => (body[name] as T | undefined) ?? null;
 
 export const serveJsonPost = (handler: JsonHandler): void => {
     Deno.serve(async (req: Request) => {
@@ -42,7 +50,9 @@ export const serveJsonPost = (handler: JsonHandler): void => {
                 return err.toResponse();
             }
             console.error("Unhandled error:", err);
-            return errorResponse(500, "internal_error", { message: String(err) });
+            return errorResponse(500, "internal_error", {
+                message: String(err),
+            });
         }
     });
 };

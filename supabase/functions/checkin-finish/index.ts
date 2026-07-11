@@ -4,10 +4,18 @@
 // Verifies each changed object's sha256 attribute server-side, captures S3
 // version-ids, then commits the single atomic DB transaction (tc.checkin_finish_tx).
 // 200: { versionId, seq } · 409 MissingOrBadUploads { paths[] } · 410 expired.
-import { optionalField, requireField, serveJsonPost } from "../_shared/handler.ts";
+import {
+    optionalField,
+    requireField,
+    serveJsonPost,
+} from "../_shared/handler.ts";
 import { HttpError, jsonResponse } from "../_shared/errors.ts";
 import { callTcRpc, selectTcRow } from "../_shared/rpc.ts";
-import { adminS3Client, verifyUploadedObject, writeManifestBackup } from "../_shared/s3.ts";
+import {
+    adminS3Client,
+    verifyUploadedObject,
+    writeManifestBackup,
+} from "../_shared/s3.ts";
 import { s3Env } from "../_shared/env.ts";
 
 interface CheckinTransactionRow {
@@ -31,7 +39,10 @@ interface CheckinFinishResult {
 
 // Exported so Deno tests can import and call it directly with a mocked Request,
 // without triggering Deno.serve — see the `import.meta.main` guard below.
-export const handler = async (req: Request, body: Record<string, unknown>): Promise<Response> => {
+export const handler = async (
+    req: Request,
+    body: Record<string, unknown>,
+): Promise<Response> => {
     const transactionId = requireField<string>(body, "transactionId");
     const comment = optionalField<string>(body, "comment");
     const keepCheckedOut = Boolean(body["keepCheckedOut"]);
@@ -48,7 +59,11 @@ export const handler = async (req: Request, body: Record<string, unknown>): Prom
         throw new HttpError(404, { error: "transaction_not_found" });
     }
 
-    const book = await selectTcRow<BookRow>(req, "books", `id=eq.${tx.book_id}&select=instance_id`);
+    const book = await selectTcRow<BookRow>(
+        req,
+        "books",
+        `id=eq.${tx.book_id}&select=instance_id`,
+    );
     if (!book) {
         throw new HttpError(404, { error: "book_not_found" });
     }
@@ -64,18 +79,27 @@ export const handler = async (req: Request, body: Record<string, unknown>): Prom
     for (const path of tx.changed_paths) {
         const proposed = tx.proposed_files.find((f) => f.path === path);
         if (!proposed) continue; // defensive; DB-side check still catches this as missing
-        const verified = await verifyUploadedObject(client, bucket, `${prefix}${path}`, proposed.sha256);
+        const verified = await verifyUploadedObject(
+            client,
+            bucket,
+            `${prefix}${path}`,
+            proposed.sha256,
+        );
         if (verified) {
             captured.push({ path, s3VersionId: verified.s3VersionId });
         }
     }
 
-    const result = await callTcRpc<CheckinFinishResult>(req, "checkin_finish_tx", {
-        p_transaction_id: transactionId,
-        p_comment: comment,
-        p_keep_checked_out: keepCheckedOut,
-        p_captured: captured,
-    });
+    const result = await callTcRpc<CheckinFinishResult>(
+        req,
+        "checkin_finish_tx",
+        {
+            p_transaction_id: transactionId,
+            p_comment: comment,
+            p_keep_checked_out: keepCheckedOut,
+            p_captured: captured,
+        },
+    );
 
     if (result.manifest) {
         // Best-effort backup; never blocks the response (see writeManifestBackup).

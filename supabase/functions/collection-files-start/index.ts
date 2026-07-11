@@ -24,27 +24,41 @@ interface CollectionFilesStartResult {
 
 // Exported so Deno tests can import and call it directly — see checkin-start/index.ts's
 // comment on the `import.meta.main` guard below.
-export const handler = async (req: Request, body: Record<string, unknown>): Promise<Response> => {
+export const handler = async (
+    req: Request,
+    body: Record<string, unknown>,
+): Promise<Response> => {
     const collectionId = requireField<string>(body, "collectionId");
     const groupKey = requireField<string>(body, "groupKey");
     const expectedVersion = requireField<number>(body, "expectedVersion");
     const files = requireField<unknown[]>(body, "files");
 
     if (!VALID_GROUP_KEYS.has(groupKey)) {
-        throw new HttpError(400, { error: "invalid_request", field: "groupKey" });
+        throw new HttpError(400, {
+            error: "invalid_request",
+            field: "groupKey",
+        });
     }
 
-    const result = await callTcRpc<CollectionFilesStartResult>(req, "collection_files_start_tx", {
-        p_collection_id: collectionId,
-        p_group_key: groupKey,
-        p_expected_version: expectedVersion,
-        p_files: files,
-    });
+    const result = await callTcRpc<CollectionFilesStartResult>(
+        req,
+        "collection_files_start_tx",
+        {
+            p_collection_id: collectionId,
+            p_group_key: groupKey,
+            p_expected_version: expectedVersion,
+            p_files: files,
+        },
+    );
 
     const prefix = `tc/${collectionId}/collectionFiles/${groupKey}/`;
     const s3 = await getScopedCredentials(prefix, COLLECTION_FILES_ACTIONS);
 
-    return jsonResponse(200, { transactionId: result.transactionId, changedPaths: result.changedPaths, s3 });
+    return jsonResponse(200, {
+        transactionId: result.transactionId,
+        changedPaths: result.changedPaths,
+        s3,
+    });
 };
 
 if (import.meta.main) {

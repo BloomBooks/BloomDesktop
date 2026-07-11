@@ -7,7 +7,8 @@ export const CORS_HEADERS: Record<string, string> = {
     // so CORS is not actually load-bearing — but it's harmless and cheap to allow, in
     // case any tooling (smoke tests, future browser-based admin UI) calls in directly.
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Headers":
+        "authorization, x-client-info, apikey, content-type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
