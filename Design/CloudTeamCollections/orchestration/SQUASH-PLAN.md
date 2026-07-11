@@ -1,5 +1,14 @@
 # Squash plan: review-grained history for the Cloud TC feature
 
+> **EXECUTED 11 Jul 2026** — `cloud-tc-for-review` built (9 commits on origin/master),
+> byte-identity verified (empty diff vs cloud-collections), pushed; draft **PR #8052**
+> opened; #8048 closed with a pointer. One wrinkle worth knowing for regeneration: the
+> pre-commit formatter diffs against origin/master on the packaging branch, so it exposed
+> (and fixed) prettier drift in 14 edge-function files that had bypassed it on
+> cloud-collections — converged by applying the formatted versions back to
+> cloud-collections (e782978f9d) BEFORE the final identity check. Regenerating after
+> cloud-collections advances: delete the branch, rerun the groups below, force-push.
+
 Goal (John, 10 Jul 2026): a new branch from current `origin/master` whose commits are
 meaningful, human-reviewable steps — replacing `cloud-collections`' ~204 orchestration-grained
 commits (126 first-parent) for review/merge purposes. The working branch `cloud-collections`

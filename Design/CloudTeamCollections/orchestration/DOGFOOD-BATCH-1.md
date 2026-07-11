@@ -489,6 +489,19 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 11 Jul 2026 (early AM — SQUASH PLAN EXECUTED; PR #8052 open, #8048 closed) · Merged
+  origin/master into cloud-collections first (13 commits, RAB/spreadsheet only, zero
+  conflicts, filter 428/428). Built `cloud-tc-for-review` per SQUASH-PLAN.md: 9
+  review-grained commits, **byte-identical to cloud-collections (empty diff)** after
+  converging the prettier drift the packaging build exposed in 14 edge-function files
+  (formatting-only; deno 33/33 after; details in SQUASH-PLAN.md's executed-note). Draft
+  **PR #8052** opened with review order + caveat + bot history; **#8048 closed** with
+  pointer. REMAINING for the batch: (1) John's [HUMAN] tests — item 3 centered check-in
+  dialog, item 10 web up/download (GOING-LIVE.md 4.3); (2) John's OUTSTANDING BUGS #0
+  follow-up decision (server-side same-user cross-seat check-in refusal); (3) optionally
+  one more full matrix as the gold stamp (every scenario HAS passed on this tree; the
+  last run was 13/14 with the 14th standalone-exonerated + spec-hardened); (4) regenerate
+  cloud-tc-for-review whenever cloud-collections advances.
 - 11 Jul 2026 (early AM — POST-SEAT-FIX FULL MATRIX: 13/14, and the 14th is exonerated) ·
   Matrix on the seat-fixed tree (36 min): **e2e-4 PASSED IN THE MATRIX** (bug #0 verified
   under full load); sole failure e2e-5, which passed standalone immediately after (3.0 min)
