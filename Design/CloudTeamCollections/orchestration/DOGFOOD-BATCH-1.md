@@ -458,7 +458,10 @@ up/download check
    on bug #0 (its download failures are fixed; it now fails at the takeover-semantics
    assertion, spec line ~166).
 3. **Full E2E matrix** not yet run on the post-defect-fix, master-merged state (was 8/14
-   before the fixes). Run it after John decides bug #0 (or accept one known e2e-4 failure).
+   before the fixes; 10/14 under heavy load 10 Jul PM). Run it after John decides bug #0 (or
+   accept one known e2e-4 failure). Standalone scoreboard as of 10 Jul late evening (after
+   the queue-arrival spec fixes): e2e-3 ✅, e2e-5 ✅, e2e-6 ✅, e2e-8 ✅, e2e-9 ✅ (3/3),
+   e2e-10 ✅; e2e-4 ❌ blocked solely on bug #0.
 4. Cosmetic (tracked): Administrators field shows registration email, not signed-in email
    (see "Also queued from dogfooding").
 5. **Preflight (10 Jul PM, John's request):** light-review pass over the day's diff found 2
@@ -472,6 +475,34 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 10 Jul 2026 (late evening — runbook step 1 COMPLETE + Greptile findings fixed) ·
+  **e2e-3/6/9 ALL GREEN STANDALONE.** e2e-3 passed as-is (pure load flake). e2e-6 FAILED
+  standalone and was a REAL spec bug: since item 7 (progressive join), a book new to an
+  instance arrives via the background download queue AFTER pollNowViaReceiveUpdates
+  returns — the spec read Bob's file immediately (evidence: the book folder existed on
+  disk moments after the assertion failed). Fixed: v1-baseline read is now an expect.poll
+  (90s, the harness convention); the two 20s ceilings on queue-driven arrivals (e2e-6 v2
+  arrival, e2e-9 first test) bumped to 90s. e2e-9 then 3/3 — its one intermediate failure
+  (name-race alice: 0-byte stdout at launch) was load I caused myself by running
+  lint/vitest during the run; reran truly idle → green. LESSON REINFORCED: "standalone"
+  means the AGENT runs nothing else concurrently either. **GREPTILE (bypass) DELIVERED:
+  1 P1 + 2 P2, all verified real and FIXED:** (P1/security) checkin-start scoped S3 write
+  creds to the CALLER-SUPPLIED bookInstanceId — checkin_start_tx never validates it for
+  existing books, so any member could get write creds for any book's prefix in their
+  collection; now reads the DB-canonical instance_id back (same selectTcRow pattern as
+  checkin-finish) + new deno test pinning that a mismatched client value cannot steer the
+  prefix. (P2) reap_expired_checkin_transactions returned only the collection-file count
+  (GET DIAGNOSTICS clobbered the loop total) → new migration 20260711000001. (P2)
+  checkout_book_takeover raised P0002/42501 bare strings instead of the schema-wide
+  PT404/PT403 JSON convention (C# would map both to CloudErrorCode.Unknown) → new
+  migration 20260711000002 (logic untouched); pgTAP 4a expectation updated. Also fixed
+  Greptile's style note: JoinCloudCollectionDialog.tsx nested ternaries → if/else chains
+  (12/12 vitest, lint+prettier clean). Suites: pgTAP 55/55 on the reset stack; deno
+  33/33 (NOTE: invariants.test.ts needs --allow-read; without it 2 tests fail on file
+  access, not logic). CONTRACTS.md check: the takeover row was ALREADY added in v1.4 —
+  the "flagged, not applied" comments in 20260709000007/CloudTeamCollection.cs are stale
+  · Next: reply to + resolve the Greptile threads on PR #8048, push, then bug #0 (John),
+  squash plan, human tests.
 - 10 Jul 2026 (evening — RESUMED after machine sleep; runbook step 1 + bot gauntlet closure) ·
   Environment: containers survived sleep (all healthy), functions serve restarted per the
   zombie rule, smoke.ps1 3/3 PASS, desktop unlocked. e2e-3 STANDALONE: **PASS** (3.1 min,

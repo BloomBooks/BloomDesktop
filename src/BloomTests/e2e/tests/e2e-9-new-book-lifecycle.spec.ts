@@ -160,7 +160,7 @@ test.describe("E2E-9 new-book lifecycle", () => {
                     return listBookFolders(bobCollectionFolder);
                 },
                 {
-                    timeout: 20_000,
+                    timeout: 90_000, // arrival is via the background download queue
                     message: "Bob never received the newly-committed book",
                 },
             )

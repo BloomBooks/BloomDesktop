@@ -4,15 +4,23 @@
 //        checksum, clientVersion, files: [{path, sha256, size}] }
 // 200: { transactionId, changedPaths[], s3: { bucket, region, prefix, credentials } }
 // Errors: 401/403 · 409 LockHeldByOther/BaseVersionSuperseded/NameConflict · 426 ClientOutOfDate.
-import { optionalField, requireField, serveJsonPost } from "../_shared/handler.ts";
-import { jsonResponse } from "../_shared/errors.ts";
-import { callTcRpc } from "../_shared/rpc.ts";
+import {
+    optionalField,
+    requireField,
+    serveJsonPost,
+} from "../_shared/handler.ts";
+import { HttpError, jsonResponse } from "../_shared/errors.ts";
+import { callTcRpc, selectTcRow } from "../_shared/rpc.ts";
 import { getScopedCredentials } from "../_shared/s3.ts";
 
 interface CheckinStartResult {
     transactionId: string;
     bookId: string;
     changedPaths: string[];
+}
+
+interface BookRow {
+    instance_id: string;
 }
 
 // The credentials handed to the client for the duration of a check-in: they need to
@@ -29,7 +37,10 @@ const CHECKIN_ACTIONS = [
 // Exported (rather than only passed inline to serveJsonPost) so Deno tests can import
 // and call it directly with a mocked Request, without triggering Deno.serve — see the
 // `import.meta.main` guard below.
-export const handler = async (req: Request, body: Record<string, unknown>): Promise<Response> => {
+export const handler = async (
+    req: Request,
+    body: Record<string, unknown>,
+): Promise<Response> => {
     const collectionId = requireField<string>(body, "collectionId");
     const bookInstanceId = requireField<string>(body, "bookInstanceId");
     const proposedName = requireField<string>(body, "proposedName");
@@ -39,18 +50,37 @@ export const handler = async (req: Request, body: Record<string, unknown>): Prom
     const bookId = optionalField<string>(body, "bookId");
     const baseVersionId = optionalField<string>(body, "baseVersionId");
 
-    const result = await callTcRpc<CheckinStartResult>(req, "checkin_start_tx", {
-        p_collection_id: collectionId,
-        p_book_id: bookId,
-        p_book_instance_id: bookInstanceId,
-        p_proposed_name: proposedName,
-        p_base_version_id: baseVersionId,
-        p_checksum: checksum,
-        p_client_version: clientVersion,
-        p_files: files,
-    });
+    const result = await callTcRpc<CheckinStartResult>(
+        req,
+        "checkin_start_tx",
+        {
+            p_collection_id: collectionId,
+            p_book_id: bookId,
+            p_book_instance_id: bookInstanceId,
+            p_proposed_name: proposedName,
+            p_base_version_id: baseVersionId,
+            p_checksum: checksum,
+            p_client_version: clientVersion,
+            p_files: files,
+        },
+    );
 
-    const prefix = `tc/${collectionId}/books/${bookInstanceId}/`;
+    // Scope the S3 credentials to the DB-canonical instance_id, never the caller-supplied
+    // bookInstanceId: for an existing book checkin_start_tx validates/locks by bookId and
+    // ignores the client's instance id, so using the client value here would let a member
+    // request write credentials for an arbitrary book's prefix (Greptile P1, PR #8048).
+    // Same read-back pattern as checkin-finish; for the new-book path the row was just
+    // created from bookInstanceId, so the canonical value is identical.
+    const book = await selectTcRow<BookRow>(
+        req,
+        "books",
+        `id=eq.${result.bookId}&select=instance_id`,
+    );
+    if (!book) {
+        throw new HttpError(404, { error: "book_not_found" });
+    }
+
+    const prefix = `tc/${collectionId}/books/${book.instance_id}/`;
     const s3 = await getScopedCredentials(prefix, CHECKIN_ACTIONS);
 
     return jsonResponse(200, {

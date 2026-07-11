@@ -122,27 +122,39 @@ export const JoinCloudCollectionDialog: React.FunctionComponent<{
         if (dialogState === JoinCloudCollectionState.NotSignedIn) {
             return "TeamCollection.Sharing.SignIn";
         }
-        return dialogState ===
+        if (
+            dialogState ===
             JoinCloudCollectionState.MatchesExistingNonTeamCollection
-            ? "TeamCollection.JoinAndMerge"
-            : dialogState ===
-                JoinCloudCollectionState.MatchesExistingTeamCollection
-              ? "TeamCollection.Open"
-              : "TeamCollection.Join";
+        ) {
+            return "TeamCollection.JoinAndMerge";
+        }
+        if (
+            dialogState ===
+            JoinCloudCollectionState.MatchesExistingTeamCollection
+        ) {
+            return "TeamCollection.Open";
+        }
+        return "TeamCollection.Join";
     }
 
     function getJoinButtonEnglish(): string {
         if (dialogState === JoinCloudCollectionState.NotSignedIn) {
             return "Sign In";
         }
-        return dialogState ===
+        if (
+            dialogState ===
             JoinCloudCollectionState.MatchesExistingNonTeamCollection
-            ? "Join and Merge"
-            : dialogState ===
-                JoinCloudCollectionState.MatchesExistingTeamCollection
-              ? "Open"
-              : "Join";
+        ) {
+            return "Join and Merge";
+        }
+        if (
+            dialogState ===
+            JoinCloudCollectionState.MatchesExistingTeamCollection
+        ) {
+            return "Open";
+        }
         // Leaving it as "Join" for the pathological/disabled cases.
+        return "Join";
     }
 
     function getMatchingCollection() {

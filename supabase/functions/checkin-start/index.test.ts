@@ -6,7 +6,13 @@
 import { assertEquals } from "jsr:@std/assert@1";
 import { mockClient } from "npm:aws-sdk-client-mock@4";
 import { AssumeRoleCommand, STSClient } from "npm:@aws-sdk/client-sts@3";
-import { callHandler, mockRequest, routedFetchStub, setTestEnv, withMockFetch } from "../_shared/test_support.ts";
+import {
+    callHandler,
+    mockRequest,
+    routedFetchStub,
+    setTestEnv,
+    withMockFetch,
+} from "../_shared/test_support.ts";
 
 setTestEnv();
 const { handler } = await import("./index.ts");
@@ -25,82 +31,174 @@ const stubAssumeRole = () => {
     const stsMock = mockClient(STSClient);
     stsMock.on(AssumeRoleCommand).resolves({
         Credentials: {
-            AccessKeyId: "K", SecretAccessKey: "S", SessionToken: "T",
+            AccessKeyId: "K",
+            SecretAccessKey: "S",
+            SessionToken: "T",
             Expiration: new Date("2026-01-01T01:00:00Z"),
         },
     });
     return stsMock;
 };
 
-Deno.test("checkin-start: happy path returns transactionId, changedPaths and scoped s3 creds", async () => {
-    const stsMock = stubAssumeRole();
-    const fetchStub = routedFetchStub([
-        {
-            when: "rpc/checkin_start_tx",
-            status: 200,
-            body: { transactionId: "tx-1", bookId: "book-1", changedPaths: ["book.htm"] },
-        },
-    ]);
+Deno.test(
+    "checkin-start: happy path returns transactionId, changedPaths and scoped s3 creds",
+    async () => {
+        const stsMock = stubAssumeRole();
+        const fetchStub = routedFetchStub([
+            {
+                when: "rpc/checkin_start_tx",
+                status: 200,
+                body: {
+                    transactionId: "tx-1",
+                    bookId: "book-1",
+                    changedPaths: ["book.htm"],
+                },
+            },
+            {
+                when: "rest/v1/books",
+                status: 200,
+                body: [{ instance_id: "22222222-2222-2222-2222-222222222222" }],
+            },
+        ]);
 
-    const res = await withMockFetch(fetchStub, () => callHandler(handler, mockRequest(VALID_BODY), VALID_BODY));
+        const res = await withMockFetch(fetchStub, () =>
+            callHandler(handler, mockRequest(VALID_BODY), VALID_BODY),
+        );
 
-    assertEquals(res.status, 200);
-    const json = await res.json();
-    assertEquals(json.transactionId, "tx-1");
-    assertEquals(json.changedPaths, ["book.htm"]);
-    assertEquals(json.s3.bucket, "bloom-teams-test");
-    // CONTRACTS.md: creds scoped to tc/{cid}/books/{bookInstanceId}/*
-    assertEquals(json.s3.prefix, "tc/11111111-1111-1111-1111-111111111111/books/22222222-2222-2222-2222-222222222222/");
-    assertEquals(json.s3.credentials.sessionToken, "T");
-    // bookId is internal-only — CONTRACTS.md's 200 response never exposes it (that's
-    // what makes an uncommitted new book invisible until the client re-learns its id
-    // via get_collection_state/checkout_book).
-    assertEquals("bookId" in json, false);
+        assertEquals(res.status, 200);
+        const json = await res.json();
+        assertEquals(json.transactionId, "tx-1");
+        assertEquals(json.changedPaths, ["book.htm"]);
+        assertEquals(json.s3.bucket, "bloom-teams-test");
+        // CONTRACTS.md: creds scoped to tc/{cid}/books/{instance_id}/* — the instance id read
+        // back from the books row, not the request body (see the mismatch test below).
+        assertEquals(
+            json.s3.prefix,
+            "tc/11111111-1111-1111-1111-111111111111/books/22222222-2222-2222-2222-222222222222/",
+        );
+        assertEquals(json.s3.credentials.sessionToken, "T");
+        // bookId is internal-only — CONTRACTS.md's 200 response never exposes it (that's
+        // what makes an uncommitted new book invisible until the client re-learns its id
+        // via get_collection_state/checkout_book).
+        assertEquals("bookId" in json, false);
 
-    stsMock.restore();
-});
+        stsMock.restore();
+    },
+);
 
-Deno.test("checkin-start: missing required field -> 400 before any RPC/S3 call", async () => {
-    const stsMock = stubAssumeRole();
-    const fetchStub = routedFetchStub([]); // must not be called
+Deno.test(
+    "checkin-start: s3 prefix comes from the DB-canonical instance_id, not the caller-supplied bookInstanceId",
+    async () => {
+        const stsMock = stubAssumeRole();
+        // The caller claims an instance id belonging to some OTHER book; the books row for the
+        // book actually being checked in has a different (canonical) instance id. The issued
+        // credentials must be scoped to the canonical one.
+        const fetchStub = routedFetchStub([
+            {
+                when: "rpc/checkin_start_tx",
+                status: 200,
+                body: {
+                    transactionId: "tx-1",
+                    bookId: "book-1",
+                    changedPaths: ["book.htm"],
+                },
+            },
+            {
+                when: "rest/v1/books",
+                status: 200,
+                body: [{ instance_id: "99999999-9999-9999-9999-999999999999" }],
+            },
+        ]);
+        const bodyWithForeignInstanceId = {
+            ...VALID_BODY,
+            bookId: "book-1",
+            bookInstanceId: "22222222-2222-2222-2222-222222222222",
+        };
 
-    const { checksum: _omit, ...bodyMissingChecksum } = VALID_BODY;
-    const res = await withMockFetch(
-        fetchStub,
-        () => callHandler(handler, mockRequest(bodyMissingChecksum), bodyMissingChecksum),
-    );
+        const res = await withMockFetch(fetchStub, () =>
+            callHandler(
+                handler,
+                mockRequest(bodyWithForeignInstanceId),
+                bodyWithForeignInstanceId,
+            ),
+        );
 
-    assertEquals(res.status, 400);
-    const json = await res.json();
-    assertEquals(json.error, "invalid_request");
-    assertEquals(json.field, "checksum");
-    assertEquals(stsMock.commandCalls(AssumeRoleCommand).length, 0, "must fail validation before touching S3");
+        assertEquals(res.status, 200);
+        const json = await res.json();
+        assertEquals(
+            json.s3.prefix,
+            "tc/11111111-1111-1111-1111-111111111111/books/99999999-9999-9999-9999-999999999999/",
+        );
 
-    stsMock.restore();
-});
+        stsMock.restore();
+    },
+);
 
-Deno.test("checkin-start: RPC 409 LockHeldByOther passes through with the holder payload intact", async () => {
-    const stsMock = stubAssumeRole();
-    const fetchStub = routedFetchStub([
-        {
-            when: "rpc/checkin_start_tx",
-            status: 409,
-            // PostgREST wraps our RAISE EXCEPTION message like this — see rpc.ts's
-            // parsePostgrestErrorBody, which unwraps it back to the flat contract shape.
-            body: { message: JSON.stringify({ error: "LockHeldByOther", holder: { userId: "u2" } }) },
-        },
-    ]);
+Deno.test(
+    "checkin-start: missing required field -> 400 before any RPC/S3 call",
+    async () => {
+        const stsMock = stubAssumeRole();
+        const fetchStub = routedFetchStub([]); // must not be called
 
-    const res = await withMockFetch(fetchStub, () => callHandler(handler, mockRequest(VALID_BODY), VALID_BODY));
+        const { checksum: _omit, ...bodyMissingChecksum } = VALID_BODY;
+        const res = await withMockFetch(fetchStub, () =>
+            callHandler(
+                handler,
+                mockRequest(bodyMissingChecksum),
+                bodyMissingChecksum,
+            ),
+        );
 
-    assertEquals(res.status, 409);
-    const json = await res.json();
-    assertEquals(json.error, "LockHeldByOther");
-    assertEquals(json.holder.userId, "u2");
-    assertEquals(stsMock.commandCalls(AssumeRoleCommand).length, 0, "must not issue S3 creds when the RPC itself failed");
+        assertEquals(res.status, 400);
+        const json = await res.json();
+        assertEquals(json.error, "invalid_request");
+        assertEquals(json.field, "checksum");
+        assertEquals(
+            stsMock.commandCalls(AssumeRoleCommand).length,
+            0,
+            "must fail validation before touching S3",
+        );
 
-    stsMock.restore();
-});
+        stsMock.restore();
+    },
+);
+
+Deno.test(
+    "checkin-start: RPC 409 LockHeldByOther passes through with the holder payload intact",
+    async () => {
+        const stsMock = stubAssumeRole();
+        const fetchStub = routedFetchStub([
+            {
+                when: "rpc/checkin_start_tx",
+                status: 409,
+                // PostgREST wraps our RAISE EXCEPTION message like this — see rpc.ts's
+                // parsePostgrestErrorBody, which unwraps it back to the flat contract shape.
+                body: {
+                    message: JSON.stringify({
+                        error: "LockHeldByOther",
+                        holder: { userId: "u2" },
+                    }),
+                },
+            },
+        ]);
+
+        const res = await withMockFetch(fetchStub, () =>
+            callHandler(handler, mockRequest(VALID_BODY), VALID_BODY),
+        );
+
+        assertEquals(res.status, 409);
+        const json = await res.json();
+        assertEquals(json.error, "LockHeldByOther");
+        assertEquals(json.holder.userId, "u2");
+        assertEquals(
+            stsMock.commandCalls(AssumeRoleCommand).length,
+            0,
+            "must not issue S3 creds when the RPC itself failed",
+        );
+
+        stsMock.restore();
+    },
+);
 
 Deno.test("checkin-start: RPC 426 ClientOutOfDate passes through", async () => {
     const stsMock = stubAssumeRole();
@@ -108,11 +206,18 @@ Deno.test("checkin-start: RPC 426 ClientOutOfDate passes through", async () => {
         {
             when: "rpc/checkin_start_tx",
             status: 426,
-            body: { message: JSON.stringify({ error: "ClientOutOfDate", minVersion: "2.0.0" }) },
+            body: {
+                message: JSON.stringify({
+                    error: "ClientOutOfDate",
+                    minVersion: "2.0.0",
+                }),
+            },
         },
     ]);
 
-    const res = await withMockFetch(fetchStub, () => callHandler(handler, mockRequest(VALID_BODY), VALID_BODY));
+    const res = await withMockFetch(fetchStub, () =>
+        callHandler(handler, mockRequest(VALID_BODY), VALID_BODY),
+    );
 
     assertEquals(res.status, 426);
     const json = await res.json();
@@ -122,17 +227,20 @@ Deno.test("checkin-start: RPC 426 ClientOutOfDate passes through", async () => {
     stsMock.restore();
 });
 
-Deno.test("checkin-start: missing Authorization header -> 401 (defensive; platform normally rejects first)", async () => {
-    const stsMock = stubAssumeRole();
-    const fetchStub = routedFetchStub([]);
+Deno.test(
+    "checkin-start: missing Authorization header -> 401 (defensive; platform normally rejects first)",
+    async () => {
+        const stsMock = stubAssumeRole();
+        const fetchStub = routedFetchStub([]);
 
-    const reqNoAuth = new Request("http://localhost/test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(VALID_BODY),
-    });
-    const res = await callHandler(handler, reqNoAuth, VALID_BODY);
+        const reqNoAuth = new Request("http://localhost/test", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(VALID_BODY),
+        });
+        const res = await callHandler(handler, reqNoAuth, VALID_BODY);
 
-    assertEquals(res.status, 401);
-    stsMock.restore();
-});
+        assertEquals(res.status, 401);
+        stsMock.restore();
+    },
+);

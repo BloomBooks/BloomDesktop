@@ -149,9 +149,11 @@ SELECT ok(
 
 SELECT tests.set_jwt('user-carol-tko', 'carol-tko@example.com', true);
 
+-- PT403 (not 42501): checkout_book_takeover raises the schema-wide PT### passthrough
+-- codes as of 20260711000002.
 SELECT throws_ok(
     $$SELECT tc.checkout_book_takeover('b0000000-0000-0000-0000-00000000a001', 'SharedMachine')$$,
-    '42501',
+    'PT403',
     NULL,
     '4a: a non-member cannot take over a lock (not_a_member)'
 );

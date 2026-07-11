@@ -116,7 +116,24 @@ test.describe("E2E-6 kill mid-Send / resume", () => {
         const bookId = bookRows[0].id;
 
         // Bob syncs down v1 so he has a concrete baseline to compare against later.
-        await pollNowViaReceiveUpdates(bob.httpPort);
+        // Since the progressive-join work, a book new to this instance arrives via the
+        // background download queue AFTER the poll call returns, so wait for the file
+        // rather than reading it immediately.
+        await expect
+            .poll(
+                async () => {
+                    await pollNowViaReceiveUpdates(bob!.httpPort);
+                    return fs.stat(bobHtmPath).then(
+                        () => true,
+                        () => false,
+                    );
+                },
+                {
+                    timeout: 90_000, // past the organic 60s poll
+                    message: "Bob never downloaded the v1 baseline",
+                },
+            )
+            .toBe(true);
         const bobV1 = await fs.readFile(bobHtmPath);
         expect(
             bobV1.includes(Buffer.from(V2_MARKER, "utf8")),
@@ -266,7 +283,7 @@ test.describe("E2E-6 kill mid-Send / resume", () => {
                     );
                 },
                 {
-                    timeout: 20_000,
+                    timeout: 90_000, // v2 arrives via the background auto-apply queue
                     message: "Bob never received the resumed v2",
                 },
             )
