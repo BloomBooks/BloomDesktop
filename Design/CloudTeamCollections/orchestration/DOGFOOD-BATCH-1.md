@@ -489,6 +489,16 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 11 Jul 2026 (morning — **GOLD STAMP: FULL MATRIX 14/14**, 34.4 min, one run, zero
+  failures) · The desktop-unlock watcher fired, environment verified clean, and the
+  matrix ran green end to end on the final tree (af8a92a516 = PR #8052's content +
+  batch-log commits): e2e-1 through e2e-10 + join-auto-open, including e2e-4's
+  seat-gated takeover refusal and e2e-10's legitimate same-seat takeover. This is the
+  first fully-green FULL matrix since the post-batch defect hunt began — the batch's
+  test pipeline is CLOSED. Everything that remains is John's: [HUMAN] item 3 (centered
+  check-in dialog) + item 10 (web up/download, GOING-LIVE.md 4.3), and the OUTSTANDING
+  BUGS #0 follow-up decision (server-side same-user cross-seat check-in refusal).
+  PR #8052 is ready for review whenever the human checks are done · Next: John.
 - 11 Jul 2026 (~04:30 — optional gold-stamp matrix INVALID: desktop locked again mid-run,
   14/14 CDP-connect failures = the locked-session signature; sleep timeouts were already
   disabled, so this was a manual lock or an unseen policy). No leaked processes. NOT a
