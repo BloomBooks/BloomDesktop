@@ -203,9 +203,28 @@ test.describe("E2E-5 approved accounts on two fresh profiles", () => {
         await bobChooser.kill();
 
         // --- 4. Alice's computer goes off; Bob participates fully on his own ---
+        // But first, wait for her initial share's v1 commit: it runs asynchronously after
+        // createCloudTeamCollection, and under load it can still be in flight this far into
+        // the test (11 Jul matrix) — killing her mid-first-Send would leave no book row at
+        // all, ever.
+        const bookName = aliceScratch.bookName;
+        await expect
+            .poll(
+                async () =>
+                    (
+                        await queryDb<{ current_version_seq: number }>(
+                            "select current_version_seq from tc.books where collection_id = $1 and name = $2 and current_version_seq >= 1",
+                            [aliceScratch.collectionId, bookName],
+                        )
+                    ).length,
+                {
+                    timeout: 90_000,
+                    message: "Alice's initial share never committed v1",
+                },
+            )
+            .toBe(1);
         await alice.kill();
 
-        const bookName = aliceScratch.bookName;
         const initialSeqRows = await queryDb<{ current_version_seq: number }>(
             "select current_version_seq from tc.books where collection_id = $1 and name = $2",
             [aliceScratch.collectionId, bookName],

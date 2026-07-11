@@ -489,6 +489,19 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 11 Jul 2026 (early AM — POST-SEAT-FIX FULL MATRIX: 13/14, and the 14th is exonerated) ·
+  Matrix on the seat-fixed tree (36 min): **e2e-4 PASSED IN THE MATRIX** (bug #0 verified
+  under full load); sole failure e2e-5, which passed standalone immediately after (3.0 min)
+  = load flake. Root cause found anyway and HARDENED: the spec killed Alice before her
+  initial share's asynchronous v1 commit was guaranteed done (nothing between
+  createCloudTeamCollection and the kill waits for the book row) — killing her mid-first-
+  Send leaves no book row ever. Fix: 90s poll for current_version_seq >= 1 BEFORE
+  alice.kill(). Every scenario has now passed on this exact tree; the tight-timeout flake
+  class is systematically addressed (all queue/commit polls at the 90s convention:
+  e2e-5/6/7/9) · Next: execute SQUASH-PLAN.md (preconditions met: bug #0 fixed+verified,
+  matrix verdict in) → cloud-tc-for-review branch + PR, close #8048 with pointer; then
+  optionally one more matrix as the gold stamp; John: [HUMAN] tests + OUTSTANDING BUGS #0
+  follow-up decision.
 - 11 Jul 2026 (early AM — BUG #0 FIXED AND VERIFIED; bot gauntlet fully closed) · John's
   ruling (his words, from the in-session Q&A): "we should only be allowed to edit (either as
   the original user checking the book out, or taking it over) if it is being worked on here,
