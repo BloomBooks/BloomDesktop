@@ -472,6 +472,20 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 10 Jul 2026 (evening — RESUMED after machine sleep; runbook step 1 + bot gauntlet closure) ·
+  Environment: containers survived sleep (all healthy), functions serve restarted per the
+  zombie rule, smoke.ps1 3/3 PASS, desktop unlocked. e2e-3 STANDALONE: **PASS** (3.1 min,
+  idle machine) — its matrix failure confirmed as a load flake; e2e-6/e2e-9 standalone runs
+  in progress. BOT GAUNTLET now TERMINAL for PR #8048 (no more waiting): **Devin FAILED —
+  "This pull request's diff exceeds the size limit for analysis"** (its review page's Info
+  sidebar; no bypass exists, so Devin will also fail on the future squash-plan PR — same
+  237-file diff); **Greptile REFUSED — 237 files > its 100-file limit** — but offers a
+  bypass, which was TAKEN: `@greptile-apps review` posted on #8048 (bot findings may arrive
+  async; check the PR's comments/reviews next visit); **CodeRabbit is NOT INSTALLED on this
+  repo** (zero comments ever, repo-wide search; no .coderabbit.yaml) — last session's
+  "timed out after 35 min" was waiting on a bot that isn't there; drop it from all future
+  waits in this repo; CI 2/2 pass (unchanged) · Next: e2e-6/e2e-9 standalone verdicts, then
+  the remaining runbook order (bug #0 = John, squash plan, human tests).
 - 10 Jul 2026 (EOD — SHUTDOWN STATE; machine going to sleep; next session may be a different
   agent: read this entry + OUTSTANDING BUGS + SQUASH-PLAN.md and you have everything) ·
   FULL MATRIX under HEAVY LOAD: 10/14 (40 min, ran concurrently with the 16-min full C#
