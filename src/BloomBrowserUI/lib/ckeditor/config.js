@@ -129,6 +129,24 @@ CKEDITOR.editorConfig = function(config) {
     // The others are required dependencies of colorbutton.
     // Note that the BGColor button that comes by default with the colorbutton plugin
     // is removed in the config.removeButtons list above.
+    // Add removeformat so that Ctrl+Space can "clear formatting" (see AddEditKeyHandlers in
+    // bloomEditing.ts). Our trimmed copy of that plugin registers only the removeFormat command,
+    // not a toolbar button, so it needs no icon or language files.
     CKEDITOR.config.extraPlugins =
-        "autolink,panel,panelbutton,button,floatpanel,colorbutton";
+        "autolink,panel,panelbutton,button,floatpanel,colorbutton,removeformat";
+
+    // Which inline elements the removeFormat command ("clear formatting", Ctrl+Space) strips.
+    // We limit this to the inline formatting that our selection toolbar can produce: bold
+    // (b/strong), italic (i/em), underline (u), superscript (sup), and text color (a bare
+    // <span style="color:...">). We include sub and font as harmless legacy cases. Notably we do
+    // NOT list block elements, so paragraphs/headings are left alone. Structural spans (audio
+    // segments, bloom-linebreak) are protected by the filter added in attachToCkEditor.
+    config.removeFormatTags = "b,strong,i,em,u,sup,sub,font,span";
+
+    // The default removeFormatAttributes would strip class/style/align/lang from any element it
+    // keeps (e.g. paragraphs spanned by a multi-paragraph selection), which would clobber
+    // alignment and other things the format toolbar never touched. All the formatting we do want
+    // to remove lives on elements listed in removeFormatTags (which are removed whole), so we
+    // don't need to strip attributes from kept elements at all.
+    config.removeFormatAttributes = "";
 };
