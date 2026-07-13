@@ -724,6 +724,18 @@ export function getActiveToolId(): string | undefined {
     return newToolId ? newToolId : currentTool?.id();
 }
 
+// How long, after a tool is turned on in the "More..." settings section, we wait
+// before adding/opening it. The open collapses the "More..." section, so we delay
+// it just long enough for the user to see the checkbox they ticked. (BL-16501)
+const kShowToolAfterEnableDelayMs = 300;
+
+// Pending deferred "open this tool" timers, keyed by tool name, so a later toggle
+// of the same tool can cancel an open that hasn't fired yet.
+const pendingShowToolTimeouts = new Map<
+    string,
+    ReturnType<typeof setTimeout>
+>();
+
 // modifies the enabledToolIds set, the saved active
 // state of the tool in question, and the presence of
 // the tool in the toolbox, whenever the tool is checked
@@ -747,7 +759,34 @@ export function setToolEnabledFromSettings(
         "editView/saveToolboxSetting",
         "active\t" + toolName + "Check\t" + (turnOn ? "1" : "0"),
     );
-    showOrHideTool(toolId, turnOn);
+
+    // A pending deferred open (below) reflects an earlier state; this call
+    // supersedes it, so cancel it. Without this, ticking a tool on and then off
+    // again within the delay would let the stale timer re-add the disabled tool
+    // (the disable runs synchronously and would otherwise be overtaken).
+    const pendingTimeout = pendingShowToolTimeouts.get(toolName);
+    if (pendingTimeout !== undefined) {
+        clearTimeout(pendingTimeout);
+        pendingShowToolTimeouts.delete(toolName);
+    }
+
+    if (turnOn) {
+        // Turning a tool on adds it to the accordion and makes it the active
+        // section, which collapses the "More..." settings section. If we do that
+        // immediately, the "More..." section closes before the user perceives the
+        // checkbox they just ticked. Briefly delay so the checkmark is visible
+        // before the section collapses to reveal the newly-enabled tool. (BL-16501)
+        const timeout = setTimeout(() => {
+            pendingShowToolTimeouts.delete(toolName);
+            // Guard against the tool having been turned off again during the delay.
+            if (enabledToolIds.has(toolName)) {
+                showOrHideTool(toolId, true);
+            }
+        }, kShowToolAfterEnableDelayMs);
+        pendingShowToolTimeouts.set(toolName, timeout);
+    } else {
+        showOrHideTool(toolId, turnOn);
+    }
 }
 
 function showOrHideTool(
