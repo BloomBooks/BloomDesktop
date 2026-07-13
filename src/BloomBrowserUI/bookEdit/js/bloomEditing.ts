@@ -1951,22 +1951,27 @@ export function attachToCkEditor(element) {
         const editor = evt["editor"];
         const bar = $("body").find("." + editor.id);
         bar.hide();
-    });
 
-    // Protect Bloom's structural spans from the removeFormat ("clear formatting") command.
-    // The only spans the format toolbar itself produces are bare <span style="color:..."> (and
-    // similar bare style spans such as small caps), which carry neither a class nor an id, so we
-    // let those be removed. Any span that has a class or id is one Bloom created for its own
-    // purposes (audio segments like audio-sentence/bloom-highlightSegment, bloom-linebreak from
-    // Shift+Enter, etc.), and clearing formatting must leave those intact.
-    ckedit.addRemoveFormatFilter((element) => {
-        if (
-            element.is("span") &&
-            (element.hasAttribute("class") || element.hasAttribute("id"))
-        ) {
-            return false; // keep it
-        }
-        return true;
+        // Protect Bloom's structural spans from the removeFormat ("clear formatting") command.
+        // The only spans the format toolbar itself produces are bare <span style="color:..."> (and
+        // similar bare style spans such as small caps), which carry neither a class nor an id, so we
+        // let those be removed. Any span that has a class or id is one Bloom created for its own
+        // purposes (audio segments like audio-sentence/bloom-highlightSegment, bloom-linebreak from
+        // Shift+Enter, etc.), and clearing formatting must leave those intact.
+        // Note: addRemoveFormatFilter is added to the editor prototype by the removeformat plugin,
+        // whose script loads asynchronously. We register the filter here, in instanceReady, rather
+        // than right after CKEDITOR.inline() because at that earlier point the plugin may not have
+        // loaded yet, so the method would be undefined and the call would throw (aborting the rest
+        // of attachToCkEditor, including the color-button setup below).
+        editor.addRemoveFormatFilter((element) => {
+            if (
+                element.is("span") &&
+                (element.hasAttribute("class") || element.hasAttribute("id"))
+            ) {
+                return false; // keep it
+            }
+            return true;
+        });
     });
 
     if (CKEDITOR.config.colorButton_colors) {
