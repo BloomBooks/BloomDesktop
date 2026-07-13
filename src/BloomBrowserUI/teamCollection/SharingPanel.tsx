@@ -212,15 +212,26 @@ const MemberRow: React.FunctionComponent<{
                 display: flex;
                 align-items: center;
                 gap: 8px;
-                // The settings dialog's page-level styles can add vertical margins to form
-                // controls, which defeats the flex centering (the chip stays put while the
-                // select and trash button ride their margins downward). Neutralize them so
-                // every control truly centers on the row.
+                // The settings dialog's page-level styles can add vertical margins/padding to
+                // controls, which defeats the flex centering. Two known offenders (found with
+                // the inspector, 13 Jul): stray margins on select/button, and a margin UNDER
+                // the MUI Chip (its outer box centers, so the visible pill rides high).
+                // Neutralize both so every control truly centers on the row.
                 select,
                 button {
                     margin-top: 0;
                     margin-bottom: 0;
                     align-self: center;
+                }
+                .MuiChip-root {
+                    margin-top: 0;
+                    margin-bottom: 0;
+                    padding-top: 0;
+                    padding-bottom: 0;
+                }
+                .MuiChip-root .MuiChip-label {
+                    padding-top: 0;
+                    padding-bottom: 0;
                 }
             `}
         >
