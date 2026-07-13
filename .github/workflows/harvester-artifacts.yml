@@ -1,0 +1,202 @@
+# Builds Bloom on the harvester branches and publishes the dependency bundle that
+# BloomBooks/bloom-harvester consumes, replacing the TeamCity config
+# Bloom_BloomDesktopHarvesterBranchContinuous.
+#
+# bloom-harvester's build/getDependencies.ps1 needs a permanent, unauthenticated
+# "latest successful build of this branch" URL, which GitHub Actions artifacts cannot
+# provide (they expire and need an authenticated API call). So each green build uploads
+# the bundle to a ROLLING GITHUB RELEASE with a fixed per-branch tag:
+#
+#   harvester-development -> tag harvester-development-latest
+#   harvester-production  -> tag harvester-production-latest
+#
+# giving stable download URLs like
+#   https://github.com/BloomBooks/BloomDesktop/releases/download/harvester-development-latest/bloom-harvester-deps.zip
+#
+# The asset is only replaced when the build and BOTH test suites succeed, so the URL
+# always serves the latest *successful* build (same semantics as TeamCity's
+# latest.lastSuccessful). The releases are marked prerelease so they never show up as
+# the repository's "Latest release".
+#
+# The zip's internal layout deliberately matches the TeamCity downloadAll artifact
+# (bin/Release/x64, output/browser, DistFiles) so the consumer script only changes its URL.
+#
+# Mirrors the TC build steps, INCLUDING its yarn usage: this branch lineage (6.4-era) is
+# yarn-based (yarn.lock, and build-prod itself invokes yarn), unlike master which uses
+# pnpm. No Velopack, no signing, no S3 — harvester binaries run on our server.
+#
+# NOTE: push triggers use the workflow file as it exists on the pushed branch, so this
+# file must be present on the harvester branches (via merge from this branch) to take
+# effect there.
+
+name: Harvester Artifacts
+
+on:
+    push:
+        branches:
+            - harvester-development
+            - harvester-production
+    # Manual re-run (e.g. after a flaky failure). Publishing stays branch-gated.
+    workflow_dispatch:
+
+# Only the newest build matters (the release asset is latest-only and there are no
+# version counters or feeds involved), so superseded runs are cancelled.
+concurrency:
+    group: harvester-artifacts-${{ github.ref_name }}
+    cancel-in-progress: true
+
+jobs:
+    build:
+        runs-on: windows-latest
+        timeout-minutes: 120
+
+        # contents: write is needed to create/update the rolling release;
+        # checks: write lets the test-report step create its check run.
+        permissions:
+            contents: write
+            checks: write
+
+        env:
+            IS_HARVESTER_BRANCH: ${{ github.ref == 'refs/heads/harvester-development' || github.ref == 'refs/heads/harvester-production' }}
+
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            # ----- Toolchains -----
+
+            - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+              with:
+                  dotnet-version: 8.0.x
+
+            - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
+
+            # yarn 1 (classic) is preinstalled on windows-latest runners; this branch
+            # lineage has no packageManager field, so no corepack/action setup is needed.
+            - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+              with:
+                  node-version: 22
+                  cache: yarn
+                  cache-dependency-path: |
+                      src/BloomBrowserUI/yarn.lock
+                      src/content/yarn.lock
+
+            # ----- Dependencies (mirrors the TeamCity build steps) -----
+
+            - name: Get binary dependencies (TeamCity artifacts, chm, ffmpeg, etc.)
+              shell: bash
+              run: ./build/getDependencies-windows.sh
+
+            - name: Get npm dependencies for content
+              working-directory: src/content
+              run: yarn --network-timeout 200000
+
+            - name: Get npm dependencies for BloomBrowserUI
+              working-directory: src/BloomBrowserUI
+              run: yarn --network-timeout 200000
+
+            # ----- Front-end production build + tests -----
+
+            - name: yarn build-prod
+              working-directory: src/BloomBrowserUI
+              run: yarn build-prod
+
+            # The junit file feeds the "Publish test results" step at the end of the job.
+            - name: Javascript tests
+              working-directory: src/BloomBrowserUI
+              run: yarn test:ci --reporter=default --reporter=junit --outputFile.junit=../../output/Tests/vitest-junit.xml
+
+            # ----- C# build + tests -----
+            # Harvester artifacts never reach end users, so the assembly version just
+            # needs to identify the build (VersionNumbers requires all 4 parts).
+            - name: Compute BUILD_NUMBER
+              shell: pwsh
+              run: |
+                  $hash = (git rev-parse --short HEAD).Trim()
+                  "BUILD_NUMBER=0.0.${{ github.run_number }}.$hash" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+            # NuGet restore of the solution, exactly as the TeamCity config does. (The
+            # SIL.BuildTasks msbuild-task dlls that Bloom.proj's targets need are NOT part
+            # of this restore; the Build target installs them itself on first run via its
+            # RestartBuild self-heal, and the TestOnly invocation finds them on disk after
+            # that.)
+            - name: msbuild restore
+              shell: pwsh
+              run: msbuild -t:Restore Bloom.sln
+
+            - name: msbuild Build
+              working-directory: build
+              shell: pwsh
+              run: msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER
+
+            - name: msbuild TestOnly
+              working-directory: build
+              shell: pwsh
+              run: |
+                  msbuild Bloom.proj /t:TestOnly `
+                    /p:BUILD_NUMBER=$env:BUILD_NUMBER `
+                    /p:excludedCategories=SkipOnTeamCity
+
+            # Renders both suites as a human-readable report: pass/fail/skip counts in the
+            # job summary page, a check run on the commit, and per-test annotations for
+            # failures. always() so the report appears precisely when tests DID fail.
+            - name: Publish test results
+              if: ${{ always() }}
+              uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+              with:
+                  check_name: Test results (harvester)
+                  junit_files: output/Tests/vitest-junit.xml
+                  nunit_files: output/Tests/Release/x64/TestResults.xml
+
+            # ----- Bundle -----
+            # Stage into the same internal layout as the old TeamCity downloadAll zip
+            # (bin/Release/x64, output/browser, DistFiles) so bloom-harvester's
+            # getDependencies.ps1 only needs its URL changed.
+            - name: Assemble dependency bundle
+              shell: pwsh
+              run: |
+                  function Copy-Tree([string]$src, [string]$dst) {
+                    robocopy $src $dst /E /NFL /NDL /NJH /NJS /NP | Out-Null
+                    if ($LASTEXITCODE -ge 8) { throw "robocopy failed ($LASTEXITCODE) copying $src" }
+                  }
+                  $staging = Join-Path $env:RUNNER_TEMP 'harvester-staging'
+                  Copy-Tree 'output\Release\x64' (Join-Path $staging 'bin\Release\x64')
+                  Copy-Tree 'output\browser' (Join-Path $staging 'output\browser')
+                  Copy-Tree 'DistFiles' (Join-Path $staging 'DistFiles')
+                  Push-Location $staging
+                  7z a -tzip "$env:GITHUB_WORKSPACE\bloom-harvester-deps.zip" *
+                  if ($LASTEXITCODE -ne 0) { throw "7z failed ($LASTEXITCODE)" }
+                  Pop-Location
+                  exit 0
+
+            # ----- Publish to the rolling release (harvester branches only) -----
+            # Reaching this step means build + both test suites succeeded, so the fixed
+            # URL always serves the latest successful build. --clobber replaces the
+            # previous asset in place.
+            - name: Update rolling release
+              if: ${{ env.IS_HARVESTER_BRANCH == 'true' }}
+              shell: pwsh
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  $tag = "${{ github.ref_name }}-latest"
+                  gh release view $tag *> $null
+                  if ($LASTEXITCODE -ne 0) {
+                    Write-Host "Release $tag does not exist yet; creating it."
+                    gh release create $tag --prerelease `
+                      --title "Bloom ${{ github.ref_name }} artifacts (rolling)" `
+                      --notes "Rolling release: the asset is replaced by every successful build of the ${{ github.ref_name }} branch. Consumed by BloomBooks/bloom-harvester's getDependencies.ps1. Do not pin to this."
+                    if ($LASTEXITCODE -ne 0) { throw "gh release create failed" }
+                  }
+                  gh release upload $tag "$env:GITHUB_WORKSPACE\bloom-harvester-deps.zip" --clobber
+                  if ($LASTEXITCODE -ne 0) { throw "gh release upload failed" }
+                  Write-Host "Updated https://github.com/${{ github.repository }}/releases/download/$tag/bloom-harvester-deps.zip (build $env:BUILD_NUMBER)"
+
+            # On non-harvester branches (the temporary test trigger) attach the bundle as
+            # a short-lived workflow artifact instead, so the layout can be inspected.
+            - name: Upload bundle as workflow artifact (test runs)
+              if: ${{ env.IS_HARVESTER_BRANCH != 'true' }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: bloom-harvester-deps
+                  path: bloom-harvester-deps.zip
+                  retention-days: 3
