@@ -424,26 +424,47 @@ namespace Bloom.web.controllers
             var joinCards =
                 myCloudCollections.Count == 0
                     ? new List<dynamic>()
-                    : ComputeJoinCards(myCloudCollections, GetLocalCloudCollectionIds());
+                    : ComputeJoinCards(
+                        myCloudCollections,
+                        GetLocalCloudCopies(),
+                        SharingApi.SignedInEmailForJoinCards()
+                    );
             request.ReplyWithJson(joinCards);
         }
 
         /// <summary>
         /// Pure matching logic (unit-tested by CollectionChooserApiTests, no filesystem/network):
-        /// a cloud collection gets a join card iff none of the given local cloud-collection ids
-        /// (gathered by <see cref="GetLocalCloudCollectionIds"/>, which reads TeamCollectionLink.txt
-        /// files) matches its id. Per the batch's decision, matching is by cloud id ONLY -- a local
-        /// folder with the same name that is NOT itself a cloud TC (e.g. a plain or folder-TC
-        /// collection) still gets a join card; CloudJoinFlow's own scenario matching handles the
-        /// merge-or-conflict decision once the user actually tries to join.
+        /// a cloud collection gets a join card unless a local copy of it exists that was most
+        /// recently used by the SIGNED-IN account (dogfood bug #11, John's ruling 13 Jul 2026).
+        /// Matching a copy by cloud id alone is not enough to suppress: on a shared machine (or a
+        /// multi-identity dev setup) the chooser's machine-wide collection list includes OTHER
+        /// accounts' copies, and those must not hide this account's invitation. A copy whose
+        /// last-known user is unknown (no TeamCollectionLastKnownUser.txt yet -- e.g. a manually
+        /// copied folder) does NOT suppress: "not known to be mine" shows the card, and
+        /// CloudJoinFlow's scenario matching handles any merge/conflict at actual join time.
+        /// A local folder with the same name that is not a cloud TC at all likewise still gets a
+        /// join card (unchanged from the original item-6 decision).
         /// </summary>
         internal static List<dynamic> ComputeJoinCards(
             IEnumerable<CloudCollectionSummary> myCloudCollections,
-            ISet<string> localCloudCollectionIds
+            IEnumerable<(string cloudCollectionId, string lastKnownUser)> localCloudCopies,
+            string signedInEmail
         )
         {
+            var idsWithMyOwnLocalCopy = new HashSet<string>(
+                localCloudCopies
+                    .Where(copy =>
+                        copy.lastKnownUser != null
+                        && string.Equals(
+                            copy.lastKnownUser,
+                            signedInEmail,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                    .Select(copy => copy.cloudCollectionId)
+            );
             return myCloudCollections
-                .Where(c => !localCloudCollectionIds.Contains(c.Id))
+                .Where(c => !idsWithMyOwnLocalCopy.Contains(c.Id))
                 .Select(c => (dynamic)new { collectionId = c.Id, title = c.Name })
                 .ToList();
         }
@@ -452,13 +473,15 @@ namespace Bloom.web.controllers
         /// Scans the same candidate collection folders <see cref="HandleGetMostRecentlyUsedCollections"/>
         /// considers (MRU list + collections discovered in the default parent directory), reading
         /// each one's TeamCollectionLink.txt (if any) to find which cloud collection ids already
-        /// have a local copy on this machine. Uncapped (unlike the MRU display list's maxMruItems)
-        /// since a join card should be suppressed even if the local copy has scrolled out of the
-        /// visible MRU list.
+        /// have a local copy on this machine -- paired with that copy's last-known user
+        /// (TeamCollectionLastKnownUser.txt, null when never recorded) so ComputeJoinCards can
+        /// apply its identity-aware suppression. Uncapped (unlike the MRU display list's
+        /// maxMruItems) since a join card should be suppressed even if the local copy has
+        /// scrolled out of the visible MRU list.
         /// </summary>
-        private static HashSet<string> GetLocalCloudCollectionIds()
+        private static List<(string cloudCollectionId, string lastKnownUser)> GetLocalCloudCopies()
         {
-            var ids = new HashSet<string>();
+            var copies = new List<(string cloudCollectionId, string lastKnownUser)>();
             foreach (var folderPath in GetCandidateCollectionFolders())
             {
                 var linkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(folderPath);
@@ -476,9 +499,11 @@ namespace Bloom.web.controllers
                     continue;
                 }
                 if (link != null && link.IsCloud)
-                    ids.Add(link.CloudCollectionId);
+                    copies.Add(
+                        (link.CloudCollectionId, TeamCollectionLastKnownUser.Read(folderPath))
+                    );
             }
-            return ids;
+            return copies;
         }
 
         /// <summary>

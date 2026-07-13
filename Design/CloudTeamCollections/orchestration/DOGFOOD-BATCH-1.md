@@ -524,14 +524,19 @@ up/download check
    (BrowserProgressDialog, 11:19:07 log — this hid the failed initial push), and
    NonFatalProblem reports go to stdout only. The dev launcher needs a way to run WITHOUT
    automation mode (flag through go.mjs → watchBloomExe), or humans keep not-seeing errors.
-11. **[NEW, 13 Jul, John's ruling recorded] Join-card dedup is identity-blind.** Bob
-   (invited, claimed member) got NO join card for Tetun because GetLocalCloudCollectionIds
-   suppresses by cloud id against EVERY local copy in the machine-wide chooser list —
-   including ALICE's C:\temp copy. John's decision: suppress a join card only if the
-   matching local copy was most recently opened by THIS signed-in account
-   (TeamCollectionLastKnownUser.txt equals the signed-in email; unknown/missing marker →
-   SHOW the card). Fix planned: identity-aware ComputeJoinCards (pure logic + tests),
-   GetLocalCloudCopies returning (id, lastKnownUser) pairs, signed-in email from SharingApi.
+11. **FIXED 13 Jul — join-card dedup is now identity-aware (John's ruling).** Bob (invited,
+   claimed member) got NO join card for Tetun because the dedup suppressed by cloud id
+   against EVERY local copy in the machine-wide chooser list — including ALICE's C:\temp
+   copy. Fix: ComputeJoinCards now takes (id, lastKnownUser) pairs + the signed-in email
+   and suppresses only when the copy's TeamCollectionLastKnownUser.txt matches the
+   signed-in account (case-insensitive); unknown/missing marker or another account's copy
+   → the card SHOWS (CloudJoinFlow's scenario matching handles merge/conflict at join
+   time, unchanged). New SharingApi.SignedInEmailForJoinCards;
+   GetLocalCloudCollectionIds → GetLocalCloudCopies. 8 chooser tests incl. the exact live
+   scenario (other account's copy → card shows); filter 435/435. Also cleaned this
+   morning's stale-state workarounds: poisoned Thursday caches purged from C:\temp\Tetun
+   Books (bug #9's trigger), both Chodri copies un-teamed (dead collection); backups in
+   C:\temp\stale-cloud-tc-backup-2026-07-13.
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)

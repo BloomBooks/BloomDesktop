@@ -509,6 +509,16 @@ namespace Bloom.web.controllers
             request.ReplyWithJson(collections);
         }
 
+        /// <summary>The signed-in cloud account's email, or null when signed out. Used by
+        /// CollectionChooserApi's join-card dedup (dogfood bug #11, John's ruling 13 Jul 2026):
+        /// a local copy of a cloud collection only suppresses that collection's join card when
+        /// the copy was most recently used by THIS account.</summary>
+        internal static string SignedInEmailForJoinCards()
+        {
+            var loginState = CurrentAuth().GetLoginState(CloudEnvironment.Current);
+            return loginState.SignedIn ? loginState.Email : null;
+        }
+
         /// <summary>Used by CollectionChooserApi.HandleGetJoinCards to compute join cards for the
         /// collection chooser (dogfood batch 1, item 6): the cloud collections the signed-in user
         /// is approved for, in the minimal Id/Name shape CloudJoinFlow already defines. Returns an
