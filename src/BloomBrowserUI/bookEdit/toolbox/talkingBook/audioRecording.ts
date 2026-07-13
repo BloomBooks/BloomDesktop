@@ -2713,7 +2713,18 @@ export default class AudioRecording implements IAudioRecorder {
     // Declared in this unusual way so we can use it as an event handler without messing with bind
     // and still get the right 'this'.
     private moveRecordingHighlightToClick = async (event: MouseEvent) => {
-        await this.moveRecordingHighlightToElement(event.target as HTMLElement);
+        const target = event.target as HTMLElement;
+        // Ignore clicks on the CKEditor formatting toolbar. It floats inside the page's document
+        // body (in a .cke_float container), so this capture-phase mousedown listener catches its
+        // buttons. Since a toolbar button isn't (and doesn't contain) an audio element,
+        // moveRecordingHighlightToElement would treat it as "clicked outside everything" and
+        // remove the current talking-book highlight (also disabling the recording controls via
+        // changeStateAndSetExpectedAsync("")). The toolbar acts on the text box that is already
+        // highlighted, so we must leave the highlight alone. The inline-editable content is not
+        // inside a .cke_float, so real content clicks still move the highlight. (Keyboard
+        // formatting shortcuts such as Ctrl+B don't fire mousedown, which is why they were unaffected.)
+        if (target.closest(".cke_float")) return;
+        await this.moveRecordingHighlightToElement(target);
     };
 
     // If we can somehow set audio recording to something associated with the argumennt, do so
