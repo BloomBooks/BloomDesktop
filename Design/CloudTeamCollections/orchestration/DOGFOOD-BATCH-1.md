@@ -476,8 +476,15 @@ up/download check
    accept one known e2e-4 failure). Standalone scoreboard as of 10 Jul late evening (after
    the queue-arrival spec fixes): e2e-3 ✅, e2e-5 ✅, e2e-6 ✅, e2e-8 ✅, e2e-9 ✅ (3/3),
    e2e-10 ✅; e2e-4 ❌ blocked solely on bug #0.
-4. Cosmetic (tracked): Administrators field shows registration email, not signed-in email
-   (see "Also queued from dogfooding").
+4. **UPGRADED from cosmetic (13 Jul human test): cloud TC identity must be the SIGNED-IN
+   account, not the registration email.** TeamCollectionManager.CurrentUser (=
+   Registration.Default.Email) drives Administrators, checkout attribution, and every
+   CurrentUserIdentity comparison — so John's Alice-signed-in instance displayed his books
+   as "checked out to john_thomson@sil.org" and every lockedBy comparison crosses
+   identities (it limps through only because the same-seat logic tolerates the mismatch).
+   For a cloud TC, CurrentUserIdentity should resolve to the signed-in cloud email.
+   Dogfood workaround (= what the e2e harness does): impersonate.txt line 1 in the
+   collection folder overrides the TC user (alice's copy got one 13 Jul).
 5. **Preflight (10 Jul PM, John's request):** light-review pass over the day's diff found 2
    valid adjacent holes, BOTH FIXED + tested (72246c2975): per-account (not per-instance)
    claim_memberships guard; machine-aware lock skip in the requeue pass. The GitHub half of
