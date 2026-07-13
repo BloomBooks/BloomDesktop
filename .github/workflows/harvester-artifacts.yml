@@ -148,9 +148,14 @@ jobs:
                   nunit_files: output/Tests/Release/x64/TestResults.xml
 
             # ----- Bundle -----
-            # Stage into the same internal layout as the old TeamCity downloadAll zip
-            # (bin/Release/x64, output/browser, DistFiles) so bloom-harvester's
-            # getDependencies.ps1 only needs its URL changed.
+            # Stage into the same internal layout as the old TeamCity downloadAll zip so
+            # bloom-harvester's getDependencies.ps1 only needs its URL changed. The TC
+            # artifact rules were:
+            #   output/Release => bin/Release
+            #   output/browser => output/browser
+            #   -: output/browser/*.*        (i.e. drop files at the browser ROOT only,
+            #                                 keeping all subdirectories)
+            #   DistFiles => DistFiles
             - name: Assemble dependency bundle
               shell: pwsh
               run: |
@@ -159,8 +164,12 @@ jobs:
                     if ($LASTEXITCODE -ge 8) { throw "robocopy failed ($LASTEXITCODE) copying $src" }
                   }
                   $staging = Join-Path $env:RUNNER_TEMP 'harvester-staging'
-                  Copy-Tree 'output\Release\x64' (Join-Path $staging 'bin\Release\x64')
-                  Copy-Tree 'output\browser' (Join-Path $staging 'output\browser')
+                  Copy-Tree 'output\Release' (Join-Path $staging 'bin\Release')
+                  # Copy each subdirectory of output/browser, skipping files at its root,
+                  # to match TC's "-: output/browser/*.*" exclusion.
+                  Get-ChildItem 'output\browser' -Directory | ForEach-Object {
+                    Copy-Tree $_.FullName (Join-Path $staging "output\browser\$($_.Name)")
+                  }
                   Copy-Tree 'DistFiles' (Join-Path $staging 'DistFiles')
                   Push-Location $staging
                   7z a -tzip "$env:GITHUB_WORKSPACE\bloom-harvester-deps.zip" *
