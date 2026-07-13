@@ -21,7 +21,7 @@ import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { kBloomDisabledOpacity } from "../../../utils/colorUtils";
 import { getAsync, useApiObject } from "../../../utils/bloomApi";
-import AudioRecording from "../../toolbox/talkingBook/audioRecording";
+import { audioExistsForIdsAsync } from "../audioUtils";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { canvasElementControlRegistry } from "../../toolbox/canvas/canvasElementControlRegistry";
 import { buildCanvasElementControlRegistryContext } from "../../toolbox/canvas/buildCanvasElementControlRegistryContext";
@@ -156,7 +156,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             props.canvasElement,
         );
         const ids = audioSentences.map((sentence) => sentence.id);
-        AudioRecording.audioExistsForIdsAsync(ids)
+        audioExistsForIdsAsync(ids)
             .then((audioExists) => {
                 setTextHasAudio(audioExists);
             })

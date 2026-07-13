@@ -21,7 +21,7 @@ import { updateCanvasElementClass } from "../toolbox/canvas/canvasElementDomUtil
 import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
-import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
+import { kPlaybackOrderContainerClass } from "./talkingBookMarkupConstants";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
 import {
     changeImage,

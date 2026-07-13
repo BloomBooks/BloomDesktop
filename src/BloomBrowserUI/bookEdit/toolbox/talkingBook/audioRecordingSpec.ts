@@ -12,13 +12,14 @@ import AudioRecording, {
     initializeTalkingBookToolAsync,
     AudioMode,
     getAllAudioModes,
-    kAnyRecordingApiUrl,
     theOneAudioRecorder,
 } from "./audioRecording";
+import { kAnyRecordingApiUrl } from "../../js/audioUtils";
 import { RecordingMode } from "./recordingMode";
 import axios from "axios";
 import $ from "jquery";
 import { mockReplies } from "../../../utils/bloomApi";
+import { Status } from "./TalkingBookUiState";
 
 // Notes:
 // For any async tests:
@@ -321,7 +322,7 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             expect(recording.playingAudio()).toBe(false);
-
+            recording.setupForListen();
             const player: Element = document.getElementById("player")!;
             player.setAttribute("preload", "auto");
             const nonExistentFilePath = "`[];'/.,<>?;.mp3";
@@ -1307,9 +1308,7 @@ describe("audio recording tests", () => {
             await recording.endRecordCurrentAsync();
             await vi.advanceTimersByTimeAsync(300);
 
-            expect(document.getElementById("audio-record")).not.toHaveClass(
-                "active",
-            );
+            expect(recording.uiState.buttons.record).not.toBe(Status.Active);
 
             recording.clearTimeouts();
         });
@@ -1338,9 +1337,7 @@ describe("audio recording tests", () => {
             await startRecordCall;
             await vi.advanceTimersByTimeAsync(300);
 
-            expect(document.getElementById("audio-record")).not.toHaveClass(
-                "active",
-            );
+            expect(recording.uiState.buttons.record).not.toBe(Status.Active);
 
             recording.clearTimeouts();
         });
@@ -1355,9 +1352,6 @@ describe("audio recording tests", () => {
             SetupIFrameFromHtml(`<div id="page1">${divHtml}</div>`);
 
             addRecordingChecksums(scenario);
-
-            const clearButton = document.getElementById("audio-clear")!;
-            clearButton.classList.add("enabled");
         }
 
         function addRecordingChecksums(scenario: AudioMode) {
@@ -1373,13 +1367,13 @@ describe("audio recording tests", () => {
             });
         }
 
-        const runClearRecordingAsync = async (scenario) => {
-            const recording = new AudioRecording();
+        const runClearRecordingAsync = async (recording, scenario) => {
             if (scenario === AudioMode.PureSentence) {
                 recording.recordingMode = RecordingMode.Sentence;
             } else {
                 recording.recordingMode = RecordingMode.TextBox;
             }
+            recording.uiState.buttons.clear = Status.Enabled;
             recording.setSoundFrom(getFrameElementById("page", "div1")!);
             await recording.clearRecordingAsync();
         };
@@ -1392,8 +1386,9 @@ describe("audio recording tests", () => {
         });
 
         async function runClearRecordingMd5TestAsync(scenario: AudioMode) {
+            const recording = new AudioRecording();
             setupClearRecordingTest(scenario);
-            await runClearRecordingAsync(scenario);
+            await runClearRecordingAsync(recording, scenario);
 
             // Verification
             if (scenario === AudioMode.PureSentence) {
@@ -1421,13 +1416,13 @@ describe("audio recording tests", () => {
         }
 
         it("clearRecording() disables button", async () => {
+            const recording = new AudioRecording();
             setupClearRecordingTest();
 
-            await runClearRecordingAsync(AudioMode.PureSentence);
+            await runClearRecordingAsync(recording, AudioMode.PureSentence);
 
-            const clearButton = document.getElementById("audio-clear")!;
-            expect(clearButton).not.toHaveClass("enabled");
-            expect(clearButton).toHaveClass("disabled");
+            expect(recording.uiState.buttons.clear).not.toBe(Status.Enabled);
+            expect(recording.uiState.buttons.clear).toBe(Status.Disabled);
         });
 
         getAllAudioModes().forEach((scenario) => {
@@ -1438,6 +1433,7 @@ describe("audio recording tests", () => {
         });
 
         async function runClearRecordingDeleteTest(scenario: AudioMode) {
+            const recording = new AudioRecording();
             vi.restoreAllMocks();
             vi.spyOn(axios, "post").mockImplementation((url: string) => {
                 if (url.includes("/bloom/api/audio/deleteSegment?id")) {
@@ -1453,7 +1449,7 @@ describe("audio recording tests", () => {
             };
 
             const run = async () => {
-                return runClearRecordingAsync(scenario);
+                return runClearRecordingAsync(recording, scenario);
             };
 
             const verify = () => {
@@ -2300,7 +2296,6 @@ function applyPolyfillsToIframe(iframe: HTMLIFrameElement) {
 }
 
 export async function setupForAudioRecordingTests() {
-    SetupTalkingBookUIElements();
     const iframe = await SetupIFrameAsync();
 
     // Keep iframe src as about:blank to avoid jsdom trying to load a file
@@ -2326,15 +2321,6 @@ export async function setupForAudioRecordingTests() {
     vi.spyOn(theOneAudioRecorder as any, "urlPrefix").mockReturnValue(
         "http://localhost:63315/bloom/api/audio/wavFile?id=audio/",
     );
-}
-
-// Just sets up some dummy elements so that they're non-null.
-function SetupTalkingBookUIElements() {
-    document.body.appendChild(document.createElement("div")); // Ensures there is always an element.
-
-    const html =
-        '<button id="audio-record" ></button><button id="audio-play"></button><div id="audio-split-wrapper"><button id="audio-split"></button></div><button id="audio-next"></button><button id="audio-prev"></button><button id="audio-clear"></button><input id="audio-recordingModeControl"><div id="audio-recordingModeControl-clickHandler" /></input><div id="audio-playbackOrderControl"></div><input id="audio-showImageDescription"><div id="audio-showImageDescription-clickHandler" /></input><audio id="player" ></audio>';
-    document.body.firstElementChild!.insertAdjacentHTML("afterend", html);
 }
 
 export function StripPlayerSrcNoCacheSuffix(url: string): string {

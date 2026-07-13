@@ -1,7 +1,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/ckeditor/ckeditor.d.ts" />
 
-import AudioRecording from "../toolbox/talkingBook/audioRecording";
+import { createValidXhtmlUniqueId } from "../js/xhtmlIdUtils";
 import { get, post } from "../../utils/bloomApi";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { tryProcessHyperlink } from "./hyperlinks";
@@ -520,7 +520,7 @@ export default class BloomField {
             nodelist.forEach(
                 (span: Element, key: number, parent: NodeListOf<Element>) => {
                     const oldId = span.getAttribute("id");
-                    const newId = AudioRecording.createValidXhtmlUniqueId();
+                    const newId = createValidXhtmlUniqueId();
                     span.setAttribute("id", newId);
                     post(`audio/copyAudioFile?oldId=${oldId}&newId=${newId}`);
                 },

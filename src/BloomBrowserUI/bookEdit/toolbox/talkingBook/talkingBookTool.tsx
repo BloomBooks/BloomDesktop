@@ -1,17 +1,30 @@
 import { hideImageDescriptions } from "../imageDescription/imageDescriptionUtils";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 import { beginLoadSynphonySettings } from "../readers/readerTools";
-import { getTheOneToolbox, ITool } from "../toolbox";
+import { getTheOneToolbox } from "../toolbox";
 import { ToolBox } from "../toolbox";
-import { getAudioRecorder } from "./audioRecording";
+import { getAudioRecorder, getOrCreateAudioRecorder } from "./audioRecording";
 import * as AudioRecorder from "./audioRecording";
+import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
+import { TalkingBookToolControls } from "./TalkingBookToolControls";
 
-export default class TalkingBookTool implements ITool {
+// This class renders the TalkingBookToolControls React component
+// in the toolbox, and passes into it an instance of the audioRecorder.
+// Also, this class handles logic such as page markup, loading necessary
+// settings, detaching and reattaching the tool to a page, showing and
+// hiding the talking book tool, switching between plain "|"'s and
+// "bloom-audio-split-marker" spans that appear in the page, and showing
+// any existing image descriptions.
+export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     imageUpdated(img: HTMLImageElement | undefined): void {
         // No action needed for this tool
     }
     public makeRootElement(): HTMLDivElement {
-        throw new Error("Method not implemented.");
+        return this.adaptReactElement(
+            <TalkingBookToolControls
+                audioRecorder={getOrCreateAudioRecorder()}
+            />,
+        );
     }
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do except that we need the sentence ending punctuation settings
@@ -21,14 +34,6 @@ export default class TalkingBookTool implements ITool {
 
     public isAlwaysEnabled(): boolean {
         return true;
-    }
-
-    public isExperimental(): boolean {
-        return false;
-    }
-
-    public requiresToolId(): boolean {
-        return false;
     }
 
     public configureElements(container: HTMLElement) {

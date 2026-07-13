@@ -5,7 +5,7 @@ import {
     kBloomButtonClass,
     kImageFitModeAttribute,
 } from "../../toolbox/canvas/canvasElementConstants";
-import AudioRecording from "../../toolbox/talkingBook/audioRecording";
+import { createValidXhtmlUniqueId } from "../xhtmlIdUtils";
 import { postData, postJson } from "../../../utils/bloomApi";
 import { cloneCanvasElementHtmlStructure } from "./canvasElementCloneCleanup";
 
@@ -369,7 +369,7 @@ export class CanvasElementDuplication {
         sourceId: string,
         copiedElement: Element,
     ): void {
-        const newId = AudioRecording.createValidXhtmlUniqueId();
+        const newId = createValidXhtmlUniqueId();
         copiedElement.setAttribute("id", newId);
         void copyAudioFileAsync(sourceId, newId); // we don't need to wait for this to finish
         const duration = sourceElement.getAttribute("data-duration");
