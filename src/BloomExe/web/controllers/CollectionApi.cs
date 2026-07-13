@@ -776,6 +776,12 @@ namespace Bloom.web.controllers
                 localBookInfos.Select(i => i.FolderName),
                 StringComparer.OrdinalIgnoreCase
             );
+            // BookInfo.Id IS the meta.json bookInstanceId -- the same identity the server's
+            // tc.books.instance_id carries (bug #15).
+            var localInstanceIds = new HashSet<string>(
+                localBookInfos.Select(i => i.Id).Where(id => !string.IsNullOrEmpty(id)),
+                StringComparer.OrdinalIgnoreCase
+            );
             var repoBooks = cloudCollection
                 .GetBookList()
                 .Select(name =>
@@ -783,6 +789,7 @@ namespace Bloom.web.controllers
                 );
             return ComputeNotYetDownloadedBookEntries(
                 localNames,
+                localInstanceIds,
                 repoBooks,
                 collection.PathToDirectory
             );
@@ -790,18 +797,29 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Pure merge logic (unit-tested by CollectionApiTests, no filesystem/network/repo access):
-        /// given the local book folder names already scanned from disk and the full repo book list
-        /// (folder name, stable instance id) for a Cloud Team Collection, returns placeholder
-        /// entries for repo books that have no local folder yet.
+        /// given the local book folder names AND local book instance ids already scanned from disk
+        /// and the full repo book list (folder name, stable instance id) for a Cloud Team
+        /// Collection, returns placeholder entries for repo books that have no local presence yet.
+        /// A repo book is locally present when a folder has its NAME or -- bug #15 (John's ruling:
+        /// instance id is the book's identity) -- when any local book has its INSTANCE ID, e.g. a
+        /// checked-out book whose local folder was renamed ahead of check-in; without the id check
+        /// that book grew a phantom "not yet downloaded" placeholder next to its real button.
         /// </summary>
         internal static List<BookListEntry> ComputeNotYetDownloadedBookEntries(
             ISet<string> localBookFolderNames,
+            ISet<string> localBookInstanceIds,
             IEnumerable<(string name, string instanceId)> repoBooks,
             string collectionPathToDirectory
         )
         {
             return repoBooks
-                .Where(b => !localBookFolderNames.Contains(b.name))
+                .Where(b =>
+                    !localBookFolderNames.Contains(b.name)
+                    && (
+                        string.IsNullOrEmpty(b.instanceId)
+                        || !localBookInstanceIds.Contains(b.instanceId)
+                    )
+                )
                 .Select(b => new BookListEntry
                 {
                     id = b.instanceId ?? b.name,

@@ -317,9 +317,15 @@ namespace BloomTests.TeamCollection.Cloud
             _collection.BookRepoChange += (sender, args) => raisedFileName = args.BookFileName;
 
             // Script the next get_changes poll: same book, now at seq 2 (someone checked in).
+            // Answer anything else blandly instead of asserting: raising the change event queues
+            // a background auto-apply download (RemoteBookAutoApplyQueue.RunLoop), which may
+            // reach get_book_manifest on its own thread while this handler is still installed --
+            // that side effect is not what this test pins, and a strict assert here made it
+            // flaky under full-suite timing.
             _executor.Handler = req =>
             {
-                Assert.That(req.Resource, Is.EqualTo("rest/v1/rpc/get_changes"));
+                if (req.Resource != "rest/v1/rpc/get_changes")
+                    return FakeResponses.Make(HttpStatusCode.OK, "{}");
                 var body = new JObject
                 {
                     ["events"] = new JArray(

@@ -22,6 +22,7 @@ namespace BloomTests.web.controllers
         {
             var result = CollectionApi.ComputeNotYetDownloadedBookEntries(
                 new HashSet<string>(),
+                new HashSet<string>(),
                 new List<(string name, string instanceId)>(),
                 "C:/Collections/My Collection"
             );
@@ -34,6 +35,7 @@ namespace BloomTests.web.controllers
         {
             var result = CollectionApi.ComputeNotYetDownloadedBookEntries(
                 new HashSet<string>(), // nothing local at all yet -- fresh progressive join
+                new HashSet<string>(),
                 new List<(string name, string instanceId)> { ("Remote Book", "instance-1") },
                 "C:/Collections/My Collection"
             );
@@ -56,6 +58,7 @@ namespace BloomTests.web.controllers
         {
             var result = CollectionApi.ComputeNotYetDownloadedBookEntries(
                 new HashSet<string> { "Already Here" },
+                new HashSet<string>(),
                 new List<(string name, string instanceId)> { ("Already Here", "instance-1") },
                 "C:/Collections/My Collection"
             );
@@ -77,6 +80,7 @@ namespace BloomTests.web.controllers
             // by using the same kind of set a real caller would.
             var result = CollectionApi.ComputeNotYetDownloadedBookEntries(
                 new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "already here" }, // different case
+                new HashSet<string>(),
                 new List<(string name, string instanceId)> { ("Already Here", "instance-1") },
                 "C:/Collections/My Collection"
             );
@@ -93,6 +97,7 @@ namespace BloomTests.web.controllers
         {
             var result = CollectionApi.ComputeNotYetDownloadedBookEntries(
                 new HashSet<string> { "Book A" },
+                new HashSet<string>(),
                 new List<(string name, string instanceId)>
                 {
                     ("Book A", "instance-a"),
@@ -110,12 +115,37 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
+        public void ComputeNotYetDownloadedBookEntries_LocalBookWithSameInstanceIdButDifferentName_NoPlaceholder()
+        {
+            // Bug #15: a checked-out book renamed locally ahead of check-in. The repo still lists
+            // it under the OLD name (no local folder by that name), but a local book with the SAME
+            // instance id exists -- it IS this book, so no phantom placeholder.
+            var result = CollectionApi.ComputeNotYetDownloadedBookEntries(
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Tetun moon and cap" },
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "instance-1" },
+                new List<(string name, string instanceId)>
+                {
+                    ("The Moon and the Cap", "instance-1"),
+                },
+                "C:/Collections/My Collection"
+            );
+
+            Assert.That(
+                result,
+                Is.Empty,
+                "a repo book whose instance id matches a local book is locally present, whatever "
+                    + "its folder is currently called"
+            );
+        }
+
+        [Test]
         public void ComputeNotYetDownloadedBookEntries_MissingInstanceId_FallsBackToNameAsId()
         {
             // A book whose instance id isn't known yet (shouldn't normally happen, but the id must
             // never be null/empty -- the client uses it as a React key and a websocket-message
             // correlation id).
             var result = CollectionApi.ComputeNotYetDownloadedBookEntries(
+                new HashSet<string>(),
                 new HashSet<string>(),
                 new List<(string name, string instanceId)> { ("No Instance Id Book", null) },
                 "C:/Collections/My Collection"

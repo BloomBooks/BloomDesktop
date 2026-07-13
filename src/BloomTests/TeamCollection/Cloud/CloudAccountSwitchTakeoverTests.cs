@@ -227,6 +227,21 @@ namespace BloomTests.TeamCollection.Cloud
         // OkToCheckIn: same-machine takeover is allowed; cross-machine is not
         // ------------------------------------------------------------------
 
+        /// <summary>Creates the local folder for a scripted repo book, carrying the meta.json
+        /// instance id ScriptCollectionState gives it ("instance-" + bookId). Required since the
+        /// bug-#15 identity-first resolution: a local folder binds to its repo row by its
+        /// meta.json id, so a bare folder with no meta.json reads as an unrelated local-only
+        /// book, not as the repo book of the same name.</summary>
+        private void CreateLocalBookFolder(string bookName, string bookId)
+        {
+            var folderPath = _collectionFolder.Combine(bookName);
+            System.IO.Directory.CreateDirectory(folderPath);
+            System.IO.File.WriteAllText(
+                System.IO.Path.Combine(folderPath, "meta.json"),
+                $"{{\"bookInstanceId\":\"instance-{bookId}\"}}"
+            );
+        }
+
         [Test]
         public void OkToCheckIn_LockedByOtherAccount_SameMachine_ReturnsTrue()
         {
@@ -236,7 +251,7 @@ namespace BloomTests.TeamCollection.Cloud
             // irrelevant to OkToCheckIn -- it only reads its checksum -- so it's left at
             // whatever GetStatus/WithChecksum produces, matching the DifferentMachine test
             // below.) WriteLocalStatus needs the book's own folder to already exist.
-            System.IO.Directory.CreateDirectory(_collectionFolder.Combine("My Book"));
+            CreateLocalBookFolder("My Book", "book-1");
             var localStatus = _collection.GetStatus("My Book").WithChecksum("checksum-book-1");
             _collection.WriteLocalStatus("My Book", localStatus);
 
@@ -253,7 +268,7 @@ namespace BloomTests.TeamCollection.Cloud
                 kOtherMachine,
                 ThisSeat
             );
-            System.IO.Directory.CreateDirectory(_collectionFolder.Combine("My Book"));
+            CreateLocalBookFolder("My Book", "book-1");
             var localStatus = _collection.GetStatus("My Book").WithChecksum("checksum-book-1");
             _collection.WriteLocalStatus("My Book", localStatus);
 
@@ -272,7 +287,7 @@ namespace BloomTests.TeamCollection.Cloud
                 ThisMachine,
                 "someone-elses-seat"
             );
-            System.IO.Directory.CreateDirectory(_collectionFolder.Combine("My Book"));
+            CreateLocalBookFolder("My Book", "book-1");
             var localStatus = _collection.GetStatus("My Book").WithChecksum("checksum-book-1");
             _collection.WriteLocalStatus("My Book", localStatus);
 

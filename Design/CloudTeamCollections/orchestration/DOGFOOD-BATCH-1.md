@@ -574,8 +574,31 @@ up/download check
    constraint, not this one). Contradicted the schema's own documented intent ("claimed
    user unique"); dogfooding never tripped it because invites happened to alternate with
    claims. Fix: 20260713000002 recreates the constraint with default NULLS DISTINCT.
-15. **[NEW, 13 Jul PM] Renaming a checked-out book breaks the client-side name→book
-   binding until check-in** (John's live report; server verified CONSISTENT — one row,
+15. **FIXED 13 Jul PM — identity-first book resolution (John's ruling: "the status of a
+   particular record by instanceID in the database is the source of truth for that book's
+   state" — ALWAYS by instance id for a local folder, not merely as a name-miss fallback,
+   so an offline-created local book X never wears the status of a teammate's checked-in
+   book that happens to share the name X).** CloudTeamCollection.ResolveBookId: a local
+   folder resolves ONLY by its meta.json bookInstanceId → _bookIdByInstanceId (unreadable
+   id ⇒ null, fail-safe "local-only", never a name guess); the name index applies only
+   when no local folder exists (repo-name queries, e.g. GetBookList names). Applied to
+   status/lock/seat/version/delete/fetch/casing/history-filter lookups; PutBookInRepo now
+   resolves by instance id ONLY (a name match could have checked in over a different
+   same-named book — the worst form of this bug); RenameBookInRepo is now a documented
+   no-op (_pendingRenameBookId deleted — identity resolution makes the bridge redundant);
+   GetRepoBookFile deliberately stays name-based (base contract: repo names, per
+   NewBookRenamedFrom/GetRepoBooksByIdMap). Placeholder merge
+   (CollectionApi.ComputeNotYetDownloadedBookEntries) also suppresses by local instance
+   id, killing the phantom "shadow" card. Per John: FolderTeamCollection untouched — all
+   changes are CloudTeamCollection overrides + the cloud-only placeholder path;
+   TeamCollection.cs/FolderTeamCollection.cs byte-identical. Tests: new
+   CloudIdentityFirstLookupTests (renamed-checked-out book keeps its row+avatar; John's
+   offline same-name conflict scenario; repo-name lookup unaffected; no-meta folder
+   fail-safe) + placeholder-suppression test; two OkToCheckIn fixtures updated to give
+   their local folder its real meta.json identity; PolledChanges fake server made
+   tolerant of the auto-apply background download (pre-existing cross-thread flake its
+   strict assert caused). Filter (Cloud|TeamCollection|SharingApi|CollectionApi) 442/442.
+   ORIGINAL DIAGNOSIS (13 Jul PM, John's live report; server verified CONSISTENT — one row,
    "The Moon and the Cap", still locked by Bob, seq 1, no rename/check-in events).
    Cloud renames are carried only at check-in (RenameBookInRepo + checkin-start
    proposedName, by design), but every client-side repo lookup is by FOLDER NAME:

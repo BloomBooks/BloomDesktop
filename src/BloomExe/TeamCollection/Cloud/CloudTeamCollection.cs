@@ -68,14 +68,16 @@ namespace Bloom.TeamCollection.Cloud
             string
         >(StringComparer.Ordinal);
 
-        // Set by RenameBookInRepo (called by the base PutBook, immediately before PutBookInRepo,
-        // whenever a rename is pending) so the following PutBookInRepo call can resolve the book id
-        // under the NEW folder name even though the cache/index still only know the OLD name until
-        // checkin-finish's subsequent HydrateFromServer catches up.
-        private readonly Dictionary<string, string> _pendingRenameBookId = new Dictionary<
+        // Cache of local book folders' meta.json instance ids, keyed by folder name and
+        // revalidated against meta.json's write time + size (bug #15): ResolveBookId consults
+        // the local identity on every repo lookup, and status lookups run in tight per-book
+        // loops (SyncAtStartup, book-button rendering), so an uncached read would hammer disk.
+        private readonly Dictionary<
             string,
-            string
-        >(StringComparer.OrdinalIgnoreCase);
+            (string instanceId, long writeTimeTicks, long fileLength)
+        > _localInstanceIdCache = new Dictionary<string, (string, long, long)>(
+            StringComparer.OrdinalIgnoreCase
+        );
 
         // Per-(book,file) cache of single-file repo fetches (GetRepoBookFile), valid for this
         // process's lifetime -- avoids re-downloading e.g. meta.json for the same book repeatedly
@@ -169,19 +171,19 @@ namespace Bloom.TeamCollection.Cloud
         /// <summary>The version seq of what's currently on THIS machine's disk for a book, or null
         /// if never Sent/Received here (book-status JSON's "localVersionSeq").</summary>
         public long? GetLocalVersionSeq(string bookFolderName) =>
-            TryGetCachedBook(bookFolderName)?.LocalVersionSeq;
+            ResolveCachedBook(bookFolderName)?.LocalVersionSeq;
 
         /// <summary>The latest version seq known to be in the repo for a book, or null if the book
         /// isn't cached at all (book-status JSON's "repoVersionSeq").</summary>
         public long? GetRepoVersionSeq(string bookFolderName) =>
-            TryGetCachedBook(bookFolderName)?.CurrentVersionSeq;
+            ResolveCachedBook(bookFolderName)?.CurrentVersionSeq;
 
         /// <summary>The server book id for a book folder name, or null if unknown -- lets
         /// SharingApi's history endpoint match a "current book only" filter (Bloom's BookInfo has
         /// no notion of the server's tc.books.id) without duplicating this class's private
         /// name/instanceId -&gt; id index.</summary>
         public string TryGetBookIdForHistoryFilter(string bookFolderName) =>
-            TryGetBookId(bookFolderName);
+            ResolveBookId(bookFolderName);
 
         /// <summary>
         /// Count of live, currently-unlocked books whose repo version is newer than what's on this
@@ -310,13 +312,90 @@ namespace Bloom.TeamCollection.Cloud
             }
         }
 
+        /// <summary>Resolve a REPO book name (e.g. one returned by GetBookList) to its server book
+        /// id. This is pure name-index lookup; for anything that denotes a LOCAL book folder, use
+        /// <see cref="ResolveBookId"/>, which resolves by the folder's own instance id.</summary>
         private string TryGetBookId(string bookName)
         {
             lock (_indexGate)
             {
-                if (_pendingRenameBookId.TryGetValue(bookName, out var pendingId))
-                    return pendingId;
                 return _bookIdByName.TryGetValue(bookName, out var id) ? id : null;
+            }
+        }
+
+        /// <summary>
+        /// Resolve a book folder name to its server book id, IDENTITY FIRST (bug #15; John's
+        /// ruling, 13 Jul 2026: "the status of a particular record by instanceID in the database
+        /// is the source of truth for that book's state"). When a local folder exists, its
+        /// meta.json bookInstanceId -- never its folder name -- decides which server row (if any)
+        /// is this book. That keeps (a) a checked-out book that was renamed locally bound to its
+        /// own row until check-in carries the rename to the server, and (b) a local book that
+        /// merely shares a NAME with some other checked-in book (e.g. created offline while a
+        /// teammate checked in an unrelated book of the same name) from wearing that book's
+        /// status. A local folder whose id cannot be read resolves to null ("not in the repo")
+        /// rather than guessing by name -- fail-safe, degrading to "local-only book". The name
+        /// index is consulted only when there is NO local folder, i.e. the caller is asking about
+        /// a repo book (typically a name from GetBookList).
+        /// </summary>
+        private string ResolveBookId(string bookFolderName)
+        {
+            var folderPath = Path.Combine(_localCollectionFolder, bookFolderName);
+            if (Directory.Exists(folderPath))
+            {
+                var instanceId = TryGetLocalBookInstanceId(bookFolderName);
+                return instanceId == null ? null : TryGetBookIdByInstanceId(instanceId);
+            }
+            return TryGetBookId(bookFolderName);
+        }
+
+        private CloudCachedBook ResolveCachedBook(string bookFolderName)
+        {
+            var id = ResolveBookId(bookFolderName);
+            return id == null ? null : _cache.TryGetBook(id);
+        }
+
+        /// <summary>Test-only: exposes <see cref="ResolveBookId"/>'s identity-first semantics.</summary>
+        internal string ResolveBookIdForTests(string bookFolderName) =>
+            ResolveBookId(bookFolderName);
+
+        /// <summary>The meta.json bookInstanceId of the LOCAL folder, or null when the folder has
+        /// no readable id. Cached per folder name, revalidated by meta.json timestamp+size (the
+        /// id itself never legitimately changes in place, but the folder a name points at can --
+        /// delete + recreate, rename shuffles).</summary>
+        private string TryGetLocalBookInstanceId(string bookFolderName)
+        {
+            try
+            {
+                var metaInfo = new FileInfo(
+                    Path.Combine(_localCollectionFolder, bookFolderName, "meta.json")
+                );
+                if (!metaInfo.Exists)
+                    return null;
+                var writeTimeTicks = metaInfo.LastWriteTimeUtc.Ticks;
+                var fileLength = metaInfo.Length;
+                lock (_indexGate)
+                {
+                    if (
+                        _localInstanceIdCache.TryGetValue(bookFolderName, out var cached)
+                        && cached.writeTimeTicks == writeTimeTicks
+                        && cached.fileLength == fileLength
+                    )
+                        return cached.instanceId;
+                }
+                var instanceId = GetBookId(bookFolderName); // base helper: meta.json's Id
+                lock (_indexGate)
+                    _localInstanceIdCache[bookFolderName] = (
+                        instanceId,
+                        writeTimeTicks,
+                        fileLength
+                    );
+                return instanceId;
+            }
+            catch (Exception)
+            {
+                // Unreadable folder/meta.json = unknown identity; callers treat that as
+                // "not a repo book" rather than misbinding by name.
+                return null;
             }
         }
 
@@ -434,7 +513,10 @@ namespace Bloom.TeamCollection.Cloud
         )
         {
             EnsureCacheHydrated();
-            var cachedBook = TryGetCachedBook(bookFolderName);
+            // Identity-first (bug #15): a local folder resolves by its own instance id, so a
+            // locally-renamed checked-out book still reports ITS row's status, and a local book
+            // that merely shares a name with someone else's checked-in book reports none.
+            var cachedBook = ResolveCachedBook(bookFolderName);
             if (cachedBook == null || !cachedBook.CurrentVersionSeq.HasValue)
             {
                 // Either genuinely absent from the repo, or a never-committed new book (invisible to
@@ -455,13 +537,13 @@ namespace Bloom.TeamCollection.Cloud
         public override bool IsBookPresentInRepo(string bookFolderName)
         {
             EnsureCacheHydrated();
-            var cachedBook = TryGetCachedBook(bookFolderName);
+            var cachedBook = ResolveCachedBook(bookFolderName);
             return cachedBook != null && cachedBook.CurrentVersionSeq.HasValue;
         }
 
         public override bool KnownToHaveBeenDeleted(string oldName)
         {
-            var cachedBook = TryGetCachedBook(oldName);
+            var cachedBook = ResolveCachedBook(oldName);
             return cachedBook != null && cachedBook.DeletedAt.HasValue;
         }
 
@@ -488,7 +570,7 @@ namespace Bloom.TeamCollection.Cloud
         protected override void WriteBookStatusJsonToRepo(string bookName, string status)
         {
             var newStatus = BookStatus.FromJson(status);
-            var bookId = TryGetBookId(bookName);
+            var bookId = ResolveBookId(bookName);
             if (bookId == null)
                 return; // never-committed book; checkin-start/finish already established repo state.
 
@@ -530,7 +612,7 @@ namespace Bloom.TeamCollection.Cloud
         /// exactly what lets AttemptLock's caller show "checked out by X" immediately).</summary>
         protected override bool TryLockInRepo(string bookName, BookStatus newStatus)
         {
-            var bookId = TryGetBookId(bookName);
+            var bookId = ResolveBookId(bookName);
             if (bookId == null)
                 return true; // brand-new, never-committed local book; nothing to lock server-side yet.
 
@@ -543,7 +625,7 @@ namespace Bloom.TeamCollection.Cloud
         /// <summary>Single RPC unlock/force-unlock, per CONTRACTS.md's unlock_book/force_unlock.</summary>
         protected override void UnlockInRepo(string bookName, bool force)
         {
-            var bookId = TryGetBookId(bookName);
+            var bookId = ResolveBookId(bookName);
             if (bookId == null)
                 return;
             if (force)
@@ -595,7 +677,7 @@ namespace Bloom.TeamCollection.Cloud
         /// </summary>
         private bool IsLockSeatHere(string bookName, bool allowUnknownSeat)
         {
-            var seat = TryGetCachedBook(bookName)?.LockedSeat;
+            var seat = ResolveCachedBook(bookName)?.LockedSeat;
             if (seat == null)
                 return allowUnknownSeat;
             return seat == SeatId;
@@ -644,7 +726,7 @@ namespace Bloom.TeamCollection.Cloud
         /// </summary>
         protected internal override bool TryTakeOverLock(string bookName)
         {
-            var bookId = TryGetBookId(bookName);
+            var bookId = ResolveBookId(bookName);
             if (bookId == null)
                 return true; // brand-new, never-committed local book; nothing to take over.
 
@@ -709,7 +791,12 @@ namespace Bloom.TeamCollection.Cloud
                     $"Could not read the book id of \"{bookFolderName}\" from its meta.json; cannot send it to the cloud Team Collection."
                 );
 
-            var bookId = TryGetBookId(bookFolderName) ?? TryGetBookIdByInstanceId(bookInstanceId);
+            // Identity ONLY -- never the folder name (bug #15, John's ruling). Resolving by name
+            // here could bind this check-in to a DIFFERENT book that happens to hold the name
+            // (e.g. a teammate checked one in while we were offline) and silently overwrite it;
+            // an unknown instance id correctly means "first-ever Send of a new book" instead,
+            // and the server's name-conflict retry below gives it a distinct name if needed.
+            var bookId = TryGetBookIdByInstanceId(bookInstanceId);
             var cachedBook = bookId == null ? null : _cache.TryGetBook(bookId);
             // CONTRACTS.md: checkin-start's `files` is the FULL proposed manifest; the SERVER
             // diffs it against the current version and its response's changedPaths[] tells us
@@ -876,7 +963,7 @@ namespace Bloom.TeamCollection.Cloud
                 zip.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null, null);
                 zip.Save();
 
-                var bookId = TryGetBookId(bookFolderName);
+                var bookId = ResolveBookId(bookFolderName);
                 try
                 {
                     _client.LogEvent(
@@ -934,7 +1021,7 @@ namespace Bloom.TeamCollection.Cloud
         )
         {
             EnsureCacheHydrated();
-            var bookId = TryGetBookId(bookName);
+            var bookId = ResolveBookId(bookName);
             if (bookId == null)
                 return $"Could not find the book \"{bookName}\" in the cloud Team Collection.";
 
@@ -1174,7 +1261,7 @@ namespace Bloom.TeamCollection.Cloud
             // "delete without tombstone" mode server-side. The base class's own doc comment on
             // makeTombstone notes we currently never pass false, so this is not a live gap today.
             var bookFolderName = Path.GetFileName(bookFolderPath);
-            var bookId = TryGetBookId(bookFolderName);
+            var bookId = ResolveBookId(bookFolderName);
             if (bookId == null)
                 return; // never made it to the repo; nothing to delete there.
             _client.DeleteBookRpc(bookId);
@@ -1183,19 +1270,15 @@ namespace Bloom.TeamCollection.Cloud
 
         public override void RenameBookInRepo(string newBookFolderPath, string oldName)
         {
-            // Cloud renames are carried implicitly: the caller (base PutBook) calls this and then
-            // immediately calls PutBookInRepo, whose checkin-start sends the NEW name as
-            // proposedName for the SAME book id -- the server updates the book row's name at
-            // checkin-finish (Design/CloudTeamCollections.md: "Folder keyed by instance id -> rename
-            // is a DB row update"). All we need to do here is make sure PutBookInRepo can resolve
-            // the book id under the new name before the cache/index catch up.
-            var newName = Path.GetFileName(newBookFolderPath);
-            var bookId = TryGetBookId(oldName);
-            if (bookId != null)
-            {
-                lock (_indexGate)
-                    _pendingRenameBookId[newName] = bookId;
-            }
+            // Deliberately a no-op for the cloud backend. Cloud renames are carried implicitly:
+            // the caller (base PutBook) calls this and then immediately calls PutBookInRepo,
+            // whose checkin-start sends the NEW name as proposedName for the SAME book id -- the
+            // server updates the book row's name at checkin-finish
+            // (Design/CloudTeamCollections.md: "Folder keyed by instance id -> rename is a DB row
+            // update"). And since every repo lookup for a local folder resolves by the folder's
+            // meta.json instance id (bug #15, ResolveBookId), the renamed folder already binds to
+            // its row without any bridging state here (an earlier version kept a pending
+            // new-name -> id map for exactly that gap).
         }
 
         protected override void MoveRepoBookToLostAndFound(string bookName)
@@ -1218,7 +1301,7 @@ namespace Bloom.TeamCollection.Cloud
 
         public override bool DoLocalAndRemoteNamesDifferOnlyByCase(string bookBaseName)
         {
-            var cachedBook = TryGetCachedBook(bookBaseName);
+            var cachedBook = ResolveCachedBook(bookBaseName);
             if (cachedBook == null || string.IsNullOrEmpty(cachedBook.Name))
                 return false;
             return !string.Equals(cachedBook.Name, bookBaseName, StringComparison.Ordinal)
@@ -1227,7 +1310,7 @@ namespace Bloom.TeamCollection.Cloud
 
         public override void EnsureConsistentCasingInLocalName(string bookBaseName)
         {
-            var cachedBook = TryGetCachedBook(bookBaseName);
+            var cachedBook = ResolveCachedBook(bookBaseName);
             if (cachedBook == null || !DoLocalAndRemoteNamesDifferOnlyByCase(bookBaseName))
                 return;
             var localFolderPath = Path.Combine(_localCollectionFolder, bookBaseName);
