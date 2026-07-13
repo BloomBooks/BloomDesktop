@@ -26,6 +26,22 @@ using SIL.Reporting;
 namespace Bloom.TeamCollection
 {
     /// <summary>
+    /// Thrown by SyncAtStartup when a book's .bloom file cannot be read and the file
+    /// appears to be in the process of downloading (e.g. an incomplete Dropbox sync).
+    /// </summary>
+    public class BookDownloadingException : Exception
+    {
+        /// <summary>The name of the book whose repo file could not be read.</summary>
+        public string BookName { get; }
+
+        public BookDownloadingException(string bookName)
+            : base($"The book '{bookName}' appears to be downloading")
+        {
+            BookName = bookName;
+        }
+    }
+
+    /// <summary>
     /// Abstract class, of which currently FolderTeamRepo is the only existing or planned implementation.
     /// The goal is to put here the logic that is independent of exactly how the shared data is stored
     /// and sharing is accomplished, to minimize what has to be reimplemented if we offer another option.
@@ -60,6 +76,33 @@ namespace Bloom.TeamCollection
         /// Books that have been remotely renamed but not yet reloaded and renamed locally.
         /// </summary>
         private HashSet<string> _remotelyRenamedBooks = new HashSet<string>();
+
+        /// <summary>
+        /// Books copied from the repo to the local collection during the most recent SyncAtStartup.
+        /// Used in StartMonitoringOnIdle to detect any repo changes that Dropbox made during the
+        /// sync-to-monitoring window (after sync read the file but before the watcher started).
+        /// </summary>
+        private readonly HashSet<string> _booksCopiedDuringSync = new(
+            StringComparer.OrdinalIgnoreCase
+        );
+
+        /// <summary>
+        /// True while SyncAtStartup is executing. Guards <see cref="_booksCopiedDuringSync"/>
+        /// so that CopyBookFromRepoToLocal only populates the set during sync, not when called
+        /// from UndoCheckoutBook or the HandleModifiedFile auto-recopy path.
+        /// </summary>
+        private bool _syncIsRunning;
+
+        /// <summary>
+        /// For testing only. Puts the collection into the same state SyncAtStartup establishes
+        /// before copying books, so that CopyBookFromRepoToLocal will track books in
+        /// _booksCopiedDuringSync exactly as it does during a real sync.
+        /// </summary>
+        internal void TestOnly_BeginFakeSync()
+        {
+            _booksCopiedDuringSync.Clear();
+            _syncIsRunning = true;
+        }
 
         public TeamCollection(
             ITeamCollectionManager manager,
@@ -389,6 +432,11 @@ namespace Bloom.TeamCollection
                 GetStatus(bookName),
                 destinationCollectionFolder ?? _localCollectionFolder
             );
+            // Track books copied to our own collection folder so StartMonitoringOnIdle can
+            // detect any repo changes that occurred in the sync-to-monitoring window.
+            // Only during SyncAtStartup — not from UndoCheckoutBook or the auto-recopy path.
+            if (destinationCollectionFolder == null && _syncIsRunning)
+                _booksCopiedDuringSync.Add(bookName);
             return null;
         }
 
@@ -1490,13 +1538,41 @@ namespace Bloom.TeamCollection
                 }
                 else if (HasBeenChangedRemotely(bookBaseName))
                 {
-                    _tcLog.WriteMessage(
-                        MessageAndMilestoneType.NewStuff,
-                        "TeamCollection.BookModifiedRemotely",
-                        "One of your teammates has made changes to the book '{0}'",
-                        bookBaseName,
-                        null
-                    );
+                    // If this book was just synced during the current reload (e.g., a renamed
+                    // book), the repo change is likely Dropbox completing a two-phase delivery
+                    // (Phase 1 had the correct name but old content; Phase 2 has the final
+                    // content). Silently re-copy so the user doesn't need a second Reload.
+                    if (_booksCopiedDuringSync.Remove(bookBaseName))
+                    {
+                        var copyError = CopyBookFromRepoToLocal(bookBaseName);
+                        if (copyError == null)
+                        {
+                            // Re-copy succeeded; tell the preview to refresh from disk.
+                            _tcManager.SendBookContentReload();
+                            // Fall through to UpdateBookStatus below.
+                        }
+                        else
+                        {
+                            // Re-copy failed; notify the user so they can Reload manually.
+                            _tcLog.WriteMessage(
+                                MessageAndMilestoneType.NewStuff,
+                                "TeamCollection.BookModifiedRemotely",
+                                "One of your teammates has made changes to the book '{0}'",
+                                bookBaseName,
+                                null
+                            );
+                        }
+                    }
+                    else
+                    {
+                        _tcLog.WriteMessage(
+                            MessageAndMilestoneType.NewStuff,
+                            "TeamCollection.BookModifiedRemotely",
+                            "One of your teammates has made changes to the book '{0}'",
+                            bookBaseName,
+                            null
+                        );
+                    }
                 }
 
                 //Debug.WriteLine("Updated status for " + bookBaseName);
@@ -1929,14 +2005,62 @@ namespace Bloom.TeamCollection
             );
             _tcLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
 
+            // Clear before the unreadable-books loop so that an early return (e.g., a book is
+            // still downloading) never leaves stale entries from a previous sync. Stale entries
+            // in _booksCopiedDuringSync would cause StartMonitoringOnIdle to treat a genuine
+            // teammate change as a Dropbox two-phase delivery and suppress the NewStuff notification.
+            _remotelyRenamedBooks.Clear();
+            _booksCopiedDuringSync.Clear();
+            _syncIsRunning = true;
+
             var hasProblems = false; //set true if we get any problems
 
-            var repoBooksByIdMap = GetRepoBooksByIdMap();
+            var unreadableBooks = new List<string>();
+            var repoBooksByIdMap = GetRepoBooksByIdMap(unreadableBooks);
+            foreach (var bookName in unreadableBooks)
+            {
+                if (IsBookDownloading(bookName))
+                {
+                    // A download is in progress. For a first-time join the local folder is
+                    // incomplete and cannot be opened; the exception is caught by the caller
+                    // (SynchronizeRepoAndLocal) which cleans up and shows a fatal message.
+                    // For a normal reload, abort sync and leave the TC button in an error
+                    // state with the Reload button visible so the user can retry.
+                    if (firstTimeJoin)
+                    {
+                        _syncIsRunning = false;
+                        throw new BookDownloadingException(bookName);
+                    }
 
-            // The list of these that we maintain to track changes while we are running
-            // is distinct from the list that is a local variable here and tracks ones
-            // we actually are in the process of fixing.
-            _remotelyRenamedBooks.Clear();
+                    // Use Error (not ErrorNoReload) so the Reload button stays visible in the
+                    // TC dialog until the user successfully reloads.
+                    _tcLog.WriteMessage(
+                        MessageAndMilestoneType.Error,
+                        "TeamCollection.BookFileDownloading",
+                        "The book '{0}' in the Team Collection appears to be downloading. Please wait a few minutes and then click Reload Collection.",
+                        bookName
+                    );
+                    progress.MessageWithoutLocalizing(
+                        string.Format(
+                            LocalizationManager.GetString(
+                                "TeamCollection.BookFileDownloading",
+                                "The book '{0}' in the Team Collection appears to be downloading. Please wait a few minutes and then click Reload Collection."
+                            ),
+                            bookName
+                        ),
+                        ProgressKind.Error
+                    );
+                    // Abort sync. Do NOT write LogDisplayed; leaving it absent keeps CurrentErrors
+                    // populated so the TC button stays in the Error state.
+                    _syncIsRunning = false;
+                    return true;
+                }
+
+                // The file is stably unreadable (not growing), so it is likely corrupt rather
+                // than mid-download. Leave the book for the normal sync loops, which will log a
+                // GetBadZipFileMessage error when they try to access it.
+            }
+
             var remotelyRenamedBooks = new HashSet<string>(); // Books actually found to be renamed (by new name)
 
             // Delete books that we think have been deleted remotely from the repo.
@@ -2454,14 +2578,12 @@ namespace Bloom.TeamCollection
                 }
             }
 
-            if (hasProblems)
-            {
-                // Not sure this is the best place for this. But currently the warnings/errors are
-                // shown in the progress dialog if we return any, so a reasonable assumption is
-                // that any we return here are immediately shown.
-                _tcLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
-            }
+            // Mark all messages written during this sync as displayed. The progress dialog showed
+            // them whether or not there were problems, so any NewStuff or Error message written
+            // *after* this point (e.g. by the watcher) will correctly appear as unread.
+            _tcLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
 
+            _syncIsRunning = false;
             return hasProblems;
         }
 
@@ -2473,10 +2595,30 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
+        /// Get the local path we expect to use for the specified book id based on the current repo state.
+        /// This helps restore selection after a remote rename before the local folder has been renamed.
+        /// </summary>
+        public string GetLikelyLocalPathForBookId(string bookId)
+        {
+            if (string.IsNullOrWhiteSpace(bookId))
+                return null;
+
+            var repoBooksById = GetRepoBooksByIdMap();
+            if (!repoBooksById.TryGetValue(bookId, out var repoBookInfo))
+                return null;
+
+            return Path.Combine(_localCollectionFolder, repoBookInfo.Item1);
+        }
+
+        /// <summary>
         /// Return a dictionary of all books in the repo which do not correspond to a local book folder.
         /// key: book GUID; value: (book name in repo (without extension), haveCorrespondingLocalBook).
         /// </summary>
-        private Dictionary<string, Tuple<string, bool>> GetRepoBooksByIdMap()
+        /// <param name="unreadableBooks">If non-null, names of books whose repo files could not be
+        /// read are added to this collection instead of being silently ignored.</param>
+        private Dictionary<string, Tuple<string, bool>> GetRepoBooksByIdMap(
+            ICollection<string> unreadableBooks = null
+        )
         {
             var newBooks = new Dictionary<string, Tuple<string, bool>>();
 
@@ -2500,11 +2642,23 @@ namespace Bloom.TeamCollection
                 catch (Exception e)
                     when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
                 {
-                    // we just won't treat it as a possible rename or conflict if we can't get the meta.json.
+                    unreadableBooks?.Add(bookName);
                 }
             }
 
             return newBooks;
+        }
+
+        /// <summary>
+        /// Return true if the named book's repo file appears to be actively downloading
+        /// (e.g. a Dropbox sync in progress) rather than permanently corrupt.
+        /// The base implementation always returns false; override in implementations
+        /// that support progressive in-place downloads such as Dropbox.
+        /// May block briefly to observe whether the file is growing.
+        /// </summary>
+        protected virtual bool IsBookDownloading(string bookName)
+        {
+            return false;
         }
 
         // Return true if copied successfully, false if there is a problem (which this method will report).
@@ -2595,6 +2749,8 @@ namespace Bloom.TeamCollection
                 (progress, worker) =>
                 {
                     bool waitForUserToCloseDialogOrReportProblems;
+                    // Declared here (not inside the try block) so the catch filter can access it.
+                    bool doingFirstTimeJoinCollectionMerge = false;
                     try
                     {
                         // Not useful to have the date and time in the progress dialog, but definitely
@@ -2607,7 +2763,7 @@ namespace Bloom.TeamCollection
                             ProgressKind.Progress
                         );
 
-                        bool doingFirstTimeJoinCollectionMerge =
+                        doingFirstTimeJoinCollectionMerge =
                             TeamCollectionManager.NextMergeIsFirstTimeJoinCollection;
                         TeamCollectionManager.NextMergeIsFirstTimeJoinCollection = false;
                         // don't want messages about the collection being changed while we're synchronizing,
@@ -2627,10 +2783,52 @@ namespace Bloom.TeamCollection
                         // REVIEW: What do we want to happen if exception throw here? Should we add to {problems} list?
                         UpdateStatusOfAllCheckedOutBooks();
 
-                        progress.Message("Done", "Done");
+                        // SyncAtStartup writes LogDisplayed at the end of every complete run,
+                        // whether clean or with errors. If it's absent the sync was aborted early
+                        // (e.g. a book was still downloading); in that case skip "Done" — the
+                        // error message already tells the user what happened.
+                        if (
+                            _tcLog.Messages.Any(m =>
+                                m.MessageType == MessageAndMilestoneType.LogDisplayed
+                            )
+                        )
+                            progress.Message("Done", "Done");
 
-                        // Tasks that are waiting for the sync may be done now, whether or not it had errors.
+                        // ReadyToShowCollections (and any equivalent whenDone action) must fire
+                        // whether or not sync was aborted, so Bloom can finish starting up and
+                        // show the TC error indicator.
                         whenDone?.Invoke();
+
+                        // Sync may have renamed or added book folders (e.g., a remote rename).
+                        // Invalidate the cached book list so the React UI rescans and shows the
+                        // current collection state rather than what was cached before sync ran.
+                        _bookCollectionHolder?.TheOneEditableCollection?.InvalidateBookList();
+                    }
+                    catch (BookDownloadingException ex) when (doingFirstTimeJoinCollectionMerge)
+                    {
+                        // During a first-time join the local collection folder contains only
+                        // minimal files (no books). A download is still in progress so the
+                        // sync cannot complete, leaving the collection in an unusable state.
+                        // Clean up the incomplete folder so the user can re-join cleanly.
+                        waitForUserToCloseDialogOrReportProblems = true;
+                        try
+                        {
+                            SIL.IO.RobustIO.DeleteDirectoryAndContents(_localCollectionFolder);
+                        }
+                        catch
+                        {
+                            // Best effort — if deletion fails the user can clean up manually.
+                        }
+                        progress.MessageWithoutLocalizing(
+                            string.Format(
+                                LocalizationManager.GetString(
+                                    "TeamCollection.BookFileDownloadingJoin",
+                                    "Cannot join the Team Collection: the book '{0}' appears to be downloading. Please wait for the download to complete and then double-click the Join file again."
+                                ),
+                                ex.BookName
+                            ),
+                            ProgressKind.Fatal
+                        );
                     }
                     catch (Exception ex)
                     {
@@ -2641,6 +2839,10 @@ namespace Bloom.TeamCollection
                         );
                     }
                     AddHelpMessageIfProblems(progress);
+
+                    // Allow startup tasks that depend on team sync completion (such as
+                    // selecting and previewing a book) to proceed.
+                    StartupScreenManager.StartupMilestoneReached("teamSyncCompleted");
 
                     // The dialog may continue to show for a bit, but other idle-time startup tasks
                     // (possibly queued during whenDone()) may continue.
@@ -2677,6 +2879,17 @@ namespace Bloom.TeamCollection
         {
             Application.Idle -= StartMonitoringOnIdle;
             StartMonitoring();
+            // The watcher was not running during sync. Any repo file that Dropbox wrote
+            // after sync read it (but before the watcher started) would have been missed.
+            // Check the books we just copied and fire HandleModifiedFile for any that now
+            // show a checksum mismatch, so the TC button and status panel stay consistent.
+            foreach (var bookName in _booksCopiedDuringSync.ToList())
+            {
+                if (HasBeenChangedRemotely(bookName))
+                    HandleModifiedFile(
+                        new BookRepoChangeEventArgs { BookFileName = bookName + ".bloom" }
+                    );
+            }
         }
 
         protected virtual void Dispose(bool disposing)

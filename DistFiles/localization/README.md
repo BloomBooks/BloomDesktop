@@ -51,8 +51,9 @@ and it negates most of the value of using Crowdin to begin with.
   changing them merely causes the corresponding addition, removal, or reordering in the
   translation xliff file.
 
-- Editing the *source* element content causes the approval status of the *trans-unit* element to
-  be reset but does not affect the content of the *target* element (translation).
+- I (AP, May 2026) am pretty sure this is affected by the `update_option` option in crowdin.yml.
+  - What I think is true today with `update_option: update_without_changes` on master: Editing the *source* element content does not affect the translation.
+  - What this document had previously (and I think is true of `update_option: update_as_unapproved` which we had previously): Editing the *source* element content causes the approval status of the *trans-unit* element to be reset but does not affect the content of the *target* element (translation).
 
 - Adding an empty *target* element to a *trans-unit* element has no effect apart from possibly
   putting the *target* and *note* elements in the right order in the target (translated) xliff
@@ -269,6 +270,8 @@ a normal merge with all that history would probably be okay.)
 
 
 ## Updating Bloom and Palaso xliff files
+
+I (AP, May 2026) am pretty sure this whole section is obsolete/incorrect.
 
 Bloom 4.1 and later have a special mode of operation to help with updating the English source
 Bloom and Palaso xliff files that operates only with Debug builds.  It is enabled either by a

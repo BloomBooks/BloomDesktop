@@ -224,11 +224,54 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// This gets set when a new book is created by copying a source book.
-        /// It is the folder name (without path) of the source book.
-        /// Setting this allows the code which renames the new book to make a more helpful history report.
+        /// If set, this book was newly created from the named source book and has a pending "Created"
+        /// history event. The event will be recorded (with whatever title the book has at that point)
+        /// when the book is deselected. In the meantime, title-change events are suppressed so they
+        /// don't produce spurious Renamed entries before the Created entry is written.
+        /// The value is the folder name (without path) of the source book.
         /// </summary>
-        public static string SourceToReportForNextRename;
+        public string PendingCreationSource { get; set; }
+
+        /// <summary>
+        /// Snapshot of the source book's title (in L1, usually empty) captured when the new book is created.
+        /// This lets us distinguish true user title edits from automatic recalculation.
+        /// </summary>
+        public string PendingCreationSourceTitle { get; set; }
+
+        /// <summary>
+        /// If there is a pending "Created" history event (set during book creation), record it now
+        /// using the book's current title.
+        /// </summary>
+        /// <param name="onlyIfTitleChanged">If true, skip recording if the book title is still
+        /// the same as the source book name (i.e. the user has not yet given the book its own title).
+        /// Pass false when flushing at deselection or shutdown or checkin so we always get at least
+        /// one entry.</param>
+        public void RecordPendingCreatedHistoryEvent(bool onlyIfTitleChanged = false)
+        {
+            if (PendingCreationSource == null)
+                return;
+            if (onlyIfTitleChanged)
+            {
+                // Compare L1 titles to detect if the user has actually changed the title.
+                // Extract the current book's L1 title using its BookData language.
+                var sourceTitle = PendingCreationSourceTitle ?? string.Empty;
+                var currentL1Title = string.Empty;
+                if (BookInfo != null && BookData != null)
+                {
+                    currentL1Title =
+                        BookInfo.GetTitleForLanguage(BookData.Language1Tag) ?? string.Empty;
+                }
+                if (sourceTitle == currentL1Title)
+                    return;
+            }
+            BookHistory.AddEvent(
+                this,
+                BookHistoryEventType.Created,
+                $"Created a new book \"{Storage.Dom.Title}\" from a source book \"{PendingCreationSource}\""
+            );
+            PendingCreationSource = null;
+            PendingCreationSourceTitle = null;
+        }
 
         public void UpdateBookInfoFromDisk()
         {
@@ -249,26 +292,17 @@ namespace Bloom.Book
             }
             else
             {
-                var folderName = Path.GetFileName(FolderPath);
-                if (SourceToReportForNextRename == null)
+                if (PendingCreationSource == null)
                 {
+                    // Normal rename: the user changed the book title
                     BookHistory.AddEvent(
                         this,
                         BookHistoryEventType.Renamed,
                         $"Book title changed to \"{Storage.Dom.Title}\""
                     );
                 }
-                else
-                {
-                    // On this path we don't think the folder name will be significantly different from the title
-                    // (added number to disambiguate, illegal characters removed). So don't need two versions.
-                    BookHistory.AddEvent(
-                        this,
-                        BookHistoryEventType.Created,
-                        $"Created a new book \"{Storage.Dom.Title}\" from a source book \"{SourceToReportForNextRename}\""
-                    );
-                    SourceToReportForNextRename = null;
-                }
+                // else: this book is newly created and its Created event is pending deselection;
+                // suppress this title-change so we don't get spurious Renamed entries before Created.
             }
             // Ensure proper path for any new book title and embedded CSS that is now invalid.
             SettingsUpdated();
@@ -4864,7 +4898,10 @@ namespace Bloom.Book
                 BookStorage.ShowAccessDeniedErrorReport(e);
                 return;
             }
-
+            // If the user has given the book its own title, record the Created entry now so
+            // any further renames are reported normally. (If the title is still just the source
+            // book name, we defer until deselection or shutdown.)
+            RecordPendingCreatedHistoryEvent(onlyIfTitleChanged: true);
             DoPostSaveTasks();
         }
 
@@ -4885,6 +4922,8 @@ namespace Bloom.Book
             Guard.Against(HasFatalError, "Save failed: " + FatalErrorDescription);
             Guard.Against(!IsSaveable, "Tried to save a non-editable book.");
             Storage.SaveForPageChanged(pageId, modifiedPage);
+            // Same as Save(): eagerly record the Created entry once the user has given the book a title.
+            RecordPendingCreatedHistoryEvent(onlyIfTitleChanged: true);
             DoPostSaveTasks();
         }
 

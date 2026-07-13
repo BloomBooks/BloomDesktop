@@ -232,6 +232,26 @@
         <source xml:lang="en">Red on white</source>
         <note>ID: EditTab.Toolbox.Games.Themes.red-on-white</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.pollinator">
+        <source xml:lang="en">Pollinator</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.pollinator</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.garden-path">
+        <source xml:lang="en">Garden Path</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.garden-path</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.cherry-blossom">
+        <source xml:lang="en">Cherry Blossom</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.cherry-blossom</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.coral-reef">
+        <source xml:lang="en">Coral Reef</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.coral-reef</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.Themes.arctic-dawn">
+        <source xml:lang="en">Arctic Dawn</source>
+        <note>ID: EditTab.Toolbox.Games.Themes.arctic-dawn</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Placeholder.DragLettersInstructions">
         <source>Drag the letters where they go</source>
         <note>ID: EditTab.Toolbox.Games.Placeholder.DragLettersInstructions</note>
@@ -718,6 +738,71 @@
       <trans-unit id="CollectionTab.OnBlorgBadge.Problem" sil:dynamic="true">
         <source xml:lang="en">Problem</source>
         <note>CollectionTab.OnBlorgBadge.Problem</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource" translate="no">
+        <source xml:lang="en">Import .bloomSource File(s)</source>
+        <note>ID: CollectionTab.ImportBloomSource</note>
+        <note>Menu command (and dialog title) that imports one or more books from .bloomSource files into the current collection. Keep ".bloomSource" unchanged; it is a file extension.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.ChoiceTitle" translate="no">
+        <source xml:lang="en">Import books</source>
+        <note>ID: CollectionTab.ImportBloomSource.ChoiceTitle</note>
+        <note>Title of the dialogs shown while importing .bloomSource file(s): the one that asks whether to import for editing or as derivatives, and the one that asks how to handle books already in the collection.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.EditChoice" translate="no">
+        <source xml:lang="en">Import for editing</source>
+        <note>ID: CollectionTab.ImportBloomSource.EditChoice</note>
+        <note>Radio-button choice in the import dialog: import the book(s) to edit them directly.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.EditChoiceDescription" translate="no">
+        <source xml:lang="en">Preserve everything.</source>
+        <note>ID: CollectionTab.ImportBloomSource.EditChoiceDescription</note>
+        <note>Explanation shown under the "Import for editing" radio-button choice in the import dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoice" translate="no">
+        <source xml:lang="en">Import as derivatives — new books based on the originals</source>
+        <note>ID: CollectionTab.ImportBloomSource.DerivativeChoice</note>
+        <note>Radio-button choice in the import dialog: use the imported book(s) as the basis for new derivative books (e.g. translations).</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.DerivativeChoiceDescription" translate="no">
+        <source xml:lang="en">Use a new book ID &amp; make room for new copyright and credits while preserving those of the original.</source>
+        <note>ID: CollectionTab.ImportBloomSource.DerivativeChoiceDescription</note>
+        <note>Explanation shown under the "Import as derivatives" radio-button choice in the import dialog.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.DuplicatePrompt" translate="no">
+        <source xml:lang="en">Some of these books are already in this collection.</source>
+        <note>ID: CollectionTab.ImportBloomSource.DuplicatePrompt</note>
+        <note>Shown once when importing .bloomSource file(s), if any of the books is already in the collection.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.Replace" translate="no">
+        <source xml:lang="en">Replace the existing books</source>
+        <note>ID: CollectionTab.ImportBloomSource.Replace</note>
+        <note>Radio-button choice in the import duplicate prompt: replace the existing book(s) with the imported one(s).</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.ReplaceDescription" translate="no">
+        <source xml:lang="en">The current copies will be overwritten.</source>
+        <note>ID: CollectionTab.ImportBloomSource.ReplaceDescription</note>
+        <note>Secondary line under the "Replace the existing books" choice in the import duplicate prompt.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.ReplaceNeedsCheckout" translate="no">
+        <source xml:lang="en">All books must be checked out</source>
+        <note>ID: CollectionTab.ImportBloomSource.ReplaceNeedsCheckout</note>
+        <note>Secondary line under the "Replace the existing books" choice in the import duplicate prompt, shown (and the choice disabled) when the collection is a Team Collection and one or more of the books being replaced is not checked out.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.AddCopy" translate="no">
+        <source xml:lang="en">Add them as new copies</source>
+        <note>ID: CollectionTab.ImportBloomSource.AddCopy</note>
+        <note>Radio-button choice in the import duplicate prompt: keep the existing book(s) and add the imported one(s) as new copies.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.AddCopyDescription" translate="no">
+        <source xml:lang="en">The existing books stay as they are.</source>
+        <note>ID: CollectionTab.ImportBloomSource.AddCopyDescription</note>
+        <note>Secondary line under the "Add them as new copies" choice in the import duplicate prompt.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ImportBloomSource.Importing" translate="no">
+        <source xml:lang="en">Importing Books</source>
+        <note>ID: CollectionTab.ImportBloomSource.Importing</note>
+        <note>Title of the progress dialog shown while .bloomSource file(s) are being imported.</note>
       </trans-unit>
       <trans-unit id="BookSettings.LockedByBranding" sil:dynamic="true">
         <source xml:lang="en">Locked by {0} Branding</source>

@@ -505,7 +505,11 @@ export default class OverflowChecker {
             }
             const isButton =
                 $editable.closest("." + kBloomButtonClass).length > 0;
-            if ($editable.parents("[class*=Device]").length === 0 || isButton) {
+            if (
+                $editable.parents("[class*=Device],[class*=Ebook]").length ===
+                    0 ||
+                isButton
+            ) {
                 // don't show an overflow warning if we have scrolling available (unless it's a button)
                 theOneLocalizationManager
                     .asyncGetText(
@@ -713,7 +717,9 @@ export default class OverflowChecker {
         const $page = $(page);
         return (
             $page.hasClass("Device16x9Portrait") ||
-            $page.hasClass("Device16x9Landscape")
+            $page.hasClass("Device16x9Landscape") ||
+            $page.hasClass("Ebook2x3Portrait") ||
+            $page.hasClass("Ebook7x5Landscape")
         );
     }
     // Make sure there are no boxes with class 'overflow' or 'thisOverflowingParent' on the page before removing

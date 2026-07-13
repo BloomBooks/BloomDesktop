@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ProgressDialog } from "../react_components/Progress/ProgressDialog";
-import { post, postDataWithConfig } from "../utils/bloomApi";
+import { post, postBoolean, postDataWithConfig } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";
 import { ShowEditViewDialog } from "./workspaceRoot";
 import WebSocketManager from "../utils/WebSocketManager";
@@ -12,6 +12,10 @@ const ProcessVideoProgressDialog: React.FunctionComponent<{
     const [isOpen, setIsOpen] = React.useState(true);
     const importStarted = React.useRef(false);
     const importFinished = React.useRef(false);
+
+    React.useEffect(() => {
+        postBoolean("editView/setModalState", isOpen);
+    }, [isOpen]);
 
     const finishImport = (importedPath?: string) => {
         if (importFinished.current) {

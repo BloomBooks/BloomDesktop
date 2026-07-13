@@ -3402,6 +3402,62 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void SuckInDataFromEditedDom_CustomLayoutTextStyle_DoesNotTransferToStandardField()
+        {
+            var bookDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div id='bloomDataDiv'>
+                    <div data-book='contentLanguage1' lang='*'>en</div>
+                    <div data-book='bookTitle' lang='en'><p>Standard Title</p></div>
+                </div>
+				<div class='bloom-page' id='titlePage'>
+                    <div class='bloom-editable Title-On-Title-Page-style' data-book='bookTitle' lang='en'><p/></div>
+				</div>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+                    <div class='marginBox'></div>
+				</div>
+			</body></html>"
+            );
+            var data = new BookData(bookDom, _collectionSettings, null);
+
+            var editedPageDom = new HtmlDom(
+                @"<html><head></head><body>
+				<div class='bloom-page bloom-customLayout' data-custom-layout-id='customOutsideFrontCover' id='customCover1'>
+					<div class='marginBox'>
+                        <div class='bloom-editable Title-On-Cover-style bloom-visibility-code-on' data-book='bookTitle' lang='en' data-audiorecordingmode='TextBox' style='color: red; -webkit-text-stroke-color: rgb(0, 0, 0); -webkit-text-stroke-width: 2px; paint-order: stroke;'><p>Custom Title</p></div>
+					</div>
+				</div>
+			</body></html>"
+            );
+
+            data.SuckInDataFromEditedDom(editedPageDom);
+
+            var standardTitle = (SafeXmlElement)
+                bookDom.SelectSingleNodeHonoringDefaultNS(
+                    "//*[@id='titlePage']//*[@data-book='bookTitle' and @lang='en']"
+                );
+            var savedTitle = (SafeXmlElement)
+                bookDom.SelectSingleNodeHonoringDefaultNS(
+                    "//*[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en']"
+                );
+            var customTitle = (SafeXmlElement)
+                bookDom.SelectSingleNodeHonoringDefaultNS(
+                    "//*[@id='customCover1']//*[@data-book='bookTitle' and @lang='en']"
+                );
+
+            Assert.That(standardTitle.HasAttribute("style"), Is.False);
+            Assert.That(savedTitle.HasAttribute("style"), Is.False);
+            Assert.That(
+                standardTitle.GetAttribute("data-audiorecordingmode"),
+                Is.EqualTo("TextBox")
+            );
+            Assert.That(
+                customTitle.GetAttribute("style"),
+                Does.Contain("-webkit-text-stroke-color")
+            );
+        }
+
+        [Test]
         public void SuckInDataFromEditedDom_CustomLayoutPage_InactivatesNestedDataAndClassesInDataDiv_ButRestoresInLiveDom()
         {
             var bookDom = new HtmlDom(
@@ -3619,6 +3675,7 @@ namespace BloomTests.Book
                         <div class='bloom-translationGroup'>
                             <div class='bloom-editable bloom-visibility-code-on audio-sentence' data-book='bookTitle' lang='en' id='i6a720491' data-audiorecordingmode='TextBox' recordingmd5='5b5efdab7f705554614a6383ae6d9469' data-duration='5.839433'><p>My Title</p></div>
 						</div>
+                        <img id='transientImageId' src='cover.png'/>
                         <div data-book='customNote' lang='en'><p><span class='audio-sentence' id='nestedSentenceId'>Nested sentence</span></p></div>
                         <p><span class='audio-sentence' id='plainSentenceId'>Unbound sentence</span></p>
 					</div>
@@ -3650,6 +3707,12 @@ namespace BloomTests.Book
                 .Dom(bookDom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//div[@data-book-inactive='customNote']//span[contains(@class,'audio-sentence') and @data-id-inactive='nestedSentenceId' and not(@id) and not(@id-inactive)]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@id='bloomDataDiv']/div[@data-book='customOutsideFrontCover']//img[@src='cover.png' and not(@id) and not(@data-id-inactive) and not(@id-inactive)]",
                     1
                 );
             AssertThatXmlIn
