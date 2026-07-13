@@ -132,6 +132,16 @@ const dotnetArgs = [
     "--automation",
 ];
 
+// `pnpm go` is the HUMAN launcher: --attended keeps --automation's ready-handshake and
+// single-instance bypass but turns its unattended-UI policies back off (dialog auto-close,
+// problem-report suppression). Without it, any warning in the Team Collection startup sync
+// auto-closed the sync dialog and silently killed the launch (dogfood bug #16, 13 Jul 2026).
+// Set BLOOM_GO_UNATTENDED=1 for a fully unattended launch (agent-driven CDP runs that must
+// never block on a dialog); the E2E harness has its own launcher and is unaffected either way.
+if (process.env.BLOOM_GO_UNATTENDED !== "1") {
+    dotnetArgs.push("--attended");
+}
+
 const startupLabel = getHelpfulStartupLabel(options.repoRoot);
 
 if (startupLabel) {

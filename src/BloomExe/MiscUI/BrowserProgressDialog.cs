@@ -96,14 +96,17 @@ namespace Bloom.MiscUI
 
                     // stop the spinner
                     socketServer.SendEvent(socketContext, "finished");
-                    if (waitForUserToCloseDialogOrReportProblems && Program.StartupAutomation)
+                    if (waitForUserToCloseDialogOrReportProblems && Program.UnattendedAutomation)
                     {
-                        // In automation mode (--automation: E2E harnesses, CI) there is no human
-                        // to click the Close/Report buttons, so the wait-for-user state below
-                        // would hang the run forever (diagnosed twice from dotnet-stack dumps of
-                        // hung instances -- see Design/CloudTeamCollections/tasks/09-e2e.md
-                        // finding 9). Log that problems were reported and close, so the failure
-                        // surfaces to the driving test as an error it can read instead of a hang.
+                        // In UNATTENDED automation (E2E harnesses, CI -- --automation without
+                        // --attended) there is no human to click the Close/Report buttons, so the
+                        // wait-for-user state below would hang the run forever (diagnosed twice
+                        // from dotnet-stack dumps of hung instances -- see
+                        // Design/CloudTeamCollections/tasks/09-e2e.md finding 9). Log that
+                        // problems were reported and close, so the failure surfaces to the
+                        // driving test as an error it can read instead of a hang. An ATTENDED
+                        // automation launch (a developer's `pnpm go`) keeps the buttons: bug #16
+                        // was this auto-close silently killing a human's startup over a warning.
                         SIL.Reporting.Logger.WriteEvent(
                             "BrowserProgressDialog: problems were reported during progress-dialog "
                                 + "work; auto-closing because Bloom is in automation mode (see "
@@ -256,10 +259,10 @@ namespace Bloom.MiscUI
 
                 // stop the spinner
                 socketServer.SendEvent(socketContext, "finished");
-                if (waitForUserToCloseDialogOrReportProblems && Program.StartupAutomation)
+                if (waitForUserToCloseDialogOrReportProblems && Program.UnattendedAutomation)
                 {
                     // See the matching branch in DoWorkWithProgressDialog above: no human exists
-                    // to click the buttons in automation mode, so close instead of hanging.
+                    // to click the buttons in UNATTENDED automation, so close instead of hanging.
                     SIL.Reporting.Logger.WriteEvent(
                         "BrowserProgressDialog: problems were reported during progress-dialog "
                             + "work; auto-closing because Bloom is in automation mode (see "

@@ -106,6 +106,21 @@ namespace Bloom
         internal static string StartupLabel { get; private set; }
         internal static bool StartupAutomation { get; private set; }
 
+        /// <summary>--attended modifies --automation: a HUMAN is at the machine (e.g. a
+        /// developer's `pnpm go` launch, which needs --automation's ready-handshake and
+        /// single-instance bypass but not its unattended-UI policies). See
+        /// <see cref="UnattendedAutomation"/> for what it turns back on.</summary>
+        internal static bool StartupAttended { get; private set; }
+
+        /// <summary>True only for machine-driven runs with NO human present (E2E harnesses, CI):
+        /// --automation without --attended. This -- not StartupAutomation -- gates the policies
+        /// that suppress or auto-close human-facing UI (progress-dialog auto-close, problem/notify
+        /// dialog suppression). Dogfood bug #16 (13 Jul 2026): those policies gated on plain
+        /// StartupAutomation while `pnpm go` always passes --automation, so a mere WARNING in the
+        /// team-collection startup sync auto-closed the dialog and silently killed a human's
+        /// Bloom at every launch.</summary>
+        internal static bool UnattendedAutomation => StartupAutomation && !StartupAttended;
+
         internal static string StartupRequestedPortSummary =>
             string.Join(
                 ", ",
@@ -755,6 +770,7 @@ namespace Bloom
             StartupVitePort = null;
             StartupLabel = null;
             StartupAutomation = false;
+            StartupAttended = false;
 
             var remainingArgs = new List<string>();
 
@@ -784,6 +800,14 @@ namespace Bloom
                         "--automation",
                         () => StartupAutomation,
                         value => StartupAutomation = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupFlagArgument(
+                        args,
+                        ref i,
+                        "--attended",
+                        () => StartupAttended,
+                        value => StartupAttended = value,
                         out errorMessage
                     )
                 )

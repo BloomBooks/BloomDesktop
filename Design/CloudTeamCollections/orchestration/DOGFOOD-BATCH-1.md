@@ -574,6 +574,33 @@ up/download check
    constraint, not this one). Contradicted the schema's own documented intent ("claimed
    user unique"); dogfooding never tripped it because invites happened to alternate with
    claims. Fix: 20260713000002 recreates the constraint with default NULLS DISTINCT.
+16. **FIXED 13 Jul PM — `pnpm go` + `--automation` silently killed Bob's startup on any
+   sync warning (bug #10's sharp edge, now with a live victim).** John's report: Bob
+   exited without any message when switching to the OneDrive Tetun copy, twice. SIL log
+   (Log-tmpcgri51/tmp2dcrx1.txt): the startup TC sync reported problems (run 1: the
+   perfectly LEGITIMATE "Renaming the local book 'The Moon and the Cap' because there is
+   a new one with the same name" — the conflict machinery working as designed on a
+   folder whose meta.json id (db07d1f3…, some earlier derivative) differed from the repo
+   book's (ca252af0…)) → BrowserProgressDialog's automation gate auto-closed the dialog
+   ("problems were reported … auto-closing because Bloom is in automation mode") →
+   Application.Run() returned → silent exit. Every relaunch re-tripped it. FIX: new
+   `--attended` flag (Program.StartupAttended / UnattendedAutomation = automation &&
+   !attended): --automation keeps the ready-handshake, port summary, and single-instance
+   bypass, while the four no-human UI policies (BrowserProgressDialog auto-close ×2,
+   HtmlErrorReporter notify suppression, NonFatalProblem stdout redirect,
+   ProblemReportApi report suppression) now gate on UnattendedAutomation.
+   watchBloomExe.mjs (pnpm go) passes --attended by default (opt out with
+   BLOOM_GO_UNATTENDED=1 for agent-driven CDP runs that must never block on a dialog);
+   the E2E harness's own launch.ts passes plain --automation and keeps full unattended
+   behavior. +4 ProgramTests; filter 454/454. RESIDUAL for next E2E pass: agent `pnpm go`
+   sessions now show real dialogs unless BLOOM_GO_UNATTENDED=1 is set — update agent
+   runbooks. CLEANUP done with it: Bob's OneDrive copy had TWO folders with instance id
+   ca252af0 ("The Moon and the Cap" re-downloaded by the sync + "Tetun moon and cap",
+   Bob's uncommitted retitle from the shared-folder chaos) — the retitle folder is backed
+   up at C:\temp\stale-cloud-tc-backup-2026-07-13\ and removed; "The Moon and the Cap1"
+   (db07d1f3, the sync's own conflict rename) left in place as a plain local book. Run
+   2's problem message was never logged (blank) — with dialogs visible again it will
+   identify itself on screen if it recurs.
 15. **FIXED 13 Jul PM — identity-first book resolution (John's ruling: "the status of a
    particular record by instanceID in the database is the source of truth for that book's
    state" — ALWAYS by instance id for a local folder, not merely as a name-miss fallback,

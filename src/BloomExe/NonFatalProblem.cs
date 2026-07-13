@@ -116,9 +116,10 @@ namespace Bloom
                     return;
                 }
 
-                if (Program.StartupAutomation)
+                if (Program.UnattendedAutomation)
                 {
-                    // In automation mode there is no human to dismiss a modal MessageBox, so a
+                    // In UNATTENDED automation (--automation without --attended) there is no
+                    // human to dismiss a modal MessageBox, so a
                     // modal report silently hangs the whole instance -- possibly before any
                     // window or server exists (found via a live stack dump: an E2E-relaunched
                     // instance sat blocked in MessageBox.Show inside TeamCollectionManager's
