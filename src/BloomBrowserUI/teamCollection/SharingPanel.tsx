@@ -212,6 +212,16 @@ const MemberRow: React.FunctionComponent<{
                 display: flex;
                 align-items: center;
                 gap: 8px;
+                // The settings dialog's page-level styles can add vertical margins to form
+                // controls, which defeats the flex centering (the chip stays put while the
+                // select and trash button ride their margins downward). Neutralize them so
+                // every control truly centers on the row.
+                select,
+                button {
+                    margin-top: 0;
+                    margin-bottom: 0;
+                    align-self: center;
+                }
             `}
         >
             <BloomAvatar
