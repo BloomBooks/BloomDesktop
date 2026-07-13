@@ -574,6 +574,33 @@ up/download check
    constraint, not this one). Contradicted the schema's own documented intent ("claimed
    user unique"); dogfooding never tripped it because invites happened to alternate with
    claims. Fix: 20260713000002 recreates the constraint with default NULLS DISTINCT.
+15. **[NEW, 13 Jul PM] Renaming a checked-out book breaks the client-side name→book
+   binding until check-in** (John's live report; server verified CONSISTENT — one row,
+   "The Moon and the Cap", still locked by Bob, seq 1, no rename/check-in events).
+   Cloud renames are carried only at check-in (RenameBookInRepo + checkin-start
+   proposedName, by design), but every client-side repo lookup is by FOLDER NAME:
+   `TryGetBookStatusJsonFromRepo` → `TryGetCachedBook(bookFolderName)` → `_bookIdByName`.
+   After the local folder rename, the new name misses the index (only the in-memory
+   `_pendingRenameBookId` bridges it, and only during PutBook), so the checked-out book
+   reads as "not in repo" → treated as a NEW LOCAL BOOK: editable, no checkout avatar
+   (Bob's symptom). Meanwhile `GetBookList()` still returns the server (old) name with no
+   matching local folder → the progressive-join merge shows a phantom cloud-download
+   placeholder of the same book (the "shadow" card). FIX SHAPE (queued, not yet applied):
+   resolve by IDENTITY when the name lookup misses — the local folder's meta.json
+   bookInstanceId → `_bookIdByInstanceId` (and/or the local status file's `oldName`, which
+   HandleBookRename already records) — in TryGetBookStatusJsonFromRepo /
+   IsBookPresentInRepo / TryLockInRepo-family lookups; and suppress a placeholder when a
+   LOCAL book with the same instance id exists regardless of name. SESSION CONFOUND,
+   important: BOTH of John's instances were running against ONE local copy —
+   `C:\Users\JohnThomson\OneDrive\Documents\Bloom\Tetun Books` (Bob's pull-down; NOTE
+   Documents is OneDrive-redirected). Seat proof: both live locks carry seat
+   6d5c0907085da326 = that folder; Alice's C:\temp\Tetun Books is bed69996f9b9d0e1 and
+   holds NO current lock. So "Alice got the rename instantly" via the SHARED FILESYSTEM,
+   not the server, and her instance likely auto-opened Bob's copy from the MRU after a
+   restart (the MRU trap again — and my C# push at ~14:5x likely recycled the dotnet
+   watch, killing both test instances). Two Blooms sharing one collection folder is
+   unsupported; her doubled cards are partly that artifact, but Bob's symptoms reproduce
+   single-instance and are the real bug.
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
