@@ -1634,9 +1634,11 @@ namespace Bloom.ImageProcessing
                     if (makeTransparent)
                         ApplyBloomTransparencyToFile(path);
                     // Copy metadata from older file to the new one.  GraphicsMagick does a poor job on metadata.
-                    var newMeta = RobustFileIO.CreateTaglibFile(path);
-                    CopyTags(oldMetaData, newMeta);
-                    RobustFileIO.SaveTaglibFile(newMeta);
+                    using (var newMeta = RobustFileIO.CreateTaglibFile(path))
+                    {
+                        CopyTags(oldMetaData, newMeta);
+                        RobustFileIO.SaveTaglibFile(newMeta);
+                    }
                     if (progress != null)
                         Application.DoEvents(); // allow progress report to work
                     return true;
