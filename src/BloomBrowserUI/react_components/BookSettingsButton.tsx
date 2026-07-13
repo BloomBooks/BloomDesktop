@@ -10,7 +10,7 @@ import {
     kTextOnPurple,
 } from "../bloomMaterialUITheme";
 
-const bookSettingsIconPath = `${getBloomApiPrefix(false)}images/book-settings.png`;
+const bookSettingsIconPath = `${getBloomApiPrefix(false)}images/BookAndPageSettings.svg`;
 
 export const getInitialBookSettingsPageKey = (): string => {
     try {
@@ -45,6 +45,14 @@ export const BookSettingsButton: React.FunctionComponent = (props) => {
                 span {
                     display: inline-block;
                     max-width: 72px;
+                }
+
+                // Recolor the (solid black) icon to black at 80% opacity so it matches
+                // the other TopBar controls (help, language, zoom). brightness(0) blackens
+                // it and opacity(0.8) composites the whole shape at 80%; the gear's center
+                // hole stays transparent, so the purple bar shows through.
+                img {
+                    filter: brightness(0) opacity(0.8);
                 }
             `}
         />
