@@ -64,7 +64,7 @@ Always include a good description when creating a git commit.
 
 # Papercuts
 When you hit tooling/process friction, have to work around something, or learn something these
-docs should have told you — and now isn't the time to fix it — append a short entry to
+docs should have told you — and now isn't the time to fix it — prepend a short entry to
 `PAPERCUTS.md` at the repo root (format in that file's header). Don't make a separate commit
 for it (it rides along in your next commit), don't derail your current task, and mention the
 logged cut in your final report. Cuts about the environment or team workflow (not this repo)
