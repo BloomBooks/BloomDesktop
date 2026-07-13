@@ -70,11 +70,13 @@ function renderList(
         onAdd?: (email: string, role: "admin" | "member") => void;
         onRemove?: (email: string) => void;
         onSetRole?: (email: string, role: "admin" | "member") => void;
+        onSetDisplayName?: (email: string, name: string) => void;
     } = {},
 ) {
     const onAdd = overrides.onAdd ?? vi.fn();
     const onRemove = overrides.onRemove ?? vi.fn();
     const onSetRole = overrides.onSetRole ?? vi.fn();
+    const onSetDisplayName = overrides.onSetDisplayName ?? vi.fn();
     const container = render(
         <SharingMembersList
             members={members}
@@ -83,9 +85,23 @@ function renderList(
             onAdd={onAdd}
             onRemove={onRemove}
             onSetRole={onSetRole}
+            onSetDisplayName={onSetDisplayName}
         />,
     );
-    return { container, onAdd, onRemove, onSetRole };
+    return { container, onAdd, onRemove, onSetRole, onSetDisplayName };
+}
+
+// The name edit commits on Enter (and blur) and cancels on Escape.
+function pressKey(element: HTMLElement, key: string) {
+    element.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+}
+
+function rowFor(container: HTMLElement, email: string): HTMLElement {
+    const row = Array.from(
+        container.querySelectorAll('[data-testid="sharing-member-row"]'),
+    ).find((r) => r.getAttribute("data-email") === email) as HTMLElement;
+    expect(row).not.toBeUndefined();
+    return row;
 }
 
 describe("SharingMembersList", () => {
@@ -239,5 +255,115 @@ describe("SharingMembersList", () => {
         act(() => setNativeValue(roleSelect, "member"));
 
         expect(onSetRole).toHaveBeenCalledWith(claimedAdmin.email, "member");
+    });
+
+    it("admin can edit a member's display name (commit with Enter)", () => {
+        const { container, onSetDisplayName } = renderList([
+            claimedAdmin,
+            pendingMember,
+        ]);
+
+        const row = rowFor(container, pendingMember.email);
+        const editButton = row.querySelector(
+            '[data-testid="sharing-edit-name-button"]',
+        ) as HTMLButtonElement;
+        expect(editButton).not.toBeNull();
+
+        act(() => editButton.click());
+        const input = row.querySelector(
+            '[data-testid="sharing-name-input"]',
+        ) as HTMLInputElement;
+        // Sanity: pendingMember has no name yet, so the edit starts empty.
+        expect(input.value).toBe("");
+
+        act(() => setNativeValue(input, "  Penny Pending  "));
+        act(() => pressKey(input, "Enter"));
+
+        // Trimmed before committing.
+        expect(onSetDisplayName).toHaveBeenCalledWith(
+            pendingMember.email,
+            "Penny Pending",
+        );
+        // The edit closes back to display mode.
+        expect(
+            row.querySelector('[data-testid="sharing-name-input"]'),
+        ).toBeNull();
+    });
+
+    it("Escape cancels a name edit without committing", () => {
+        const { container, onSetDisplayName } = renderList([claimedAdmin]);
+
+        const row = rowFor(container, claimedAdmin.email);
+        const editButton = row.querySelector(
+            '[data-testid="sharing-edit-name-button"]',
+        ) as HTMLButtonElement;
+        act(() => editButton.click());
+
+        const input = row.querySelector(
+            '[data-testid="sharing-name-input"]',
+        ) as HTMLInputElement;
+        // The edit starts from the current name.
+        expect(input.value).toBe(claimedAdmin.name);
+
+        act(() => setNativeValue(input, "Changed But Abandoned"));
+        act(() => pressKey(input, "Escape"));
+
+        expect(onSetDisplayName).not.toHaveBeenCalled();
+        expect(
+            row.querySelector('[data-testid="sharing-name-input"]'),
+        ).toBeNull();
+    });
+
+    it("committing an unchanged name does not call onSetDisplayName", () => {
+        const { container, onSetDisplayName } = renderList([claimedAdmin]);
+
+        const row = rowFor(container, claimedAdmin.email);
+        act(() =>
+            (
+                row.querySelector(
+                    '[data-testid="sharing-edit-name-button"]',
+                ) as HTMLButtonElement
+            ).click(),
+        );
+        const input = row.querySelector(
+            '[data-testid="sharing-name-input"]',
+        ) as HTMLInputElement;
+        act(() => pressKey(input, "Enter"));
+
+        expect(onSetDisplayName).not.toHaveBeenCalled();
+    });
+
+    it("emptying the name commits an empty string (clears it)", () => {
+        const { container, onSetDisplayName } = renderList([claimedAdmin]);
+
+        const row = rowFor(container, claimedAdmin.email);
+        act(() =>
+            (
+                row.querySelector(
+                    '[data-testid="sharing-edit-name-button"]',
+                ) as HTMLButtonElement
+            ).click(),
+        );
+        const input = row.querySelector(
+            '[data-testid="sharing-name-input"]',
+        ) as HTMLInputElement;
+        act(() => setNativeValue(input, "   "));
+        act(() => pressKey(input, "Enter"));
+
+        expect(onSetDisplayName).toHaveBeenCalledWith(claimedAdmin.email, "");
+    });
+
+    it("non-admins get no name-edit affordance", () => {
+        const { container } = renderList([claimedAdmin, pendingMember], {
+            isAdmin: false,
+        });
+
+        expect(
+            container.querySelector('[data-testid="sharing-edit-name-button"]'),
+        ).toBeNull();
+        // ...but an existing name still displays.
+        expect(rowFor(container, claimedAdmin.email).textContent).toContain(
+            claimedAdmin.name,
+        );
     });
 });

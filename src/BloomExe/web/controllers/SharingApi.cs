@@ -59,6 +59,11 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler("sharing/setRole", HandleSetRole, false);
+            apiHandler.RegisterEndpointHandler(
+                "sharing/setDisplayName",
+                HandleSetDisplayName,
+                false
+            );
 
             // Same handler TeamCollectionApi registers under "teamCollection/forceUnlock" --
             // ForceUnlock already dispatches to the audited RPC for a cloud backend via
@@ -280,16 +285,16 @@ namespace Bloom.web.controllers
         // ------------------------------------------------------------------
 
         /// <summary>Maps one tc.members row (members_list's snake_case RPC shape) to the camelCase
-        /// IApprovedMember shape sharingApi.ts expects. There is no display-name data source for
-        /// members server-side (see the 20260707000006 migration's own comment on this same gap for
-        /// book locks) -- name is always omitted/null here, exactly as CONTRACTS.md documents
-        /// ("Only known once claimed" -- in practice, not known at all yet). Internal (not private)
-        /// so SharingApiTests can verify the mapping without a live server.</summary>
+        /// IApprovedMember shape sharingApi.ts expects. name comes from the durable
+        /// tc.members.display_name column (20260713000001 migration; editable via
+        /// sharing/setDisplayName below) and is null until someone sets it -- the UI falls back to
+        /// the email. Internal (not private) so SharingApiTests can verify the mapping without a
+        /// live server.</summary>
         internal static object ToApprovedMember(JObject row) =>
             new
             {
                 email = (string)row["email"],
-                name = (string)null,
+                name = (string)row["display_name"],
                 role = (string)row["role"],
                 // The (string) cast maps a JSON-null token to a real null; a bare `!= null`
                 // check is TRUE for JTokenType.Null and made every pending invitation look
@@ -371,6 +376,26 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
+        private class SetDisplayNameBody
+        {
+            public string collectionId;
+            public string email;
+            public string displayName;
+        }
+
+        /// <summary>Sets a member's human-readable display name (shown wherever the member is
+        /// displayed -- checkout status, history, sharing panel -- with email as the fallback).
+        /// The server RPC (members_set_display_name, 20260713000001) allows an admin to set
+        /// anyone's name and a claimed member to set their own; a blank name clears it.</summary>
+        private void HandleSetDisplayName(ApiRequest request)
+        {
+            var body = request.RequiredPostObject<SetDisplayNameBody>();
+            var memberId = ResolveMemberId(body.collectionId, body.email);
+            CurrentClient().MembersSetDisplayName(body.collectionId, memberId, body.displayName);
+            NotifyClients("sharing", "membersChanged");
+            request.PostSucceeded();
+        }
+
         // ------------------------------------------------------------------
         // History (CONTRACTS.md's get_changes RPC, surfaced for CollectionHistoryTable.tsx's cloud
         // path). Maps events to the exact same BookHistoryEvent shape (Title/ThumbnailPath/When/
@@ -387,7 +412,12 @@ namespace Bloom.web.controllers
                 Message = (string)e["message"],
                 Type = (BookHistoryEventType)(int)e["type"],
                 UserId = (string)e["by_user_id"],
-                UserName = (string)e["by_user_name"] ?? (string)e["by_email"],
+                // Preference order: the member's CURRENT durable display name (by_display_name,
+                // 20260713000001), then the JWT name claim frozen in at event time, then email.
+                UserName =
+                    (string)e["by_display_name"]
+                    ?? (string)e["by_user_name"]
+                    ?? (string)e["by_email"],
                 When = (DateTime)e["occurred_at"],
                 BloomVersion = (string)e["bloom_version"],
             };

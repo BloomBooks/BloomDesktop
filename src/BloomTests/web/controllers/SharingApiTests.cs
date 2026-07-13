@@ -25,6 +25,7 @@ namespace BloomTests.web.controllers
             {
                 ["id"] = 1,
                 ["email"] = "sara@example.com",
+                ["display_name"] = "Sara S",
                 ["role"] = "admin",
                 ["user_id"] = "user-abc",
                 ["added_by"] = "user-xyz",
@@ -37,7 +38,26 @@ namespace BloomTests.web.controllers
             Assert.That(result.email, Is.EqualTo("sara@example.com"));
             Assert.That(result.role, Is.EqualTo("admin"));
             Assert.That(result.claimed, Is.True);
-            Assert.That(result.name, Is.Null); // no display-name source server-side; see comment
+            Assert.That(result.name, Is.EqualTo("Sara S"));
+        }
+
+        [Test]
+        public void ToApprovedMember_NoDisplayNameSet_NameIsNull()
+        {
+            // display_name is NULL until someone sets it (20260713000001 migration); the UI
+            // falls back to the email. A JSON-null token must map to a real null, not "".
+            var row = new JObject
+            {
+                ["id"] = 3,
+                ["email"] = "unnamed@example.com",
+                ["display_name"] = null,
+                ["role"] = "member",
+                ["user_id"] = "user-def",
+            };
+
+            dynamic result = SharingApi.ToApprovedMember(row);
+
+            Assert.That(result.name, Is.Null);
         }
 
         [Test]
@@ -149,6 +169,34 @@ namespace BloomTests.web.controllers
                 Is.EqualTo("bob@example.com"),
                 "when by_user_name is null (no JWT name claim, common in dev-auth mode), UserName "
                     + "should fall back to the always-present by_email rather than showing nothing"
+            );
+        }
+
+        [Test]
+        public void ToBookHistoryEvent_DurableDisplayNamePresent_BeatsJwtNameAndEmail()
+        {
+            var e = new JObject
+            {
+                ["id"] = 44,
+                ["book_id"] = "book-1",
+                ["type"] = 1, // CheckIn
+                ["by_user_id"] = "user-3",
+                ["by_user_name"] = "JWT Name",
+                ["by_email"] = "carol@example.com",
+                ["by_display_name"] = "Carol the Editor",
+                ["book_name"] = "My Book",
+                ["message"] = null,
+                ["bloom_version"] = "6.2.100",
+                ["occurred_at"] = DateTime.UtcNow.ToString("O"),
+            };
+
+            var result = SharingApi.ToBookHistoryEvent(e);
+
+            Assert.That(
+                result.UserName,
+                Is.EqualTo("Carol the Editor"),
+                "the member's current durable display name (by_display_name, 20260713000001) "
+                    + "should beat both the at-event-time JWT name claim and the email"
             );
         }
 

@@ -382,13 +382,15 @@ namespace Bloom.TeamCollection.Cloud
             {
                 checksum = book.CurrentChecksum,
                 lockedBy = ResolveLockedByForDisplay(book),
-                // The server book row has no reliable first/last-name split (task 06's
-                // 20260707000006 migration adds a best-effort whole display name -- surfaced via
-                // the book-status JSON's separate lockedByEmail/lockedByName fields instead, since
-                // stuffing a whole name into "FirstName" with a null Surname would render as
-                // "Name null" in the existing TS template `${whoFirstName} ${whoSurname}`).
-                // Left null here; see the task 05 final report's contract-ambiguity note.
-                lockedByFirstName = null,
+                // The server book row has no first/last-name split, only a whole display name
+                // (locked_by_name: since 20260713000001 the durable, admin-editable
+                // tc.members.display_name, with the older JWT-claim capture as fallback). The
+                // WHOLE name goes in the FirstName slot with Surname left null: both consumers
+                // (TeamCollectionBookStatusPanel's `${whoFirstName ?? ""} ${whoSurname ?? ""}`
+                // .trim() and BookButton's `whoFirstName || who`) render that cleanly, and they
+                // fall back to the email (lockedBy) when it is null. lockedBy itself must STAY
+                // the email -- the panel compares it with currentUser to decide lockedByMe.
+                lockedByFirstName = book.LockedByDisplayName,
                 lockedBySurname = null,
                 lockedWhen = book.LockedAt.HasValue
                     ? $"{book.LockedAt.Value.ToUniversalTime():yyyy-MM-ddTHH:mm:ss.fffZ}"

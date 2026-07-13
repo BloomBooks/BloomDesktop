@@ -566,9 +566,65 @@ up/download check
    morning's stale-state workarounds: poisoned Thursday caches purged from C:\temp\Tetun
    Books (bug #9's trigger), both Chodri copies un-teamed (dead collection); backups in
    C:\temp\stale-cloud-tc-backup-2026-07-13.
+14. **FIXED 13 Jul — only ONE pending invitation per collection was possible.** Found by
+   the display-name test fixture, present since the original schema:
+   `members_claimed_user_uq` was `UNIQUE NULLS NOT DISTINCT (collection_id, user_id)`, so
+   two unclaimed rows (user_id NULL) collided — inviting a second person before the first
+   claimed made members_add die with 23505 (its ON CONFLICT clause targets the email
+   constraint, not this one). Contradicted the schema's own documented intent ("claimed
+   user unique"); dogfooding never tripped it because invites happened to alternate with
+   claims. Fix: 20260713000002 recreates the constraint with default NULLS DISTINCT.
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 13 Jul 2026 (Sunday PM #2 — **member display names**, John's request, CODE + SQL TESTS
+  DONE; bug #14 found+fixed) · "Show who has a book checked out (and similar) by a
+  human-readable name, email as fallback; admins edit the name in the Sharing panel."
+  Server (CONTRACTS.md bumped to v1.6, additive): 20260713000001 adds
+  tc.members.display_name; members_set_display_name RPC (admin sets anyone's, a claimed
+  member their own, blank clears, ≤100 chars); members_list rows carry display_name
+  (DROP+CREATE, re-granted); resolve_member_display prefers the durable column over the
+  JWT-claim event capture — so locked_by_name in get_collection_state/get_changes/
+  get_book_manifest picks it up with no signature changes; get_changes event rows gain
+  by_display_name (the CURRENT durable name). 20260713000002 fixes bug #14 (see
+  OUTSTANDING BUGS). Both migrations applied to the live local stack via
+  `supabase migration up` (NO db reset — John's Tetun server data untouched);
+  `supabase test db` 89/89 (24 new in 03_tc_member_display_name_test.sql: auth matrix
+  admin/self/other/non-member, trim/clear/too-long, precedence, full pipeline via
+  get_collection_state + get_changes). C#: SharingApi.ToApprovedMember maps display_name
+  → name; new sharing/setDisplayName endpoint; CloudCollectionClient.MembersSetDisplayName;
+  ToBookHistoryEvent UserName preference by_display_name → by_user_name → by_email;
+  CloudTeamCollection.StatusFromCachedBook now puts the whole display name in
+  lockedByFirstName (surname null — both TS consumers render that cleanly; lockedBy STAYS
+  the email because the panel compares it with currentUser for lockedByMe). UI:
+  SharingPanel member rows get an admin-only pencil → inline input (Enter/blur commits
+  trimmed, Escape cancels, empty clears; all spans/inputs, no new divs, per the CSS
+  hazard above); sharingApi.setDisplayName. Vitest 12/12 (5 new); eslint/tsc clean.
+  SharingApiTests updated (+2 new C# tests) but **the C# suite has NOT been run**: John's
+  Alice instance (pnpm go, dotnet watch PID 67472) is live from THIS worktree, so
+  `dotnet test` would fight the locked output\Debug — ALSO NOTE the watcher has likely
+  already picked up this session's C# edits (may have rebuilt/restarted Alice) · Next:
+  run the C# required filter once Alice closes; John verifies the pencil in the Sharing
+  panel + a "checked out to <name>" status; follow-ups queued: member self-service name
+  UI, folder-TC parity n/a (folder TCs already use registration first/surname).
+- 13 Jul 2026 (Sunday PM — John's UI niggles fixed; **CSS HAZARD recorded**) · Three niggles
+  from live testing, all pushed: (1) create-success message now says "Team Collection panel"
+  instead of "Sharing panel" (CreateTeamCollection.tsx + XLF, John's call: fix the message,
+  don't rename the panel); (2) "(experimental)" dropped from both the Cloud Team Collections
+  checkbox label (AdvancedSettingsPanel.tsx — it already sits in an "Experimental Features"
+  list) and the "Share this collection on the Bloom sharing server" button
+  (TeamCollectionSettingsPanel.tsx); (3) Sharing-panel row alignment fixed (23b636f966).
+  **HAZARD for anyone adding UI to the Team Collection settings panel:** the legacy rule
+  `#teamCollection-settings div:not(.no-space-below) { margin-bottom: 10px; }`
+  (TeamCollectionSettingsPanel.less) uses an ID selector, so it outranks every
+  emotion-class rule and silently adds 10px below EVERY div descendant — inside a
+  `align-items: center` flex row this lifts div children (avatar, text column, MUI Chip)
+  10px above honestly-centered non-div siblings (select, button). Neutralize with
+  `> div { margin-bottom: 0 !important; }` on the flex row (see SharingPanel.tsx's
+  MemberRow/AddMemberRow comments); nothing weaker wins. Found by John with the inspector
+  after two rounds of margin/height guesses failed · Next: member display names (John's
+  13 Jul request): display_name column on tc.members + admin editing in the Sharing panel
+  + "checked out to <name>" with email fallback.
 - 13 Jul 2026 (Sunday AM — weekend recovery + second launch failure diagnosed) · The Podman
   WSL machine stopped over the weekend: whole local stack was down (supabase functions serve
   "failed to run docker"; podman ps connection refused). RECOVERED: podman machine start →

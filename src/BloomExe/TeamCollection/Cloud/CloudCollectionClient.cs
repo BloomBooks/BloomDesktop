@@ -317,6 +317,22 @@ namespace Bloom.TeamCollection.Cloud
             );
 
         /// <summary>
+        /// Sets a member's display name (20260713000001 migration). Admin may set anyone's;
+        /// a claimed member may set their own. Blank/whitespace clears it server-side.
+        /// Returns nothing useful (the RPC is void); callers refresh via MembersList.
+        /// </summary>
+        public void MembersSetDisplayName(string collectionId, long memberId, string displayName) =>
+            CallRpc(
+                "members_set_display_name",
+                new
+                {
+                    p_collection_id = collectionId,
+                    p_member_id = memberId,
+                    p_display_name = displayName,
+                }
+            );
+
+        /// <summary>
         /// Changes an approved-account's role (admin-only; last-admin guard enforced server-side).
         /// Task 06 live-verification fix: same <c>p_member_id</c> mismatch as
         /// <see cref="MembersRemove"/> -- the deployed RPC is

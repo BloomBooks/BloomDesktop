@@ -28,7 +28,8 @@ export type SharingRole = "admin" | "member";
 // One row of the approved-accounts list shown in SharingPanel.
 export interface IApprovedMember {
     email: string;
-    // Only known once the invitation has been claimed (the person has signed in at least once).
+    // The durable, editable display name (tc.members.display_name, 20260713000001); undefined
+    // until someone sets it via setDisplayName below. Display falls back to the email.
     name?: string;
     role: SharingRole;
     // True once someone has signed in with this email and been linked to the approval.
@@ -119,6 +120,21 @@ export function setRole(
     role: SharingRole,
 ) {
     return postJson("sharing/setRole", { collectionId, email, role });
+}
+
+// Sets a member's human-readable display name (shown with the email as fallback wherever the
+// member appears -- member list, checkout status, history). An empty string clears it.
+// Server-side, an admin may set anyone's name and a claimed member their own.
+export function setDisplayName(
+    collectionId: string,
+    email: string,
+    displayName: string,
+) {
+    return postJson("sharing/setDisplayName", {
+        collectionId,
+        email,
+        displayName,
+    });
 }
 
 // The "Get my Team Collections" list on the collection chooser.

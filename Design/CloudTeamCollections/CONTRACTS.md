@@ -1,7 +1,14 @@
 # Cloud Team Collections — frozen API contracts (v1)
 
 Changes to this file require an orchestrator commit and a version-note bump here.
-**Contract version: 1.5** (11 Jul 2026 — per-collection-copy "seat" on checkouts, additive
+**Contract version: 1.6** (13 Jul 2026 — durable member display names, additive (John's
+13 Jul request): `tc.members` gains an editable `display_name` column; new
+`members_set_display_name(collection_id, member_id, display_name)` RPC (admin may set
+anyone's, a claimed member their own; blank clears); `members_list` rows carry
+`display_name`; `resolve_member_display` (hence `locked_by_name` everywhere it already
+appears) prefers it over the JWT-claim event capture; `get_changes` event rows gain
+`by_display_name` (the CURRENT durable name of `by_user_id`). Display rule everywhere:
+name when set, else email. v1.5, 11 Jul: per-collection-copy "seat" on checkouts, additive
 (bug #0, John's ruling): `checkout_book`/`checkout_book_takeover` gain an optional third
 `seat` parameter (client-computed stable hash of the local collection folder path) and
 return `locked_seat`; `get_collection_state`/`get_changes` book rows carry `locked_seat`;
@@ -90,7 +97,8 @@ with `p_`, and PostgREST matches JSON keys to parameter names — so clients sen
 | `delete_book(book_id)` | requires caller holds the lock; sets `deleted_at`; emits Deleted |
 | `undelete_book(book_id)` | admin; clears tombstone (name-uniqueness enforced) |
 | `rename_check(book_id, new_name)` | advisory uniqueness pre-check |
-| `members: list/add/remove/set_role` | admin-only approved-accounts management; remove force-unlocks that user's checkouts (evented); last-admin guard |
+| `members: list/add/remove/set_role` | admin-only approved-accounts management; remove force-unlocks that user's checkouts (evented); last-admin guard. v1.6: list rows carry `display_name` |
+| `members_set_display_name(collection_id, member_id bigint, display_name text)` | v1.6: sets the durable human-readable name shown in place of the email (member list, checkout status, history). Admin may set anyone's; a claimed member may set their own; blank/whitespace clears to NULL (display falls back to email); max 100 chars |
 | `add_palette_colors(collection_id, palette, colors[])` | union merge |
 | `log_event(...)` | client-originated history entries |
 

@@ -1,9 +1,10 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import BloomButton from "../react_components/bloomButton";
 import { AttentionTextField } from "../react_components/AttentionTextField";
@@ -17,6 +18,7 @@ import {
     SharingRole,
     addApproval,
     removeApproval,
+    setDisplayName as setMemberDisplayName,
     setRole as setMemberRole,
     useSharingMembers,
 } from "./sharingApi";
@@ -47,6 +49,11 @@ export const SharingPanel: React.FunctionComponent<{
             onSetRole={(email, role) => {
                 setMemberRole(props.collectionId, email, role).then(reload);
             }}
+            onSetDisplayName={(email, name) => {
+                setMemberDisplayName(props.collectionId, email, name).then(
+                    reload,
+                );
+            }}
         />
     );
 };
@@ -59,6 +66,8 @@ export const SharingMembersList: React.FunctionComponent<{
     onAdd: (email: string, role: SharingRole) => void;
     onRemove: (email: string) => void;
     onSetRole: (email: string, role: SharingRole) => void;
+    // An empty string clears the display name (the display falls back to the email).
+    onSetDisplayName: (email: string, name: string) => void;
 }> = (props) => {
     const adminCount = props.members.filter((m) => m.role === "admin").length;
 
@@ -102,6 +111,9 @@ export const SharingMembersList: React.FunctionComponent<{
                         onRemove={() => props.onRemove(member.email)}
                         onSetRole={(role) =>
                             props.onSetRole(member.email, role)
+                        }
+                        onSetDisplayName={(name) =>
+                            props.onSetDisplayName(member.email, name)
                         }
                     />
                 ))}
@@ -161,8 +173,14 @@ const MemberRow: React.FunctionComponent<{
     isLastAdmin: boolean;
     onRemove: () => void;
     onSetRole: (role: SharingRole) => void;
+    onSetDisplayName: (name: string) => void;
 }> = (props) => {
     const [confirmingRemove, setConfirmingRemove] = useState(false);
+    const [editingName, setEditingName] = useState(false);
+    const [nameDraft, setNameDraft] = useState("");
+    // Set once Enter/Escape has already finished the edit, so the input's blur (which fires
+    // right after in a real browser) doesn't commit a second time.
+    const nameEditFinishedRef = useRef(false);
     const claimedLabel = useL10n(
         "Claimed",
         "TeamCollection.Sharing.Claimed",
@@ -203,6 +221,33 @@ const MemberRow: React.FunctionComponent<{
         undefined,
         true,
     );
+    const editNameTooltip = useL10n(
+        "Edit name",
+        "TeamCollection.Sharing.EditName",
+        "Tooltip on the small pencil button an administrator uses to set the human-readable name shown for a team member.",
+        undefined,
+        undefined,
+        true,
+    );
+
+    const startNameEdit = () => {
+        setNameDraft(props.member.name ?? "");
+        nameEditFinishedRef.current = false;
+        setEditingName(true);
+    };
+
+    const finishNameEdit = (commit: boolean) => {
+        if (nameEditFinishedRef.current) return;
+        nameEditFinishedRef.current = true;
+        setEditingName(false);
+        if (!commit) return;
+        const trimmed = nameDraft.trim();
+        // An unchanged name is not an edit; an emptied one clears the stored name
+        // (the display falls back to the email).
+        if (trimmed !== (props.member.name ?? "")) {
+            props.onSetDisplayName(trimmed);
+        }
+    };
 
     return (
         <div
@@ -240,7 +285,59 @@ const MemberRow: React.FunctionComponent<{
                     flex-direction: column;
                 `}
             >
-                {props.member.name && <span>{props.member.name}</span>}
+                {/* Everything on this first line is a span/input/button on purpose: a nested
+                    div would be re-hit by the settings page's div margin rule this row's own
+                    css neutralizes only for direct children (see the comment below). */}
+                {editingName ? (
+                    <input
+                        data-testid="sharing-name-input"
+                        autoFocus
+                        value={nameDraft}
+                        css={css`
+                            font-family: inherit;
+                            font-size: inherit;
+                            max-width: 14em;
+                            padding: 0 2px;
+                        `}
+                        onChange={(event) => setNameDraft(event.target.value)}
+                        onKeyDown={(event) => {
+                            if (event.key === "Enter") finishNameEdit(true);
+                            else if (event.key === "Escape")
+                                finishNameEdit(false);
+                        }}
+                        onBlur={() => finishNameEdit(true)}
+                    />
+                ) : (
+                    (props.member.name || props.isAdmin) && (
+                        <span
+                            css={css`
+                                display: flex;
+                                align-items: center;
+                                gap: 2px;
+                            `}
+                        >
+                            {props.member.name && (
+                                <span>{props.member.name}</span>
+                            )}
+                            {props.isAdmin && (
+                                <IconButton
+                                    size="small"
+                                    title={editNameTooltip}
+                                    data-testid="sharing-edit-name-button"
+                                    css={css`
+                                        padding: 2px;
+                                        svg {
+                                            font-size: 16px;
+                                        }
+                                    `}
+                                    onClick={startNameEdit}
+                                >
+                                    <EditIcon fontSize="inherit" />
+                                </IconButton>
+                            )}
+                        </span>
+                    )
+                )}
                 <span
                     css={css`
                         color: ${kBloomGray};
