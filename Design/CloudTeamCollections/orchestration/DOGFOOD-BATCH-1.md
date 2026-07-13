@@ -531,6 +531,27 @@ up/download check
    (BrowserProgressDialog, 11:19:07 log — this hid the failed initial push), and
    NonFatalProblem reports go to stdout only. The dev launcher needs a way to run WITHOUT
    automation mode (flag through go.mjs → watchBloomExe), or humans keep not-seeing errors.
+12. **[NEW, 13 Jul] Cloud identity silently leaks between instances on one Windows account.**
+   John signed in "as fred" in a second instance, yet that instance's server calls ran as
+   ALICE (proof: collection-file + book downloads succeeded — fred isn't a member and would
+   get 403; tc.members/events show zero fred activity). Cause: the DPAPI CloudTokenStore is
+   per-Windows-user (shared by every instance), and the shared MRU auto-opened Alice's
+   C:\temp copy (which also collided with her running instance — IOException on the
+   .bloomCollection). Access control HELD server-side; the failure is client identity UX.
+   Design question queued: what is a UI sign-in's scope (instance? machine?), and should
+   BLOOM_CLOUDTC_USER-style per-instance pinning be a first-class dev affordance?
+   Dogfood rule until then: one PowerShell (env-pinned user) + one collection folder per
+   identity.
+13. **[NEW, 13 Jul, UX] "Send All" is hard to find**: it lives at the bottom of the TC
+   dialog's STATUS tab, but the dialog deliberately opens on the History tab when there are
+   no important status messages — John saw only "Sync + Close". The create-success message
+   also points at the Sharing panel, not here. Consider surfacing Send All on the status
+   panel or making the Status tab default when there are uncommitted local books. ALSO
+   13 Jul: create-time `Settings.Administrators = CurrentUser` stamps the REGISTRATION
+   email (bug #4 family) — locked Alice out of her own collection's settings until the
+   .bloomCollection was hand-patched; and TeamCollectionApi.isUserAdmin
+   (OkToEditCollectionSettings) reports false for the server-side admin — the admin flag
+   for cloud should come from the server membership role.
 11. **FIXED 13 Jul — join-card dedup is now identity-aware (John's ruling).** Bob (invited,
    claimed member) got NO join card for Tetun because the dedup suppressed by cloud id
    against EVERY local copy in the machine-wide chooser list — including ALICE's C:\temp
