@@ -586,7 +586,12 @@ namespace Bloom.TeamCollection
 
             // If the request asked for the book by name, we don't have an actual Book object.
             // However, it happens that those requests don't need the checkinMessage.
-            var checkinMessage = book == null ? "" : BookHistory.GetPendingCheckinMessage(book);
+            // Also skip if the book's folder is gone (e.g., between a TC rename and SelectBookAtStartup
+            // running), to avoid a spurious "Problem reading book history" toast.
+            var checkinMessage =
+                book == null || !Directory.Exists(book.FolderPath)
+                    ? ""
+                    : BookHistory.GetPendingCheckinMessage(book);
             return JsonConvert.SerializeObject(
                 new
                 {
@@ -959,6 +964,11 @@ namespace Bloom.TeamCollection
 
                     var book = _collectionModel.GetBookFromBookInfo(bookInfo);
                     var message = BookHistory.GetPendingCheckinMessage(book);
+                    // Before recording the check-in, make sure any pending "Created" entry is
+                    // written first. This is a hard requirement: once a book is checked in the
+                    // local copy is locked, so it will be too late to update history. Also,
+                    // we want the 'created' event to be before the first 'checked in' event.
+                    book.RecordPendingCreatedHistoryEvent();
                     BookHistory.AddEvent(book, BookHistoryEventType.CheckIn, message);
                     BookHistory.SetPendingCheckinMessage(book, "");
                     try

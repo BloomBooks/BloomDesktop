@@ -189,6 +189,9 @@ namespace Bloom.CollectionTab
             }
         }
 
+        // The .bloomSource import feature (choosing files, the duplicate pre-flight check, and the
+        // import itself) lives in CollectionModel.BloomSourceImport.cs.
+
         public void moveBookIntoThisCollection(Book.Book origBook, BookCollection origCollection)
         {
             var possibleTCFilePath = TeamCollectionManager.GetTcLinkPathFromLcPath(
@@ -1032,22 +1035,22 @@ namespace Bloom.CollectionTab
                 if (newBook == null)
                     return; //This can happen if there is a configuration dialog and the user clicks Cancel
 
-                // We want it to have the name it's eventually going to BEFORE we add it to the collection.
-                // Otherwise, there are race conditions between the code that is selecting it (and as a side
-                // effect, bringing it up to date, which may rename it and its folder, if it already has a
-                // title in the relevant language) and the code that wants to display a thumbnail of the new
-                // item in the list.
-                // (We can't fix this by reordering things, because there will also be problems if we attempt
-                // to select an item before it is present in the collection to select.)
-                // We know this is a new book object, so there's no point in using EnsureUpToDate.
-                // When we later select it, that code uses EnsureUpToDate and will not do it again.
+                // We want to eventually make a book-created entry in history for this book,
+                // which includes information about the book we made it from. We want to wait
+                // to make that record until the new author gives it a name in L1. Possible
+                // sources for the original name may be lost in the course of bringing it up to
+                // date, so we capture the original title now. Also, we capture the initial
+                // L1 title, so we can reliably tell whether the user has actually provided one.
+                newBook.PendingCreationSource = Path.GetFileName(sourceBook.FolderPath);
+                var l1Lang = newBook?.BookData?.Language1Tag;
+                var sourceL1Title = sourceBook.BookInfo.GetTitleForLanguage(l1Lang);
+                newBook.PendingCreationSourceTitle = sourceL1Title;
                 newBook.BringBookUpToDate(new NullProgress(), false);
 
                 TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
 
                 if (_bookSelection != null)
                 {
-                    Book.Book.SourceToReportForNextRename = Path.GetFileName(sourceBook.FolderPath);
                     _bookSelection.SelectBook(newBook, aboutToEdit: true);
                 }
                 //enhance: would be nice to know if this is a new shell
@@ -1063,8 +1066,6 @@ namespace Bloom.CollectionTab
                         }
                     );
                 }
-                // Better reported in Book_BookTitleChanged as a side effect of selecting it.
-                // BookHistory.AddEvent(newBook, BookHistoryEventType.Created, "New book created");
                 _editBookCommand.Raise(newBook);
             }
             catch (Exception e)

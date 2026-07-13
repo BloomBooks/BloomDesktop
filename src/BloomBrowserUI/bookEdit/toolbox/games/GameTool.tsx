@@ -449,7 +449,13 @@ const makeArrowShape = (
     // rectangle that contains the arrow, without this it would not get mouse events.
     arrow.style.pointerEvents = "none";
 
-    const color = "#80808080";
+    // Match the arrow to the target's outline color so the two read as a pair. We read the
+    // target's resolved border color rather than the --game-draggable-target-outline-color
+    // variable directly, so themes that define it via color-mix() still yield a concrete color.
+    const color =
+        target.ownerDocument.defaultView!.getComputedStyle(
+            target,
+        ).borderTopColor;
     const strokeWidth = "3";
     const lines = [line, line2, line3];
     lines.forEach((l) => {
@@ -685,9 +691,12 @@ const updateTabClass = (tabIndex: number) => {
         // doesn't have a tab, but used in Play when showing the correct answer.
         "drag-activity-solution",
     ];
+    const isDragActivityPage = (
+        page.getAttribute("data-activity") ?? ""
+    ).startsWith("drag-");
     for (let i = 0; i < classes.length; i++) {
         const className = classes[i];
-        classSetter(page, className, i === tabIndex);
+        classSetter(page, className, isDragActivityPage && i === tabIndex);
     }
 };
 
@@ -1927,7 +1936,6 @@ function scheduleRemoveBloomSelectedFromTargets(page: HTMLElement): void {
 // getToolboxBundleExports()?.setActiveDragActivityTab(), which works in any bundle.
 // Even in this file, a calling function could be running in the page bundle.
 export function setActiveDragActivityTab(tab: number) {
-    window.top!["dragActivityPage"] = tab;
     const page = GameTool.getBloomPage();
     const pageFrameExports = getEditablePageBundleExports();
     if (!page || !pageFrameExports) {
@@ -1947,21 +1955,29 @@ export function setActiveDragActivityTab(tab: number) {
         console.error("No parent for page");
         return;
     }
-    updateTabClass(tab);
-    pageFrameExports.renderDragActivityTabControl(tab);
+    const isDragActivityPage = (
+        page.getAttribute("data-activity") ?? ""
+    ).startsWith("drag-");
+    // Non-drag games can still pass through this API during page setup. Force Start mode there
+    // so drag-only positioning logic (for Correct/Wrong/Play) cannot mutate their canvas elements.
+    const effectiveTab = isDragActivityPage ? tab : startTabIndex;
+    window.top!["dragActivityPage"] = effectiveTab;
+
+    updateTabClass(effectiveTab);
+    pageFrameExports.renderDragActivityTabControl(effectiveTab);
     // Update the toolbox.
     /// Review: might it not exist yet? Do we need a timeout if so?
     // I think we're OK, if for no other reason, because both the dragActivityTool code and the
     // code here agree that we start in the Start tab after switching pages.
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
-    toolbox?.getTheOneGameTool()?.setActiveTab(tab);
+    toolbox?.getTheOneGameTool()?.setActiveTab(effectiveTab);
 
     //Slider: const wrapper = page.getElementsByClassName(
     //     "bloom-activity-slider"
     // )[0] as HTMLElement;
 
     const canvasElementManager = getCanvasElementManager();
-    if (tab === playTabIndex) {
+    if (effectiveTab === playTabIndex) {
         canvasElementManager!.suspendComicEditing("forGamePlayMode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
@@ -2010,12 +2026,15 @@ export function setActiveDragActivityTab(tab: number) {
         canvasElementManager?.checkActiveElementIsVisible();
         //Slider: wrapper?.addEventListener("click", designTimeClickOnSlider);
     }
-    if (tab === correctTabIndex || tab === wrongTabIndex) {
+    if (
+        isDragActivityPage &&
+        (effectiveTab === correctTabIndex || effectiveTab === wrongTabIndex)
+    ) {
         // We can't currently do this for hidden canvas elements, and selecting one of these tabs
         // may cause some previously hidden canvas elements to become visible.
         canvasElementManager?.ensureCanvasElementsIntersectParent(page);
     }
-    if (tab === startTabIndex) {
+    if (effectiveTab === startTabIndex) {
         enableDraggingTargets(page);
         pageFrameExports.showGamePromptDialog(true);
     } else {

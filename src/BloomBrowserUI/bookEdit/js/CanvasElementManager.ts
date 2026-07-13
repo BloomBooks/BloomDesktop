@@ -23,10 +23,12 @@ import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import {
     IImageInfo,
     SetupElements,
+    addRequestPageContentDelay,
     attachToCkEditor,
     changeImageInfo,
     kMakeNewCanvasElement,
     notifyToolOfChangedImage,
+    removeRequestPageContentDelay,
     wrapWithRequestPageContentDelay,
 } from "./bloomEditing";
 import { addSkeletonIfEmpty } from "./linkGrid";
@@ -92,6 +94,13 @@ import {
     doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
 } from "./workspaceFrames";
+import {
+    clearImageOperationUndoState,
+    commitPendingImageOperationUndo,
+    IImageCropInfo,
+    initializeImageUndoManager,
+    prepareUndoForImageOperation,
+} from "./ImageUndoManager";
 
 export interface ITextColorInfo {
     color: string;
@@ -104,6 +113,8 @@ export interface ITextOutlineColorInfo {
 }
 
 const kComicalGeneratedClass: string = "comical-generated";
+const kAdjustContainerAspectRatioDelayId =
+    "adjustContainerAspectRatioImageLoad";
 
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
 export const kBackgroundImageClass = "bloom-backgroundImage"; // split-pane.js and editMode.less know about this too
@@ -153,6 +164,18 @@ export class CanvasElementManager {
     private snapProvider: CanvasSnapProvider;
 
     public constructor() {
+        initializeImageUndoManager({
+            getCurrentPage: () =>
+                document.getElementsByClassName("bloom-page")[0] as
+                    | HTMLElement
+                    | undefined,
+            updateCanvasElementForChangedImage:
+                this.updateCanvasElementForChangedImage.bind(this),
+            getActiveElement: this.getActiveElement.bind(this),
+            setActiveElement: this.setActiveElement.bind(this),
+            removeDetachedTargets: this.removeDetachedTargets.bind(this),
+            updateCanvasElementClass,
+        });
         this.snapProvider = new CanvasSnapProvider();
         this.guideProvider = new CanvasGuideProvider();
         this.keyboardProvider = new CanvasElementKeyboardProvider(
@@ -177,7 +200,7 @@ export class CanvasElementManager {
     public moveActiveCanvasElement(
         dx: number,
         dy: number,
-        event: KeyboardEvent,
+        event?: KeyboardEvent,
     ): void {
         if (!this.activeElement) return;
 
@@ -2634,6 +2657,9 @@ export class CanvasElementManager {
         img.style.top = "";
         img.style.left = "";
         if (adjustContainer) {
+            // If the image was previously set the cover the container, remove that class
+            // so that image is displayed normally.  (BL-16471)
+            img.classList.remove("bloom-imageObjectFit-cover");
             // Enhance: possibly we want to align by making it bigger rather than smaller?
             this.adjustContainerAspectRatio(this.activeElement);
         }
@@ -2764,6 +2790,19 @@ export class CanvasElementManager {
     // width as necessary, or possibly increasing one if the usual adjustment would make it too small.
     // After making the adjustment if necessary (which might be delayed if the image dimensions
     // are not available), align the control frame with the active element.
+    //
+    // SAVE-RACE INVARIANT: when the adjustment must wait for the image to load, the geometry it
+    // eventually writes (width/height/left/top) would be stale if a save (requestPageContent) ran
+    // first. We guard the *deferred* path below with addRequestPageContentDelay, but that guard is
+    // only registered once we reach this method. requestPageContent always arrives as a separate
+    // JS task (posted by C# via RunJavascript), so it cannot interleave with a synchronous call
+    // stack. The guard is therefore sufficient ONLY because every caller reaches this method
+    // synchronously from the DOM mutation that necessitates the adjustment -- no await, setTimeout,
+    // or event-handler boundary in between -- so no save task can be processed in that gap. If you
+    // add a caller that does async work *before* the mutation (as the paste-new-element path does),
+    // it must hold its own requestPageContent delay across that gap; see the wrapWithRequestPageContentDelay
+    // usage in the paste branch, whose delay overlaps the one registered here so there is never an
+    // uncovered window.
     public adjustContainerAspectRatio(
         canvasElement: HTMLElement,
         useSizeOfNewImage = false,
@@ -2818,30 +2857,13 @@ export class CanvasElementManager {
                 return;
             }
             if (imgHeight === 0 || useSizeOfNewImage) {
-                // image not ready yet, try again later.
-                const handle = setTimeout(
-                    () =>
-                        this.adjustContainerAspectRatio(
-                            canvasElement,
-                            false, // if we've got dimensions just use them
-                            0,
-                        ), // if we get this call we don't have a timeout to cancel
-                    // I think this is long enough that we won't be seeing obsolete data (from a previous src).
-                    // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
-                    // If by any chance this happens when the image really isn't loaded enough to
-                    // have naturalHeight/Width, the zero checks above will force another iteration.
-                    100,
-                    // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
-                ) as unknown as number;
-                imgOrVideo.addEventListener(
-                    "load",
-                    () =>
-                        this.adjustContainerAspectRatio(
-                            canvasElement,
-                            false, // it's loaded, we don't want to wait again
-                            handle,
-                        ), // if we get this call we can cancel the timeout above.
-                    { once: true },
+                // A newly changed image often needs an async retry before the browser reports
+                // natural dimensions. That retry will later write width/height/left/top, so it
+                // must participate in requestPageContent delay bookkeeping or saves can capture
+                // stale geometry.
+                this.waitForImageAndAdjustContainerAspectRatio(
+                    canvasElement,
+                    imgOrVideo,
                 );
                 return; // control frame will be aligned when the image is loaded
             }
@@ -2929,9 +2951,56 @@ export class CanvasElementManager {
         copyContentToTargetAndCleanup(canvasElement);
     }
 
+    private waitForImageAndAdjustContainerAspectRatio(
+        canvasElement: HTMLElement,
+        image: HTMLImageElement,
+    ): void {
+        // This delay is separate from the wrapper around the "add a new canvas element" paste path.
+        // That wrapper only covers the async feature-status request before an element is added.
+        // This one covers the later async wait for the image itself to finish loading so our final
+        // geometry updates become part of any saved page content.
+        // NB: this is registered only once we reach here; it closes the save-race window for the
+        // image-load wait, but relies on callers reaching adjustContainerAspectRatio synchronously
+        // from the triggering DOM mutation. See the SAVE-RACE INVARIANT note on that method.
+        addRequestPageContentDelay(kAdjustContainerAspectRatioDelayId);
+        let adjustmentResumed = false;
+        const resumeAdjustment = (timeoutHandler: number) => {
+            if (adjustmentResumed) {
+                return;
+            }
+            adjustmentResumed = true;
+            try {
+                this.adjustContainerAspectRatio(
+                    canvasElement,
+                    false, // if we've got dimensions just use them
+                    timeoutHandler,
+                );
+            } finally {
+                removeRequestPageContentDelay(
+                    kAdjustContainerAspectRatioDelayId,
+                );
+            }
+        };
+        const handle = setTimeout(
+            () => resumeAdjustment(0),
+            // I think this is long enough that we won't be seeing obsolete data (from a previous src).
+            // OTOH it's not hopelessly long for the user to wait when we don't get an onload.
+            // If by any chance this happens when the image really isn't loaded enough to
+            // have naturalHeight/Width, the zero checks above will force another iteration.
+            100,
+            // somehow Typescript is confused and thinks this is a NodeJS version of setTimeout.
+        ) as unknown as number;
+        image.addEventListener("load", () => resumeAdjustment(handle), {
+            once: true,
+        });
+    }
+
     // When the image is changed in a canvas element (e.g., choose or paste image),
     // we remove cropping, adjust the aspect ratio, and move the control frame.
-    updateCanvasElementForChangedImage(imgOrImageContainer: HTMLElement) {
+    updateCanvasElementForChangedImage(
+        imgOrImageContainer: HTMLElement,
+        cropInfo?: IImageCropInfo,
+    ) {
         const canvasElement = imgOrImageContainer.closest(
             kCanvasElementSelector,
         ) as HTMLElement;
@@ -2952,6 +3021,7 @@ export class CanvasElementManager {
                 canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
                 true,
+                cropInfo,
             );
             SetupMetadataButton(canvasElement);
         } else {
@@ -3261,7 +3331,10 @@ export class CanvasElementManager {
         // (Makes the font look bolder.)
         // So we need to set it only when we are actually applying an outline color.
         // This will also save us data migration if we one day want to give the user control
-        // over the outline width or (much less likely) paint order
+        // over the outline width or (much less likely) paint order.
+        // Keep the paragraph/linebreak marker override in editMode.less in sync with these
+        // inherited outline properties. The edit-only helper glyphs are pseudo-elements and
+        // will pick up changes here unless that LESS rule is updated too.
         const outlineWidthProperty = "-webkit-text-stroke-width";
         const paintOrderProperty = "paint-order";
         const applyOutlineProperties = (target: HTMLElement) => {
@@ -5305,93 +5378,118 @@ export class CanvasElementManager {
             }
         }
         // otherwise we will add a new canvas element...but only if subscription allows it.
-        get("features/status?featureName=canvas&forPublishing=false", (c) => {
-            const features = c.data as FeatureStatus;
-            if (features.enabled) {
-                // If the feature is enabled, we can proceed with adding the canvas element.
-                const width = Math.max(
-                    this.snapProvider.getSnappedX(
-                        bloomCanvas.offsetWidth / 3,
-                        undefined,
-                    ),
-                    this.minWidth,
-                );
-                const height = Math.max(
-                    this.snapProvider.getSnappedY(
-                        bloomCanvas.offsetHeight / 3,
-                        undefined,
-                    ),
-                    this.minHeight,
-                );
-                if (
-                    width > bloomCanvas.offsetWidth ||
-                    height > bloomCanvas.offsetHeight
-                ) {
-                    // Can't paste image into such a tiny canvas
-                    return;
-                }
-                const activeGameTab = getActiveGameTab();
-                let positionX = (bloomCanvas.offsetWidth - width) / 2;
-                let positionY = (bloomCanvas.offsetHeight - height) / 2;
-                if (activeGameTab === startTabIndex) {
-                    // If we're in the start tab, we want to put it further towards the top left,
-                    // so there is room for the target.
-                    positionX = positionX / 2;
-                    positionY = positionY / 2;
-                }
-                const { x: adjustedX, y: adjustedY } =
-                    this.snapProvider.getPosition(
-                        undefined,
-                        positionX,
-                        positionY,
+        // Keep this wrapper even though adjustContainerAspectRatio now manages its own image-load delay.
+        // This branch still has a separate async feature-status request before we even know whether a
+        // new element will be created. Without this wrapper, requestPageContent can run before the
+        // callback adds the pasted element or decides to show the subscription dialog instead.
+        wrapWithRequestPageContentDelay(
+            () =>
+                new Promise<void>((resolve) => {
+                    get(
+                        "features/status?featureName=canvas&forPublishing=false",
+                        (c) => {
+                            const features = c.data as FeatureStatus;
+                            if (features.enabled) {
+                                // If the feature is enabled, we can proceed with adding the canvas element.
+                                const width = Math.max(
+                                    this.snapProvider.getSnappedX(
+                                        bloomCanvas.offsetWidth / 3,
+                                        undefined,
+                                    ),
+                                    this.minWidth,
+                                );
+                                const height = Math.max(
+                                    this.snapProvider.getSnappedY(
+                                        bloomCanvas.offsetHeight / 3,
+                                        undefined,
+                                    ),
+                                    this.minHeight,
+                                );
+                                if (
+                                    width > bloomCanvas.offsetWidth ||
+                                    height > bloomCanvas.offsetHeight
+                                ) {
+                                    // Can't paste image into such a tiny canvas
+                                    resolve();
+                                    return;
+                                }
+                                const activeGameTab = getActiveGameTab();
+                                let positionX =
+                                    (bloomCanvas.offsetWidth - width) / 2;
+                                let positionY =
+                                    (bloomCanvas.offsetHeight - height) / 2;
+                                if (activeGameTab === startTabIndex) {
+                                    // If we're in the start tab, we want to put it further towards the top left,
+                                    // so there is room for the target.
+                                    positionX = positionX / 2;
+                                    positionY = positionY / 2;
+                                }
+                                const { x: adjustedX, y: adjustedY } =
+                                    this.snapProvider.getPosition(
+                                        undefined,
+                                        positionX,
+                                        positionY,
+                                    );
+                                const positionInBloomCanvas = new Point(
+                                    adjustedX,
+                                    adjustedY,
+                                    PointScaling.Scaled,
+                                    "pasteImageFromClipboard",
+                                );
+                                this.addPictureCanvasElement(
+                                    positionInBloomCanvas,
+                                    $(bloomCanvas),
+                                    undefined,
+                                    imageInfo,
+                                    { width, height },
+                                    (newCanvasElement) => {
+                                        switch (activeGameTab) {
+                                            case startTabIndex:
+                                                // make it a draggable, with a target.
+                                                // We want to do this after its shape and position are stable, so we arrange for a callback
+                                                // after the aspect ratio is adjusted.
+                                                // (It would be nice to do this using async and await, or by passing this action as a param
+                                                // all the way down to adjustContainerAspectRatio, but there are eight layers of methods
+                                                // and at least one settimeout in between, and if each has to await the others, yet other
+                                                // callers of those methods have to become async. It would be a mess.)
+                                                // We do this as an action passed to addPictureCanvasElement so that doAfterNewImageAdjusted
+                                                // is set before the call to adjustContainerAspectRatio, which would be hard to guarantee
+                                                // if we did it after the call to addPictureCanvasElement.
+                                                this.doAfterNewImageAdjusted =
+                                                    () => {
+                                                        makeTargetAndMatchSize(
+                                                            newCanvasElement,
+                                                        );
+                                                    };
+                                                break;
+                                            case correctTabIndex:
+                                                newCanvasElement.classList.add(
+                                                    "drag-item-correct",
+                                                );
+                                                break;
+                                            case wrongTabIndex:
+                                                newCanvasElement.classList.add(
+                                                    "drag-item-wrong",
+                                                );
+                                        }
+                                    },
+                                );
+                                notifyToolOfChangedImage();
+                            } else {
+                                // If the feature is not enabled, we need to show the subscription dialog.
+                                showRequiresSubscriptionDialogInEditView(
+                                    "canvas",
+                                );
+                            }
+                            resolve();
+                        },
+                        () => {
+                            resolve();
+                        },
                     );
-                const positionInBloomCanvas = new Point(
-                    adjustedX,
-                    adjustedY,
-                    PointScaling.Scaled,
-                    "pasteImageFromClipboard",
-                );
-                this.addPictureCanvasElement(
-                    positionInBloomCanvas,
-                    $(bloomCanvas),
-                    undefined,
-                    imageInfo,
-                    { width, height },
-                    (newCanvasElement) => {
-                        switch (activeGameTab) {
-                            case startTabIndex:
-                                // make it a draggable, with a target.
-                                // We want to do this after its shape and position are stable, so we arrange for a callback
-                                // after the aspect ratio is adjusted.
-                                // (It would be nice to do this using async and await, or by passing this action as a param
-                                // all the way down to adjustContainerAspectRatio, but there are eight layers of methods
-                                // and at least one settimeout in between, and if each has to await the others, yet other
-                                // callers of those methods have to become async. It would be a mess.)
-                                // We do this as an action passed to addPictureCanvasElement so that doAfterNewImageAdjusted
-                                // is set before the call to adjustContainerAspectRatio, which would be hard to guarantee
-                                // if we did it after the call to addPictureCanvasElement.
-                                this.doAfterNewImageAdjusted = () => {
-                                    makeTargetAndMatchSize(newCanvasElement);
-                                };
-                                break;
-                            case correctTabIndex:
-                                newCanvasElement.classList.add(
-                                    "drag-item-correct",
-                                );
-                                break;
-                            case wrongTabIndex:
-                                newCanvasElement.classList.add(
-                                    "drag-item-wrong",
-                                );
-                        }
-                    },
-                );
-                notifyToolOfChangedImage();
-            } else {
-                // If the feature is not enabled, we need to show the subscription dialog.
-                showRequiresSubscriptionDialogInEditView("canvas");
-            }
-        });
+                }),
+            "pasteImageFromClipboardAddCanvasElement",
+        );
     }
 
     private addPictureCanvasElement(
@@ -5934,6 +6032,7 @@ export class CanvasElementManager {
             // just revert it to a placeholder
             const img = getImageFromCanvasElement(textOverPicDiv);
             if (img) {
+                prepareUndoForImageOperation(img);
                 img.classList.remove("bloom-imageLoadError");
                 img.onerror = HandleImageError;
                 img.src = "placeHolder.png";
@@ -5941,6 +6040,7 @@ export class CanvasElementManager {
                     normalizeCoverImageDesignation(page);
                 }
                 this.updateCanvasElementForChangedImage(img);
+                commitPendingImageOperationUndo(img);
                 notifyToolOfChangedImage(img);
             }
             return;
@@ -6622,6 +6722,8 @@ export class CanvasElementManager {
     };
 
     public initializeCanvasElementEditing(): void {
+        clearImageOperationUndoState();
+
         // This gets called in bloomEditable's SetupElements method. This is how it gets set up on page
         // load, so that canvas element editing works even when the Canvas element tool is not active. So it definitely
         // needs to be called there when we're calling SetupElements during page load. It's possible
@@ -7180,19 +7282,46 @@ export class CanvasElementManager {
         bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
+        cropInfo?: IImageCropInfo,
     ) {
         // adjustBackgroundImageSizeInternal may wait for the image to load and make modifications after, and we want to make
         // sure those modifications are included in any save that occurs in the meanwhile.
         // wrapWithRequestPageContentDelay will add the delay before calling the function and remove it when the promise settles.
-        wrapWithRequestPageContentDelay(
-            () =>
-                this.adjustBackgroundImageSizeInternal(
-                    bloomCanvas,
-                    bgCanvasElement,
-                    useSizeOfNewImage,
-                ),
-            this.pageContentDelayRequestId,
-        );
+        wrapWithRequestPageContentDelay(() => {
+            if (cropInfo) {
+                // For undo/restore, put cropping back first so size adjustment uses
+                // the restored image state rather than the image being replaced.
+                this.restoreImageCropInfo(bgCanvasElement, cropInfo);
+            }
+            return this.adjustBackgroundImageSizeInternal(
+                bloomCanvas,
+                bgCanvasElement,
+                useSizeOfNewImage,
+            );
+        }, this.pageContentDelayRequestId);
+    }
+
+    private restoreImageCropInfo(
+        imageOrContainer: HTMLElement,
+        cropInfo: IImageCropInfo,
+    ): void {
+        const image = this.getImageElement(imageOrContainer);
+        if (!image) {
+            return;
+        }
+
+        image.style.width = cropInfo.width;
+        image.style.height = cropInfo.height;
+        image.style.left = cropInfo.left;
+        image.style.top = cropInfo.top;
+    }
+
+    private getImageElement(
+        imageOrContainer: HTMLElement,
+    ): HTMLImageElement | undefined {
+        return imageOrContainer.tagName.toLowerCase() === "img"
+            ? (imageOrContainer as HTMLImageElement)
+            : (imageOrContainer.getElementsByTagName("img")[0] ?? undefined);
     }
 
     // Track background image load listener to prevent duplicates

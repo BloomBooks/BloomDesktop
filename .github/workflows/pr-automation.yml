@@ -1,0 +1,85 @@
+name: PR Automation
+
+# Runs housekeeping when a PR is opened or gets new commits (synchronize):
+#   - assign the PR to its author (so the author shows up on the PR Review
+#     Tracker board)
+#   - kick off a devinreview.com review and add its link to the PR description
+#
+# The devin step loads the matching devinreview.com URL in the Google Chrome
+# preinstalled on the runner, driven by Playwright. Chrome runs the page's
+# JavaScript so it can kick off a review, just as opening the URL in a browser
+# would. Using playwright-core with channel:"chrome" keeps each run to a small
+# npm install.
+# SECURITY: keep this as `pull_request` (NOT `pull_request_target`). With
+# `pull_request`, fork PRs get a read-only token and no access to secrets, and
+# we never check out or run PR code here. Switching to `pull_request_target`
+# would expose secrets and a writable token to untrusted PRs -- don't.
+on:
+    pull_request:
+        types: [opened, synchronize]
+
+jobs:
+    pr-automation:
+        # Internal PRs only: skip PRs that come from forks.
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-latest
+        permissions:
+            pull-requests: write
+        steps:
+            # Done first so a later (flaky) browser step can't cause us to skip it.
+            - name: Assign the PR to its author
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  # gh can't infer the repo without a checkout, so pass it explicitly.
+                  GH_REPO: ${{ github.repository }}
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+              run: gh pr edit "$PR_NUMBER" --add-assignee "$PR_AUTHOR"
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: lts/*
+
+            - name: Install Playwright driver (no browser download)
+              run: |
+                  yarn init -y
+                  yarn add playwright-core
+
+            - name: Open the devinreview.com URL in a real (headless) browser
+              env:
+                  # The PR's URL on github.com, e.g. https://github.com/owner/repo/pull/123
+                  PR_URL: ${{ github.event.pull_request.html_url }}
+              run: |
+                  export DEVIN_URL="${PR_URL/github.com/devinreview.com}"
+                  echo "Opening: $DEVIN_URL"
+                  cat > open.mjs <<'EOF'
+                  import { chromium } from "playwright-core";
+
+                  const url = process.env.DEVIN_URL;
+                  // channel:"chrome" uses the Google Chrome preinstalled on the runner.
+                  const browser = await chromium.launch({ channel: "chrome" });
+                  const page = await browser.newPage();
+                  await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
+                  // Give client-side JS time to fire any review-triggering requests.
+                  await page.waitForTimeout(8000);
+                  console.log("Loaded:", page.url(), "| title:", await page.title());
+                  await browser.close();
+                  EOF
+                  node open.mjs
+
+            - name: Add the devin review link to the PR description
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  # gh can't infer the repo without a checkout, so pass it explicitly.
+                  GH_REPO: ${{ github.repository }}
+                  PR_URL: ${{ github.event.pull_request.html_url }}
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  PR_BODY: ${{ github.event.pull_request.body }}
+              run: |
+                  DEVIN_URL="${PR_URL/github.com/devinreview.com}"
+                  LINK="[Devin review](${DEVIN_URL})"
+                  if printf '%s' "$PR_BODY" | grep -qF "$DEVIN_URL"; then
+                      echo "PR description already has the devin link; nothing to do."
+                      exit 0
+                  fi
+                  printf '%s\n\n%s\n' "$PR_BODY" "$LINK" | gh pr edit "$PR_NUMBER" --body-file -

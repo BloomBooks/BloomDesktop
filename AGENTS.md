@@ -47,10 +47,12 @@ If you create new files for temporary purposes (e.g. output or artifact or log f
 It is vital that you not run `yarn build` unless instructed to. If there is already a "--watch" build running, you will wreck it and waste the developer's time. You are welcome to `yarn lint` if you want to check for errors without building.
 
 # Localization
-- Localizations for translatable strings are kept in DistFiles/localizations; new ones are initially added to one of the files in the "en" subdirectory
-- Mark new XLF entries translate="no"
+- Localizations for translatable strings are kept in DistFiles/localizations; new ones are initially added to one of the files in the "en" subdirectory: There are high (DistFiles/localization/en/Bloom.xlf), medium (DistFiles/localization/en/BloomMediumPriority.xlf), and low (DistFiles/localization/en/BloomLowPriority.xlf) priority options. If you don't know where it should go, ask.
+- Mark new XLF entries translate="no" unless instructed otherwise.
 - When adding a new string, do not add it to all of the various language files. Just the one in the "en" subdirectory.
-- Don't change the content or ID of an existing XLF entry unless it is new (marked translate="no"). Instead, mark the old one with a note saying it is "obsolete as of <current Bloom version>" and make a new entry with a different ID.
+- Don't change the ID of an existing XLF entry unless it is new (marked translate="no"). Instead, mark the old one with a note saying it is "obsolete as of <current Bloom version>" and make a new entry with a different ID. Try to avoid this if possible by keeping the existing ID.
+- Don't change the content of an existing XLF entry unless it is new (marked translate="no") or you are sure that the change will not cause problems with existing translations. Instead, mark the old one with a note saying it is "obsolete as of <current Bloom version>" and make a new entry with the new content and a different ID.
+- You can find the current version from the `Version` property in `build/Bloom.proj`.
 - It's OK not to make XLF entries for strings only used in experimental features, as long as there is fallback English in the code that will be used.
 
 # Commenting
@@ -58,3 +60,14 @@ All public methods should have a comment. So should most private ones!
 
 # Git Committing
 Always include a good description when creating a git commit.
+
+# Skills
+Reusable, task-specific procedures for this repo live in `.github/skills/<name>/SKILL.md`.
+When a request matches one of these, READ the matching `SKILL.md` and follow it as the
+authoritative procedure (it may have more files alongside it). These may not be auto-loaded
+for non-copilot agents, so you may have to open the file yourself.
+
+Team-wide workflow skills that are not specific to this repo (the preflight → self-review →
+peer-review pipeline, Devin and Reviewable review handling, YouTrack operations) live in
+https://github.com/BloomBooks/bloom-team-skills — install per its README (clone + symlink
+into `~/.claude/skills`).

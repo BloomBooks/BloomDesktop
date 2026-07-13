@@ -253,6 +253,33 @@ namespace Bloom.Book
             set { MetaData.AllTitles = value; }
         }
 
+        /// <summary>
+        /// Extract the title for a specific language from AllTitles JSON.
+        /// Returns the title if found, otherwise returns an empty string.
+        /// </summary>
+        public string GetTitleForLanguage(string languageTag)
+        {
+            if (string.IsNullOrWhiteSpace(AllTitles) || string.IsNullOrWhiteSpace(languageTag))
+                return string.Empty;
+
+            try
+            {
+                var jsonString = AllTitles.Replace("\r", "\\r").Replace("\n", "\\n");
+                dynamic titles = DynamicJson.Parse(jsonString);
+                var langs = (IEnumerable<string>)titles.GetDynamicMemberNames();
+                if (langs.Contains(languageTag))
+                {
+                    return ((string)titles[languageTag]).Trim();
+                }
+            }
+            catch
+            {
+                // If parsing fails, return empty
+            }
+
+            return string.Empty;
+        }
+
         public string Isbn
         {
             get { return MetaData.Isbn; }

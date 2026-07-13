@@ -593,6 +593,9 @@ namespace Bloom.Publish
                         && size != "B5"
                         && size != "Letter"
                         && size != "Device16x9"
+                        // Ebook2x3/Ebook7x5 are screen/ebook sizes, like Device16x9; booklets don't make sense for them.
+                        && size != "Ebook2x3"
+                        && size != "Ebook7x5"
                     );
             }
         }

@@ -208,6 +208,7 @@ namespace Bloom.Edit
                             // to try again. If we do try again and the same page fails again, the state machine will
                             // call this action anyway. So, finally PostponedWork will get called and we can close the collection.
                             CurrentBook.Save();
+                            CurrentBook.RecordPendingCreatedHistoryEvent();
                             args.PostponedWork();
                             return null;
                         },
@@ -1610,7 +1611,8 @@ namespace Bloom.Edit
                     CurrentBook.FolderPath,
                     imageId,
                     priorImageSrc,
-                    imageInfo
+                    imageInfo,
+                    undoable: true // All image changes made here are undoable.
                 );
                 UpdateImageInBrowser(args);
             }
@@ -1627,68 +1629,16 @@ namespace Bloom.Edit
 
         public void UpdateImageInBrowser(PageEditingModel.ImageInfoForJavascript args)
         {
-            // We generally don't need to wait. Even if we decide to save, its call to RunJavascriptAsync() will come in after ours.
-            // changeImage() itself is synchronous. The one async path (adjustBackgroundImageSize) is wrapped with
-            // wrapWithRequestPageContentDelay, which ensures any C#-triggered request for page content waits until
-            // those async DOM adjustments settle before retrieving the page HTML.
+            // We generally don't need to wait since we don't need to save as part of this operation.
+            // If a cover image needs to be made transparent, code in version 6.5 and later takes care of that elsewhere.
+            // Not saving here greatly simplifies Undo image changes for cover pages.  (BL-16330)
             GetEditingBrowser()
                 .RunJavascriptFireAndForget(
                     $"workspaceBundle.getEditablePageBundleExports().changeImage({JsonConvert.SerializeObject(args)})"
                 );
-
-            /* We're Saving to the DOM here only if it's a cover page, because that lets us make the image transparent if it should be:
-             *        Cause: Until we have Saved the page, the in-memory DOM doesn't have this as the cover image,
-             *        so the check to see if we need to make it transparent says "no".
-             *  [JT idea: we could update our version of the DOM, just setting the src of the image. Or, we could
-             *  talk directly to the BloomServer and tell it that image needs transparency.]
-             * Another possible reason to Save is that it is needed if we're going to update the thumbnail, but we decided
-             * we can live without this...probably we can get that behavior back once the page list is in the same browser.
-             * Note: although changeImage() is synchronous, the async background-image-size adjustment it triggers is wrapped
-             * with wrapWithRequestPageContentDelay, so any save below will correctly wait for DOM adjustments to settle.
-             */
-            if (CurrentPage.IsCoverPage)
-            {
-                SaveThen(
-                    doAfterSaving: () =>
-                    {
-                        try
-                        {
-                            _view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
-
-                            Logger.WriteMinorEvent(
-                                "Finished ChangePicture with save {0}",
-                                (object)args.src
-                            );
-                            Analytics.Track("Change Picture");
-                            Logger.WriteEvent("ChangePicture {0}...", (object)args.src);
-                        }
-                        catch (Exception e)
-                        {
-                            var msg = LocalizationManager.GetString(
-                                "Errors.ProblemImportingPicture",
-                                "Bloom had a problem importing this image."
-                            );
-                            e.Data["ProblemImagePath"] = args.src;
-                            ErrorReport.NotifyUserOfProblem(
-                                e,
-                                msg + Environment.NewLine + e.Message
-                            );
-                        }
-
-                        return _pageSelection.CurrentSelection.Id; // we're not changing pages
-                    },
-                    doIfNotInRightStateToSave: () => { },
-                    forceFullSave: false,
-                    skipSaveToDisk: false // we can wait for the normal save to disk
-                );
-            }
-            else
-            {
-                // not saving, but we still want to log etc.
-                Logger.WriteMinorEvent("Finished ChangePicture without save {0}", (object)args.src);
-                Analytics.Track("Change Picture");
-                Logger.WriteEvent("ChangePicture {0}...", (object)args.src);
-            }
+            // not saving, but we still want to log etc.
+            Analytics.Track("Change Picture");
+            Logger.WriteEvent("ChangePicture {0}...", (object)args.src);
         }
 
         public void SetView(EditingView view)

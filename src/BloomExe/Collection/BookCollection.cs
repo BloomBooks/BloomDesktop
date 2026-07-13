@@ -243,6 +243,20 @@ namespace Bloom.Collection
         }
 
         /// <summary>
+        /// Clears the cached book list so the next call to GetBookInfos will rescan the folder.
+        /// Also fires CollectionChanged to notify subscribers (e.g., the React UI) to refresh.
+        /// Call this after external changes to the collection folder (e.g., after TC sync renames a folder).
+        /// </summary>
+        public void InvalidateBookList()
+        {
+            lock (_bookInfoLock)
+            {
+                _bookInfos = null;
+            }
+            CollectionChanged?.Invoke(this, null);
+        }
+
+        /// <summary>
         /// Handles side effects of deleting a book (also used when remotely deleted)
         /// </summary>
         /// <param name="bookInfo"></param>
@@ -335,7 +349,9 @@ namespace Bloom.Collection
 
                 _bookInfos = _bookInfos.Where(b => Directory.Exists(b.FolderPath)).ToList();
 
-                return _bookInfos;
+                // Return a snapshot so callers can enumerate without holding the lock,
+                // preventing "Collection was modified" exceptions from concurrent updates.
+                return _bookInfos.ToList();
             }
         }
 
