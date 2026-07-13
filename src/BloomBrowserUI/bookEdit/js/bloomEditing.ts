@@ -282,9 +282,19 @@ function AddEditKeyHandlers(container) {
             hideInvisibles(e);
         });
 
+    // Ctrl+Space: "clear formatting" on the current selection. We route this through the CKEditor
+    // instance that currently has focus (rather than the browser's document.execCommand) so that
+    // (a) it uses our removeFormat configuration/filter, which strips exactly the inline formatting
+    // our toolbar produces (bold, italic, underline, superscript, text color) while preserving
+    // Bloom's structural spans, and (b) the edit goes through CKEditor's change/undo machinery so
+    // it is noticed and saved. CKEditor breaks up partially-selected enclosing elements as needed.
     $(document).on("keydown", (e) => {
         if (e.key === " " && e.ctrlKey && !e.shiftKey && !e.altKey) {
-            document.execCommand("removeFormat"); // will remove bold, italics, etc. but not things that use elements, like h1
+            const editor = CKEDITOR.currentInstance;
+            if (editor) {
+                e.preventDefault();
+                editor.execCommand("removeFormat");
+            }
         }
     });
 
@@ -1941,6 +1951,22 @@ export function attachToCkEditor(element) {
         const editor = evt["editor"];
         const bar = $("body").find("." + editor.id);
         bar.hide();
+    });
+
+    // Protect Bloom's structural spans from the removeFormat ("clear formatting") command.
+    // The only spans the format toolbar itself produces are bare <span style="color:..."> (and
+    // similar bare style spans such as small caps), which carry neither a class nor an id, so we
+    // let those be removed. Any span that has a class or id is one Bloom created for its own
+    // purposes (audio segments like audio-sentence/bloom-highlightSegment, bloom-linebreak from
+    // Shift+Enter, etc.), and clearing formatting must leave those intact.
+    ckedit.addRemoveFormatFilter((element) => {
+        if (
+            element.is("span") &&
+            (element.hasAttribute("class") || element.hasAttribute("id"))
+        ) {
+            return false; // keep it
+        }
+        return true;
     });
 
     if (CKEDITOR.config.colorButton_colors) {
