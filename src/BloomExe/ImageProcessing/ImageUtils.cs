@@ -1636,7 +1636,7 @@ namespace Bloom.ImageProcessing
                     // Copy metadata from older file to the new one.  GraphicsMagick does a poor job on metadata.
                     var newMeta = RobustFileIO.CreateTaglibFile(path);
                     CopyTags(oldMetaData, newMeta);
-                    newMeta.Save();
+                    RobustFileIO.SaveTaglibFile(newMeta);
                     if (progress != null)
                         Application.DoEvents(); // allow progress report to work
                     return true;
@@ -2988,7 +2988,7 @@ namespace Bloom.ImageProcessing
                         using (var tagFile = RobustFileIO.CreateTaglibFile(destPath))
                         {
                             tagFile.RemoveTags(TagTypes.AllTags);
-                            tagFile.Save();
+                            RobustFileIO.SaveTaglibFile(tagFile);
                         }
                         var newMeta = new Metadata
                         {
