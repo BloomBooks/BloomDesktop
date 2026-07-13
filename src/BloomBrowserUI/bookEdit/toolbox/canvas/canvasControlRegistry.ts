@@ -73,7 +73,7 @@ import {
     playSound,
     showDialogToChooseSoundFileAsync,
 } from "../games/GameTool";
-import AudioRecording from "../talkingBook/audioRecording";
+import { showTalkingBookTool } from "../talkingBook/showTalkingBookTool";
 import { showLinkTargetChooserDialog } from "../../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
 import {
@@ -334,7 +334,7 @@ const makeChooseAudioMenuItemForText = (
                 englishLabel: "Use Talking Book Tool",
                 onSelect: () => {
                     runtime.closeMenu(false);
-                    AudioRecording.showTalkingBookTool();
+                    showTalkingBookTool();
                 },
             },
         ],
