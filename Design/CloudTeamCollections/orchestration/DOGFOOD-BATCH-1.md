@@ -574,6 +574,42 @@ up/download check
    constraint, not this one). Contradicted the schema's own documented intent ("claimed
    user unique"); dogfooding never tripped it because invites happened to alternate with
    claims. Fix: 20260713000002 recreates the constraint with default NULLS DISTINCT.
+18. **FIXED 13 Jul PM — a teammate's rename arrived as a DUPLICATE book (two local folders,
+   one instance id) on the receiving side.** John's live report: after Bob's retitle
+   check-in (server row renamed to "Tetun moon and cap", seq 3, unlocked — verified),
+   Alice ended up with old-name AND new-name folders, same id, same content, phantom
+   checkout displays, "both selected at once". Root cause: an identity-first REGRESSION —
+   base `NewBookRenamedFrom`'s heuristic ("a local folder with repo status can't be the
+   rename source") assumes name-keyed status; under identity-first the old-name folder
+   resolving (by id) to the renamed row is precisely what MARKS it as the rename source,
+   so rename detection always failed, the renamed book was treated as NEW and
+   auto-downloaded beside the old folder, and each later sync happily refreshed the
+   old-name folder's content via its identity binding (explaining "same content incl. the
+   new title in both"). FIX: `NewBookRenamedFrom` is now `protected internal virtual`
+   (base body byte-identical — folder TCs keep their heuristic);
+   CloudTeamCollection overrides it with an exact instance-id comparison (repo name → row
+   instance id → local folder carrying that id under a different name). Guards added in
+   the two auto-download sweeps (`QueueMissingRepoBooksForBackgroundDownload` + a
+   re-check in `DownloadMissingBookInBackground`, both inside CanAutoApplyRemoteChanges-
+   gated paths, i.e. cloud-only at runtime): a repo book that is a rename of an existing
+   local book is NOT "missing" — the rename is applied by the next sync's
+   rename-from-remote pass, which is already identity-driven (GetRepoBooksByIdMap) and
+   works for cloud unchanged. CLEANUP: Alice's old-name duplicate backed up to
+   C:\temp\stale-cloud-tc-backup-2026-07-13\ and removed; her copy now has one folder per
+   id. 3 new CloudIdentityFirstLookupTests.
+17. **FIXED 13 Jul PM — new/local-only books in a cloud TC showed "checked out to John1"
+   (the REGISTRATION identity).** John's live report from Bob's copy; Alice's copy only
+   looked right because C:\temp\Tetun Books\impersonate.txt makes her registration EQUAL
+   the account. The base status JSON stamps `who` (plus whoFirstName/whoSurname and
+   currentUserName) from TeamCollectionManager.CurrentUser for books whose checkout is
+   purely local (new local book / not in repo). FIX in
+   TeamCollectionApi.AddCloudBookStatusFields (same method as the earlier currentUser
+   override, bug #4 family): when `who` equals the base registration currentUser, rewrite
+   it to the signed-in account email and clear the registration first/surname;
+   currentUserName now also carries the account identity (avatar dialog). A real repo
+   lock's `who` (a member email) is untouched. 2 new TeamCollectionApiCloudTests.
+   RESIDUAL of the same family (already in bug #13's tail): create-time
+   Settings.Administrators and isUserAdmin still use registration identity.
 16. **FIXED 13 Jul PM — `pnpm go` + `--automation` silently killed Bob's startup on any
    sync warning (bug #10's sharp edge, now with a live victim).** John's report: Bob
    exited without any message when switching to the OneDrive Tetun copy, twice. SIL log

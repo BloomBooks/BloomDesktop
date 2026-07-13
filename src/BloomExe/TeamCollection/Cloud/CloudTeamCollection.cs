@@ -358,6 +358,42 @@ namespace Bloom.TeamCollection.Cloud
         internal string ResolveBookIdForTests(string bookFolderName) =>
             ResolveBookId(bookFolderName);
 
+        /// <summary>
+        /// Identity-exact remote-rename detection (bug #18). The base heuristic ("a local folder
+        /// with repo status can't be the rename source") assumes name-keyed status and is
+        /// INVERTED under this class's identity-first resolution: after a teammate's rename, the
+        /// old-name local folder resolves (by instance id) to the renamed repo row -- having
+        /// status is precisely what marks it as the rename source. Instead compare instance ids
+        /// directly: the repo book named <paramref name="newBookName"/> is a rename of whichever
+        /// local folder carries the same meta.json id under a different name. Without this,
+        /// the receiving side downloaded the renamed book as a NEW book next to the old-name
+        /// folder -- two local folders with one instance id (both "selected" at once, phantom
+        /// checkout displays -- John's live report, 13 Jul 2026).
+        /// </summary>
+        protected internal override string NewBookRenamedFrom(string newBookName)
+        {
+            EnsureCacheHydrated();
+            // Repo-name lookup on purpose: the caller is asking about a repo book's name.
+            var instanceId = TryGetBookInstanceIdForName(newBookName);
+            if (string.IsNullOrEmpty(instanceId))
+                return null;
+            foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
+            {
+                var folderName = Path.GetFileName(path);
+                if (string.Equals(folderName, newBookName, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (
+                    string.Equals(
+                        TryGetLocalBookInstanceId(folderName),
+                        instanceId,
+                        StringComparison.Ordinal
+                    )
+                )
+                    return folderName;
+            }
+            return null;
+        }
+
         /// <summary>The meta.json bookInstanceId of the LOCAL folder, or null when the folder has
         /// no readable id. Cached per folder name, revalidated by meta.json timestamp+size (the
         /// id itself never legitimately changes in place, but the folder a name points at can --

@@ -188,5 +188,40 @@ namespace BloomTests.TeamCollection.Cloud
             MakeLocalBook("Tetun moon and cap", "instance-moon");
             Assert.That(_collection.KnownToHaveBeenDeleted("Tetun moon and cap"), Is.False);
         }
+
+        // Bug #18 (13 Jul 2026, John's live report): a teammate's rename arrives as a repo book
+        // name with no local folder. The base rename-source heuristic ("has repo status => can't
+        // be the rename source") is inverted under identity-first resolution, so the receiving
+        // side downloaded the renamed book as a NEW book next to its old-name folder -- two local
+        // folders with one instance id. The cloud override compares instance ids exactly.
+        [Test]
+        public void NewBookRenamedFrom_LocalFolderWithSameIdUnderOldName_IsDetected()
+        {
+            // The repo book is named "The Moon and the Cap" (instance-moon); locally it still
+            // sits under the name the teammate renamed it FROM.
+            MakeLocalBook("Old Local Name", "instance-moon");
+
+            Assert.That(
+                _collection.NewBookRenamedFrom("The Moon and the Cap"),
+                Is.EqualTo("Old Local Name")
+            );
+        }
+
+        [Test]
+        public void NewBookRenamedFrom_NoLocalFolderWithThatId_ReturnsNull()
+        {
+            MakeLocalBook("Unrelated Book", "instance-unrelated");
+
+            Assert.That(_collection.NewBookRenamedFrom("The Moon and the Cap"), Is.Null);
+        }
+
+        [Test]
+        public void NewBookRenamedFrom_LocalFolderUnderTheSameName_IsNotARenameSource()
+        {
+            // The book already exists locally under the repo's own name: nothing was renamed.
+            MakeLocalBook("The Moon and the Cap", "instance-moon");
+
+            Assert.That(_collection.NewBookRenamedFrom("The Moon and the Cap"), Is.Null);
+        }
     }
 }

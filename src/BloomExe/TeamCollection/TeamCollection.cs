@@ -209,6 +209,18 @@ namespace Bloom.TeamCollection
             {
                 if (Directory.Exists(Path.Combine(_localCollectionFolder, bookName)))
                     continue;
+                // A repo book with no folder of ITS name but which is a rename of an existing
+                // local book is NOT missing -- downloading it would create a duplicate of that
+                // book under the new name (bug #18). The rename itself is applied by the next
+                // sync's rename-from-remote pass; HandleModifiedFile/HandleNewBook report it.
+                var renamedFrom = NewBookRenamedFrom(bookName);
+                if (renamedFrom != null)
+                {
+                    Logger.WriteEvent(
+                        $"TeamCollection: repo book '{bookName}' is a rename of local book '{renamedFrom}'; not queueing a download."
+                    );
+                    continue;
+                }
                 var lockedBy = WhoHasBookLocked(bookName);
                 if (
                     !string.IsNullOrEmpty(lockedBy)
@@ -1993,6 +2005,20 @@ namespace Bloom.TeamCollection
                 return;
             }
 
+            // Guard against the queued-before-the-rename-landed race (bug #18): by the time this
+            // runs, the "missing" repo book may have turned out to be a rename of an existing
+            // local book -- downloading it would duplicate that book under its new name. (After
+            // the presence check on purpose: rename detection reads the repo book's meta.json,
+            // which a repo-deleted book no longer has.)
+            var renamedFrom = NewBookRenamedFrom(bookBaseName);
+            if (renamedFrom != null)
+            {
+                Logger.WriteEvent(
+                    $"Background download of '{bookBaseName}' skipped: it is a rename of the local book '{renamedFrom}' (applied at the next sync)."
+                );
+                return;
+            }
+
             var error = CopyBookFromRepoToLocal(bookBaseName);
             if (error != null)
             {
@@ -2100,10 +2126,17 @@ namespace Bloom.TeamCollection
         /// that does not occur locally, can we determine that it is a rename
         /// of a local book? If so, return the book it is renamed from,
         /// otherwise, return null.
+        /// Virtual (bug #18, 13 Jul 2026): this base implementation's "has repo status =>
+        /// can't be the rename source" heuristic assumes name-keyed status, which is true for
+        /// folder TCs (unchanged) but inverted for CloudTeamCollection's identity-first
+        /// resolution -- there the OLD-name folder resolving to a (renamed) repo row is exactly
+        /// what marks it as the rename source, so the cloud backend overrides this with an
+        /// exact instance-id comparison. protected INTERNAL only so tests can exercise the
+        /// overrides directly.
         /// </summary>
         /// <param name="newBookName"></param>
         /// <returns></returns>
-        private string NewBookRenamedFrom(string newBookName)
+        protected internal virtual string NewBookRenamedFrom(string newBookName)
         {
             var meta = GetRepoBookFile(newBookName, "meta.json");
             if (string.IsNullOrEmpty(meta) || meta == "error")

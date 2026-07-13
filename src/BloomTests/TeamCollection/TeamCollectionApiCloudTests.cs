@@ -295,6 +295,50 @@ namespace BloomTests.TeamCollection
             Assert.That((string)json["currentUser"], Is.EqualTo("alice@dev.local"));
         }
 
+        // Dogfood bug #17 (13 Jul 2026): a brand-new local book (and any book not in the repo)
+        // gets `who` stamped from Bloom's REGISTRATION identity by the base status JSON, so in a
+        // cloud TC it displayed as "checked out to John1" instead of the signed-in account.
+        [Test]
+        public void AddCloudBookStatusFields_WhoIsRegistrationIdentity_RewritesWhoToAccount()
+        {
+            HydrateWith(Book("book-1", "My Book", currentVersionSeq: 5));
+            _auth.SignIn("bob@dev.local", "irrelevant");
+            const string original =
+                "{\"who\":\"registration@example.com\",\"whoFirstName\":\"John\","
+                + "\"whoSurname\":\"One\",\"currentUser\":\"registration@example.com\","
+                + "\"currentUserName\":\"John\"}";
+
+            var result = _api.AddCloudBookStatusFields(original, "My Book");
+
+            var json = JObject.Parse(result);
+            Assert.That((string)json["who"], Is.EqualTo("bob@dev.local"));
+            Assert.That(
+                json["whoFirstName"].Type,
+                Is.EqualTo(JTokenType.Null),
+                "the registration first name must not survive as the display name"
+            );
+            Assert.That(json["whoSurname"].Type, Is.EqualTo(JTokenType.Null));
+            Assert.That((string)json["currentUser"], Is.EqualTo("bob@dev.local"));
+            Assert.That((string)json["currentUserName"], Is.EqualTo("bob@dev.local"));
+        }
+
+        [Test]
+        public void AddCloudBookStatusFields_WhoIsAnotherMember_LeavesWhoAndNamesAlone()
+        {
+            HydrateWith(Book("book-1", "My Book", currentVersionSeq: 5));
+            _auth.SignIn("bob@dev.local", "irrelevant");
+            // A real repo lock: who is a member email, with the durable display name fields.
+            const string original =
+                "{\"who\":\"carol@dev.local\",\"whoFirstName\":\"Carol the Editor\","
+                + "\"whoSurname\":null,\"currentUser\":\"registration@example.com\"}";
+
+            var result = _api.AddCloudBookStatusFields(original, "My Book");
+
+            var json = JObject.Parse(result);
+            Assert.That((string)json["who"], Is.EqualTo("carol@dev.local"));
+            Assert.That((string)json["whoFirstName"], Is.EqualTo("Carol the Editor"));
+        }
+
         [Test]
         public void AddCloudBookStatusFields_SignedOut_LeavesCurrentUserAlone()
         {

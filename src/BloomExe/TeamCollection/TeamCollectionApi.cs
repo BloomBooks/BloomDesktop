@@ -915,7 +915,37 @@ namespace Bloom.TeamCollection
             // smoke test (registration was john_thomson@sil.org; the lock was alice@dev.local).
             var accountEmail = cloudCollection.Auth.CurrentEmail;
             if (!string.IsNullOrEmpty(accountEmail))
+            {
+                // The base JSON stamps `who` from the same registration identity for books whose
+                // "checkout" is purely local -- a brand-new local book, or one not in the repo --
+                // so those displayed as checked out to the REGISTRATION name (dogfood bug #17:
+                // Bob's new book said "checked out to John1"). Rewrite it to the account, and
+                // clear the registration first/surname that came with it; a real repo lock's
+                // `who` is a member email (never the registration email) and is left alone.
+                var registrationUser = (string)json["currentUser"];
+                if (
+                    !string.IsNullOrEmpty(registrationUser)
+                    && string.Equals(
+                        (string)json["who"],
+                        registrationUser,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                    && !string.Equals(
+                        registrationUser,
+                        accountEmail,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                {
+                    json["who"] = accountEmail;
+                    json["whoFirstName"] = null;
+                    json["whoSurname"] = null;
+                }
                 json["currentUser"] = accountEmail;
+                // Same identity rule for the avatar dialog's display name (base stamps the
+                // registration first name).
+                json["currentUserName"] = accountEmail;
+            }
             if (bookFolderName != null)
             {
                 var repoVersionSeq = cloudCollection.GetRepoVersionSeq(bookFolderName);
