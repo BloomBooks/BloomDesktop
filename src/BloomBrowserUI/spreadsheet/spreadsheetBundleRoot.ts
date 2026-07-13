@@ -7,8 +7,7 @@ import {
     TextFragment,
     addBloomSynphonyExtensions,
 } from "../bookEdit/toolbox/readers/libSynphony/bloomSynphonyExtensions";
-import AudioRecording from "../bookEdit/toolbox/talkingBook/audioRecording";
-
+import { getChecksum } from "../bookEdit/js/talkingBookChecksum";
 // If a string only contains | and whitespace, it is a "segment" with no text
 // and should be skipped when matching to audio segments
 function isEmptySegment(s: string): boolean {
@@ -24,7 +23,7 @@ export function split(text: string): string {
 }
 
 export function getMd5(input: string): string {
-    return AudioRecording.getChecksum(input);
+    return getChecksum(input);
 }
 
 // In some contexts, this seems to happen automatically when bloomSynphonyExtensions is loaded, since

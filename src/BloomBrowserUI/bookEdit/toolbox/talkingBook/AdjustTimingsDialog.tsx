@@ -20,7 +20,7 @@ import {
 } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { getAsync, postBoolean, postJsonAsync } from "../../../utils/bloomApi";
-import { kAudioCurrent } from "./audioRecording";
+import { kAudioCurrent } from "../../js/talkingBookMarkupConstants";
 import { AdjustTimingsControl, TimedTextSegment } from "./AdjustTimingsControl";
 import {
     getUrlPrefixFromWindowHref,
