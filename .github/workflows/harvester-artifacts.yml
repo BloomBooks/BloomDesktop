@@ -200,6 +200,27 @@ jobs:
                   if ($LASTEXITCODE -ne 0) { throw "gh release upload failed" }
                   Write-Host "Updated https://github.com/${{ github.repository }}/releases/download/$tag/bloom-harvester-deps.zip (build $env:BUILD_NUMBER)"
 
+            # ----- Trigger the downstream harvester build -----
+            # A fresh Bloom bundle should immediately be built into (and tested against) a
+            # new deployable harvester build, like the TeamCity dependency chain did:
+            #   harvester-development -> bloom-harvester master
+            #   harvester-production  -> bloom-harvester release
+            # workflow_dispatch is used (not repository_dispatch) because it can target a
+            # specific ref, which the production chain needs. The default GITHUB_TOKEN is
+            # scoped to this repo, so this needs GH_TOKEN_HARVESTER_ACTIONS: a fine-grained
+            # PAT (or GitHub App token) with Actions: write on BloomBooks/bloom-harvester.
+            # If the secret is missing, this step simply fails.
+            - name: Trigger bloom-harvester build
+              if: ${{ env.IS_HARVESTER_BRANCH == 'true' }}
+              shell: pwsh
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN_HARVESTER_ACTIONS }}
+              run: |
+                  $ref = if ('${{ github.ref_name }}' -eq 'harvester-production') { 'release' } else { 'master' }
+                  Write-Host "Dispatching bloom-harvester ci.yml on ref '$ref'"
+                  gh workflow run ci.yml --repo BloomBooks/bloom-harvester --ref $ref
+                  if ($LASTEXITCODE -ne 0) { throw "Failed to dispatch bloom-harvester ci.yml on '$ref'" }
+
             # On non-harvester branches (the temporary test trigger) attach the bundle as
             # a short-lived workflow artifact instead, so the layout can be inspected.
             - name: Upload bundle as workflow artifact (test runs)
