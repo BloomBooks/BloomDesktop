@@ -508,6 +508,30 @@ up/download check
    (all master code; timing/network dependent) and a failed assert TERMINATES the process
    ("Process terminated. Assertion Failed", captured stdout 13 Jul). Release unaffected.
    Candidate for a YouTrack issue against master, not a Cloud TC fix.
+9. **[NEW, 13 Jul human test] Client cache survives server-side collection recreation and
+   poisons everything after.** C:\temp\Tetun Books kept Thursday's
+   .bloom-cloud-repo-cache.json (lastSeenEventId 13, phantom books at seq 4) across the
+   server wipe + 13 Jul re-create of the SAME collection id. Consequences observed live:
+   the initial share push uploaded NOTHING (cache said the server already had every book at
+   the current version — zero checkin transactions ever), and Alice's checkout sent a
+   phantom Thursday book id → checkout_book raised book_not_found → "Bloom was not able to
+   check out". FIX NEEDED: a FULL get_collection_state snapshot must REPLACE the cache
+   (prune cached books absent from the snapshot), and lastSeenEventId > server max_event_id
+   must be detected as server regression → drop cache, full resync. Workaround: delete the
+   stale cache files before reopening (pending — an instance is still holding them).
+10. **[NEW, 13 Jul] `pnpm go` (watchBloomExe.mjs) always passes `--automation`**, so HUMAN
+   dogfooding runs under automation semantics: progress-dialog problems auto-close
+   (BrowserProgressDialog, 11:19:07 log — this hid the failed initial push), and
+   NonFatalProblem reports go to stdout only. The dev launcher needs a way to run WITHOUT
+   automation mode (flag through go.mjs → watchBloomExe), or humans keep not-seeing errors.
+11. **[NEW, 13 Jul, John's ruling recorded] Join-card dedup is identity-blind.** Bob
+   (invited, claimed member) got NO join card for Tetun because GetLocalCloudCollectionIds
+   suppresses by cloud id against EVERY local copy in the machine-wide chooser list —
+   including ALICE's C:\temp copy. John's decision: suppress a join card only if the
+   matching local copy was most recently opened by THIS signed-in account
+   (TeamCollectionLastKnownUser.txt equals the signed-in email; unknown/missing marker →
+   SHOW the card). Fix planned: identity-aware ComputeJoinCards (pure logic + tests),
+   GetLocalCloudCopies returning (id, lastKnownUser) pairs, signed-in email from SharingApi.
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
