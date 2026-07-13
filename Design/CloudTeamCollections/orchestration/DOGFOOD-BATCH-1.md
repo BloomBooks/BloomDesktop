@@ -54,16 +54,17 @@ Status: DONE (commit 6f0c4a068; e2e-2 GREEN in the 9 Jul PM queue)
       real check is John's manual test at the default 60s poll).
 
 ### 3. Center the checkin-progress dialog in the status panel  `[quick]`
-Status: CODE DONE + e2e-2 GREEN — remaining: John's VISUAL check of the centered dialog
-during his next manual checkin
+Status: **COMPLETE — John's visual check PASSED 13 Jul 2026** ("Confirmed checking progress
+is in the right place"). Same session also hand-confirmed the batch's very first fix:
+check-in MESSAGES appear in history and are shared to teammates.
 - [x] It's the React BloomDialog in TeamCollectionBookStatusPanel (not BrowserProgressDialog):
       now positioned via PaperProps over the #teamCollection div's center, vertically
       clamped so the paper stays on-screen (the panel hugs the window bottom). Falls back
       to default whole-window centering when #teamCollection is absent (unit tests).
       Panel vitest suite 11/11.
 - [x] `e2e-2-collaboration-loop` GREEN (9 Jul PM queue).
-- [ ] [HUMAN, John] Visual check that the checkin-progress dialog appears centered over the
-      status panel during a manual checkin.
+- [x] [HUMAN, John] Visual check that the checkin-progress dialog appears centered over the
+      status panel during a manual checkin — PASSED 13 Jul 2026.
 
 ### 4+5. Automatic remote-update application + in-place Sync (one work item)  `[medium]`
 Status: MERGED + E2E VERIFIED (9 Jul PM queue: e2e-2 + e2e-8 GREEN with auto-apply active;
