@@ -7,13 +7,13 @@ import {
     afterEach,
     vi,
 } from "vitest";
-import TalkingBookTool from "./talkingBook";
+import TalkingBookTool from "./talkingBookTool";
 import AudioRecording, {
     theOneAudioRecorder,
     AudioMode,
     getAllAudioModes,
-    kAnyRecordingApiUrl,
 } from "./audioRecording";
+import { kAnyRecordingApiUrl } from "../../js/audioUtils";
 import { RecordingMode } from "./recordingMode";
 import {
     SetupIFrameFromHtml,
@@ -26,6 +26,7 @@ import XRegExp from "xregexp";
 import axios from "axios";
 import { setSentenceEndingPunctuationForBloom } from "../readers/libSynphony/bloom_xregexp_categories";
 import $ from "jquery";
+import { Status } from "./TalkingBookUiState";
 
 describe("talking book tests", () => {
     beforeAll(async () => {
@@ -831,7 +832,9 @@ function getAudioSentenceSpans(divId: string): HTMLSpanElement[] {
 }
 
 function verifyRecordButtonEnabled() {
-    expect(document.getElementById("audio-record")).not.toHaveClass("disabled");
+    expect(theOneAudioRecorder.uiState.buttons.record).not.toBe(
+        Status.Disabled,
+    );
 }
 
 function setAllAudioFilesPresent() {

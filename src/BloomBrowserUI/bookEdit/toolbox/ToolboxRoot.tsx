@@ -69,10 +69,6 @@ const toolIconPathByToolId: Record<string, string> = {
         "/bloom/bookEdit/toolbox/impairmentVisualizer/blind-eye-white.svg",
 };
 
-const legacyToolSubPathByToolId: Record<string, string> = {
-    talkingBook: "talkingBook/talkingBookToolboxTool.html",
-};
-
 const toolboxHeaderIconStyles = css`
     width: 16px;
     height: 16px;
@@ -154,7 +150,6 @@ const makeSectionFromToolId = (toolId: string): ToolboxSection => {
         id: toolId,
         englishLabel: labelInfo.englishLabel,
         l10nKey: labelInfo.l10nKey,
-        legacyToolHtmlSubPath: legacyToolSubPathByToolId[toolId],
     };
 };
 
@@ -261,12 +256,7 @@ const ensureReactToolBodyElement = (
     }
 
     const normalizedToolId = normalizeToolId(toolId);
-    // Do not create elements for legacy tools; they load their content from
-    // legacyToolHtmlSubPath and their makeRootElement() implementations throw
-    // "Method not implemented." if called directly.
-    if (legacyToolSubPathByToolId[normalizedToolId]) {
-        return undefined;
-    }
+
     const tool = getMasterToolList().find((candidate) => {
         return candidate.id() === normalizedToolId;
     });
@@ -454,36 +444,6 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                     };
                 }),
             );
-            return;
-        }
-
-        const legacyToolHtmlSubPath = legacyToolSubPathByToolId[toolId];
-        if (legacyToolHtmlSubPath) {
-            try {
-                const legacyToolBodyHtml = await loadLegacyToolBodyHtml({
-                    id: toolId,
-                    englishLabel: "",
-                    l10nKey: "",
-                    legacyToolHtmlSubPath,
-                });
-                setSections((previousSections) =>
-                    previousSections.map((section) => {
-                        if (section.id !== toolId) {
-                            return section;
-                        }
-                        return {
-                            ...section,
-                            legacyToolBodyHtml,
-                        };
-                    }),
-                );
-            } catch (error) {
-                hydratedToolIds.current.delete(toolId);
-                console.error(
-                    `Failed to load legacy toolbox HTML for ${toolId}.`,
-                    error,
-                );
-            }
             return;
         }
 
