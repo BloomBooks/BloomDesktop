@@ -486,6 +486,28 @@ up/download check
    `/preflight` to create the draft PR and run the bot gauntlet.
 6. **Full C# suite: RESOLVED AS FLAKE** — the first run's single failure (1/3131) did not
    reproduce on the identification rerun (3120 passed / 0 failed / 3133 total, merged tree).
+7. **[NEW, 13 Jul human test] Create-over-stale-cloud-link reports FAKE SUCCESS.** John
+   shared Tetun Books, whose folder still carried Thursday's cloud link (server rows wiped
+   by e2e resets): ConnectToCloudCollection correctly threw
+   TeamCollectionLinkConflictException, but HandleCreateCloudTeamCollection's catch calls
+   request.PostSucceeded() (comment: avoid a double toast) — so CreateTeamCollection.tsx
+   advanced to "Your Team Collection is ready. Invite your team from the Sharing panel" with
+   NO server row, NO link rewrite, and no Sharing panel (nothing was created). The
+   ErrorReport.NotifyUserOfProblem dialog was not seen (may not display in this context).
+   FIX NEEDED: the reply must let the dialog distinguish failure (show the conflict message
+   + guidance) — and decide the recovery UX for "cloud link points at a collection that no
+   longer exists server-side" (same family as the deferred recovery-preconditions decision;
+   the create flow could offer re-create when the dead link's id == this collection's id).
+   Workaround applied for the human test: moved TeamCollectionLink.txt +
+   .bloom-cloud-repo-cache.json + lastCollectionFileSyncData.txt out of Tetun Books (backup:
+   Documents/Bloom/Tetun-Books-stale-tc-backup-2026-07-13).
+8. **[NEW, 13 Jul — UPSTREAM, not this branch] Debug builds die silently at the collection
+   chooser**: UrlLookup.LookupFullUrl's Debug.Assert ("provide an appropriate acceptFinalUrl
+   param when looking up a url during startup") fires via CollectionChooserApi.
+   HandleGetUnpublishedCount → GetLibraryStatusForBooks → BloomLibraryDetailPageUrlFromBookId
+   (all master code; timing/network dependent) and a failed assert TERMINATES the process
+   ("Process terminated. Assertion Failed", captured stdout 13 Jul). Release unaffected.
+   Candidate for a YouTrack issue against master, not a Cloud TC fix.
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
