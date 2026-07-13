@@ -489,6 +489,20 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 13 Jul 2026 (Sunday AM — weekend recovery + second launch failure diagnosed) · The Podman
+  WSL machine stopped over the weekend: whole local stack was down (supabase functions serve
+  "failed to run docker"; podman ps connection refused). RECOVERED: podman machine start →
+  supabase stop/start → db reset (migrations + seed users) → MinIO compose up → functions
+  serve fresh → smoke 3/3 PASS. John's second `pnpm go` failure ("Bloom was started on port
+  51040, but no vite server was available") did NOT reproduce on the next run (Bloom came up
+  fine, ready line + Vite connected): cold-start race — first post-weekend launch runs
+  Vite's dependency optimizer concurrently with a full dotnet-watch rebuild, and Bloom's
+  ReactControl.IsViteDevServerRunning allows only 400ms per origin (~1.2s total) at exactly
+  that moment. **QUEUED DX FOLLOW-UP: make the startup --vite-port validation patient**
+  (retry/longer window, mirroring go.mjs's own two-consecutive-successes poll) — NOT done
+  yet because a live dotnet watch was attached to John's running instance (never edit C#
+  under a live watcher) · Next: John's human tests in the running instance
+  (alice@dev.local / BloomDev123!, fresh collection).
 - 11 Jul 2026 (afternoon — human-test launch failure diagnosed + fixed) · John's `pnpm go`
   timed out ("Bloom did not emit BLOOM_AUTOMATION_READY within 120000 ms"). Cause: the E2E
   harness launches write to the SHARED per-machine user.config, so the last matrix left
