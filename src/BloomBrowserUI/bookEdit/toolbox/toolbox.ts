@@ -731,6 +731,9 @@ const kShowToolAfterEnableDelayMs = 300;
 
 // Pending deferred "open this tool" timers, keyed by tool name, so a later toggle
 // of the same tool can cancel an open that hasn't fired yet.
+// We deliberately don't clear this map on toolbox teardown/navigation: each timer
+// is ~300ms and removes its own entry when it fires, so at most a couple of very
+// short-lived entries ever exist and nothing can accumulate. (BL-16501)
 const pendingShowToolTimeouts = new Map<
     string,
     ReturnType<typeof setTimeout>
@@ -739,10 +742,16 @@ const pendingShowToolTimeouts = new Map<
 // modifies the enabledToolIds set, the saved active
 // state of the tool in question, and the presence of
 // the tool in the toolbox, whenever the tool is checked
-// or unchecked in the toolbox settings
+// or unchecked in the toolbox settings.
+// deferShowToRevealCheckbox is set only by the "More..." settings checkboxes:
+// when turning a tool on from there, opening it collapses the settings section,
+// so we briefly delay the open (see below) to let the user see the checkbox they
+// ticked. Other callers (e.g. activating a tool from an in-page action) leave it
+// false so the tool opens immediately. (BL-16501)
 export function setToolEnabledFromSettings(
     toolName: string,
     turnOn: boolean,
+    deferShowToRevealCheckbox: boolean = false,
 ): void {
     if (turnOn) {
         enabledToolIds.add(toolName);
@@ -770,7 +779,7 @@ export function setToolEnabledFromSettings(
         pendingShowToolTimeouts.delete(toolName);
     }
 
-    if (turnOn) {
+    if (turnOn && deferShowToRevealCheckbox) {
         // Turning a tool on adds it to the accordion and makes it the active
         // section, which collapses the "More..." settings section. If we do that
         // immediately, the "More..." section closes before the user perceives the

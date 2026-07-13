@@ -1012,8 +1012,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                         // alone, hovering an opened reader tool paints its whole
                                         // body the jQuery-UI "hover" lightcoral (#f08080).
                                         // Neutralize the stray header theming. (BL-16501)
-                                        div[data-toolid].ui-accordion-header,
-                                        div[data-toolId].ui-accordion-header {
+                                        div[data-toolid].ui-accordion-header {
                                             &,
                                             &.ui-state-hover,
                                             &.ui-state-focus,
