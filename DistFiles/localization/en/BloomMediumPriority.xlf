@@ -40,9 +40,9 @@
         <note>This checkbox enables the experimental publish-to-apps workflow.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.CloudTeamCollections" translate="no">
-        <source xml:lang="en">Cloud Team Collections (experimental)</source>
+        <source xml:lang="en">Cloud Team Collections</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.CloudTeamCollections</note>
-        <note>Checkbox label in Settings > Advanced > Experimental Features. Enables the cloud-backed (internet-synced) flavor of Team Collections, as opposed to the existing shared-folder-based one. "Team Collections" and "Cloud" should be treated as this feature's name; do not translate "(experimental)" as a technical caveat, just as normal descriptive text.</note>
+        <note>Checkbox label in Settings > Advanced > Experimental Features (the list itself is already labeled experimental, so the name carries no caveat). Enables the cloud-backed (internet-synced) flavor of Team Collections, as opposed to the existing shared-folder-based one. "Cloud Team Collections" is this feature's name.</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
@@ -1669,8 +1669,9 @@
         <note>Button shown after the initial upload to the cloud sharing server fails, to retry it.</note>
       </trans-unit>
       <trans-unit id="TeamCollection.Sharing.InitialSendComplete" translate="no">
-        <source xml:lang="en">Your Team Collection is ready. Invite your team from the Sharing panel in Collection Settings.</source>
+        <source xml:lang="en">Your Team Collection is ready. Invite your team from the Team Collection panel in Collection Settings.</source>
         <note>ID: TeamCollection.Sharing.InitialSendComplete</note>
+        <note>Shown when creating a cloud Team Collection finishes. "Team Collection panel" and "Collection Settings" name the tab and dialog where the member-invitation controls live.</note>
       </trans-unit>
       <trans-unit id="TeamCollection.Sharing.MustSignInToJoin" translate="no">
         <source xml:lang="en">Sign in with your Bloom account to join "%0".</source>

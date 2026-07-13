@@ -136,6 +136,10 @@ const RoleSelect: React.FunctionComponent<{
                 font-family: inherit;
                 font-size: inherit;
                 padding: 2px 4px;
+                // Match the small MUI Chip's height so the role control sits on the same
+                // visual line as the Claimed/Pending indicator in a member row.
+                height: 24px;
+                box-sizing: border-box;
             `}
             onChange={(event) => {
                 // Guard against synthetic/programmatic change events reaching a select that's
@@ -263,6 +267,11 @@ const MemberRow: React.FunctionComponent<{
                         disabled={props.isLastAdmin}
                         title={props.isLastAdmin ? lastAdminTooltip : undefined}
                         data-testid="sharing-remove-button"
+                        css={css`
+                            // Shrink the default touch padding so the trash can lines up
+                            // with the chip and role select instead of hanging below them.
+                            padding: 2px;
+                        `}
                         onClick={() => setConfirmingRemove(true)}
                     >
                         <DeleteIcon fontSize="small" />
@@ -380,9 +389,19 @@ const AddMemberRow: React.FunctionComponent<{
             data-testid="sharing-add-row"
             css={css`
                 display: flex;
-                align-items: center;
+                // Top-align and offset each control to the vertical center of the email
+                // input's 40px box (not the row's center): the AttentionTextField grows
+                // downward when it shows a validation message, and center alignment would
+                // drag the role select and Add button down with it.
+                align-items: flex-start;
                 gap: 8px;
                 margin-top: 12px;
+                select {
+                    margin-top: 8px;
+                }
+                button {
+                    margin-top: 2px;
+                }
             `}
         >
             <AttentionTextField

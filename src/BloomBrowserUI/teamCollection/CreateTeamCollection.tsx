@@ -416,8 +416,8 @@ export const CreateCloudTeamCollectionBody: React.FunctionComponent<{
                 l10nKey="TeamCollection.Sharing.InitialSendComplete"
                 temporarilyDisableI18nWarning={true}
             >
-                Your Team Collection is ready. Invite your team from the Sharing
-                panel in Collection Settings.
+                Your Team Collection is ready. Invite your team from the Team
+                Collection panel in Collection Settings.
             </Span>
         </div>
     );

@@ -5803,7 +5803,7 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TeamCollection.Available</note>
       </trans-unit>
       <trans-unit id="TeamCollection.Sharing.ShareOnCloudServer" translate="no">
-        <source xml:lang="en">Share this collection on the Bloom sharing server (experimental)</source>
+        <source xml:lang="en">Share this collection on the Bloom sharing server</source>
         <note>ID: TeamCollection.Sharing.ShareOnCloudServer</note>
         <note>Button in Team Collection settings that starts turning a local collection into a cloud-backed Team Collection. "Bloom" is a product name and must not be translated.</note>
       </trans-unit>

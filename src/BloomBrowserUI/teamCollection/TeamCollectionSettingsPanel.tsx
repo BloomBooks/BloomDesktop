@@ -205,7 +205,6 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = () => {
                     data-testid="share-on-cloud-button"
                 >
                     Share this collection on the Bloom sharing server
-                    (experimental)
                 </BloomButton>
             </div>
             <P

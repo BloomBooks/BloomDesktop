@@ -66,7 +66,7 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "TeamCollection.TeamCollections",
     );
     const cloudTeamCollectionsLabel = useL10n(
-        "Cloud Team Collections (experimental)",
+        "Cloud Team Collections",
         "CollectionSettingsDialog.AdvancedTab.Experimental.CloudTeamCollections",
     );
     const appBuilderLabel = useL10n(
