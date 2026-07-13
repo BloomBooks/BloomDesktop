@@ -212,26 +212,19 @@ const MemberRow: React.FunctionComponent<{
                 display: flex;
                 align-items: center;
                 gap: 8px;
-                // The settings dialog's page-level styles can add vertical margins/padding to
-                // controls, which defeats the flex centering. Two known offenders (found with
-                // the inspector, 13 Jul): stray margins on select/button, and a margin UNDER
-                // the MUI Chip (its outer box centers, so the visible pill rides high).
-                // Neutralize both so every control truly centers on the row.
+                // The settings page rule "#teamCollection-settings div:not(.no-space-below)
+                // { margin-bottom: 10px; }" lifts every DIV in this row (avatar, name/email
+                // column, chip) 10px above the flex center while the select and trash button
+                // (not divs) center honestly -- the visible misalignment. Its ID selector
+                // outranks anything we can nest under this class, hence the !important.
+                > div {
+                    margin-bottom: 0 !important;
+                }
                 select,
                 button {
                     margin-top: 0;
                     margin-bottom: 0;
                     align-self: center;
-                }
-                .MuiChip-root {
-                    margin-top: 0;
-                    margin-bottom: 0;
-                    padding-top: 0;
-                    padding-bottom: 0;
-                }
-                .MuiChip-root .MuiChip-label {
-                    padding-top: 0;
-                    padding-bottom: 0;
                 }
             `}
         >
@@ -417,6 +410,12 @@ const AddMemberRow: React.FunctionComponent<{
                 align-items: flex-start;
                 gap: 8px;
                 margin-top: 12px;
+                // Same page-level "#teamCollection-settings div ..." margin neutralization
+                // as the member rows (see MemberRow), so the email field's wrapper div
+                // doesn't sit 10px high relative to the select and Add button.
+                > div {
+                    margin-bottom: 0 !important;
+                }
                 select {
                     margin-top: 8px;
                 }
