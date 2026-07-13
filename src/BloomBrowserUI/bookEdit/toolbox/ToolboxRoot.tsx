@@ -1002,6 +1002,26 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                             margin-right: 0 !important;
                                             padding-right: 0 !important;
                                         }
+
+                                        // The Decodable/Leveled reader tool bodies are
+                                        // adopted from the old jQuery-UI accordion and
+                                        // still wear its header classes (ui-accordion-header,
+                                        // ui-state-default) plus jQuery hover/focus handlers
+                                        // that add ui-state-hover/-focus. Here they are tool
+                                        // *bodies*, not headers, so that theming is wrong: left
+                                        // alone, hovering an opened reader tool paints its whole
+                                        // body the jQuery-UI "hover" lightcoral (#f08080).
+                                        // Neutralize the stray header theming. (BL-16501)
+                                        div[data-toolid].ui-accordion-header {
+                                            &,
+                                            &.ui-state-hover,
+                                            &.ui-state-focus,
+                                            &.ui-state-active {
+                                                background: transparent !important;
+                                                border: none !important;
+                                                font-weight: normal;
+                                            }
+                                        }
                                     `}
                                 >
                                     {section.liveToolBodyElement ? (
