@@ -946,6 +946,17 @@ namespace Bloom.TeamCollection
                 // registration first name).
                 json["currentUserName"] = accountEmail;
             }
+            // A new/local-only book's whoFirstName/whoSurname come from the REGISTRATION name
+            // (base WhoHasBookLockedFirstName's FakeUserIndicatingNewBook branch), and the
+            // status panel/book buttons prefer those name fields over `who` -- so such books
+            // displayed as "checked out to John1" even though `who` already carried the account
+            // identity (bug #17's real culprit; the who-rewrite above only covers a signed-out
+            // registration leak). Clear them so the display falls back to `who`.
+            if ((bool?)json["isNewLocalBook"] == true)
+            {
+                json["whoFirstName"] = null;
+                json["whoSurname"] = null;
+            }
             if (bookFolderName != null)
             {
                 var repoVersionSeq = cloudCollection.GetRepoVersionSeq(bookFolderName);

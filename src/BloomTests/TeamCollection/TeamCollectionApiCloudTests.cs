@@ -322,6 +322,32 @@ namespace BloomTests.TeamCollection
             Assert.That((string)json["currentUserName"], Is.EqualTo("bob@dev.local"));
         }
 
+        // Bug #17's real culprit (13 Jul 2026, second report): for a new/local-only book the
+        // base JSON's `who` already carries the account identity (CurrentUserForStatus resolves
+        // to CloudTeamCollection.CurrentUserIdentity), but whoFirstName/whoSurname come from the
+        // REGISTRATION name -- and the UI prefers the name fields over `who`, so the book still
+        // displayed as "checked out to John1".
+        [Test]
+        public void AddCloudBookStatusFields_NewLocalBook_ClearsRegistrationNameFields()
+        {
+            HydrateWith(Book("book-1", "My Book", currentVersionSeq: 5));
+            _auth.SignIn("bob@dev.local", "irrelevant");
+            const string original =
+                "{\"who\":\"bob@dev.local\",\"whoFirstName\":\"John\",\"whoSurname\":\"One\","
+                + "\"currentUser\":\"bob@dev.local\",\"isNewLocalBook\":true}";
+
+            var result = _api.AddCloudBookStatusFields(original, "Some Brand New Book");
+
+            var json = JObject.Parse(result);
+            Assert.That((string)json["who"], Is.EqualTo("bob@dev.local"));
+            Assert.That(
+                json["whoFirstName"].Type,
+                Is.EqualTo(JTokenType.Null),
+                "the registration name must not win over the account identity in the display"
+            );
+            Assert.That(json["whoSurname"].Type, Is.EqualTo(JTokenType.Null));
+        }
+
         [Test]
         public void AddCloudBookStatusFields_WhoIsAnotherMember_LeavesWhoAndNamesAlone()
         {

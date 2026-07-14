@@ -608,6 +608,15 @@ up/download check
    it to the signed-in account email and clear the registration first/surname;
    currentUserName now also carries the account identity (avatar dialog). A real repo
    lock's `who` (a member email) is untouched. 2 new TeamCollectionApiCloudTests.
+   SECOND ROUND (John: "still showing John1"): the who-rewrite was aimed at the wrong
+   field — `who` was ALREADY the account (CurrentUserForStatus resolves to
+   CloudTeamCollection.CurrentUserIdentity); the REAL leak is whoFirstName/whoSurname,
+   which base WhoHasBookLockedFirstName stamps from the REGISTRATION name for
+   new/local-only books, and the UI prefers the name fields over `who`. Fix:
+   AddCloudBookStatusFields clears whoFirstName/whoSurname whenever isNewLocalBook — the
+   display falls back to `who` (account email). The earlier who-rewrite kept (covers a
+   signed-out registration leak). +1 test — NOT yet run (John's two instances hold
+   output\Debug); run the filter when they close.
    RESIDUAL of the same family (already in bug #13's tail): create-time
    Settings.Administrators and isUserAdmin still use registration identity.
 16. **FIXED 13 Jul PM — `pnpm go` + `--automation` silently killed Bob's startup on any
