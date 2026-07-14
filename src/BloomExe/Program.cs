@@ -380,8 +380,11 @@ namespace Bloom
                 {
                     if (IsLocalizationHarvestingLaunch(args))
                         LocalizationManager.IgnoreExistingEnglishTranslationFiles = true;
-                    else
-                        // This allows us to debug things like  interpreting a URL.
+                    else if (!StartupAutomation)
+                        // This allows us to debug things like interpreting a URL.
+                        // Suppressed under --automation (the build-once dev launcher run.sh,
+                        // and the E2E harness): there is no human to dismiss this modal, so it
+                        // would silently hang startup before any window or server exists.
                         MessageBox.Show("Attach debugger now");
                 }
                 var harvest = Environment.GetEnvironmentVariable("HARVEST_FOR_LOCALIZATION");

@@ -46,6 +46,25 @@ The vscode terminal often loses the first character sent from copilot agents. So
 
 - Do not launch Bloom with `dotnet run` or `node scripts/watchBloomExe.mjs` unless you are specifically working on the launcher scripts themselves or a better repo-supported source-aware launcher has been documented.
 
+- Two source-aware launchers exist; both start Vite (so the front-end hot-reloads) and pass
+  `--automation --attended`:
+    - `./go.sh` — runs Bloom under `dotnet watch`. Best for front-end work and small C# tweaks on a
+      **single** instance. The catch: the watcher holds the `output/` apphost locked, so a C# change
+      forces a full rebuild+relaunch anyway *and* nothing else can rebuild until you stop Bloom.
+    - `./run.sh` — the **build-once** launcher: it builds `BloomExe` once (Debug), then launches the
+      built `Bloom.exe` **directly**, with no C# file watcher. Prefer this for substantial C# work and
+      for running **two instances at once** (e.g. Team Collection testing). Two windows both run
+      `./run.sh`; a build lock + freshness check means only the first actually builds and the second
+      reuses that build (and its Vite). To pick up a later C# change, close Bloom (or press Enter at
+      its relaunch prompt) — `run.sh` rebuilds and relaunches while keeping Vite warm.
+      (`pnpm run run` also works; bare `pnpm run` only lists scripts.)
+    - Any `Bloom.exe` running from this repo's `output/` tree is a dev build of this worktree. Since
+      `run.sh` uses no watcher, such an instance can be stopped (and stays stopped) to free the build.
+      Identify them via the `bloom-automation` skill's status probe (HTTP `common/instanceInfo`), and
+      stop one with `killBloomProcess.mjs --http-port <port>`. NOTE: `killBloomProcess.mjs` with no
+      args enumerates processes via `wmic`, which is absent on newer Windows 11 — prefer the
+      `--http-port`/`--pid` forms there.
+
 If you create new files for temporary purposes (e.g. output or artifact or log files), be sure to clean them up when you're done and be careful not to accidentally commit them.
 
 # Don't run pnpm build
