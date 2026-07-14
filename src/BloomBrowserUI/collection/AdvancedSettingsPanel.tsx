@@ -19,6 +19,7 @@ interface IAdvancedSettings {
     autoUpdate?: boolean;
     showExperimentalBookSources?: boolean;
     allowTeamCollection?: boolean;
+    allowCloudTeamCollection?: boolean;
     allowAppBuilder?: boolean;
     showQrCode?: boolean;
     qrcodeCaption?: string;
@@ -31,6 +32,10 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const [showAutoUpdate, setShowAutoUpdate] = React.useState<boolean>(false);
     const [allowTeamCollectionEnabled, setAllowTeamCollectionEnabled] =
         React.useState<boolean>(false);
+    const [
+        allowCloudTeamCollectionEnabled,
+        setAllowCloudTeamCollectionEnabled,
+    ] = React.useState<boolean>(false);
     const [
         showExperimentalBookSourcesOption,
         setShowExperimentalBookSourcesOption,
@@ -60,6 +65,10 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "Team Collections",
         "TeamCollection.TeamCollections",
     );
+    const cloudTeamCollectionsLabel = useL10n(
+        "Cloud Team Collections",
+        "CollectionSettingsDialog.AdvancedTab.Experimental.CloudTeamCollections",
+    );
     const appBuilderLabel = useL10n(
         "App Builder",
         "CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder",
@@ -88,12 +97,21 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const featureStatus = useGetFeatureStatus("TeamCollection");
     const teamCollectionOptionEnabled =
         featureStatus === undefined ? true : featureStatus.enabled;
+    const cloudTeamCollectionFeatureStatus = useGetFeatureStatus(
+        "CloudTeamCollection",
+    );
+    const cloudTeamCollectionOptionEnabled =
+        cloudTeamCollectionFeatureStatus === undefined
+            ? true
+            : cloudTeamCollectionFeatureStatus.enabled;
     const appBuilderFeatureStatus = useGetFeatureStatus("AppBuilder");
     const appBuilderOptionEnabled =
         appBuilderFeatureStatus === undefined
             ? false
             : appBuilderFeatureStatus.enabled;
     const canChangeTeamCollectionOption = allowTeamCollectionEnabled !== false;
+    const canChangeCloudTeamCollectionOption =
+        allowCloudTeamCollectionEnabled !== false;
 
     const normalizeConfigrSettings = React.useCallback(
         (
@@ -124,6 +142,9 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
             setShowAutoUpdate(data["showAutoUpdate"] ?? false);
             setAllowTeamCollectionEnabled(
                 data["allowTeamCollectionEnabled"] ?? false,
+            );
+            setAllowCloudTeamCollectionEnabled(
+                data["allowCloudTeamCollectionEnabled"] ?? false,
             );
             setShowExperimentalBookSourcesOption(
                 data["showExperimentalBookSourcesOption"] ?? false,
@@ -232,6 +253,37 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                 >
                                     <BloomSubscriptionIndicatorIconAndText
                                         feature="TeamCollection"
+                                        className="bloom-subscriptionIndicator"
+                                    />
+                                </div>
+                            </div>
+                            <div
+                                css={css`
+                                    .Mui-disabled {
+                                        opacity: 1;
+                                    }
+                                `}
+                            >
+                                <ConfigrBoolean
+                                    label={cloudTeamCollectionsLabel}
+                                    path="allowCloudTeamCollection"
+                                    disabled={
+                                        !cloudTeamCollectionOptionEnabled ||
+                                        !canChangeCloudTeamCollectionOption
+                                    }
+                                ></ConfigrBoolean>{" "}
+                                <div
+                                    css={css`
+                                        display: flex;
+                                        justify-content: flex-end;
+                                        .bloom-subscriptionIndicator {
+                                            font-size: 10pt;
+                                            font-weight: 700;
+                                        }
+                                    `}
+                                >
+                                    <BloomSubscriptionIndicatorIconAndText
+                                        feature="CloudTeamCollection"
                                         className="bloom-subscriptionIndicator"
                                     />
                                 </div>

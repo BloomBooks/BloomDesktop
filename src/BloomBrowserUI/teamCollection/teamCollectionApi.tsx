@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import { get, getBoolean } from "../utils/bloomApi";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+import { useIsCloudTeamCollectionsExperimentalFeatureEnabled } from "./sharingApi";
 
 // The TS end of various interactions with the TeamCollectionApi class in C#
 
@@ -25,6 +26,14 @@ export interface IBookTeamCollectionStatus {
     error: string; // This one is not current sent from the C# side.
     checkInMessage: string;
     isUserAdmin: boolean;
+    // --- Cloud Team Collections additions (CONTRACTS.md "Book-status JSON", additive) ---
+    // Folder Team Collections never populate these fields, so `undefined` must always be
+    // treated as "behave exactly as before" everywhere they're read.
+    localVersionSeq?: number; // sequence number of the version currently on disk
+    repoVersionSeq?: number; // sequence number of the latest version in the repo (may be newer)
+    signedIn?: boolean; // whether the current user is signed in to the cloud account
+    requiresSignIn?: boolean; // true for cloud-backed collections, which need an authenticated user to check out/in
+    offlineDisabledReason?: string; // non-empty => this book can't be used at all while offline (e.g. it has never been downloaded to this computer)
 }
 
 export const initialBookStatus: IBookTeamCollectionStatus = {
@@ -96,4 +105,139 @@ export function useIsTeamCollection() {
         );
     }, []);
     return isTeamCollection;
+}
+
+// --- Cloud Team Collections (see task 08's shells, task 06's real endpoints, this task's wiring) ---
+// The endpoints referenced below (teamCollection/capabilities, teamCollection/tcStatusMetadata,
+// teamCollection/cloudCollectionId, teamCollection/isUserAdmin) are real, implemented in
+// TeamCollectionApi.cs. Every hook here only calls its endpoint when the cloud-team-collections
+// experimental feature is on, so folder Team Collections (the overwhelming majority of current
+// usage) never make the extra request and never see any UI difference.
+
+// Backend capability flags (CONTRACTS.md, additive to the book-status JSON): tell the UI what the
+// current Team Collection's backend can do, so components branch on capability rather than on
+// concrete backend type (folder vs cloud). All default to false, which is exactly today's
+// folder-TC behavior.
+export interface ITeamCollectionCapabilities {
+    supportsVersionHistory: boolean;
+    supportsSharingUi: boolean;
+    requiresSignIn: boolean;
+}
+
+export const initialTeamCollectionCapabilities: ITeamCollectionCapabilities = {
+    supportsVersionHistory: false,
+    supportsSharingUi: false,
+    requiresSignIn: false,
+};
+
+// Fetched at most ONCE per page load and shared by every caller: this hook runs in per-book
+// components (BookButton — once per book, remounting on each Collection-tab switch), so an
+// uncached per-mount request would mean hundreds of identical HTTP calls in large collections.
+// Capabilities only change when the collection's backend changes, which restarts Bloom anyway.
+let capabilitiesPromise: Promise<ITeamCollectionCapabilities> | undefined;
+
+function getTeamCollectionCapabilitiesOnce(): Promise<ITeamCollectionCapabilities> {
+    if (!capabilitiesPromise) {
+        capabilitiesPromise = new Promise((resolve) =>
+            get("teamCollection/capabilities", (result) =>
+                resolve(
+                    (result.data as ITeamCollectionCapabilities) ??
+                        initialTeamCollectionCapabilities,
+                ),
+            ),
+        );
+    }
+    return capabilitiesPromise;
+}
+
+// Test-only: forget the cached capabilities fetch so each test's endpoint mocks are
+// observed. Call from beforeEach; production code must never call this.
+export function resetTeamCollectionApiCachesForTests() {
+    capabilitiesPromise = undefined;
+}
+
+export function useTeamCollectionCapabilities(): ITeamCollectionCapabilities {
+    const cloudFeatureEnabled =
+        useIsCloudTeamCollectionsExperimentalFeatureEnabled();
+    const [capabilities, setCapabilities] = useState(
+        initialTeamCollectionCapabilities,
+    );
+    React.useEffect(() => {
+        if (!cloudFeatureEnabled) return;
+        let cancelled = false;
+        getTeamCollectionCapabilitiesOnce().then((result) => {
+            if (!cancelled) setCapabilities(result);
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [cloudFeatureEnabled]);
+    return capabilities;
+}
+
+// True if any capability flag indicates a cloud (S3 + Supabase) backend rather than a folder one.
+// Prefer this over checking a single flag, so callers that just want "is this a cloud TC" stay
+// correct even if a future capability is added or the initial (pre-fetch) defaults change.
+export function isCloudTeamCollection(
+    capabilities: ITeamCollectionCapabilities,
+): boolean {
+    return (
+        capabilities.supportsVersionHistory ||
+        capabilities.supportsSharingUi ||
+        capabilities.requiresSignIn
+    );
+}
+
+// Live metadata behind the status button/chip (e.g. "Updates Available (3 books)"). Kept separate
+// from the plain `teamCollection/tcStatus` enum endpoint (owned by other tasks) so this task can
+// add to it without touching that contract.
+export interface ITeamCollectionStatusMetadata {
+    updatesAvailableCount?: number;
+}
+
+export function useTeamCollectionStatusMetadata(): ITeamCollectionStatusMetadata {
+    const cloudFeatureEnabled =
+        useIsCloudTeamCollectionsExperimentalFeatureEnabled();
+    const [metadata, setMetadata] = useState<ITeamCollectionStatusMetadata>({});
+    const [reload, setReload] = useState(0);
+    useSubscribeToWebSocketForEvent(
+        "teamCollection",
+        "statusMetadataChanged",
+        () => setReload((old) => old + 1),
+    );
+    React.useEffect(() => {
+        if (!cloudFeatureEnabled) return;
+        get("teamCollection/tcStatusMetadata", (result) => {
+            setMetadata((result.data as ITeamCollectionStatusMetadata) ?? {});
+        });
+    }, [cloudFeatureEnabled, reload]);
+    return metadata;
+}
+
+// The cloud collection id (server `collections.id`) of the currently open collection, needed to
+// call SharingApi endpoints. Empty string for a folder Team Collection (or no collection open).
+export function useCloudCollectionId(): string {
+    const cloudFeatureEnabled =
+        useIsCloudTeamCollectionsExperimentalFeatureEnabled();
+    const [collectionId, setCollectionId] = useState("");
+    React.useEffect(() => {
+        if (!cloudFeatureEnabled) return;
+        get("teamCollection/cloudCollectionId", (result) => {
+            setCollectionId((result.data as string) ?? "");
+        });
+    }, [cloudFeatureEnabled]);
+    return collectionId;
+}
+
+// Whether the current user is an administrator of the currently open Team Collection. Used by the
+// collection-tab Share button to decide whether SharingPanel opens in manage or read-only mode.
+export function useIsTeamCollectionAdmin(): boolean {
+    const cloudFeatureEnabled =
+        useIsCloudTeamCollectionsExperimentalFeatureEnabled();
+    const [isAdmin, setIsAdmin] = useState(false);
+    React.useEffect(() => {
+        if (!cloudFeatureEnabled) return;
+        getBoolean("teamCollection/isUserAdmin", setIsAdmin);
+    }, [cloudFeatureEnabled]);
+    return isAdmin;
 }

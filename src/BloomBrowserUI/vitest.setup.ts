@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { vi } from "vitest";
+import { beforeEach, vi } from "vitest";
 
 // Some legacy specs use the Jasmine/Jest-style fail() helper, which vitest does
 // not provide. Define it globally (throwing an Error) so those assertions both
@@ -129,6 +129,20 @@ vi.mock("./lib/localizationManager/localizationManager", () => {
                     },
                     fail: () => promise,
                 });
+            },
+            // Mirrors the real localizationManager.processSimpleMarkdown (lib/localizationManager/localizationManager.ts):
+            // components built on l10nComponents.tsx's LocalizableElement (Div, Span, BloomButton, etc.)
+            // call this unconditionally while rendering, so it must exist here even in tests that never
+            // put markdown in their strings.
+            processSimpleMarkdown: (text: string): string => {
+                if (text.indexOf("*") < 0 && text.indexOf("[") < 0) return text;
+                const reStrong = /(^|[^*])\*\*([^*]+)\*\*([^*]|$)/g;
+                let newstr = text.replace(reStrong, "$1<strong>$2</strong>$3");
+                const reEm = /(^|[^*])\*([^*]+)\*([^*]|$)/g;
+                newstr = newstr.replace(reEm, "$1<em>$2</em>$3");
+                const reA = /\[([^\]]*)\]\(([^)]*)\)/g;
+                newstr = newstr.replace(reA, '<a href="$2">$1</a>');
+                return newstr;
             },
             isBypassEnabled: () => true, // Bypass localization in tests to avoid server calls
             getVernacularLang: () => "en", // Default vernacular language for tests
@@ -507,4 +521,28 @@ globalThis.jQuery = jQuery;
         "Science",
         "Tradition",
     ],
+});
+
+// Cloud Team Collections: the sharing/capability hooks cache their endpoint fetches at
+// module scope (once per page load in production — see sharingApi.ts / teamCollectionApi.tsx).
+// Tests mock those endpoints per-test, so the caches must be forgotten between tests or the
+// first test's mock would poison every later one in the same file.
+beforeEach(async () => {
+    // try/catch per module: a test that vi.mock()s one of these modules without the reset
+    // export gets a throwing proxy from vitest on ANY missing-export access; such a test has
+    // replaced the real module (and its cache) entirely, so there is nothing to reset anyway.
+    try {
+        const sharingApi = await import("./teamCollection/sharingApi");
+        sharingApi.resetSharingApiCachesForTests();
+    } catch {
+        // module fully mocked without the reset export - nothing to do
+    }
+    try {
+        const teamCollectionApi = await import(
+            "./teamCollection/teamCollectionApi"
+        );
+        teamCollectionApi.resetTeamCollectionApiCachesForTests();
+    } catch {
+        // module fully mocked without the reset export - nothing to do
+    }
 });

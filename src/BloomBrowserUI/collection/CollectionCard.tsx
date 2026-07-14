@@ -12,7 +12,7 @@ import {
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { LocalizableMenuItem } from "../react_components/localizableMenuItem";
 import { get, postString } from "../utils/bloomApi";
-import { kBloomRed } from "../bloomMaterialUITheme";
+import { kBloomBlue, kBloomRed } from "../bloomMaterialUITheme";
 import { useL10n } from "../react_components/l10nHooks";
 import { TeamCollectionIcon } from "../teamCollection/TeamCollectionIcon";
 
@@ -23,6 +23,14 @@ export interface ICollectionInfo {
     checkedOutCount?: number;
     unpublishedCount?: number;
     isTeamCollection?: boolean;
+    // The fields below are set only for a "join card" (dogfood batch 1, item 6): a cloud Team
+    // Collection the signed-in user belongs to but has no local copy of yet (see
+    // CollectionChooserApi.HandleGetJoinCards). A join card has no local folder, so none of the
+    // fields above (bookCount/checkedOutCount/unpublishedCount) are meaningful for it and none are
+    // fetched; clicking it invites the user to join instead of opening a local collection.
+    isJoinCard?: boolean;
+    collectionId?: string;
+    onJoinClick?: (collectionId: string, title: string) => void;
 }
 
 const moreButtonStyle = css`
@@ -65,14 +73,15 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
 
     // The unpublished count is somewhat expensive to calculate, so it's not likely to be
     // included in the initial data we get. Instead, we use an effect to fetch it when the
-    // card is rendered.
+    // card is rendered. A join card has no local folder to ask about, so it never fetches this
+    // (or anything else per-card -- see the batch plan's "no per-card fetches for join cards").
     React.useEffect(() => {
-        if (props.unpublishedCount !== undefined) return;
+        if (props.isJoinCard || props.unpublishedCount !== undefined) return;
         get(
             `collections/getUnpublishedCount?collectionPath=${encodeURIComponent(props.path)}`,
             (r) => setUnpublishedCount(r.data?.count),
         );
-    }, [props.path, props.unpublishedCount]);
+    }, [props.isJoinCard, props.path, props.unpublishedCount]);
 
     const bookCountSingular = useL10n(
         "{0} book",
@@ -98,6 +107,10 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
         undefined,
         String(unpublishedCount ?? 0),
     );
+    // Reuses the same "Get" wording the old "Get my Team Collections" sidebar used for its
+    // pull-down button, as the join cue for a join card (batch decision: "e.g. the existing
+    // 'Get'/join affordance").
+    const joinCueText = useL10n("Get", "CollectionChooser.PullDown", undefined);
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         event.stopPropagation();
@@ -114,11 +127,22 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
     const additionalCardTexts: JSX.Element[] = getAdditionalCardTexts();
 
     return (
-        <Card variant="outlined" css={cardStyle}>
+        <Card
+            variant="outlined"
+            css={cardStyle}
+            data-testid={props.isJoinCard ? "join-collection-card" : undefined}
+        >
             <CardActionArea
                 onClick={() => {
-                    if (!moreMenuAnchorEl)
-                        postString("workspace/openCollection", props.path);
+                    if (moreMenuAnchorEl) return;
+                    if (props.isJoinCard) {
+                        props.onJoinClick?.(
+                            props.collectionId ?? "",
+                            props.title,
+                        );
+                        return;
+                    }
+                    postString("workspace/openCollection", props.path);
                 }}
             >
                 <CardContent css={cardContentStyle}>
@@ -170,53 +194,71 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
                     </div>
                 </CardContent>
             </CardActionArea>
-            {/* Outside CardActionArea so clicks don't bubble up and open the collection */}
-            <IconButton
-                aria-label="more"
-                aria-controls="long-menu"
-                aria-haspopup="true"
-                onClick={handleClick}
-                css={[
-                    moreButtonStyle,
-                    moreMenuIsOpen &&
-                        css`
-                            opacity: 1;
-                        `,
-                ]}
-                className="more-button"
-            >
-                <MoreVertIcon />
-            </IconButton>
-            <Menu
-                id="long-menu"
-                anchorEl={moreMenuAnchorEl}
-                keepMounted
-                open={moreMenuIsOpen}
-                onClose={handleMenuClose}
-                slotProps={{ paper: { sx: { maxWidth: 280 } } }}
-            >
-                <LocalizableMenuItem
-                    english={"Show in File Explorer"}
-                    l10nId={"CollectionTab.BookMenu.ShowInFileExplorer"}
-                    onClick={handleOpenInFileExplorer}
-                    hasLeadingIconSpace={false}
-                />
-                <hr />
-                <MenuItem
-                    disabled
-                    css={css`
-                        white-space: normal;
-                        word-break: break-all;
-                    `}
-                >
-                    {props.path}
-                </MenuItem>
-            </Menu>
+            {/* Outside CardActionArea so clicks don't bubble up and open the collection.
+                Omitted entirely for a join card: there is no local folder yet, so "Show in File
+                Explorer" and the path display below are both meaningless before joining. */}
+            {!props.isJoinCard && (
+                <React.Fragment>
+                    <IconButton
+                        aria-label="more"
+                        aria-controls="long-menu"
+                        aria-haspopup="true"
+                        onClick={handleClick}
+                        css={[
+                            moreButtonStyle,
+                            moreMenuIsOpen &&
+                                css`
+                                    opacity: 1;
+                                `,
+                        ]}
+                        className="more-button"
+                    >
+                        <MoreVertIcon />
+                    </IconButton>
+                    <Menu
+                        id="long-menu"
+                        anchorEl={moreMenuAnchorEl}
+                        keepMounted
+                        open={moreMenuIsOpen}
+                        onClose={handleMenuClose}
+                        slotProps={{ paper: { sx: { maxWidth: 280 } } }}
+                    >
+                        <LocalizableMenuItem
+                            english={"Show in File Explorer"}
+                            l10nId={"CollectionTab.BookMenu.ShowInFileExplorer"}
+                            onClick={handleOpenInFileExplorer}
+                            hasLeadingIconSpace={false}
+                        />
+                        <hr />
+                        <MenuItem
+                            disabled
+                            css={css`
+                                white-space: normal;
+                                word-break: break-all;
+                            `}
+                        >
+                            {props.path}
+                        </MenuItem>
+                    </Menu>
+                </React.Fragment>
+            )}
         </Card>
     );
 
     function getAdditionalCardTexts() {
         const additionalCardTexts: JSX.Element[] = [];
+        // A join card has no local book count/checked-out/unpublished info to show (it isn't
+        // joined yet); show only the join cue instead.
+        if (props.isJoinCard) {
+            additionalCardTexts.push(
+                <AdditionalCardText
+                    key="joinCue"
+                    text={joinCueText}
+                    color={kBloomBlue}
+                />,
+            );
+            return additionalCardTexts;
+        }
         additionalCardTexts.push(
             <AdditionalCardText
                 key="bookCount"

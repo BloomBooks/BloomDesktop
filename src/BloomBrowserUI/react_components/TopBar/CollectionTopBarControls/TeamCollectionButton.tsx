@@ -5,6 +5,7 @@ import { getBloomApiPrefix, post } from "../../../utils/bloomApi";
 import { kBloomYellow } from "../../../bloomMaterialUITheme";
 import { kBloomGray } from "../../../utils/colorUtils";
 import { TeamCollectionStatus } from "../../../teamCollection/TeamCollectionStatus";
+import { useTeamCollectionStatusMetadata } from "../../../teamCollection/teamCollectionApi";
 import { useL10n2 } from "../../l10nHooks";
 
 const bloomApiPrefix = getBloomApiPrefix(false);
@@ -49,6 +50,17 @@ export const TeamCollectionButton: React.FunctionComponent<{
     // "Team Collection" has been internationalized thus far.
     const nominalLabel = useL10n2({ key: "TeamCollection.TeamCollection" });
 
+    // Cloud Team Collections: when the backend can tell us how many books have a newer version
+    // in the repo, show that count instead of the generic "Updates Available" label. This hook
+    // only calls its (currently mocked) endpoint when the cloud-team-collections experimental
+    // feature is on, so folder Team Collections keep the exact label above unchanged.
+    const { updatesAvailableCount } = useTeamCollectionStatusMetadata();
+    const updatesAvailableWithCountLabel = useL10n2({
+        english: "Updates Available (%0 books)",
+        key: "TeamCollection.UpdatesAvailableWithCount",
+        params: [String(updatesAvailableCount ?? 0)],
+    });
+
     const handleTeamCollectionClick = React.useCallback(() => {
         post("teamCollection/showStatusDialog");
     }, []);
@@ -60,6 +72,12 @@ export const TeamCollectionButton: React.FunctionComponent<{
     const statusColor = statusColors[props.status] || "white";
     let statusLabel = statusLabels[props.status] || "Team Collection";
     if (statusLabel === statusLabels["Nominal"]) statusLabel = nominalLabel;
+    if (
+        props.status === "NewStuff" &&
+        typeof updatesAvailableCount === "number"
+    ) {
+        statusLabel = updatesAvailableWithCountLabel;
+    }
     const iconPath = statusIcons[props.status] || kTeamCollectionIcon;
     return (
         <div
