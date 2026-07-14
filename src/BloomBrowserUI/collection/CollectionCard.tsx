@@ -28,9 +28,13 @@ export interface ICollectionInfo {
     isCurrentCollection?: boolean;
 }
 
+// The "..." menu button sits in the top-right corner of the card. The title row
+// reserves matching space on its right (kMoreButtonReservedSpace) so a long
+// collection name truncates with an ellipsis instead of sliding under the button.
+const kMoreButtonReservedSpace = "34px";
 const moreButtonStyle = css`
     position: absolute;
-    bottom: 8px;
+    top: 8px;
     right: 8px;
     color: #979797;
     opacity: 0;
@@ -93,8 +97,9 @@ const cardTitleStyle = css`
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    // Grow to fill the row so the team icon is pushed to the right edge,
-    // vertically in line with the right-aligned unpublished text below.
+    // Grow to fill the row so the team icon is pushed to the right (up to the
+    // space reserved for the "..." button), and truncate a long name with an
+    // ellipsis before it reaches that button.
     min-width: 0;
     flex: 1 1 auto;
 `;
@@ -115,10 +120,10 @@ const bookCountStyle = css`
     white-space: nowrap;
 `;
 
-// Pill-shaped status "tag" chips. The unpublished chip is a tinted teal fill; the
-// checked-out chip is outlined red (see the variant/border override where used).
-// Keep the label at a normal weight; the design's teal reads as a light tag, and
-// Bloom's font fallback renders 500 heavier than the mockup's Roboto.
+// Pill-shaped status "tag" chip, currently used only for the outlined-red
+// checked-out chip (see the color/border override where used). Keep the label at
+// a normal weight; Bloom's font fallback renders 500 heavier than the mockup's
+// Roboto.
 const chipBaseStyle = css`
     height: 24px;
     border-radius: 12px;
@@ -223,6 +228,9 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
                                 gap: 8px;
                                 width: 100%;
                                 margin-bottom: 10px;
+                                // Keep the title (and team icon) clear of the
+                                // top-right "..." button.
+                                padding-right: ${kMoreButtonReservedSpace};
                             `}
                         >
                             <Typography variant="body1" css={cardTitleStyle}>
