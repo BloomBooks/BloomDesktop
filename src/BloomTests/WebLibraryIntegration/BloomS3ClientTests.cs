@@ -180,6 +180,9 @@ namespace BloomTests.WebLibraryIntegration
                 matchingFilesResponse = await amazonS3.ListObjectsV2Async(
                     listMatchingObjectsRequest
                 );
+                // AWSSDK v4: an empty result gives a null S3Objects collection, not an empty one.
+                if (matchingFilesResponse.S3Objects == null)
+                    return;
                 if (matchingFilesResponse.S3Objects.Count == 0)
                     return;
 
@@ -192,12 +195,15 @@ namespace BloomTests.WebLibraryIntegration
                 };
 
                 var response = await amazonS3.DeleteObjectsAsync(deleteObjectsRequest);
-                System.Diagnostics.Debug.Assert(response.DeleteErrors.Count == 0);
+                // AWSSDK v4: response collections may be null instead of empty.
+                System.Diagnostics.Debug.Assert(
+                    response.DeleteErrors == null || response.DeleteErrors.Count == 0
+                );
 
                 // Prep the next request (if needed)
                 listMatchingObjectsRequest.ContinuationToken =
                     matchingFilesResponse.NextContinuationToken;
-            } while (matchingFilesResponse.IsTruncated); // Returns true if haven't reached the end yet
+            } while (matchingFilesResponse.IsTruncated == true); // Returns true if haven't reached the end yet (AWSSDK v4: bool?)
         }
     }
 }
