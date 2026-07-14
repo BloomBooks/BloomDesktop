@@ -377,7 +377,9 @@ export default class BloomSourceBubbles {
             if (indexA >= 0) return -1;
             if (indexB >= 0) return 1;
             // Neither in preferred list - maintain alphabetical order
-            return langA < langB ? -1 : langA > langB ? 1 : 0;
+            if (langA < langB) return -1;
+            if (langA > langB) return 1;
+            return 0;
         });
 
         return $(itemArray);
