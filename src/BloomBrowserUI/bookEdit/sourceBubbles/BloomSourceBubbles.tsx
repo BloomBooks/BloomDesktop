@@ -18,23 +18,18 @@ import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import "../../lib/jquery.easytabs.js"; //load into global space
 import BloomHintBubbles from "../js/BloomHintBubbles";
-import { getEditablePageBundleExports } from "../js/workspaceFrames";
-import { postJson, postJsonAsync, postString } from "../../utils/bloomApi";
+import { postJson, postString } from "../../utils/bloomApi";
 import CopyContentButton from "../../react_components/CopyContentButton";
+import {
+    getAiProviderDisplayName,
+    getLanguageNameFromBrowser,
+    isAiLanguageTag,
+    removeAiTranslationDivsFromClone,
+} from "./aiTranslationDisplay";
 
 declare function GetSettings(): ICollectionSettings;
 
 export default class BloomSourceBubbles {
-    private static readonly kAiSourceBubbleFingerprintAttr =
-        "data-ai-source-bubble-fingerprint";
-    private static readonly kAiSourceBubblePendingFingerprintAttr =
-        "data-ai-source-bubble-pending-fingerprint";
-    private static readonly kAiSourceBubbleRequestTokenAttr =
-        "data-ai-source-bubble-request-token";
-    private static readonly kAiSourceBubbleClass =
-        "bloom-ai-source-bubble-translation";
-    private static nextAiSourceBubbleRequestToken = 0;
-
     //:empty is not quite enough... we don't want to show bubbles if all there is is an empty paragraph
     private static hasNoText(obj: HTMLElement): boolean {
         //if(typeof (obj) == 'HTMLTextAreaElement') {
@@ -43,447 +38,8 @@ export default class BloomSourceBubbles {
         return $.trim($(obj).text()).length === 0;
     }
 
-    private static isAiLanguageTag(languageTag: string | undefined): boolean {
-        return !!languageTag && languageTag.includes("-x-ai");
-    }
-
-    private static getPreferredSourceDiv(divForBubble: JQuery): JQuery {
-        const settings = GetSettings();
-        const preferredLanguages = [
-            settings.defaultSourceLanguage,
-            settings.defaultSourceLanguage2,
-            settings.currentCollectionLanguage2,
-            settings.currentCollectionLanguage3,
-            "en",
-        ].filter(
-            (languageTag, index, tags) =>
-                !!languageTag &&
-                !BloomSourceBubbles.isAiLanguageTag(languageTag) &&
-                tags.indexOf(languageTag) === index,
-        );
-
-        for (const languageTag of preferredLanguages) {
-            const matchingDiv = divForBubble
-                .find(`div[lang='${languageTag}']`)
-                .filter(
-                    (index, element) =>
-                        !BloomSourceBubbles.hasNoText(element as HTMLElement),
-                )
-                .first();
-            if (matchingDiv.length > 0) {
-                return matchingDiv;
-            }
-        }
-
-        return divForBubble
-            .find("div[lang]")
-            .filter((index, element) => {
-                const languageTag = element.getAttribute("lang") || "";
-                return (
-                    !BloomSourceBubbles.isAiLanguageTag(languageTag) &&
-                    !BloomSourceBubbles.hasNoText(element as HTMLElement)
-                );
-            })
-            .first();
-    }
-
-    private static getAiSourceBubbleLangTag(): string | undefined {
-        const settings = GetSettings();
-        if (
-            !settings.allowAiSourceBubbles ||
-            !settings.aiSourceBubblesLanguageTag
-        ) {
-            return undefined;
-        }
-        return settings.aiSourceBubblesLanguageTag;
-    }
-
-    private static getAiSourceBubbleFingerprint(
-        sourceText: string,
-        sourceLanguageTag: string,
-        aiLanguageTag: string,
-    ): string {
-        return [
-            sourceLanguageTag,
-            aiLanguageTag,
-            sourceText.length.toString(),
-            BloomSourceBubbles.hashText(sourceText),
-        ].join("|");
-    }
-
-    private static hashText(text: string): string {
-        let hash = 0;
-        for (let i = 0; i < text.length; i++) {
-            hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
-        }
-
-        return hash.toString(36);
-    }
-
-    private static removeAiSourceBubbleDivs(
-        group: JQuery,
-        currentLangTag?: string,
-    ): void {
-        group.find("div[lang]").each((index, element) => {
-            const langTag = element.getAttribute("lang") || "";
-            if (!langTag.includes("-x-ai")) {
-                return;
-            }
-
-            if (currentLangTag && langTag === currentLangTag) {
-                return;
-            }
-
-            element.remove();
-        });
-    }
-
-    private static syncVisibleAiSourceBubble(
-        group: HTMLElement,
-        sourceAiDiv: HTMLDivElement,
-    ): void {
-        const qtipId = group.getAttribute("aria-describedby");
-        if (!qtipId) {
-            return;
-        }
-
-        const tooltip = group.ownerDocument.querySelector(`#${qtipId}`);
-        if (!tooltip) {
-            return;
-        }
-
-        const tooltipAiDivs = tooltip.querySelectorAll<HTMLDivElement>(
-            `.${BloomSourceBubbles.kAiSourceBubbleClass}`,
-        );
-        tooltipAiDivs.forEach((tooltipAiDiv) => {
-            tooltipAiDiv.setAttribute(
-                "lang",
-                sourceAiDiv.getAttribute("lang") || "",
-            );
-
-            const fingerprint = sourceAiDiv.getAttribute(
-                BloomSourceBubbles.kAiSourceBubbleFingerprintAttr,
-            );
-            if (fingerprint) {
-                tooltipAiDiv.setAttribute(
-                    BloomSourceBubbles.kAiSourceBubbleFingerprintAttr,
-                    fingerprint,
-                );
-            } else {
-                tooltipAiDiv.removeAttribute(
-                    BloomSourceBubbles.kAiSourceBubbleFingerprintAttr,
-                );
-            }
-
-            const pendingFingerprint = sourceAiDiv.getAttribute(
-                BloomSourceBubbles.kAiSourceBubblePendingFingerprintAttr,
-            );
-            if (pendingFingerprint) {
-                tooltipAiDiv.setAttribute(
-                    BloomSourceBubbles.kAiSourceBubblePendingFingerprintAttr,
-                    pendingFingerprint,
-                );
-            } else {
-                tooltipAiDiv.removeAttribute(
-                    BloomSourceBubbles.kAiSourceBubblePendingFingerprintAttr,
-                );
-            }
-
-            const requestToken = sourceAiDiv.getAttribute(
-                BloomSourceBubbles.kAiSourceBubbleRequestTokenAttr,
-            );
-            if (requestToken) {
-                tooltipAiDiv.setAttribute(
-                    BloomSourceBubbles.kAiSourceBubbleRequestTokenAttr,
-                    requestToken,
-                );
-            } else {
-                tooltipAiDiv.removeAttribute(
-                    BloomSourceBubbles.kAiSourceBubbleRequestTokenAttr,
-                );
-            }
-
-            tooltipAiDiv.innerText = sourceAiDiv.innerText;
-        });
-    }
-
-    private static refreshVisibleAiSourceBubble(group: HTMLElement): void {
-        const qtipId = group.getAttribute("aria-describedby");
-        if (!qtipId) {
-            return;
-        }
-
-        const tooltip = group.ownerDocument.querySelector<HTMLElement>(
-            `#${qtipId}`,
-        );
-        if (!tooltip || tooltip.getAttribute("aria-hidden") === "true") {
-            return;
-        }
-
-        const selectedTab = tooltip.querySelector<HTMLAnchorElement>(
-            "a.sourceTextTab.active",
-        );
-        const selectedLangTag = selectedTab?.getAttribute("href")?.substring(1);
-        const refreshedBubble = BloomSourceBubbles.MakeSourceTextDivForGroup(
-            group,
-            selectedLangTag,
-        );
-        if (refreshedBubble.length === 0) {
-            return;
-        }
-
-        BloomSourceBubbles.removeSourceBubbles(group);
-        BloomSourceBubbles.MakeSourceBubblesIntoQtips(
-            group,
-            refreshedBubble,
-            selectedLangTag,
-        );
-    }
-
     private static maybeRememberSourceBubbleLanguage(langTag: string): void {
         postString("editView/sourceTextTab", langTag);
-    }
-
-    private static getExistingAiSourceBubbleDiv(
-        group: JQuery,
-        aiLanguageTag: string,
-    ): HTMLDivElement | undefined {
-        return group.find(`div[lang='${aiLanguageTag}']`).first().get(0) as
-            | HTMLDivElement
-            | undefined;
-    }
-
-    private static ensureAiSourceBubbleDiv(
-        group: JQuery,
-        aiLanguageTag: string,
-    ): HTMLDivElement {
-        const existingDiv = BloomSourceBubbles.getExistingAiSourceBubbleDiv(
-            group,
-            aiLanguageTag,
-        );
-        if (existingDiv) {
-            existingDiv.classList.add(
-                "bloom-editable",
-                BloomSourceBubbles.kAiSourceBubbleClass,
-            );
-            existingDiv.setAttribute("lang", aiLanguageTag);
-            existingDiv.setAttribute("contenteditable", "true");
-            return existingDiv;
-        }
-
-        const aiDiv = document.createElement("div");
-        aiDiv.className = `bloom-editable ${BloomSourceBubbles.kAiSourceBubbleClass}`;
-        aiDiv.setAttribute("lang", aiLanguageTag);
-        aiDiv.setAttribute("contenteditable", "true");
-        group.append(aiDiv);
-        return aiDiv;
-    }
-
-    private static isCurrentAiSourceBubbleTranslation(
-        aiDiv: HTMLDivElement,
-        fingerprint: string,
-    ): boolean {
-        return (
-            aiDiv.getAttribute(
-                BloomSourceBubbles.kAiSourceBubbleFingerprintAttr,
-            ) === fingerprint && !BloomSourceBubbles.hasNoText(aiDiv)
-        );
-    }
-
-    private static async wrapAiSourceBubbleUpdateWithPageContentDelay<T>(
-        fn: () => Promise<T>,
-        delayId: string,
-    ): Promise<T> {
-        const editablePageBundle = getEditablePageBundleExports();
-        if (!editablePageBundle) {
-            return fn();
-        }
-
-        editablePageBundle.addRequestPageContentDelay(delayId);
-        try {
-            const result = await fn();
-            editablePageBundle.removeRequestPageContentDelay(delayId);
-            return result;
-        } catch (error) {
-            editablePageBundle.removeRequestPageContentDelay(delayId);
-            throw error;
-        }
-    }
-
-    private static ensureAiSourceBubbleTranslation(
-        group: HTMLElement,
-        sourceText: string,
-        sourceLanguageTag: string,
-        aiLanguageTag: string,
-    ): void {
-        const $group = $(group);
-        BloomSourceBubbles.removeAiSourceBubbleDivs($group, aiLanguageTag);
-        const aiDiv = BloomSourceBubbles.ensureAiSourceBubbleDiv(
-            $group,
-            aiLanguageTag,
-        );
-        const fingerprint = BloomSourceBubbles.getAiSourceBubbleFingerprint(
-            sourceText,
-            sourceLanguageTag,
-            aiLanguageTag,
-        );
-
-        if (
-            BloomSourceBubbles.isCurrentAiSourceBubbleTranslation(
-                aiDiv,
-                fingerprint,
-            )
-        ) {
-            aiDiv.removeAttribute(
-                BloomSourceBubbles.kAiSourceBubblePendingFingerprintAttr,
-            );
-            aiDiv.removeAttribute(
-                BloomSourceBubbles.kAiSourceBubbleRequestTokenAttr,
-            );
-            BloomSourceBubbles.syncVisibleAiSourceBubble(group, aiDiv);
-            return;
-        }
-
-        if (
-            aiDiv.getAttribute(
-                BloomSourceBubbles.kAiSourceBubblePendingFingerprintAttr,
-            ) === fingerprint
-        ) {
-            BloomSourceBubbles.syncVisibleAiSourceBubble(group, aiDiv);
-            return;
-        }
-
-        const requestToken =
-            (++BloomSourceBubbles.nextAiSourceBubbleRequestToken).toString();
-        aiDiv.setAttribute("lang", aiLanguageTag);
-        aiDiv.setAttribute(
-            BloomSourceBubbles.kAiSourceBubblePendingFingerprintAttr,
-            fingerprint,
-        );
-        aiDiv.setAttribute(
-            BloomSourceBubbles.kAiSourceBubbleRequestTokenAttr,
-            requestToken,
-        );
-        aiDiv.removeAttribute(
-            BloomSourceBubbles.kAiSourceBubbleFingerprintAttr,
-        );
-        aiDiv.innerText = "Translating...";
-        BloomSourceBubbles.syncVisibleAiSourceBubble(group, aiDiv);
-
-        const delayId = `ai-source-bubble:${requestToken}`;
-        void BloomSourceBubbles.wrapAiSourceBubbleUpdateWithPageContentDelay(
-            async () => {
-                try {
-                    const response =
-                        await BloomSourceBubbles.translateSourceBubbleAsync(
-                            sourceText,
-                            sourceLanguageTag,
-                        );
-                    if (
-                        aiDiv.getAttribute(
-                            BloomSourceBubbles.kAiSourceBubbleRequestTokenAttr,
-                        ) !== requestToken
-                    ) {
-                        return;
-                    }
-
-                    const responseLanguageTag =
-                        response?.aiLanguageTag || aiLanguageTag;
-                    aiDiv.setAttribute("lang", responseLanguageTag);
-                    aiDiv.innerText =
-                        response?.text || "No translation returned.";
-                    aiDiv.setAttribute(
-                        BloomSourceBubbles.kAiSourceBubbleFingerprintAttr,
-                        BloomSourceBubbles.getAiSourceBubbleFingerprint(
-                            sourceText,
-                            sourceLanguageTag,
-                            responseLanguageTag,
-                        ),
-                    );
-                    BloomSourceBubbles.syncVisibleAiSourceBubble(group, aiDiv);
-                } catch (error) {
-                    if (
-                        aiDiv.getAttribute(
-                            BloomSourceBubbles.kAiSourceBubbleRequestTokenAttr,
-                        ) !== requestToken
-                    ) {
-                        return;
-                    }
-
-                    aiDiv.innerText =
-                        BloomSourceBubbles.getTranslationErrorMessage(error);
-                    aiDiv.removeAttribute(
-                        BloomSourceBubbles.kAiSourceBubbleFingerprintAttr,
-                    );
-                    BloomSourceBubbles.syncVisibleAiSourceBubble(group, aiDiv);
-                } finally {
-                    if (
-                        aiDiv.getAttribute(
-                            BloomSourceBubbles.kAiSourceBubbleRequestTokenAttr,
-                        ) === requestToken
-                    ) {
-                        aiDiv.removeAttribute(
-                            BloomSourceBubbles.kAiSourceBubblePendingFingerprintAttr,
-                        );
-                        aiDiv.removeAttribute(
-                            BloomSourceBubbles.kAiSourceBubbleRequestTokenAttr,
-                        );
-                        BloomSourceBubbles.syncVisibleAiSourceBubble(
-                            group,
-                            aiDiv,
-                        );
-                        BloomSourceBubbles.refreshVisibleAiSourceBubble(group);
-                    }
-                }
-            },
-            delayId,
-        );
-    }
-
-    private static async translateSourceBubbleAsync(
-        sourceText: string,
-        sourceLanguageTag: string,
-    ): Promise<{ text?: string; aiLanguageTag?: string } | undefined> {
-        const response = await postJsonAsync("aiSourceBubbles/translate", {
-            sourceText,
-            sourceLanguageTag,
-        });
-        const data = response?.data as
-            | {
-                  text?: string;
-                  aiLanguageTag?: string;
-                  Text?: string;
-                  AiLanguageTag?: string;
-              }
-            | undefined;
-        if (!data) {
-            return undefined;
-        }
-
-        return {
-            text: data.text || data.Text,
-            aiLanguageTag: data.aiLanguageTag || data.AiLanguageTag,
-        };
-    }
-
-    private static getTranslationErrorMessage(error: unknown): string {
-        if (typeof error === "string") {
-            return error;
-        }
-
-        if (typeof error === "object" && error !== null) {
-            const errorInfo = error as {
-                response?: { data?: string };
-                message?: string;
-            };
-            return (
-                errorInfo.response?.data ||
-                errorInfo.message ||
-                "Translation failed."
-            );
-        }
-
-        return "Translation failed.";
     }
 
     private static getLanguageDisplayName(langTag: string): string {
@@ -499,10 +55,18 @@ export default class BloomSourceBubbles {
         const providerId = langTag.substring(
             aiSplitIndex + aiSplitMarker.length,
         );
+        // getLanguageName echoes the tag back when it doesn't know the language, so treat
+        // that as "unknown" and let the browser's Intl database have a try.
+        const bloomLanguageName =
+            theOneLocalizationManager.getLanguageName(targetLanguageTag);
         const targetLanguageName =
-            theOneLocalizationManager.getLanguageName(targetLanguageTag) ||
+            (bloomLanguageName !== targetLanguageTag
+                ? bloomLanguageName
+                : undefined) ||
+            getLanguageNameFromBrowser(targetLanguageTag) ||
             targetLanguageTag;
-        return `AI ${targetLanguageName}`;
+        const providerDisplayName = getAiProviderDisplayName(providerId);
+        return `AI ${targetLanguageName} (${providerDisplayName})`;
     }
 
     private static appendSourceTabLabel(
@@ -510,11 +74,16 @@ export default class BloomSourceBubbles {
         langTag: string,
         localizedLanguageName: string,
     ): void {
-        if (!BloomSourceBubbles.isAiLanguageTag(langTag)) {
+        if (!isAiLanguageTag(langTag)) {
             anchor.textContent = localizedLanguageName;
             return;
         }
 
+        // TODO (BL-16549 follow-up): migrate to React 18 createRoot. Kept on the synchronous
+        // ReactDOM.render here deliberately for now -- these tab-label anchors are rebuilt each
+        // time bubbles are constructed, and createRoot's async render / one-root-per-container
+        // rules need their own change; behavior is unchanged in the meantime.
+        // eslint-disable-next-line react/no-deprecated
         ReactDOM.render(
             <>
                 <AutoAwesomeIcon fontSize="inherit" aria-hidden={true} />
@@ -590,24 +159,6 @@ export default class BloomSourceBubbles {
     ): JQuery {
         if (group.classList.contains("bloom-no-source-bubble")) return $();
         const liveGroup = $(group);
-        const aiSourceBubbleLangTag =
-            BloomSourceBubbles.getAiSourceBubbleLangTag();
-        const sourceDiv = BloomSourceBubbles.getPreferredSourceDiv(liveGroup);
-        const sourceLanguageTag = sourceDiv.attr("lang");
-        if (
-            aiSourceBubbleLangTag &&
-            sourceDiv.length > 0 &&
-            sourceLanguageTag
-        ) {
-            BloomSourceBubbles.ensureAiSourceBubbleTranslation(
-                group,
-                sourceDiv.text(),
-                sourceLanguageTag,
-                aiSourceBubbleLangTag,
-            );
-        } else {
-            BloomSourceBubbles.removeAiSourceBubbleDivs(liveGroup);
-        }
 
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
@@ -619,10 +170,9 @@ export default class BloomSourceBubbles {
         divForBubble.find("label.bubble").each((index, element) => {
             $(element).remove();
         });
-        BloomSourceBubbles.removeAiSourceBubbleDivs(
-            divForBubble,
-            aiSourceBubbleLangTag,
-        );
+        if (!GetSettings().allowAiSourceBubbles) {
+            removeAiTranslationDivsFromClone(divForBubble);
+        }
 
         //make the source texts in the bubble read-only and remove any user font size adjustments
         divForBubble.find("textarea, div").each(function (): boolean {

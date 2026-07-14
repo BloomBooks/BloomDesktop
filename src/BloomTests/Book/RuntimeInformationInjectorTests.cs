@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Bloom;
-using Bloom.AiSourceBubbles;
+using Bloom.AiTranslation;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SubscriptionAndFeatures;
@@ -108,12 +108,10 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void AddUISettingsToDom_AiSourceBubblesDisabledWhenValidationFingerprintMissing()
+        public void AddUISettingsToDom_AiSourceBubblesDisabledWhenNoEngineEnabled()
         {
             SetDom("<div class='bloom-page'></div>");
             var collectionSettings = MakeAiSourceBubblesCollectionSettings();
-            collectionSettings.AiSourceBubblesLastValidationSucceeded = true;
-            collectionSettings.AiSourceBubblesValidatedConfigurationFingerprint = "stale";
             var bookData = new BookData(_bookDom, collectionSettings, null);
 
             RuntimeInformationInjector.AddUISettingsToDom(_bookDom, bookData, null);
@@ -125,13 +123,42 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void AddUISettingsToDom_AiSourceBubblesEnabledWhenValidationMatchesCurrentConfiguration()
+        public void AddUISettingsToDom_AiSourceBubblesDisabledWhenValidationFingerprintStale()
         {
             SetDom("<div class='bloom-page'></div>");
             var collectionSettings = MakeAiSourceBubblesCollectionSettings();
-            collectionSettings.AiSourceBubblesLastValidationSucceeded = true;
-            collectionSettings.AiSourceBubblesValidatedConfigurationFingerprint =
-                AiSourceBubblesService.GetConfigurationFingerprint(collectionSettings);
+            var engine = collectionSettings.AiTranslationEngines.Single(e =>
+                e.ProviderId == "deepl"
+            );
+            engine.Enabled = true;
+            engine.ApiKey = "sample-key";
+            engine.LastValidationSucceeded = true;
+            engine.ValidatedConfigurationFingerprint = "stale";
+            var bookData = new BookData(_bookDom, collectionSettings, null);
+
+            RuntimeInformationInjector.AddUISettingsToDom(_bookDom, bookData, null);
+
+            var scriptContents = _bookDom
+                .RawDom.SelectSingleNode("//script[@id='ui-settings']")
+                .InnerText;
+            Assert.That(scriptContents, Does.Contain("\"allowAiSourceBubbles\":false"));
+        }
+
+        [Test]
+        public void AddUISettingsToDom_AiSourceBubblesEnabledWhenAnEngineValidatedAndCurrent()
+        {
+            SetDom("<div class='bloom-page'></div>");
+            var collectionSettings = MakeAiSourceBubblesCollectionSettings();
+            var engine = collectionSettings.AiTranslationEngines.Single(e =>
+                e.ProviderId == "deepl"
+            );
+            engine.Enabled = true;
+            engine.ApiKey = "sample-key";
+            engine.LastValidationSucceeded = true;
+            engine.ValidatedConfigurationFingerprint = AiTranslationService.GetEngineFingerprint(
+                engine,
+                collectionSettings.AiTranslationTargetLanguageTag
+            );
             var bookData = new BookData(_bookDom, collectionSettings, null);
 
             RuntimeInformationInjector.AddUISettingsToDom(_bookDom, bookData, null);
@@ -144,13 +171,13 @@ namespace BloomTests.Book
 
         private static CollectionSettings MakeAiSourceBubblesCollectionSettings()
         {
-            return new CollectionSettings
+            var collectionSettings = new CollectionSettings
             {
                 Subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Pro),
-                AiSourceBubblesProviderId = "deepl",
-                AiSourceBubblesTargetLanguageTag = "fr",
-                AiSourceBubblesDeepLApiKey = "sample-key",
+                AiTranslationTargetLanguageTag = "fr",
             };
+            collectionSettings.EnsureAiTranslationEngines();
+            return collectionSettings;
         }
     }
 }

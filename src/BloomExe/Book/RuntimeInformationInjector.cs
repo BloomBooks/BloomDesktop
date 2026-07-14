@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
-using Bloom.AiSourceBubbles;
+using Bloom.AiTranslation;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.SafeXml;
@@ -496,35 +496,16 @@ namespace Bloom.Book
                 bookData.CollectionSettings.Subscription,
                 FeatureName.AiSourceBubbles
             );
-            var aiSourceBubblesProviderId = AiSourceBubblesService.NormalizeProviderId(
-                bookData.CollectionSettings.AiSourceBubblesProviderId
-            );
-            var aiSourceBubblesTargetLanguageTag = AiSourceBubblesService.NormalizeBloomLanguageTag(
-                bookData.CollectionSettings.AiSourceBubblesTargetLanguageTag
-            );
-            var aiSourceBubblesConfigurationFingerprint =
-                AiSourceBubblesService.GetConfigurationFingerprint(bookData.CollectionSettings);
-            var aiSourceBubblesConfigurationValid =
-                bookData.CollectionSettings.AiSourceBubblesLastValidationSucceeded
-                && String.Equals(
-                    bookData.CollectionSettings.AiSourceBubblesValidatedConfigurationFingerprint,
-                    aiSourceBubblesConfigurationFingerprint,
-                    StringComparison.Ordinal
-                );
+            // At least one engine must be enabled and validated, with that validation still
+            // matching its current configuration (provider, target language, credentials).
+            var anyEngineReady = AiTranslationService
+                .GetActiveEngines(bookData.CollectionSettings)
+                .Any();
             d.Add(
                 "allowAiSourceBubbles",
                 aiSourceBubblesFeatureStatus.Visible
                     && aiSourceBubblesFeatureStatus.Enabled
-                    && aiSourceBubblesConfigurationValid
-            );
-            d.Add("aiSourceBubblesProvider", aiSourceBubblesProviderId);
-            d.Add("aiSourceBubblesTargetLanguageTag", aiSourceBubblesTargetLanguageTag);
-            d.Add(
-                "aiSourceBubblesLanguageTag",
-                AiSourceBubblesService.GetAiLanguageTag(
-                    aiSourceBubblesTargetLanguageTag,
-                    aiSourceBubblesProviderId
-                )
+                    && anyEngineReady
             );
 
             element.InnerText = String.Format(

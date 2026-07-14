@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Bloom.AiSourceBubbles;
+using Bloom.AiTranslation;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -96,14 +98,14 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterAsyncEndpointHandler(
-                kApiUrlPart + "validateAiSourceBubbles",
-                HandleValidateAiSourceBubblesAsync,
+                kApiUrlPart + "validateAiTranslationEngine",
+                HandleValidateAiTranslationEngineAsync,
                 false,
                 true
             );
             apiHandler.RegisterAsyncEndpointHandler(
-                kApiUrlPart + "aiSourceBubblesSupportedLanguages",
-                HandleGetAiSourceBubblesSupportedLanguagesAsync,
+                kApiUrlPart + "aiTranslationSupportedLanguages",
+                HandleGetAiTranslationSupportedLanguagesAsync,
                 false,
                 true
             );
@@ -322,7 +324,6 @@ namespace Bloom.web.controllers
             var isAutoUpdateSupported =
                 dialog?.ShowAutomaticallyUpdateOption
                 ?? CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform;
-            var aiSourceBubblesValidation = GetAiSourceBubblesValidationState(dialog);
             return new
             {
                 values = new
@@ -343,18 +344,7 @@ namespace Bloom.web.controllers
                         ?? ExperimentalFeatures.IsFeatureEnabled(
                             ExperimentalFeatures.kAiSourceBubbles
                         ),
-                    aiSourceBubblesProvider = AiSourceBubblesService.NormalizeProviderId(
-                        dialog?.PendingAiSourceBubblesProviderId
-                            ?? _collectionSettings.AiSourceBubblesProviderId
-                    ),
-                    aiSourceBubblesTargetLanguageTag = dialog?.PendingAiSourceBubblesTargetLanguageTag
-                        ?? _collectionSettings.AiSourceBubblesTargetLanguageTag,
-                    aiSourceBubblesDeepLApiKey = dialog?.PendingAiSourceBubblesDeepLApiKey
-                        ?? _collectionSettings.AiSourceBubblesDeepLApiKey,
-                    aiSourceBubblesGoogleServiceAccountEmail = dialog?.PendingAiSourceBubblesGoogleServiceAccountEmail
-                        ?? _collectionSettings.AiSourceBubblesGoogleServiceAccountEmail,
-                    aiSourceBubblesGooglePrivateKey = dialog?.PendingAiSourceBubblesGooglePrivateKey
-                        ?? _collectionSettings.AiSourceBubblesGooglePrivateKey,
+                    aiTranslation = GetAiTranslationData(dialog),
                     showQrCode = dialog?.PendingShowQrCode
                         ?? _collectionSettings.ShowBlorgLanguageQrCode,
                     qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
@@ -364,97 +354,69 @@ namespace Bloom.web.controllers
                 showExperimentalBookSourcesOption = dialog?.ShowExperimentalBookSourcesOption
                     ?? false,
                 allowTeamCollectionEnabled = dialog?.AllowTeamCollectionOptionEnabled ?? true,
-                aiSourceBubblesValidation,
             };
         }
 
-        private object GetAiSourceBubblesValidationState(CollectionSettingsDialog dialog)
+        /// <summary>
+        /// Builds the aiTranslation payload sent to the client: the shared target language and,
+        /// always in deepl/google/alpha2 order, each engine's configuration plus whether its
+        /// stored validation is still up to date with that configuration.
+        /// </summary>
+        private object GetAiTranslationData(CollectionSettingsDialog dialog)
         {
-            var currentSettings = GetAiSourceBubblesSettings(dialog);
-            var currentFingerprint = AiSourceBubblesService.GetConfigurationFingerprint(
-                currentSettings
-            );
-            var validatedFingerprint =
-                dialog?.PendingAiSourceBubblesValidatedConfigurationFingerprint
-                ?? _collectionSettings.AiSourceBubblesValidatedConfigurationFingerprint;
-            var succeeded =
-                dialog?.PendingAiSourceBubblesLastValidationSucceeded
-                ?? _collectionSettings.AiSourceBubblesLastValidationSucceeded;
-            var message =
-                dialog?.PendingAiSourceBubblesLastValidationMessage
-                ?? _collectionSettings.AiSourceBubblesLastValidationMessage;
-            var isCurrent = String.Equals(
-                currentFingerprint,
-                validatedFingerprint,
-                StringComparison.Ordinal
-            );
+            var targetLanguageTag =
+                dialog?.PendingAiTranslationTargetLanguageTag
+                ?? _collectionSettings.AiTranslationTargetLanguageTag;
+            if (dialog == null)
+                _collectionSettings.EnsureAiTranslationEngines();
+            var engines =
+                dialog?.PendingAiTranslationEngines ?? _collectionSettings.AiTranslationEngines;
 
             return new
             {
-                currentFingerprint,
-                validatedFingerprint = isCurrent ? validatedFingerprint : String.Empty,
-                succeeded = isCurrent && succeeded,
-                message = isCurrent ? message : String.Empty,
+                targetLanguageTag,
+                engines = engines
+                    .Select(engine =>
+                        (object)
+                            new
+                            {
+                                providerId = engine.ProviderId,
+                                enabled = engine.Enabled,
+                                apiKey = engine.ApiKey ?? "",
+                                serviceAccountEmail = engine.ServiceAccountEmail ?? "",
+                                privateKey = engine.PrivateKey ?? "",
+                                validation = new
+                                {
+                                    succeeded = engine.LastValidationSucceeded,
+                                    message = engine.LastValidationMessage ?? "",
+                                    upToDate = String.Equals(
+                                        engine.ValidatedConfigurationFingerprint,
+                                        AiTranslationService.GetEngineFingerprint(
+                                            engine,
+                                            targetLanguageTag
+                                        ),
+                                        StringComparison.Ordinal
+                                    ),
+                                },
+                            }
+                    )
+                    .ToArray(),
             };
         }
 
-        private CollectionSettings GetAiSourceBubblesSettings(CollectionSettingsDialog dialog)
+        private static void InvalidateEngineValidation(AiTranslationEngineSettings engine)
         {
-            return new CollectionSettings
-            {
-                Subscription = _collectionSettings.Subscription,
-                AiSourceBubblesProviderId =
-                    dialog?.PendingAiSourceBubblesProviderId
-                    ?? _collectionSettings.AiSourceBubblesProviderId,
-                AiSourceBubblesTargetLanguageTag =
-                    dialog?.PendingAiSourceBubblesTargetLanguageTag
-                    ?? _collectionSettings.AiSourceBubblesTargetLanguageTag,
-                AiSourceBubblesDeepLApiKey =
-                    dialog?.PendingAiSourceBubblesDeepLApiKey
-                    ?? _collectionSettings.AiSourceBubblesDeepLApiKey,
-                AiSourceBubblesGoogleServiceAccountEmail =
-                    dialog?.PendingAiSourceBubblesGoogleServiceAccountEmail
-                    ?? _collectionSettings.AiSourceBubblesGoogleServiceAccountEmail,
-                AiSourceBubblesGooglePrivateKey =
-                    dialog?.PendingAiSourceBubblesGooglePrivateKey
-                    ?? _collectionSettings.AiSourceBubblesGooglePrivateKey,
-            };
-        }
-
-        private static void InvalidateAiSourceBubblesValidation(CollectionSettingsDialog dialog)
-        {
-            var pendingSettings = new CollectionSettings
-            {
-                AiSourceBubblesProviderId = dialog.PendingAiSourceBubblesProviderId,
-                AiSourceBubblesTargetLanguageTag = dialog.PendingAiSourceBubblesTargetLanguageTag,
-                AiSourceBubblesDeepLApiKey = dialog.PendingAiSourceBubblesDeepLApiKey,
-                AiSourceBubblesGoogleServiceAccountEmail =
-                    dialog.PendingAiSourceBubblesGoogleServiceAccountEmail,
-                AiSourceBubblesGooglePrivateKey = dialog.PendingAiSourceBubblesGooglePrivateKey,
-            };
-            var currentFingerprint = AiSourceBubblesService.GetConfigurationFingerprint(
-                pendingSettings
-            );
-            if (
-                String.Equals(
-                    dialog.PendingAiSourceBubblesValidatedConfigurationFingerprint,
-                    currentFingerprint,
-                    StringComparison.Ordinal
-                )
-            )
-            {
-                return;
-            }
-
-            dialog.PendingAiSourceBubblesValidatedConfigurationFingerprint = String.Empty;
-            dialog.PendingAiSourceBubblesLastValidationSucceeded = false;
-            dialog.PendingAiSourceBubblesLastValidationMessage = String.Empty;
+            engine.ValidatedConfigurationFingerprint = String.Empty;
+            engine.LastValidationSucceeded = false;
+            engine.LastValidationMessage = String.Empty;
         }
 
         /// <summary>
-        /// Validates the AI Source Bubbles configuration currently being edited in Collection Settings.
+        /// Validates one AI translation engine (identified by providerId in the post body)
+        /// using the PENDING settings currently being edited in Collection Settings, and stores
+        /// the result and fingerprint back on that pending engine.
         /// </summary>
-        private async Task HandleValidateAiSourceBubblesAsync(ApiRequest request)
+        private async Task HandleValidateAiTranslationEngineAsync(ApiRequest request)
         {
             if (request.HttpMethod != HttpMethods.Post)
             {
@@ -463,64 +425,75 @@ namespace Bloom.web.controllers
             }
 
             var dialog = DialogBeingEdited;
-            var requestJson = request.RequiredPostJson();
-            if (dialog != null && !String.IsNullOrWhiteSpace(requestJson))
+            if (dialog == null)
             {
-                StoreAdvancedSettingsData(JObject.Parse(requestJson), dialog);
+                request.Failed(
+                    HttpStatusCode.BadRequest,
+                    "AI translation can only be validated while Collection Settings is open."
+                );
+                return;
             }
 
-            var settings = GetAiSourceBubblesSettings(dialog);
-            var validationResult = new AiSourceBubblesValidationResult
+            var requestJson = JObject.Parse(request.RequiredPostJson());
+            var providerId = AiTranslationService.NormalizeProviderId(
+                requestJson["providerId"]?.Value<string>()
+            );
+            var engine = dialog.PendingAiTranslationEngines.Single(e => e.ProviderId == providerId);
+
+            var succeeded = false;
+            var message = String.Empty;
+            var tempSettings = new CollectionSettings
             {
-                ConfigurationFingerprint = AiSourceBubblesService.GetConfigurationFingerprint(
-                    settings
-                ),
-                Succeeded = false,
-                Message = String.Empty,
+                Subscription = _collectionSettings.Subscription,
+                AiTranslationTargetLanguageTag = dialog.PendingAiTranslationTargetLanguageTag,
             };
 
             try
             {
-                validationResult = await new AiSourceBubblesService(
-                    settings
-                ).ValidateConfigurationAsync();
+                var validationResult = await new AiTranslationService(
+                    tempSettings
+                ).ValidateEngineAsync(engine, CancellationToken.None);
+                succeeded = validationResult.Succeeded;
+                message = validationResult.Message;
+                engine.ValidatedConfigurationFingerprint =
+                    validationResult.ConfigurationFingerprint;
             }
             catch (ArgumentException e)
             {
-                validationResult.Message = e.Message;
+                message = e.Message;
             }
             catch (InvalidOperationException e)
             {
-                validationResult.Message = e.Message;
+                message = e.Message;
             }
             catch (HttpRequestException e)
             {
-                validationResult.Message = e.Message;
+                message = e.Message;
             }
             catch (CryptographicException e)
             {
-                validationResult.Message = e.Message;
+                message = e.Message;
             }
             catch (JsonException e)
             {
-                validationResult.Message = e.Message;
+                message = e.Message;
             }
 
-            if (dialog != null)
+            engine.LastValidationSucceeded = succeeded;
+            engine.LastValidationMessage = message;
+            if (!succeeded)
             {
-                dialog.PendingAiSourceBubblesValidatedConfigurationFingerprint =
-                    validationResult.ConfigurationFingerprint;
-                dialog.PendingAiSourceBubblesLastValidationSucceeded = validationResult.Succeeded;
-                dialog.PendingAiSourceBubblesLastValidationMessage = validationResult.Message;
+                engine.ValidatedConfigurationFingerprint = String.Empty;
             }
 
-            request.ReplyWithJson(validationResult);
+            request.ReplyWithJson(new { succeeded, message });
         }
 
         /// <summary>
-        /// Gets the provider-backed list of target languages for the AI Source Bubbles settings currently being edited.
+        /// Gets the union of provider-backed target languages across the currently-enabled
+        /// (pending, if Collection Settings is open) AI translation engines.
         /// </summary>
-        private async Task HandleGetAiSourceBubblesSupportedLanguagesAsync(ApiRequest request)
+        private async Task HandleGetAiTranslationSupportedLanguagesAsync(ApiRequest request)
         {
             if (request.HttpMethod != HttpMethods.Post)
             {
@@ -529,18 +502,32 @@ namespace Bloom.web.controllers
             }
 
             var dialog = DialogBeingEdited;
-            var requestJson = request.RequiredPostJson();
-            if (dialog != null && !String.IsNullOrWhiteSpace(requestJson))
+            if (dialog == null)
+                _collectionSettings.EnsureAiTranslationEngines();
+            var tempSettings = new CollectionSettings
             {
-                StoreAdvancedSettingsData(JObject.Parse(requestJson), dialog);
-            }
+                Subscription = _collectionSettings.Subscription,
+                AiTranslationTargetLanguageTag =
+                    dialog?.PendingAiTranslationTargetLanguageTag
+                    ?? _collectionSettings.AiTranslationTargetLanguageTag,
+                AiTranslationEngines = (
+                    dialog?.PendingAiTranslationEngines ?? _collectionSettings.AiTranslationEngines
+                )
+                    .Select(engine => engine.Clone())
+                    .ToList(),
+            };
 
-            var settings = GetAiSourceBubblesSettings(dialog);
             try
             {
-                var languages = await new AiSourceBubblesService(
-                    settings
-                ).GetSupportedTargetLanguagesAsync();
+                var options = await new AiTranslationService(
+                    tempSettings
+                ).GetSupportedTargetLanguagesAsync(CancellationToken.None);
+                var languages = options.Select(option => new
+                {
+                    tag = option.Value,
+                    name = option.Label,
+                    providerIds = option.ProviderIds,
+                });
                 request.ReplyWithJson(new { languages, message = String.Empty });
             }
             catch (ArgumentException e)
@@ -577,7 +564,7 @@ namespace Bloom.web.controllers
 
         private void StoreAdvancedSettingsData(JObject data, CollectionSettingsDialog dialog)
         {
-            var aiSourceBubblesConfigurationChanged = false;
+            var aiTranslationConfigurationChanged = false;
 
             var autoUpdateToken = data["autoUpdate"];
             if (autoUpdateToken != null)
@@ -612,73 +599,80 @@ namespace Bloom.web.controllers
                 dialog.PendingAllowAiSourceBubbles = allowAiSourceBubbles;
             }
 
-            var aiSourceBubblesProviderToken = data["aiSourceBubblesProvider"];
-            if (aiSourceBubblesProviderToken != null)
+            var aiTranslationToken = data["aiTranslation"];
+            if (aiTranslationToken != null)
             {
-                var providerId = AiSourceBubblesService.NormalizeProviderId(
-                    aiSourceBubblesProviderToken.Value<string>()
-                );
-                aiSourceBubblesConfigurationChanged |= !String.Equals(
-                    dialog.PendingAiSourceBubblesProviderId,
-                    providerId,
-                    StringComparison.OrdinalIgnoreCase
-                );
-                dialog.PendingAiSourceBubblesProviderId = providerId;
+                var targetLanguageTagToken = aiTranslationToken["targetLanguageTag"];
+                if (targetLanguageTagToken != null)
+                {
+                    var targetLanguageTag = targetLanguageTagToken.Value<string>();
+                    if (
+                        !String.Equals(
+                            dialog.PendingAiTranslationTargetLanguageTag,
+                            targetLanguageTag,
+                            StringComparison.Ordinal
+                        )
+                    )
+                    {
+                        dialog.PendingAiTranslationTargetLanguageTag = targetLanguageTag;
+                        foreach (var engineToInvalidate in dialog.PendingAiTranslationEngines)
+                            InvalidateEngineValidation(engineToInvalidate);
+                        aiTranslationConfigurationChanged = true;
+                    }
+                }
+
+                if (aiTranslationToken["engines"] is JArray enginesToken)
+                {
+                    foreach (var engineToken in enginesToken)
+                    {
+                        var providerId = AiTranslationService.NormalizeProviderId(
+                            engineToken["providerId"]?.Value<string>()
+                        );
+                        var engine = dialog.PendingAiTranslationEngines.SingleOrDefault(e =>
+                            e.ProviderId == providerId
+                        );
+                        if (engine == null)
+                            continue;
+
+                        var enabled = engineToken["enabled"]?.Value<bool>() ?? engine.Enabled;
+                        var apiKey = engineToken["apiKey"]?.Value<string>() ?? engine.ApiKey;
+                        var serviceAccountEmail =
+                            engineToken["serviceAccountEmail"]?.Value<string>()
+                            ?? engine.ServiceAccountEmail;
+                        var privateKey =
+                            engineToken["privateKey"]?.Value<string>() ?? engine.PrivateKey;
+
+                        var engineChanged =
+                            enabled != engine.Enabled
+                            || !String.Equals(apiKey, engine.ApiKey, StringComparison.Ordinal)
+                            || !String.Equals(
+                                serviceAccountEmail,
+                                engine.ServiceAccountEmail,
+                                StringComparison.Ordinal
+                            )
+                            || !String.Equals(
+                                privateKey,
+                                engine.PrivateKey,
+                                StringComparison.Ordinal
+                            );
+
+                        engine.Enabled = enabled;
+                        engine.ApiKey = apiKey;
+                        engine.ServiceAccountEmail = serviceAccountEmail;
+                        engine.PrivateKey = privateKey;
+
+                        if (engineChanged)
+                        {
+                            InvalidateEngineValidation(engine);
+                            aiTranslationConfigurationChanged = true;
+                        }
+                    }
+                }
             }
 
-            var aiSourceBubblesTargetLanguageTagToken = data["aiSourceBubblesTargetLanguageTag"];
-            if (aiSourceBubblesTargetLanguageTagToken != null)
+            if (aiTranslationConfigurationChanged)
             {
-                var targetLanguageTag = aiSourceBubblesTargetLanguageTagToken.Value<string>();
-                aiSourceBubblesConfigurationChanged |= !String.Equals(
-                    dialog.PendingAiSourceBubblesTargetLanguageTag,
-                    targetLanguageTag,
-                    StringComparison.Ordinal
-                );
-                dialog.PendingAiSourceBubblesTargetLanguageTag = targetLanguageTag;
-            }
-
-            var aiSourceBubblesDeepLApiKeyToken = data["aiSourceBubblesDeepLApiKey"];
-            if (aiSourceBubblesDeepLApiKeyToken != null)
-            {
-                var deepLApiKey = aiSourceBubblesDeepLApiKeyToken.Value<string>();
-                aiSourceBubblesConfigurationChanged |= !String.Equals(
-                    dialog.PendingAiSourceBubblesDeepLApiKey,
-                    deepLApiKey,
-                    StringComparison.Ordinal
-                );
-                dialog.PendingAiSourceBubblesDeepLApiKey = deepLApiKey;
-            }
-            var aiSourceBubblesGoogleServiceAccountEmailToken = data[
-                "aiSourceBubblesGoogleServiceAccountEmail"
-            ];
-            if (aiSourceBubblesGoogleServiceAccountEmailToken != null)
-            {
-                var googleServiceAccountEmail =
-                    aiSourceBubblesGoogleServiceAccountEmailToken.Value<string>();
-                aiSourceBubblesConfigurationChanged |= !String.Equals(
-                    dialog.PendingAiSourceBubblesGoogleServiceAccountEmail,
-                    googleServiceAccountEmail,
-                    StringComparison.Ordinal
-                );
-                dialog.PendingAiSourceBubblesGoogleServiceAccountEmail = googleServiceAccountEmail;
-            }
-
-            var aiSourceBubblesGooglePrivateKeyToken = data["aiSourceBubblesGooglePrivateKey"];
-            if (aiSourceBubblesGooglePrivateKeyToken != null)
-            {
-                var googlePrivateKey = aiSourceBubblesGooglePrivateKeyToken.Value<string>();
-                aiSourceBubblesConfigurationChanged |= !String.Equals(
-                    dialog.PendingAiSourceBubblesGooglePrivateKey,
-                    googlePrivateKey,
-                    StringComparison.Ordinal
-                );
-                dialog.PendingAiSourceBubblesGooglePrivateKey = googlePrivateKey;
-            }
-
-            if (aiSourceBubblesConfigurationChanged)
-            {
-                InvalidateAiSourceBubblesValidation(dialog);
+                dialog.ChangeThatRequiresRestart();
             }
 
             var showQrCodeToken = data["showQrCode"];

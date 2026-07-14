@@ -353,6 +353,16 @@
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
         <note>{0} will be replaced with the name of the collection that the user currently has open for editing.</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.RemoveAiSourceTranslations" translate="no">
+        <source xml:lang="en">Remove AI Source Translations</source>
+        <note>ID: CollectionTab.BookMenu.RemoveAiSourceTranslations</note>
+        <note>A book right-click menu command in the Collection tab. It deletes the AI-generated translations that appear as source bubbles when editing. "AI" stands for artificial intelligence.</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.RemovedAiSourceTranslations" translate="no">
+        <source xml:lang="en">Bloom removed the AI source translations from this book.</source>
+        <note>ID: CollectionTab.BookMenu.RemovedAiSourceTranslations</note>
+        <note>Confirmation message shown after the "Remove AI Source Translations" menu command finishes. "Bloom" is the product name and must not be translated; "AI" stands for artificial intelligence.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

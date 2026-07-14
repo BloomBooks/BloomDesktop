@@ -15,24 +15,45 @@ import { useGetFeatureStatus } from "../react_components/featureStatus";
 import { BloomSubscriptionIndicatorIconAndText } from "../react_components/requiresSubscription";
 import { useL10n } from "../react_components/l10nHooks";
 import {
-    IAiSourceBubblesSettings,
-    IAiSourceBubblesValidationState,
-    useAiSourceBubblesSettingsGroup,
-} from "./AiSourceBubblesSettingsGroup";
+    AiTranslationProviderId,
+    IAiTranslationEngineValidation,
+    IAiTranslationSettings,
+    IAiTranslationWireSettings,
+    buildAiTranslationWirePayload,
+    extractAiTranslationFlatSettings,
+    flattenAiTranslationWireSettings,
+    omitAiTranslationFlatSettings,
+    useAiTranslationSettingsGroup,
+} from "./AiTranslationSettingsGroup";
 
-interface IAdvancedSettingsApiData {
-    values: IAdvancedSettings;
-    showAutoUpdate?: boolean;
-    showExperimentalBookSourcesOption?: boolean;
-    allowTeamCollectionEnabled?: boolean;
-    aiSourceBubblesValidation?: IAiSourceBubblesValidationState;
-}
-
-interface IAdvancedSettings extends IAiSourceBubblesSettings {
+// The shape actually sent/received over the wire for settings/advancedProgramSettings: the
+// flat, non-AI settings plus a nested "aiTranslation" object matching the backend contract.
+interface IAdvancedSettingsWire {
     autoUpdate?: boolean;
     showExperimentalBookSources?: boolean;
     allowTeamCollection?: boolean;
     allowAppBuilder?: boolean;
+    allowAiSourceBubbles?: boolean;
+    showQrCode?: boolean;
+    qrcodeCaption?: string;
+    aiTranslation?: IAiTranslationWireSettings;
+}
+
+interface IAdvancedSettingsApiData {
+    values: IAdvancedSettingsWire;
+    showAutoUpdate?: boolean;
+    showExperimentalBookSourcesOption?: boolean;
+    allowTeamCollectionEnabled?: boolean;
+}
+
+// The flattened shape Configr actually edits: non-AI settings plus one boolean+credential set
+// per AI engine (see AiTranslationSettingsGroup for why it's flattened rather than nested).
+interface IAdvancedSettings extends IAiTranslationSettings {
+    autoUpdate?: boolean;
+    showExperimentalBookSources?: boolean;
+    allowTeamCollection?: boolean;
+    allowAppBuilder?: boolean;
+    allowAiSourceBubbles?: boolean;
     showQrCode?: boolean;
     qrcodeCaption?: string;
 }
@@ -48,8 +69,15 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         showExperimentalBookSourcesOption,
         setShowExperimentalBookSourcesOption,
     ] = React.useState<boolean>(false);
-    const [aiSourceBubblesValidation, setAiSourceBubblesValidation] =
-        React.useState<IAiSourceBubblesValidationState>();
+    const [
+        aiTranslationInitialValidations,
+        setAiTranslationInitialValidations,
+    ] =
+        React.useState<
+            Partial<
+                Record<AiTranslationProviderId, IAiTranslationEngineValidation>
+            >
+        >();
 
     const advancedProgramSettingsLabel = useL10n(
         "Advanced Program Settings",
@@ -83,31 +111,43 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "AI Source Bubbles",
         "CollectionSettingsDialog.AdvancedTab.Experimental.AiSourceBubbles",
     );
-    const aiSourceBubblesSectionLabel = useL10n(
+    const aiTranslationSectionLabel = useL10n(
         "AI Source Bubbles",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.SectionLabel",
     );
-    const aiSourceBubblesProviderLabel = useL10n(
-        "Provider",
-        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.ProviderLabel",
-    );
-    const aiSourceBubblesTargetLanguageLabel = useL10n(
+    const aiTranslationTargetLanguageLabel = useL10n(
         "Target Language",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageLabel",
     );
-    const aiSourceBubblesDeepLApiKeyLabel = useL10n(
+    const aiTranslationDeepLEnabledLabel = useL10n(
+        "DeepL",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLEnabledLabel",
+    );
+    const aiTranslationDeepLApiKeyLabel = useL10n(
         "DeepL API Key",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLApiKeyLabel",
     );
-    const aiSourceBubblesGoogleServiceAccountEmailLabel = useL10n(
+    const aiTranslationGoogleEnabledLabel = useL10n(
+        "Google Translate",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleEnabledLabel",
+    );
+    const aiTranslationGoogleServiceAccountEmailLabel = useL10n(
         "Google Service Account Email",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleServiceAccountEmailLabel",
     );
-    const aiSourceBubblesGooglePrivateKeyLabel = useL10n(
+    const aiTranslationGooglePrivateKeyLabel = useL10n(
         "Google Service Account Private Key",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GooglePrivateKeyLabel",
     );
-    const aiSourceBubblesTranslationTestLabel = useL10n(
+    const aiTranslationAlpha2EnabledLabel = useL10n(
+        "SIL Alpha2",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2EnabledLabel",
+    );
+    const aiTranslationAlpha2ApiKeyLabel = useL10n(
+        "Alpha2 API key",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2ApiKeyLabel",
+    );
+    const aiTranslationTranslationTestLabel = useL10n(
         "Translation Test",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TranslationTestLabel",
     );
@@ -172,7 +212,14 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                 data = JSON.parse(result.data);
             }
             const advancedSettingsData = data as IAdvancedSettingsApiData;
-            setSettings(advancedSettingsData.values);
+            const { aiTranslation, ...restOfWireValues } =
+                advancedSettingsData.values;
+            const { flatSettings, initialValidations } =
+                flattenAiTranslationWireSettings(aiTranslation);
+            setSettings({
+                ...restOfWireValues,
+                ...flatSettings,
+            } as IAdvancedSettings);
             setShowAutoUpdate(advancedSettingsData.showAutoUpdate ?? false);
             setAllowTeamCollectionEnabled(
                 advancedSettingsData.allowTeamCollectionEnabled ?? false,
@@ -180,23 +227,36 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
             setShowExperimentalBookSourcesOption(
                 advancedSettingsData.showExperimentalBookSourcesOption ?? false,
             );
-            setAiSourceBubblesValidation(
-                advancedSettingsData.aiSourceBubblesValidation,
-            );
+            setAiTranslationInitialValidations(initialValidations);
         });
     }, []);
 
-    const aiSourceBubblesSettingsGroup = useAiSourceBubblesSettingsGroup({
-        settings,
-        initialValidation: aiSourceBubblesValidation,
-        groupLabel: aiSourceBubblesSectionLabel,
-        providerLabel: aiSourceBubblesProviderLabel,
-        targetLanguageLabel: aiSourceBubblesTargetLanguageLabel,
-        deepLApiKeyLabel: aiSourceBubblesDeepLApiKeyLabel,
+    // Memoized so the object reference is stable across renders that don't actually change
+    // the AI settings; the group's validation/language-fetch effects key off this reference.
+    const aiTranslationFlatSettings = React.useMemo(
+        () =>
+            settings
+                ? extractAiTranslationFlatSettings(
+                      settings as unknown as Record<string, unknown>,
+                  )
+                : undefined,
+        [settings],
+    );
+
+    const aiTranslationSettingsGroup = useAiTranslationSettingsGroup({
+        settings: aiTranslationFlatSettings,
+        initialValidations: aiTranslationInitialValidations,
+        groupLabel: aiTranslationSectionLabel,
+        targetLanguageLabel: aiTranslationTargetLanguageLabel,
+        deepLEnabledLabel: aiTranslationDeepLEnabledLabel,
+        deepLApiKeyLabel: aiTranslationDeepLApiKeyLabel,
+        googleEnabledLabel: aiTranslationGoogleEnabledLabel,
         googleServiceAccountEmailLabel:
-            aiSourceBubblesGoogleServiceAccountEmailLabel,
-        googlePrivateKeyLabel: aiSourceBubblesGooglePrivateKeyLabel,
-        translationTestLabel: aiSourceBubblesTranslationTestLabel,
+            aiTranslationGoogleServiceAccountEmailLabel,
+        googlePrivateKeyLabel: aiTranslationGooglePrivateKeyLabel,
+        alpha2EnabledLabel: aiTranslationAlpha2EnabledLabel,
+        alpha2ApiKeyLabel: aiTranslationAlpha2ApiKeyLabel,
+        translationTestLabel: aiTranslationTranslationTestLabel,
     });
 
     return (
@@ -231,9 +291,28 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                             normalizeConfigrSettings(newSettings);
                         if (normalized) {
                             setSettings(normalized);
+                            const aiFlatSettings =
+                                extractAiTranslationFlatSettings(
+                                    normalized as unknown as Record<
+                                        string,
+                                        unknown
+                                    >,
+                                );
+                            const wirePayload = {
+                                ...omitAiTranslationFlatSettings(
+                                    normalized as unknown as Record<
+                                        string,
+                                        unknown
+                                    >,
+                                ),
+                                aiTranslation:
+                                    buildAiTranslationWirePayload(
+                                        aiFlatSettings,
+                                    ),
+                            };
                             postJson(
                                 "settings/advancedProgramSettings",
-                                normalized,
+                                wirePayload,
                             );
                         }
                     }}
@@ -359,7 +438,7 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                             </div>
                         </ConfigrGroup>
                         {settings.allowAiSourceBubbles &&
-                            aiSourceBubblesSettingsGroup}
+                            aiTranslationSettingsGroup}
                     </ConfigrPage>
                 </ConfigrPane>
             )}

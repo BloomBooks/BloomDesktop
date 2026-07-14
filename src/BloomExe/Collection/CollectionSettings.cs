@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Bloom.AiTranslation;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
@@ -72,14 +73,43 @@ namespace Bloom.Collection
         // if this is null, relevant code uses the default, so we don't have to initialize it here
         public string BadgeQrCodeLabel;
 
-        public string AiSourceBubblesProviderId = "deepl";
-        public string AiSourceBubblesTargetLanguageTag = "";
-        public string AiSourceBubblesDeepLApiKey = "";
-        public string AiSourceBubblesGoogleServiceAccountEmail = "";
-        public string AiSourceBubblesGooglePrivateKey = "";
-        public string AiSourceBubblesValidatedConfigurationFingerprint = "";
-        public bool AiSourceBubblesLastValidationSucceeded = false;
-        public string AiSourceBubblesLastValidationMessage = "";
+        /// <summary>
+        /// The provider ids for AI translation, in the fixed order used for settings
+        /// persistence and the settings UI. AiTranslationEngines always has exactly one
+        /// entry for each of these, in this order; see EnsureAiTranslationEngines().
+        /// </summary>
+        public static readonly string[] kAiTranslationProviderIds = { "deepl", "google", "alpha2" };
+
+        /// <summary>
+        /// The single target language shared by all AI translation engines.
+        /// </summary>
+        public string AiTranslationTargetLanguageTag = "";
+
+        /// <summary>
+        /// Per-engine AI translation configuration. Normalized (see
+        /// EnsureAiTranslationEngines()) to contain exactly one entry for each provider in
+        /// kAiTranslationProviderIds, in that order.
+        /// </summary>
+        public List<AiTranslationEngineSettings> AiTranslationEngines =
+            new List<AiTranslationEngineSettings>();
+
+        /// <summary>
+        /// Ensures AiTranslationEngines contains exactly one entry for each provider in
+        /// kAiTranslationProviderIds, in that order, preserving any existing settings for
+        /// providers already present and adding defaults for any that are missing.
+        /// </summary>
+        public void EnsureAiTranslationEngines()
+        {
+            var normalized = new List<AiTranslationEngineSettings>();
+            foreach (var providerId in kAiTranslationProviderIds)
+            {
+                var existing = AiTranslationEngines?.Find(e => e.ProviderId == providerId);
+                normalized.Add(
+                    existing ?? new AiTranslationEngineSettings { ProviderId = providerId }
+                );
+            }
+            AiTranslationEngines = normalized;
+        }
 
         public static readonly Dictionary<string, string> CssNumberStylesToCultureOrDigits =
             new Dictionary<string, string>()
@@ -207,6 +237,7 @@ namespace Bloom.Collection
             AudioRecordingMode = TalkingBookApi.AudioRecordingMode.Sentence;
             AudioRecordingTrimEndMilliseconds = kDefaultAudioRecordingTrimEndMilliseconds;
             BooksOnWebGoal = kDefaultBooksOnWebGoal;
+            EnsureAiTranslationEngines();
         }
 
         public static void CreateNewCollection(NewCollectionSettings collectionInfo)
@@ -409,38 +440,32 @@ namespace Bloom.Collection
             xml.Add(BulkPublishBloomPubSettings.ToXElement());
             xml.Add(new XElement("ShowBlorgLanguageQrCode", ShowBlorgLanguageQrCode));
             xml.Add(new XElement("BadgeQrCodeLabel", BadgeQrCodeLabel));
-            xml.Add(new XElement("AiSourceBubblesProviderId", AiSourceBubblesProviderId));
-            xml.Add(
-                new XElement("AiSourceBubblesTargetLanguageTag", AiSourceBubblesTargetLanguageTag)
-            );
-            xml.Add(new XElement("AiSourceBubblesDeepLApiKey", AiSourceBubblesDeepLApiKey));
-            xml.Add(
-                new XElement(
-                    "AiSourceBubblesGoogleServiceAccountEmail",
-                    AiSourceBubblesGoogleServiceAccountEmail
-                )
-            );
-            xml.Add(
-                new XElement("AiSourceBubblesGooglePrivateKey", AiSourceBubblesGooglePrivateKey)
-            );
-            xml.Add(
-                new XElement(
-                    "AiSourceBubblesValidatedConfigurationFingerprint",
-                    AiSourceBubblesValidatedConfigurationFingerprint
-                )
-            );
-            xml.Add(
-                new XElement(
-                    "AiSourceBubblesLastValidationSucceeded",
-                    AiSourceBubblesLastValidationSucceeded
-                )
-            );
-            xml.Add(
-                new XElement(
-                    "AiSourceBubblesLastValidationMessage",
-                    AiSourceBubblesLastValidationMessage
-                )
-            );
+            xml.Add(new XElement("AiTranslationTargetLanguageTag", AiTranslationTargetLanguageTag));
+            EnsureAiTranslationEngines();
+            foreach (var engine in AiTranslationEngines)
+            {
+                var engineElement = new XElement("AiTranslationEngine");
+                engineElement.Add(new XAttribute("id", engine.ProviderId));
+                engineElement.Add(new XAttribute("enabled", engine.Enabled));
+                engineElement.Add(
+                    new XAttribute("validationSucceeded", engine.LastValidationSucceeded)
+                );
+                engineElement.Add(
+                    new XAttribute(
+                        "validatedFingerprint",
+                        engine.ValidatedConfigurationFingerprint ?? ""
+                    )
+                );
+                engineElement.Add(new XElement("ApiKey", engine.ApiKey ?? ""));
+                engineElement.Add(
+                    new XElement("ServiceAccountEmail", engine.ServiceAccountEmail ?? "")
+                );
+                engineElement.Add(new XElement("PrivateKey", engine.PrivateKey ?? ""));
+                engineElement.Add(
+                    new XElement("ValidationMessage", engine.LastValidationMessage ?? "")
+                );
+                xml.Add(engineElement);
+            }
             RobustIO.SaveXElement(xml, SettingsFilePath);
 
             // Color palette settings are stored in a separate Json file
@@ -715,38 +740,38 @@ namespace Bloom.Collection
 
                 ShowBlorgLanguageQrCode = ReadBoolean(xml, "ShowBlorgLanguageQrCode", true);
                 BadgeQrCodeLabel = ReadString(xml, "BadgeQrCodeLabel", "");
-                AiSourceBubblesProviderId = ReadString(xml, "AiSourceBubblesProviderId", "deepl");
-                AiSourceBubblesTargetLanguageTag = ReadString(
+                AiTranslationTargetLanguageTag = ReadString(
                     xml,
-                    "AiSourceBubblesTargetLanguageTag",
+                    "AiTranslationTargetLanguageTag",
                     ""
                 );
-                AiSourceBubblesDeepLApiKey = ReadString(xml, "AiSourceBubblesDeepLApiKey", "");
-                AiSourceBubblesGoogleServiceAccountEmail = ReadString(
-                    xml,
-                    "AiSourceBubblesGoogleServiceAccountEmail",
-                    ""
-                );
-                AiSourceBubblesGooglePrivateKey = ReadString(
-                    xml,
-                    "AiSourceBubblesGooglePrivateKey",
-                    ""
-                );
-                AiSourceBubblesValidatedConfigurationFingerprint = ReadString(
-                    xml,
-                    "AiSourceBubblesValidatedConfigurationFingerprint",
-                    ""
-                );
-                AiSourceBubblesLastValidationSucceeded = ReadBoolean(
-                    xml,
-                    "AiSourceBubblesLastValidationSucceeded",
-                    false
-                );
-                AiSourceBubblesLastValidationMessage = ReadString(
-                    xml,
-                    "AiSourceBubblesLastValidationMessage",
-                    ""
-                );
+                // This is an unreleased experiment, so there is no migration from the old
+                // single-provider settings: any old AiTranslation* elements are just ignored.
+                AiTranslationEngines = xml.Descendants("AiTranslationEngine")
+                    .Select(engineElement =>
+                    {
+                        bool.TryParse(engineElement.Attribute("enabled")?.Value, out var enabled);
+                        bool.TryParse(
+                            engineElement.Attribute("validationSucceeded")?.Value,
+                            out var validationSucceeded
+                        );
+                        return new AiTranslationEngineSettings
+                        {
+                            ProviderId = engineElement.Attribute("id")?.Value ?? "",
+                            Enabled = enabled,
+                            LastValidationSucceeded = validationSucceeded,
+                            ValidatedConfigurationFingerprint =
+                                engineElement.Attribute("validatedFingerprint")?.Value ?? "",
+                            ApiKey = engineElement.Element("ApiKey")?.Value ?? "",
+                            ServiceAccountEmail =
+                                engineElement.Element("ServiceAccountEmail")?.Value ?? "",
+                            PrivateKey = engineElement.Element("PrivateKey")?.Value ?? "",
+                            LastValidationMessage =
+                                engineElement.Element("ValidationMessage")?.Value ?? "",
+                        };
+                    })
+                    .ToList();
+                EnsureAiTranslationEngines();
 
                 LoadDictionary(xml, "Palette", ColorPalettes);
             }

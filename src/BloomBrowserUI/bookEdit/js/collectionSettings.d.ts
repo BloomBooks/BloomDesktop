@@ -10,9 +10,6 @@ interface ICollectionSettings {
     currentCollectionLanguage2: string;
     currentCollectionLanguage3: string;
     allowAiSourceBubbles: boolean;
-    aiSourceBubblesProvider: string;
-    aiSourceBubblesTargetLanguageTag: string;
-    aiSourceBubblesLanguageTag: string;
     browserRoot: string;
     topics: string[];
 }

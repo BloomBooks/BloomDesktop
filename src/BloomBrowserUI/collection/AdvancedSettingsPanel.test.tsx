@@ -1,3 +1,7 @@
+// This test harness deliberately mounts/unmounts via the React 17-style ReactDOM.render /
+// unmountComponentAtNode API (synchronous, simple for these unit tests). Disable the
+// React-18-deprecation rule for the file rather than migrate the harness to createRoot here.
+/* eslint-disable react/no-deprecated */
 import * as React from "react";
 import ReactDOM from "react-dom";
 import { act } from "react-dom/test-utils";
@@ -21,23 +25,53 @@ const {
             allowTeamCollection: false,
             allowAppBuilder: false,
             allowAiSourceBubbles: false,
-            aiSourceBubblesProvider: "deepl",
-            aiSourceBubblesTargetLanguageTag: "en",
-            aiSourceBubblesDeepLApiKey: "",
-            aiSourceBubblesGoogleServiceAccountEmail: "",
-            aiSourceBubblesGooglePrivateKey: "",
+            aiTranslation: {
+                targetLanguageTag: "en",
+                engines: [
+                    {
+                        providerId: "deepl",
+                        enabled: false,
+                        apiKey: "",
+                        serviceAccountEmail: "",
+                        privateKey: "",
+                        validation: {
+                            succeeded: false,
+                            message: "",
+                            upToDate: false,
+                        },
+                    },
+                    {
+                        providerId: "google",
+                        enabled: false,
+                        apiKey: "",
+                        serviceAccountEmail: "",
+                        privateKey: "",
+                        validation: {
+                            succeeded: false,
+                            message: "",
+                            upToDate: false,
+                        },
+                    },
+                    {
+                        providerId: "alpha2",
+                        enabled: false,
+                        apiKey: "",
+                        serviceAccountEmail: "",
+                        privateKey: "",
+                        validation: {
+                            succeeded: false,
+                            message: "",
+                            upToDate: false,
+                        },
+                    },
+                ],
+            },
             showQrCode: true,
             qrcodeCaption: "caption",
-        },
+        } as Record<string, unknown>,
         showAutoUpdate: true,
         showExperimentalBookSourcesOption: false,
         allowTeamCollectionEnabled: true,
-        aiSourceBubblesValidation: {
-            currentFingerprint: "",
-            validatedFingerprint: "",
-            succeeded: false,
-            message: "",
-        },
     },
 }));
 
@@ -89,58 +123,89 @@ vi.mock("@sillsdev/config-r", () => ({
         return (
             <div>
                 <button
-                    data-testid="set-google-config"
+                    data-testid="enable-google"
                     onClick={() => {
                         props.onChange({
                             ...props.initialValues,
                             allowAiSourceBubbles: true,
-                            aiSourceBubblesProvider: "google",
-                            aiSourceBubblesTargetLanguageTag: "es",
-                            aiSourceBubblesDeepLApiKey: "",
-                            aiSourceBubblesGoogleServiceAccountEmail:
+                            aiTranslationTargetLanguageTag: "es",
+                            aiTranslationGoogleEnabled: true,
+                            aiTranslationGoogleServiceAccountEmail:
                                 "service-account@example.com",
-                            aiSourceBubblesGooglePrivateKey:
+                            aiTranslationGooglePrivateKey:
                                 "-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----",
                         });
                     }}
                 >
-                    Set Google Config
+                    Enable Google
                 </button>
                 <button
-                    data-testid="set-google-without-target"
+                    data-testid="enable-google-without-target"
                     onClick={() => {
                         props.onChange({
                             ...props.initialValues,
                             allowAiSourceBubbles: true,
-                            aiSourceBubblesProvider: "google",
-                            aiSourceBubblesTargetLanguageTag: "",
-                            aiSourceBubblesDeepLApiKey: "",
-                            aiSourceBubblesGoogleServiceAccountEmail:
+                            aiTranslationTargetLanguageTag: "",
+                            aiTranslationGoogleEnabled: true,
+                            aiTranslationGoogleServiceAccountEmail:
                                 "service-account@example.com",
-                            aiSourceBubblesGooglePrivateKey:
+                            aiTranslationGooglePrivateKey:
                                 "-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----",
                         });
                     }}
                 >
-                    Set Google Without Target
+                    Enable Google Without Target
                 </button>
                 <button
                     data-testid="set-french-target"
                     onClick={() => {
                         props.onChange({
                             ...props.initialValues,
-                            allowAiSourceBubbles: true,
-                            aiSourceBubblesProvider: "google",
-                            aiSourceBubblesTargetLanguageTag: "fr",
-                            aiSourceBubblesDeepLApiKey: "",
-                            aiSourceBubblesGoogleServiceAccountEmail:
-                                "service-account@example.com",
-                            aiSourceBubblesGooglePrivateKey:
-                                "-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----",
+                            aiTranslationTargetLanguageTag: "fr",
                         });
                     }}
                 >
                     Set French Target
+                </button>
+                <button
+                    data-testid="enable-deepl-and-google"
+                    onClick={() => {
+                        props.onChange({
+                            ...props.initialValues,
+                            allowAiSourceBubbles: true,
+                            aiTranslationTargetLanguageTag: "es",
+                            aiTranslationDeepLEnabled: true,
+                            aiTranslationDeepLApiKey: "deepl-key",
+                            aiTranslationGoogleEnabled: true,
+                            aiTranslationGoogleServiceAccountEmail:
+                                "service-account@example.com",
+                            aiTranslationGooglePrivateKey:
+                                "-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----",
+                        });
+                    }}
+                >
+                    Enable DeepL And Google
+                </button>
+                <button
+                    data-testid="enable-all-three"
+                    onClick={() => {
+                        props.onChange({
+                            ...props.initialValues,
+                            allowAiSourceBubbles: true,
+                            aiTranslationTargetLanguageTag: "es",
+                            aiTranslationDeepLEnabled: true,
+                            aiTranslationDeepLApiKey: "deepl-key",
+                            aiTranslationGoogleEnabled: true,
+                            aiTranslationGoogleServiceAccountEmail:
+                                "service-account@example.com",
+                            aiTranslationGooglePrivateKey:
+                                "-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----",
+                            aiTranslationAlpha2Enabled: true,
+                            aiTranslationAlpha2ApiKey: "alpha2-key",
+                        });
+                    }}
+                >
+                    Enable All Three
                 </button>
                 {props.children}
             </div>
@@ -152,18 +217,25 @@ vi.mock("@sillsdev/config-r", () => ({
     ConfigrGroup: (props: React.PropsWithChildren<object>) => (
         <div>{props.children}</div>
     ),
-    ConfigrBoolean: () => null,
-    ConfigrInput: () => null,
+    ConfigrBoolean: (props: { path: string; label: string }) => (
+        <div data-testid={`configr-boolean-${props.path}`}>{props.label}</div>
+    ),
+    ConfigrInput: (props: { path: string; label: string }) => (
+        <div data-testid={`configr-input-${props.path}`}>{props.label}</div>
+    ),
     ConfigrSelect: () => null,
     ConfigrCustomObjectInput: (props: {
         control: React.FunctionComponent<{
-            value: string;
+            value: unknown;
             disabled?: boolean;
-            onChange: (value: string) => void;
+            onChange: (value: unknown) => void;
         }>;
+        overrideValue?: unknown;
     }) => {
         const Control = props.control;
-        return <Control value="" onChange={() => {}} />;
+        return (
+            <Control value={props.overrideValue ?? ""} onChange={() => {}} />
+        );
     },
     ConfigrCustomStringInput: (props: {
         control: React.FunctionComponent<{
@@ -178,7 +250,10 @@ vi.mock("@sillsdev/config-r", () => ({
 }));
 
 import { AdvancedSettingsPanel } from "./AdvancedSettingsPanel";
-import { parseSupportedTargetLanguageOptions } from "./AiSourceBubblesSettingsGroup";
+import {
+    getLanguageSupportNote,
+    parseSupportedTargetLanguageOptions,
+} from "./AiTranslationSettingsGroup";
 
 describe("AdvancedSettingsPanel", () => {
     let container: HTMLDivElement;
@@ -204,45 +279,85 @@ describe("AdvancedSettingsPanel", () => {
             allowTeamCollection: false,
             allowAppBuilder: false,
             allowAiSourceBubbles: false,
-            aiSourceBubblesProvider: "deepl",
-            aiSourceBubblesTargetLanguageTag: "en",
-            aiSourceBubblesDeepLApiKey: "",
-            aiSourceBubblesGoogleServiceAccountEmail: "",
-            aiSourceBubblesGooglePrivateKey: "",
+            aiTranslation: {
+                targetLanguageTag: "en",
+                engines: [
+                    {
+                        providerId: "deepl",
+                        enabled: false,
+                        apiKey: "",
+                        serviceAccountEmail: "",
+                        privateKey: "",
+                        validation: {
+                            succeeded: false,
+                            message: "",
+                            upToDate: false,
+                        },
+                    },
+                    {
+                        providerId: "google",
+                        enabled: false,
+                        apiKey: "",
+                        serviceAccountEmail: "",
+                        privateKey: "",
+                        validation: {
+                            succeeded: false,
+                            message: "",
+                            upToDate: false,
+                        },
+                    },
+                    {
+                        providerId: "alpha2",
+                        enabled: false,
+                        apiKey: "",
+                        serviceAccountEmail: "",
+                        privateKey: "",
+                        validation: {
+                            succeeded: false,
+                            message: "",
+                            upToDate: false,
+                        },
+                    },
+                ],
+            },
             showQrCode: true,
             qrcodeCaption: "caption",
         };
-        initialAdvancedSettingsData.aiSourceBubblesValidation = {
-            currentFingerprint: "",
-            validatedFingerprint: "",
-            succeeded: false,
-            message: "",
-        };
-        mockPostJsonAsync.mockImplementation(async (endpoint: string) => {
-            if (endpoint === "settings/validateAiSourceBubbles") {
-                return {
-                    data: {
-                        currentFingerprint: "fingerprint",
-                        validatedFingerprint: "fingerprint",
-                        succeeded: true,
-                        message: "La lectura es importante",
-                    },
-                };
-            }
+        mockPostJsonAsync.mockImplementation(
+            async (endpoint: string, body?: unknown) => {
+                if (endpoint === "settings/validateAiTranslationEngine") {
+                    const providerId = (body as { providerId: string })
+                        .providerId;
+                    return {
+                        data: {
+                            succeeded: true,
+                            message: `translated by ${providerId}`,
+                        },
+                    };
+                }
 
-            if (endpoint === "settings/aiSourceBubblesSupportedLanguages") {
-                return {
-                    data: {
-                        languages: [
-                            { Value: "es", Label: "Spanish" },
-                            { Value: "fra", Label: "French (fra)" },
-                        ],
-                    },
-                };
-            }
+                if (endpoint === "settings/aiTranslationSupportedLanguages") {
+                    return {
+                        data: {
+                            languages: [
+                                {
+                                    tag: "es",
+                                    name: "Spanish",
+                                    providerIds: ["deepl", "google"],
+                                },
+                                {
+                                    tag: "fra",
+                                    name: "French (fra)",
+                                    providerIds: ["deepl"],
+                                },
+                            ],
+                        },
+                    };
+                }
 
-            throw new Error(`Unexpected async POST endpoint: ${endpoint}`);
-        });
+                throw new Error(`Unexpected async POST endpoint: ${endpoint}`);
+            },
+        );
     });
 
     afterEach(() => {
@@ -252,41 +367,125 @@ describe("AdvancedSettingsPanel", () => {
         vi.useRealTimers();
     });
 
-    it("debounces AI validation and renders the translated probe result", async () => {
+    it("shows an engine's credential fields only once it is enabled", async () => {
         await act(async () => {
             ReactDOM.render(<AdvancedSettingsPanel />, container);
         });
 
-        click('[data-testid="set-google-config"]');
+        expect(
+            container.querySelector(
+                '[data-testid="configr-input-aiTranslationGoogleServiceAccountEmail"]',
+            ),
+        ).toBeNull();
+
+        click('[data-testid="enable-google"]');
+
+        expect(
+            container.querySelector(
+                '[data-testid="configr-input-aiTranslationGoogleServiceAccountEmail"]',
+            ),
+        ).not.toBeNull();
+        expect(
+            container.querySelector(
+                '[data-testid="configr-input-aiTranslationGooglePrivateKey"]',
+            ),
+        ).not.toBeNull();
+        // DeepL and Alpha2 were never enabled, so their credential fields stay hidden.
+        expect(
+            container.querySelector(
+                '[data-testid="configr-input-aiTranslationDeepLApiKey"]',
+            ),
+        ).toBeNull();
+        expect(
+            container.querySelector(
+                '[data-testid="configr-input-aiTranslationAlpha2ApiKey"]',
+            ),
+        ).toBeNull();
+        // The three enable toggles are always present, regardless of enabled state.
+        expect(
+            container.querySelector(
+                '[data-testid="configr-boolean-aiTranslationDeepLEnabled"]',
+            ),
+        ).not.toBeNull();
+        expect(
+            container.querySelector(
+                '[data-testid="configr-boolean-aiTranslationAlpha2Enabled"]',
+            ),
+        ).not.toBeNull();
+    });
+
+    it("posts the store payload in the pinned nested wire shape", async () => {
+        await act(async () => {
+            ReactDOM.render(<AdvancedSettingsPanel />, container);
+        });
+
+        click('[data-testid="enable-all-three"]');
 
         expect(mockPostJson).toHaveBeenCalledWith(
             "settings/advancedProgramSettings",
             expect.objectContaining({
                 allowAiSourceBubbles: true,
-                aiSourceBubblesProvider: "google",
-                aiSourceBubblesTargetLanguageTag: "es",
-                aiSourceBubblesGoogleServiceAccountEmail:
-                    "service-account@example.com",
+                aiTranslation: {
+                    targetLanguageTag: "es",
+                    engines: [
+                        // Google's serviceAccountEmail/privateKey must NOT leak onto the other
+                        // engines' records (doing so wiped their validation when Google creds
+                        // were edited); non-google engines send empty Google fields.
+                        expect.objectContaining({
+                            providerId: "deepl",
+                            enabled: true,
+                            apiKey: "deepl-key",
+                            serviceAccountEmail: "",
+                            privateKey: "",
+                        }),
+                        expect.objectContaining({
+                            providerId: "google",
+                            enabled: true,
+                            serviceAccountEmail: "service-account@example.com",
+                            privateKey:
+                                "-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----",
+                        }),
+                        expect.objectContaining({
+                            providerId: "alpha2",
+                            enabled: true,
+                            apiKey: "alpha2-key",
+                            serviceAccountEmail: "",
+                            privateKey: "",
+                        }),
+                    ],
+                },
             }),
         );
 
+        // The flat, Configr-internal AI keys must not leak into the wire payload.
+        const [, wirePayload] = mockPostJson.mock.calls[0];
+        expect(wirePayload).not.toHaveProperty("aiTranslationGoogleEnabled");
+        expect(wirePayload).not.toHaveProperty(
+            "aiTranslationTargetLanguageTag",
+        );
+    });
+
+    it("debounces per-engine validation and posts only the providerId", async () => {
+        await act(async () => {
+            ReactDOM.render(<AdvancedSettingsPanel />, container);
+        });
+
+        click('[data-testid="enable-google"]');
+
+        // Only google is enabled+credentialed, so only it should be probed.
         await act(async () => {
             await vi.advanceTimersByTimeAsync(601);
         });
 
         expect(mockPostJsonAsync).toHaveBeenCalledWith(
-            "settings/validateAiSourceBubbles",
-            expect.objectContaining({
-                allowAiSourceBubbles: true,
-                aiSourceBubblesProvider: "google",
-                aiSourceBubblesTargetLanguageTag: "es",
-                aiSourceBubblesGoogleServiceAccountEmail:
-                    "service-account@example.com",
-            }),
+            "settings/validateAiTranslationEngine",
+            { providerId: "google" },
         );
-        expect(container.textContent).toContain(
-            '"Today a reader, tomorrow a leader." --> La lectura es importante',
+        expect(mockPostJsonAsync).not.toHaveBeenCalledWith(
+            "settings/validateAiTranslationEngine",
+            { providerId: "deepl" },
         );
+        expect(container.textContent).toContain("translated by google");
 
         click('[data-testid="set-french-target"]');
 
@@ -297,48 +496,68 @@ describe("AdvancedSettingsPanel", () => {
         });
 
         expect(mockPostJsonAsync).toHaveBeenCalledWith(
-            "settings/validateAiSourceBubbles",
-            expect.objectContaining({
-                allowAiSourceBubbles: true,
-                aiSourceBubblesProvider: "google",
-                aiSourceBubblesTargetLanguageTag: "fr",
-                aiSourceBubblesGoogleServiceAccountEmail:
-                    "service-account@example.com",
-            }),
+            "settings/validateAiTranslationEngine",
+            { providerId: "google" },
         );
     });
 
-    it("clears the previous translation result immediately and waits for a target language before rerunning", async () => {
+    it("clears validation immediately when the target language is removed, and waits for one before re-validating", async () => {
         initialAdvancedSettingsData.values = {
             ...initialAdvancedSettingsData.values,
             allowAiSourceBubbles: true,
-            aiSourceBubblesProvider: "google",
-            aiSourceBubblesTargetLanguageTag: "es",
-            aiSourceBubblesGoogleServiceAccountEmail:
-                "service-account@example.com",
-            aiSourceBubblesGooglePrivateKey:
-                "-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----",
-        };
-        initialAdvancedSettingsData.aiSourceBubblesValidation = {
-            currentFingerprint: "loaded-fingerprint",
-            validatedFingerprint: "loaded-fingerprint",
-            succeeded: true,
-            message: "La lectura es importante",
+            aiTranslation: {
+                targetLanguageTag: "es",
+                engines: [
+                    {
+                        providerId: "deepl",
+                        enabled: false,
+                        apiKey: "",
+                        serviceAccountEmail: "",
+                        privateKey: "",
+                        validation: {
+                            succeeded: false,
+                            message: "",
+                            upToDate: false,
+                        },
+                    },
+                    {
+                        providerId: "google",
+                        enabled: true,
+                        apiKey: "",
+                        serviceAccountEmail: "service-account@example.com",
+                        privateKey:
+                            "-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----",
+                        validation: {
+                            succeeded: true,
+                            message: "translated by google",
+                            upToDate: true,
+                        },
+                    },
+                    {
+                        providerId: "alpha2",
+                        enabled: false,
+                        apiKey: "",
+                        serviceAccountEmail: "",
+                        privateKey: "",
+                        validation: {
+                            succeeded: false,
+                            message: "",
+                            upToDate: false,
+                        },
+                    },
+                ],
+            },
         };
 
         await act(async () => {
             ReactDOM.render(<AdvancedSettingsPanel />, container);
         });
 
-        expect(container.textContent).toContain(
-            '"Today a reader, tomorrow a leader." --> La lectura es importante',
-        );
+        expect(container.textContent).toContain("translated by google");
 
-        click('[data-testid="set-google-without-target"]');
+        click('[data-testid="enable-google-without-target"]');
 
-        expect(container.textContent).not.toContain(
-            '"Today a reader, tomorrow a leader." --> La lectura es importante',
-        );
+        expect(container.textContent).not.toContain("translated by google");
         expect(container.textContent).not.toContain("Testing translation...");
 
         await act(async () => {
@@ -346,11 +565,8 @@ describe("AdvancedSettingsPanel", () => {
         });
 
         expect(mockPostJsonAsync).not.toHaveBeenCalledWith(
-            "settings/validateAiSourceBubbles",
-            expect.objectContaining({
-                aiSourceBubblesProvider: "google",
-                aiSourceBubblesTargetLanguageTag: "",
-            }),
+            "settings/validateAiTranslationEngine",
+            { providerId: "google" },
         );
 
         click('[data-testid="set-french-target"]');
@@ -362,26 +578,20 @@ describe("AdvancedSettingsPanel", () => {
         });
 
         expect(mockPostJsonAsync).toHaveBeenCalledWith(
-            "settings/validateAiSourceBubbles",
-            expect.objectContaining({
-                allowAiSourceBubbles: true,
-                aiSourceBubblesProvider: "google",
-                aiSourceBubblesTargetLanguageTag: "fr",
-                aiSourceBubblesGoogleServiceAccountEmail:
-                    "service-account@example.com",
-            }),
+            "settings/validateAiTranslationEngine",
+            { providerId: "google" },
         );
     });
 
-    it("fetches provider-supported languages for the target language selector", async () => {
+    it("fetches the union of provider-supported languages when the ready engine set changes", async () => {
         await act(async () => {
             ReactDOM.render(<AdvancedSettingsPanel />, container);
         });
 
-        click('[data-testid="set-google-config"]');
+        click('[data-testid="enable-deepl-and-google"]');
 
         const targetLanguageSelect = container.querySelector(
-            '[data-testid="ai-source-bubbles-target-language-select"]',
+            '[data-testid="ai-translation-target-language-select"]',
         ) as HTMLElement;
         expect(targetLanguageSelect).not.toBeNull();
 
@@ -392,24 +602,45 @@ describe("AdvancedSettingsPanel", () => {
         });
 
         expect(mockPostJsonAsync).toHaveBeenCalledWith(
-            "settings/aiSourceBubblesSupportedLanguages",
-            expect.objectContaining({
-                allowAiSourceBubbles: true,
-                aiSourceBubblesProvider: "google",
-                aiSourceBubblesGoogleServiceAccountEmail:
-                    "service-account@example.com",
-            }),
+            "settings/aiTranslationSupportedLanguages",
+            expect.anything(),
         );
 
         expect(
             parseSupportedTargetLanguageOptions({
                 languages: [
-                    { Value: "es", Label: "Spanish (es)" } as unknown as {
-                        value: string;
-                        label: string;
-                    },
+                    { tag: "es", name: "Spanish (es)", providerIds: ["deepl"] },
                 ],
             }),
-        ).toEqual([{ value: "es", label: "Spanish" }]);
+        ).toEqual([{ value: "es", label: "Spanish", providerIds: ["deepl"] }]);
+    });
+
+    it("notes when a language is only supported by some of the ready engines", () => {
+        const spanish = {
+            value: "es",
+            label: "Spanish",
+            providerIds: ["deepl", "google"] as const,
+        };
+        const french = {
+            value: "fra",
+            label: "French",
+            providerIds: ["deepl"] as const,
+        };
+        const displayNames = {
+            deepl: "DeepL",
+            google: "Google Translate",
+            alpha2: "SIL Alpha2",
+        };
+
+        expect(
+            getLanguageSupportNote(spanish, ["deepl", "google"], displayNames),
+        ).toBe("");
+        expect(
+            getLanguageSupportNote(french, ["deepl", "google"], displayNames),
+        ).toBe("DeepL");
+        // Supported by none of the ready engines: no note (won't appear as an option anyway).
+        expect(getLanguageSupportNote(french, ["google"], displayNames)).toBe(
+            "",
+        );
     });
 });

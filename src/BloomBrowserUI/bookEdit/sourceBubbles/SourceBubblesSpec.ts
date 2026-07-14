@@ -9,15 +9,13 @@ vi.mock("../../utils/bloomApi", async (importOriginal) => {
     return {
         ...actual,
         postJson: vi.fn(),
-        postJsonAsync: vi.fn(),
         postString: vi.fn(),
     };
 });
 
-import { postJsonAsync, postString } from "../../utils/bloomApi";
+import { postString } from "../../utils/bloomApi";
 import BloomSourceBubbles from "./BloomSourceBubbles";
 
-const mockedPostJsonAsync = vi.mocked(postJsonAsync);
 const mockedPostString = vi.mocked(postString);
 
 describe("SourceBubbles", () => {
@@ -26,8 +24,6 @@ describe("SourceBubbles", () => {
     // reset fixture
     beforeEach(() => {
         $("body").html("");
-        mockedPostJsonAsync.mockReset();
-        mockedPostJsonAsync.mockResolvedValue(undefined);
         mockedPostString.mockReset();
     });
     afterEach(() => {
@@ -335,48 +331,100 @@ describe("SourceBubbles", () => {
         expect(listItems[2].getAttribute("id")).toBe("es"); // alphabetical
     });
 
-    it("MakeSourceTextDivForGroup reuses a current AI translation stored in the live group", () => {
-        const sourceText = "English text";
-        const aiLanguageTag = "id-x-ai-google";
-        const fingerprint = (
-            BloomSourceBubbles as any
-        ).getAiSourceBubbleFingerprint(sourceText, "en", aiLanguageTag);
+    // --- AI source bubble display tests ---
+    //
+    // AI-translated source divs (lang tag like "fr-x-ai-deepl") are written into the book
+    // by a C# batch process that runs before the book is opened for editing. The front end
+    // is display-only: it never requests a translation, never writes an AI div, and never
+    // removes one from the live .bloom-translationGroup. These tests exercise only that
+    // display behavior.
+
+    it("MakeSourceTextDivForGroup shows one tab per AI-provider div, alongside the normal source tabs", () => {
         const testHtml = $(
             [
                 "<div id='testTarget' class='bloom-translationGroup'>",
                 "   <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>English text</div>",
-                `   <div class='bloom-editable' lang='${aiLanguageTag}' data-ai-source-bubble-fingerprint='${fingerprint}'>Teks Indonesia</div>`,
+                "   <div class='bloom-editable' lang='es'>Spanish text</div>",
+                "   <div class='bloom-editable bloom-ai-translation' lang='fr-x-ai-deepl' data-ai-fingerprint='abc'>Texte français DeepL</div>",
+                "   <div class='bloom-editable bloom-ai-translation' lang='fr-x-ai-google' data-ai-fingerprint='def'>Texte français Google</div>",
                 "</div>",
             ].join("\n"),
         );
         $("body").append(testHtml);
+
+        // sanity check: both AI divs are actually present with distinct text before we build the bubble
+        expect(
+            $("body").find("#testTarget div[lang='fr-x-ai-deepl']").text(),
+        ).toBe("Texte français DeepL");
+        expect(
+            $("body").find("#testTarget div[lang='fr-x-ai-google']").text(),
+        ).toBe("Texte français Google");
+
         (window as any).GetSettings = () => ({
             defaultSourceLanguage: "en",
             defaultSourceLanguage2: "",
             currentCollectionLanguage2: "",
             currentCollectionLanguage3: "",
             allowAiSourceBubbles: true,
-            aiSourceBubblesLanguageTag: aiLanguageTag,
         });
 
         const result = BloomSourceBubbles.MakeSourceTextDivForGroup(
             $("body").find("#testTarget")[0],
         );
 
-        expect(mockedPostJsonAsync).not.toHaveBeenCalled();
+        // English is vernacular (no tab); es, fr-x-ai-deepl and fr-x-ai-google each get a tab
+        const listItems = result.find("nav ul li");
+        expect(listItems.length).toBe(3);
+        expect(result.find("li#es").length).toBe(1);
+        expect(result.find("li#fr-x-ai-deepl").length).toBe(1);
+        expect(result.find("li#fr-x-ai-google").length).toBe(1);
         expect(
-            result.find(`div.source-text[lang='${aiLanguageTag}']`)[0]
+            result.find("div.source-text[lang='fr-x-ai-deepl']")[0]
                 .childNodes[0].textContent,
-        ).toBe("Teks Indonesia");
+        ).toBe("Texte français DeepL");
+        expect(
+            result.find("div.source-text[lang='fr-x-ai-google']")[0]
+                .childNodes[0].textContent,
+        ).toBe("Texte français Google");
     });
 
-    it("MakeSourceTextDivForGroup shows an icon before AI language tab labels", () => {
+    it("getLanguageDisplayName labels an AI tab with the language name and mapped provider name", () => {
+        const getLanguageDisplayName = (BloomSourceBubbles as any)
+            .getLanguageDisplayName as (langTag: string) => string;
+
+        expect(getLanguageDisplayName("fr-x-ai-deepl")).toBe(
+            "AI français (DeepL)",
+        );
+        expect(getLanguageDisplayName("fr-x-ai-google")).toBe(
+            "AI français (Google Translate)",
+        );
+        expect(getLanguageDisplayName("fr-x-ai-alpha2")).toBe(
+            "AI français (SIL Alpha2)",
+        );
+        // an unrecognized provider id is shown as-is
+        expect(getLanguageDisplayName("fr-x-ai-mystery")).toBe(
+            "AI français (mystery)",
+        );
+    });
+
+    it("getLanguageDisplayName falls back to the browser's language names for tags Bloom doesn't know", () => {
+        const getLanguageDisplayName = (BloomSourceBubbles as any)
+            .getLanguageDisplayName as (langTag: string) => string;
+
+        // "de" is not one of the mocked collection languages, so Bloom's own lookup fails;
+        // Intl.DisplayNames should supply "German" rather than showing the raw tag.
+        expect(getLanguageDisplayName("de-x-ai-deepl")).toBe(
+            "AI German (DeepL)",
+        );
+    });
+
+    it("MakeSourceTextDivForGroup shows the AI icon only on AI tabs, with a provider-labeled tab", () => {
         const testHtml = $(
             [
                 "<div id='testTarget' class='bloom-translationGroup'>",
                 "   <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>English text</div>",
                 "   <div class='bloom-editable' lang='fr'>French text</div>",
-                "   <div class='bloom-editable' lang='id-x-ai-deepl'>Bulan dan Topi</div>",
+                "   <div class='bloom-editable bloom-ai-translation' lang='fr-x-ai-deepl'>Texte français DeepL</div>",
                 "</div>",
             ].join("\n"),
         );
@@ -388,113 +436,106 @@ describe("SourceBubbles", () => {
             currentCollectionLanguage2: "",
             currentCollectionLanguage3: "",
             allowAiSourceBubbles: true,
-            aiSourceBubblesLanguageTag: "id-x-ai-deepl",
         });
 
         const result = BloomSourceBubbles.MakeSourceTextDivForGroup(
             $("body").find("#testTarget")[0],
         );
 
-        const aiTab = result.find("li#id-x-ai-deepl a.sourceTextTab");
+        const aiTab = result.find("li#fr-x-ai-deepl a.sourceTextTab");
         expect(aiTab.length).toBe(1);
         expect(aiTab.find("svg[data-testid='AutoAwesomeIcon']").length).toBe(1);
-        expect(aiTab.text()).toContain("AI ");
+        expect(aiTab.text().trim()).toBe("AI français (DeepL)");
 
         const nonAiTab = result.find("li#fr a.sourceTextTab");
+        expect(nonAiTab.length).toBe(1);
         expect(nonAiTab.find("svg[data-testid='AutoAwesomeIcon']").length).toBe(
             0,
         );
     });
 
-    it("MakeSourceTextDivForGroup does not start a second request while the same AI translation is pending", () => {
-        const aiLanguageTag = "id-x-ai-google";
-        mockedPostJsonAsync.mockImplementation(
-            () => new Promise(() => undefined),
-        );
+    it("MakeSourceTextDivForGroup hides AI tabs when allowAiSourceBubbles is false, without touching the live group", () => {
         const testHtml = $(
             [
                 "<div id='testTarget' class='bloom-translationGroup'>",
                 "   <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>English text</div>",
+                "   <div class='bloom-editable' lang='es'>Spanish text</div>",
+                "   <div class='bloom-editable bloom-ai-translation' lang='fr-x-ai-deepl'>Texte français DeepL</div>",
                 "</div>",
             ].join("\n"),
         );
         $("body").append(testHtml);
+        const liveGroup = $("body").find("#testTarget");
+
+        // sanity check: the AI div is present in the live book DOM before we build the bubble
+        expect(liveGroup.find("div[lang='fr-x-ai-deepl']").length).toBe(1);
+
+        (window as any).GetSettings = () => ({
+            defaultSourceLanguage: "en",
+            defaultSourceLanguage2: "",
+            currentCollectionLanguage2: "",
+            currentCollectionLanguage3: "",
+            allowAiSourceBubbles: false,
+        });
+
+        const result = BloomSourceBubbles.MakeSourceTextDivForGroup(
+            liveGroup[0],
+        );
+
+        expect(result.find("li#fr-x-ai-deepl").length).toBe(0);
+        expect(result.find("div[lang='fr-x-ai-deepl']").length).toBe(0);
+        expect(result.find("li#es").length).toBe(1);
+        // the book's own DOM must be untouched even though the setting is off
+        expect(liveGroup.find("div[lang='fr-x-ai-deepl']").length).toBe(1);
+        expect(liveGroup.find("div[lang='fr-x-ai-deepl']").text()).toBe(
+            "Texte français DeepL",
+        );
+    });
+
+    it("MakeSourceTextDivForGroup does not show an empty AI div as a tab", () => {
+        const testHtml = $(
+            [
+                "<div id='testTarget' class='bloom-translationGroup'>",
+                "   <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>English text</div>",
+                "   <div class='bloom-editable' lang='es'>Spanish text</div>",
+                "   <div class='bloom-editable bloom-ai-translation' lang='fr-x-ai-deepl'></div>",
+                "</div>",
+            ].join("\n"),
+        );
+        $("body").append(testHtml);
+
+        // sanity check: the AI div really is empty before we build the bubble
+        expect(
+            $("body")
+                .find("#testTarget div[lang='fr-x-ai-deepl']")
+                .text()
+                .trim(),
+        ).toBe("");
+
         (window as any).GetSettings = () => ({
             defaultSourceLanguage: "en",
             defaultSourceLanguage2: "",
             currentCollectionLanguage2: "",
             currentCollectionLanguage3: "",
             allowAiSourceBubbles: true,
-            aiSourceBubblesLanguageTag: aiLanguageTag,
         });
 
-        const firstResult = BloomSourceBubbles.MakeSourceTextDivForGroup(
-            $("body").find("#testTarget")[0],
-        );
-        const secondResult = BloomSourceBubbles.MakeSourceTextDivForGroup(
+        const result = BloomSourceBubbles.MakeSourceTextDivForGroup(
             $("body").find("#testTarget")[0],
         );
 
-        expect(mockedPostJsonAsync).toHaveBeenCalledTimes(1);
-        expect(
-            firstResult.find(`div.source-text[lang='${aiLanguageTag}']`)[0]
-                .childNodes[0].textContent,
-        ).toBe("Translating...");
-        expect(
-            secondResult.find(`div.source-text[lang='${aiLanguageTag}']`)[0]
-                .childNodes[0].textContent,
-        ).toBe("Translating...");
-    });
-
-    it("MakeSourceTextDivForGroup ignores an AI default source language when choosing text to translate", () => {
-        const aiLanguageTag = "id-x-ai-deepl";
-        mockedPostJsonAsync.mockImplementation(
-            () => new Promise(() => undefined),
-        );
-        const testHtml = $(
-            [
-                "<div id='testTarget' class='bloom-translationGroup'>",
-                "   <div class='bloom-editable' lang='en'>English text</div>",
-                "   <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>",
-                `   <div class='bloom-editable bloom-ai-source-bubble-translation' lang='${aiLanguageTag}' data-ai-source-bubble-fingerprint='old'>Old Indonesian</div>`,
-                "</div>",
-            ].join("\n"),
-        );
-        $("body").append(testHtml);
-        (window as any).GetSettings = () => ({
-            defaultSourceLanguage: aiLanguageTag,
-            defaultSourceLanguage2: "",
-            currentCollectionLanguage2: "tpi",
-            currentCollectionLanguage3: "",
-            allowAiSourceBubbles: true,
-            aiSourceBubblesLanguageTag: aiLanguageTag,
-        });
-
-        BloomSourceBubbles.MakeSourceTextDivForGroup(
-            $("body").find("#testTarget")[0],
-        );
-
-        expect(mockedPostJsonAsync).toHaveBeenCalledTimes(1);
-        expect(mockedPostJsonAsync.mock.calls[0][0]).toBe(
-            "aiSourceBubbles/translate",
-        );
-        expect(mockedPostJsonAsync.mock.calls[0][1]).toEqual({
-            sourceText: "Tok Pisin text",
-            sourceLanguageTag: "tpi",
-        });
+        expect(result.find("li#fr-x-ai-deepl").length).toBe(0);
+        expect(result.find("div[lang='fr-x-ai-deepl']").length).toBe(0);
+        expect(result.find("li#es").length).toBe(1);
     });
 
     it("AI source bubble tabs are remembered as the default source language", () => {
         const aiLanguageTag = "id-x-ai-deepl";
-        const sourceText = "Tok Pisin text";
-        const fingerprint = (
-            BloomSourceBubbles as any
-        ).getAiSourceBubbleFingerprint(sourceText, "tpi", aiLanguageTag);
         const testHtml = $(
             [
                 "<div id='testTarget' class='bloom-translationGroup'>",
                 "   <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>",
-                `   <div class='bloom-editable bloom-ai-source-bubble-translation' lang='${aiLanguageTag}' data-ai-source-bubble-fingerprint='${fingerprint}'>Bahasa Indonesia</div>`,
+                `   <div class='bloom-editable bloom-ai-translation' lang='${aiLanguageTag}'>Bahasa Indonesia</div>`,
                 "</div>",
             ].join("\n"),
         );
@@ -505,7 +546,6 @@ describe("SourceBubbles", () => {
             currentCollectionLanguage2: "",
             currentCollectionLanguage3: "",
             allowAiSourceBubbles: true,
-            aiSourceBubblesLanguageTag: aiLanguageTag,
         });
 
         const result = BloomSourceBubbles.MakeSourceTextDivForGroup(
@@ -567,69 +607,5 @@ describe("SourceBubbles", () => {
             "editView/sourceTextTab",
             "es",
         );
-    });
-
-    it("translateSourceBubbleAsync maps PascalCase API response properties", async () => {
-        mockedPostJsonAsync.mockResolvedValue({
-            data: {
-                Text: "Bahasa Indonesia",
-                AiLanguageTag: "id-x-ai-deepl",
-            },
-        } as any);
-
-        const response = await (
-            BloomSourceBubbles as any
-        ).translateSourceBubbleAsync("Tok Pisin text", "tpi");
-
-        expect(response).toEqual({
-            text: "Bahasa Indonesia",
-            aiLanguageTag: "id-x-ai-deepl",
-        });
-    });
-
-    it("MakeSourceTextDivForGroup syncs a stale visible qtip when the AI translation is already current", () => {
-        const aiLanguageTag = "id-x-ai-deepl";
-        const sourceText = "The Moon and the Cap";
-        const fingerprint = (
-            BloomSourceBubbles as any
-        ).getAiSourceBubbleFingerprint(sourceText, "en", aiLanguageTag);
-        const testHtml = $(
-            [
-                "<div id='testTarget' class='bloom-translationGroup' aria-describedby='qtip-0'>",
-                `   <div class='bloom-editable' lang='en'>${sourceText}</div>`,
-                `   <div class='bloom-editable bloom-ai-source-bubble-translation' lang='${aiLanguageTag}' data-ai-source-bubble-fingerprint='${fingerprint}'>Bulan dan Topi</div>`,
-                "</div>",
-                "<div id='qtip-0' class='qtip'>",
-                `   <div class='bloom-ai-source-bubble-translation source-text active' lang='${aiLanguageTag}' data-ai-source-bubble-pending-fingerprint='${fingerprint}' data-ai-source-bubble-request-token='1'>Translating...</div>`,
-                "</div>",
-            ].join("\n"),
-        );
-        $("body").append(testHtml);
-        (window as any).GetSettings = () => ({
-            defaultSourceLanguage: "en",
-            defaultSourceLanguage2: "",
-            currentCollectionLanguage2: "",
-            currentCollectionLanguage3: "",
-            allowAiSourceBubbles: true,
-            aiSourceBubblesLanguageTag: aiLanguageTag,
-        });
-
-        BloomSourceBubbles.MakeSourceTextDivForGroup(
-            $("body").find("#testTarget")[0],
-        );
-
-        const tooltipAiDiv = $("body").find(
-            "#qtip-0 .bloom-ai-source-bubble-translation",
-        );
-        expect(tooltipAiDiv.text()).toBe("Bulan dan Topi");
-        expect(tooltipAiDiv.attr("data-ai-source-bubble-fingerprint")).toBe(
-            fingerprint,
-        );
-        expect(
-            tooltipAiDiv.attr("data-ai-source-bubble-pending-fingerprint"),
-        ).toBeUndefined();
-        expect(
-            tooltipAiDiv.attr("data-ai-source-bubble-request-token"),
-        ).toBeUndefined();
     });
 });

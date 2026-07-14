@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Forms;
-using Bloom.AiSourceBubbles;
+using Bloom.AiTranslation;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Properties;
@@ -53,14 +54,8 @@ namespace Bloom.Collection
         internal bool PendingAllowTeamCollection;
         internal bool PendingAllowAppBuilder;
         internal bool PendingAllowAiSourceBubbles;
-        internal string PendingAiSourceBubblesProviderId;
-        internal string PendingAiSourceBubblesTargetLanguageTag;
-        internal string PendingAiSourceBubblesDeepLApiKey;
-        internal string PendingAiSourceBubblesGoogleServiceAccountEmail;
-        internal string PendingAiSourceBubblesGooglePrivateKey;
-        internal string PendingAiSourceBubblesValidatedConfigurationFingerprint;
-        internal bool PendingAiSourceBubblesLastValidationSucceeded;
-        internal string PendingAiSourceBubblesLastValidationMessage;
+        public string PendingAiTranslationTargetLanguageTag;
+        public List<AiTranslationEngineSettings> PendingAiTranslationEngines;
         internal bool AllowTeamCollectionOptionEnabled = false;
 
         // "Internal" so CollectionSettingsApi can update these.
@@ -134,22 +129,12 @@ namespace Bloom.Collection
             PendingAllowAiSourceBubbles = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kAiSourceBubbles
             );
-            PendingAiSourceBubblesProviderId = AiSourceBubblesService.NormalizeProviderId(
-                _collectionSettings.AiSourceBubblesProviderId
-            );
-            PendingAiSourceBubblesTargetLanguageTag =
-                _collectionSettings.AiSourceBubblesTargetLanguageTag;
-            PendingAiSourceBubblesDeepLApiKey = _collectionSettings.AiSourceBubblesDeepLApiKey;
-            PendingAiSourceBubblesGoogleServiceAccountEmail =
-                _collectionSettings.AiSourceBubblesGoogleServiceAccountEmail;
-            PendingAiSourceBubblesGooglePrivateKey =
-                _collectionSettings.AiSourceBubblesGooglePrivateKey;
-            PendingAiSourceBubblesValidatedConfigurationFingerprint =
-                _collectionSettings.AiSourceBubblesValidatedConfigurationFingerprint;
-            PendingAiSourceBubblesLastValidationSucceeded =
-                _collectionSettings.AiSourceBubblesLastValidationSucceeded;
-            PendingAiSourceBubblesLastValidationMessage =
-                _collectionSettings.AiSourceBubblesLastValidationMessage;
+            PendingAiTranslationTargetLanguageTag =
+                _collectionSettings.AiTranslationTargetLanguageTag;
+            _collectionSettings.EnsureAiTranslationEngines();
+            PendingAiTranslationEngines = _collectionSettings
+                .AiTranslationEngines.Select(engine => engine.Clone())
+                .ToList();
 
             if (
                 !ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
@@ -440,21 +425,11 @@ namespace Bloom.Collection
             UpdateTeamCollectionAllowed();
             UpdateAppBuilderAllowed();
             UpdateAiSourceBubblesAllowed();
-            _collectionSettings.AiSourceBubblesProviderId =
-                AiSourceBubblesService.NormalizeProviderId(PendingAiSourceBubblesProviderId);
-            _collectionSettings.AiSourceBubblesTargetLanguageTag =
-                PendingAiSourceBubblesTargetLanguageTag;
-            _collectionSettings.AiSourceBubblesDeepLApiKey = PendingAiSourceBubblesDeepLApiKey;
-            _collectionSettings.AiSourceBubblesGoogleServiceAccountEmail =
-                PendingAiSourceBubblesGoogleServiceAccountEmail;
-            _collectionSettings.AiSourceBubblesGooglePrivateKey =
-                PendingAiSourceBubblesGooglePrivateKey;
-            _collectionSettings.AiSourceBubblesValidatedConfigurationFingerprint =
-                PendingAiSourceBubblesValidatedConfigurationFingerprint;
-            _collectionSettings.AiSourceBubblesLastValidationSucceeded =
-                PendingAiSourceBubblesLastValidationSucceeded;
-            _collectionSettings.AiSourceBubblesLastValidationMessage =
-                PendingAiSourceBubblesLastValidationMessage;
+            _collectionSettings.AiTranslationTargetLanguageTag =
+                PendingAiTranslationTargetLanguageTag;
+            _collectionSettings.AiTranslationEngines = PendingAiTranslationEngines
+                .Select(engine => engine.Clone())
+                .ToList();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
