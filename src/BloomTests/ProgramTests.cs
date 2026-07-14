@@ -42,6 +42,53 @@ namespace BloomTests
         }
 
         [Test]
+        public void ParseStartupPortArguments_AutomationWithoutAttended_IsUnattended()
+        {
+            Program.ParseStartupPortArguments(new[] { "--automation" }, out var errorMessage);
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(
+                Program.UnattendedAutomation,
+                Is.True,
+                "E2E/CI launches pass plain --automation and must keep the no-human policies"
+            );
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_AttendedAutomation_KeepsHandshakeButIsNotUnattended()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { "--automation", "--attended" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(
+                Program.StartupAutomation,
+                Is.True,
+                "--attended must not disable the ready-handshake/single-instance behaviors"
+            );
+            Assert.That(
+                Program.UnattendedAutomation,
+                Is.False,
+                "a human is present (pnpm go): dialogs must NOT auto-close (bug #16)"
+            );
+            Assert.That(remainingArgs, Is.Empty);
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_AttendedIsResetBetweenParses()
+        {
+            Program.ParseStartupPortArguments(new[] { "--automation", "--attended" }, out _);
+            // Sanity check the flag really was set before we test the reset.
+            Assert.That(Program.UnattendedAutomation, Is.False);
+
+            Program.ParseStartupPortArguments(new[] { "--automation" }, out _);
+
+            Assert.That(Program.UnattendedAutomation, Is.True);
+        }
+
+        [Test]
         public void ParseStartupPortArguments_VitePortAloneDoesNotEnableAutomation()
         {
             Program.ParseStartupPortArguments(

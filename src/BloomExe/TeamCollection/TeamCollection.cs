@@ -104,6 +104,141 @@ namespace Bloom.TeamCollection
             _syncIsRunning = true;
         }
 
+        /// <summary>
+        /// True for backends where a remote change to a book that is safe to apply (not checked
+        /// out here, no local edits that would be clobbered) should be downloaded and swapped in
+        /// automatically, rather than merely reported via a "click Reload/Sync" message. False (the
+        /// default) preserves every folder-TC behavior exactly. See
+        /// <see cref="Cloud.CloudTeamCollection"/>'s override and <see cref="HandleModifiedFile"/>'s
+        /// use of this flag.
+        /// </summary>
+        protected virtual bool CanAutoApplyRemoteChanges => false;
+
+        private RemoteBookAutoApplyQueue _autoApplyQueue;
+        private bool _autoApplyQueueSynchronousForTests;
+
+        /// <summary>
+        /// Lazily-created so a backend that never sets <see cref="CanAutoApplyRemoteChanges"/> true
+        /// (every folder TC) never spins up any queueing machinery at all.
+        /// </summary>
+        private RemoteBookAutoApplyQueue AutoApplyQueue =>
+            _autoApplyQueue ??= new RemoteBookAutoApplyQueue(
+                ProcessAutoApplyRemoteChange,
+                _autoApplyQueueSynchronousForTests ? (Action<Action>)(action => action()) : null
+            );
+
+        /// <summary>
+        /// For testing only. Makes the auto-apply queue's worker run synchronously (on the calling
+        /// thread, immediately, inside Enqueue) instead of via a background task, so a test can
+        /// assert on the outcome of HandleModifiedFile's auto-apply path without needing to wait
+        /// for a real background thread. Must be called before the first book is queued.
+        /// </summary>
+        internal void TestOnly_MakeAutoApplyQueueSynchronous()
+        {
+            _autoApplyQueueSynchronousForTests = true;
+        }
+
+        /// <summary>
+        /// For testing only. Directly invokes the auto-apply worker's eligibility re-verification
+        /// and copy logic for one book, bypassing the queue entirely -- lets a test exercise
+        /// ProcessAutoApplyRemoteChange's behavior for a specific state without needing to win a
+        /// real race between queueing and background processing.
+        /// </summary>
+        internal void TestOnly_ProcessAutoApplyRemoteChange(string bookBaseName)
+        {
+            ProcessAutoApplyRemoteChange(bookBaseName);
+        }
+
+        /// <summary>
+        /// Batch item 7 (progressive join): queues a repo book (by folder name) for background
+        /// download via the same single-consumer queue <see cref="CanAutoApplyRemoteChanges"/>
+        /// backends use to auto-apply remote changes. Used by <see cref="Cloud.CloudJoinFlow"/>
+        /// right after joining (instead of blocking the join on every book's full download) and by
+        /// <see cref="SyncAtStartup"/>'s cloud rerouting for books that are still missing locally.
+        /// A no-op for backends that don't set <see cref="CanAutoApplyRemoteChanges"/> true (every
+        /// folder TC): a folder TC has no use for background-downloading a book with no local
+        /// folder at all, so this simply does nothing rather than spinning up queueing machinery it
+        /// will never need.
+        /// </summary>
+        internal void QueueBookForBackgroundDownload(string bookName)
+        {
+            if (!CanAutoApplyRemoteChanges)
+                return;
+            AutoApplyQueue.Enqueue(bookName);
+        }
+
+        /// <summary>
+        /// Like <see cref="QueueBookForBackgroundDownload"/>, but jumps the book to the front of
+        /// the queue (see <see cref="RemoteBookAutoApplyQueue.EnqueueFront"/>) -- used when the
+        /// user explicitly selects a not-yet-downloaded book, so it arrives before books that were
+        /// only queued in the background.
+        /// </summary>
+        internal void PrioritizeBackgroundDownload(string bookName)
+        {
+            if (!CanAutoApplyRemoteChanges)
+                return;
+            AutoApplyQueue.EnqueueFront(bookName);
+        }
+
+        /// <summary>
+        /// Queues a background download for every repo book that has no local folder and is not
+        /// checked out by the current user. This is the self-healing safety net for the
+        /// progressive-join pipeline (batch item 7): the in-memory download queue does not survive
+        /// a Bloom restart (the join flow's pullDown-then-relaunch pattern, or a crash mid-join),
+        /// and a book the queue somehow dropped would otherwise never be retried, because the poll
+        /// only raises change events for books whose repo state CHANGED since the last poll.
+        /// Called when monitoring starts (right after the startup sync) and again after every
+        /// poll, so any locally-missing repo book is re-queued within one poll interval no matter
+        /// how it was missed. Enqueue's dedupe makes repeat calls cheap and safe.
+        /// Books locked by the CURRENT USER ON THIS MACHINE are skipped: that is the
+        /// local-rename-mid-checkin edge, where the OLD repo name intentionally has no local
+        /// folder and downloading it would resurrect the pre-rename book. Any other lock must NOT
+        /// suppress the download -- a teammate's lock (e2e-4, 10 Jul 2026: an any-lock skip
+        /// turned one transient download failure into "book missing for as long as the teammate
+        /// held the lock") and even the current user's own lock taken on a DIFFERENT machine
+        /// (preflight review finding, same day: the rename edge is machine-local, "checked out
+        /// here" everywhere else in this file means lockedBy AND lockedWhere match, and
+        /// SyncAtStartup happily fetches such a book on restart -- the retry pass must agree
+        /// with it) both describe committed content that is exactly what Receive would fetch.
+        /// </summary>
+        internal void QueueMissingRepoBooksForBackgroundDownload()
+        {
+            if (!CanAutoApplyRemoteChanges)
+                return;
+            foreach (var bookName in GetBookList())
+            {
+                if (Directory.Exists(Path.Combine(_localCollectionFolder, bookName)))
+                    continue;
+                // A repo book with no folder of ITS name but which is a rename of an existing
+                // local book is NOT missing -- downloading it would create a duplicate of that
+                // book under the new name (bug #18). The rename itself is applied by the next
+                // sync's rename-from-remote pass; HandleModifiedFile/HandleNewBook report it.
+                var renamedFrom = NewBookRenamedFrom(bookName);
+                if (renamedFrom != null)
+                {
+                    Logger.WriteEvent(
+                        $"TeamCollection: repo book '{bookName}' is a rename of local book '{renamedFrom}'; not queueing a download."
+                    );
+                    continue;
+                }
+                var lockedBy = WhoHasBookLocked(bookName);
+                if (
+                    !string.IsNullOrEmpty(lockedBy)
+                    && string.Equals(
+                        lockedBy,
+                        CurrentUserIdentity,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                    && WhatComputerHasBookLocked(bookName) == TeamCollectionManager.CurrentMachine
+                )
+                    continue;
+                Logger.WriteEvent(
+                    $"TeamCollection: repo book '{bookName}' has no local folder; queueing background download."
+                );
+                QueueBookForBackgroundDownload(bookName);
+            }
+        }
+
         public TeamCollection(
             ITeamCollectionManager manager,
             string localCollectionFolder,
@@ -149,7 +284,8 @@ namespace Bloom.TeamCollection
             string sourceBookFolderPath,
             BookStatus newStatus,
             bool inLostAndFound = false,
-            Action<float> progressCallback = null
+            Action<float> progressCallback = null,
+            string checkinComment = null
         );
 
         public abstract bool KnownToHaveBeenDeleted(string oldName);
@@ -181,7 +317,7 @@ namespace Bloom.TeamCollection
             }
 
             if (
-                repoStatus.lockedBy == TeamCollectionManager.CurrentUser
+                repoStatus.lockedBy == CurrentUserIdentity
                 && repoStatus.lockedWhere == TeamCollectionManager.CurrentMachine
             )
             {
@@ -195,6 +331,14 @@ namespace Bloom.TeamCollection
                 // the book. We can go ahead.
                 return true;
             }
+
+            // Account-switch takeover (batch item 9): it's locked to someone else, but that lock
+            // is for THIS machine, and this backend allows handing it over instead of blocking.
+            // PutBookInRepo performs the actual server-side handover before this check-in
+            // proceeds, so by the time the repo is touched the lock legitimately belongs to us.
+            if (CanTakeOverLockOnThisMachine(bookName, repoStatus))
+                return true;
+
             // It's checked out somewhere else according to the repo. They haven't changed it yet,
             // but the repo says they have the right to.
             return false;
@@ -282,12 +426,17 @@ namespace Bloom.TeamCollection
         /// <param name="inLostAndFound">If true, put the book into the Lost-and-found folder,
         ///     if necessary generating a unique name for it. If false, put it into the main repo
         ///     folder, overwriting any existing book.</param>
+        /// <param name="checkinComment">The user's "what did you change?" message for a checkin.
+        ///     Folder TCs ignore it (the message travels inside the book's history.db, which is
+        ///     part of the .bloom file), but cloud TCs must send it explicitly because remote
+        ///     users read history from the server's event log, not from history.db.</param>
         /// <returns>Updated book status</returns>
         public BookStatus PutBook(
             string folderPath,
             bool checkin = false,
             bool inLostAndFound = false,
-            Action<float> progressCallback = null
+            Action<float> progressCallback = null,
+            string checkinComment = null
         )
         {
             var bookFolderName = Path.GetFileName(folderPath);
@@ -318,7 +467,7 @@ namespace Bloom.TeamCollection
                 // This is essential for the case when oldName is missing. See BL-16226.
                 status = status.WithOldName(null);
             }
-            PutBookInRepo(folderPath, status, inLostAndFound, progressCallback);
+            PutBookInRepo(folderPath, status, inLostAndFound, progressCallback, checkinComment);
             // If this is true, we're about to delete or overwrite the book, so no point
             // in updating its status (and we never call with this true in regard to a rename).
             if (inLostAndFound)
@@ -490,6 +639,12 @@ namespace Bloom.TeamCollection
 
             if (e.Name == kLastcollectionfilesynctimeTxt)
                 return; // side effect of doing a sync!
+            if (e.Name == TeamCollectionLastKnownUser.FileName)
+                return; // local-only sidecar, written from CheckConnection -- which the idle sync
+            // this handler schedules itself calls, so reacting to it here creates an infinite
+            // idle-loop of network calls that starves the UI thread (found live, 10 Jul 2026).
+            // It must also never be treated as a syncable collection file: it is per-machine
+            // state, not shared content.
             if (Directory.Exists(e.FullPath))
                 return; // we seem to get frequent notifications that seem to be spurious for book folders.
             // We'll wait for the system to be idle before writing to the repo. This helps to ensure things
@@ -514,14 +669,58 @@ namespace Bloom.TeamCollection
 
         /// <summary>
         /// Returns true if the book must be checked out before editing it (etc.),
-        /// that is, if it is NOT already checked out on this machine by this user.
+        /// that is, if it is NOT already editable here (see <see cref="IsEditableHere"/>).
         /// </summary>
         /// <param name="bookFolderPath"></param>
         /// <returns></returns>
         public bool NeedCheckoutToEdit(string bookFolderPath)
         {
-            return !IsCheckedOutHereBy(GetStatus(Path.GetFileName(bookFolderPath)));
+            var bookName = Path.GetFileName(bookFolderPath);
+            return !IsEditableHere(bookName, GetStatus(bookName));
         }
+
+        /// <summary>
+        /// Virtual seam for "is this book editable by the CURRENT user right now" -- deliberately
+        /// distinct from <see cref="IsCheckedOutHereBy(BookStatus, string)"/>, which asks "is it
+        /// checked out by exactly this identity" and is relied on elsewhere (sync-at-startup
+        /// conflict/clobber reconciliation, delete gating, etc.) for a strict identity match that
+        /// must NOT be loosened. The default here is the same strict check. CloudTeamCollection
+        /// overrides it for the account-switch scenario (batch item 9,
+        /// Design/CloudTeamCollections/orchestration/DOGFOOD-BATCH-1.md): a book left checked out
+        /// HERE (this machine) by a DIFFERENT signed-in team member is still editable by the
+        /// current member -- John's decision: "local machine access is unrestricted; only
+        /// shared-data operations are gated by the CURRENT logon's server permissions." The
+        /// server-side lock itself only actually moves to the current user lazily, the first time
+        /// we need to push a change (see CanTakeOverLockOnThisMachine/TryTakeOverLock).
+        /// The bookName parameter lets the cloud override consult per-book state its BookStatus
+        /// doesn't carry (the lock's "seat" — which local copy of the collection holds it; bug #0).
+        /// </summary>
+        protected internal virtual bool IsEditableHere(string bookName, BookStatus status) =>
+            IsCheckedOutHereBy(status);
+
+        /// <summary>
+        /// Virtual seam: true if <paramref name="repoStatus"/> represents a lock this backend is
+        /// willing to atomically hand over to the current user instead of treating it as a
+        /// conflict. The base (folder) implementation never allows this. CloudTeamCollection
+        /// overrides it to allow same-machine, same-seat, different-account takeover (batch
+        /// item 9 + bug #0) -- never across machines or across local collection copies, which
+        /// remain genuine conflicts. Used by both
+        /// <see cref="OkToCheckIn"/> (so an account-switched check-in isn't blocked) and
+        /// <see cref="AttemptLock"/> (so an explicit "check out" click on such a book performs
+        /// the handover instead of silently failing).
+        /// </summary>
+        protected internal virtual bool CanTakeOverLockOnThisMachine(
+            string bookName,
+            BookStatus repoStatus
+        ) => false;
+
+        /// <summary>
+        /// Virtual seam: actually perform the atomic same-machine lock takeover
+        /// <see cref="CanTakeOverLockOnThisMachine"/> judged eligible. Base (folder) does nothing
+        /// (and should never be asked to, since CanTakeOverLockOnThisMachine is always false
+        /// there). Returns true if the current user now holds the lock.
+        /// </summary>
+        protected internal virtual bool TryTakeOverLock(string bookName) => false;
 
         public abstract void DeleteBookFromRepo(string bookFolderPath, bool makeTombstone = true);
 
@@ -557,6 +756,27 @@ namespace Bloom.TeamCollection
         /// A good default, overridden in DisconnectedTeamCollection.
         /// </summary>
         public virtual bool IsDisconnected => false;
+
+        /// <summary>
+        /// True if this backend supports browsing/restoring version history.
+        /// The folder backend returns false; the cloud backend will return true once implemented.
+        /// UI should branch on this flag rather than testing the concrete type.
+        /// </summary>
+        public virtual bool SupportsVersionHistory => false;
+
+        /// <summary>
+        /// True if this backend supports the Sharing panel (approved-accounts management).
+        /// The folder backend returns false; the cloud backend will return true once implemented.
+        /// UI should branch on this flag rather than testing the concrete type.
+        /// </summary>
+        public virtual bool SupportsSharingUi => false;
+
+        /// <summary>
+        /// True if this backend requires the user to be signed in before performing TC operations.
+        /// The folder backend returns false; the cloud backend will return true once implemented.
+        /// UI should branch on this flag rather than testing the concrete type.
+        /// </summary>
+        public virtual bool RequiresSignIn => false;
 
         /// <summary>
         /// Common part of getting book status as recorded in the repo, or if it is not in the repo
@@ -696,14 +916,14 @@ namespace Bloom.TeamCollection
         // Unlock the book, making it available for anyone to edit.
         public void UnlockBook(string bookName)
         {
-            WriteBookStatus(bookName, GetStatus(bookName).WithLockedBy(null));
+            UnlockInRepo(bookName, force: false);
         }
 
         // Lock the book, making it available for the specified user to edit. Return true if successful.
         // We must ensure that the user has registered a valid email address before making the call to the API endpoint which calls this.
         public bool AttemptLock(string bookName, string email = null)
         {
-            var whoBy = email ?? TeamCollectionManager.CurrentUser;
+            var whoBy = email ?? CurrentUserIdentity;
             Debug.Assert(!string.IsNullOrWhiteSpace(whoBy));
 
             var status = GetStatus(bookName);
@@ -714,7 +934,28 @@ namespace Bloom.TeamCollection
                     TeamCollectionManager.CurrentUserFirstName,
                     TeamCollectionManager.CurrentUserSurname
                 );
-                WriteBookStatus(bookName, status);
+                if (!TryLockInRepo(bookName, status))
+                {
+                    // The backend refused the lock (a cloud backend loses the race when someone
+                    // else checked the book out first; the folder backend never refuses). Re-read
+                    // so the status we report below reflects the repo's truth about who holds the
+                    // lock rather than the optimistic lockedBy we stamped above.
+                    status = GetStatus(bookName);
+                }
+            }
+            else if (
+                !IsDisconnected
+                && status.lockedBy != whoBy
+                && CanTakeOverLockOnThisMachine(bookName, status)
+            )
+            {
+                // Account-switch takeover (batch item 9): an explicit "check out" click on a book
+                // that's already editable-here-by-a-different-account (see IsEditableHere)
+                // performs the same atomic server-side handover that PutBookInRepo otherwise does
+                // lazily on first check-in. Re-read afterwards so the return value below reflects
+                // the repo's truth (whether we won the handover or someone else changed it first).
+                if (TryTakeOverLock(bookName))
+                    status = GetStatus(bookName);
             }
 
             // If we succeeded, we definitely want various things to update to show it.
@@ -728,10 +969,41 @@ namespace Bloom.TeamCollection
 
         public void ForceUnlock(string bookName)
         {
-            var status = GetStatus(bookName);
-            status = status.WithLockedBy(null);
-            WriteBookStatus(bookName, status);
+            UnlockInRepo(bookName, force: true);
             UpdateBookStatus(bookName, true);
+        }
+
+        /// <summary>
+        /// Virtual seam for the lock operation. The base (folder) implementation performs a
+        /// read-modify-write of the book status in the repo. Cloud subclasses will override
+        /// this with a single conditional RPC so the checkout is race-free.
+        /// </summary>
+        /// <param name="bookName">The folder name of the book to lock.</param>
+        /// <param name="newStatus">The status object with the lock fields already set.</param>
+        /// <returns>
+        /// True if the lock was successfully recorded; false if the book was already locked
+        /// by someone else (the caller should re-read status to find out who won).
+        /// The folder implementation always returns true because it writes unconditionally.
+        /// </returns>
+        protected virtual bool TryLockInRepo(string bookName, BookStatus newStatus)
+        {
+            WriteBookStatus(bookName, newStatus);
+            return true;
+        }
+
+        /// <summary>
+        /// Virtual seam for the unlock operation. The base (folder) implementation performs a
+        /// read-modify-write of the book status in the repo. Cloud subclasses will override
+        /// this with a single RPC.
+        /// </summary>
+        /// <param name="bookName">The folder name of the book to unlock.</param>
+        /// <param name="force">
+        /// When true the unlock is a forced checkout reversal (admin operation); when false it
+        /// is a normal unlock/undo-checkout.
+        /// </param>
+        protected virtual void UnlockInRepo(string bookName, bool force)
+        {
+            WriteBookStatus(bookName, GetStatus(bookName).WithLockedBy(null));
         }
 
         // Get the email of the user, if any, who has the book locked. Returns null if not locked.
@@ -1259,7 +1531,7 @@ namespace Bloom.TeamCollection
                         var localStatus = GetLocalStatus(Path.GetFileName(path));
                         if (localStatus.lockedBy == TeamCollection.FakeUserIndicatingNewBook)
                             continue;
-                        if (localStatus.IsCheckedOutHereBy(TeamCollectionManager.CurrentUser))
+                        if (localStatus.IsCheckedOutHereBy(CurrentUserIdentity))
                             return true;
                     }
                     catch (Exception)
@@ -1293,7 +1565,7 @@ namespace Bloom.TeamCollection
             }
 
             var status = GetLocalStatus(bookBaseName);
-            if (status.IsCheckedOutHereBy(TeamCollectionManager.CurrentUser))
+            if (status.IsCheckedOutHereBy(CurrentUserIdentity))
             {
                 //Debug.WriteLine("Deleted checked out book: " + bookBaseName);
                 // Argh! Somebody deleted the book I'm working on! This is an error, but Reloading the collection
@@ -1563,6 +1835,16 @@ namespace Bloom.TeamCollection
                             );
                         }
                     }
+                    else if (CanAutoApplyRemoteChanges)
+                    {
+                        // This backend (currently only CloudTeamCollection) applies safe remote
+                        // changes automatically instead of merely reporting them. Queue the actual
+                        // download/swap on a background thread (HandleModifiedFile itself runs at
+                        // Application.Idle, on the UI thread, and cloud downloads can be slow) --
+                        // see ProcessAutoApplyRemoteChange, which re-verifies eligibility before
+                        // touching anything, since state may have moved on by the time it runs.
+                        AutoApplyQueue.Enqueue(bookBaseName);
+                    }
                     else
                     {
                         _tcLog.WriteMessage(
@@ -1579,6 +1861,181 @@ namespace Bloom.TeamCollection
                 // This needs to be AFTER we update the message log, data which it may use.
                 UpdateBookStatus(bookBaseName, true);
             }
+        }
+
+        /// <summary>
+        /// A hook for backends that can preserve a doomed local copy before a sync overwrites it
+        /// (cloud saves a .bloomSource to Lost and Found and logs an incident; see
+        /// CloudTeamCollection's override). Base implementation does nothing: folder TCs never
+        /// reach the call sites (auto-apply and cloud Receive Updates are cloud-only paths).
+        /// </summary>
+        protected virtual void PreserveLocalCopyForRecoveryBeforeOverwrite(
+            string bookFolderName
+        ) { }
+
+        /// <summary>
+        /// John's recovery decision (9 Jul 2026, dogfood batch item 8): when a sync is about to
+        /// replace the local copy of a book with the repo version, but the local copy has somehow
+        /// changed since the last sync (rare -- e.g. a force-stolen checkout that was edited, or
+        /// unexplained local drift), we still go ahead and make local consistent with the Team
+        /// Collection, but FIRST preserve the previous local content so nothing is silently lost.
+        /// "Changed since the last sync" is a pure content comparison (current checksum vs the
+        /// checksum the local status recorded), deliberately NOT gated on checked-out-here: cloud
+        /// checkouts never write the local status file, which is exactly why the older
+        /// HasLocalChangesThatMustBeClobbered gate can't see this case (tasks/09-e2e.md, E2E-4).
+        /// </summary>
+        public void PreserveLocalCopyIfModifiedSinceLastSync(string bookFolderName)
+        {
+            var bookPath = Path.Combine(_localCollectionFolder, bookFolderName);
+            if (!Directory.Exists(bookPath))
+                return; // nothing local to preserve
+            var currentChecksum = MakeChecksum(bookPath);
+            if (string.IsNullOrEmpty(currentChecksum))
+                return; // can't checksum it (e.g. no .htm); nothing meaningful to preserve
+            // A missing/empty recorded checksum counts as "modified": a local folder the sync
+            // never recorded is exactly the kind of content we must not silently discard.
+            if (currentChecksum == GetLocalStatus(bookFolderName).checksum)
+                return; // unchanged since last sync; overwriting loses nothing
+            PreserveLocalCopyForRecoveryBeforeOverwrite(bookFolderName);
+        }
+
+        /// <summary>
+        /// Runs on a background thread (see <see cref="AutoApplyQueue"/> and
+        /// <see cref="CanAutoApplyRemoteChanges"/>): re-verifies that it is still safe to apply this
+        /// book's remote change -- the state at the time this runs may differ from the state at the
+        /// time HandleModifiedFile queued it, since queueing and processing happen at different
+        /// times -- and if so, downloads and atomically swaps in the new content
+        /// (CopyBookFromRepoToLocal already stages to a temp folder and swaps via directory
+        /// renames, so there is no user-visible half-written state). On success, updates the book's
+        /// status icon and, if this book is the one currently selected, tells the preview to
+        /// refresh so the user sees the new content without reselecting. On failure, or if the book
+        /// is no longer eligible, falls back to exactly the same NewStuff message an
+        /// auto-apply-incapable backend (e.g. a folder TC) would have written instead.
+        ///
+        /// Batch item 7 (progressive join): this same queue also carries books that have NO local
+        /// folder at all yet (queued by <see cref="QueueBookForBackgroundDownload"/> from
+        /// <see cref="Cloud.CloudJoinFlow"/> or <see cref="SyncAtStartup"/>'s cloud rerouting).
+        /// That case is simpler -- there's no existing local content to re-verify eligibility
+        /// against or protect -- so it's handled by <see cref="DownloadMissingBookInBackground"/>
+        /// instead of the auto-apply re-verification below.
+        /// </summary>
+        private void ProcessAutoApplyRemoteChange(string bookBaseName)
+        {
+            if (!Directory.Exists(Path.Combine(_localCollectionFolder, bookBaseName)))
+            {
+                DownloadMissingBookInBackground(bookBaseName);
+                return;
+            }
+
+            // Re-verify eligibility: none of these should be true, or auto-applying now would be
+            // wrong -- e.g. the user might have checked the book out here, or a conflicting local
+            // edit might have appeared, since this book was queued.
+            if (
+                !HasBeenChangedRemotely(bookBaseName)
+                || IsCheckedOutHereBy(GetLocalStatus(bookBaseName))
+                || HasLocalChangesThatMustBeClobbered(bookBaseName)
+                || HasCheckoutConflict(bookBaseName)
+            )
+                return; // no longer (or not yet) safe/needed; leave it for the normal handling
+
+            // Batch item 8: if the local copy somehow changed since the last sync (e.g. a
+            // force-stolen checkout that had local edits -- a case the eligibility gates above
+            // cannot see for cloud, since cloud checkouts don't write the local status file),
+            // preserve it before the swap below discards it.
+            PreserveLocalCopyIfModifiedSinceLastSync(bookBaseName);
+
+            var error = CopyBookFromRepoToLocal(bookBaseName);
+            if (error != null)
+            {
+                // Fall back to exactly the message-only path so the user at least knows to Sync/Reload.
+                _tcLog.WriteMessage(
+                    MessageAndMilestoneType.NewStuff,
+                    "TeamCollection.BookModifiedRemotely",
+                    "One of your teammates has made changes to the book '{0}'",
+                    bookBaseName,
+                    null
+                );
+                UpdateBookStatus(bookBaseName, true);
+                return;
+            }
+
+            UpdateBookStatus(bookBaseName, true);
+
+            // If the book we just updated is the one currently selected, refresh the preview so the
+            // user sees the new content without having to reselect the book.
+            var selectedFolder = _tcManager?.BookSelection?.CurrentSelection?.FolderPath;
+            if (
+                !string.IsNullOrEmpty(selectedFolder)
+                && string.Equals(
+                    Path.GetFileName(selectedFolder),
+                    bookBaseName,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            {
+                _tcManager.SendBookContentReload();
+            }
+        }
+
+        /// <summary>
+        /// Batch item 7 (progressive join): downloads a repo book that has no local folder at all
+        /// yet (queued by <see cref="QueueBookForBackgroundDownload"/>/<see cref="PrioritizeBackgroundDownload"/>,
+        /// e.g. right after joining a cloud collection, or by <see cref="SyncAtStartup"/>'s cloud
+        /// rerouting for a half-joined collection's next open). Unlike
+        /// <see cref="ProcessAutoApplyRemoteChange"/>'s re-verification, there is no existing local
+        /// content to check eligibility against or protect -- the only thing that could have
+        /// changed since queueing is that the book itself vanished from the repo (e.g. deleted
+        /// before its background download ran), which <see cref="IsBookPresentInRepo"/> catches.
+        /// On success, invalidates the cached book list and tells the collection-tab UI to reload
+        /// it so the not-yet-downloaded placeholder (see CollectionApi.HandleBooksRequest) swaps
+        /// for the real book button.
+        /// </summary>
+        private void DownloadMissingBookInBackground(string bookBaseName)
+        {
+            if (!IsBookPresentInRepo(bookBaseName))
+            {
+                // Usually the book was deleted/renamed remotely between queueing and now; but a
+                // cache problem would look identical, so never skip SILENTLY (the first post-batch
+                // full matrix, 10 Jul 2026, lost a book to an undiagnosable silent drop here --
+                // this log line plus the QueueMissingRepoBooksForBackgroundDownload retry pass are
+                // the fix).
+                Logger.WriteEvent(
+                    $"Background download of '{bookBaseName}' skipped: the current repo cache does not list it (deleted remotely, renamed, or a cache problem)."
+                );
+                return;
+            }
+
+            // Guard against the queued-before-the-rename-landed race (bug #18): by the time this
+            // runs, the "missing" repo book may have turned out to be a rename of an existing
+            // local book -- downloading it would duplicate that book under its new name. (After
+            // the presence check on purpose: rename detection reads the repo book's meta.json,
+            // which a repo-deleted book no longer has.)
+            var renamedFrom = NewBookRenamedFrom(bookBaseName);
+            if (renamedFrom != null)
+            {
+                Logger.WriteEvent(
+                    $"Background download of '{bookBaseName}' skipped: it is a rename of the local book '{renamedFrom}' (applied at the next sync)."
+                );
+                return;
+            }
+
+            var error = CopyBookFromRepoToLocal(bookBaseName);
+            if (error != null)
+            {
+                Logger.WriteEvent(
+                    $"Background download of new book '{bookBaseName}' failed: {error}"
+                );
+                return;
+            }
+            Logger.WriteEvent($"Background download of new book '{bookBaseName}' completed.");
+            UpdateBookStatus(bookBaseName, true);
+
+            // Swap the placeholder for the real book button: the JSON collections/books merge
+            // (CollectionApi.HandleBooksRequest) only shows a placeholder while GetBookInfos()
+            // finds no matching local folder, so the cached book list must be invalidated before
+            // the client re-fetches it.
+            _bookCollectionHolder?.TheOneEditableCollection?.InvalidateBookList();
+            SocketServer?.SendEvent("editableCollectionList", "reload:" + _localCollectionFolder);
         }
 
         /// <summary>
@@ -1669,10 +2126,17 @@ namespace Bloom.TeamCollection
         /// that does not occur locally, can we determine that it is a rename
         /// of a local book? If so, return the book it is renamed from,
         /// otherwise, return null.
+        /// Virtual (bug #18, 13 Jul 2026): this base implementation's "has repo status =>
+        /// can't be the rename source" heuristic assumes name-keyed status, which is true for
+        /// folder TCs (unchanged) but inverted for CloudTeamCollection's identity-first
+        /// resolution -- there the OLD-name folder resolving to a (renamed) repo row is exactly
+        /// what marks it as the rename source, so the cloud backend overrides this with an
+        /// exact instance-id comparison. protected INTERNAL only so tests can exercise the
+        /// overrides directly.
         /// </summary>
         /// <param name="newBookName"></param>
         /// <returns></returns>
-        private string NewBookRenamedFrom(string newBookName)
+        protected internal virtual string NewBookRenamedFrom(string newBookName)
         {
             var meta = GetRepoBookFile(newBookName, "meta.json");
             if (string.IsNullOrEmpty(meta) || meta == "error")
@@ -1883,6 +2347,40 @@ namespace Bloom.TeamCollection
             }
         }
 
+        /// <summary>
+        /// Deletes per-book and per-collection artifacts left behind by a Team Collection that
+        /// this local collection folder used to belong to (typically a folder-based TC the user
+        /// has since disconnected from -- "un-teamed" -- by removing TeamCollectionLink.txt, but
+        /// whose local files were never cleaned up). Called before converting a plain local
+        /// collection into a fresh cloud Team Collection
+        /// (<see cref="TeamCollectionManager.ConnectToCloudCollection"/>), so the very first
+        /// upload of each book starts from a clean slate rather than carrying over a stale
+        /// checksum or lockedBy value from the old TC: <see cref="PutBook"/>/<see cref="GetStatus"/>
+        /// fall back to local status whenever the repo has no record for a book yet, which is
+        /// true for every book in the collection on its first cloud Send.
+        /// Deliberately does NOT touch TeamCollectionLink.txt -- callers decide separately
+        /// whether an existing link is a conflict that should block the conversion entirely.
+        /// Safe to call on a collection that was never a Team Collection (no matching files
+        /// found, so this is a no-op).
+        /// </summary>
+        public static void CleanStaleTeamCollectionArtifacts(string localCollectionFolder)
+        {
+            foreach (var bookFolder in Directory.EnumerateDirectories(localCollectionFolder))
+            {
+                var statusFile = GetStatusFilePathFromBookFolderPath(bookFolder);
+                if (RobustFile.Exists(statusFile))
+                    RobustFile.Delete(statusFile);
+            }
+
+            var lastSyncFile = Path.Combine(localCollectionFolder, kLastcollectionfilesynctimeTxt);
+            if (RobustFile.Exists(lastSyncFile))
+                RobustFile.Delete(lastSyncFile);
+
+            var logFile = Path.Combine(localCollectionFolder, "log.txt");
+            if (RobustFile.Exists(logFile))
+                RobustFile.Delete(logFile);
+        }
+
         internal BookStatus GetLocalStatus(string bookFolderName, string collectionFolder = null)
         {
             var statusFilePath = GetStatusFilePath(
@@ -1928,11 +2426,21 @@ namespace Bloom.TeamCollection
         /// <returns></returns>
         internal bool IsCheckedOutHereBy(BookStatus status, string email = null)
         {
-            var whoBy = email ?? TeamCollectionManager.CurrentUser;
+            var whoBy = email ?? CurrentUserIdentity;
             if (whoBy == null)
                 return false;
             return status.IsCheckedOutHereBy(whoBy);
         }
+
+        /// <summary>
+        /// The identity that checkout ownership is compared against (and stamped with, absent an
+        /// explicit email). Folder TCs use Bloom's registration email, as always. The cloud
+        /// backend overrides this with the signed-in ACCOUNT email: the server stamps locks from
+        /// the auth token, so comparing against anything else calls the user's own checkout
+        /// someone else's — which is exactly what disabled editing in the first two-instance
+        /// smoke test (registration john_thomson@sil.org vs lock owner alice@dev.local).
+        /// </summary>
+        protected internal virtual string CurrentUserIdentity => TeamCollectionManager.CurrentUser;
 
         bool IsBloomBookFolder(string folderPath)
         {
@@ -2175,7 +2683,7 @@ namespace Bloom.TeamCollection
                             continue;
                         // It's now missing from the repo. Explore more options.
                         if (
-                            statusLocal.lockedBy == TeamCollectionManager.CurrentUser
+                            statusLocal.lockedBy == CurrentUserIdentity
                             && statusLocal.lockedWhere == TeamCollectionManager.CurrentMachine
                         )
                         {
@@ -2309,25 +2817,51 @@ namespace Bloom.TeamCollection
                             continue;
                         }
 
-                        // brand new book! Get it.
-                        hasProblems |= !CopyBookFromRepoToLocalAndReport(
-                            progress,
-                            bookName,
-                            () =>
+                        if (CanAutoApplyRemoteChanges)
+                        {
+                            // Cloud (batch item 7, progressive join): don't block the startup
+                            // sync dialog waiting for a full download here -- hand it to the same
+                            // background queue CloudJoinFlow uses for a fresh join and
+                            // HandleModifiedFile uses to auto-apply remote changes, so a
+                            // half-joined collection's next open stays fast and downloads keep
+                            // resuming in the background (DownloadMissingBookInBackground).
+                            // Folder TCs (CanAutoApplyRemoteChanges is always false there) are
+                            // completely unaffected -- they keep the original synchronous fetch
+                            // in the else branch below.
+                            QueueBookForBackgroundDownload(bookName);
+                            if (!remotelyRenamedBooks.Contains(bookName))
                             {
-                                if (!remotelyRenamedBooks.Contains(bookName))
-                                {
-                                    // Report the new book, unless we already reported it as a rename.
-                                    ReportProgressAndLog(
-                                        progress,
-                                        ProgressKind.Progress,
-                                        "FetchedNewBook",
-                                        "Fetching a new book '{0}' from the Team Collection",
-                                        bookName
-                                    );
-                                }
+                                ReportProgressAndLog(
+                                    progress,
+                                    ProgressKind.Progress,
+                                    "FetchingNewBookInBackground",
+                                    "The book '{0}' will finish downloading in the background",
+                                    bookName
+                                );
                             }
-                        );
+                        }
+                        else
+                        {
+                            // brand new book! Get it.
+                            hasProblems |= !CopyBookFromRepoToLocalAndReport(
+                                progress,
+                                bookName,
+                                () =>
+                                {
+                                    if (!remotelyRenamedBooks.Contains(bookName))
+                                    {
+                                        // Report the new book, unless we already reported it as a rename.
+                                        ReportProgressAndLog(
+                                            progress,
+                                            ProgressKind.Progress,
+                                            "FetchedNewBook",
+                                            "Fetching a new book '{0}' from the Team Collection",
+                                            bookName
+                                        );
+                                    }
+                                }
+                            );
+                        }
 
                         continue;
                     }
@@ -2728,10 +3262,13 @@ namespace Bloom.TeamCollection
 
         /// <summary>
         /// Main entry point called before creating CollectionSettings; updates local folder to match
-        /// repo one, if any. Not unit tested, as it mainly handles wrapping SyncAtStartup with a
-        /// progress dialog.
+        /// repo one, if any. The real implementation itself isn't unit tested (it mainly handles
+        /// wrapping SyncAtStartup with a progress dialog), but it's virtual so a test-only
+        /// subclass can override it to pin down WorkspaceModel.HandleTeamStuffBeforeGetBookCollections'
+        /// call-ordering around it (see the "tier-timing" fix's ordering tests) without ever
+        /// showing a real dialog.
         /// </summary>
-        public void SynchronizeRepoAndLocal(Action whenDone = null)
+        public virtual void SynchronizeRepoAndLocal(Action whenDone = null)
         {
             Analytics.Track(
                 "TeamCollectionOpen",

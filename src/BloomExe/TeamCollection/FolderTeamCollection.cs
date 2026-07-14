@@ -90,11 +90,14 @@ namespace Bloom.TeamCollection
         ///     if necessary generating a unique name for it. If false, put it into the main repo
         ///     folder, overwriting any existing book.</param>
         /// <returns>The book's new status, with the new VersionCode</returns>
+        // checkinComment is unused here: for folder TCs the message is already inside the
+        // book's history.db, which travels within the .bloom file we are about to write.
         protected override void PutBookInRepo(
             string sourceBookFolderPath,
             BookStatus status,
             bool inLostAndFound = false,
-            Action<float> progressCallback = null
+            Action<float> progressCallback = null,
+            string checkinComment = null
         )
         {
             var bookFolderName = Path.GetFileName(sourceBookFolderPath);

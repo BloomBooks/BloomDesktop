@@ -60,7 +60,8 @@ namespace Bloom.TeamCollection
             string sourceBookFolderPath,
             BookStatus newStatus,
             bool inLostAndFound = false,
-            Action<float> progressCallback = null
+            Action<float> progressCallback = null,
+            string checkinComment = null
         )
         {
             throw new NotImplementedException();

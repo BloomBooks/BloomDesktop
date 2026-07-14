@@ -25,8 +25,15 @@ namespace Bloom.History
         SyncProblem,
         Deleted,
         Moved, // Moved from one collection to another
+
         // NB: add them here, too: teamCollection\CollectionHistoryTable.tsx
         // and also add them to EventTypeEnumerationIsStable() in History\HistoryEventTests.cs
+
+        // Cloud Team Collection incident events start at 100 so that ordinary events added
+        // above (always at the end, before 100) can never collide with them. These numeric
+        // values are shared with the server's tc.events.type check constraint
+        // (supabase/migrations) — keep the two in sync.
+        WorkPreservedLocally = 100, // local work saved to Lost & Found as a .bloomSource
     }
 
     /// <summary>
