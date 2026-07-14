@@ -1512,7 +1512,7 @@
         <note>ID: EditTab.DirectFormatting.Underline</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
       </trans-unit>
-      <trans-unit id="EditTab.DirectFormatting.RemoveFormat" sil:dynamic="true">
+      <trans-unit id="EditTab.DirectFormatting.RemoveFormat" sil:dynamic="true" translate="no">
         <source xml:lang="en">Remove Formatting</source>
         <note>ID: EditTab.DirectFormatting.RemoveFormat</note>
         <note>Tooltip for the "clear formatting" button in the panel that pops up when the user selects more than one character in a textbox. Clicking it strips bold/italic/underline/superscript/color from the selection.</note>
