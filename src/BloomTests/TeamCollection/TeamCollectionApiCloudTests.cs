@@ -348,6 +348,61 @@ namespace BloomTests.TeamCollection
             Assert.That(json["whoSurname"].Type, Is.EqualTo(JTokenType.Null));
         }
 
+        // Dogfood follow-up (14 Jul 2026): clearing the name fields (test above) fixed the
+        // "checked out to John1" text, but left a new local book's avatar showing a single-letter,
+        // email-tooltip badge (A / bob@dev.local) while a real checkout by the same user showed
+        // initials + the display name (BH / Bob Helper). The status must carry the account's
+        // display name so both look the same. Here members_list resolves it, unlike the test above
+        // where the fake returns no usable member row (so CurrentUserDisplayName is null and the
+        // fields fall back to the email).
+        [Test]
+        public void AddCloudBookStatusFields_NewLocalBook_UsesAccountDisplayNameForAvatar()
+        {
+            _executor.Handler = req =>
+            {
+                if (req.Resource == "rest/v1/rpc/members_list")
+                    return FakeResponses.Make(
+                        HttpStatusCode.OK,
+                        new JArray(
+                            new JObject
+                            {
+                                ["id"] = 1,
+                                ["email"] = "bob@dev.local",
+                                ["display_name"] = "Bob Helper",
+                                ["role"] = "editor",
+                                ["user_id"] = "user-bob",
+                            }
+                        ).ToString()
+                    );
+                // get_collection_state (hydration) and anything else.
+                return FakeResponses.Make(
+                    HttpStatusCode.OK,
+                    new JObject
+                    {
+                        ["books"] = new JArray(),
+                        ["groups"] = new JArray(),
+                        ["max_event_id"] = 1,
+                    }.ToString()
+                );
+            };
+            EnsureCloudCollection().IsBookPresentInRepo("force hydration");
+            _auth.SignIn("bob@dev.local", "irrelevant");
+            const string original =
+                "{\"who\":\"bob@dev.local\",\"whoFirstName\":\"John\",\"whoSurname\":\"One\","
+                + "\"currentUser\":\"bob@dev.local\",\"isNewLocalBook\":true}";
+
+            var result = _api.AddCloudBookStatusFields(original, "Some Brand New Book");
+
+            var json = JObject.Parse(result);
+            Assert.That(
+                (string)json["whoFirstName"],
+                Is.EqualTo("Bob Helper"),
+                "a new local book's avatar should use the account's display name, not the email"
+            );
+            Assert.That(json["whoSurname"].Type, Is.EqualTo(JTokenType.Null));
+            Assert.That((string)json["currentUserName"], Is.EqualTo("Bob Helper"));
+        }
+
         [Test]
         public void AddCloudBookStatusFields_WhoIsAnotherMember_LeavesWhoAndNamesAlone()
         {

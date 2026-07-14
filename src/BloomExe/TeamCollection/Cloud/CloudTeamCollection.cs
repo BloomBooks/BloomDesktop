@@ -147,6 +147,56 @@ namespace Bloom.TeamCollection.Cloud
         protected internal override string CurrentUserIdentity =>
             _auth?.CurrentEmail ?? base.CurrentUserIdentity;
 
+        private string _currentUserDisplayName;
+        private bool _currentUserDisplayNameResolved;
+
+        /// <summary>
+        /// The signed-in account's admin-editable display name (tc.members.display_name), e.g.
+        /// "Alice Admin", or null when signed out / not yet resolvable. Used so a brand-new
+        /// local book's avatar shows the same initials + full name as a real checkout by this
+        /// user (dogfood bug: new local books showed a single-letter, email-tooltip avatar while
+        /// real checkouts showed "AA"/"Alice Admin"). Resolved lazily from MembersList and cached
+        /// for the session; a null result is NOT cached, so a call that happens before sign-in or
+        /// during a transient failure retries later. Not refreshed after a successful resolve --
+        /// display-name changes are rare and the avatar is cosmetic. Callers fall back to the
+        /// email when this is null, matching prior behavior.
+        /// </summary>
+        protected internal virtual string CurrentUserDisplayName
+        {
+            get
+            {
+                if (_currentUserDisplayNameResolved)
+                    return _currentUserDisplayName;
+                var email = _auth?.CurrentEmail;
+                if (string.IsNullOrEmpty(email))
+                    return null;
+                try
+                {
+                    foreach (var member in _client.MembersList(CollectionId).OfType<JObject>())
+                    {
+                        if (
+                            string.Equals(
+                                (string)member["email"],
+                                email,
+                                StringComparison.OrdinalIgnoreCase
+                            )
+                        )
+                        {
+                            _currentUserDisplayName = (string)member["display_name"];
+                            break;
+                        }
+                    }
+                    _currentUserDisplayNameResolved = true;
+                }
+                catch
+                {
+                    // Network/permission hiccup; leave unresolved so a later call can retry.
+                    return null;
+                }
+                return _currentUserDisplayName;
+            }
+        }
+
         // ------------------------------------------------------------------
         // Accessors for task 06 (SharingApi / TeamCollectionApi): thin, read-only exposure of
         // this collection's own auth/client/cache state, so those API classes can be simple

@@ -943,18 +943,22 @@ namespace Bloom.TeamCollection
                 }
                 json["currentUser"] = accountEmail;
                 // Same identity rule for the avatar dialog's display name (base stamps the
-                // registration first name).
-                json["currentUserName"] = accountEmail;
+                // registration first name). Prefer the account's admin-editable display name
+                // (e.g. "Alice Admin"); fall back to the email when it isn't resolvable.
+                json["currentUserName"] = cloudCollection.CurrentUserDisplayName ?? accountEmail;
             }
             // A new/local-only book's whoFirstName/whoSurname come from the REGISTRATION name
             // (base WhoHasBookLockedFirstName's FakeUserIndicatingNewBook branch), and the
             // status panel/book buttons prefer those name fields over `who` -- so such books
             // displayed as "checked out to John1" even though `who` already carried the account
             // identity (bug #17's real culprit; the who-rewrite above only covers a signed-out
-            // registration leak). Clear them so the display falls back to `who`.
+            // registration leak). Replace them with the current account's display name so the
+            // avatar shows the same initials + full name as a real checkout by this user (e.g.
+            // "AA"/"Alice Admin"); when the display name isn't resolvable this leaves whoFirstName
+            // null, so the display falls back to `who` (the account email) exactly as before.
             if ((bool?)json["isNewLocalBook"] == true)
             {
-                json["whoFirstName"] = null;
+                json["whoFirstName"] = cloudCollection.CurrentUserDisplayName;
                 json["whoSurname"] = null;
             }
             if (bookFolderName != null)
