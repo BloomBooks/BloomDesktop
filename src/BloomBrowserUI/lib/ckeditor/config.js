@@ -129,9 +129,10 @@ CKEDITOR.editorConfig = function(config) {
     // The others are required dependencies of colorbutton.
     // Note that the BGColor button that comes by default with the colorbutton plugin
     // is removed in the config.removeButtons list above.
-    // Add removeformat so that Ctrl+Space can "clear formatting" (see AddEditKeyHandlers in
-    // bloomEditing.ts). Our trimmed copy of that plugin registers only the removeFormat command,
-    // not a toolbar button, so it needs no icon or language files.
+    // Add removeformat so that Ctrl+Space (see AddEditKeyHandlers in bloomEditing.ts) and the
+    // "Remove Formatting" toolbar button can "clear formatting". Our trimmed copy of that plugin
+    // registers the removeFormat command and the toolbar button (with its icon), but ships no
+    // language files: the button's tooltip is localized by Bloom in localizeCkeditorTooltips().
     CKEDITOR.config.extraPlugins =
         "autolink,panel,panelbutton,button,floatpanel,colorbutton,removeformat";
 
