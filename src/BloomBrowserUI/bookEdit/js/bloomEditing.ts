@@ -1466,10 +1466,8 @@ export function getBodyContentForSavePage() {
     return result;
 }
 
-// Grow each text canvas element (bloom-canvas-element) to fit its content, matching what the editor
-// does automatically when a page is opened. (Despite the "grow" in the name, this fits to content in
-// BOTH directions -- it will also shrink a box that was authored taller than its text -- which is
-// exactly what the editor's auto-grow does; "grow" just names the case that motivated the fix.)
+// Resize each text canvas element (bloom-canvas-element) to fit its content -- growing or shrinking
+// the box -- matching what the editor does automatically when a page is opened.
 //
 // On page load the editor schedules this same auto-height adjustment for every editable
 // (OverflowChecker.AddOverflowHandlers -> AdjustSizeOrMarkOverflowSoon), but that runs on a 1000ms
@@ -1485,8 +1483,8 @@ export function getBodyContentForSavePage() {
 // OverflowChecker.AdjustSizeOrMarkOverflow) so we only resize the box and don't add page-level
 // overflow markup or qtip debris to the captured DOM. Callers run this on the fully settled layout
 // (after the activeDelays wait), so text measurements reflect the final image sizing and fonts.
-function growTextCanvasElementsToFitContent(): void {
-    // Never throws out: this runs inside finish()'s try/catch, and a failure to grow must not
+function resizeCanvasElementsToFitContent(): void {
+    // Never throws out: this runs inside finish()'s try/catch, and a failure to resize must not
     // block capturing/saving the page (same contract as the fitImageTextSplits block). If it
     // threw, the whole page capture would be abandoned -- strictly worse than falling back to the
     // authored height. So we self-guard and degrade to "capture without the resize" on any error.
@@ -1513,7 +1511,7 @@ function growTextCanvasElementsToFitContent(): void {
             );
         }
     } catch (e) {
-        console.error("growTextCanvasElementsToFitContent failed: ", e);
+        console.error("resizeCanvasElementsToFitContent failed: ", e);
     }
 }
 
@@ -1524,8 +1522,8 @@ function growTextCanvasElementsToFitContent(): void {
 // combined result on window.__bloomExternalPageContent for the C# caller to poll. Like
 // requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, up to
 // kMaxWaitTimeMs, so browser-based measurements (image sizing, canvas-element layout, etc.) are complete
-// before we capture the page. It also grows text canvas elements to fit their content (see
-// growTextCanvasElementsToFitContent), since that auto-height adjustment is otherwise deferred on a
+// before we capture the page. It also resizes text canvas elements to fit their content (see
+// resizeCanvasElementsToFitContent), since that auto-height adjustment is otherwise deferred on a
 // timer the wait loop does not track.
 export function captureContentForExternalProcessing(
     fitImageTextSplits?: boolean,
@@ -1559,7 +1557,7 @@ export function captureContentForExternalProcessing(
     const start = Date.now();
     const finish = () => {
         try {
-            growTextCanvasElementsToFitContent();
+            resizeCanvasElementsToFitContent();
             window.__bloomExternalPageContent =
                 extractAndStripPageContentForSave();
         } catch (e) {
