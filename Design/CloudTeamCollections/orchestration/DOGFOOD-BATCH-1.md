@@ -699,6 +699,30 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 14 Jul 2026 (John pausing — low Fable credits; preflight kicked off) · All instances
+  closed; full required filter 459/459 (includes bug #17-round-2's new test, previously
+  unrun). origin/master merged into cloud-collections (clean, 17 files, f5a00c1cae) and
+  cloud-tc-for-review REGENERATED per SQUASH-PLAN (same 9 review-grained commits, head
+  8ac48df0db, byte-identity verified — empty diff vs cloud-collections), force-pushed;
+  PR #8052 now MERGEABLE at the new head with all dogfood fixes through bug #18.
+  Bot gauntlet triggered: pr-automation (Devin) run 29341744792 in progress;
+  @greptile-apps review comment posted (246 files > auto limit). Regeneration gotcha
+  recorded: the identity check REQUIRES cloud-collections to be up to date with
+  origin/master first (stale master files otherwise show as diff; one BloomExe.csproj
+  merge artifact forced a second rebuild — cheap). Also: bash scripting note — $GROUPS is
+  a readonly bash builtin; don't use it as a variable name (cost one puzzled retry).
+  NEXT (when agent returns): gather Devin/Greptile findings from PR #8052 and
+  triage/fix; then remaining [HUMAN] items. FOR JOHN meanwhile (no agent needed):
+  (1) restart Bob → verify new/local-only books now say bob@dev.local (bug #17 fix);
+  (2) rename round-trip retest: Bob checkout → retitle → check in → Alice should get ONE
+  renamed folder (bug #18 fix), watch for the "renamed by a teammate" message;
+  (3) display names: set names via the Sharing-panel pencil and verify "checked out to
+  <name>" + history show them; (4) item 10 [HUMAN]: real Bloom Library web
+  upload/download (AWSSDK v4 validation, GOING-LIVE.md 4.3); (5) decide bug #0 follow-up
+  (server-side refusal of same-user cross-seat check-in?) and bug #13 UX (Send All
+  discoverability); (6) if Alice's "My first test" blocks editing (lock carries the
+  OneDrive seat), admin Force Unlock from the Status panel; (7) housekeeping when done:
+  restore sleep timeouts (powercfg /change standby-timeout-ac 120; standby-timeout-dc 3).
 - 13 Jul 2026 (Sunday PM #2 — **member display names**, John's request, CODE + SQL TESTS
   DONE; bug #14 found+fixed) · "Show who has a book checked out (and similar) by a
   human-readable name, email as fallback; admins edit the name in the Sharing panel."
