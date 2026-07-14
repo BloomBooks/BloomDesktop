@@ -1484,17 +1484,26 @@ export function getBodyContentForSavePage() {
 // overflow markup or qtip debris to the captured DOM. Callers run this on the fully settled layout
 // (after the activeDelays wait), so text measurements reflect the final image sizing and fonts.
 function growTextCanvasElementsToFitContent(): void {
-    const canvasEditables = Array.from(
-        document.querySelectorAll<HTMLElement>(
-            `${kCanvasElementSelector} .bloom-editable.bloom-visibility-code-on`,
-        ),
-    );
-    for (const editable of canvasEditables) {
-        const [, overflowY] = OverflowChecker.getSelfOverflowAmounts(editable);
-        theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
-            editable,
-            overflowY,
+    // Never throws out: this runs inside finish()'s try/catch, and a failure to grow must not
+    // block capturing/saving the page (same contract as the fitImageTextSplits block). If it
+    // threw, the whole page capture would be abandoned -- strictly worse than falling back to the
+    // authored height. So we self-guard and degrade to "capture without the resize" on any error.
+    try {
+        const canvasEditables = Array.from(
+            document.querySelectorAll<HTMLElement>(
+                `${kCanvasElementSelector} .bloom-editable.bloom-visibility-code-on`,
+            ),
         );
+        for (const editable of canvasEditables) {
+            const [, overflowY] =
+                OverflowChecker.getSelfOverflowAmounts(editable);
+            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
+                editable,
+                overflowY,
+            );
+        }
+    } catch (e) {
+        console.error("growTextCanvasElementsToFitContent failed: ", e);
     }
 }
 
