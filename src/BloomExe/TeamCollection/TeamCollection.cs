@@ -2595,6 +2595,65 @@ namespace Bloom.TeamCollection
                         bookFolderName,
                         _localCollectionFolder
                     );
+
+                    // Remote rename under identity-first resolution (cloud; bug B). The rename
+                    // branch further down only runs when statusJson == null (a folder TC's renamed
+                    // book has no repo file under its OLD name). But a cloud TC resolves a local
+                    // folder to its repo row by the meta.json INSTANCE ID, so the old-name folder
+                    // still gets a non-null status -- and that branch is skipped, leaving the folder
+                    // un-renamed while a later pass downloads the new name as a SECOND folder with
+                    // the same instance id (John's live report, 14 Jul 2026). Detect it here by
+                    // instance id: the repo has this book under a DIFFERENT name with no local
+                    // folder by that new name. Rename the local folder IN PLACE (keeps its history,
+                    // avoids the old delete + full re-unzip), then bring content up to date only if
+                    // it actually changed. Guarded to a checked-IN book so we never touch our own
+                    // local-rename-in-progress (that folder is checked out to us). Folder TCs never
+                    // reach this: their renamed book's statusJson is null, so this whole block is
+                    // skipped and their existing path below is unchanged.
+                    if (statusJson != null && !GetLocalStatus(bookFolderName).IsCheckedOut())
+                    {
+                        var localIdForRename = BookMetaData.FromFolder(path)?.Id;
+                        if (
+                            localIdForRename != null
+                            && repoBooksByIdMap.TryGetValue(
+                                localIdForRename,
+                                out Tuple<string, bool> renameTarget
+                            )
+                            && !renameTarget.Item2 // no local folder by the repo's (new) name yet
+                            && !string.Equals(
+                                renameTarget.Item1,
+                                bookFolderName,
+                                StringComparison.OrdinalIgnoreCase
+                            )
+                        )
+                        {
+                            var newName = renameTarget.Item1;
+                            ReportProgressAndLog(
+                                progress,
+                                ProgressKind.Progress,
+                                "RenameFromRemote",
+                                "The book \"{0}\" has been renamed to \"{1}\" by a teammate.",
+                                bookFolderName,
+                                newName
+                            );
+                            var repoChecksum = BookStatus.FromJson(statusJson).checksum;
+                            var localChecksum = GetLocalStatus(bookFolderName).checksum;
+                            SIL.IO.RobustIO.MoveDirectory(
+                                path,
+                                Path.Combine(_localCollectionFolder, newName)
+                            );
+                            remotelyRenamedBooks.Add(newName);
+                            // Bring content up to date only if it actually changed (a title change
+                            // usually does). TODO (planned follow-up): replace this full download
+                            // with an incremental "download only the changed files into the renamed
+                            // folder" mechanism; today CopyBookFromRepoToLocal re-fetches the whole
+                            // book. A pure rename (checksums equal) needs no download at all.
+                            if (localChecksum != repoChecksum)
+                                CopyBookFromRepoToLocal(newName);
+                            continue;
+                        }
+                    }
+
                     if (statusJson == null) // includes cases where validRepoStatus is false
                     {
                         if (firstTimeJoin && validRepoStatus)
