@@ -2636,20 +2636,18 @@ namespace Bloom.TeamCollection
                                 bookFolderName,
                                 newName
                             );
-                            var repoChecksum = BookStatus.FromJson(statusJson).checksum;
-                            var localChecksum = GetLocalStatus(bookFolderName).checksum;
                             SIL.IO.RobustIO.MoveDirectory(
                                 path,
                                 Path.Combine(_localCollectionFolder, newName)
                             );
                             remotelyRenamedBooks.Add(newName);
-                            // Bring content up to date only if it actually changed (a title change
-                            // usually does). TODO (planned follow-up): replace this full download
-                            // with an incremental "download only the changed files into the renamed
-                            // folder" mechanism; today CopyBookFromRepoToLocal re-fetches the whole
-                            // book. A pure rename (checksums equal) needs no download at all.
-                            if (localChecksum != repoChecksum)
-                                CopyBookFromRepoToLocal(newName);
+                            // Bring the renamed folder up to the current version. The cloud Receive
+                            // seeds its staging folder from the local copy and re-downloads only the
+                            // files that actually changed (see CloudTeamCollection.FetchBookFromRepo),
+                            // so this is cheap even for a pure rename (nothing transfers) -- and it
+                            // always refreshes the recorded local version, so the book never lingers
+                            // in an "updates available" state after a rename.
+                            CopyBookFromRepoToLocal(newName);
                             continue;
                         }
                     }

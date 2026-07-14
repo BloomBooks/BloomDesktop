@@ -1139,6 +1139,32 @@ namespace Bloom.TeamCollection.Cloud
                 stagingPath = finalPath + ".cloudReceive-" + Guid.NewGuid().ToString("N");
                 Directory.CreateDirectory(stagingPath);
 
+                // Incremental Receive: seed the staging folder with the LOCAL copies of files that
+                // are still part of the target version, so DownloadFiles' hash-skip re-downloads
+                // ONLY the files that actually changed. A teammate's rename (or any Receive of a
+                // book we already have) then transfers a handful of changed files instead of the
+                // whole book. We seed only files that appear in the target manifest (by relative
+                // path), so files removed in the new version are simply never carried into staging,
+                // and local-only junk (never in the manifest) is left behind -- the swap below then
+                // makes finalPath exactly the target version. Seeding is a local copy (cheap next to
+                // a network download) and preserves the existing stage-then-atomic-swap guarantee.
+                if (Directory.Exists(finalPath))
+                {
+                    foreach (var relativePath in manifest.Entries.Keys)
+                    {
+                        var platformRelative = relativePath.Replace(
+                            '/',
+                            Path.DirectorySeparatorChar
+                        );
+                        var sourceFile = Path.Combine(finalPath, platformRelative);
+                        if (!RobustFile.Exists(sourceFile))
+                            continue;
+                        var seededFile = Path.Combine(stagingPath, platformRelative);
+                        Directory.CreateDirectory(Path.GetDirectoryName(seededFile));
+                        RobustFile.Copy(sourceFile, seededFile);
+                    }
+                }
+
                 _transfer.DownloadFiles(
                     location,
                     pinnedFiles,
