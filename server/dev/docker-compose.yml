@@ -1,0 +1,115 @@
+# Bloom Cloud Team Collections — local dev infrastructure
+# Provides MinIO as an S3-compatible object store (SNSD mode, versioning ON).
+# Run alongside `supabase start` (which provides Postgres, GoTrue, PostgREST, Edge Functions).
+#
+# Usage:
+#   docker compose up -d          # start MinIO + run init job
+#   docker compose down           # stop containers (data preserved in minio-data/)
+#   docker compose down -v        # stop and remove volumes (not needed — data is bind-mounted)
+#   docker compose down && rm -rf ./minio-data   # full wipe
+
+services:
+    # -----------------------------------------------------------------------
+    # MinIO — single-node single-drive (SNSD) mode.
+    # SNSD is the supported mode for object versioning on a single node.
+    # https://min.io/docs/minio/linux/operations/install-deploy-manage/deploy-minio-single-node-single-drive.html
+    # -----------------------------------------------------------------------
+    minio:
+        image: quay.io/minio/minio:latest
+        container_name: bloom-minio
+        command: server /data --console-address ":9001"
+        environment:
+            # Fixed dev credentials — NOT production secrets.
+            MINIO_ROOT_USER: minioadmin
+            MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+            - "9000:9000" # S3 API
+            - "9001:9001" # MinIO Console (web UI)
+        volumes:
+            # Bind-mount so data survives container restarts and is easy to inspect/wipe.
+            - ./minio-data:/data
+        healthcheck:
+            test: ["CMD", "mc", "ready", "local"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+            start_period: 10s
+        restart: unless-stopped
+        networks:
+            - default
+            # Join the Supabase CLI's own project network too (see the `networks:` block
+            # below and server/dev/README.md's "MinIO endpoint from edge functions" note):
+            # edge functions reach MinIO by container name (`bloom-minio`) on this shared
+            # network. NEVER use `host.containers.internal`/`host.docker.internal` for this
+            # — task 02's live-integration spike (6 Jul 2026) found that path reliably HANGS
+            # (not just slow — indefinite) for POST/PUT/GET alike when Podman's edge-runtime
+            # container calls out through the gvproxy host gateway on Windows, even though a
+            # plain `curl` through the same path works fine. Direct container-to-container
+            # traffic on a shared bridge network does not hit this and is instant.
+            - supabase_network
+
+    # -----------------------------------------------------------------------
+    # Init job — uses minio/mc (MinIO Client) to:
+    #   1. Wait for MinIO to be healthy.
+    #   2. Create the dev bucket "bloom-teams-local".
+    #   3. Enable object versioning on the bucket.
+    #   4. Set a lifecycle rule to expire noncurrent object versions after 7 days
+    #      (mirrors the production lifecycle; MinIO supports this via mc ilm import).
+    #
+    # This service exits after setup; it does NOT stay running.
+    # Re-running `docker compose up` is idempotent — mc mb --ignore-existing.
+    # -----------------------------------------------------------------------
+    minio-init:
+        image: quay.io/minio/mc:latest
+        container_name: bloom-minio-init
+        depends_on:
+            minio:
+                condition: service_healthy
+        entrypoint: >
+            /bin/sh -c "
+              set -e
+
+              echo '==> Configuring mc alias for local MinIO...'
+              mc alias set local http://minio:9000 minioadmin minioadmin
+
+              echo '==> Creating bucket bloom-teams-local (idempotent)...'
+              mc mb --ignore-existing local/bloom-teams-local
+
+              echo '==> Enabling object versioning...'
+              mc version enable local/bloom-teams-local
+
+              echo '==> Applying lifecycle policy (noncurrent-version expiry 7d)...'
+              # Idempotency via shell 'case' — the mc image has no grep.
+              existing=$$(mc ilm rule ls local/bloom-teams-local 2>/dev/null || true)
+              case \"$$existing\" in
+                *tc/*) echo '    lifecycle rule already present' ;;
+                *) mc ilm rule add --noncurrent-expire-days 7 --prefix 'tc/' local/bloom-teams-local ;;
+              esac
+              # Dev-only gap vs production: S3's AbortIncompleteMultipartUpload rule is not
+              # settable via 'mc ilm rule add' (XML import proved brittle through the compose
+              # quoting layers). MinIO's built-in stale-upload cleanup covers dev;
+              # server/provision-aws sets the real abort-multipart rule on AWS.
+
+              echo '==> MinIO init complete.'
+              echo ''
+              echo '    Bucket : bloom-teams-local'
+              echo '    Console: http://localhost:9001  (admin/minioadmin)'
+              echo '    S3 API : http://localhost:9000'
+              echo ''
+              mc ls local/
+            "
+        restart: "no"
+        networks:
+            - default
+            - supabase_network
+
+# `supabase_network_bloom-team-collections` is created by `supabase start` (project_id
+# "bloom-team-collections" in supabase/config.toml) — it must already exist, so run
+# `supabase start` BEFORE `docker compose -f server/dev/docker-compose.yml up -d` (the
+# README's documented bring-up order already does this).
+networks:
+    default:
+        name: dev_default
+    supabase_network:
+        name: supabase_network_bloom-team-collections
+        external: true
