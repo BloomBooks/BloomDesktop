@@ -1,0 +1,5 @@
+# Supabase CLI local state — never commit
+.branches/
+.temp/
+# snippets/ and functions/ hold committed content (.gitkeep at minimum): Podman does not
+# auto-create missing bind-mount directories, so fresh clones must already have them.
