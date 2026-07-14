@@ -53,11 +53,9 @@ namespace BloomTemp
             return f;
         }
 
-        [Obsolete(
-            "Go ahead and give it a name related to the test.  Makes it easier to track down problems."
-        )]
-        public TemporaryFolder()
-            : this("unnamedTestFolder") { }
+        // Used only by TrackExisting; unlike the public constructors, this must not create
+        // (or delete) any folder on disk.
+        private TemporaryFolder() { }
 
         public TemporaryFolder(string name)
         {

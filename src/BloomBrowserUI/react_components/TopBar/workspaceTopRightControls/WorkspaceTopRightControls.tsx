@@ -46,13 +46,6 @@ export const WorkspaceTopRightControls: React.FunctionComponent = () => {
                     gap: 12px;
                     font-size: 12px;
 
-                    // The neighboring Settings/Other Collection buttons (TopBarButton) have
-                    // 8px of internal top padding before their icon, so their visible content
-                    // starts ~10px below the top of this group's boxes. Nudge this group down
-                    // by the same amount so the language menu, help icon, zoom, and avatar
-                    // top-align with the Settings icon rather than riding above it.
-                    margin-top: 10px;
-
                     // See comment on kTopRightControlColor above.
                     color: ${kTopRightControlColor};
                     button {
@@ -89,7 +82,17 @@ export const WorkspaceTopRightControls: React.FunctionComponent = () => {
                     </div>
                     <ZoomControl />
                 </div>
-                <AccountMenu />
+                {/* Top-align the account menu with the language/help/zoom stack. Because
+                    the avatar is shorter than that stack, it never drives this group's
+                    height, and so it cannot affect the position or size of anything to
+                    its left. */}
+                <div
+                    css={css`
+                        align-self: flex-start;
+                    `}
+                >
+                    <AccountMenu />
+                </div>
             </div>
         </ThemeProvider>
     );

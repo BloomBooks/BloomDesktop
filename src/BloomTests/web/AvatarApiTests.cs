@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Bloom.Api;
@@ -99,9 +100,9 @@ namespace BloomTests.web
             _server.EnsureListening();
 
             byte[] data;
-            using (var client = new WebClient())
+            using (var client = new HttpClient())
             {
-                data = client.DownloadData(AvatarUrl("user@example.com"));
+                data = client.GetByteArrayAsync(AvatarUrl("user@example.com")).Result;
             }
 
             Assert.That(data, Is.EqualTo(new byte[] { 10, 20, 30 }));
@@ -113,16 +114,11 @@ namespace BloomTests.web
             _cache.BytesToReturn = null; // simulate no known photo, no Gravatar, offline
             _server.EnsureListening();
 
-            using (var client = new WebClient())
+            using (var client = new HttpClient())
+            using (var response = client.GetAsync(AvatarUrl("nobody@example.com")).Result)
             {
-                var ex = Assert.Throws<WebException>(() =>
-                    client.DownloadData(AvatarUrl("nobody@example.com"))
-                );
                 // 404 is the contract that makes react-avatar fall back to generated initials.
-                Assert.That(
-                    ((HttpWebResponse)ex.Response).StatusCode,
-                    Is.EqualTo(HttpStatusCode.NotFound)
-                );
+                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
             }
         }
 

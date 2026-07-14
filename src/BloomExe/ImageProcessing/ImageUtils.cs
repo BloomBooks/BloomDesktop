@@ -88,13 +88,6 @@ namespace Bloom.ImageProcessing
             return false;
         }
 
-        private class ColorInfo
-        {
-            public Color color;
-            public bool isGrayish;
-            public bool isNearWhite;
-        }
-
         // Thresholds for the in-process dominant-color line-art check.
         // To be a line-art background, a color must have a perceptual brightness
         // of at least LineArtBackgroundMinBrightness and a chroma (max-min channel) of at
@@ -1641,9 +1634,11 @@ namespace Bloom.ImageProcessing
                     if (makeTransparent)
                         ApplyBloomTransparencyToFile(path);
                     // Copy metadata from older file to the new one.  GraphicsMagick does a poor job on metadata.
-                    var newMeta = RobustFileIO.CreateTaglibFile(path);
-                    CopyTags(oldMetaData, newMeta);
-                    newMeta.Save();
+                    using (var newMeta = RobustFileIO.CreateTaglibFile(path))
+                    {
+                        CopyTags(oldMetaData, newMeta);
+                        RobustFileIO.SaveTaglibFile(newMeta);
+                    }
                     if (progress != null)
                         Application.DoEvents(); // allow progress report to work
                     return true;
@@ -2995,7 +2990,7 @@ namespace Bloom.ImageProcessing
                         using (var tagFile = RobustFileIO.CreateTaglibFile(destPath))
                         {
                             tagFile.RemoveTags(TagTypes.AllTags);
-                            tagFile.Save();
+                            RobustFileIO.SaveTaglibFile(tagFile);
                         }
                         var newMeta = new Metadata
                         {
