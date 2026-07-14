@@ -1467,7 +1467,9 @@ export function getBodyContentForSavePage() {
 }
 
 // Grow each text canvas element (bloom-canvas-element) to fit its content, matching what the editor
-// does automatically when a page is opened.
+// does automatically when a page is opened. (Despite the "grow" in the name, this fits to content in
+// BOTH directions -- it will also shrink a box that was authored taller than its text -- which is
+// exactly what the editor's auto-grow does; "grow" just names the case that motivated the fix.)
 //
 // On page load the editor schedules this same auto-height adjustment for every editable
 // (OverflowChecker.AddOverflowHandlers -> AdjustSizeOrMarkOverflowSoon), but that runs on a 1000ms
@@ -1497,6 +1499,14 @@ function growTextCanvasElementsToFitContent(): void {
         for (const editable of canvasEditables) {
             const [, overflowY] =
                 OverflowChecker.getSelfOverflowAmounts(editable);
+            // Calling this off-screen is DOM-safe. adjustSizeOfContainingCanvasElementToMatchContent
+            // ends by calling adjustTarget()/alignControlFrameWithActiveElement() (CanvasElementManager
+            // ~514-515), which in the live editor can add drag-game target arrows or the selection
+            // frame. Neither happens here: adjustTarget runs only AFTER the bloom-noAutoHeight
+            // early-return, so drag-game text (which is bloom-noAutoHeight) never reaches it, and a
+            // normal canvas box has no drag target to build one for; alignControlFrame no-ops when
+            // there is no active element (there isn't, off-screen). This is the same resize path the
+            // live editor already runs on auto-grow, and capture strips editing debris afterward.
             theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
                 editable,
                 overflowY,
