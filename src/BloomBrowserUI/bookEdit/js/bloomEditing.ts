@@ -1287,6 +1287,17 @@ export function localizeCkeditorTooltips(bar: JQuery) {
         .done((result) => {
             $(toolGroup).find(".cke_button__superscript").attr("title", result);
         });
+    theOneLocalizationManager
+        .asyncGetText(
+            "EditTab.DirectFormatting.RemoveFormat",
+            "Remove Formatting",
+            "",
+        )
+        .done((result) => {
+            $(toolGroup)
+                .find(".cke_button__removeformat")
+                .attr("title", result);
+        });
 }
 
 // This is invoked when we are about to change pages.

@@ -3,17 +3,32 @@
  * For licensing, see LICENSE.md or http://ckeditor.com/license
  */
 
-// This is the standard CKEditor 4.5.x "removeformat" plugin, trimmed by Bloom so that it does
-// NOT register a toolbar button (and therefore needs no icon or language files). We only invoke
-// the "removeFormat" command programmatically (Ctrl+Space -> "clear formatting"), so the button,
-// icon, and localized label that the stock plugin adds are unnecessary. Everything else (the
-// command, the addRemoveFormatFilter API, and the config defaults) is verbatim from upstream.
+// This is the standard CKEditor 4.5.x "removeformat" plugin, trimmed by Bloom. It registers the
+// "removeFormat" command (invoked both by the Ctrl+Space "clear formatting" shortcut and by the
+// toolbar button added below) plus the RemoveFormat toolbar button. The button icon is the
+// authentic 4.5.x icon shipped in this plugin's icons/ (and icons/hidpi/) folder; CKEditor builds
+// the button's background-image from those at runtime because of the `icons`/`hidpi` metadata.
+// We deliberately do NOT declare `lang` and ship no language files: the button's tooltip is
+// localized by Bloom instead, in localizeCkeditorTooltips() in bloomEditing.ts, so the plain
+// English label below is only a momentary fallback until that runs. Everything else (the command,
+// the addRemoveFormatFilter API, and the config defaults) is verbatim from upstream.
 // See src/BloomBrowserUI/bookEdit/js/bloomEditing.ts (attachToCkEditor) for the filter Bloom adds
 // to protect its structural spans (audio segments, bloom-linebreak) from being removed.
 
 CKEDITOR.plugins.add( 'removeformat', {
+	icons: 'removeformat', // %REMOVE_LINE_CORE%
+	hidpi: true, // %REMOVE_LINE_CORE%
 	init: function( editor ) {
 		editor.addCommand( 'removeFormat', CKEDITOR.plugins.removeformat.commands.removeformat );
+
+		if ( editor.ui.addButton ) {
+			editor.ui.addButton( 'RemoveFormat', {
+				// Plain-English fallback; Bloom localizes this tooltip in localizeCkeditorTooltips().
+				label: 'Remove Formatting',
+				command: 'removeFormat',
+				toolbar: 'cleanup,10'
+			} );
+		}
 	}
 } );
 
