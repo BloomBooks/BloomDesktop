@@ -441,6 +441,13 @@ up/download check
    Trade-off: it needs the client to send its seat/machine on check-in and a server migration +
    pgTAP; risk is low and it mirrors the takeover gate we already trust. (Not urgent — no live
    data-loss seen; the client gate holds in normal use.)
+   **DECISION (14 Jul 2026, John): WON'T DO — do not enforce seat on check-in server-side.**
+   Two reasons: (1) a client buggy or hacked enough to check in from the wrong source folder
+   could just as easily send the wrong seat checksum, so the server gate wouldn't actually
+   protect against that threat; and (2) a server-side seat requirement could get in the way of
+   recovering a collection whose local folder has legitimately been moved or renamed (which
+   changes the seat hash). The client-side editable gate remains the enforcement point. **This
+   was the last open piece of bug #0; bug #0 is now fully closed.**
    Original problem statement follows for the record.
    **[Original — NEEDS JOHN] Item 9's same-machine takeover can steal ANY same-machine
    lock, even across separate collection folders (found by e2e-4 after its download bugs were
