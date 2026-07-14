@@ -422,8 +422,26 @@ up/download check
    e2e-4 PASSES. FOLLOW-UP flagged for John (not blocking): checkin_start_tx still accepts a
    same-user check-in regardless of seat/machine (pre-existing behavior; the client-side
    editable gate is the enforcement point today) — decide whether the server should also
-   refuse cross-seat check-ins by the SAME user. Original problem statement follows for the
-   record.
+   refuse cross-seat check-ins by the SAME user.
+   **What that question means (plain English, clarified 14 Jul 2026):** A lock is recorded on
+   the server as (user, machine, SEAT), where the seat identifies WHICH local copy of the
+   collection took the checkout (hash of that copy's folder path). The bug #0 fix makes
+   *takeover* of a lock require a matching machine+seat, and enforces it in BOTH places — the
+   client (IsEditableHere/CanTakeOverLockOnThisMachine) AND the server (checkout_book_takeover).
+   But an ordinary *check-in* (checkin_start_tx) only verifies the lock is held by the same
+   USER; it does not check that the check-in comes from the seat that holds the lock. Today the
+   only thing stopping a same-user cross-seat check-in is the client: from a second copy the
+   book shows as not-editable-here, so the UI won't let you edit/check it in. Concretely: John
+   has two copies of the Tetun collection (C:\temp\Tetun Books and the OneDrive copy) under one
+   account. If he checks a book out in copy A and then, from copy B, something got a check-in
+   through (a client bug, a bypass, or a future/alternate client), the server would accept it
+   and could clobber the version copy A is working on. The question is whether to close that gap
+   server-side — i.e. also make checkin_start_tx require the caller's machine+seat to match the
+   lock's — as defense-in-depth so the seat rule doesn't rely solely on client behavior.
+   Trade-off: it needs the client to send its seat/machine on check-in and a server migration +
+   pgTAP; risk is low and it mirrors the takeover gate we already trust. (Not urgent — no live
+   data-loss seen; the client gate holds in normal use.)
+   Original problem statement follows for the record.
    **[Original — NEEDS JOHN] Item 9's same-machine takeover can steal ANY same-machine
    lock, even across separate collection folders (found by e2e-4 after its download bugs were
    fixed).** Scenario: Bob (admin) force-unlocks Alice's checkout and takes the lock himself;
@@ -547,7 +565,10 @@ up/download check
    dialog's STATUS tab, but the dialog deliberately opens on the History tab when there are
    no important status messages — John saw only "Sync + Close". The create-success message
    also points at the Sharing panel, not here. Consider surfacing Send All on the status
-   panel or making the Status tab default when there are uncommitted local books. ALSO
+   panel or making the Status tab default when there are uncommitted local books.
+   **DECISION (14 Jul 2026, John): leave "Send All" where it is — no location/UX change
+   needed. The Send-All-discoverability half of this item is CLOSED; the admin-role half
+   below is still open.** ALSO
    13 Jul: create-time `Settings.Administrators = CurrentUser` stamps the REGISTRATION
    email (bug #4 family) — locked Alice out of her own collection's settings until the
    .bloomCollection was hand-patched; and TeamCollectionApi.isUserAdmin
