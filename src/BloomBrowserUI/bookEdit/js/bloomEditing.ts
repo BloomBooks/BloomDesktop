@@ -1969,6 +1969,14 @@ export function attachToCkEditor(element) {
         // let those be removed. Any span that has a class or id is one Bloom created for its own
         // purposes (audio segments like audio-sentence/bloom-highlightSegment, bloom-linebreak from
         // Shift+Enter, etc.), and clearing formatting must leave those intact.
+        // Tradeoff: we keep EVERY class/id span, so if formatting were carried directly on such a
+        // span (e.g. an imported <span class="x" style="font-weight:bold">), this command would not
+        // strip it. That case is rare and mostly can't arise here: the toolbar never puts formatting
+        // on a class/id span (bold -> <strong>, color -> a bare <span style="color">), formatting
+        // nested INSIDE a protected span is still cleared because the command descends into
+        // children, and pasted spans have their class/id and most styles removed by
+        // config.pasteFilter. We accept that edge in exchange for guaranteeing the structural spans
+        // survive; this feature is about user convenience, not repairing malformed markup.
         // Note: addRemoveFormatFilter is added to the editor prototype by the removeformat plugin,
         // whose script loads asynchronously. We register the filter here, in instanceReady, rather
         // than right after CKEDITOR.inline() because at that earlier point the plugin may not have
