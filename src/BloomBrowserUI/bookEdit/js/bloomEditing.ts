@@ -1466,6 +1466,38 @@ export function getBodyContentForSavePage() {
     return result;
 }
 
+// Grow each text canvas element (bloom-canvas-element) to fit its content, matching what the editor
+// does automatically when a page is opened.
+//
+// On page load the editor schedules this same auto-height adjustment for every editable
+// (OverflowChecker.AddOverflowHandlers -> AdjustSizeOrMarkOverflowSoon), but that runs on a 1000ms
+// setTimeout that is NOT registered as a requestPageContent delay, so the off-screen capture's
+// wait-for-delays loop does not wait for it. Off-screen, C# captures as soon as the (image-sizing,
+// etc.) delays clear, which is usually well under a second, so without this we would save the box at
+// its authored height. When that height is too short for how Bloom actually renders the text (e.g. a
+// caption that wraps to two lines), the result is a scrollbar-clipped box that only fixes itself once
+// a human opens the page in the Edit tab (letting the timer fire) and saves. Doing it synchronously
+// here bakes the corrected height into the processed HTML.
+//
+// We call adjustSizeOfContainingCanvasElementToMatchContent directly (rather than the full
+// OverflowChecker.AdjustSizeOrMarkOverflow) so we only resize the box and don't add page-level
+// overflow markup or qtip debris to the captured DOM. Callers run this on the fully settled layout
+// (after the activeDelays wait), so text measurements reflect the final image sizing and fonts.
+function growTextCanvasElementsToFitContent(): void {
+    const canvasEditables = Array.from(
+        document.querySelectorAll<HTMLElement>(
+            `${kCanvasElementSelector} .bloom-editable.bloom-visibility-code-on`,
+        ),
+    );
+    for (const editable of canvasEditables) {
+        const [, overflowY] = OverflowChecker.getSelfOverflowAmounts(editable);
+        theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
+            editable,
+            overflowY,
+        );
+    }
+}
+
 // Used by the off-screen "process whole book" path (C# BookProcessor, driven by the
 // external/process-book API). It gathers the same page content that requestPageContent() would save
 // (via the shared extractAndStripPageContentForSave()), but instead of posting it to the editView/pageContent
@@ -1473,7 +1505,9 @@ export function getBodyContentForSavePage() {
 // combined result on window.__bloomExternalPageContent for the C# caller to poll. Like
 // requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, up to
 // kMaxWaitTimeMs, so browser-based measurements (image sizing, canvas-element layout, etc.) are complete
-// before we capture the page.
+// before we capture the page. It also grows text canvas elements to fit their content (see
+// growTextCanvasElementsToFitContent), since that auto-height adjustment is otherwise deferred on a
+// timer the wait loop does not track.
 export function captureContentForExternalProcessing(
     fitImageTextSplits?: boolean,
 ): void {
@@ -1506,6 +1540,7 @@ export function captureContentForExternalProcessing(
     const start = Date.now();
     const finish = () => {
         try {
+            growTextCanvasElementsToFitContent();
             window.__bloomExternalPageContent =
                 extractAndStripPageContentForSave();
         } catch (e) {
