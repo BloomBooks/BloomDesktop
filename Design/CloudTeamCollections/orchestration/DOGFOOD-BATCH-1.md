@@ -727,6 +727,80 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 15 Jul 2026 (PAUSED MID-REFACTOR — tokens ran out; tree has UNCOMMITTED WIP that DOES NOT
+  COMPILE yet) · John asked for a /simplify-style quality review of the whole branch; 5 review
+  agents produced ~49 findings; application was in progress when paused. **STATE:**
+  - DONE + verified, uncommitted: (a) supabase edge functions — shared
+    `_shared/paths.ts` (key layout) + `captureVerifiedUploads` in `_shared/s3.ts` (Map + 8-way
+    bounded parallel verify) used by both finish fns; `stubAssumeRole`→test_support;
+    `S3_WRITE_ACTIONS` shared — deno 33/33 BEFORE AND AFTER + deno check clean. (b) launcher
+    scripts — `terminateChildProcess` (with signalFirst option) in processTree.mjs used by
+    go/run/watchBloomExe; new `automationReady.mjs` (prefix + scanner) used by run+watchBloomExe;
+    watchBloomExe now uses pipeChildOutput — node --check + eslint clean (needs a live
+    go.sh/run.sh smoke later).
+  - DONE, uncommitted, MY C# batch-1 so far: BookVersionManifest Diff API deleted (+tests);
+    CloudJoinFlow.ListMyCollections+CreateAndJoinCollection deleted; CloudCollectionClient
+    UndeleteBookRpc/RenameCheck deleted + UnlockBookRpc/ForceUnlockRpc/DeleteBookRpc renamed
+    without Rpc suffix (callers in CloudTeamCollection.cs updated; LockTests test method
+    renamed); CloudAuth AccountSwitched/SignedOut events + EventArgs + raiseEvent param deleted
+    (+tests rewritten as SignIn_WithDifferentAccount_ReplacesIdentity; stale comments fixed in
+    CloudTeamCollection.cs + MemberTests); CloudEnvironment S3Bucket + FirebaseProjectId props +
+    env reads deleted. **BROKEN RIGHT NOW: CloudEnvironmentTests still asserts env.S3Bucket
+    (~line 18, ~71) and env.FirebaseProjectId (~76, ~88) — delete those assertion lines (and the
+    two env entries "BLOOM_CLOUDTC_FIREBASE_PROJECT_ID"/S3_BUCKET in the sandbox test dict) to
+    compile.**
+  - Two fix agents were STOPPED MID-WORK (partial uncommitted edits, unverified): React/TS agent
+    (was doing: extract CreateCloudTeamCollection.tsx from CreateTeamCollection.tsx — likely
+    done; shared DevSignInForm.tsx — likely done; useSharingLoginState→useWatchApiData; shared
+    test-render helper — was mid-way through the 13 test files, stopped at SharingPanel.test.tsx/
+    NewerVersionAvailableMarker.test.tsx) and e2e agent (edits done — waitForSharingReady in
+    harness/bloomApi.ts replacing ~14 poll copies + paths.ts header — but verification NOT run).
+    On resume: run vitest/eslint/typecheck for BloomBrowserUI and finish/verify both.
+  - REMAINING C# work I had queued (batch 1 tail): CloudBookTransfer drop dead
+    `alreadyUploadedThisTransaction` param (both CloudTeamCollection call sites pass throwaway
+    sets — removes the lock complexity too); CloudCollectionMonitor delete dead Stop() + doc
+    Dispose; SharingApi: serialize `emailVerified` in HandleLoginState reply (1 line, makes the
+    declared TS field truthful), simplify SignedInEmailForJoinCards→CurrentAuth().CurrentEmail
+    (+line ~560 IsSignedIn), doc RegisterWithApiHandler; CloudTeamCollection rename
+    CollectionIdForCloud→CloudCollectionId + doc (caller TeamCollectionApi.cs:293), rename
+    TryGetBookIdForTests→GetBookIdByNameIndexForTests (caller LiveTests:224); TeamCollection.cs
+    reword TryTakeOverLock doc ("true = may proceed as lock holder incl. nothing-to-take-over").
+  - BATCH 2 (efficiency/reuse, NOT started): E1 GetRepoBooksByIdMap→protected virtual + cloud
+    override from _cache.GetAllBooks() (kills 3 network calls/book at startup); E3
+    OnPolledChanges early-return when get_changes empty + cursor unchanged (kills full-cache
+    Save every 60s); E4 pass local manifest hashes into UploadChangedFiles (kills double SHA256);
+    E6 CurrentUserDisplayName failure retry TTL ~30s; R1 DownloadCollectionFileGroup→
+    S3Extensions.ListAllObjects; R2 delete CloudTeamCollection.BuildS3Client, reuse
+    CloudBookTransfer.BuildDefaultClient (make internal static); R11 hoist
+    FolderTeamCollection.AvailablePath→base TeamCollection, reuse in GetAvailableBloomSourcePath;
+    R12 CloudAuth.CreateInitialized factory (3 dup sites: TeamCollectionManager:707,
+    CloudTeamCollection:130, SharingApi:144).
+  - BATCH 3 (file org, NOT started; John asked explicitly): extract partial
+    CloudTeamCollection.CollectionFiles.cs (~310-line banner-delimited cluster ~1462-1770);
+    partial TeamCollection.AutoApply.cs (queue machinery ~104-244 + ProcessAutoApplyRemoteChange
+    + DownloadMissingBookInBackground + QueueMissingRepoBooks...); split DevCloudAuthProvider +
+    FirebaseCloudAuthProvider out of CloudAuth.cs; move HandleReceiveUpdates' loop into
+    CloudTeamCollection.ReceiveAllUpdates (NOTE: its predicate skips checked-out-HERE while
+    GetUpdatesAvailableCount excludes locked-by-ANYONE — drift to surface to John, don't silently
+    unify).
+  - REPORT-ONLY for John (decisions): DpapiCloudTokenStore is NEVER WIRED (real sessions won't
+    survive restart — wire at the 2 CloudAuth construction sites when AuthMode==Cloud, or delete
+    until Firebase ships); E2 cache DownloadStart credentials (~1h TTL, big join speedup); E7
+    rename-scan cost per poll; E8 history refetches whole log each open (use since-cursor); E9
+    collection-file group re-downloads unchanged files (compare size/ETag from listing); A3
+    AddCloudBookStatusFields JSON-surgery could move behind virtual WhoHasBookLocked* seams
+    (skipped deliberately: identity logic just live-verified, not worth re-destabilizing); R6
+    remaining hooks (useSharingMembers etc.) could share a reload-capable useWatchApiData; R13
+    getApiDataOnce dedup (sharingApi/teamCollectionApi cached-promise idiom); R5 shared C# cloud
+    test-fixture builder (9 copy-pasted harness blocks). Full agent reports also survive in the
+    session tasks dir (a6925…=reuse, a095b…=simplify, af6da…=efficiency, ad850…=altitude,
+    a48a9…=naming .output files).
+  **EXACT next action on resume:** (1) fix CloudEnvironmentTests compile break; (2) finish C#
+  batch-1 tail; (3) run required filter (expect ~465 minus deleted diff/event tests, plus fix
+  fallout); (4) verify/finish the React+e2e agents' partial work (vitest/eslint/typecheck);
+  (5) batches 2-3; (6) full test pass, live-smoke run.sh, commit in logical chunks, regenerate
+  #8052 via regen scripts, re-trigger Greptile; (7) give John the fixed/skipped summary + the
+  REPORT-ONLY decision list.
 - 15 Jul 2026 (doc cleanup, per John) · Removed the spent orchestration scratch documents from
   the branch: all 11 agent launch prompts (`orchestration/*.prompt.md` — one-time kickoff
   prompts; the durable per-task specs stay in `tasks/*.md`, which code comments reference),
