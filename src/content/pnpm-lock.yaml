@@ -8,8 +8,8 @@ importers:
     .:
         dependencies:
             "@types/node":
-                specifier: 22.17.0
-                version: 22.17.0
+                specifier: 24.13.0
+                version: 24.13.0
             typescript:
                 specifier: 6.0.3
                 version: 6.0.3
@@ -29,6 +29,9 @@ importers:
             lessc-glob:
                 specifier: 1.0.9
                 version: 1.0.9
+            node:
+                specifier: runtime:24.13.0
+                version: runtime:24.13.0
             npm-run-all:
                 specifier: 4.1.5
                 version: 4.1.5
@@ -47,9 +50,6 @@ importers:
             rimraf:
                 specifier: 5.0.5
                 version: 5.0.5
-            ts-node:
-                specifier: 10.9.2
-                version: 10.9.2(@types/node@22.17.0)(typescript@6.0.3)
 
 packages:
     "@babel/helper-string-parser@7.29.7":
@@ -93,38 +93,12 @@ packages:
                 integrity: sha512-w/63nURdkRPpg3AXbNr7lPv6HgOuVDyefTumiXsbXxtIwcuk5EXayWR5OpSwDjsQPgaYsfUSedMduaNOjAYY8A==,
             }
 
-    "@cspotcode/source-map-support@0.8.1":
-        resolution:
-            {
-                integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==,
-            }
-        engines: { node: ">=12" }
-
     "@isaacs/cliui@8.0.2":
         resolution:
             {
                 integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==,
             }
         engines: { node: ">=12" }
-
-    "@jridgewell/resolve-uri@3.1.2":
-        resolution:
-            {
-                integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==,
-            }
-        engines: { node: ">=6.0.0" }
-
-    "@jridgewell/sourcemap-codec@1.5.5":
-        resolution:
-            {
-                integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==,
-            }
-
-    "@jridgewell/trace-mapping@0.3.9":
-        resolution:
-            {
-                integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==,
-            }
 
     "@nodelib/fs.scandir@2.1.5":
         resolution:
@@ -154,30 +128,6 @@ packages:
             }
         engines: { node: ">=14" }
 
-    "@tsconfig/node10@1.0.12":
-        resolution:
-            {
-                integrity: sha512-UCYBaeFvM11aU2y3YPZ//O5Rhj+xKyzy7mvcIoAjASbigy8mHMryP5cK7dgjlz2hWxh1g5pLw084E0a/wlUSFQ==,
-            }
-
-    "@tsconfig/node12@1.0.11":
-        resolution:
-            {
-                integrity: sha512-cqefuRsh12pWyGsIoBKJA9luFu3mRxCA+ORZvA4ktLSzIuCUtWVxGIuXigEwO5/ywWFMZ2QEGKWvkZG1zDMTag==,
-            }
-
-    "@tsconfig/node14@1.0.3":
-        resolution:
-            {
-                integrity: sha512-ysT8mhdixWK6Hw3i1V2AeRqZ5WfXg1G43mqoYlM2nc6388Fq5jcXyr5mRsqViLx/GJYdoL0bfXD8nmF+Zn/Iow==,
-            }
-
-    "@tsconfig/node16@1.0.4":
-        resolution:
-            {
-                integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==,
-            }
-
     "@types/babel-types@7.0.16":
         resolution:
             {
@@ -190,10 +140,10 @@ packages:
                 integrity: sha512-sEKyxMVEowhcr8WLfN0jJYe4gS4Z9KC2DGz0vqfC7+MXFbmvOF7jSjALC77thvAO2TLgFUPa9vDeOak+AcUrZA==,
             }
 
-    "@types/node@22.17.0":
+    "@types/node@24.13.0":
         resolution:
             {
-                integrity: sha512-bbAKTCqX5aNVryi7qXVMi+OkB3w/OyblodicMbvE38blyAz7GxXf6XYhklokijuPwwVg9sDLKRxt0ZHXQwZVfQ==,
+                integrity: sha512-5vtOqGQr4NJKeEzV441FcOi2MeG9UTWq9LqVLGneDdu4vlX17H8kQ2PA2UmNwCUGPVDj4oBjNhS7ReVEIWJJrg==,
             }
 
     acorn-globals@3.1.0:
@@ -201,13 +151,6 @@ packages:
             {
                 integrity: sha512-uWttZCk96+7itPxK8xCzY86PnxKTMrReKDqrHzv42VQY0K30PUO8WY13WMOuI+cOdX4EIdzdvQ8k6jkuGRFMYw==,
             }
-
-    acorn-walk@8.3.5:
-        resolution:
-            {
-                integrity: sha512-HEHNfbars9v4pgpW6SO1KSPkfoS0xVOM/9UzkJltjlsHZmJasxg8aXkuZa7SMf8vKGIBhpUsPluQSqhJFCqebw==,
-            }
-        engines: { node: ">=0.4.0" }
 
     acorn@3.3.0:
         resolution:
@@ -229,14 +172,6 @@ packages:
         resolution:
             {
                 integrity: sha512-nQyp0o1/mNdbTO1PO6kHkwSrmgZ0MT/jCCpNiwbUjGoRN4dlBhqJtoQuCnEOKzgTVwg0ZWiCoQy6SxMebQVh8A==,
-            }
-        engines: { node: ">=0.4.0" }
-        hasBin: true
-
-    acorn@8.17.0:
-        resolution:
-            {
-                integrity: sha512-xRQbDb9BnwDafYNn6Vwl839DYVjqXYb1XVGtWAZ1kcDc6iwAL4hg3B1dZlRiuENFeO2H53gFG3in621AdERVAg==,
             }
         engines: { node: ">=0.4.0" }
         hasBin: true
@@ -806,12 +741,6 @@ packages:
             }
         hasBin: true
 
-    create-require@1.1.1:
-        resolution:
-            {
-                integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==,
-            }
-
     cross-spawn@6.0.6:
         resolution:
             {
@@ -928,13 +857,6 @@ packages:
                 integrity: sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==,
             }
         engines: { node: ">=0.4.0" }
-
-    diff@4.0.4:
-        resolution:
-            {
-                integrity: sha512-X07nttJQkwkfKfvTPG/KSnE2OMdcUCao6+eXF3wmnIQRn2aPAHH3VxDbDOdegkd6JbPsXqShpvEOHfAT+nCNwQ==,
-            }
-        engines: { node: ">=0.3.1" }
 
     doctypes@1.1.0:
         resolution:
@@ -2168,12 +2090,6 @@ packages:
             }
         engines: { node: ">=18" }
 
-    make-error@1.3.6:
-        resolution:
-            {
-                integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==,
-            }
-
     map-cache@0.2.2:
         resolution:
             {
@@ -2355,6 +2271,127 @@ packages:
             {
                 integrity: sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==,
             }
+
+    node@runtime:24.13.0:
+        resolution:
+            type: variations
+            variants:
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-rCHprwik1UsFfYAMA7yVMilGlSuNqoEcramL+2aozo8=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-aix-ppc64.tar.gz
+                  targets:
+                      - cpu: ppc64
+                        os: aix
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-1ZWWHlY/yuBX1KD7mS8XWlTZf8xKFNwtR02S3e6jufg=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-darwin-arm64.tar.gz
+                  targets:
+                      - cpu: arm64
+                        os: darwin
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-bwPBtI3b4bEppvgDi+COCJnwXxcYW00+Q1AYCrZpp/M=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-darwin-x64.tar.gz
+                  targets:
+                      - cpu: x64
+                        os: darwin
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-D21AuUxqLra0wkD/yLn9Otp6sETBd91BPAbh75pj8IE=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-linux-arm64.tar.gz
+                  targets:
+                      - cpu: arm64
+                        os: linux
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-GAEZMLGCocW0nSMmGR/bpYJwvfe0W4x9+FXvMZMbFIo=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-linux-ppc64le.tar.gz
+                  targets:
+                      - cpu: ppc64le
+                        os: linux
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-V0RhC2JPLoKuHKJ52OznuMpGZDcjlTPS0DNWUwO8HTk=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-linux-s390x.tar.gz
+                  targets:
+                      - cpu: s390x
+                        os: linux
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-YiOq0agfnR57aCxZ0S4t4jP3tMN0dc1A0cicQrc3/6g=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-linux-x64.tar.gz
+                  targets:
+                      - cpu: x64
+                        os: linux
+                - resolution:
+                      archive: zip
+                      bin:
+                          node: node.exe
+                      integrity: sha256-krn5sMDBI+EeSvxTXw7BnNmHRl7qUGQnVTpJlxNkFYo=
+                      prefix: node-v24.13.0-win-arm64
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-win-arm64.zip
+                  targets:
+                      - cpu: arm64
+                        os: win32
+                - resolution:
+                      archive: zip
+                      bin:
+                          node: node.exe
+                      integrity: sha256-yidCaVvo3kQCfXGz9TpL2zYAm5VXX+Gub38LXOCRy4g=
+                      prefix: node-v24.13.0-win-x64
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-win-x64.zip
+                  targets:
+                      - cpu: x64
+                        os: win32
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-+DEgEuB/8QahxIrQj8Io+UNAd+f3Riov/Gg5yOPwKTU=
+                      type: binary
+                      url: https://unofficial-builds.nodejs.org/download/release/v24.13.0/node-v24.13.0-linux-arm64-musl.tar.gz
+                  targets:
+                      - cpu: arm64
+                        os: linux
+                        libc: musl
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-4nUNngAAjS6tzswA4XwwYJgO0miI3pClX5hz69zedKw=
+                      type: binary
+                      url: https://unofficial-builds.nodejs.org/download/release/v24.13.0/node-v24.13.0-linux-x64-musl.tar.gz
+                  targets:
+                      - cpu: x64
+                        os: linux
+                        libc: musl
+        version: 24.13.0
+        hasBin: true
 
     normalize-package-data@2.5.0:
         resolution:
@@ -3423,23 +3460,6 @@ packages:
             }
         hasBin: true
 
-    ts-node@10.9.2:
-        resolution:
-            {
-                integrity: sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ==,
-            }
-        hasBin: true
-        peerDependencies:
-            "@swc/core": ">=1.2.50"
-            "@swc/wasm": ">=1.2.50"
-            "@types/node": "*"
-            typescript: ">=2.7"
-        peerDependenciesMeta:
-            "@swc/core":
-                optional: true
-            "@swc/wasm":
-                optional: true
-
     tslib@1.14.1:
         resolution:
             {
@@ -3515,10 +3535,10 @@ packages:
             }
         engines: { node: ">= 0.4" }
 
-    undici-types@6.21.0:
+    undici-types@7.18.2:
         resolution:
             {
-                integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==,
+                integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==,
             }
 
     union-value@1.0.1:
@@ -3562,12 +3582,6 @@ packages:
             }
         deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
         hasBin: true
-
-    v8-compile-cache-lib@3.0.1:
-        resolution:
-            {
-                integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==,
-            }
 
     validate-npm-package-license@3.0.4:
         resolution:
@@ -3692,13 +3706,6 @@ packages:
                 integrity: sha512-QFzUah88GAGy9lyDKGBqZdkYApt63rCXYBGYnEP4xDJPXNqXXnBDACnbrXnViV6jRSqAePwrATi2i8mfYm4L1A==,
             }
 
-    yn@3.1.1:
-        resolution:
-            {
-                integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==,
-            }
-        engines: { node: ">=6" }
-
 snapshots:
     "@babel/helper-string-parser@7.29.7": {}
 
@@ -3717,10 +3724,6 @@ snapshots:
 
     "@blakeembrey/template@1.2.0": {}
 
-    "@cspotcode/source-map-support@0.8.1":
-        dependencies:
-            "@jridgewell/trace-mapping": 0.3.9
-
     "@isaacs/cliui@8.0.2":
         dependencies:
             string-width: 5.1.2
@@ -3729,15 +3732,6 @@ snapshots:
             strip-ansi-cjs: strip-ansi@6.0.1
             wrap-ansi: 8.1.0
             wrap-ansi-cjs: wrap-ansi@7.0.0
-
-    "@jridgewell/resolve-uri@3.1.2": {}
-
-    "@jridgewell/sourcemap-codec@1.5.5": {}
-
-    "@jridgewell/trace-mapping@0.3.9":
-        dependencies:
-            "@jridgewell/resolve-uri": 3.1.2
-            "@jridgewell/sourcemap-codec": 1.5.5
 
     "@nodelib/fs.scandir@2.1.5":
         dependencies:
@@ -3754,39 +3748,25 @@ snapshots:
     "@pkgjs/parseargs@0.11.0":
         optional: true
 
-    "@tsconfig/node10@1.0.12": {}
-
-    "@tsconfig/node12@1.0.11": {}
-
-    "@tsconfig/node14@1.0.3": {}
-
-    "@tsconfig/node16@1.0.4": {}
-
     "@types/babel-types@7.0.16": {}
 
     "@types/babylon@6.16.9":
         dependencies:
             "@types/babel-types": 7.0.16
 
-    "@types/node@22.17.0":
+    "@types/node@24.13.0":
         dependencies:
-            undici-types: 6.21.0
+            undici-types: 7.18.2
 
     acorn-globals@3.1.0:
         dependencies:
             acorn: 4.0.13
-
-    acorn-walk@8.3.5:
-        dependencies:
-            acorn: 8.17.0
 
     acorn@3.3.0: {}
 
     acorn@4.0.13: {}
 
     acorn@7.4.1: {}
-
-    acorn@8.17.0: {}
 
     ajv@4.11.8:
         dependencies:
@@ -4159,8 +4139,6 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
-    create-require@1.1.1: {}
-
     cross-spawn@6.0.6:
         dependencies:
             nice-try: 1.0.5
@@ -4238,8 +4216,6 @@ snapshots:
 
     delayed-stream@1.0.0:
         optional: true
-
-    diff@4.0.4: {}
 
     doctypes@1.1.0: {}
 
@@ -5067,8 +5043,6 @@ snapshots:
     make-dir@5.1.0:
         optional: true
 
-    make-error@1.3.6: {}
-
     map-cache@0.2.2: {}
 
     map-visit@1.0.0:
@@ -5193,6 +5167,8 @@ snapshots:
         optional: true
 
     nice-try@1.0.5: {}
+
+    node@runtime:24.13.0: {}
 
     normalize-package-data@2.5.0:
         dependencies:
@@ -5934,24 +5910,6 @@ snapshots:
 
     tree-kill@1.2.2: {}
 
-    ts-node@10.9.2(@types/node@22.17.0)(typescript@6.0.3):
-        dependencies:
-            "@cspotcode/source-map-support": 0.8.1
-            "@tsconfig/node10": 1.0.12
-            "@tsconfig/node12": 1.0.11
-            "@tsconfig/node14": 1.0.3
-            "@tsconfig/node16": 1.0.4
-            "@types/node": 22.17.0
-            acorn: 8.17.0
-            acorn-walk: 8.3.5
-            arg: 4.1.3
-            create-require: 1.1.1
-            diff: 4.0.4
-            make-error: 1.3.6
-            typescript: 6.0.3
-            v8-compile-cache-lib: 3.0.1
-            yn: 3.1.1
-
     tslib@1.14.1: {}
 
     tunnel-agent@0.6.0:
@@ -6014,7 +5972,7 @@ snapshots:
             has-symbols: 1.1.0
             which-boxed-primitive: 1.1.1
 
-    undici-types@6.21.0: {}
+    undici-types@7.18.2: {}
 
     union-value@1.0.1:
         dependencies:
@@ -6036,8 +5994,6 @@ snapshots:
 
     uuid@3.4.0:
         optional: true
-
-    v8-compile-cache-lib@3.0.1: {}
 
     validate-npm-package-license@3.0.4:
         dependencies:
@@ -6140,5 +6096,3 @@ snapshots:
             cliui: 2.1.0
             decamelize: 1.2.0
             window-size: 0.1.0
-
-    yn@3.1.1: {}
