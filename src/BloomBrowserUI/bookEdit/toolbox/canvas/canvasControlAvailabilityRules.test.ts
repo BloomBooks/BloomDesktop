@@ -6,8 +6,8 @@ import { IControlAvailability, IControlContext } from "./canvasControlTypes";
 // Unit tests for the `editWithAi` availability rule (see canvasControlAvailabilityRules.ts).
 // This is the gating logic behind the "Edit with AI..." image menu item: it must stay hidden
 // until the experimental feature is on, and be disabled unless there is a real, modifiable
-// image. The rule is a pure function of IControlContext, so we exercise it directly rather
-// than driving the whole menu.
+// image whose format the editor can actually edit. The rule is a pure function of
+// IControlContext, so we exercise it directly rather than driving the whole menu.
 
 // A context with every flag off/neutral. Each test flips only the flags the rule reads, so a
 // change in behavior points at the rule and not at incidental context. Cast through unknown
@@ -18,6 +18,7 @@ function makeCtx(overrides: Partial<IControlContext>): IControlContext {
         hasImage: false,
         hasRealImage: false,
         canModifyImage: false,
+        imageIsAiEditableFormat: false,
     };
     return { ...base, ...overrides } as unknown as IControlContext;
 }
@@ -89,7 +90,7 @@ describe("imageAvailabilityRules.editWithAi", () => {
         });
     });
 
-    describe("enabled = hasRealImage && canModifyImage", () => {
+    describe("enabled = hasRealImage && canModifyImage && imageIsAiEditableFormat", () => {
         test("disabled when there is only a placeholder (no real image)", () => {
             expect(
                 evaluate(
@@ -97,6 +98,7 @@ describe("imageAvailabilityRules.editWithAi", () => {
                     makeCtx({
                         hasRealImage: false,
                         canModifyImage: true,
+                        imageIsAiEditableFormat: true,
                     }),
                 ),
             ).toBe(false);
@@ -109,18 +111,33 @@ describe("imageAvailabilityRules.editWithAi", () => {
                     makeCtx({
                         hasRealImage: true,
                         canModifyImage: false,
+                        imageIsAiEditableFormat: true,
                     }),
                 ),
             ).toBe(false);
         });
 
-        test("enabled with a real, modifiable image", () => {
+        test("disabled when the image format is one the editor cannot edit (e.g. svg)", () => {
             expect(
                 evaluate(
                     rule.enabled,
                     makeCtx({
                         hasRealImage: true,
                         canModifyImage: true,
+                        imageIsAiEditableFormat: false,
+                    }),
+                ),
+            ).toBe(false);
+        });
+
+        test("enabled with a real, modifiable, editable-format image", () => {
+            expect(
+                evaluate(
+                    rule.enabled,
+                    makeCtx({
+                        hasRealImage: true,
+                        canModifyImage: true,
+                        imageIsAiEditableFormat: true,
                     }),
                 ),
             ).toBe(true);

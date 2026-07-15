@@ -296,6 +296,29 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
+        public void TryResolveServedUrlToBookFile_NonEditableImageFormat_Fails()
+        {
+            // An svg is a real image, but the AI editor can't edit it, so it must not
+            // resolve as a reusable source (see AllowedImageExtensions).
+            var svgPath = MakeFile("drawing.svg");
+            // Sanity: the file exists, so a False result is due to the format check, not absence.
+            Assert.That(File.Exists(svgPath), Is.True, "setup");
+
+            var ok = AiImageEditorApi.TryResolveServedUrlToBookFile(
+                _bookFolder.Path,
+                BookUrl("drawing.svg"),
+                out var resolved
+            );
+
+            Assert.That(
+                ok,
+                Is.False,
+                "an svg (a format the editor cannot edit) must not resolve as a reusable source"
+            );
+            Assert.That(resolved, Is.Null);
+        }
+
+        [Test]
         public void TryResolveServedUrlToBookFile_PathTraversalOutsideBook_Fails()
         {
             // A real file just outside the book folder, reached via "..".

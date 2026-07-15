@@ -92,9 +92,14 @@ namespace Bloom.web.controllers
         private string _pendingOAuthCode;
         private string _pendingOAuthError;
 
-        // The image formats the editor may store and that we serve/commit. Single source of
-        // truth: both AllowedFileName (below) and IsImageFileName derive from this set so the
-        // two lists can't drift apart.
+        // The image formats the AI editor can actually work with — the ones it can load as
+        // input, and the raster formats it stores/serves/commits as results. Deliberately a
+        // short list: formats the editor can't edit (e.g. svg, tif, bmp, gif) are excluded so
+        // we never offer, serve, or commit an image the editor can't handle. Single source of
+        // truth — AllowedFileName (below), IsImageFileName, the history-result probe, the
+        // reused-source check, and the whole-book image list all derive from this set, so the
+        // lists can't drift apart. Must stay in sync with the front-end's editable-format list
+        // (BloomBrowserUI/.../aiEditorImageFormats.ts).
         private static readonly HashSet<string> AllowedImageExtensions = new HashSet<string>(
             StringComparer.OrdinalIgnoreCase
         )
@@ -102,12 +107,7 @@ namespace Bloom.web.controllers
             ".png",
             ".jpg",
             ".jpeg",
-            ".gif",
             ".webp",
-            ".svg",
-            ".bmp",
-            ".tif",
-            ".tiff",
         };
 
         // Regex alternation of the allowed extensions without the leading dot
@@ -680,6 +680,12 @@ namespace Bloom.web.controllers
 
                     var relativePath = HtmlDom.GetImageElementUrl(element).PathOnly.NotEncoded;
                     if (string.IsNullOrEmpty(relativePath))
+                        continue;
+
+                    // Only offer images the editor can actually edit. A book may legitimately
+                    // contain formats the editor can't open (e.g. an svg illustration); those
+                    // slots are simply omitted from the list rather than handed over to fail.
+                    if (!IsImageFileName(relativePath))
                         continue;
 
                     images.Add(

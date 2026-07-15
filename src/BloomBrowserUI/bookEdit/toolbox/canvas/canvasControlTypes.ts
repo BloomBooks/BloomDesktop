@@ -147,6 +147,10 @@ export interface IControlContext {
     // FeatureStatus.visible). Off by default, so the "Edit with AI" menu item is
     // hidden until the user enables the feature in Experimental Features.
     aiImageEditingAvailable: boolean;
+    // True when the current image's format is one the AI Image Editor can actually
+    // edit (see aiEditorImageFormats.ts). False for formats the editor can't open
+    // (e.g. svg), which keeps "Edit with AI" disabled for them.
+    imageIsAiEditableFormat: boolean;
 }
 
 export interface IControlRuntime {
