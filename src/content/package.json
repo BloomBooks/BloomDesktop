@@ -22,7 +22,7 @@
         "The -a option says to run them all before watching": "",
         "watch:pug": "onchange -j 9 -a \"**/*.pug\" -- pug {{file}} --pretty --out ../../output/browser/{{fileDir}}",
         "//": "______________________________________________________________________________________________________",
-        "// build:pageSizes runs the .ts directly via Node's native type stripping (no ts-node). --experimental-strip-types is required on the Volta-pinned Node 22.14 (default only from 22.18); the disable-warning flags silence the harmless experimental and typeless-package.json notices": "",
+        "// build:pageSizes runs the .ts directly via Node's native type stripping (no ts-node). --experimental-strip-types is required for earlier versions of Node (default only from 22.18); the disable-warning flags silence the harmless experimental and typeless-package.json notices": "",
         "build:pageSizes": "node --experimental-strip-types --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON pageSizes.ts",
         "build:less": "npm-run-all build:pageSizes build:less-inner",
         "build:less-inner": "node ../BloomBrowserUI/scripts/watchLess.mjs --scope=content --once",

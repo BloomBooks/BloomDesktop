@@ -5,6 +5,13 @@
     "engines": {
         "node": ">=22.11.0"
     },
+    "devEngines": {
+        "runtime": {
+            "name": "node",
+            "version": "24.13.0",
+            "onFail": "download"
+        }
+    },
     "scripts": {
         "dev": "pnpm exec vite --config vite.config.ts --no-open",
         "test": "playwright test",
@@ -18,7 +25,7 @@
     },
     "devDependencies": {
         "@playwright/test": "1.56.1",
-        "@types/node": "22.18.11",
+        "@types/node": "24.13.0",
         "@types/react": "17.0.89",
         "@types/react-dom": "17.0.26",
         "@vitejs/plugin-react": "4.7.0",
