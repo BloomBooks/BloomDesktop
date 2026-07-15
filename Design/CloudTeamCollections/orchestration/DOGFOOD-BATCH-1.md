@@ -727,6 +727,47 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 15 Jul 2026 (PAUSED #2 — John: "put this task on hold until the next session; too many
+  tokens"). Continuation of the entry below; tree has UNCOMMITTED WIP (~67 modified + 5 new
+  files). **What changed since the previous PAUSE entry:**
+  - C# batch-1 is COMPLETE and GREEN: fixed the CloudEnvironmentTests compile break, finished
+    the whole batch-1 tail (CloudBookTransfer dead `alreadyUploadedThisTransaction` param
+    dropped from UploadChangedFiles + both CloudTeamCollection call sites + tests;
+    CloudCollectionMonitor dead Stop() deleted + Dispose doc'd terminal; SharingApi
+    serializes `emailVerified`, SignedInEmailForJoinCards→CurrentAuth().CurrentEmail,
+    RegisterWithApiHandler doc'd; CloudTeamCollection CollectionIdForCloud→CloudCollectionId
+    and TryGetBookIdForTests→GetBookIdByNameIndexForTests with callers; TryTakeOverLock doc
+    reworded). Required filter ran **460/460 PASSED** (down from 465 because dead-API tests
+    were deleted with their APIs).
+  - MID-PAUSE INCIDENT (resolved): an old stash mis-applied during the previous pause left
+    conflict markers in 9 files foreign to this branch's work + a spurious untracked
+    CanvasElementManager.ts; with John's approval all 9 were restored from HEAD and the stray
+    file deleted. No stash was dropped; nothing of ours was lost.
+  - Three fix agents were then relaunched and STOPPED for THIS pause, each mid-flight:
+    (a) React/TS agent — finished auditing/completing the test-render-helper refactor and was
+    running the FULL vitest suite, which **exited code 1**; it was stopped while reading the
+    failure summary. UNKNOWN whether the failure is refactor-caused or pre-existing — first
+    resume job: run `pnpm exec vitest run` in src/BloomBrowserUI and triage.
+    (b) e2e agent — verification came back CLEAN (stragglers converted, tsc/eslint-level check
+    passed); it was stopped during scratchpad cleanup (it made a HEAD-baseline checkout in the
+    session scratchpad with a node_modules junction — harmless, dies with the session).
+    Treat e2e work as DONE pending one final look.
+    (c) C# batch-2 agent — had applied E1 (GetRepoBooksByIdMap protected virtual + cloud
+    override from _cache.GetAllBooks()), E3 (poll early-return), E4 (manifest hashes into
+    UploadChangedFiles), E6 (display-name failure TTL), R12 (CloudAuth.CreateInitialized),
+    and the R11 hoist (AvailablePath→base); its last words were "Now R11 (use hoisted
+    AvailablePath), R1 (ListAllObjects), R2 (delete BuildS3Client)" — so R11's USE side, R1,
+    R2 are NOT done, and NOTHING of batch 2 has been compiled or tested. The C# tree may not
+    compile.
+  **EXACT next action on resume:** (1) `git diff` the C# files to see batch-2 agent's actual
+  edits; finish R11-use/R1/R2 (specs in the entry below); run the required filter (baseline
+  was 460/460 pre-batch-2). (2) Triage the vitest full-suite failure; finish React/TS
+  verification (vitest/eslint/typecheck). (3) C# batch 3 (file org — specs below). (4) Full
+  test pass + live run.sh smoke (launchers still unverified live). (5) Commit in logical
+  chunks (NOTE: `.claude/settings.json` is untracked session-local config — do NOT commit it;
+  add files explicitly, no `git add -A`). (6) Regenerate #8052 via orchestration/regen-*.sh,
+  re-trigger Greptile. (7) Final report to John: fixed/skipped summary + REPORT-ONLY decision
+  list (below, incl. DpapiCloudTokenStore never wired).
 - 15 Jul 2026 (PAUSED MID-REFACTOR — tokens ran out; tree has UNCOMMITTED WIP that DOES NOT
   COMPILE yet) · John asked for a /simplify-style quality review of the whole branch; 5 review
   agents produced ~49 findings; application was in progress when paused. **STATE:**
