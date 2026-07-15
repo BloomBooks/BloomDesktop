@@ -18,7 +18,7 @@ namespace Bloom
 		/// </summary>
 		private void InitializeComponent()
 		{
-            this._webview = new Microsoft.Web.WebView2.WinForms.WebView2();
+            this._webview = new Bloom.BloomWebView2();
             ((System.ComponentModel.ISupportInitialize)(this._webview)).BeginInit();
             this.SuspendLayout();
             // 
@@ -49,6 +49,6 @@ namespace Bloom
 
 		#endregion
 
-		private Microsoft.Web.WebView2.WinForms.WebView2 _webview;
+		private Bloom.BloomWebView2 _webview;
 	}
 }
