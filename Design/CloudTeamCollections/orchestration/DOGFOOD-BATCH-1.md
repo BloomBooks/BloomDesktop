@@ -727,6 +727,16 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 14 Jul 2026 (PM #5 — review branch refreshed with all fixes; Greptile re-running) · Re-merged
+  origin/master (now 7209ba3bc1 → cloud-collections df580ff6bf); required filter 462/462; pushed.
+  cloud-tc-for-review REGENERATED (bucket now also assigns ExperimentalFeaturesTests.cs → g6;
+  --no-verify; byte-identical to cloud-collections — empty diff) and force-pushed → **PR #8052
+  head 8fbe66e4ea, MERGEABLE**, now carrying all Devin-finding fixes. Greptile re-review triggered
+  (@greptile-apps review) and PENDING on the new head. **Fork Devin-probe cleanup DONE:** PRs
+  JohnThomson #3/#4/#5 closed, branches devin-probe-{base,client-core,server,backend-api} deleted
+  (remote + local). Devin slice-review harvest fully complete (7 actionable → 5 fixed, 1 dismissed,
+  1 deferred to item 10). **EXACT next action:** when Greptile finishes on 8fbe66e4ea, gather +
+  triage its findings; fix any real ones on cloud-collections and re-regenerate/force-push.
 - 14 Jul 2026 (PM #4 — Devin findings triaged + FIXED) · Commit `99bfb1e102` on cloud-collections
   (pushed) fixes 5 of the 7 actionable Devin findings; 462/462 required-filter + new regression
   test; eslint clean. **Fixed:** (1) CloudBookTransfer upload race — alreadyUploadedThisTransaction
