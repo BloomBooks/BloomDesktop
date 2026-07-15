@@ -282,9 +282,19 @@ function AddEditKeyHandlers(container) {
             hideInvisibles(e);
         });
 
+    // Ctrl+Space: "clear formatting" on the current selection. We route this through the CKEditor
+    // instance that currently has focus (rather than the browser's document.execCommand) so that
+    // (a) it uses our removeFormat configuration/filter, which strips exactly the inline formatting
+    // our toolbar produces (bold, italic, underline, superscript, text color) while preserving
+    // Bloom's structural spans, and (b) the edit goes through CKEditor's change/undo machinery so
+    // it is noticed and saved. CKEditor breaks up partially-selected enclosing elements as needed.
     $(document).on("keydown", (e) => {
         if (e.key === " " && e.ctrlKey && !e.shiftKey && !e.altKey) {
-            document.execCommand("removeFormat"); // will remove bold, italics, etc. but not things that use elements, like h1
+            const editor = CKEDITOR.currentInstance;
+            if (editor) {
+                e.preventDefault();
+                editor.execCommand("removeFormat");
+            }
         }
     });
 
@@ -1277,6 +1287,17 @@ export function localizeCkeditorTooltips(bar: JQuery) {
         .done((result) => {
             $(toolGroup).find(".cke_button__superscript").attr("title", result);
         });
+    theOneLocalizationManager
+        .asyncGetText(
+            "EditTab.DirectFormatting.RemoveFormat",
+            "Remove Formatting",
+            "",
+        )
+        .done((result) => {
+            $(toolGroup)
+                .find(".cke_button__removeformat")
+                .attr("title", result);
+        });
 }
 
 // This is invoked when we are about to change pages.
@@ -1466,6 +1487,55 @@ export function getBodyContentForSavePage() {
     return result;
 }
 
+// Resize each text canvas element (bloom-canvas-element) to fit its content -- growing or shrinking
+// the box -- matching what the editor does automatically when a page is opened.
+//
+// On page load the editor schedules this same auto-height adjustment for every editable
+// (OverflowChecker.AddOverflowHandlers -> AdjustSizeOrMarkOverflowSoon), but that runs on a 1000ms
+// setTimeout that is NOT registered as a requestPageContent delay, so the off-screen capture's
+// wait-for-delays loop does not wait for it. Off-screen, C# captures as soon as the (image-sizing,
+// etc.) delays clear, which is usually well under a second, so without this we would save the box at
+// its authored height. When that height is too short for how Bloom actually renders the text (e.g. a
+// caption that wraps to two lines), the result is a scrollbar-clipped box that only fixes itself once
+// a human opens the page in the Edit tab (letting the timer fire) and saves. Doing it synchronously
+// here bakes the corrected height into the processed HTML.
+//
+// We call adjustSizeOfContainingCanvasElementToMatchContent directly (rather than the full
+// OverflowChecker.AdjustSizeOrMarkOverflow) so we only resize the box and don't add page-level
+// overflow markup or qtip debris to the captured DOM. Callers run this on the fully settled layout
+// (after the activeDelays wait), so text measurements reflect the final image sizing and fonts.
+function resizeCanvasElementsToFitContent(): void {
+    // Never throws out: this runs inside finish()'s try/catch, and a failure to resize must not
+    // block capturing/saving the page (same contract as the fitImageTextSplits block). If it
+    // threw, the whole page capture would be abandoned -- strictly worse than falling back to the
+    // authored height. So we self-guard and degrade to "capture without the resize" on any error.
+    try {
+        const canvasEditables = Array.from(
+            document.querySelectorAll<HTMLElement>(
+                `${kCanvasElementSelector} .bloom-editable.bloom-visibility-code-on`,
+            ),
+        );
+        for (const editable of canvasEditables) {
+            const [, overflowY] =
+                OverflowChecker.getSelfOverflowAmounts(editable);
+            // Calling this off-screen is DOM-safe. adjustSizeOfContainingCanvasElementToMatchContent
+            // ends by calling adjustTarget()/alignControlFrameWithActiveElement() (CanvasElementManager
+            // ~514-515), which in the live editor can add drag-game target arrows or the selection
+            // frame. Neither happens here: adjustTarget runs only AFTER the bloom-noAutoHeight
+            // early-return, so drag-game text (which is bloom-noAutoHeight) never reaches it, and a
+            // normal canvas box has no drag target to build one for; alignControlFrame no-ops when
+            // there is no active element (there isn't, off-screen). This is the same resize path the
+            // live editor already runs on auto-grow, and capture strips editing debris afterward.
+            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
+                editable,
+                overflowY,
+            );
+        }
+    } catch (e) {
+        console.error("resizeCanvasElementsToFitContent failed: ", e);
+    }
+}
+
 // Used by the off-screen "process whole book" path (C# BookProcessor, driven by the
 // external/process-book API). It gathers the same page content that requestPageContent() would save
 // (via the shared extractAndStripPageContentForSave()), but instead of posting it to the editView/pageContent
@@ -1473,7 +1543,9 @@ export function getBodyContentForSavePage() {
 // combined result on window.__bloomExternalPageContent for the C# caller to poll. Like
 // requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, up to
 // kMaxWaitTimeMs, so browser-based measurements (image sizing, canvas-element layout, etc.) are complete
-// before we capture the page.
+// before we capture the page. It also resizes text canvas elements to fit their content (see
+// resizeCanvasElementsToFitContent), since that auto-height adjustment is otherwise deferred on a
+// timer the wait loop does not track.
 export function captureContentForExternalProcessing(
     fitImageTextSplits?: boolean,
 ): void {
@@ -1506,6 +1578,7 @@ export function captureContentForExternalProcessing(
     const start = Date.now();
     const finish = () => {
         try {
+            resizeCanvasElementsToFitContent();
             window.__bloomExternalPageContent =
                 extractAndStripPageContentForSave();
         } catch (e) {
@@ -1941,6 +2014,35 @@ export function attachToCkEditor(element) {
         const editor = evt["editor"];
         const bar = $("body").find("." + editor.id);
         bar.hide();
+
+        // Protect Bloom's structural spans from the removeFormat ("clear formatting") command.
+        // The only spans the format toolbar itself produces are bare <span style="color:..."> (and
+        // similar bare style spans such as small caps), which carry neither a class nor an id, so we
+        // let those be removed. Any span that has a class or id is one Bloom created for its own
+        // purposes (audio segments like audio-sentence/bloom-highlightSegment, bloom-linebreak from
+        // Shift+Enter, etc.), and clearing formatting must leave those intact.
+        // Tradeoff: we keep EVERY class/id span, so if formatting were carried directly on such a
+        // span (e.g. an imported <span class="x" style="font-weight:bold">), this command would not
+        // strip it. That case is rare and mostly can't arise here: the toolbar never puts formatting
+        // on a class/id span (bold -> <strong>, color -> a bare <span style="color">), formatting
+        // nested INSIDE a protected span is still cleared because the command descends into
+        // children, and pasted spans have their class/id and most styles removed by
+        // config.pasteFilter. We accept that edge in exchange for guaranteeing the structural spans
+        // survive; this feature is about user convenience, not repairing malformed markup.
+        // Note: addRemoveFormatFilter is added to the editor prototype by the removeformat plugin,
+        // whose script loads asynchronously. We register the filter here, in instanceReady, rather
+        // than right after CKEDITOR.inline() because at that earlier point the plugin may not have
+        // loaded yet, so the method would be undefined and the call would throw (aborting the rest
+        // of attachToCkEditor, including the color-button setup below).
+        editor.addRemoveFormatFilter((element) => {
+            if (
+                element.is("span") &&
+                (element.hasAttribute("class") || element.hasAttribute("id"))
+            ) {
+                return false; // keep it
+            }
+            return true;
+        });
     });
 
     if (CKEDITOR.config.colorButton_colors) {
