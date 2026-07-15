@@ -62,7 +62,7 @@ export const killProcessTree = (pid, signal = "SIGTERM") =>
 const BLOOM_DEV_STACK_SIGNATURE =
     "watchBloomExe\\.mjs" +
     "|BloomBrowserUI[\\\\/](scripts[\\\\/](dev|watchLess)\\.mjs|node_modules[\\\\/](vite|onchange)[\\\\/])" +
-    "|(compilePug|copyStaticFile|copyContentFile)\\.mjs";
+    "|scripts[\\\\/](compilePug|copyStaticFile|copyContentFile)\\.mjs";
 
 /**
  * Find the process ids of ORPHANED Bloom dev-stack `node.exe` processes across
