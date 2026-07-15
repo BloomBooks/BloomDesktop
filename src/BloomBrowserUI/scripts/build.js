@@ -112,9 +112,9 @@ const run = async () => {
     const rimrafBin = resolvePackageBin(contentRoot, "rimraf", "rimraf");
 
     // Run pageSizes.ts through Node's native TypeScript type stripping rather
-    // than ts-node: the pinned TypeScript 6.0 + ts-node combo fails on Node 22
+    // than ts-node: the TypeScript 6.0 + ts-node combo fails on Node 22
     // (ERR_UNKNOWN_FILE_EXTENSION and a TS5107 deprecation error).
-    // --experimental-strip-types is required on the Volta-pinned Node 22.14
+    // --experimental-strip-types is required for earlier versions of Node
     // (stripping is on by default only from 22.18); the disable-warning flags
     // silence the harmless experimental and typeless-package.json notices.
     await runCommand(
