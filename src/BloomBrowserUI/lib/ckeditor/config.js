@@ -45,15 +45,22 @@ CKEDITOR.editorConfig = function(config) {
         { name: "clipboard", groups: ["clipboard", "undo"] },
         { name: "editing", groups: ["find", "selection", "spellchecker"] },
         { name: "forms" },
-        { name: "basicstyles", groups: ["basicstyles", "cleanup"] },
+        { name: "basicstyles", groups: ["basicstyles"] },
         {
             name: "paragraph",
             groups: ["list", "indent", "blocks", "align", "bidi"]
         },
         { name: "links" },
-        { name: "insert" },
         { name: "styles" },
         { name: "colors" },
+        // The "cleanup" group (which holds the "Remove Formatting" button, added by our trimmed
+        // removeformat plugin via toolbar: 'cleanup,10') is placed after "colors", so the button
+        // appears to the right of the text-color button.
+        { name: "cleanup", groups: ["cleanup"] },
+        // The "insert" group holds our "SetupLink" hyperlink button (added in BloomField.ts with
+        // toolbar: "insert"). It is placed last so the link button is the very last button on the
+        // selection toolbar, after Remove Formatting.
+        { name: "insert" },
         { name: "tools" },
         { name: "others" },
         { name: "about" }
@@ -129,6 +136,25 @@ CKEDITOR.editorConfig = function(config) {
     // The others are required dependencies of colorbutton.
     // Note that the BGColor button that comes by default with the colorbutton plugin
     // is removed in the config.removeButtons list above.
+    // Add removeformat so that Ctrl+Space (see AddEditKeyHandlers in bloomEditing.ts) and the
+    // "Remove Formatting" toolbar button can "clear formatting". Our trimmed copy of that plugin
+    // registers the removeFormat command and the toolbar button (with its icon), but ships no
+    // language files: the button's tooltip is localized by Bloom in localizeCkeditorTooltips().
     CKEDITOR.config.extraPlugins =
-        "autolink,panel,panelbutton,button,floatpanel,colorbutton";
+        "autolink,panel,panelbutton,button,floatpanel,colorbutton,removeformat";
+
+    // Which inline elements the removeFormat command ("clear formatting", Ctrl+Space) strips.
+    // We limit this to the inline formatting that our selection toolbar can produce: bold
+    // (b/strong), italic (i/em), underline (u), superscript (sup), and text color (a bare
+    // <span style="color:...">). We include sub and font as harmless legacy cases. Notably we do
+    // NOT list block elements, so paragraphs/headings are left alone. Structural spans (audio
+    // segments, bloom-linebreak) are protected by the filter added in attachToCkEditor.
+    config.removeFormatTags = "b,strong,i,em,u,sup,sub,font,span";
+
+    // The default removeFormatAttributes would strip class/style/align/lang from any element it
+    // keeps (e.g. paragraphs spanned by a multi-paragraph selection), which would clobber
+    // alignment and other things the format toolbar never touched. All the formatting we do want
+    // to remove lives on elements listed in removeFormatTags (which are removed whole), so we
+    // don't need to strip attributes from kept elements at all.
+    config.removeFormatAttributes = "";
 };

@@ -1,6 +1,7 @@
 ---
 name: run-bloom
 description: Run, launch, screenshot, or drive the Bloom desktop app (Bloom.exe with embedded WebView2). Use when you need to start Bloom from this worktree, attach to a running Bloom, switch workspace tabs, take a screenshot, inspect DOM/console/network over CDP, or stop a Bloom instance.
+model: sonnet
 ---
 
 # Run Bloom (desktop app)
@@ -18,7 +19,7 @@ verified quick path.
 
 ## Prerequisites
 
-Dev machines already have: node 22 + pnpm 11.5.2 (see .node-version and the
+Dev machines already have: node 24 + pnpm 11.5.2 (see .node-version and the
 packageManager field), .NET SDK 10, WebView2 runtime. On a machine missing
 dependencies, run `./init.sh` (fetches C# deps, pnpm installs, initial
 `pnpm build`) — documented but not re-verified here; a failed C# build with
