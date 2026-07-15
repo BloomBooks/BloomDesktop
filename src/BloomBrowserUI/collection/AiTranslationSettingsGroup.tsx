@@ -413,6 +413,11 @@ function useAiTranslationEngineValidation(
     const latestSettingsRef = React.useRef(settings);
     latestSettingsRef.current = settings;
 
+    // Effect justified: synchronizes this engine's displayed validation with the initialValidation
+    // prop, which arrives asynchronously from the server (an external source) after the settings
+    // load. When an up-to-date validation loads we adopt it and seed the "last probed" key so we
+    // don't immediately re-probe; otherwise we clear it. That is external-state synchronization,
+    // which is what an Effect is for.
     React.useEffect(() => {
         setValidation(
             initialValidation?.upToDate ? initialValidation : undefined,
@@ -429,6 +434,11 @@ function useAiTranslationEngineValidation(
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialValidation]);
 
+    // Effect justified: debounced live validation against the external translation service. When
+    // this engine's enabled state, credentials, or the target language change, we wait ~600ms of
+    // quiet and then probe the provider over the network and reflect the result, cancelling the
+    // pending probe (timer) on further change or unmount. Talking to that external service with
+    // proper cleanup is a legitimate use of an Effect.
     React.useEffect(() => {
         if (!isEngineEnabled(settings, spec)) {
             setIsPending(false);
@@ -533,6 +543,151 @@ const EngineValidationStatusControl: React.FunctionComponent<{
     );
 };
 
+// The live data the target-language control needs, supplied via context (below) so the control
+// can live at module scope. Everything here is derived from the hook's state and refreshed each
+// render; the control reads it through the context.
+export interface IAiTranslationTargetLanguageControlData {
+    usesEngineManagedTargetLanguages: boolean;
+    supportedTargetLanguages: ITargetLanguageOption[];
+    supportedLanguagesMessage: string;
+    isLoadingSupportedLanguages: boolean;
+    languageOptionsVersion: number;
+    loadSupportedLanguages: () => Promise<void>;
+    readyProviderIds: AiTranslationProviderId[];
+    engineDisplayNames: Record<AiTranslationProviderId, string>;
+}
+
+// Provided by AdvancedSettingsPanel (wrapping the Configr pane) so the module-scope
+// AiTranslationTargetLanguageControl can reach the hook's live data without being redefined on
+// every render.
+export const AiTranslationTargetLanguageContext = React.createContext<
+    IAiTranslationTargetLanguageControlData | undefined
+>(undefined);
+
+// The target-language chooser passed to ConfigrCustomObjectInput's `control` prop. It MUST live at
+// module scope (not inside useAiTranslationSettingsGroup): a component defined inside the hook gets
+// a new identity on every render, which makes React unmount/remount it -- closing the dropdown and
+// losing focus whenever any other settings field changes. It gets its selection via the usual
+// value/onChange, and everything else (options, load callback, etc.) from context.
+const AiTranslationTargetLanguageControl: React.FunctionComponent<{
+    value: string;
+    disabled?: boolean;
+    onChange: (value: string) => void;
+}> = (controlProps) => {
+    const data = React.useContext(AiTranslationTargetLanguageContext)!;
+
+    if (!data.usesEngineManagedTargetLanguages) {
+        return (
+            <TextField
+                fullWidth={true}
+                size="small"
+                value={controlProps.value || ""}
+                disabled={controlProps.disabled}
+                onChange={(event) => {
+                    controlProps.onChange(event.target.value);
+                }}
+                inputProps={{
+                    "data-testid": "ai-translation-target-language-input",
+                }}
+            />
+        );
+    }
+
+    const currentValue = controlProps.value || "";
+    const knownOptions = data.supportedTargetLanguages.some(
+        (option) => option.value === currentValue,
+    )
+        ? data.supportedTargetLanguages
+        : currentValue
+          ? [
+                ...data.supportedTargetLanguages,
+                {
+                    value: currentValue,
+                    label: currentValue,
+                    providerIds: [],
+                },
+            ]
+          : data.supportedTargetLanguages;
+
+    return (
+        // Constrain the width so a long error message wraps within the dialog instead of
+        // forcing it to scroll horizontally (the message is rendered below, not as the
+        // TextField's helperText, so we can style it as a red, wrapping error).
+        <div
+            css={css`
+                width: 100%;
+                max-width: 500px;
+            `}
+        >
+            <TextField
+                select={true}
+                fullWidth={true}
+                size="small"
+                value={currentValue}
+                disabled={controlProps.disabled}
+                onChange={(event) => {
+                    controlProps.onChange(event.target.value);
+                }}
+                SelectProps={{
+                    onOpen: () => {
+                        void data.loadSupportedLanguages();
+                    },
+                }}
+                inputProps={{
+                    "data-testid": "ai-translation-target-language-select",
+                    "data-language-options-version":
+                        data.languageOptionsVersion,
+                }}
+            >
+                <MenuItem value={""}></MenuItem>
+                {data.isLoadingSupportedLanguages && (
+                    <MenuItem value="" disabled={true}>
+                        Loading languages...
+                    </MenuItem>
+                )}
+                {knownOptions.map((option) => {
+                    const note = getLanguageSupportNote(
+                        option,
+                        data.readyProviderIds,
+                        data.engineDisplayNames,
+                    );
+                    return (
+                        <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                            {note && (
+                                <span
+                                    css={css`
+                                        margin-left: 6px;
+                                        font-size: 0.8em;
+                                        opacity: 0.65;
+                                    `}
+                                >
+                                    ({note})
+                                </span>
+                            )}
+                        </MenuItem>
+                    );
+                })}
+            </TextField>
+            {data.supportedLanguagesMessage && (
+                <div
+                    data-testid="ai-translation-supported-languages-message"
+                    css={css`
+                        margin-top: 4px;
+                        color: #b3261e;
+                        white-space: pre-wrap;
+                        overflow-wrap: anywhere;
+                        word-break: break-word;
+                        line-height: 1.35;
+                    `}
+                >
+                    {data.supportedLanguagesMessage}
+                </div>
+            )}
+        </div>
+    );
+};
+
 export const useAiTranslationSettingsGroup = (props: {
     settings: IAiTranslationSettings | undefined;
     initialValidations?: Partial<
@@ -548,7 +703,10 @@ export const useAiTranslationSettingsGroup = (props: {
     alpha2EnabledLabel: string;
     alpha2ApiKeyLabel: string;
     translationTestLabel: string;
-}): React.ReactElement => {
+}): {
+    group: React.ReactElement;
+    targetLanguageData: IAiTranslationTargetLanguageControlData;
+} => {
     const deepLValidation = useAiTranslationEngineValidation(
         deepLFieldSpec,
         props.settings,
@@ -613,6 +771,11 @@ export const useAiTranslationSettingsGroup = (props: {
         }
     }, [props.settings, supportedTargetLanguages.length]);
 
+    // Effect justified: keeps the cached supported-languages list in sync with the engine
+    // configuration. The list is fetched from the providers (external services) and keyed to a
+    // specific credential/target configuration; when that configuration changes, the cached list
+    // and message no longer apply, so we clear them (the refetch is triggered by the effect below).
+    // This synchronizes cached external data with its inputs, which warrants an Effect.
     React.useEffect(() => {
         const currentLanguageConfigKey = getSupportedLanguagesConfigKey(
             props.settings,
@@ -645,123 +808,20 @@ export const useAiTranslationSettingsGroup = (props: {
         alpha2: props.alpha2EnabledLabel,
     };
 
-    const AiTranslationTargetLanguageControl: React.FunctionComponent<{
-        value: string;
-        disabled?: boolean;
-        onChange: (value: string) => void;
-    }> = (controlProps) => {
-        if (!usesEngineManagedTargetLanguages) {
-            return (
-                <TextField
-                    fullWidth={true}
-                    size="small"
-                    value={controlProps.value || ""}
-                    disabled={controlProps.disabled}
-                    onChange={(event) => {
-                        controlProps.onChange(event.target.value);
-                    }}
-                    inputProps={{
-                        "data-testid": "ai-translation-target-language-input",
-                    }}
-                />
-            );
-        }
-
-        const currentValue = controlProps.value || "";
-        const knownOptions = supportedTargetLanguages.some(
-            (option) => option.value === currentValue,
-        )
-            ? supportedTargetLanguages
-            : currentValue
-              ? [
-                    ...supportedTargetLanguages,
-                    {
-                        value: currentValue,
-                        label: currentValue,
-                        providerIds: [],
-                    },
-                ]
-              : supportedTargetLanguages;
-
-        return (
-            // Constrain the width so a long error message wraps within the dialog instead of
-            // forcing it to scroll horizontally (the message is rendered below, not as the
-            // TextField's helperText, so we can style it as a red, wrapping error).
-            <div
-                css={css`
-                    width: 100%;
-                    max-width: 500px;
-                `}
-            >
-                <TextField
-                    select={true}
-                    fullWidth={true}
-                    size="small"
-                    value={currentValue}
-                    disabled={controlProps.disabled}
-                    onChange={(event) => {
-                        controlProps.onChange(event.target.value);
-                    }}
-                    SelectProps={{
-                        onOpen: () => {
-                            void loadSupportedLanguages();
-                        },
-                    }}
-                    inputProps={{
-                        "data-testid": "ai-translation-target-language-select",
-                        "data-language-options-version": languageOptionsVersion,
-                    }}
-                >
-                    <MenuItem value={""}></MenuItem>
-                    {isLoadingSupportedLanguages && (
-                        <MenuItem value="" disabled={true}>
-                            Loading languages...
-                        </MenuItem>
-                    )}
-                    {knownOptions.map((option) => {
-                        const note = getLanguageSupportNote(
-                            option,
-                            readyProviderIds,
-                            engineDisplayNames,
-                        );
-                        return (
-                            <MenuItem key={option.value} value={option.value}>
-                                {option.label}
-                                {note && (
-                                    <span
-                                        css={css`
-                                            margin-left: 6px;
-                                            font-size: 0.8em;
-                                            opacity: 0.65;
-                                        `}
-                                    >
-                                        ({note})
-                                    </span>
-                                )}
-                            </MenuItem>
-                        );
-                    })}
-                </TextField>
-                {supportedLanguagesMessage && (
-                    <div
-                        data-testid="ai-translation-supported-languages-message"
-                        css={css`
-                            margin-top: 4px;
-                            color: #b3261e;
-                            white-space: pre-wrap;
-                            overflow-wrap: anywhere;
-                            word-break: break-word;
-                            line-height: 1.35;
-                        `}
-                    >
-                        {supportedLanguagesMessage}
-                    </div>
-                )}
-            </div>
-        );
+    // Bundle the control's live inputs for the context. The control itself is a stable module-scope
+    // component (see AiTranslationTargetLanguageControl); this data is what changes over time.
+    const targetLanguageData: IAiTranslationTargetLanguageControlData = {
+        usesEngineManagedTargetLanguages,
+        supportedTargetLanguages,
+        supportedLanguagesMessage,
+        isLoadingSupportedLanguages,
+        languageOptionsVersion,
+        loadSupportedLanguages,
+        readyProviderIds,
+        engineDisplayNames,
     };
 
-    return (
+    const group = (
         <ConfigrGroup label={props.groupLabel}>
             <ConfigrBoolean
                 label={props.deepLEnabledLabel}
@@ -865,4 +925,6 @@ export const useAiTranslationSettingsGroup = (props: {
             />
         </ConfigrGroup>
     );
+
+    return { group, targetLanguageData };
 };

@@ -39,6 +39,12 @@ export default class BloomSourceBubbles {
     }
 
     private static maybeRememberSourceBubbleLanguage(langTag: string): void {
+        // Note (BL-16549): this remembers whatever tab was activated as the preferred source
+        // language, including AI tabs (synthetic tags like "es-x-ai-deepl"). Devin flagged that
+        // clicking an AI tab therefore displaces the remembered *real* source language. We are
+        // deliberately leaving that as-is for now: whether an AI tab should be remembered is a
+        // product decision, not clearly a bug (a user who just chose to view the AI translation may
+        // well want it to persist). Revisit if that turns out to be undesirable.
         postString("editView/sourceTextTab", langTag);
     }
 

@@ -16,6 +16,7 @@ import { BloomSubscriptionIndicatorIconAndText } from "../react_components/requi
 import { useL10n } from "../react_components/l10nHooks";
 import {
     AiTranslationProviderId,
+    AiTranslationTargetLanguageContext,
     IAiTranslationEngineValidation,
     IAiTranslationSettings,
     IAiTranslationWireSettings,
@@ -243,7 +244,10 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         [settings],
     );
 
-    const aiTranslationSettingsGroup = useAiTranslationSettingsGroup({
+    const {
+        group: aiTranslationSettingsGroup,
+        targetLanguageData: aiTranslationTargetLanguageData,
+    } = useAiTranslationSettingsGroup({
         settings: aiTranslationFlatSettings,
         initialValidations: aiTranslationInitialValidations,
         groupLabel: aiTranslationSectionLabel,
@@ -272,175 +276,186 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
             `}
         >
             {settings && (
-                <ConfigrPane
-                    label={advancedProgramSettingsLabel}
-                    showAppBar={false}
-                    showSearch={false}
-                    initialValues={
-                        settings as React.ComponentProps<
-                            typeof ConfigrPane
-                        >["initialValues"]
-                    }
-                    themeOverrides={{
-                        palette: {
-                            primary: { main: kBloomBlue },
-                        },
-                    }}
-                    onChange={(newSettings) => {
-                        const normalized =
-                            normalizeConfigrSettings(newSettings);
-                        if (normalized) {
-                            setSettings(normalized);
-                            const aiFlatSettings =
-                                extractAiTranslationFlatSettings(
-                                    normalized as unknown as Record<
-                                        string,
-                                        unknown
-                                    >,
-                                );
-                            const wirePayload = {
-                                ...omitAiTranslationFlatSettings(
-                                    normalized as unknown as Record<
-                                        string,
-                                        unknown
-                                    >,
-                                ),
-                                aiTranslation:
-                                    buildAiTranslationWirePayload(
-                                        aiFlatSettings,
-                                    ),
-                            };
-                            postJson(
-                                "settings/advancedProgramSettings",
-                                wirePayload,
-                            );
-                        }
-                    }}
+                // Provide the target-language control's data here, above the Configr pane, so the
+                // stable module-scope AiTranslationTargetLanguageControl (rendered somewhere inside
+                // the pane) can read it via context without being redefined each render.
+                <AiTranslationTargetLanguageContext.Provider
+                    value={aiTranslationTargetLanguageData}
                 >
-                    <ConfigrPage label={""} pageKey="settings" topLevel={true}>
-                        <ConfigrGroup label={programLabel}>
-                            {showAutoUpdate && (
+                    <ConfigrPane
+                        label={advancedProgramSettingsLabel}
+                        showAppBar={false}
+                        showSearch={false}
+                        initialValues={
+                            settings as React.ComponentProps<
+                                typeof ConfigrPane
+                            >["initialValues"]
+                        }
+                        themeOverrides={{
+                            palette: {
+                                primary: { main: kBloomBlue },
+                            },
+                        }}
+                        onChange={(newSettings) => {
+                            const normalized =
+                                normalizeConfigrSettings(newSettings);
+                            if (normalized) {
+                                setSettings(normalized);
+                                const aiFlatSettings =
+                                    extractAiTranslationFlatSettings(
+                                        normalized as unknown as Record<
+                                            string,
+                                            unknown
+                                        >,
+                                    );
+                                const wirePayload = {
+                                    ...omitAiTranslationFlatSettings(
+                                        normalized as unknown as Record<
+                                            string,
+                                            unknown
+                                        >,
+                                    ),
+                                    aiTranslation:
+                                        buildAiTranslationWirePayload(
+                                            aiFlatSettings,
+                                        ),
+                                };
+                                postJson(
+                                    "settings/advancedProgramSettings",
+                                    wirePayload,
+                                );
+                            }
+                        }}
+                    >
+                        <ConfigrPage
+                            label={""}
+                            pageKey="settings"
+                            topLevel={true}
+                        >
+                            <ConfigrGroup label={programLabel}>
+                                {showAutoUpdate && (
+                                    <ConfigrBoolean
+                                        label={automaticallyUpdateBloomLabel}
+                                        path="autoUpdate"
+                                    />
+                                )}
+                            </ConfigrGroup>
+                            <ConfigrGroup label={qrCodesLabel}>
                                 <ConfigrBoolean
-                                    label={automaticallyUpdateBloomLabel}
-                                    path="autoUpdate"
+                                    label={showQrCodesLabel}
+                                    path="showQrCode"
+                                    description={showQrCodesDescription}
+                                ></ConfigrBoolean>
+                                <ConfigrInput
+                                    path="qrcodeCaption"
+                                    label={captionLabel}
+                                    description={captionDescription}
+                                    charactersWide={45}
+                                    allowNewLines={true}
+                                    maxLinesToShowBeforeScrolling={4}
+                                    disabled={!settings.showQrCode}
                                 />
-                            )}
-                        </ConfigrGroup>
-                        <ConfigrGroup label={qrCodesLabel}>
-                            <ConfigrBoolean
-                                label={showQrCodesLabel}
-                                path="showQrCode"
-                                description={showQrCodesDescription}
-                            ></ConfigrBoolean>
-                            <ConfigrInput
-                                path="qrcodeCaption"
-                                label={captionLabel}
-                                description={captionDescription}
-                                charactersWide={45}
-                                allowNewLines={true}
-                                maxLinesToShowBeforeScrolling={4}
-                                disabled={!settings.showQrCode}
-                            />
-                        </ConfigrGroup>
-                        <ConfigrGroup label={experimentalFeaturesLabel}>
-                            {showExperimentalBookSourcesOption && (
-                                <ConfigrBoolean
-                                    label={showExperimentalBookSourcesLabel}
-                                    path="showExperimentalBookSources"
-                                />
-                            )}
-                            <div
-                                css={css`
-                                    .Mui-disabled {
-                                        opacity: 1;
-                                    }
-                                `}
-                            >
-                                <ConfigrBoolean
-                                    label={teamCollectionsLabel}
-                                    path="allowTeamCollection"
-                                    disabled={
-                                        !teamCollectionOptionEnabled ||
-                                        !canChangeTeamCollectionOption
-                                    }
-                                ></ConfigrBoolean>{" "}
+                            </ConfigrGroup>
+                            <ConfigrGroup label={experimentalFeaturesLabel}>
+                                {showExperimentalBookSourcesOption && (
+                                    <ConfigrBoolean
+                                        label={showExperimentalBookSourcesLabel}
+                                        path="showExperimentalBookSources"
+                                    />
+                                )}
                                 <div
                                     css={css`
-                                        display: flex;
-                                        justify-content: flex-end;
-                                        .bloom-subscriptionIndicator {
-                                            font-size: 10pt;
-                                            font-weight: 700;
+                                        .Mui-disabled {
+                                            opacity: 1;
                                         }
                                     `}
                                 >
-                                    <BloomSubscriptionIndicatorIconAndText
-                                        feature="TeamCollection"
-                                        className="bloom-subscriptionIndicator"
-                                    />
+                                    <ConfigrBoolean
+                                        label={teamCollectionsLabel}
+                                        path="allowTeamCollection"
+                                        disabled={
+                                            !teamCollectionOptionEnabled ||
+                                            !canChangeTeamCollectionOption
+                                        }
+                                    ></ConfigrBoolean>{" "}
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            justify-content: flex-end;
+                                            .bloom-subscriptionIndicator {
+                                                font-size: 10pt;
+                                                font-weight: 700;
+                                            }
+                                        `}
+                                    >
+                                        <BloomSubscriptionIndicatorIconAndText
+                                            feature="TeamCollection"
+                                            className="bloom-subscriptionIndicator"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <div
-                                css={css`
-                                    .Mui-disabled {
-                                        opacity: 1;
-                                    }
-                                `}
-                            >
-                                <ConfigrBoolean
-                                    label={appBuilderLabel}
-                                    path="allowAppBuilder"
-                                    disabled={!appBuilderOptionEnabled}
-                                />
                                 <div
                                     css={css`
-                                        display: flex;
-                                        justify-content: flex-end;
-                                        .bloom-subscriptionIndicator {
-                                            font-size: 10pt;
-                                            font-weight: 700;
+                                        .Mui-disabled {
+                                            opacity: 1;
                                         }
                                     `}
                                 >
-                                    <BloomSubscriptionIndicatorIconAndText
-                                        feature="AppBuilder"
-                                        className="bloom-subscriptionIndicator"
+                                    <ConfigrBoolean
+                                        label={appBuilderLabel}
+                                        path="allowAppBuilder"
+                                        disabled={!appBuilderOptionEnabled}
                                     />
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            justify-content: flex-end;
+                                            .bloom-subscriptionIndicator {
+                                                font-size: 10pt;
+                                                font-weight: 700;
+                                            }
+                                        `}
+                                    >
+                                        <BloomSubscriptionIndicatorIconAndText
+                                            feature="AppBuilder"
+                                            className="bloom-subscriptionIndicator"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <div
-                                css={css`
-                                    .Mui-disabled {
-                                        opacity: 1;
-                                    }
-                                `}
-                            >
-                                <ConfigrBoolean
-                                    label={aiSourceBubblesLabel}
-                                    path="allowAiSourceBubbles"
-                                    disabled={!aiSourceBubblesOptionEnabled}
-                                />
                                 <div
                                     css={css`
-                                        display: flex;
-                                        justify-content: flex-end;
-                                        .bloom-subscriptionIndicator {
-                                            font-size: 10pt;
-                                            font-weight: 700;
+                                        .Mui-disabled {
+                                            opacity: 1;
                                         }
                                     `}
                                 >
-                                    <BloomSubscriptionIndicatorIconAndText
-                                        feature="AiSourceBubbles"
-                                        className="bloom-subscriptionIndicator"
+                                    <ConfigrBoolean
+                                        label={aiSourceBubblesLabel}
+                                        path="allowAiSourceBubbles"
+                                        disabled={!aiSourceBubblesOptionEnabled}
                                     />
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            justify-content: flex-end;
+                                            .bloom-subscriptionIndicator {
+                                                font-size: 10pt;
+                                                font-weight: 700;
+                                            }
+                                        `}
+                                    >
+                                        <BloomSubscriptionIndicatorIconAndText
+                                            feature="AiSourceBubbles"
+                                            className="bloom-subscriptionIndicator"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        </ConfigrGroup>
-                        {settings.allowAiSourceBubbles &&
-                            aiTranslationSettingsGroup}
-                    </ConfigrPage>
-                </ConfigrPane>
+                            </ConfigrGroup>
+                            {settings.allowAiSourceBubbles &&
+                                aiTranslationSettingsGroup}
+                        </ConfigrPage>
+                    </ConfigrPane>
+                </AiTranslationTargetLanguageContext.Provider>
             )}
         </div>
     );
