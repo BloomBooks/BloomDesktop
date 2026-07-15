@@ -563,6 +563,47 @@ namespace Bloom.web.controllers
             AllowedImageExtensions.Contains(Path.GetExtension(name));
 
         /// <summary>
+        /// Parses a commit slot id of the form "{pageId}:{ordinal}". Returns false (leaving
+        /// pageId null and ordinal -1) when the id is empty, has no ':' separator, has a page
+        /// id outside the safe charset (<see cref="SafeId"/>), or has a non-integer ordinal.
+        /// A negative ordinal parses successfully here; the holder-index range check is done
+        /// separately by the caller. Internal for testing.
+        /// </summary>
+        internal static bool TryParseIncomingId(
+            string incomingId,
+            out string pageId,
+            out int ordinal
+        )
+        {
+            pageId = null;
+            ordinal = -1;
+            if (string.IsNullOrEmpty(incomingId))
+                return false;
+            var separator = incomingId.LastIndexOf(':');
+            if (separator <= 0)
+                return false;
+            var candidatePageId = incomingId.Substring(0, separator);
+            if (
+                !SafeId.IsMatch(candidatePageId)
+                || !int.TryParse(incomingId.Substring(separator + 1), out var candidateOrdinal)
+            )
+                return false;
+            pageId = candidatePageId;
+            ordinal = candidateOrdinal;
+            return true;
+        }
+
+        /// <summary>
+        /// True if an image-bearing element is one the user is allowed to replace. Branding,
+        /// license, and QR-code images are never user-changeable, so they are excluded both from
+        /// the list offered to the editor and from being overwritten at commit. Internal for testing.
+        /// </summary>
+        internal static bool IsUserChangeableImageElement(SafeXmlElement element) =>
+            !element.HasClass("branding")
+            && !element.HasClass("licenseImage")
+            && !element.HasClass("bloom-qrcode");
+
+        /// <summary>
         /// Locates the bytes for a history result by id. The editor may store a result under
         /// any supported raster extension, so we probe history/&lt;resultId&gt;.&lt;ext&gt; across
         /// <see cref="AllowedImageExtensions"/> and return the first match. The caller must
@@ -634,11 +675,7 @@ namespace Bloom.web.controllers
                 {
                     if (!(holders[ordinal] is SafeXmlElement element))
                         continue;
-                    if (
-                        element.HasClass("branding")
-                        || element.HasClass("licenseImage")
-                        || element.HasClass("bloom-qrcode")
-                    )
+                    if (!IsUserChangeableImageElement(element))
                         continue;
 
                     var relativePath = HtmlDom.GetImageElementUrl(element).PathOnly.NotEncoded;
@@ -895,17 +932,7 @@ namespace Bloom.web.controllers
                 return false;
             }
 
-            var separator = replacement.incomingId.LastIndexOf(':');
-            if (separator <= 0)
-            {
-                error = "Malformed incomingId";
-                return false;
-            }
-            var pageId = replacement.incomingId.Substring(0, separator);
-            if (
-                !SafeId.IsMatch(pageId)
-                || !int.TryParse(replacement.incomingId.Substring(separator + 1), out var ordinal)
-            )
+            if (!TryParseIncomingId(replacement.incomingId, out var pageId, out var ordinal))
             {
                 error = "Malformed incomingId";
                 return false;
@@ -937,11 +964,7 @@ namespace Bloom.web.controllers
                 error = "Image element not found";
                 return false;
             }
-            if (
-                element.HasClass("branding")
-                || element.HasClass("licenseImage")
-                || element.HasClass("bloom-qrcode")
-            )
+            if (!IsUserChangeableImageElement(element))
             {
                 error = "Image is not user-changeable";
                 return false;
@@ -978,7 +1001,11 @@ namespace Bloom.web.controllers
             }
             else if (
                 !string.IsNullOrEmpty(replacement.sourceUrl)
-                && TryResolveServedUrlToBookFile(book, replacement.sourceUrl, out sourceBytesPath)
+                && TryResolveServedUrlToBookFile(
+                    book.FolderPath,
+                    replacement.sourceUrl,
+                    out sourceBytesPath
+                )
             )
             {
                 // resolved to an existing file within the book folder
@@ -1023,12 +1050,12 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Resolves a host-served image URL (as handed to the editor by EnumerateBookImages)
-        /// back to a file path, requiring that it lands on an existing file inside the current
-        /// book folder. Guards against path traversal so the editor can't have us read or copy
-        /// arbitrary files.
+        /// back to a file path, requiring that it lands on an existing image file inside the
+        /// given book folder. Guards against path traversal so the editor can't have us read or
+        /// copy arbitrary files. Internal for testing.
         /// </summary>
-        private bool TryResolveServedUrlToBookFile(
-            Bloom.Book.Book book,
+        internal static bool TryResolveServedUrlToBookFile(
+            string bookFolderPath,
             string servedUrl,
             out string fsPath
         )
@@ -1040,7 +1067,7 @@ namespace Bloom.web.controllers
                 // image URLs are "<bookFolder>/<relativePath>", so this yields a full path.
                 var candidate = servedUrl.FromLocalhost().Replace('/', Path.DirectorySeparatorChar);
                 var fullCandidate = Path.GetFullPath(candidate);
-                var bookFolder = Path.GetFullPath(book.FolderPath);
+                var bookFolder = Path.GetFullPath(bookFolderPath);
                 if (
                     !fullCandidate.StartsWith(
                         bookFolder + Path.DirectorySeparatorChar,
@@ -1121,7 +1148,13 @@ namespace Bloom.web.controllers
             return referenced;
         }
 
-        private static void AppendEditedWithAiCredit(SafeXmlElement element)
+        /// <summary>
+        /// Adds the "Edited with AI" illustrator credit to the element's data-creator, once:
+        /// an empty creator becomes just the credit; an existing creator gets ", Edited with AI"
+        /// appended; and a creator that already mentions it (any case) is left unchanged.
+        /// Internal for testing.
+        /// </summary>
+        internal static void AppendEditedWithAiCredit(SafeXmlElement element)
         {
             var creator = element.GetAttribute("data-creator") ?? "";
             if (creator.IndexOf(EditedWithAiCredit, StringComparison.OrdinalIgnoreCase) >= 0)

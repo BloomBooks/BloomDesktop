@@ -95,6 +95,7 @@ import {
 import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { isDraggable, kDraggableIdAttribute } from "./canvasElementDraggables";
 import { setGeneratedDraggableId } from "./CanvasElementItem";
+import { matchReplacementsToElements } from "./aiEditorSlotMatching";
 import {
     makeFieldTypeMenuItem,
     makeLanguageMenuItem,
@@ -728,57 +729,45 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                         ),
                     );
                     // A page can have several slots sharing the same source (e.g. multiple
-                    // empty placeholders). Consume each matched element once so distinct
-                    // replacements land on distinct elements instead of collapsing onto the
-                    // first match. Match by filename (as the clicked-image lookup does),
-                    // not full src, so a cache-busting query string or path prefix on the
-                    // live element doesn't cause a silent miss. Within a same-filename
-                    // group, filename matching alone can't tell the slots apart — so apply
-                    // in the host's slot order (the ordinal in incomingId "{pageId}:{n}"
-                    // counts the saved page's image holders in document order, which is the
-                    // live candidates' order too), pairing each result with the right slot
-                    // instead of whichever same-filename element comes first.
-                    const ordinalOf = (r: { incomingId?: string }) =>
-                        parseInt(
-                            (r.incomingId ?? "").split(":").pop() ?? "",
-                            10,
-                        ) || 0;
-                    const usedElements = new Set<Element>();
-                    let applied = 0;
-                    [...toApply]
-                        .sort((a, b) => ordinalOf(a) - ordinalOf(b))
-                        .forEach((r) => {
-                            // oldSrc arrives from C# already decoded; the live srcs are encoded.
-                            const wanted = fileNameOf(r.oldSrc, false);
-                            const target = candidates.find(
-                                (el) =>
-                                    !usedElements.has(el) &&
-                                    fileNameOf(GetRawImageUrl(el)) === wanted,
-                            ) as HTMLElement | undefined;
-                            if (!target) return;
-                            usedElements.add(target);
-                            const creator =
-                                target.getAttribute("data-creator") || "";
-                            const newCreator = /Edited with AI/i.test(creator)
-                                ? creator
-                                : creator
-                                  ? creator + ", Edited with AI"
-                                  : "Edited with AI";
-                            changeImageByElement(target, {
-                                src: r.newSrc as string,
-                                creator: newCreator,
-                                copyright:
-                                    target.getAttribute("data-copyright") || "",
-                                license:
-                                    target.getAttribute("data-license") || "",
-                                // The AI commit applies replacements book-wide in C#
-                                // (saved directly, not undoable), so don't register a
-                                // separate per-image undo for the current-page piece.
-                                undoable: "false",
-                            });
-                            applied++;
+                    // empty placeholders). matchReplacementsToElements consumes each matched
+                    // element once so distinct replacements land on distinct elements instead
+                    // of collapsing onto the first match, and applies in slot (ordinal) order.
+                    // We match by filename (as the clicked-image lookup does), not full src, so
+                    // a cache-busting query string or path prefix on the live element doesn't
+                    // cause a silent miss. oldSrc arrives from C# already decoded; the live srcs
+                    // are encoded, so fileNameOf normalizes both sides.
+                    const pairs = matchReplacementsToElements(
+                        toApply,
+                        (r) =>
+                            parseInt(
+                                (r.incomingId ?? "").split(":").pop() ?? "",
+                                10,
+                            ) || 0,
+                        (r) => fileNameOf(r.oldSrc, false),
+                        candidates as HTMLElement[],
+                        (el) => fileNameOf(GetRawImageUrl(el)),
+                    );
+                    pairs.forEach(({ replacement: r, element: target }) => {
+                        const creator =
+                            target.getAttribute("data-creator") || "";
+                        const newCreator = /Edited with AI/i.test(creator)
+                            ? creator
+                            : creator
+                              ? creator + ", Edited with AI"
+                              : "Edited with AI";
+                        changeImageByElement(target, {
+                            src: r.newSrc as string,
+                            creator: newCreator,
+                            copyright:
+                                target.getAttribute("data-copyright") || "",
+                            license: target.getAttribute("data-license") || "",
+                            // The AI commit applies replacements book-wide in C#
+                            // (saved directly, not undoable), so don't register a
+                            // separate per-image undo for the current-page piece.
+                            undoable: "false",
                         });
-                    return { applied, expected: toApply.length };
+                    });
+                    return { applied: pairs.length, expected: toApply.length };
                 };
 
                 const handleMessage = (event: MessageEvent) => {

@@ -152,5 +152,309 @@ namespace BloomTests.web.controllers
                 "with no candidates, no file should be touched even if unreferenced"
             );
         }
+
+        // Returns the single <img> element from a DOM whose data-creator attribute is
+        // exactly `initialCreator` (omitted entirely when null), so AppendEditedWithAiCredit
+        // can be exercised against a real SafeXmlElement.
+        private static Bloom.SafeXml.SafeXmlElement MakeImgWithCreator(string initialCreator)
+        {
+            var creatorAttr = initialCreator == null ? "" : $" data-creator='{initialCreator}'";
+            var dom = new HtmlDom(
+                $@"<html><head></head><body>
+                    <div class='bloom-page' id='page1'><div class='marginBox'>
+                        <img src='pic.png'{creatorAttr}/>
+                    </div></div>
+                  </body></html>"
+            );
+            return (Bloom.SafeXml.SafeXmlElement)dom.RawDom.SelectSingleNode("//img");
+        }
+
+        [Test]
+        public void AppendEditedWithAiCredit_NoExistingCreator_SetsCreditAlone()
+        {
+            var img = MakeImgWithCreator(null);
+            // Sanity: nothing there yet, so a non-empty result below is due to the call.
+            Assert.That(
+                img.GetAttribute("data-creator") ?? "",
+                Is.Empty,
+                "setup: image should start with no creator"
+            );
+
+            AiImageEditorApi.AppendEditedWithAiCredit(img);
+
+            Assert.That(img.GetAttribute("data-creator"), Is.EqualTo("Edited with AI"));
+        }
+
+        [Test]
+        public void AppendEditedWithAiCredit_ExistingCreator_AppendsCredit()
+        {
+            var img = MakeImgWithCreator("Jane Doe");
+
+            AiImageEditorApi.AppendEditedWithAiCredit(img);
+
+            Assert.That(img.GetAttribute("data-creator"), Is.EqualTo("Jane Doe, Edited with AI"));
+        }
+
+        [Test]
+        public void AppendEditedWithAiCredit_AlreadyCredited_LeavesUnchanged()
+        {
+            var img = MakeImgWithCreator("Jane Doe, Edited with AI");
+
+            AiImageEditorApi.AppendEditedWithAiCredit(img);
+
+            Assert.That(
+                img.GetAttribute("data-creator"),
+                Is.EqualTo("Jane Doe, Edited with AI"),
+                "the credit must not be added a second time"
+            );
+        }
+
+        [Test]
+        public void AppendEditedWithAiCredit_AlreadyCreditedDifferentCase_LeavesUnchanged()
+        {
+            // The dedupe check is case-insensitive, so a lower-case mention still counts.
+            var img = MakeImgWithCreator("edited with ai");
+
+            AiImageEditorApi.AppendEditedWithAiCredit(img);
+
+            Assert.That(img.GetAttribute("data-creator"), Is.EqualTo("edited with ai"));
+        }
+
+        [Test]
+        public void AppendEditedWithAiCredit_CalledTwice_IsIdempotent()
+        {
+            var img = MakeImgWithCreator(null);
+
+            AiImageEditorApi.AppendEditedWithAiCredit(img);
+            AiImageEditorApi.AppendEditedWithAiCredit(img);
+
+            Assert.That(
+                img.GetAttribute("data-creator"),
+                Is.EqualTo("Edited with AI"),
+                "applying the credit twice must not duplicate it"
+            );
+        }
+
+        // ------------------------------------------------------------------
+        // TryResolveServedUrlToBookFile: the path-traversal guard that stops a
+        // reused-image URL from resolving to anything outside the book folder.
+        // servedUrl is passed as a plain book-folder path (FromLocalhost leaves a
+        // non-server URL unchanged), so these run without a live server.
+        // ------------------------------------------------------------------
+
+        // Builds the kind of URL EnumerateBookImages hands the editor: the book folder
+        // path plus a relative part, forward-slashed.
+        private string BookUrl(string relative) =>
+            _bookFolder.Path.Replace('\\', '/') + "/" + relative;
+
+        [Test]
+        public void TryResolveServedUrlToBookFile_InBookImage_Resolves()
+        {
+            var picPath = MakeFile("pic.png");
+            // Sanity: the file we expect to resolve to really exists first.
+            Assert.That(File.Exists(picPath), Is.True, "setup");
+
+            var ok = AiImageEditorApi.TryResolveServedUrlToBookFile(
+                _bookFolder.Path,
+                BookUrl("pic.png"),
+                out var resolved
+            );
+
+            Assert.That(ok, Is.True, "an existing in-book image should resolve");
+            Assert.That(resolved, Is.EqualTo(Path.GetFullPath(picPath)));
+        }
+
+        [Test]
+        public void TryResolveServedUrlToBookFile_NonExistentInBookFile_Fails()
+        {
+            var ok = AiImageEditorApi.TryResolveServedUrlToBookFile(
+                _bookFolder.Path,
+                BookUrl("nope.png"),
+                out var resolved
+            );
+
+            Assert.That(ok, Is.False, "a file that doesn't exist must not resolve");
+            Assert.That(resolved, Is.Null);
+        }
+
+        [Test]
+        public void TryResolveServedUrlToBookFile_DisallowedExtension_Fails()
+        {
+            MakeFile("note.txt"); // exists, in-book, but not an image type
+
+            var ok = AiImageEditorApi.TryResolveServedUrlToBookFile(
+                _bookFolder.Path,
+                BookUrl("note.txt"),
+                out _
+            );
+
+            Assert.That(
+                ok,
+                Is.False,
+                "a non-image file must not resolve even if it exists in-book"
+            );
+        }
+
+        [Test]
+        public void TryResolveServedUrlToBookFile_PathTraversalOutsideBook_Fails()
+        {
+            // A real file just outside the book folder, reached via "..".
+            var outsideDir = Directory.GetParent(_bookFolder.Path).FullName;
+            var outsidePath = Path.Combine(outsideDir, "outside-secret.png");
+            File.WriteAllText(outsidePath, "x");
+            try
+            {
+                // Sanity: the target exists, so a False result is due to the guard, not absence.
+                Assert.That(File.Exists(outsidePath), Is.True, "setup");
+
+                var ok = AiImageEditorApi.TryResolveServedUrlToBookFile(
+                    _bookFolder.Path,
+                    BookUrl("../outside-secret.png"),
+                    out var resolved
+                );
+
+                Assert.That(ok, Is.False, "a '..' escape out of the book folder must be rejected");
+                Assert.That(resolved, Is.Null);
+            }
+            finally
+            {
+                File.Delete(outsidePath);
+            }
+        }
+
+        [Test]
+        public void TryResolveServedUrlToBookFile_SiblingFolderSharingNamePrefix_Fails()
+        {
+            // A sibling folder whose path has the book folder path as a string prefix
+            // ("...book" vs "...book-evil"): the separator in the guard must stop this.
+            var evilDir = _bookFolder.Path + "-evil";
+            Directory.CreateDirectory(evilDir);
+            var evilPic = Path.Combine(evilDir, "pic.png");
+            File.WriteAllText(evilPic, "x");
+            try
+            {
+                var ok = AiImageEditorApi.TryResolveServedUrlToBookFile(
+                    _bookFolder.Path,
+                    evilDir.Replace('\\', '/') + "/pic.png",
+                    out var resolved
+                );
+
+                Assert.That(
+                    ok,
+                    Is.False,
+                    "a sibling folder that merely shares a name prefix must not be treated as in-book"
+                );
+                Assert.That(resolved, Is.Null);
+            }
+            finally
+            {
+                Directory.Delete(evilDir, true);
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // TryParseIncomingId: parsing/validation of the "{pageId}:{ordinal}" slot id
+        // that the editor echoes back on commit (and which we interpolate into an XPath).
+        // ------------------------------------------------------------------
+
+        [Test]
+        public void TryParseIncomingId_WellFormed_ParsesPageIdAndOrdinal()
+        {
+            var ok = AiImageEditorApi.TryParseIncomingId(
+                "page1:12",
+                out var pageId,
+                out var ordinal
+            );
+
+            Assert.That(ok, Is.True);
+            Assert.That(pageId, Is.EqualTo("page1"));
+            Assert.That(ordinal, Is.EqualTo(12));
+        }
+
+        [Test]
+        public void TryParseIncomingId_PageIdWithHyphenAndUnderscore_Allowed()
+        {
+            var ok = AiImageEditorApi.TryParseIncomingId(
+                "my-page_2:3",
+                out var pageId,
+                out var ordinal
+            );
+
+            Assert.That(ok, Is.True);
+            Assert.That(pageId, Is.EqualTo("my-page_2"));
+            Assert.That(ordinal, Is.EqualTo(3));
+        }
+
+        [TestCase("", TestName = "TryParseIncomingId_Empty_Fails")]
+        [TestCase(null, TestName = "TryParseIncomingId_Null_Fails")]
+        [TestCase("page1", TestName = "TryParseIncomingId_NoColon_Fails")]
+        [TestCase(":3", TestName = "TryParseIncomingId_LeadingColonNoPageId_Fails")]
+        [TestCase("page1:x", TestName = "TryParseIncomingId_NonIntegerOrdinal_Fails")]
+        [TestCase("page1:", TestName = "TryParseIncomingId_MissingOrdinal_Fails")]
+        [TestCase("bad page:0", TestName = "TryParseIncomingId_PageIdWithSpace_Fails")]
+        [TestCase("bad/page:0", TestName = "TryParseIncomingId_PageIdWithSlash_Fails")]
+        [TestCase("page:1:2", TestName = "TryParseIncomingId_ColonInsidePageId_Fails")]
+        public void TryParseIncomingId_Malformed_Fails(string incomingId)
+        {
+            var ok = AiImageEditorApi.TryParseIncomingId(
+                incomingId,
+                out var pageId,
+                out var ordinal
+            );
+
+            Assert.That(ok, Is.False, $"'{incomingId}' should be rejected");
+            Assert.That(pageId, Is.Null, "a rejected id must not yield a page id");
+            Assert.That(ordinal, Is.EqualTo(-1), "a rejected id must not yield an ordinal");
+        }
+
+        // ------------------------------------------------------------------
+        // IsUserChangeableImageElement: branding/license/QR images are off-limits.
+        // ------------------------------------------------------------------
+
+        private static Bloom.SafeXml.SafeXmlElement MakeImgWithClass(string className)
+        {
+            var classAttr = className == null ? "" : $" class='{className}'";
+            var dom = new HtmlDom(
+                $@"<html><head></head><body>
+                    <div class='bloom-page' id='page1'><div class='marginBox'>
+                        <img src='pic.png'{classAttr}/>
+                    </div></div>
+                  </body></html>"
+            );
+            return (Bloom.SafeXml.SafeXmlElement)dom.RawDom.SelectSingleNode("//img");
+        }
+
+        [Test]
+        public void IsUserChangeableImageElement_PlainImage_IsChangeable()
+        {
+            Assert.That(
+                AiImageEditorApi.IsUserChangeableImageElement(MakeImgWithClass(null)),
+                Is.True
+            );
+        }
+
+        [TestCase("branding")]
+        [TestCase("licenseImage")]
+        [TestCase("bloom-qrcode")]
+        public void IsUserChangeableImageElement_ProtectedImage_IsNotChangeable(string className)
+        {
+            Assert.That(
+                AiImageEditorApi.IsUserChangeableImageElement(MakeImgWithClass(className)),
+                Is.False,
+                $"an image with class '{className}' must not be user-changeable"
+            );
+        }
+
+        [Test]
+        public void IsUserChangeableImageElement_ProtectedClassAmongOthers_IsNotChangeable()
+        {
+            // The class check must find the protected class even when combined with others.
+            Assert.That(
+                AiImageEditorApi.IsUserChangeableImageElement(
+                    MakeImgWithClass("bloom-imageContainer branding")
+                ),
+                Is.False
+            );
+        }
     }
 }
