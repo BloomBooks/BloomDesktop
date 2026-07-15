@@ -727,6 +727,16 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 14 Jul 2026 (PM #6 — CLEAN REVIEW CHECKPOINT: Devin + Greptile both satisfied) · Greptile
+  re-review of #8052 head 8fbe66e4ea PASSED (9m27s) with NO new findings; the prior XLF P1 is
+  fixed in the new head and its thread is resolved/outdated; all checks green (Greptile,
+  pr-automation, track); PR MERGEABLE, still draft. **Review status: both bots clear.** Devin
+  (via the fork slice-reviews) → 7 actionable, 5 fixed + 1 dismissed + 1 deferred. Greptile
+  (full diff) → clean after the XLF P1 fix. **Remaining before human review/merge are the known
+  [HUMAN] items only:** item 10 real Bloom Library web upload/download + the deferred
+  S3ForcePathStyle production-AWS check (GOING-LIVE.md 4.3); and John's live spot-checks. No
+  agent action pending on the bot gauntlet. EXACT next action (future): item-10 production
+  validation; when ready, promote #8052 from draft to ready-for-human.
 - 14 Jul 2026 (PM #5 — review branch refreshed with all fixes; Greptile re-running) · Re-merged
   origin/master (now 7209ba3bc1 → cloud-collections df580ff6bf); required filter 462/462; pushed.
   cloud-tc-for-review REGENERATED (bucket now also assigns ExperimentalFeaturesTests.cs → g6;
