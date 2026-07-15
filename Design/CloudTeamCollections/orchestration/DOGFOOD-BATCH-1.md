@@ -727,6 +727,30 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 14 Jul 2026 (PM #3 — ALL Devin slice findings gathered; triage/fix next) · Heads unchanged:
+  cloud-collections `5c8275bc9a`, cloud-tc-for-review `b45e5e21be` = #8052 (MERGEABLE). Devin
+  reviews of all three fork slices are COMPLETE. **Full actionable inventory to triage/fix on
+  cloud-collections:**
+    - #3 client-core (g5): BUG CloudBookTransfer.cs:241 `alreadyUploadedThisTransaction` ISet.Add
+      inside Parallel.ForEach = data race (CONFIRMED real); BUG CloudRepoCache.cs:404 lock seat not
+      cleared on check-in release (stale cache); BUG CloudRepoCache.cs:270 full snapshot wipes local
+      version tracking → needless re-downloads; INVESTIGATE CloudEnvironment.cs:144 S3ForcePathStyle
+      always true (non-empty default endpoint) → breaks real AWS (ties to item 10); INVESTIGATE
+      BloomS3Client.cs:130 protected→internal-static breaks bloom-harvester subclass.
+    - #4 server (g2+g3): 0 Bugs, 0 Investigate. 6 Informational (3 are "already fixed by a later
+      migration"; 1 worth a glance: rpc.ts:65 user values interpolated into PostgREST query strings
+      w/o URL-encoding — Devin rated Informational).
+    - #5 backend+API (g6+g7): BUG ExperimentalFeatures.cs:20 enabling cloud TC feature silently
+      enables the folder one too + disabling folder corrupts the cloud flag; BUG HistoryEvent.cs:36
+      a new (cloud) history event type renders BLANK in the history table. Informational (skip):
+      FolderTeamCollection PutBook checkinComment not passed; RemoteBookAutoApplyQueue.cs:83-91
+      case-sensitivity mismatch between dedup set & priority-move (glance-worthy, rename-adjacent);
+      SharingApi static auth/client never disposed; a positive null-ref-fix note; a test-only virtual.
+    Net: **7 actionable** (5 from g5, 2 from #5), plus 2 glance-worthy Informationals (rpc.ts URL-encode,
+    auto-apply-queue case-sensitivity). Greptile re-review of #8052 new head still not posted — check.
+  **EXACT next action:** triage each of the 7 against the code; fix the real ones on cloud-collections
+  (begin with the CONFIRMED CloudBookTransfer race). Then Greptile #8052, re-regenerate + force-push,
+  delete fork probe branches/PRs (#3/#4/#5, branches devin-probe-*).
 - 14 Jul 2026 (PM #2 — SESSION-SAVE for machine sleep; fixes + Devin-slicing review in flight) ·
   **Branch heads:** cloud-collections = `812703d56a` (origin in sync); cloud-tc-for-review =
   `b45e5e21be` (origin in sync) = PR #8052 head, MERGEABLE. Working tree clean.
