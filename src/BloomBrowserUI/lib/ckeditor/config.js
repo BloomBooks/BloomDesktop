@@ -45,15 +45,22 @@ CKEDITOR.editorConfig = function(config) {
         { name: "clipboard", groups: ["clipboard", "undo"] },
         { name: "editing", groups: ["find", "selection", "spellchecker"] },
         { name: "forms" },
-        { name: "basicstyles", groups: ["basicstyles", "cleanup"] },
+        { name: "basicstyles", groups: ["basicstyles"] },
         {
             name: "paragraph",
             groups: ["list", "indent", "blocks", "align", "bidi"]
         },
         { name: "links" },
-        { name: "insert" },
         { name: "styles" },
         { name: "colors" },
+        // The "cleanup" group (which holds the "Remove Formatting" button, added by our trimmed
+        // removeformat plugin via toolbar: 'cleanup,10') is placed after "colors", so the button
+        // appears to the right of the text-color button.
+        { name: "cleanup", groups: ["cleanup"] },
+        // The "insert" group holds our "SetupLink" hyperlink button (added in BloomField.ts with
+        // toolbar: "insert"). It is placed last so the link button is the very last button on the
+        // selection toolbar, after Remove Formatting.
+        { name: "insert" },
         { name: "tools" },
         { name: "others" },
         { name: "about" }

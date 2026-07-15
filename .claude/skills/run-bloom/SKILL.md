@@ -1,6 +1,7 @@
 ---
 name: run-bloom
 description: Run, launch, screenshot, or drive the Bloom desktop app (Bloom.exe with embedded WebView2). Use when you need to start Bloom from this worktree, attach to a running Bloom, switch workspace tabs, take a screenshot, inspect DOM/console/network over CDP, or stop a Bloom instance.
+model: sonnet
 ---
 
 # Run Bloom (desktop app)
