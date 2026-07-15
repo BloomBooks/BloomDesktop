@@ -165,7 +165,7 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   `CollectionChooser`'s `onPullDown`) once the relevant backend capability flags/matching logic
   from tasks 05/06 land — see the note at the end of the 2026-07-06 step-3 entry above.
 
-## Wave-3 UI wiring (task/ui-wiring branch, resumable per orchestration/ui-wiring.prompt.md)
+## Wave-3 UI wiring (task/ui-wiring branch)
 
 - 2026-07-07 · done: item 1 (the live folder-TC breakage) + item 2 (dedicated sign-in dialog).
   Root cause confirmed: `createTeamCollectionDialogBundle` is ONE shared Vite entry
@@ -296,4 +296,4 @@ destructuring — follow src/BloomBrowserUI/AGENTS.md.
   count task 07's own final wrap-up entry reported before this branch's work started, confirming
   zero new warnings introduced across all six items. `dotnet build src/BloomExe/BloomExe.csproj`
   re-verified clean (0 errors) after the last commit. All six work items from
-  `orchestration/ui-wiring.prompt.md` are now complete.
+  the ui-wiring launch prompt (a scratch file, since removed) are now complete.

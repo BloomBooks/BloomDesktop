@@ -1,7 +1,7 @@
 // Builds and launches Bloom.exe instances for the E2E harness.
 //
 // HARD-WON ENVIRONMENT RULES this file encodes (see
-// Design/CloudTeamCollections/orchestration/09-e2e.prompt.md):
+// src/BloomTests/e2e/README.md, "Environment rules"):
 //  1. Build ONCE per test session (`buildBloomOnce`), then launch the built exe directly N
 //     times with per-instance environment. Never run `dotnet watch`/go.sh concurrently with
 //     the harness — concurrent rebuilds into the shared `output/` tree produce stale binaries.

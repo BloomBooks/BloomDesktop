@@ -1,53 +1,28 @@
-# Cloud TC — agent orchestration & resume protocol
+# Cloud TC — orchestration rules & resume protocol
 
-> **In-flight batch (9 Jul 2026):** John's dogfood bug/improvement list is being worked
-> per [DOGFOOD-BATCH-1.md](DOGFOOD-BATCH-1.md) — resume THAT file's checklist first.
-
-This folder holds the launch prompts for in-flight implementation tasks and the protocol
-that makes them resumable across work sessions (including AI-session token limits).
+> **Current state lives in [DOGFOOD-BATCH-1.md](DOGFOOD-BATCH-1.md)** (its progress log's
+> newest entry is the resume point). This file keeps the general working rules that batch
+> doc and IMPLEMENTATION.md refer to.
+>
+> History note (15 Jul 2026): this folder originally also held the per-task agent launch
+> prompts (`<NN>-<name>.prompt.md`) used to build the feature in waves. All tasks are long
+> merged, so those scratch prompts were removed; the durable per-task specs and findings
+> remain in `../tasks/*.md`, and the wave-by-wave merge log is in `../IMPLEMENTATION.md`.
 
 ## The durable-state rule
 
-All task state lives in **git branches**, never in a conversation:
+All work state lives in **git**, never only in a conversation:
 
-- One branch per task, named `task/<NN>-<name>`, based on `cloud-collections`. The
-  currently in-flight set = whatever `git branch --list "task/*"` shows unmerged into
-  `cloud-collections`. As of 8 Jul 2026 (evening) ALL Wave-4 code is merged and pushed:
-  harness, scenarios E2E-1..9 (E2E-4 partial, E2E-10 blocked — both are product decisions,
-  see tasks/09-e2e.md findings + GOING-LIVE.md Phase 5), task 10's 7 polish items, the
-  go-live/test-setup docs, and 3 product fixes from the scenario work. NO agent work is in
-  flight. What remains for Wave 4: (a) one 12/12 acceptance run of the full E2E matrix on
-  an IDLE machine (`cd src/BloomTests/e2e && yarn test`, desktop unlocked, ~30 min — five
-  runs on the busy dev machine each passed a different 8–11/12, all failures
-  load-correlated, worst offender = finding 9's problem-report modal); (b) John's product
-  decisions; (c) dogfood. All Wave-0/1/2/3 branches are merged; see IMPLEMENTATION.md.
-- Agents commit after EVERY completed checklist step — small, coherent commits; never one
-  big commit at the end. Tick the step's checkbox in the task file in the same commit.
-- Each task file ends with a `## Progress log` section; every commit appends/updates one
-  line: `date · what was just completed · EXACT next action`. A resumer starts by reading
-  this line.
-- A step that is half-done at interruption is simply redone from its last commit — or, if
-  the orchestrator finds uncommitted work in a leftover `.claude/worktrees/agent-*`
-  worktree, it secures that as a WIP commit on the branch first (proven pattern).
+- Commit after EVERY completed step — small, coherent commits; tick the step's checkbox /
+  update the item's `Status:` line in the same commit.
+- The state doc (currently DOGFOOD-BATCH-1.md) ends with a `## Progress log`; every work
+  session appends: `date · what was just completed · EXACT next action`. A resumer starts
+  by reading the newest entry.
+- A step half-done at interruption is redone from its last commit; uncommitted work found
+  in a leftover worktree is secured as a WIP commit first.
 
-## How to resume (human instructions)
+## Working rules (still operative)
 
-1. Wait for usage limits to reset (session window), then start a **fresh** Claude Code
-   session in this repo (cheaper than resuming the old conversation; everything needed is
-   on disk and in Claude's project memory).
-2. Say: **"Resume the Cloud Team Collections tasks per
-   Design/CloudTeamCollections/orchestration/RESUME.md."**
-3. The orchestrator will: find unmerged `task/*` branches and read their progress logs;
-   secure any uncommitted worktree work as WIP commits; relaunch unfinished agents with
-   their prompt files from this folder (prompts are resume-aware — they check for an
-   existing branch first); review and merge finished branches into `cloud-collections`
-   per IMPLEMENTATION.md rules; rebase onto origin/master at least daily.
-
-## Orchestrator notes
-
-- Launch prompts live in this folder, one per task (`<NN>-<name>.prompt.md`). Sonnet
-  agents. Front-end/server-file tasks run in isolated worktrees; C#-building tasks run in
-  the MAIN tree (worktrees lack initialized build deps) — one C# task at a time.
 - Review before merge is MANDATORY (independently re-run the tests; see the merge log in
   IMPLEMENTATION.md for the kinds of bugs review has caught: SQL type bug, bad bcrypt
   hash, fake-session-token spec error, ungated UI section, JSON-null claimed bug).
@@ -61,5 +36,13 @@ All task state lives in **git branches**, never in a conversation:
   MinIO must be on the supabase network — the compose file handles this).
 - Known environment quirks: pre-commit hook fails in worktrees (prettier manually +
   `--no-verify`, orchestrator re-verifies); Bloom.exe often running → apphost copy error
-  MSB3027 is benign if test DLLs are fresh; edge-runtime containers must reach MinIO as
-  `bloom-minio:9000`, never `host.containers.internal` (hangs under Podman).
+  MSB3027 is benign if test DLLs are fresh (or use `build/agent-dotnet.sh`, which builds
+  into a private tree and avoids the lock entirely); edge-runtime containers must reach
+  MinIO as `bloom-minio:9000`, never `host.containers.internal` (hangs under Podman).
+
+## How to resume (human instructions)
+
+Start a fresh Claude Code session in this repo and say: **"Resume the dogfood batch per
+Design/CloudTeamCollections/orchestration/DOGFOOD-BATCH-1.md."** The resumer reads that
+file's newest progress-log entry and item Status lines, secures any uncommitted work, and
+continues with the stated next action.

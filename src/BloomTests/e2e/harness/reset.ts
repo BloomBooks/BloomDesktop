@@ -1,5 +1,5 @@
 // Resets the local dev stack to a known-empty state between scenarios (HARD-WON RULE #5 in
-// Design/CloudTeamCollections/orchestration/09-e2e.prompt.md): `supabase db reset` replays
+// src/BloomTests/e2e/README.md "Per-scenario reset"): `supabase db reset` replays
 // migrations + seed, the MinIO bucket prefix is cleared via a throwaway `mc` container on the
 // same Podman/Docker network as `bloom-minio` (NOT via host.containers.internal — see
 // server/dev/README.md's gvproxy-hang gotcha), and local scratch collection folders are wiped.

@@ -727,6 +727,25 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 15 Jul 2026 (doc cleanup, per John) · Removed the spent orchestration scratch documents from
+  the branch: all 11 agent launch prompts (`orchestration/*.prompt.md` — one-time kickoff
+  prompts; the durable per-task specs stay in `tasks/*.md`, which code comments reference),
+  `BUG0-OPTION-A-SKETCH.md` (bug #0 implemented as option (a) and fully closed — the outcome is
+  recorded in this file's OUTSTANDING BUGS #0), and `notes-item7-progressive-join.md` (scouting
+  notes with stale line numbers; item 7 shipped). RESUME.md was TRIMMED, not removed: its
+  still-operative rules (mandatory C# test filter, review-before-merge, dev-stack bring-up,
+  environment quirks) are what this file and IMPLEMENTATION.md point at; its stale Wave-4
+  status and prompt-launching machinery are gone. Three e2e harness comments that cited
+  09-e2e.prompt.md now cite src/BloomTests/e2e/README.md (same rules, kept doc). KEPT (the
+  durable set): CloudTeamCollections.md (design), CONTRACTS.md, GOING-LIVE.md (real
+  buckets/DB/deploy), IMPLEMENTATION.md (wave/merge history), tasks/*.md (specs+findings,
+  code-referenced), docs/ (walkthrough, unit-test setup), notes/write-book-status-audit.md
+  (code-referenced), this file (state), SQUASH-PLAN.md + regen-*.sh (needed until merge),
+  server/dev + firebase + e2e READMEs. Mentions of the deleted files in OLD progress-log
+  entries here and in tasks/IMPLEMENTATION logs are historical records and were left alone.
+  **EXACT next action:** regenerate cloud-tc-for-review + force-push (diff shrinks by the
+  deleted docs), re-trigger Greptile; then back to the standing next steps (item 10 [HUMAN],
+  promote #8052 when ready).
 - 15 Jul 2026 (AM — fresh-eyes review of the 14 Jul work; three real fixes) · John asked for a
   review of yesterday's session. Findings, all fixed + regression-tested (465/465 on the
   required filter):

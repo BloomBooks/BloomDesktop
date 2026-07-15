@@ -1,5 +1,5 @@
 // Automates the "experimental feature flag must be set in user.config BEFORE launching
-// instances" step called out in Design/CloudTeamCollections/orchestration/09-e2e.prompt.md
+// instances" step called out in src/BloomTests/e2e/README.md
 // (the same hack recorded in IMPLEMENTATION.md's Wave-3 merge log: "missing experimental-
 // feature checkbox — flag set via user.config for now — proper Advanced-settings checkbox
 // still owed").
