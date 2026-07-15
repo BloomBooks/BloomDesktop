@@ -282,9 +282,19 @@ function AddEditKeyHandlers(container) {
             hideInvisibles(e);
         });
 
+    // Ctrl+Space: "clear formatting" on the current selection. We route this through the CKEditor
+    // instance that currently has focus (rather than the browser's document.execCommand) so that
+    // (a) it uses our removeFormat configuration/filter, which strips exactly the inline formatting
+    // our toolbar produces (bold, italic, underline, superscript, text color) while preserving
+    // Bloom's structural spans, and (b) the edit goes through CKEditor's change/undo machinery so
+    // it is noticed and saved. CKEditor breaks up partially-selected enclosing elements as needed.
     $(document).on("keydown", (e) => {
         if (e.key === " " && e.ctrlKey && !e.shiftKey && !e.altKey) {
-            document.execCommand("removeFormat"); // will remove bold, italics, etc. but not things that use elements, like h1
+            const editor = CKEDITOR.currentInstance;
+            if (editor) {
+                e.preventDefault();
+                editor.execCommand("removeFormat");
+            }
         }
     });
 
@@ -1277,6 +1287,17 @@ export function localizeCkeditorTooltips(bar: JQuery) {
         .done((result) => {
             $(toolGroup).find(".cke_button__superscript").attr("title", result);
         });
+    theOneLocalizationManager
+        .asyncGetText(
+            "EditTab.DirectFormatting.RemoveFormat",
+            "Remove Formatting",
+            "",
+        )
+        .done((result) => {
+            $(toolGroup)
+                .find(".cke_button__removeformat")
+                .attr("title", result);
+        });
 }
 
 // This is invoked when we are about to change pages.
@@ -1993,6 +2014,35 @@ export function attachToCkEditor(element) {
         const editor = evt["editor"];
         const bar = $("body").find("." + editor.id);
         bar.hide();
+
+        // Protect Bloom's structural spans from the removeFormat ("clear formatting") command.
+        // The only spans the format toolbar itself produces are bare <span style="color:..."> (and
+        // similar bare style spans such as small caps), which carry neither a class nor an id, so we
+        // let those be removed. Any span that has a class or id is one Bloom created for its own
+        // purposes (audio segments like audio-sentence/bloom-highlightSegment, bloom-linebreak from
+        // Shift+Enter, etc.), and clearing formatting must leave those intact.
+        // Tradeoff: we keep EVERY class/id span, so if formatting were carried directly on such a
+        // span (e.g. an imported <span class="x" style="font-weight:bold">), this command would not
+        // strip it. That case is rare and mostly can't arise here: the toolbar never puts formatting
+        // on a class/id span (bold -> <strong>, color -> a bare <span style="color">), formatting
+        // nested INSIDE a protected span is still cleared because the command descends into
+        // children, and pasted spans have their class/id and most styles removed by
+        // config.pasteFilter. We accept that edge in exchange for guaranteeing the structural spans
+        // survive; this feature is about user convenience, not repairing malformed markup.
+        // Note: addRemoveFormatFilter is added to the editor prototype by the removeformat plugin,
+        // whose script loads asynchronously. We register the filter here, in instanceReady, rather
+        // than right after CKEDITOR.inline() because at that earlier point the plugin may not have
+        // loaded yet, so the method would be undefined and the call would throw (aborting the rest
+        // of attachToCkEditor, including the color-button setup below).
+        editor.addRemoveFormatFilter((element) => {
+            if (
+                element.is("span") &&
+                (element.hasAttribute("class") || element.hasAttribute("id"))
+            ) {
+                return false; // keep it
+            }
+            return true;
+        });
     });
 
     if (CKEDITOR.config.colorButton_colors) {
