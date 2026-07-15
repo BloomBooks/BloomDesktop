@@ -67,13 +67,23 @@ export const LicenseBadge: React.FunctionComponent<{
                     flex-direction: column;
                 `}
             >
-                <img
-                    src={`${getBloomApiPrefix()}copyrightAndLicense/ccImage?token=${token}`}
+                <div
                     css={css`
-                        width: 100px;
+                        background-color: #555;
+                        border-radius: ${kBorderRadiusForSpecialBlocks};
+                        padding: 5px 8px;
                         margin-left: auto !important;
+                        width: fit-content;
                     `}
-                />
+                >
+                    <img
+                        src={`${getBloomApiPrefix()}copyrightAndLicense/ccImage?token=${token}`}
+                        css={css`
+                            width: 100px;
+                            display: block;
+                        `}
+                    />
+                </div>
                 {token !== "cc0" && (
                     <div
                         css={css`
