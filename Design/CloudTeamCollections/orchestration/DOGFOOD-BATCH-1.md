@@ -727,6 +727,25 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 14 Jul 2026 (PM #4 — Devin findings triaged + FIXED) · Commit `99bfb1e102` on cloud-collections
+  (pushed) fixes 5 of the 7 actionable Devin findings; 462/462 required-filter + new regression
+  test; eslint clean. **Fixed:** (1) CloudBookTransfer upload race — alreadyUploadedThisTransaction
+  now accessed only under resultGate; (2) CloudRepoCache.RecordCheckinFinish now clears LockedSeat
+  on release; (3) ApplyFullSnapshot now carries LocalVersionSeq across the swap (was wiping it →
+  needless re-downloads); (6) ExperimentalFeatures now exact-token match (was substring — cloud/
+  folder TC flags collided) + regression test CloudAndFolderTeamCollectionTokensDoNotCollide;
+  (7) CollectionHistoryTable.tsx now labels numeric-type ≥100 cloud incident events (were blank).
+  **DISMISSED (5) BloomS3Client.cs:130** — false positive: the flagged `internal static
+  CreateAmazonS3Client(config,credentials)` is a NEW helper, not a visibility downgrade; the methods
+  bloom-harvester actually overrides (GetAccessKeyCredentials, the bucketName CreateAmazonS3Client
+  overload) are unchanged `protected virtual` — no cross-repo break. **DEFERRED (4)
+  CloudEnvironment.cs:144 S3ForcePathStyle** to item 10 (GOING-LIVE real-AWS validation): the logic
+  `= !IsNullOrEmpty(S3Endpoint)` is correct for dev/MinIO (DefaultS3Endpoint is the MinIO URL) but
+  would force path-style on real AWS; the right production config (leave S3Endpoint empty, or an
+  explicit force-path-style override) is exactly what item 10's production validation must settle.
+  **EXACT next action:** re-regenerate cloud-tc-for-review from cloud-collections (bucket.sh/
+  rebuild.sh, --no-verify), force-push #8052; check/handle Greptile's re-review of the new head;
+  delete the throwaway fork probe PRs/branches (JohnThomson #3/#4/#5, branches devin-probe-*).
 - 14 Jul 2026 (PM #3 — ALL Devin slice findings gathered; triage/fix next) · Heads unchanged:
   cloud-collections `5c8275bc9a`, cloud-tc-for-review `b45e5e21be` = #8052 (MERGEABLE). Devin
   reviews of all three fork slices are COMPLETE. **Full actionable inventory to triage/fix on
