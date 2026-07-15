@@ -727,6 +727,67 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 14 Jul 2026 (PM #2 — SESSION-SAVE for machine sleep; fixes + Devin-slicing review in flight) ·
+  **Branch heads:** cloud-collections = `812703d56a` (origin in sync); cloud-tc-for-review =
+  `b45e5e21be` (origin in sync) = PR #8052 head, MERGEABLE. Working tree clean.
+  **Code shipped this session (all committed + pushed on cloud-collections, ride to #8052 via the
+  regen):**
+    - Build-once dev launcher `run.sh` (+ `run.mjs`, shared `viteDevServer.mjs`/`childOutput.mjs`;
+      `go.mjs` refactored onto them; Program.cs suppresses the DEBUG "Attach debugger" modal under
+      --automation; AGENTS.md documents both launchers). Commit c1665fecdc.
+    - Bug A (new-local-book avatar shows account display name, not email): CloudTeamCollection
+      `CurrentUserDisplayName` cached from MembersList; TeamCollectionApi stamps it. Commit 3d240de7a7.
+    - Bug B (teammate-rename round-trip): SyncAtStartup now detects the remote rename by instance id
+      even when statusJson is non-null (cloud identity-first) and renames the local folder IN PLACE
+      (no duplicate, no stale name). Commit 0b27f6a6f6. LIVE-VERIFIED by John.
+    - Incremental Receive: FetchBookFromRepo seeds staging from the local folder so DownloadFiles'
+      hash-skip re-downloads only changed files (rename refresh + all Receives). Commit 696958aff8.
+    - Greptile P1: launch-crashing `--` in an XLF <note> (CollectionTab.BookNotYetDownloaded) →
+      replaced with ';'. Commit acf3ba9272.
+    - Decisions recorded (see items #0, #13 above): Send All stays put; server-side cross-seat
+      check-in enforcement = WON'T DO (bug #0 fully closed).
+  **Preflight / review state:**
+    - origin/master (51e467d5de) merged into cloud-collections (clean, 812703d56a); required-filter
+      460/460. cloud-tc-for-review regenerated per SQUASH-PLAN (byte-identical, `--no-verify` on the
+      9 regen commits — John-approved, since the content already passed hooks on cloud-collections;
+      this made the rebuild seconds instead of timing out on the per-commit hook). Force-pushed → #8052.
+    - **Devin can't review #8052 (246 files "too large").** So we review the feature in SLICES via
+      throwaway PRs ON JOHN'S FORK (JohnThomson/BloomDesktop) to keep the main repo clean. Mechanism:
+      base branch = exact master commit `devin-probe-base`; each slice branch checks out that group's
+      files from cloud-collections; stacked where dependent. Slices → fork PRs:
+        - #3 client-core (g5, 19 files, base devin-probe-base) — **Devin DONE, 3 Bugs + 2 Investigate
+          + 3 Info** (below).
+        - #4 server (g2+g3, 39 files, base devin-probe-base) — Devin ANALYZING (triggered).
+        - #5 backend+API (g6+g7, 54 files, base devin-probe-client-core so g5 types are context) —
+          Devin ANALYZING (triggered).
+    - **g5 (#3) Devin findings — NOT yet triaged/fixed:** Bugs: (1) CloudRepoCache.cs:404 lock SEAT
+      not cleared when a check-in releases the lock (stale cache metadata); (2) CloudRepoCache.cs:270
+      full server snapshot wipes local version tracking → needless re-downloads (matches a queued
+      follow-up); (3) CloudBookTransfer.cs:241 `alreadyUploadedThisTransaction` (plain ISet) `.Add()`
+      inside a Parallel.ForEach = data race — **CONFIRMED real by code read.** Investigate: (a)
+      BloomS3Client.cs:130 protected→internal-static on a method bloom-harvester (separate repo)
+      extends; (b) CloudEnvironment.cs:144 S3ForcePathStyle always true (non-empty default endpoint)
+      → breaks real AWS in production (ties to item 10 GOING-LIVE). Info (skip): CloudSession setters,
+      CloudAuth timer race (benign), S3Extensions null-guards OK.
+    - Greptile on #8052 NEW head (b45e5e21be): only pr-automation shows so far; Greptile's re-review
+      not yet posted — CHECK next session.
+  **EXACT next actions (resume here):**
+    1. Gather Devin findings from fork PRs #4 (server) and #5 (backend+API) — devin-review skill,
+       chrome-devtools isolated context, URLs app.devin.ai/review/JohnThomson/BloomDesktop/pull/{4,5}.
+    2. Triage ALL Devin findings (g5 #3 + #4 + #5) against the code; fix the real ones on
+       cloud-collections (start with the confirmed CloudBookTransfer.cs:241 race). Also handle
+       Greptile's fresh #8052 review.
+    3. After fixes: re-run required filter, re-regenerate cloud-tc-for-review (bucket.sh/rebuild.sh
+       in scratchpad — rebuild.sh now uses --no-verify), force-push #8052.
+    4. Clean up the throwaway fork probe branches + PRs (JohnThomson #3/#4/#5, branches
+       devin-probe-base / -client-core / -server / -backend-api) when the review harvest is done.
+  **Tooling notes:** regen scripts live in this session's scratchpad (bucket.sh updated so all 253
+  diff files bucket into the 9 groups, 0 unmatched; rebuild.sh has --no-verify). Master added
+  `build/agent-dotnet.sh|ps1` + Directory.Build.props: builds/tests into a private per-terminal tree
+  so a running Bloom no longer blocks builds (`build/agent-dotnet.sh test <proj> --filter ...`).
+  Guard: plain `dotnet test` under the new Directory.Build.props left spurious `Bloom.sln` /
+  `BloomTests.csproj` edits (dropped BloomExe project+ref) — discard them (`git checkout --`) if they
+  reappear; the committed versions are correct.
 - 14 Jul 2026 (John pausing — low Fable credits; preflight kicked off) · All instances
   closed; full required filter 459/459 (includes bug #17-round-2's new test, previously
   unrun). origin/master merged into cloud-collections (clean, 17 files, f5a00c1cae) and
