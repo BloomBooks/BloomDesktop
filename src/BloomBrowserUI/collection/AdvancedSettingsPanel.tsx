@@ -262,14 +262,24 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
 
     // Memoized so the object reference is stable across renders that don't actually change
     // the AI settings; the group's validation/language-fetch effects key off this reference.
+    // We key the memo on the *serialized* AI settings rather than the whole `settings` object:
+    // extractAiTranslationFlatSettings returns a fresh object every call, so keying on `settings`
+    // handed out a new reference whenever ANY unrelated setting changed. That silently cancelled an
+    // in-flight engine validation and left it stuck showing "Testing translation..." forever (the
+    // per-engine validation effect early-returns when its probe key is unchanged, so it never
+    // restarted or cleared the pending flag). Keying on the serialized value fixes that.
+    const extractedAiTranslationFlatSettings = settings
+        ? extractAiTranslationFlatSettings(
+              settings as unknown as Record<string, unknown>,
+          )
+        : undefined;
+    const aiTranslationFlatSettingsKey = JSON.stringify(
+        extractedAiTranslationFlatSettings ?? null,
+    );
     const aiTranslationFlatSettings = React.useMemo(
-        () =>
-            settings
-                ? extractAiTranslationFlatSettings(
-                      settings as unknown as Record<string, unknown>,
-                  )
-                : undefined,
-        [settings],
+        () => extractedAiTranslationFlatSettings,
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [aiTranslationFlatSettingsKey],
     );
 
     const {
