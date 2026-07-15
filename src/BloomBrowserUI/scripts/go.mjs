@@ -25,8 +25,21 @@ const devScriptPath = path.join(browserUIRoot, "scripts", "dev.mjs");
 const exeScriptPath = path.join(repoRoot, "scripts", "watchBloomExe.mjs");
 process.env.feedback = "off";
 const startupQuietMs = 1500;
-const viteHealthTimeoutMs = 15000;
+const viteHealthTimeoutMs = 30000;
 const viteHealthPollMs = 250;
+// Per-request timeout for a single /@vite/client probe. This must comfortably
+// exceed Vite's real cold-start response latency, NOT just its steady-state
+// latency (a few ms). We probe at the most CPU-contended moment of startup:
+// Vite is still pre-bundling deps (optimizeDeps for jquery/comicaljs), the 7
+// file watchers are doing their initial scans, and LESS is compiling ~180
+// stylesheets, so Vite's event loop stalls in bursts. Measured latency under
+// that load reaches ~2.9s (p99), while steady state is <10ms. A 500ms timeout
+// (the previous value) spuriously aborted every probe during this window, so
+// waitForViteClient never got its 2 consecutive successes and the whole launch
+// failed. A slow-but-listening server is healthy, not broken; a genuinely dead
+// server still fails fast via ECONNREFUSED, so this longer timeout only affects
+// the busy-but-fine case.
+const viteHealthRequestTimeoutMs = 3000;
 const maxRandomVitePortAttempts = 10;
 const gracefulShutdownMs = 1500;
 // How long to wait for a linked iframe-app (--with) dev server to print its URL. The first
@@ -282,7 +295,7 @@ const isViteClientReachable = async (port) => {
             const response = await fetch(
                 `${toViteOrigin(host, port)}/@vite/client`,
                 {
-                    signal: AbortSignal.timeout(500),
+                    signal: AbortSignal.timeout(viteHealthRequestTimeoutMs),
                 },
             );
             if (response.ok) {

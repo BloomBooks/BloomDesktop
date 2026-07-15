@@ -592,6 +592,7 @@ namespace Bloom.Publish.Rab
 
             ReconcileProjectWithImportedBooks(existingProjectPath, trackedBooks);
             SynchronizeProjectFonts(existingProjectPath, trackedBooks);
+            EnsureProjectInterfaceLanguage(existingProjectPath);
             ReportProgressStage("updating-project", 85);
             SaveState(paths, state);
 
@@ -722,6 +723,7 @@ namespace Bloom.Publish.Rab
             );
             ReconcileProjectWithImportedBooks(state.AppDefPath, trackedBooks);
             SynchronizeProjectFonts(state.AppDefPath, trackedBooks);
+            EnsureProjectInterfaceLanguage(state.AppDefPath);
             state.Books = trackedBooks;
             SaveState(paths, state);
 
@@ -1338,6 +1340,109 @@ namespace Bloom.Publish.Rab
             var project = RabAppProject.Load(appDefPath);
             project.SynchronizeFonts(ReadFontDefinitionsFromBloomPubs(trackedBooks));
             project.Save();
+        }
+
+        /// <summary>
+        /// One interface (app UI) language that Reading App Builder ships translations for.
+        /// </summary>
+        internal class RabInterfaceLanguage
+        {
+            public RabInterfaceLanguage(string code, string englishName, bool isRightToLeft)
+            {
+                Code = code;
+                EnglishName = englishName;
+                IsRightToLeft = isRightToLeft;
+            }
+
+            public string Code { get; }
+            public string EnglishName { get; }
+            public bool IsRightToLeft { get; }
+        }
+
+        // The interface (app UI) languages Reading App Builder offers, keyed by their language
+        // subtag. RAB requires at least one enabled interface language or it refuses to build
+        // (BL-16470). Keep this in sync with the languages RAB actually ships UI translations for.
+        private static readonly Dictionary<
+            string,
+            RabInterfaceLanguage
+        > kSupportedInterfaceLanguages = new Dictionary<string, RabInterfaceLanguage>(
+            StringComparer.OrdinalIgnoreCase
+        )
+        {
+            ["en"] = new RabInterfaceLanguage("en", "English", false),
+            ["fr"] = new RabInterfaceLanguage("fr", "French", false),
+            ["de"] = new RabInterfaceLanguage("de", "German", false),
+            ["es"] = new RabInterfaceLanguage("es", "Spanish", false),
+            ["pt"] = new RabInterfaceLanguage("pt", "Portuguese", false),
+            ["ru"] = new RabInterfaceLanguage("ru", "Russian", false),
+            ["ar"] = new RabInterfaceLanguage("ar", "Arabic", true),
+            ["uk"] = new RabInterfaceLanguage("uk", "Ukrainian", false),
+            ["tr"] = new RabInterfaceLanguage("tr", "Turkish", false),
+            ["fa"] = new RabInterfaceLanguage("fa", "Farsi", true),
+            ["id"] = new RabInterfaceLanguage("id", "Indonesian", false),
+            ["zh"] = new RabInterfaceLanguage("zh", "Chinese (Simplified)", false),
+            ["vi"] = new RabInterfaceLanguage("vi", "Vietnamese", false),
+            ["hi"] = new RabInterfaceLanguage("hi", "Hindi", false),
+            ["ml"] = new RabInterfaceLanguage("ml", "Malayalam", false),
+        };
+
+        /// <summary>
+        /// Chooses the app's interface (UI) language from the collection's languages, in order
+        /// L1, L2, L3, picking the first one Reading App Builder supports. Falls back to English
+        /// when none of the collection languages is a supported interface language.
+        /// </summary>
+        internal static RabInterfaceLanguage ChooseInterfaceLanguage(
+            IEnumerable<string> preferredLanguageTags
+        )
+        {
+            foreach (var tag in preferredLanguageTags ?? Array.Empty<string>())
+            {
+                if (string.IsNullOrWhiteSpace(tag))
+                    continue;
+
+                var subtag = tag.Trim().Split('-')[0];
+                if (kSupportedInterfaceLanguages.TryGetValue(subtag, out var language))
+                    return language;
+            }
+
+            return kSupportedInterfaceLanguages["en"];
+        }
+
+        /// <summary>
+        /// Ensures the RAB project has an enabled interface (app UI) language. Without one, RAB
+        /// stops with a "select an interface language" message and produces no APK (BL-16470).
+        /// Bloom only supplies a default when none is enabled, deriving it from the collection's
+        /// languages (L1, then L2, then L3) and falling back to English; if an interface language
+        /// is already enabled — for example one the user chose in Reading App Builder — we leave
+        /// it untouched.
+        /// </summary>
+        private void EnsureProjectInterfaceLanguage(string appDefPath)
+        {
+            var project = RabAppProject.Load(appDefPath);
+
+            // Don't override a choice already made (e.g. in Reading App Builder).
+            if (project.HasEnabledInterfaceLanguage())
+                return;
+
+            var language = ChooseInterfaceLanguage(
+                new[]
+                {
+                    _collectionSettings?.Language1Tag,
+                    _collectionSettings?.Language2Tag,
+                    _collectionSettings?.Language3Tag,
+                }
+            );
+
+            project.SetInterfaceLanguage(
+                language.Code,
+                language.EnglishName,
+                language.IsRightToLeft
+            );
+            project.Save();
+
+            _progress.MessageWithoutLocalizing(
+                $"Set the app's interface language to {language.EnglishName} ({language.Code})."
+            );
         }
 
         internal static List<RabAppFontDefinition> ReadFontDefinitionsFromBloomPub(

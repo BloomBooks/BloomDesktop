@@ -40,7 +40,10 @@ const ToolboxCheckbox: FunctionComponent<{
                 l10nKey={`EditTab.Toolbox.${props.l10nKeySuffix}`}
                 checked={checked}
                 onCheckChanged={(checked) => {
-                    setToolEnabledFromSettings(props.tool, checked!);
+                    // Pass true so that, when enabling, the tool opens after a
+                    // brief delay letting the user see this checkbox tick before
+                    // the "More..." section collapses to reveal the tool. (BL-16501)
+                    setToolEnabledFromSettings(props.tool, checked!, true);
                     setChecked(checked!);
                 }}
             />
