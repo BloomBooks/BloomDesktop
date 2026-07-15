@@ -356,14 +356,22 @@ namespace Bloom.AiTranslation
                 // Best-effort cleanup on the failure path: a collection is still a real,
                 // storage-consuming resource even when translation failed, but a delete failure
                 // here must never replace/mask the original, more informative exception.
-                await TryDeleteBestEffortAsync(httpClient, apiKey, sourceCollectionId, ct);
+                // Use CancellationToken.None: this path also runs when the user cancels (ct is
+                // already tripped), and passing ct would make the very first cleanup request throw
+                // OperationCanceledException, silently orphaning the collections we came here to delete.
+                await TryDeleteBestEffortAsync(
+                    httpClient,
+                    apiKey,
+                    sourceCollectionId,
+                    CancellationToken.None
+                );
                 if (outputCollectionId.HasValue)
                 {
                     await TryDeleteBestEffortAsync(
                         httpClient,
                         apiKey,
                         outputCollectionId.Value,
-                        ct
+                        CancellationToken.None
                     );
                 }
                 throw;
