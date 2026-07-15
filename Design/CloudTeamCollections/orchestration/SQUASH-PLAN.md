@@ -14,6 +14,22 @@ meaningful, human-reviewable steps — replacing `cloud-collections`' ~204 orche
 commits (126 first-parent) for review/merge purposes. The working branch `cloud-collections`
 stays untouched; the squashed branch is a **regenerable packaging artifact**.
 
+> **Scripts (15 Jul 2026):** the regeneration is now fully scripted, right next to this file —
+> `regen-bucket.sh` (assigns the `origin/master..cloud-collections` diff to the 9 groups by
+> path pattern; **must report 0 unmatched** — extend its patterns when new files join the
+> branch) and `regen-rebuild.sh` (stages + commits each group with `--no-verify`, safe because
+> the resulting tree is byte-identical to `cloud-collections`, which already passed every hook,
+> then verifies that identity). Usage:
+> ```bash
+> git checkout -B cloud-tc-for-review origin/master
+> git diff --name-only origin/master cloud-collections > /tmp/allfiles.txt
+> Design/CloudTeamCollections/orchestration/regen-bucket.sh /tmp/allfiles.txt /tmp/groups
+> Design/CloudTeamCollections/orchestration/regen-rebuild.sh /tmp/groups
+> git push origin cloud-tc-for-review --force-with-lease
+> ```
+> Precondition unchanged: `cloud-collections` must already contain `origin/master` (merge it
+> first), or the byte-identity check fails.
+
 ## Method: path-staged rebuild (recommended)
 
 Do NOT interactive-rebase 126+ commits (it conflicts immediately — master already contains

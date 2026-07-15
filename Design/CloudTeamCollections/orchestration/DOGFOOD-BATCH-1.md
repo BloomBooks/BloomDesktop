@@ -727,6 +727,38 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 15 Jul 2026 (AM — fresh-eyes review of the 14 Jul work; three real fixes) · John asked for a
+  review of yesterday's session. Findings, all fixed + regression-tested (465/465 on the
+  required filter):
+    1. **Rename-apply guard was unsound (data-loss risk).** The bug B fix guarded the
+       SyncAtStartup rename-apply block with LOCAL status (`!GetLocalStatus(..).IsCheckedOut()`),
+       but cloud checkouts never stamp local status (TryLockInRepo is RPC+cache only) — so
+       "check out → retitle → RESTART before check-in" would rename the folder back to the repo
+       name and overwrite the checked-out edits from the repo. Local status can also carry a
+       STALE teammate lock (accept-remote-lock sync writes repo status locally), wrongly
+       SKIPPING a legitimate rename. Fix: guard on the REPO lock (`IsCheckedOutHereBy(repo
+       status)` — same machine-local rule as QueueMissingRepoBooksForBackgroundDownload) plus a
+       `NewBookRenamedFrom(newName)==thisFolder` confirmation, which doubles as the
+       folder-TC gate (base implementation always answers null when the folder has repo status,
+       so folder TCs provably never enter the block). New tests:
+       CloudSyncAtStartupTests.SyncAtStartup_TeammateRenamedBook_RenamesLocalFolderInPlace and
+       SyncAtStartup_OwnRenameMidCheckin_DoesNotRevertRenameOrClobber (+ per-key S3 test harness).
+    2. **Display-name cache ignored account switch.** CurrentUserDisplayName cached on a
+       session-wide boolean, so after Bob signs out and Alice signs in (batch item 9), Alice's
+       new local books showed BOB's display name. Fix: cache keyed by the signed-in email. New
+       test: AddCloudBookStatusFields_AccountSwitch_RefreshesDisplayName.
+    3. **run.sh freshness check was effectively dead after any edit.** It compared source mtimes
+       against the apphost Bloom.exe, which incremental builds usually don't touch (only
+       Bloom.dll changes) — so the skip-build fast path never fired again after the first C#
+       edit. Fix: compare against the newest of Bloom.exe/Bloom.dll; also include the repo-root
+       Directory.Build.* files in the source scan (master's new Directory.Build.props affects
+       builds).
+    Also: the review-branch regeneration scripts now live IN THE REPO
+    (orchestration/regen-bucket.sh + regen-rebuild.sh, referenced from SQUASH-PLAN.md) instead
+    of a session-scratchpad that dies with the session. Reviewed-and-fine: incremental-download
+    seeding, upload-race lock, LockedSeat/LocalVersionSeq cache fixes, ExperimentalFeatures
+    exact-token match, XLF fix, launcher architecture. **EXACT next action:** regenerate
+    cloud-tc-for-review with the new scripts, force-push #8052, re-trigger Greptile.
 - 14 Jul 2026 (PM #6 — CLEAN REVIEW CHECKPOINT: Devin + Greptile both satisfied) · Greptile
   re-review of #8052 head 8fbe66e4ea PASSED (9m27s) with NO new findings; the prior XLF P1 is
   fixed in the new head and its thread is resolved/outdated; all checks green (Greptile,

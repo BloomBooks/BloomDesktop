@@ -403,6 +403,68 @@ namespace BloomTests.TeamCollection
             Assert.That((string)json["currentUserName"], Is.EqualTo("Bob Helper"));
         }
 
+        // Regression (15 Jul 2026 review): the display name is cached per SESSION, but the same
+        // instance supports switching accounts (batch item 9) -- after Bob signs out and Alice
+        // signs in, a new local book must NOT keep showing Bob's display name.
+        [Test]
+        public void AddCloudBookStatusFields_AccountSwitch_RefreshesDisplayName()
+        {
+            _executor.Handler = req =>
+            {
+                if (req.Resource == "rest/v1/rpc/members_list")
+                    return FakeResponses.Make(
+                        HttpStatusCode.OK,
+                        new JArray(
+                            new JObject
+                            {
+                                ["id"] = 1,
+                                ["email"] = "bob@dev.local",
+                                ["display_name"] = "Bob Helper",
+                                ["role"] = "editor",
+                                ["user_id"] = "user-bob",
+                            },
+                            new JObject
+                            {
+                                ["id"] = 2,
+                                ["email"] = "alice@dev.local",
+                                ["display_name"] = "Alice Admin",
+                                ["role"] = "admin",
+                                ["user_id"] = "user-alice",
+                            }
+                        ).ToString()
+                    );
+                return FakeResponses.Make(
+                    HttpStatusCode.OK,
+                    new JObject
+                    {
+                        ["books"] = new JArray(),
+                        ["groups"] = new JArray(),
+                        ["max_event_id"] = 1,
+                    }.ToString()
+                );
+            };
+            EnsureCloudCollection().IsBookPresentInRepo("force hydration");
+            const string original =
+                "{\"who\":\"x\",\"whoFirstName\":null,\"whoSurname\":null,"
+                + "\"currentUser\":\"x\",\"isNewLocalBook\":true}";
+
+            _auth.SignIn("bob@dev.local", "irrelevant");
+            var bobJson = JObject.Parse(_api.AddCloudBookStatusFields(original, "Bob's new book"));
+            // Sanity: Bob's name resolved and is now cached.
+            Assert.That((string)bobJson["whoFirstName"], Is.EqualTo("Bob Helper"));
+
+            _auth.SignIn("alice@dev.local", "irrelevant");
+            var aliceJson = JObject.Parse(
+                _api.AddCloudBookStatusFields(original, "Alice's new book")
+            );
+            Assert.That(
+                (string)aliceJson["whoFirstName"],
+                Is.EqualTo("Alice Admin"),
+                "after an account switch the previous member's cached display name must not leak"
+            );
+            Assert.That((string)aliceJson["currentUserName"], Is.EqualTo("Alice Admin"));
+        }
+
         [Test]
         public void AddCloudBookStatusFields_WhoIsAnotherMember_LeavesWhoAndNamesAlone()
         {

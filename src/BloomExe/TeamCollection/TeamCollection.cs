@@ -2605,12 +2605,22 @@ namespace Bloom.TeamCollection
                     // the same instance id (John's live report, 14 Jul 2026). Detect it here by
                     // instance id: the repo has this book under a DIFFERENT name with no local
                     // folder by that new name. Rename the local folder IN PLACE (keeps its history,
-                    // avoids the old delete + full re-unzip), then bring content up to date only if
-                    // it actually changed. Guarded to a checked-IN book so we never touch our own
-                    // local-rename-in-progress (that folder is checked out to us). Folder TCs never
-                    // reach this: their renamed book's statusJson is null, so this whole block is
-                    // skipped and their existing path below is unchanged.
-                    if (statusJson != null && !GetLocalStatus(bookFolderName).IsCheckedOut())
+                    // avoids the old delete + full re-unzip), then bring its content up to date.
+                    // Two guards before applying:
+                    //  - The REPO lock must not be ours-on-this-machine: that is the local-rename-
+                    //    mid-checkin edge (we renamed a checked-out book and haven't checked in;
+                    //    the repo's old name is expected), and renaming it back would clobber our
+                    //    checked-out work. The repo status is the authoritative test -- cloud
+                    //    checkouts do NOT stamp the LOCAL status (TryLockInRepo is RPC+cache only),
+                    //    and local status can carry a STALE teammate lock from an earlier
+                    //    accept-remote-lock sync, so a local-status guard fails in both directions.
+                    //    Same machine-local rule as QueueMissingRepoBooksForBackgroundDownload.
+                    //  - NewBookRenamedFrom(newName) must name THIS folder as the rename source.
+                    //    For the cloud backend that is the exact instance-id confirmation; for a
+                    //    folder TC the base implementation always answers null here (a folder with
+                    //    repo status "can't be the source of a rename"), so folder TCs provably
+                    //    never enter this block and keep their existing statusJson==null path.
+                    if (statusJson != null)
                     {
                         var localIdForRename = BookMetaData.FromFolder(path)?.Id;
                         if (
@@ -2622,6 +2632,12 @@ namespace Bloom.TeamCollection
                             && !renameTarget.Item2 // no local folder by the repo's (new) name yet
                             && !string.Equals(
                                 renameTarget.Item1,
+                                bookFolderName,
+                                StringComparison.OrdinalIgnoreCase
+                            )
+                            && !IsCheckedOutHereBy(BookStatus.FromJson(statusJson))
+                            && string.Equals(
+                                NewBookRenamedFrom(renameTarget.Item1),
                                 bookFolderName,
                                 StringComparison.OrdinalIgnoreCase
                             )
@@ -2647,7 +2663,11 @@ namespace Bloom.TeamCollection
                             // so this is cheap even for a pure rename (nothing transfers) -- and it
                             // always refreshes the recorded local version, so the book never lingers
                             // in an "updates available" state after a rename.
-                            CopyBookFromRepoToLocal(newName);
+                            hasProblems |= !CopyBookFromRepoToLocalAndReport(
+                                progress,
+                                newName,
+                                () => { } // the rename message above already covers success
+                            );
                             continue;
                         }
                     }

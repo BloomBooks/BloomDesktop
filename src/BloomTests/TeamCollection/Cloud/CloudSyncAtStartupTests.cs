@@ -235,6 +235,279 @@ namespace BloomTests.TeamCollection.Cloud
             );
         }
 
+        /// <summary>An S3 mock that serves different bytes per requested key, unlike
+        /// <see cref="MakeScriptedS3"/>'s fixed content -- needed by the rename tests, whose
+        /// GetRepoBooksByIdMap pass downloads the repo book's real meta.json (it must parse and
+        /// carry the right instance id).</summary>
+        private static Mock<Amazon.S3.IAmazonS3> MakeScriptedS3PerKey(
+            Func<string, byte[]> bytesForKey
+        )
+        {
+            var mock = new Mock<Amazon.S3.IAmazonS3>();
+            mock.Setup(x =>
+                    x.GetObjectAsync(
+                        It.IsAny<Amazon.S3.Model.GetObjectRequest>(),
+                        It.IsAny<System.Threading.CancellationToken>()
+                    )
+                )
+                .Returns<Amazon.S3.Model.GetObjectRequest, System.Threading.CancellationToken>(
+                    (req, ct) =>
+                        System.Threading.Tasks.Task.FromResult(
+                            new Amazon.S3.Model.GetObjectResponse
+                            {
+                                ResponseStream = new MemoryStream(bytesForKey(req.Key)),
+                                HttpStatusCode = HttpStatusCode.OK,
+                                VersionId = req.VersionId,
+                            }
+                        )
+                );
+            return mock;
+        }
+
+        /// <summary>Builds a second CloudTeamCollection over the same local folder whose S3 mock
+        /// serves per-key content (see <see cref="MakeScriptedS3PerKey"/>). Reassigns _executor so
+        /// the test scripts this instance's server.</summary>
+        private CloudTeamCollection MakeCollectionWithPerKeyS3(Func<string, byte[]> bytesForKey)
+        {
+            var environment = new CloudEnvironment(name =>
+                name == "BLOOM_CLOUDTC_ANON_KEY" ? "test-anon-key" : null
+            );
+            var auth = new CloudAuth(new StubCloudAuthProvider(), new InMemoryCloudTokenStore());
+            auth.SignIn("test@somewhere.org", "irrelevant");
+            var client = new CloudCollectionClient(environment, auth);
+            _executor = new FakeRestExecutor();
+            client.SetRestClientForTests(_executor);
+            return new CloudTeamCollection(
+                _mockTcManager.Object,
+                _collectionFolder.FolderPath,
+                kCollectionId,
+                environment: environment,
+                auth: auth,
+                client: client,
+                transfer: new CloudBookTransfer(_ => MakeScriptedS3PerKey(bytesForKey).Object)
+            );
+        }
+
+        /// <summary>Scripts get_collection_state/get_book_manifest/download-start for ONE repo
+        /// book whose manifest exactly matches the given local folder's content (so an incremental
+        /// Receive of it downloads nothing except what a test's S3 mock serves).</summary>
+        private void ScriptSingleBookServer(
+            string repoBookName,
+            string instanceId,
+            string folderPathForManifest,
+            bool lockedByCurrentUserHere
+        )
+        {
+            var manifest = BookVersionManifest.FromLocalFolder(folderPathForManifest);
+            // A LOCAL manifest has no s3VersionId (files were never committed), but the server's
+            // version manifest always carries one and the pinned-download path fails fast without
+            // it -- so stamp one per file.
+            var manifestFiles = new JArray(
+                manifest.Entries.Select(kvp =>
+                    (JToken)
+                        new JObject
+                        {
+                            ["path"] = kvp.Key,
+                            ["sha256"] = kvp.Value.Sha256,
+                            ["size"] = kvp.Value.Size,
+                            ["s3VersionId"] = "sv-" + kvp.Key,
+                        }
+                )
+            );
+            var stateBody = new JObject
+            {
+                ["books"] = new JArray(
+                    new JObject
+                    {
+                        ["id"] = kBookId,
+                        ["instance_id"] = instanceId,
+                        ["name"] = repoBookName,
+                        ["current_version_id"] = "v1",
+                        ["current_version_seq"] = 1,
+                        ["current_checksum"] = "cs1",
+                        // StubCloudAuthProvider signs every session in as user id "user-1", which
+                        // ResolveLockedByForDisplay maps back to the signed-in email -- so this
+                        // row reads as "checked out by the current user on this machine".
+                        ["locked_by"] = lockedByCurrentUserHere ? "user-1" : null,
+                        ["locked_by_machine"] = lockedByCurrentUserHere
+                            ? TeamCollectionManager.CurrentMachine
+                            : null,
+                        ["locked_at"] = lockedByCurrentUserHere ? "2026-07-15T00:00:00Z" : null,
+                        ["deleted_at"] = null,
+                    }
+                ),
+                ["groups"] = new JArray(),
+                ["max_event_id"] = 5,
+            };
+            var manifestBody = new JObject
+            {
+                ["bookId"] = kBookId,
+                ["versionId"] = "v1",
+                ["seq"] = 1,
+                ["checksum"] = "cs1",
+                ["files"] = manifestFiles,
+            };
+            var downloadStartBody = new JObject
+            {
+                ["s3"] = new JObject
+                {
+                    ["bucket"] = "test-bucket",
+                    ["region"] = "us-east-1",
+                    ["prefix"] = "tc/x/",
+                    ["credentials"] = new JObject
+                    {
+                        ["accessKeyId"] = "a",
+                        ["secretAccessKey"] = "b",
+                        ["sessionToken"] = "c",
+                    },
+                },
+            };
+            _executor.Handler = req =>
+            {
+                switch (req.Resource)
+                {
+                    case "rest/v1/rpc/get_collection_state":
+                        return FakeResponses.Make(HttpStatusCode.OK, stateBody.ToString());
+                    case "rest/v1/rpc/get_book_manifest":
+                        return FakeResponses.Make(HttpStatusCode.OK, manifestBody.ToString());
+                    case "functions/v1/download-start":
+                        return FakeResponses.Make(HttpStatusCode.OK, downloadStartBody.ToString());
+                    default:
+                        return FakeResponses.Make(HttpStatusCode.OK, "{}");
+                }
+            };
+        }
+
+        // Regression for bug B (14 Jul 2026): a teammate's rename must be applied by renaming the
+        // local folder IN PLACE -- not leaving the old-name folder in "newer version available"
+        // limbo while a later pass downloads the new name as a duplicate with the same instance id.
+        [Test]
+        public void SyncAtStartup_TeammateRenamedBook_RenamesLocalFolderInPlace()
+        {
+            var folderPath = new BookFolderBuilder()
+                .WithRootFolder(_collectionFolder.FolderPath)
+                .WithTitle("Old book name")
+                .WithHtm("<html><body>same content both sides</body></html>")
+                .Build()
+                .BuiltBookFolderPath;
+            var instanceId = BookMetaData.FromFolder(folderPath).Id;
+            // Capture the meta.json bytes NOW: the folder gets renamed mid-test, and the repo's
+            // meta.json must carry this instance id for the id-map rename detection to bind.
+            var metaBytes = RobustFile.ReadAllBytes(Path.Combine(folderPath, "meta.json"));
+            // Sanity: the scripted manifest is built from the local folder and MUST include
+            // meta.json (rename detection reads the repo book's meta.json via the manifest).
+            var localManifest = BookVersionManifest.FromLocalFolder(folderPath);
+            Assert.That(
+                localManifest.Entries.Keys,
+                Does.Contain("meta.json"),
+                "setup: manifest lacks meta.json; entries: "
+                    + string.Join(", ", localManifest.Entries.Keys)
+            );
+
+            var collection = MakeCollectionWithPerKeyS3(key =>
+                key.EndsWith("meta.json")
+                    ? metaBytes
+                    : System.Text.Encoding.UTF8.GetBytes(kRemoteFileContent)
+            );
+            collection.TestOnly_MakeAutoApplyQueueSynchronous();
+            // The repo has the SAME book (by instance id) under a NEW name, not locked; its
+            // manifest matches the local content exactly (a pure rename).
+            ScriptSingleBookServer(
+                "New book name",
+                instanceId,
+                folderPath,
+                lockedByCurrentUserHere: false
+            );
+
+            // Sanity: the local folder starts under the old name.
+            Assert.That(Directory.Exists(folderPath), Is.True);
+            // Sanity: rename detection depends on reading the REPO book's meta.json (for its
+            // instance id) through the scripted manifest + S3; prove that path works before
+            // blaming the rename logic itself. (Any call hydrates the cache first, as SyncAtStartup
+            // itself would.)
+            Assert.That(collection.IsBookPresentInRepo("New book name"), Is.True);
+            Assert.That(
+                collection.GetRepoBookFile("New book name", "meta.json"),
+                Does.Contain(instanceId),
+                "setup: the repo book's meta.json must be fetchable and carry the instance id"
+            );
+
+            collection.SyncAtStartup(new ProgressSpy(), firstTimeJoin: false);
+
+            var newFolderPath = Path.Combine(_collectionFolder.FolderPath, "New book name");
+            Assert.That(
+                Directory.Exists(newFolderPath),
+                Is.True,
+                "the local folder should have been renamed to the repo's new name"
+            );
+            Assert.That(
+                Directory.Exists(folderPath),
+                Is.False,
+                "the old-name folder must be gone (a lingering copy is the duplicate-id bug)"
+            );
+            var htmPath = Directory.EnumerateFiles(newFolderPath, "*.htm").Single();
+            Assert.That(
+                RobustFile.ReadAllText(htmPath),
+                Does.Contain("same content both sides"),
+                "a pure rename must keep the local content"
+            );
+        }
+
+        // Regression for the guard on the bug B fix (15 Jul 2026 review): the local-rename-mid-
+        // checkin edge. When the CURRENT USER has the book checked out ON THIS MACHINE and renamed
+        // it locally (not yet checked in), the repo intentionally still shows the OLD name -- the
+        // rename-from-remote pass must NOT "correct" the local folder back to the repo name, which
+        // would clobber the checked-out work. Cloud checkouts never stamp the LOCAL status
+        // (TryLockInRepo is RPC + cache only), so this guard must read the REPO lock.
+        [Test]
+        public void SyncAtStartup_OwnRenameMidCheckin_DoesNotRevertRenameOrClobber()
+        {
+            var folderPath = new BookFolderBuilder()
+                .WithRootFolder(_collectionFolder.FolderPath)
+                .WithTitle("My renamed book")
+                .WithHtm("<html><body>my precious checked-out edits</body></html>")
+                .Build()
+                .BuiltBookFolderPath;
+            var instanceId = BookMetaData.FromFolder(folderPath).Id;
+            var metaBytes = RobustFile.ReadAllBytes(Path.Combine(folderPath, "meta.json"));
+
+            var collection = MakeCollectionWithPerKeyS3(key =>
+                key.EndsWith("meta.json")
+                    ? metaBytes
+                    : System.Text.Encoding.UTF8.GetBytes(kRemoteFileContent)
+            );
+            // Synchronous queue: if anything wrongly routes the repo's old-name book to the
+            // background download path, it happens inline where the asserts below can see it.
+            collection.TestOnly_MakeAutoApplyQueueSynchronous();
+            // The repo shows the OLD name, checked out to the current user on this machine --
+            // exactly the state after "check out, retitle, restart Bloom before checking in".
+            ScriptSingleBookServer(
+                "My old book",
+                instanceId,
+                folderPath,
+                lockedByCurrentUserHere: true
+            );
+
+            collection.SyncAtStartup(new ProgressSpy(), firstTimeJoin: false);
+
+            Assert.That(
+                Directory.Exists(folderPath),
+                Is.True,
+                "the checked-out, locally-renamed folder must be left alone"
+            );
+            Assert.That(
+                Directory.Exists(Path.Combine(_collectionFolder.FolderPath, "My old book")),
+                Is.False,
+                "the repo's old name must not be resurrected as a second folder"
+            );
+            var htmPath = Directory.EnumerateFiles(folderPath, "*.htm").Single();
+            Assert.That(
+                RobustFile.ReadAllText(htmPath),
+                Does.Contain("my precious checked-out edits"),
+                "checked-out local edits must not be overwritten from the repo"
+            );
+        }
+
         private JObject FindLogEventRequest()
         {
             // The FakeRestExecutor doesn't record request bodies against a specific resource by

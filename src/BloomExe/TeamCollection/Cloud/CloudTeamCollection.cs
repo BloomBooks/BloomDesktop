@@ -148,7 +148,12 @@ namespace Bloom.TeamCollection.Cloud
             _auth?.CurrentEmail ?? base.CurrentUserIdentity;
 
         private string _currentUserDisplayName;
-        private bool _currentUserDisplayNameResolved;
+
+        // The account email _currentUserDisplayName was resolved for. Keying the cache by email
+        // (rather than a boolean) makes an ACCOUNT SWITCH (batch item 9: sign out, different
+        // member signs in, same instance) invalidate it automatically -- a boolean flag kept
+        // serving the PREVIOUS member's display name for the new member's new local books.
+        private string _currentUserDisplayNameForEmail;
 
         /// <summary>
         /// The signed-in account's admin-editable display name (tc.members.display_name), e.g.
@@ -156,22 +161,30 @@ namespace Bloom.TeamCollection.Cloud
         /// local book's avatar shows the same initials + full name as a real checkout by this
         /// user (dogfood bug: new local books showed a single-letter, email-tooltip avatar while
         /// real checkouts showed "AA"/"Alice Admin"). Resolved lazily from MembersList and cached
-        /// for the session; a null result is NOT cached, so a call that happens before sign-in or
-        /// during a transient failure retries later. Not refreshed after a successful resolve --
-        /// display-name changes are rare and the avatar is cosmetic. Callers fall back to the
-        /// email when this is null, matching prior behavior.
+        /// per signed-in email; a failed resolve is NOT cached, so a call that happens before
+        /// sign-in or during a transient failure retries later. Not refreshed after a successful
+        /// resolve while the same account stays signed in -- display-name changes are rare and
+        /// the avatar is cosmetic. Callers fall back to the email when this is null, matching
+        /// prior behavior.
         /// </summary>
         protected internal virtual string CurrentUserDisplayName
         {
             get
             {
-                if (_currentUserDisplayNameResolved)
-                    return _currentUserDisplayName;
                 var email = _auth?.CurrentEmail;
                 if (string.IsNullOrEmpty(email))
                     return null;
+                if (
+                    string.Equals(
+                        _currentUserDisplayNameForEmail,
+                        email,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                    return _currentUserDisplayName;
                 try
                 {
+                    string resolved = null;
                     foreach (var member in _client.MembersList(CollectionId).OfType<JObject>())
                     {
                         if (
@@ -182,11 +195,12 @@ namespace Bloom.TeamCollection.Cloud
                             )
                         )
                         {
-                            _currentUserDisplayName = (string)member["display_name"];
+                            resolved = (string)member["display_name"];
                             break;
                         }
                     }
-                    _currentUserDisplayNameResolved = true;
+                    _currentUserDisplayName = resolved;
+                    _currentUserDisplayNameForEmail = email;
                 }
                 catch
                 {

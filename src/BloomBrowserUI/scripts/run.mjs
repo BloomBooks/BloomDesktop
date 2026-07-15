@@ -201,12 +201,28 @@ const isProcessAlive = (pid) => {
 
 // --- Build coordination ---------------------------------------------------
 
-// Newest modification time (ms) among C# sources and project files under src/.
-// Used only to decide whether the existing exe is already up to date; the build
-// lock plus dotnet's own incrementality are the real correctness guarantees, so
-// a slightly conservative answer (rebuild when unsure) is fine.
+// Newest modification time (ms) among C# sources and project files under src/,
+// plus the repo-root MSBuild files (Directory.Build.props and friends), which
+// also change build output. Used only to decide whether the existing build is
+// already up to date; the build lock plus dotnet's own incrementality are the
+// real correctness guarantees, so a slightly conservative answer (rebuild when
+// unsure) is fine.
 const newestSourceMtimeMs = () => {
     let newest = 0;
+    for (const rootBuildFile of [
+        "Directory.Build.props",
+        "Directory.Build.targets",
+        "Directory.Packages.props",
+    ]) {
+        try {
+            const mtime = statSync(path.join(repoRoot, rootBuildFile)).mtimeMs;
+            if (mtime > newest) {
+                newest = mtime;
+            }
+        } catch {
+            // Not every repo-root build file exists; that's fine.
+        }
+    }
     const stack = [path.join(repoRoot, "src")];
 
     while (stack.length > 0) {
@@ -249,8 +265,22 @@ const isBuiltExeFresh = () => {
         return false;
     }
     try {
-        const exeMtime = statSync(builtExePath).mtimeMs;
-        return exeMtime >= newestSourceMtimeMs();
+        // Compare against the newest BUILD OUTPUT, not just the apphost exe: an
+        // incremental `dotnet build` rewrites Bloom.dll but usually leaves the
+        // apphost Bloom.exe untouched (it only embeds the dll name), so the exe's
+        // mtime goes permanently stale after the first source edit and an
+        // exe-only check would make every launch rebuild forever.
+        const builtDllPath = path.join(path.dirname(builtExePath), "Bloom.dll");
+        let newestOutput = statSync(builtExePath).mtimeMs;
+        try {
+            const dllMtime = statSync(builtDllPath).mtimeMs;
+            if (dllMtime > newestOutput) {
+                newestOutput = dllMtime;
+            }
+        } catch {
+            // No dll (very unusual); fall back to the exe mtime alone.
+        }
+        return newestOutput >= newestSourceMtimeMs();
     } catch {
         return false;
     }
