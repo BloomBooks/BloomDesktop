@@ -323,6 +323,11 @@ namespace BloomTests.WebLibraryIntegration
                     Is.True,
                     "updateSource should start with BloomDesktop when re-uploaded"
                 );
+                Assert.That(
+                    bookRecord.updateSource.Value,
+                    Is.Not.EqualTo("BloomDesktop old"),
+                    "updateSource should not equal 'BloomDesktop old' when uploaded from current Bloom"
+                );
                 lastUploadedDateTime = bookRecord.lastUploaded.Value;
                 differenceBetweenNowAndCreationOfJson = DateTime.UtcNow - lastUploadedDateTime;
                 Assert.That(
