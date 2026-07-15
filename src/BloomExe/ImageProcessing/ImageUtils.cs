@@ -932,9 +932,13 @@ namespace Bloom.ImageProcessing
         /// Create a display-ready processed version of an image in <paramref name="destDir"/>:
         /// resize if too large, convert format if beneficial (JPEG→PNG for transparent line art,
         /// PNG→JPEG for photographic content), and optionally make backgrounds transparent.
-        /// This contains the processing that was formerly done at import time by
-        /// <see cref="ProcessAndSaveImageIntoFolder"/>; it is now applied at display time so that
-        /// the book folder always stores something as close as we think reasonable to the original/unmodified file.
+        /// This may duplicate some processing that is done at import time by
+        /// <see cref="ProcessAndSaveImageIntoFolder"/>, but this method is also called when
+        /// publishing to possibly adjust the images even further.
+        /// After import processing, the book folder always stores something as close as we think
+        /// reasonable to the original/unmodified file and that is suitable for good quality print
+        /// publication.  The result of this method is not stored in the book folder, but is used
+        /// for display in the Bloom UI or for ebook publication.
         /// </summary>
         /// <param name="sourcePath">Path to the image file in the book folder.</param>
         /// <param name="destDir">Directory in which to write the processed copy.</param>
@@ -946,6 +950,12 @@ namespace Bloom.ImageProcessing
         /// Path of the processed image inside <paramref name="destDir"/>, or <c>null</c> if the
         /// original can be served as-is or if processing failed.
         /// </returns>
+        /// <remarks>
+        /// Care must be taken that any processing here that duplicates what is done at import time does not
+        /// slow down the UI.  For example, if the image is already a web format and small enough, we should
+        /// use it as-is.  Methods that may process the image with GraphicsMagick should avoid processing if
+        /// the result would be the same as the original. (BL-16424)
+        /// </remarks>
         public static string AdjustImageForDisplay(
             string sourcePath,
             string destDir,
