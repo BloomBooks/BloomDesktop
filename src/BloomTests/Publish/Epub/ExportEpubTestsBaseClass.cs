@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
+using Bloom.Publish;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
@@ -41,6 +42,13 @@ namespace BloomTests.Publish.Epub
         protected static BloomServer s_testServer;
         protected static BookSelection s_bookSelection;
         protected static CollectionSettings s_collectionSettings;
+
+        // One off-screen page-checks browser shared by every epub export in the fixture (via
+        // PublishHelper.ExternalPageChecksBrowserForTests). Starting a WebView2 environment (browser
+        // process + dedicated thread) per export dominates the time of these tests; sharing one keeps
+        // each test running the real browser-based visibility checks while paying the startup cost
+        // only once per fixture.
+        protected static OffScreenBrowser s_pageChecksBrowser;
         protected BookServer _bookServer;
         protected string _defaultSourceValue;
 
@@ -61,11 +69,16 @@ namespace BloomTests.Publish.Epub
         {
             s_collectionSettings = new CollectionSettings();
             s_testServer = GetTestServer();
+            s_pageChecksBrowser = new OffScreenBrowser();
+            PublishHelper.ExternalPageChecksBrowserForTests = s_pageChecksBrowser;
         }
 
         [OneTimeTearDown]
         public virtual void OneTimeTearDown()
         {
+            PublishHelper.ExternalPageChecksBrowserForTests = null;
+            s_pageChecksBrowser.Dispose();
+            s_pageChecksBrowser = null;
             s_testServer.Dispose();
         }
 

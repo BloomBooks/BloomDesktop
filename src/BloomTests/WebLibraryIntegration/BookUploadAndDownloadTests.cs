@@ -50,7 +50,12 @@ namespace BloomTests.WebLibraryIntegration
         }
     }
 
+    // Integration tests: these upload/download real books against the live unit-test S3 buckets
+    // and the live bloomlibrary API (and one test downloads from the production site), so they
+    // need internet access and take minutes. Exclude them from a quick local run with
+    // --filter TestCategory!=Integration
     [TestFixture]
+    [Category("Integration")]
     public class BookUploadAndDownloadTests
     {
         private TemporaryFolder _workFolder;
