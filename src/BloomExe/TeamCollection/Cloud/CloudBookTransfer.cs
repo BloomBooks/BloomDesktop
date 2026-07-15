@@ -197,10 +197,17 @@ namespace Bloom.TeamCollection.Cloud
                     },
                     relativePath =>
                     {
-                        if (
-                            alreadyUploadedThisTransaction != null
-                            && alreadyUploadedThisTransaction.Contains(relativePath)
-                        )
+                        // alreadyUploadedThisTransaction is a plain set shared across the retry
+                        // calls of one transaction; reads AND writes of it happen on multiple
+                        // Parallel.ForEach threads, so every access must go through resultGate
+                        // (the same lock guarding the result sets) -- an unsynchronized Add here
+                        // could corrupt the set or lose entries.
+                        bool alreadyUploaded;
+                        lock (resultGate)
+                            alreadyUploaded =
+                                alreadyUploadedThisTransaction != null
+                                && alreadyUploadedThisTransaction.Contains(relativePath);
+                        if (alreadyUploaded)
                         {
                             lock (resultGate)
                                 result.SkippedPaths.Add(relativePath);
@@ -237,8 +244,10 @@ namespace Bloom.TeamCollection.Cloud
                         );
 
                         lock (resultGate)
+                        {
                             result.UploadedPaths.Add(relativePath);
-                        alreadyUploadedThisTransaction?.Add(relativePath);
+                            alreadyUploadedThisTransaction?.Add(relativePath);
+                        }
                     }
                 );
             }

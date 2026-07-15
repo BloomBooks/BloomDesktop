@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Bloom.Properties;
 
 namespace Bloom
@@ -52,10 +53,15 @@ namespace Bloom
             }
             else
             {
-                // Replace does no harm if the feature is not found in the string.
-                Settings.Default.EnabledExperimentalFeatures = Settings
-                    .Default.EnabledExperimentalFeatures.Replace(featureName, "")
-                    .Replace(",,", ",");
+                // Remove the EXACT token, not a substring: a raw Replace() would turn
+                // "cloud-team-collections" into "cloud-" when disabling "team-collections"
+                // (the two feature tokens share a substring).
+                Settings.Default.EnabledExperimentalFeatures = string.Join(
+                    ",",
+                    (Settings.Default.EnabledExperimentalFeatures ?? "")
+                        .Split(',')
+                        .Where(token => token != featureName && token.Length > 0)
+                );
             }
             Settings.Default.EnabledExperimentalFeatures =
                 Settings.Default.EnabledExperimentalFeatures.Trim(',');
@@ -63,7 +69,13 @@ namespace Bloom
 
         public static bool IsFeatureEnabled(string featureName)
         {
-            return Settings.Default.EnabledExperimentalFeatures.Contains(featureName);
+            // Exact-token match, not substring: the setting is a comma-separated list and one
+            // token can be a substring of another ("team-collections" is contained in
+            // "cloud-team-collections"), so a Contains() check reported the cloud feature as
+            // enabling the folder feature too.
+            return (Settings.Default.EnabledExperimentalFeatures ?? "")
+                .Split(',')
+                .Contains(featureName);
         }
     }
 }

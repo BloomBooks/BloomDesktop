@@ -268,6 +268,15 @@ namespace Bloom.TeamCollection.Cloud
             lock (_gate)
             {
                 var oldManifests = _booksById.ToDictionary(kv => kv.Key, kv => kv.Value.Manifest);
+                // LocalVersionSeq is this-machine-only state (never carried in a server row), so it
+                // must survive the full-snapshot swap for books that still exist -- otherwise a
+                // resync wipes it, and every already-received book then looks like it has an
+                // un-downloaded newer version (repoVersionSeq > null), triggering a needless
+                // re-download. (Mirrors the Manifest carry-over just above.)
+                var oldLocalVersionSeqs = _booksById.ToDictionary(
+                    kv => kv.Key,
+                    kv => kv.Value.LocalVersionSeq
+                );
                 _booksById.Clear();
                 foreach (var row in AsObjectArray(state["books"]))
                 {
@@ -275,6 +284,8 @@ namespace Bloom.TeamCollection.Cloud
                     book.ApplyServerRow(row);
                     if (oldManifests.TryGetValue(book.Id, out var manifest))
                         book.Manifest = manifest;
+                    if (oldLocalVersionSeqs.TryGetValue(book.Id, out var localSeq))
+                        book.LocalVersionSeq = localSeq;
                     _booksById[book.Id] = book;
                 }
 
@@ -405,6 +416,7 @@ namespace Bloom.TeamCollection.Cloud
                 {
                     book.LockedBy = null;
                     book.LockedByMachine = null;
+                    book.LockedSeat = null;
                     book.LockedAt = null;
                 }
             }

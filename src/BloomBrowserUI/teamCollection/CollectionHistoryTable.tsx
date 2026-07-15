@@ -76,6 +76,13 @@ const kEventTypes = [
     "Moved",
 ]; // REVIEW maybe better to do this in c# and just send it over?
 
+// Cloud Team Collection incident events use numeric values >= 100 (BookHistoryEventType in
+// History\HistoryEvent.cs), so they fall OUTSIDE the positional kEventTypes array above and must
+// be looked up by their exact numeric value -- otherwise they render blank in the table.
+const kCloudEventTypeLabels: { [type: number]: string } = {
+    100: "Work Preserved Locally", // BookHistoryEventType.WorkPreservedLocally
+};
+
 // Event types that represent an incident an admin should notice (per CONTRACTS.md: "recorded
 // as a server-side incident event admins can see") rather than routine activity. Indices into
 // kEventTypes above / BookHistoryEventType.cs: ForcedUnlock (5), SyncProblem (7) — the latter
@@ -261,7 +268,9 @@ export const CollectionHistoryTable: React.FunctionComponent<{
                                         />
                                     </BloomTooltip>
                                 )}
-                                {kEventTypes[e.Type]}
+                                {kEventTypes[e.Type] ??
+                                    kCloudEventTypeLabels[e.Type] ??
+                                    ""}
                             </TextCell>
                             <TextCell>{e.Message}</TextCell>
                         </tr>
