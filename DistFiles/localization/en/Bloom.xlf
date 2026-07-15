@@ -408,6 +408,51 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.DefaultFontFor</note>
         <note>{0} is a language name.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.KeyboardFor" translate="no">
+        <source xml:lang="en">Keyboard for {0}</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.KeyboardFor</note>
+        <note>{0} is a language name.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Keyboard.Automatic" translate="no">
+        <source xml:lang="en">Automatic</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Keyboard.Automatic</note>
+        <note>First item of the per-language Keyboard dropdown in the Book Making tab of Settings. Means "let Bloom figure out the best keyboard for this language on this machine".</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Keyboard.Off" translate="no">
+        <source xml:lang="en">Off</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Keyboard.Off</note>
+        <note>An item in the per-language Keyboard dropdown in the Book Making tab of Settings. Means Bloom should not change or supply a keyboard for this language; it leaves whatever keyboard the user has active.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Keyboard.AutomaticResolvesTo" translate="no">
+        <source xml:lang="en">Currently: {0}</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Keyboard.AutomaticResolvesTo</note>
+        <note>Secondary/subtext line under "Automatic" in the per-language Keyboard dropdown. {0} is the name of the keyboard or input method that Automatic currently resolves to on this machine (may itself be untranslated, e.g. an OS input method name).</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Keyboard.InstalledGroup" translate="no">
+        <source xml:lang="en">Installed input methods</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Keyboard.InstalledGroup</note>
+        <note>Group header in the per-language Keyboard dropdown, above the list of keyboards/input methods already installed on this machine.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Keyboard.CloudGroup" translate="no">
+        <source xml:lang="en">Keyman (online) keyboards</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Keyboard.CloudGroup</note>
+        <note>Group header in the per-language Keyboard dropdown, above the list of keyboards available from the Keyman online keyboard service. "Keyman" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Keyboard.CloudUnavailable" translate="no">
+        <source xml:lang="en">Not available offline</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Keyboard.CloudUnavailable</note>
+        <note>Shown in place of the online Keyman keyboard list, in the per-language Keyboard dropdown, when Bloom cannot reach the Keyman server (e.g. no internet connection).</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Keyboard.DownloadCount" translate="no">
+        <source xml:lang="en">{0} downloads</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Keyboard.DownloadCount</note>
+        <note>Small subtext shown under a Keyman online keyboard's name in the per-language Keyboard dropdown. {0} is a number of times that keyboard has been downloaded.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.Keyboard.NoneResolvesTo" translate="no">
+        <source xml:lang="en">Default</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.Keyboard.NoneResolvesTo</note>
+        <note>Used as the "Currently: {0}" value under "Automatic" in the per-language Keyboard dropdown, when this machine has no matching OS input method and no Keyman keyboard has been suggested yet for this language.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
         <source xml:lang="en">Front/Back Matter Pack</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack</note>
@@ -1567,6 +1612,11 @@
       <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true">
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
+      </trans-unit>
+      <trans-unit id="EditTab.EditableControls.ShowOnScreenKeyboard" translate="no">
+        <source xml:lang="en">Show on-screen keyboard</source>
+        <note>ID: EditTab.EditableControls.ShowOnScreenKeyboard</note>
+        <note>Tooltip on a small keyboard icon that appears at the corner of a text box when that box is focused and uses a Keyman on-screen keyboard. Clicking the icon re-opens the on-screen keyboard.</note>
       </trans-unit>
       <trans-unit id="EditTab.SubscriptionEnabled" sil:dynamic="true">
         <source xml:lang="en">Your subscription includes this feature.</source>

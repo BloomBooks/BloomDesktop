@@ -165,6 +165,37 @@ body:has(.qtip.topic-chooser-hint-bubble:hover)
     pointer-events: auto;
 }
 
+// The per-editable React controls strip (language tag, keyboard indicator; see
+// editableControls/). Its POSITIONING is unconditional (not gated on :hover):
+// the strip is a real DOM sibling inserted right after each editable, so if it
+// were ever position:static it would fall into the translation group's flex
+// column and add a phantom gap between multilingual editables. Absolute
+// positioning removes it from flow entirely. The manager sets top/left/width/
+// height to overlay the editable; the strip inside pins to the bottom-right.
+// padding matches the old tip's 2px inset (Bl-10017).
+//
+// Its VISIBILITY, however, rides on the same page-hover gate as the format cog
+// and the structure borders (see the hover block below): when the mouse leaves
+// the page we hide all editing chrome so the user sees the page as it will
+// print. So the whole strip is hidden by default and revealed only on hover.
+// (Per-control conditions compose on top of this: e.g. the keyboard indicator is
+// only rendered by React when the field is focused and uses a KMW keyboard, so
+// it appears only when focused AND the page is hovered.)
+.bloom-editableControls {
+    position: absolute;
+    pointer-events: none; // clicks fall through to the text; the keyboard button
+    // turns them back on for itself
+    z-index: @formatButtonZIndex;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    padding: 0 2px 2px 0;
+    box-sizing: border-box;
+    overflow: visible;
+    visibility: hidden;
+}
+
 // Keep together here all the effects we want when hovering (previously: also when focus-within)
 // the bloom-page. All of them need to also apply when the canvas element context controls are hovered,
 // even though that is no longer a child of the bloom-page. (That's what the second rule is for.)
@@ -259,24 +290,14 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
         }
     }
 
-    /*Put in little grey language tooltips in the bottom-right of the editable divs*/
-    .languageTip,
-    .bloom-editable[contentEditable="true"][data-languageTipContent]:not(
-            [data-languageTipContent=""]
-        ):after {
-        position: absolute;
-        right: 0;
-        /*Same grey color as pageLabel*/
-        color: var(--language-tag-color); //rgba(0, 0, 0, 0.2);
-        font-family: @UIFontStack;
-        font-size: small;
-        font-style: normal;
-        font-weight: normal;
-        line-height: 1; //else it will draw up in the box somewhere if the font is large
-        text-shadow: none;
-        content: attr(data-languageTipContent);
-        bottom: 2px; // See Bl-10017
-        margin-right: 2px;
+    // Reveal the per-editable controls strip (language tag, keyboard indicator,
+    // any future controls) only while the page is hovered, exactly like the
+    // format cog below and the structure borders above. Its positioning is set
+    // unconditionally (see the top-level .bloom-editableControls rule); only its
+    // visibility is gated here, so moving the mouse off the page hides it along
+    // with the rest of the editing chrome.
+    .bloom-editableControls {
+        visibility: visible;
     }
     // show some structure when the page is hovered
     // Show the padding, multilingual gap, etc as colored areas.
@@ -1316,16 +1337,10 @@ body {
     .bloom-dragHandle {
         right: calc(100% + 1.4px);
     }
-
-    [data-languageTipContent]:after {
-        content: "" !important; // suppress these, now in canvas element context controls
-    }
-}
-
-[data-bubble*="caption"] {
-    [data-languageTipContent]:after {
-        right: calc(100% + 2.8px) !important;
-    }
+    // (The old data-languageTipContent :after suppression that lived here is
+    // gone: the corner tag is now a React control, which the editableControls
+    // manager already suppresses inside canvas elements. The language is shown
+    // in the canvas element context controls.)
 }
 
 // hideAllCKEditors is toggled by bloomEditing.ts to prevent bl-12448

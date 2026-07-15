@@ -40,6 +40,21 @@ namespace Bloom.Collection
         public decimal LineHeight;
         public string FontName;
 
+        /// <summary>
+        /// The per-language keyboard setting, serialized via <see cref="Bloom.Keyboarding.KeyboardSetting"/>.
+        /// Empty string (the default) means "Automatic" (resolve at edit time based on this machine's
+        /// installed input methods, falling back to <see cref="CachedKmwFallbackKeyboard"/>).
+        /// Not used for sign languages.
+        /// </summary>
+        public string Keyboard = "";
+
+        /// <summary>
+        /// The Keyman keyboard id (top suggestion from the Keyman search API) to use as the KeymanWeb
+        /// fallback when <see cref="Keyboard"/> is Automatic and this machine has no matching OS keyboard.
+        /// Empty until fetched. Not used for sign languages.
+        /// </summary>
+        public string CachedKmwFallbackKeyboard = "";
+
         public WritingSystem(Func<string> tagOfDefaultLanguageForNaming)
         {
             //Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
@@ -158,6 +173,10 @@ namespace Bloom.Collection
             if (isSignLanguage)
                 return;
             xml.Add(new XElement($"DefaultLanguage{langNumTag}FontName", FontName));
+            xml.Add(new XElement($"Language{langNumTag}Keyboard", Keyboard));
+            xml.Add(
+                new XElement($"Language{langNumTag}CachedKmwKeyboard", CachedKmwFallbackKeyboard)
+            );
             xml.Add(new XElement($"IsLanguage{langNumTag}Rtl", IsRightToLeft));
             xml.Add(new XElement($"Language{langNumTag}LineHeight", LineHeight));
             xml.Add(
@@ -302,6 +321,8 @@ namespace Bloom.Collection
                 FontName = GetDefaultFontName(); // probably could just be empty string...
                 BreaksLinesOnlyAtSpaces = false;
                 BaseUIFontSizeInPoints = 0;
+                Keyboard = "";
+                CachedKmwFallbackKeyboard = "";
                 return;
             }
             IsRightToLeft = ReadBoolean(xml, $"IsLanguage{langNumTag}Rtl", false);
@@ -310,6 +331,12 @@ namespace Bloom.Collection
                 xml,
                 $"DefaultLanguage{langNumTag}FontName",
                 GetDefaultFontName()
+            );
+            Keyboard = ReadString(xml, $"Language{langNumTag}Keyboard", "");
+            CachedKmwFallbackKeyboard = ReadString(
+                xml,
+                $"Language{langNumTag}CachedKmwKeyboard",
+                ""
             );
             BreaksLinesOnlyAtSpaces = ReadBoolean(
                 xml,
@@ -424,6 +451,8 @@ namespace Bloom.Collection
             copy.IsCustomName = this.IsCustomName;
             copy.LineHeight = this.LineHeight;
             copy.FontName = this.FontName;
+            copy.Keyboard = this.Keyboard;
+            copy.CachedKmwFallbackKeyboard = this.CachedKmwFallbackKeyboard;
             copy.BreaksLinesOnlyAtSpaces = this.BreaksLinesOnlyAtSpaces;
             copy.BaseUIFontSizeInPoints = this.BaseUIFontSizeInPoints;
             copy.IsRightToLeft = this.IsRightToLeft;

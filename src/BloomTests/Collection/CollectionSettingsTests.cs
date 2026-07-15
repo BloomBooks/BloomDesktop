@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Keyboarding;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
@@ -170,6 +171,145 @@ namespace BloomTests.Collection
             settings.Save();
             var newSettings = CreateCollectionSettings(_folder.Path, collectionName);
             Assert.That(newSettings.Language1.IsRightToLeft, Is.True);
+        }
+
+        [Test]
+        public void Keyboard_DefaultsToAutomaticWhenAbsent()
+        {
+            // Uses its own collection name (rather than the shared "test" name other tests in this
+            // fixture reuse) because this test checks the DEFAULT when nothing has been saved yet,
+            // and _folder is shared for the whole fixture's lifetime.
+            const string collectionName = "testKeyboardDefault";
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+            // Sanity check: a freshly-created collection shouldn't have anything for Keyboard yet.
+            Assert.That(settings.Language1.Keyboard, Is.Not.Null);
+            Assert.That(
+                settings.Language1.Keyboard,
+                Is.EqualTo(""),
+                "Absent Keyboard should default to Automatic (empty string)"
+            );
+            Assert.That(settings.Language1.CachedKmwFallbackKeyboard, Is.EqualTo(""));
+        }
+
+        [Test]
+        public void Keyboard_CanRoundTrip()
+        {
+            const string collectionName = "testKeyboardRoundTrip";
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+            settings.Language1Tag = "th";
+            settings.Language1.Keyboard = "kmw:thai_kedmanee@th";
+            settings.Language1.CachedKmwFallbackKeyboard = "thai_kedmanee";
+            settings.Language2Tag = "en";
+            settings.Language2.Keyboard = "system:some_libpalaso_id";
+            // Sanity check before saving.
+            Assert.That(settings.Language1.Keyboard, Is.EqualTo("kmw:thai_kedmanee@th"));
+            settings.Save();
+
+            var newSettings = CreateCollectionSettings(_folder.Path, collectionName);
+            Assert.That(newSettings.Language1.Keyboard, Is.EqualTo("kmw:thai_kedmanee@th"));
+            Assert.That(
+                newSettings.Language1.CachedKmwFallbackKeyboard,
+                Is.EqualTo("thai_kedmanee")
+            );
+            Assert.That(newSettings.Language2.Keyboard, Is.EqualTo("system:some_libpalaso_id"));
+        }
+
+        [Test]
+        public void LegacyKeyboard_Loads()
+        {
+            // Simulates a .bloomCollection written by this Bloom version but read by code that only
+            // understands the numbered legacy elements (no <Languages> block), the way LegacyRTL_Loads
+            // simulates an old file for IsRightToLeft. Bloom itself always writes both forms, but we
+            // still need to be able to read a file that only has the legacy numbered form.
+            var input =
+                @"<Collection version=""0.2"">
+  <Language1Name>Thai</Language1Name>
+  <Language1IsCustomName>false</Language1IsCustomName>
+  <Language1Iso639Code>th</Language1Iso639Code>
+  <DefaultLanguage1FontName>Andika</DefaultLanguage1FontName>
+  <Language1Keyboard>kmw:thai_kedmanee@th</Language1Keyboard>
+  <Language1CachedKmwKeyboard>thai_kedmanee</Language1CachedKmwKeyboard>
+  <IsLanguage1Rtl>false</IsLanguage1Rtl>
+  <Language1LineHeight>0</Language1LineHeight>
+  <Language1BreaksLinesOnlyAtSpaces>false</Language1BreaksLinesOnlyAtSpaces>
+  <Language1BaseUIFontSizeInPoints>0</Language1BaseUIFontSizeInPoints>
+</Collection>";
+            const string collectionName = "testLegacyKeyboard";
+            var collectionPath = CollectionSettings.GetPathForNewSettings(
+                _folder.Path,
+                collectionName
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
+            RobustFile.WriteAllText(collectionPath, input);
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+            Assert.That(settings.Language1.Keyboard, Is.EqualTo("kmw:thai_kedmanee@th"));
+            Assert.That(settings.Language1.CachedKmwFallbackKeyboard, Is.EqualTo("thai_kedmanee"));
+        }
+
+        [Test]
+        public void WritingSystem_Clone_CopiesKeyboardSettings()
+        {
+            var original = new WritingSystem(() => "en")
+            {
+                Tag = "th",
+                Keyboard = "kmw:thai_kedmanee@th",
+                CachedKmwFallbackKeyboard = "thai_kedmanee",
+            };
+            // Sanity check before cloning.
+            Assert.That(original.Keyboard, Is.EqualTo("kmw:thai_kedmanee@th"));
+
+            var clone = original.Clone();
+
+            Assert.That(clone.Keyboard, Is.EqualTo("kmw:thai_kedmanee@th"));
+            Assert.That(clone.CachedKmwFallbackKeyboard, Is.EqualTo("thai_kedmanee"));
+        }
+
+        [TestCase("", KeyboardSetting.Kind.Automatic, "", "")]
+        [TestCase("off", KeyboardSetting.Kind.Off, "", "")]
+        [TestCase("system:mykeyboard", KeyboardSetting.Kind.System, "mykeyboard", "")]
+        [TestCase("kmw:thai_kedmanee@th", KeyboardSetting.Kind.KeymanWeb, "thai_kedmanee", "th")]
+        [TestCase("system:", KeyboardSetting.Kind.Automatic, "", "")] // malformed: no id
+        [TestCase("kmw:thai_kedmanee", KeyboardSetting.Kind.Automatic, "", "")] // malformed: no '@'
+        [TestCase("kmw:@th", KeyboardSetting.Kind.Automatic, "", "")] // malformed: no id before '@'
+        [TestCase("kmw:thai_kedmanee@", KeyboardSetting.Kind.Automatic, "", "")] // malformed: no tag after '@'
+        [TestCase("garbage", KeyboardSetting.Kind.Automatic, "", "")] // unrecognized form
+        public void KeyboardSetting_Parse_HandlesAllCases(
+            string input,
+            KeyboardSetting.Kind expectedKind,
+            string expectedId,
+            string expectedLanguageTag
+        )
+        {
+            var setting = KeyboardSetting.Parse(input);
+            Assert.That(setting.SettingKind, Is.EqualTo(expectedKind));
+            Assert.That(setting.Id, Is.EqualTo(expectedId));
+            Assert.That(setting.LanguageTag, Is.EqualTo(expectedLanguageTag));
+        }
+
+        [Test]
+        public void KeyboardSetting_ToString_RoundTripsThroughParse()
+        {
+            var system = KeyboardSetting.CreateSystem("mykeyboard");
+            Assert.That(system.ToString(), Is.EqualTo("system:mykeyboard"));
+            Assert.That(
+                KeyboardSetting.Parse(system.ToString()).ToString(),
+                Is.EqualTo(system.ToString())
+            );
+
+            var kmw = KeyboardSetting.CreateKeymanWeb("thai_kedmanee", "th");
+            Assert.That(kmw.ToString(), Is.EqualTo("kmw:thai_kedmanee@th"));
+            Assert.That(
+                KeyboardSetting.Parse(kmw.ToString()).ToString(),
+                Is.EqualTo(kmw.ToString())
+            );
+
+            Assert.That(KeyboardSetting.Automatic.ToString(), Is.EqualTo(""));
+
+            Assert.That(KeyboardSetting.Off.ToString(), Is.EqualTo("off"));
+            Assert.That(
+                KeyboardSetting.Parse(KeyboardSetting.Off.ToString()).SettingKind,
+                Is.EqualTo(KeyboardSetting.Kind.Off)
+            );
         }
 
         [Test]

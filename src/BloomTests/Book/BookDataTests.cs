@@ -3233,6 +3233,134 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void SynchronizeDataItemsThroughoutDOM_SkipsLtrDirValue_ButKeepsRtl()
+        {
+            // KeymanWeb forces dir="ltr" on whatever it attaches to (see keymanWebIntegration.ts);
+            // Bloom itself never writes dir="ltr" (only "rtl"), so an "ltr" value must never be
+            // saved to the data-div (from where it would get force-propagated to other copies of
+            // the field). An explicit dir="rtl" is legitimate Bloom-authored data and must survive.
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+					<div class='bloom-page'>
+						 <div findMe='ltrSource' data-book='someLtrField' lang='en' dir='ltr' class='bloom-editable bloom-visibility-code-on'><p>hi</p></div>
+						 <div findMe='rtlSource' data-book='someRtlField' lang='ar' dir='rtl' class='bloom-editable bloom-visibility-code-on'><p>hi</p></div>
+					</div>
+					</body></html>"
+            );
+            // Sanity check the input really has both dir values before we sync.
+            Assert.That(
+                (
+                    (SafeXmlElement)
+                        dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='ltrSource']")
+                ).GetAttribute("dir"),
+                Is.EqualTo("ltr")
+            );
+
+            var data = new BookData(dom, _collectionSettings, null);
+            // These fields have no prior data-div entry, so we need the variant that creates one
+            // (SynchronizeDataItemsThroughoutDOM only updates elements that already exist).
+            data.UpdateVariablesAndDataDivThroughDOM();
+
+            var dataDivLtr = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@id='bloomDataDiv']/div[@data-book='someLtrField']"
+                );
+            Assert.That(dataDivLtr, Is.Not.Null);
+            Assert.That(
+                dataDivLtr.GetOptionalStringAttribute("dir", null),
+                Is.Null,
+                "dir='ltr' should never be saved to the data-div"
+            );
+
+            var dataDivRtl = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@id='bloomDataDiv']/div[@data-book='someRtlField']"
+                );
+            Assert.That(
+                dataDivRtl.GetAttribute("dir"),
+                Is.EqualTo("rtl"),
+                "An explicit dir='rtl' must survive"
+            );
+        }
+
+        [Test]
+        public void SynchronizeDataItemsThroughoutDOM_ScrubsKeymanWebPollution_FromDataDivAndPage()
+        {
+            // Simulates a page that KeymanWeb has just attached to (adding the "keymanweb-font"
+            // class and inputmode="none"; see keymanWebIntegration.ts) being saved for the first
+            // time, before the data-div has any entry for this field.
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+					<div class='bloom-page'>
+						 <div findMe='foo' data-book='someXmatterField' lang='en' inputmode='none' class='bloom-editable bloom-visibility-code-on keymanweb-font'><p>hi</p></div>
+					</div>
+					</body></html>"
+            );
+            // Sanity check the pollution is really there before we sync.
+            var fooBefore = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='foo']");
+            Assert.That(fooBefore.GetAttribute("inputmode"), Is.EqualTo("none"));
+            Assert.That(fooBefore.GetAttribute("class"), Does.Contain("keymanweb-font"));
+
+            var data = new BookData(dom, _collectionSettings, null);
+            // This field has no prior data-div entry, so we need the variant that creates one
+            // (SynchronizeDataItemsThroughoutDOM only updates elements that already exist).
+            data.UpdateVariablesAndDataDivThroughDOM();
+
+            var dataDivEntry = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@id='bloomDataDiv']/div[@data-book='someXmatterField']"
+                );
+            Assert.That(dataDivEntry, Is.Not.Null);
+            Assert.That(dataDivEntry.GetOptionalStringAttribute("inputmode", null), Is.Null);
+            Assert.That(dataDivEntry.GetAttribute("class"), Does.Not.Contain("keymanweb-font"));
+
+            // The re-emitted page copy (the very element KeymanWeb polluted) must also come out clean.
+            var fooAfter = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='foo']");
+            Assert.That(fooAfter.GetOptionalStringAttribute("inputmode", null), Is.Null);
+            Assert.That(fooAfter.GetAttribute("class"), Does.Not.Contain("keymanweb-font"));
+        }
+
+        [Test]
+        public void SynchronizeDataItemsThroughoutDOM_HealsPreExistingKeymanWebPollutionInDataDiv()
+        {
+            // Simulates a book saved by an earlier POC-era session, where the pollution made it
+            // all the way into the data-div itself. The next sync (of any page) should heal it.
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+					<div id='bloomDataDiv'>
+						 <div data-book='someXmatterField' lang='en' inputmode='none' class='bloom-editable keymanweb-font'><p>hi</p></div>
+					</div>
+					<div class='bloom-page'>
+						 <div findMe='foo' data-book='someXmatterField' lang='en' class='bloom-editable'><p/></div>
+					</div>
+					</body></html>"
+            );
+            // Sanity check the data-div really starts out polluted.
+            var dataDivBefore = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@id='bloomDataDiv']/div[@data-book='someXmatterField']"
+                );
+            Assert.That(dataDivBefore.GetAttribute("inputmode"), Is.EqualTo("none"));
+            Assert.That(dataDivBefore.GetAttribute("class"), Does.Contain("keymanweb-font"));
+
+            var data = new BookData(dom, _collectionSettings, null);
+            data.SynchronizeDataItemsThroughoutDOM();
+
+            var dataDivAfter = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@id='bloomDataDiv']/div[@data-book='someXmatterField']"
+                );
+            Assert.That(dataDivAfter.GetOptionalStringAttribute("inputmode", null), Is.Null);
+            Assert.That(dataDivAfter.GetAttribute("class"), Does.Not.Contain("keymanweb-font"));
+
+            var foo = (SafeXmlElement)dom.SelectSingleNodeHonoringDefaultNS("//*[@findMe='foo']");
+            Assert.That(foo.GetOptionalStringAttribute("inputmode", null), Is.Null);
+            Assert.That(foo.GetAttribute("class"), Does.Not.Contain("keymanweb-font"));
+        }
+
+        [Test]
         public void SynchronizeDataItemsThroughoutDOM_StripsDisplayFromStyleAttribute()
         {
             var dom = new HtmlDom(

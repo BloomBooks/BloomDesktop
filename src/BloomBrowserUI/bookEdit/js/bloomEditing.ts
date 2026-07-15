@@ -54,6 +54,12 @@ import {
     getToolboxBundleExports,
 } from "./workspaceFrames";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
+import { attachKeymanWebIfNeeded } from "./keymanWebIntegration";
+import {
+    cleanupEditableControls,
+    notifyEditableFocused,
+    setupEditableControls,
+} from "../editableControls/editableControlsManager";
 
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
@@ -166,6 +172,27 @@ function Cleanup() {
 
     $("div.bloom-editable").each(function () {
         TrimTrailingLineBreaksInDivs(this);
+    });
+
+    // Scrub KeymanWeb attach artifacts (see keymanWebIntegration.ts). The engine
+    // decorates every control it attaches to: it adds the "keymanweb-font" class,
+    // sets inputmode="none", forces dir="ltr", and can leave an empty style="".
+    // None of these belong in the saved book, so remove them here. This runs
+    // unconditionally (not only when Keyman loaded this session) so books already
+    // polluted by an earlier session get cleaned on their next save.
+    $("div.bloom-editable").each(function () {
+        $(this).removeClass("keymanweb-font");
+        $(this).removeAttr("inputmode");
+        // Bloom itself only ever sets dir="rtl" (via C# TranslationGroupManager),
+        // never "ltr", so a "ltr" value can only be KeymanWeb's; leave "rtl" alone.
+        if ($(this).attr("dir") === "ltr") {
+            $(this).removeAttr("dir");
+        }
+        // Remove the empty style attribute Keyman can leave behind, but keep any
+        // real inline styles.
+        if ($(this).attr("style") === "") {
+            $(this).removeAttr("style");
+        }
     });
 
     cleanupImages();
@@ -327,63 +354,6 @@ function AddEditKeyHandlers(container) {
 
     // Note, CTRL+N is also caught, but up on the Shell where it is turned into an event,
     // so that it can be caught even when the focus isn't on the browser
-}
-
-// Add little language tags. (At one point we limited this to visible .bloom-editable divs,
-// probably as an optimization since there can be other-language divs present but hidden.
-// But there may be yet others that are not visible when we run this but which soon will be,
-// such as image descriptions. We don't seem to need the optimization, so let's just do
-// them all.)
-function AddLanguageTags(container) {
-    $(container)
-        .find(".bloom-editable[contentEditable=true]")
-        .each(function () {
-            const $this = $(this);
-
-            // If this DIV already had a language tag, remove the content in case we decide the situation has changed.
-            if ($this.hasAttr("data-languageTipContent")) {
-                $this.removeAttr("data-languageTipContent");
-            }
-
-            // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
-            // with each other, leading to flashing back and forth
-            // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
-            // August 2024: for canvas elements, the language is now displayed in the context controls box, and isn't
-            // a problem for small text boxes.
-            if ($this.width() < 100 && !this.closest(kCanvasElementSelector)) {
-                return;
-            }
-
-            const key = $this.attr("lang");
-            if (key !== undefined && (key === "*" || key.length < 1)) {
-                return; //seeing a "*" was confusing even to me
-            }
-            // z is not a real language, it is used for prototype blocks, which are NEVER visible.
-            // Searching for it causes missing-localization toasts if attempted.
-            if (key === "z") {
-                return;
-            }
-
-            // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
-            // first usage (for instance) was turning off language tags for a whole page
-            if (
-                $this.hasClass("bloom-hideLanguageNameDisplay") ||
-                $this.parents(".bloom-hideLanguageNameDisplay").length !== 0
-            ) {
-                return;
-            }
-
-            let whatToSay = "";
-            if (key !== undefined) {
-                whatToSay = theOneLocalizationManager.getText(key);
-                if (!whatToSay) {
-                    whatToSay = key; //just show the code
-                }
-            }
-
-            // Put whatToSay into data attribute for pickup by the css
-            $this.attr("data-languageTipContent", whatToSay);
-        });
 }
 
 function SetBookCopyrightAndLicenseButtonVisibility(container) {
@@ -778,7 +748,7 @@ export function SetupElements(
             }
         });
 
-    AddLanguageTags(container);
+    setupEditableControls(container);
 
     //only make things deletable if they have the deletable class *and* page customization is enabled
     $(container)
@@ -967,6 +937,11 @@ export function SetupElements(
             editBox.closest(".bloom-userCannotModifyStyles").length === 0
         ) {
             editor.AttachToBox(editBox.get(0));
+            const focusedEditable = editBox.get(0)!;
+            attachKeymanWebIfNeeded(focusedEditable).catch((err) =>
+                console.error("attachKeymanWebIfNeeded failed", err),
+            );
+            notifyEditableFocused(focusedEditable);
         }
     });
 
@@ -1303,6 +1278,7 @@ export function localizeCkeditorTooltips(bar: JQuery) {
 // This is invoked when we are about to change pages.
 function removeEditingDebris() {
     resetAbovePageControls();
+    cleanupEditableControls();
     // We are mirroring the Change Layout mode toggle behavior here, in case the user changes
     // pages while the Change Layout mode toggle is on.
     // The DOM here is for just one page, so there's only ever one marginBox.

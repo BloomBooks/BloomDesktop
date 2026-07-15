@@ -6,7 +6,11 @@ import DefaultBookshelfControl from "../react_components/DefaultBookshelfControl
 import PageNumberStyleControl from "../react_components/pageNumberStyleControl";
 import XmatterChooserControl from "../react_components/xmatterChooserControl";
 import FontScriptSettingsControl from "./fontScriptSettingsControl";
-import { tabMargins } from "./commonTabSettings";
+import {
+    bookMakingDividerCss,
+    bookMakingPanelCss,
+    tabMargins,
+} from "./commonTabSettings";
 
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 
@@ -25,13 +29,21 @@ const BookMakingSettingsControl: React.FunctionComponent = () => {
                         font-family: ${kUiFontStack};
                     `}
                 >
+                    {/* Left column: the font/keyboard/page-number controls,
+                        grouped in a light rounded panel (design 1A). align-self
+                        keeps the panel from stretching to the taller right
+                        column's height. */}
                     <div
                         css={css`
+                            display: flex;
                             flex-direction: column;
                             flex: 2;
+                            align-self: flex-start;
+                            ${bookMakingPanelCss}
                         `}
                     >
                         <FontScriptSettingsControl />
+                        <div css={bookMakingDividerCss} />
                         <PageNumberStyleControl />
                     </div>
                     <div

@@ -8,6 +8,8 @@ import FontSelectComponent, {
 import { Link } from "./link";
 import { useL10n } from "./l10nHooks";
 import { Typography } from "@mui/material";
+import KeyboardSection from "./keyboardSection";
+import { bookMakingSelectCss } from "../collection/commonTabSettings";
 
 const SingleFontSection: React.FunctionComponent<{
     languageNumber: number;
@@ -35,6 +37,9 @@ const SingleFontSection: React.FunctionComponent<{
     );
 
     return (
+        // One language's block: font, then keyboard, then Special Script
+        // Settings. Blocks are separated by dividers rendered by the parent
+        // (see fontScriptSettingsControl.tsx).
         <React.Fragment>
             <Typography
                 css={css`
@@ -48,15 +53,26 @@ const SingleFontSection: React.FunctionComponent<{
                 fontMetadata={props.fontMetadata}
                 currentFontName={props.currentFontName}
                 onChangeFont={fontChangeHandler}
-                css={css`
-                    width: 200px;
-                    margin-top: 0 !important;
-                `}
+                css={[
+                    bookMakingSelectCss,
+                    css`
+                        margin-top: 0 !important;
+                    `,
+                ]}
+            />
+            {/* Keyboard comes right under the font select; Special Script
+                Settings is the last item in the block.
+                L4+ languages don't get a row here (v1); this component is only
+                instantiated for languages 1-3 (see fontScriptSettingsControl.tsx). */}
+            <KeyboardSection
+                languageNumber={props.languageNumber}
+                languageName={props.languageName}
             />
             <Link
                 css={css`
+                    display: block;
                     text-decoration: underline !important;
-                    margin-bottom: 16px !important;
+                    margin-top: 4px !important;
                 `}
                 l10nKey="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink"
                 onClick={() => {

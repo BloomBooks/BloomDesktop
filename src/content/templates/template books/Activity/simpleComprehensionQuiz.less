@@ -181,34 +181,13 @@
     }
 }
 
-// overrides a rule in EditMode.less to push the language label over and make room for cog on right.
-.bloom-editable.QuizHeader-style[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):after,
-.bloom-editable.QuizAnswer-style[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):after,
-.bloom-editable.QuizQuestion-style[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):after {
-    margin-right: 24px;
-}
-// Also hide the label except in the focused item (but only in editMode, where we have this label and other rules about it.
-// In PDF, we don't want an :after at all...will mess up page layout. (BL-10019).
-.editMode
-    .bloom-editable.QuizAnswer-style:not(
-        .cke_focus
-    )[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):after,
-.editMode
-    .bloom-editable.QuizQuestion-style:not(
-        .cke_focus
-    )[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):after {
-    content: none;
-}
+// The old data-languageTipContent language-label rules were removed here: the
+// corner tag is now a React control (see editableControls/). The former quiz
+// behavior (nudge the tip left by 24px to clear the cog, and hide it on all but
+// the focused answer/question) is intentionally dropped for now — quiz pages
+// must be checked manually, and reproducing per-quiz-item behavior on the strip
+// is a follow-up. (Original BL-10019 concern — no :after in PDF — no longer
+// applies, since the strip is edit-mode-only, bloom-ui, out-of-flow markup.)
 
 // In edit mode, the check boxes are checked if marked correct.
 body.editMode

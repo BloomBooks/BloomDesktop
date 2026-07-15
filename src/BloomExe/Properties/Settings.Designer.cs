@@ -440,6 +440,19 @@ namespace Bloom.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool KeymanOskVisible {
+            get {
+                return ((bool)(this["KeymanOskVisible"]));
+            }
+            set {
+                this["KeymanOskVisible"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public global::System.DateTime ForumInvitationLastShown {
             get {
                 return ((global::System.DateTime)(this["ForumInvitationLastShown"]));

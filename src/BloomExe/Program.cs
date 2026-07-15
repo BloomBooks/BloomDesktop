@@ -1360,6 +1360,33 @@ namespace Bloom
                 lowPriority: true
             );
 
+            // Initialize libpalaso's keyboard enumeration once, as a low-priority startup action on the
+            // UI thread. The spike (Design/Keyboards/spike-os-switching-findings.md) measured a
+            // ~160-500ms one-time cost, so we keep it off the startup-critical path. We use it only to
+            // ENUMERATE installed input methods for the per-language keyboard setting; activation goes
+            // through a different channel (see Bloom.Keyboarding.OsKeyboards). Failure is non-fatal: the
+            // edit view simply falls back to KeymanWeb.
+            StartupScreenManager.AddStartupAction(
+                () =>
+                {
+                    try
+                    {
+                        SIL.Windows.Forms.Keyboarding.KeyboardController.Initialize();
+                    }
+                    catch (Exception e)
+                    {
+                        NonFatalProblem.Report(
+                            ModalIf.None,
+                            PassiveIf.All,
+                            "Error initializing the keyboard controller",
+                            "",
+                            e
+                        );
+                    }
+                },
+                lowPriority: true
+            );
+
             // Crashes if initialized twice, and there's at least once case when joining a TC
             // where we can come here twice.
             WritingSystem.EnsureSldrInitialized();
@@ -1427,6 +1454,17 @@ namespace Bloom
             }
 
             Sldr.Cleanup();
+            // Tear down libpalaso's keyboard controller if we initialized it (see the low-priority
+            // startup action in Run). Guarded because Initialize() may never have run (it is deferred).
+            try
+            {
+                if (SIL.Windows.Forms.Keyboarding.KeyboardController.IsInitialized)
+                    SIL.Windows.Forms.Keyboarding.KeyboardController.Shutdown();
+            }
+            catch (Exception)
+            {
+                // Non-fatal: we are shutting down anyway.
+            }
             Logger.WriteMinorEvent("shutting down logger, about to dispose project context");
             // Force the log file to include the minor events.  I don't know why this isn't the default. (BL-16290)
             var logText = Logger.LogText;

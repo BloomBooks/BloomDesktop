@@ -74,7 +74,6 @@ function removeClassesByPrefix(element: HTMLElement, prefix: string): void {
 function updateTranslationGroupLanguage(
     translationGroup: HTMLElement,
     langCode: string,
-    langName: string,
     dataDefaultLang: string,
     classes: string[],
     appearanceClasses: string[],
@@ -102,7 +101,9 @@ function updateTranslationGroupLanguage(
         editableInLang = editableToClone.cloneNode(true) as HTMLElement;
         editableInLang.innerHTML = "<p><br></p>";
         editableInLang.setAttribute("lang", langCode);
-        editableInLang.setAttribute("data-languagetipcontent", langName);
+        // The corner language tag is now a React control (see editableControls/)
+        // that derives its text from the editable's lang, so we no longer stamp a
+        // data-languagetipcontent attribute here.
         translationGroup.appendChild(editableInLang);
     }
 
@@ -221,7 +222,6 @@ export function makeLanguageMenuItem(
                 updateTranslationGroupLanguage(
                     translationGroup,
                     languageNameValues.language1Tag,
-                    languageNameValues.language1Name,
                     "V",
                     ["bloom-content1"],
                     ["bloom-contentFirst"],
@@ -251,7 +251,6 @@ export function makeLanguageMenuItem(
                 updateTranslationGroupLanguage(
                     translationGroup,
                     languageNameValues.language2Tag,
-                    languageNameValues.language2Name,
                     "N1",
                     ["bloom-contentNational1"],
                     ["bloom-contentSecond"],
@@ -282,7 +281,6 @@ export function makeLanguageMenuItem(
                 updateTranslationGroupLanguage(
                     translationGroup,
                     languageNameValues.language3Tag!,
-                    languageNameValues.language3Name!,
                     "N2",
                     ["bloom-contentNational2"],
                     ["bloom-contentThird"],

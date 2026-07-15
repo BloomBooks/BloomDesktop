@@ -36,3 +36,8 @@
 *.d.ts -whitespace
 src/BloomBrowserUI/compilerconfig.json -whitespace
 changelog -whitespace
+
+# Vendored third-party artifacts must stay byte-identical to their upstream
+# source (see src/BloomBrowserUI/keymanweb/README.md) - no EOL conversion,
+# no whitespace enforcement.
+src/BloomBrowserUI/keymanweb/** -text -whitespace

@@ -33,6 +33,20 @@ interface FormsSelectProps {
     // Use this if you need to modify the style of popup menus by increasing z-index
     // (e.g., to make the popup be in front of the bloom font dialog)
     popoverZindex?: string;
+    // Pass true when one of the menu items has an empty-string value that should
+    // still show its label in the closed control. Without this, MUI's Select
+    // treats currentValue === "" as "nothing selected" and renders blank even
+    // when a MenuItem with value="" is the current choice.
+    displayEmpty?: boolean;
+    // Optional custom rendering for the selected value shown in the closed
+    // control. Use this when the menu items carry extra detail (secondary
+    // lines, badges) that is helpful while choosing but only clutters the
+    // chosen result. When omitted, MUI renders the selected MenuItem's children.
+    renderValue?: (value: string) => React.ReactNode;
+    // Applied to the outer FormControl so callers can override its size (e.g. to
+    // give a row of these selects a shared width/height). Emotion routes a `css`
+    // prop on this component here.
+    className?: string;
     children?: React.ReactNode;
 }
 
@@ -70,6 +84,7 @@ const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = (
             <FormControl
                 variant="outlined"
                 margin="dense"
+                className={props.className}
                 css={css`
                     // Some of the following "!important"s are needed when the Style tab is present,
                     // oddly enough!
@@ -95,6 +110,8 @@ const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = (
                     MenuProps={selectMenuProps}
                     onChange={props.onChangeHandler}
                     value={props.currentValue}
+                    displayEmpty={props.displayEmpty}
+                    renderValue={props.renderValue}
                     variant="outlined"
                     css={css`
                         #select-${finalKey} {

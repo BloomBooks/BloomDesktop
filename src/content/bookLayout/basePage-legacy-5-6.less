@@ -323,37 +323,9 @@ span.bloom-linebreak {
     text-align: center;
     overflow: visible;
 }
-.bloom-canvas
-    .bloom-canvas-element
-    .bloom-translationGroup
-    .bloom-editable[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):after {
-    display: none;
-}
-.bloom-canvas
-    .bloom-canvas-element
-    .bloom-translationGroup
-    .bloom-editable[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):focus:after {
-    display: block;
-    left: unset;
-    text-align: right;
-    bottom: 3px;
-    color: #96668f;
-    background-color: white;
-    font-size: small;
-    cursor: auto;
-}
-.bloom-canvas
-    .bloom-canvas-element
-    .bloom-translationGroup
-    .bloom-editable[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):focus:after:hover {
-    background-color: white;
-}
+/* The old data-languageTipContent language-tip rules were removed: the corner
+   tag is now a React control, and inside canvas elements the language is shown
+   in the context controls. */
 .bloom-canvas
     .bloom-canvas-element[data-bubble]:not([data-bubble*="`style`:`none`"])
     .bloom-translationGroup

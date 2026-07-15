@@ -141,31 +141,9 @@
                 text-align: center;
             }
 
-            // Language tip CSS
-            .bloom-editable[contentEditable="true"][data-languageTipContent]:not(
-                    [data-languageTipContent=""]
-                ) {
-                &:after {
-                    // In editMode.less, it sets the "content" property for all text boxes (which normally always have the language tip visible).
-                    // But here in text over picture, we want to default to not having the language tip visible.
-                    display: none; // Prevents padding-top from being rendered (content: "" still renders it)
-                }
-
-                &:focus:after {
-                    display: block;
-                    left: unset;
-                    text-align: right;
-                    // NB: right is set by a rule at the end of this file
-                    bottom: 3px;
-                    color: @bloom-purple;
-                    background-color: white;
-                    font-size: small;
-                    cursor: auto;
-                    &:hover {
-                        background-color: white;
-                    }
-                }
-            }
+            // (The old data-languageTipContent language-tip CSS was removed: the
+            // corner tag is now a React control, and inside canvas elements the
+            // language is shown in the context controls, not as a tip.)
         }
 
         &:not(.bloom-canvas-button) .bloom-translationGroup .bloom-editable {
