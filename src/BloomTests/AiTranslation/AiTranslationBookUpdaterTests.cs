@@ -423,5 +423,119 @@ namespace BloomTests.AiTranslation
                 "CountStaleAiDivsWithoutMutating must not mutate the real book DOM"
             );
         }
+
+        [Test]
+        public async Task RunEnginesAsync_Alpha2FixedSource_DeeplPrioritySource_SameGroup()
+        {
+            var deepl = MakeEngine("deepl");
+            var alpha2 = new AiTranslationEngineSettings
+            {
+                ProviderId = "alpha2",
+                Enabled = true,
+                SourceLanguageTag = "fr",
+            };
+            var dom = MakeBookDom(
+                @"
+                <div class='bloom-page'>
+                    <div class='bloom-translationGroup'>
+                        <div class='bloom-editable' lang='en'>Hello</div>
+                        <div class='bloom-editable' lang='fr'>Bonjour</div>
+                    </div>
+                </div>"
+            );
+            var scanner = new AiTranslationBookScanner(
+                dom,
+                "es",
+                new[] { deepl, alpha2 },
+                new[] { "en" }
+            );
+            var scan = scanner.Scan();
+
+            var calls = new List<(string Engine, string Lang, string[] Segments)>();
+            Task<string[]> translate(
+                AiTranslationEngineSettings e,
+                string[] segments,
+                string sourceLang,
+                CancellationToken ct
+            )
+            {
+                lock (calls)
+                    calls.Add((e.ProviderId, sourceLang, segments));
+                return Task.FromResult(segments.Select(s => $"{e.ProviderId}:{s}").ToArray());
+            }
+
+            await AiTranslationBookUpdater.RunEnginesAsync(
+                scan,
+                new[] { deepl, alpha2 },
+                translate,
+                new ProgressSpy(),
+                CancellationToken.None
+            );
+
+            var deeplCall = calls.Single(c => c.Engine == "deepl");
+            var alpha2Call = calls.Single(c => c.Engine == "alpha2");
+            Assert.That(deeplCall.Lang, Is.EqualTo("en"), "deepl uses the priority source");
+            Assert.That(deeplCall.Segments, Is.EqualTo(new[] { "Hello" }));
+            Assert.That(
+                alpha2Call.Lang,
+                Is.EqualTo("fr"),
+                "alpha2 uses its fixed configured source for the same group"
+            );
+            Assert.That(alpha2Call.Segments, Is.EqualTo(new[] { "Bonjour" }));
+        }
+
+        [Test]
+        public async Task RunEnginesAsync_Alpha2_SkipsGroupWithNoSourceText_NoTranslateCallForIt()
+        {
+            var alpha2 = new AiTranslationEngineSettings
+            {
+                ProviderId = "alpha2",
+                Enabled = true,
+                SourceLanguageTag = "fr",
+            };
+            var dom = MakeBookDom(
+                @"
+                <div class='bloom-page'>
+                    <div class='bloom-translationGroup'>
+                        <div class='bloom-editable' lang='en'>Hello</div>
+                        <div class='bloom-editable' lang='fr'>Bonjour</div>
+                    </div>
+                    <div class='bloom-translationGroup'>
+                        <div class='bloom-editable' lang='en'>World</div>
+                    </div>
+                </div>"
+            );
+            var scanner = new AiTranslationBookScanner(dom, "es", new[] { alpha2 }, new[] { "en" });
+            var scan = scanner.Scan();
+            Assert.That(scan.Groups.Count, Is.EqualTo(2), "sanity check on fixture");
+
+            var translatedSegments = new List<string>();
+            Task<string[]> translate(
+                AiTranslationEngineSettings e,
+                string[] segments,
+                string sourceLang,
+                CancellationToken ct
+            )
+            {
+                lock (translatedSegments)
+                    translatedSegments.AddRange(segments);
+                return Task.FromResult(segments.Select(s => $"ES:{s}").ToArray());
+            }
+
+            var outcomes = await AiTranslationBookUpdater.RunEnginesAsync(
+                scan,
+                new[] { alpha2 },
+                translate,
+                new ProgressSpy(),
+                CancellationToken.None
+            );
+
+            Assert.That(
+                translatedSegments,
+                Is.EqualTo(new[] { "Bonjour" }),
+                "only the group with French text is translated; the English-only group is skipped"
+            );
+            Assert.That(outcomes.Single().Translations.Count, Is.EqualTo(1));
+        }
     }
 }

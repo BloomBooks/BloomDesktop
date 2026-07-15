@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -30,26 +31,272 @@ namespace Bloom.AiTranslation
         private static readonly TimeSpan kPollInterval = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan kPollTimeout = TimeSpan.FromMinutes(5);
 
+        // The /v2/translation_languages endpoint is queried once per (apiKey, src|trg iso3) key.
+        // AiTranslationService is constructed fresh per API call, so this cache MUST be static to
+        // survive across calls; a short TTL keeps it from going stale while still collapsing the
+        // burst of queries a single dropdown-open produces.
+        private static readonly TimeSpan kLanguageCacheTtl = TimeSpan.FromMinutes(10);
+        private static readonly ConcurrentDictionary<
+            string,
+            (DateTime Expiry, List<AiTranslationTargetLanguageOption> Languages)
+        > _languageCache =
+            new ConcurrentDictionary<string, (DateTime, List<AiTranslationTargetLanguageOption>)>();
+
+        // Lazily-built reverse map from ISO 639-3 code to the shortest registered Bloom/BCP-47
+        // language tag, so alpha2's "fra" can dedup with DeepL's "fr" in the service-level union
+        // (which keys on the option value). See MapIso6393ToBloomTag.
+        private static readonly Lazy<Dictionary<string, string>> _iso6393ToBloomTag = new Lazy<
+            Dictionary<string, string>
+        >(BuildIso6393ToBloomTagMap);
+
         public string ProviderId => "alpha2";
         public int MaxSegmentsPerRequest => 500;
         public int MaxRequestBytes => 400_000;
 
         /// <summary>
-        /// Alpha2 has no supported-languages matrix: /v2/translation_models only returns
-        /// {id, name} per model, with no src/trg metadata, so there is no way to enumerate which
-        /// target languages are supported without querying every language pair up front. Alpha2
-        /// viability for a given pair is instead proven by the validation probe
-        /// (TranslateBatchAsync), which throws a clear "no translation model" error when a pair
-        /// isn't supported. So the settings UI's union dropdown simply won't include
-        /// Alpha2-only languages.
+        /// Lists the target languages Alpha2 can translate INTO from the given likely sources. Since
+        /// Alpha2's supported targets are per source language, this queries
+        /// /v2/translation_languages?src={iso3} once for each distinct (mappable) likely source and
+        /// unions the results, deduped by the reverse-mapped Bloom tag. Sources that can't be mapped
+        /// to ISO 639-3 are skipped; a query that fails for one source doesn't fail the whole list
+        /// (unless every source query fails); an empty result for a source is not an error.
         /// </summary>
-        public Task<List<AiTranslationTargetLanguageOption>> GetSupportedTargetLanguagesAsync(
+        public async Task<List<AiTranslationTargetLanguageOption>> GetSupportedTargetLanguagesAsync(
             AiTranslationEngineSettings engine,
+            IReadOnlyList<string> likelySourceLanguageTags,
             HttpClient httpClient,
             CancellationToken ct
         )
         {
-            return Task.FromResult(new List<AiTranslationTargetLanguageOption>());
+            EnsureCredentials(engine);
+            return await GetLanguagesForAxisAsync(
+                httpClient,
+                engine.ApiKey.Trim(),
+                "src",
+                likelySourceLanguageTags,
+                ct
+            );
+        }
+
+        /// <summary>
+        /// Lists the source languages Alpha2 can translate FROM into the given target language, via
+        /// /v2/translation_languages?trg={iso3}. Used by the Alpha2 source-language chooser in
+        /// Collection Settings. Returns an empty list if the target can't be mapped to ISO 639-3.
+        /// </summary>
+        public async Task<List<AiTranslationTargetLanguageOption>> GetSupportedSourceLanguagesAsync(
+            AiTranslationEngineSettings engine,
+            string targetLanguageTag,
+            HttpClient httpClient,
+            CancellationToken ct
+        )
+        {
+            EnsureCredentials(engine);
+            return await GetLanguagesForAxisAsync(
+                httpClient,
+                engine.ApiKey.Trim(),
+                "trg",
+                new[] { targetLanguageTag },
+                ct
+            );
+        }
+
+        /// <summary>
+        /// Shared implementation for both directions: maps each pivot language tag to ISO 639-3
+        /// (skipping unmappable ones), queries /v2/translation_languages with the given axis
+        /// parameter ("src" or "trg") once per distinct pivot, and unions the results deduped by
+        /// reverse-mapped Bloom tag. Throws only if every pivot query failed.
+        /// </summary>
+        private static async Task<List<AiTranslationTargetLanguageOption>> GetLanguagesForAxisAsync(
+            HttpClient httpClient,
+            string apiKey,
+            string axisParam,
+            IReadOnlyList<string> pivotLanguageTags,
+            CancellationToken ct
+        )
+        {
+            var pivotIso3Codes = new List<string>();
+            foreach (var pivotTag in pivotLanguageTags ?? Array.Empty<string>())
+            {
+                try
+                {
+                    var iso3 = MapToIso6393(pivotTag);
+                    if (!pivotIso3Codes.Contains(iso3))
+                        pivotIso3Codes.Add(iso3);
+                }
+                catch (InvalidOperationException)
+                {
+                    // An unmappable pivot language (e.g. a collection language with no ISO 639-3
+                    // code) must not break the whole list; just skip it.
+                }
+            }
+
+            var optionsByTag = new Dictionary<string, AiTranslationTargetLanguageOption>(
+                StringComparer.OrdinalIgnoreCase
+            );
+            var failures = new List<string>();
+            var anySucceeded = false;
+            foreach (var iso3 in pivotIso3Codes)
+            {
+                try
+                {
+                    var languages = await GetLanguagesForKeyAsync(
+                        httpClient,
+                        apiKey,
+                        axisParam,
+                        iso3,
+                        ct
+                    );
+                    anySucceeded = true;
+                    foreach (var option in languages)
+                    {
+                        if (!optionsByTag.ContainsKey(option.Value))
+                            optionsByTag[option.Value] = option;
+                    }
+                }
+                catch (Exception e)
+                    when (e is HttpRequestException || e is InvalidOperationException)
+                {
+                    failures.Add(e.Message);
+                }
+            }
+
+            // If we had pivots to query but every one failed, surface the error; otherwise return
+            // whatever union we managed to build (possibly empty, which is a valid answer).
+            if (!anySucceeded && failures.Count > 0)
+                throw new InvalidOperationException(string.Join(" ", failures));
+
+            return optionsByTag
+                .Values.OrderBy(o => o.Label, StringComparer.CurrentCultureIgnoreCase)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Fetches (and caches for kLanguageCacheTtl) the languages Alpha2 reports for one
+        /// axis/iso3 key. Only successful responses are cached.
+        /// </summary>
+        private static async Task<List<AiTranslationTargetLanguageOption>> GetLanguagesForKeyAsync(
+            HttpClient httpClient,
+            string apiKey,
+            string axisParam,
+            string iso3,
+            CancellationToken ct
+        )
+        {
+            var cacheKey = $"{apiKey}\n{axisParam}:{iso3}";
+            if (
+                _languageCache.TryGetValue(cacheKey, out var cached)
+                && cached.Expiry > DateTime.UtcNow
+            )
+            {
+                return cached.Languages;
+            }
+
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"{kApiBaseUrl}/v2/translation_languages?{axisParam}={Uri.EscapeDataString(iso3)}"
+            );
+            request.Headers.Add("api_key", apiKey);
+
+            using var response = await httpClient.SendAsync(request, ct);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            AiTranslationProviderHelpers.EnsureSuccess(response, responseContent, "Alpha2");
+
+            var languages = ParseTranslationLanguages(responseContent);
+            _languageCache[cacheKey] = (DateTime.UtcNow + kLanguageCacheTtl, languages);
+            return languages;
+        }
+
+        /// <summary>
+        /// Parses a /v2/translation_languages response body -- a JSON array of
+        /// {iso, name, display, models:[...]} objects -- into target-language options, mapping each
+        /// entry's ISO 639-3 code back to the shortest registered Bloom tag. Kept internal and
+        /// HTTP-free so tests can exercise the parsing/reverse-mapping without mocking the network.
+        /// </summary>
+        internal static List<AiTranslationTargetLanguageOption> ParseTranslationLanguages(
+            string responseContent
+        )
+        {
+            var array = JArray.Parse(responseContent);
+            var options = new List<AiTranslationTargetLanguageOption>();
+            var seenTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var entry in array)
+            {
+                var iso = entry["iso"]?.Value<string>();
+                if (string.IsNullOrWhiteSpace(iso))
+                    continue;
+
+                var bloomTag = MapIso6393ToBloomTag(iso);
+                if (!seenTags.Add(bloomTag))
+                    continue;
+
+                var name = entry["name"]?.Value<string>();
+                options.Add(
+                    new AiTranslationTargetLanguageOption
+                    {
+                        Value = bloomTag,
+                        Label = string.IsNullOrWhiteSpace(name) ? bloomTag : name,
+                        ProviderIds = new List<string> { "alpha2" },
+                    }
+                );
+            }
+
+            options.Sort(
+                (first, second) =>
+                    StringComparer.CurrentCultureIgnoreCase.Compare(first.Label, second.Label)
+            );
+            return options;
+        }
+
+        /// <summary>
+        /// Reverse of MapToIso6393: maps an ISO 639-3 code (as Alpha2 returns) to the shortest
+        /// registered Bloom/BCP-47 language tag (e.g. "fra" -> "fr"), so an Alpha2 language dedups
+        /// with the same language from DeepL/Google in the settings union. An iso3 with no shorter
+        /// registered tag (the usual case for languages that only have a 3-letter code) passes
+        /// through unchanged.
+        /// </summary>
+        internal static string MapIso6393ToBloomTag(string iso3)
+        {
+            if (string.IsNullOrWhiteSpace(iso3))
+                return iso3;
+
+            var normalized = iso3.Trim().ToLowerInvariant();
+            if (_iso6393ToBloomTag.Value.TryGetValue(normalized, out var bloomTag))
+                return bloomTag;
+
+            return normalized;
+        }
+
+        /// <summary>
+        /// Builds the ISO-639-3 -> shortest-registered-Bloom-tag map once. When several registered
+        /// tags share an ISO 639-3 code, the shortest wins (ties broken lexicographically) so we
+        /// prefer the familiar 2-letter tag (e.g. "fr" over "fra").
+        /// </summary>
+        private static Dictionary<string, string> BuildIso6393ToBloomTagMap()
+        {
+            var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var language in StandardSubtags.RegisteredLanguages)
+            {
+                var iso3 = language.Iso3Code;
+                var code = language.Code;
+                if (string.IsNullOrWhiteSpace(iso3) || string.IsNullOrWhiteSpace(code))
+                    continue;
+
+                var key = iso3.ToLowerInvariant();
+                var candidate = code.ToLowerInvariant();
+                if (
+                    !map.TryGetValue(key, out var existing)
+                    || candidate.Length < existing.Length
+                    || (
+                        candidate.Length == existing.Length
+                        && string.CompareOrdinal(candidate, existing) < 0
+                    )
+                )
+                {
+                    map[key] = candidate;
+                }
+            }
+
+            return map;
         }
 
         /// <summary>

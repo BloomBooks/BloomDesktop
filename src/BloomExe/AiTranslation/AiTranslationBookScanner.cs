@@ -10,69 +10,135 @@ using Bloom.SafeXml;
 namespace Bloom.AiTranslation
 {
     /// <summary>
-    /// One eligible translation group found by AiTranslationBookScanner.Scan(): the chosen
-    /// source text to translate, and whether a current (up to date) translation already exists
-    /// per engine.
+    /// One eligible translation group found by AiTranslationBookScanner.Scan(): the chosen default
+    /// source text to translate, the text of every candidate source language in the group, and
+    /// whether a current (up to date) translation already exists per engine.
     /// </summary>
     public class AiTranslationGroupInfo
     {
         /// <summary>The bloom-translationGroup element this info describes.</summary>
         public SafeXmlElement GroupElement { get; }
 
-        /// <summary>The language tag of the bloom-editable chosen as the translation source.</summary>
+        /// <summary>
+        /// The language tag of the bloom-editable chosen (by source-language priority) as the
+        /// default translation source. This is what the automatic-source engines (deepl/google) use.
+        /// </summary>
         public string SourceLanguageTag { get; }
 
-        /// <summary>The trimmed text of the chosen source bloom-editable.</summary>
+        /// <summary>The trimmed text of the default (priority-chosen) source bloom-editable.</summary>
         public string SourceText { get; }
+
+        /// <summary>
+        /// The trimmed text of every non-AI, non-"z", non-empty bloom-editable in this group, keyed
+        /// by its lang attribute (in document order). Used by fixed-source engines (alpha2) to look
+        /// up whether the group has text in the engine's configured source language.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> TextsByLanguage { get; }
 
         /// <summary>True if this is the book's data-book="bookTitle" translation group.</summary>
         public bool IsBookTitle { get; }
 
         /// <summary>
         /// Creates group info for one eligible translation group. See
-        /// AiTranslationBookScanner.Scan() for how the source language/text and IsBookTitle are
-        /// determined.
+        /// AiTranslationBookScanner.Scan() for how the default source language/text, the
+        /// per-language texts, and IsBookTitle are determined.
         /// </summary>
         public AiTranslationGroupInfo(
             SafeXmlElement groupElement,
             string sourceLanguageTag,
             string sourceText,
+            IReadOnlyDictionary<string, string> textsByLanguage,
             bool isBookTitle
         )
         {
             GroupElement = groupElement;
             SourceLanguageTag = sourceLanguageTag;
             SourceText = sourceText;
+            TextsByLanguage =
+                textsByLanguage ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             IsBookTitle = isBookTitle;
         }
 
         /// <summary>
-        /// The fingerprint a translation div for the given engine must currently have, based on
-        /// this group's current source language/text and the engine's AI language tag.
+        /// Resolves the source language tag and text this engine should translate from for this
+        /// group. Automatic-source engines (deepl/google) always use the group's priority-chosen
+        /// default. Fixed-source engines (alpha2) require text in their configured source language
+        /// (matched on normalized primary subtag, so an "en" setting matches an "en-US" editable);
+        /// if the group has no such text, this returns false and the group is ineligible for that
+        /// engine.
+        /// </summary>
+        public bool TryGetSourceForEngine(
+            AiTranslationEngineSettings engine,
+            out string sourceLanguageTag,
+            out string sourceText
+        )
+        {
+            var fixedSource = AiTranslationBookScanner.GetFixedSourceLanguageTagOrNull(engine);
+            if (fixedSource == null)
+            {
+                sourceLanguageTag = SourceLanguageTag;
+                sourceText = SourceText;
+                return !string.IsNullOrWhiteSpace(SourceText);
+            }
+
+            var wantedPrimarySubtag = AiTranslationBookScanner.GetPrimarySubtag(fixedSource);
+            // Prefer an exact-normalized match, then fall back to any editable sharing the primary
+            // subtag (in document order), so a fixed "en" source can use an "en-US" editable.
+            foreach (var pair in TextsByLanguage)
+            {
+                if (
+                    AiTranslationBookScanner.GetPrimarySubtag(pair.Key) == wantedPrimarySubtag
+                    && !string.IsNullOrWhiteSpace(pair.Value)
+                )
+                {
+                    sourceLanguageTag = pair.Key;
+                    sourceText = pair.Value;
+                    return true;
+                }
+            }
+
+            sourceLanguageTag = null;
+            sourceText = null;
+            return false;
+        }
+
+        /// <summary>
+        /// The fingerprint a translation div for the given engine must currently have, based on the
+        /// engine's resolved source language/text for this group and the engine's AI language tag.
+        /// Returns null if the engine has no usable source for this group (a fixed-source engine
+        /// whose source language is absent), meaning any existing div for it is stale.
         /// </summary>
         public string GetExpectedFingerprint(
             AiTranslationEngineSettings engine,
             string targetLanguageTag
         )
         {
+            if (!TryGetSourceForEngine(engine, out var sourceLanguageTag, out var sourceText))
+                return null;
+
             var aiTag = AiTranslationService.GetAiLanguageTag(targetLanguageTag, engine.ProviderId);
             return AiTranslationBookScanner.ComputeFingerprint(
-                SourceLanguageTag,
-                SourceText,
+                sourceLanguageTag,
+                sourceText,
                 aiTag
             );
         }
 
         /// <summary>
-        /// True if this group already has a non-empty translation div for the given engine's AI
-        /// language tag whose fingerprint matches the current source (i.e. it does NOT need
-        /// (re)translation).
+        /// True if this group does NOT need (re)translation for the given engine: either the engine
+        /// has no usable source for it (so there is nothing to translate), or it already has a
+        /// non-empty translation div for the engine's AI language tag whose fingerprint matches the
+        /// engine's current resolved source.
         /// </summary>
         public bool HasCurrentTranslation(
             AiTranslationEngineSettings engine,
             string targetLanguageTag
         )
         {
+            var expectedFingerprint = GetExpectedFingerprint(engine, targetLanguageTag);
+            if (expectedFingerprint == null)
+                return true; // no source for this engine -> nothing to (re)translate.
+
             var aiTag = AiTranslationService.GetAiLanguageTag(targetLanguageTag, engine.ProviderId);
             var existing = GroupElement
                 .SafeSelectElements($"div[@lang='{aiTag}']")
@@ -84,8 +150,36 @@ namespace Bloom.AiTranslation
             if (string.IsNullOrEmpty(text))
                 return false;
 
-            return existing.GetAttribute("data-ai-fingerprint")
-                == GetExpectedFingerprint(engine, targetLanguageTag);
+            return existing.GetAttribute("data-ai-fingerprint") == expectedFingerprint;
+        }
+    }
+
+    /// <summary>
+    /// One group's resolved translation work for a specific engine: the group plus the source
+    /// language/text that engine should translate from (which, for fixed-source engines, can differ
+    /// from the group's default source). Returned by AiTranslationBookScan.GroupsNeedingTranslation.
+    /// </summary>
+    public class AiTranslationGroupSource
+    {
+        /// <summary>The group needing translation.</summary>
+        public AiTranslationGroupInfo Group { get; }
+
+        /// <summary>The language tag the engine should translate from for this group.</summary>
+        public string SourceLanguageTag { get; }
+
+        /// <summary>The source text the engine should translate for this group.</summary>
+        public string SourceText { get; }
+
+        /// <summary>Pairs a group with the engine-resolved source language/text.</summary>
+        public AiTranslationGroupSource(
+            AiTranslationGroupInfo group,
+            string sourceLanguageTag,
+            string sourceText
+        )
+        {
+            Group = group;
+            SourceLanguageTag = sourceLanguageTag;
+            SourceText = sourceText;
         }
     }
 
@@ -108,14 +202,45 @@ namespace Bloom.AiTranslation
         }
 
         /// <summary>
-        /// The ordered subset of Groups that still need a (re)translation for the given engine:
-        /// those lacking a current, fingerprint-matching translation div.
+        /// The ordered subset of Groups that still need a (re)translation for the given engine,
+        /// each paired with the source language/text that engine should translate from. Groups the
+        /// engine cannot translate (a fixed-source engine whose source language is absent from the
+        /// group) are excluded, as are groups that already have a current translation.
         /// </summary>
-        public List<AiTranslationGroupInfo> GroupsNeedingTranslation(
+        public List<AiTranslationGroupSource> GroupsNeedingTranslation(
             AiTranslationEngineSettings engine
         )
         {
-            return Groups.Where(g => !g.HasCurrentTranslation(engine, _targetLanguageTag)).ToList();
+            var result = new List<AiTranslationGroupSource>();
+            foreach (var group in Groups)
+            {
+                if (
+                    !group.TryGetSourceForEngine(
+                        engine,
+                        out var sourceLanguageTag,
+                        out var sourceText
+                    )
+                )
+                    continue;
+                if (group.HasCurrentTranslation(engine, _targetLanguageTag))
+                    continue;
+                result.Add(new AiTranslationGroupSource(group, sourceLanguageTag, sourceText));
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// How many otherwise-eligible groups this engine must skip because it has no source text
+        /// for them. Only fixed-source engines (alpha2) can skip groups this way -- an
+        /// automatic-source engine always has the group's default source -- so this is always 0 for
+        /// deepl/google. Used only to leave a trace in the progress log; the book-level skip itself
+        /// is silent.
+        /// </summary>
+        public int CountGroupsSkippedForEngine(AiTranslationEngineSettings engine)
+        {
+            if (AiTranslationBookScanner.GetFixedSourceLanguageTagOrNull(engine) == null)
+                return 0;
+            return Groups.Count(group => !group.TryGetSourceForEngine(engine, out _, out _));
         }
     }
 
@@ -199,7 +324,17 @@ namespace Bloom.AiTranslation
                 _targetLanguageTag,
                 engine.ProviderId
             );
-            var fingerprint = ComputeFingerprint(group.SourceLanguageTag, group.SourceText, aiTag);
+            // Fingerprint against the engine's own resolved source (which, for a fixed-source engine
+            // like alpha2, may differ from the group's default source) so it matches what
+            // GroupsNeedingTranslation/RemoveStaleAiDivs compute for the same engine. A group is only
+            // ever applied for an engine that has a source for it, so this must resolve.
+            if (!group.TryGetSourceForEngine(engine, out var sourceLanguageTag, out var sourceText))
+            {
+                throw new InvalidOperationException(
+                    "ApplyTranslation called for an engine with no source for the group."
+                );
+            }
+            var fingerprint = ComputeFingerprint(sourceLanguageTag, sourceText, aiTag);
 
             WriteChildDiv(
                 group.GroupElement,
@@ -389,8 +524,65 @@ namespace Bloom.AiTranslation
                 group,
                 sourceDiv.GetAttribute("lang"),
                 sourceText,
+                BuildTextsByLanguage(editables),
                 isBookTitle
             );
+        }
+
+        /// <summary>
+        /// Builds the lang -> trimmed-text map of every candidate source editable in a group: those
+        /// with a lang attribute that is not an AI ("-x-ai") tag, not the "z" placeholder language,
+        /// and whose text is non-empty. Preserves document order; when a lang appears more than once,
+        /// the first non-empty occurrence wins.
+        /// </summary>
+        private static IReadOnlyDictionary<string, string> BuildTextsByLanguage(
+            IEnumerable<SafeXmlElement> editables
+        )
+        {
+            var textsByLanguage = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var editable in editables)
+            {
+                if (!editable.HasAttribute("lang"))
+                    continue;
+                var lang = editable.GetAttribute("lang");
+                if (lang.Contains(kAiLangTagFragment) || lang == kZeroLang)
+                    continue;
+                var text = (editable.InnerText ?? "").Trim();
+                if (string.IsNullOrWhiteSpace(text))
+                    continue;
+                if (!textsByLanguage.ContainsKey(lang))
+                    textsByLanguage[lang] = text;
+            }
+
+            return textsByLanguage;
+        }
+
+        /// <summary>
+        /// Returns the fixed source language tag an engine must translate from, or null if the
+        /// engine chooses its source automatically per group. Only the alpha2 provider is
+        /// fixed-source (its model selection is per source/target pair); its blank source defaults
+        /// to English via GetEffectiveSourceLanguageTag.
+        /// </summary>
+        internal static string GetFixedSourceLanguageTagOrNull(AiTranslationEngineSettings engine)
+        {
+            if (AiTranslationService.NormalizeProviderId(engine.ProviderId) == "alpha2")
+                return engine.GetEffectiveSourceLanguageTag();
+            return null;
+        }
+
+        /// <summary>
+        /// The lowercased primary (language) subtag of a Bloom language tag, used to match a fixed
+        /// source language against a group's editables at primary-subtag granularity (e.g. an "en"
+        /// setting matches an "en-US" editable).
+        /// </summary>
+        internal static string GetPrimarySubtag(string languageTag)
+        {
+            if (string.IsNullOrWhiteSpace(languageTag))
+                return string.Empty;
+            return AiTranslationService
+                .NormalizeBloomLanguageTag(languageTag)
+                .Split('-')[0]
+                .ToLowerInvariant();
         }
 
         /// <summary>
@@ -434,9 +626,11 @@ namespace Bloom.AiTranslation
         /// Decides whether one existing AI div under a translation group should be removed:
         /// always if the group is no longer eligible for AI translation at all (its AI content is
         /// orphaned), otherwise if its language isn't currently active (disabled engine or changed
-        /// target language), or its fingerprint no longer matches the group's current source text.
+        /// target language), or its fingerprint no longer matches the source the div's OWN engine
+        /// would currently translate from (which, for a fixed-source engine, is that engine's
+        /// configured source; a missing fixed source makes the div stale).
         /// </summary>
-        private static bool ShouldRemoveGroupAiDiv(
+        private bool ShouldRemoveGroupAiDiv(
             AiTranslationGroupInfo groupInfo,
             SafeXmlElement aiDiv,
             string lang,
@@ -453,12 +647,38 @@ namespace Bloom.AiTranslation
             if (string.IsNullOrEmpty(text))
                 return true;
 
-            var expectedFingerprint = ComputeFingerprint(
-                groupInfo.SourceLanguageTag,
-                groupInfo.SourceText,
-                lang
-            );
+            var engine = ResolveEngineFromAiLang(lang);
+            if (engine == null)
+                return true; // no matching active engine (shouldn't happen given activeTags check).
+
+            var expectedFingerprint = groupInfo.GetExpectedFingerprint(engine, _targetLanguageTag);
+            if (expectedFingerprint == null)
+                return true; // this engine has no source for the group now -> the div is stale.
+
             return aiDiv.GetAttribute("data-ai-fingerprint") != expectedFingerprint;
+        }
+
+        /// <summary>
+        /// Finds the enabled engine that produced an AI div, by reading the provider id out of the
+        /// div's AI language tag (e.g. "es-x-ai-alpha2" -> the alpha2 engine). Returns null if no
+        /// enabled engine matches.
+        /// </summary>
+        private AiTranslationEngineSettings ResolveEngineFromAiLang(string lang)
+        {
+            if (string.IsNullOrEmpty(lang))
+                return null;
+            var markerIndex = lang.IndexOf(
+                kAiLangTagFragment + "-",
+                StringComparison.OrdinalIgnoreCase
+            );
+            if (markerIndex < 0)
+                return null;
+            var providerId = AiTranslationService.NormalizeProviderId(
+                lang.Substring(markerIndex + kAiLangTagFragment.Length + 1)
+            );
+            return _enabledEngines.FirstOrDefault(e =>
+                AiTranslationService.NormalizeProviderId(e.ProviderId) == providerId
+            );
         }
 
         /// <summary>Finds the book's #bloomDataDiv element, or null if it isn't present.</summary>

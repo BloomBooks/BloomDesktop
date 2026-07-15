@@ -16,7 +16,7 @@ import { BloomSubscriptionIndicatorIconAndText } from "../react_components/requi
 import { useL10n } from "../react_components/l10nHooks";
 import {
     AiTranslationProviderId,
-    AiTranslationTargetLanguageContext,
+    AiTranslationLanguageControlsContext,
     IAiTranslationEngineValidation,
     IAiTranslationSettings,
     IAiTranslationWireSettings,
@@ -109,11 +109,11 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder",
     );
     const aiSourceBubblesLabel = useL10n(
-        "AI Source Bubbles",
+        "AI Source Translation",
         "CollectionSettingsDialog.AdvancedTab.Experimental.AiSourceBubbles",
     );
     const aiTranslationSectionLabel = useL10n(
-        "AI Source Bubbles",
+        "AI Source Translation",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.SectionLabel",
     );
     const aiTranslationTargetLanguageLabel = useL10n(
@@ -125,8 +125,12 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLEnabledLabel",
     );
     const aiTranslationDeepLApiKeyLabel = useL10n(
-        "DeepL API Key",
+        "API Key",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLApiKeyLabel",
+    );
+    const aiTranslationDeepLApiKeyDescription = useL10n(
+        "The key needs the 'translate:text' and 'languages:read' permissions.",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLApiKeyDescription",
     );
     const aiTranslationGoogleEnabledLabel = useL10n(
         "Google Translate",
@@ -135,6 +139,10 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const aiTranslationGoogleServiceAccountEmailLabel = useL10n(
         "Google Service Account Email",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleServiceAccountEmailLabel",
+    );
+    const aiTranslationGoogleServiceAccountDescription = useL10n(
+        "The service account needs access to the Cloud Translation API (the 'Cloud Translation API User' role).",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleServiceAccountDescription",
     );
     const aiTranslationGooglePrivateKeyLabel = useL10n(
         "Google Service Account Private Key",
@@ -145,12 +153,32 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2EnabledLabel",
     );
     const aiTranslationAlpha2ApiKeyLabel = useL10n(
-        "Alpha2 API key",
+        "API Key",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2ApiKeyLabel",
+    );
+    const aiTranslationAlpha2SourceLanguageLabel = useL10n(
+        "Source Language",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2SourceLanguageLabel",
     );
     const aiTranslationTranslationTestLabel = useL10n(
         "Translation Test",
         "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TranslationTestLabel",
+    );
+    const aiTranslationTargetLanguageNotSupportedTemplate = useL10n(
+        "{0} does not support translating to {1}, so it will be skipped.",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageNotSupported",
+    );
+    const aiTranslationNoServiceSupportsLanguageNote = useL10n(
+        "no enabled service supports this",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.NoServiceSupportsLanguage",
+    );
+    const aiTranslationNoProviderSelectedNote = useL10n(
+        "Select at least one translation provider to get a list of languages it supports.",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.NoProviderSelected",
+    );
+    const aiTranslationAlpha2LanguagesNoteTemplate = useL10n(
+        "SIL Alpha2 shows the languages it can translate from {0}.",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2LanguagesNote",
     );
     const qrCodesLabel = useL10n(
         "QR Codes",
@@ -246,7 +274,7 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
 
     const {
         group: aiTranslationSettingsGroup,
-        targetLanguageData: aiTranslationTargetLanguageData,
+        languageControlsData: aiTranslationLanguageControlsData,
     } = useAiTranslationSettingsGroup({
         settings: aiTranslationFlatSettings,
         initialValidations: aiTranslationInitialValidations,
@@ -254,13 +282,23 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         targetLanguageLabel: aiTranslationTargetLanguageLabel,
         deepLEnabledLabel: aiTranslationDeepLEnabledLabel,
         deepLApiKeyLabel: aiTranslationDeepLApiKeyLabel,
+        deepLApiKeyDescription: aiTranslationDeepLApiKeyDescription,
         googleEnabledLabel: aiTranslationGoogleEnabledLabel,
         googleServiceAccountEmailLabel:
             aiTranslationGoogleServiceAccountEmailLabel,
+        googleServiceAccountDescription:
+            aiTranslationGoogleServiceAccountDescription,
         googlePrivateKeyLabel: aiTranslationGooglePrivateKeyLabel,
         alpha2EnabledLabel: aiTranslationAlpha2EnabledLabel,
         alpha2ApiKeyLabel: aiTranslationAlpha2ApiKeyLabel,
+        alpha2SourceLanguageLabel: aiTranslationAlpha2SourceLanguageLabel,
         translationTestLabel: aiTranslationTranslationTestLabel,
+        targetLanguageNotSupportedTemplate:
+            aiTranslationTargetLanguageNotSupportedTemplate,
+        noServiceSupportsLanguageNote:
+            aiTranslationNoServiceSupportsLanguageNote,
+        noProviderSelectedNote: aiTranslationNoProviderSelectedNote,
+        alpha2LanguagesNoteTemplate: aiTranslationAlpha2LanguagesNoteTemplate,
     });
 
     return (
@@ -279,8 +317,8 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                 // Provide the target-language control's data here, above the Configr pane, so the
                 // stable module-scope AiTranslationTargetLanguageControl (rendered somewhere inside
                 // the pane) can read it via context without being redefined each render.
-                <AiTranslationTargetLanguageContext.Provider
-                    value={aiTranslationTargetLanguageData}
+                <AiTranslationLanguageControlsContext.Provider
+                    value={aiTranslationLanguageControlsData}
                 >
                     <ConfigrPane
                         label={advancedProgramSettingsLabel}
@@ -455,7 +493,7 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                 aiTranslationSettingsGroup}
                         </ConfigrPage>
                     </ConfigrPane>
-                </AiTranslationTargetLanguageContext.Provider>
+                </AiTranslationLanguageControlsContext.Provider>
             )}
         </div>
     );

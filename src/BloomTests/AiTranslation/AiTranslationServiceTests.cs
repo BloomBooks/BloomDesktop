@@ -330,6 +330,145 @@ namespace BloomTests.AiTranslation
             Assert.That(exception.Message, Does.Contain("languages:read"));
         }
 
+        [Test]
+        public void GetEngineFingerprint_ChangesWhenSourceLanguageTagChanges()
+        {
+            var engine = new AiTranslationEngineSettings
+            {
+                ProviderId = "alpha2",
+                ApiKey = "same-key",
+                SourceLanguageTag = "en",
+            };
+
+            var englishSource = AiTranslationService.GetEngineFingerprint(engine, "fr");
+            engine.SourceLanguageTag = "es";
+            var spanishSource = AiTranslationService.GetEngineFingerprint(engine, "fr");
+
+            Assert.That(spanishSource, Is.Not.EqualTo(englishSource));
+        }
+
+        [Test]
+        public async Task GetSupportedTargetLanguagesAsync_LooksUpAlpha2TargetsForItsConfiguredSourceOnly()
+        {
+            var provider = new FakeLanguageListProvider(
+                "alpha2",
+                languages: new[] { ("es", "Spanish") }
+            );
+            var collectionSettings = new CollectionSettings
+            {
+                Subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Pro),
+                AiTranslationTargetLanguageTag = "de",
+                Language1Tag = "fr",
+                AiTranslationEngines = new List<AiTranslationEngineSettings>
+                {
+                    new AiTranslationEngineSettings
+                    {
+                        ProviderId = "alpha2",
+                        Enabled = true,
+                        SourceLanguageTag = "es",
+                    },
+                },
+            };
+            var service = new AiTranslationService(
+                collectionSettings,
+                new Dictionary<string, IAiTranslationProvider> { { "alpha2", provider } }
+            );
+
+            await service.GetSupportedTargetLanguagesAsync(CancellationToken.None);
+
+            // Only the engine's configured source is used. We must NOT union in English or the
+            // collection languages: alpha2 unions its target results across every source given, and
+            // English reaches a near-superset of targets, so including it made the list look the
+            // same regardless of the chosen source (BL-16549).
+            Assert.That(provider.LastLikelySourceLanguageTags, Is.EquivalentTo(new[] { "es" }));
+        }
+
+        [Test]
+        public async Task ValidateEngineAsync_TargetMissingFromNonEmptyList_ReturnsTargetLanguageNotSupported_WithoutProbing()
+        {
+            var provider = new FakeValidatingProvider(
+                "alpha2",
+                supportedTargets: new[] { "es", "fr" }
+            );
+            var collectionSettings = new CollectionSettings
+            {
+                Subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Pro),
+                AiTranslationTargetLanguageTag = "de", // not in the provider's supported list
+            };
+            var service = new AiTranslationService(
+                collectionSettings,
+                new Dictionary<string, IAiTranslationProvider> { { "alpha2", provider } }
+            );
+            var engine = new AiTranslationEngineSettings { ProviderId = "alpha2", ApiKey = "key" };
+
+            var result = await service.ValidateEngineAsync(engine, CancellationToken.None);
+
+            Assert.That(result.Succeeded, Is.False);
+            Assert.That(result.TargetLanguageNotSupported, Is.True);
+            Assert.That(
+                provider.TranslateCallCount,
+                Is.EqualTo(0),
+                "an unsupported target must short-circuit before the probe translation"
+            );
+        }
+
+        [Test]
+        public async Task ValidateEngineAsync_TargetSupported_ProbesUsingConfiguredSourceLanguage()
+        {
+            var provider = new FakeValidatingProvider("alpha2", supportedTargets: new[] { "es" });
+            var collectionSettings = new CollectionSettings
+            {
+                Subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Pro),
+                AiTranslationTargetLanguageTag = "es",
+            };
+            var service = new AiTranslationService(
+                collectionSettings,
+                new Dictionary<string, IAiTranslationProvider> { { "alpha2", provider } }
+            );
+            var engine = new AiTranslationEngineSettings
+            {
+                ProviderId = "alpha2",
+                ApiKey = "key",
+                SourceLanguageTag = "fr",
+            };
+
+            var result = await service.ValidateEngineAsync(engine, CancellationToken.None);
+
+            Assert.That(result.Succeeded, Is.True);
+            Assert.That(result.TargetLanguageNotSupported, Is.False);
+            Assert.That(
+                provider.LastTranslateSourceLanguageTag,
+                Is.EqualTo("fr"),
+                "the probe should translate FROM the engine's configured source language"
+            );
+        }
+
+        [Test]
+        public async Task ValidateEngineAsync_EmptySupportedList_FallsThroughToProbe()
+        {
+            var provider = new FakeValidatingProvider("alpha2", supportedTargets: new string[0]);
+            var collectionSettings = new CollectionSettings
+            {
+                Subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Pro),
+                AiTranslationTargetLanguageTag = "de",
+            };
+            var service = new AiTranslationService(
+                collectionSettings,
+                new Dictionary<string, IAiTranslationProvider> { { "alpha2", provider } }
+            );
+            var engine = new AiTranslationEngineSettings { ProviderId = "alpha2", ApiKey = "key" };
+
+            var result = await service.ValidateEngineAsync(engine, CancellationToken.None);
+
+            Assert.That(result.Succeeded, Is.True);
+            Assert.That(result.TargetLanguageNotSupported, Is.False);
+            Assert.That(
+                provider.TranslateCallCount,
+                Is.EqualTo(1),
+                "an empty supported-languages list is not proof of non-support, so we still probe"
+            );
+        }
+
         private static AiTranslationService MakeLanguageListService(
             params FakeLanguageListProvider[] providers
         )
@@ -397,6 +536,7 @@ namespace BloomTests.AiTranslation
 
             public Task<List<AiTranslationTargetLanguageOption>> GetSupportedTargetLanguagesAsync(
                 AiTranslationEngineSettings engine,
+                IReadOnlyList<string> likelySourceLanguageTags,
                 HttpClient httpClient,
                 CancellationToken ct
             )
@@ -449,12 +589,17 @@ namespace BloomTests.AiTranslation
             public int MaxSegmentsPerRequest => 100;
             public int MaxRequestBytes => 100_000;
 
+            /// <summary>The likelySourceLanguageTags the service passed on the most recent call.</summary>
+            public IReadOnlyList<string> LastLikelySourceLanguageTags { get; private set; }
+
             public Task<List<AiTranslationTargetLanguageOption>> GetSupportedTargetLanguagesAsync(
                 AiTranslationEngineSettings engine,
+                IReadOnlyList<string> likelySourceLanguageTags,
                 HttpClient httpClient,
                 CancellationToken ct
             )
             {
+                LastLikelySourceLanguageTags = likelySourceLanguageTags;
                 if (_throwMessage != null)
                     throw new HttpRequestException(_throwMessage);
 
@@ -482,6 +627,61 @@ namespace BloomTests.AiTranslation
                 throw new System.NotSupportedException(
                     "FakeLanguageListProvider is only for supported-languages tests."
                 );
+            }
+        }
+
+        /// <summary>
+        /// A provider that both lists a fixed set of supported target languages AND "translates",
+        /// recording how the probe was called, so ValidateEngineAsync's target-support check and
+        /// probe-source behavior can be exercised without any network.
+        /// </summary>
+        private sealed class FakeValidatingProvider : IAiTranslationProvider
+        {
+            private readonly string[] _supportedTargets;
+
+            public FakeValidatingProvider(string providerId, string[] supportedTargets)
+            {
+                ProviderId = providerId;
+                _supportedTargets = supportedTargets ?? new string[0];
+            }
+
+            public string ProviderId { get; }
+            public int MaxSegmentsPerRequest => 100;
+            public int MaxRequestBytes => 100_000;
+            public int TranslateCallCount { get; private set; }
+            public string LastTranslateSourceLanguageTag { get; private set; }
+
+            public Task<List<AiTranslationTargetLanguageOption>> GetSupportedTargetLanguagesAsync(
+                AiTranslationEngineSettings engine,
+                IReadOnlyList<string> likelySourceLanguageTags,
+                HttpClient httpClient,
+                CancellationToken ct
+            )
+            {
+                return Task.FromResult(
+                    _supportedTargets
+                        .Select(tag => new AiTranslationTargetLanguageOption
+                        {
+                            Value = tag,
+                            Label = tag,
+                            ProviderIds = new List<string> { ProviderId },
+                        })
+                        .ToList()
+                );
+            }
+
+            public Task<string[]> TranslateBatchAsync(
+                AiTranslationEngineSettings engine,
+                string[] segments,
+                string sourceLanguageTag,
+                string targetLanguageTag,
+                HttpClient httpClient,
+                CancellationToken ct
+            )
+            {
+                TranslateCallCount++;
+                LastTranslateSourceLanguageTag = sourceLanguageTag;
+                return Task.FromResult(segments.Select(s => "translated:" + s).ToArray());
             }
         }
     }

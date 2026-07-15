@@ -266,25 +266,31 @@ namespace Bloom.AiTranslation
                 {
                     Engine = engine,
                     Groups = scan.GroupsNeedingTranslation(engine),
+                    SkippedCount = scan.CountGroupsSkippedForEngine(engine),
                 })
                 .Where(w => w.Groups.Count > 0)
                 .ToList();
 
             var tasks = workByEngine.Select(w =>
-                TranslateOneEngineAsync(w.Engine, w.Groups, translate, progress, ct)
+                TranslateOneEngineAsync(w.Engine, w.Groups, w.SkippedCount, translate, progress, ct)
             );
             var outcomes = await Task.WhenAll(tasks);
             return outcomes.ToList();
         }
 
         /// <summary>
-        /// Translates one engine's groups, grouped by source language, isolating any failure into the
-        /// returned outcome (cancellation is the one exception: it is rethrown so it aborts the whole
-        /// run rather than being recorded as this engine's failure).
+        /// Translates one engine's groups, grouped by the engine-resolved source language (so a
+        /// fixed-source engine like alpha2 translates from its configured source while deepl/google
+        /// translate from each group's default source), isolating any failure into the returned
+        /// outcome (cancellation is the one exception: it is rethrown so it aborts the whole run
+        /// rather than being recorded as this engine's failure). skippedCount is how many eligible
+        /// groups this engine had to skip for lack of source text; when non-zero it is noted in the
+        /// progress log.
         /// </summary>
         private static async Task<AiTranslationEngineOutcome> TranslateOneEngineAsync(
             AiTranslationEngineSettings engine,
-            List<AiTranslationGroupInfo> groups,
+            List<AiTranslationGroupSource> groups,
+            int skippedCount,
             AiTranslateSegmentsDelegate translate,
             IWebSocketProgress progress,
             CancellationToken ct
@@ -311,8 +317,21 @@ namespace Bloom.AiTranslation
                     var translated = await translate(engine, segments, languageGroup.Key, ct);
                     for (var i = 0; i < groupList.Count; i++)
                     {
-                        outcome.Translations.Add((groupList[i], translated[i]));
+                        outcome.Translations.Add((groupList[i].Group, translated[i]));
                     }
+                }
+
+                if (skippedCount > 0)
+                {
+                    progress.MessageWithParams(
+                        "EditTab.AiTranslation.EngineSkippedNoSourceText",
+                        "{0} is the translation engine's name (e.g. SIL Alpha2), which must not be translated; {1} is a count of text boxes; {2} is a language tag (e.g. \"en\")",
+                        "{0}: skipped {1} text box(es) with no {2} text.",
+                        ProgressKind.Progress,
+                        engineName,
+                        skippedCount,
+                        engine.GetEffectiveSourceLanguageTag()
+                    );
                 }
 
                 progress.MessageWithParams(

@@ -23,10 +23,12 @@ namespace Bloom.AiTranslation
 
         public async Task<List<AiTranslationTargetLanguageOption>> GetSupportedTargetLanguagesAsync(
             AiTranslationEngineSettings engine,
+            IReadOnlyList<string> likelySourceLanguageTags,
             HttpClient httpClient,
             CancellationToken ct
         )
         {
+            // DeepL's target list is source-independent, so likelySourceLanguageTags is ignored.
             EnsureCredentials(engine);
 
             using var request = new HttpRequestMessage(

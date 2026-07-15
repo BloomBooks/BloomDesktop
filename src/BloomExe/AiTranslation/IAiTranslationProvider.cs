@@ -43,8 +43,16 @@ namespace Bloom.AiTranslation
         /// </summary>
         int MaxRequestBytes { get; }
 
+        /// <summary>
+        /// Lists the target languages this provider supports for the given engine.
+        /// likelySourceLanguageTags is a hint used only by providers (alpha2) whose supported-target
+        /// set depends on the source language: the caller passes the sources it is likely to
+        /// translate from (the engine's configured source, "en", and the collection's languages).
+        /// Providers that don't need it (deepl/google) ignore the hint.
+        /// </summary>
         Task<List<AiTranslationTargetLanguageOption>> GetSupportedTargetLanguagesAsync(
             AiTranslationEngineSettings engine,
+            IReadOnlyList<string> likelySourceLanguageTags,
             HttpClient httpClient,
             CancellationToken ct
         );

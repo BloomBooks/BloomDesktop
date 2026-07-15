@@ -19,6 +19,14 @@ namespace Bloom.AiTranslation
     public class AiTranslationValidationResult
     {
         public bool Succeeded { get; set; }
+
+        /// <summary>
+        /// True when validation failed specifically because the provider does not support the
+        /// chosen target language (rather than a credential/network problem). In that case the
+        /// engine is auto-skipped for translation rather than reported as broken.
+        /// </summary>
+        public bool TargetLanguageNotSupported { get; set; }
+
         public string ConfigurationFingerprint { get; set; }
         public string Message { get; set; }
     }
@@ -31,7 +39,6 @@ namespace Bloom.AiTranslation
     public class AiTranslationService
     {
         public const string kValidationProbeText = "Today a reader, tomorrow a leader.";
-        public const string kValidationProbeSourceLanguageTag = "en";
 
         private static readonly HttpClient _httpClient = new HttpClient();
         private readonly CollectionSettings _collectionSettings;
@@ -153,34 +160,117 @@ namespace Bloom.AiTranslation
         }
 
         /// <summary>
-        /// Validates one engine's configuration, credentials, and target language with a probe translation.
+        /// Validates one engine's configuration, credentials, and target language. First, if the
+        /// provider can cheaply list its supported target languages and the chosen target is
+        /// definitively absent, it short-circuits with TargetLanguageNotSupported (the engine is
+        /// fine, it just can't do this language, so it will be auto-skipped rather than reported as
+        /// broken). Otherwise it runs a probe translation. The probe uses the engine's effective
+        /// source language (only alpha2 differs from the "en" default); the probe text is always
+        /// English and only proves that the pair/model and credentials work, not translation quality.
         /// </summary>
         public async Task<AiTranslationValidationResult> ValidateEngineAsync(
             AiTranslationEngineSettings engine,
             CancellationToken ct
         )
         {
+            var targetLanguageTag = _collectionSettings.AiTranslationTargetLanguageTag;
+            var normalizedTarget = NormalizeBloomLanguageTag(targetLanguageTag);
+
+            var unsupportedResult = await CheckTargetLanguageSupportedAsync(
+                engine,
+                normalizedTarget,
+                targetLanguageTag,
+                ct
+            );
+            if (unsupportedResult != null)
+                return unsupportedResult;
+
             var translations = await TranslateSegmentsAsync(
                 engine,
                 new[] { kValidationProbeText },
-                kValidationProbeSourceLanguageTag,
+                engine.GetEffectiveSourceLanguageTag(),
                 ct
             );
 
             return new AiTranslationValidationResult
             {
                 Succeeded = true,
-                ConfigurationFingerprint = GetEngineFingerprint(
-                    engine,
-                    _collectionSettings.AiTranslationTargetLanguageTag
-                ),
+                ConfigurationFingerprint = GetEngineFingerprint(engine, targetLanguageTag),
                 Message = translations[0],
+            };
+        }
+
+        /// <summary>
+        /// If the provider can list its supported target languages and the chosen target is
+        /// definitively NOT among them, returns a failed result flagged TargetLanguageNotSupported;
+        /// otherwise (target is supported, list is empty, or the list couldn't be fetched) returns
+        /// null so the caller falls through to the normal probe. Never throws: a failure to fetch
+        /// the list is treated as "unknown", deferring to the probe which surfaces real errors.
+        /// </summary>
+        private async Task<AiTranslationValidationResult> CheckTargetLanguageSupportedAsync(
+            AiTranslationEngineSettings engine,
+            string normalizedTarget,
+            string targetLanguageTag,
+            CancellationToken ct
+        )
+        {
+            if (string.IsNullOrWhiteSpace(normalizedTarget))
+                return null;
+
+            List<AiTranslationTargetLanguageOption> supportedTargets;
+            try
+            {
+                var provider = GetProvider(engine.ProviderId);
+                supportedTargets = await provider.GetSupportedTargetLanguagesAsync(
+                    engine,
+                    BuildAlpha2SourceLanguageTags(engine),
+                    _httpClient,
+                    ct
+                );
+            }
+            catch (Exception e)
+                when (e is HttpRequestException
+                    || e is InvalidOperationException
+                    || e is ArgumentException
+                    || e is CryptographicException
+                    || e is Newtonsoft.Json.JsonException
+                )
+            {
+                // Couldn't determine support; let the probe be the judge.
+                return null;
+            }
+
+            if (supportedTargets == null || supportedTargets.Count == 0)
+                return null;
+
+            var isSupported = supportedTargets.Any(o =>
+                string.Equals(
+                    NormalizeBloomLanguageTag(o.Value),
+                    normalizedTarget,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            );
+            if (isSupported)
+                return null;
+
+            return new AiTranslationValidationResult
+            {
+                Succeeded = false,
+                TargetLanguageNotSupported = true,
+                ConfigurationFingerprint = GetEngineFingerprint(engine, targetLanguageTag),
+                // This message is a plain-English fallback for persistence/logs; the settings UI
+                // shows its own localized "does not support ⟨language⟩, will be skipped" note driven
+                // by the TargetLanguageNotSupported flag.
+                Message =
+                    $"{GetProviderDisplayName(engine.ProviderId)} does not support translating to '{normalizedTarget}'.",
             };
         }
 
         /// <summary>
         /// Gets the union of target languages supported by all ENABLED engines on the collection,
         /// deduped by language tag (each option records which of those engines' providers support it).
+        /// For source-dependent providers (alpha2) the list is looked up for that engine's own
+        /// configured source language only (see BuildAlpha2SourceLanguageTags).
         /// </summary>
         public async Task<List<AiTranslationTargetLanguageOption>> GetSupportedTargetLanguagesAsync(
             CancellationToken ct
@@ -193,11 +283,13 @@ namespace Bloom.AiTranslation
             foreach (var engine in _collectionSettings.AiTranslationEngines.Where(e => e.Enabled))
             {
                 var provider = GetProvider(engine.ProviderId);
+                var likelySourceLanguageTags = BuildAlpha2SourceLanguageTags(engine);
                 List<AiTranslationTargetLanguageOption> options;
                 try
                 {
                     options = await provider.GetSupportedTargetLanguagesAsync(
                         engine,
+                        likelySourceLanguageTags,
                         _httpClient,
                         ct
                     );
@@ -240,6 +332,32 @@ namespace Bloom.AiTranslation
             return optionsByTag
                 .Values.OrderBy(o => o.Label, StringComparer.CurrentCultureIgnoreCase)
                 .ToList();
+        }
+
+        /// <summary>
+        /// Lists the source languages the given engine's provider can translate FROM into the
+        /// collection's target language. Only the alpha2 provider (whose source/target pairing is
+        /// meaningful) returns anything; other providers return an empty list. Used to populate the
+        /// Alpha2 source-language chooser in Collection Settings.
+        /// </summary>
+        public async Task<List<AiTranslationTargetLanguageOption>> GetSupportedSourceLanguagesAsync(
+            AiTranslationEngineSettings engine,
+            string targetLanguageTag,
+            CancellationToken ct
+        )
+        {
+            var provider = GetProvider(engine.ProviderId);
+            if (provider is Alpha2TranslationProvider alpha2)
+            {
+                return await alpha2.GetSupportedSourceLanguagesAsync(
+                    engine,
+                    targetLanguageTag,
+                    _httpClient,
+                    ct
+                );
+            }
+
+            return new List<AiTranslationTargetLanguageOption>();
         }
 
         /// <summary>
@@ -424,6 +542,10 @@ namespace Bloom.AiTranslation
 
             var normalizedProvider = NormalizeProviderId(engine.ProviderId);
             var normalizedTargetLanguageTag = NormalizeBloomLanguageTag(targetLanguageTag);
+            // Only alpha2 actually uses SourceLanguageTag, but we fold it in uniformly: deepl/google
+            // leave it blank, so it normalizes to "" and doesn't perturb their fingerprint. Every
+            // engine re-validates once after this field was added, which is fine (feature unreleased).
+            var normalizedSourceLanguageTag = NormalizeBloomLanguageTag(engine.SourceLanguageTag);
             var credentialKey = normalizedProvider switch
             {
                 "google" =>
@@ -431,8 +553,32 @@ namespace Bloom.AiTranslation
                 _ => engine.ApiKey?.Trim() ?? string.Empty,
             };
             var fingerprintInput =
-                $"{normalizedProvider}\n{normalizedTargetLanguageTag}\n{credentialKey}";
+                $"{normalizedProvider}\n{normalizedTargetLanguageTag}\n{normalizedSourceLanguageTag}\n{credentialKey}";
             return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprintInput)));
+        }
+
+        /// <summary>
+        /// Builds the deduped, normalized, blank-filtered list of source languages a
+        /// source-dependent provider (alpha2) should probe when listing its supported targets:
+        /// the engine's configured (effective) source, English, and the collection's languages.
+        /// </summary>
+        /// <summary>
+        /// The source language(s) to look up an engine's supported TARGET languages against. Only
+        /// alpha2 consumes this (its supported targets are per source language). We deliberately use
+        /// ONLY the engine's own configured source (defaulting to English when blank) -- NOT a union
+        /// with English and the collection languages. Alpha2 unions its results across every source
+        /// passed here, and because English can reach a near-superset of targets, including it made
+        /// the target list look the same no matter which source the user chose (BL-16549). Returned
+        /// as a single-element list to match the provider's IReadOnlyList&lt;string&gt; parameter.
+        /// </summary>
+        private static IReadOnlyList<string> BuildAlpha2SourceLanguageTags(
+            AiTranslationEngineSettings engine
+        )
+        {
+            var tag = NormalizeBloomLanguageTag(engine.GetEffectiveSourceLanguageTag());
+            return string.IsNullOrWhiteSpace(tag)
+                ? (IReadOnlyList<string>)Array.Empty<string>()
+                : new[] { tag };
         }
 
         private IAiTranslationProvider GetProvider(string providerId)

@@ -452,6 +452,12 @@ namespace Bloom.Collection
                 );
                 engineElement.Add(
                     new XAttribute(
+                        "validationTargetLanguageNotSupported",
+                        engine.LastValidationTargetLanguageNotSupported
+                    )
+                );
+                engineElement.Add(
+                    new XAttribute(
                         "validatedFingerprint",
                         engine.ValidatedConfigurationFingerprint ?? ""
                     )
@@ -461,6 +467,9 @@ namespace Bloom.Collection
                     new XElement("ServiceAccountEmail", engine.ServiceAccountEmail ?? "")
                 );
                 engineElement.Add(new XElement("PrivateKey", engine.PrivateKey ?? ""));
+                engineElement.Add(
+                    new XElement("SourceLanguageTag", engine.SourceLanguageTag ?? "")
+                );
                 engineElement.Add(
                     new XElement("ValidationMessage", engine.LastValidationMessage ?? "")
                 );
@@ -755,17 +764,25 @@ namespace Bloom.Collection
                             engineElement.Attribute("validationSucceeded")?.Value,
                             out var validationSucceeded
                         );
+                        bool.TryParse(
+                            engineElement.Attribute("validationTargetLanguageNotSupported")?.Value,
+                            out var validationTargetLanguageNotSupported
+                        );
                         return new AiTranslationEngineSettings
                         {
                             ProviderId = engineElement.Attribute("id")?.Value ?? "",
                             Enabled = enabled,
                             LastValidationSucceeded = validationSucceeded,
+                            LastValidationTargetLanguageNotSupported =
+                                validationTargetLanguageNotSupported,
                             ValidatedConfigurationFingerprint =
                                 engineElement.Attribute("validatedFingerprint")?.Value ?? "",
                             ApiKey = engineElement.Element("ApiKey")?.Value ?? "",
                             ServiceAccountEmail =
                                 engineElement.Element("ServiceAccountEmail")?.Value ?? "",
                             PrivateKey = engineElement.Element("PrivateKey")?.Value ?? "",
+                            SourceLanguageTag =
+                                engineElement.Element("SourceLanguageTag")?.Value ?? "",
                             LastValidationMessage =
                                 engineElement.Element("ValidationMessage")?.Value ?? "",
                         };

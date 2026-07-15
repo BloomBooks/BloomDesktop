@@ -207,6 +207,21 @@ vi.mock("@sillsdev/config-r", () => ({
                 >
                     Enable All Three
                 </button>
+                <button
+                    data-testid="enable-alpha2-with-source"
+                    onClick={() => {
+                        props.onChange({
+                            ...props.initialValues,
+                            allowAiSourceBubbles: true,
+                            aiTranslationTargetLanguageTag: "es",
+                            aiTranslationAlpha2Enabled: true,
+                            aiTranslationAlpha2ApiKey: "alpha2-key",
+                            aiTranslationAlpha2SourceLanguageTag: "fr",
+                        });
+                    }}
+                >
+                    Enable Alpha2 With Source
+                </button>
                 {props.children}
             </div>
         );
@@ -250,10 +265,7 @@ vi.mock("@sillsdev/config-r", () => ({
 }));
 
 import { AdvancedSettingsPanel } from "./AdvancedSettingsPanel";
-import {
-    getLanguageSupportNote,
-    parseSupportedTargetLanguageOptions,
-} from "./AiTranslationSettingsGroup";
+import { parseSupportedTargetLanguageOptions } from "./AiTranslationSettingsGroup";
 
 describe("AdvancedSettingsPanel", () => {
     let container: HTMLDivElement;
@@ -353,6 +365,12 @@ describe("AdvancedSettingsPanel", () => {
                             ],
                         },
                     };
+                }
+
+                if (
+                    endpoint === "settings/aiTranslationAlpha2SourceLanguages"
+                ) {
+                    return { data: { languages: [] } };
                 }
 
                 throw new Error(`Unexpected async POST endpoint: ${endpoint}`);
@@ -615,32 +633,85 @@ describe("AdvancedSettingsPanel", () => {
         ).toEqual([{ value: "es", label: "Spanish", providerIds: ["deepl"] }]);
     });
 
-    it("notes when a language is only supported by some of the ready engines", () => {
-        const spanish = {
-            value: "es",
-            label: "Spanish",
-            providerIds: ["deepl", "google"] as const,
-        };
-        const french = {
-            value: "fra",
-            label: "French",
-            providerIds: ["deepl"] as const,
-        };
-        const displayNames = {
-            deepl: "DeepL",
-            google: "Google Translate",
-            alpha2: "SIL Alpha2",
-        };
+    it("round-trips alpha2 sourceLanguageTag through the wire payload", async () => {
+        await act(async () => {
+            ReactDOM.render(<AdvancedSettingsPanel />, container);
+        });
 
-        expect(
-            getLanguageSupportNote(spanish, ["deepl", "google"], displayNames),
-        ).toBe("");
-        expect(
-            getLanguageSupportNote(french, ["deepl", "google"], displayNames),
-        ).toBe("DeepL");
-        // Supported by none of the ready engines: no note (won't appear as an option anyway).
-        expect(getLanguageSupportNote(french, ["google"], displayNames)).toBe(
-            "",
+        click('[data-testid="enable-alpha2-with-source"]');
+
+        expect(mockPostJson).toHaveBeenCalledWith(
+            "settings/advancedProgramSettings",
+            expect.objectContaining({
+                aiTranslation: expect.objectContaining({
+                    engines: expect.arrayContaining([
+                        expect.objectContaining({
+                            providerId: "alpha2",
+                            enabled: true,
+                            apiKey: "alpha2-key",
+                            sourceLanguageTag: "fr",
+                        }),
+                    ]),
+                }),
+            }),
         );
+        // The non-alpha2 engines must send an empty source language.
+        const [, wirePayload] = mockPostJson.mock.calls[0];
+        const engines = (
+            wirePayload as {
+                aiTranslation: {
+                    engines: Array<{
+                        providerId: string;
+                        sourceLanguageTag: string;
+                    }>;
+                };
+            }
+        ).aiTranslation.engines;
+        expect(
+            engines.find((e) => e.providerId === "deepl")?.sourceLanguageTag,
+        ).toBe("");
+    });
+
+    it("shows the amber 'will be skipped' note when an engine doesn't support the target", async () => {
+        mockPostJsonAsync.mockImplementation(
+            async (endpoint: string, body?: unknown) => {
+                if (endpoint === "settings/validateAiTranslationEngine") {
+                    const providerId = (body as { providerId: string })
+                        .providerId;
+                    return {
+                        data: {
+                            succeeded: false,
+                            targetLanguageNotSupported: true,
+                            message: `${providerId} cannot do this language`,
+                        },
+                    };
+                }
+                if (endpoint === "settings/aiTranslationSupportedLanguages") {
+                    return { data: { languages: [] } };
+                }
+                if (
+                    endpoint === "settings/aiTranslationAlpha2SourceLanguages"
+                ) {
+                    return { data: { languages: [] } };
+                }
+                throw new Error(`Unexpected async POST endpoint: ${endpoint}`);
+            },
+        );
+
+        await act(async () => {
+            ReactDOM.render(<AdvancedSettingsPanel />, container);
+        });
+
+        click('[data-testid="enable-google"]');
+
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(601);
+        });
+
+        expect(container.textContent).toContain(
+            "does not support translating to",
+        );
+        // The red "Translation test failed" text must NOT be shown for the not-supported case.
+        expect(container.textContent).not.toContain("Translation test failed");
     });
 });

@@ -78,6 +78,85 @@ namespace BloomTests.AiTranslation
 
             Assert.That(exception.Message, Does.Contain("exploded"));
         }
+
+        [Test]
+        public void MapIso6393ToBloomTag_MapsToShortestRegisteredTag()
+        {
+            // Alpha2's 3-letter codes should collapse to the familiar 2-letter tags so they dedup
+            // with DeepL/Google's "fr"/"en" in the settings union.
+            Assert.That(Alpha2TranslationProvider.MapIso6393ToBloomTag("fra"), Is.EqualTo("fr"));
+            Assert.That(Alpha2TranslationProvider.MapIso6393ToBloomTag("eng"), Is.EqualTo("en"));
+        }
+
+        [Test]
+        public void MapIso6393ToBloomTag_UnmappedCodePassesThrough()
+        {
+            // A code with no shorter registered tag is returned unchanged (and lowercased).
+            Assert.That(Alpha2TranslationProvider.MapIso6393ToBloomTag("zzz"), Is.EqualTo("zzz"));
+            Assert.That(Alpha2TranslationProvider.MapIso6393ToBloomTag("FRA"), Is.EqualTo("fr"));
+        }
+
+        [Test]
+        public void ParseTranslationLanguages_ReverseMapsSortsByLabelAndTagsAlpha2()
+        {
+            var json =
+                @"[
+                    {""iso"":""fra"",""name"":""French"",""display"":""Français"",""models"":[{""id"":1,""name"":""m1""}]},
+                    {""iso"":""spa"",""name"":""Spanish"",""models"":[]},
+                    {""iso"":""zzz"",""name"":""Madeup""}
+                ]";
+
+            var options = Alpha2TranslationProvider.ParseTranslationLanguages(json);
+
+            // Sorted by label: French, Madeup, Spanish.
+            Assert.That(
+                options.Select(o => o.Label),
+                Is.EqualTo(new[] { "French", "Madeup", "Spanish" })
+            );
+            var valueByLabel = options.ToDictionary(o => o.Label, o => o.Value);
+            Assert.That(valueByLabel["French"], Is.EqualTo("fr"));
+            Assert.That(valueByLabel["Spanish"], Is.EqualTo("es"));
+            Assert.That(
+                valueByLabel["Madeup"],
+                Is.EqualTo("zzz"),
+                "an unmapped ISO code should pass through unchanged"
+            );
+            Assert.That(
+                options.All(o => o.ProviderIds.SequenceEqual(new[] { "alpha2" })),
+                Is.True,
+                "every option must be tagged as coming from alpha2"
+            );
+        }
+
+        [Test]
+        public void ParseTranslationLanguages_DedupsEntriesThatMapToTheSameTag()
+        {
+            var json =
+                @"[
+                    {""iso"":""eng"",""name"":""English""},
+                    {""iso"":""eng"",""name"":""English (again)""}
+                ]";
+
+            var options = Alpha2TranslationProvider.ParseTranslationLanguages(json);
+
+            Assert.That(options.Count, Is.EqualTo(1));
+            Assert.That(options[0].Value, Is.EqualTo("en"));
+        }
+
+        [Test]
+        public void ParseTranslationLanguages_SkipsEntriesWithNoIso()
+        {
+            var json =
+                @"[
+                    {""name"":""No iso here""},
+                    {""iso"":""fra"",""name"":""French""}
+                ]";
+
+            var options = Alpha2TranslationProvider.ParseTranslationLanguages(json);
+
+            Assert.That(options.Count, Is.EqualTo(1));
+            Assert.That(options[0].Value, Is.EqualTo("fr"));
+        }
     }
 
     /// <summary>

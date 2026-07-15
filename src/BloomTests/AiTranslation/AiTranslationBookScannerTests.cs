@@ -556,5 +556,160 @@ namespace BloomTests.AiTranslation
                 "both English source divs should be left in place"
             );
         }
+
+        [Test]
+        public void GroupsNeedingTranslation_FixedSourceEngine_UsesConfiguredSourceLanguageText()
+        {
+            var alpha2 = new AiTranslationEngineSettings
+            {
+                ProviderId = "alpha2",
+                Enabled = true,
+                SourceLanguageTag = "fr",
+            };
+            var dom = MakeBookDom(
+                @"
+                <div class='bloom-page'>
+                    <div class='bloom-translationGroup'>
+                        <div class='bloom-editable' lang='en'>Hello</div>
+                        <div class='bloom-editable' lang='fr'>Bonjour</div>
+                    </div>
+                </div>"
+            );
+            var scanner = new AiTranslationBookScanner(
+                dom,
+                "es",
+                new[] { alpha2 },
+                new[] { "en" } // priority prefers en, but alpha2's fixed source must win for alpha2.
+            );
+
+            var needing = scanner.Scan().GroupsNeedingTranslation(alpha2);
+
+            Assert.That(needing.Count, Is.EqualTo(1));
+            Assert.That(
+                needing[0].SourceLanguageTag,
+                Is.EqualTo("fr"),
+                "a fixed-source engine translates from its configured source, not the priority default"
+            );
+            Assert.That(needing[0].SourceText, Is.EqualTo("Bonjour"));
+        }
+
+        [Test]
+        public void GroupsNeedingTranslation_FixedSourceEngine_MissingSourceLanguage_ExcludedAndCountedAsSkipped()
+        {
+            var alpha2 = new AiTranslationEngineSettings
+            {
+                ProviderId = "alpha2",
+                Enabled = true,
+                SourceLanguageTag = "fr",
+            };
+            var dom = MakeBookDom(
+                @"
+                <div class='bloom-page'>
+                    <div class='bloom-translationGroup'>
+                        <div class='bloom-editable' lang='en'>Hello</div>
+                    </div>
+                </div>"
+            );
+            var scanner = new AiTranslationBookScanner(dom, "es", new[] { alpha2 }, new[] { "en" });
+            var scan = scanner.Scan();
+            Assert.That(scan.Groups.Count, Is.EqualTo(1), "sanity check: the group is eligible");
+
+            Assert.That(
+                scan.GroupsNeedingTranslation(alpha2),
+                Is.Empty,
+                "the group has no French text, so the fixed-source alpha2 engine must skip it"
+            );
+            Assert.That(scan.CountGroupsSkippedForEngine(alpha2), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void GroupsNeedingTranslation_SameGroup_Alpha2AndDeeplGetDifferentSources()
+        {
+            var deepl = new AiTranslationEngineSettings { ProviderId = "deepl", Enabled = true };
+            var alpha2 = new AiTranslationEngineSettings
+            {
+                ProviderId = "alpha2",
+                Enabled = true,
+                SourceLanguageTag = "fr",
+            };
+            var dom = MakeBookDom(
+                @"
+                <div class='bloom-page'>
+                    <div class='bloom-translationGroup'>
+                        <div class='bloom-editable' lang='en'>Hello</div>
+                        <div class='bloom-editable' lang='fr'>Bonjour</div>
+                    </div>
+                </div>"
+            );
+            var scanner = new AiTranslationBookScanner(
+                dom,
+                "es",
+                new[] { deepl, alpha2 },
+                new[] { "en" }
+            );
+            var scan = scanner.Scan();
+
+            var deeplWork = scan.GroupsNeedingTranslation(deepl).Single();
+            var alpha2Work = scan.GroupsNeedingTranslation(alpha2).Single();
+
+            Assert.That(
+                deeplWork.SourceLanguageTag,
+                Is.EqualTo("en"),
+                "deepl uses the priority-chosen default source"
+            );
+            Assert.That(deeplWork.SourceText, Is.EqualTo("Hello"));
+            Assert.That(
+                alpha2Work.SourceLanguageTag,
+                Is.EqualTo("fr"),
+                "alpha2 uses its fixed configured source for the same group"
+            );
+            Assert.That(alpha2Work.SourceText, Is.EqualTo("Bonjour"));
+        }
+
+        [Test]
+        public void RemoveStaleAiDivs_FixedSourceEngineLostItsSourceText_RemovesDiv()
+        {
+            var alpha2 = new AiTranslationEngineSettings
+            {
+                ProviderId = "alpha2",
+                Enabled = true,
+                SourceLanguageTag = "fr",
+            };
+            const string targetTag = "es";
+            var alpha2AiTag = AiTranslationService.GetAiLanguageTag(targetTag, "alpha2");
+            // The group has English text but NO French text, yet carries an alpha2 (French-source)
+            // AI div left over from when French text existed. Since alpha2 can no longer resolve a
+            // French source for the group, its div is stale and must be removed.
+            var dom = MakeBookDom(
+                $@"
+                <div class='bloom-page'>
+                    <div class='bloom-translationGroup'>
+                        <div class='bloom-editable' lang='en'>Hello</div>
+                        <div class='bloom-editable' lang='{alpha2AiTag}' data-ai-fingerprint='whatever'>Hola (from French, now orphaned)</div>
+                    </div>
+                </div>"
+            );
+            Assert.That(
+                dom.RawDom.SafeSelectNodes("//div[@lang and contains(@lang,'-x-ai')]").Length,
+                Is.EqualTo(1),
+                "sanity check: fixture starts with one alpha2 AI div"
+            );
+
+            var scanner = new AiTranslationBookScanner(
+                dom,
+                targetTag,
+                new[] { alpha2 },
+                new[] { "en" }
+            );
+
+            var removedCount = scanner.RemoveStaleAiDivs();
+
+            Assert.That(removedCount, Is.EqualTo(1));
+            Assert.That(
+                dom.RawDom.SafeSelectNodes("//div[@lang and contains(@lang,'-x-ai')]").Length,
+                Is.EqualTo(0),
+                "the fixed-source engine's div is stale because its source language is gone"
+            );
+        }
     }
 }

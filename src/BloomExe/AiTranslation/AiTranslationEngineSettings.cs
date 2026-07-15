@@ -33,6 +33,14 @@ namespace Bloom.AiTranslation
         public string PrivateKey = "";
 
         /// <summary>
+        /// The source language (Bloom/BCP-47 tag) to translate FROM. Only meaningful for the
+        /// alpha2 provider, whose model selection is per source/target pair; deepl/google choose
+        /// their source automatically per translation group and ignore this. A blank value means
+        /// English ("en"); use GetEffectiveSourceLanguageTag() to read it with that default applied.
+        /// </summary>
+        public string SourceLanguageTag = "";
+
+        /// <summary>
         /// Fingerprint (see AiTranslationService.GetEngineFingerprint) of this engine's
         /// configuration and the target language at the time it was last validated.
         /// </summary>
@@ -44,9 +52,26 @@ namespace Bloom.AiTranslation
         public bool LastValidationSucceeded;
 
         /// <summary>
+        /// True if the last validation failed specifically because this engine's provider does
+        /// not support the chosen target language (as opposed to a credential/network error). When
+        /// set, the settings UI shows a "does not support ⟨language⟩, will be skipped" note and the
+        /// engine is simply excluded from translation rather than treated as misconfigured.
+        /// </summary>
+        public bool LastValidationTargetLanguageNotSupported;
+
+        /// <summary>
         /// The message (success text or error) from the last validation attempt.
         /// </summary>
         public string LastValidationMessage = "";
+
+        /// <summary>
+        /// The effective source language tag to translate from: the configured SourceLanguageTag
+        /// if non-blank, otherwise English ("en"). Only the alpha2 provider consults this.
+        /// </summary>
+        public string GetEffectiveSourceLanguageTag()
+        {
+            return string.IsNullOrWhiteSpace(SourceLanguageTag) ? "en" : SourceLanguageTag.Trim();
+        }
 
         /// <summary>
         /// Creates a deep (independent) copy of this engine's settings.
@@ -60,8 +85,10 @@ namespace Bloom.AiTranslation
                 ApiKey = ApiKey,
                 ServiceAccountEmail = ServiceAccountEmail,
                 PrivateKey = PrivateKey,
+                SourceLanguageTag = SourceLanguageTag,
                 ValidatedConfigurationFingerprint = ValidatedConfigurationFingerprint,
                 LastValidationSucceeded = LastValidationSucceeded,
+                LastValidationTargetLanguageNotSupported = LastValidationTargetLanguageNotSupported,
                 LastValidationMessage = LastValidationMessage,
             };
         }

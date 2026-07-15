@@ -33,10 +33,12 @@ namespace Bloom.AiTranslation
 
         public async Task<List<AiTranslationTargetLanguageOption>> GetSupportedTargetLanguagesAsync(
             AiTranslationEngineSettings engine,
+            IReadOnlyList<string> likelySourceLanguageTags,
             HttpClient httpClient,
             CancellationToken ct
         )
         {
+            // Google's target list is source-independent, so likelySourceLanguageTags is ignored.
             EnsureCredentials(engine);
 
             var accessToken = await GetAccessTokenAsync(engine, httpClient, ct);

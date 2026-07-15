@@ -109,6 +109,12 @@ namespace Bloom.web.controllers
                 false,
                 true
             );
+            apiHandler.RegisterAsyncEndpointHandler(
+                kApiUrlPart + "aiTranslationAlpha2SourceLanguages",
+                HandleGetAiTranslationAlpha2SourceLanguagesAsync,
+                false,
+                true
+            );
             apiHandler.RegisterBooleanEndpointHandler(
                 kApiUrlPart + "lockedToOneDownloadedBook",
                 request => _collectionSettings.EditingABlorgBook,
@@ -385,9 +391,11 @@ namespace Bloom.web.controllers
                                 apiKey = engine.ApiKey ?? "",
                                 serviceAccountEmail = engine.ServiceAccountEmail ?? "",
                                 privateKey = engine.PrivateKey ?? "",
+                                sourceLanguageTag = engine.SourceLanguageTag ?? "",
                                 validation = new
                                 {
                                     succeeded = engine.LastValidationSucceeded,
+                                    targetLanguageNotSupported = engine.LastValidationTargetLanguageNotSupported,
                                     message = engine.LastValidationMessage ?? "",
                                     upToDate = String.Equals(
                                         engine.ValidatedConfigurationFingerprint,
@@ -408,6 +416,7 @@ namespace Bloom.web.controllers
         {
             engine.ValidatedConfigurationFingerprint = String.Empty;
             engine.LastValidationSucceeded = false;
+            engine.LastValidationTargetLanguageNotSupported = false;
             engine.LastValidationMessage = String.Empty;
         }
 
@@ -441,6 +450,7 @@ namespace Bloom.web.controllers
             var engine = dialog.PendingAiTranslationEngines.Single(e => e.ProviderId == providerId);
 
             var succeeded = false;
+            var targetLanguageNotSupported = false;
             var message = String.Empty;
             var tempSettings = new CollectionSettings
             {
@@ -454,6 +464,7 @@ namespace Bloom.web.controllers
                     tempSettings
                 ).ValidateEngineAsync(engine, CancellationToken.None);
                 succeeded = validationResult.Succeeded;
+                targetLanguageNotSupported = validationResult.TargetLanguageNotSupported;
                 message = validationResult.Message;
                 engine.ValidatedConfigurationFingerprint =
                     validationResult.ConfigurationFingerprint;
@@ -480,13 +491,25 @@ namespace Bloom.web.controllers
             }
 
             engine.LastValidationSucceeded = succeeded;
+            engine.LastValidationTargetLanguageNotSupported = targetLanguageNotSupported;
             engine.LastValidationMessage = message;
-            if (!succeeded)
+            // A genuine failure clears the fingerprint so we re-probe next time. The
+            // "target not supported" outcome, though, is a settled fact for this exact
+            // configuration: keep the fingerprint (already set from the result above) so the UI
+            // shows the persisted "will be skipped" note without re-probing on every reopen.
+            if (!succeeded && !targetLanguageNotSupported)
             {
                 engine.ValidatedConfigurationFingerprint = String.Empty;
             }
 
-            request.ReplyWithJson(new { succeeded, message });
+            request.ReplyWithJson(
+                new
+                {
+                    succeeded,
+                    targetLanguageNotSupported,
+                    message,
+                }
+            );
         }
 
         /// <summary>
@@ -555,6 +578,80 @@ namespace Bloom.web.controllers
                 );
             }
             catch (JsonException e)
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = e.Message }
+                );
+            }
+        }
+
+        /// <summary>
+        /// Gets the (pending, if Collection Settings is open) source languages the Alpha2 engine can
+        /// translate FROM into the currently-chosen target language, for the Alpha2 source-language
+        /// chooser. Replies with an empty list when no target is set or Alpha2 has no API key.
+        /// </summary>
+        private async Task HandleGetAiTranslationAlpha2SourceLanguagesAsync(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Post)
+            {
+                request.Failed(HttpStatusCode.MethodNotAllowed, "Only POST is supported.");
+                return;
+            }
+
+            var dialog = DialogBeingEdited;
+            if (dialog == null)
+                _collectionSettings.EnsureAiTranslationEngines();
+            var targetLanguageTag =
+                dialog?.PendingAiTranslationTargetLanguageTag
+                ?? _collectionSettings.AiTranslationTargetLanguageTag;
+            var engines =
+                dialog?.PendingAiTranslationEngines ?? _collectionSettings.AiTranslationEngines;
+            var alpha2Engine = engines.FirstOrDefault(e =>
+                AiTranslationService.NormalizeProviderId(e.ProviderId) == "alpha2"
+            );
+
+            if (
+                string.IsNullOrWhiteSpace(targetLanguageTag)
+                || alpha2Engine == null
+                || string.IsNullOrWhiteSpace(alpha2Engine.ApiKey)
+            )
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = String.Empty }
+                );
+                return;
+            }
+
+            var tempSettings = new CollectionSettings
+            {
+                Subscription = _collectionSettings.Subscription,
+                AiTranslationTargetLanguageTag = targetLanguageTag,
+            };
+
+            try
+            {
+                var options = await new AiTranslationService(
+                    tempSettings
+                ).GetSupportedSourceLanguagesAsync(
+                    alpha2Engine.Clone(),
+                    targetLanguageTag,
+                    CancellationToken.None
+                );
+                var languages = options.Select(option => new
+                {
+                    tag = option.Value,
+                    name = option.Label,
+                    providerIds = option.ProviderIds,
+                });
+                request.ReplyWithJson(new { languages, message = String.Empty });
+            }
+            catch (Exception e)
+                when (e is ArgumentException
+                    || e is InvalidOperationException
+                    || e is HttpRequestException
+                    || e is CryptographicException
+                    || e is JsonException
+                )
             {
                 request.ReplyWithJson(
                     new { languages = Array.Empty<object>(), message = e.Message }
@@ -641,6 +738,9 @@ namespace Bloom.web.controllers
                             ?? engine.ServiceAccountEmail;
                         var privateKey =
                             engineToken["privateKey"]?.Value<string>() ?? engine.PrivateKey;
+                        var sourceLanguageTag =
+                            engineToken["sourceLanguageTag"]?.Value<string>()
+                            ?? engine.SourceLanguageTag;
 
                         var engineChanged =
                             enabled != engine.Enabled
@@ -654,12 +754,18 @@ namespace Bloom.web.controllers
                                 privateKey,
                                 engine.PrivateKey,
                                 StringComparison.Ordinal
+                            )
+                            || !String.Equals(
+                                sourceLanguageTag,
+                                engine.SourceLanguageTag,
+                                StringComparison.Ordinal
                             );
 
                         engine.Enabled = enabled;
                         engine.ApiKey = apiKey;
                         engine.ServiceAccountEmail = serviceAccountEmail;
                         engine.PrivateKey = privateKey;
+                        engine.SourceLanguageTag = sourceLanguageTag;
 
                         if (engineChanged)
                         {
