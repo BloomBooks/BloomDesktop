@@ -1848,3 +1848,21 @@ rename pass) keep the simple per-book path. Verified: clean build, TeamCollectio
 this I did **not** find an empty-poll early-return I'd associated with a batch-2 item ("E3") in
 `OnPolledChanges` — it still does `ApplyDelta`/`Save`/self-healing unconditionally each poll.
 Flagged for a separate look; independent of E7.
+
+---
+
+**2026-07-16 — E3 done (skip the per-poll cache write on idle polls).** Resolves the flag in the
+E7 entry above: the batch-2 "OnPolledChanges early-return" item had never actually landed — no
+commit, and `OnPolledChanges` still did `ApplyDelta` + full `_cache.Save()` (whole repo-cache JSON
+to disk) + `RefreshIndexFromCache()` unconditionally on every 60s poll, even when the poll carried
+no changes. Done the safe way per John: `CloudRepoCache.ApplyDelta` now returns whether it actually
+mutated state (a book row upserted OR the cursor advanced); `OnPolledChanges` skips Save + index
+rebuild + the book-event pass when it returns false. Crucially the two things that legitimately
+must run on a no-change poll still run unconditionally: the **group-file** check
+(`RaiseRepoCollectionFilesChanged`, since `ApplyDelta` only inspects books+cursor, never groups)
+and the **self-healing** `QueueMissingRepoBooksForBackgroundDownload` pass (retries still-missing
+downloads during a join, when polls are legitimately empty — the exact scenario E7 concerns). The
+`previousBooksById` diff snapshot is now taken only when the poll carried book rows. Extracted the
+book-event loop into `RaiseBookEventsForPolledChanges` to keep the fast path readable. New unit
+test `ApplyDelta_ReportsWhetherAnythingChanged` pins the true/false contract E3 rides on. Verified:
+clean build, TeamCollection 436/436, CloudRepoCache 17/17 (16 + 1 new).

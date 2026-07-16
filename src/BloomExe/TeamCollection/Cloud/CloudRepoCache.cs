@@ -310,12 +310,17 @@ namespace Bloom.TeamCollection.Cloud
         /// never removes a book, since unlike a full snapshot a delta doesn't enumerate "everything
         /// that still exists" — tombstoning is via `deleted_at`, present on the row itself.
         /// </summary>
-        public void ApplyDelta(JObject changes)
+        /// <returns>true if the delta actually mutated cached state — at least one book row was
+        /// upserted or the event cursor advanced. false means an idle poll that changed nothing, so
+        /// the caller can skip persisting/re-indexing (E3).</returns>
+        public bool ApplyDelta(JObject changes)
         {
             lock (_gate)
             {
+                var changed = false;
                 foreach (var row in AsObjectArray(changes["books"]))
                 {
+                    changed = true;
                     var id = (string)row["id"];
                     if (!_booksById.TryGetValue(id, out var book))
                     {
@@ -325,21 +330,26 @@ namespace Bloom.TeamCollection.Cloud
                     book.ApplyServerRow(row);
                 }
 
-                AdvanceCursorLocked(changes["max_event_id"]);
+                changed |= AdvanceCursorLocked(changes["max_event_id"]);
+                return changed;
             }
         }
 
         private static IEnumerable<JObject> AsObjectArray(JToken token) =>
             (token as JArray)?.OfType<JObject>() ?? Enumerable.Empty<JObject>();
 
-        // Caller must already hold _gate.
-        private void AdvanceCursorLocked(JToken maxEventIdToken)
+        // Caller must already hold _gate. Returns true if the cursor actually advanced.
+        private bool AdvanceCursorLocked(JToken maxEventIdToken)
         {
             if (maxEventIdToken == null || maxEventIdToken.Type == JTokenType.Null)
-                return;
+                return false;
             var maxEventId = (long)maxEventIdToken;
             if (maxEventId > _lastSeenEventId)
+            {
                 _lastSeenEventId = maxEventId;
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

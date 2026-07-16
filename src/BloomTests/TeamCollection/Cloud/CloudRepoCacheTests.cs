@@ -205,6 +205,44 @@ namespace BloomTests.TeamCollection.Cloud
             Assert.That(book.DeletedAt, Is.Not.Null);
         }
 
+        [Test]
+        public void ApplyDelta_ReportsWhetherAnythingChanged()
+        {
+            // OnPolledChanges relies on this return value to skip the full-cache Save + index
+            // rebuild on idle polls (E3), so pin the contract: true iff a book row was upserted
+            // OR the cursor advanced; false for a poll that touched neither.
+            var cache = new CloudRepoCache(_collectionFolderPath);
+            cache.ApplyFullSnapshot(
+                new JObject
+                {
+                    ["books"] = new JArray(MakeBookRow("book-1", versionSeq: 1)),
+                    ["max_event_id"] = 10,
+                }
+            );
+
+            Assert.That(
+                cache.ApplyDelta(new JObject { ["books"] = new JArray(), ["max_event_id"] = 10 }),
+                Is.False,
+                "idle poll: no book rows and the cursor did not advance -> nothing changed"
+            );
+            Assert.That(
+                cache.ApplyDelta(new JObject { ["books"] = new JArray(), ["max_event_id"] = 11 }),
+                Is.True,
+                "cursor advanced -> changed, even with no book rows"
+            );
+            Assert.That(
+                cache.ApplyDelta(
+                    new JObject
+                    {
+                        ["books"] = new JArray(MakeBookRow("book-1", versionSeq: 2)),
+                        ["max_event_id"] = 11,
+                    }
+                ),
+                Is.True,
+                "a book row was upserted -> changed, even though the cursor held at 11"
+            );
+        }
+
         // ------------------------------------------------------------------
         // Cursor monotonicity
         // ------------------------------------------------------------------

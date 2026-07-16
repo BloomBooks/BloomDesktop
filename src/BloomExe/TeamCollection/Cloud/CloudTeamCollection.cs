@@ -1897,11 +1897,45 @@ namespace Bloom.TeamCollection.Cloud
         /// </summary>
         private void OnPolledChanges(JObject changes)
         {
-            var previousBooksById = _cache.GetAllBooks().ToDictionary(b => b.Id);
-            _cache.ApplyDelta(changes);
-            _cache.Save();
-            RefreshIndexFromCache();
+            // An idle poll (no touched books, cursor unchanged) makes ApplyDelta a no-op: the cache
+            // content and its index are already current and no Raise*/socket event below could
+            // fire. Skip the full-cache Save + index rebuild + book-event pass in that case (E3) --
+            // otherwise every 60s poll rewrites the whole repo-cache file to disk while nothing has
+            // changed. The book snapshot is only needed to diff for those events, so only take it
+            // when the poll actually carried book rows. The group-file check and the self-healing
+            // download pass below run on EVERY poll regardless (see their own notes).
+            var hasBookRows = changes["books"] is JArray booksArray && booksArray.Count > 0;
+            var previousBooksById = hasBookRows
+                ? _cache.GetAllBooks().ToDictionary(b => b.Id)
+                : null;
 
+            if (_cache.ApplyDelta(changes))
+            {
+                _cache.Save();
+                RefreshIndexFromCache();
+                if (hasBookRows)
+                    RaiseBookEventsForPolledChanges(previousBooksById);
+            }
+
+            if (changes["groups"] is JArray groupsArray && groupsArray.Count > 0)
+                RaiseRepoCollectionFilesChanged();
+
+            // Self-healing pass: a repo book missing locally whose repo state did NOT change this
+            // poll raises none of the events above, so without this it would never be retried
+            // (found the hard way -- see QueueMissingRepoBooksForBackgroundDownload's doc).
+            QueueMissingRepoBooksForBackgroundDownload();
+        }
+
+        /// <summary>
+        /// Raises the per-book Raise*/socket notifications for a poll that actually touched books,
+        /// by diffing the current cache against <paramref name="previousBooksById"/> (the snapshot
+        /// taken before ApplyDelta). Split out of OnPolledChanges so the idle-poll fast path (E3)
+        /// stays readable.
+        /// </summary>
+        private void RaiseBookEventsForPolledChanges(
+            Dictionary<string, CloudCachedBook> previousBooksById
+        )
+        {
             foreach (var book in _cache.GetAllBooks())
             {
                 if (string.IsNullOrEmpty(book.Name))
@@ -1934,21 +1968,12 @@ namespace Bloom.TeamCollection.Cloud
                 }
             }
 
-            if (changes["groups"] is JArray groupsArray && groupsArray.Count > 0)
-                RaiseRepoCollectionFilesChanged();
-
             // Task 06: the status button's "Updates Available (N books)" metadata
             // (teamCollection/tcStatusMetadata) can only have changed if this poll actually touched
-            // any book -- push the same "reuse existing contexts" websocket plumbing the rest of
-            // this class already uses (RaiseBookStateChange/etc. above) so the UI refreshes without
-            // waiting for its own next poll.
-            if (changes["books"] is JArray booksArray && booksArray.Count > 0)
-                SocketServer?.SendEvent("teamCollection", "statusMetadataChanged");
-
-            // Self-healing pass: a repo book missing locally whose repo state did NOT change this
-            // poll raises none of the events above, so without this it would never be retried
-            // (found the hard way -- see QueueMissingRepoBooksForBackgroundDownload's doc).
-            QueueMissingRepoBooksForBackgroundDownload();
+            // any book -- and this method only runs when it did -- so push the same "reuse existing
+            // contexts" websocket plumbing the rest of this class already uses (RaiseBookStateChange
+            // etc. above) so the UI refreshes without waiting for its own next poll.
+            SocketServer?.SendEvent("teamCollection", "statusMetadataChanged");
         }
 
         /// <summary>Lets UI code (e.g. a "Receive Updates" button, or Bloom regaining focus) trigger
