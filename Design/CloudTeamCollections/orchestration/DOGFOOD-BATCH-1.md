@@ -727,6 +727,24 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 16 Jul 2026 (E9 DONE — collection files download only what changed, pinned + consistent;
+  John chose Option 2) · Collection-file group downloads used to LIST the S3 prefix and re-fetch
+  every object every time (no change detection; a mid-write listing could read an uncommitted
+  mix). Discovery: the committed per-file manifest ALREADY existed durably in
+  tc.collection_group_files (path/sha256/size_bytes/s3_version_id, replaced atomically by
+  collection-files-finish) — just not exposed for reads, so NO schema migration was needed (and
+  John confirmed we're free to change the local test DB anyway). Fix (commit 66de46e910): new
+  get_collection_file_manifest(collection_id, group_key) RPC mirroring get_book_manifest
+  (CONTRACTS v1.7); client GetCollectionFileManifest; DownloadCollectionFileGroup rewritten to
+  fetch the manifest and hand the files to CloudBookTransfer.DownloadFiles — the SAME path book
+  content uses, which already skips files whose local sha256+size match and downloads the rest
+  pinned to their committed s3VersionId (a consistent snapshot). Delete-extras keys off manifest
+  paths; dead S3-listing code + its Amazon.S3.Model/WebLibraryIntegration usings removed. A
+  never-written group returns version 0 / empty files (handled gracefully). Verified live on the
+  dev stack: pgTAP 95/95 (6 new get_collection_file_manifest tests); C# required filter 452/452;
+  e2e-2 collaboration loop PASS (join downloads collection files, Send/Receive byte-identical).
+  · EXACT next action: remaining open items for John — (a) pull the 8 mid-session master commits,
+  (b) re-run PR #8052 regen vs current master + Greptile, (c) remaining refactors E7/R5/R6/R13.
 - 16 Jul 2026 (E8 DONE — incremental history fetch; John chose approach A) · The history panel
   (SharingApi sharing/history) called get_changes(0) on every open, re-downloading the entire
   event log each time. Now (commit 9ceeded909) it persists the cursor (max_event_id) alongside the
