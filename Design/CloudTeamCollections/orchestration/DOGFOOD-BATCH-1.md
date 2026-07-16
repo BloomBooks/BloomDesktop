@@ -727,6 +727,42 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 16 Jul 2026 (RESUME from PAUSE #2 — verification pass; WIP is HEALTHIER than the pause note
+  feared) · Resumed the /simplify application. Working tree matched the PAUSE #2 doc exactly
+  (67 modified + 5 new source files + untracked .claude/settings.json — nothing lost; top
+  stash is unrelated Version6.4). **Findings, all now resolved or characterized:**
+  - **C# COMPILES** (the pause note's "tree may not compile" worry was unfounded — R1/R2/
+    R11-use are unstarted *additional* cleanups, not half-applied breakage). BloomExe builds
+    clean. The ONLY real breakage: 4 call sites in CloudBookTransferTests.cs still passed the
+    pre-E4 arg list to `UploadChangedFiles` (missing the new `localManifest` param) →
+    CS7036. FIXED: inserted `null` for `localManifest` at all 4 sites (behavior-preserving —
+    doc says null ⇒ hash as before). BloomTests now compiles.
+  - **C# required filter GREEN: 441/441** (non-live: `(~Cloud|~TeamCollection|~SharingApi)
+    &!~LiveTests`), 0 failures. (Doc's 460 pre-batch-2 count included ~19 LiveTests, excluded
+    here since the stack was not confirmed up; zero failures either way.) CloudBookTransfer
+    fixture 10/10.
+  - **vitest full suite TRIAGED: 593 passed, 5 failed, 5 skipped.** All 5 failures are in
+    `bookEdit/toolbox/talkingBook/talkingBookSpec.ts` ("sentence splitting" audio-checksum
+    tests) — a directory this branch NEVER touched (git diff vs origin/master is empty; last
+    commit Mar 2026; clean in working tree; none of its deps are in the changed set; global
+    test infra untouched). **Conclusion: pre-existing / environmental, NOT caused by the
+    refactor.** Every refactored teamCollection/collection test passes.
+  - **eslint (changed front-end files): 0 errors.** Fixed 3 warnings in CreateTeamCollection.tsx
+    (dropped unused `showDialog`/`closeDialog` from the useSetupBloomDialog destructure — a
+    leftover of the CreateCloudTeamCollection extraction; `==`→`===` on the boxesChecked
+    gate). CreateTeamCollection + CreateCloudTeamCollection vitest 14/14.
+  - e2e: prior agent reported tsc/eslint-level clean; live run still queued (desktop/stack gated).
+  **State of REMAINING documented work (unchanged, still open):** batch-2 R1 (DownloadCollection
+  FileGroup→S3Extensions.ListAllObjects), R2 (delete CloudTeamCollection.BuildS3Client, reuse
+  CloudBookTransfer.BuildDefaultClient), R11-use (reuse hoisted AvailablePath) — all UNSTARTED,
+  and R1/R2 touch AWSSDK-v4 S3 client construction (want live MinIO verify); batch-3 file org
+  (partials + provider split, large mechanical reorg); full pass + live run.sh/go.sh smoke;
+  commit in logical chunks; regen #8052 + re-trigger Greptile (needs `gh auth`, was broken at
+  pause). **My 7 line-fixes above are LEFT UNCOMMITTED with the rest of the WIP** (matching this
+  batch's established pattern — code WIP uncommitted, state in this doc), fully reproducible from
+  this entry. **EXACT next action:** paused to confirm scope with John — how far to push the
+  remaining OPTIONAL/quality work (R1/R2/R11-use + batch-3 file org) in this session given the
+  token concern that triggered the pause, and whether `gh` is now authenticated for the PR regen.
 - 15 Jul 2026 (PAUSED #2 — John: "put this task on hold until the next session; too many
   tokens"). Continuation of the entry below; tree has UNCOMMITTED WIP (~67 modified + 5 new
   files). **What changed since the previous PAUSE entry:**
