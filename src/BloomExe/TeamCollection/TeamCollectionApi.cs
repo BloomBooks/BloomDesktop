@@ -317,28 +317,9 @@ namespace Bloom.TeamCollection
 
             var progress = new WebSocketProgress(_socketServer, "teamCollection-status");
             progress.LogAllMessages = true;
-            cloudCollection.PollNow();
-            var receivedCount = 0;
-            var skippedCheckedOutCount = 0;
-            foreach (var bookName in collection.GetBookList())
-            {
-                var status = collection.GetStatus(bookName);
-                if (collection.IsCheckedOutHereBy(status))
-                {
-                    skippedCheckedOutCount++;
-                    continue; // Checked out here; Receive would conflict with local edits.
-                }
-                var repoSeq = cloudCollection.GetRepoVersionSeq(bookName);
-                var localSeq = cloudCollection.GetLocalVersionSeq(bookName);
-                if (!repoSeq.HasValue || (localSeq ?? -1) >= repoSeq.Value)
-                    continue; // Already current.
-                progress.MessageWithoutLocalizing($"Receiving updates for '{bookName}'...");
-                // Batch item 8: same preserve-before-overwrite guard as the auto-apply worker --
-                // Sync must never silently discard local content that changed since the last sync.
-                collection.PreserveLocalCopyIfModifiedSinceLastSync(bookName);
-                collection.CopyBookFromRepoToLocal(bookName, dialogOnError: false);
-                receivedCount++;
-            }
+            var (receivedCount, skippedCheckedOutCount) = cloudCollection.ReceiveAllUpdates(
+                progress
+            );
             progress.MessageWithoutLocalizing("Done receiving updates.");
             UpdateUiForBook();
             // Tell javascript-land to re-query book statuses NOW (same event
