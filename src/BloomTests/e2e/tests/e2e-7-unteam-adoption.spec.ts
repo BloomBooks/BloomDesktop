@@ -34,6 +34,7 @@ import {
     postApi,
     getApi,
     postCreateCloudTeamCollection,
+    waitForSharingReady,
 } from "../harness/bloomApi";
 import { bookStatus } from "../harness/bookStatus";
 import { selectBookByName } from "../harness/selectBook";
@@ -128,20 +129,7 @@ test.describe("E2E-7 un-team adoption", () => {
 
         const createResponse = await postCreateCloudTeamCollection(instance);
         expect(createResponse.status).toBe(200);
-        await expect
-            .poll(
-                async () =>
-                    (
-                        await (
-                            await getApi(
-                                instance!.httpPort,
-                                "teamCollection/capabilities",
-                            )
-                        ).json()
-                    ).supportsSharingUi,
-                { timeout: 20_000 },
-            )
-            .toBe(true);
+        await waitForSharingReady(instance.httpPort);
 
         // 1. The STALE artifact content did not survive (CleanStaleTeamCollectionArtifacts ran
         // before the initial Send). Note: absence of the files is NOT the invariant -- a live

@@ -59,8 +59,8 @@ import { launchBloom, LaunchedBloom } from "../harness/launch";
 import { ALICE, BOB, ADMIN } from "../harness/devStack";
 import {
     postApi,
-    getApi,
     postCreateCloudTeamCollection,
+    waitForSharingReady,
 } from "../harness/bloomApi";
 import { bookStatus } from "../harness/bookStatus";
 import { selectBookByName } from "../harness/selectBook";
@@ -102,20 +102,7 @@ test.describe("E2E-10 account-switch behavior", () => {
         await alice.connect(); // connect-before-trigger (harness finding #4)
         const createResponse = await postCreateCloudTeamCollection(alice);
         expect(createResponse.status).toBe(200);
-        await expect
-            .poll(
-                async () =>
-                    (
-                        await (
-                            await getApi(
-                                alice.httpPort,
-                                "teamCollection/capabilities",
-                            )
-                        ).json()
-                    ).supportsSharingUi,
-                { timeout: 20_000 },
-            )
-            .toBe(true);
+        await waitForSharingReady(alice.httpPort);
 
         // Approve Bob as a member (but NOT Admin -- Admin stays unapproved for scenario 1).
         const approveResponse = await postApi(
@@ -202,20 +189,7 @@ test.describe("E2E-10 account-switch behavior", () => {
             }),
         );
         await bobReopen.connect();
-        await expect
-            .poll(
-                async () =>
-                    (
-                        await (
-                            await getApi(
-                                bobReopen.httpPort,
-                                "teamCollection/capabilities",
-                            )
-                        ).json()
-                    ).supportsSharingUi,
-                { timeout: 20_000 },
-            )
-            .toBe(true);
+        await waitForSharingReady(bobReopen.httpPort);
 
         // CONNECTED, not disconnected: the book still shows checked out to Alice, on this
         // machine, but Bob is the current signed-in user.

@@ -4,13 +4,25 @@
 import { expect } from "@playwright/test";
 import { postApi, getApi } from "./bloomApi";
 
-export const bookStatus = async (httpPort: number, folderName: string) => {
+/** The subset of the `teamCollection/bookStatus` payload (see IBookTeamCollectionStatus in
+ * TeamCollectionApi.tsx / GetBookStatusJson in TeamCollectionApi.cs) that the e2e specs consume. */
+export interface BookTeamCollectionStatus {
+    who: string;
+    where: string;
+    currentUser: string;
+    isChangedRemotely: boolean;
+}
+
+export const bookStatus = async (
+    httpPort: number,
+    folderName: string,
+): Promise<BookTeamCollectionStatus> => {
     const response = await getApi(
         httpPort,
         `teamCollection/bookStatus?folderName=${encodeURIComponent(folderName)}`,
     );
     expect(response.status).toBe(200);
-    return response.json();
+    return (await response.json()) as BookTeamCollectionStatus;
 };
 
 // CloudCollectionMonitor only polls the server every 60s by default

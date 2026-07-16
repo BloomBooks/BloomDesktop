@@ -34,7 +34,7 @@ export const listCdpTargets = async (
             `CDP /json/list failed: ${response.status} ${response.statusText}`,
         );
     }
-    return response.json();
+    return (await response.json()) as CdpTargetInfo[];
 };
 
 /** Polls `/json/list` until a target's title or url contains `substring`, then returns it. */

@@ -26,27 +26,13 @@ import { resetStack } from "../harness/reset";
 import { setUpAliceAndBobOnSharedCollection } from "../harness/twoInstanceSetup";
 import { launchBloom, LaunchedBloom } from "../harness/launch";
 import { ALICE } from "../harness/devStack";
-import { postApi, getApi } from "../harness/bloomApi";
+import { postApi, waitForSharingReady } from "../harness/bloomApi";
 import { pollNowViaReceiveUpdates } from "../harness/bookStatus";
 import { selectBookByName } from "../harness/selectBook";
 import { queryDb, openPersistentClient } from "../harness/db";
 
 const LOG_DIR = "C:\\BloomE2E-logs\\e2e-6";
 const V2_MARKER = "ALICE-V2-EDIT-MARKER";
-
-const waitForCloudConnectionReady = async (httpPort: number): Promise<void> => {
-    await expect
-        .poll(
-            async () =>
-                (
-                    await (
-                        await getApi(httpPort, "teamCollection/capabilities")
-                    ).json()
-                ).supportsSharingUi,
-            { timeout: 20_000 },
-        )
-        .toBe(true);
-};
 
 const checkInWithConnectionRetry = async (
     httpPort: number,
@@ -172,7 +158,7 @@ test.describe("E2E-6 kill mid-Send / resume", () => {
             label: "e2e-6-alice-sending",
             logDir: LOG_DIR,
         });
-        await waitForCloudConnectionReady(alice.httpPort);
+        await waitForSharingReady(alice.httpPort);
         await selectBookByName(
             alice.httpPort,
             aliceScratch.collectionFolder,
@@ -237,7 +223,7 @@ test.describe("E2E-6 kill mid-Send / resume", () => {
             label: "e2e-6-alice-resumed",
             logDir: LOG_DIR,
         });
-        await waitForCloudConnectionReady(alice.httpPort);
+        await waitForSharingReady(alice.httpPort);
         await selectBookByName(
             alice.httpPort,
             aliceScratch.collectionFolder,

@@ -24,6 +24,7 @@ import {
     postApi,
     getApi,
     postCreateCloudTeamCollection,
+    waitForSharingReady,
 } from "../harness/bloomApi";
 
 const LOG_DIR = "C:\\BloomE2E-logs\\join-auto-open";
@@ -60,20 +61,7 @@ test.describe("Join auto-open", () => {
         );
         await alice.connect(); // connect-before-trigger (finding #7)
         expect((await postCreateCloudTeamCollection(alice)).status).toBe(200);
-        await expect
-            .poll(
-                async () =>
-                    (
-                        await (
-                            await getApi(
-                                alice.httpPort,
-                                "teamCollection/capabilities",
-                            )
-                        ).json()
-                    ).supportsSharingUi,
-                { timeout: 20_000 },
-            )
-            .toBe(true);
+        await waitForSharingReady(alice.httpPort);
         expect(
             (
                 await postApi(
@@ -103,9 +91,9 @@ test.describe("Join auto-open", () => {
             }),
         );
         // Bob is NOT in a cloud TC yet — sanity check before asserting the switch happened.
-        const bobCapsBefore = await (
+        const bobCapsBefore = (await (
             await getApi(bob.httpPort, "teamCollection/capabilities")
-        ).json();
+        ).json()) as { supportsSharingUi: boolean };
         expect(bobCapsBefore.supportsSharingUi).toBe(false);
 
         // Call 1: pullDown. The reply's collectionPath is the auto-open contract: a
@@ -117,7 +105,9 @@ test.describe("Join auto-open", () => {
             JSON.stringify({ collectionId: aliceScratch.collectionId }),
         );
         expect(pullDownResponse.status).toBe(200);
-        const { collectionPath } = await pullDownResponse.json();
+        const { collectionPath } = (await pullDownResponse.json()) as {
+            collectionPath: string;
+        };
         expect(
             collectionPath,
             "pullDown must reply with the .bloomCollection file path the dialog auto-opens",
@@ -137,29 +127,9 @@ test.describe("Join auto-open", () => {
 
         // The switch happens on Application.Idle and reopens the workspace; poll the SAME
         // instance (same port — the process survives the switch) until it reports being
-        // inside the cloud TC.
-        await expect
-            .poll(
-                async () => {
-                    try {
-                        const caps = await (
-                            await getApi(
-                                bob.httpPort,
-                                "teamCollection/capabilities",
-                            )
-                        ).json();
-                        return caps.supportsSharingUi;
-                    } catch {
-                        return false; // momentarily unreachable during the workspace reopen
-                    }
-                },
-                {
-                    timeout: 120_000,
-                    message:
-                        "Bob's instance never ended up inside the cloud TC after openCollection",
-                },
-            )
-            .toBe(true);
+        // inside the cloud TC. Much longer timeout than the default: the in-place reopen
+        // includes the full initial sync of the pulled-down collection.
+        await waitForSharingReady(bob.httpPort, 120_000);
 
         // And it is the RIGHT collection, fully functional (book visible via status API).
         const name = await (

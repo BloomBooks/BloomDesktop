@@ -7,6 +7,8 @@
 // connections. `postApi`/`getApi` retry on 404 specifically (a real 404 for a nonexistent
 // route would retry pointlessly for the same reason, but this harness only calls known-good
 // routes, so that's an acceptable tradeoff for robustness against the startup race).
+import { expect } from "@playwright/test";
+
 const DEFAULT_REGISTRATION_TIMEOUT_MS = 10_000;
 // Per-attempt request timeout: some Bloom operations (e.g. createCloudTeamCollection) tear down
 // and recreate the workspace's WebView2 controls on the UI thread, and a handler that needs to
@@ -132,4 +134,47 @@ export const getApi = async (
         await new Promise((resolve) => setTimeout(resolve, 300));
     } while (Date.now() < deadline);
     return lastResponse;
+};
+
+/** Waits (up to `timeoutMs`, default 20s) until `teamCollection/capabilities` reports
+ * `supportsSharingUi: true` — the harness's one readiness signal that the instance is genuinely
+ * inside a live, connected cloud Team Collection.
+ *
+ * WHY this gate exists — POLL, don't single-shot: `teamCollection/capabilities` is an
+ * application-level endpoint (post-batch defect 3 fix) that answers truthfully-false while the
+ * project is still opening, and BLOOM_AUTOMATION_READY fires when the HTTP server starts
+ * listening — which can be BEFORE the Team Collection has finished (re)connecting. UI-thread
+ * endpoints gated on `_tcManager.CheckConnection()` (e.g. `teamCollection/checkInCurrentBook`)
+ * 503 with an EMPTY body if called before that connection is live. This is a different
+ * post-launch race than this module's 404 endpoint-registration retry (that one is about routes
+ * existing at all; this one is about the cloud connection itself being live yet), so every
+ * fresh launch, join, or mid-test relaunch that immediately needs a working cloud connection
+ * must wait for this explicitly.
+ *
+ * A fetch failure counts as "not ready yet" rather than an immediate test failure: an in-place
+ * collection switch (`workspace/openCollection`) reopens the workspace and can leave the
+ * instance momentarily unreachable mid-poll (observed in join-auto-open.spec.ts). */
+export const waitForSharingReady = async (
+    httpPort: number,
+    timeoutMs = 20_000,
+): Promise<void> => {
+    await expect
+        .poll(
+            async () => {
+                try {
+                    const caps = (await (
+                        await getApi(httpPort, "teamCollection/capabilities")
+                    ).json()) as { supportsSharingUi: boolean };
+                    return caps.supportsSharingUi;
+                } catch {
+                    return false; // momentarily unreachable (e.g. during a workspace reopen)
+                }
+            },
+            {
+                timeout: timeoutMs,
+                message:
+                    "teamCollection/capabilities never reported supportsSharingUi: true (instance never became a connected cloud Team Collection)",
+            },
+        )
+        .toBe(true);
 };

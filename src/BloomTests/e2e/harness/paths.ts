@@ -1,3 +1,5 @@
+// Absolute paths to the repo, the built Bloom.exe, and shared tool locations used across the
+// E2E harness.
 import * as path from "node:path";
 
 // This file lives at src/BloomTests/e2e/harness/paths.ts — repo root is four levels up.

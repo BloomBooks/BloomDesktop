@@ -22,34 +22,12 @@ import { launchBloom, LaunchedBloom } from "../harness/launch";
 import { ALICE, BOB } from "../harness/devStack";
 import {
     postApi,
-    getApi,
     postCreateCloudTeamCollection,
+    waitForSharingReady,
 } from "../harness/bloomApi";
+import { bookStatus, pollNowViaReceiveUpdates } from "../harness/bookStatus";
 
 const LOG_DIR = "C:\\BloomE2E-logs\\e2e-2";
-
-const bookStatus = async (httpPort: number, folderName: string) => {
-    const response = await getApi(
-        httpPort,
-        `teamCollection/bookStatus?folderName=${encodeURIComponent(folderName)}`,
-    );
-    expect(response.status).toBe(200);
-    return response.json();
-};
-
-// CloudCollectionMonitor only polls the server every 60s by default
-// (CloudCollectionMonitor.DefaultPollInterval) â€” an instance sitting idle would take up to a
-// minute to notice a remote change organically. `teamCollection/receiveUpdates` internally
-// calls `CloudTeamCollection.PollNow()` before doing anything else, so calling it is the
-// harness's way of forcing an immediate poll instead of waiting out the timer.
-const pollNowViaReceiveUpdates = async (httpPort: number) => {
-    const response = await postApi(
-        httpPort,
-        "teamCollection/receiveUpdates",
-        "{}",
-    );
-    expect(response.status).toBe(200);
-};
 
 test.describe("E2E-2 two-instance collaboration loop", () => {
     let alice: LaunchedBloom | undefined;
@@ -91,20 +69,7 @@ test.describe("E2E-2 two-instance collaboration loop", () => {
 
         const createResponse = await postCreateCloudTeamCollection(alice);
         expect(createResponse.status).toBe(200);
-        await expect
-            .poll(
-                async () =>
-                    (
-                        await (
-                            await getApi(
-                                alice!.httpPort,
-                                "teamCollection/capabilities",
-                            )
-                        ).json()
-                    ).supportsSharingUi,
-                { timeout: 20_000 },
-            )
-            .toBe(true);
+        await waitForSharingReady(alice.httpPort);
 
         const approveResponse = await postApi(
             alice.httpPort,
@@ -150,23 +115,7 @@ test.describe("E2E-2 two-instance collaboration loop", () => {
             label: "e2e2-bob-joined",
             logDir: LOG_DIR,
         });
-        // POLL, don't single-shot: teamCollection/capabilities is an application-level
-        // endpoint (post-batch defect 3 fix) that answers truthfully-false while the project
-        // is still opening — see twoInstanceSetup.ts's identical wait.
-        await expect
-            .poll(
-                async () =>
-                    (
-                        await (
-                            await getApi(
-                                bob.httpPort,
-                                "teamCollection/capabilities",
-                            )
-                        ).json()
-                    ).supportsSharingUi,
-                { timeout: 20_000 },
-            )
-            .toBe(true);
+        await waitForSharingReady(bob.httpPort);
 
         // Before checkout, nobody has the book locked.
         const statusBeforeCheckout = await bookStatus(

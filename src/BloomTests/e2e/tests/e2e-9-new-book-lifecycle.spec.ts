@@ -33,37 +33,13 @@ import { setUpAliceAndBobOnSharedCollection } from "../harness/twoInstanceSetup"
 import { seedAdditionalBookIntoCollection } from "../harness/collectionFixture";
 import { launchBloom, LaunchedBloom } from "../harness/launch";
 import { ALICE, BOB } from "../harness/devStack";
-import { postApi, getApi } from "../harness/bloomApi";
+import { postApi, getApi, waitForSharingReady } from "../harness/bloomApi";
 import { pollNowViaReceiveUpdates } from "../harness/bookStatus";
 import { readBookInstanceId, selectBookByName } from "../harness/selectBook";
 import { duplicateBook, listBookFolders } from "../harness/duplicateBook";
 import { queryDb, openPersistentClient } from "../harness/db";
 
 const LOG_DIR = "C:\\BloomE2E-logs\\e2e-9";
-
-// `teamCollection/checkInCurrentBook` (and other UI-thread endpoints gated on
-// `_tcManager.CheckConnection()`) 503 with an EMPTY body if called before CloudTeamCollection has
-// finished (re)connecting after a fresh launch -- TeamCollectionApi.HandleCheckInCurrentBook's
-// `if (!_tcManager.CheckConnection()) { request.Failed(); return; }` guard. This is a different
-// post-launch race than `bloomApi.ts`'s 404 endpoint-registration retry (that one is about routes
-// existing at all; this one is about the cloud connection itself being live yet), so callers that
-// relaunch mid-test and immediately need a working cloud connection must wait for this explicitly
-// -- the same `capabilities.supportsSharingUi` signal `twoInstanceSetup.ts` already polls after
-// every fresh launch/join, factored out here since every relaunch-then-immediately-act step in
-// this file needs it too.
-const waitForCloudConnectionReady = async (httpPort: number): Promise<void> => {
-    await expect
-        .poll(
-            async () =>
-                (
-                    await (
-                        await getApi(httpPort, "teamCollection/capabilities")
-                    ).json()
-                ).supportsSharingUi,
-            { timeout: 20_000 },
-        )
-        .toBe(true);
-};
 
 // DISCOVERED: even after `capabilities.supportsSharingUi` is true (proving `CurrentCollection`
 // IS a live CloudTeamCollection right then), `teamCollection/checkInCurrentBook` can still 503
@@ -268,7 +244,7 @@ test.describe("E2E-9 new-book lifecycle", () => {
             label: "e2e-9-kill-mid-send-alice-resumed",
             logDir: LOG_DIR,
         });
-        await waitForCloudConnectionReady(alice.httpPort);
+        await waitForSharingReady(alice.httpPort);
         await selectBookByName(
             alice.httpPort,
             aliceScratch.collectionFolder,
@@ -366,8 +342,8 @@ test.describe("E2E-9 new-book lifecycle", () => {
         ]);
 
         await Promise.all([
-            waitForCloudConnectionReady(alice.httpPort),
-            waitForCloudConnectionReady(bob.httpPort),
+            waitForSharingReady(alice.httpPort),
+            waitForSharingReady(bob.httpPort),
         ]);
 
         // Select via the direct API on both sides (no CDP dependency -- see harness/selectBook.ts).

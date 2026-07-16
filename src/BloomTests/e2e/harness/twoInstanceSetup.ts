@@ -12,7 +12,11 @@ import {
 } from "./collectionFixture";
 import { launchBloom, LaunchedBloom } from "./launch";
 import { ALICE, BOB, DevUser } from "./devStack";
-import { postApi, getApi, postCreateCloudTeamCollection } from "./bloomApi";
+import {
+    postApi,
+    postCreateCloudTeamCollection,
+    waitForSharingReady,
+} from "./bloomApi";
 
 export interface SharedCloudCollection {
     alice: LaunchedBloom;
@@ -46,20 +50,7 @@ export const setUpAliceAndBobOnSharedCollection = async (
 
     const createResponse = await postCreateCloudTeamCollection(alice);
     expect(createResponse.status).toBe(200);
-    await expect
-        .poll(
-            async () =>
-                (
-                    await (
-                        await getApi(
-                            alice.httpPort,
-                            "teamCollection/capabilities",
-                        )
-                    ).json()
-                ).supportsSharingUi,
-            { timeout: 20_000 },
-        )
-        .toBe(true);
+    await waitForSharingReady(alice.httpPort);
 
     const approveResponse = await postApi(
         alice.httpPort,
@@ -103,24 +94,7 @@ export const setUpAliceAndBobOnSharedCollection = async (
         label: `${scenarioName}-bob-joined`,
         logDir,
     });
-    // POLL, don't single-shot: teamCollection/capabilities is an application-level endpoint
-    // (post-batch defect 3 fix) that answers truthfully-false while the project is still
-    // opening, and BLOOM_AUTOMATION_READY fires when the server starts listening — which can
-    // be before the Team Collection has finished connecting.
-    await expect
-        .poll(
-            async () =>
-                (
-                    await (
-                        await getApi(
-                            bob.httpPort,
-                            "teamCollection/capabilities",
-                        )
-                    ).json()
-                ).supportsSharingUi,
-            { timeout: 20_000 },
-        )
-        .toBe(true);
+    await waitForSharingReady(bob.httpPort);
 
     return { alice, alicePage, aliceScratch, bob, bobCollectionFilePath };
 };

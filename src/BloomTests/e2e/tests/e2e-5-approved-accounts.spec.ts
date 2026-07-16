@@ -31,6 +31,7 @@ import {
     postApi,
     getApi,
     postCreateCloudTeamCollection,
+    waitForSharingReady,
 } from "../harness/bloomApi";
 import { bookStatus } from "../harness/bookStatus";
 import { selectBookByName } from "../harness/selectBook";
@@ -74,20 +75,7 @@ test.describe("E2E-5 approved accounts on two fresh profiles", () => {
         await alice.connect(); // connect-before-trigger (finding #7)
         const createResponse = await postCreateCloudTeamCollection(alice);
         expect(createResponse.status).toBe(200);
-        await expect
-            .poll(
-                async () =>
-                    (
-                        await (
-                            await getApi(
-                                alice.httpPort,
-                                "teamCollection/capabilities",
-                            )
-                        ).json()
-                    ).supportsSharingUi,
-                { timeout: 20_000 },
-            )
-            .toBe(true);
+        await waitForSharingReady(alice.httpPort);
         const approveResponse = await postApi(
             alice.httpPort,
             "sharing/addApproval",
@@ -244,20 +232,7 @@ test.describe("E2E-5 approved accounts on two fresh profiles", () => {
                 logDir: LOG_DIR,
             }),
         );
-        await expect
-            .poll(
-                async () =>
-                    (
-                        await (
-                            await getApi(
-                                bob.httpPort,
-                                "teamCollection/capabilities",
-                            )
-                        ).json()
-                    ).supportsSharingUi,
-                { timeout: 20_000 },
-            )
-            .toBe(true);
+        await waitForSharingReady(bob.httpPort);
 
         await selectBookByName(
             bob.httpPort,

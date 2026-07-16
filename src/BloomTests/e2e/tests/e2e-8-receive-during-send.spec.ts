@@ -28,7 +28,7 @@ import { resetStack } from "../harness/reset";
 import { setUpAliceAndBobOnSharedCollection } from "../harness/twoInstanceSetup";
 import { launchBloom, LaunchedBloom } from "../harness/launch";
 import { ALICE } from "../harness/devStack";
-import { postApi, getApi } from "../harness/bloomApi";
+import { postApi, waitForSharingReady } from "../harness/bloomApi";
 import { pollNowViaReceiveUpdates } from "../harness/bookStatus";
 import { selectBookByName, waitForBookFile } from "../harness/selectBook";
 import { queryDb, openPersistentClient } from "../harness/db";
@@ -46,20 +46,6 @@ const BIG_ASSET_NAME = "big-v2-asset.txt";
 // its end-to-end latency (pg poll + signal delivery) is ~100ms+. 40 MB lost that race on a
 // warm full-matrix run (the Send committed first); 256 MB gives an order-of-magnitude margin.
 const BIG_ASSET_BYTES = 256 * 1024 * 1024;
-
-const waitForCloudConnectionReady = async (httpPort: number): Promise<void> => {
-    await expect
-        .poll(
-            async () =>
-                (
-                    await (
-                        await getApi(httpPort, "teamCollection/capabilities")
-                    ).json()
-                ).supportsSharingUi,
-            { timeout: 20_000 },
-        )
-        .toBe(true);
-};
 
 test.describe("E2E-8 Receive-during-Send coherence", () => {
     let alice: LaunchedBloom | undefined;
@@ -168,7 +154,7 @@ test.describe("E2E-8 Receive-during-Send coherence", () => {
             label: "e2e-8-alice-sending",
             logDir: LOG_DIR,
         });
-        await waitForCloudConnectionReady(alice.httpPort);
+        await waitForSharingReady(alice.httpPort);
         await selectBookByName(
             alice.httpPort,
             aliceScratch.collectionFolder,
@@ -255,7 +241,7 @@ test.describe("E2E-8 Receive-during-Send coherence", () => {
             label: "e2e-8-alice-resumed",
             logDir: LOG_DIR,
         });
-        await waitForCloudConnectionReady(alice.httpPort);
+        await waitForSharingReady(alice.httpPort);
         await selectBookByName(
             alice.httpPort,
             aliceScratch.collectionFolder,

@@ -29,6 +29,7 @@ import {
     postApi,
     getApi,
     postCreateCloudTeamCollection,
+    waitForSharingReady,
 } from "../harness/bloomApi";
 import { queryDb } from "../harness/db";
 import { listS3Objects } from "../harness/s3";
@@ -72,9 +73,9 @@ test.describe("E2E-1 create/share an existing collection", () => {
         // A CDP-attachable, dom-loaded workspace page proves initialization is complete.
         await instance.connect();
 
-        const capsBefore = await (
+        const capsBefore = (await (
             await getApi(instance.httpPort, "teamCollection/capabilities")
-        ).json();
+        ).json()) as { supportsSharingUi: boolean };
         expect(capsBefore.supportsSharingUi).toBe(false);
 
         const createResponse = await postCreateCloudTeamCollection(instance);
@@ -83,23 +84,7 @@ test.describe("E2E-1 create/share an existing collection", () => {
         // ConnectToCloudCollection + the reopen callback + the initial upload are not
         // synchronous with the HTTP reply; poll for the capability flip rather than assuming
         // a fixed delay is enough.
-        await expect
-            .poll(
-                async () => {
-                    const caps = await (
-                        await getApi(
-                            instance!.httpPort,
-                            "teamCollection/capabilities",
-                        )
-                    ).json();
-                    return caps.supportsSharingUi;
-                },
-                {
-                    timeout: 20_000,
-                    message: "capabilities never flipped to a cloud collection",
-                },
-            )
-            .toBe(true);
+        await waitForSharingReady(instance.httpPort);
 
         const collectionRows = await queryDb<{ id: string; name: string }>(
             "select id, name from tc.collections where id = $1",
