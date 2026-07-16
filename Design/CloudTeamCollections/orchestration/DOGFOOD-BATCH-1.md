@@ -727,6 +727,29 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 16 Jul 2026 (merge origin/master — John: "rebase on current master") · Merged origin/master
+  (tip 5ed9403367, #8071 go-launcher-parallel-worktrees) into cloud-collections as commit
+  760695d960 (a merge, NOT a literal rebase — the SQUASH-PLAN forbids rebasing this 270-commit
+  branch). **Launcher reconciliation per John's guidance** (minimize changes to existing files;
+  reuse master's helpers; no duplicate methods): go.mjs, processTree.mjs, watchBloomExe.mjs,
+  build.js resolved to MASTER's versions (our branch now carries ZERO diff on them — adopts
+  #8071's parallel-worktree design + reapOrphanedBloomDevStacks, drops our behavior-neutral
+  /simplify of them). The cloud build-once launcher stays as pure additions (run.sh, run.mjs,
+  automationReady.mjs, childOutput.mjs, viteDevServer.mjs); run.mjs rewritten to use master's
+  killProcessTree (dropped our duplicate terminateChildProcess) and reapOrphanedBloomDevStacks
+  (dropped our sweepStaleWorktreeNodeProcesses). CollectionCard.tsx: union-merged master's card
+  redesign (isCurrentCollection highlight + Chip/metadata row) with our join-card support, wiring
+  the "Get" join cue into master's new inline metadata row; join-card tests updated for the new
+  title element (body1 not h5). Verified: C# required filter 442/442; auto-merged
+  CollectionChooserApi + BloomS3ClientTests 39/39; collection + teamCollection vitest 100/100
+  (run sequentially — the parallel full-suite stall is the KNOWN Windows vitest flake, hang-fix in
+  vitest.setup.ts intact, NOT a merge regression); all launchers pass node --check. · NOTE:
+  origin/master advanced 8 more commits DURING this session (fba6b758ab etc.: speedUpCSharpTests,
+  fasterIntegrationTests, a Version6.4 merge, BL-16532 toolbox fix) — the merge captured
+  master-as-of-merge-time; those 8 are not yet pulled (surfaced to John). · EXACT next action:
+  John decides whether to also pull the 8 newer master commits now; then the PR #8052 regen should
+  be re-run against CURRENT origin/master (now that cloud-collections contains it — the earlier
+  regen was against the merge-base); the launcher-reconciliation question is CLOSED.
 - 16 Jul 2026 (final — John authorized the force-push + freed memory) · Two things closed:
   (1) **PR #8052 force-pushed** — regenerated `cloud-tc-for-review` (byte-identical to
   cloud-collections) pushed with --force-with-lease (51da40f8f0→98bc3524ac); **Greptile
