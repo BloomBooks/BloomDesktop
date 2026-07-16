@@ -327,6 +327,14 @@ namespace Bloom
             doc.LoadHtml(xml);
             string html = doc.DocumentNode.OuterHtml;
 
+            // The commented-CDATA markers that protect <style> content (/*<![CDATA[*/ ... /*]]>*/)
+            // pass through the Html Agility Pack here, which can leave behind empty CSS comments
+            // (/**/) inside the style block. Repeated xmatter/branding updates accumulate more of
+            // them, so a book's HTML keeps changing on every save even when nothing meaningful did.
+            // These empty comments are meaningless, and are never part of the real CDATA markers
+            // (which do not contain the substring "/**/"), so strip them out here.
+            html = Regex.Replace(html, @"[\t ]*/\*\*/(\r?\n)?", "");
+
             return html;
         }
 
