@@ -1909,3 +1909,21 @@ Verified: eslint 0 errors / 0 new warnings on the 3 files; typecheck clean for t
 consumer files (SettingsPanel, Dialog, BookStatusPanel, ShareButton, CollectionHistoryTable,
 BookButton, CollectionChooser) 38/38 green. No `pnpm build` run (the CodeReview worktree's Vite on
 :5173 is a different tree and was left alone).
+
+---
+
+**2026-07-16 — Merged current master + regenerated PR #8052.** (a) Merged `origin/master` (10
+new commits: test-suite speedups, PNG resizing BL-16424, toolbox-gap BL-16532, Version6.4) into
+`cloud-collections` via the 'ort' strategy — ZERO conflicts (auto-merged BloomS3ClientTests,
+BookUploadAndDownloadTests, ImageUtils, PageEditingModel, ToolboxRoot). Chose merge, NOT rebase:
+`cloud-collections` is a shared/pushed branch (origin/cloud-collections) 288 commits ahead with
+prior master-merge topology — a rebase would rewrite published history and force-clobber a shared
+branch. Verified merged tree: cloud/TC filter 453/453. Pushed `cloud-collections`
+(ba781f7943..b812b999f5, fast-forward, no force). (b) Regenerated `cloud-tc-for-review` via the
+in-repo regen scripts: bucket reported **0 unmatched** across 253 changed files (all this
+session's new files matched existing patterns), rebuild produced the 9 path-grouped commits on
+origin/master, byte-identity check PASSED (tree == cloud-collections). Force-pushed with
+--force-with-lease (98bc3524ac..9de218b31a) and posted the regen summary + `@greptile-apps review`
+trigger (the explicit tag bypasses Greptile's 100-file limit). NOTE: `cloud-tc-for-review` is now
+one doc-commit behind (this entry) — the trailing log paragraph is not code and syncs on the next
+regen; deliberately NOT re-pushing the packaging branch now that Greptile is mid-review.
