@@ -727,6 +727,21 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 16 Jul 2026 (E2 DONE — cache collection-scoped download credentials) · download-start returns
+  read-only S3 creds scoped to the WHOLE collection prefix (tc/{cid}/*, ~1h); every book +
+  collection-file-group download was fetching them separately (N+ edge-function calls + server STS
+  AssumeRole per join). Now cached (CloudTeamCollection.GetCollectionDownloadLocation, commit
+  a9e817f616): one fetch serves a whole join/Receive. Re-fetched only near the creds' stated
+  expiration (captured via new CloudS3Location.ExpiresAtUtc + ParseCredentialExpiration; MinValue
+  when absent ⇒ non-cacheable) or on account change. Risk review (John asked): creds are
+  collection-scoped + read-only so cross-book reuse is correct; no new exposure; only expiry to
+  manage, handled by honoring the server's real expiration (no TTL assumption). BUG caught by the
+  existing SyncAtStartup_TeammateRenamedBook test during verification: an absent-expiration
+  (MinValue) cache entry made the staleness check compute `MinValue - margin` → underflow throw on
+  the 2nd call; fixed by adding the margin to `now` instead. 3 new tests (reuse-within-expiry /
+  refetch-when-expired / refetch-without-throwing-when-no-expiration). Required filter 446/446.
+  · EXACT next action: remaining open items for John — (a) pull the 8 mid-session master commits,
+  (b) re-run PR #8052 regen vs current master + Greptile, (c) remaining refactors E7/E8/E9/R5/R6/R13.
 - 16 Jul 2026 (decision C RESOLVED — 'updates available' now includes books checked out elsewhere)
   · John's ruling: GetUpdatesAvailableCount should count books checked out by ANOTHER user (a
   reviewer can still receive the latest checked-in version; and it's wrong for the badge to switch
