@@ -8,8 +8,29 @@
 //     handler module never throws "missing required environment variable" at test time.
 //   - `mockRequest` builds a same-shaped `Request` the handler expects (JSON body +
 //     bearer token), matching what `serveJsonPost` hands the handler after parsing.
-// S3/STS mocking uses `aws-sdk-client-mock` directly in each test file (it patches the
-// SDK client prototypes, so no indirection is needed here).
+// S3/STS mocking uses `aws-sdk-client-mock` (it patches the SDK client prototypes):
+//   - `stubAssumeRole` here covers the common case (every *-start handler mints scoped
+//     credentials via STS AssumeRole);
+//   - S3 HeadObject/PutObject behavior varies per test, so the *-finish test files
+//     still call `mockClient(S3Client)` directly.
+import { mockClient } from "npm:aws-sdk-client-mock@4";
+import { AssumeRoleCommand, STSClient } from "npm:@aws-sdk/client-sts@3";
+
+/** Stubs the AWS SDK's STSClient so any AssumeRole call (MinIO-local or prod-shaped —
+ * see _shared/s3.ts's getScopedCredentials) returns fixed fake credentials. Callers
+ * must call `.restore()` on the returned mock when the test is done. */
+export const stubAssumeRole = () => {
+    const stsMock = mockClient(STSClient);
+    stsMock.on(AssumeRoleCommand).resolves({
+        Credentials: {
+            AccessKeyId: "K",
+            SecretAccessKey: "S",
+            SessionToken: "T",
+            Expiration: new Date("2026-01-01T01:00:00Z"),
+        },
+    });
+    return stsMock;
+};
 
 /** Sets every env var `_shared/env.ts` reads, with dev-mode-friendly defaults. Call
  * this at the top of every test file (module scope) — handlers call `s3Env()` /

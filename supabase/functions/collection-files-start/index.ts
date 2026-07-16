@@ -5,17 +5,10 @@
 import { requireField, serveJsonPost } from "../_shared/handler.ts";
 import { HttpError, jsonResponse } from "../_shared/errors.ts";
 import { callTcRpc } from "../_shared/rpc.ts";
-import { getScopedCredentials } from "../_shared/s3.ts";
+import { getScopedCredentials, S3_WRITE_ACTIONS } from "../_shared/s3.ts";
+import { collectionFilesPrefix } from "../_shared/paths.ts";
 
 const VALID_GROUP_KEYS = new Set(["other", "allowed-words", "sample-texts"]);
-
-const COLLECTION_FILES_ACTIONS = [
-    "s3:PutObject",
-    "s3:GetObject",
-    "s3:GetObjectVersion",
-    "s3:AbortMultipartUpload",
-    "s3:ListMultipartUploadParts",
-];
 
 interface CollectionFilesStartResult {
     transactionId: string;
@@ -51,8 +44,8 @@ export const handler = async (
         },
     );
 
-    const prefix = `tc/${collectionId}/collectionFiles/${groupKey}/`;
-    const s3 = await getScopedCredentials(prefix, COLLECTION_FILES_ACTIONS);
+    const prefix = collectionFilesPrefix(collectionId, groupKey);
+    const s3 = await getScopedCredentials(prefix, S3_WRITE_ACTIONS);
 
     return jsonResponse(200, {
         transactionId: result.transactionId,

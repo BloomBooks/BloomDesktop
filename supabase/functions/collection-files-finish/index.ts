@@ -6,9 +6,10 @@ import { HttpError, jsonResponse } from "../_shared/errors.ts";
 import { callTcRpc, selectTcRow } from "../_shared/rpc.ts";
 import {
     adminS3Client,
-    verifyUploadedObject,
+    captureVerifiedUploads,
     writeManifestBackup,
 } from "../_shared/s3.ts";
+import { collectionFilesPrefix } from "../_shared/paths.ts";
 import { s3Env } from "../_shared/env.ts";
 
 interface CollectionFileTransactionRow {
@@ -41,24 +42,18 @@ export const handler = async (
         throw new HttpError(404, { error: "transaction_not_found" });
     }
 
-    const prefix = `tc/${tx.collection_id}/collectionFiles/${tx.group_key}/`;
+    const prefix = collectionFilesPrefix(tx.collection_id, tx.group_key);
     const { bucket } = s3Env();
     const client = adminS3Client();
 
-    const captured: { path: string; s3VersionId: string }[] = [];
-    for (const path of tx.changed_paths) {
-        const proposed = tx.proposed_files.find((f) => f.path === path);
-        if (!proposed) continue;
-        const verified = await verifyUploadedObject(
-            client,
-            bucket,
-            `${prefix}${path}`,
-            proposed.sha256,
-        );
-        if (verified) {
-            captured.push({ path, s3VersionId: verified.s3VersionId });
-        }
-    }
+    // Same skip-unverified semantics as checkin-finish — see captureVerifiedUploads.
+    const captured = await captureVerifiedUploads(
+        client,
+        bucket,
+        prefix,
+        tx.changed_paths,
+        tx.proposed_files,
+    );
 
     const result = await callTcRpc<CollectionFilesFinishResult>(
         req,

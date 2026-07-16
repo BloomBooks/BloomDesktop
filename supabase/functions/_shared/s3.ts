@@ -33,6 +33,18 @@ export interface S3Descriptor {
 
 const DEFAULT_DURATION_SECONDS = 3600;
 
+/** The actions granted to a client for the duration of an upload transaction
+ * (check-in or collection-files): PUT new/changed content, plus read-back of what's
+ * already there (e.g. to resume after an interrupted upload). Only enforced in
+ * production — see getScopedCredentials. */
+export const S3_WRITE_ACTIONS = [
+    "s3:PutObject",
+    "s3:GetObject",
+    "s3:GetObjectVersion",
+    "s3:AbortMultipartUpload",
+    "s3:ListMultipartUploadParts",
+];
+
 /** Builds an IAM-style session policy scoped to one prefix. MinIO's AssumeRole
  * accepts a Policy parameter but — per DEV-CREDENTIALS.md — local mode deliberately
  * does NOT pass one (prefix scoping is a production security measure; MinIO local
@@ -205,6 +217,63 @@ export const verifyUploadedObject = async (
         // report it as a missing/bad upload rather than propagating a 5xx.
         return null;
     }
+};
+
+export interface CapturedUpload {
+    path: string;
+    s3VersionId: string;
+}
+
+/** How many verifyUploadedObject (HeadObject) calls captureVerifiedUploads runs at
+ * once — enough to hide S3 round-trip latency on a many-file check-in without
+ * hammering the endpoint with an unbounded burst. */
+const VERIFY_CONCURRENCY = 8;
+
+/** Verifies each changed path's uploaded object against its proposed sha256 (via
+ * verifyUploadedObject) and returns the version-id captures for the ones that
+ * verified, in changedPaths order. A path with no matching proposed file, or whose
+ * object is missing/mismatched, is simply omitted — the DB-side finish RPC
+ * independently detects the gap and reports it as 409 MissingOrBadUploads, so no
+ * error handling is duplicated here. Verification runs with bounded concurrency
+ * (VERIFY_CONCURRENCY workers) rather than one-at-a-time. */
+export const captureVerifiedUploads = async (
+    client: S3Client,
+    bucket: string,
+    prefix: string,
+    changedPaths: string[],
+    proposedFiles: { path: string; sha256: string }[],
+): Promise<CapturedUpload[]> => {
+    const proposedByPath = new Map(proposedFiles.map((f) => [f.path, f]));
+    // Filled by index so the output order matches changedPaths regardless of which
+    // verification finishes first.
+    const results: (CapturedUpload | null)[] = new Array(
+        changedPaths.length,
+    ).fill(null);
+    let next = 0;
+    const worker = async (): Promise<void> => {
+        while (next < changedPaths.length) {
+            const i = next++; // safe: no await between the check and the increment
+            const path = changedPaths[i];
+            const proposed = proposedByPath.get(path);
+            if (!proposed) continue; // defensive; DB-side check still catches this as missing
+            const verified = await verifyUploadedObject(
+                client,
+                bucket,
+                `${prefix}${path}`,
+                proposed.sha256,
+            );
+            if (verified) {
+                results[i] = { path, s3VersionId: verified.s3VersionId };
+            }
+        }
+    };
+    await Promise.all(
+        Array.from(
+            { length: Math.min(VERIFY_CONCURRENCY, changedPaths.length) },
+            worker,
+        ),
+    );
+    return results.filter((r): r is CapturedUpload => r !== null);
 };
 
 /** Best-effort `.manifest.json` backup write (CONTRACTS.md S3 layout). Never

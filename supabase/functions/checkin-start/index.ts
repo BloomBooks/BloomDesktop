@@ -9,30 +9,16 @@ import {
     requireField,
     serveJsonPost,
 } from "../_shared/handler.ts";
-import { HttpError, jsonResponse } from "../_shared/errors.ts";
-import { callTcRpc, selectTcRow } from "../_shared/rpc.ts";
-import { getScopedCredentials } from "../_shared/s3.ts";
+import { jsonResponse } from "../_shared/errors.ts";
+import { callTcRpc } from "../_shared/rpc.ts";
+import { getScopedCredentials, S3_WRITE_ACTIONS } from "../_shared/s3.ts";
+import { resolveBookPrefix } from "../_shared/paths.ts";
 
 interface CheckinStartResult {
     transactionId: string;
     bookId: string;
     changedPaths: string[];
 }
-
-interface BookRow {
-    instance_id: string;
-}
-
-// The credentials handed to the client for the duration of a check-in: they need to
-// PUT new/changed content and read back what's already there (e.g. to resume after
-// an interrupted upload).
-const CHECKIN_ACTIONS = [
-    "s3:PutObject",
-    "s3:GetObject",
-    "s3:GetObjectVersion",
-    "s3:AbortMultipartUpload",
-    "s3:ListMultipartUploadParts",
-];
 
 // Exported (rather than only passed inline to serveJsonPost) so Deno tests can import
 // and call it directly with a mocked Request, without triggering Deno.serve — see the
@@ -69,19 +55,11 @@ export const handler = async (
     // bookInstanceId: for an existing book checkin_start_tx validates/locks by bookId and
     // ignores the client's instance id, so using the client value here would let a member
     // request write credentials for an arbitrary book's prefix (Greptile P1, PR #8048).
-    // Same read-back pattern as checkin-finish; for the new-book path the row was just
-    // created from bookInstanceId, so the canonical value is identical.
-    const book = await selectTcRow<BookRow>(
-        req,
-        "books",
-        `id=eq.${result.bookId}&select=instance_id`,
-    );
-    if (!book) {
-        throw new HttpError(404, { error: "book_not_found" });
-    }
-
-    const prefix = `tc/${collectionId}/books/${book.instance_id}/`;
-    const s3 = await getScopedCredentials(prefix, CHECKIN_ACTIONS);
+    // resolveBookPrefix reads the canonical value back from the books row (same pattern
+    // as checkin-finish); for the new-book path the row was just created from
+    // bookInstanceId, so the canonical value is identical.
+    const prefix = await resolveBookPrefix(req, collectionId, result.bookId);
+    const s3 = await getScopedCredentials(prefix, S3_WRITE_ACTIONS);
 
     return jsonResponse(200, {
         transactionId: result.transactionId,

@@ -5,6 +5,7 @@ import { requireField, serveJsonPost } from "../_shared/handler.ts";
 import { jsonResponse } from "../_shared/errors.ts";
 import { callTcRpc } from "../_shared/rpc.ts";
 import { getScopedCredentials } from "../_shared/s3.ts";
+import { collectionPrefix } from "../_shared/paths.ts";
 
 const DOWNLOAD_ACTIONS = ["s3:GetObject", "s3:GetObjectVersion"];
 
@@ -20,7 +21,7 @@ export const handler = async (
         p_collection_id: collectionId,
     });
 
-    const prefix = `tc/${collectionId}/`;
+    const prefix = collectionPrefix(collectionId);
     const s3 = await getScopedCredentials(prefix, DOWNLOAD_ACTIONS);
 
     return jsonResponse(200, { s3 });

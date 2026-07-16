@@ -1,31 +1,18 @@
 // Unit tests for download-start's handler: membership check via RPC, then read-only
 // scoped S3 credentials (GetObject + GetObjectVersion only — see CONTRACTS.md).
 import { assertEquals } from "jsr:@std/assert@1";
-import { mockClient } from "npm:aws-sdk-client-mock@4";
-import { AssumeRoleCommand, STSClient } from "npm:@aws-sdk/client-sts@3";
+import { AssumeRoleCommand } from "npm:@aws-sdk/client-sts@3";
 import {
     callHandler,
     mockRequest,
     routedFetchStub,
     setTestEnv,
+    stubAssumeRole,
     withMockFetch,
 } from "../_shared/test_support.ts";
 
 setTestEnv();
 const { handler } = await import("./index.ts");
-
-const stubAssumeRole = () => {
-    const stsMock = mockClient(STSClient);
-    stsMock.on(AssumeRoleCommand).resolves({
-        Credentials: {
-            AccessKeyId: "K",
-            SecretAccessKey: "S",
-            SessionToken: "T",
-            Expiration: new Date("2026-01-01T01:00:00Z"),
-        },
-    });
-    return stsMock;
-};
 
 Deno.test(
     "download-start: happy path returns collection-scoped read-only creds",

@@ -1,13 +1,13 @@
 // Unit tests for collection-files-start's handler: groupKey validation, the
 // optimistic-version RPC call, and scoped S3 credential issuance.
 import { assertEquals } from "jsr:@std/assert@1";
-import { mockClient } from "npm:aws-sdk-client-mock@4";
-import { AssumeRoleCommand, STSClient } from "npm:@aws-sdk/client-sts@3";
+import { AssumeRoleCommand } from "npm:@aws-sdk/client-sts@3";
 import {
     callHandler,
     mockRequest,
     routedFetchStub,
     setTestEnv,
+    stubAssumeRole,
     withMockFetch,
 } from "../_shared/test_support.ts";
 
@@ -19,19 +19,6 @@ const VALID_BODY = {
     groupKey: "allowed-words",
     expectedVersion: 0,
     files: [{ path: "allowed.txt", sha256: "abc", size: 3 }],
-};
-
-const stubAssumeRole = () => {
-    const stsMock = mockClient(STSClient);
-    stsMock.on(AssumeRoleCommand).resolves({
-        Credentials: {
-            AccessKeyId: "K",
-            SecretAccessKey: "S",
-            SessionToken: "T",
-            Expiration: new Date("2026-01-01T01:00:00Z"),
-        },
-    });
-    return stsMock;
 };
 
 Deno.test(

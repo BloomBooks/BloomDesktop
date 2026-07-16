@@ -4,13 +4,13 @@
 // exercises the real stack end-to-end; these tests pin down the handler's own request
 // validation, RPC-argument wiring, and error passthrough cheaply and hermetically.
 import { assertEquals } from "jsr:@std/assert@1";
-import { mockClient } from "npm:aws-sdk-client-mock@4";
-import { AssumeRoleCommand, STSClient } from "npm:@aws-sdk/client-sts@3";
+import { AssumeRoleCommand } from "npm:@aws-sdk/client-sts@3";
 import {
     callHandler,
     mockRequest,
     routedFetchStub,
     setTestEnv,
+    stubAssumeRole,
     withMockFetch,
 } from "../_shared/test_support.ts";
 
@@ -25,19 +25,6 @@ const VALID_BODY = {
     checksum: "abc123",
     clientVersion: "1.0.0",
     files: [{ path: "book.htm", sha256: "deadbeef", size: 42 }],
-};
-
-const stubAssumeRole = () => {
-    const stsMock = mockClient(STSClient);
-    stsMock.on(AssumeRoleCommand).resolves({
-        Credentials: {
-            AccessKeyId: "K",
-            SecretAccessKey: "S",
-            SessionToken: "T",
-            Expiration: new Date("2026-01-01T01:00:00Z"),
-        },
-    });
-    return stsMock;
 };
 
 Deno.test(
