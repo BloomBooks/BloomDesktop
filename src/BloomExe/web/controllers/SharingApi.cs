@@ -421,34 +421,102 @@ namespace Bloom.web.controllers
                 BloomVersion = (string)e["bloom_version"],
             };
 
-        /// <summary>Full collection history since the beginning (get_changes(sinceEventId: 0)).
-        /// CONTRACTS.md defines no dedicated "whole history" RPC; get_changes with a 0 cursor is
-        /// the documented mechanism for catch-up from scratch. Optionally filtered to one book,
-        /// resolving Bloom's currently-selected book folder to the server's book id via the
-        /// currently-open CloudTeamCollection's own index (there is no other way to make that
-        /// translation from outside that class).</summary>
-        private System.Collections.Generic.List<BookHistoryEvent> FetchAndCacheHistory(
+        /// <summary>On-disk history cache: the merged events plus the get_changes cursor (the max
+        /// event id they were fetched through). A later open fetches only NEW events via
+        /// get_changes(cursor) and appends them, instead of re-downloading the whole log every time
+        /// -- safe because the event log is append-only and get_changes' cursor is exclusive
+        /// (pgTAP 7c). Trade-off accepted with John (16 Jul 2026): already-cached rows keep the book
+        /// name / author display name they were fetched with, so a later rename or display-name edit
+        /// isn't reflected on old rows until the cache is rebuilt.</summary>
+        internal class CloudHistoryCache
+        {
+            public long MaxEventId;
+            public List<BookHistoryEvent> Events = new List<BookHistoryEvent>();
+        }
+
+        /// <summary>Reads the history cache, tolerating a missing file and the pre-incremental
+        /// on-disk format (a bare events array): an old-format file keeps its events (so the offline
+        /// view still works) but reports cursor 0, so the next online fetch does one full refetch and
+        /// re-saves in the new format.</summary>
+        internal static CloudHistoryCache LoadHistoryCache(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
+                return new CloudHistoryCache();
+            try
+            {
+                var token = JToken.Parse(RobustFile.ReadAllText(path));
+                if (token is JArray oldFormatEvents)
+                    return new CloudHistoryCache
+                    {
+                        MaxEventId = 0,
+                        Events = oldFormatEvents.ToObject<List<BookHistoryEvent>>(),
+                    };
+                return token.ToObject<CloudHistoryCache>() ?? new CloudHistoryCache();
+            }
+            catch (Exception e)
+            {
+                NonFatalProblem.ReportSentryOnly(e, "SharingApi: failed to read history cache");
+                return new CloudHistoryCache();
+            }
+        }
+
+        /// <summary>Persists the merged history + cursor so <see cref="HandleHistoryCache"/> can
+        /// serve it while disconnected and the next fetch can resume from the cursor. Best-effort:
+        /// a failure to write must never break the live history fetch that just succeeded.</summary>
+        internal static void SaveHistoryCache(string path, CloudHistoryCache cache)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+            try
+            {
+                RobustFile.WriteAllText(path, JsonConvert.SerializeObject(cache));
+            }
+            catch (Exception e)
+            {
+                NonFatalProblem.ReportSentryOnly(e, "SharingApi: failed to write history cache");
+            }
+        }
+
+        /// <summary>Merges a get_changes response into the cached history. With a non-zero prior
+        /// cursor the response holds only events AFTER it (exclusive), so they append; with cursor 0
+        /// the response is the whole log, so it replaces. Result is sorted newest-first, as the UI
+        /// expects. Pure/static so it can be unit-tested without a live client.</summary>
+        internal static CloudHistoryCache MergeHistory(
+            CloudHistoryCache cached,
+            JArray newEventsJson,
+            long? responseMaxEventId
+        )
+        {
+            var newEvents = newEventsJson.OfType<JObject>().Select(ToBookHistoryEvent);
+            var merged = (cached.MaxEventId > 0 ? cached.Events.Concat(newEvents) : newEvents)
+                .OrderByDescending(e => e.When)
+                .ToList();
+            return new CloudHistoryCache
+            {
+                MaxEventId = responseMaxEventId ?? cached.MaxEventId,
+                Events = merged,
+            };
+        }
+
+        private List<BookHistoryEvent> FetchAndCacheHistory(
             string collectionId,
             bool currentBookOnly
         )
         {
-            var changes = CurrentClient().GetChanges(collectionId, 0);
-            var events = ((JArray)changes["events"])
-                .OfType<JObject>()
-                .Select(ToBookHistoryEvent)
-                .OrderByDescending(e => e.When)
-                .ToList();
+            var path = HistoryCachePath(collectionId);
+            var cached = LoadHistoryCache(path);
+            // Fetch only events newer than the cursor (whole log when cursor is 0); merge + persist.
+            var changes = CurrentClient().GetChanges(collectionId, cached.MaxEventId);
+            var updated = MergeHistory(
+                cached,
+                (JArray)changes["events"],
+                (long?)changes["max_event_id"]
+            );
+            SaveHistoryCache(path, updated);
 
-            SaveHistoryCache(collectionId, events);
-
+            var events = updated.Events;
             if (currentBookOnly)
-            {
-                var bookId = CurrentCloudCollection()
-                    ?.TryGetBookIdForHistoryFilter(
-                        TeamCollectionApi.TheOneInstance?.CurrentBookFolderName
-                    );
-                events = events.Where(e => e.BookId == bookId).ToList();
-            }
+                events = FilterToCurrentBook(events);
             return events;
         }
 
@@ -467,50 +535,24 @@ namespace Bloom.web.controllers
             return folder == null ? null : Path.Combine(folder, ".bloom-cloud-history-cache.json");
         }
 
-        /// <summary>Persists the last-fetched history so <see cref="HandleHistoryCache"/> has
-        /// something to serve while disconnected (task 08's "stand-in for a Wave-3 on-disk cache" --
-        /// this task provides the real thing). Best-effort: a failure to write the cache must never
-        /// break the live history fetch that just succeeded.</summary>
-        private static void SaveHistoryCache(
-            string collectionId,
-            System.Collections.Generic.List<BookHistoryEvent> events
-        )
+        /// <summary>Keeps only the currently-selected book's events (resolving its server book id) --
+        /// the "current book only" filter shared by the live and cached history paths.</summary>
+        private static List<BookHistoryEvent> FilterToCurrentBook(List<BookHistoryEvent> events)
         {
-            var path = HistoryCachePath(collectionId);
-            if (path == null)
-                return;
-            try
-            {
-                RobustFile.WriteAllText(path, JsonConvert.SerializeObject(events));
-            }
-            catch (Exception e)
-            {
-                NonFatalProblem.ReportSentryOnly(e, "SharingApi: failed to write history cache");
-            }
+            var bookId = CurrentCloudCollection()
+                ?.TryGetBookIdForHistoryFilter(
+                    TeamCollectionApi.TheOneInstance?.CurrentBookFolderName
+                );
+            return events.Where(e => e.BookId == bookId).ToList();
         }
 
         private void HandleHistoryCache(ApiRequest request)
         {
             var collectionId = request.RequiredParam("collectionId");
             var currentBookOnly = request.GetParamOrNull("currentBookOnly") == "true";
-            var path = HistoryCachePath(collectionId);
-            if (path == null || !RobustFile.Exists(path))
-            {
-                request.ReplyWithJson(new System.Collections.Generic.List<BookHistoryEvent>());
-                return;
-            }
-            var events =
-                JsonConvert.DeserializeObject<System.Collections.Generic.List<BookHistoryEvent>>(
-                    RobustFile.ReadAllText(path)
-                );
+            var events = LoadHistoryCache(HistoryCachePath(collectionId)).Events;
             if (currentBookOnly)
-            {
-                var bookId = CurrentCloudCollection()
-                    ?.TryGetBookIdForHistoryFilter(
-                        TeamCollectionApi.TheOneInstance?.CurrentBookFolderName
-                    );
-                events = events.Where(e => e.BookId == bookId).ToList();
-            }
+                events = FilterToCurrentBook(events);
             request.ReplyWithJson(JsonConvert.SerializeObject(events));
         }
 

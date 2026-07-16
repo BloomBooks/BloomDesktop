@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using Bloom.History;
 using Bloom.web.controllers;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
@@ -263,5 +266,183 @@ namespace BloomTests.web.controllers
                     + "caller error and should fail loudly, not silently no-op"
             );
         }
+
+        // ------------------------------------------------------------------
+        // History incremental cache (E8): fetch only NEW events past the cursor
+        // and merge, instead of re-downloading the whole log every open.
+        // ------------------------------------------------------------------
+
+        private static JObject HistoryEventJson(string bookId, DateTime when, string message) =>
+            new JObject
+            {
+                ["book_id"] = bookId,
+                ["type"] = 1, // CheckIn
+                ["by_user_id"] = "u",
+                ["by_user_name"] = "U",
+                ["by_email"] = "u@example.com",
+                ["book_name"] = "B",
+                ["message"] = message,
+                ["bloom_version"] = "6.2",
+                ["occurred_at"] = when.ToString("O"),
+            };
+
+        [Test]
+        public void MergeHistory_Cursor0_ReplacesWithWholeLog()
+        {
+            var cached = new SharingApi.CloudHistoryCache
+            {
+                MaxEventId = 0,
+                Events = new List<BookHistoryEvent>
+                {
+                    SharingApi.ToBookHistoryEvent(
+                        HistoryEventJson(
+                            "b1",
+                            new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                            "stale"
+                        )
+                    ),
+                },
+            };
+            var wholeLog = new JArray
+            {
+                HistoryEventJson(
+                    "b2",
+                    new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Utc),
+                    "fresh"
+                ),
+            };
+
+            var result = SharingApi.MergeHistory(cached, wholeLog, 5);
+
+            Assert.That(result.MaxEventId, Is.EqualTo(5));
+            Assert.That(
+                result.Events.Count,
+                Is.EqualTo(1),
+                "a 0 cursor means the response is the whole log, so it replaces the cache"
+            );
+            Assert.That(result.Events[0].Message, Is.EqualTo("fresh"));
+        }
+
+        [Test]
+        public void MergeHistory_NonZeroCursor_AppendsNewEventsNewestFirst()
+        {
+            var cached = new SharingApi.CloudHistoryCache
+            {
+                MaxEventId = 3,
+                Events = new List<BookHistoryEvent>
+                {
+                    SharingApi.ToBookHistoryEvent(
+                        HistoryEventJson(
+                            "b1",
+                            new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                            "old"
+                        )
+                    ),
+                },
+            };
+            var delta = new JArray
+            {
+                HistoryEventJson("b2", new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Utc), "new"),
+            };
+
+            var result = SharingApi.MergeHistory(cached, delta, 7);
+
+            Assert.That(result.MaxEventId, Is.EqualTo(7));
+            Assert.That(result.Events.Count, Is.EqualTo(2), "new events append to the cached ones");
+            Assert.That(result.Events[0].Message, Is.EqualTo("new"), "sorted newest-first");
+            Assert.That(result.Events[1].Message, Is.EqualTo("old"));
+        }
+
+        [Test]
+        public void MergeHistory_NullResponseMax_KeepsExistingCursor()
+        {
+            var cached = new SharingApi.CloudHistoryCache
+            {
+                MaxEventId = 3,
+                Events = new List<BookHistoryEvent>(),
+            };
+
+            var result = SharingApi.MergeHistory(cached, new JArray(), null);
+
+            Assert.That(result.MaxEventId, Is.EqualTo(3));
+            Assert.That(result.Events, Is.Empty);
+        }
+
+        [Test]
+        public void LoadHistoryCache_RoundTripsNewFormat()
+        {
+            var path = TempCachePath();
+            try
+            {
+                var cache = new SharingApi.CloudHistoryCache
+                {
+                    MaxEventId = 9,
+                    Events = new List<BookHistoryEvent>
+                    {
+                        SharingApi.ToBookHistoryEvent(HistoryEventJson("b1", DateTime.UtcNow, "m")),
+                    },
+                };
+                SharingApi.SaveHistoryCache(path, cache);
+
+                var loaded = SharingApi.LoadHistoryCache(path);
+
+                Assert.That(loaded.MaxEventId, Is.EqualTo(9));
+                Assert.That(loaded.Events.Count, Is.EqualTo(1));
+                Assert.That(loaded.Events[0].BookId, Is.EqualTo("b1"));
+            }
+            finally
+            {
+                if (File.Exists(path))
+                    File.Delete(path);
+            }
+        }
+
+        [Test]
+        public void LoadHistoryCache_OldBareArrayFormat_KeepsEventsButCursorZero()
+        {
+            var path = TempCachePath();
+            try
+            {
+                // The pre-incremental on-disk format was a bare List<BookHistoryEvent>.
+                var oldEvents = new List<BookHistoryEvent>
+                {
+                    SharingApi.ToBookHistoryEvent(HistoryEventJson("b1", DateTime.UtcNow, "m")),
+                };
+                File.WriteAllText(path, JsonConvert.SerializeObject(oldEvents));
+
+                var loaded = SharingApi.LoadHistoryCache(path);
+
+                Assert.That(
+                    loaded.MaxEventId,
+                    Is.EqualTo(0),
+                    "an old bare-array cache has no cursor, forcing the next fetch to be a full refetch"
+                );
+                Assert.That(
+                    loaded.Events.Count,
+                    Is.EqualTo(1),
+                    "old-format events are preserved so the offline view still works after upgrade"
+                );
+            }
+            finally
+            {
+                if (File.Exists(path))
+                    File.Delete(path);
+            }
+        }
+
+        [Test]
+        public void LoadHistoryCache_MissingFileOrNullPath_ReturnsEmpty()
+        {
+            Assert.That(SharingApi.LoadHistoryCache(null).Events, Is.Empty);
+            var loaded = SharingApi.LoadHistoryCache(TempCachePath()); // never written
+            Assert.That(loaded.MaxEventId, Is.EqualTo(0));
+            Assert.That(loaded.Events, Is.Empty);
+        }
+
+        private static string TempCachePath() =>
+            Path.Combine(
+                Path.GetTempPath(),
+                "BloomHistoryCacheTest-" + Guid.NewGuid().ToString("N") + ".json"
+            );
     }
 }
