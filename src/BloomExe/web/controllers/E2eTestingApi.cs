@@ -42,6 +42,33 @@ namespace Bloom.web.controllers
                 HandleSetBranding,
                 true
             );
+
+            // POST body is an appearance theme name, e.g. "default", "zero-margin-ebook" (see the
+            // files in src/content/appearanceThemes). Lets tests screenshot each theme. Must run
+            // on the UI thread because bringing the book up to date shows a dialog.
+            apiHandler.RegisterEndpointHandler(kApiUrlPart + "setTheme", HandleSetTheme, true);
+        }
+
+        /// <summary>
+        /// Set the currently selected book's appearance theme to the one named in the POST body,
+        /// then make it up to date so its appearance.css is regenerated for that theme.
+        /// </summary>
+        private void HandleSetTheme(ApiRequest request)
+        {
+            var theme = request.RequiredPostString();
+            var book = _bookSelection.CurrentSelection;
+            if (book != null)
+            {
+                // Mirror what the book settings dialog does when the user picks a theme: set the
+                // theme, let the book react (SettingsUpdated regenerates appearance.css from the
+                // selected theme), then bring it fully up to date so the change is saved and the
+                // preview refreshes.
+                book.BookInfo.AppearanceSettings.CssThemeName = theme;
+                book.SettingsUpdated();
+                book.BringBookUpToDate(new NullProgress());
+            }
+
+            request.PostSucceeded();
         }
 
         /// <summary>

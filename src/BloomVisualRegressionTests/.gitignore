@@ -1,3 +1,8 @@
+# The repository-root .gitignore ignores every "screenshots/" directory, but this project commits
+# its reference images as the regression baseline. Re-include those directories here so the
+# *-reference.png files can be tracked; the per-run *-current.png / *-diff.png stay ignored below.
+!collections/**/screenshots/
+
 # generated screenshots that we don't want to commit
 *-current.png
 *-diff.png
@@ -17,6 +22,10 @@ collections/**/license.png
 collections/**/made-with-bloom-badge*.svg
 collections/**/lang-qr-code.png
 collections/**/history.db
+# Branding xmatter stylesheets copied in for whichever branding/xmatter is active (e.g. a
+# branding that uses a custom xmatter like Uzbekistan2023-XMatter.css). Normally the final
+# switch back to Default removes these, but a test run interrupted mid-branding can leave them.
+collections/**/*-XMatter.css
 # Branding logos copied into the book folder for whichever branding is active. A new branding
 # tested here may introduce more logo files that should be added below.
 collections/**/USAID_*

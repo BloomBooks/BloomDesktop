@@ -27,6 +27,16 @@ describe("All books", () => {
         page = await context.newPage();
     });
     afterAll(async () => {
+        // Leave every book on the Default branding. Otherwise each book stays in whatever
+        // branding was tested last, which leaves the fixture in a non-default state: an extra
+        // xmatter page (with a fresh page id), a changed brandingProjectName in meta.json, and
+        // branding-specific files copied into the book folder. Switching back to Default also
+        // makes Bloom clean up those branding-specific support files.
+        for (const bookFolder of bookFolders) {
+            await selectBook(bookFolder);
+            await setBranding("Default");
+            await setTheme("default");
+        }
         await browser.close();
     });
 
@@ -49,48 +59,72 @@ describe("All books", () => {
         return paths;
     });
     const brandings = ["Default", "Local-Community", "UEEP[Uzbek]"];
-    // create a two dimensional array with all combinations of bookFolders and brandings
-    const bookFoldersAndBrandings = bookFolders.flatMap((bookFolder) => {
-        return brandings.map((branding) => {
-            return [bookFolder, branding];
-        });
+    // The appearance themes to test. These match the files in src/content/appearanceThemes/.
+    const themes = [
+        "default",
+        "legacy-5-6",
+        "rounded-border-ebook",
+        "zero-margin-ebook",
+    ];
+
+    // We test each branding with the default theme, and each non-default theme with the default
+    // branding. Testing every branding x theme combination would be many more reference images
+    // for little extra coverage; this way each branding and each theme is exercised at least once.
+    // "label" becomes the screenshot base name, so it must be unique per book and stable.
+    const cases = bookFolders.flatMap((bookFolder) => {
+        const bookName = Path.basename(bookFolder);
+        const brandingCases = brandings.map((branding) => ({
+            bookFolder,
+            branding,
+            theme: "default",
+            label: `branding-${branding}`,
+            title: `${bookName} branding:${branding}`,
+        }));
+        const themeCases = themes
+            .filter((theme) => theme !== "default") // default theme is already covered by branding:Default
+            .map((theme) => ({
+                bookFolder,
+                branding: "Default",
+                theme,
+                label: `theme-${theme}`,
+                title: `${bookName} theme:${theme}`,
+            }));
+        return [...brandingCases, ...themeCases];
     });
 
-    test.each(bookFoldersAndBrandings)(
-        `%# "%s" Branding:%s`,
-        async (bookFolder, branding) => {
-            // Select the book first, then set the branding: setBranding brings the
-            // currently-selected book up to date so it picks up the branding's files.
-            await selectBook(bookFolder);
-            await setBranding(branding);
-            var screenshotsDir = ensureDir(
-                Path.join(bookFolder, "screenshots"),
+    test.each(cases)("$title", async (testCase) => {
+        // Select the book first, then set branding and theme: each of setBranding/setTheme brings
+        // the currently-selected book up to date so it picks up the corresponding files/appearance.
+        await selectBook(testCase.bookFolder);
+        await setBranding(testCase.branding);
+        await setTheme(testCase.theme);
+        var screenshotsDir = ensureDir(
+            Path.join(testCase.bookFolder, "screenshots"),
+        );
+        var referenceScreenPath = Path.join(
+            screenshotsDir,
+            `${testCase.label}-reference.png`,
+        );
+        if (!fs.existsSync(referenceScreenPath)) {
+            console.log(
+                chalk.blueBright(
+                    `Creating reference image for ${testCase.title}`,
+                ),
             );
-            var referenceScreenPath = Path.join(
-                screenshotsDir,
-                `${branding}-reference.png`,
-            );
-            if (!fs.existsSync(referenceScreenPath)) {
-                console.log(
-                    chalk.blueBright(
-                        `Creating reference image for ${bookFolder}`,
-                    ),
-                );
-                await saveScreenshot(referenceScreenPath);
-                return;
-            }
-            var currentScreenshotPath = Path.join(
-                screenshotsDir,
-                `${branding}-current.png`,
-            );
-            await saveScreenshot(currentScreenshotPath);
-            await comparePreviewImage(
-                referenceScreenPath,
-                currentScreenshotPath,
-                Path.join(screenshotsDir, `${branding}-diff.png`),
-            );
-        },
-    );
+            await saveScreenshot(referenceScreenPath);
+            return;
+        }
+        var currentScreenshotPath = Path.join(
+            screenshotsDir,
+            `${testCase.label}-current.png`,
+        );
+        await saveScreenshot(currentScreenshotPath);
+        await comparePreviewImage(
+            referenceScreenPath,
+            currentScreenshotPath,
+            Path.join(screenshotsDir, `${testCase.label}-diff.png`),
+        );
+    });
 
     async function saveScreenshot(imagePath: string) {
         await page.goto("http://localhost:8089/bloom/book-preview/index.htm");
@@ -119,6 +153,19 @@ describe("All books", () => {
             {
                 method: "POST",
                 body: branding,
+            },
+        );
+        expect(result.ok).toBe(true);
+    }
+    async function setTheme(theme: string) {
+        // Appearance theme is a per-book setting. This test-only endpoint (present in DEBUG builds
+        // only) sets it and brings the selected book up to date so its appearance.css is
+        // regenerated for that theme.
+        let result = await fetch(
+            `http://localhost:8089/bloom/api/e2e/setTheme`,
+            {
+                method: "POST",
+                body: theme,
             },
         );
         expect(result.ok).toBe(true);
