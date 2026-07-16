@@ -156,7 +156,12 @@ namespace Bloom.TeamCollection.Cloud
         /// </summary>
         public static CloudAuth CreateInitialized(CloudEnvironment environment)
         {
-            var auth = new CloudAuth(CreateProvider(environment));
+            // Use the DPAPI-backed persistent store (not the in-memory default) so a real Cloud
+            // TC session survives a Bloom restart: InitializeAtStartup restores it from disk, and
+            // every sign-in/refresh re-saves it. Harmless for the dev env-override path, which
+            // re-signs from BLOOM_CLOUDTC_USER before ever consulting the store (see
+            // InitializeAtStartup).
+            var auth = new CloudAuth(CreateProvider(environment), new DpapiCloudTokenStore());
             auth.InitializeAtStartup(environment);
             return auth;
         }

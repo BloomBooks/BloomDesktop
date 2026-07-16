@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Bloom.TeamCollection.Cloud;
 using NUnit.Framework;
 
@@ -268,6 +269,74 @@ namespace BloomTests.TeamCollection.Cloud
 
             Assert.DoesNotThrow(() => auth.InitializeAtStartup(env));
             Assert.That(auth.IsSignedIn, Is.False);
+        }
+
+        [Test]
+        public void RealDpapiTokenStore_SessionSurvivesSimulatedRestart()
+        {
+            // End-to-end proof (with the REAL DpapiCloudTokenStore, not the fake) that a Cloud TC
+            // login survives a Bloom restart: a session persisted by one CloudAuth is restored by a
+            // fresh CloudAuth reading the same on-disk store — exactly what CreateInitialized wires
+            // up in the app. The dev/fake provider stands in for Firebase, whose refresh follows the
+            // identical Load-then-Refresh path.
+            var tempFile = Path.Combine(
+                Path.GetTempPath(),
+                "BloomCloudAuthRestartTest-" + Guid.NewGuid().ToString("N") + ".dat"
+            );
+            try
+            {
+                // First run: signing in persists the session (with its refresh token) to disk.
+                var firstRun = new CloudAuth(
+                    new FakeCloudAuthProvider
+                    {
+                        SignInHandler = (email, password) =>
+                            MakeSession(email, refreshToken: "refresh-A"),
+                    },
+                    new DpapiCloudTokenStore(tempFile)
+                );
+                firstRun.SignIn("alice@dev.local", "BloomDev123!");
+                Assert.That(
+                    firstRun.IsSignedIn,
+                    Is.True,
+                    "sanity: the first run must be signed in before we simulate a restart"
+                );
+
+                // Second run (simulated restart): a brand-new CloudAuth over the SAME store file
+                // must restore the session via InitializeAtStartup's Load + refresh.
+                var secondRunProvider = new FakeCloudAuthProvider
+                {
+                    RefreshHandler = refreshToken =>
+                        MakeSession("alice@dev.local", refreshToken: refreshToken),
+                };
+                var secondRun = new CloudAuth(
+                    secondRunProvider,
+                    new DpapiCloudTokenStore(tempFile)
+                );
+                Assert.That(
+                    secondRun.IsSignedIn,
+                    Is.False,
+                    "sanity: a fresh CloudAuth is signed out until it restores from the store"
+                );
+
+                secondRun.InitializeAtStartup(new CloudEnvironment(name => null));
+
+                Assert.That(
+                    secondRun.IsSignedIn,
+                    Is.True,
+                    "the session must survive the restart via the refresh token saved to disk"
+                );
+                Assert.That(secondRun.CurrentEmail, Is.EqualTo("alice@dev.local"));
+                Assert.That(
+                    secondRunProvider.RefreshTokensSeen,
+                    Does.Contain("refresh-A"),
+                    "the restart must refresh using the refresh token the first run wrote to disk"
+                );
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                    File.Delete(tempFile);
+            }
         }
 
         [Test]
