@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Bloom.AiTranslation;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -55,6 +56,7 @@ namespace Bloom.Edit
         private IPage _previouslySelectedPage;
         private BloomServer _server;
         private readonly BloomWebSocketServer _webSocketServer;
+        private readonly AiTranslationBookUpdater _aiTranslationBookUpdater;
         internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
 
         // This event fires after the EditingModel has finished responding to a PageSelection change.
@@ -105,7 +107,8 @@ namespace Bloom.Edit
             CollectionSettings collectionSettings,
             BloomServer server,
             BloomWebSocketServer webSocketServer,
-            ITemplateFinder sourceCollectionsList
+            ITemplateFinder sourceCollectionsList,
+            AiTranslationBookUpdater aiTranslationBookUpdater
         )
         {
             _bookSelection = bookSelection;
@@ -114,6 +117,7 @@ namespace Bloom.Edit
             _server = server;
             _webSocketServer = webSocketServer;
             _sourceCollectionsList = sourceCollectionsList;
+            _aiTranslationBookUpdater = aiTranslationBookUpdater;
 
             _stateMachine = new EditingStateMachine(
                 // navigate,
@@ -949,6 +953,15 @@ namespace Bloom.Edit
                 var contentLanguages = GetMultilingualContentLanguages();
                 CurrentBook.SetMultilingualContentLanguages(contentLanguages);
                 CurrentBook.PrepareForEditing();
+
+                // Scan the book for AI Source Bubbles translation work (missing/stale translations
+                // for any active engine, or stale AI content needing cleanup) and, if any is found,
+                // block here -- showing a modal progress dialog -- until it is translated, applied,
+                // and saved, or the user cancels. This must happen before the page below is loaded, so
+                // the user edits pages that already reflect any newly-applied AI translations. When
+                // nothing needs doing (the normal case once a book is up to date), this returns
+                // immediately with no dialog and no delay.
+                _aiTranslationBookUpdater.UpdateBookIfNeeded(CurrentBook);
             }
 
             _currentlyDisplayedBook = CurrentBook;

@@ -2,7 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Bloom.AiTranslation;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -80,11 +87,32 @@ namespace Bloom.web.controllers
                         var dialog = DialogBeingEdited;
                         if (dialog != null)
                         {
-                            StoreAdvancedSettingsData(request, dialog);
+                            StoreAdvancedSettingsData(
+                                JObject.Parse(request.RequiredPostJson()),
+                                dialog
+                            );
                         }
                         request.PostSucceeded();
                     }
                 },
+                true
+            );
+            apiHandler.RegisterAsyncEndpointHandler(
+                kApiUrlPart + "validateAiTranslationEngine",
+                HandleValidateAiTranslationEngineAsync,
+                false,
+                true
+            );
+            apiHandler.RegisterAsyncEndpointHandler(
+                kApiUrlPart + "aiTranslationSupportedLanguages",
+                HandleGetAiTranslationSupportedLanguagesAsync,
+                false,
+                true
+            );
+            apiHandler.RegisterAsyncEndpointHandler(
+                kApiUrlPart + "aiTranslationAlpha2SourceLanguages",
+                HandleGetAiTranslationAlpha2SourceLanguagesAsync,
+                false,
                 true
             );
             apiHandler.RegisterBooleanEndpointHandler(
@@ -318,6 +346,11 @@ namespace Bloom.web.controllers
                         ),
                     allowAppBuilder = dialog?.PendingAllowAppBuilder
                         ?? ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kAppBuilder),
+                    allowAiSourceBubbles = dialog?.PendingAllowAiSourceBubbles
+                        ?? ExperimentalFeatures.IsFeatureEnabled(
+                            ExperimentalFeatures.kAiSourceBubbles
+                        ),
+                    aiTranslation = GetAiTranslationData(dialog),
                     showQrCode = dialog?.PendingShowQrCode
                         ?? _collectionSettings.ShowBlorgLanguageQrCode,
                     qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
@@ -330,9 +363,305 @@ namespace Bloom.web.controllers
             };
         }
 
-        private void StoreAdvancedSettingsData(ApiRequest request, CollectionSettingsDialog dialog)
+        /// <summary>
+        /// Builds the aiTranslation payload sent to the client: the shared target language and,
+        /// always in deepl/google/alpha2 order, each engine's configuration plus whether its
+        /// stored validation is still up to date with that configuration.
+        /// </summary>
+        private object GetAiTranslationData(CollectionSettingsDialog dialog)
         {
-            var data = JObject.Parse(request.RequiredPostJson());
+            var targetLanguageTag =
+                dialog?.PendingAiTranslationTargetLanguageTag
+                ?? _collectionSettings.AiTranslationTargetLanguageTag;
+            if (dialog == null)
+                _collectionSettings.EnsureAiTranslationEngines();
+            var engines =
+                dialog?.PendingAiTranslationEngines ?? _collectionSettings.AiTranslationEngines;
+
+            return new
+            {
+                targetLanguageTag,
+                engines = engines
+                    .Select(engine =>
+                        (object)
+                            new
+                            {
+                                providerId = engine.ProviderId,
+                                enabled = engine.Enabled,
+                                apiKey = engine.ApiKey ?? "",
+                                serviceAccountEmail = engine.ServiceAccountEmail ?? "",
+                                privateKey = engine.PrivateKey ?? "",
+                                sourceLanguageTag = engine.SourceLanguageTag ?? "",
+                                validation = new
+                                {
+                                    succeeded = engine.LastValidationSucceeded,
+                                    targetLanguageNotSupported = engine.LastValidationTargetLanguageNotSupported,
+                                    message = engine.LastValidationMessage ?? "",
+                                    upToDate = String.Equals(
+                                        engine.ValidatedConfigurationFingerprint,
+                                        AiTranslationService.GetEngineFingerprint(
+                                            engine,
+                                            targetLanguageTag
+                                        ),
+                                        StringComparison.Ordinal
+                                    ),
+                                },
+                            }
+                    )
+                    .ToArray(),
+            };
+        }
+
+        private static void InvalidateEngineValidation(AiTranslationEngineSettings engine)
+        {
+            engine.ValidatedConfigurationFingerprint = String.Empty;
+            engine.LastValidationSucceeded = false;
+            engine.LastValidationTargetLanguageNotSupported = false;
+            engine.LastValidationMessage = String.Empty;
+        }
+
+        /// <summary>
+        /// Validates one AI translation engine (identified by providerId in the post body)
+        /// using the PENDING settings currently being edited in Collection Settings, and stores
+        /// the result and fingerprint back on that pending engine.
+        /// </summary>
+        private async Task HandleValidateAiTranslationEngineAsync(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Post)
+            {
+                request.Failed(HttpStatusCode.MethodNotAllowed, "Only POST is supported.");
+                return;
+            }
+
+            var dialog = DialogBeingEdited;
+            if (dialog == null)
+            {
+                request.Failed(
+                    HttpStatusCode.BadRequest,
+                    "AI translation can only be validated while Collection Settings is open."
+                );
+                return;
+            }
+
+            var requestJson = JObject.Parse(request.RequiredPostJson());
+            var providerId = AiTranslationService.NormalizeProviderId(
+                requestJson["providerId"]?.Value<string>()
+            );
+            var engine = dialog.PendingAiTranslationEngines.Single(e => e.ProviderId == providerId);
+
+            var succeeded = false;
+            var targetLanguageNotSupported = false;
+            var message = String.Empty;
+            var tempSettings = new CollectionSettings
+            {
+                Subscription = _collectionSettings.Subscription,
+                AiTranslationTargetLanguageTag = dialog.PendingAiTranslationTargetLanguageTag,
+            };
+
+            try
+            {
+                var validationResult = await new AiTranslationService(
+                    tempSettings
+                ).ValidateEngineAsync(engine, CancellationToken.None);
+                succeeded = validationResult.Succeeded;
+                targetLanguageNotSupported = validationResult.TargetLanguageNotSupported;
+                message = validationResult.Message;
+                engine.ValidatedConfigurationFingerprint =
+                    validationResult.ConfigurationFingerprint;
+            }
+            catch (ArgumentException e)
+            {
+                message = e.Message;
+            }
+            catch (InvalidOperationException e)
+            {
+                message = e.Message;
+            }
+            catch (HttpRequestException e)
+            {
+                message = e.Message;
+            }
+            catch (CryptographicException e)
+            {
+                message = e.Message;
+            }
+            catch (JsonException e)
+            {
+                message = e.Message;
+            }
+
+            engine.LastValidationSucceeded = succeeded;
+            engine.LastValidationTargetLanguageNotSupported = targetLanguageNotSupported;
+            engine.LastValidationMessage = message;
+            // A genuine failure clears the fingerprint so we re-probe next time. The
+            // "target not supported" outcome, though, is a settled fact for this exact
+            // configuration: keep the fingerprint (already set from the result above) so the UI
+            // shows the persisted "will be skipped" note without re-probing on every reopen.
+            if (!succeeded && !targetLanguageNotSupported)
+            {
+                engine.ValidatedConfigurationFingerprint = String.Empty;
+            }
+
+            request.ReplyWithJson(
+                new
+                {
+                    succeeded,
+                    targetLanguageNotSupported,
+                    message,
+                }
+            );
+        }
+
+        /// <summary>
+        /// Gets the union of provider-backed target languages across the currently-enabled
+        /// (pending, if Collection Settings is open) AI translation engines.
+        /// </summary>
+        private async Task HandleGetAiTranslationSupportedLanguagesAsync(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Post)
+            {
+                request.Failed(HttpStatusCode.MethodNotAllowed, "Only POST is supported.");
+                return;
+            }
+
+            var dialog = DialogBeingEdited;
+            if (dialog == null)
+                _collectionSettings.EnsureAiTranslationEngines();
+            var tempSettings = new CollectionSettings
+            {
+                Subscription = _collectionSettings.Subscription,
+                AiTranslationTargetLanguageTag =
+                    dialog?.PendingAiTranslationTargetLanguageTag
+                    ?? _collectionSettings.AiTranslationTargetLanguageTag,
+                AiTranslationEngines = (
+                    dialog?.PendingAiTranslationEngines ?? _collectionSettings.AiTranslationEngines
+                )
+                    .Select(engine => engine.Clone())
+                    .ToList(),
+            };
+
+            try
+            {
+                var options = await new AiTranslationService(
+                    tempSettings
+                ).GetSupportedTargetLanguagesAsync(CancellationToken.None);
+                var languages = options.Select(option => new
+                {
+                    tag = option.Value,
+                    name = option.Label,
+                    providerIds = option.ProviderIds,
+                });
+                request.ReplyWithJson(new { languages, message = String.Empty });
+            }
+            catch (ArgumentException e)
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = e.Message }
+                );
+            }
+            catch (InvalidOperationException e)
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = e.Message }
+                );
+            }
+            catch (HttpRequestException e)
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = e.Message }
+                );
+            }
+            catch (CryptographicException e)
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = e.Message }
+                );
+            }
+            catch (JsonException e)
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = e.Message }
+                );
+            }
+        }
+
+        /// <summary>
+        /// Gets the (pending, if Collection Settings is open) source languages the Alpha2 engine can
+        /// translate FROM into the currently-chosen target language, for the Alpha2 source-language
+        /// chooser. Replies with an empty list when no target is set or Alpha2 has no API key.
+        /// </summary>
+        private async Task HandleGetAiTranslationAlpha2SourceLanguagesAsync(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Post)
+            {
+                request.Failed(HttpStatusCode.MethodNotAllowed, "Only POST is supported.");
+                return;
+            }
+
+            var dialog = DialogBeingEdited;
+            if (dialog == null)
+                _collectionSettings.EnsureAiTranslationEngines();
+            var targetLanguageTag =
+                dialog?.PendingAiTranslationTargetLanguageTag
+                ?? _collectionSettings.AiTranslationTargetLanguageTag;
+            var engines =
+                dialog?.PendingAiTranslationEngines ?? _collectionSettings.AiTranslationEngines;
+            var alpha2Engine = engines.FirstOrDefault(e =>
+                AiTranslationService.NormalizeProviderId(e.ProviderId) == "alpha2"
+            );
+
+            if (
+                string.IsNullOrWhiteSpace(targetLanguageTag)
+                || alpha2Engine == null
+                || string.IsNullOrWhiteSpace(alpha2Engine.ApiKey)
+            )
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = String.Empty }
+                );
+                return;
+            }
+
+            var tempSettings = new CollectionSettings
+            {
+                Subscription = _collectionSettings.Subscription,
+                AiTranslationTargetLanguageTag = targetLanguageTag,
+            };
+
+            try
+            {
+                var options = await new AiTranslationService(
+                    tempSettings
+                ).GetSupportedSourceLanguagesAsync(
+                    alpha2Engine.Clone(),
+                    targetLanguageTag,
+                    CancellationToken.None
+                );
+                var languages = options.Select(option => new
+                {
+                    tag = option.Value,
+                    name = option.Label,
+                    providerIds = option.ProviderIds,
+                });
+                request.ReplyWithJson(new { languages, message = String.Empty });
+            }
+            catch (Exception e)
+                when (e is ArgumentException
+                    || e is InvalidOperationException
+                    || e is HttpRequestException
+                    || e is CryptographicException
+                    || e is JsonException
+                )
+            {
+                request.ReplyWithJson(
+                    new { languages = Array.Empty<object>(), message = e.Message }
+                );
+            }
+        }
+
+        private void StoreAdvancedSettingsData(JObject data, CollectionSettingsDialog dialog)
+        {
+            var aiTranslationConfigurationChanged = false;
 
             var autoUpdateToken = data["autoUpdate"];
             if (autoUpdateToken != null)
@@ -358,6 +687,98 @@ namespace Bloom.web.controllers
             {
                 var allowAppBuilder = allowAppBuilderToken.Value<bool>();
                 dialog.PendingAllowAppBuilder = allowAppBuilder;
+            }
+
+            var allowAiSourceBubblesToken = data["allowAiSourceBubbles"];
+            if (allowAiSourceBubblesToken != null)
+            {
+                var allowAiSourceBubbles = allowAiSourceBubblesToken.Value<bool>();
+                dialog.PendingAllowAiSourceBubbles = allowAiSourceBubbles;
+            }
+
+            var aiTranslationToken = data["aiTranslation"];
+            if (aiTranslationToken != null)
+            {
+                var targetLanguageTagToken = aiTranslationToken["targetLanguageTag"];
+                if (targetLanguageTagToken != null)
+                {
+                    var targetLanguageTag = targetLanguageTagToken.Value<string>();
+                    if (
+                        !String.Equals(
+                            dialog.PendingAiTranslationTargetLanguageTag,
+                            targetLanguageTag,
+                            StringComparison.Ordinal
+                        )
+                    )
+                    {
+                        dialog.PendingAiTranslationTargetLanguageTag = targetLanguageTag;
+                        foreach (var engineToInvalidate in dialog.PendingAiTranslationEngines)
+                            InvalidateEngineValidation(engineToInvalidate);
+                        aiTranslationConfigurationChanged = true;
+                    }
+                }
+
+                if (aiTranslationToken["engines"] is JArray enginesToken)
+                {
+                    foreach (var engineToken in enginesToken)
+                    {
+                        var providerId = AiTranslationService.NormalizeProviderId(
+                            engineToken["providerId"]?.Value<string>()
+                        );
+                        var engine = dialog.PendingAiTranslationEngines.SingleOrDefault(e =>
+                            e.ProviderId == providerId
+                        );
+                        if (engine == null)
+                            continue;
+
+                        var enabled = engineToken["enabled"]?.Value<bool>() ?? engine.Enabled;
+                        var apiKey = engineToken["apiKey"]?.Value<string>() ?? engine.ApiKey;
+                        var serviceAccountEmail =
+                            engineToken["serviceAccountEmail"]?.Value<string>()
+                            ?? engine.ServiceAccountEmail;
+                        var privateKey =
+                            engineToken["privateKey"]?.Value<string>() ?? engine.PrivateKey;
+                        var sourceLanguageTag =
+                            engineToken["sourceLanguageTag"]?.Value<string>()
+                            ?? engine.SourceLanguageTag;
+
+                        var engineChanged =
+                            enabled != engine.Enabled
+                            || !String.Equals(apiKey, engine.ApiKey, StringComparison.Ordinal)
+                            || !String.Equals(
+                                serviceAccountEmail,
+                                engine.ServiceAccountEmail,
+                                StringComparison.Ordinal
+                            )
+                            || !String.Equals(
+                                privateKey,
+                                engine.PrivateKey,
+                                StringComparison.Ordinal
+                            )
+                            || !String.Equals(
+                                sourceLanguageTag,
+                                engine.SourceLanguageTag,
+                                StringComparison.Ordinal
+                            );
+
+                        engine.Enabled = enabled;
+                        engine.ApiKey = apiKey;
+                        engine.ServiceAccountEmail = serviceAccountEmail;
+                        engine.PrivateKey = privateKey;
+                        engine.SourceLanguageTag = sourceLanguageTag;
+
+                        if (engineChanged)
+                        {
+                            InvalidateEngineValidation(engine);
+                            aiTranslationConfigurationChanged = true;
+                        }
+                    }
+                }
+            }
+
+            if (aiTranslationConfigurationChanged)
+            {
+                dialog.ChangeThatRequiresRestart();
             }
 
             var showQrCodeToken = data["showQrCode"];

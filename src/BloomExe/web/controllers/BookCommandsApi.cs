@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Bloom.AiTranslation;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -180,6 +181,19 @@ namespace Bloom.web.controllers
                     request.PostSucceeded();
                 },
                 true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "bookCommand/removeAiSourceTranslations",
+                (request) =>
+                {
+                    var book = GetBookObjectFromPost(request);
+                    HandleRemoveAiSourceTranslations(book);
+                    request.PostSucceeded();
+                },
+                // On the UI thread (it shows a modal confirmation dialog) but not sync: the dialog
+                // makes further API requests that would deadlock if this endpoint held the lock.
+                true,
+                false
             );
         }
 
@@ -515,6 +529,35 @@ namespace Bloom.web.controllers
                 );
                 ErrorReport.NotifyUserOfProblem(error, msg);
             }
+        }
+
+        /// <summary>
+        /// Removes every AI-generated source translation from the book, saves it, and shows a
+        /// confirmation dialog. Reached only from the (save-permission-gated) "Remove AI source
+        /// translations" collection-tab menu item.
+        /// </summary>
+        private void HandleRemoveAiSourceTranslations(Book.Book book)
+        {
+            // RemoveAllAiDivs finds AI content purely by its "-x-ai" language marker, so the
+            // scanner needs no engine/target-language/source-priority context here.
+            var scanner = new AiTranslationBookScanner(
+                book.OurHtmlDom,
+                targetLanguageTag: null,
+                enabledEngines: null,
+                sourceLanguagePriorities: null
+            );
+            var removedCount = scanner.RemoveAllAiDivs();
+            book.Save();
+            Logger.WriteEvent(
+                $"AI translation: removed {removedCount} AI source translation div(s) at user request."
+            );
+
+            BloomMessageBox.ShowInfo(
+                LocalizationManager.GetString(
+                    "CollectionTab.BookMenu.RemovedAiSourceTranslations",
+                    "Bloom removed the AI source translations from this book."
+                )
+            );
         }
 
         private BookInfo GetBookInfoFromPost(ApiRequest request)

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Forms;
+using Bloom.AiTranslation;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Properties;
@@ -51,6 +53,9 @@ namespace Bloom.Collection
 
         internal bool PendingAllowTeamCollection;
         internal bool PendingAllowAppBuilder;
+        internal bool PendingAllowAiSourceBubbles;
+        public string PendingAiTranslationTargetLanguageTag;
+        public List<AiTranslationEngineSettings> PendingAiTranslationEngines;
         internal bool AllowTeamCollectionOptionEnabled = false;
 
         // "Internal" so CollectionSettingsApi can update these.
@@ -121,6 +126,15 @@ namespace Bloom.Collection
             PendingAllowAppBuilder = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kAppBuilder
             );
+            PendingAllowAiSourceBubbles = ExperimentalFeatures.IsFeatureEnabled(
+                ExperimentalFeatures.kAiSourceBubbles
+            );
+            PendingAiTranslationTargetLanguageTag =
+                _collectionSettings.AiTranslationTargetLanguageTag;
+            _collectionSettings.EnsureAiTranslationEngines();
+            PendingAiTranslationEngines = _collectionSettings
+                .AiTranslationEngines.Select(engine => engine.Clone())
+                .ToList();
 
             if (
                 !ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
@@ -410,6 +424,12 @@ namespace Bloom.Collection
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
             UpdateAppBuilderAllowed();
+            UpdateAiSourceBubblesAllowed();
+            _collectionSettings.AiTranslationTargetLanguageTag =
+                PendingAiTranslationTargetLanguageTag;
+            _collectionSettings.AiTranslationEngines = PendingAiTranslationEngines
+                .Select(engine => engine.Clone())
+                .ToList();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -828,6 +848,15 @@ namespace Bloom.Collection
         {
             // NB: This change does not require a restart.
             ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, PendingAllowAppBuilder);
+        }
+
+        private void UpdateAiSourceBubblesAllowed()
+        {
+            // NB: This change does not require a restart.
+            ExperimentalFeatures.SetValue(
+                ExperimentalFeatures.kAiSourceBubbles,
+                PendingAllowAiSourceBubbles
+            );
         }
     }
 }

@@ -384,6 +384,103 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.SpreadsheetImportExport</note>
         <note>This is the label of a checkbox which, if enabled, allows a menu command to be used that can import Bloom books from an Excel spreadsheet or to an Excel spreadsheet.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AiSourceBubbles" translate="no">
+        <source xml:lang="en">AI Source Translation</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AiSourceBubbles</note>
+        <note>Label of the experimental-features checkbox that turns on AI source-language translation for book source bubbles.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.SectionLabel" translate="no">
+        <source xml:lang="en">AI Source Translation</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.SectionLabel</note>
+        <note>Heading of the settings group where the AI source-translation providers (SIL Alpha2, DeepL, Google Translate) are configured.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageLabel" translate="no">
+        <source xml:lang="en">Target Language</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageDescription" translate="no">
+        <source xml:lang="en">Choose one of this collection's languages, or Other... to select another language.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageDescription</note>
+        <note>Currently unused (orphaned from an earlier design); left in place rather than deleted.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.OtherLanguageLabel" translate="no">
+        <source xml:lang="en">Other...</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.OtherLanguageLabel</note>
+        <note>Currently unused (orphaned from an earlier design); left in place rather than deleted.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLEnabledLabel" translate="no">
+        <source xml:lang="en">DeepL</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLEnabledLabel</note>
+        <note>Label of the checkbox that enables the DeepL translation engine for AI source bubbles. "DeepL" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLApiKeyLabel" translate="no">
+        <source xml:lang="en">API Key</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLApiKeyLabel</note>
+        <note>Label of the API-key field within the DeepL section of AI Source Translation settings (the section heading already identifies it as DeepL).</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLApiKeyDescription" translate="no">
+        <source xml:lang="en">The key needs the 'translate:text' and 'languages:read' permissions.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLApiKeyDescription</note>
+        <note>Description subtitle under the DeepL API key field in AI Source Translation settings. 'translate:text' and 'languages:read' are DeepL permission-scope identifiers and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleEnabledLabel" translate="no">
+        <source xml:lang="en">Google Translate</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleEnabledLabel</note>
+        <note>Label of the checkbox that enables the Google Translate engine for AI source bubbles. "Google Translate" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleServiceAccountEmailLabel" translate="no">
+        <source xml:lang="en">Google service account email</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleServiceAccountEmailLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GooglePrivateKeyLabel" translate="no">
+        <source xml:lang="en">Google private key</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GooglePrivateKeyLabel</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleServiceAccountDescription" translate="no">
+        <source xml:lang="en">The service account needs access to the Cloud Translation API (the 'Cloud Translation API User' role).</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleServiceAccountDescription</note>
+        <note>Description subtitle under the Google service account fields in AI Source Translation settings. 'Cloud Translation API' and 'Cloud Translation API User' are Google product/role names and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2EnabledLabel" translate="no">
+        <source xml:lang="en">SIL Alpha2</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2EnabledLabel</note>
+        <note>Label of the checkbox that enables the SIL Alpha2 translation engine for AI source bubbles. "SIL Alpha2" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2ApiKeyLabel" translate="no">
+        <source xml:lang="en">API Key</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2ApiKeyLabel</note>
+        <note>Label of the API-key field within the SIL Alpha2 section of AI Source Translation settings (the section heading already identifies it as SIL Alpha2).</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TranslationTestLabel" translate="no">
+        <source xml:lang="en">Translation Test</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TranslationTestLabel</note>
+        <note>Label of the row showing a live translation-test result for one AI source bubbles engine (DeepL, Google Translate, or SIL Alpha2); this same label is reused once per engine.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2SourceLanguageLabel" translate="no">
+        <source xml:lang="en">Source Language</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2SourceLanguageLabel</note>
+        <note>Label of the SIL Alpha2 source-language chooser in AI Source Bubbles settings: the language Alpha2 translates FROM (Alpha2 needs a fixed source language, unlike the other engines).</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageNotSupported" translate="no">
+        <source xml:lang="en">{0} does not support translating to {1}, so it will be skipped.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageNotSupported</note>
+        <note>Amber note under an AI Source Bubbles engine when it can't translate into the chosen target language. {0} is the translation engine's name (e.g. "DeepL"), which must not be translated; {1} is the target language name.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.NoServiceSupportsLanguage" translate="no">
+        <source xml:lang="en">no enabled service supports this</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.NoServiceSupportsLanguage</note>
+        <note>Shown in parentheses next to the currently-selected target language in the AI Source Bubbles target-language dropdown when none of the enabled translation services offers that language.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.NoProviderSelected" translate="no">
+        <source xml:lang="en">Select at least one translation provider to get a list of languages it supports.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.NoProviderSelected</note>
+        <note>Message shown below the (disabled) AI Source Bubbles target-language field when no translation provider is enabled yet, so there is no language list to choose from.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2LanguagesNote" translate="no">
+        <source xml:lang="en">SIL Alpha2 shows the languages it can translate from {0}.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2LanguagesNote</note>
+        <note>Explanatory note below the AI Source Bubbles target-language dropdown, shown when SIL Alpha2 is an enabled provider. It clarifies that Alpha2's offered languages depend on its configured source language. {0} is the source language's name (e.g. "English"); "SIL Alpha2" is a product name and must not be translated.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AndikaNewBasicUpdate1" sil:dynamic="true">
         <source xml:lang="en">Bloom is switching the default font for "{0}" to the new "Andika New Basic".</source>
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate1</note>
@@ -1348,6 +1445,36 @@
       <trans-unit id="EditTab.AddPageDialog.Title" sil:dynamic="true">
         <source xml:lang="en">Add Page...</source>
         <note>ID: EditTab.AddPageDialog.Title</note>
+      </trans-unit>
+      <trans-unit id="EditTab.AiTranslation.Cancelled" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Cancelled.</source>
+        <note>ID: EditTab.AiTranslation.Cancelled</note>
+        <note>Status line in the AI translation progress dialog after the user clicks Cancel; the book is left unchanged.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.AiTranslation.DialogTitle" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Translating</source>
+        <note>ID: EditTab.AiTranslation.DialogTitle</note>
+        <note>Title of the progress dialog shown while AI engines translate the book's text before it opens for editing.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.AiTranslation.EngineDone" sil:dynamic="true" translate="no">
+        <source xml:lang="en">{0}: done.</source>
+        <note>ID: EditTab.AiTranslation.EngineDone</note>
+        <note>Progress line in the AI translation dialog. {0} is replaced with the translation engine's name (e.g. "DeepL"), which must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.AiTranslation.EngineError" sil:dynamic="true" translate="no">
+        <source xml:lang="en">{0}: {1}</source>
+        <note>ID: EditTab.AiTranslation.EngineError</note>
+        <note>Error line in the AI translation dialog. {0} is the translation engine's name (e.g. "DeepL"); {1} is an error message. Only the separator punctuation can be localized.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.AiTranslation.EngineSkippedNoSourceText" sil:dynamic="true" translate="no">
+        <source xml:lang="en">{0}: skipped {1} text box(es) with no {2} text.</source>
+        <note>ID: EditTab.AiTranslation.EngineSkippedNoSourceText</note>
+        <note>Progress line in the AI translation dialog, shown when an engine with a fixed source language (e.g. SIL Alpha2) had to skip text boxes that have no text in that language. {0} is the translation engine's name (e.g. "SIL Alpha2"), which must not be translated; {1} is the number of text boxes skipped; {2} is the source language tag (e.g. "en").</note>
+      </trans-unit>
+      <trans-unit id="EditTab.AiTranslation.EngineTranslating" sil:dynamic="true" translate="no">
+        <source xml:lang="en">{0}: translating {1} text box(es)...</source>
+        <note>ID: EditTab.AiTranslation.EngineTranslating</note>
+        <note>Progress line in the AI translation dialog. {0} is the translation engine's name (e.g. "DeepL"), which must not be translated; {1} is the number of text boxes being translated.</note>
       </trans-unit>
       <trans-unit id="EditTab.BackMatter.InsideBackCoverTextPrompt" sil:dynamic="true">
         <source xml:lang="en">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</source>

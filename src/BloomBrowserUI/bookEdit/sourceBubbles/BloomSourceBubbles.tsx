@@ -9,7 +9,10 @@
 // The actual function is injected by C#.
 /// <reference path="../js/collectionSettings.d.ts"/>
 import { renderRoot } from "../../utils/reactRender";
+import * as ReactDOM from "react-dom";
+import * as React from "react";
 import $ from "jquery";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from "../js/bloomQtipUtils";
@@ -17,8 +20,14 @@ import "../../lib/jquery.easytabs.js"; //load into global space
 import BloomHintBubbles from "../js/BloomHintBubbles";
 import { postJson, postString } from "../../utils/bloomApi";
 import CopyContentButton from "../../react_components/CopyContentButton";
+import {
+    getAiProviderDisplayName,
+    getLanguageNameFromBrowser,
+    isAiLanguageTag,
+    removeAiTranslationDivsFromClone,
+} from "./aiTranslationDisplay";
 
-declare function GetSettings(): any; // C# (or test code) injects this
+declare function GetSettings(): ICollectionSettings;
 
 export default class BloomSourceBubbles {
     //:empty is not quite enough... we don't want to show bubbles if all there is is an empty paragraph
@@ -27,6 +36,67 @@ export default class BloomSourceBubbles {
         //    return $.trim($(obj).text()).length == 0;
         //}
         return $.trim($(obj).text()).length === 0;
+    }
+
+    private static maybeRememberSourceBubbleLanguage(langTag: string): void {
+        // Note (BL-16549): this remembers whatever tab was activated as the preferred source
+        // language, including AI tabs (synthetic tags like "es-x-ai-deepl"). Devin flagged that
+        // clicking an AI tab therefore displaces the remembered *real* source language. We are
+        // deliberately leaving that as-is for now: whether an AI tab should be remembered is a
+        // product decision, not clearly a bug (a user who just chose to view the AI translation may
+        // well want it to persist). Revisit if that turns out to be undesirable.
+        postString("editView/sourceTextTab", langTag);
+    }
+
+    private static getLanguageDisplayName(langTag: string): string {
+        const aiSplitMarker = "-x-ai-";
+        const aiSplitIndex = langTag.indexOf(aiSplitMarker);
+        if (aiSplitIndex < 0) {
+            return (
+                theOneLocalizationManager.getLanguageName(langTag) || langTag
+            );
+        }
+
+        const targetLanguageTag = langTag.substring(0, aiSplitIndex);
+        const providerId = langTag.substring(
+            aiSplitIndex + aiSplitMarker.length,
+        );
+        // getLanguageName echoes the tag back when it doesn't know the language, so treat
+        // that as "unknown" and let the browser's Intl database have a try.
+        const bloomLanguageName =
+            theOneLocalizationManager.getLanguageName(targetLanguageTag);
+        const targetLanguageName =
+            (bloomLanguageName !== targetLanguageTag
+                ? bloomLanguageName
+                : undefined) ||
+            getLanguageNameFromBrowser(targetLanguageTag) ||
+            targetLanguageTag;
+        const providerDisplayName = getAiProviderDisplayName(providerId);
+        return `AI ${targetLanguageName} (${providerDisplayName})`;
+    }
+
+    private static appendSourceTabLabel(
+        anchor: HTMLAnchorElement,
+        langTag: string,
+        localizedLanguageName: string,
+    ): void {
+        if (!isAiLanguageTag(langTag)) {
+            anchor.textContent = localizedLanguageName;
+            return;
+        }
+
+        // TODO (BL-16549 follow-up): migrate to React 18 createRoot. Kept on the synchronous
+        // ReactDOM.render here deliberately for now -- these tab-label anchors are rebuilt each
+        // time bubbles are constructed, and createRoot's async render / one-root-per-container
+        // rules need their own change; behavior is unchanged in the meantime.
+        // eslint-disable-next-line react/no-deprecated
+        ReactDOM.render(
+            <>
+                <AutoAwesomeIcon fontSize="inherit" aria-hidden={true} />
+                <span> {localizedLanguageName}</span>
+            </>,
+            anchor,
+        );
     }
 
     // This is the method that should be called from bloomEditing to create tabbed source bubbles
@@ -94,9 +164,11 @@ export default class BloomSourceBubbles {
         newLangTag?: string,
     ): JQuery {
         if (group.classList.contains("bloom-no-source-bubble")) return $();
+        const liveGroup = $(group);
+
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
-        const divForBubble = $(group).clone();
+        const divForBubble = liveGroup.clone();
         divForBubble.removeAttr("style");
         divForBubble.removeClass(); //remove them all
         divForBubble.addClass("ui-sourceTextsForBubble");
@@ -104,6 +176,9 @@ export default class BloomSourceBubbles {
         divForBubble.find("label.bubble").each((index, element) => {
             $(element).remove();
         });
+        if (!GetSettings().allowAiSourceBubbles) {
+            removeAiTranslationDivsFromClone(divForBubble);
+        }
 
         //make the source texts in the bubble read-only and remove any user font size adjustments
         divForBubble.find("textarea, div").each(function (): boolean {
@@ -172,8 +247,7 @@ export default class BloomSourceBubbles {
             const langTag = sourceElement.getAttribute("lang");
             if (langTag) {
                 const localizedLanguageName =
-                    theOneLocalizationManager.getLanguageName(langTag) ||
-                    langTag;
+                    BloomSourceBubbles.getLanguageDisplayName(langTag);
                 // This is bizarre. The href ought to be referring to the element with the specified ID,
                 // which should be the tab CONTENT that should be shown for this language. But we have modified
                 // easytabs (see above) so that the target (main page content div) for a tab is the element whose
@@ -181,22 +255,27 @@ export default class BloomSourceBubbles {
                 // Even more bizarrely, we make the id of the list item have that value also, so that
                 // the apparent target of the <a> is the <li> it resides inside. Not sure why this is
                 // helpful.
-                $(list).append(
-                    '<li id="' +
-                        langTag +
-                        '" title="' +
-                        langTag +
-                        '"><a class="sourceTextTab" href="#' +
-                        langTag +
-                        '">' +
-                        localizedLanguageName +
-                        "</a></li>",
+                const liElement = document.createElement("li");
+                liElement.id = langTag;
+                liElement.title = langTag;
+                const anchor = document.createElement("a");
+                anchor.className = "sourceTextTab";
+                anchor.href = `#${langTag}`;
+                BloomSourceBubbles.appendSourceTabLabel(
+                    anchor,
+                    langTag,
+                    localizedLanguageName,
                 );
+                liElement.append(anchor);
+                list.append(liElement);
                 (
                     list.get(0) as HTMLElement
                 ).lastElementChild?.firstElementChild?.addEventListener(
                     "click",
-                    () => postString("editView/sourceTextTab", langTag),
+                    () =>
+                        BloomSourceBubbles.maybeRememberSourceBubbleLanguage(
+                            langTag,
+                        ),
                 );
                 // BL-8174: Add a tooltip with the language tag to the item
                 // BL-15212: we no longer want the tag here, just on the language-name label
@@ -304,7 +383,9 @@ export default class BloomSourceBubbles {
             if (indexA >= 0) return -1;
             if (indexB >= 0) return 1;
             // Neither in preferred list - maintain alphabetical order
-            return langA < langB ? (langA > langB ? 1 : 0) : -1;
+            if (langA < langB) return -1;
+            if (langA > langB) return 1;
+            return 0;
         });
 
         return $(itemArray);
@@ -427,7 +508,23 @@ export default class BloomSourceBubbles {
     }
 
     private static styledSelectChangeHandler(event) {
-        const newLangTag = event.target.href.split("#")[1];
+        const anchor =
+            event.target instanceof Element
+                ? event.target.closest("a.sourceTextTab")
+                : undefined;
+        const currentTarget =
+            event.currentTarget instanceof Element
+                ? event.currentTarget
+                : undefined;
+        const href =
+            anchor?.getAttribute("href") ??
+            currentTarget
+                ?.querySelector("a.sourceTextTab")
+                ?.getAttribute("href");
+        if (!href) {
+            return;
+        }
+        const newLangTag = href.split("#")[1];
 
         // Figure out which qtip we're in and go find the associated bloom-translationGroup
         const qtip = $(event.target).closest(".qtip").attr("id");
@@ -442,7 +539,7 @@ export default class BloomSourceBubbles {
                 group[0],
                 newLangTag,
             );
-            postString("editView/sourceTextTab", newLangTag);
+            BloomSourceBubbles.maybeRememberSourceBubbleLanguage(newLangTag);
             if (divForBubble.length !== 0) {
                 BloomHintBubbles.addHintBubbles(
                     group.get(0),

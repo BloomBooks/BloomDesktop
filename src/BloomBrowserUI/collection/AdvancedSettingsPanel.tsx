@@ -11,15 +11,50 @@ import { get, postJson } from "../utils/bloomApi";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { tabMargins } from "./commonTabSettings";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
-import { BloomSubscriptionIndicatorIconAndText } from "../react_components/requiresSubscription";
 import { useGetFeatureStatus } from "../react_components/featureStatus";
+import { BloomSubscriptionIndicatorIconAndText } from "../react_components/requiresSubscription";
 import { useL10n } from "../react_components/l10nHooks";
+import {
+    AiTranslationProviderId,
+    AiTranslationLanguageControlsContext,
+    IAiTranslationEngineValidation,
+    IAiTranslationSettings,
+    IAiTranslationWireSettings,
+    buildAiTranslationWirePayload,
+    extractAiTranslationFlatSettings,
+    flattenAiTranslationWireSettings,
+    omitAiTranslationFlatSettings,
+    useAiTranslationSettingsGroup,
+} from "./AiTranslationSettingsGroup";
 
-interface IAdvancedSettings {
+// The shape actually sent/received over the wire for settings/advancedProgramSettings: the
+// flat, non-AI settings plus a nested "aiTranslation" object matching the backend contract.
+interface IAdvancedSettingsWire {
     autoUpdate?: boolean;
     showExperimentalBookSources?: boolean;
     allowTeamCollection?: boolean;
     allowAppBuilder?: boolean;
+    allowAiSourceBubbles?: boolean;
+    showQrCode?: boolean;
+    qrcodeCaption?: string;
+    aiTranslation?: IAiTranslationWireSettings;
+}
+
+interface IAdvancedSettingsApiData {
+    values: IAdvancedSettingsWire;
+    showAutoUpdate?: boolean;
+    showExperimentalBookSourcesOption?: boolean;
+    allowTeamCollectionEnabled?: boolean;
+}
+
+// The flattened shape Configr actually edits: non-AI settings plus one boolean+credential set
+// per AI engine (see AiTranslationSettingsGroup for why it's flattened rather than nested).
+interface IAdvancedSettings extends IAiTranslationSettings {
+    autoUpdate?: boolean;
+    showExperimentalBookSources?: boolean;
+    allowTeamCollection?: boolean;
+    allowAppBuilder?: boolean;
+    allowAiSourceBubbles?: boolean;
     showQrCode?: boolean;
     qrcodeCaption?: string;
 }
@@ -35,6 +70,15 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         showExperimentalBookSourcesOption,
         setShowExperimentalBookSourcesOption,
     ] = React.useState<boolean>(false);
+    const [
+        aiTranslationInitialValidations,
+        setAiTranslationInitialValidations,
+    ] =
+        React.useState<
+            Partial<
+                Record<AiTranslationProviderId, IAiTranslationEngineValidation>
+            >
+        >();
 
     const advancedProgramSettingsLabel = useL10n(
         "Advanced Program Settings",
@@ -63,6 +107,78 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const appBuilderLabel = useL10n(
         "App Builder",
         "CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder",
+    );
+    const aiSourceBubblesLabel = useL10n(
+        "AI Source Translation",
+        "CollectionSettingsDialog.AdvancedTab.Experimental.AiSourceBubbles",
+    );
+    const aiTranslationSectionLabel = useL10n(
+        "AI Source Translation",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.SectionLabel",
+    );
+    const aiTranslationTargetLanguageLabel = useL10n(
+        "Target Language",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageLabel",
+    );
+    const aiTranslationDeepLEnabledLabel = useL10n(
+        "DeepL",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLEnabledLabel",
+    );
+    const aiTranslationDeepLApiKeyLabel = useL10n(
+        "API Key",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLApiKeyLabel",
+    );
+    const aiTranslationDeepLApiKeyDescription = useL10n(
+        "The key needs the 'translate:text' and 'languages:read' permissions.",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.DeepLApiKeyDescription",
+    );
+    const aiTranslationGoogleEnabledLabel = useL10n(
+        "Google Translate",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleEnabledLabel",
+    );
+    const aiTranslationGoogleServiceAccountEmailLabel = useL10n(
+        "Google Service Account Email",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleServiceAccountEmailLabel",
+    );
+    const aiTranslationGoogleServiceAccountDescription = useL10n(
+        "The service account needs access to the Cloud Translation API (the 'Cloud Translation API User' role).",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GoogleServiceAccountDescription",
+    );
+    const aiTranslationGooglePrivateKeyLabel = useL10n(
+        "Google Service Account Private Key",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.GooglePrivateKeyLabel",
+    );
+    const aiTranslationAlpha2EnabledLabel = useL10n(
+        "SIL Alpha2",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2EnabledLabel",
+    );
+    const aiTranslationAlpha2ApiKeyLabel = useL10n(
+        "API Key",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2ApiKeyLabel",
+    );
+    const aiTranslationAlpha2SourceLanguageLabel = useL10n(
+        "Source Language",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2SourceLanguageLabel",
+    );
+    const aiTranslationTranslationTestLabel = useL10n(
+        "Translation Test",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TranslationTestLabel",
+    );
+    const aiTranslationTargetLanguageNotSupportedTemplate = useL10n(
+        "{0} does not support translating to {1}, so it will be skipped.",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.TargetLanguageNotSupported",
+    );
+    const aiTranslationNoServiceSupportsLanguageNote = useL10n(
+        "no enabled service supports this",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.NoServiceSupportsLanguage",
+    );
+    const aiTranslationNoProviderSelectedNote = useL10n(
+        "Select at least one translation provider to get a list of languages it supports.",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.NoProviderSelected",
+    );
+    const aiTranslationAlpha2LanguagesNoteTemplate = useL10n(
+        "SIL Alpha2 shows the languages it can translate from {0}.",
+        "CollectionSettingsDialog.AdvancedTab.AiSourceBubbles.Alpha2LanguagesNote",
     );
     const qrCodesLabel = useL10n(
         "QR Codes",
@@ -93,6 +209,11 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         appBuilderFeatureStatus === undefined
             ? false
             : appBuilderFeatureStatus.enabled;
+    const aiSourceBubblesFeatureStatus = useGetFeatureStatus("AiSourceBubbles");
+    const aiSourceBubblesOptionEnabled =
+        aiSourceBubblesFeatureStatus === undefined
+            ? false
+            : aiSourceBubblesFeatureStatus.enabled;
     const canChangeTeamCollectionOption = allowTeamCollectionEnabled !== false;
 
     const normalizeConfigrSettings = React.useCallback(
@@ -110,7 +231,6 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         [],
     );
 
-    // Load current advanced settings from the host dialog so Config-r starts with matching values.
     React.useEffect(() => {
         get("settings/advancedProgramSettings", (result) => {
             if (!result || !result.data || result.data === "{}") {
@@ -120,16 +240,76 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
             if (typeof result.data === "string") {
                 data = JSON.parse(result.data);
             }
-            setSettings(data["values"]);
-            setShowAutoUpdate(data["showAutoUpdate"] ?? false);
+            const advancedSettingsData = data as IAdvancedSettingsApiData;
+            const { aiTranslation, ...restOfWireValues } =
+                advancedSettingsData.values;
+            const { flatSettings, initialValidations } =
+                flattenAiTranslationWireSettings(aiTranslation);
+            setSettings({
+                ...restOfWireValues,
+                ...flatSettings,
+            } as IAdvancedSettings);
+            setShowAutoUpdate(advancedSettingsData.showAutoUpdate ?? false);
             setAllowTeamCollectionEnabled(
-                data["allowTeamCollectionEnabled"] ?? false,
+                advancedSettingsData.allowTeamCollectionEnabled ?? false,
             );
             setShowExperimentalBookSourcesOption(
-                data["showExperimentalBookSourcesOption"] ?? false,
+                advancedSettingsData.showExperimentalBookSourcesOption ?? false,
             );
+            setAiTranslationInitialValidations(initialValidations);
         });
     }, []);
+
+    // Memoized so the object reference is stable across renders that don't actually change
+    // the AI settings; the group's validation/language-fetch effects key off this reference.
+    // We key the memo on the *serialized* AI settings rather than the whole `settings` object:
+    // extractAiTranslationFlatSettings returns a fresh object every call, so keying on `settings`
+    // handed out a new reference whenever ANY unrelated setting changed. That silently cancelled an
+    // in-flight engine validation and left it stuck showing "Testing translation..." forever (the
+    // per-engine validation effect early-returns when its probe key is unchanged, so it never
+    // restarted or cleared the pending flag). Keying on the serialized value fixes that.
+    const extractedAiTranslationFlatSettings = settings
+        ? extractAiTranslationFlatSettings(
+              settings as unknown as Record<string, unknown>,
+          )
+        : undefined;
+    const aiTranslationFlatSettingsKey = JSON.stringify(
+        extractedAiTranslationFlatSettings ?? null,
+    );
+    const aiTranslationFlatSettings = React.useMemo(
+        () => extractedAiTranslationFlatSettings,
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [aiTranslationFlatSettingsKey],
+    );
+
+    const {
+        group: aiTranslationSettingsGroup,
+        languageControlsData: aiTranslationLanguageControlsData,
+    } = useAiTranslationSettingsGroup({
+        settings: aiTranslationFlatSettings,
+        initialValidations: aiTranslationInitialValidations,
+        groupLabel: aiTranslationSectionLabel,
+        targetLanguageLabel: aiTranslationTargetLanguageLabel,
+        deepLEnabledLabel: aiTranslationDeepLEnabledLabel,
+        deepLApiKeyLabel: aiTranslationDeepLApiKeyLabel,
+        deepLApiKeyDescription: aiTranslationDeepLApiKeyDescription,
+        googleEnabledLabel: aiTranslationGoogleEnabledLabel,
+        googleServiceAccountEmailLabel:
+            aiTranslationGoogleServiceAccountEmailLabel,
+        googleServiceAccountDescription:
+            aiTranslationGoogleServiceAccountDescription,
+        googlePrivateKeyLabel: aiTranslationGooglePrivateKeyLabel,
+        alpha2EnabledLabel: aiTranslationAlpha2EnabledLabel,
+        alpha2ApiKeyLabel: aiTranslationAlpha2ApiKeyLabel,
+        alpha2SourceLanguageLabel: aiTranslationAlpha2SourceLanguageLabel,
+        translationTestLabel: aiTranslationTranslationTestLabel,
+        targetLanguageNotSupportedTemplate:
+            aiTranslationTargetLanguageNotSupportedTemplate,
+        noServiceSupportsLanguageNote:
+            aiTranslationNoServiceSupportsLanguageNote,
+        noProviderSelectedNote: aiTranslationNoProviderSelectedNote,
+        alpha2LanguagesNoteTemplate: aiTranslationAlpha2LanguagesNoteTemplate,
+    });
 
     return (
         <div
@@ -144,129 +324,186 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
             `}
         >
             {settings && (
-                <ConfigrPane
-                    label={advancedProgramSettingsLabel}
-                    showAppBar={false}
-                    showSearch={false}
-                    initialValues={
-                        settings as React.ComponentProps<
-                            typeof ConfigrPane
-                        >["initialValues"]
-                    }
-                    themeOverrides={{
-                        palette: {
-                            primary: { main: kBloomBlue },
-                        },
-                    }}
-                    onChange={(newSettings) => {
-                        const normalized =
-                            normalizeConfigrSettings(newSettings);
-                        if (normalized) {
-                            setSettings(normalized);
-                            postJson(
-                                "settings/advancedProgramSettings",
-                                normalized,
-                            );
-                        }
-                    }}
+                // Provide the target-language control's data here, above the Configr pane, so the
+                // stable module-scope AiTranslationTargetLanguageControl (rendered somewhere inside
+                // the pane) can read it via context without being redefined each render.
+                <AiTranslationLanguageControlsContext.Provider
+                    value={aiTranslationLanguageControlsData}
                 >
-                    <ConfigrPage label={""} pageKey="settings" topLevel={true}>
-                        <ConfigrGroup label={programLabel}>
-                            {showAutoUpdate && (
+                    <ConfigrPane
+                        label={advancedProgramSettingsLabel}
+                        showAppBar={false}
+                        showSearch={false}
+                        initialValues={
+                            settings as React.ComponentProps<
+                                typeof ConfigrPane
+                            >["initialValues"]
+                        }
+                        themeOverrides={{
+                            palette: {
+                                primary: { main: kBloomBlue },
+                            },
+                        }}
+                        onChange={(newSettings) => {
+                            const normalized =
+                                normalizeConfigrSettings(newSettings);
+                            if (normalized) {
+                                setSettings(normalized);
+                                const aiFlatSettings =
+                                    extractAiTranslationFlatSettings(
+                                        normalized as unknown as Record<
+                                            string,
+                                            unknown
+                                        >,
+                                    );
+                                const wirePayload = {
+                                    ...omitAiTranslationFlatSettings(
+                                        normalized as unknown as Record<
+                                            string,
+                                            unknown
+                                        >,
+                                    ),
+                                    aiTranslation:
+                                        buildAiTranslationWirePayload(
+                                            aiFlatSettings,
+                                        ),
+                                };
+                                postJson(
+                                    "settings/advancedProgramSettings",
+                                    wirePayload,
+                                );
+                            }
+                        }}
+                    >
+                        <ConfigrPage
+                            label={""}
+                            pageKey="settings"
+                            topLevel={true}
+                        >
+                            <ConfigrGroup label={programLabel}>
+                                {showAutoUpdate && (
+                                    <ConfigrBoolean
+                                        label={automaticallyUpdateBloomLabel}
+                                        path="autoUpdate"
+                                    />
+                                )}
+                            </ConfigrGroup>
+                            <ConfigrGroup label={qrCodesLabel}>
                                 <ConfigrBoolean
-                                    label={automaticallyUpdateBloomLabel}
-                                    path="autoUpdate"
+                                    label={showQrCodesLabel}
+                                    path="showQrCode"
+                                    description={showQrCodesDescription}
+                                ></ConfigrBoolean>
+                                <ConfigrInput
+                                    path="qrcodeCaption"
+                                    label={captionLabel}
+                                    description={captionDescription}
+                                    charactersWide={45}
+                                    allowNewLines={true}
+                                    maxLinesToShowBeforeScrolling={4}
+                                    disabled={!settings.showQrCode}
                                 />
-                            )}
-                        </ConfigrGroup>
-                        <ConfigrGroup label={qrCodesLabel}>
-                            <ConfigrBoolean
-                                label={showQrCodesLabel}
-                                path="showQrCode"
-                                description={showQrCodesDescription}
-                            ></ConfigrBoolean>
-                            <ConfigrInput
-                                path="qrcodeCaption"
-                                label={captionLabel}
-                                description={captionDescription}
-                                charactersWide={45}
-                                allowNewLines={true}
-                                maxLinesToShowBeforeScrolling={4}
-                                disabled={!settings.showQrCode}
-                            />
-                        </ConfigrGroup>
-                        <ConfigrGroup label={experimentalFeaturesLabel}>
-                            {showExperimentalBookSourcesOption && (
-                                <ConfigrBoolean
-                                    label={showExperimentalBookSourcesLabel}
-                                    path="showExperimentalBookSources"
-                                />
-                            )}
-                            <div
-                                css={css`
-                                    .Mui-disabled {
-                                        // The color already sets opacity to 0.26.  We don't
-                                        // want to get any lighter, but MUI defaults to an
-                                        // additional "opacity: 0.38" for disabled elements.
-                                        opacity: 1;
-                                    }
-                                `}
-                            >
-                                <ConfigrBoolean
-                                    label={teamCollectionsLabel}
-                                    path="allowTeamCollection"
-                                    disabled={
-                                        !teamCollectionOptionEnabled ||
-                                        !canChangeTeamCollectionOption
-                                    }
-                                ></ConfigrBoolean>{" "}
+                            </ConfigrGroup>
+                            <ConfigrGroup label={experimentalFeaturesLabel}>
+                                {showExperimentalBookSourcesOption && (
+                                    <ConfigrBoolean
+                                        label={showExperimentalBookSourcesLabel}
+                                        path="showExperimentalBookSources"
+                                    />
+                                )}
                                 <div
                                     css={css`
-                                        display: flex;
-                                        justify-content: flex-end;
-                                        .bloom-subscriptionIndicator {
-                                            font-size: 10pt;
-                                            font-weight: 700;
+                                        .Mui-disabled {
+                                            opacity: 1;
                                         }
                                     `}
                                 >
-                                    <BloomSubscriptionIndicatorIconAndText
-                                        feature="TeamCollection"
-                                        className="bloom-subscriptionIndicator"
-                                    />
+                                    <ConfigrBoolean
+                                        label={teamCollectionsLabel}
+                                        path="allowTeamCollection"
+                                        disabled={
+                                            !teamCollectionOptionEnabled ||
+                                            !canChangeTeamCollectionOption
+                                        }
+                                    ></ConfigrBoolean>{" "}
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            justify-content: flex-end;
+                                            .bloom-subscriptionIndicator {
+                                                font-size: 10pt;
+                                                font-weight: 700;
+                                            }
+                                        `}
+                                    >
+                                        <BloomSubscriptionIndicatorIconAndText
+                                            feature="TeamCollection"
+                                            className="bloom-subscriptionIndicator"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <div
-                                css={css`
-                                    .Mui-disabled {
-                                        opacity: 1;
-                                    }
-                                `}
-                            >
-                                <ConfigrBoolean
-                                    label={appBuilderLabel}
-                                    path="allowAppBuilder"
-                                    disabled={!appBuilderOptionEnabled}
-                                />
                                 <div
                                     css={css`
-                                        display: flex;
-                                        justify-content: flex-end;
-                                        .bloom-subscriptionIndicator {
-                                            font-size: 10pt;
-                                            font-weight: 700;
+                                        .Mui-disabled {
+                                            opacity: 1;
                                         }
                                     `}
                                 >
-                                    <BloomSubscriptionIndicatorIconAndText
-                                        feature="AppBuilder"
-                                        className="bloom-subscriptionIndicator"
+                                    <ConfigrBoolean
+                                        label={appBuilderLabel}
+                                        path="allowAppBuilder"
+                                        disabled={!appBuilderOptionEnabled}
                                     />
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            justify-content: flex-end;
+                                            .bloom-subscriptionIndicator {
+                                                font-size: 10pt;
+                                                font-weight: 700;
+                                            }
+                                        `}
+                                    >
+                                        <BloomSubscriptionIndicatorIconAndText
+                                            feature="AppBuilder"
+                                            className="bloom-subscriptionIndicator"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        </ConfigrGroup>
-                    </ConfigrPage>
-                </ConfigrPane>
+                                <div
+                                    css={css`
+                                        .Mui-disabled {
+                                            opacity: 1;
+                                        }
+                                    `}
+                                >
+                                    <ConfigrBoolean
+                                        label={aiSourceBubblesLabel}
+                                        path="allowAiSourceBubbles"
+                                        disabled={!aiSourceBubblesOptionEnabled}
+                                    />
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            justify-content: flex-end;
+                                            .bloom-subscriptionIndicator {
+                                                font-size: 10pt;
+                                                font-weight: 700;
+                                            }
+                                        `}
+                                    >
+                                        <BloomSubscriptionIndicatorIconAndText
+                                            feature="AiSourceBubbles"
+                                            className="bloom-subscriptionIndicator"
+                                        />
+                                    </div>
+                                </div>
+                            </ConfigrGroup>
+                            {settings.allowAiSourceBubbles &&
+                                aiTranslationSettingsGroup}
+                        </ConfigrPage>
+                    </ConfigrPane>
+                </AiTranslationLanguageControlsContext.Provider>
             )}
         </div>
     );

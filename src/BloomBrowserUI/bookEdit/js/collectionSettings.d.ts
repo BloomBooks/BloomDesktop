@@ -9,6 +9,7 @@ interface ICollectionSettings {
     defaultSourceLanguage2: string;
     currentCollectionLanguage2: string;
     currentCollectionLanguage3: string;
+    allowAiSourceBubbles: boolean;
     browserRoot: string;
     topics: string[];
 }

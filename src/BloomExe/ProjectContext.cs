@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Autofac;
+using Bloom.AiTranslation;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -161,6 +162,8 @@ namespace Bloom
                                 typeof(RabPublishApi),
                                 typeof(AccessibilityCheckApi),
                                 typeof(CollectionSettingsApi),
+                                typeof(AiTranslationService),
+                                typeof(AiTranslationBookUpdater),
                                 typeof(SubscriptionSettingsEditorApi),
                                 typeof(FeatureStatusApi),
                                 typeof(CollectionTabView),
