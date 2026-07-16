@@ -26,10 +26,11 @@ namespace Bloom.web.controllers
     {
         /// <summary>
         /// Saves (or, when <paramref name="apiKey"/> is null/empty, clears) the user's
-        /// OpenRouter credentials. The key is DPAPI-encrypted before being written; the
-        /// auth method and OpenRouter user name are stored as-is (they are not secret).
+        /// OpenRouter API key. The key is DPAPI-encrypted before being written. Only the
+        /// API key is persisted: Bloom supports the API-key method, so the OAuth auth
+        /// method and OpenRouter user name the editor may send are not stored.
         /// </summary>
-        public static void Save(string apiKey, string authMethod, string openRouterUser)
+        public static void Save(string apiKey)
         {
             if (string.IsNullOrEmpty(apiKey))
             {
@@ -39,18 +40,14 @@ namespace Bloom.web.controllers
 
             var settings = Properties.Settings.Default;
             settings.OpenRouterApiKey = Protect(apiKey);
-            settings.OpenRouterAuthMethod = authMethod ?? "";
-            settings.OpenRouterUser = openRouterUser ?? "";
             settings.Save();
         }
 
-        /// <summary>Clears all stored OpenRouter credentials (e.g. on sign-out).</summary>
+        /// <summary>Clears the stored OpenRouter API key (e.g. on sign-out).</summary>
         public static void Clear()
         {
             var settings = Properties.Settings.Default;
             settings.OpenRouterApiKey = "";
-            settings.OpenRouterAuthMethod = "";
-            settings.OpenRouterUser = "";
             settings.Save();
         }
 
@@ -67,13 +64,6 @@ namespace Bloom.web.controllers
             if (string.IsNullOrEmpty(stored))
                 return null;
             return Unprotect(stored);
-        }
-
-        /// <summary>Returns the stored OpenRouter user name (display only), or null.</summary>
-        public static string GetOpenRouterUser()
-        {
-            var user = Properties.Settings.Default.OpenRouterUser;
-            return string.IsNullOrEmpty(user) ? null : user;
         }
 
         /// <summary>

@@ -4,6 +4,15 @@
 // Stage the AI Image Editor for the DEFAULT `./go.sh` (i.e. when you are NOT actively
 // developing the editor with `--with bloom-ai-image-tools`).
 //
+// TEMPORARY dev scaffolding. This file — together with the rest of the two-repo
+// convenience machinery (the `--with bloom-ai-image-tools` option, and the parts of
+// go.mjs / devLibraries.mjs / processTree.mjs that serve it) — exists only while we are
+// still co-developing Bloom and the separate Bloom AI Image Editor and the interface
+// between them is still in flux, so that we can work on both at once. Once that interface
+// solidifies and the editor is consumed purely as a published, versioned dependency, this
+// local-checkout build/staging path and its helpers should be deleted; Bloom would then
+// just use the prebuilt dist-app/ from the installed package.
+//
 // The editor is a SEPARATE app (the `bloom-ai-image-tools` package). Bloom loads it in an
 // <iframe> at {ServerUrl}/bloom/aiImageEditor/index.html, which BloomServer serves from
 // output/browser/aiImageEditor/ (see AiImageEditorApi.GetEditorUrl).

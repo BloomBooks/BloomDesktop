@@ -273,11 +273,14 @@ namespace Bloom.web.controllers
                     // (and their sidecars) appear even when state.json doesn't list them.
                     history = EnumerateHistoryImages(book),
                     references = Array.Empty<object>(),
-                    // Bloom owns the OpenRouter key: supply the per-user stored key (and
-                    // user name) so the editor doesn't have to ask for it again. The editor
-                    // hands any newly obtained key back via aiImageEditor/saveCredentials.
+                    // Bloom owns the OpenRouter key: supply the per-user stored key so the
+                    // editor doesn't have to ask for it again. The editor hands any newly
+                    // obtained key back via aiImageEditor/saveCredentials.
                     apiKey = OpenRouterCredentialStore.GetApiKey(),
-                    openRouterUser = OpenRouterCredentialStore.GetOpenRouterUser(),
+                    // Kept in the init payload for protocol compatibility, but always null:
+                    // Bloom supports the API-key method and no longer stores an OpenRouter
+                    // user name for the editor's "signed in as" display.
+                    openRouterUser = (string)null,
                     // In a Playground template book all features are unlocked for
                     // "try it out", so the editor opens — but it's a shared demo
                     // context, so the editor must not let the user set/save an
@@ -291,6 +294,9 @@ namespace Bloom.web.controllers
         private class SaveCredentialsRequest
         {
             public string apiKey { get; set; }
+
+            // Still accepted from the editor for protocol compatibility, but no longer
+            // persisted: Bloom supports the API-key method and only stores the key.
             public string authMethod { get; set; }
             public string openRouterUser { get; set; }
         }
@@ -326,11 +332,7 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            OpenRouterCredentialStore.Save(
-                payload.apiKey,
-                payload.authMethod,
-                payload.openRouterUser
-            );
+            OpenRouterCredentialStore.Save(payload.apiKey);
             request.PostSucceeded();
         }
 

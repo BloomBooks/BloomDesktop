@@ -525,31 +525,5 @@ namespace Bloom.Properties {
                 this["OpenRouterApiKey"] = value;
             }
         }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string OpenRouterUser {
-            get {
-                return ((string)(this["OpenRouterUser"]));
-            }
-            set {
-                this["OpenRouterUser"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string OpenRouterAuthMethod {
-            get {
-                return ((string)(this["OpenRouterAuthMethod"]));
-            }
-            set {
-                this["OpenRouterAuthMethod"] = value;
-            }
-        }
     }
 }
