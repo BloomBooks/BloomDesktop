@@ -59,8 +59,10 @@ describe("All books", () => {
     test.each(bookFoldersAndBrandings)(
         `%# "%s" Branding:%s`,
         async (bookFolder, branding) => {
-            await setBranding(branding);
+            // Select the book first, then set the branding: setBranding brings the
+            // currently-selected book up to date so it picks up the branding's files.
             await selectBook(bookFolder);
+            await setBranding(branding);
             var screenshotsDir = ensureDir(
                 Path.join(bookFolder, "screenshots"),
             );
@@ -109,9 +111,11 @@ describe("All books", () => {
     async function setBranding(branding: string) {
         // Enhance: get us on the correct collection (currently we can only handle the one collection)
 
-        // get us on the correct branding
+        // Branding is normally derived from the (checksum-validated) subscription code and can't
+        // be set directly. This test-only endpoint (present in DEBUG builds only) forces the
+        // branding and brings the selected book up to date so it picks up that branding's files.
         let result = await fetch(
-            `http://localhost:8089/bloom/api/settings/branding`,
+            `http://localhost:8089/bloom/api/e2e/setBranding`,
             {
                 method: "POST",
                 body: branding,

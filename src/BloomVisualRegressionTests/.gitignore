@@ -2,6 +2,30 @@
 *-current.png
 *-diff.png
 
+# Bloom-regenerated book files. When the tests run, Bloom rewrites/copies these into each book
+# folder every run, so they are outputs, not fixtures. They are NOT the change-detection baseline
+# (that is the committed *-reference.png), so we do not track them. Genuine fixture inputs stay
+# tracked: *.htm, meta.json, appearance.json, origami.css, image*.png, customCollectionStyles.css,
+# ArithmeticTemplate.css, publish-settings.json.
+collections/**/branding.css
+collections/**/appearance.css
+collections/**/defaultLangStyles.css
+collections/**/langVisibility.css
+collections/**/thumbnail.png
+collections/**/coverImage*.jpg
+collections/**/license.png
+collections/**/made-with-bloom-badge*.svg
+collections/**/lang-qr-code.png
+collections/**/history.db
+# Branding logos copied into the book folder for whichever branding is active. A new branding
+# tested here may introduce more logo files that should be added below.
+collections/**/USAID_*
+collections/**/Uzbekistan-*
+collections/**/UEEP\[*\]*.svg
+collections/**/BloomLocal.svg
+collections/**/BloomWithTaglineAgainstLight.svg
+collections/**/Bloom Against Light HD.png
+
 # Logs
 logs
 *.log

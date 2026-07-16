@@ -162,6 +162,9 @@ namespace Bloom
                                 typeof(AccessibilityCheckApi),
                                 typeof(CollectionSettingsApi),
                                 typeof(SubscriptionSettingsEditorApi),
+#if DEBUG
+                                typeof(E2eTestingApi),
+#endif
                                 typeof(FeatureStatusApi),
                                 typeof(CollectionTabView),
                                 typeof(CollectionApi),
@@ -428,6 +431,11 @@ namespace Bloom
             _scope
                 .Resolve<SubscriptionSettingsEditorApi>()
                 .RegisterWithApiHandler(server.ApiHandler);
+#if DEBUG
+            // Endpoints that exist only to support end-to-end/visual-regression testing. They are
+            // compiled only into DEBUG builds (see E2eTestingApi), so they never reach real users.
+            _scope.Resolve<E2eTestingApi>().RegisterWithApiHandler(server.ApiHandler);
+#endif
             _scope.Resolve<FeatureStatusApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<RegistrationApi>().RegisterWithApiHandler(server.ApiHandler);
