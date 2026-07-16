@@ -727,6 +727,23 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 16 Jul 2026 (DpapiCloudTokenStore WIRED — cloud login now survives restart; John decision B
+  resolved) · The REPORT-ONLY "DpapiCloudTokenStore never wired" item is DONE (John: we want a
+  real cloud login to survive restart; make the progress we can now). Root state found: CloudAuth's
+  whole persistence mechanism (Save session/refresh-token on sign-in+refresh, Load+refresh at
+  startup, Clear on sign-out, proactive-refresh timer) was already built AND unit-tested via a fake
+  store — the ONLY gap was CloudAuth.CreateInitialized injecting the in-memory store, so nothing
+  reached disk. Fix (commit f4c5dbf2e3): CreateInitialized now injects DpapiCloudTokenStore (all
+  three call sites — CloudTeamCollection/TeamCollectionManager/SharingApi — flow through it). Dev
+  env-override path unaffected (re-signs from BLOOM_CLOUDTC_USER before consulting the store). Added
+  an end-to-end test using the REAL DpapiCloudTokenStore (session saved by one CloudAuth restored by
+  a fresh one over the same on-disk file = simulated restart); the dev provider's refresh follows
+  the identical Load-then-Refresh path Firebase will use, so the mechanism is fully verified now
+  without a live Firebase account. Required filter 443/443. WHAT STILL WAITS FOR FIREBASE: only a
+  literal real-account restart round-trip — the code path is identical and proven. · EXACT next
+  action: unchanged open items — John decides (a) pull the 8 mid-session master commits, (b) re-run
+  PR #8052 regen vs current master, (c) the remaining deferred refactors (E2/E7/E8/E9/R5/R6/R13) +
+  the ReceiveAllUpdates/GetUpdatesAvailableCount predicate drift.
 - 16 Jul 2026 (merge origin/master — John: "rebase on current master") · Merged origin/master
   (tip 5ed9403367, #8071 go-launcher-parallel-worktrees) into cloud-collections as commit
   760695d960 (a merge, NOT a literal rebase — the SQUASH-PLAN forbids rebasing this 270-commit
