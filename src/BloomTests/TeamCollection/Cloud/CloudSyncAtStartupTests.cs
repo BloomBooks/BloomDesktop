@@ -31,6 +31,7 @@ namespace BloomTests.TeamCollection.Cloud
     {
         private const string kCollectionId = "11111111-1111-1111-1111-111111111111";
         private const string kBookId = "book-id-1";
+        private CloudTestHarness _harness;
         private TemporaryFolder _collectionFolder;
         private Mock<ITeamCollectionManager> _mockTcManager;
         private CloudTeamCollection _collection;
@@ -40,31 +41,18 @@ namespace BloomTests.TeamCollection.Cloud
         [SetUp]
         public void Setup()
         {
-            _collectionFolder = new TemporaryFolder("CloudSyncAtStartupTests");
-            _mockTcManager = new Mock<ITeamCollectionManager>();
-            TeamCollectionManager.ForceCurrentUserForTests("test@somewhere.org");
-
-            var environment = new CloudEnvironment(name =>
-                name == "BLOOM_CLOUDTC_ANON_KEY" ? "test-anon-key" : null
-            );
-            var auth = new CloudAuth(new StubCloudAuthProvider(), new InMemoryCloudTokenStore());
-            auth.SignIn("test@somewhere.org", "irrelevant");
-            var client = new CloudCollectionClient(environment, auth);
-            _executor = new FakeRestExecutor();
-            client.SetRestClientForTests(_executor);
-
-            _collection = new CloudTeamCollection(
-                _mockTcManager.Object,
-                _collectionFolder.FolderPath,
+            // The scripted manifests carry one real file entry (empty manifests are now rejected by
+            // FetchAndCacheManifest's fail-fast guard -- no real book has zero files), so the S3
+            // mock serves fixed bytes matching that entry's sha256.
+            _harness = CloudTestHarness.Create(
+                "CloudSyncAtStartupTests",
                 kCollectionId,
-                environment: environment,
-                auth: auth,
-                client: client,
-                // The scripted manifests carry one real file entry (empty manifests are now
-                // rejected by FetchAndCacheManifest's fail-fast guard -- no real book has zero
-                // files), so the S3 mock serves fixed bytes matching that entry's sha256.
-                transfer: new CloudBookTransfer(_ => MakeScriptedS3().Object)
+                s3Factory: _ => MakeScriptedS3().Object
             );
+            _collectionFolder = _harness.CollectionFolder;
+            _mockTcManager = _harness.MockTcManager;
+            _collection = _harness.Collection;
+            _executor = _harness.Executor;
         }
 
         /// <summary>The fixed content the scripted S3 serves for every key; the scripted
@@ -99,8 +87,7 @@ namespace BloomTests.TeamCollection.Cloud
         [TearDown]
         public void TearDown()
         {
-            _collectionFolder.Dispose();
-            TeamCollectionManager.ForceCurrentUserForTests(null);
+            _harness.Dispose();
         }
 
         private IRestResponse HandleServerRequest(IRestRequest req)

@@ -19,36 +19,16 @@ namespace BloomTests.TeamCollection.Cloud
     {
         private const string kCollectionId = "11111111-1111-1111-1111-111111111111";
         private const string kBookId = "book-id-1";
-        private TemporaryFolder _collectionFolder;
-        private Mock<ITeamCollectionManager> _mockTcManager;
+        private CloudTestHarness _harness;
         private CloudTeamCollection _collection;
         private FakeRestExecutor _executor;
 
         [SetUp]
         public void Setup()
         {
-            _collectionFolder = new TemporaryFolder("CloudTeamCollectionLockTests");
-            _mockTcManager = new Mock<ITeamCollectionManager>();
-            TeamCollectionManager.ForceCurrentUserForTests("test@somewhere.org");
-
-            var environment = new CloudEnvironment(name =>
-                name == "BLOOM_CLOUDTC_ANON_KEY" ? "test-anon-key" : null
-            );
-            var auth = new CloudAuth(new StubCloudAuthProvider(), new InMemoryCloudTokenStore());
-            auth.SignIn("test@somewhere.org", "irrelevant");
-            var client = new CloudCollectionClient(environment, auth);
-            _executor = new FakeRestExecutor();
-            client.SetRestClientForTests(_executor);
-
-            _collection = new CloudTeamCollection(
-                _mockTcManager.Object,
-                _collectionFolder.FolderPath,
-                kCollectionId,
-                environment: environment,
-                auth: auth,
-                client: client,
-                transfer: new CloudBookTransfer(_ => new Mock<Amazon.S3.IAmazonS3>().Object)
-            );
+            _harness = CloudTestHarness.Create("CloudTeamCollectionLockTests", kCollectionId);
+            _collection = _harness.Collection;
+            _executor = _harness.Executor;
 
             // Hydrate the cache with one committed, unlocked book so the name/id index knows it.
             _executor.Handler = req =>
@@ -81,8 +61,7 @@ namespace BloomTests.TeamCollection.Cloud
         [TearDown]
         public void TearDown()
         {
-            _collectionFolder.Dispose();
-            TeamCollectionManager.ForceCurrentUserForTests(null);
+            _harness.Dispose();
         }
 
         [Test]

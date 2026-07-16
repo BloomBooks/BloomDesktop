@@ -32,48 +32,34 @@ namespace BloomTests.TeamCollection.Cloud
         // property actually resolves to right now, not an arbitrary literal.
         private static string ThisMachine => TeamCollectionManager.CurrentMachine;
 
+        private CloudTestHarness _harness;
         private TemporaryFolder _collectionFolder;
         private Mock<ITeamCollectionManager> _mockTcManager;
         private CloudTeamCollection _collection;
         private FakeRestExecutor _executor;
         private CloudAuth _auth;
 
-        private static CloudEnvironment MakeEnvironment() =>
-            new CloudEnvironment(name => name == "BLOOM_CLOUDTC_ANON_KEY" ? "test-anon-key" : null);
-
         [SetUp]
         public void Setup()
         {
-            _collectionFolder = new TemporaryFolder("CloudAccountSwitchTakeoverTests");
-            _mockTcManager = new Mock<ITeamCollectionManager>();
-            // "CurrentMachine" (TeamCollectionManager.CurrentMachine) defaults to
-            // Environment.MachineName; override it via impersonate.txt-free static test seam so
-            // the test is deterministic regardless of the actual machine it runs on.
-            TeamCollectionManager.ForceCurrentUserForTests(kCurrentUserEmail);
-
-            _auth = new CloudAuth(new StubCloudAuthProvider(), new InMemoryCloudTokenStore());
-            _auth.SignIn(kCurrentUserEmail, "irrelevant");
-            var environment = MakeEnvironment();
-            var client = new CloudCollectionClient(environment, _auth);
-            _executor = new FakeRestExecutor();
-            client.SetRestClientForTests(_executor);
-
-            _collection = new CloudTeamCollection(
-                _mockTcManager.Object,
-                _collectionFolder.FolderPath,
+            // Signed in as the machine-local current user (kCurrentUserEmail); the account-switch
+            // scenarios then re-sign-in as other users via _auth within individual tests.
+            _harness = CloudTestHarness.Create(
+                "CloudAccountSwitchTakeoverTests",
                 kCollectionId,
-                environment: environment,
-                auth: _auth,
-                client: client,
-                transfer: new CloudBookTransfer(_ => new Mock<Amazon.S3.IAmazonS3>().Object)
+                currentUser: kCurrentUserEmail
             );
+            _collectionFolder = _harness.CollectionFolder;
+            _mockTcManager = _harness.MockTcManager;
+            _collection = _harness.Collection;
+            _executor = _harness.Executor;
+            _auth = _harness.Auth;
         }
 
         [TearDown]
         public void TearDown()
         {
-            _collectionFolder.Dispose();
-            TeamCollectionManager.ForceCurrentUserForTests(null);
+            _harness.Dispose();
         }
 
         /// <summary>The seat id of THIS test's own collection copy — what the production code

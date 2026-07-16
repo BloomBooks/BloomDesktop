@@ -22,44 +22,33 @@ namespace BloomTests.TeamCollection.Cloud
     public class CloudTeamCollectionMemberTests
     {
         private const string kCollectionId = "11111111-1111-1111-1111-111111111111";
+        private CloudTestHarness _harness;
         private TemporaryFolder _collectionFolder;
         private Mock<ITeamCollectionManager> _mockTcManager;
         private CloudTeamCollection _collection;
         private FakeRestExecutor _executor;
         private CloudAuth _auth;
 
-        private static CloudEnvironment MakeEnvironment() =>
-            new CloudEnvironment(name => name == "BLOOM_CLOUDTC_ANON_KEY" ? "test-anon-key" : null);
-
         [SetUp]
         public void Setup()
         {
-            _collectionFolder = new TemporaryFolder("CloudTeamCollectionMemberTests");
-            _mockTcManager = new Mock<ITeamCollectionManager>();
-            TeamCollectionManager.ForceCurrentUserForTests("test@somewhere.org");
-
-            _auth = new CloudAuth(new StubCloudAuthProvider(), new InMemoryCloudTokenStore());
-            var environment = MakeEnvironment();
-            var client = new CloudCollectionClient(environment, _auth);
-            _executor = new FakeRestExecutor();
-            client.SetRestClientForTests(_executor);
-
-            _collection = new CloudTeamCollection(
-                _mockTcManager.Object,
-                _collectionFolder.FolderPath,
+            // These tests drive the member-listing RPCs against a signed-OUT auth, so signIn:false.
+            _harness = CloudTestHarness.Create(
+                "CloudTeamCollectionMemberTests",
                 kCollectionId,
-                environment: environment,
-                auth: _auth,
-                client: client,
-                transfer: new CloudBookTransfer(_ => new Mock<Amazon.S3.IAmazonS3>().Object)
+                signIn: false
             );
+            _collectionFolder = _harness.CollectionFolder;
+            _mockTcManager = _harness.MockTcManager;
+            _collection = _harness.Collection;
+            _executor = _harness.Executor;
+            _auth = _harness.Auth;
         }
 
         [TearDown]
         public void TearDown()
         {
-            _collectionFolder.Dispose();
-            TeamCollectionManager.ForceCurrentUserForTests(null);
+            _harness.Dispose();
         }
 
         [Test]

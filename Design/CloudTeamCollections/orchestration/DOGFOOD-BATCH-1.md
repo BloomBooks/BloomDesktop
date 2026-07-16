@@ -1866,3 +1866,23 @@ downloads during a join, when polls are legitimately empty — the exact scenari
 book-event loop into `RaiseBookEventsForPolledChanges` to keep the fast path readable. New unit
 test `ApplyDelta_ReportsWhetherAnythingChanged` pins the true/false contract E3 rides on. Verified:
 clean build, TeamCollection 436/436, CloudRepoCache 17/17 (16 + 1 new).
+
+---
+
+**2026-07-16 — R5 done (shared C# cloud test-fixture builder).** Every CloudTeamCollection unit
+fixture hand-rolled the same ~15-line setup block: temp folder + mock ITeamCollectionManager +
+CloudEnvironment(test anon key) + CloudAuth(stub provider, in-memory token store) + signed-in +
+CloudCollectionClient wired to a FakeRestExecutor + CloudTeamCollection with a mock-S3
+CloudBookTransfer, and an identical TearDown (dispose folder + reset ForceCurrentUserForTests).
+New `CloudTestHarness.Create(folderName, collectionId, currentUser=, signIn=, s3Factory=)` returns
+the pieces individually (Collection/Executor/Auth/MockTcManager/CollectionFolder) so each fixture
+stays explicit about what it drives and can still script the executor / inject a custom S3 mock;
+`Dispose()` is IDisposable and undoes the two process-global seams. Converted 5 fixtures
+(Lock, Member [signIn:false — it tests the signed-out path], IdentityFirst, AccountSwitch
+[currentUser:bob@dev.local], SyncAtStartup [s3Factory: scripted S3]); each keeps its own fields as
+aliases so no test body changed. Deliberately NOT applied to CloudCollectionClientTests /
+CloudCollectionMonitorTests (they test client/monitor directly, the former with a custom auth
+provider, and never build a whole collection) nor to SyncAtStartup's MakeCollectionWithPerKeyS3
+(builds a *second* collection reusing the fixture's folder — folding it in would bloat the helper
+or change behavior; exactly the over-consolidation to avoid). Net -123 dup lines across fixtures
+for +91 shared. Verified: TeamCollection|Cloud filter 438/438, no new warnings.

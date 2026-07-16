@@ -23,6 +23,7 @@ namespace BloomTests.TeamCollection.Cloud
     public class CloudIdentityFirstLookupTests
     {
         private const string kCollectionId = "22222222-2222-2222-2222-222222222222";
+        private CloudTestHarness _harness;
         private TemporaryFolder _collectionFolder;
         private Mock<ITeamCollectionManager> _mockTcManager;
         private CloudTeamCollection _collection;
@@ -31,28 +32,11 @@ namespace BloomTests.TeamCollection.Cloud
         [SetUp]
         public void Setup()
         {
-            _collectionFolder = new TemporaryFolder("CloudIdentityFirstLookupTests");
-            _mockTcManager = new Mock<ITeamCollectionManager>();
-            TeamCollectionManager.ForceCurrentUserForTests("test@somewhere.org");
-
-            var environment = new CloudEnvironment(name =>
-                name == "BLOOM_CLOUDTC_ANON_KEY" ? "test-anon-key" : null
-            );
-            var auth = new CloudAuth(new StubCloudAuthProvider(), new InMemoryCloudTokenStore());
-            auth.SignIn("test@somewhere.org", "irrelevant");
-            var client = new CloudCollectionClient(environment, auth);
-            _executor = new FakeRestExecutor();
-            client.SetRestClientForTests(_executor);
-
-            _collection = new CloudTeamCollection(
-                _mockTcManager.Object,
-                _collectionFolder.FolderPath,
-                kCollectionId,
-                environment: environment,
-                auth: auth,
-                client: client,
-                transfer: new CloudBookTransfer(_ => new Mock<Amazon.S3.IAmazonS3>().Object)
-            );
+            _harness = CloudTestHarness.Create("CloudIdentityFirstLookupTests", kCollectionId);
+            _collectionFolder = _harness.CollectionFolder;
+            _mockTcManager = _harness.MockTcManager;
+            _collection = _harness.Collection;
+            _executor = _harness.Executor;
 
             // Hydrate the cache with one committed book, checked out by a TEAMMATE on another
             // machine: "The Moon and the Cap" / instance-moon (the live bug-#15 book).
@@ -87,8 +71,7 @@ namespace BloomTests.TeamCollection.Cloud
         [TearDown]
         public void TearDown()
         {
-            _collectionFolder.Dispose();
-            TeamCollectionManager.ForceCurrentUserForTests(null);
+            _harness.Dispose();
         }
 
         /// <summary>Creates a local book folder with a meta.json carrying the given instance id
