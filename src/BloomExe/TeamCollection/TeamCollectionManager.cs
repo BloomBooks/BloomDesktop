@@ -704,8 +704,7 @@ namespace Bloom.TeamCollection
             Settings.Save();
 
             var environment = Cloud.CloudEnvironment.Current;
-            var auth = new Cloud.CloudAuth(Cloud.CloudAuth.CreateProvider(environment));
-            auth.InitializeAtStartup(environment);
+            var auth = Cloud.CloudAuth.CreateInitialized(environment);
             var client = new Cloud.CloudCollectionClient(environment, auth);
             client.CreateCollection(collectionId, Settings.CollectionName);
 

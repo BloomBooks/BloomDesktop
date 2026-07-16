@@ -259,28 +259,8 @@ namespace Bloom.TeamCollection
             return AvailablePath(bookFolderName, lfPath, ".bloom");
         }
 
-        private static string AvailablePath(
-            string bookFolderName,
-            string folderName,
-            string extension
-        )
-        {
-            string bookPath;
-            Directory.CreateDirectory(folderName);
-            int counter = 0;
-            do
-            {
-                counter++;
-                // Don't use ChangeExtension here, bookFolderName may have arbitrary period
-                bookPath =
-                    Path.Combine(
-                        folderName,
-                        bookFolderName + (counter == 1 ? "" : counter.ToString())
-                    ) + extension;
-            } while (RobustFile.Exists(bookPath));
-
-            return bookPath;
-        }
+        // (The AvailablePath helper this class used to define here was hoisted to the base
+        // TeamCollection so CloudTeamCollection's local Lost and Found can share it.)
 
         protected override void MoveRepoBookToLostAndFound(string bookName)
         {

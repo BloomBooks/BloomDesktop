@@ -39,6 +39,8 @@ namespace Bloom.web.controllers
     /// </summary>
     public class SharingApi
     {
+        /// <summary>Called once at startup (app-level registration) to register every sharing/*
+        /// and collections/* endpoint this class serves.</summary>
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler("sharing/loginState", HandleLoginState, false);
@@ -139,11 +141,7 @@ namespace Bloom.web.controllers
             lock (_globalAuthLock)
             {
                 if (_globalAuth == null)
-                {
-                    var environment = CloudEnvironment.Current;
-                    _globalAuth = new CloudAuth(CloudAuth.CreateProvider(environment));
-                    _globalAuth.InitializeAtStartup(environment);
-                }
+                    _globalAuth = CloudAuth.CreateInitialized(CloudEnvironment.Current);
                 return _globalAuth;
             }
         }
@@ -179,6 +177,7 @@ namespace Bloom.web.controllers
                     mode = loginState.AuthMode,
                     signedIn = loginState.SignedIn,
                     email = loginState.Email,
+                    emailVerified = loginState.EmailVerified,
                 }
             );
         }
@@ -543,21 +542,17 @@ namespace Bloom.web.controllers
         /// CollectionChooserApi's join-card dedup (dogfood bug #11, John's ruling 13 Jul 2026):
         /// a local copy of a cloud collection only suppresses that collection's join card when
         /// the copy was most recently used by THIS account.</summary>
-        internal static string SignedInEmailForJoinCards()
-        {
-            var loginState = CurrentAuth().GetLoginState(CloudEnvironment.Current);
-            return loginState.SignedIn ? loginState.Email : null;
-        }
+        internal static string SignedInEmailForJoinCards() => CurrentAuth().CurrentEmail;
 
         /// <summary>Used by CollectionChooserApi.HandleGetJoinCards to compute join cards for the
         /// collection chooser (dogfood batch 1, item 6): the cloud collections the signed-in user
         /// is approved for, in the minimal Id/Name shape CloudJoinFlow already defines. Returns an
-        /// empty list WITHOUT any network call when not signed in (GetLoginState is a local check,
+        /// empty list WITHOUT any network call when not signed in (IsSignedIn is a local check,
         /// not an RPC) -- required so the chooser degrades silently for signed-out/folder-only
         /// users instead of making a doomed cloud call on every chooser render.</summary>
         public static IReadOnlyList<CloudCollectionSummary> GetMyCollectionsForJoinCards()
         {
-            if (!CurrentAuth().GetLoginState(CloudEnvironment.Current).SignedIn)
+            if (!CurrentAuth().IsSignedIn)
                 return Array.Empty<CloudCollectionSummary>();
             try
             {

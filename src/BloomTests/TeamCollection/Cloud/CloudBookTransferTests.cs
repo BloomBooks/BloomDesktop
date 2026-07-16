@@ -150,6 +150,58 @@ namespace BloomTests.TeamCollection.Cloud
         }
 
         [Test]
+        public void UploadChangedFiles_UsesLocalManifestHashInsteadOfReHashing()
+        {
+            // The whole point of the localManifest parameter (E4): when the caller has already
+            // hashed the current on-disk content, UploadChangedFiles must use THAT hash rather
+            // than hashing the file a second time. We prove it by handing in a localManifest whose
+            // hash equals the previous commit while the real bytes on disk are different: a
+            // re-hashing implementation would see the changed bytes and upload; the hash-reuse
+            // path trusts the manifest, matches the previous commit, and skips.
+            WriteBookFile("book.htm", "the actual on-disk content");
+            var (realSha, _) = BookVersionManifest.ComputeFileHash(
+                Path.Combine(_bookFolderPath, "book.htm")
+            );
+            const string staleSha =
+                "0000000000000000000000000000000000000000000000000000000000000000";
+            const long staleSize = 5;
+            Assert.That(
+                realSha,
+                Is.Not.EqualTo(staleSha),
+                "test setup: the stale manifest hash must differ from the real file's hash"
+            );
+            var manifest = new BookVersionManifest(
+                new Dictionary<string, BookVersionManifestEntry>
+                {
+                    ["book.htm"] = new BookVersionManifestEntry(staleSha, staleSize, "v-old"),
+                }
+            );
+
+            var result = _transfer.UploadChangedFiles(
+                _location,
+                _bookFolderPath,
+                new[] { "book.htm" },
+                manifest, // previousCommittedManifest
+                manifest, // localManifest — claims the file still matches the old commit
+                2,
+                null,
+                CancellationToken.None
+            );
+
+            Assert.That(
+                result.SkippedPaths,
+                Has.Member("book.htm"),
+                "the caller-supplied localManifest hash (== previous) must be trusted over the changed on-disk bytes"
+            );
+            Assert.That(result.UploadedPaths, Is.Empty);
+            _s3Mock.Verify(
+                s => s.PutObjectAsync(It.IsAny<PutObjectRequest>(), It.IsAny<CancellationToken>()),
+                Times.Never,
+                "no PUT when the localManifest says the content is unchanged (no second hash of the file)"
+            );
+        }
+
+        [Test]
         public void UploadChangedFiles_UploadsChangedFile_WithChecksumHeaderAndCorrectKey()
         {
             WriteBookFile("book.htm", "changed content");
@@ -194,52 +246,6 @@ namespace BloomTests.TeamCollection.Cloud
                 capturedRequests[0].Headers["x-amz-checksum-sha256"],
                 Is.Not.Null.And.Not.Empty,
                 "CONTRACTS.md: uploads carry x-amz-checksum-sha256"
-            );
-        }
-
-        // ------------------------------------------------------------------
-        // Upload: resume support
-        // ------------------------------------------------------------------
-
-        [Test]
-        public void UploadChangedFiles_ResumeSkipsAlreadyUploadedPaths()
-        {
-            WriteBookFile("a.txt", "A");
-            WriteBookFile("b.txt", "B");
-            var alreadyUploaded = new HashSet<string> { "a.txt" };
-            var putKeys = new List<string>();
-            _s3Mock
-                .Setup(s =>
-                    s.PutObjectAsync(It.IsAny<PutObjectRequest>(), It.IsAny<CancellationToken>())
-                )
-                .Callback<PutObjectRequest, CancellationToken>((req, ct) => putKeys.Add(req.Key))
-                .ReturnsAsync(
-                    new PutObjectResponse { HttpStatusCode = HttpStatusCode.OK, VersionId = "v" }
-                );
-
-            var result = _transfer.UploadChangedFiles(
-                _location,
-                _bookFolderPath,
-                new[] { "a.txt", "b.txt" },
-                null,
-                alreadyUploaded,
-                2,
-                null,
-                CancellationToken.None
-            );
-
-            Assert.That(result.SkippedPaths, Has.Member("a.txt"));
-            Assert.That(result.UploadedPaths, Has.Member("b.txt"));
-            Assert.That(
-                putKeys,
-                Has.Count.EqualTo(1),
-                "a resumed transaction must not re-PUT a.txt"
-            );
-            Assert.That(putKeys[0], Does.EndWith("b.txt"));
-            Assert.That(
-                alreadyUploaded,
-                Has.Member("b.txt"),
-                "the resume set should grow as this call succeeds, for a further retry to use"
             );
         }
 

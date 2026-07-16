@@ -221,7 +221,7 @@ namespace BloomTests.TeamCollection.Cloud
 
             Assert.That(status.lockedBy, Is.Null.Or.Empty, "check-in should release the lock");
             var manifest = secondSession.Client.GetBookManifest(
-                secondSession.TryGetBookIdForTests("Update book")
+                secondSession.GetBookIdByNameIndexForTests("Update book")
             );
             Assert.That((long)manifest["seq"], Is.EqualTo(2), "the update should be version 2");
             // The manifest must contain the FULL file list, not just what changed: the

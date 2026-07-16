@@ -15,7 +15,6 @@ namespace BloomTests.TeamCollection.Cloud
             // checkout of Bloom talks to the local dev stack with zero configuration.
             Assert.That(env.SupabaseUrl, Is.EqualTo("http://127.0.0.1:54321"));
             Assert.That(env.S3Endpoint, Is.EqualTo("http://127.0.0.1:9000"));
-            Assert.That(env.S3Bucket, Is.EqualTo("bloom-teams-local"));
             Assert.That(env.AuthMode, Is.EqualTo(CloudAuthMode.Dev));
             Assert.That(env.DevUser, Is.Null);
             Assert.That(env.DevPassword, Is.Null);
@@ -53,12 +52,10 @@ namespace BloomTests.TeamCollection.Cloud
                 ["BLOOM_CLOUDTC_SUPABASE_URL"] = "https://sandbox.example.org",
                 ["BLOOM_CLOUDTC_ANON_KEY"] = "sandbox-anon-key",
                 ["BLOOM_CLOUDTC_S3_ENDPOINT"] = "https://s3.sandbox.example.org",
-                ["BLOOM_CLOUDTC_S3_BUCKET"] = "sandbox-bucket",
                 ["BLOOM_CLOUDTC_AUTH_MODE"] = "cloud",
                 ["BLOOM_CLOUDTC_USER"] = "override@dev.local",
                 ["BLOOM_CLOUDTC_PASSWORD"] = "pw",
                 ["BLOOM_CLOUDTC_FIREBASE_API_KEY"] = "sandbox-firebase-key",
-                ["BLOOM_CLOUDTC_FIREBASE_PROJECT_ID"] = "sandbox-firebase-project",
             };
 
             var env = new CloudEnvironment(name =>
@@ -68,12 +65,10 @@ namespace BloomTests.TeamCollection.Cloud
             Assert.That(env.SupabaseUrl, Is.EqualTo("https://sandbox.example.org"));
             Assert.That(env.AnonKey, Is.EqualTo("sandbox-anon-key"));
             Assert.That(env.S3Endpoint, Is.EqualTo("https://s3.sandbox.example.org"));
-            Assert.That(env.S3Bucket, Is.EqualTo("sandbox-bucket"));
             Assert.That(env.AuthMode, Is.EqualTo(CloudAuthMode.Cloud));
             Assert.That(env.DevUser, Is.EqualTo("override@dev.local"));
             Assert.That(env.DevPassword, Is.EqualTo("pw"));
             Assert.That(env.FirebaseApiKey, Is.EqualTo("sandbox-firebase-key"));
-            Assert.That(env.FirebaseProjectId, Is.EqualTo("sandbox-firebase-project"));
         }
 
         [Test]
@@ -85,7 +80,6 @@ namespace BloomTests.TeamCollection.Cloud
             // build a URL query string without a null-check, and so it's obvious in a log that
             // no override was configured yet.
             Assert.That(env.FirebaseApiKey, Is.EqualTo(""));
-            Assert.That(env.FirebaseProjectId, Is.EqualTo(""));
         }
 
         [TestCase("dev", CloudAuthMode.Dev)]

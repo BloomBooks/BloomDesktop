@@ -32,15 +32,13 @@ namespace Bloom.TeamCollection.Cloud
         private const string DefaultSupabaseUrl = "http://127.0.0.1:54321";
         private const string DefaultAnonKey = "";
         private const string DefaultS3Endpoint = "http://127.0.0.1:9000";
-        private const string DefaultS3Bucket = "bloom-teams-local";
         private const CloudAuthMode DefaultAuthMode = CloudAuthMode.Dev;
 
-        // Firebase Web API key + project id (Option A): compiled defaults are empty
-        // placeholders (never call the securetoken API before an override is set); production
-        // values are set via GOING-LIVE.md Phase 3.5's client-defaults change, sandbox/dev via
-        // the env-var overrides below.
+        // Firebase Web API key (Option A): the compiled default is an empty placeholder (never
+        // call the securetoken API before an override is set); the production value is set via
+        // GOING-LIVE.md Phase 3.5's client-defaults change, sandbox/dev via the env-var
+        // override below.
         private const string DefaultFirebaseApiKey = "";
-        private const string DefaultFirebaseProjectId = "";
 
         /// <summary>The Supabase (or PostgREST/GoTrue-compatible) API base URL.</summary>
         public string SupabaseUrl { get; }
@@ -48,11 +46,10 @@ namespace Bloom.TeamCollection.Cloud
         /// <summary>The Supabase anon/public JWT key, sent as the `apikey` header on every call.</summary>
         public string AnonKey { get; }
 
-        /// <summary>The S3-compatible endpoint used for book/collection-file storage.</summary>
+        /// <summary>The S3-compatible endpoint used for book/collection-file storage. NOTE:
+        /// there is deliberately no bucket setting here — every bucket name arrives in server
+        /// responses (checkin-start/download-start's s3 blocks), never from client config.</summary>
         public string S3Endpoint { get; }
-
-        /// <summary>The bucket that holds this deployment's Cloud Team Collection objects.</summary>
-        public string S3Bucket { get; }
 
         /// <summary>
         /// True when the S3 endpoint requires path-style requests (http://host/bucket/key), as
@@ -73,10 +70,6 @@ namespace Bloom.TeamCollection.Cloud
         /// GOING-LIVE.md Phase 3.5.
         /// </summary>
         public string FirebaseApiKey { get; }
-
-        /// <summary>The Firebase project id (`BLOOM_CLOUDTC_FIREBASE_PROJECT_ID`), used only for
-        /// sanity-checking a decoded ID token's `aud`/`iss` claims match the project we expect.</summary>
-        public string FirebaseProjectId { get; }
 
         /// <summary>
         /// Optional email to silently auto-sign-in as, bypassing any stored session tokens. Set
@@ -132,7 +125,6 @@ namespace Bloom.TeamCollection.Cloud
             SupabaseUrl = Get("BLOOM_CLOUDTC_SUPABASE_URL", DefaultSupabaseUrl);
             AnonKey = Get("BLOOM_CLOUDTC_ANON_KEY", DefaultAnonKey);
             S3Endpoint = Get("BLOOM_CLOUDTC_S3_ENDPOINT", DefaultS3Endpoint);
-            S3Bucket = Get("BLOOM_CLOUDTC_S3_BUCKET", DefaultS3Bucket);
 
             var pollSecondsRaw = Get("BLOOM_CLOUDTC_POLL_SECONDS", "60");
             if (!int.TryParse(pollSecondsRaw, out var pollSeconds) || pollSeconds <= 0)
@@ -154,7 +146,6 @@ namespace Bloom.TeamCollection.Cloud
             DevUser = Get("BLOOM_CLOUDTC_USER", null);
             DevPassword = Get("BLOOM_CLOUDTC_PASSWORD", null);
             FirebaseApiKey = Get("BLOOM_CLOUDTC_FIREBASE_API_KEY", DefaultFirebaseApiKey);
-            FirebaseProjectId = Get("BLOOM_CLOUDTC_FIREBASE_PROJECT_ID", DefaultFirebaseProjectId);
         }
     }
 }

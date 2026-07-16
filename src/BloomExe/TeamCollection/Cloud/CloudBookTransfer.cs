@@ -126,7 +126,11 @@ namespace Bloom.TeamCollection.Cloud
             _clientFactory = clientFactory;
         }
 
-        private static IAmazonS3 BuildDefaultClient(CloudS3Location location)
+        /// <summary>Builds the real S3 client for a location's scoped credentials against the
+        /// configured (always S3-compatible, never real AWS) endpoint. Internal so other cloud-TC
+        /// code with the same need (e.g. CloudTeamCollection's collection-file downloads) reuses
+        /// this rather than duplicating the config.</summary>
+        internal static IAmazonS3 BuildDefaultClient(CloudS3Location location)
         {
             var env = CloudEnvironment.Current;
             var config = new AmazonS3Config
@@ -159,19 +163,27 @@ namespace Bloom.TeamCollection.Cloud
         /// Uploads the given candidate paths (typically checkin-start's authoritative `changedPaths`)
         /// from <paramref name="bookFolderPath"/>, skipping any whose current on-disk content exactly
         /// matches <paramref name="previousCommittedManifest"/> (hash-skip — belt-and-suspenders
-        /// against re-sending unchanged bytes even if a candidate path turns out identical) or that
-        /// are already recorded in <paramref name="alreadyUploadedThisTransaction"/> (resume support:
-        /// a caller retrying an interrupted Send passes back what a prior attempt already finished,
-        /// updated in place as this call succeeds, so a second retry needs even less work). Runs PUTs
-        /// in parallel up to <paramref name="maxDegreeOfParallelism"/>, each carrying an explicit
-        /// `x-amz-checksum-sha256` header (CONTRACTS.md: "Uploads carry x-amz-checksum-sha256").
+        /// against re-sending unchanged bytes even if a candidate path turns out identical). Runs
+        /// PUTs in parallel up to <paramref name="maxDegreeOfParallelism"/>, each carrying an
+        /// explicit `x-amz-checksum-sha256` header (CONTRACTS.md: "Uploads carry
+        /// x-amz-checksum-sha256"). (An earlier version also took a caller-held
+        /// already-uploaded-this-transaction set for cross-retry resume, but no caller ever
+        /// reused one across calls, so it was removed as dead complexity; an interrupted Send's
+        /// retry is still cheap because the hash-skip does the same job against the committed
+        /// manifest.)
+        ///
+        /// <paramref name="localManifest"/> is the caller's already-computed manifest of the
+        /// CURRENT on-disk content (e.g. the one PutBookInRepo just built to drive checkin-start):
+        /// a candidate path found there uses that hash/size instead of re-hashing the file —
+        /// without it every Send hashed each changed file twice. May be null (or missing a path),
+        /// in which case the file is hashed here as before.
         /// </summary>
         public CloudUploadResult UploadChangedFiles(
             CloudS3Location location,
             string bookFolderPath,
             IEnumerable<string> changedRelativePaths,
             BookVersionManifest previousCommittedManifest,
-            ISet<string> alreadyUploadedThisTransaction,
+            BookVersionManifest localManifest,
             int maxDegreeOfParallelism,
             IProgress<CloudTransferProgress> progress,
             CancellationToken cancellationToken
@@ -197,25 +209,23 @@ namespace Bloom.TeamCollection.Cloud
                     },
                     relativePath =>
                     {
-                        // alreadyUploadedThisTransaction is a plain set shared across the retry
-                        // calls of one transaction; reads AND writes of it happen on multiple
-                        // Parallel.ForEach threads, so every access must go through resultGate
-                        // (the same lock guarding the result sets) -- an unsynchronized Add here
-                        // could corrupt the set or lose entries.
-                        bool alreadyUploaded;
-                        lock (resultGate)
-                            alreadyUploaded =
-                                alreadyUploadedThisTransaction != null
-                                && alreadyUploadedThisTransaction.Contains(relativePath);
-                        if (alreadyUploaded)
-                        {
-                            lock (resultGate)
-                                result.SkippedPaths.Add(relativePath);
-                            return;
-                        }
-
                         var localFilePath = ToLocalPath(bookFolderPath, relativePath);
-                        var (sha256, size) = BookVersionManifest.ComputeFileHash(localFilePath);
+                        string sha256;
+                        long size;
+                        if (
+                            localManifest != null
+                            && localManifest.Entries.TryGetValue(relativePath, out var localEntry)
+                        )
+                        {
+                            // The caller already hashed this exact on-disk content (see the doc
+                            // comment) — don't hash it a second time.
+                            sha256 = localEntry.Sha256;
+                            size = localEntry.Size;
+                        }
+                        else
+                        {
+                            (sha256, size) = BookVersionManifest.ComputeFileHash(localFilePath);
+                        }
 
                         if (
                             previousCommittedManifest != null
@@ -244,10 +254,7 @@ namespace Bloom.TeamCollection.Cloud
                         );
 
                         lock (resultGate)
-                        {
                             result.UploadedPaths.Add(relativePath);
-                            alreadyUploadedThisTransaction?.Add(relativePath);
-                        }
                     }
                 );
             }

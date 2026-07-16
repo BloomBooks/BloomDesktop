@@ -273,8 +273,8 @@ namespace BloomTests.TeamCollection.Cloud
         {
             // Preflight review finding (10 Jul 2026): the claimed-flag must be per ACCOUNT, not
             // per instance -- this CloudTeamCollection survives an in-session sign-out +
-            // sign-in as a different approved member (nothing disposes it on
-            // CloudAuth.AccountSwitched), and skipping the second account's claim resurrects
+            // sign-in as a different approved member (nothing resets it on an
+            // account switch), and skipping the second account's claim resurrects
             // the not_a_member startup failure the claim call exists to prevent.
             var requestedResources = new List<string>();
             _executor.Handler = req =>

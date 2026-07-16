@@ -99,21 +99,6 @@ namespace Bloom.TeamCollection.Cloud
             _client = client;
         }
 
-        /// <summary>Lists the collections the signed-in user is approved for (CONTRACTS.md's
-        /// my_collections -- includes unclaimed-but-approved rows, per that RPC's own doc).</summary>
-        public IReadOnlyList<CloudCollectionSummary> ListMyCollections()
-        {
-            return _client
-                .MyCollections()
-                .OfType<Newtonsoft.Json.Linq.JObject>()
-                .Select(o => new CloudCollectionSummary
-                {
-                    Id = (string)o["id"],
-                    Name = (string)o["name"],
-                })
-                .ToList();
-        }
-
         /// <summary>Where a collection with this display name would live locally, mirroring
         /// <see cref="FolderTeamCollection.ShowJoinCollectionTeamDialog"/>'s own naming
         /// convention.</summary>
@@ -244,26 +229,6 @@ namespace Bloom.TeamCollection.Cloud
             foreach (var bookName in cloudTc.GetBookList())
                 cloudTc.QueueBookForBackgroundDownload(bookName);
             return cloudTc;
-        }
-
-        /// <summary>
-        /// Creates a brand-new cloud collection (create_collection -- caller becomes its sole
-        /// claimed admin) and immediately joins it locally. Matches the design doc's cloud-create
-        /// flow: "sign-in -> confirm immutable name -> initial Send (no folder chooser, no
-        /// restart)" -- the "initial Send" itself (pushing an existing local collection's books up)
-        /// is done by the caller via the ordinary SynchronizeBooksFromLocalToRepo/PutBook path once
-        /// this method returns a working CloudTeamCollection, exactly as
-        /// FolderTeamCollection.SetupTeamCollection does for a folder TC.
-        /// </summary>
-        public CloudTeamCollection CreateAndJoinCollection(
-            string collectionName,
-            ITeamCollectionManager manager,
-            BookCollectionHolder bookCollectionHolder = null
-        )
-        {
-            var collectionId = Guid.NewGuid().ToString();
-            _client.CreateCollection(collectionId, collectionName);
-            return JoinCollection(collectionId, collectionName, manager, bookCollectionHolder);
         }
     }
 }

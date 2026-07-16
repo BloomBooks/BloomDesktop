@@ -47,37 +47,6 @@ namespace Bloom.TeamCollection.Cloud
         }
     }
 
-    /// <summary>How a path differs between two manifests (or a manifest and a local folder).</summary>
-    public enum ManifestDiffKind
-    {
-        /// <summary>Present in the "new" side, absent from the "base" side.</summary>
-        Added,
-
-        /// <summary>Present in both, but the content (sha256 or size) differs.</summary>
-        Changed,
-
-        /// <summary>Present in the "base" side, absent from the "new" side.</summary>
-        Removed,
-
-        /// <summary>Present in both with identical content.</summary>
-        Unchanged,
-    }
-
-    /// <summary>One path's classification from <see cref="BookVersionManifest.DiffAgainst"/>.</summary>
-    public class ManifestDiffEntry
-    {
-        public string Path { get; }
-        public ManifestDiffKind Kind { get; }
-
-        public ManifestDiffEntry(string path, ManifestDiffKind kind)
-        {
-            Path = path;
-            Kind = kind;
-        }
-
-        public override string ToString() => $"{Kind}: {Path}";
-    }
-
     /// <summary>
     /// An NFC-path-normalized map of relative path → (sha256, size, s3VersionId) for one book's
     /// content, per CONTRACTS.md's S3 layout and `version_files` table. Two things build one of
@@ -219,44 +188,9 @@ namespace Bloom.TeamCollection.Cloud
             }
         }
 
-        /// <summary>
-        /// Compares this manifest (typically the last-known-committed one) against a book folder's
-        /// current content on disk, producing one <see cref="ManifestDiffEntry"/> per path that
-        /// appears on either side. This is the local, no-network pre-check used both to decide
-        /// whether a Send is needed at all and to build the `files` list checkin-start needs; the
-        /// server still does the authoritative diff against the real current version (race
-        /// protection), returning `changedPaths` for what actually needs uploading.
-        /// </summary>
-        public List<ManifestDiffEntry> DiffAgainstLocalFolder(string bookFolderPath)
-        {
-            return DiffAgainst(FromLocalFolder(bookFolderPath));
-        }
-
-        /// <summary>
-        /// Core of <see cref="DiffAgainstLocalFolder"/>, taking an already-built manifest for the
-        /// "new" side — exposed separately so tests (and a Receive-side diff against a freshly
-        /// downloaded manifest) can supply one directly without touching disk.
-        /// </summary>
-        public List<ManifestDiffEntry> DiffAgainst(BookVersionManifest other)
-        {
-            var result = new List<ManifestDiffEntry>();
-            var allPaths = _entriesByPath
-                .Keys.Union(other._entriesByPath.Keys, StringComparer.Ordinal)
-                .OrderBy(p => p, StringComparer.Ordinal);
-            foreach (var path in allPaths)
-            {
-                var inThis = _entriesByPath.TryGetValue(path, out var thisEntry);
-                var inOther = other._entriesByPath.TryGetValue(path, out var otherEntry);
-                if (inThis && !inOther)
-                    result.Add(new ManifestDiffEntry(path, ManifestDiffKind.Removed));
-                else if (!inThis && inOther)
-                    result.Add(new ManifestDiffEntry(path, ManifestDiffKind.Added));
-                else if (thisEntry.Sha256 != otherEntry.Sha256 || thisEntry.Size != otherEntry.Size)
-                    result.Add(new ManifestDiffEntry(path, ManifestDiffKind.Changed));
-                else
-                    result.Add(new ManifestDiffEntry(path, ManifestDiffKind.Unchanged));
-            }
-            return result;
-        }
+        // NOTE: an earlier version of this class also carried a local manifest-diff API
+        // (DiffAgainst/DiffAgainstLocalFolder). It was removed as dead code: the server is
+        // authoritative about what changed (checkin-start returns changedPaths), and no product
+        // code ever consumed a locally-computed diff.
     }
 }

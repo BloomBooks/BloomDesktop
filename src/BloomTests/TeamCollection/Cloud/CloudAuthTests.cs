@@ -166,9 +166,6 @@ namespace BloomTests.TeamCollection.Cloud
                 "must be signed in before we can test refresh failure"
             );
 
-            var signedOutRaised = false;
-            auth.SignedOut += (s, e) => signedOutRaised = true;
-
             var refreshed = auth.TryRefreshOn401();
 
             // This is the "refresh failure mid-operation aborts cleanly and surfaces 'please
@@ -178,7 +175,6 @@ namespace BloomTests.TeamCollection.Cloud
             Assert.That(refreshed, Is.False);
             Assert.That(auth.IsSignedIn, Is.False);
             Assert.That(auth.GetAccessTokenOrNull(), Is.Null);
-            Assert.That(signedOutRaised, Is.True);
             Assert.That(tokenStore.ClearCallCount, Is.EqualTo(1));
         }
 
@@ -195,7 +191,7 @@ namespace BloomTests.TeamCollection.Cloud
         }
 
         [Test]
-        public void SignIn_WithDifferentAccount_RaisesAccountSwitched()
+        public void SignIn_WithDifferentAccount_ReplacesIdentity()
         {
             var provider = new FakeCloudAuthProvider
             {
@@ -203,38 +199,12 @@ namespace BloomTests.TeamCollection.Cloud
             };
             var auth = new CloudAuth(provider, new FakeCloudTokenStore());
             auth.SignIn("alice@dev.local", "BloomDev123!");
-
-            CloudAccountSwitchedEventArgs raisedArgs = null;
-            auth.AccountSwitched += (s, e) => raisedArgs = e;
+            // Sanity check the starting identity before switching.
+            Assert.That(auth.CurrentEmail, Is.EqualTo("alice@dev.local"));
 
             auth.SignIn("bob@dev.local", "BloomDev123!");
 
-            Assert.That(
-                raisedArgs,
-                Is.Not.Null,
-                "switching from alice to bob must raise AccountSwitched"
-            );
-            Assert.That(raisedArgs.PreviousEmail, Is.EqualTo("alice@dev.local"));
-            Assert.That(raisedArgs.NewEmail, Is.EqualTo("bob@dev.local"));
             Assert.That(auth.CurrentEmail, Is.EqualTo("bob@dev.local"));
-        }
-
-        [Test]
-        public void SignIn_WithSameAccountAgain_DoesNotRaiseAccountSwitched()
-        {
-            var provider = new FakeCloudAuthProvider
-            {
-                SignInHandler = (email, password) => MakeSession(email),
-            };
-            var auth = new CloudAuth(provider, new FakeCloudTokenStore());
-            auth.SignIn("alice@dev.local", "BloomDev123!");
-
-            var switchedRaised = false;
-            auth.AccountSwitched += (s, e) => switchedRaised = true;
-
-            auth.SignIn("alice@dev.local", "BloomDev123!");
-
-            Assert.That(switchedRaised, Is.False);
         }
 
         [Test]
@@ -301,7 +271,7 @@ namespace BloomTests.TeamCollection.Cloud
         }
 
         [Test]
-        public void SignOut_ClearsSessionAndRaisesSignedOut()
+        public void SignOut_ClearsSessionAndTokenStore()
         {
             var provider = new FakeCloudAuthProvider
             {
@@ -312,14 +282,10 @@ namespace BloomTests.TeamCollection.Cloud
             auth.SignIn("alice@dev.local", "BloomDev123!");
             Assert.That(auth.IsSignedIn, Is.True, "must be signed in before testing sign-out");
 
-            var signedOutRaised = false;
-            auth.SignedOut += (s, e) => signedOutRaised = true;
-
             auth.SignOut();
 
             Assert.That(auth.IsSignedIn, Is.False);
             Assert.That(auth.CurrentEmail, Is.Null);
-            Assert.That(signedOutRaised, Is.True);
             Assert.That(tokenStore.ClearCallCount, Is.EqualTo(1));
         }
 

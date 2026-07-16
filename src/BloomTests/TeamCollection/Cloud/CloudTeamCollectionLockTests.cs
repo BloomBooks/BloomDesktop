@@ -178,7 +178,7 @@ namespace BloomTests.TeamCollection.Cloud
         }
 
         [Test]
-        public void ForceUnlock_CallsForceUnlockRpc()
+        public void ForceUnlock_CallsServerForceUnlock()
         {
             var forceUnlockCalled = false;
             _executor.Handler = req =>

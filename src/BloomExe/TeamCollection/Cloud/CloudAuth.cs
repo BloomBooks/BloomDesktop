@@ -50,19 +50,6 @@ namespace Bloom.TeamCollection.Cloud
         public bool EmailVerified { get; set; }
     }
 
-    /// <summary>Raised by <see cref="CloudAuth.AccountSwitched"/> when a new sign-in changes the identity.</summary>
-    public class CloudAccountSwitchedEventArgs : EventArgs
-    {
-        public string PreviousEmail { get; }
-        public string NewEmail { get; }
-
-        public CloudAccountSwitchedEventArgs(string previousEmail, string newEmail)
-        {
-            PreviousEmail = previousEmail;
-            NewEmail = newEmail;
-        }
-    }
-
     /// <summary>Thrown by an <see cref="ICloudAuthProvider"/> when sign-in or refresh fails.</summary>
     public class CloudAuthException : ApplicationException
     {
@@ -149,16 +136,29 @@ namespace Bloom.TeamCollection.Cloud
         private CloudSession _session;
         private Timer _refreshTimer;
 
-        /// <summary>Fired when a sign-in replaces a previously-active, different account.</summary>
-        public event EventHandler<CloudAccountSwitchedEventArgs> AccountSwitched;
-
-        /// <summary>Fired whenever the session is cleared, whether by explicit sign-out or a failed refresh.</summary>
-        public event EventHandler SignedOut;
+        // NOTE: this class used to expose AccountSwitched/SignedOut events, but nothing ever
+        // subscribed. Account-switch consumers instead key their cached state on the signed-in
+        // email (e.g. CloudTeamCollection._membershipsClaimedForEmail), which self-invalidates.
 
         public CloudAuth(ICloudAuthProvider provider, ICloudTokenStore tokenStore = null)
         {
             _provider = provider;
             _tokenStore = tokenStore ?? new InMemoryCloudTokenStore();
+        }
+
+        /// <summary>
+        /// The one shared construction sequence for a ready-to-use auth: builds a CloudAuth with
+        /// the provider matching <paramref name="environment"/> and immediately establishes a
+        /// session where possible (env-override credentials or a stored token — see
+        /// <see cref="InitializeAtStartup"/>). Used everywhere a default auth is needed
+        /// (TeamCollectionManager.ConnectToCloudCollection, CloudTeamCollection's own default,
+        /// SharingApi's process-wide fallback).
+        /// </summary>
+        public static CloudAuth CreateInitialized(CloudEnvironment environment)
+        {
+            var auth = new CloudAuth(CreateProvider(environment));
+            auth.InitializeAtStartup(environment);
+            return auth;
         }
 
         /// <summary>Builds the provider matching <paramref name="environment"/>'s configured auth mode.</summary>
@@ -310,13 +310,13 @@ namespace Bloom.TeamCollection.Cloud
             catch (Exception e)
             {
                 Logger.WriteError("CloudAuth: refresh-on-401 failed", e);
-                SignOutCore(raiseEvent: true);
+                SignOutCore();
                 return false;
             }
         }
 
         /// <summary>Clears the session (locally and in the token store) and cancels the refresh timer.</summary>
-        public void SignOut() => SignOutCore(raiseEvent: true);
+        public void SignOut() => SignOutCore();
 
         /// <summary>
         /// Groundwork data for the `sharing/loginState` endpoint (see <see cref="CloudLoginState"/>).
@@ -346,21 +346,6 @@ namespace Bloom.TeamCollection.Cloud
             }
             _tokenStore.Save(newSession);
             ScheduleProactiveRefresh(newSession);
-
-            if (
-                previousEmail != null
-                && !string.Equals(
-                    previousEmail,
-                    newSession.Email,
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
-            {
-                AccountSwitched?.Invoke(
-                    this,
-                    new CloudAccountSwitchedEventArgs(previousEmail, newSession.Email)
-                );
-            }
         }
 
         /// <summary>
@@ -401,19 +386,17 @@ namespace Bloom.TeamCollection.Cloud
             catch (Exception e)
             {
                 Logger.WriteError("CloudAuth: proactive refresh failed", e);
-                SignOutCore(raiseEvent: true);
+                SignOutCore();
             }
         }
 
-        private void SignOutCore(bool raiseEvent)
+        private void SignOutCore()
         {
             lock (_lock)
                 _session = null;
             _refreshTimer?.Dispose();
             _refreshTimer = null;
             _tokenStore.Clear();
-            if (raiseEvent)
-                SignedOut?.Invoke(this, EventArgs.Empty);
         }
 
         public void Dispose() => _refreshTimer?.Dispose();

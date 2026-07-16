@@ -81,15 +81,6 @@ namespace Bloom.TeamCollection.Cloud
             }
         }
 
-        public void Stop()
-        {
-            lock (_gate)
-            {
-                _timer?.Dispose();
-                _timer = null;
-            }
-        }
-
         /// <summary>
         /// Runs one poll cycle immediately: used by the periodic timer, and available for
         /// "on-activation" callers (Bloom regaining focus, or a user-initiated "Receive Updates").
@@ -133,6 +124,9 @@ namespace Bloom.TeamCollection.Cloud
             }
         }
 
+        /// <summary>Terminal: stops the timer and permanently disables Start/PollNow (the
+        /// monitor can never poll again). There is deliberately no separate pausable Stop();
+        /// the one owner (CloudTeamCollection.StopMonitoring) only ever tears down.</summary>
         public void Dispose()
         {
             lock (_gate)

@@ -290,8 +290,7 @@ namespace Bloom.TeamCollection
         private void HandleCloudCollectionId(ApiRequest request)
         {
             request.ReplyWithText(
-                (_tcManager.CurrentCollection as Cloud.CloudTeamCollection)?.CollectionIdForCloud
-                    ?? ""
+                (_tcManager.CurrentCollection as Cloud.CloudTeamCollection)?.CloudCollectionId ?? ""
             );
         }
 

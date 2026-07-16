@@ -718,7 +718,7 @@ namespace Bloom.TeamCollection
         /// Virtual seam: actually perform the atomic same-machine lock takeover
         /// <see cref="CanTakeOverLockOnThisMachine"/> judged eligible. Base (folder) does nothing
         /// (and should never be asked to, since CanTakeOverLockOnThisMachine is always false
-        /// there). Returns true if the current user now holds the lock.
+        /// there). Returns true if the caller may proceed as lock holder (including the cloud case where a never-committed book has no server lock to take over).
         /// </summary>
         protected internal virtual bool TryTakeOverLock(string bookName) => false;
 
@@ -3206,6 +3206,36 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
+        /// Finds a path in <paramref name="folderName"/> (created if necessary) that does not yet
+        /// exist, named as similarly as possible to bookFolderName + extension: the bare name if
+        /// free, otherwise with 2, 3, ... appended. Shared by FolderTeamCollection (repo temp
+        /// files, Lost and Found .bloom files) and CloudTeamCollection (local Lost and Found
+        /// .bloomSource files).
+        /// </summary>
+        protected static string AvailablePath(
+            string bookFolderName,
+            string folderName,
+            string extension
+        )
+        {
+            string bookPath;
+            Directory.CreateDirectory(folderName);
+            int counter = 0;
+            do
+            {
+                counter++;
+                // Don't use ChangeExtension here, bookFolderName may have arbitrary period
+                bookPath =
+                    Path.Combine(
+                        folderName,
+                        bookFolderName + (counter == 1 ? "" : counter.ToString())
+                    ) + extension;
+            } while (RobustFile.Exists(bookPath));
+
+            return bookPath;
+        }
+
+        /// <summary>
         /// Get the local path we expect to use for the specified book id based on the current repo state.
         /// This helps restore selection after a remote rename before the local folder has been renamed.
         /// </summary>
@@ -3227,7 +3257,10 @@ namespace Bloom.TeamCollection
         /// </summary>
         /// <param name="unreadableBooks">If non-null, names of books whose repo files could not be
         /// read are added to this collection instead of being silently ignored.</param>
-        private Dictionary<string, Tuple<string, bool>> GetRepoBooksByIdMap(
+        /// <remarks>Virtual so a backend that already knows every repo book's id (e.g.
+        /// CloudTeamCollection's repo cache) can answer without fetching each book's meta.json —
+        /// this base implementation costs a repo read per book.</remarks>
+        protected virtual Dictionary<string, Tuple<string, bool>> GetRepoBooksByIdMap(
             ICollection<string> unreadableBooks = null
         )
         {

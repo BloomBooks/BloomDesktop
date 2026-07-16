@@ -48,8 +48,8 @@ namespace Bloom.TeamCollection.Cloud
         // claiming converts an approved-by-email membership row into a claimed (user_id-filled)
         // one that every data RPC's RLS gate accepts. Keyed by EMAIL, not a once-per-session
         // bool (preflight review finding, 10 Jul 2026): this instance survives an in-session
-        // sign-out + sign-in as a DIFFERENT approved member (nothing disposes it on
-        // CloudAuth.AccountSwitched), and a stale "already claimed" bool would skip claiming for
+        // sign-out + sign-in as a DIFFERENT approved member (nothing resets it on an
+        // account switch), and a stale "already claimed" bool would skip claiming for
         // the new account -- resurrecting the not_a_member startup failure this field exists to
         // prevent.
         private string _membershipsClaimedForEmail;
@@ -126,10 +126,7 @@ namespace Bloom.TeamCollection.Cloud
             // already calls InitializeAtStartup itself before constructing us; every unit test)
             // are unaffected -- they own their auth's lifecycle already.
             if (auth == null)
-            {
-                auth = new CloudAuth(CloudAuth.CreateProvider(_environment));
-                auth.InitializeAtStartup(_environment);
-            }
+                auth = CloudAuth.CreateInitialized(_environment);
             _auth = auth;
             _client = client ?? new CloudCollectionClient(_environment, _auth);
             _transfer = transfer ?? new CloudBookTransfer();
@@ -137,7 +134,9 @@ namespace Bloom.TeamCollection.Cloud
             RefreshIndexFromCache();
         }
 
-        public string CollectionIdForCloud => _collectionId;
+        /// <summary>The server-side collections.id this instance talks to (same value the UI's
+        /// useCloudCollectionId hook fetches; the base CollectionId field carries it too).</summary>
+        public string CloudCollectionId => _collectionId;
 
         /// <summary>In a cloud TC the identity that owns checkouts is the signed-in ACCOUNT
         /// (the server stamps locks from the auth token), not Bloom's registration email.
@@ -155,14 +154,24 @@ namespace Bloom.TeamCollection.Cloud
         // serving the PREVIOUS member's display name for the new member's new local books.
         private string _currentUserDisplayNameForEmail;
 
+        // Failure back-off for the display-name lookup (also keyed by email, for the same
+        // account-switch reason as above): when MembersList throws (offline, server down), don't
+        // re-attempt the network call for this TTL. Without it, every status render retried the
+        // lookup immediately -- a timeout storm while offline. 30s keeps the avatar self-healing
+        // soon after connectivity returns while being far longer than any render burst.
+        internal static readonly TimeSpan DisplayNameFailureRetryTtl = TimeSpan.FromSeconds(30);
+        private string _displayNameLookupFailedForEmail;
+        private DateTime _displayNameLookupFailedAtUtc;
+
         /// <summary>
         /// The signed-in account's admin-editable display name (tc.members.display_name), e.g.
         /// "Alice Admin", or null when signed out / not yet resolvable. Used so a brand-new
         /// local book's avatar shows the same initials + full name as a real checkout by this
         /// user (dogfood bug: new local books showed a single-letter, email-tooltip avatar while
         /// real checkouts showed "AA"/"Alice Admin"). Resolved lazily from MembersList and cached
-        /// per signed-in email; a failed resolve is NOT cached, so a call that happens before
-        /// sign-in or during a transient failure retries later. Not refreshed after a successful
+        /// per signed-in email; a failed resolve is retried, but only after
+        /// <see cref="DisplayNameFailureRetryTtl"/> (a per-call retry made every status render
+        /// pay a fresh network timeout while offline). Not refreshed after a successful
         /// resolve while the same account stays signed in -- display-name changes are rare and
         /// the avatar is cosmetic. Callers fall back to the email when this is null, matching
         /// prior behavior.
@@ -182,6 +191,15 @@ namespace Bloom.TeamCollection.Cloud
                     )
                 )
                     return _currentUserDisplayName;
+                if (
+                    string.Equals(
+                        _displayNameLookupFailedForEmail,
+                        email,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                    && DateTime.UtcNow - _displayNameLookupFailedAtUtc < DisplayNameFailureRetryTtl
+                )
+                    return null; // recent failure; don't hammer the server (see the TTL field's doc)
                 try
                 {
                     string resolved = null;
@@ -201,10 +219,14 @@ namespace Bloom.TeamCollection.Cloud
                     }
                     _currentUserDisplayName = resolved;
                     _currentUserDisplayNameForEmail = email;
+                    _displayNameLookupFailedForEmail = null;
                 }
                 catch
                 {
-                    // Network/permission hiccup; leave unresolved so a later call can retry.
+                    // Network/permission hiccup; leave unresolved so a later call can retry --
+                    // but not before the TTL elapses (timeout-storm guard).
+                    _displayNameLookupFailedForEmail = email;
+                    _displayNameLookupFailedAtUtc = DateTime.UtcNow;
                     return null;
                 }
                 return _currentUserDisplayName;
@@ -230,7 +252,8 @@ namespace Bloom.TeamCollection.Cloud
         public CloudCollectionClient Client => _client;
 
         /// <summary>Test-only: resolve a book folder name to its server book id (null if unknown).</summary>
-        internal string TryGetBookIdForTests(string bookFolderName) => TryGetBookId(bookFolderName);
+        internal string GetBookIdByNameIndexForTests(string bookFolderName) =>
+            TryGetBookId(bookFolderName);
 
         /// <summary>The version seq of what's currently on THIS machine's disk for a book, or null
         /// if never Sent/Received here (book-status JSON's "localVersionSeq").</summary>
@@ -659,6 +682,37 @@ namespace Bloom.TeamCollection.Cloud
         }
 
         /// <summary>
+        /// Cloud override: answered entirely from the repo cache, which already knows every
+        /// book's instance id (the server's books.instance_id IS meta.json's bookInstanceId).
+        /// The base implementation fetches each repo book's meta.json via GetRepoBookFile just to
+        /// read that same id -- for this backend, several network round trips PER BOOK at every
+        /// startup sync. Matches the base contract exactly: only live, committed repo books
+        /// (the same filter as <see cref="GetBookList"/>) with a readable id appear; value is
+        /// (repo book name, whether a local folder of that name exists). Nothing is ever added to
+        /// <paramref name="unreadableBooks"/> -- there are no repo zip files here to be unreadable,
+        /// and the base only adds names on zip/IO read failures.
+        /// </summary>
+        protected override Dictionary<string, Tuple<string, bool>> GetRepoBooksByIdMap(
+            ICollection<string> unreadableBooks = null
+        )
+        {
+            EnsureCacheHydrated();
+            var booksById = new Dictionary<string, Tuple<string, bool>>();
+            foreach (var book in _cache.GetAllBooks())
+            {
+                if (book.DeletedAt.HasValue || !book.CurrentVersionSeq.HasValue)
+                    continue; // not a live, committed repo book (mirrors GetBookList)
+                if (string.IsNullOrEmpty(book.Name) || string.IsNullOrEmpty(book.InstanceId))
+                    continue; // no usable name/id -- the base skips id-less books too
+                booksById[book.InstanceId] = Tuple.Create(
+                    book.Name,
+                    Directory.Exists(Path.Combine(_localCollectionFolder, book.Name))
+                );
+            }
+            return booksById;
+        }
+
+        /// <summary>
         /// Diff-dispatches to the narrowest RPC per Design/CloudTeamCollections/notes/
         /// write-book-status-audit.md. TryLockInRepo/UnlockInRepo (overridden below) already handle
         /// the lock-changing callers (AttemptLock/UnlockBook/ForceUnlock); this method only needs to
@@ -729,9 +783,9 @@ namespace Bloom.TeamCollection.Cloud
             if (bookId == null)
                 return;
             if (force)
-                _client.ForceUnlockRpc(bookId);
+                _client.ForceUnlock(bookId);
             else
-                _client.UnlockBookRpc(bookId);
+                _client.UnlockBook(bookId);
             _cache.RecordUnlock(bookId);
             _cache.Save();
         }
@@ -969,7 +1023,9 @@ namespace Bloom.TeamCollection.Cloud
                     sourceBookFolderPath,
                     changedPaths,
                     cachedBook?.Manifest,
-                    new HashSet<string>(),
+                    // We just hashed the whole folder to build checkin-start's proposed manifest;
+                    // passing it here keeps UploadChangedFiles from hashing each file again.
+                    localManifest,
                     4,
                     progressCallback == null
                         ? null
@@ -1057,8 +1113,9 @@ namespace Bloom.TeamCollection.Cloud
             try
             {
                 var lostAndFoundDir = Path.Combine(_localCollectionFolder, "Lost and Found");
-                Directory.CreateDirectory(lostAndFoundDir);
-                var destPath = GetAvailableBloomSourcePath(lostAndFoundDir, bookFolderName);
+                // AvailablePath (hoisted to the base TeamCollection) creates the folder and finds
+                // a non-colliding "<name>[.N].bloomSource" path.
+                var destPath = AvailablePath(bookFolderName, lostAndFoundDir, ".bloomSource");
                 var zip = new Bloom.Utils.BloomZipFile(destPath);
                 zip.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null, null);
                 zip.Save();
@@ -1095,20 +1152,6 @@ namespace Bloom.TeamCollection.Cloud
                     exception: e
                 );
             }
-        }
-
-        private static string GetAvailableBloomSourcePath(string folder, string bookFolderName)
-        {
-            var counter = 0;
-            string path;
-            do
-            {
-                counter++;
-                path =
-                    Path.Combine(folder, bookFolderName + (counter == 1 ? "" : counter.ToString()))
-                    + ".bloomSource";
-            } while (RobustFile.Exists(path));
-            return path;
         }
 
         // ------------------------------------------------------------------
@@ -1390,7 +1433,7 @@ namespace Bloom.TeamCollection.Cloud
             var bookId = ResolveBookId(bookFolderName);
             if (bookId == null)
                 return; // never made it to the repo; nothing to delete there.
-            _client.DeleteBookRpc(bookId);
+            _client.DeleteBook(bookId);
             HydrateFromServer();
         }
 
@@ -1535,12 +1578,18 @@ namespace Bloom.TeamCollection.Cloud
             );
             var transactionId = (string)startResult["transactionId"];
             var location = ParseS3Location(startResult);
+            // Hand the hashes we just computed (for the start call's files json) to the transfer
+            // so it doesn't hash every file a second time.
+            var localGroupHashes = new Dictionary<string, BookVersionManifestEntry>();
+            foreach (var f in files)
+                localGroupHashes[BookVersionManifest.NormalizePath(f.path)] =
+                    new BookVersionManifestEntry(f.sha256, f.size);
             _transfer.UploadChangedFiles(
                 location,
                 sourceFolder,
                 files.Select(f => f.path),
                 null,
-                new HashSet<string>(),
+                new BookVersionManifest(localGroupHashes),
                 4,
                 null,
                 CancellationToken.None
@@ -1571,33 +1620,17 @@ namespace Bloom.TeamCollection.Cloud
             {
                 var download = _client.DownloadStart(_collectionId);
                 var location = ParseS3Location(download);
-                var s3Client = BuildS3Client(location);
+                var s3Client = CloudBookTransfer.BuildDefaultClient(location);
                 var prefix = $"{location.Prefix}collectionFiles/{groupKey}/";
 
-                var keys = new List<string>();
-                string continuationToken = null;
-                do
-                {
-                    var response = s3Client
-                        .ListObjectsV2Async(
-                            new ListObjectsV2Request
-                            {
-                                BucketName = location.Bucket,
-                                Prefix = prefix,
-                                ContinuationToken = continuationToken,
-                            }
-                        )
-                        .GetAwaiter()
-                        .GetResult();
-                    // AWSSDK v4 returns null (not empty) response collections when the prefix has
-                    // no objects — routine for the allowed-words/sample-texts groups, which most
-                    // collections never populate. (Same v4 change S3Extensions.ListAllObjects
-                    // guards; found live by the first post-bump E2E pass.)
-                    if (response.S3Objects != null)
-                        keys.AddRange(response.S3Objects.Select(o => o.Key));
-                    continuationToken =
-                        response.IsTruncated == true ? response.NextContinuationToken : null;
-                } while (continuationToken != null);
+                // ListAllObjects handles pagination and AWSSDK v4's null-collection quirk (the
+                // allowed-words/sample-texts groups most collections never populate list empty).
+                var keys = s3Client
+                    .ListAllObjects(
+                        new ListObjectsV2Request { BucketName = location.Bucket, Prefix = prefix }
+                    )
+                    .Select(o => o.Key)
+                    .ToList();
 
                 if (keys.Count == 0)
                     return;
@@ -1682,31 +1715,6 @@ namespace Bloom.TeamCollection.Cloud
                 candidates = candidates.Where(path => shareable.Contains(Path.GetFileName(path)));
             }
             return candidates.ToList();
-        }
-
-        private static IAmazonS3 BuildS3Client(CloudS3Location location)
-        {
-            var env = CloudEnvironment.Current;
-            var config = new AmazonS3Config
-            {
-                ServiceURL = env.S3Endpoint,
-                ForcePathStyle = env.S3ForcePathStyle,
-                AuthenticationRegion = location.Region,
-                // See the matching comment in CloudBookTransfer.BuildDefaultClient: this endpoint
-                // is always MinIO or another S3-compatible store, never real AWS, so we opt back
-                // into AWSSDK v4's pre-v4 checksum behavior (only when an operation requires one)
-                // rather than the new WHEN_SUPPORTED default, which not every S3-compatible server
-                // understands.
-                RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
-                ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED,
-            };
-            var credentials = new AmazonS3Credentials
-            {
-                AccessKey = location.AccessKeyId,
-                SecretAccessKey = location.SecretAccessKey,
-                SessionToken = location.SessionToken,
-            };
-            return BloomS3Client.CreateAmazonS3Client(config, credentials);
         }
 
         protected override DateTime LastRepoCollectionFileModifyTime

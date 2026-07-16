@@ -248,24 +248,21 @@ namespace Bloom.TeamCollection.Cloud
             );
 
         /// <summary>Releases the caller's own lock (undo checkout; no content change).</summary>
-        public JObject UnlockBookRpc(string bookId) =>
+        public JObject UnlockBook(string bookId) =>
             (JObject)CallRpc("unlock_book", new { p_book_id = bookId });
 
         /// <summary>Admin-only forced unlock; audited server-side, emits a ForcedUnlock event.</summary>
-        public JObject ForceUnlockRpc(string bookId) =>
+        public JObject ForceUnlock(string bookId) =>
             (JObject)CallRpc("force_unlock", new { p_book_id = bookId });
 
         /// <summary>Requires the caller holds the lock; sets deleted_at and emits a Deleted event.</summary>
-        public JObject DeleteBookRpc(string bookId) =>
+        public JObject DeleteBook(string bookId) =>
             (JObject)CallRpc("delete_book", new { p_book_id = bookId });
 
-        /// <summary>Admin-only; clears a tombstone (name-uniqueness re-enforced).</summary>
-        public JObject UndeleteBookRpc(string bookId) =>
-            (JObject)CallRpc("undelete_book", new { p_book_id = bookId });
-
-        /// <summary>Advisory uniqueness pre-check for a proposed rename.</summary>
-        public JObject RenameCheck(string bookId, string newName) =>
-            (JObject)CallRpc("rename_check", new { p_book_id = bookId, p_new_name = newName });
+        // NOTE: wrappers for the tc.undelete_book and tc.rename_check RPCs used to live here but
+        // were removed as dead code -- no client flow calls them (renames travel through
+        // checkin-start's proposedName/NameConflict retry). The SQL functions remain as contract
+        // surface for admin tooling.
 
         /// <summary>
         /// Admin-only approved-accounts list. RPC name is our best reading of CONTRACTS.md's
