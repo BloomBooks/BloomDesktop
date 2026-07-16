@@ -1,6 +1,11 @@
 import * as React from "react";
 import { useState } from "react";
-import { get, getBoolean } from "../utils/bloomApi";
+import {
+    get,
+    getApiDataOnce,
+    getBoolean,
+    resetApiDataOnceCacheForTests,
+} from "../utils/bloomApi";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { useIsCloudTeamCollectionsExperimentalFeatureEnabled } from "./sharingApi";
 
@@ -134,26 +139,19 @@ export const initialTeamCollectionCapabilities: ITeamCollectionCapabilities = {
 // components (BookButton — once per book, remounting on each Collection-tab switch), so an
 // uncached per-mount request would mean hundreds of identical HTTP calls in large collections.
 // Capabilities only change when the collection's backend changes, which restarts Bloom anyway.
-let capabilitiesPromise: Promise<ITeamCollectionCapabilities> | undefined;
-
 function getTeamCollectionCapabilitiesOnce(): Promise<ITeamCollectionCapabilities> {
-    if (!capabilitiesPromise) {
-        capabilitiesPromise = new Promise((resolve) =>
-            get("teamCollection/capabilities", (result) =>
-                resolve(
-                    (result.data as ITeamCollectionCapabilities) ??
-                        initialTeamCollectionCapabilities,
-                ),
-            ),
-        );
-    }
-    return capabilitiesPromise;
+    return getApiDataOnce(
+        "teamCollection/capabilities",
+        (data) =>
+            (data as ITeamCollectionCapabilities) ??
+            initialTeamCollectionCapabilities,
+    );
 }
 
 // Test-only: forget the cached capabilities fetch so each test's endpoint mocks are
 // observed. Call from beforeEach; production code must never call this.
 export function resetTeamCollectionApiCachesForTests() {
-    capabilitiesPromise = undefined;
+    resetApiDataOnceCacheForTests();
 }
 
 export function useTeamCollectionCapabilities(): ITeamCollectionCapabilities {

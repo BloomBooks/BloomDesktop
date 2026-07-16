@@ -1,7 +1,14 @@
 import * as React from "react";
 import { useState } from "react";
-import { get, post, postJson, useWatchApiData } from "../utils/bloomApi";
-import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+import {
+    get,
+    getApiDataOnce,
+    post,
+    postJson,
+    resetApiDataOnceCacheForTests,
+    useWatchApiData,
+    useWatchApiDataWithReload,
+} from "../utils/bloomApi";
 
 // The TS end of interactions with the `SharingApi` C# class (task 06). Names here are kept in
 // sync with Design/CloudTeamCollections/CONTRACTS.md.
@@ -74,26 +81,22 @@ export function openBrowserSignIn() {
     return post("sharing/openBrowserSignIn");
 }
 
-// Fetches the approved-accounts list for a cloud Team Collection.
+// Fetches the approved-accounts list for a cloud Team Collection, refetching whenever the server
+// fires "sharing"/"membersChanged" (or the caller invokes reload). No fetch until collectionId is
+// known.
 export function useSharingMembers(collectionId: string): {
     members: IApprovedMember[];
     reload: () => void;
 } {
-    const [members, setMembers] = useState<IApprovedMember[]>([]);
-    const [generation, setGeneration] = useState(0);
-    useSubscribeToWebSocketForEvent("sharing", "membersChanged", () =>
-        setGeneration((old) => old + 1),
+    const { data, reload } = useWatchApiDataWithReload<IApprovedMember[]>(
+        collectionId
+            ? `sharing/members?collectionId=${encodeURIComponent(collectionId)}`
+            : undefined,
+        [],
+        "sharing",
+        "membersChanged",
     );
-    React.useEffect(() => {
-        if (!collectionId) return;
-        get(
-            `sharing/members?collectionId=${encodeURIComponent(collectionId)}`,
-            (result) => {
-                setMembers((result.data as IApprovedMember[]) ?? []);
-            },
-        );
-    }, [collectionId, generation]);
-    return { members, reload: () => setGeneration((old) => old + 1) };
+    return { members: data, reload };
 }
 
 export function addApproval(
@@ -174,23 +177,17 @@ const kCloudTeamCollectionsExperimentalFeatureToken = "cloud-team-collections";
 // (BookButton renders once per book, and remounts on every switch to the Collection tab) — an
 // uncached per-mount request meant hundreds of identical HTTP calls. Changing experimental
 // features requires reopening dialogs/pages anyway, so page-load granularity loses nothing.
-let enabledExperimentalFeaturesPromise: Promise<string> | undefined;
-
 function getEnabledExperimentalFeaturesOnce(): Promise<string> {
-    if (!enabledExperimentalFeaturesPromise) {
-        enabledExperimentalFeaturesPromise = new Promise((resolve) =>
-            get("app/enabledExperimentalFeatures", (result) =>
-                resolve((result.data as string) ?? ""),
-            ),
-        );
-    }
-    return enabledExperimentalFeaturesPromise;
+    return getApiDataOnce(
+        "app/enabledExperimentalFeatures",
+        (data) => (data as string) ?? "",
+    );
 }
 
 // Test-only: forget the cached experimental-features fetch so each test's endpoint mocks
 // are observed. Call from beforeEach; production code must never call this.
 export function resetSharingApiCachesForTests() {
-    enabledExperimentalFeaturesPromise = undefined;
+    resetApiDataOnceCacheForTests();
 }
 
 // Whether the user has turned on the "cloud-team-collections" experimental feature. Backed by

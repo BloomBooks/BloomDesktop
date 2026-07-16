@@ -1886,3 +1886,26 @@ provider, and never build a whole collection) nor to SyncAtStartup's MakeCollect
 (builds a *second* collection reusing the fixture's folder — folding it in would bloat the helper
 or change behavior; exactly the over-consolidation to avoid). Net -123 dup lines across fixtures
 for +91 shared. Verified: TeamCollection|Cloud filter 438/438, no new warnings.
+
+---
+
+**2026-07-16 — R6 + R13 done (front-end hook reuse).** Two duplicated front-end idioms in the
+cloud-TC TS, both extracted into utils/bloomApi.ts:
+- **R13 (cached-promise dedup):** sharingApi.ts (`enabledExperimentalFeaturesPromise` /
+  getEnabledExperimentalFeaturesOnce) and teamCollectionApi.tsx (`capabilitiesPromise` /
+  getTeamCollectionCapabilitiesOnce) hand-rolled the identical "fetch at most once per page load,
+  cache the promise, expose a test-only reset" pattern (needed because per-book components would
+  otherwise fire hundreds of identical requests). New `getApiDataOnce(urlSuffix, mapResult)` keyed
+  by a Map, plus `resetApiDataOnceCacheForTests()` (clears the whole map). The two module-specific
+  reset exports remain (vitest.setup.ts calls them by name) but now delegate to the shared clear.
+- **R6 (reload-capable watch hook):** useSharingMembers hand-rolled the generation-counter +
+  websocket-refetch + manual-reload + skip-until-param-known idiom that useWatchApiData almost
+  covers. New additive `useWatchApiDataWithReload(urlSuffix?, default, ctx, event)` returns
+  `{data, reload}` and skips fetching while urlSuffix is undefined; useSharingMembers is now a
+  4-line wrapper over it. Left useWatchApiData (used by ~12 files) untouched, and left
+  useMyCloudCollections alone (its `loading` flag doesn't fit the watch/reload shape -- forcing it
+  would be over-consolidation).
+Verified: eslint 0 errors / 0 new warnings on the 3 files; typecheck clean for them; 7 vitest
+consumer files (SettingsPanel, Dialog, BookStatusPanel, ShareButton, CollectionHistoryTable,
+BookButton, CollectionChooser) 38/38 green. No `pnpm build` run (the CodeReview worktree's Vite on
+:5173 is a different tree and was left alone).
