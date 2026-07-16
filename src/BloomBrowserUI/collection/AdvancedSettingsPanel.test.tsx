@@ -1,7 +1,7 @@
 import * as React from "react";
 import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { renderTestRoot } from "../utils/testRender";
 
 // Tests the "Cloud Team Collections (experimental)" checkbox this task adds alongside the
 // existing "Team Collections" one: same wiring (settings/advancedProgramSettings GET/POST,
@@ -84,16 +84,8 @@ vi.mock("@sillsdev/config-r", () => ({
 
 import { AdvancedSettingsPanel } from "./AdvancedSettingsPanel";
 
-let renderedContainer: HTMLDivElement | undefined;
-
 function render(): HTMLDivElement {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    renderedContainer = container;
-    act(() => {
-        renderRoot(<AdvancedSettingsPanel />, container);
-    });
-    return container;
+    return renderTestRoot(<AdvancedSettingsPanel />);
 }
 
 // Mirrors the shape CollectionSettingsApi.GetAdvancedSettingsData returns.
@@ -129,12 +121,6 @@ function respondWith(overrides: {
 }
 
 afterEach(() => {
-    if (renderedContainer) {
-        unmountRoot(renderedContainer);
-        renderedContainer.remove();
-        renderedContainer = undefined;
-    }
-    document.body.innerHTML = "";
     vi.clearAllMocks();
     mockUseGetFeatureStatus.mockReturnValue({ enabled: true });
 });

@@ -1,6 +1,6 @@
 import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { renderTestRoot } from "../utils/testRender";
 import { ShareButton } from "./ShareButton";
 import { ITeamCollectionCapabilities } from "./teamCollectionApi";
 
@@ -64,24 +64,11 @@ const cloudCapabilities: ITeamCollectionCapabilities = {
     requiresSignIn: true,
 };
 
-let renderedContainer: HTMLDivElement | undefined;
-
 function renderShareButton() {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    renderedContainer = container;
-    act(() => {
-        renderRoot(<ShareButton />, container);
-    });
+    renderTestRoot(<ShareButton />);
 }
 
 afterEach(() => {
-    if (renderedContainer) {
-        unmountRoot(renderedContainer);
-        renderedContainer.remove();
-        renderedContainer = undefined;
-    }
-    document.body.innerHTML = "";
     mockUseTeamCollectionCapabilities.mockReset();
     mockUseCloudCollectionId.mockReset();
     mockUseIsTeamCollectionAdmin.mockReset();

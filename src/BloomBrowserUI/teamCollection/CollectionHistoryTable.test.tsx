@@ -1,6 +1,5 @@
-import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { renderTestRoot } from "../utils/testRender";
 import { CollectionHistoryTable } from "./CollectionHistoryTable";
 import { ITeamCollectionCapabilities } from "./teamCollectionApi";
 
@@ -71,25 +70,11 @@ const oneEvent = (type: number) => [
     },
 ];
 
-let renderedContainer: HTMLDivElement | undefined;
-
 function renderTable() {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    renderedContainer = container;
-    act(() => {
-        renderRoot(<CollectionHistoryTable />, container);
-    });
-    return container;
+    return renderTestRoot(<CollectionHistoryTable />);
 }
 
 afterEach(() => {
-    if (renderedContainer) {
-        unmountRoot(renderedContainer);
-        renderedContainer.remove();
-        renderedContainer = undefined;
-    }
-    document.body.innerHTML = "";
     mockUseTeamCollectionCapabilities.mockReset();
     mockGet.mockReset();
     mockGetBoolean.mockReset();

@@ -1,6 +1,5 @@
-import { act } from "react";
-import { afterEach, describe, expect, it } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { describe, expect, it } from "vitest";
+import { renderTestRoot as render } from "../utils/testRender";
 import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { CreateTeamCollectionBundleDispatcher } from "./CreateTeamCollection";
 
@@ -13,28 +12,6 @@ import { CreateTeamCollectionBundleDispatcher } from "./CreateTeamCollection";
 // This test proves the dispatcher renders the right component for every dialogKind C# can send,
 // including the case where dialogKind is omitted (must still be the folder dialog, since that's
 // the one caller that predates the prop).
-
-let mountedRoot: HTMLDivElement | undefined;
-
-function render(element: React.ReactElement): HTMLDivElement {
-    const root = document.createElement("div");
-    document.body.appendChild(root);
-    mountedRoot = root;
-    act(() => {
-        renderRoot(element, root);
-    });
-    return root;
-}
-
-afterEach(() => {
-    if (mountedRoot) {
-        unmountRoot(mountedRoot);
-        mountedRoot.remove();
-        mountedRoot = undefined;
-    }
-    // BloomDialog/MUI Dialog portal their content directly onto document.body.
-    document.body.innerHTML = "";
-});
 
 describe("CreateTeamCollectionBundleDispatcher", () => {
     it('renders the folder create dialog when dialogKind is "folder"', () => {

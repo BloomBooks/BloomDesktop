@@ -1,6 +1,6 @@
 import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { renderTestRoot } from "../utils/testRender";
 import { BookButton } from "./BookButton";
 import { IBookInfo, ICollection } from "./BooksOfCollection";
 import { BookSelectionManager } from "./bookSelectionManager";
@@ -65,8 +65,6 @@ const folderCapabilities: ITeamCollectionCapabilities = {
     requiresSignIn: false,
 };
 
-let renderedContainer: HTMLDivElement | undefined;
-
 function render(book: IBookInfo): HTMLDivElement {
     const collection: ICollection = {
         isEditableCollection: true,
@@ -77,21 +75,14 @@ function render(book: IBookInfo): HTMLDivElement {
     };
     const manager = new BookSelectionManager();
 
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    renderedContainer = container;
-    act(() => {
-        renderRoot(
-            <BookButton
-                book={book}
-                collection={collection}
-                manager={manager}
-                lockedToOneDownloadedBook={false}
-            />,
-            container,
-        );
-    });
-    return container;
+    return renderTestRoot(
+        <BookButton
+            book={book}
+            collection={collection}
+            manager={manager}
+            lockedToOneDownloadedBook={false}
+        />,
+    );
 }
 
 function makeBook(overrides: Partial<IBookInfo> = {}): IBookInfo {
@@ -107,12 +98,6 @@ function makeBook(overrides: Partial<IBookInfo> = {}): IBookInfo {
 }
 
 afterEach(() => {
-    if (renderedContainer) {
-        unmountRoot(renderedContainer);
-        renderedContainer.remove();
-        renderedContainer = undefined;
-    }
-    document.body.innerHTML = "";
     mockUseTColBookStatus.mockReset();
     mockUseTeamCollectionCapabilities.mockReset();
     mockGet.mockClear();

@@ -1,23 +1,11 @@
 import { act } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { describe, expect, it, vi } from "vitest";
+import { renderTestRoot as render } from "../utils/testRender";
 import { SharingMembersList } from "./SharingPanel";
 import { IApprovedMember } from "./sharingApi";
 
 // Tests the presentational SharingMembersList directly with injected members/callbacks
 // (no network layer), per Wave-1 scope: shells against mocked endpoints.
-
-let renderedContainer: HTMLDivElement | undefined;
-
-function render(element: React.ReactElement): HTMLDivElement {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    renderedContainer = container;
-    act(() => {
-        renderRoot(element, container);
-    });
-    return container;
-}
 
 // React tracks the previous value of native inputs/selects internally; setting .value directly
 // and dispatching a plain Event doesn't trigger React's onChange. This is the standard
@@ -35,15 +23,6 @@ function setNativeValue(
     element.dispatchEvent(new Event("change", { bubbles: true }));
     element.dispatchEvent(new Event("input", { bubbles: true }));
 }
-
-afterEach(() => {
-    if (renderedContainer) {
-        unmountRoot(renderedContainer);
-        renderedContainer.remove();
-        renderedContainer = undefined;
-    }
-    document.body.innerHTML = "";
-});
 
 const claimedAdmin: IApprovedMember = {
     email: "admin@example.com",

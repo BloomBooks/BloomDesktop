@@ -1,6 +1,6 @@
 import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { renderTestRoot } from "../utils/testRender";
 import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { JoinCloudCollectionDialog } from "./JoinCloudCollectionDialog";
 
@@ -36,33 +36,25 @@ vi.mock("../utils/bloomApi", async (importOriginal) => {
     };
 });
 
-let mountedRoot: HTMLDivElement | undefined;
-
 function renderDialog(
     overrides: Partial<React.ComponentProps<typeof JoinCloudCollectionDialog>>,
 ) {
-    const root = document.createElement("div");
-    document.body.appendChild(root);
-    mountedRoot = root;
-    act(() => {
-        renderRoot(
-            <JoinCloudCollectionDialog
-                collectionId="collection-123"
-                collectionName="My Team's Collection"
-                signedIn={true}
-                isApproved={true}
-                existingCollection={false}
-                isAlreadyTcCollection={false}
-                isSameCollection={false}
-                isCurrentCollection={false}
-                existingCollectionFolder=""
-                conflictingCollection=""
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-                {...overrides}
-            />,
-            root,
-        );
-    });
+    renderTestRoot(
+        <JoinCloudCollectionDialog
+            collectionId="collection-123"
+            collectionName="My Team's Collection"
+            signedIn={true}
+            isApproved={true}
+            existingCollection={false}
+            isAlreadyTcCollection={false}
+            isSameCollection={false}
+            isCurrentCollection={false}
+            existingCollectionFolder=""
+            conflictingCollection=""
+            dialogEnvironment={normalDialogEnvironmentForStorybook}
+            {...overrides}
+        />,
+    );
 }
 
 // Flushes the microtask queue so a clicked button's pullDownCollection().then(...) chain has
@@ -97,14 +89,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-    if (mountedRoot) {
-        unmountRoot(mountedRoot);
-        mountedRoot.remove();
-        mountedRoot = undefined;
-    }
-    // BloomDialog/MUI Dialog portal their content directly onto document.body, outside our
-    // mounted root, so it must be cleaned up separately between tests.
-    document.body.innerHTML = "";
     mockPullDownCollection.mockReset();
     mockPost.mockClear();
     mockPostString.mockClear();

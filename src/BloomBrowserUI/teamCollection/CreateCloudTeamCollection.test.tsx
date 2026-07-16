@@ -1,25 +1,13 @@
 import { act } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
-import { CreateCloudTeamCollectionBody } from "./CreateTeamCollection";
+import { describe, expect, it, vi } from "vitest";
+import { renderTestRoot as render, unmountTestRoot } from "../utils/testRender";
+import { CreateCloudTeamCollectionBody } from "./CreateCloudTeamCollection";
 import { ISharingLoginState } from "./sharingApi";
 
 // Tests the presentational CreateCloudTeamCollectionBody directly with injected
 // props/callbacks (no network layer), per Wave-1 scope: shells against mocked endpoints.
 // Covers the step gating described in Design/CloudTeamCollections/tasks/07-ui-setup.md:
 // sign-in (dev-mode form) -> immutable-name acknowledgement -> initial Send progress.
-
-let renderedContainer: HTMLDivElement | undefined;
-
-function render(element: React.ReactElement): HTMLDivElement {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    renderedContainer = container;
-    act(() => {
-        renderRoot(element, container);
-    });
-    return container;
-}
 
 // React tracks the previous value of native inputs internally; setting .value directly and
 // dispatching a plain Event doesn't trigger React's onChange. Standard workaround (there is no
@@ -33,15 +21,6 @@ function setNativeValue(element: HTMLInputElement, value: string) {
     element.dispatchEvent(new Event("change", { bubbles: true }));
     element.dispatchEvent(new Event("input", { bubbles: true }));
 }
-
-afterEach(() => {
-    if (renderedContainer) {
-        unmountRoot(renderedContainer);
-        renderedContainer.remove();
-        renderedContainer = undefined;
-    }
-    document.body.innerHTML = "";
-});
 
 const signedOutDev: ISharingLoginState = { mode: "dev", signedIn: false };
 const signedOutCloud: ISharingLoginState = { mode: "cloud", signedIn: false };
@@ -230,7 +209,7 @@ describe("CreateCloudTeamCollectionBody", () => {
         expect(onAcknowledgeNameChange).toHaveBeenCalledWith(true);
 
         // Re-render with the acknowledgement now true, as the container would after the callback.
-        unmountRoot(renderedContainer!);
+        unmountTestRoot(container);
         const container2 = render(
             <CreateCloudTeamCollectionBody
                 {...baseProps({

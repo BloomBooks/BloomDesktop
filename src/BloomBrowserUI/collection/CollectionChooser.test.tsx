@@ -1,6 +1,6 @@
 import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { renderTestRoot } from "../utils/testRender";
 import { CollectionChooser } from "./CollectionChooser";
 import { ISharingLoginState } from "../teamCollection/sharingApi";
 import { IJoinCollectionInfo } from "./CollectionCardList";
@@ -63,16 +63,8 @@ vi.mock("../teamCollection/JoinCloudCollectionDialog", () => ({
     ),
 }));
 
-let renderedContainer: HTMLDivElement | undefined;
-
 function render(): HTMLDivElement {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    renderedContainer = container;
-    act(() => {
-        renderRoot(<CollectionChooser />, container);
-    });
-    return container;
+    return renderTestRoot(<CollectionChooser />);
 }
 
 const signedIn: ISharingLoginState = {
@@ -103,12 +95,6 @@ function mockJoinCardsResponse(joinCards: IJoinCollectionInfo[]) {
 }
 
 afterEach(() => {
-    if (renderedContainer) {
-        unmountRoot(renderedContainer);
-        renderedContainer.remove();
-        renderedContainer = undefined;
-    }
-    document.body.innerHTML = "";
     vi.clearAllMocks();
 });
 

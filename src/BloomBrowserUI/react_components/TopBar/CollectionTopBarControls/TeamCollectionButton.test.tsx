@@ -1,6 +1,5 @@
-import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderRoot, unmountRoot } from "../../../utils/reactRender";
+import { renderTestRoot } from "../../../utils/testRender";
 import { TeamCollectionButton } from "./TeamCollectionButton";
 import { TeamCollectionStatus } from "../../../teamCollection/TeamCollectionStatus";
 
@@ -35,25 +34,11 @@ vi.mock("../../l10nHooks", () => ({
             : (options.english ?? options.key ?? ""),
 }));
 
-let mountedRoot: HTMLDivElement | undefined;
-
 function renderButton(status: TeamCollectionStatus): HTMLDivElement {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    mountedRoot = container;
-    act(() => {
-        renderRoot(<TeamCollectionButton status={status} />, container);
-    });
-    return container;
+    return renderTestRoot(<TeamCollectionButton status={status} />);
 }
 
 afterEach(() => {
-    if (mountedRoot) {
-        unmountRoot(mountedRoot);
-        mountedRoot.remove();
-        mountedRoot = undefined;
-    }
-    document.body.innerHTML = "";
     mockUseTeamCollectionStatusMetadata.mockReset();
 });
 

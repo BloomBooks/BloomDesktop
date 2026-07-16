@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import { get, post, postJson } from "../utils/bloomApi";
+import { get, post, postJson, useWatchApiData } from "../utils/bloomApi";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 
 // The TS end of interactions with the `SharingApi` C# class (task 06). Names here are kept in
@@ -46,17 +46,12 @@ export interface ICloudCollectionSummary {
 // Re-queries whenever the "sharing"/"loginState" websocket event fires (e.g. after login/logout
 // completes in another part of the UI).
 export function useSharingLoginState(): ISharingLoginState {
-    const [loginState, setLoginState] = useState(initialLoginState);
-    const [reload, setReload] = useState(0);
-    useSubscribeToWebSocketForEvent("sharing", "loginState", () =>
-        setReload((old) => old + 1),
+    return useWatchApiData(
+        "sharing/loginState",
+        initialLoginState,
+        "sharing",
+        "loginState",
     );
-    React.useEffect(() => {
-        get("sharing/loginState", (result) => {
-            setLoginState(result.data as ISharingLoginState);
-        });
-    }, [reload]);
-    return loginState;
 }
 
 // Posts dev-auth-mode credentials. Resolves once the server has updated the login state;

@@ -1,6 +1,6 @@
 import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { renderTestRoot } from "../utils/testRender";
 import { TeamCollectionDialog } from "./TeamCollectionDialog";
 import { ITeamCollectionCapabilities } from "./teamCollectionApi";
 
@@ -60,25 +60,17 @@ const cloudCapabilities: ITeamCollectionCapabilities = {
     requiresSignIn: true,
 };
 
-let renderedContainer: HTMLDivElement | undefined;
-
 function renderDialog(showReloadButton: boolean) {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    renderedContainer = container;
-    act(() => {
-        renderRoot(
-            <TeamCollectionDialog
-                showReloadButton={showReloadButton}
-                closeDialog={vi.fn()}
-                propsForBloomDialog={{
-                    open: true,
-                    onClose: vi.fn(),
-                }}
-            />,
-            container,
-        );
-    });
+    renderTestRoot(
+        <TeamCollectionDialog
+            showReloadButton={showReloadButton}
+            closeDialog={vi.fn()}
+            propsForBloomDialog={{
+                open: true,
+                onClose: vi.fn(),
+            }}
+        />,
+    );
 }
 
 function getButtonById(id: string): HTMLButtonElement | null {
@@ -86,14 +78,6 @@ function getButtonById(id: string): HTMLButtonElement | null {
 }
 
 afterEach(() => {
-    if (renderedContainer) {
-        unmountRoot(renderedContainer);
-        renderedContainer.remove();
-        renderedContainer = undefined;
-    }
-    // BloomDialog/MUI Dialog portal their content directly onto document.body, outside our
-    // mounted root, so it must be cleaned up separately between tests.
-    document.body.innerHTML = "";
     mockPost.mockClear();
     mockUseTeamCollectionCapabilities.mockReset();
 });

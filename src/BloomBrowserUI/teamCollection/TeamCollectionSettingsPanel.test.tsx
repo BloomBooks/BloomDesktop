@@ -1,6 +1,5 @@
-import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { renderTestRoot } from "../utils/testRender";
 import { TeamCollectionSettingsPanel } from "./TeamCollectionSettingsPanel";
 
 // Tests the cloud-vs-folder branch this task wires up in the isTeamCollection half of the
@@ -71,16 +70,8 @@ vi.mock("./SharingPanel", () => ({
     ),
 }));
 
-let renderedContainer: HTMLDivElement | undefined;
-
 function render(): HTMLDivElement {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    renderedContainer = container;
-    act(() => {
-        renderRoot(<TeamCollectionSettingsPanel />, container);
-    });
-    return container;
+    return renderTestRoot(<TeamCollectionSettingsPanel />);
 }
 
 const folderCapabilities = {
@@ -95,12 +86,6 @@ const cloudCapabilities = {
 };
 
 afterEach(() => {
-    if (renderedContainer) {
-        unmountRoot(renderedContainer);
-        renderedContainer.remove();
-        renderedContainer = undefined;
-    }
-    document.body.innerHTML = "";
     vi.clearAllMocks();
     mockUseIsCloudFeatureEnabled.mockReturnValue(false);
     mockUseTeamCollectionCapabilities.mockReturnValue(folderCapabilities);

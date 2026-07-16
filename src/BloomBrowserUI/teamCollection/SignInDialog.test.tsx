@@ -1,6 +1,6 @@
 import { act } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { describe, expect, it, vi } from "vitest";
+import { renderTestRoot as render } from "../utils/testRender";
 import { SignInDialogBody } from "./SignInDialog";
 import { ISharingLoginState } from "./sharingApi";
 
@@ -8,27 +8,6 @@ import { ISharingLoginState } from "./sharingApi";
 // network layer), same approach as CreateCloudTeamCollectionBody's own tests. Covers both
 // sign-in modes (task 06's `sharing/loginState` mode field): dev-mode's email/password form,
 // and "cloud" mode's browser-sign-in button (task 12; Option A decided 8 Jul 2026).
-
-let renderedContainer: HTMLDivElement | undefined;
-
-function render(element: React.ReactElement): HTMLDivElement {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    renderedContainer = container;
-    act(() => {
-        renderRoot(element, container);
-    });
-    return container;
-}
-
-afterEach(() => {
-    if (renderedContainer) {
-        unmountRoot(renderedContainer);
-        renderedContainer.remove();
-        renderedContainer = undefined;
-    }
-    document.body.innerHTML = "";
-});
 
 const devMode: ISharingLoginState = { mode: "dev", signedIn: false };
 const cloudMode: ISharingLoginState = { mode: "cloud", signedIn: false };

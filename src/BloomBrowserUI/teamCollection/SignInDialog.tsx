@@ -1,6 +1,5 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { useState } from "react";
 import { post } from "../utils/bloomApi";
 import BloomButton from "../react_components/bloomButton";
 import { P } from "../react_components/l10nComponents";
@@ -10,14 +9,8 @@ import {
     DialogMiddle,
     DialogTitle,
 } from "../react_components/BloomDialog/BloomDialog";
-import {
-    DialogCancelButton,
-    DialogControlGroup,
-} from "../react_components/BloomDialog/commonDialogComponents";
+import { DialogCancelButton } from "../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../react_components/l10nHooks";
-import { AttentionTextField } from "../react_components/AttentionTextField";
-import { ErrorBox } from "../react_components/boxes";
-import { isValidEmail } from "../utils/emailUtils";
 import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog,
@@ -25,9 +18,9 @@ import {
 import {
     ISharingLoginState,
     openBrowserSignIn,
-    signIn as sharingSignIn,
     useSharingLoginState,
 } from "./sharingApi";
+import { DevSignInForm, useDevSignIn } from "./DevSignInForm";
 
 // The dedicated sign-in dialog for cloud Team Collections, opened by `sharing/showSignIn`
 // (see SharingApi.cs). Replaces the earlier placeholder, which reused the cloud
@@ -99,56 +92,16 @@ export const SignInDialogBody: React.FunctionComponent<{
 
     return (
         <div data-testid="signin-dev-form">
-            <DialogControlGroup>
-                <AttentionTextField
-                    label="Email address"
-                    l10nKey="TeamCollection.Sharing.EmailAddress"
-                    // Note: unlike Div/P/BloomButton, AttentionTextField's underlying
-                    // MuiTextField treats temporarilyDisableI18nWarning as "skip the XLF
-                    // lookup entirely" (see muiTextField.tsx), not just "suppress the
-                    // warning" -- so it must be omitted here for this label to actually
-                    // be localized.
-                    value={props.email}
-                    onChange={props.onEmailChange}
-                    isValid={(value) => isValidEmail(value.trim())}
-                    submitAttempts={props.submitAttempts}
-                    data-testid="signin-email"
-                    css={css`
-                        margin-top: 5px;
-                    `}
-                />
-                <AttentionTextField
-                    label="Password"
-                    l10nKey="TeamCollection.Sharing.Password"
-                    type="password"
-                    value={props.password}
-                    onChange={props.onPasswordChange}
-                    isValid={(value) => value.length > 0}
-                    submitAttempts={props.submitAttempts}
-                    data-testid="signin-password"
-                    css={css`
-                        margin-top: 5px;
-                    `}
-                />
-                {props.signInError && (
-                    <div data-testid="signin-error">
-                        <ErrorBox>{props.signInError}</ErrorBox>
-                    </div>
-                )}
-                <BloomButton
-                    enabled={true}
-                    hasText={true}
-                    l10nKey="TeamCollection.Sharing.SignIn"
-                    temporarilyDisableI18nWarning={true}
-                    data-testid="signin-button"
-                    onClick={props.onSignIn}
-                    css={css`
-                        margin-top: 10px;
-                    `}
-                >
-                    Sign In
-                </BloomButton>
-            </DialogControlGroup>
+            <DevSignInForm
+                testIdPrefix="signin"
+                email={props.email}
+                password={props.password}
+                onEmailChange={props.onEmailChange}
+                onPasswordChange={props.onPasswordChange}
+                onSignIn={props.onSignIn}
+                submitAttempts={props.submitAttempts}
+                signInError={props.signInError}
+            />
         </div>
     );
 };
@@ -160,12 +113,7 @@ export const SignInDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = (props) => {
     const loginState = useSharingLoginState();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [submitAttempts, setSubmitAttempts] = useState(0);
-    const [signInError, setSignInError] = useState<string | undefined>(
-        undefined,
-    );
+    const devSignIn = useDevSignIn();
     const { closeDialog, propsForBloomDialog } = useSetupBloomDialog(
         props.dialogEnvironment,
     );
@@ -189,27 +137,13 @@ export const SignInDialog: React.FunctionComponent<{
             <DialogMiddle>
                 <SignInDialogBody
                     loginState={loginState}
-                    email={email}
-                    password={password}
-                    onEmailChange={setEmail}
-                    onPasswordChange={setPassword}
-                    submitAttempts={submitAttempts}
-                    signInError={signInError}
-                    onSignIn={() => {
-                        if (
-                            !isValidEmail(email.trim()) ||
-                            password.length === 0
-                        ) {
-                            setSubmitAttempts((old) => old + 1);
-                            return;
-                        }
-                        setSignInError(undefined);
-                        sharingSignIn(email.trim(), password).then(
-                            undefined,
-                            (error) =>
-                                setSignInError(String(error?.message ?? error)),
-                        );
-                    }}
+                    email={devSignIn.email}
+                    password={devSignIn.password}
+                    onEmailChange={devSignIn.setEmail}
+                    onPasswordChange={devSignIn.setPassword}
+                    submitAttempts={devSignIn.submitAttempts}
+                    signInError={devSignIn.signInError}
+                    onSignIn={devSignIn.onSignIn}
                     onOpenBrowserSignIn={() => openBrowserSignIn()}
                 />
             </DialogMiddle>

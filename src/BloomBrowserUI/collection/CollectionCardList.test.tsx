@@ -1,6 +1,6 @@
 import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { renderTestRoot as render } from "../utils/testRender";
 import { CollectionCardList } from "./CollectionCardList";
 import { ICollectionInfo } from "./CollectionCard";
 
@@ -24,18 +24,6 @@ vi.mock("../utils/bloomApi", async (importOriginal) => {
     };
 });
 
-let renderedContainer: HTMLDivElement | undefined;
-
-function render(element: React.ReactElement): HTMLDivElement {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    renderedContainer = container;
-    act(() => {
-        renderRoot(element, container);
-    });
-    return container;
-}
-
 function makeCollection(index: number): ICollectionInfo {
     return {
         path: `C:/Collections/Collection${index}`,
@@ -47,12 +35,6 @@ function makeCollection(index: number): ICollectionInfo {
 }
 
 afterEach(() => {
-    if (renderedContainer) {
-        unmountRoot(renderedContainer);
-        renderedContainer.remove();
-        renderedContainer = undefined;
-    }
-    document.body.innerHTML = "";
     vi.clearAllMocks();
 });
 

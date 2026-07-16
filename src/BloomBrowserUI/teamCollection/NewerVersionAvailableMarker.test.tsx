@@ -1,32 +1,14 @@
-import { act } from "react";
-import { afterEach, describe, expect, it } from "vitest";
-import { renderRoot, unmountRoot } from "../utils/reactRender";
+import { describe, expect, it } from "vitest";
+import { renderTestRoot } from "../utils/testRender";
 import { NewerVersionAvailableMarker } from "./NewerVersionAvailableMarker";
 
 // Tests the Wave-2 "newer version exists" book-thumbnail marker in isolation: it's a pure
 // function of its `show` prop (the gating/version-comparison logic lives in BookButton.tsx,
 // which composes this marker the same way it already composes BookOnBlorgBadge).
 
-let renderedContainer: HTMLDivElement | undefined;
-
 function render(show: boolean): HTMLDivElement {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    renderedContainer = container;
-    act(() => {
-        renderRoot(<NewerVersionAvailableMarker show={show} />, container);
-    });
-    return container;
+    return renderTestRoot(<NewerVersionAvailableMarker show={show} />);
 }
-
-afterEach(() => {
-    if (renderedContainer) {
-        unmountRoot(renderedContainer);
-        renderedContainer.remove();
-        renderedContainer = undefined;
-    }
-    document.body.innerHTML = "";
-});
 
 describe("NewerVersionAvailableMarker", () => {
     it("renders nothing when show is false", () => {
