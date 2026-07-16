@@ -10,7 +10,6 @@ using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
-using Bloom.ToPalaso;
 using Newtonsoft.Json;
 using SIL.IO;
 
@@ -44,11 +43,10 @@ namespace Bloom.web.controllers
     ///                                    images + history, return the launch payload.
     ///        aiImageEditor/file          GET/POST/DELETE files under .ai-image-editor/.
     ///        aiImageEditor/commit        apply the chosen replacements to the book.
-    ///        aiImageEditor/openExternal  open an OpenRouter OAuth URL in the real browser.
-    ///        aiImageEditor/oauth-*       OAuth callback + result polling.
+    ///        aiImageEditor/saveCredentials  persist the user's OpenRouter API key.
     ///   2. window.postMessage on channel "bloom-ai-image-tools", between the overlay JS
     ///      (CanvasElementContextControls.tsx) and the editor iframe: ready / init /
-    ///      commit / cancel / log / open-external / ack. The overlay JS — NOT this class —
+    ///      commit / cancel / log / ack. The overlay JS — NOT this class —
     ///      sends `init` (built from the launch reply) and tears the overlay down. Image
     ///      BYTES never cross postMessage; they move only as files via aiImageEditor/file.
     ///
@@ -57,10 +55,9 @@ namespace Bloom.web.controllers
     ///   `history/<id>.json` sidecars. The history folder is the source of truth.
     ///
     /// SECURITY
-    ///   A per-launch session token (query param) gates /file, /commit, /oauth-result.
+    ///   A per-launch session token (query param) gates /file, /commit, /saveCredentials.
     ///   File names are allow-listed; page/result ids are charset-restricted; reused
-    ///   source URLs must resolve inside the book folder (no path traversal); openExternal
-    ///   is restricted to https openrouter.ai.
+    ///   source URLs must resolve inside the book folder (no path traversal).
     ///
     /// COMMIT SPLIT
     ///   Off-page images are edited directly in the whole-book DOM here and saved. The
@@ -88,9 +85,6 @@ namespace Bloom.web.controllers
         // while an overlay is still up, requests from that overlay must fail rather than
         // read/write the newly selected book's files or commit against its DOM.
         private string _sessionBookFolderPath;
-
-        private string _pendingOAuthCode;
-        private string _pendingOAuthError;
 
         // The image formats the AI editor can actually work with — the ones it can load as
         // input, and the raster formats it stores/serves/commits as results. Deliberately a
@@ -138,7 +132,7 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Registers all of the AI Image Editor's API endpoints (launch, file persistence,
-        /// commit, credentials, OAuth, external-url) with Bloom's API handler.
+        /// commit, credentials) with Bloom's API handler.
         /// </summary>
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
@@ -161,26 +155,8 @@ namespace Bloom.web.controllers
                 requiresSync: true
             );
             apiHandler.RegisterEndpointHandler(
-                "aiImageEditor/openExternal",
-                HandleOpenExternal,
-                handleOnUiThread: true,
-                requiresSync: false
-            );
-            apiHandler.RegisterEndpointHandler(
                 "aiImageEditor/saveCredentials",
                 HandleSaveCredentials,
-                handleOnUiThread: false,
-                requiresSync: false
-            );
-            apiHandler.RegisterEndpointHandler(
-                "aiImageEditor/oauth-callback",
-                HandleOAuthCallback,
-                handleOnUiThread: false,
-                requiresSync: false
-            );
-            apiHandler.RegisterEndpointHandler(
-                "aiImageEditor/oauth-result",
-                HandleOAuthResult,
                 handleOnUiThread: false,
                 requiresSync: false
             );
@@ -248,8 +224,6 @@ namespace Bloom.web.controllers
 
             _sessionToken = Guid.NewGuid().ToString("N");
             _sessionBookFolderPath = book.FolderPath;
-            _pendingOAuthCode = null;
-            _pendingOAuthError = null;
 
             // H3: ensure .ai-image-editor and history subfolder exist.
             var editorFolder = GetEditorFolderPath();
@@ -277,10 +251,6 @@ namespace Bloom.web.controllers
                     // editor doesn't have to ask for it again. The editor hands any newly
                     // obtained key back via aiImageEditor/saveCredentials.
                     apiKey = OpenRouterCredentialStore.GetApiKey(),
-                    // Kept in the init payload for protocol compatibility, but always null:
-                    // Bloom supports the API-key method and no longer stores an OpenRouter
-                    // user name for the editor's "signed in as" display.
-                    openRouterUser = (string)null,
                     // In a Playground template book all features are unlocked for
                     // "try it out", so the editor opens — but it's a shared demo
                     // context, so the editor must not let the user set/save an
@@ -294,18 +264,13 @@ namespace Bloom.web.controllers
         private class SaveCredentialsRequest
         {
             public string apiKey { get; set; }
-
-            // Still accepted from the editor for protocol compatibility, but no longer
-            // persisted: Bloom supports the API-key method and only stores the key.
-            public string authMethod { get; set; }
-            public string openRouterUser { get; set; }
         }
 
         /// <summary>
-        /// Receives the user's OpenRouter credentials from the editor (after OAuth sign-in or
-        /// manual key entry) and persists them per-user via <see cref="OpenRouterCredentialStore"/>.
-        /// A null/empty apiKey clears the stored credentials (sign-out). Session-gated so a
-        /// stray frame can't overwrite the user's stored key.
+        /// Receives the user's OpenRouter API key from the editor (manual key entry) and
+        /// persists it per-user via <see cref="OpenRouterCredentialStore"/>. A null/empty
+        /// apiKey clears the stored key (sign-out). Session-gated so a stray frame can't
+        /// overwrite the user's stored key.
         /// </summary>
         private void HandleSaveCredentials(ApiRequest request)
         {
@@ -336,45 +301,12 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
-        private void HandleOpenExternal(ApiRequest request)
-        {
-            if (!HasValidSession(request))
-                return;
-
-            // unescape: false — the body is an already-encoded auth URL whose
-            // callback_url param must not be double-decoded.
-            OpenExternalUrl(request.RequiredPostString(unescape: false));
-            request.PostSucceeded();
-        }
-
-        /// <summary>
-        /// Opens an OAuth URL in the user's default browser (with their normal
-        /// OpenRouter identity), rather than navigating the WebView. Restricted to
-        /// HTTPS openrouter.ai so a compromised editor frame can't ask Bloom to
-        /// launch arbitrary URLs or protocols.
-        /// </summary>
-        private static void OpenExternalUrl(string url)
-        {
-            if (string.IsNullOrEmpty(url))
-                return;
-            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
-                return;
-            if (uri.Scheme != Uri.UriSchemeHttps)
-                return;
-            if (!uri.Host.Equals("openrouter.ai", StringComparison.OrdinalIgnoreCase))
-                return;
-
-            ProcessExtra.SafeStartInFront(uri.AbsoluteUri);
-        }
-
         // Invalidates the current session. Called at the start of each launch to tear down
         // any prior session; the overlay itself is created and removed by the overlay JS.
         private void EndSession()
         {
             _sessionToken = null;
             _sessionBookFolderPath = null;
-            _pendingOAuthCode = null;
-            _pendingOAuthError = null;
         }
 
         /// <summary>
@@ -402,57 +334,6 @@ namespace Bloom.web.controllers
             }
 
             return true;
-        }
-
-        private void HandleOAuthCallback(ApiRequest request)
-        {
-            // No session check here: this endpoint is hit by the user's external
-            // browser (redirected from OpenRouter), which has no session token, and
-            // the callback URL is deliberately stable so OpenRouter reuses one app
-            // record. The code is useless without the PKCE verifier held by the
-            // editor, and the /oauth-result poll that hands it back is session-gated.
-            var error = request.GetParamOrNull("error");
-            var code = request.GetParamOrNull("code");
-
-            _pendingOAuthError = error;
-            _pendingOAuthCode = code;
-
-            if (!string.IsNullOrEmpty(error))
-            {
-                // We echo OpenRouter's `error` string back to the browser. This is safe
-                // without HTML-encoding because ReplyWithText responds as text/plain, which
-                // browsers render literally rather than parsing as HTML — so a crafted error
-                // value can't inject markup or script (no reflected-XSS). Decision: left
-                // as-is intentionally; do not "fix" by switching this to an HTML response
-                // without also encoding the value.
-                request.ReplyWithText(
-                    $"OpenRouter sign-in failed: {error}. You can return to Bloom."
-                );
-                return;
-            }
-
-            if (string.IsNullOrEmpty(code))
-            {
-                request.Failed(HttpStatusCode.BadRequest, "Missing OAuth code");
-                return;
-            }
-
-            request.ReplyWithText("OpenRouter sign-in completed. You can return to Bloom.");
-        }
-
-        /// <summary>
-        /// Polled by the editor after openExternal: hands over (and clears) the OAuth code
-        /// or error that HandleOAuthCallback captured from the user's external browser.
-        /// </summary>
-        private void HandleOAuthResult(ApiRequest request)
-        {
-            if (!HasValidSession(request))
-                return;
-
-            var answer = new { code = _pendingOAuthCode, error = _pendingOAuthError };
-            _pendingOAuthCode = null;
-            _pendingOAuthError = null;
-            request.ReplyWithJson(answer);
         }
 
         /// <summary>

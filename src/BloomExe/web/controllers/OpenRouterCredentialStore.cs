@@ -26,9 +26,7 @@ namespace Bloom.web.controllers
     {
         /// <summary>
         /// Saves (or, when <paramref name="apiKey"/> is null/empty, clears) the user's
-        /// OpenRouter API key. The key is DPAPI-encrypted before being written. Only the
-        /// API key is persisted: Bloom supports the API-key method, so the OAuth auth
-        /// method and OpenRouter user name the editor may send are not stored.
+        /// OpenRouter API key. The key is DPAPI-encrypted before being written.
         /// </summary>
         public static void Save(string apiKey)
         {

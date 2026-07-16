@@ -22,7 +22,7 @@
 //      down. (There is intentionally no C#->iframe message channel; init flows from
 //      here, the overlay JS, because only the browser can postMessage to the iframe.)
 
-import { post, postJson, postString } from "../../../utils/bloomApi";
+import { post, postJson } from "../../../utils/bloomApi";
 import {
     getImageUrlFromImageContainer,
     GetRawImageUrl,
@@ -65,7 +65,6 @@ export const launchAiImageEditor = (
                 metadata?: Record<string, unknown> | null;
             }>;
             apiKey?: string | null;
-            openRouterUser?: string | null;
             // Playground/demo context: the editor must disable its
             // "set OpenRouter API key" UI. Rides through the `...launchData`
             // spread below into the editor's init payload.
@@ -258,14 +257,11 @@ export const launchAiImageEditor = (
                       payload?: {
                           level?: string;
                           message?: string;
-                          url?: string;
                           replacements?: Array<{
                               incomingId?: string;
                               resultId?: string;
                           }>;
                           apiKey?: string | null;
-                          authMethod?: string | null;
-                          openRouterUser?: string | null;
                       };
                   }
                 | undefined;
@@ -381,31 +377,16 @@ export const launchAiImageEditor = (
                             (data.payload?.message ?? ""),
                     );
                     break;
-                case "open-external":
-                    // The editor wants a URL (OpenRouter OAuth) opened in the
-                    // user's real default browser, not navigated inside the
-                    // WebView. Bloom shells out to the OS default browser.
-                    if (data.payload?.url) {
-                        postString(
-                            "aiImageEditor/openExternal?session=" +
-                                encodeURIComponent(launchData.sessionToken),
-                            data.payload.url,
-                        );
-                    }
-                    break;
                 case "saveCredentials":
-                    // Bloom owns the OpenRouter key. When the user signs in or
-                    // pastes a key in the editor, the editor hands it up here so
-                    // Bloom persists it per-user (and supplies it on the next
-                    // launch). A null apiKey clears the stored credentials.
+                    // Bloom owns the OpenRouter API key. When the user pastes a key
+                    // in the editor, the editor hands it up here so Bloom persists it
+                    // per-user (and supplies it on the next launch). A null apiKey
+                    // clears the stored key.
                     postJson(
                         "aiImageEditor/saveCredentials?session=" +
                             encodeURIComponent(launchData.sessionToken),
                         {
                             apiKey: data.payload?.apiKey ?? null,
-                            authMethod: data.payload?.authMethod ?? null,
-                            openRouterUser:
-                                data.payload?.openRouterUser ?? null,
                         },
                     );
                     break;
