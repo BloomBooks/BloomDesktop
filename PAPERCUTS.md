@@ -19,6 +19,21 @@ House rules:
 
 ---
 
+
+## 2026-07-15 — agent-dotnet full suite can never be fully green (9 environmental failures)
+
+- **Cut:** Running the full C# suite through `build/agent-dotnet.sh` always fails 9 tests for
+  environment reasons: the per-terminal agent output tree lacks `BloomPdfMaker.exe` (4
+  `PdfMakerTests` failures) and `XMatterHelper` can't locate the checked-in
+  `src/BloomTests/xMatter/Test-XMatter` packs from that tree (5 failures in
+  `XMatterHelperTests` and `InsertPageAfter_FromDifferentBook_MergesStyles`). Agents can't get
+  a green full-suite baseline, so every preflight has to re-establish that these 9 are noise.
+- **Idea:** Make the wrapper copy/link `BloomPdfMaker.exe` into its private output tree and fix
+  the xmatter file-locator path (or document the 9 known failures in AGENTS.md as expected under
+  the wrapper).
+- **Context:** BloomDesktop, found during `/preflight` of PR #8067 (speedUpCSharpTests).
+
+
 ## 2026-07-13 — pnpm-lock.yaml reformats wholesale on any install (format drift)
 - **Cut:** The committed `src/BloomBrowserUI/pnpm-lock.yaml` (on master too) is in an
   older pnpm serialization style (double-quoted `lockfileVersion`, 4-space indent, and it
