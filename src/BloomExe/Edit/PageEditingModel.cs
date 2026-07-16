@@ -42,8 +42,7 @@ namespace Bloom.Edit
             var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(
                 imageInfo,
                 bookFolderPath,
-                isSameFile,
-                resizeFileIfNeeded: false // resizing will happen later in a callback from javascript
+                isSameFile
             );
             try
             {
