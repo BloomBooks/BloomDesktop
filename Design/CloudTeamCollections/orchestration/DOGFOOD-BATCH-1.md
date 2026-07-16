@@ -727,6 +727,21 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 16 Jul 2026 (E8 DONE — incremental history fetch; John chose approach A) · The history panel
+  (SharingApi sharing/history) called get_changes(0) on every open, re-downloading the entire
+  event log each time. Now (commit 9ceeded909) it persists the cursor (max_event_id) alongside the
+  on-disk history cache and fetches only events past it (get_changes(cursor)), merging into the
+  cache. Safe: the event log is append-only and get_changes' cursor is exclusive (confirmed vs
+  pgTAP test 7c: get_changes(since=max) returns empty). Cache format gained a cursor
+  ({MaxEventId, Events}); an old bare-array cache loads with cursor 0 → one full refetch → re-saved
+  in the new format (back-compat, offline view preserved). TRADE-OFF (John's call, "go with A;
+  switch to B if users complain about stale names"): already-cached rows keep the book name /
+  author display name they were fetched with until the cache rebuilds (book renames + admin
+  display-name edits don't retroactively update old rows). Fallback if that bites: approach B
+  (refetch-only-when-changed). Refactor: extracted testable LoadHistoryCache / SaveHistoryCache /
+  MergeHistory statics + a shared FilterToCurrentBook; 6 new unit tests. Required filter 452/452.
+  · EXACT next action: remaining open items for John — (a) pull the 8 mid-session master commits,
+  (b) re-run PR #8052 regen vs current master + Greptile, (c) remaining refactors E7/E9/R5/R6/R13.
 - 16 Jul 2026 (E2 DONE — cache collection-scoped download credentials) · download-start returns
   read-only S3 creds scoped to the WHOLE collection prefix (tc/{cid}/*, ~1h); every book +
   collection-file-group download was fetching them separately (N+ edge-function calls + server STS
