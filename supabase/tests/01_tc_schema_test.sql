@@ -14,7 +14,7 @@
 BEGIN;
 
 -- Load pgTAP
-SELECT plan(42);   -- update count when tests are added/removed
+SELECT plan(48);   -- update count when tests are added/removed
 
 -- =============================================================================
 -- 0. Sanity: schema and key tables exist
@@ -454,6 +454,72 @@ SELECT throws_ok(
     '23505',   -- unique_violation
     NULL,
     '9b: inserting a second live book with same name raises unique_violation'
+);
+
+-- =============================================================================
+-- 10. get_collection_file_manifest (E9)
+-- =============================================================================
+-- Seed a collection-file group + its committed files directly (pgTAP can't drive
+-- the two-phase S3 upload). Alice is an admin/member of the collection above.
+DO $$
+DECLARE
+    v_group_id bigint;
+BEGIN
+    PERFORM tests.set_jwt('user-alice-001', 'alice@example.com');
+    INSERT INTO tc.collection_file_groups (collection_id, group_key, version, updated_by)
+    VALUES ('a0000000-0000-0000-0000-000000000001', 'other', 3, 'user-alice-001')
+    RETURNING id INTO v_group_id;
+    INSERT INTO tc.collection_group_files (group_id, path, sha256, size_bytes, s3_version_id)
+    VALUES
+        (v_group_id, 'bloomCollection', 'sha-a', 10, 'sv-1'),
+        (v_group_id, 'customCollectionStyles.css', 'sha-b', 20, 'sv-2');
+END
+$$;
+
+SELECT is(
+    (tc.get_collection_file_manifest(
+        'a0000000-0000-0000-0000-000000000001', 'other') ->> 'version'),
+    '3',
+    '10a: get_collection_file_manifest returns the group version'
+);
+SELECT is(
+    jsonb_array_length(tc.get_collection_file_manifest(
+        'a0000000-0000-0000-0000-000000000001', 'other') -> 'files'),
+    2,
+    '10b: manifest returns every committed file in the group'
+);
+SELECT is(
+    (tc.get_collection_file_manifest(
+        'a0000000-0000-0000-0000-000000000001', 'other')
+        -> 'files' -> 0 ->> 's3VersionId'),
+    'sv-1',
+    '10c: manifest files carry the pinned s3VersionId (ordered by path)'
+);
+SELECT is(
+    (tc.get_collection_file_manifest(
+        'a0000000-0000-0000-0000-000000000001', 'sample-texts') ->> 'version'),
+    '0',
+    '10d: a never-written group returns version 0 (not an error)'
+);
+SELECT is(
+    jsonb_array_length(tc.get_collection_file_manifest(
+        'a0000000-0000-0000-0000-000000000001', 'sample-texts') -> 'files'),
+    0,
+    '10e: a never-written group returns empty files'
+);
+
+-- A non-member is refused.
+DO $$
+BEGIN
+    PERFORM tests.set_jwt('user-carol-999', 'carol@example.com');
+END
+$$;
+SELECT throws_ok(
+    $$SELECT tc.get_collection_file_manifest(
+        'a0000000-0000-0000-0000-000000000001', 'other')$$,
+    '42501',
+    NULL,
+    '10f: get_collection_file_manifest refuses a non-member'
 );
 
 -- =============================================================================

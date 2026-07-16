@@ -216,6 +216,16 @@ namespace Bloom.TeamCollection.Cloud
         public JObject GetBookManifest(string bookId) =>
             (JObject)CallRpc("get_book_manifest", new { p_book_id = bookId });
 
+        /// <summary>E9: per-file current manifest for one collection-file group
+        /// (path, sha256, size, s3VersionId) + its version, so the download path fetches only
+        /// changed files pinned to their committed s3_version_id. A never-written group returns
+        /// version 0 / empty files.</summary>
+        public JObject GetCollectionFileManifest(string collectionId, string groupKey) =>
+            (JObject)CallRpc(
+                "get_collection_file_manifest",
+                new { p_collection_id = collectionId, p_group_key = groupKey }
+            );
+
         /// <summary>Conditional lock; result includes the winning holder's identity on failure.
         /// v1.5 (20260711000003): also records which local copy of the collection ("seat") took
         /// the lock — see CloudTeamCollection.SeatId.</summary>

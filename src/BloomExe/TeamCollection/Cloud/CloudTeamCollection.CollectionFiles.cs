@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Amazon.S3.Model;
 using Bloom.Collection;
 using Bloom.MiscUI;
-using Bloom.WebLibraryIntegration;
 using Newtonsoft.Json.Linq;
 using SIL.IO;
 
@@ -120,60 +118,55 @@ namespace Bloom.TeamCollection.Cloud
         }
 
         /// <summary>
-        /// Downloads every file currently in one collection-file group directly from S3 (listing the
-        /// group's prefix, since CONTRACTS.md defines no manifest RPC for collection-file groups --
-        /// only a version-bump counter via get_collection_state; see the task 05 final report's
-        /// contract-gap note). Unlike book content, this reads "latest", not a pinned version -- an
-        /// acknowledged deviation from the pinned-read invariant, forced by the missing manifest.
+        /// Brings one collection-file group's local folder up to date with the repo. Fetches the
+        /// group's committed per-file manifest (path, sha256, size, s3VersionId) via
+        /// get_collection_file_manifest and downloads only the files whose content changed, each
+        /// pinned to its committed S3 version-id -- so this reads a CONSISTENT snapshot and never
+        /// re-downloads unchanged files (E9). DownloadFiles does the hash-skip + pinned/verified
+        /// transfer (the same path book content uses); files the manifest no longer lists are
+        /// removed by the delete-extras pass. A never-written group has an empty manifest, so the
+        /// group is left with only the delete-extras cleanup.
         /// </summary>
         private void DownloadCollectionFileGroup(string groupKey, string destFolder)
         {
             try
             {
-                var location = GetCollectionDownloadLocation();
-                var s3Client = CloudBookTransfer.BuildDefaultClient(location);
-                var prefix = $"{location.Prefix}collectionFiles/{groupKey}/";
+                var manifestResponse = _client.GetCollectionFileManifest(_collectionId, groupKey);
+                var manifest = manifestResponse?["files"] is JArray filesArray
+                    ? BookVersionManifest.FromJson(filesArray)
+                    : new BookVersionManifest();
 
-                // ListAllObjects handles pagination and AWSSDK v4's null-collection quirk (the
-                // allowed-words/sample-texts groups most collections never populate list empty).
-                var keys = s3Client
-                    .ListAllObjects(
-                        new ListObjectsV2Request { BucketName = location.Bucket, Prefix = prefix }
-                    )
-                    .Select(o => o.Key)
-                    .ToList();
-
-                if (keys.Count == 0)
-                    return;
+                var collectionLocation = GetCollectionDownloadLocation();
+                var location = new CloudS3Location
+                {
+                    Bucket = collectionLocation.Bucket,
+                    Region = collectionLocation.Region,
+                    Prefix = $"{collectionLocation.Prefix}collectionFiles/{groupKey}/",
+                    AccessKeyId = collectionLocation.AccessKeyId,
+                    SecretAccessKey = collectionLocation.SecretAccessKey,
+                    SessionToken = collectionLocation.SessionToken,
+                    ExpiresAtUtc = collectionLocation.ExpiresAtUtc,
+                };
 
                 Directory.CreateDirectory(destFolder);
-                var keptFileNames = new HashSet<string>();
-                foreach (var key in keys)
-                {
-                    var fileName = key.Substring(prefix.Length);
-                    if (string.IsNullOrEmpty(fileName) || fileName.Contains("/"))
-                        continue; // collection-file groups are flat per CONTRACTS.md's S3 layout.
-                    keptFileNames.Add(fileName);
-                    var destPath = Path.Combine(destFolder, fileName);
-                    var tempPath = destPath + ".tmp";
-                    using (
-                        var response = s3Client
-                            .GetObjectAsync(
-                                new GetObjectRequest { BucketName = location.Bucket, Key = key }
-                            )
-                            .GetAwaiter()
-                            .GetResult()
-                    )
+                var pinnedFiles = manifest
+                    .Entries.Select(kvp => new PinnedFileDownload
                     {
-                        response
-                            .WriteResponseStreamToFileAsync(tempPath, false, CancellationToken.None)
-                            .GetAwaiter()
-                            .GetResult();
-                    }
-                    if (RobustFile.Exists(destPath))
-                        RobustFile.Delete(destPath);
-                    RobustFile.Move(tempPath, destPath);
-                }
+                        RelativePath = kvp.Key,
+                        S3VersionId = kvp.Value.S3VersionId,
+                        ExpectedSha256Hex = kvp.Value.Sha256,
+                        ExpectedSize = kvp.Value.Size,
+                    })
+                    .ToList();
+                if (pinnedFiles.Count > 0)
+                    _transfer.DownloadFiles(
+                        location,
+                        pinnedFiles,
+                        destFolder,
+                        4,
+                        null,
+                        CancellationToken.None
+                    );
 
                 // Mirrors FolderTeamCollection's ExtractFolder "delete extras" behavior --
                 // but see FilesEligibleForDeleteExtras: for the "other" group the destination
@@ -182,6 +175,7 @@ namespace Bloom.TeamCollection.Cloud
                 // logs, PDFs...). A naive mirror-delete stripped TeamCollectionLink.txt on
                 // every join/Receive, silently un-teaming the collection on next open (found
                 // by the first two-instance smoke test, 7 Jul 2026).
+                var keptFileNames = new HashSet<string>(manifest.Entries.Keys);
                 foreach (
                     var doomed in FilesEligibleForDeleteExtras(groupKey, destFolder, keptFileNames)
                 )

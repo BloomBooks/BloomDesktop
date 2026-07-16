@@ -1,7 +1,11 @@
 # Cloud Team Collections — frozen API contracts (v1)
 
 Changes to this file require an orchestrator commit and a version-note bump here.
-**Contract version: 1.6** (13 Jul 2026 — durable member display names, additive (John's
+**Contract version: 1.7** (16 Jul 2026 — added the `get_collection_file_manifest` RPC,
+additive (E9): a per-file manifest for one collection-file group so the download path fetches
+only changed files pinned to their committed `s3_version_id`, mirroring `get_book_manifest`;
+the data already lived in `tc.collection_group_files`, this just exposes it for reads. No
+schema change. v1.6, 13 Jul 2026 — durable member display names, additive (John's
 13 Jul request): `tc.members` gains an editable `display_name` column; new
 `members_set_display_name(collection_id, member_id, display_name)` RPC (admin may set
 anyone's, a claimed member their own; blank clears); `members_list` rows carry
@@ -90,6 +94,7 @@ with `p_`, and PostgREST matches JSON keys to parameter names — so clients sen
 | `get_collection_state(collection_id, since_event_id?)` | full/delta snapshot: book rows (locks, current version seq + checksum), collection-file group versions, `max_event_id` |
 | `get_changes(collection_id, since_event_id)` | events + touched book rows (polling/catch-up) |
 | `get_book_manifest(book_id)` | v1.2: per-file current manifest `{bookId, versionId, seq, checksum, files:[{path, sha256, size, s3VersionId}]}` for pinned-version Receive; never-committed books invisible except to their mid-Send lock holder |
+| `get_collection_file_manifest(collection_id, group_key)` | v1.7: per-file current manifest `{groupKey, version, files:[{path, sha256, size, s3VersionId}]}` for one collection-file group, so the download path fetches only changed files pinned to their committed `s3_version_id` (E9); a never-written group returns `version 0` / empty `files`. Mirrors `get_book_manifest`. |
 | `checkout_book(book_id, machine text, seat text?)` | conditional lock; returns resulting status (winner's identity on failure). v1.5: also records the caller's `seat` — a stable hash of the local collection folder path identifying WHICH local copy took the lock (never the raw path); returns `locked_seat`. |
 | `checkout_book_takeover(book_id, machine text, seat text?)` | v1.4/v1.5: atomically reassigns another account's lock to the caller ONLY when the existing lock is recorded for the same machine AND the same seat (account-switch, batch item 9 + bug #0: two local copies on one computer are two seats); a NULL stored seat never matches (fail-safe). Returns `{success, locked_by, locked_by_machine, locked_seat, locked_at}` (same shape as checkout_book); emits a CheckOut event only on a genuine handover; safe to call speculatively — no-ops (success:false) when unlocked, already the caller's, locked on a different machine, or locked in a different/unknown seat. Note: `machine` and `seat` are client-asserted, consistent with checkout_book's existing trust model. |
 | `unlock_book(book_id)` | release own lock (undo checkout, no content change) |
