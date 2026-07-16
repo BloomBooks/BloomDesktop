@@ -107,6 +107,11 @@ namespace Bloom.TeamCollection
         {
             if (!CanAutoApplyRemoteChanges)
                 return;
+            // Caller-owned scan state for the rename check: a backend that would otherwise redo
+            // per-book work across this loop builds an index into it the first time it's needed
+            // and reuses it for the rest of this pass (see NewBookRenamedFrom(name, ref scanState)).
+            // A local, so it's fresh every poll and confined to this thread.
+            object renameScanState = null;
             foreach (var bookName in GetBookList())
             {
                 if (Directory.Exists(Path.Combine(_localCollectionFolder, bookName)))
@@ -115,7 +120,7 @@ namespace Bloom.TeamCollection
                 // local book is NOT missing -- downloading it would create a duplicate of that
                 // book under the new name (bug #18). The rename itself is applied by the next
                 // sync's rename-from-remote pass; HandleModifiedFile/HandleNewBook report it.
-                var renamedFrom = NewBookRenamedFrom(bookName);
+                var renamedFrom = NewBookRenamedFrom(bookName, ref renameScanState);
                 if (renamedFrom != null)
                 {
                     Logger.WriteEvent(

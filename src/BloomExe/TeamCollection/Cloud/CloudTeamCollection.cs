@@ -513,26 +513,60 @@ namespace Bloom.TeamCollection.Cloud
         /// </summary>
         protected internal override string NewBookRenamedFrom(string newBookName)
         {
+            // A one-off call builds the index and throws it away; the per-poll bulk path uses the
+            // ref-scanState override below so it builds the index only once for the whole scan.
+            object scanState = null;
+            return NewBookRenamedFrom(newBookName, ref scanState);
+        }
+
+        /// <summary>
+        /// Bulk-scan override for QueueMissingRepoBooksForBackgroundDownload. Finding the local
+        /// folder that shares a repo book's instance id means enumerating every local folder; the
+        /// per-book method does that once per missing book, which is O(missing x local) disk stats
+        /// per poll -- wasteful during a progressive join of a large collection (E7). Here we build
+        /// the instanceId -> folder index ONCE (the first missing book that needs it) and reuse it
+        /// for the rest of the pass, collapsing it to O(missing + local). scanState is a
+        /// caller-owned local (see the base pass), so it is rebuilt fresh each poll -- never stale
+        /// across polls -- and touched only by the polling thread.
+        /// </summary>
+        protected internal override string NewBookRenamedFrom(
+            string newBookName,
+            ref object scanState
+        )
+        {
             EnsureCacheHydrated();
             // Repo-name lookup on purpose: the caller is asking about a repo book's name.
             var instanceId = TryGetBookInstanceIdForName(newBookName);
             if (string.IsNullOrEmpty(instanceId))
                 return null;
+            var index =
+                scanState as Dictionary<string, string>
+                ?? (Dictionary<string, string>)(scanState = BuildLocalInstanceIdToFolder());
+            return
+                index.TryGetValue(instanceId, out var folder)
+                && !string.Equals(folder, newBookName, StringComparison.OrdinalIgnoreCase)
+                ? folder
+                : null;
+        }
+
+        /// <summary>
+        /// Maps each local book folder's meta.json instance id to its folder name, by enumerating
+        /// the collection folder once. Per-folder id reads go through <see
+        /// cref="TryGetLocalBookInstanceId"/>, so they hit the timestamp/size-validated cache. On
+        /// the (pathological, bug #18) case of two local folders sharing one id, first-enumerated
+        /// wins -- matching the per-book method's original first-match-returns loop.
+        /// </summary>
+        private Dictionary<string, string> BuildLocalInstanceIdToFolder()
+        {
+            var map = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
             {
                 var folderName = Path.GetFileName(path);
-                if (string.Equals(folderName, newBookName, StringComparison.OrdinalIgnoreCase))
-                    continue;
-                if (
-                    string.Equals(
-                        TryGetLocalBookInstanceId(folderName),
-                        instanceId,
-                        StringComparison.Ordinal
-                    )
-                )
-                    return folderName;
+                var instanceId = TryGetLocalBookInstanceId(folderName);
+                if (!string.IsNullOrEmpty(instanceId) && !map.ContainsKey(instanceId))
+                    map[instanceId] = folderName;
             }
-            return null;
+            return map;
         }
 
         /// <summary>The meta.json bookInstanceId of the LOCAL folder, or null when the folder has

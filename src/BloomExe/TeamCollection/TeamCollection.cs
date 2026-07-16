@@ -1891,6 +1891,23 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
+        /// Bulk-scan variant of <see cref="NewBookRenamedFrom(string)"/>, called once per repo book
+        /// by <see cref="QueueMissingRepoBooksForBackgroundDownload"/>. A backend that would
+        /// otherwise redo the same per-call work (e.g. re-enumerating every local book folder) may
+        /// stash a prebuilt index in <paramref name="scanState"/>: it is a caller-owned local (see
+        /// the pass), so it is naturally scoped to one scan and confined to the scanning thread —
+        /// no cross-poll staleness and no locking. The default ignores it and defers to the
+        /// per-book method.
+        /// </summary>
+        protected internal virtual string NewBookRenamedFrom(
+            string newBookName,
+            ref object scanState
+        )
+        {
+            return NewBookRenamedFrom(newBookName);
+        }
+
+        /// <summary>
         /// Handle a new book we have detected from NewBook event.
         /// Might be a new book from remote user. If so unpack to local.
         /// Just possibly might be a new book from a remote user whose name conflicts

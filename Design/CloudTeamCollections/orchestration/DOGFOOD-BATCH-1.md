@@ -1822,3 +1822,29 @@ up/download check
   (or at least no longer load-bearing), but flagged for the orchestrator to verify live before
   touching the harness, since removing it now means every E2E cloud-TC scenario exercises the real
   timing path for the first time · Next: orchestrator review + merge of task/b1-tier-timing.
+
+---
+
+**2026-07-16 — E7 done (per-poll rename-scan is now O(missing + local), not O(missing × local)).**
+`QueueMissingRepoBooksForBackgroundDownload` runs unconditionally at the end of every poll's
+`OnPolledChanges` (60s + on-activation/reconnect) and calls `NewBookRenamedFrom(bookName)` for
+each repo book that has no local folder. The cloud override enumerated *every* local book folder
+(FileInfo-stat per meta.json, cached) to find the one sharing the repo book's instance id — so
+during a progressive join of a large collection it re-enumerated the whole local folder set once
+per still-missing book, every 60s. Network cost was already gone (E1's instance-id cache); this
+was the remaining per-poll disk cost. Fix per John's direction ("first time a poll needs the map
+from instanceID→localFolder, build it, then use it"): added a bulk-scan overload
+`NewBookRenamedFrom(string, ref object scanState)` (base delegates to the per-book method;
+[TeamCollection.cs](../../../src/BloomExe/TeamCollection/TeamCollection.cs)). The pass owns
+`scanState` as a **local**, so the index is built lazily on the first missing book, reused for the
+rest of that poll, rebuilt fresh next poll (never stale across polls), and confined to the polling
+thread (no lock, no race with the worker thread's one-off `NewBookRenamedFrom` calls). Cloud
+override builds `instanceId→folderName` once via `BuildLocalInstanceIdToFolder()` (per-folder id
+reads hit the timestamp/size-validated cache; first-enumerated wins on the pathological dup-id
+case, matching the old first-match loop). Steady state (no missing books) does zero enumeration —
+the overload is never called. One-off callers (`DownloadMissingBookInBackground`, sync's
+rename pass) keep the simple per-book path. Verified: clean build, TeamCollection filter 436/436
+(includes the teammate-rename regression tests that exercise this exact path). Note: while tracing
+this I did **not** find an empty-poll early-return I'd associated with a batch-2 item ("E3") in
+`OnPolledChanges` — it still does `ApplyDelta`/`Save`/self-healing unconditionally each poll.
+Flagged for a separate look; independent of E7.
