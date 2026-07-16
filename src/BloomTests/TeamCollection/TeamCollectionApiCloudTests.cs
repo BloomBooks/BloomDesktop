@@ -154,7 +154,8 @@ namespace BloomTests.TeamCollection
             string id,
             string name,
             long? currentVersionSeq,
-            string lockedBy = null
+            string lockedBy = null,
+            string lockedByMachine = null
         ) =>
             new JObject
             {
@@ -167,7 +168,8 @@ namespace BloomTests.TeamCollection
                 ["current_version_seq"] = currentVersionSeq,
                 ["current_checksum"] = "cs",
                 ["locked_by"] = lockedBy,
-                ["locked_by_machine"] = lockedBy == null ? null : "SomeMachine",
+                ["locked_by_machine"] =
+                    lockedBy == null ? null : (lockedByMachine ?? "SomeMachine"),
                 ["locked_at"] = null,
                 ["deleted_at"] = null,
             };
@@ -214,19 +216,32 @@ namespace BloomTests.TeamCollection
         }
 
         [Test]
-        public void TcStatusMetadata_UnlockedNewerBookInRepo_CountsAsUpdateAvailable()
+        public void TcStatusMetadata_CountsNewerBooks_IncludingCheckedOutElsewhere_ExcludingCheckedOutHere()
         {
             HydrateWith(
-                Book("book-1", "Book One", currentVersionSeq: 3), // never locally received
-                Book("book-2", "Book Two", currentVersionSeq: 1, lockedBy: "someone-else") // locked: excluded
+                // Never locally received, unlocked -> counts.
+                Book("book-1", "Book One", currentVersionSeq: 3),
+                // Checked out by ANOTHER user -> counts (John, 16 Jul 2026): a reviewer can still
+                // receive the latest checked-in version, and the badge must not switch off without
+                // the update ever being received just because someone else took the book out.
+                Book("book-2", "Book Two", currentVersionSeq: 1, lockedBy: "someone-else"),
+                // Checked out HERE (this user + this machine) -> excluded, matching what
+                // ReceiveAllUpdates would skip (receiving would clobber local edits).
+                Book(
+                    "book-3",
+                    "Book Three",
+                    currentVersionSeq: 5,
+                    lockedBy: "test@somewhere.org",
+                    lockedByMachine: TeamCollectionManager.CurrentMachine
+                )
             );
 
             var result = ApiTest.GetString(_server, endPoint: "teamCollection/tcStatusMetadata");
 
             Assert.That(
                 result,
-                Does.Contain("\"updatesAvailableCount\":1"),
-                "only the unlocked book with a repo version and no local version should count"
+                Does.Contain("\"updatesAvailableCount\":2"),
+                "newer repo books count even when checked out by someone else; only a book checked out HERE is excluded (matching ReceiveAllUpdates)"
             );
         }
 

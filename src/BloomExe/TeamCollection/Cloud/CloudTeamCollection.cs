@@ -273,10 +273,19 @@ namespace Bloom.TeamCollection.Cloud
             ResolveBookId(bookFolderName);
 
         /// <summary>
-        /// Count of live, currently-unlocked books whose repo version is newer than what's on this
-        /// machine -- drives the status button's "Updates Available (N books)" metadata. A book
-        /// this machine has never Received (LocalVersionSeq null) counts too: from this machine's
-        /// point of view it equally needs a Receive before it's current.
+        /// Count of live books whose repo version is newer than what's on this machine -- drives
+        /// the status button's "Updates Available (N books)" metadata. A book this machine has
+        /// never Received (LocalVersionSeq null) counts too: from this machine's point of view it
+        /// equally needs a Receive before it's current.
+        ///
+        /// This must count EXACTLY the books <see cref="ReceiveAllUpdates"/> would receive, so the
+        /// two never disagree: a book checked out by ANOTHER user still counts (John, 16 Jul 2026)
+        /// -- a reviewer legitimately wants the latest checked-in version even though they can't
+        /// edit it, and it would be wrong for the badge to switch off (without the update ever
+        /// being received) merely because someone else took the book out. Only a book checked out
+        /// HERE is excluded -- the same book ReceiveAllUpdates skips, because receiving would
+        /// clobber local edits. "Checked out here" is computed via the identical
+        /// StatusFromCachedBook + IsCheckedOutHereBy path ReceiveAllUpdates uses, so they can't drift.
         /// </summary>
         public int GetUpdatesAvailableCount()
         {
@@ -286,7 +295,7 @@ namespace Bloom.TeamCollection.Cloud
                 .Count(b =>
                     !b.DeletedAt.HasValue
                     && b.CurrentVersionSeq.HasValue
-                    && string.IsNullOrEmpty(b.LockedBy)
+                    && !IsCheckedOutHereBy(StatusFromCachedBook(b, _collectionId))
                     && (b.LocalVersionSeq ?? -1) < b.CurrentVersionSeq.Value
                 );
         }
