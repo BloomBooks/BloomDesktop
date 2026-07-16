@@ -727,6 +727,19 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 16 Jul 2026 (final — John authorized the force-push + freed memory) · Two things closed:
+  (1) **PR #8052 force-pushed** — regenerated `cloud-tc-for-review` (byte-identical to
+  cloud-collections) pushed with --force-with-lease (51da40f8f0→98bc3524ac); **Greptile
+  re-triggered** via `@greptile-apps review` comment (issuecomment-4989391847) describing the
+  /simplify pass. (2) **Live e2e now PASSES** — with memory freed (49% free vs the earlier 14%),
+  `e2e-1-create-share` + `e2e-2-collaboration-loop` both PASSED (2/2, 3.9 min) through the live
+  Supabase+MinIO stack. This confirms the earlier about:blank failures were purely the documented
+  memory-pressure flake, and LIVE-VERIFIES R2 (BuildDefaultClient S3 client, up+down), R1
+  (ListAllObjects in DownloadCollectionFileGroup, via e2e-2's join/receive), and the batch-3
+  ReceiveAllUpdates extraction end-to-end. · **Still for John (morning):** master-merge +
+  launcher reconciliation (origin/master's #8071 go-launcher change vs our 85ba119594); the
+  REPORT-ONLY decision list; an optional go.sh/run.sh launcher smoke (e2e bypasses those scripts).
+  Dev stack is still up. Working tree clean (only session-local .claude/settings.json untracked).
 - 16 Jul 2026 (later — "FINISH EVERYTHING" per John; /simplify application COMPLETE & COMMITTED)
   · John chose "Finish everything" for the remaining optional work, and gave an uninterrupted
   multi-hour window (machine already set never-sleep-on-AC; verified, no change needed).
