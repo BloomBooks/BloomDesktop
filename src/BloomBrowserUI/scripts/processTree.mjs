@@ -1,5 +1,5 @@
 /* eslint-env node */
-/* global process */
+/* global clearTimeout, process, setTimeout */
 import { spawn } from "node:child_process";
 
 const isWindows = process.platform === "win32";
@@ -49,6 +49,88 @@ export const killProcessTree = (pid, signal = "SIGTERM") =>
             // The process may already be gone; nothing more to do.
         }
         resolve();
+    });
+
+/**
+ * Terminate a spawned child AND all of its descendants, resolving once the
+ * child has exited (or a bounded force-kill fallback has fired).
+ *
+ * This is the shared teardown for the dev launchers (go.mjs, run.mjs, and
+ * repo-root scripts/watchBloomExe.mjs). It builds on killProcessTree because on
+ * Windows a plain signal to a Node child does NOT reach that child's
+ * descendants, so the spawned subtree (Vite + watchers, or dotnet watch +
+ * Bloom) would orphan if we merely signaled the child and trusted it to reap
+ * them before exiting.
+ *
+ * Two kill strategies, selected by `signalFirst`:
+ * - false (default; go.mjs/run.mjs): on Windows, force-kill the whole subtree
+ *   immediately — the only reliable way to leave zero orphans there. On POSIX,
+ *   send SIGINT first so dotnet/Bloom can shut down cleanly (terminals already
+ *   propagate Ctrl-C to the process group), then force-kill the tree if the
+ *   child is still alive after `gracefulShutdownMs`.
+ * - true (watchBloomExe.mjs, which restarts `dotnet watch` in place): send
+ *   SIGINT first on EVERY platform, giving the child `gracefulShutdownMs` to
+ *   shut down gracefully, then force-kill whatever remains of the tree.
+ *
+ * @param {import("node:child_process").ChildProcess} child - The child to terminate.
+ * @param {object} [options]
+ * @param {number} [options.gracefulShutdownMs] - How long to wait after SIGINT
+ *   before force-killing the tree. Defaults to 1500.
+ * @param {boolean} [options.signalFirst] - Send SIGINT before force-killing even
+ *   on Windows. Defaults to false (immediate tree kill on Windows).
+ * @returns {Promise<void>} Resolves once the child has exited or the bounded
+ *   force-kill fallback has run.
+ */
+export const terminateChildProcess = (
+    child,
+    { gracefulShutdownMs = 1500, signalFirst = false } = {},
+) =>
+    new Promise((resolve) => {
+        if (!child || child.exitCode !== null || child.signalCode) {
+            resolve();
+            return;
+        }
+
+        let settled = false;
+        let forceTimer;
+
+        const finish = () => {
+            if (settled) {
+                return;
+            }
+
+            settled = true;
+            if (forceTimer) {
+                clearTimeout(forceTimer);
+            }
+            resolve();
+        };
+
+        child.once("exit", finish);
+
+        if (isWindows && !signalFirst) {
+            // Kill the entire subtree by pid; the "exit" event resolves us, and
+            // the watchdog covers the case where it never arrives.
+            void killProcessTree(child.pid);
+            forceTimer = setTimeout(finish, gracefulShutdownMs);
+            return;
+        }
+
+        try {
+            child.kill("SIGINT");
+        } catch {
+            finish();
+            return;
+        }
+
+        forceTimer = setTimeout(() => {
+            if (settled) {
+                return;
+            }
+
+            void killProcessTree(child.pid, "SIGTERM");
+            setTimeout(finish, 250);
+        }, gracefulShutdownMs);
     });
 
 /**

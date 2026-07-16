@@ -14,11 +14,15 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+    automationReadyPrefix,
+    makeAutomationReadyScanner,
+} from "./automationReady.mjs";
 import { pipeChildOutput } from "./childOutput.mjs";
 import { startViteDevServer } from "./viteDevServer.mjs";
 import {
-    killProcessTree,
     sweepStaleWorktreeNodeProcesses,
+    terminateChildProcess,
 } from "./processTree.mjs";
 import { findRunningStandardBloomInstances } from "../../../.github/skills/bloom-automation/bloomProcessCommon.mjs";
 import { getHelpfulStartupLabel } from "../../../scripts/watchBloomExeLabel.mjs";
@@ -62,14 +66,12 @@ const builtExePath = path.join(
 const outputRoot = path.join(repoRoot, "output");
 const buildLockPath = path.join(outputRoot, "run-build.lock");
 
-const automationReadyPrefix = "BLOOM_AUTOMATION_READY ";
 const launchTimeoutMs = 120000;
 const buildLockPollMs = 500;
 // A build lock older than this is treated as abandoned (builder crashed without
 // releasing it). A full clean build is well under this; a normal incremental build
 // is seconds. Ten minutes is generous headroom over the slowest real build.
 const staleBuildLockMs = 10 * 60 * 1000;
-const gracefulShutdownMs = 1500;
 // Directories we never descend into when scanning C# sources for freshness — they
 // hold build output, dependencies, or VCS metadata, none of which are edited.
 const freshnessSkipDirs = new Set([
@@ -127,52 +129,6 @@ const delay = (milliseconds) =>
 
 const log = (message) => console.log(`[run] ${message}`);
 
-// Terminate a spawned child and all of its descendants (see go.mjs for why the
-// whole tree must go on Windows rather than trusting signal propagation).
-const terminateChild = (child) =>
-    new Promise((resolve) => {
-        if (!child || child.exitCode !== null || child.signalCode) {
-            resolve();
-            return;
-        }
-
-        let settled = false;
-        let forceTimer;
-        const finish = () => {
-            if (settled) {
-                return;
-            }
-            settled = true;
-            if (forceTimer) {
-                clearTimeout(forceTimer);
-            }
-            resolve();
-        };
-
-        child.once("exit", finish);
-
-        if (process.platform === "win32") {
-            void killProcessTree(child.pid);
-            forceTimer = setTimeout(finish, gracefulShutdownMs);
-            return;
-        }
-
-        try {
-            child.kill("SIGINT");
-        } catch {
-            finish();
-            return;
-        }
-
-        forceTimer = setTimeout(() => {
-            if (settled) {
-                return;
-            }
-            void killProcessTree(child.pid, "SIGTERM");
-            setTimeout(finish, 250);
-        }, gracefulShutdownMs);
-    });
-
 const shutdown = async (exitCode = 0) => {
     if (isShuttingDown) {
         return;
@@ -180,7 +136,10 @@ const shutdown = async (exitCode = 0) => {
     isShuttingDown = true;
     const normalizedExitCode = Number.isInteger(exitCode) ? exitCode : 1;
     log(`Shutting down (exit ${normalizedExitCode})...`);
-    await Promise.all(children.map((child) => terminateChild(child)));
+    // terminateChildProcess kills each child's whole subtree (see its doc
+    // comment in processTree.mjs for why signal propagation can't be trusted
+    // on Windows).
+    await Promise.all(children.map((child) => terminateChildProcess(child)));
     process.exit(normalizedExitCode);
 };
 
@@ -450,34 +409,6 @@ const buildBloomArgs = (vitePort) => {
     return args;
 };
 
-// Scan a forwarded stdout/stderr chunk for the BLOOM_AUTOMATION_READY handshake
-// line and report the parsed startup info via onReady.
-const makeReadyScanner = (onReady) => {
-    let buffered = "";
-    return (text) => {
-        buffered += text;
-        let newlineIndex;
-        while ((newlineIndex = buffered.search(/\r\n|\r|\n/)) >= 0) {
-            const line = buffered.slice(0, newlineIndex);
-            buffered = buffered.slice(
-                newlineIndex +
-                    (buffered.startsWith("\r\n", newlineIndex) ? 2 : 1),
-            );
-            if (line.startsWith(automationReadyPrefix)) {
-                try {
-                    onReady(
-                        JSON.parse(line.slice(automationReadyPrefix.length)),
-                    );
-                } catch (error) {
-                    console.error(
-                        `[run] Could not parse ${automationReadyPrefix.trim()} payload: ${error.message}`,
-                    );
-                }
-            }
-        }
-    };
-};
-
 const launchBloom = (vitePort) =>
     new Promise((resolve) => {
         const args = buildBloomArgs(vitePort);
@@ -498,14 +429,20 @@ const launchBloom = (vitePort) =>
             }
         }, launchTimeoutMs);
 
-        const scanner = makeReadyScanner((info) => {
-            ready = true;
-            clearTimeout(launchTimer);
-            bloomProcessId = Number(info?.processId) || bloomChild.pid;
-            log(
-                `Bloom ready. HTTP ${info?.httpPort}, CDP ${info?.cdpPort}, Bloom PID ${bloomProcessId}.`,
-            );
-        });
+        const scanner = makeAutomationReadyScanner(
+            (info) => {
+                ready = true;
+                clearTimeout(launchTimer);
+                bloomProcessId = Number(info?.processId) || bloomChild.pid;
+                log(
+                    `Bloom ready. HTTP ${info?.httpPort}, CDP ${info?.cdpPort}, Bloom PID ${bloomProcessId}.`,
+                );
+            },
+            (error) =>
+                console.error(
+                    `[run] Could not parse ${automationReadyPrefix.trim()} payload: ${error.message}`,
+                ),
+        );
 
         pipeChildOutput(bloomChild, "[bloom] ", scanner);
 

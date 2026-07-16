@@ -1,13 +1,13 @@
 /* eslint-env node */
-/* global clearTimeout, console, process, setTimeout */
+/* global console, process */
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { pipeChildOutput } from "./childOutput.mjs";
 import { startViteDevServer } from "./viteDevServer.mjs";
 import {
-    killProcessTree,
     sweepStaleWorktreeNodeProcesses,
+    terminateChildProcess,
 } from "./processTree.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -16,7 +16,6 @@ const browserUIRoot = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(browserUIRoot, "..", "..");
 const exeScriptPath = path.join(repoRoot, "scripts", "watchBloomExe.mjs");
 process.env.feedback = "off";
-const gracefulShutdownMs = 1500;
 
 const parsePositiveInteger = (value) => {
     const parsed = Number.parseInt(value, 10);
@@ -89,65 +88,6 @@ try {
 const children = [];
 let isShuttingDown = false;
 
-// Terminate a spawned child AND all of its descendants.
-//
-// On Windows we do NOT rely on SIGINT propagation: terminating a Node child does
-// not terminate its descendants, so the dev.mjs subtree (Vite + ~7 watchers and
-// their own command children) would orphan if we merely signaled dev.mjs and
-// then trusted it to reap them before exiting. Instead we `taskkill /t /f` the
-// whole subtree directly, which is the only reliable way to leave zero orphans.
-//
-// On POSIX we keep the graceful SIGINT-then-force path so dotnet/Bloom can shut
-// down cleanly; terminals already propagate Ctrl-C to the process group there.
-const terminateChild = (child) =>
-    new Promise((resolve) => {
-        if (!child || child.exitCode !== null || child.signalCode) {
-            resolve();
-            return;
-        }
-
-        let settled = false;
-        let forceTimer;
-
-        const finish = () => {
-            if (settled) {
-                return;
-            }
-
-            settled = true;
-            if (forceTimer) {
-                clearTimeout(forceTimer);
-            }
-            resolve();
-        };
-
-        child.once("exit", finish);
-
-        if (process.platform === "win32") {
-            // Kill the entire subtree by pid; the "exit" event resolves us, and
-            // the watchdog covers the case where it never arrives.
-            void killProcessTree(child.pid);
-            forceTimer = setTimeout(finish, gracefulShutdownMs);
-            return;
-        }
-
-        try {
-            child.kill("SIGINT");
-        } catch {
-            finish();
-            return;
-        }
-
-        forceTimer = setTimeout(() => {
-            if (settled) {
-                return;
-            }
-
-            void killProcessTree(child.pid, "SIGTERM");
-            setTimeout(finish, 250);
-        }, gracefulShutdownMs);
-    });
-
 const shutdown = async (exitCode = 0) => {
     if (isShuttingDown) {
         return;
@@ -157,7 +97,11 @@ const shutdown = async (exitCode = 0) => {
     const normalizedExitCode = Number.isInteger(exitCode) ? exitCode : 1;
     console.log(`[go] Shutting down (exit ${normalizedExitCode})...`);
 
-    await Promise.all(children.map((child) => terminateChild(child)));
+    // terminateChildProcess kills each child's WHOLE subtree; see its doc
+    // comment in processTree.mjs for why signal propagation can't be trusted
+    // (the dev.mjs subtree — Vite + ~7 watchers and their own command children —
+    // would orphan on Windows otherwise).
+    await Promise.all(children.map((child) => terminateChildProcess(child)));
     process.exit(normalizedExitCode);
 };
 
