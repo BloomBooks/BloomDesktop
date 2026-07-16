@@ -727,6 +727,19 @@ up/download check
 
 ## Progress log
 (orchestrator appends: date · what was just completed · EXACT next action)
+- 16 Jul 2026 (decision C RESOLVED — 'updates available' now includes books checked out elsewhere)
+  · John's ruling: GetUpdatesAvailableCount should count books checked out by ANOTHER user (a
+  reviewer can still receive the latest checked-in version; and it's wrong for the badge to switch
+  off — without the update ever being received — just because someone else took the book out).
+  Fix (commit d2bd21847d): GetUpdatesAvailableCount now excludes only books checked out HERE
+  (was: any locked book), computed via the SAME StatusFromCachedBook + IsCheckedOutHereBy path
+  ReceiveAllUpdates uses — so the badge count and what Sync receives can't drift (this closes the
+  predicate-drift item flagged during the batch-3 ReceiveAllUpdates extraction). The top-bar
+  TeamCollectionButton's "Updates Available (N)" label reads this count, so it now stays on while a
+  book is checked out elsewhere. Test updated to pin both halves; required filter 443/443. · EXACT
+  next action: remaining open items — John decides (a) pull the 8 mid-session master commits, (b)
+  re-run PR #8052 regen vs current master, (c) the remaining efficiency/reuse refactors
+  (E2/E7/E8/E9/R5/R6/R13).
 - 16 Jul 2026 (DpapiCloudTokenStore WIRED — cloud login now survives restart; John decision B
   resolved) · The REPORT-ONLY "DpapiCloudTokenStore never wired" item is DONE (John: we want a
   real cloud login to survive restart; make the progress we can now). Root state found: CloudAuth's
