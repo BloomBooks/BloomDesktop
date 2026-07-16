@@ -27,6 +27,29 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
     z-index: 1;
 }
 
+/* nicescroll looks for position:absolute to find where to place its elements.
+ * For "Just Text" pages, the .split-pane > .split-pane-component element layers
+ * are omitted, so we need to add a rule to set position:absolute on the
+ * .split-pane-component-inner element.
+ * This prevents the strange behavior reported in BL-15093.
+ * Note that position:absolute causes padding of the parent to be ignored, so we
+ * have to set the top, left, right, and bottom to what would be the padding value
+ * in order to get the correct layout.  We also really want to restrict this rule
+ * to only "Just Text" pages. The ":has()" pseudo-class does that since the "Just
+ * a Picture" page will not have an immediate child with a visible
+ * .bloom-translationGroup class.  (BL-15611, BL-15720)
+ */
+.marginBox
+    > .split-pane-component-inner:has(> .bloom-translationGroup:not(.box-header-off)) {
+    position: absolute;
+    top: var(--marginBox-padding);
+    left: var(--marginBox-padding);
+    right: var(--marginBox-padding);
+    bottom: var(--marginBox-padding);
+    width: initial;
+    height: initial;
+}
+
 .split-pane.fixed-top > .split-pane-component:first-child,
 .split-pane.fixed-bottom > .split-pane-component:first-child,
 .split-pane.horizontal-percent > .split-pane-component:first-child {
@@ -42,6 +65,8 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
     left: 0;
     cursor: ns-resize;
     z-index: 2;
+
+    /* JohnT mod: this extra padding makes it impossible to grab the crop control right above the split.
     padding-bottom: 5px; /* this actually enlarges the target area for the user trying to find the splitter, without changing the layout of the page (because the position is absolute)*/
 }
 
@@ -101,14 +126,14 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 }
 .split-pane.vertical-percent > .split-pane-component.position-left {
   right: 50%;
-  margin-right: 3px;
+  margin-right: var(--side-by-side-gap);
 }
 .split-pane.vertical-percent > .split-pane-component.position-right {
   width: 50%;
 }
 .split-pane.horizontal-percent > .split-pane-component.position-top {
   bottom: 50%;
-  margin-bottom: 3px;
+  margin-bottom: var(--top-bottom-gap);
 }
 .split-pane.horizontal-percent > .split-pane-component.position-bottom {
   height: 50%;
@@ -235,36 +260,50 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 .selector-links div {
   display: inline;
 }
+.split-pane-component-inner {
+  container-type: size;
+  container-name: split-pane-component-inner;
+}
 .split-pane-component-inner .vertical-adders {
   display: none;
 }
 .split-pane-component-inner .horizontal-adders {
   display: none;
 }
-.split-pane-component-inner[min-width~="60px"] .horizontal-adders {
-  width: 70px;
-  height: 50px;
+@container split-pane-component-inner (min-width: 60px) {
+  .horizontal-adders {
+    width: 70px;
+    height: 50px;
+  }
 }
-.split-pane-component-inner[min-height~="60px"] .vertical-adders {
-  width: 50px;
-  height: 70px;
+@container split-pane-component-inner (min-height: 60px) {
+  .vertical-adders {
+    width: 50px;
+    height: 70px;
+  }
 }
-.split-pane-component-inner[min-width~="150px"][min-height~="150px"] .textBox-identifier {
-  transition-property: font-size;
-  transition-duration: 0.5s;
-  font-size: 24pt;
+@container split-pane-component-inner (min-width: 150px) and (min-height: 150px) {
+  .textBox-identifier {
+    transition-property: font-size;
+    transition-duration: 0.5s;
+    font-size: 24pt;
+  }
 }
-.split-pane-component-inner[min-height~="250px"] .vertical-adders {
-  height: 100px;
+@container split-pane-component-inner (min-height: 250px) {
+  .vertical-adders {
+    height: 100px;
+  }
+  .horizontal-adders {
+    height: 100px;
+  }
 }
-.split-pane-component-inner[min-height~="250px"] .horizontal-adders {
-  height: 100px;
-}
-.split-pane-component-inner[min-width~="250px"] .vertical-adders {
-  width: 100px;
-}
-.split-pane-component-inner[min-width~="250px"] .horizontal-adders {
-  width: 100px;
+@container split-pane-component-inner (min-width: 250px) {
+  .vertical-adders {
+    width: 100px;
+  }
+  .horizontal-adders {
+    width: 100px;
+  }
 }
 .origami-layout-mode {
   /*the commented line below would also add it to an empty bloom-content1 for re-entry to layout mode*/
@@ -298,3 +337,5 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
   padding-left: 10px;
   display: inline-flex;
 }
+/*# sourceMappingURL=origami.css.map */
+/*# sourceMappingURL=origami.css.map */
