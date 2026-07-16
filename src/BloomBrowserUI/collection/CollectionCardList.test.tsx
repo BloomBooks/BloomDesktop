@@ -60,9 +60,9 @@ describe("CollectionCardList", () => {
             container.querySelectorAll('[data-testid="join-collection-card"]')
                 .length,
         ).toBe(2);
-        const allCardTitles = Array.from(container.querySelectorAll("h5")).map(
-            (el) => el.textContent,
-        );
+        const allCardTitles = Array.from(
+            container.querySelectorAll(".MuiTypography-body1"),
+        ).map((el) => el.textContent);
         expect(allCardTitles).not.toContain("Collection 11");
         expect(allCardTitles).not.toContain("Collection 12");
         expect(allCardTitles).toContain("Collection 10");
@@ -89,7 +89,11 @@ describe("CollectionCardList", () => {
         // Click something INSIDE CardActionArea (its title), not the outer Card itself -- click
         // events only bubble UP from the target through ancestors, so clicking the Card root
         // would not reach CardActionArea's onClick handler.
-        act(() => (joinCard.querySelector("h5") as HTMLElement).click());
+        act(() =>
+            (
+                joinCard.querySelector(".MuiTypography-body1") as HTMLElement
+            ).click(),
+        );
 
         expect(onJoinCardClick).toHaveBeenCalledWith(
             "join-1",

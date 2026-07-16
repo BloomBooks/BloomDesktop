@@ -9,12 +9,8 @@ import {
 } from "../.github/skills/bloom-automation/bloomProcessCommon.mjs";
 import { isManualRestartCommand } from "./watchBloomExeInput.mjs";
 import { getHelpfulStartupLabel } from "./watchBloomExeLabel.mjs";
-import {
-    automationReadyPrefix,
-    makeAutomationReadyScanner,
-} from "../src/BloomBrowserUI/scripts/automationReady.mjs";
-import { pipeChildOutput } from "../src/BloomBrowserUI/scripts/childOutput.mjs";
-import { terminateChildProcess } from "../src/BloomBrowserUI/scripts/processTree.mjs";
+
+const automationReadyPrefix = "BLOOM_AUTOMATION_READY ";
 
 const parseArgs = () => {
     const args = process.argv.slice(2);
@@ -136,16 +132,6 @@ const dotnetArgs = [
     "--automation",
 ];
 
-// `pnpm go` is the HUMAN launcher: --attended keeps --automation's ready-handshake and
-// single-instance bypass but turns its unattended-UI policies back off (dialog auto-close,
-// problem-report suppression). Without it, any warning in the Team Collection startup sync
-// auto-closed the sync dialog and silently killed the launch (dogfood bug #16, 13 Jul 2026).
-// Set BLOOM_GO_UNATTENDED=1 for a fully unattended launch (agent-driven CDP runs that must
-// never block on a dialog); the E2E harness has its own launcher and is unaffected either way.
-if (process.env.BLOOM_GO_UNATTENDED !== "1") {
-    dotnetArgs.push("--attended");
-}
-
 const startupLabel = getHelpfulStartupLabel(options.repoRoot);
 
 if (startupLabel) {
@@ -165,6 +151,52 @@ if (effectiveVitePort) {
         );
     }
 }
+
+const createForwardingLineWriter = (target, onLine) => {
+    let buffered = "";
+
+    const emitBufferedLines = (text) => {
+        buffered += text;
+
+        while (buffered.length > 0) {
+            const crlfIndex = buffered.indexOf("\r\n");
+            const lfIndex = buffered.indexOf("\n");
+            const crIndex = buffered.indexOf("\r");
+            const newlineIndexes = [crlfIndex, lfIndex, crIndex].filter(
+                (index) => index >= 0,
+            );
+
+            if (newlineIndexes.length === 0) {
+                return;
+            }
+
+            const lineEnd = Math.min(...newlineIndexes);
+            const line = buffered.slice(0, lineEnd);
+            const separatorLength = buffered.startsWith("\r\n", lineEnd)
+                ? 2
+                : 1;
+
+            onLine?.(line);
+            buffered = buffered.slice(lineEnd + separatorLength);
+        }
+    };
+
+    return {
+        write: (chunk) => {
+            const text = chunk.toString();
+            target.write(text);
+            emitBufferedLines(text);
+        },
+        flush: () => {
+            if (!buffered) {
+                return;
+            }
+
+            onLine?.(buffered);
+            buffered = "";
+        },
+    };
+};
 
 let child;
 let childExited = false;
@@ -338,6 +370,92 @@ const reportAutomationReady = (rawAutomationInfo) => {
     startBloomMonitor();
 };
 
+const handleOutputLine = (launchToken, line) => {
+    if (launchToken !== activeLaunchToken) {
+        return;
+    }
+
+    if (!line.startsWith(automationReadyPrefix)) {
+        return;
+    }
+
+    try {
+        reportAutomationReady(
+            JSON.parse(line.slice(automationReadyPrefix.length)),
+        );
+    } catch (error) {
+        console.error(
+            `Could not parse ${automationReadyPrefix.trim()} payload: ${error instanceof Error ? error.message : String(error)}`,
+        );
+    }
+};
+
+const terminateChild = (targetChild) =>
+    new Promise((resolve) => {
+        if (
+            !targetChild ||
+            targetChild.exitCode !== null ||
+            targetChild.signalCode
+        ) {
+            resolve();
+            return;
+        }
+
+        let settled = false;
+        let forceTimer;
+
+        const finish = () => {
+            if (settled) {
+                return;
+            }
+
+            settled = true;
+            if (forceTimer) {
+                clearTimeout(forceTimer);
+            }
+            resolve();
+        };
+
+        targetChild.once("exit", finish);
+
+        try {
+            targetChild.kill("SIGINT");
+        } catch {
+            finish();
+            return;
+        }
+
+        forceTimer = setTimeout(() => {
+            if (settled) {
+                return;
+            }
+
+            if (process.platform === "win32") {
+                const killer = spawn(
+                    "taskkill",
+                    ["/pid", String(targetChild.pid), "/t", "/f"],
+                    {
+                        stdio: "ignore",
+                        shell: false,
+                    },
+                );
+
+                killer.on("exit", finish);
+                killer.on("error", finish);
+                return;
+            }
+
+            try {
+                targetChild.kill("SIGTERM");
+            } catch {
+                finish();
+                return;
+            }
+
+            setTimeout(finish, 250);
+        }, 1500);
+    });
+
 const startLaunchTimeout = () => {
     launchTimeout = setTimeout(() => {
         if (launchCompleted || launchFailed) {
@@ -365,30 +483,17 @@ const spawnWatchChild = () => {
 
     console.log(`dotnet PID: ${child.pid} (launch ${launchNumber})`);
 
-    // A fresh scanner per launch, with both callbacks gated on launchToken so
-    // trailing output from a terminated previous launch (whose streams may
-    // still drain after a restart) can never trigger ready handling — or parse
-    // errors — for the current one.
-    const scanner = makeAutomationReadyScanner(
-        (info) => {
-            if (launchToken !== activeLaunchToken) {
-                return;
-            }
-
-            reportAutomationReady(info);
-        },
-        (error) => {
-            if (launchToken !== activeLaunchToken) {
-                return;
-            }
-
-            console.error(
-                `Could not parse ${automationReadyPrefix.trim()} payload: ${error instanceof Error ? error.message : String(error)}`,
-            );
-        },
+    const stdoutWriter = createForwardingLineWriter(process.stdout, (line) =>
+        handleOutputLine(launchToken, line),
+    );
+    const stderrWriter = createForwardingLineWriter(process.stderr, (line) =>
+        handleOutputLine(launchToken, line),
     );
 
-    pipeChildOutput(child, "", scanner);
+    child.stdout.on("data", stdoutWriter.write);
+    child.stderr.on("data", stderrWriter.write);
+    child.stdout.on("end", stdoutWriter.flush);
+    child.stderr.on("end", stderrWriter.flush);
 
     startLaunchTimeout();
 
@@ -453,9 +558,7 @@ const restartWatchChild = async () => {
     restartRequested = true;
     awaitingManualRestart = false;
     console.log("Restarting Bloom...");
-    // signalFirst: give dotnet watch a chance to shut down cleanly on SIGINT
-    // before its tree is force-killed (see processTree.mjs).
-    await terminateChildProcess(child, { signalFirst: true });
+    await terminateChild(child);
 };
 
 if (process.stdin.readable) {

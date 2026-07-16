@@ -1,11 +1,12 @@
 /* eslint-env node */
 
-// Shared parsing of the BLOOM_AUTOMATION_READY startup handshake. When Bloom is
-// launched with --automation it prints a single stdout line of the form
-// `BLOOM_AUTOMATION_READY {json}` (processId, httpPort, cdpPort, ...) once it is
-// ready to be driven. Both launchers that watch for that line — run.mjs (build-
-// once) and repo-root scripts/watchBloomExe.mjs (dotnet watch) — share this
-// implementation instead of each maintaining their own line scanner.
+// Parsing of the BLOOM_AUTOMATION_READY startup handshake for the cloud-TC
+// build-once launcher (run.mjs). When Bloom is launched with --automation it
+// prints a single stdout line of the form `BLOOM_AUTOMATION_READY {json}`
+// (processId, httpPort, cdpPort, ...) once it is ready to be driven. (The
+// repo-root scripts/watchBloomExe.mjs dotnet-watch launcher does its own
+// equivalent scanning inline; run.mjs is a separate build-once launcher this
+// cloud branch adds, so it keeps its scanner here.)
 
 export const automationReadyPrefix = "BLOOM_AUTOMATION_READY ";
 

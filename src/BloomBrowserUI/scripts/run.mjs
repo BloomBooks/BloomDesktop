@@ -20,10 +20,7 @@ import {
 } from "./automationReady.mjs";
 import { pipeChildOutput } from "./childOutput.mjs";
 import { startViteDevServer } from "./viteDevServer.mjs";
-import {
-    sweepStaleWorktreeNodeProcesses,
-    terminateChildProcess,
-} from "./processTree.mjs";
+import { killProcessTree, reapOrphanedBloomDevStacks } from "./processTree.mjs";
 import { findRunningStandardBloomInstances } from "../../../.github/skills/bloom-automation/bloomProcessCommon.mjs";
 import { getHelpfulStartupLabel } from "../../../scripts/watchBloomExeLabel.mjs";
 
@@ -136,10 +133,9 @@ const shutdown = async (exitCode = 0) => {
     isShuttingDown = true;
     const normalizedExitCode = Number.isInteger(exitCode) ? exitCode : 1;
     log(`Shutting down (exit ${normalizedExitCode})...`);
-    // terminateChildProcess kills each child's whole subtree (see its doc
-    // comment in processTree.mjs for why signal propagation can't be trusted
-    // on Windows).
-    await Promise.all(children.map((child) => terminateChildProcess(child)));
+    // killProcessTree takes down each child's WHOLE subtree (see its doc comment
+    // in processTree.mjs for why signal propagation can't be trusted on Windows).
+    await Promise.all(children.map((child) => killProcessTree(child.pid)));
     process.exit(normalizedExitCode);
 };
 
@@ -513,8 +509,9 @@ if (process.stdin.readable) {
 }
 
 const main = async () => {
-    await sweepStaleWorktreeNodeProcesses({
-        commandLineMarker: repoRoot,
+    // Reap dev-stack node processes orphaned by a hard-killed launcher before we
+    // start (same cleanup go.mjs does at startup; reuses master's shared helper).
+    await reapOrphanedBloomDevStacks({
         excludePids: [process.pid],
         log,
     });

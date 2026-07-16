@@ -12,7 +12,10 @@ namespace BloomTests.WebLibraryIntegration
     /// This file now contains only edge cases. For a more efficient upload/download test,
     /// the more standard tests have been separated out into BloomS3StandardUpDownloadTests.
     /// </summary>
+    // Integration tests: these talk to the live unit-test S3 bucket, so they need internet
+    // access. Exclude them from a quick local run with --filter TestCategory!=Integration
     [TestFixture]
+    [Category("Integration")]
     public class BloomS3ClientTests
     {
         private BloomS3Client _client;

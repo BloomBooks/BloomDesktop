@@ -177,6 +177,16 @@ namespace Bloom.web.controllers
             var checkedOutCount = isTeamCollection
                 ? CountCheckedOutToCurrentUser(folderPath)
                 : (int?)null;
+            // The collection currently open in Bloom (if any). Null at startup, when no
+            // project is loaded, so nothing is highlighted in that case.
+            var currentCollectionPath = CommonApi.CurrentCollectionSettings?.SettingsFilePath;
+            var isCurrentCollection =
+                !string.IsNullOrEmpty(currentCollectionPath)
+                && string.Equals(
+                    collectionFilePath,
+                    currentCollectionPath,
+                    StringComparison.OrdinalIgnoreCase
+                );
             return new
             {
                 path = collectionFilePath,
@@ -184,6 +194,7 @@ namespace Bloom.web.controllers
                 bookCount = CountBooksInCollection(folderPath),
                 isTeamCollection,
                 checkedOutCount,
+                isCurrentCollection,
             };
         }
 

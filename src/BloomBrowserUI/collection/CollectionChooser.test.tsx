@@ -120,7 +120,11 @@ describe("CollectionChooser", () => {
         const cardB = Array.from(joinCards).find((card) =>
             card.textContent?.includes(joinCardB.title),
         ) as HTMLElement;
-        act(() => (cardB.querySelector("h5") as HTMLElement).click());
+        act(() =>
+            (
+                cardB.querySelector(".MuiTypography-body1") as HTMLElement
+            ).click(),
+        );
 
         const dialog = document.querySelector(
             '[data-testid="join-cloud-collection-dialog-stub"]',

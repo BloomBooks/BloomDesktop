@@ -8,6 +8,7 @@ import {
     IconButton,
     Menu,
     MenuItem,
+    Chip,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { LocalizableMenuItem } from "../react_components/localizableMenuItem";
@@ -23,6 +24,8 @@ export interface ICollectionInfo {
     checkedOutCount?: number;
     unpublishedCount?: number;
     isTeamCollection?: boolean;
+    // True for the collection currently open in Bloom; that card is highlighted.
+    isCurrentCollection?: boolean;
     // The fields below are set only for a "join card" (dogfood batch 1, item 6): a cloud Team
     // Collection the signed-in user belongs to but has no local copy of yet (see
     // CollectionChooserApi.HandleGetJoinCards). A join card has no local folder, so none of the
@@ -33,21 +36,52 @@ export interface ICollectionInfo {
     onJoinClick?: (collectionId: string, title: string) => void;
 }
 
+// The "..." menu button sits in the top-right corner of the card. The title row
+// reserves matching space on its right (kMoreButtonReservedSpace) so a long
+// collection name truncates with an ellipsis instead of sliding under the button.
+const kMoreButtonReservedSpace = "34px";
 const moreButtonStyle = css`
     position: absolute;
-    bottom: 8px;
+    top: 8px;
     right: 8px;
     color: #979797;
     opacity: 0;
     transition: opacity 0.3s;
 `;
 
+// Outlined cards with a very subtle resting shadow; on hover the border tints to
+// Bloom blue and the shadow lifts a little to signal the whole card is clickable.
 const cardStyle = css`
     position: relative;
-    box-shadow: #b5b5b5 0px 3px 5px;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    transition:
+        box-shadow 0.15s,
+        border-color 0.15s;
+    &:hover {
+        border-color: ${kBloomBlue};
+        box-shadow:
+            0 2px 4px -1px rgba(0, 0, 0, 0.16),
+            0 4px 10px 0 rgba(0, 0, 0, 0.1);
+    }
     &:hover .more-button {
         opacity: 1;
     }
+`;
+
+// Applied in addition to cardStyle for the collection currently open in Bloom:
+// a faint tinted background.
+const currentCardStyle = css`
+    background-color: ${kBloomBlue}0d;
+`;
+
+// The unpublished count is now plain gray text pushed to the right edge of the
+// metadata row (margin-left:auto), rather than a chip.
+const unpublishedTextStyle = css`
+    margin-left: auto;
+    font-size: 13px;
+    color: #6b6b6b;
+    white-space: nowrap;
 `;
 
 const cardContentStyle = css`
@@ -55,9 +89,58 @@ const cardContentStyle = css`
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    padding: 6px 10px;
+    padding: 16px 18px;
     &:last-child {
-        padding-bottom: 6px;
+        padding-bottom: 16px;
+    }
+`;
+
+const cardTitleStyle = css`
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    color: #262626;
+    line-height: 1.3;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    // Grow to fill the row so the team icon is pushed to the right (up to the
+    // space reserved for the "..." button), and truncate a long name with an
+    // ellipsis before it reaches that button.
+    min-width: 0;
+    flex: 1 1 auto;
+`;
+
+// The book count, an optional checked-out chip, and the right-aligned unpublished
+// text share a single row beneath the title.
+const metadataRowStyle = css`
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+`;
+
+const bookCountStyle = css`
+    font-size: 13px;
+    color: #6b6b6b;
+    line-height: 1.1;
+    white-space: nowrap;
+`;
+
+// Pill-shaped status "tag" chip, currently used only for the outlined-red
+// checked-out chip (see the color/border override where used). Keep the label at
+// a normal weight; Bloom's font fallback renders 500 heavier than the mockup's
+// Roboto.
+const chipBaseStyle = css`
+    height: 24px;
+    border-radius: 12px;
+    letter-spacing: 0.2px;
+    .MuiChip-label {
+        padding-left: 10px;
+        padding-right: 10px;
+        font-size: 12px;
+        font-weight: 400;
     }
 `;
 
@@ -101,9 +184,15 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
         undefined,
         String(props.checkedOutCount ?? 0),
     );
+    // Full phrase, used as the chip's hover tooltip so the short label stays clear.
     const unpublishedText = useL10n(
-        "{0} unpublished to bloomlibrary.org",
+        "Books not yet published to BloomLibrary.org",
         "CollectionChooser.UnpublishedToBloomLibrary",
+    );
+    // Short label shown on the right of the metadata row.
+    const unpublishedShortText = useL10n(
+        "{0} unpublished",
+        "CollectionChooser.UnpublishedShort",
         undefined,
         String(unpublishedCount ?? 0),
     );
@@ -124,12 +213,13 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
         handleMenuClose();
     };
 
-    const additionalCardTexts: JSX.Element[] = getAdditionalCardTexts();
+    const bookCountText =
+        props.bookCount === 1 ? bookCountSingular : bookCountPlural;
 
     return (
         <Card
             variant="outlined"
-            css={cardStyle}
+            css={[cardStyle, props.isCurrentCollection && currentCardStyle]}
             data-testid={props.isJoinCard ? "join-collection-card" : undefined}
         >
             <CardActionArea
@@ -150,47 +240,74 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
                         css={css`
                             display: flex;
                             flex-direction: column;
-                            gap: 3px;
                             width: 100%;
                         `}
                     >
                         <div
                             css={css`
                                 display: flex;
-                                justify-content: space-between;
                                 align-items: center;
+                                gap: 8px;
                                 width: 100%;
+                                margin-bottom: 10px;
+                                // Keep the title (and team icon) clear of the
+                                // top-right "..." button.
+                                padding-right: ${kMoreButtonReservedSpace};
                             `}
                         >
-                            <Typography
-                                variant="h5"
-                                css={css`
-                                    color: #263238;
-                                    line-height: 1.2;
-                                    margin: 0;
-                                    white-space: nowrap;
-                                    overflow: hidden;
-                                    text-overflow: ellipsis;
-                                    flex-grow: 1;
-                                `}
-                            >
+                            <Typography variant="body1" css={cardTitleStyle}>
                                 {props.title}
                             </Typography>
                             {props.isTeamCollection && (
                                 <TeamCollectionIcon
                                     css={css`
-                                        margin-left: 6px;
+                                        flex: none;
                                     `}
                                 />
                             )}
                         </div>
-                        {additionalCardTexts}
-                        {/* Guarantee we always have 3 AdditionalCardTexts, but that blanks are last */}
-                        {Array.from({
-                            length: 3 - additionalCardTexts.length,
-                        }).map((_, index) => (
-                            <AdditionalCardText key={`blank${index}`} />
-                        ))}
+                        <div css={metadataRowStyle}>
+                            {props.isJoinCard ? (
+                                // A join card isn't joined yet, so it has no local book
+                                // count / checkout / unpublished info to show — show the
+                                // "Get" join cue instead (dogfood batch 1, item 6).
+                                <span
+                                    css={css`
+                                        ${bookCountStyle};
+                                        color: ${kBloomBlue};
+                                    `}
+                                >
+                                    {joinCueText}
+                                </span>
+                            ) : (
+                                <React.Fragment>
+                                    <span css={bookCountStyle}>
+                                        {bookCountText}
+                                    </span>
+                                    {props.checkedOutCount ? (
+                                        <Chip
+                                            size="small"
+                                            variant="outlined"
+                                            label={checkedOutText}
+                                            css={css`
+                                                ${chipBaseStyle};
+                                                color: ${kBloomRed};
+                                                border-color: ${kBloomRed}73;
+                                                background-color: transparent;
+                                            `}
+                                        />
+                                    ) : null}
+                                    {unpublishedCount ? (
+                                        <span
+                                            css={unpublishedTextStyle}
+                                            title={unpublishedText}
+                                        >
+                                            {unpublishedShortText}
+                                        </span>
+                                    ) : null}
+                                </React.Fragment>
+                            )}
+                        </div>
                     </div>
                 </CardContent>
             </CardActionArea>
@@ -244,63 +361,4 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
             )}
         </Card>
     );
-
-    function getAdditionalCardTexts() {
-        const additionalCardTexts: JSX.Element[] = [];
-        // A join card has no local book count/checked-out/unpublished info to show (it isn't
-        // joined yet); show only the join cue instead.
-        if (props.isJoinCard) {
-            additionalCardTexts.push(
-                <AdditionalCardText
-                    key="joinCue"
-                    text={joinCueText}
-                    color={kBloomBlue}
-                />,
-            );
-            return additionalCardTexts;
-        }
-        additionalCardTexts.push(
-            <AdditionalCardText
-                key="bookCount"
-                text={
-                    props.bookCount === 1 ? bookCountSingular : bookCountPlural
-                }
-            />,
-        );
-        if (props.checkedOutCount) {
-            additionalCardTexts.push(
-                <AdditionalCardText
-                    key="checkedOutCount"
-                    text={checkedOutText}
-                    color={kBloomRed}
-                />,
-            );
-        }
-        if (unpublishedCount) {
-            additionalCardTexts.push(
-                <AdditionalCardText
-                    key="unpublishedCount"
-                    text={unpublishedText}
-                />,
-            );
-        }
-        return additionalCardTexts;
-    }
 };
-
-const AdditionalCardText: React.FunctionComponent<{
-    text?: string;
-    color?: string;
-}> = (props) => (
-    <Typography
-        variant="body2"
-        css={css`
-            color: ${props.color ?? "#606060"};
-            line-height: 1.1;
-            margin-block-end: 2px !important;
-            ${props.text ? "" : "visibility: hidden;"}
-        `}
-    >
-        {props.text || "invisible"}
-    </Typography>
-);
