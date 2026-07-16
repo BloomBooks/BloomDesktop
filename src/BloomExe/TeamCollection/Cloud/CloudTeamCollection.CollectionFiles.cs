@@ -130,8 +130,7 @@ namespace Bloom.TeamCollection.Cloud
         {
             try
             {
-                var download = _client.DownloadStart(_collectionId);
-                var location = ParseS3Location(download);
+                var location = GetCollectionDownloadLocation();
                 var s3Client = CloudBookTransfer.BuildDefaultClient(location);
                 var prefix = $"{location.Prefix}collectionFiles/{groupKey}/";
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -1228,8 +1229,7 @@ namespace Bloom.TeamCollection.Cloud
                 if (manifest == null)
                     return $"Could not read the file list for \"{bookName}\" from the cloud Team Collection.";
 
-                var download = _client.DownloadStart(_collectionId);
-                var collectionLocation = ParseS3Location(download);
+                var collectionLocation = GetCollectionDownloadLocation();
                 var instanceId = _cache.TryGetBook(bookId)?.InstanceId;
                 var location = BuildBookS3Location(collectionLocation, instanceId);
                 var pinnedFiles = manifest
@@ -1349,8 +1349,7 @@ namespace Bloom.TeamCollection.Cloud
                 )
                     return null;
 
-                var download = _client.DownloadStart(_collectionId);
-                var collectionLocation = ParseS3Location(download);
+                var collectionLocation = GetCollectionDownloadLocation();
                 var instanceId = _cache.TryGetBook(bookId)?.InstanceId;
                 var location = BuildBookS3Location(collectionLocation, instanceId);
                 tempFolder = Path.Combine(
@@ -1438,7 +1437,65 @@ namespace Bloom.TeamCollection.Cloud
                 AccessKeyId = (string)creds["accessKeyId"],
                 SecretAccessKey = (string)creds["secretAccessKey"],
                 SessionToken = (string)creds["sessionToken"],
+                ExpiresAtUtc = ParseCredentialExpiration((string)creds["expiration"]),
             };
+        }
+
+        /// <summary>Parses the edge function's ISO-8601 `credentials.expiration` to UTC, or
+        /// DateTime.MinValue when absent/unparseable (callers then treat the creds as
+        /// non-cacheable and simply fetch fresh ones per use).</summary>
+        private static DateTime ParseCredentialExpiration(string raw)
+        {
+            if (string.IsNullOrEmpty(raw))
+                return DateTime.MinValue;
+            return DateTimeOffset.TryParse(
+                raw,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal,
+                out var parsed
+            )
+                ? parsed.UtcDateTime
+                : DateTime.MinValue;
+        }
+
+        private readonly object _downloadLocationLock = new object();
+        private CloudS3Location _cachedDownloadLocation;
+        private string _cachedDownloadLocationForUser;
+
+        // Refetch once the cached download credentials are within this margin of their stated
+        // expiration, leaving ample headroom for any in-flight download to finish on them.
+        private static readonly TimeSpan kDownloadCredsExpiryMargin = TimeSpan.FromMinutes(5);
+
+        /// <summary>
+        /// The collection-scoped, read-only S3 credentials from download-start (CONTRACTS.md:
+        /// GetObject/GetObjectVersion over the whole `tc/{cid}/` prefix, ~1h TTL), CACHED and
+        /// reused across every book and collection-file-group download instead of re-fetched per
+        /// download. Because the creds cover the entire collection prefix, one fetch serves a whole
+        /// join/Receive; without this a join did one edge-function call plus a server-side STS
+        /// AssumeRole for EACH book. Refetched when the cached creds approach their stated
+        /// expiration (so long joins refresh mid-way rather than assuming a fixed TTL), or when the
+        /// signed-in account changes (the creds were issued for the prior identity). Internal so a
+        /// test can drive it directly.
+        /// </summary>
+        internal CloudS3Location GetCollectionDownloadLocation()
+        {
+            lock (_downloadLocationLock)
+            {
+                if (
+                    _cachedDownloadLocation != null
+                    && _cachedDownloadLocationForUser == CurrentUserIdentity
+                    // Add the margin to "now" rather than subtracting it from the expiry, so an
+                    // unknown expiry (DateTime.MinValue -> treated as always-stale) can't underflow.
+                    && _cachedDownloadLocation.ExpiresAtUtc
+                        > DateTime.UtcNow + kDownloadCredsExpiryMargin
+                )
+                    return _cachedDownloadLocation;
+
+                var location = ParseS3Location(_client.DownloadStart(_collectionId));
+                _cachedDownloadLocation = location;
+                _cachedDownloadLocationForUser = CurrentUserIdentity;
+                return location;
+            }
         }
 
         /// <summary>

@@ -31,6 +31,13 @@ namespace Bloom.TeamCollection.Cloud
         public string AccessKeyId;
         public string SecretAccessKey;
         public string SessionToken;
+
+        /// <summary>When these temporary credentials expire (from the edge function's
+        /// `credentials.expiration`, ~1h out; see _shared/s3.ts). DateTime.MinValue when the
+        /// response carried no/invalid expiration, which callers treat as "don't cache". Lets
+        /// the download-credential cache re-fetch before the creds go stale rather than assuming
+        /// a fixed TTL.</summary>
+        public DateTime ExpiresAtUtc;
     }
 
     /// <summary>Byte-level progress for one file within a multi-file transfer.</summary>

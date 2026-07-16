@@ -490,5 +490,85 @@ namespace BloomTests.TeamCollection.Cloud
             Assert.That(detail, Does.Contain("alice@example.com"));
             Assert.That(detail, Does.Not.Contain("()"));
         }
+
+        [Test]
+        public void GetCollectionDownloadLocation_WithinExpiry_FetchesOnceAndReuses()
+        {
+            _executor.Handler = req => DownloadStartResponse(DateTime.UtcNow.AddHours(1));
+
+            var first = _collection.GetCollectionDownloadLocation();
+            var second = _collection.GetCollectionDownloadLocation();
+
+            Assert.That(first.SessionToken, Is.EqualTo("c"), "sanity: credentials were parsed");
+            Assert.That(
+                second,
+                Is.SameAs(first),
+                "collection-scoped download credentials should be reused, not re-fetched per download"
+            );
+            Assert.That(
+                DownloadStartRequestCount(),
+                Is.EqualTo(1),
+                "download-start should be hit once for many downloads within the credential lifetime"
+            );
+        }
+
+        [Test]
+        public void GetCollectionDownloadLocation_Expired_Refetches()
+        {
+            // Credentials already past their expiration must not be reused.
+            _executor.Handler = req => DownloadStartResponse(DateTime.UtcNow.AddMinutes(-1));
+
+            _collection.GetCollectionDownloadLocation();
+            _collection.GetCollectionDownloadLocation();
+
+            Assert.That(
+                DownloadStartRequestCount(),
+                Is.EqualTo(2),
+                "expired download credentials must be re-fetched rather than reused"
+            );
+        }
+
+        [Test]
+        public void GetCollectionDownloadLocation_NoExpiration_RefetchesWithoutThrowing()
+        {
+            // A response with no `expiration` is treated as non-cacheable: it must be re-fetched
+            // every time, and must not underflow DateTime.MinValue when checking staleness.
+            _executor.Handler = req => DownloadStartResponse(expiresUtc: null);
+
+            Assert.DoesNotThrow(() =>
+            {
+                _collection.GetCollectionDownloadLocation();
+                _collection.GetCollectionDownloadLocation();
+            });
+            Assert.That(DownloadStartRequestCount(), Is.EqualTo(2));
+        }
+
+        private int DownloadStartRequestCount() =>
+            _executor.RequestsSeen.Count(r => r.Resource == "functions/v1/download-start");
+
+        private static IRestResponse DownloadStartResponse(DateTime? expiresUtc)
+        {
+            var credentials = new JObject
+            {
+                ["accessKeyId"] = "a",
+                ["secretAccessKey"] = "b",
+                ["sessionToken"] = "c",
+            };
+            if (expiresUtc.HasValue)
+                credentials["expiration"] = expiresUtc.Value.ToString("o");
+            return FakeResponses.Make(
+                HttpStatusCode.OK,
+                new JObject
+                {
+                    ["s3"] = new JObject
+                    {
+                        ["bucket"] = "test-bucket",
+                        ["region"] = "us-east-1",
+                        ["prefix"] = "tc/x/",
+                        ["credentials"] = credentials,
+                    },
+                }.ToString()
+            );
+        }
     }
 }
