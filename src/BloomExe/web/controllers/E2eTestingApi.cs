@@ -1,7 +1,9 @@
 #if DEBUG
+using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionTab;
 using Bloom.SubscriptionAndFeatures;
 using SIL.Progress;
 
@@ -20,11 +22,20 @@ namespace Bloom.web.controllers
 
         private readonly CollectionSettings _collectionSettings;
         private readonly BookSelection _bookSelection;
+        private readonly PublishApi _publishApi;
+        private readonly CollectionModel _collectionModel;
 
-        public E2eTestingApi(CollectionSettings collectionSettings, BookSelection bookSelection)
+        public E2eTestingApi(
+            CollectionSettings collectionSettings,
+            BookSelection bookSelection,
+            PublishApi publishApi,
+            CollectionModel collectionModel
+        )
         {
             _collectionSettings = collectionSettings;
             _bookSelection = bookSelection;
+            _publishApi = publishApi;
+            _collectionModel = collectionModel;
         }
 
         /// <summary>
@@ -47,6 +58,65 @@ namespace Bloom.web.controllers
             // files in src/content/appearanceThemes). Lets tests screenshot each theme. Must run
             // on the UI thread because bringing the book up to date shows a dialog.
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "setTheme", HandleSetTheme, true);
+
+            // POST (no body needed). Stages the currently selected book as a BloomPUB exactly as
+            // the Publish:BloomPub preview does, and replies with the localhost URL of the staged
+            // book's .htm file. A test then loads that URL in bloom-player to screenshot how the
+            // book looks in the player (which can differ from the edit/preview rendering even when
+            // the source book is identical, because it renders the staged output). The test must
+            // first put Bloom into the publish tab (POST workspace/selectTab {tab:"publish"}).
+            // handleOnUiThread is false to match the production publish/bloompub/updatePreview
+            // endpoint: staging must NOT run on the UI thread because its page checks drive an
+            // off-thread OffScreenBrowser and would otherwise risk a UI-thread deadlock.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "makeBloomPubPreview",
+                HandleMakeBloomPubPreview,
+                false
+            );
+
+            // GET returns true once the editable collection is loaded and its books are
+            // enumerable. Switching to the collection tab reloads its webview, and during that
+            // window the collection list is momentarily unavailable; selecting a book then throws
+            // (NullReferenceException -> 503) and pops an error box. A test that switches back to
+            // the collection tab (e.g. to select the next book) polls this first so it selects
+            // only once the collection is ready. Read-only; safe to call off the UI thread.
+            apiHandler.RegisterBooleanEndpointHandler(
+                kApiUrlPart + "isCollectionReady",
+                request => IsCollectionReady(),
+                null, // read only
+                false // does not need the UI thread
+            );
+        }
+
+        /// <summary>
+        /// True if the editable collection is loaded and its book list is available. Mirrors what
+        /// selecting a book needs (see CollectionApi.GetCollectionOfRequest), so a test can wait
+        /// for this before selecting. Any exception means "not ready yet", so we swallow it.
+        /// </summary>
+        private bool IsCollectionReady()
+        {
+            try
+            {
+                var editable = _collectionModel.TheOneEditableCollection;
+                return editable != null && editable.GetBookInfos().Any();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Stage the currently selected book as a BloomPUB and reply with the localhost URL of the
+        /// staged .htm file, which a test can load in bloom-player.
+        /// </summary>
+        private void HandleMakeBloomPubPreview(ApiRequest request)
+        {
+            var book = _bookSelection.CurrentSelection;
+            // Fail Fast: a test should only call this once a book is selected. If none is, letting
+            // it throw tells us the test is out of order rather than silently returning nothing.
+            var stagedUrl = _publishApi.StageBookForBloomPubPreviewForTest(book);
+            request.ReplyWithText(stagedUrl);
         }
 
         /// <summary>

@@ -754,6 +754,44 @@ namespace Bloom.web.controllers
             return modifiedBook.GetPathHtmlFile().ToLocalhost();
         }
 
+        /// <summary>
+        /// For automated/e2e testing only (see src/BloomVisualRegressionTests): stage
+        /// <paramref name="book"/> exactly as the interactive Publish:BloomPub preview does
+        /// (full PrepareBookForBloomReader + image compression + save into PlaceForStagingBook)
+        /// and return the localhost URL of the staged book's .htm file, ready to be loaded in
+        /// bloom-player. bloom-player is designed to render the files staging produces (the same
+        /// set an unzipped .bloompub contains), so this is the only way to get a faithful player
+        /// rendering of a page. Unlike MakeBloompubPreview, this deliberately does not require the
+        /// publish tab to be active: that guard only exists to abort previews when a user rapidly
+        /// navigates away, which does not apply to a test driving staging directly.
+        /// </summary>
+        public string StageBookForBloomPubPreviewForTest(Book.Book book)
+        {
+            // Staging goes through PublishHelper, which guards against building a BloomPUB while the
+            // app is not on the publish tab. Rather than fake that state, the test must genuinely
+            // put Bloom into the publish tab first (POST workspace/selectTab {tab:"publish"}), which
+            // runs all the real publish-tab setup; otherwise we might miss setup that the tab does
+            // now or adds later. Fail Fast here (via the guard) if the caller forgot to do that.
+            if (!PublishHelper.InPublishTab)
+                throw new InvalidOperationException(
+                    "makeBloomPubPreview requires the publish tab to be active. "
+                        + "POST workspace/selectTab with {tab:\"publish\"} before calling this."
+                );
+
+            // Populate the book's publish language settings from its actual content, the same way
+            // entering the publish tab does; otherwise FromBookInfo would find no languages to
+            // include and the staged book would have no text.
+            InitializeLanguagesInBook(book);
+            var settings = BloomPubPublishSettings.FromBookInfo(book.BookInfo);
+            return MakeBloomPubForPreview(
+                book,
+                _bookServer,
+                _progress,
+                _thumbnailBackgroundColor,
+                settings
+            );
+        }
+
         internal bool UpdatePreviewIfNeeded(ApiRequest request)
         {
             var newSettings = GetSettings();
