@@ -258,7 +258,7 @@ importers:
                 version: 7.17.12(@babel/core@7.18.5(supports-color@5.5.0))
             "@chromatic-com/storybook":
                 specifier: 4.1.2
-                version: 4.1.2(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))
+                version: 4.1.2(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))
             "@eslint/js":
                 specifier: 9.21.0
                 version: 9.21.0
@@ -267,13 +267,13 @@ importers:
                 version: 7.2.24(@types/react@18.3.31)
             "@storybook/addon-a11y":
                 specifier: 10.0.2
-                version: 10.0.2(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))
+                version: 10.0.2(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))
             "@storybook/addon-docs":
                 specifier: 10.0.2
-                version: 10.0.2(@types/react@18.3.31)(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+                version: 10.0.2(@types/react@18.3.31)(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             "@storybook/react-vite":
                 specifier: 10.0.2
-                version: 10.0.2(esbuild@0.25.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))(typescript@6.0.3)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+                version: 10.0.2(esbuild@0.25.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))(typescript@6.0.3)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             "@testing-library/jest-dom":
                 specifier: 6.8.0
                 version: 6.8.0
@@ -290,8 +290,8 @@ importers:
                 specifier: 14.1.2
                 version: 14.1.2
             "@types/node":
-                specifier: 22.9.0
-                version: 22.9.0
+                specifier: 24.13.0
+                version: 24.13.0
             "@types/rc-slider":
                 specifier: 8.6.6
                 version: 8.6.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -339,10 +339,10 @@ importers:
                 version: 7.0.0-dev.20260619.1
             "@vitejs/plugin-react":
                 specifier: 5.0.4
-                version: 5.0.4(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+                version: 5.0.4(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             "@vitest/browser-playwright":
                 specifier: 4.0.8
-                version: 4.0.8(playwright@1.56.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))(vitest@4.0.8)
+                version: 4.0.8(playwright@1.56.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))(vitest@4.0.8)
             "@vitest/ui":
                 specifier: 4.0.8
                 version: 4.0.8(vitest@4.0.8)
@@ -372,7 +372,7 @@ importers:
                 version: 5.2.0(eslint@9.33.0(supports-color@5.5.0))
             eslint-plugin-storybook:
                 specifier: 10.0.2
-                version: 10.0.2(eslint@9.33.0(supports-color@5.5.0))(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))(supports-color@5.5.0)(typescript@6.0.3)
+                version: 10.0.2(eslint@9.33.0(supports-color@5.5.0))(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))(supports-color@5.5.0)(typescript@6.0.3)
             glob:
                 specifier: 11.0.3
                 version: 11.0.3
@@ -406,6 +406,9 @@ importers:
             markdown-it-container:
                 specifier: 4.0.0
                 version: 4.0.0
+            node:
+                specifier: runtime:24.13.0
+                version: runtime:24.13.0
             npm-run-all:
                 specifier: 4.1.5
                 version: 4.1.5
@@ -438,7 +441,7 @@ importers:
                 version: 7.3.5
             storybook:
                 specifier: 10.0.2
-                version: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+                version: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             typescript:
                 specifier: 6.0.3
                 version: 6.0.3
@@ -450,16 +453,16 @@ importers:
                 version: 1.0.0
             vite:
                 specifier: 7.1.5
-                version: 7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)
+                version: 7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)
             vite-plugin-pug:
                 specifier: 0.4.1
                 version: 0.4.1
             vite-plugin-static-copy:
                 specifier: 3.1.3
-                version: 3.1.3(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+                version: 3.1.3(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             vitest:
                 specifier: 4.0.8
-                version: 4.0.8(@types/node@22.9.0)(@vitest/browser-playwright@4.0.8)(@vitest/ui@4.0.8)(jsdom@26.1.0(supports-color@5.5.0))(less@3.13.1)(supports-color@5.5.0)(yaml@2.9.0)
+                version: 4.0.8(@types/node@24.13.0)(@vitest/browser-playwright@4.0.8)(@vitest/ui@4.0.8)(jsdom@26.1.0(supports-color@5.5.0))(less@3.13.1)(supports-color@5.5.0)(yaml@2.9.0)
 
 packages:
     "@adobe/css-tools@4.5.0":
@@ -2956,10 +2959,10 @@ packages:
                 integrity: sha512-T48PeuJtvLosNTPVhfnIp3i/n3a4g4Bad7YCq5k64D4u7NwDrAotikQ+5+sjtUvBmxCMlbo3dVL+C2dP0rWHzg==,
             }
 
-    "@types/node@22.9.0":
+    "@types/node@24.13.0":
         resolution:
             {
-                integrity: sha512-vuyHg81vvWA1Z1ELfvLko2c8f34gyA0zaic0+Rllc5lbCnbSyuvb2Oxpm6TAUAC/2xZN3QGqxBNggD1nNR2AfQ==,
+                integrity: sha512-5vtOqGQr4NJKeEzV441FcOi2MeG9UTWq9LqVLGneDdu4vlX17H8kQ2PA2UmNwCUGPVDj4oBjNhS7ReVEIWJJrg==,
             }
 
     "@types/parse-json@4.0.2":
@@ -7776,6 +7779,127 @@ packages:
             }
         engines: { node: ">=18" }
 
+    node@runtime:24.13.0:
+        resolution:
+            type: variations
+            variants:
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-rCHprwik1UsFfYAMA7yVMilGlSuNqoEcramL+2aozo8=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-aix-ppc64.tar.gz
+                  targets:
+                      - cpu: ppc64
+                        os: aix
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-1ZWWHlY/yuBX1KD7mS8XWlTZf8xKFNwtR02S3e6jufg=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-darwin-arm64.tar.gz
+                  targets:
+                      - cpu: arm64
+                        os: darwin
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-bwPBtI3b4bEppvgDi+COCJnwXxcYW00+Q1AYCrZpp/M=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-darwin-x64.tar.gz
+                  targets:
+                      - cpu: x64
+                        os: darwin
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-D21AuUxqLra0wkD/yLn9Otp6sETBd91BPAbh75pj8IE=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-linux-arm64.tar.gz
+                  targets:
+                      - cpu: arm64
+                        os: linux
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-GAEZMLGCocW0nSMmGR/bpYJwvfe0W4x9+FXvMZMbFIo=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-linux-ppc64le.tar.gz
+                  targets:
+                      - cpu: ppc64le
+                        os: linux
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-V0RhC2JPLoKuHKJ52OznuMpGZDcjlTPS0DNWUwO8HTk=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-linux-s390x.tar.gz
+                  targets:
+                      - cpu: s390x
+                        os: linux
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-YiOq0agfnR57aCxZ0S4t4jP3tMN0dc1A0cicQrc3/6g=
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-linux-x64.tar.gz
+                  targets:
+                      - cpu: x64
+                        os: linux
+                - resolution:
+                      archive: zip
+                      bin:
+                          node: node.exe
+                      integrity: sha256-krn5sMDBI+EeSvxTXw7BnNmHRl7qUGQnVTpJlxNkFYo=
+                      prefix: node-v24.13.0-win-arm64
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-win-arm64.zip
+                  targets:
+                      - cpu: arm64
+                        os: win32
+                - resolution:
+                      archive: zip
+                      bin:
+                          node: node.exe
+                      integrity: sha256-yidCaVvo3kQCfXGz9TpL2zYAm5VXX+Gub38LXOCRy4g=
+                      prefix: node-v24.13.0-win-x64
+                      type: binary
+                      url: https://nodejs.org/download/release/v24.13.0/node-v24.13.0-win-x64.zip
+                  targets:
+                      - cpu: x64
+                        os: win32
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-+DEgEuB/8QahxIrQj8Io+UNAd+f3Riov/Gg5yOPwKTU=
+                      type: binary
+                      url: https://unofficial-builds.nodejs.org/download/release/v24.13.0/node-v24.13.0-linux-arm64-musl.tar.gz
+                  targets:
+                      - cpu: arm64
+                        os: linux
+                        libc: musl
+                - resolution:
+                      archive: tarball
+                      bin:
+                          node: bin/node
+                      integrity: sha256-4nUNngAAjS6tzswA4XwwYJgO0miI3pClX5hz69zedKw=
+                      type: binary
+                      url: https://unofficial-builds.nodejs.org/download/release/v24.13.0/node-v24.13.0-linux-x64-musl.tar.gz
+                  targets:
+                      - cpu: x64
+                        os: linux
+                        libc: musl
+        version: 24.13.0
+        hasBin: true
+
     normalize-package-data@2.5.0:
         resolution:
             {
@@ -10296,10 +10420,10 @@ packages:
                 integrity: sha512-hzSoAVtJF+3ZtiFX0VgfFPHEDRm7Y/QPjGyNo4TVdnDTdft3tr8hEkD25a1jC+TjTuE7tkHGKkhwCgs9dgBB2g==,
             }
 
-    undici-types@6.19.8:
+    undici-types@7.18.2:
         resolution:
             {
-                integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==,
+                integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==,
             }
 
     unicode-canonical-property-names-ecmascript@2.0.1:
@@ -11696,13 +11820,13 @@ snapshots:
 
     "@blakeembrey/template@1.2.0": {}
 
-    "@chromatic-com/storybook@4.1.2(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))":
+    "@chromatic-com/storybook@4.1.2(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))":
         dependencies:
             "@neoconfetti/react": 1.0.0
             chromatic: 12.2.0
             filesize: 10.1.6
             jsonfile: 6.2.1
-            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             strip-ansi: 7.2.0
         transitivePeerDependencies:
             - "@chromatic-com/cypress"
@@ -12046,12 +12170,12 @@ snapshots:
 
     "@isaacs/cliui@9.0.0": {}
 
-    "@joshwooding/vite-plugin-react-docgen-typescript@0.6.1(typescript@6.0.3)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))":
+    "@joshwooding/vite-plugin-react-docgen-typescript@0.6.1(typescript@6.0.3)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))":
         dependencies:
             glob: 10.5.0
             magic-string: 0.30.21
             react-docgen-typescript: 2.4.0(typescript@6.0.3)
-            vite: 7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)
+            vite: 7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)
         optionalDependencies:
             typescript: 6.0.3
 
@@ -12491,21 +12615,21 @@ snapshots:
 
     "@standard-schema/spec@1.1.0": {}
 
-    "@storybook/addon-a11y@10.0.2(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))":
+    "@storybook/addon-a11y@10.0.2(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))":
         dependencies:
             "@storybook/global": 5.0.0
             axe-core: 4.12.1
-            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
 
-    "@storybook/addon-docs@10.0.2(@types/react@18.3.31)(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))":
+    "@storybook/addon-docs@10.0.2(@types/react@18.3.31)(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))":
         dependencies:
             "@mdx-js/react": 3.1.1(@types/react@18.3.31)(react@18.3.1)
-            "@storybook/csf-plugin": 10.0.2(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            "@storybook/csf-plugin": 10.0.2(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             "@storybook/icons": 1.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-            "@storybook/react-dom-shim": 10.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))
+            "@storybook/react-dom-shim": 10.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))
             react: 18.3.1
             react-dom: 18.3.1(react@18.3.1)
-            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             ts-dedent: 2.3.0
         transitivePeerDependencies:
             - "@types/react"
@@ -12514,25 +12638,25 @@ snapshots:
             - vite
             - webpack
 
-    "@storybook/builder-vite@10.0.2(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))":
+    "@storybook/builder-vite@10.0.2(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))":
         dependencies:
-            "@storybook/csf-plugin": 10.0.2(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
-            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            "@storybook/csf-plugin": 10.0.2(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
+            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             ts-dedent: 2.3.0
-            vite: 7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)
+            vite: 7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)
         transitivePeerDependencies:
             - esbuild
             - rollup
             - webpack
 
-    "@storybook/csf-plugin@10.0.2(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))":
+    "@storybook/csf-plugin@10.0.2(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))":
         dependencies:
-            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             unplugin: 2.3.11
         optionalDependencies:
             esbuild: 0.25.12
             rollup: 4.62.2
-            vite: 7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)
+            vite: 7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)
 
     "@storybook/global@5.0.0": {}
 
@@ -12541,27 +12665,27 @@ snapshots:
             react: 18.3.1
             react-dom: 18.3.1(react@18.3.1)
 
-    "@storybook/react-dom-shim@10.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))":
+    "@storybook/react-dom-shim@10.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))":
         dependencies:
             react: 18.3.1
             react-dom: 18.3.1(react@18.3.1)
-            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
 
-    "@storybook/react-vite@10.0.2(esbuild@0.25.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))(typescript@6.0.3)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))":
+    "@storybook/react-vite@10.0.2(esbuild@0.25.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))(typescript@6.0.3)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))":
         dependencies:
-            "@joshwooding/vite-plugin-react-docgen-typescript": 0.6.1(typescript@6.0.3)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            "@joshwooding/vite-plugin-react-docgen-typescript": 0.6.1(typescript@6.0.3)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             "@rollup/pluginutils": 5.4.0(rollup@4.62.2)
-            "@storybook/builder-vite": 10.0.2(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
-            "@storybook/react": 10.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))(typescript@6.0.3)
+            "@storybook/builder-vite": 10.0.2(esbuild@0.25.12)(rollup@4.62.2)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
+            "@storybook/react": 10.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))(typescript@6.0.3)
             empathic: 2.0.1
             magic-string: 0.30.21
             react: 18.3.1
             react-docgen: 8.0.3
             react-dom: 18.3.1(react@18.3.1)
             resolve: 1.22.12
-            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             tsconfig-paths: 4.2.0
-            vite: 7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)
+            vite: 7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)
         transitivePeerDependencies:
             - esbuild
             - rollup
@@ -12569,13 +12693,13 @@ snapshots:
             - typescript
             - webpack
 
-    "@storybook/react@10.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))(typescript@6.0.3)":
+    "@storybook/react@10.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))(typescript@6.0.3)":
         dependencies:
             "@storybook/global": 5.0.0
-            "@storybook/react-dom-shim": 10.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))
+            "@storybook/react-dom-shim": 10.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))
             react: 18.3.1
             react-dom: 18.3.1(react@18.3.1)
-            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
         optionalDependencies:
             typescript: 6.0.3
 
@@ -12680,9 +12804,9 @@ snapshots:
 
     "@types/mdx@2.0.14": {}
 
-    "@types/node@22.9.0":
+    "@types/node@24.13.0":
         dependencies:
-            undici-types: 6.19.8
+            undici-types: 7.18.2
 
     "@types/parse-json@4.0.2": {}
 
@@ -12930,7 +13054,7 @@ snapshots:
         dependencies:
             react: 18.3.1
 
-    "@vitejs/plugin-react@5.0.4(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))":
+    "@vitejs/plugin-react@5.0.4(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))":
         dependencies:
             "@babel/core": 7.29.7
             "@babel/plugin-transform-react-jsx-self": 7.29.7(@babel/core@7.29.7)
@@ -12938,33 +13062,33 @@ snapshots:
             "@rolldown/pluginutils": 1.0.0-beta.38
             "@types/babel__core": 7.20.5
             react-refresh: 0.17.0
-            vite: 7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)
+            vite: 7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)
         transitivePeerDependencies:
             - supports-color
 
-    "@vitest/browser-playwright@4.0.8(playwright@1.56.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))(vitest@4.0.8)":
+    "@vitest/browser-playwright@4.0.8(playwright@1.56.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))(vitest@4.0.8)":
         dependencies:
-            "@vitest/browser": 4.0.8(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))(vitest@4.0.8)
-            "@vitest/mocker": 4.0.8(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            "@vitest/browser": 4.0.8(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))(vitest@4.0.8)
+            "@vitest/mocker": 4.0.8(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             playwright: 1.56.1
             tinyrainbow: 3.1.0
-            vitest: 4.0.8(@types/node@22.9.0)(@vitest/browser-playwright@4.0.8)(@vitest/ui@4.0.8)(jsdom@26.1.0(supports-color@5.5.0))(less@3.13.1)(supports-color@5.5.0)(yaml@2.9.0)
+            vitest: 4.0.8(@types/node@24.13.0)(@vitest/browser-playwright@4.0.8)(@vitest/ui@4.0.8)(jsdom@26.1.0(supports-color@5.5.0))(less@3.13.1)(supports-color@5.5.0)(yaml@2.9.0)
         transitivePeerDependencies:
             - bufferutil
             - msw
             - utf-8-validate
             - vite
 
-    "@vitest/browser@4.0.8(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))(vitest@4.0.8)":
+    "@vitest/browser@4.0.8(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))(vitest@4.0.8)":
         dependencies:
-            "@vitest/mocker": 4.0.8(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            "@vitest/mocker": 4.0.8(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             "@vitest/utils": 4.0.8
             magic-string: 0.30.21
             pixelmatch: 7.1.0
             pngjs: 7.0.0
             sirv: 3.0.2
             tinyrainbow: 3.1.0
-            vitest: 4.0.8(@types/node@22.9.0)(@vitest/browser-playwright@4.0.8)(@vitest/ui@4.0.8)(jsdom@26.1.0(supports-color@5.5.0))(less@3.13.1)(supports-color@5.5.0)(yaml@2.9.0)
+            vitest: 4.0.8(@types/node@24.13.0)(@vitest/browser-playwright@4.0.8)(@vitest/ui@4.0.8)(jsdom@26.1.0(supports-color@5.5.0))(less@3.13.1)(supports-color@5.5.0)(yaml@2.9.0)
             ws: 8.21.0
         transitivePeerDependencies:
             - bufferutil
@@ -12989,21 +13113,21 @@ snapshots:
             chai: 6.2.2
             tinyrainbow: 3.1.0
 
-    "@vitest/mocker@3.2.4(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))":
+    "@vitest/mocker@3.2.4(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))":
         dependencies:
             "@vitest/spy": 3.2.4
             estree-walker: 3.0.3
             magic-string: 0.30.21
         optionalDependencies:
-            vite: 7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)
+            vite: 7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)
 
-    "@vitest/mocker@4.0.8(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))":
+    "@vitest/mocker@4.0.8(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))":
         dependencies:
             "@vitest/spy": 4.0.8
             estree-walker: 3.0.3
             magic-string: 0.30.21
         optionalDependencies:
-            vite: 7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)
+            vite: 7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)
 
     "@vitest/pretty-format@3.2.4":
         dependencies:
@@ -13039,7 +13163,7 @@ snapshots:
             sirv: 3.0.2
             tinyglobby: 0.2.17
             tinyrainbow: 3.1.0
-            vitest: 4.0.8(@types/node@22.9.0)(@vitest/browser-playwright@4.0.8)(@vitest/ui@4.0.8)(jsdom@26.1.0(supports-color@5.5.0))(less@3.13.1)(supports-color@5.5.0)(yaml@2.9.0)
+            vitest: 4.0.8(@types/node@24.13.0)(@vitest/browser-playwright@4.0.8)(@vitest/ui@4.0.8)(jsdom@26.1.0(supports-color@5.5.0))(less@3.13.1)(supports-color@5.5.0)(yaml@2.9.0)
 
     "@vitest/utils@3.2.4":
         dependencies:
@@ -14297,11 +14421,11 @@ snapshots:
             string.prototype.matchall: 4.0.12
             string.prototype.repeat: 1.0.0
 
-    eslint-plugin-storybook@10.0.2(eslint@9.33.0(supports-color@5.5.0))(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)))(supports-color@5.5.0)(typescript@6.0.3):
+    eslint-plugin-storybook@10.0.2(eslint@9.33.0(supports-color@5.5.0))(storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)))(supports-color@5.5.0)(typescript@6.0.3):
         dependencies:
             "@typescript-eslint/utils": 8.61.1(eslint@9.33.0(supports-color@5.5.0))(supports-color@5.5.0)(typescript@6.0.3)
             eslint: 9.33.0(supports-color@5.5.0)
-            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            storybook: 10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
         transitivePeerDependencies:
             - supports-color
             - typescript
@@ -15833,6 +15957,8 @@ snapshots:
 
     node-releases@2.0.48: {}
 
+    node@runtime:24.13.0: {}
+
     normalize-package-data@2.5.0:
         dependencies:
             hosted-git-info: 2.8.9
@@ -17194,14 +17320,14 @@ snapshots:
             es-errors: 1.3.0
             internal-slot: 1.1.0
 
-    storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)):
+    storybook@10.0.2(@testing-library/dom@10.4.1)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)):
         dependencies:
             "@storybook/global": 5.0.0
             "@storybook/icons": 1.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
             "@testing-library/jest-dom": 6.8.0
             "@testing-library/user-event": 14.6.1(@testing-library/dom@10.4.1)
             "@vitest/expect": 3.2.4
-            "@vitest/mocker": 3.2.4(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            "@vitest/mocker": 3.2.4(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             "@vitest/spy": 3.2.4
             esbuild: 0.25.12
             recast: 0.23.11
@@ -17564,7 +17690,7 @@ snapshots:
 
     underscore@1.13.1: {}
 
-    undici-types@6.19.8: {}
+    undici-types@7.18.2: {}
 
     unicode-canonical-property-names-ecmascript@2.0.1: {}
 
@@ -17670,16 +17796,16 @@ snapshots:
             picocolors: 1.1.1
             pug: 3.0.4
 
-    vite-plugin-static-copy@3.1.3(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)):
+    vite-plugin-static-copy@3.1.3(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)):
         dependencies:
             chokidar: 3.6.0
             fs-extra: 11.3.5
             p-map: 7.0.4
             picocolors: 1.1.1
             tinyglobby: 0.2.17
-            vite: 7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)
+            vite: 7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)
 
-    vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0):
+    vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0):
         dependencies:
             esbuild: 0.25.12
             fdir: 6.5.0(picomatch@4.0.4)
@@ -17688,15 +17814,15 @@ snapshots:
             rollup: 4.62.2
             tinyglobby: 0.2.17
         optionalDependencies:
-            "@types/node": 22.9.0
+            "@types/node": 24.13.0
             fsevents: 2.3.3
             less: 3.13.1
             yaml: 2.9.0
 
-    vitest@4.0.8(@types/node@22.9.0)(@vitest/browser-playwright@4.0.8)(@vitest/ui@4.0.8)(jsdom@26.1.0(supports-color@5.5.0))(less@3.13.1)(supports-color@5.5.0)(yaml@2.9.0):
+    vitest@4.0.8(@types/node@24.13.0)(@vitest/browser-playwright@4.0.8)(@vitest/ui@4.0.8)(jsdom@26.1.0(supports-color@5.5.0))(less@3.13.1)(supports-color@5.5.0)(yaml@2.9.0):
         dependencies:
             "@vitest/expect": 4.0.8
-            "@vitest/mocker": 4.0.8(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))
+            "@vitest/mocker": 4.0.8(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))
             "@vitest/pretty-format": 4.0.8
             "@vitest/runner": 4.0.8
             "@vitest/snapshot": 4.0.8
@@ -17713,11 +17839,11 @@ snapshots:
             tinyexec: 0.3.2
             tinyglobby: 0.2.17
             tinyrainbow: 3.1.0
-            vite: 7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0)
+            vite: 7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0)
             why-is-node-running: 2.3.0
         optionalDependencies:
-            "@types/node": 22.9.0
-            "@vitest/browser-playwright": 4.0.8(playwright@1.56.1)(vite@7.1.5(@types/node@22.9.0)(less@3.13.1)(yaml@2.9.0))(vitest@4.0.8)
+            "@types/node": 24.13.0
+            "@vitest/browser-playwright": 4.0.8(playwright@1.56.1)(vite@7.1.5(@types/node@24.13.0)(less@3.13.1)(yaml@2.9.0))(vitest@4.0.8)
             "@vitest/ui": 4.0.8(vitest@4.0.8)
             jsdom: 26.1.0(supports-color@5.5.0)
         transitivePeerDependencies:

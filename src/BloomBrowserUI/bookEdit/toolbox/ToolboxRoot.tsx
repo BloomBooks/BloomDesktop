@@ -841,6 +841,9 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                         background-color: ${kBloomPanelBackground};
                         display: flex;
                         flex-direction: column;
+                        // Lets the darker panel background show through between the
+                        // collapsed section headers, as it did in 6.3 and earlier (BL-16532).
+                        gap: 1px;
                         height: 100%;
                         min-height: 0;
 

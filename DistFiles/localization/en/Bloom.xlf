@@ -345,9 +345,14 @@
         <note>{0} is the number of books checked out to the current user in a team collection.</note>
       </trans-unit>
       <trans-unit id="CollectionChooser.UnpublishedToBloomLibrary" translate="no">
-        <source xml:lang="en">{0} unpublished to bloomlibrary.org</source>
+        <source xml:lang="en">Books not yet published to BloomLibrary.org</source>
         <note>ID: CollectionChooser.UnpublishedToBloomLibrary</note>
-        <note>{0} is the number of books in the collection not yet published to bloomlibrary.org.</note>
+        <note>Hover tooltip on the unpublished-count label of a collection card in the Open/Create Collections dialog. "BloomLibrary.org" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.UnpublishedShort" translate="no">
+        <source xml:lang="en">{0} unpublished</source>
+        <note>ID: CollectionChooser.UnpublishedShort</note>
+        <note>Short label shown on a status chip on a collection card in the Open/Create Collections dialog. {0} is the number of books not yet published to BloomLibrary.org. The phrase "Books not yet published to BloomLibrary.org" appears as the chip's hover tooltip.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
@@ -3753,6 +3758,11 @@
         <source xml:lang="en">Browse for another collection on this computer</source>
         <note>ID: OpenCreateNewCollectionsDialog.BrowseForOtherCollections</note>
       </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.BrowseOnThisComputer" translate="no">
+        <source xml:lang="en">Browse on this computer</source>
+        <note>ID: OpenCreateNewCollectionsDialog.BrowseOnThisComputer</note>
+        <note>Text button at the bottom-left of the Open/Create Collections dialog. Clicking it opens a file browser so the user can find a Bloom collection stored elsewhere on their computer.</note>
+      </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
         <source xml:lang="en">Copy From Chorus Hub on Local Network</source>
         <note>ID: OpenCreateNewCollectionsDialog.CopyFromChorusHub</note>
@@ -3770,7 +3780,7 @@
         <note>ID: OpenCreateNewCollectionsDialog.CreateNewCollection</note>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
-        <source xml:lang="en">Open/Create Collections</source>
+        <source xml:lang="en">Open / Create Collections</source>
         <note>ID: OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle</note>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.ReadMoreLink">
