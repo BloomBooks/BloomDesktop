@@ -204,3 +204,7 @@ critiqueAI.json
 
 pr-comments*.md
 *.stackdump
+
+# Per-developer Claude Code settings (the shared .claude/CLAUDE.md stays tracked).
+.claude/settings.json
+.claude/settings.local.json

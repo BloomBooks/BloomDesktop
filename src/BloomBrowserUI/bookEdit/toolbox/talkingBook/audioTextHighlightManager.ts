@@ -1,3 +1,5 @@
+import StyleEditor from "../../StyleEditor/StyleEditor";
+
 const kSegmentClass = "bloom-highlightSegment";
 const kEnableHighlightClass = "ui-enableHighlight";
 const kDisableHighlightClass = "ui-disableHighlight";
@@ -63,6 +65,18 @@ function getHighlightConstructor(
           })
         | undefined;
     return docWindow?.Highlight;
+}
+
+// A StyleEditor instance used only to read the user's audio-highlight colors from a book's
+// userModifiedStyles sheet. We share StyleEditor's rule lookup rather than duplicating the
+// selector-matching logic, so the read and the write (StyleEditor.putAudioHiliteRulesInDom)
+// can never drift apart. supportFilesRoot is irrelevant for this read-only use.
+let styleEditorForColorLookup: StyleEditor | undefined;
+function getStyleEditorForColorLookup(): StyleEditor {
+    if (!styleEditorForColorLookup) {
+        styleEditorForColorLookup = new StyleEditor("/bloom/bookEdit");
+    }
+    return styleEditorForColorLookup;
 }
 
 export class AudioTextHighlightManager {
@@ -263,55 +277,25 @@ export class AudioTextHighlightManager {
               )
             : undefined;
 
+        // Read the user's chosen highlight colors for this style from the same
+        // userModifiedStyles rules that StyleEditor.putAudioHiliteRulesInDom writes, by
+        // delegating to StyleEditor's own lookup (looking in the page's document, not the
+        // toolbox's). When there is no such style, fall back to the default yellow/black.
         const userColors = styleName
-            ? this.getHighlightColorsFromUserStyles(
-                  styleSource.ownerDocument,
+            ? getStyleEditorForColorLookup().getAudioHiliteProps(
                   styleName,
+                  styleSource.ownerDocument,
               )
             : undefined;
 
         documentElement.style.setProperty(
             kCurrentHighlightBackgroundCssVar,
-            userColors?.backgroundColor ?? "#febf00",
+            userColors?.hiliteBgColor ?? "#febf00",
         );
         documentElement.style.setProperty(
             kCurrentHighlightColorCssVar,
-            userColors?.color ?? "black",
+            userColors?.hiliteTextColor ?? "black",
         );
-    }
-
-    // Look in the book's userModifiedStyles sheet for an audio highlight rule for the
-    // given style name, and return its background-color and color if found.
-    private getHighlightColorsFromUserStyles(
-        doc: Document,
-        styleName: string,
-    ): { backgroundColor: string; color: string } | undefined {
-        const userStyles = Array.from(doc.styleSheets).find(
-            (s) =>
-                (s.ownerNode as Element)?.getAttribute("title") ===
-                "userModifiedStyles",
-        );
-        if (!userStyles) return undefined;
-
-        try {
-            for (const cssRule of Array.from(userStyles.cssRules)) {
-                const rule = cssRule as CSSStyleRule;
-                if (
-                    (rule.selectorText?.includes("." + styleName + " ") ||
-                        rule.selectorText?.includes("." + styleName + ".")) &&
-                    rule.selectorText?.includes("ui-audioCurrent") &&
-                    rule.style.backgroundColor
-                ) {
-                    return {
-                        backgroundColor: rule.style.backgroundColor,
-                        color: rule.style.color || "black",
-                    };
-                }
-            }
-        } catch {
-            // Stylesheets can throw on cross-origin access; shouldn't happen here
-        }
-        return undefined;
     }
 
     private shouldShowSplitHighlights(
