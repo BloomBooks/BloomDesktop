@@ -1036,12 +1036,14 @@ even when the div is focused (as long as it is empty).*/
     color: @bloom-buff;
 }
 
-// BL-11633: Works around a Chromium bug where elements with position:relative and a
-// background color cause the caret to disappear. We unset position on the element
-// itself and on any inline text-formatting children, since the bug can trigger at
-// any level of nesting.
-.bl11633-unset-position() {
-    position: unset;
+// BL-11633: Works around a Chromium bug where an element with position:relative and a
+// background color makes the caret disappear. The bug can trigger on inline text-formatting
+// elements at any level of nesting, so this unsets position on those children wherever they
+// appear. Use this (rather than .bl11633-unset-position()) on BLOCK containers such as
+// div.bloom-editable and p: those must keep their own position:relative, because the little
+// language-code tags and paragraph/line-break markers are positioned relative to them and
+// would otherwise jump to the wrong corner.
+.bl11633-unset-position-on-children() {
     em,
     i,
     strong,
@@ -1050,6 +1052,13 @@ even when the div is focused (as long as it is empty).*/
     sup {
         position: unset;
     }
+}
+// For an INLINE element that is itself background-colored (e.g. a decodable/leveled-reader
+// violation span, or the sentence span that is the ::highlight range), also unset position
+// on the element itself. Do not use this on block containers - see the note above.
+.bl11633-unset-position() {
+    position: unset;
+    .bl11633-unset-position-on-children();
 }
 
 /*This block handles marking elements that violate decodable book and leveled reader constraints*/
@@ -1087,14 +1096,18 @@ span.word-not-found {
     .bl11633-unset-position();
 }
 
-div.bloom-editable {
-    .bl11633-unset-position();
+// div.bloom-editable and p are block-level and carry the language-code tags and paragraph/
+// line-break markers, which are positioned relative to them, so they must keep their own
+// position:relative; only their inline children need position:unset. (In the edit tab the
+// current highlight is a ::highlight pseudo-element drawn with text-decoration, not a
+// background color, so the block itself does not trigger the BL-11633 caret bug.)
+div.bloom-editable,
+div.bloom-editable p {
+    .bl11633-unset-position-on-children();
 }
 
-// p elements can be the ::highlight range in text-box recording mode; they need position:unset
-// for the same BL-11633 reason (caret hidden behind a background-colored ancestor).
-// Sentence spans are the ::highlight range in sentence mode, so they need it too.
-div.bloom-editable p,
+// Sentence spans / highlight segments are inline and are themselves the ::highlight range in
+// sentence mode, so they (and their inline children) need position:unset on the element itself.
 div.bloom-editable p > .audio-sentence,
 div.bloom-editable p > .bloom-highlightSegment {
     .bl11633-unset-position();
