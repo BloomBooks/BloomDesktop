@@ -205,10 +205,13 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            // The editor app is a separate package staged into browser/aiImageEditor at
-            // build/dev time (see GetEditorUrl); until it is published and added as a real
-            // dependency, a build can end up without it. Fail the launch with a clear
-            // message rather than opening an overlay whose iframe would just 404.
+            // The editor app is a separate published package (bloom-ai-image-tools, a
+            // dependency in package.json) staged into browser/aiImageEditor at build time
+            // (see GetEditorUrl). We keep this "might be missing" guard on purpose: it is
+            // handy during development, where a build can legitimately lack the staged
+            // editor (e.g. a local checkout that hasn't been built/staged yet). Fail the
+            // launch with a clear message rather than opening an overlay whose iframe would
+            // just 404.
             if (
                 string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("BLOOM_AI_EDITOR_URL"))
                 && BloomFileLocator.GetBrowserFile(optional: true, "aiImageEditor", "index.html")
@@ -983,12 +986,16 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Deletes the now-superseded image files we generated ("ai-image*") that no image
-        /// element anywhere in <paramref name="dom"/> still references. Without this, editing
-        /// an already-AI-edited slot again would leave the previous ai-image file orphaned in
-        /// the book folder, and they would accumulate. Only our own generated files are
-        /// considered, and only when nothing references them, so a file shared by another
-        /// slot (or a user's original image) is never removed. Internal for testing; callers
-        /// pass the book's folder path and its (already-edited, already-saved) DOM.
+        /// element anywhere in <paramref name="dom"/> still references. Bloom's built-in
+        /// garbage collector (BookStorage.CleanupUnusedImageFiles, run when the book is next
+        /// brought up to date) would eventually remove unreferenced images anyway, so these
+        /// don't accumulate forever; but it only handles .jpg/.png/.svg/.gif. This prunes our
+        /// files promptly at commit time and also covers the other formats we can generate
+        /// (.jpeg/.webp), so a re-edited slot's old ai-image file doesn't linger in the book
+        /// folder between edits. Only our own generated files are considered, and only when
+        /// nothing references them, so a file shared by another slot (or a user's original
+        /// image) is never removed. Internal for testing; callers pass the book's folder path
+        /// and its (already-edited, already-saved) DOM.
         /// </summary>
         internal static void DeleteSupersededAiImageFiles(
             string bookFolderPath,
