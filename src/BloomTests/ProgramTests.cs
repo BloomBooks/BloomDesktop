@@ -193,6 +193,22 @@ namespace BloomTests
             Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.True);
         }
 
+        [TestCase("System.OperationCanceledException")]
+        [TestCase("System.Threading.Tasks.TaskCanceledException")]
+        public void IsBenignUnobservedTaskSocketNoise_DropsUnobservedCancellation(
+            string cancellationType
+        )
+        {
+            // A shutdown race can cancel the fire-and-forget send instead of aborting the socket;
+            // that is still benign teardown noise, so both cancellation types are dropped.
+            var sentryEvent = MakeEvent(
+                MakeException(cancellationType, "A task was canceled."),
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.True);
+        }
+
         [Test]
         public void IsBenignUnobservedTaskSocketNoise_DropsRegardlessOfLocalizedMessage()
         {

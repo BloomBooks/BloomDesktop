@@ -2180,6 +2180,15 @@ namespace Bloom
         {
             switch (exceptionTypeName)
             {
+                // The observed noise is a SocketException, but the abort surfaces from the socket
+                // stack as an IOException just as often (an IOException frequently wraps the
+                // SocketException), and a shutdown race can instead cancel the send. All three are
+                // benign teardown outcomes of an *unobserved* fire-and-forget socket.Send(); this
+                // predicate only ever runs for events already carrying the UnobservedTaskException
+                // mechanism (see IsBenignUnobservedTaskSocketNoise), which is what keeps it from
+                // suppressing these same types when they arrive through a normal, observed path.
+                // The trade-off is accepted deliberately: an unobserved-Task IOException/cancellation
+                // is treated as noise here rather than reported.
                 case "System.Net.Sockets.SocketException":
                 case "System.IO.IOException":
                 case "System.OperationCanceledException":
