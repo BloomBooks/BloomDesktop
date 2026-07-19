@@ -788,7 +788,35 @@ namespace Bloom
         /// </summary>
         public override void RunJavascriptFireAndForget(string script)
         {
-            _webview.ExecuteScriptAsync(script);
+            // Guard against running when the browser isn't in a usable state. During app startup
+            // (before CoreWebView2 is initialized) or shutdown (while the control is disposing),
+            // ExecuteScriptAsync throws from inside its async state machine. Because nothing here
+            // awaits or otherwise observes the returned Task, that fault used to reach the GC
+            // finalizer thread and get rethrown as an UnobservedTaskException (Sentry
+            // BLOOM-DESKTOP-D07). This mirrors the readiness check in UpdateDisplay().
+            if (
+                _webview == null
+                || _webview.IsDisposed
+                || _webview.Disposing
+                || _webview.CoreWebView2 == null
+            )
+                return;
+
+            // Even with the guard above there is a tiny race window in which the control can start
+            // disposing between the check and the call, so we still observe the returned Task. On a
+            // fault we just log it: this is an expected startup/shutdown race, not a user-facing
+            // failure, so no MessageBox and no rethrow. Observing the Task is what structurally
+            // eliminates the UnobservedTaskException (BLOOM-DESKTOP-D07).
+            _webview
+                .ExecuteScriptAsync(script)
+                .ContinueWith(
+                    t =>
+                        Logger.WriteEvent(
+                            "WebView2Browser.RunJavascriptFireAndForget: ExecuteScriptAsync faulted (expected during startup/shutdown): "
+                                + t.Exception?.GetBaseException().Message
+                        ),
+                    TaskContinuationOptions.OnlyOnFaulted
+                );
         }
 
         public override async Task<string> GetStringFromJavascriptAsync(string script)
