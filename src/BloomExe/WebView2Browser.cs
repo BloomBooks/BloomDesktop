@@ -811,10 +811,23 @@ namespace Bloom
                 .ExecuteScriptAsync(script)
                 .ContinueWith(
                     t =>
-                        Logger.WriteEvent(
-                            "WebView2Browser.RunJavascriptFireAndForget: ExecuteScriptAsync faulted (expected during startup/shutdown): "
-                                + t.Exception?.GetBaseException().Message
-                        ),
+                    {
+                        // Read the exception first so it is observed even if logging fails.
+                        var message = t.Exception?.GetBaseException().Message;
+                        try
+                        {
+                            Logger.WriteEvent(
+                                "WebView2Browser.RunJavascriptFireAndForget: ExecuteScriptAsync faulted (expected during startup/shutdown): "
+                                    + message
+                            );
+                        }
+                        catch
+                        {
+                            // Swallow any logging failure: letting it escape would fault this
+                            // continuation's own Task and reintroduce the very
+                            // UnobservedTaskException we are preventing (BLOOM-DESKTOP-D07).
+                        }
+                    },
                     TaskContinuationOptions.OnlyOnFaulted
                 );
         }
