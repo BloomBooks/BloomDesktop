@@ -1025,6 +1025,20 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                                 font-weight: normal;
                                             }
                                         }
+
+                                        // Those same adopted bodies also keep the
+                                        // header icon jQuery-UI's _createIcons()
+                                        // prepends to every header: a
+                                        // ui-icon-triangle-1-e sprite. As a body
+                                        // (not a header) it renders as a stray
+                                        // right-pointing arrowhead in the top-left
+                                        // corner. The rule above only neutralized the
+                                        // header background/border, not this child
+                                        // icon, so hide it too. (BL-16538)
+                                        div[data-toolid]
+                                            span.ui-accordion-header-icon {
+                                            display: none !important;
+                                        }
                                     `}
                                 >
                                     {section.liveToolBodyElement ? (
