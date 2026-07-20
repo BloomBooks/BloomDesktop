@@ -65,36 +65,19 @@
 }
 
 .bloom-page.game-theme-white-and-orange-on-blue {
-    --game-primary-color: #ffb453;
-    --game-secondary-color: #0068f0;
-
-    --game-text-color: white;
-
-    --game-draggable-color: black;
-
-    // The theme's orange #ffb453 is only 2.81:1 on the blue page, just under the 3:1 UI
-    // minimum. A slightly brighter orange (3.4:1) keeps the theme's orange identity on
-    // the draggables, Check button, and selected checkbox while clearing AA; black text
-    // on it stays very readable. (BL-16323)
-    --game-draggable-bg-color: #ffce8f;
-    --game-control-button-bg-color: #ffce8f;
-    --game-selected-checkbox-bg-color: #ffce8f;
-
-    // The default outline color (the orange draggable bg) is only 2.81:1 against
-    // the blue page background; a lighter orange clears the 3:1 UI minimum. (BL-16323)
-    --game-draggable-target-outline-color: #ffd9a8;
-
-    --game-header-color: white;
-    --game-header-bg-color: var(--game-secondary-color);
-
-    --game-button-text-color: black;
     --game-button-bg-color: white;
     --game-button-correct-color: black;
-    --game-button-outline-color: var(--game-page-bg-color);
-
-    // The previous gray (#848484, 1.32:1 on blue) was off-palette and nearly invisible;
-    // white is the theme's other named color and contrasts strongly (4.95:1). (BL-16323)
-    --game-checkbox-outline-color: white;
+    --game-button-outline-color: #0068f0;
+    --game-button-text-color: black;
+    --game-draggable-bg-color: #ffce8f;
+    --game-draggable-color: black;
+    --game-draggable-target-outline-color: #ffd9a8;
+    --game-header-bg-color: #0068f0;
+    --game-header-color: white;
+    --game-primary-color: #ffb453;
+    --game-secondary-color: #0068f0;
+    --game-selected-checkbox-bg-color: #ffce8f;
+    --game-text-color: white;
 }
 .bloom-page.game-theme-pollinator {
     --game-button-correct-bg-color: #b35527;
@@ -104,6 +87,7 @@
     --game-secondary-color: white;
 }
 .bloom-page.game-theme-garden-path {
+    --game-button-bg-color: #ffffff;
     --game-button-correct-bg-color: #ea5252;
     --game-button-correct-color: #ffffff;
     --game-draggable-target-outline-color: #5c8a47;
@@ -133,7 +117,6 @@
     --game-button-text-color: black;
     --game-button-wrong-bg-color: #747474;
     --game-checkbox-outline-color: #e0f2f1;
-    --game-control-button-bg-color: #ffdccf;
     --game-draggable-bg-color: #ffdccf;
     --game-draggable-color: black;
     --game-draggable-target-outline-color: #ffd9c9;

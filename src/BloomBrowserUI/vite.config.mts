@@ -573,6 +573,44 @@ export default defineConfig(async ({ command }) => {
     return {
         // PLUGINS: Extend Vite's functionality (runs during build and/or dev)
         plugins: [
+            // Production build only: resolve the game theme editor's bare dependency
+            // imports (@emotion/react, @emotion/cache, react, react-dom, react-rnd)
+            // from BloomBrowserUI's node_modules. The editor is a self-contained
+            // project whose source lives in a sibling directory (../gameThemeEditor/src;
+            // see its README.md), so Rollup can't find those deps by walking up out of
+            // that folder. The dev server solves the same problem via
+            // optimizeDeps.include (see below); this is the build-time equivalent.
+            // Scoped to importers inside the editor directory, so resolution for the
+            // rest of the app is completely unchanged. Re-resolving through this.resolve
+            // (rather than aliasing to a path) keeps a single, deduped copy of react et
+            // al. and honors each package's exports map.
+            {
+                name: "resolve-game-theme-editor-deps",
+                enforce: "pre",
+                apply: "build",
+                async resolveId(source, importer) {
+                    if (
+                        !importer ||
+                        source.startsWith(".") ||
+                        path.isAbsolute(source)
+                    ) {
+                        return null;
+                    }
+                    const editorDir = path.resolve(
+                        __dirname,
+                        "../gameThemeEditor",
+                    );
+                    if (!path.resolve(importer).startsWith(editorDir)) {
+                        return null;
+                    }
+                    // Resolve as if imported from BloomBrowserUI's own root.
+                    return this.resolve(
+                        source,
+                        path.resolve(__dirname, "vite.config.mts"),
+                        { skipSelf: true },
+                    );
+                },
+            } as Plugin,
             // React plugin: Enables JSX, Fast Refresh, and React-specific optimizations
             react({
                 reactRefreshHost: `http://localhost:${devServerPort}`,

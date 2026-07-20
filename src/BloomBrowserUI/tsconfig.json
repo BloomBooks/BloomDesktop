@@ -42,7 +42,18 @@
         "paths": {
             "react": ["./node_modules/@types/react"],
             // The self-contained game theme editor project (see vite.config.mts resolve.alias).
-            "gameThemeEditor": ["../gameThemeEditor/src/index.tsx"]
+            "gameThemeEditor": ["../gameThemeEditor/src/index.tsx"],
+            // The game theme editor's source lives in a sibling directory
+            // (../gameThemeEditor/src), so the type checker can't resolve its bare
+            // dependency imports by walking up into BloomBrowserUI/node_modules. Map
+            // them explicitly here, just as we do for "react" above. (The Vite build
+            // solves the same problem separately via optimizeDeps.include; see
+            // vite.config.mts.)
+            "react-dom": ["./node_modules/@types/react-dom"],
+            "react-dom/client": ["./node_modules/@types/react-dom/client"],
+            "@emotion/react": ["./node_modules/@emotion/react"],
+            "@emotion/cache": ["./node_modules/@emotion/cache"],
+            "react-rnd": ["./node_modules/react-rnd"]
         }
     },
     "exclude": [
