@@ -152,12 +152,18 @@ export default class TextBoxProperties {
     }
     fillInLanguageNames() {
         get("editView/getBookLangs", (result) => {
-            document.getElementById("tbprop-lang1")!.innerText =
-                "(" + result.data.V + ")";
-            document.getElementById("tbprop-lang2")!.innerText =
-                "(" + result.data.N1 + ")";
-            document.getElementById("tbprop-lang3")!.innerText =
-                "(" + result.data.N2 + ")";
+            // This is an async callback: by the time getBookLangs returns, the dialog may
+            // already have been closed and these elements removed from the DOM. In that case
+            // getElementById returns null; bail rather than throw (Sentry BLOOM-DESKTOP-FFJ).
+            // Guard all three (not just the first): don't rely on an assumption about the
+            // order in which the dialog's elements are torn down.
+            const lang1 = document.getElementById("tbprop-lang1");
+            const lang2 = document.getElementById("tbprop-lang2");
+            const lang3 = document.getElementById("tbprop-lang3");
+            if (!lang1 || !lang2 || !lang3) return;
+            lang1.innerText = "(" + result.data.V + ")";
+            lang2.innerText = "(" + result.data.N1 + ")";
+            lang3.innerText = "(" + result.data.N2 + ")";
         });
     }
 
