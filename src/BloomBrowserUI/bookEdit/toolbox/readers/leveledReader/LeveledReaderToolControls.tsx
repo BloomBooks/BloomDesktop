@@ -320,6 +320,7 @@ function isBookOverLevel(
         [model.maxGlyphsPerWord(), stats["actualLettersPerWord"]],
         [model.maxAverageGlyphsPerWord(), stats["actualAverageGlyphsPerWord"]],
         [model.maxSentencesPerPage(), stats["actualSentencesPerPage"]],
+        [model.maxSentencesPerBook(), stats["actualSentenceCount"]],
         [
             model.maxAverageSentencesPerPage(),
             stats["actualAverageSentencesPerPage"],
