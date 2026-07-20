@@ -279,4 +279,74 @@ describe("jquery.text-markup", function () {
             '<p> <span class="word-not-found" data-segment="word">This</span><em> <span class="word-not-found" data-segment="word">is</span> </em>a test.</p>',
         );
     });
+
+    // The following three tests lock in that the analyzer (getWordsFromHtmlString) and the
+    // highlighter (wrap_words_extra) agree about ZERO WIDTH SPACE (U+200B) being a word
+    // boundary. They previously disagreed: the analyzer split words on U+200B while the
+    // highlighter's \p{Z}/\p{P} boundaries did not match it (U+200B is Unicode category Cf,
+    // not Zs), so a decodable word touching a ZWSP was left unmarked or mis-marked. See
+    // BL-16490. We build the invisible characters with String.fromCharCode so this source
+    // file stays free of them.
+    it("getWordsFromHtmlString splits on ZERO WIDTH SPACE but not ZERO WIDTH JOINER (BL-16490)", function () {
+        const zwsp = String.fromCharCode(0x200b);
+        const zwj = String.fromCharCode(0x200d);
+
+        // sanity check the test data really contains an invisible ZWSP in the middle
+        const input = `cat${zwsp}dog`;
+        expect(input.length).toBe(7);
+        expect(input.indexOf(zwsp)).toBe(3);
+
+        expect(theOneLibSynphony.getWordsFromHtmlString(input)).toEqual([
+            "cat",
+            "dog",
+        ]);
+
+        // ...but ZERO WIDTH JOINER is legitimate within a word and must NOT split it.
+        expect(
+            theOneLibSynphony.getWordsFromHtmlString(`ca${zwj}t`),
+        ).toEqual([`ca${zwj}t`]);
+    });
+
+    it("wrap_words_extra matches words bounded by a ZERO WIDTH SPACE (BL-16490)", function () {
+        const zwsp = String.fromCharCode(0x200b);
+        // A stray ZWSP sits between two words. Because the analyzer splits on it, both
+        // "cat" and "dog" end up in the word list, and the highlighter must wrap both,
+        // leaving the ZWSP in place between them.
+        const html = `<p>cat${zwsp}dog</p>`;
+        // sanity check: the invisible ZWSP really is present in the input
+        expect(html.indexOf(zwsp)).toBeGreaterThan(-1);
+
+        const newHtml = theOneLibSynphony.wrap_words_extra(
+            html,
+            ["cat", "dog"],
+            "word-not-found",
+            ' data-segment="word"',
+        );
+
+        expect(newHtml).toBe(
+            `<p><span class="word-not-found" data-segment="word">cat</span>${zwsp}` +
+                `<span class="word-not-found" data-segment="word">dog</span></p>`,
+        );
+        // the ZWSP must be preserved, not swallowed
+        expect(newHtml.indexOf(zwsp)).toBeGreaterThan(-1);
+    });
+
+    it("wrap_words_extra matches a word immediately followed by a ZERO WIDTH SPACE (BL-16490)", function () {
+        const zwsp = String.fromCharCode(0x200b);
+        // "cat" is decodable; a stray ZWSP sits right after it, before a normal space.
+        // Previously the afterWord boundary (\p{Z}/\p{P} only) did not see the ZWSP, so
+        // "cat" was left unmarked.
+        const html = `<p>cat${zwsp} sat</p>`;
+
+        const newHtml = theOneLibSynphony.wrap_words_extra(
+            html,
+            ["cat"],
+            "word-not-found",
+            ' data-segment="word"',
+        );
+
+        expect(newHtml).toBe(
+            `<p><span class="word-not-found" data-segment="word">cat</span>${zwsp} sat</p>`,
+        );
+    });
 });

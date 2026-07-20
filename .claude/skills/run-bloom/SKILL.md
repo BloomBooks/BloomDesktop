@@ -19,7 +19,7 @@ verified quick path.
 
 ## Prerequisites
 
-Dev machines already have: node 22 + pnpm 11.5.2 (see .node-version and the
+Dev machines already have: node 24 + pnpm 11.5.2 (see .node-version and the
 packageManager field), .NET SDK 10, WebView2 runtime. On a machine missing
 dependencies, run `./init.sh` (fetches C# deps, pnpm installs, initial
 `pnpm build`) — documented but not re-verified here; a failed C# build with

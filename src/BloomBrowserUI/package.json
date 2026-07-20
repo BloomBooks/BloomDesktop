@@ -6,8 +6,12 @@
     "directories": {
         "test": "test"
     },
-    "engines": {
-        "node": ">=22.12.0"
+    "devEngines": {
+        "runtime": {
+            "name": "node",
+            "version": "24.13.0",
+            "onFail": "download"
+        }
     },
     "scripts": {
         "exe": "node ../../scripts/watchBloomExe.mjs",
@@ -210,7 +214,7 @@
         "@types/jquery": "1.10.45",
         "@types/less": "3.0.8",
         "@types/markdown-it": "14.1.2",
-        "@types/node": "22.9.0",
+        "@types/node": "24.13.0",
         "@types/rc-slider": "8.6.6",
         "@types/react": "18.3.31",
         "@types/react-color": "3.0.4",

@@ -53,13 +53,27 @@ namespace Bloom.Publish
         private OffScreenBrowser _pageChecksBrowser;
 
         /// <summary>
+        /// Test hook: an externally-owned browser every PublishHelper uses for its page checks instead of
+        /// lazily creating its own. The owner retains ownership: ReleaseBrowser and Dispose leave it alone,
+        /// and the owner must dispose it. This lets one browser — with its expensive-to-start WebView2
+        /// environment and dedicated thread — be shared across the many PublishHelper instances created when
+        /// tests export dozens of epubs/bloompubs in a row (booting a browser per export dominated those
+        /// suites' time). Never set in production, where helpers deliberately release their browser as soon
+        /// as a batch of page checks is done (see ReleaseBrowser) rather than keep one idle.
+        /// </summary>
+        internal static OffScreenBrowser ExternalPageChecksBrowserForTests;
+
+        /// <summary>
         /// The browser we use for the "page checks" (element visibility and font info). It is an off-screen
         /// browser on its own dedicated thread, so we can drive it with blocking calls that never pump the main
         /// UI message loop — avoiding the reentrancy that made RunJavascriptWithStringResult_Sync_Dangerous
-        /// dangerous (BL-12614 / BL-13120) — and never deadlock. Created lazily. See <see cref="OffScreenBrowser"/>.
+        /// dangerous (BL-12614 / BL-13120) — and never deadlock. Created lazily, unless the tests supplied
+        /// a shared one via <see cref="ExternalPageChecksBrowserForTests"/>. See <see cref="OffScreenBrowser"/>.
         /// </summary>
         private OffScreenBrowser GetOrCreatePageChecksBrowser()
         {
+            if (ExternalPageChecksBrowserForTests != null)
+                return ExternalPageChecksBrowserForTests;
             return _pageChecksBrowser ??= new OffScreenBrowser();
         }
 
@@ -1460,7 +1474,8 @@ namespace Bloom.Publish
         public void ReleaseBrowser()
         {
             // Don't use GetOrCreatePageChecksBrowser here — if we never created one, we don't want to make
-            // one now just to dispose it.
+            // one now just to dispose it. An external browser (ExternalPageChecksBrowserForTests) belongs
+            // to its owner, so we never dispose it.
             _pageChecksBrowser?.Dispose();
             _pageChecksBrowser = null;
         }

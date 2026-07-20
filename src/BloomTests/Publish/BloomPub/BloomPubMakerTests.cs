@@ -34,6 +34,14 @@ namespace BloomTests.Publish.BloomPub
         private BookServer _bookServer;
         protected BloomServer s_bloomServer;
 
+        // One off-screen page-checks browser shared by every bloompub creation in the fixture (via
+        // PublishHelper.ExternalPageChecksBrowserForTests). BloomPubMaker.PrepareBookForBloomReader
+        // creates a PublishHelper per call, and starting a WebView2 environment (browser process +
+        // dedicated thread) per bloompub dominates the time of these tests; sharing one keeps each
+        // test running the real browser-based visibility checks while paying the startup cost only
+        // once per fixture.
+        private static OffScreenBrowser s_pageChecksBrowser;
+
         [OneTimeSetUp]
         public virtual void OneTimeSetup()
         {
@@ -51,11 +59,16 @@ namespace BloomTests.Publish.BloomPub
                 locator
             );
             s_bloomServer.EnsureListening();
+            s_pageChecksBrowser = new OffScreenBrowser();
+            PublishHelper.ExternalPageChecksBrowserForTests = s_pageChecksBrowser;
         }
 
         [OneTimeTearDown]
         public virtual void OneTimeTearDown()
         {
+            PublishHelper.ExternalPageChecksBrowserForTests = null;
+            s_pageChecksBrowser.Dispose();
+            s_pageChecksBrowser = null;
             s_bloomServer.Dispose();
         }
 
@@ -2290,11 +2303,16 @@ namespace BloomTests.Publish.BloomPub
                     isTemplateBook: false,
                     creator: creator
                 );
-                var zip = new ZipFile(bloompubTempFile.Path);
-                var newHtml = GetEntryContents(zip, "index.htm");
-                var paramObj = new ZipHtmlObj(zip, newHtml);
-                assertionsOnZipArchive?.Invoke(paramObj); // send in html in case we need to compare it with the zip contents
-                assertionsOnResultingHtmlString?.Invoke(newHtml);
+                // The ZipFiles must be disposed before the enclosing TempFiles are: an open
+                // ZipFile locks the .bloompub, and the TempFile's Dispose then spends seconds
+                // in robust-delete retry loops trying to remove its temp folder.
+                using (var zip = new ZipFile(bloompubTempFile.Path))
+                {
+                    var newHtml = GetEntryContents(zip, "index.htm");
+                    var paramObj = new ZipHtmlObj(zip, newHtml);
+                    assertionsOnZipArchive?.Invoke(paramObj); // send in html in case we need to compare it with the zip contents
+                    assertionsOnResultingHtmlString?.Invoke(newHtml);
+                }
                 if (assertionsOnRepeat != null)
                 {
                     // compress it again! Used for checking important repeatable results
@@ -2311,8 +2329,10 @@ namespace BloomTests.Publish.BloomPub
                             _bookServer,
                             new NullWebSocketProgress()
                         );
-                        zip = new ZipFile(extraTempFile.Path);
-                        assertionsOnRepeat(zip);
+                        using (var zipOfRepeat = new ZipFile(extraTempFile.Path))
+                        {
+                            assertionsOnRepeat(zipOfRepeat);
+                        }
                     }
                 }
             }

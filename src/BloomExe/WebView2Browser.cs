@@ -396,9 +396,13 @@ namespace Bloom
             {
                 additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
             }
-            if (RemoteDebuggingPort.HasValue)
+            if (RemoteDebuggingPort.HasValue && !Program.RunningUnitTests)
             {
                 // Expose a CDP endpoint so Playwright and other automation can attach to the real Bloom WebView2 surface.
+                // NOT in unit tests: nothing attaches to a test-run WebView2, and on a busy CI machine the port
+                // (BloomServer's http port + 2) can already be held by a real Bloom instance running beside the
+                // tests, in which case Chromium's fight over the port breaks WebView2 startup and fails the test
+                // (seen as flaky BookUploadAndDownloadTests upload failures on agents also running Bloom automation).
                 additionalBrowserArgs += $" --remote-debugging-port={RemoteDebuggingPort.Value} "; // allow external inspector connect
             }
             if (featuresToDisable.Count > 0)

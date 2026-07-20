@@ -2,12 +2,10 @@
 /* global AbortSignal, clearTimeout, console, fetch, process, setTimeout */
 import { spawn } from "node:child_process";
 import net from "node:net";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-    killProcessTree,
-    sweepStaleWorktreeNodeProcesses,
-} from "./processTree.mjs";
+import { killProcessTree, reapOrphanedBloomDevStacks } from "./processTree.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,21 +15,26 @@ const devScriptPath = path.join(browserUIRoot, "scripts", "dev.mjs");
 const exeScriptPath = path.join(repoRoot, "scripts", "watchBloomExe.mjs");
 process.env.feedback = "off";
 const startupQuietMs = 1500;
-const viteHealthTimeoutMs = 30000;
+// Overall window to get a healthy /@vite/client response before giving up.
+const viteHealthTimeoutMs = 60000;
 const viteHealthPollMs = 250;
 // Per-request timeout for a single /@vite/client probe. This must comfortably
 // exceed Vite's real cold-start response latency, NOT just its steady-state
 // latency (a few ms). We probe at the most CPU-contended moment of startup:
 // Vite is still pre-bundling deps (optimizeDeps for jquery/comicaljs), the 7
 // file watchers are doing their initial scans, and LESS is compiling ~180
-// stylesheets, so Vite's event loop stalls in bursts. Measured latency under
-// that load reaches ~2.9s (p99), while steady state is <10ms. A 500ms timeout
-// (the previous value) spuriously aborted every probe during this window, so
-// waitForViteClient never got its 2 consecutive successes and the whole launch
-// failed. A slow-but-listening server is healthy, not broken; a genuinely dead
-// server still fails fast via ECONNREFUSED, so this longer timeout only affects
-// the busy-but-fine case.
-const viteHealthRequestTimeoutMs = 3000;
+// stylesheets, so Vite's event loop stalls in bursts. That contention multiplies
+// when several worktrees run at once (the supported case), so we allow generous
+// slack: a slow-but-listening server is healthy, not broken, and a genuinely
+// dead server still fails fast via ECONNREFUSED, so a long timeout only affects
+// the busy-but-fine case. Measured latency for a single stack reaches ~2.9s
+// (p99); 10s leaves headroom for a loaded machine.
+const viteHealthRequestTimeoutMs = 10000;
+// How many reachable probes (250ms apart) we require before declaring Vite up.
+// We probe only AFTER the dev output has already gone quiescent, so a single
+// success is enough evidence the server is serving; requiring more just adds
+// wall-clock and, under load, risks never stringing successes together at all.
+const requiredHealthProbeSuccesses = 1;
 const maxRandomVitePortAttempts = 10;
 const gracefulShutdownMs = 1500;
 // Probe both loopback families: Vite may bind only IPv6 (::1) on some machines,
@@ -48,6 +51,26 @@ const parsePositiveInteger = (value) => {
 
     return undefined;
 };
+
+// How many CPU cores each dev stack's esbuild (used by Vite for dep pre-bundling
+// and transforms) is allowed to use. esbuild is written in Go and honors the
+// GOMAXPROCS environment variable, which propagates from here through dev.mjs and
+// Vite to the esbuild service child. By default we cap each stack at roughly a
+// third of the machine's logical cores so up to ~3 worktrees can start in
+// parallel without oversubscribing the CPU (which is what inflates cold-start
+// latency past the health-check window and, at the extreme, thrashes the whole
+// machine). This trades some single-stack speed for parallel-run reliability;
+// override with BLOOM_GO_MAX_PROCS to widen or narrow the cap.
+const logicalCpuCount = (() => {
+    try {
+        return os.availableParallelism();
+    } catch {
+        return os.cpus().length;
+    }
+})();
+const esbuildMaxProcs =
+    parsePositiveInteger(process.env.BLOOM_GO_MAX_PROCS) ??
+    Math.max(2, Math.floor(logicalCpuCount / 3));
 
 const requireOptionValue = (args, index, optionName) => {
     const value = args[index + 1];
@@ -263,7 +286,7 @@ const waitForViteClient = async (port, timeoutMs) => {
     while (!isShuttingDown && Date.now() < deadline) {
         if (await isViteClientReachable(port)) {
             consecutiveSuccesses++;
-            if (consecutiveSuccesses >= 2) {
+            if (consecutiveSuccesses >= requiredHealthProbeSuccesses) {
                 return true;
             }
         } else {
@@ -374,6 +397,8 @@ const startDevServerOnPort = (port) =>
                 env: {
                     ...process.env,
                     PORT: String(port),
+                    // Cap this stack's esbuild (Go) parallelism; see esbuildMaxProcs.
+                    GOMAXPROCS: String(esbuildMaxProcs),
                 },
             },
         );
@@ -575,16 +600,16 @@ const startBloomExe = (vitePort) => {
 };
 
 const main = async () => {
-    // Defensive sweep: a prior launcher that was hard-killed (terminal closed,
+    // Defensive reap: a prior launcher that was hard-killed (terminal closed,
     // SIGKILL, timeout) cannot run its shutdown handlers, so its Vite + watcher
-    // node processes orphan. Reap any such leftovers from THIS worktree before we
-    // start, so a previous leak can't starve the machine and wreck this run. We
-    // match on this worktree's repo-root path (which appears in the command lines
-    // of dev.mjs, watchBloomExe.mjs, and the Vite/onchange bins) and exclude our
-    // own pid. Killing a tree root takes its relative-path descendants
-    // (watchLess, onchange's command children) with it.
-    await sweepStaleWorktreeNodeProcesses({
-        commandLineMarker: repoRoot,
+    // node processes orphan. Left uncleaned, these accumulate across worktrees and
+    // sessions until the machine is starved and launches fail their Vite health
+    // check. Reap orphans from EVERY worktree before we start (not just this one):
+    // it is safe because only dead-parented processes are targeted, so a live
+    // go.sh session -- whose processes still have a living parent chain up to its
+    // go.mjs -- is never touched. Killing a tree root takes its descendants
+    // (Vite, watchLess, onchange's command children) with it.
+    await reapOrphanedBloomDevStacks({
         excludePids: [process.pid],
         log: (message) => console.log(`[go] ${message}`),
     });
