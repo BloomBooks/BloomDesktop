@@ -578,8 +578,12 @@ export default class StyleEditor {
         create: boolean,
         documentToUse: Document = document,
     ): CSSStyleRule | null {
-        const styleSheet =
-            this.GetOrCreateUserModifiedStyleSheet(documentToUse);
+        // When we are only reading (create === false), do not create a userModifiedStyles
+        // sheet as a side effect: a caller looking up a rule that isn't there should not
+        // mutate the document. Only create the sheet when we actually intend to add a rule.
+        const styleSheet = create
+            ? this.GetOrCreateUserModifiedStyleSheet(documentToUse)
+            : this.FindExistingUserModifiedStyleSheet(documentToUse);
         if (styleSheet == null) {
             return null;
         }
@@ -685,7 +689,10 @@ export default class StyleEditor {
         }
     }
 
-    public getAudioHiliteProps(styleName: string): {
+    public getAudioHiliteProps(
+        styleName: string,
+        documentToUse: Document = document,
+    ): {
         hiliteTextColor: string | undefined;
         hiliteBgColor: string;
     } {
@@ -694,9 +701,12 @@ export default class StyleEditor {
             // The two should have the same content, so for reading, we only need one.
             this.sentenceHiliteRuleSelector,
             false,
+            documentToUse,
         );
-        const hiliteTextColor = sentenceRule?.style?.color;
-        let hiliteBgColor = sentenceRule?.style?.backgroundColor;
+        const hiliteTextColor =
+            sentenceRule?.style?.getPropertyValue("color") || undefined;
+        let hiliteBgColor =
+            sentenceRule?.style?.getPropertyValue("background-color");
         if (!hiliteBgColor) {
             hiliteBgColor = kBloomYellow;
         }
