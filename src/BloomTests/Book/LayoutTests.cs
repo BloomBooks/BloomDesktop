@@ -1,6 +1,7 @@
 ﻿using System.Xml;
 using Bloom.Book;
 using Bloom.SafeXml;
+using L10NSharp;
 using NUnit.Framework;
 
 namespace BloomTests.Book
@@ -8,6 +9,35 @@ namespace BloomTests.Book
     [TestFixture]
     public class LayoutTests
     {
+        [SetUp]
+        public void Setup()
+        {
+            // Layout.DisplayName routes its English display names through LocalizationManager.
+            // For an English UI the in-code name we pass wins, but under any other UI language
+            // these (currently untranslated) dynamic ids resolve to the source value stored in
+            // the XLF instead. Other fixtures (e.g. BookDataTests) load a "Bloom"
+            // LocalizationManager with a non-English UI language and leave that language set in
+            // the shared static state, so without this our DisplayName assertions would depend
+            // on test order and pass locally but fail in CI. Pin English for determinism.
+            // (BloomFileLocatorTests guards against the same cross-test pollution.)
+            LocalizationManager.SetUILanguage("en");
+        }
+
+        [TestCase("Device16x9Portrait", "Ebook 9x16 Portrait")]
+        [TestCase("Device16x9Landscape", "Ebook 16x9 Landscape")]
+        public void DisplayName_Device16x9Layouts_UsesEbookLabels(
+            string layoutClassName,
+            string expectedDisplayName
+        )
+        {
+            var layout = new Layout
+            {
+                SizeAndOrientation = SizeAndOrientation.FromString(layoutClassName),
+            };
+
+            Assert.That(layout.DisplayName, Is.EqualTo(expectedDisplayName));
+        }
+
         [Test]
         public void UpdatePageSplitMode_WasCombinedAndShouldStayThatWay_PageUntouched()
         {

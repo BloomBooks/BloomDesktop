@@ -15,6 +15,7 @@ import {
     kBloomUnselectedTabBackground,
 } from "../../utils/colorUtils";
 import { getMasterToolList } from "./toolbox";
+import { SubscriptionBadgeWithTooltipAndDialog } from "../../react_components/requiresSubscription";
 
 // React host for the toolbox sidebar.
 //
@@ -70,10 +71,6 @@ const toolIconPathByToolId: Record<string, string> = {
 
 const legacyToolSubPathByToolId: Record<string, string> = {
     talkingBook: "talkingBook/talkingBookToolboxTool.html",
-    decodableReader: "readers/decodableReader/decodableReaderToolboxTool.html",
-    leveledReader: "readers/leveledReader/leveledReaderToolboxTool.html",
-    settings: "settings/Settings.html",
-    settingsTool: "settings/Settings.html",
 };
 
 const toolboxHeaderIconStyles = css`
@@ -844,6 +841,9 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                         background-color: ${kBloomPanelBackground};
                         display: flex;
                         flex-direction: column;
+                        // Lets the darker panel background show through between the
+                        // collapsed section headers, as it did in 6.3 and earlier (BL-16532).
+                        gap: 1px;
                         height: 100%;
                         min-height: 0;
 
@@ -969,7 +969,11 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                     </LocalizedString>
                                 </Typography>
                                 {subscriptionToolIds.has(section.id) && (
-                                    <span className="subscription-badge"></span>
+                                    <span>
+                                        <SubscriptionBadgeWithTooltipAndDialog
+                                            featureName={section.id}
+                                        />
+                                    </span>
                                 )}
                             </AccordionSummary>
                             <AccordionDetails
@@ -991,17 +995,6 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                         min-height: 100%;
                                         overflow: visible;
 
-                                        #leveled-reader-tool-content,
-                                        #decodable-reader-tool-content {
-                                            width: 100% !important;
-                                            box-sizing: border-box;
-                                            min-width: 0;
-                                            display: block !important;
-                                            align-self: stretch;
-                                            margin-right: 0 !important;
-                                            padding-right: 0 !important;
-                                        }
-
                                         div[data-toolid="leveledReaderTool"],
                                         div[data-toolId="decodableReaderTool"] {
                                             width: 100% !important;
@@ -1011,6 +1004,40 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                             box-sizing: border-box;
                                             margin-right: 0 !important;
                                             padding-right: 0 !important;
+                                        }
+
+                                        // The Decodable/Leveled reader tool bodies are
+                                        // adopted from the old jQuery-UI accordion and
+                                        // still wear its header classes (ui-accordion-header,
+                                        // ui-state-default) plus jQuery hover/focus handlers
+                                        // that add ui-state-hover/-focus. Here they are tool
+                                        // *bodies*, not headers, so that theming is wrong: left
+                                        // alone, hovering an opened reader tool paints its whole
+                                        // body the jQuery-UI "hover" lightcoral (#f08080).
+                                        // Neutralize the stray header theming. (BL-16501)
+                                        div[data-toolid].ui-accordion-header {
+                                            &,
+                                            &.ui-state-hover,
+                                            &.ui-state-focus,
+                                            &.ui-state-active {
+                                                background: transparent !important;
+                                                border: none !important;
+                                                font-weight: normal;
+                                            }
+                                        }
+
+                                        // Those same adopted bodies also keep the
+                                        // header icon jQuery-UI's _createIcons()
+                                        // prepends to every header: a
+                                        // ui-icon-triangle-1-e sprite. As a body
+                                        // (not a header) it renders as a stray
+                                        // right-pointing arrowhead in the top-left
+                                        // corner. The rule above only neutralized the
+                                        // header background/border, not this child
+                                        // icon, so hide it too. (BL-16538)
+                                        div[data-toolid]
+                                            span.ui-accordion-header-icon {
+                                            display: none !important;
                                         }
                                     `}
                                 >

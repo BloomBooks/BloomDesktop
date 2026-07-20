@@ -6,6 +6,19 @@ namespace BloomTests
     [TestFixture]
     public class ProgramTests
     {
+        /// <summary>
+        /// ParseStartupPortArguments stores its results in Program statics (StartupAutomation etc.)
+        /// which live for the rest of the test run. Re-parse empty args after each test to restore
+        /// the defaults; the method resets all of them on entry. Without this, the "--automation"
+        /// tests here left StartupAutomation=true for every later fixture, which (among other
+        /// things) made BloomServer print automation banners in unrelated tests' output.
+        /// </summary>
+        [TearDown]
+        public void TearDown()
+        {
+            Program.ParseStartupPortArguments(System.Array.Empty<string>(), out _);
+        }
+
         [Test]
         public void ParseStartupPortArguments_RemovesPortsAndStoresExplicitValues()
         {

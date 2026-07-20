@@ -77,7 +77,9 @@ body {
         pointer-events: auto; // start up clicks again a the next level
     }
 
-    :not(.Device16x9Portrait):not(.Device16x9Landscape)&::before {
+    :not(.Device16x9Portrait):not(.Device16x9Landscape):not(
+            .Ebook2x3Portrait
+        ):not(.Ebook7x5Landscape)&::before {
         // show bleed area
         content: "";
         position: absolute;
@@ -90,7 +92,9 @@ body {
         z-index: 1;
     }
 
-    :not(.Device16x9Portrait):not(.Device16x9Landscape)&:after {
+    :not(.Device16x9Portrait):not(.Device16x9Landscape):not(
+            .Ebook2x3Portrait
+        ):not(.Ebook7x5Landscape)&:after {
         // show safety area (the area inside of the trim box that still could get cut)
         content: "";
         position: absolute;
@@ -793,9 +797,9 @@ div.bloom-templateMode {
     border: 3px dashed black;
 }
 
-// We only make a big deal out of "overflow" if the layout is a *paper* size, rather than a *device* size.
+// We only make a big deal out of "overflow" if the layout is a *paper* size, rather than a *device* or *ebook* size.
 // Or the overflowing text is on a button
-.bloom-page:not([class*="Device"]),
+.bloom-page:not([class*="Device"]):not([class*="Ebook"]),
 .bloom-page .bloom-canvas-button.bloom-canvas-button {
     // We need this three times to beat a rule that gives the focusd editable box a blue outline
     // And for buttons we need to beat the rule on .bloom-canvas-element[data-bloom-active="true"] div.bloom-editable
@@ -1036,15 +1040,40 @@ even when the div is focused (as long as it is empty).*/
     color: @bloom-buff;
 }
 
+// BL-11633: Works around a Chromium bug where an element with position:relative and a
+// background color makes the caret disappear. The bug can trigger on inline text-formatting
+// elements at any level of nesting, so this unsets position on those children wherever they
+// appear. Use this (rather than .bl11633-unset-position()) on BLOCK containers such as
+// div.bloom-editable and p: those must keep their own position:relative, because the little
+// language-code tags and paragraph/line-break markers are positioned relative to them and
+// would otherwise jump to the wrong corner.
+.bl11633-unset-position-on-children() {
+    em,
+    i,
+    strong,
+    span[style],
+    u,
+    sup {
+        position: unset;
+    }
+}
+// For an INLINE element that is itself background-colored (e.g. a decodable/leveled-reader
+// violation span, or the sentence span that is the ::highlight range), also unset position
+// on the element itself. Do not use this on block containers - see the note above.
+.bl11633-unset-position() {
+    position: unset;
+    .bl11633-unset-position-on-children();
+}
+
 /*This block handles marking elements that violate decodable book and leveled reader constraints*/
 span.sentence-too-long {
     background-color: @LeveledReaderViolationColor;
-    position: unset; // BL-11633, works around Chromium bug
+    .bl11633-unset-position();
 }
 
 span.word-too-long {
     background-color: @bloom-lightblue;
-    position: unset; // BL-11633, works around Chromium bug
+    .bl11633-unset-position();
 }
 
 .page-too-many-words-or-sentences .marginBox {
@@ -1068,21 +1097,24 @@ span.sight-word {
 
 span.word-not-found {
     background-color: @DecodableReaderViolationColor;
-    position: unset; // BL-11633, works around Chromium bug
+    .bl11633-unset-position();
 }
 
-div.bloom-editable {
-    // Chrome 105 and later (ie, WebView2) has the :has selector.
-    // These rules may not need the :has(span) selector, but I
-    // don't want to risk breaking something.  This is enough to
-    // work around the Chromium bug reported in BL-11633.
-    span[style]:has(span),
-    em:has(span),
-    strong:has(span),
-    u:has(span),
-    sup:has(span) {
-        position: unset; // BL-11633, works around Chromium bug
-    }
+// div.bloom-editable and p are block-level and carry the language-code tags and paragraph/
+// line-break markers, which are positioned relative to them, so they must keep their own
+// position:relative; only their inline children need position:unset. (In the edit tab the
+// current highlight is a ::highlight pseudo-element drawn with text-decoration, not a
+// background color, so the block itself does not trigger the BL-11633 caret bug.)
+div.bloom-editable,
+div.bloom-editable p {
+    .bl11633-unset-position-on-children();
+}
+
+// Sentence spans / highlight segments are inline and are themselves the ::highlight range in
+// sentence mode, so they (and their inline children) need position:unset on the element itself.
+div.bloom-editable p > .audio-sentence,
+div.bloom-editable p > .bloom-highlightSegment {
+    .bl11633-unset-position();
 }
 
 /* We are disabling the "Possible Word" feature at this time.
@@ -1225,10 +1257,10 @@ body {
 // and a background color cause the caret not to show up. Somehow, this
 // triggers when a decodable reader error span is nested inside one of these
 // spans, even though when DR is active the rules that give these segments
-// background color are not active. Nothing depends on thei being position:relative,
+// background color are not active. Nothing depends on their being position:relative,
 // so it's easiest to just prevent it. See BL-11633 for reproduction steps in Bloom 5.5.
 .bloom-highlightSegment {
-    position: unset;
+    .bl11633-unset-position();
 }
 
 // Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image

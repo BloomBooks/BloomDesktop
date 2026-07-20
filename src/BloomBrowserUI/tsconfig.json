@@ -8,6 +8,19 @@
         "jsx": "react-jsx",
         "jsxImportSource": "@emotion/react",
         "esModuleInterop": true,
+        // Don't type-check the .d.ts files inside node_modules. Several of our
+        // dependencies ship declaration files that don't pass a strict check
+        // (e.g. react-select's bundled @emotion types); checking them buried our
+        // own ~80 errors under ~970 library errors and made `tsc` useless as a
+        // gate. This matches how the Vite/esbuild build already treats libraries.
+        // (TypeScript 6.0 also made the old `module Foo {}` namespace syntax an
+        // error (TS1540), which several dependencies' bundled typings still use.)
+        "skipLibCheck": true,
+        // TypeScript 6.0 made `strict` default to true. This project deliberately opts
+        // into only a subset of strict checks (see the individual flags below), so we
+        // pin strict:false to preserve the prior behavior and explicitly enable the
+        // checks we want on top of it.
+        "strict": false,
         "types": [
             /*"@emotion/core",*/
             "@emotion/react/types/css-prop",
@@ -19,7 +32,10 @@
         "alwaysStrict": true,
         "noImplicitReturns": true,
         "strictNullChecks": true,
-        "outDir": "../../output/browser",
+        // This tsconfig is for type-checking only; Vite (esbuild) produces the actual
+        // build output (see outDir in vite.config.mts). noEmit (with no outDir) avoids
+        // TS 6.0's rootDir/outDir layout diagnostics.
+        "noEmit": true,
         //"resolveJsonModule": true,
         // this solved the 'foo' cannot be used as a JSX component. Its instance type 'foo' is not a valid JSX element,
         // which came in when we were at react 17 but some things are going towards 18

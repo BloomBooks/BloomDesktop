@@ -7,8 +7,8 @@
  * - Renders components based on __TEST_ELEMENT__ injection (for automated tests)
  * - Dynamically loads components defined via Playwright or manual configuration
  *
- * To run: `yarn dev` from the component-tester folder
- * Then open http://127.0.0.1:5173/ in your browser
+ * To run: `pnpm dev` from the component-tester folder
+ * Then open http://127.0.0.1:5183/ in your browser
  */
 
 import * as React from "react";

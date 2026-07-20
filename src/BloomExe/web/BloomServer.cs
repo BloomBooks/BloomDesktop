@@ -1037,9 +1037,10 @@ namespace Bloom.Api
                     // in our source code.
 
                     // In this case the source is buried in the depths of ckeditor's implementation.
-                    if (imageFile.EndsWith("ckeditor/skins/flat/icons.png"))
+                    // (icons.png or icons_hidpi.png)  See BL-16474.
+                    if (imageFile.Contains("ckeditor/skins/flat/icons"))
                     {
-                        imageFile = imageFile.Replace("flat", "icy_orange");
+                        imageFile = imageFile.Replace("/flat/", "/icy_orange/");
                     }
                     // If the user does add a video or widget, these placeholder .svgs will get copied to the
                     // book folder and used from there. But we don't copy to the book folder while the user
@@ -1086,7 +1087,7 @@ namespace Bloom.Api
                 //          (because they are rendered on a dark background) becoming completely invisible.
                 // Things in the book folder are processed on demand: resized, format-converted, and optionally
                 // made transparent, with results cached by GetPathToAdjustedImage / AdjustImageForDisplay.
-                processImage = sourceDir == CurrentBook?.FolderPath;
+                processImage = !isSvg && sourceDir == CurrentBook?.FolderPath;
             }
 
             var originalImageFile = imageFile;
@@ -1123,7 +1124,7 @@ namespace Bloom.Api
         }
 
         static HashSet<string> _imageExtensions = new HashSet<string>(
-            new[] { ".jpg", "jpeg", ".png", ".svg" }
+            new[] { ".jpg", ".jpeg", ".png", ".svg" }
         );
 
         internal static bool IsImageTypeThatCanBeReturned(string path)

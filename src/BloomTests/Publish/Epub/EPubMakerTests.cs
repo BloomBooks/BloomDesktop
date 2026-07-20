@@ -278,6 +278,8 @@ namespace BloomTests.Publish.Epub
         [TestCase("A5Portrait", 559.37, 793.7)] // gets most common case right
         [TestCase("A5Landscape", 793.7, 559.37)] // make sure orientation matters
         [TestCase("LetterPortrait", 816, 1056)] // one where dimensions are inches
+        [TestCase("Ebook2x3Portrait", 475, 700)] // dimensions given in exact px
+        [TestCase("Ebook7x5Landscape", 959, 690)] // px, and different aspect ratio than portrait
         [TestCase("Garbage", 559.37, 793.7)] // default to A5Portrait
         public void GetPageDimensions(string name, double expectedWidth, double expectedHeight)
         {

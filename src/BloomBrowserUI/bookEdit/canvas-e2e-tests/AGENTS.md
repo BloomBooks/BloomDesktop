@@ -10,8 +10,8 @@ This folder contains a dedicated Canvas Playwright suite for behavior of working
 
 From `src/BloomBrowserUI`:
 
-- `yarn e2e canvas`
-- `yarn e2e canvas specs/01-toolbox-drag-to-canvas.spec.ts`
+- `pnpm e2e canvas`
+- `pnpm e2e canvas specs/01-toolbox-drag-to-canvas.spec.ts`
 
 Execution mode:
 
@@ -21,16 +21,16 @@ Execution mode:
 
 Mode flags:
 
-- `yarn e2e canvas --shared`
-- `yarn e2e canvas --isolated`
+- `pnpm e2e canvas --shared`
+- `pnpm e2e canvas --isolated`
 
 Watch tests in a visible browser:
 
-- `yarn e2e canvas --headed`
+- `pnpm e2e canvas --headed`
 
 Use Playwright UI mode for interactive reruns and debugging:
 
-- `yarn e2e canvas --ui`
+- `pnpm e2e canvas --ui`
 
 The command fails fast if `http://localhost:8089/bloom/CURRENTPAGE` is not reachable.
 

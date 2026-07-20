@@ -1374,6 +1374,9 @@ export class CanvasElementManager {
         img.style.top = "";
         img.style.left = "";
         if (adjustContainer) {
+            // If the image was previously set the cover the container, remove that class
+            // so that image is displayed normally.  (BL-16471)
+            img.classList.remove("bloom-imageObjectFit-cover");
             // Enhance: possibly we want to align by making it bigger rather than smaller?
             this.adjustContainerAspectRatio(this.activeElement);
         }
@@ -3122,9 +3125,9 @@ export class CanvasElementManager {
             bloomCanvas,
             bgCanvasElement,
             useSizeOfNewImage,
-            cropInfo,
             () => this.activeElement,
             this.alignControlFrameWithActiveElement,
+            cropInfo,
         );
     }
 

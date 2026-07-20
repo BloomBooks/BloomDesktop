@@ -2960,6 +2960,301 @@ namespace BloomTests.Book
             );
         }
 
+        private static SafeXmlElement GetFirstEditableParagraph(HtmlDom dom)
+        {
+            return (SafeXmlElement)
+                dom.SafeSelectNodes("//div[contains(@class,'bloom-editable')]/p")[0];
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_ConvertsBoldToStrong()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><b>bold text</b></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo("<strong>bold text</strong>")
+            );
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_ConvertsItalicToEm()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><i>italic text</i></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo("<em>italic text</em>")
+            );
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_ConvertsCombinedBoldItalicToStrongEm()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><b><i>bold italic</i></b></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo("<strong><em>bold italic</em></strong>")
+            );
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_CollapsesAdjacentBoldTags()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><b>foo</b><b>bar</b></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo("<strong>foobar</strong>")
+            );
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_CollapsesAdjacentBoldTagsPreservingSpaceSeparator()
+        {
+            // Non-breaking space (\u00A0) is a \p{Z} (Unicode separator), so it is preserved
+            // between the merged bold runs.
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><b>foo</b>\u00A0<b>bar</b></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo("<strong>foo\u00A0bar</strong>")
+            );
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_CollapsesAdjacentItalicTags()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><i>foo</i><i>bar</i></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(GetFirstEditableParagraph(dom).InnerXml, Is.EqualTo("<em>foobar</em>"));
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_CollapsesNestedBoldItalicAdjacentTags()
+        {
+            // <b><i>...</i></b><b><i>...</i></b> collapses via two passes:
+            // first </b><b> is merged, then </i><i> is merged.
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><b><i>This is </i></b><b><i>a test!</i></b></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo("<strong><em>This is a test!</em></strong>")
+            );
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_RemovesEmptyStrongTag()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>text<strong></strong>more</p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(GetFirstEditableParagraph(dom).InnerXml, Is.EqualTo("textmore"));
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_RemovesEmptyEmTag()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>text<em></em>more</p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(GetFirstEditableParagraph(dom).InnerXml, Is.EqualTo("textmore"));
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_RemovesEmptySupTag()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>text<sup></sup>more</p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(GetFirstEditableParagraph(dom).InnerXml, Is.EqualTo("textmore"));
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_RemovesEmptyUTag()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>text<u></u>more</p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(GetFirstEditableParagraph(dom).InnerXml, Is.EqualTo("textmore"));
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_RemovesZeroWidthCharacterOnlyTag()
+        {
+            // \u200B = zero-width space, \u200C = zero-width non-joiner, \u200D = zero-width joiner
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>a<strong>\u200B</strong>b<em>\u200C</em>c<u>\u200D</u>d</p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(GetFirstEditableParagraph(dom).InnerXml, Is.EqualTo("abcd"));
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_RemovesAttributesFromNonSpanParagraphChildren()
+        {
+            // Attributes on direct non-span paragraph children (e.g., <b style="...">) are stripped
+            // before any tag conversion.
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><b style='color:red'>bold</b></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo("<strong>bold</strong>")
+            );
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_PreservesSpanAttributes()
+        {
+            // Attributes on <span> children of paragraphs must not be removed.
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><span class='audio-sentence' id='abc'>text</span></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            var innerXml = GetFirstEditableParagraph(dom).InnerXml;
+            Assert.That(innerXml, Does.Contain("class=\"audio-sentence\""));
+            Assert.That(innerXml, Does.Contain("id=\"abc\""));
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_PreservesSpanAttributesButNotOthers()
+        {
+            // Attributes on <span> children of paragraphs must not be removed.
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><span class='audio-sentence' id='abc'><b style='color:red'><em lang='en'>text</em></b></span></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            var innerXml = GetFirstEditableParagraph(dom).InnerXml;
+            Assert.That(innerXml, Does.Contain("class=\"audio-sentence\""));
+            Assert.That(innerXml, Does.Contain("id=\"abc\""));
+            Assert.That(innerXml, Does.Not.Contain("style=\"color:red\""));
+            Assert.That(innerXml, Does.Not.Contain("lang=\"en\""));
+            Assert.That(innerXml, Does.Contain("<strong><em>text</em></strong>"));
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_DoesNotAffectNonEditableDivs()
+        {
+            // Only <p> elements inside bloom-editable divs should be processed.
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-page'><p><b>text</b></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            var para = (SafeXmlElement)
+                dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]/p")[0];
+            Assert.That(para.InnerXml, Is.EqualTo("<b>text</b>"));
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_LeavesPlainTextUnchanged()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>plain text without markup</p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo("plain text without markup")
+            );
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_ReducesNestingOfSameTags()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><b>some <b style='color:red'>text</b> here</b></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo("<strong>some text here</strong>")
+            );
+            var dom1 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><i><i style='color:red'>text</i></i></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom1);
+            Assert.That(GetFirstEditableParagraph(dom1).InnerXml, Is.EqualTo("<em>text</em>"));
+            var dom2 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><sup><sup style='color:red'>text</sup></sup></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom2);
+            // <sup> does have a nesting effect, so we don't collapse them. We just remove the attributes from the inner tag.
+            Assert.That(
+                GetFirstEditableParagraph(dom2).InnerXml,
+                Is.EqualTo("<sup><sup>text</sup></sup>")
+            );
+            var dom3 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>This is <u><u style='color:red'>some text.</u></u></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom3);
+            Assert.That(
+                GetFirstEditableParagraph(dom3).InnerXml,
+                Is.EqualTo("This is <u>some text.</u>")
+            );
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_HandlesMultipleTags()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><b>text</b>, <b><i>more text</i></b> and <i><b>yet more.</b></i></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                GetFirstEditableParagraph(dom).InnerXml,
+                Is.EqualTo(
+                    "<strong>text</strong>, <strong><em>more text</em></strong> and <em><strong>yet more.</strong></em>"
+                )
+            );
+            var dom1 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><i><i>text</i></i> with <i><i>more text</i></i></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom1);
+            Assert.That(
+                GetFirstEditableParagraph(dom1).InnerXml,
+                Is.EqualTo("<em>text</em> with <em>more text</em>")
+            );
+            var dom2 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p><sup>number</sup> of <sup style='color:red'>text</sup> with <sup>xyz</sup></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom2);
+            Assert.That(
+                GetFirstEditableParagraph(dom2).InnerXml,
+                Is.EqualTo("<sup>number</sup> of <sup>text</sup> with <sup>xyz</sup>")
+            );
+            var dom3 = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>This is <b><b>some text.</b></b> x <b>More stuff</b> of <b>sorts</b></p></div></body></html>"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom3);
+            Assert.That(
+                GetFirstEditableParagraph(dom3).InnerXml,
+                Is.EqualTo(
+                    "This is <strong>some text.</strong> x <strong>More stuff</strong> of <strong>sorts</strong>"
+                )
+            );
+        }
+
         [Test]
         public void BringBookUpToDate_FixesDuplicateAudioIds_SentenceRecording()
         {

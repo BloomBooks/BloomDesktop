@@ -6,15 +6,15 @@ Canvas Playwright tests live in:
 
 Run them from `src/BloomBrowserUI`:
 - `cd src/BloomBrowserUI`
-- `yarn install` (first time)
-- `yarn e2e canvas`
-- `yarn e2e canvas specs/01-toolbox-drag-to-canvas.spec.ts`
+- `pnpm install` (first time)
+- `pnpm e2e canvas`
+- `pnpm e2e canvas specs/01-toolbox-drag-to-canvas.spec.ts`
 
 To watch the tests run in a visible browser:
-- `yarn e2e canvas --headed`
+- `pnpm e2e canvas --headed`
 
 To use Playwright's interactive UI (rerun and inspect while editing):
-- `yarn e2e canvas --ui`
+- `pnpm e2e canvas --ui`
 
 ## Frame targeting rules
 Bloom Edit Tab uses multiple iframes.

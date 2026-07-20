@@ -39,7 +39,7 @@ import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { default as SearchIcon } from "@mui/icons-material/Search";
 import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
-import { showCopyrightAndLicenseDialog } from "../../workspaceRoot";
+import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
 import {
     doImageCommand,
     getImageFromCanvasElement,
@@ -481,7 +481,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             }
 
             runtime.closeMenu(true);
-            showCopyrightAndLicenseDialog(
+            // Launch via the workspace (top window) bundle, not this page iframe, so that saving
+            // the metadata — which reloads the page iframe — doesn't tear the dialog down.
+            getWorkspaceBundleExports().showCopyrightAndLicenseDialog(
                 getImageUrlFromImageContainer(imageContainer),
             );
         },

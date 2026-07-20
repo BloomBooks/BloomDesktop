@@ -135,7 +135,7 @@ DistFiles/IntegrityFailureAdvice-*.htm
 DistFiles/infoPages/TrainingVideos-*.htm
 DistFiles/localization/*.htm
 
-src/BloomBrowserUI/yarn-error\.log
+pnpm-debug.log*
 
 src/BloomExe/Firefox/
 
@@ -178,22 +178,8 @@ src/BloomBrowserUI/templates/template books/Activity/domActivities.css
 
 src/BloomBrowserUI/templates/template books/Activity/choiceActivities.css
 
-# per https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
-src/BloomBrowserUI/.pnp.*
-src/BloomBrowserUI/.yarn/*
-!src/BloomBrowserUI/.yarn/patches
-!src/BloomBrowserUI/.yarn/plugins
-!src/BloomBrowserUI/.yarn/releases
-!src/BloomBrowserUI/.yarn/sdks
-!src/BloomBrowserUI/.yarn/versions
-
-src/content/.pnp.*
-src/content/.yarn/*
-!src/content/.yarn/patches
-!src/content/.yarn/plugins
-!src/content/.yarn/releases
-!src/content/.yarn/sdks
-!src/content/.yarn/versions
+# pnpm's per-project store / state; the committed pnpm-lock.yaml files are NOT ignored.
+.pnpm-store/
 
 .github/copilot-instructions.md
 
@@ -204,3 +190,7 @@ critiqueAI.json
 
 pr-comments*.md
 *.stackdump
+
+# Per-developer Claude Code settings (the shared .claude/CLAUDE.md stays tracked).
+.claude/settings.json
+.claude/settings.local.json

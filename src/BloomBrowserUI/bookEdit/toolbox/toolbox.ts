@@ -24,11 +24,6 @@ import {
 export { isLongPressEvaluating };
 export { callOnBlur as registerMenuCloseOnBlur };
 
-/**
- * The html code for a check mark character
- * @type String
- */
-const checkMarkString: string = "&#10004;";
 const checkLeaveOffTool: string = "Visualizer";
 
 type ToolboxSettings = Record<string, string> & {
@@ -40,7 +35,16 @@ let savedSettings: ToolboxSettings = {};
 
 let keypressTimer: ReturnType<typeof setTimeout> | null = null;
 
-const showExperimentalTools = false; // set by Toolbox.initialize()
+// This variable stores all the ids of the enabled tools, so
+// that the React toolbox settings can initially check the
+// checkboxes that correspond to the enabled tools
+let enabledToolIds = new Set<string>();
+
+// checks if the tool is currently enabled by using its
+// name and the enabledToolIds set
+export function isToolEnabledInToolbox(toolName: string): boolean {
+    return enabledToolIds.has(toolName);
+}
 
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
@@ -158,10 +162,9 @@ export class ToolBox {
                     if (haveTool !== wantTool) {
                         // add or remove as needed.
                         showOrHideTool(
-                            "dummy", // required tools don't have check boxes.
                             ToolBox.addToolToString(masterToolList[i].id()),
                             wantTool,
-                        );
+                        ); // required tools don't have check boxes.
                         toolsAdjusted = wantTool;
                     }
                 }
@@ -373,17 +376,9 @@ export class ToolBox {
         masterToolList.push(tool);
     }
 
-    private getEnabledExperimentalFeatures() {
-        // Using axios directly because api calls for returning the promise.
-        return axios.get("/bloom/api/app/enabledExperimentalFeatures");
-    }
     private getEnabledTools() {
         // Using axios directly because api calls for returning the promise.
         return axios.get("/bloom/api/toolbox/enabledTools");
-    }
-
-    public static getShowExperimentalTools(): boolean {
-        return showExperimentalTools;
     }
 
     // Called from document.ready, initializes the whole toolbox.
@@ -402,133 +397,121 @@ export class ToolBox {
 
         // Using axios directly because bloomApi doesn't support merging promises with .all
         wrapAxios(
-            axios
-                .all([
-                    this.getEnabledExperimentalFeatures(),
-                    this.getEnabledTools(),
-                ])
-                .then(
-                    axios.spread((experimentalFeatures, enabledTools) => {
-                        // remove any experimental tools the user doesn't want
-                        // TODO: give each experimental tool it's own setting once we have any experimental tools again.
-                        // Presumably use the tool id as the keyword in the list of experimental features.
-                        const toolsToLoad = enabledTools.data
-                            .split(",")
-                            .map((toolId: string) => toolId.trim())
-                            .filter((toolId: string) => toolId.length > 0)
-                            .map((toolId: string) =>
-                                toolId.endsWith("Tool")
-                                    ? toolId.substring(0, toolId.length - 4)
-                                    : toolId,
-                            );
-                        // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
-                        for (let i = toolsToLoad.length - 1; i >= 0; i--) {
-                            if (
-                                !masterToolList.some(
-                                    (mod) => mod.id() === toolsToLoad[i],
-                                )
-                            ) {
-                                toolsToLoad.splice(i, 1);
-                            }
+            axios.all([this.getEnabledTools()]).then(
+                axios.spread((enabledTools) => {
+                    // remove any experimental tools the user doesn't want
+                    // TODO: give each experimental tool it's own setting once we have any experimental tools again.
+                    // Presumably use the tool id as the keyword in the list of experimental features.
+                    const toolsToLoad = enabledTools.data
+                        .split(",")
+                        .map((toolId: string) => toolId.trim())
+                        .filter((toolId: string) => toolId.length > 0)
+                        .map((toolId: string) =>
+                            toolId.endsWith("Tool")
+                                ? toolId.substring(0, toolId.length - 4)
+                                : toolId,
+                        );
+                    // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
+                    for (let i = toolsToLoad.length - 1; i >= 0; i--) {
+                        if (
+                            !masterToolList.some(
+                                (mod) => mod.id() === toolsToLoad[i],
+                            )
+                        ) {
+                            toolsToLoad.splice(i, 1);
                         }
+                    }
 
-                        for (let j = 0; j < masterToolList.length; j++) {
-                            // add any tools we always show
-                            if (
-                                masterToolList[j].isAlwaysEnabled() &&
-                                !toolsToLoad.includes(masterToolList[j].id())
-                            ) {
-                                toolsToLoad.push(masterToolList[j].id());
-                            }
+                    enabledToolIds = new Set(toolsToLoad);
+
+                    for (let j = 0; j < masterToolList.length; j++) {
+                        // add any tools we always show
+                        if (
+                            masterToolList[j].isAlwaysEnabled() &&
+                            !toolsToLoad.includes(masterToolList[j].id())
+                        ) {
+                            toolsToLoad.push(masterToolList[j].id());
                         }
+                    }
 
-                        // for correct positioning and so we can find check boxes when adding others must load this one first,
-                        // which means putting it last in the array.
-                        toolsToLoad.push("settings");
-                        $("#toolbox").hide();
-                        const loadNextTool = () => {
-                            if (toolsToLoad.length === 0) {
-                                $("#toolbox").accordion({
-                                    heightStyle: "fill",
-                                });
-                                $("body").find("*[data-i18n]").localize(); // run localization
+                    toolsToLoad.push("settings");
+                    $("#toolbox").hide();
+                    const loadNextTool = () => {
+                        if (toolsToLoad.length === 0) {
+                            $("#toolbox").accordion({
+                                heightStyle: "fill",
+                            });
+                            $("body").find("*[data-i18n]").localize(); // run localization
 
-                                get("currentUiLanguage", (result) => {
-                                    const langName = result.data;
+                            get("currentUiLanguage", (result) => {
+                                const langName = result.data;
 
-                                    const nodeList = document.querySelectorAll(
-                                        ':not([data-i18n=""])',
-                                    );
-                                    for (let i = 0; i < nodeList.length; ++i) {
-                                        const node = nodeList.item(i);
-
-                                        if (!node.hasAttribute("data-i18n")) {
-                                            // Nodes which don't have data-18n will match the selector that it's not equal to "",
-                                            // but we definitely don't want to apply language text-specific markup to those non-leaf nodes.
-                                            continue;
-                                        }
-
-                                        // TODO: This only works when the tool is loaded up for the first time.
-                                        // It doesn't work if you open a new tool after the talking book tool is initialized for the first time.
-                                        // TODO: How to re-translate when UI lang changed.
-                                        const i18nId =
-                                            node.getAttribute("data-i18n");
-                                        if (!i18nId) {
-                                            node.setAttribute("lang", langName);
-                                        } else {
-                                            // Double-check that it's actually in this language and not just using an English fallback
-                                            theOneLocalizationManager
-                                                .asyncGetTextInLang(
-                                                    i18nId,
-                                                    "",
-                                                    langName,
-                                                    "",
-                                                )
-                                                .done((result) => {
-                                                    if (result) {
-                                                        node.setAttribute(
-                                                            "lang",
-                                                            langName,
-                                                        );
-                                                    } else {
-                                                        node.removeAttribute(
-                                                            "lang",
-                                                        ); // Or maybe set to "en" instead?
-                                                    }
-                                                });
-                                        }
-                                    }
-                                });
-
-                                // Now bind the window's resize function to the toolbox resizer
-                                $(window).bind("resize", () => {
-                                    clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
-                                    resizeTimer = setTimeout(
-                                        resizeToolbox,
-                                        100,
-                                    );
-                                });
-                                this.builtToolbox = true;
-                                // loaded them all, now we can deal with settings.
-                                restoreToolboxSettings();
-                                $("#toolbox").show();
-                                // I don't know why, but the accordion refresh inside resizeToolbox is needed
-                                // to (at least) make the accordion icons appear, and it has to happen on a later cycle.
-                                setTimeout(resizeToolbox, 0);
-                            } else {
-                                // optimize: maybe we can overlap these?
-                                const nextToolId = toolsToLoad.pop();
-                                const checkBoxId = nextToolId + "Check";
-                                const toolId =
-                                    ToolBox.addToolToString(nextToolId);
-                                beginAddTool(checkBoxId, toolId, false, () =>
-                                    loadNextTool(),
+                                const nodeList = document.querySelectorAll(
+                                    ':not([data-i18n=""])',
                                 );
-                            }
-                        };
-                        loadNextTool();
-                    }),
-                ),
+                                for (let i = 0; i < nodeList.length; ++i) {
+                                    const node = nodeList.item(i);
+
+                                    if (!node.hasAttribute("data-i18n")) {
+                                        // Nodes which don't have data-18n will match the selector that it's not equal to "",
+                                        // but we definitely don't want to apply language text-specific markup to those non-leaf nodes.
+                                        continue;
+                                    }
+
+                                    // TODO: This only works when the tool is loaded up for the first time.
+                                    // It doesn't work if you open a new tool after the talking book tool is initialized for the first time.
+                                    // TODO: How to re-translate when UI lang changed.
+                                    const i18nId =
+                                        node.getAttribute("data-i18n");
+                                    if (!i18nId) {
+                                        node.setAttribute("lang", langName);
+                                    } else {
+                                        // Double-check that it's actually in this language and not just using an English fallback
+                                        theOneLocalizationManager
+                                            .asyncGetTextInLang(
+                                                i18nId,
+                                                "",
+                                                langName,
+                                                "",
+                                            )
+                                            .done((result) => {
+                                                if (result) {
+                                                    node.setAttribute(
+                                                        "lang",
+                                                        langName,
+                                                    );
+                                                } else {
+                                                    node.removeAttribute(
+                                                        "lang",
+                                                    ); // Or maybe set to "en" instead?
+                                                }
+                                            });
+                                    }
+                                }
+                            });
+
+                            // Now bind the window's resize function to the toolbox resizer
+                            $(window).bind("resize", () => {
+                                clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
+                                resizeTimer = setTimeout(resizeToolbox, 100);
+                            });
+                            this.builtToolbox = true;
+                            // loaded them all, now we can deal with settings.
+                            restoreToolboxSettings();
+                            $("#toolbox").show();
+                            // I don't know why, but the accordion refresh inside resizeToolbox is needed
+                            // to (at least) make the accordion icons appear, and it has to happen on a later cycle.
+                            setTimeout(resizeToolbox, 0);
+                        } else {
+                            // optimize: maybe we can overlap these?
+                            const nextToolId = toolsToLoad.pop();
+                            const toolId = ToolBox.addToolToString(nextToolId);
+                            beginAddTool(toolId, false, () => loadNextTool());
+                        }
+                    };
+                    loadNextTool();
+                }),
+            ),
         );
     }
 
@@ -572,7 +555,6 @@ export class ToolBox {
         return getITool(toolId);
     }
 
-    // Returns 'true' if the checkbox in the More... tab for the requested tool (w/"Tool" suffix!) is checked.
     public isToolActive(toolId: string): boolean {
         const tools = $("*[data-toolId]");
         const filteredTools = tools.filter(function () {
@@ -591,8 +573,7 @@ export class ToolBox {
         }
         const toolboxElt = $("#toolbox");
         const activeToolId = getActiveToolIdFromCurrentToolboxUi();
-        const checkBoxId = toolId + "Check";
-        beginAddTool(checkBoxId, toolIdWithTool, false, () => {
+        beginAddTool(toolIdWithTool, false, () => {
             const adapter = getToolboxReactAdapter();
             if (adapter) {
                 if (activeToolId) {
@@ -640,33 +621,23 @@ export class ToolBox {
         if (!toolboxWasShowing) {
             this.toggleToolbox();
         }
-        const checkBox = $("#" + toolId + "Check").get(0) as HTMLDivElement;
-        if (checkBox) {
-            // if it was an actual "input" element, we would just check for "checked",
-            // but it's actually a div with possibly a checkmark character inside,
-            // so just check string length.
-            // An earlier version of this code simulated a click on the checkbox,
-            // but that failed when it was already active, toggling it to inactive,
-            // where here we want to ensure it is active AND selected.
-            if (checkBox.innerText.length === 0) {
-                turnOnToolFromCheckbox(
-                    checkBox,
-                    ToolBox.addToolToString(toolId),
-                    true,
-                );
-            } else {
-                setCurrentTool(toolId);
-            }
+
+        if (isToolEnabledInToolbox(toolId)) {
+            // Already enabled; just make it the active tool.
+            setCurrentTool(toolId);
         } else {
-            // no corresponding checkbox, probably a required tool for this page type
+            // Not a required-for-this-page tool that's already present, and not yet enabled.
             const toolbox = document.getElementById("toolbox") as HTMLElement;
             const toolHeader = toolbox.querySelector(
                 "[data-toolid='" + ToolBox.addToolToString(toolId) + "']",
             ) as HTMLElement;
             if (toolHeader) {
+                // Present in the accordion (e.g. a required tool) but not in enabledToolIds.
                 setCurrentTool(toolId);
             } else {
-                showOrHideTool("dummy", ToolBox.addToolToString(toolId), true);
+                // Genuinely disabled: enable it, which persists the state and updates
+                // enabledToolIds, then activates it (showOrHideTool opens it by default).
+                setToolEnabledFromSettings(toolId, true);
             }
         }
     }
@@ -753,49 +724,87 @@ export function getActiveToolId(): string | undefined {
     return newToolId ? newToolId : currentTool?.id();
 }
 
-/**
- * Handles the click event of the divs in Settings.htm that are styled to be check boxes.
- * @param chkbox
- */
-export function showOrHideTool_click(chkbox) {
-    const tool = $(chkbox).data("tool");
-    const turnOn = chkbox.innerHTML === "";
+// How long, after a tool is turned on in the "More..." settings section, we wait
+// before adding/opening it. The open collapses the "More..." section, so we delay
+// it just long enough for the user to see the checkbox they ticked. (BL-16501)
+const kShowToolAfterEnableDelayMs = 300;
+
+// Pending deferred "open this tool" timers, keyed by tool name, so a later toggle
+// of the same tool can cancel an open that hasn't fired yet.
+// We deliberately don't clear this map on toolbox teardown/navigation: each timer
+// is ~300ms and removes its own entry when it fires, so at most a couple of very
+// short-lived entries ever exist and nothing can accumulate. (BL-16501)
+const pendingShowToolTimeouts = new Map<
+    string,
+    ReturnType<typeof setTimeout>
+>();
+
+// modifies the enabledToolIds set, the saved active
+// state of the tool in question, and the presence of
+// the tool in the toolbox, whenever the tool is checked
+// or unchecked in the toolbox settings.
+// deferShowToRevealCheckbox is set only by the "More..." settings checkboxes:
+// when turning a tool on from there, opening it collapses the settings section,
+// so we briefly delay the open (see below) to let the user see the checkbox they
+// ticked. Other callers (e.g. activating a tool from an in-page action) leave it
+// false so the tool opens immediately. (BL-16501)
+export function setToolEnabledFromSettings(
+    toolName: string,
+    turnOn: boolean,
+    deferShowToRevealCheckbox: boolean = false,
+): void {
     if (turnOn) {
-        turnOnToolFromCheckbox(chkbox, tool, true);
+        enabledToolIds.add(toolName);
     } else {
-        setToolCheckboxEnabledState(chkbox, false);
-        showOrHideTool(chkbox.id, tool, false);
+        enabledToolIds.delete(toolName);
+    }
+
+    const toolId =
+        toolName.indexOf(checkLeaveOffTool) === -1
+            ? toolName + "Tool"
+            : toolName;
+
+    postString(
+        "editView/saveToolboxSetting",
+        "active\t" + toolName + "Check\t" + (turnOn ? "1" : "0"),
+    );
+
+    // A pending deferred open (below) reflects an earlier state; this call
+    // supersedes it, so cancel it. Without this, ticking a tool on and then off
+    // again within the delay would let the stale timer re-add the disabled tool
+    // (the disable runs synchronously and would otherwise be overtaken).
+    const pendingTimeout = pendingShowToolTimeouts.get(toolName);
+    if (pendingTimeout !== undefined) {
+        clearTimeout(pendingTimeout);
+        pendingShowToolTimeouts.delete(toolName);
+    }
+
+    if (turnOn && deferShowToRevealCheckbox) {
+        // Turning a tool on adds it to the accordion and makes it the active
+        // section, which collapses the "More..." settings section. If we do that
+        // immediately, the "More..." section closes before the user perceives the
+        // checkbox they just ticked. Briefly delay so the checkmark is visible
+        // before the section collapses to reveal the newly-enabled tool. (BL-16501)
+        const timeout = setTimeout(() => {
+            pendingShowToolTimeouts.delete(toolName);
+            // Guard against the tool having been turned off again during the delay.
+            if (enabledToolIds.has(toolName)) {
+                showOrHideTool(toolId, true);
+            }
+        }, kShowToolAfterEnableDelayMs);
+        pendingShowToolTimeouts.set(toolName, timeout);
+    } else {
+        showOrHideTool(toolId, turnOn);
     }
 }
 
-function setToolCheckboxEnabledState(
-    chkbox: HTMLDivElement,
-    turnOn: boolean,
-): void {
-    chkbox.innerHTML = turnOn ? checkMarkString : "";
-    postString(
-        "editView/saveToolboxSetting",
-        "active\t" + chkbox.id + "\t" + (turnOn ? "1" : "0"),
-    );
-}
-
-function turnOnToolFromCheckbox(
-    chkbox: HTMLDivElement,
-    tool: string,
-    openTool: boolean,
-): void {
-    setToolCheckboxEnabledState(chkbox, true);
-    showOrHideTool(chkbox.id, tool, true, openTool);
-}
-
 function showOrHideTool(
-    chkboxId: string,
     tool: string,
     turnOn: boolean,
     openTool: boolean = true,
 ) {
     if (turnOn) {
-        beginAddTool(chkboxId, tool, openTool);
+        beginAddTool(tool, openTool);
     } else {
         $("*[data-toolId]")
             .filter(function () {
@@ -1254,29 +1263,18 @@ function getITool(toolId: string): ITool {
 
 /**
  * Requests a tool from localhost and loads it into the toolbox.
- * This is used when the user ticks a previously unticked checkbox of a tool, or as part of
- * initializing the toolbox for those that are already checked.
+ * These tools are the tools enabled by the user, tools that are
+ * always enabled (like the talking book tool), and the settings
+ * "tool".
  */
 // these last three parameters were never used: function requestTool(checkBoxId, toolId, loadNextCallback, tools, currentTool) {
 function beginAddTool(
-    checkBoxId: string,
     toolId: string,
     openTool: boolean,
     whenLoaded?: () => void,
 ): void {
-    const chkBox = document.getElementById(checkBoxId);
-    if (chkBox) {
-        // always-enabled tools don't have checkboxes.
-        chkBox.innerHTML = checkMarkString;
-    }
-
     const subpath = {
         talkingBookTool: "talkingBook/talkingBookToolboxTool.html",
-        decodableReaderTool:
-            "readers/decodableReader/decodableReaderToolboxTool.html",
-        leveledReaderTool:
-            "readers/leveledReader/leveledReaderToolboxTool.html",
-        settingsTool: "settings/Settings.html",
         // none for music: done in React
     };
     const subPathToPremadeHtml = subpath[toolId];
@@ -1320,6 +1318,13 @@ function beginAddTool(
         }
 
         const content = $(tool.makeRootElement());
+
+        // the settings for the toolbox is React, but
+        // its localization works a little differently
+        // than the other toolbox tools. So, special-case
+        // handling is needed for the settings
+        const isSettingsTool = tool.id() === "settings";
+
         const toolName = ToolBox.addToolToString(tool.id());
         // const parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
         //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
@@ -1327,15 +1332,20 @@ function beginAddTool(
         const toolIdUpper =
             tool.id()[0].toUpperCase() +
             tool.id().substring(1, tool.id().length);
-        let i18Id = "EditTab.Toolbox." + toolIdUpper;
-        if (toolName.indexOf(checkLeaveOffTool) === -1) {
-            i18Id += "Tool";
-        }
+        const i18Id = isSettingsTool
+            ? "EditTab.Toolbox.More"
+            : "EditTab.Toolbox." +
+              toolIdUpper +
+              (toolName.indexOf(checkLeaveOffTool) === -1 ? "Tool" : "");
         // Not sure this will always work, but we can do something more complicated...maybe a new method
         // on ITool...if we need it. Note that this is just a way to come up with the English,
         // we don't do it to localizations. But in English, the code value beats the xlf one.
-        let toolLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim();
-        toolLabel = ToolBox.addToolToString(toolLabel, true);
+        const toolLabel = isSettingsTool
+            ? "More..."
+            : ToolBox.addToolToString(
+                  toolIdUpper.replace(/([A-Z])/g, " $1").trim(),
+                  true,
+              );
 
         const reactTool = tool as unknown as IReactTool;
 
@@ -1842,12 +1852,6 @@ function loadToolboxTool(
 ) {
     const toolboxElt = $("#toolbox");
     const label = header.text();
-    if (toolId === "settingsTool" && !showExperimentalTools) {
-        content.addClass("hideExperimental");
-    }
-    if (toolId === "settingsTool") {
-        addFeatureStatusMessageTitlesToSubscriptionBadges(content);
-    }
 
     // Where to insert the new tool? We want to keep them alphabetical except for More...which is always last,
     // so insert before the first one with text alphabetically greater than this (if any).

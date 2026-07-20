@@ -14,6 +14,21 @@ declare module "*.html?raw" {
     export default content;
 }
 
+// Allow side-effect imports of stylesheets, e.g. import "./App.less".
+// TypeScript 6.0 began requiring a module declaration for side-effect imports
+// (TS2882); Vite handles the actual loading, so an ambient declaration is enough.
+declare module "*.less";
+declare module "*.css";
+
+// Bare-specifier side-effect imports that Vite resolves at build time but TypeScript
+// cannot. TypeScript 6.0 began erroring on unresolved side-effect imports (TS2882),
+// so we declare them ambiently to preserve the prior (silently-allowed) behavior.
+declare module "errorHandler";
+declare module "jquery.i18n.custom.ts";
+declare module "jquery.hasAttr.js";
+declare module "long-press/jquery.mousewheel.js";
+declare module "long-press/jquery.longpress.js";
+
 declare module "select2/dist/js/select2.js" {
     const select2Factory: (
         root: unknown,

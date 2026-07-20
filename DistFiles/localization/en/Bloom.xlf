@@ -107,6 +107,21 @@
         <source xml:lang="en">Bloom Accessibility Checker</source>
         <note>ID: AccessibilityCheck.WindowTitle</note>
       </trans-unit>
+      <trans-unit id="AccountMenu.Account" translate="no">
+        <source xml:lang="en">Account</source>
+        <note>ID: AccountMenu.Account</note>
+        <note>Tooltip and accessible label for the round avatar button in the top bar of the main window.</note>
+      </trans-unit>
+      <trans-unit id="AccountMenu.SignIn" translate="no">
+        <source xml:lang="en">Sign in</source>
+        <note>ID: AccountMenu.SignIn</note>
+        <note>Button in the top bar of the main window. Clicking it opens the web browser to sign in to BloomLibrary.org.</note>
+      </trans-unit>
+      <trans-unit id="AccountMenu.SignOut" translate="no">
+        <source xml:lang="en">Sign out</source>
+        <note>ID: AccountMenu.SignOut</note>
+        <note>Menu item shown under the user's avatar in the top bar; signs the user out of BloomLibrary.org.</note>
+      </trans-unit>
       <trans-unit id="AutoUpdateSoftwareDialog.SoftwareUpdates" sil:dynamic="true">
         <source xml:lang="en">Software Updates</source>
         <note>ID: AutoUpdateSoftwareDialog.SoftwareUpdates</note>
@@ -330,9 +345,14 @@
         <note>{0} is the number of books checked out to the current user in a team collection.</note>
       </trans-unit>
       <trans-unit id="CollectionChooser.UnpublishedToBloomLibrary" translate="no">
-        <source xml:lang="en">{0} unpublished to bloomlibrary.org</source>
+        <source xml:lang="en">Books not yet published to BloomLibrary.org</source>
         <note>ID: CollectionChooser.UnpublishedToBloomLibrary</note>
-        <note>{0} is the number of books in the collection not yet published to bloomlibrary.org.</note>
+        <note>Hover tooltip on the unpublished-count label of a collection card in the Open/Create Collections dialog. "BloomLibrary.org" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.UnpublishedShort" translate="no">
+        <source xml:lang="en">{0} unpublished</source>
+        <note>ID: CollectionChooser.UnpublishedShort</note>
+        <note>Short label shown on a status chip on a collection card in the Open/Create Collections dialog. {0} is the number of books not yet published to BloomLibrary.org. The phrase "Books not yet published to BloomLibrary.org" appears as the chip's hover tooltip.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
@@ -1497,6 +1517,11 @@
         <note>ID: EditTab.DirectFormatting.Underline</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
       </trans-unit>
+      <trans-unit id="EditTab.DirectFormatting.RemoveFormat" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Remove Formatting</source>
+        <note>ID: EditTab.DirectFormatting.RemoveFormat</note>
+        <note>Tooltip for the "clear formatting" button in the panel that pops up when the user selects more than one character in a textbox. Clicking it strips bold/italic/underline/superscript/color from the selection.</note>
+      </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.labelForDefaultColor" sil:dynamic="true">
         <source xml:lang="en">Default for style</source>
         <note>ID:EditTab.DirectFormatting.labelForDefaultColor</note>
@@ -2082,6 +2107,31 @@
         <source xml:lang="en">There are no other options for this template.</source>
         <note>ID: EditTab.NoOtherLayouts</note>
         <note>Show in the size/orientation chooser dropdown of the edit tab, if there was only a single choice</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Ebooks" translate="no">
+        <source xml:lang="en">Ebooks</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Ebooks</note>
+        <note>Heading for the ebook-size column in the page size and orientation chooser dropdown on the edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Other" translate="no">
+        <source xml:lang="en">Other</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Other</note>
+        <note>Heading for the catch-all group in the page size and orientation chooser dropdown on the edit tab. It lists any sizes a template offers that don't fit the standard metric, ebook, or imperial groups.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Portrait" translate="no">
+        <source xml:lang="en">Portrait</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Portrait</note>
+        <note>Section heading for portrait page sizes in the page size and orientation chooser dropdown on the edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Landscape" translate="no">
+        <source xml:lang="en">Landscape</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Landscape</note>
+        <note>Section heading for landscape page sizes in the page size and orientation chooser dropdown on the edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Square" translate="no">
+        <source xml:lang="en">Square</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Square</note>
+        <note>Section heading for square page sizes in the page size and orientation chooser dropdown on the edit tab.</note>
       </trans-unit>
       <trans-unit id="EditTab.Overflow" sil:dynamic="true">
         <source xml:lang="en">This box has more text than will fit</source>
@@ -3293,6 +3343,70 @@
         <source xml:lang="en">Training Videos</source>
         <note>ID: HelpMenu.trainingVideos</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.CollectionsOnThisComputer" translate="no">
+        <source xml:lang="en">Collections on this Computer</source>
+        <note>ID: ImageLibrary.CollectionsOnThisComputer</note>
+        <note>Section heading in the image library's local-images tab, above the list of installed image collections (e.g. Art of Reading).</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OnlineSources" translate="no">
+        <source xml:lang="en">Online Sources</source>
+        <note>ID: ImageLibrary.OnlineSources</note>
+        <note>Tab or section header in the image library dialog for online image providers such as Pixabay and Openverse.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OpenFile" translate="no">
+        <source xml:lang="en">Open File...</source>
+        <note>ID: ImageLibrary.OpenFile</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Search" translate="no">
+        <source xml:lang="en">Search</source>
+        <note>ID: ImageLibrary.Search</note>
+        <note>Label for the search input field in the image library.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ThisComputer" translate="no">
+        <source xml:lang="en">This Computer</source>
+        <note>ID: ImageLibrary.ThisComputer</note>
+        <note>Tab or section header in the image library dialog for browsing locally installed image collections.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.UseThisImage" translate="no">
+        <source xml:lang="en">Use this image</source>
+        <note>ID: ImageLibrary.UseThisImage</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PasteApiKeyFromClipboard" translate="no">
+        <source xml:lang="en">Paste API key from clipboard</source>
+        <note>ID: ImageLibrary.PasteApiKeyFromClipboard</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayApiKeyInstructions" translate="no">
+        <source xml:lang="en">To use Pixabay, you need an API key:</source>
+        <note>ID: ImageLibrary.PixabayApiKeyInstructions</note>
+        <note>Introductory sentence for a numbered list of steps to obtain a Pixabay API key.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayApiKeyLabel" translate="no">
+        <source xml:lang="en">Pixabay API Key</source>
+        <note>ID: ImageLibrary.PixabayApiKeyLabel</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayFindKey" translate="no">
+        <source xml:lang="en">Copy the API key shown on that page, next to &quot;Your API key:&quot;</source>
+        <note>ID: ImageLibrary.PixabayFindKey</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayGoToApiKeyPage" translate="no">
+        <source xml:lang="en">go to the API key page</source>
+        <note>ID: ImageLibrary.PixabayGoToApiKeyPage</note>
+        <note>Clickable link text completing the sentence "or, if already logged in, go to the API key page" in the Pixabay API key instructions.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayLogIn" translate="no">
+        <source xml:lang="en">Log in to Pixabay</source>
+        <note>ID: ImageLibrary.PixabayLogIn</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayOrIfLoggedIn" translate="no">
+        <source xml:lang="en">{0} or, if already logged in, {1}</source>
+        <note>ID: ImageLibrary.PixabayOrIfLoggedIn</note>
+        <note>Sentence in the Pixabay API key instructions. {0} is replaced with a "Log in to Pixabay" link; {1} is replaced with a "go to the API key page" link.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayStep4" translate="no">
+        <source xml:lang="en">Paste it below</source>
+        <note>ID: ImageLibrary.PixabayStep4</note>
+        <note>Step 4 in the Pixabay API key instructions. "It" refers to the API key copied in step 3; "below" refers to the text input field below the instruction list.</note>
+      </trans-unit>
       <trans-unit id="ImageUtils.PreparingImage">
         <source xml:lang="en">Preparing image: {0}</source>
         <note>ID: ImageUtils.PreparingImage</note>
@@ -3373,6 +3487,14 @@
       <trans-unit id="LayoutChoices.Device16x9Portrait" sil:dynamic="true">
         <source xml:lang="en">Device16x9 Portrait</source>
         <note>ID: LayoutChoices.Device16x9Portrait</note>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.Ebook7x5Landscape" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Ebook 7x5 Landscape</source>
+        <note>ID: LayoutChoices.Ebook7x5Landscape</note>
+      </trans-unit>
+      <trans-unit id="LayoutChoices.Ebook2x3Portrait" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Ebook 2x3 Portrait</source>
+        <note>ID: LayoutChoices.Ebook2x3Portrait</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.HalfFolioPortrait" sil:dynamic="true">
         <source xml:lang="en">Half Folio Portrait</source>
@@ -3636,6 +3758,11 @@
         <source xml:lang="en">Browse for another collection on this computer</source>
         <note>ID: OpenCreateNewCollectionsDialog.BrowseForOtherCollections</note>
       </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.BrowseOnThisComputer" translate="no">
+        <source xml:lang="en">Browse on this computer</source>
+        <note>ID: OpenCreateNewCollectionsDialog.BrowseOnThisComputer</note>
+        <note>Text button at the bottom-left of the Open/Create Collections dialog. Clicking it opens a file browser so the user can find a Bloom collection stored elsewhere on their computer.</note>
+      </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
         <source xml:lang="en">Copy From Chorus Hub on Local Network</source>
         <note>ID: OpenCreateNewCollectionsDialog.CopyFromChorusHub</note>
@@ -3653,7 +3780,7 @@
         <note>ID: OpenCreateNewCollectionsDialog.CreateNewCollection</note>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
-        <source xml:lang="en">Open/Create Collections</source>
+        <source xml:lang="en">Open / Create Collections</source>
         <note>ID: OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle</note>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.ReadMoreLink">

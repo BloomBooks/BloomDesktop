@@ -16,11 +16,9 @@ const kOpenCreateCollectionIcon = `${bloomApiPrefix}images/OpenCreateCollection2
 const kSettingsIcon = `${bloomApiPrefix}images/settings24x24.png`;
 
 const mainButtonBackground = kBloomBlue;
-// Review: this doesn't seem to match anything else in our UI.
-// But it is what the original WinForms button had, so I've kept it for now.
-// Likely we'll need JH to make a full pass through the TopBar controls once
-// they are all in React to decide what we want everything to be.
-const mainButtonTextColor = "rgb(60, 60, 60)";
+// Black at 80% opacity, matching the controls in WorkspaceTopRightControls
+// (language menu, help, zoom) so the whole TopBar reads as one group.
+const mainButtonTextColor = "rgba(0, 0, 0, 0.8)";
 
 export const CollectionTopBarControls: React.FunctionComponent = () => {
     const teamCollectionStatus = useWatchApiData<TeamCollectionStatus>(
@@ -62,6 +60,15 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                         display: flex;
                         gap: 10px;
                         align-items: center;
+
+                        // The button icons are flat gray (#404040) PNG silhouettes.
+                        // Recolor them to black at 80% opacity so they match this
+                        // group's text and the WorkspaceTopRightControls to the right.
+                        // brightness(0) blackens the flat shape (no internal detail to lose);
+                        // opacity(0.8) composites it at 80%.
+                        img {
+                            filter: brightness(0) opacity(0.8);
+                        }
                     `}
                 >
                     <TopBarButton

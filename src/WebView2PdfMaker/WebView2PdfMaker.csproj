@@ -50,6 +50,6 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="SIL.Core" Version="18.0.0-beta0014" />
+		<PackageReference Include="SIL.Core" Version="18.0.0-beta0028" />
 	</ItemGroup>
 </Project>

@@ -28,6 +28,26 @@ namespace Bloom.Publish.Rab
         public RabTrackedBookInfo[] TrackedBooks { get; set; } = Array.Empty<RabTrackedBookInfo>();
         public RabPrepareStepStatus[] PrepareSteps { get; set; } =
             Array.Empty<RabPrepareStepStatus>();
+
+        /// <summary>
+        /// The action currently running ("prepare", "build", or "install"), or null if idle.
+        /// Lets the UI restore its busy indicator when switching back to the Apps tab mid-action.
+        /// </summary>
+        public string ActiveAction { get; set; }
+
+        /// <summary>
+        /// The most-recently reported progress stage code for the active action (e.g.
+        /// "building-android-app"), or null when idle.  Sent with the status so the UI can
+        /// show the correct stage label immediately on tab re-activation, without waiting for
+        /// the next websocket progress event.
+        /// </summary>
+        public string ActiveActionProgressStage { get; set; }
+
+        /// <summary>
+        /// The most-recently reported progress percentage (0–100) for the active action, or
+        /// 0 when idle.  Paired with <see cref="ActiveActionProgressStage"/> for the same reason.
+        /// </summary>
+        public int ActiveActionProgressPercent { get; set; }
     }
 
     /// <summary>

@@ -1088,7 +1088,19 @@ namespace BloomTests.Publish.Rab
             var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
 
             await service.PrepareAsync();
-            await service.BuildAsync();
+
+            // RabPublishApi claims the "build" action slot before running BuildAsync; mirror that
+            // here so RAB build output is recognized as build progress (TryAdvanceBuildProgressFromOutput
+            // only advances while the active action is "build").
+            Assert.That(service.TryBeginAction("build"), Is.True);
+            try
+            {
+                await service.BuildAsync();
+            }
+            finally
+            {
+                service.ClearAction();
+            }
 
             Assert.That(service.Progress.Percents, Does.Contain(70));
             Assert.That(service.Progress.Percents, Does.Contain(97));

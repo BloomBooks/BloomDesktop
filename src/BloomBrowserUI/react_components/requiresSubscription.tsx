@@ -37,6 +37,7 @@ import {
 import { ShowEditViewDialog } from "../bookEdit/workspaceRoot";
 import { getPageIframeBody } from "../utils/shared";
 import { getWorkspaceBundleExports } from "../bookEdit/js/workspaceFrames";
+import { BloomTooltip } from "./BloomToolTip";
 
 const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 
@@ -134,6 +135,39 @@ export const BloomEnterpriseIconWithTooltip: React.FunctionComponent<{
     );
 };
 
+// This component displays the bloom subscription badge, and is used
+// primarily for the tool options that appear in the settings and the
+// enabled tool headers that appear above the "More..." button
+export const SubscriptionBadgeWithTooltipAndDialog: React.FunctionComponent<{
+    featureName: string;
+}> = (props) => {
+    // check whether the tool is a feature provided in the user's
+    // current subscription tier, and retrieve the proper message
+    // that explains whether the tool is available or not
+    const featureStatus = useGetFeatureStatus(props.featureName);
+    const featureMessage = useGetFeatureAvailabilityMessage(featureStatus);
+
+    return (
+        <BloomTooltip tip={featureMessage} placement="bottom-end">
+            <img
+                css={css`
+                    height: 1.5em;
+                    margin-left: 1em;
+                    cursor: ${featureStatus?.enabled ? "default" : "pointer"};
+                `}
+                src={badgeUrl}
+                onClick={() => {
+                    if (!featureStatus?.enabled) {
+                        showRequiresSubscriptionDialogInAnyView(
+                            props.featureName,
+                        );
+                    }
+                }}
+            />
+        </BloomTooltip>
+    );
+};
+
 export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
     featureName: string;
     children?: React.ReactNode;
@@ -166,7 +200,7 @@ export const RequiresSubscriptionOverlayWrapper: React.FunctionComponent<{
             >
                 {props.children}
             </div>
-            {featureStatus?.enabled || (
+            {featureStatus === undefined || featureStatus.enabled || (
                 <div
                     css={css`
                         position: absolute;

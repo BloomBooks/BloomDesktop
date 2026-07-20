@@ -451,6 +451,109 @@ namespace Bloom.Publish.Rab
             return _document.Root?.Element(name)?.Value;
         }
 
+        /// <summary>
+        /// Returns true if the project already has at least one enabled interface (app UI)
+        /// language — for example one the user selected in Reading App Builder. Bloom checks this
+        /// so it does not overwrite an existing choice when defaulting the interface language.
+        /// A writing-system counts as enabled unless it explicitly says enabled="false", matching
+        /// how Reading App Builder reads the attribute.
+        /// </summary>
+        internal bool HasEnabledInterfaceLanguage()
+        {
+            var writingSystems = _document
+                .Root?.Element("interface-languages")
+                ?.Element("writing-systems");
+            if (writingSystems == null)
+                return false;
+
+            return writingSystems
+                .Elements("writing-system")
+                .Any(element =>
+                    !string.Equals(
+                        (string)element.Attribute("enabled"),
+                        "false",
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                );
+        }
+
+        /// <summary>
+        /// Enables the given language as the app's interface (UI) language, adding it to
+        /// &lt;interface-languages&gt; if it is not already present. Reading App Builder requires at
+        /// least one enabled interface language to build (BL-16470).
+        /// </summary>
+        internal void SetInterfaceLanguage(string code, string englishName, bool isRightToLeft)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+                throw new ArgumentException("Interface language code is required.", nameof(code));
+
+            var root = _document.Root;
+            if (root == null)
+                throw new ApplicationException("RAB project file is missing its root element.");
+
+            var interfaceLanguages = GetOrCreateInterfaceLanguagesElement(root);
+
+            var writingSystems = interfaceLanguages.Element("writing-systems");
+            if (writingSystems == null)
+            {
+                writingSystems = new XElement("writing-systems");
+                interfaceLanguages.Add(writingSystems);
+            }
+
+            // Replace any existing entry for this language so the method is idempotent across
+            // repeated prepare/build runs.
+            writingSystems
+                .Elements("writing-system")
+                .Where(element =>
+                    string.Equals(
+                        (string)element.Attribute("code"),
+                        code,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                .ToList()
+                .ForEach(element => element.Remove());
+
+            writingSystems.Add(
+                new XElement(
+                    "writing-system",
+                    new XAttribute("code", code),
+                    new XAttribute("type", "interface"),
+                    new XAttribute("enabled", "true"),
+                    new XElement(
+                        "display-names",
+                        new XElement("form", new XAttribute("lang", "en"), englishName)
+                    ),
+                    new XElement("font-family", "system"),
+                    new XElement(
+                        "trait",
+                        new XAttribute("name", "text-direction"),
+                        new XAttribute("value", isRightToLeft ? "RTL" : "LTR")
+                    )
+                )
+            );
+        }
+
+        private XElement GetOrCreateInterfaceLanguagesElement(XElement root)
+        {
+            var interfaceLanguages = root.Element("interface-languages");
+            if (interfaceLanguages != null)
+                return interfaceLanguages;
+
+            interfaceLanguages = new XElement("interface-languages");
+            var insertBefore =
+                root.Element("translation-mappings")
+                ?? root.Element("fonts")
+                ?? root.Element("color-scheme")
+                ?? root.Element("books");
+            if (insertBefore != null)
+                insertBefore.AddBeforeSelf(interfaceLanguages);
+            else
+                root.Add(interfaceLanguages);
+
+            return interfaceLanguages;
+        }
+
         private XElement GetOrCreateFontsElement(XElement root)
         {
             var fontsElement = root.Element("fonts");

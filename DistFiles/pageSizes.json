@@ -45,6 +45,16 @@
             "width": "177.77777778mm",
             "height": "100mm"
         },
+        {
+            "size": "Ebook2x3Portrait",
+            "width": "475px",
+            "height": "700px"
+        },
+        {
+            "size": "Ebook7x5Landscape",
+            "width": "959px",
+            "height": "690px"
+        },
         { "size": "Size6x9Portrait", "width": "6in", "height": "9in" },
         { "size": "Size6x9Landscape", "width": "9in", "height": "6in" }
     ]

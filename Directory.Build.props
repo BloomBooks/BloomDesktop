@@ -4,4 +4,52 @@
                  We always use the same version for BloomBooks.Velopack and BloomBooks.Velopack.Cli. -->
         <VelopackVersion>0.0.1350-l10n-0020</VelopackVersion>
     </PropertyGroup>
+
+    <!--
+        Isolated builds for agents / automated tests.
+
+        Problem: while a Bloom.exe launched by ./go.sh (dotnet watch) is running, it
+        locks output\<Config>\<Platform>\Bloom.exe and Bloom.dll. Any `dotnet build`/
+        `dotnet test` that writes there then fails at the copy step with MSB3027
+        ("being used by another process"), so today you have to stop the running Bloom
+        before you can build or test. The same collision happens between two builds
+        running in separate terminals in one worktree.
+
+        Fix: build into a private per-terminal tree instead of the shared output dir.
+        That takes redirecting BOTH halves of the build output:
+          - obj (intermediate)  -> redirected HERE, keyed on the BLOOM_AGENT_BUILD_DIR
+            env var. It must be here (not passed as a global -p:) because
+            BaseIntermediateOutputPath is consumed very early during the common props
+            import, AND because it has to be namespaced per project
+            ($(MSBuildProjectName)); a single invocation that builds several projects
+            (e.g. BloomTests plus the BloomExe it references) would otherwise collapse
+            their obj folders onto one another. A global property cannot namespace per
+            project, so this has to be evaluated inside the build.
+          - bin (final output)  -> passed as a global -p:OutDir=<dir> by the wrapper
+            (build/agent-dotnet.sh). It must be a global so it is set before evaluation
+            begins: that is the only way TargetPath/TargetDir (which `dotnet test` uses
+            to locate the test container, and which BloomTests otherwise pins to its
+            explicit OutputPath of output\Tests\...) get recomputed to the scratch dir.
+            Setting OutDir late (e.g. in Directory.Build.targets) fixes the build copy
+            but leaves TargetPath stale, so `dotnet test` would silently run an OLD dll.
+
+        Because both halves are required, always go through build/agent-dotnet.sh rather
+        than setting the env var by hand. It derives one BLOOM_AGENT_BUILD_DIR per
+        terminal (from CLAUDE_CODE_SESSION_ID, else the shell pid) so builds and test
+        runs in different terminals never share a bin/obj: a test host locks the
+        assemblies it loads, which would otherwise re-create the very cross-process
+        collision we are avoiding.
+    -->
+    <PropertyGroup Condition="'$(BLOOM_AGENT_BUILD_DIR)' != ''">
+        <BaseIntermediateOutputPath>$(BLOOM_AGENT_BUILD_DIR)\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+        <!--
+            Once obj moves out of the project directory, the SDK no longer treats the
+            conventional in-tree obj\ and bin\ as intermediate output, so their stale
+            auto-generated *.cs (AssemblyInfo, .AssemblyAttributes) left over from a
+            normal build get swept into the compile glob and collide with the freshly
+            generated ones under BLOOM_AGENT_BUILD_DIR (CS0579 duplicate attribute).
+            A dev building normally always leaves those behind, so re-exclude them.
+        -->
+        <DefaultItemExcludes>$(DefaultItemExcludes);obj\**;bin\**</DefaultItemExcludes>
+    </PropertyGroup>
 </Project>

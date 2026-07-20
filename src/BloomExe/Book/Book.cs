@@ -2628,15 +2628,23 @@ namespace Bloom.Book
 
         /// <summary>
         /// Convert old &lt;b&gt; and &lt;i&gt; to &lt;strong&gt; and &lt;em&gt; respectively.
-        /// Also remove instances like &lt;/b&gt;&lt;b&gt; altogether since such markup is redundant.
+        /// Remove instances like &lt;/b&gt;&lt;b&gt; altogether since such markup is redundant.
+        /// Cleanup instances like &lt;strong&gt;&lt;strong&gt;...&lt;/strong&gt;&lt;/strong&gt; to just &lt;strong&gt;...&lt;/strong&gt;.
+        /// Remove empty character markup like &lt;strong&gt;&lt;/strong&gt;, and seemingly empty markup that contains
+        /// only zero-width characters.
+        /// Doubled (nested) markup is handled only to one level, but that should be enough since Bloom can't
+        /// introduce such markup on its own.  Handling general nested markup would require more than regular
+        /// expressions to handle properly.
         /// </summary>
-        public void UpdateCharacterStyleMarkup(HtmlDom bookDOM)
+        public static void UpdateCharacterStyleMarkup(HtmlDom bookDOM)
         {
             var preserve = bookDOM.RawDom.PreserveWhitespace;
             bookDOM.RawDom.PreserveWhitespace = true;
             var paragraphs = bookDOM.SafeSelectNodes("//div[contains(@class,'bloom-editable')]/p");
             foreach (SafeXmlElement para in paragraphs)
             {
+                // spans are the only paragraph internal elements that should have any attributes.
+                RemoveUnwantedAttributesFromChildren(para);
                 string inner = para.InnerXml;
                 if (String.IsNullOrEmpty(inner) || !inner.Contains("<"))
                     continue;
@@ -2665,10 +2673,33 @@ namespace Bloom.Book
                     "<strong>$1</strong>",
                     RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                 );
+                if (inner.IndexOf("<b>", StringComparison.OrdinalIgnoreCase) >= 0) // handle one level of nesting
+                    inner = Regex.Replace(
+                        inner,
+                        @"<b>(.*?)</b>",
+                        "<strong>$1</strong>",
+                        RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
+                    );
                 inner = Regex.Replace(
                     inner,
                     @"<i>(.*?)</i>",
                     "<em>$1</em>",
+                    RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
+                );
+                if (inner.IndexOf("<i>", StringComparison.OrdinalIgnoreCase) >= 0) // handle one level of nesting
+                    inner = Regex.Replace(
+                        inner,
+                        @"<i>(.*?)</i>",
+                        "<em>$1</em>",
+                        RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
+                    );
+                // Replace doubled (nested) markup with single markup.  This shouldn't happen, but it
+                // has been seen in the wild, possibly as a result of pasting text. (BL-16387)
+                // Only one level of nesting is handled, but that should (almost always) be enough.
+                inner = Regex.Replace(
+                    inner,
+                    @"<(strong|em|u)>([^<>]*)<\1>([^<>]*)</\1>([^<>]*)</\1>",
+                    "<$1>$2$3$4</$1>",
                     RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                 );
                 // Remove empty (or essentially empty) character markup tags.  (BL-16387)
@@ -2677,10 +2708,24 @@ namespace Bloom.Book
                 inner = Regex.Replace(
                     inner,
                     @"<(strong|em|sup|u)>(\u200B|\u200C|\u200D)*</\1>",
-                    ""
+                    "",
+                    RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                 );
                 if (inner != para.InnerXml)
                     para.InnerXml = inner;
+            }
+        }
+
+        private static void RemoveUnwantedAttributesFromChildren(SafeXmlElement paraOrMarkup)
+        {
+            foreach (var child in paraOrMarkup.ChildNodes.OfType<SafeXmlElement>())
+            {
+                if (child.Name.ToLowerInvariant() != "span")
+                {
+                    foreach (var attrName in child.AttributeNames)
+                        child.RemoveAttribute(attrName);
+                }
+                RemoveUnwantedAttributesFromChildren(child);
             }
         }
 
