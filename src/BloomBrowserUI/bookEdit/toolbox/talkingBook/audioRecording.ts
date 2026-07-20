@@ -59,10 +59,7 @@ import { setupImageDescriptions } from "../imageDescription/imageDescription";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { createValidXhtmlUniqueId } from "../../js/xhtmlIdUtils";
 import { doesNarrationExist, kAnyRecordingApiUrl } from "../../js/audioUtils";
-import {
-    kAudioCurrent,
-    kPlaybackOrderContainerClass,
-} from "../../js/talkingBookMarkupConstants";
+import { kPlaybackOrderContainerClass } from "../../js/talkingBookMarkupConstants";
 import {
     hideImageDescriptions,
     showImageDescriptions,
@@ -234,8 +231,6 @@ export default class AudioRecording implements IAudioRecorder {
             prev: Status.Disabled,
             clear: Status.Disabled,
             listen: Status.Disabled,
-                if (!this.highlightedElement) return;
-                    this.highlightedElement,
         },
         recordingMode: RecordingMode.Unknown,
         hasAudio: false,
@@ -1680,7 +1675,9 @@ export default class AudioRecording implements IAudioRecorder {
     public async showAdjustTimingsDialog(): Promise<void> {
         const mediaPlayer = this.getMediaPlayer();
         mediaPlayer.pause();
+        if (!this.highlightedElement) return;
         getWorkspaceBundleExports().showAdjustTimingsDialogFromWorkspaceRoot(
+            this.highlightedElement,
             this.split,
             this.editTimingsFileAsync,
             this.applyTimingsFileAsync,
