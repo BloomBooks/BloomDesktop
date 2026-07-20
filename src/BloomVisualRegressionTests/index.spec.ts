@@ -15,6 +15,10 @@ import { PNG } from "pngjs";
 import Pixelmatch from "pixelmatch";
 import * as Path from "path";
 
+// The Bloom HTTP origin the suite talks to. launchBloomIfNeeded resolves this at startup so we use
+// whatever port Bloom actually opened on, instead of assuming 8089.
+let bloomOrigin = "http://localhost:8089";
+
 describe("All books", () => {
     let page: Page;
     // A second page dedicated to bloom-player captures, with its own fixed viewport, so that
@@ -186,7 +190,7 @@ describe("All books", () => {
     }
 
     async function saveScreenshot(imagePath: string) {
-        await page.goto("http://localhost:8089/bloom/book-preview/index.htm");
+        await page.goto(`${bloomOrigin}/bloom/book-preview/index.htm`);
         await page.waitForSelector("body");
 
         await argosScreenshot(page, imagePath.replace(".png", ""), {
@@ -207,26 +211,20 @@ describe("All books", () => {
         // Branding is normally derived from the (checksum-validated) subscription code and can't
         // be set directly. This test-only endpoint (present in DEBUG builds only) forces the
         // branding and brings the selected book up to date so it picks up that branding's files.
-        let result = await fetch(
-            `http://localhost:8089/bloom/api/e2e/setBranding`,
-            {
-                method: "POST",
-                body: branding,
-            },
-        );
+        let result = await fetch(`${bloomOrigin}/bloom/api/e2e/setBranding`, {
+            method: "POST",
+            body: branding,
+        });
         expect(result.ok).toBe(true);
     }
     async function setTheme(theme: string) {
         // Appearance theme is a per-book setting. This test-only endpoint (present in DEBUG builds
         // only) sets it and brings the selected book up to date so its appearance.css is
         // regenerated for that theme.
-        let result = await fetch(
-            `http://localhost:8089/bloom/api/e2e/setTheme`,
-            {
-                method: "POST",
-                body: theme,
-            },
-        );
+        let result = await fetch(`${bloomOrigin}/bloom/api/e2e/setTheme`, {
+            method: "POST",
+            body: theme,
+        });
         expect(result.ok).toBe(true);
     }
     async function selectBook(bookPath: string) {
@@ -234,7 +232,7 @@ describe("All books", () => {
 
         // get us on the correct book
         let result = await fetch(
-            `http://localhost:8089/bloom/api/collections/selected-book?path=${bookPath}&collection-id=${encodeURIComponent(
+            `${bloomOrigin}/bloom/api/collections/selected-book?path=${bookPath}&collection-id=${encodeURIComponent(
                 Path.dirname(bookPath),
             )}`,
             {
@@ -249,7 +247,7 @@ describe("All books", () => {
     // requires the collection tab.
     async function selectTab(tab: string) {
         const result = await fetch(
-            `http://localhost:8089/bloom/api/workspace/selectTab`,
+            `${bloomOrigin}/bloom/api/workspace/selectTab`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -265,7 +263,7 @@ describe("All books", () => {
     async function waitForCollectionReady() {
         for (let attempt = 0; attempt < 30; attempt++) {
             const result = await fetch(
-                `http://localhost:8089/bloom/api/e2e/isCollectionReady`,
+                `${bloomOrigin}/bloom/api/e2e/isCollectionReady`,
             );
             if (result.ok && (await result.text()) === "true") return;
             await new Promise((resolve) => setTimeout(resolve, 500));
@@ -278,7 +276,7 @@ describe("All books", () => {
     // publish tab to be active. This test-only endpoint is present in DEBUG builds only.
     async function makeBloomPubPreview(): Promise<string> {
         const result = await fetch(
-            `http://localhost:8089/bloom/api/e2e/makeBloomPubPreview`,
+            `${bloomOrigin}/bloom/api/e2e/makeBloomPubPreview`,
             {
                 method: "POST",
                 body: "",
@@ -301,7 +299,7 @@ describe("All books", () => {
             skipActivities: "true",
             "start-page": String(startPage),
         });
-        return `http://localhost:8089/bloom/bloom-player/dist/bloomplayer.htm?${params.toString()}`;
+        return `${bloomOrigin}/bloom/bloom-player/dist/bloomplayer.htm?${params.toString()}`;
     }
 
     // Render the staged BloomPUB in bloom-player and capture (or compare) one clean image per page.
@@ -365,7 +363,7 @@ describe("All books", () => {
     // our test books would otherwise fail with a confusing NullReferenceException.
     async function assertOnBasicCollection() {
         const result = await fetch(
-            "http://localhost:8089/bloom/api/common/instanceInfo",
+            `${bloomOrigin}/bloom/api/common/instanceInfo`,
         );
         expect(result.ok).toBe(true);
         const info = (await result.json()) as { collectionName: string };
@@ -418,34 +416,79 @@ describe("All books", () => {
     }
 });
 
+// Ports Bloom uses: it takes the next free block starting at 8089 (8089, 8092, 8095, ...). We probe
+// these to attach to an already-running Bloom on whatever port it happens to have opened, rather
+// than assuming 8089.
+const CANDIDATE_PORTS = [8089, 8092, 8095, 8098, 8101, 8104];
+
+// Return the origin (e.g. "http://localhost:8092") of a running Bloom that has the test ("basic")
+// collection open, or null if none is found. Matching on the collection avoids attaching to some
+// other Bloom the developer has open on a different collection.
+async function findRunningBloomOnBasic(): Promise<string | null> {
+    for (const port of CANDIDATE_PORTS) {
+        const origin = `http://localhost:${port}`;
+        try {
+            const r = await fetch(`${origin}/bloom/api/common/instanceInfo`);
+            if (!r.ok) continue;
+            const info = (await r.json()) as { collectionName?: string };
+            if (info.collectionName === "basic") return origin;
+        } catch (e) {
+            // Nothing responding on that port; keep looking.
+        }
+    }
+    return null;
+}
+
 async function launchBloomIfNeeded() {
-    if (await isBloomRunning()) {
+    // Prefer an already-running Bloom that is on the test collection and reuse it on whatever port
+    // it opened on. A developer usually already has one running (e.g. via ./go.sh); this is also
+    // the reliable path, since it doesn't depend on us building/launching Bloom correctly here.
+    const existing = await findRunningBloomOnBasic();
+    if (existing) {
+        bloomOrigin = existing;
+        console.log(`Using running Bloom at ${bloomOrigin}`);
         return;
     }
-    const p = `${Path.join(
+
+    // Otherwise launch one ourselves on the test collection. We launch the built exe with the
+    // collection path because the source-aware launcher (./go.sh) can't be told which collection to
+    // open — and opening the right collection is what makes selecting the test books work. The exe
+    // lands in a platform-specific folder depending on the build, so try the known locations.
+    const collection = Path.join(
         process.cwd(),
         "collections",
         "basic",
         "basic.bloomCollection",
-    )}`;
-    console.log(`Launching Bloom with ${p}`);
-    execFile("../../output/Debug/Bloom.exe ", [p]);
+    );
+    const exeCandidates = [
+        "../../output/Debug/x64/Bloom.exe",
+        "../../output/Debug/AnyCPU/Bloom.exe",
+        "../../output/Debug/Bloom.exe",
+    ];
+    const exe = exeCandidates.find((c) => fs.existsSync(c));
+    if (!exe) {
+        throw new Error(
+            `Could not find a built Bloom.exe (looked in: ${exeCandidates.join(", ")}). ` +
+                `Build Bloom, or start it yourself on collections/basic/basic.bloomCollection, then re-run.`,
+        );
+    }
+    console.log(`Launching ${exe} on ${collection}`);
+    execFile(exe, [collection]);
 
+    // Wait for it to come up on the test collection (a freshly launched Bloom takes the standard
+    // 8089 block when it is free, but we still discover the actual port rather than assume it).
     const startTime = Date.now();
-    while (Date.now() - startTime < 20000) {
-        if (await isBloomRunning()) {
+    while (Date.now() - startTime < 60000) {
+        const origin = await findRunningBloomOnBasic();
+        if (origin) {
+            bloomOrigin = origin;
+            console.log(`Launched Bloom is ready at ${bloomOrigin}`);
             return;
         }
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1500));
     }
-    expect(false, "Bloom did not start").toBe(true);
-}
-
-async function isBloomRunning() {
-    try {
-        const r = await fetch("http://localhost:8089/bloom/testconnection");
-        return r.ok;
-    } catch (e) {
-        return false;
-    }
+    expect(
+        false,
+        "Bloom did not start on the basic collection within 60s",
+    ).toBe(true);
 }
