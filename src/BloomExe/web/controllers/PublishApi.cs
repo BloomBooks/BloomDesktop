@@ -754,6 +754,7 @@ namespace Bloom.web.controllers
             return modifiedBook.GetPathHtmlFile().ToLocalhost();
         }
 
+#if DEBUG
         /// <summary>
         /// For automated/e2e testing only (see src/BloomVisualRegressionTests): stage
         /// <paramref name="book"/> exactly as the interactive Publish:BloomPub preview does
@@ -791,6 +792,7 @@ namespace Bloom.web.controllers
                 settings
             );
         }
+#endif
 
         internal bool UpdatePreviewIfNeeded(ApiRequest request)
         {
