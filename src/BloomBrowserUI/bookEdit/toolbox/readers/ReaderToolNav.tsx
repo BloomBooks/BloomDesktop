@@ -35,9 +35,6 @@ export const ReaderToolNav: FunctionComponent<{
 
     // Boxed square buttons at the right, matching the mockup. Unlike before,
     // the button at an end is shown but disabled (greyed) rather than hidden,
-    // so the pair of boxes is always present.
-    // Boxed square buttons at the right, matching the mockup. Unlike before,
-    // the button at an end is shown but disabled (greyed) rather than hidden,
     // so the pair of boxes is always present. Kept fairly small so the whole
     // "Level N of M" line fits on a single row.
     const arrowButtonCss = css`

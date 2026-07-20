@@ -262,7 +262,7 @@ const OverLevelBanner: FunctionComponent<{ levelNumber: number }> = (props) => {
                     font-weight: bold;
                 `}
             >
-                This book reads above Level {0}
+                {"This book reads above Level {0}"}
             </Span>
         </div>
     );
@@ -302,10 +302,18 @@ function isBookOverLevel(
             stats["actualAverageSentencesPerPage"],
         ],
     ];
-    return pairs.some(
-        ([max, actual]) =>
-            max !== 0 && max !== Infinity && Number(actual) > max,
-    );
+    // Compare against the actual value rounded to the same one decimal place
+    // the rows display (see formatAverage), so the banner never disagrees with
+    // the per-row coloring: e.g. a raw 5.04 shows as "5.0" within-level, so it
+    // must not trip the "reads above level" banner either. Rounding is a no-op
+    // for the integer stats.
+    return pairs.some(([max, actual]) => {
+        if (max === 0 || max === Infinity) {
+            return false;
+        }
+        const roundedActual = Number(Number(actual).toFixed(1));
+        return roundedActual > max;
+    });
 }
 
 const LeveledReaderStats: FunctionComponent<{
