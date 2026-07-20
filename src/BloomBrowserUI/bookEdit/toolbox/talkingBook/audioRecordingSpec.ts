@@ -14,7 +14,7 @@ import AudioRecording, {
     getAllAudioModes,
     theOneAudioRecorder,
 } from "./audioRecording";
-import { kAnyRecordingApiUrl } from "../../js/audioUtils";
+import { kAnyRecordingApiUrl } from "./audioUtils";
 import { RecordingMode } from "./recordingMode";
 import axios from "axios";
 import $ from "jquery";

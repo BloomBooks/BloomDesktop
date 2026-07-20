@@ -54,12 +54,11 @@ import {
 } from "../../js/workspaceFrames";
 import PlaybackOrderControls from "../../../react_components/playbackOrderControls";
 import Recordable from "./recordable";
-import { getChecksum } from "../../js/talkingBookChecksum";
+import { getChecksum } from "./talkingBookChecksum";
 import { setupImageDescriptions } from "../imageDescription/imageDescription";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { createValidXhtmlUniqueId } from "../../js/xhtmlIdUtils";
-import { doesNarrationExist, kAnyRecordingApiUrl } from "../../js/audioUtils";
-import { kPlaybackOrderContainerClass } from "../../js/talkingBookMarkupConstants";
+import { doesNarrationExist, kAnyRecordingApiUrl } from "./audioUtils";
 import {
     hideImageDescriptions,
     showImageDescriptions,
@@ -111,6 +110,8 @@ const kBloomTranslationGroupClass = "bloom-translationGroup";
 const kBloomVisibleClass = "bloom-visibility-code-on";
 
 const kEndTimeAttributeName: string = "data-audioRecordingEndTimes";
+const kPlaybackOrderContainerClass: string =
+    "bloom-playbackOrderControlsContainer";
 
 interface IPlaybackOrderInfo {
     containerDiv: HTMLDivElement;

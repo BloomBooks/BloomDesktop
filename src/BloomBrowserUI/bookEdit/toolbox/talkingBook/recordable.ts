@@ -1,6 +1,6 @@
 import XRegExp from "xregexp";
-import { getChecksum } from "../../js/talkingBookChecksum";
-import { kAnyRecordingApiUrl } from "../../js/audioUtils";
+import { getChecksum } from "./talkingBookChecksum";
+import { kAnyRecordingApiUrl } from "./audioUtils";
 import { RecordingMode } from "./recordingMode";
 import axios, { AxiosResponse } from "axios";
 

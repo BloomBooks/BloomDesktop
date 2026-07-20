@@ -7,7 +7,7 @@ import {
     TextFragment,
     addBloomSynphonyExtensions,
 } from "../bookEdit/toolbox/readers/libSynphony/bloomSynphonyExtensions";
-import { getChecksum } from "../bookEdit/js/talkingBookChecksum";
+import { getChecksum } from "../bookEdit/toolbox/talkingBook/talkingBookChecksum";
 // If a string only contains | and whitespace, it is a "segment" with no text
 // and should be skipped when matching to audio segments
 function isEmptySegment(s: string): boolean {

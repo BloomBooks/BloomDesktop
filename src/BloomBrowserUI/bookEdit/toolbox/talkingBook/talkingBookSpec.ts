@@ -13,7 +13,7 @@ import AudioRecording, {
     AudioMode,
     getAllAudioModes,
 } from "./audioRecording";
-import { kAnyRecordingApiUrl } from "../../js/audioUtils";
+import { kAnyRecordingApiUrl } from "./audioUtils";
 import { RecordingMode } from "./recordingMode";
 import {
     SetupIFrameFromHtml,

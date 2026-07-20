@@ -2,7 +2,7 @@
 // files to import that big file just to use a little bit of
 // code.
 
-import { getMd5 } from "../toolbox/talkingBook/md5Util";
+import { getMd5 } from "./md5Util";
 
 export function getChecksum(message: string): string {
     if (message === null || message === undefined) {
