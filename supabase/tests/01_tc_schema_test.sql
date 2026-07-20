@@ -14,7 +14,7 @@
 BEGIN;
 
 -- Load pgTAP
-SELECT plan(48);   -- update count when tests are added/removed
+SELECT plan(55);   -- update count when tests are added/removed
 
 -- =============================================================================
 -- 0. Sanity: schema and key tables exist
@@ -520,6 +520,119 @@ SELECT throws_ok(
     '42501',
     NULL,
     '10f: get_collection_file_manifest refuses a non-member'
+);
+
+-- =============================================================================
+-- 11. concurrency lock (20260717000001) + admin recovery (20260717000002)
+-- =============================================================================
+
+-- 11a: the last-admin guard must take a FOR UPDATE lock on the parent collection so concurrent
+-- admin removals serialize instead of racing to zero admins. A true two-session race can't be
+-- reproduced in single-session pgTAP, so assert the lock is present in the function body -- a
+-- regression guard against a future CREATE OR REPLACE silently dropping it. (6a/6b cover the
+-- actual rejection behavior.)
+SELECT ok(
+    pg_get_functiondef('tc.members_last_admin_guard()'::regprocedure)
+        LIKE '%tc.collections%FOR UPDATE%',
+    '11a: last_admin_guard locks the collection row (serializes concurrent admin removals)'
+);
+
+-- 11b: support_set_admin promotes an EXISTING member to admin (the common recovery). The
+-- mixed-case input also exercises the lower()+NFC normalization.
+DO $$
+BEGIN
+    INSERT INTO tc.members (collection_id, email, role, added_by)
+    VALUES ('a0000000-0000-0000-0000-000000000001', 'recover-promote@example.com', 'member', 'test-fixture');
+    PERFORM tc.support_set_admin('a0000000-0000-0000-0000-000000000001', 'Recover-Promote@Example.com');
+END;
+$$;
+SELECT is(
+    (SELECT role::text FROM tc.members
+      WHERE collection_id = 'a0000000-0000-0000-0000-000000000001'
+        AND email = 'recover-promote@example.com'),
+    'admin',
+    '11b: support_set_admin promotes an existing member to admin (case-insensitive)'
+);
+
+-- 11c: support_set_admin grants admin to an email that is NOT yet a member (inserts a row).
+DO $$
+BEGIN
+    PERFORM tc.support_set_admin('a0000000-0000-0000-0000-000000000001', 'recover-new@example.com');
+END;
+$$;
+SELECT is(
+    (SELECT role::text FROM tc.members
+      WHERE collection_id = 'a0000000-0000-0000-0000-000000000001'
+        AND email = 'recover-new@example.com'),
+    'admin',
+    '11c: support_set_admin grants admin to a not-yet-member email'
+);
+
+-- 11d: support_set_admin is a service-role-only recovery tool -- a normal signed-in caller
+-- (`authenticated`) must not be able to execute it.
+SELECT ok(
+    NOT has_function_privilege('authenticated', 'tc.support_set_admin(uuid, text)', 'EXECUTE'),
+    '11d: authenticated cannot execute support_set_admin (service-role only)'
+);
+
+-- =============================================================================
+-- 12. orphaned-upload sweep worklist (20260717000003)
+-- =============================================================================
+
+-- Fixture: a committed book (index.htm @ s3 version 'v-committed') plus a DEAD check-in
+-- transaction (open but past its expiry) that had changed index.htm -- i.e. it uploaded a
+-- newer garbage version to S3 and never committed.
+DO $$
+BEGIN
+    INSERT INTO tc.books (id, collection_id, instance_id, name, current_version_id,
+                          current_version_seq, current_checksum, created_by)
+    VALUES ('eb000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001',
+            'cccccccc-cccc-cccc-cccc-cccccccccccc', 'Sweep Fixture Book',
+            'e1000000-0000-0000-0000-000000000001', 1, 'cs-sweep', 'user-alice-001');
+    INSERT INTO tc.versions (id, book_id, collection_id, seq, checksum, created_by)
+    VALUES ('e1000000-0000-0000-0000-000000000001', 'eb000000-0000-0000-0000-000000000001',
+            'a0000000-0000-0000-0000-000000000001', 1, 'cs-sweep', 'user-alice-001');
+    INSERT INTO tc.version_files (book_id, version_id, path, sha256, size_bytes, s3_version_id)
+    VALUES ('eb000000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000001',
+            'index.htm', 'sha-x', 10, 'v-committed');
+    INSERT INTO tc.checkin_transactions (id, collection_id, book_id, started_by, proposed_name,
+                                         changed_paths, status, started_at, expires_at)
+    VALUES ('e2000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001',
+            'eb000000-0000-0000-0000-000000000001', 'user-alice-001', 'Sweep Fixture Book',
+            ARRAY['index.htm'], 'open', now() - interval '3 days', now() - interval '1 day');
+END;
+$$;
+
+-- 12a: the dead transaction surfaces index.htm with the committed version as the delete watermark.
+SELECT is(
+    (SELECT referenced_version_id FROM tc.list_stale_upload_garbage()
+      WHERE s3_key = 'tc/a0000000-0000-0000-0000-000000000001/books/cccccccc-cccc-cccc-cccc-cccccccccccc/index.htm'),
+    'v-committed',
+    '12a: a dead check-in transaction surfaces its changed file, watermarked to the committed version'
+);
+
+-- 12b: once a LIVE (open, unexpired) transaction is uploading that same path, it is excluded
+-- from the worklist -- the sweep must never race a legitimate in-flight check-in.
+DO $$
+BEGIN
+    INSERT INTO tc.checkin_transactions (id, collection_id, book_id, started_by, proposed_name,
+                                         changed_paths, status, started_at, expires_at)
+    VALUES ('e3000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001',
+            'eb000000-0000-0000-0000-000000000001', 'user-alice-001', 'Sweep Fixture Book',
+            ARRAY['index.htm'], 'open', now(), now() + interval '1 day');
+END;
+$$;
+SELECT is(
+    (SELECT count(*)::int FROM tc.list_stale_upload_garbage()
+      WHERE s3_key = 'tc/a0000000-0000-0000-0000-000000000001/books/cccccccc-cccc-cccc-cccc-cccccccccccc/index.htm'),
+    0,
+    '12b: a path a live (unexpired open) transaction is still uploading is excluded from the sweep'
+);
+
+-- 12c: the worklist is an operational, cross-collection function -- not callable by a user.
+SELECT ok(
+    NOT has_function_privilege('authenticated', 'tc.list_stale_upload_garbage()', 'EXECUTE'),
+    '12c: authenticated cannot execute list_stale_upload_garbage (service-role only)'
 );
 
 -- =============================================================================

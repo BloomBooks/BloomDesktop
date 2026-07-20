@@ -5,7 +5,9 @@
 // server/dev/DEV-CREDENTIALS.md for the full spec this implements.
 import { STSClient, AssumeRoleCommand } from "npm:@aws-sdk/client-sts@3";
 import {
+    DeleteObjectCommand,
     HeadObjectCommand,
+    ListObjectVersionsCommand,
     PutObjectCommand,
     S3Client,
 } from "npm:@aws-sdk/client-s3@3";
@@ -296,4 +298,41 @@ export const writeManifestBackup = async (
     } catch (err) {
         console.error("writeManifestBackup failed (non-fatal):", err);
     }
+};
+
+/** Lists the S3 object versions for an EXACT key, newest-first (the order S3 returns
+ * them). Used by the orphaned-upload sweep to find versions newer than the committed
+ * one. Returns [] if the key has no versions. (No pagination: a single book file never
+ * has anywhere near 1000 versions given the 7-day noncurrent-expiry lifecycle.) */
+export const listObjectVersions = async (
+    client: S3Client,
+    bucket: string,
+    key: string,
+): Promise<{ versionId: string; isLatest: boolean }[]> => {
+    const out = await client.send(
+        new ListObjectVersionsCommand({ Bucket: bucket, Prefix: key }),
+    );
+    return (out.Versions ?? [])
+        .filter((v) => v.Key === key && v.VersionId)
+        .map((v) => ({
+            versionId: v.VersionId as string,
+            isLatest: !!v.IsLatest,
+        }));
+};
+
+/** Permanently deletes one specific object version (the orphaned-upload sweep's only
+ * mutating S3 operation). */
+export const deleteObjectVersion = async (
+    client: S3Client,
+    bucket: string,
+    key: string,
+    versionId: string,
+): Promise<void> => {
+    await client.send(
+        new DeleteObjectCommand({
+            Bucket: bucket,
+            Key: key,
+            VersionId: versionId,
+        }),
+    );
 };

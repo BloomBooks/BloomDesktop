@@ -194,6 +194,63 @@ but giving the feature to real testers does:
   loop (commit e0526fa30); deliberately NOT the persist-checkout-state-to-local-file
   alternative, which was only needed to reproduce folder-TC blocking semantics. Remaining
   [AGENT] follow-up: extend E2E-4's spec to cover the now-reachable preserve path.
+- **[DECIDED + IMPLEMENTED 17 Jul 2026] Admin recovery (only admin unavailable).** The
+  `members_last_admin_guard` trigger prevents *removing/demoting* a collection's last admin
+  (now race-safe — it locks the collection row before counting, migration
+  `20260717000001`), so a collection cannot be left with zero admin rows through normal use.
+  It does NOT, and cannot, prevent the sole admin from simply becoming *unavailable* (leaving
+  the org, losing their login). John's decision: no forced second-admin (small teams may have
+  only one qualified admin); instead the Bloom team recovers such a collection out-of-band with
+  the service-role key. Tooling: `tc.support_set_admin(collection_id, email)` (migration
+  `20260717000002`) — service-role-only (not callable by `authenticated`), bypasses `is_admin`,
+  idempotent (promotes an existing member or inserts a new admin approval).
+
+  **Runbook — restore an admin to a collection that has lost its only reachable one:**
+  1. Find the collection id and, if promoting an existing member, confirm the target email:
+     ```sql
+     select id, name from tc.collections where name ilike '%<name fragment>%';
+     select email, role, (user_id is not null) as claimed
+       from tc.members where collection_id = '<collection-uuid>';
+     ```
+  2. Grant admin (run with the **service-role** connection — Supabase Dashboard → SQL editor,
+     or a service-role RPC call; a normal signed-in user cannot do this):
+     ```sql
+     select tc.support_set_admin('<collection-uuid>', '<email-to-make-admin>');
+     ```
+  3. Tell that person to sign in to Bloom with that email; `claim_memberships` links their
+     account to the new admin row, and they can then manage members normally.
+
+  Deliberately left for later (not needed now): a self-service break-glass (e.g. the original
+  `collections.created_by` creator reclaiming admin) — revisit only if recovery volume warrants.
+- **[DECIDED + IMPLEMENTED 17 Jul 2026 → OPS to schedule] Orphaned-upload sweep.** A check-in
+  uploads changed files to S3 (creating new object versions) *before* it commits. If the upload
+  succeeds but the commit fails, the garbage upload becomes S3's *current* version while the
+  still-referenced committed version is demoted to *noncurrent* — so the `NoncurrentVersionExpiration`
+  lifecycle rule (7 d) would eventually delete the version we still need and never touch the
+  garbage. John's decision: keep the 7 d lifecycle rule (it correctly GCs genuinely-superseded
+  versions) and add a small sweep that fixes only the failed-commit case, accepting the small
+  compound risk (failed commit **and** a completed S3 upload **and** the sweep not running for ~7 d).
+  Implemented as:
+  - `tc.list_stale_upload_garbage()` (migration `20260717000003`, service-role-only) — the
+    reference-aware worklist: per-file S3 keys touched by DEAD (aborted/expired) transactions, each
+    with the currently-referenced `s3_version_id` as a "delete newer than this" watermark, and
+    **excluding** any path a still-live transaction is uploading.
+  - `sweep-stale-uploads` edge function — for each worklist key, deletes every S3 version newer
+    than the referenced one (all of them if nothing references the key), restoring the committed
+    version to *current*. Idempotent; service-role-only.
+
+  **[OPS] Schedule it ~daily.** Any of: (a) `pg_cron` + `pg_net` job that `net.http_post`s the
+  function URL with `Authorization: Bearer <service-role key>`; (b) an external cron (e.g. GitHub
+  Actions) POSTing the same. Daily is ample — the staleness threshold is the 48 h transaction
+  expiry and the lifecycle floor is 7 d, so there is a ~5-day margin. **Monitor the response**: a
+  non-zero `referencedMissing` means a referenced version was already gone when the sweep ran
+  (i.e. it ran too late) — page on it.
+
+  **Known residual (garbage leak, NOT data loss):** a *new book* whose very first commit fails is
+  reaped by `_checkin_reap_book`, which deletes the phantom book row (cascading its transaction),
+  so its uploads are no longer reachable via this sweep. Those objects are unreferenced *current*
+  versions the 7 d rule never touches — harmless orphans. Close later if wanted by sweeping before
+  the reaper deletes the book, or with a periodic full reference-aware GC.
 - **[POLICY DECIDED 9 Jul 2026 → AGENT] Subscription-tier check timing.** John: cloud TCs
   require the SAME subscription tier as folder Team Collections — no new policy, reuse the
   existing FeatureName.TeamCollection gate. Remaining [AGENT] work is purely the timing bug:
