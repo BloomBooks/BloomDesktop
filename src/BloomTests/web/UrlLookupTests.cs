@@ -92,5 +92,53 @@ namespace BloomTests.web
 
             Assert.That(UrlLookup.TestInternetConnection("https://example.com"), Is.False);
         }
+
+        // The best-effort startup URL lookup must NOT report expected transient network/timeout
+        // failures to Sentry (BLOOM-DESKTOP-ERZ, -2H2); it must still report genuinely unexpected
+        // failures. These tests pin the classifier that makes that distinction.
+
+        [Test]
+        public void IsExpectedTransientLookupFailure_Timeout_ReturnsTrue()
+        {
+            Assert.That(
+                UrlLookup.IsExpectedTransientLookupFailure(
+                    new TimeoutException("A task was canceled.")
+                ),
+                Is.True
+            );
+        }
+
+        [Test]
+        public void IsExpectedTransientLookupFailure_Cancellation_ReturnsTrue()
+        {
+            Assert.That(
+                UrlLookup.IsExpectedTransientLookupFailure(new TaskCanceledException()),
+                Is.True
+            );
+        }
+
+        [Test]
+        public void IsExpectedTransientLookupFailure_WrappedWebException_ReturnsTrue()
+        {
+            // The AWS SDK surfaces a timeout as an AmazonServiceException wrapping a WebException,
+            // so the classifier must look down the InnerException chain, not just at the top.
+            var wrapped = new Exception(
+                "A WebException with status Timeout was thrown.",
+                new WebException("timed out", WebExceptionStatus.Timeout)
+            );
+            Assert.That(UrlLookup.IsExpectedTransientLookupFailure(wrapped), Is.True);
+        }
+
+        [Test]
+        public void IsExpectedTransientLookupFailure_UnexpectedError_ReturnsFalse()
+        {
+            // A parse/logic error is a real bug and must still reach Sentry.
+            Assert.That(
+                UrlLookup.IsExpectedTransientLookupFailure(
+                    new InvalidOperationException("bad json")
+                ),
+                Is.False
+            );
+        }
     }
 }
