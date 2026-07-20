@@ -10,6 +10,7 @@ import {
 import MenuItem from "@mui/material/MenuItem";
 import Divider from "@mui/material/Divider";
 import { Div } from "../../../react_components/l10nComponents";
+import { useL10n } from "../../../react_components/l10nHooks";
 import { InfoIconUrl } from "../../../react_components/icons/InfoIconUrl";
 import BloomSelect from "../../../react_components/bloomSelect";
 import EditIcon from "@mui/icons-material/Edit";
@@ -84,6 +85,11 @@ export const ThemeChooser: React.FunctionComponent<{
             setIsDeveloper(!!(result && (result as { data?: boolean }).data));
         });
     }, []);
+    // Tooltip for the edit (pencil) button that opens the game theme editor.
+    const editThemeColorsTitle = useL10n(
+        "Edit theme colors",
+        "EditTab.Toolbox.Games.EditThemeColors",
+    );
     const currentThemeIsFactory = React.useMemo(
         () => isFactoryThemeSlug(currentTheme),
         // Re-evaluate when the page changes too, since the available stylesheets can change.
@@ -396,7 +402,7 @@ export const ThemeChooser: React.FunctionComponent<{
                         // Opens the floating game theme editor over the live page so it can recolor
                         // the real game in real time. Mounted from here (toolbox) into the page document.
                         onClick={() => showGameThemeEditor()}
-                        title="Edit theme colors"
+                        title={editThemeColorsTitle}
                         css={css`
                             color: white !important;
                             margin-left: 4px;
