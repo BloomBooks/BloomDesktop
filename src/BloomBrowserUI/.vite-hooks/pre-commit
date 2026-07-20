@@ -1,0 +1,32 @@
+#!/bin/sh
+# Pre-commit checks for the pnpm/vite-plus front-end. This is the "vite-plus" hook
+# referenced by the .githooks/pre-commit dispatcher: on a pnpm branch the dispatcher
+# detects this file and runs it (via `exec`, honoring this shebang). The dispatcher
+# is wired up by core.hooksPath -> .githooks (see scripts/setup-git-hooks.mjs). It
+# replaces husky (husky v4 was EOL and incompatible with pnpm).
+#
+# It is committed executable (mode 0755) with a POSIX-sh shebang so the dispatcher
+# can exec it directly.
+#
+# We deliberately do NOT use `vp staged`: it runs vite-plus's own bundled
+# vite/rolldown/oxc toolchain instead of this project's pinned eslint/prettier/tsgo,
+# and would not match how we lint and type-check everywhere else. Instead we invoke
+# the project's own tools directly.
+
+# The dispatcher runs us from the repo root; put the front-end's node_modules/.bin
+# on PATH (as an absolute path, before we cd) so its bins resolve.
+export PATH="$(pwd)/src/BloomBrowserUI/node_modules/.bin:$PATH"
+
+# JavaScript/TypeScript checks (run from the front-end project)
+cd src/BloomBrowserUI || exit 1
+pretty-quick --staged || exit 1
+# --no-stash keeps linting fast and is safe because lint-staged doesn't modify files here.
+lint-staged --no-stash || exit 1
+node scripts/typecheck.js || exit 1
+
+# C# checks (run from the repo root)
+cd ../.. || exit 1
+build/check-csharp-robustfile.sh || exit 1
+build/check-csharp-xmlclasses.sh || exit 1
+build/check-csharp-ApplicationExit.sh || exit 1
+build/run-csharpier.sh || exit 1

@@ -1,6 +1,11 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
+// Tell React 18 that this environment supports act(), suppressing the
+// "not configured to support act(...)" warning in every React component test.
+(globalThis as unknown as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT =
+    true;
+
 // Some legacy specs use the Jasmine/Jest-style fail() helper, which vitest does
 // not provide. Define it globally (throwing an Error) so those assertions both
 // work at runtime and type-check. Test-only: this file is loaded only by vitest.
@@ -41,6 +46,21 @@ console.error = (...args: unknown[]) => {
         serialized.includes("XMLHttpRequest-impl.js");
 
     if (isJsdomXhrAggregateError) {
+        return;
+    }
+
+    // React 18 emits two families of act() warnings in jsdom test environments:
+    //   • "not configured to support act()" – the environment flag is absent
+    //   • "not wrapped in act(...)" – an async state update escaped an act() boundary
+    // Both arise from React 18's concurrent scheduler and from third-party libraries
+    // (e.g. MUI Accordion/Tooltip transitions) whose timer-based state updates fire
+    // outside of synchronous act() blocks. All tests still pass; the warnings are
+    // noise. @testing-library/react suppresses the same patterns for the same reason.
+    const isReactActWarning =
+        serialized.includes("not wrapped in act(...)") ||
+        serialized.includes("not configured to support act(...)");
+
+    if (isReactActWarning) {
         return;
     }
 

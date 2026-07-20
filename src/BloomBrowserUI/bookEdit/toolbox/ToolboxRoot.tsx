@@ -801,6 +801,9 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                         background-color: ${kBloomPanelBackground};
                         display: flex;
                         flex-direction: column;
+                        // Lets the darker panel background show through between the
+                        // collapsed section headers, as it did in 6.3 and earlier (BL-16532).
+                        gap: 1px;
                         height: 100%;
                         min-height: 0;
 
@@ -961,6 +964,26 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                             box-sizing: border-box;
                                             margin-right: 0 !important;
                                             padding-right: 0 !important;
+                                        }
+
+                                        // The Decodable/Leveled reader tool bodies are
+                                        // adopted from the old jQuery-UI accordion and
+                                        // still wear its header classes (ui-accordion-header,
+                                        // ui-state-default) plus jQuery hover/focus handlers
+                                        // that add ui-state-hover/-focus. Here they are tool
+                                        // *bodies*, not headers, so that theming is wrong: left
+                                        // alone, hovering an opened reader tool paints its whole
+                                        // body the jQuery-UI "hover" lightcoral (#f08080).
+                                        // Neutralize the stray header theming. (BL-16501)
+                                        div[data-toolid].ui-accordion-header {
+                                            &,
+                                            &.ui-state-hover,
+                                            &.ui-state-focus,
+                                            &.ui-state-active {
+                                                background: transparent !important;
+                                                border: none !important;
+                                                font-weight: normal;
+                                            }
                                         }
                                     `}
                                 >

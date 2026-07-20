@@ -805,7 +805,7 @@ export default defineConfig(async ({ command }) => {
                 "**/cypress/**",
                 "**/.{idea,git,cache,output,temp}/**",
                 "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
-                "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via yarn e2e canvas)
+                "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via pnpm e2e canvas)
                 "**/react_components/component-tester/**", // Exclude playwright component tests
                 "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
             ],
@@ -813,11 +813,18 @@ export default defineConfig(async ({ command }) => {
             globals: false, // Don't inject global test functions (use imports instead)
             testTimeout: 30000, // 30 second timeout for async operations
             teardownTimeout: 10000, // 10s max for after-test cleanup; prevents hung workers from blocking the pool
-            // Cap parallel workers. On Windows, running too many jsdom workers simultaneously
-            // may exhaust system resources (TCP connections to localhost, libuv thread pool), causing
-            // workers to stall indefinitely. This may slightly slow things down on some computers
-            // but reduces the chance of the tests hanging altogether.
-            maxWorkers: "70%",
+            // Use worker threads instead of child-process forks. Vitest 4.0 changed the
+            // default pool to 'forks', but on Windows the process-creation overhead causes
+            // workers to time out before they start ("Timeout starting forks runner").
+            // The threads pool is lighter-weight and avoids that issue.
+            pool: "threads",
+            // Limit concurrent workers. The heavy transform cost of some test files
+            // (notably PrepareAppStepper.spec.tsx with its deep MUI import chain) saturates
+            // the CPU while workers are starting, causing other workers to miss the
+            // hardcoded 5-second vitest startup timeout. With pool: "threads" the
+            // per-worker startup overhead is negligible, so we can safely use more workers.
+            // 4 workers roughly halves the wall-clock collect time compared to 2.
+            maxWorkers: 4,
             minWorkers: 2,
             sourcemap: true, // Enable source maps for debugging test code
             deps: {

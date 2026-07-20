@@ -3,99 +3,69 @@
 @highlightColor: @bloom-yellow;
 @splitAnimationTime: 300ms;
 
-// See BL-7442: When low line height causes lines to overlap, the highlighting overlaps and
-// can over up the bottom of the characters in the line above. For Chrome/Safari we have
-// a fix that can be found in bloom-player. But those don't work in Firefox yet (as of FF 68).
-// So we deal with the most common case of overlap (the book title on the cover) by just
-// treating the text as a rectangle. And it's fine that this will show this way in Chrome too:
-.Title-On-Cover-style
-    span.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) {
-    display: inline-block;
-    white-space: pre-wrap;
-}
-
-span.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight),
-div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p {
-    // This behavior is now achieved by a default rule in content/basePage-shared.less,
-    // from whence it can work in various players and be overridden by our new audio-hightlighting
-    // control. The negation for suppress/disable is now handled by a separate rule below.
-    // background: @highlightColor;
-    // /* make highlighted text easier to read if it is normally a light color (like white)*/
-    // color: @textOnLightBackground;
-}
-
-.bloom-ui-current-audio-marker:before {
-    background-image: url(currentTextIndicator.svg);
-    background-repeat: no-repeat;
-    background-size: 10px 13px;
-    background-position: 2px 5px;
-    left: -15px;
-    top: 0; // should have no effect, but prevents a FF bug causing BL-6796
+.bloom-ui-current-audio-marker {
+    // Use the same highlight background color as the current sentence.
+    background-color: var(
+        --bloom-audio-current-highlight-background,
+        @highlightColor
+    );
+    // Mask to the microphone shape so the background-color shows through it.
+    -webkit-mask-image: url(currentTextIndicator.svg);
+    -webkit-mask-size: 10px 13px;
+    -webkit-mask-position: 2px 5px;
+    -webkit-mask-repeat: no-repeat;
+    mask-image: url(currentTextIndicator.svg);
+    mask-size: 10px 13px;
+    mask-position: 2px 5px;
+    mask-repeat: no-repeat;
     width: 15px;
     height: 19px;
-    position: absolute;
-    content: " ";
+    // Must be above the split-pane-component and other content in the page frame.
+    z-index: 1;
 }
 
-// These classes get applied to ui-audioCurrent elements when we don't currently want
-// them highlighted. Because a lot of rules now set various foreground and background
-// colors for .ui-audioCurrent, not only during editing when the suppress and disable
-// classes are relevant, it's cleaner to do the suppression with separate rules
-// rather than :not claues like the above.
-// The goal is that rules that set background and foreground color for the current
-// playback element shall be defeated when the disable/suppress classes are present.
-// There could pathologically be a case where some other rule was defeated unintentionally,
-// but we don't have any other rule-based text or background coloring that applies to
-// audio elements, so I think the neatness of not having to complicate many rules
-// with :not clauses that aren't relevant in most contexts is worth it.
-.ui-audioCurrent.ui-suppressHighlight,
-.ui-audioCurrent.ui-suppressHighlight p,
-.ui-audioCurrent.ui-disableHighlight,
-.ui-audioCurrent.ui-disableHighlight p {
-    background-color: unset !important;
-    color: unset !important;
+// Use pseudoelements to display TBT highlighting in the Edit tab. See audioTextHighlightManager.ts
+::highlight(bloom-audio-current) {
+    // A thick underline offset upwards (the skip-ink setting allows it to be drawn right against the text)
+    // does not extend upwards as far as background-color highlighting, which greatly reduces the
+    // extent to which it covers previous lines of text when tightly spaced.
+    // Color is read from a CSS variable so the Format dialog's stored audio highlight colors apply.
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-decoration-color: var(
+        --bloom-audio-current-highlight-background,
+        @highlightColor
+    );
+    text-decoration-thickness: 1.1em;
+    text-underline-offset: -0.8em;
+    text-decoration-skip-ink: none;
+    color: var(--bloom-audio-current-highlight-color, black);
 }
-
-.ui-audioCurrent .ui-enableHighlight {
-    background-color: @highlightColor;
-    // If we can one day get rid of this, we can simplify code for positioning the microphone icon near the span.
-    position: unset; // BL-11633, works around Chromium bug
+// Note: This highlighting is expected to persist across sessions, but to be hidden
+// (displayed with the yellow color) while each segment is playing.
+::highlight(bloom-audio-split-1) {
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-decoration-color: #bfedf3;
+    text-decoration-thickness: 1.1em;
+    text-underline-offset: -0.8em;
+    text-decoration-skip-ink: none;
 }
-
-span.ui-audioCurrent,
-div.ui-audioCurrent p {
-    // The rule that sets the background color is in basepage.less. However, we only need to
-    // interfere with position: relative when editing, so I _think_ this rule belongs here.
-    position: unset; // BL-11633, works around Chromium bug
+::highlight(bloom-audio-split-2) {
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-decoration-color: #7fdae6;
+    text-decoration-thickness: 1.1em;
+    text-underline-offset: -0.8em;
+    text-decoration-skip-ink: none;
 }
-
-.ui-audioCurrent.bloom-postAudioSplit[data-audiorecordingmode="TextBox"]:not(
-        .ui-suppressHighlight
-    ):not(.ui-disableHighlight) {
-    // Special highlighting after the Split button completes to show it completed.
-    // Note: This highlighting is expected to persist across sessions, but to be hidden (displayed with the yellow color) while each segment is playing.
-    //       This is accomplished because this rule temporarily drops out of effect when .ui-audioCurrent is moved to the span as that segment plays.
-    //       (The rule requires a span BELOW the .ui-audioCurrent, so it drops out of effect the span IS the .ui-audioCurrent).
-    span:nth-child(3n + 1 of .bloom-highlightSegment) {
-        background-color: #bfedf3;
-    }
-
-    span:nth-child(3n + 2 of .bloom-highlightSegment) {
-        background-color: #7fdae6;
-    }
-
-    span:nth-child(3n + 3 of .bloom-highlightSegment) {
-        background-color: #29c2d6;
-    }
-
-    span {
-        position: unset; // BL-11633, works around Chromium bug
-    }
-
-    p {
-        // Override the normal yellow highlight so it doesn't clash with the ones we just added
-        background: none;
-    }
+::highlight(bloom-audio-split-3) {
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-decoration-color: #29c2d6;
+    text-decoration-thickness: 1.1em;
+    text-underline-offset: -0.8em;
+    text-decoration-skip-ink: none;
 }
 
 //////////////////////////////////////////

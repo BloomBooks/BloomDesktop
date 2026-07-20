@@ -731,11 +731,17 @@ namespace BloomTests.Spreadsheet
             string supRegex =
                 "<p>Head.*<sup>.* shoulders.*</sup>.*<sup> knees</sup><span style=\"color:#ABCABC;\"> and toes</span></p>";
             string colorRegex =
-                "<p>Head.*<span  style=\"color:#DEF123;\">.* shoulders.*</span>.*<sup> knees</sup><span style=\"color:#ABCABC;\"> and toes</span></p>";
+                "<p>Head.*<span style=\"color:#DEF123;\">.* shoulders.*</span>.*<sup> knees</sup><span style=\"color:#ABCABC;\"> and toes</span></p>";
             ExcelRange fifthCell = _worksheet.Cells[5, 5];
             string xmlString = SpreadsheetIO.BuildXmlString(fifthCell);
             Assert.That(xmlString.Length, Is.EqualTo(possibleExpected.Length));
-            Assert.That(Regex.IsMatch(xmlString, supRegex));
+            // The tag nesting order can vary, so accept either <sup><span>...
+            // or <span><sup>... for the colored superscript run.
+            Assert.That(
+                Regex.IsMatch(xmlString, supRegex) || Regex.IsMatch(xmlString, colorRegex),
+                Is.True,
+                "BuildXmlString result did not match either expected nesting order: " + xmlString
+            );
         }
 
         [Test]

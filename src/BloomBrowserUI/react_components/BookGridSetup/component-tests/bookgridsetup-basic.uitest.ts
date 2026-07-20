@@ -1,7 +1,7 @@
 /**
  * Tests for BookGridSetup - Initial Setup Tests
  * These tests verify that the component can be rendered and basic interaction works
- * Run with: yarn test
+ * Run with: pnpm test
  */
 
 import { expect, test } from "../../component-tester/playwrightTest";

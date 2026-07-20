@@ -1,5 +1,5 @@
 This project has a web front-end at src/BloomBrowserUI.
-The front-end uses yarn 1.22.22. Never ever use npm.
+The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 
 # Architecture
 
@@ -24,6 +24,8 @@ The front-end uses yarn 1.22.22. Never ever use npm.
 
 - Where possible style things using @emotion/react rather than using sx objects.
 
+- Avoid stacking/nesting ternary (`? :`) operators (e.g. `a ? x : b ? y : z`). They're too hard for humans to read. Use an if/else-if chain (or a switch) instead. A single, non-nested ternary is fine.
+
 - For Typescript coding style, see ./src/BloomBrowserUI/AGENTS.md
 
 # Testing
@@ -32,6 +34,32 @@ The front-end uses yarn 1.22.22. Never ever use npm.
 - Try to make it so that test failures indicate what went wrong. For example, `fail("An error occurred in setup; we should not have gotten here")` would be better than `expect(false).toBeTruthy();` and `expect(foo).toBe(3);` would be better than `expect(foo === 3).toBe(true);`.
 - Add sanity checks to guard against falsely passing tests. For example, when unit testing a method, sanity check that the test data values are as expected before you call the method, and then after you call the method you can verify that those values have changed as expected.
 - When running C# tests with `dotnet test`, never pass `--no-build`. Always let dotnet build the test project first so the tests run against the latest code. A stale DLL can cause tests to pass or fail against an old version of the code, hiding real regressions.
+
+## Building / testing C# while a Bloom is running
+
+The developer often has a Bloom running (via `./go.sh`) so they can watch your changes
+live. That running `Bloom.exe` locks `output\Debug\AnyCPU\Bloom.exe` and `Bloom.dll`, so a
+plain `dotnet build`/`dotnet test` fails at the copy step with **MSB3027** ("being used by
+another process"). The same collision happens between two builds in separate terminals in
+one worktree.
+
+**So build and run C# tests through the wrapper, not `dotnet` directly:**
+
+```bash
+build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj --filter "FullyQualifiedName~UrlPathStringTests"
+build/agent-dotnet.sh build src/BloomExe/BloomExe.csproj
+```
+
+(PowerShell: `build/agent-dotnet.ps1 test ...`.) It takes the exact same arguments as
+`dotnet`; it just redirects the whole build (obj + bin) into a private per-terminal tree
+under `output/agent/<key>/` so your build/test never touches the locked shared output. This
+means you do **not** need to stop the developer's Bloom to build or run unit tests, and
+multiple terminals can build/test at once. See `Directory.Build.props` for how it works.
+
+- This wrapper is for **building and running tests only**. To *run* Bloom, still use
+  `./go.sh` (see "Running Bloom" below) — the wrapper builds without a native apphost.
+- The first build in a fresh terminal is a full (cold) build into that terminal's private
+  tree; subsequent builds there are incremental. `output/` is gitignored.
 
 
 # Terminal
@@ -46,8 +74,8 @@ The vscode terminal often loses the first character sent from copilot agents. So
 
 If you create new files for temporary purposes (e.g. output or artifact or log files), be sure to clean them up when you're done and be careful not to accidentally commit them.
 
-# Don't run yarn build
-It is vital that you not run `yarn build` unless instructed to. If there is already a "--watch" build running, you will wreck it and waste the developer's time. You are welcome to `yarn lint` if you want to check for errors without building.
+# Don't run pnpm build
+It is vital that you not run `pnpm build` unless instructed to. If there is already a "--watch" build running, you will wreck it and waste the developer's time. You are welcome to `pnpm lint` if you want to check for errors without building.
 
 # Localization
 Whenever you add, modify, or review localizable strings (XLF entries), follow `.github/skills/xlf-strings/SKILL.md`.

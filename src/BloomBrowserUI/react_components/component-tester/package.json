@@ -2,11 +2,15 @@
     "name": "component-tester",
     "private": true,
     "version": "0.0.0",
-    "engines": {
-        "node": ">=22.11.0"
+    "devEngines": {
+        "runtime": {
+            "name": "node",
+            "version": "24.13.0",
+            "onFail": "download"
+        }
     },
     "scripts": {
-        "dev": "yarn vite --config vite.config.ts --no-open",
+        "dev": "pnpm exec vite --config vite.config.ts --no-open",
         "test": "playwright test",
         "test:ui": "playwright test --ui --headed",
         "manual": "tsx scripts/manual.ts -- ",
@@ -17,17 +21,14 @@
         "react-dom": "17.0.2"
     },
     "devDependencies": {
-        "@playwright/test": "^1.48.0",
-        "@types/node": "^22.10.1",
-        "@types/react": "^17.0.80",
-        "@types/react-dom": "^17.0.25",
-        "@vitejs/plugin-react": "^4.3.2",
-        "typescript": "^6.0.3",
-        "vite": "^5.4.9",
-        "tsx": "^4.17.0"
+        "@playwright/test": "1.56.1",
+        "@types/node": "24.13.0",
+        "@types/react": "17.0.89",
+        "@types/react-dom": "17.0.26",
+        "@vitejs/plugin-react": "4.7.0",
+        "typescript": "6.0.3",
+        "vite": "5.4.20",
+        "tsx": "4.20.6"
     },
-    "volta": {
-        "node": "22.21.1",
-        "yarn": "1.22.22"
-    }
+    "packageManager": "pnpm@11.5.2"
 }

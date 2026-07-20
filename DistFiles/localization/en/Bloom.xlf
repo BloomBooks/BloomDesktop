@@ -107,6 +107,21 @@
         <source xml:lang="en">Bloom Accessibility Checker</source>
         <note>ID: AccessibilityCheck.WindowTitle</note>
       </trans-unit>
+      <trans-unit id="AccountMenu.Account" translate="no">
+        <source xml:lang="en">Account</source>
+        <note>ID: AccountMenu.Account</note>
+        <note>Tooltip and accessible label for the round avatar button in the top bar of the main window.</note>
+      </trans-unit>
+      <trans-unit id="AccountMenu.SignIn" translate="no">
+        <source xml:lang="en">Sign in</source>
+        <note>ID: AccountMenu.SignIn</note>
+        <note>Button in the top bar of the main window. Clicking it opens the web browser to sign in to BloomLibrary.org.</note>
+      </trans-unit>
+      <trans-unit id="AccountMenu.SignOut" translate="no">
+        <source xml:lang="en">Sign out</source>
+        <note>ID: AccountMenu.SignOut</note>
+        <note>Menu item shown under the user's avatar in the top bar; signs the user out of BloomLibrary.org.</note>
+      </trans-unit>
       <trans-unit id="AutoUpdateSoftwareDialog.SoftwareUpdates" sil:dynamic="true">
         <source xml:lang="en">Software Updates</source>
         <note>ID: AutoUpdateSoftwareDialog.SoftwareUpdates</note>
@@ -330,9 +345,14 @@
         <note>{0} is the number of books checked out to the current user in a team collection.</note>
       </trans-unit>
       <trans-unit id="CollectionChooser.UnpublishedToBloomLibrary" translate="no">
-        <source xml:lang="en">{0} unpublished to bloomlibrary.org</source>
+        <source xml:lang="en">Books not yet published to BloomLibrary.org</source>
         <note>ID: CollectionChooser.UnpublishedToBloomLibrary</note>
-        <note>{0} is the number of books in the collection not yet published to bloomlibrary.org.</note>
+        <note>Hover tooltip on the unpublished-count label of a collection card in the Open/Create Collections dialog. "BloomLibrary.org" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.UnpublishedShort" translate="no">
+        <source xml:lang="en">{0} unpublished</source>
+        <note>ID: CollectionChooser.UnpublishedShort</note>
+        <note>Short label shown on a status chip on a collection card in the Open/Create Collections dialog. {0} is the number of books not yet published to BloomLibrary.org. The phrase "Books not yet published to BloomLibrary.org" appears as the chip's hover tooltip.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
@@ -1496,6 +1516,11 @@
         <source xml:lang="en">Underline</source>
         <note>ID: EditTab.DirectFormatting.Underline</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.DirectFormatting.RemoveFormat" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Remove Formatting</source>
+        <note>ID: EditTab.DirectFormatting.RemoveFormat</note>
+        <note>Tooltip for the "clear formatting" button in the panel that pops up when the user selects more than one character in a textbox. Clicking it strips bold/italic/underline/superscript/color from the selection.</note>
       </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.labelForDefaultColor" sil:dynamic="true">
         <source xml:lang="en">Default for style</source>
@@ -3733,6 +3758,11 @@
         <source xml:lang="en">Browse for another collection on this computer</source>
         <note>ID: OpenCreateNewCollectionsDialog.BrowseForOtherCollections</note>
       </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.BrowseOnThisComputer" translate="no">
+        <source xml:lang="en">Browse on this computer</source>
+        <note>ID: OpenCreateNewCollectionsDialog.BrowseOnThisComputer</note>
+        <note>Text button at the bottom-left of the Open/Create Collections dialog. Clicking it opens a file browser so the user can find a Bloom collection stored elsewhere on their computer.</note>
+      </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
         <source xml:lang="en">Copy From Chorus Hub on Local Network</source>
         <note>ID: OpenCreateNewCollectionsDialog.CopyFromChorusHub</note>
@@ -3750,7 +3780,7 @@
         <note>ID: OpenCreateNewCollectionsDialog.CreateNewCollection</note>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
-        <source xml:lang="en">Open/Create Collections</source>
+        <source xml:lang="en">Open / Create Collections</source>
         <note>ID: OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle</note>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.ReadMoreLink">
