@@ -86,7 +86,7 @@ importers:
                 version: 0.21.1
             bloom-image-gallery:
                 specifier: github:BloomBooks/bloom-image-gallery
-                version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/51c5a75bb611c51dd24b40c9162929c6e75473eb(@types/react@18.3.31)(supports-color@5.5.0)
+                version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/0b4ae4e253d7d5b93f089f43f9a7752452c1cf9a(@types/react@18.3.31)(supports-color@5.5.0)
             bloom-player:
                 specifier: 2.20.1
                 version: 2.20.1
@@ -4043,12 +4043,12 @@ packages:
                 integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==,
             }
 
-    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/51c5a75bb611c51dd24b40c9162929c6e75473eb:
+    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/0b4ae4e253d7d5b93f089f43f9a7752452c1cf9a:
         resolution:
             {
                 gitHosted: true,
-                integrity: sha512-UDY38GPb9jUq4iC1IWPhNyJZOvSF+YYrgHUUJNFNDLymFwqt/YPu6kplT+Y+O9kZYhOJzUtha4ImKcHqnxhmsQ==,
-                tarball: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/51c5a75bb611c51dd24b40c9162929c6e75473eb,
+                integrity: sha512-yQCSWNiY8/8TNKS9IbYLJqK4qt4yZ2++kjXCfW+CE82zT2qyopk46FIfwddgAxHH+9Ud5UdbJAUM3djuuylB0Q==,
+                tarball: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/0b4ae4e253d7d5b93f089f43f9a7752452c1cf9a,
             }
         version: 0.0.2
 
@@ -13517,7 +13517,7 @@ snapshots:
             file-uri-to-path: 1.0.0
         optional: true
 
-    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/51c5a75bb611c51dd24b40c9162929c6e75473eb(@types/react@18.3.31)(supports-color@5.5.0):
+    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/0b4ae4e253d7d5b93f089f43f9a7752452c1cf9a(@types/react@18.3.31)(supports-color@5.5.0):
         dependencies:
             "@emotion/react": 11.14.0(@types/react@18.3.31)(react@18.3.1)
             "@emotion/styled": 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)

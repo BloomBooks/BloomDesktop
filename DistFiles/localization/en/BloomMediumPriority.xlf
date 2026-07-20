@@ -1596,6 +1596,26 @@
         <note>ID: ImageLibrary.ThisPage</note>
         <note>Short link text used in setup instructions (e.g., as in "go to this page"). Should be lowercase as it appears mid-sentence.</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.SelectImagePrompt" translate="no">
+        <source xml:lang="en">Select an image to see its details and license.</source>
+        <note>ID: ImageLibrary.SelectImagePrompt</note>
+        <note>Hint shown in the right-hand pane of the Image Chooser dialog before the user has selected any image; it prompts them to pick a thumbnail to reveal that image's attribution details.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Dimensions" translate="no">
+        <source xml:lang="en">Dimensions</source>
+        <note>ID: ImageLibrary.Dimensions</note>
+        <note>Label in the Image Chooser detail pane. Its value is the selected image's pixel size, e.g. "1024 × 768".</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.FileSize" translate="no">
+        <source xml:lang="en">File size</source>
+        <note>ID: ImageLibrary.FileSize</note>
+        <note>Label in the Image Chooser detail pane. Its value is the selected image's file size, e.g. "2.3M".</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.License" translate="no">
+        <source xml:lang="en">License</source>
+        <note>ID: ImageLibrary.License</note>
+        <note>Label in the Image Chooser detail pane. Its value is the image's license, shown as a link, e.g. "CC-BY-SA".</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
