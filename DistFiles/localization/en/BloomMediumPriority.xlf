@@ -350,6 +350,21 @@
         <source xml:lang="en">Book is not Leveled</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.OverLevel" sil:dynamic="true">
+        <source xml:lang="en">Over level</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.OverLevel</note>
+        <note>Legend label next to an orange dot, explaining that statistics shown in orange exceed the current level's limit.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.OverLevelWarning" sil:dynamic="true">
+        <source xml:lang="en">This book reads above Level {0}</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.OverLevelWarning</note>
+        <note>Warning banner shown above the statistics when one or more measures exceed the current level's limit. {0} is replaced with the current level number.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WithinLevel" sil:dynamic="true">
+        <source xml:lang="en">Within level</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.WithinLevel</note>
+        <note>Legend label next to a green dot, explaining that statistics shown in green are within the current level's limit.</note>
+      </trans-unit>
       <!-- Talking Book Advanced -->
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
         <source xml:lang="en">eSpeak failed.</source>

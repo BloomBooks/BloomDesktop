@@ -100,8 +100,9 @@ export class ReaderToolsModel {
     // (The constructor must return synchronously)
     public async initAsync(): Promise<void> {
         const keys = {
-            "EditTab.Toolbox.DecodableReaderTool.StageNofM": "Stage {0} of {1}",
-            "EditTab.Toolbox.LeveledReaderTool.LevelNofM": "Level {0} of {1}",
+            "EditTab.Toolbox.DecodableReaderTool.StageNumber": "Stage {0}",
+            "EditTab.Toolbox.LeveledReaderTool.LevelNumber": "Level {0}",
+            "EditTab.Toolbox.ReaderTools.OfCount": "of {0}",
         };
 
         // Asynchronously pre-load the localizations (in the UI language) of the specified keys
