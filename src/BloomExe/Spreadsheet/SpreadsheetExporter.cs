@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Security;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -409,6 +410,10 @@ namespace Bloom.Spreadsheet
                     "<span class=\"bloom-audio-split-marker\">\u200B</span>",
                     "|"
                 );
+                content = content.Trim();   // remove leading and trailing whitespace, which is not meaningful.
+                content = content.Replace("<br>", ""); // remove <br> tags which should not exist.
+                content = content.Replace("<br />", ""); // remove <br /> tags which should not exist.
+                content = Regex.Replace(content, "\\s+", " "); // collapse multiple whitespace characters.
                 // Don't just test content, it typically contains paragraph markup.
                 if (String.IsNullOrWhiteSpace(editable.InnerText))
                 {

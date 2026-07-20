@@ -129,13 +129,13 @@ namespace BloomTests.Spreadsheet
             Assert.That(
                 _pageContentRows[0].GetCell("[en]").Text,
                 Is.EqualTo(
-                    "Is this really a cat?  The nose looks too long for it to be a cat.  But perching on a limb doesn't look like a dog either.  So what is it?  I can't really tell from first glance!"
+                    "Is this really a cat? The nose looks too long for it to be a cat. But perching on a limb doesn't look like a dog either. So what is it? I can't really tell from first glance!"
                 )
             );
             Assert.That(
                 _pageContentRows[0].GetCell("[es-x-ai-google]").Text,
                 Is.EqualTo(
-                    "¿Es esto realmente un gato?  La nariz parece demasiado larga para ser un gato.  Pero posado sobre una rama tampoco parece un perro.  Entonces, ¿qué es?  ¡Realmente no puedo decirlo a primera vista!"
+                    "¿Es esto realmente un gato? La nariz parece demasiado larga para ser un gato. Pero posado sobre una rama tampoco parece un perro. Entonces, ¿qué es? ¡Realmente no puedo decirlo a primera vista!"
                 )
             );
         }
