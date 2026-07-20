@@ -257,6 +257,15 @@ describe("jquery.text-markup", function () {
         expect($("#text_entry1").html()).toBe("<p>pre new text post</p>");
     });
 
+    it("removeCkEditorMarkup unwraps spans with rgba() background-color", function () {
+        const input =
+            '<p>pre <span style="background-color: rgba(255, 255, 155, 0.5);">new text</span> post</p>';
+
+        $("#text_entry1").html(input).removeCkEditorMarkup();
+
+        expect($("#text_entry1").html()).toBe("<p>pre new text post</p>");
+    });
+
     it("removeCkEditorMarkup removes hidden cke_ spans", function () {
         const input =
             '<p>pre <span id="cke_1" style="display: none;">hidden</span> post</p>';

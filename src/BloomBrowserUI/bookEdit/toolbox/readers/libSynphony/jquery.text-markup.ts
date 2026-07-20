@@ -392,7 +392,12 @@ import { ReaderToolsModel } from "../readerToolsModel";
                     const style = (element as HTMLElement).getAttribute(
                         "style",
                     );
-                    return !!style && /^background-color: rgb\([0-9, ]*\);$/.test(style);
+                    // rgba? and the optional "." handle highlight colors that carry an
+                    // alpha component (CKEditor serializes those as rgba(r, g, b, a)).
+                    return (
+                        !!style &&
+                        /^background-color: rgba?\([0-9, .]*\);$/.test(style)
+                    );
                 })
                 .contents()
                 .unwrap();
