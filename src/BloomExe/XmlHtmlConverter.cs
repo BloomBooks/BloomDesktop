@@ -332,8 +332,19 @@ namespace Bloom
             // (/**/) inside the style block. Repeated xmatter/branding updates accumulate more of
             // them, so a book's HTML keeps changing on every save even when nothing meaningful did.
             // These empty comments are meaningless, and are never part of the real CDATA markers
-            // (which do not contain the substring "/**/"), so strip them out here.
-            html = Regex.Replace(html, @"[\t ]*/\*\*/(\r?\n)?", "");
+            // (which do not contain the substring "/**/"), so strip them out. Scope the strip to the
+            // contents of <style> elements only: that is the only place these artifacts appear, and
+            // it means a legitimate "/**/" occurring in the book's own text (e.g. a book about CSS)
+            // is never touched.
+            html = Regex.Replace(
+                html,
+                @"(<style\b[^>]*>)(.*?)(</style>)",
+                match =>
+                    match.Groups[1].Value
+                    + Regex.Replace(match.Groups[2].Value, @"[\t ]*/\*\*/(\r?\n)?", "")
+                    + match.Groups[3].Value,
+                RegexOptions.Singleline | RegexOptions.IgnoreCase
+            );
 
             return html;
         }
