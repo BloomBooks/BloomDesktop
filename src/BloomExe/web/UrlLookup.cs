@@ -248,7 +248,37 @@ namespace Bloom.web
                 _internetAvailable = false;
                 var msg = $"Exception while attempting get URL data from server";
                 Logger.WriteEvent($"{msg}: {e.Message}");
-                NonFatalProblem.ReportSentryOnly(e, msg);
+                // A timeout/cancellation/network failure here is expected on slow or unreliable
+                // connections: this is a deliberately short (2.5s/3s) best-effort lookup, and when
+                // it fails we simply fall back to a cached/default URL. Reporting those to Sentry
+                // just buries real issues under thousands of zero-impact events
+                // (BLOOM-DESKTOP-ERZ, -2H2), so we only log them. Anything unexpected (e.g. a JSON
+                // parse error, which would be a real bug) is still reported.
+                if (!IsExpectedTransientLookupFailure(e))
+                    NonFatalProblem.ReportSentryOnly(e, msg);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Is this exception one of the expected transient network/timeout failures that the
+        /// best-effort URL lookup in <see cref="TryGetUrlDataFromServer"/> handles gracefully (by
+        /// falling back to a cached/default URL), and so should be logged but not reported to
+        /// Sentry? We walk the whole InnerException chain because the AWS SDK wraps the underlying
+        /// WebException/timeout inside an AmazonServiceException.
+        /// </summary>
+        public static bool IsExpectedTransientLookupFailure(Exception e)
+        {
+            for (var ex = e; ex != null; ex = ex.InnerException)
+            {
+                if (
+                    ex is TimeoutException
+                    || ex is OperationCanceledException // includes TaskCanceledException
+                    || ex is System.Net.WebException
+                    || ex is System.Net.Sockets.SocketException
+                    || ex is System.Net.Http.HttpRequestException
+                )
+                    return true;
             }
             return false;
         }
