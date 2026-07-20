@@ -11,6 +11,12 @@
 --   Design/CloudTeamCollections.md
 --   Design/CloudTeamCollections/CONTRACTS.md
 --   Design/CloudTeamCollections/tasks/01-server-schema.md
+--
+-- SCHEMA DIAGRAM: an ER diagram of the whole `tc` schema lives in
+--   Design/CloudTeamCollections/SCHEMA.md
+-- It is maintained BY HAND, so if you change the schema here or in a later migration
+-- (add/remove/rename a table or column, or change a foreign key), update that diagram to
+-- match — see its "Updating this diagram" section for the how-to.
 -- =============================================================================
 
 -- ---------------------------------------------------------------------------

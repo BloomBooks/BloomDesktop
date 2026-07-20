@@ -78,7 +78,31 @@ re-queries and updates/closes itself, and the Bloom window is brought to the fro
 `external/login`'s `Shell.ComeToFront()` — the user's attention is already on the browser tab
 that just finished signing in).
 
-## Postgres RPCs (PostgREST `/rest/v1/rpc/...`)
+## Cloud functions
+
+Two categories of server-side function back the cloud client. Both are gated by the caller's
+Supabase login (a JWT), but they run in different places and have different powers. Since most of
+this project's programmers work in the C#/TypeScript client rather than the database backend, the
+distinction in one paragraph:
+
+- **Postgres RPCs** run *inside the database* — they are SQL / PL/pgSQL functions that Supabase's
+  PostgREST layer exposes over HTTP at `/rest/v1/rpc/...`, and the Bloom client calls them
+  directly. Use them for pure database reads/writes; **row-level security (RLS)** enforces
+  per-user, per-collection access on every call. An RPC cannot reach outside the database — in
+  particular it cannot talk to Amazon S3.
+- **Edge functions** are small TypeScript programs running on a *separate* server (Supabase's edge
+  runtime — **not** the database), reached at `/functions/v1/<name>`; the Bloom client calls them
+  over HTTP. Use one when an operation needs something the database can't do — above all, talking
+  to **AWS S3**: only edge functions hold the AWS secret key, so anything that vends S3
+  credentials or verifies S3 objects *must* be an edge function. An edge function may itself call
+  RPCs / database functions — e.g. `checkin-finish` does its S3 work and then calls the
+  `checkin_finish_tx` database function to record the result in one atomic transaction.
+
+Both require the user's login; only edge functions additionally hold the AWS secret. Rule of
+thumb: **creds-free, single-step database work → RPC; anything touching S3 or orchestrating
+multiple steps → edge function.**
+
+### Postgres RPCs (PostgREST `/rest/v1/rpc/...`)
 
 Wire-format clarifications (v1.1): (1) the implemented SQL functions prefix every parameter
 with `p_`, and PostgREST matches JSON keys to parameter names — so clients send
@@ -109,9 +133,9 @@ with `p_`, and PostgREST matches JSON keys to parameter names — so clients sen
 
 All timestamps server-side. All RPCs RLS-gated; books/versions accept no direct writes.
 
-## Edge functions (`/functions/v1/<name>`, JWT-verified; only these hold AWS creds)
+### Edge functions (`/functions/v1/<name>`, JWT-verified; only these hold AWS creds)
 
-### `checkin-start` POST
+#### `checkin-start` POST
 Req: `{ collectionId, bookId?, bookInstanceId, proposedName, baseVersionId?, checksum,
 clientVersion, files: [{path, sha256, size}] }`
 - `bookId` null ⇒ first Send of a new book: validates name/instance-id uniqueness; creates the
@@ -123,7 +147,7 @@ credentials: { accessKeyId, secretAccessKey, sessionToken, expiration } } }`
 Errors: 401/403 · 409 `LockHeldByOther` (+holder) / `BaseVersionSuperseded` / `NameConflict`
 · 426 `ClientOutOfDate`.
 
-### `checkin-finish` POST
+#### `checkin-finish` POST
 Req: `{ transactionId, comment?, keepCheckedOut? }`
 Verifies each changed object's sha256 attribute; captures s3 version-ids; one DB tx:
 version (metadata) row, current-manifest rows (superseded rows pruned), book row update,
@@ -131,12 +155,12 @@ lock release (unless keepCheckedOut), events (Created+CheckIn for a new book), w
 `.manifest.json`. 200: `{ versionId, seq }` · 409 `MissingOrBadUploads { paths[] }`
 (re-upload + retry, idempotent) · 410 transaction expired.
 
-### `checkin-abort` POST — `{ transactionId }` → 200.
+#### `checkin-abort` POST — `{ transactionId }` → 200.
 
-### `download-start` POST — `{ collectionId }` →
+#### `download-start` POST — `{ collectionId }` →
 200 `{ s3: {...} }` read-only creds (`GetObject` + `GetObjectVersion`) scoped `tc/{cid}/*`, 1 h.
 
-### `collection-files-start` / `collection-files-finish` POST
+#### `collection-files-start` / `collection-files-finish` POST
 `{ collectionId, groupKey: 'other'|'allowed-words'|'sample-texts', expectedVersion, files[] }`
 two-phase like check-in; finish bumps the group version atomically; 409 `VersionConflict`
 ⇒ client pulls first (repo-wins rule).

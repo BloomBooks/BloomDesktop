@@ -831,6 +831,13 @@ COMMENT ON FUNCTION tc.collection_files_finish_tx(uuid, jsonb) IS
 -- to `authenticated`; internal re-validation makes this safe to call directly).
 -- ---------------------------------------------------------------------------
 GRANT EXECUTE ON FUNCTION tc.download_start_check(uuid)                    TO authenticated;
+-- DEV-ONLY: the five *_tx transaction primitives immediately below are EXECUTE-granted to
+-- `authenticated` so the local dev flow works without a service-role key. BEFORE PRODUCTION, per
+-- GOING-LIVE.md §2.4, the edge functions must call them via the service-role key with an explicit
+-- verified-user-id argument, and these `authenticated` grants must be REVOKEd (verified by a pgTAP
+-- test) so a client cannot invoke the internal transaction functions directly and forge a
+-- check-in. These look like the legitimate client-facing RPC grants but are NOT meant to stay
+-- client-callable in production.
 GRANT EXECUTE ON FUNCTION tc.checkin_start_tx(uuid, uuid, uuid, text, uuid, text, text, jsonb) TO authenticated;
 GRANT EXECUTE ON FUNCTION tc.checkin_finish_tx(uuid, text, boolean, jsonb)  TO authenticated;
 GRANT EXECUTE ON FUNCTION tc.checkin_abort_tx(uuid)                         TO authenticated;

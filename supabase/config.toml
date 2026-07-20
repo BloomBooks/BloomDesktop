@@ -88,6 +88,12 @@ enabled = true
 # endpoint = "env(SUPABASE_STORAGE_S3_ENDPOINT)"
 
 [auth]
+# DEV-ONLY (applies to this whole file): config.toml configures the local `supabase start` stack.
+# A hosted (production/sandbox) Supabase project does NOT read this file — its auth is set in the
+# Dashboard. And because production auth is Firebase third-party (GOING-LIVE.md §3), Bloom never
+# uses Supabase's own redirect/email sign-in flow at all: the site_url/redirect values and the
+# auto-confirm setting below exist only to fake an identity provider locally. There is nothing
+# here to "point at the real URL" for production.
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs
 # used in emails.
