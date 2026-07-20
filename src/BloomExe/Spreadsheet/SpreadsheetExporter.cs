@@ -410,10 +410,17 @@ namespace Bloom.Spreadsheet
                     "<span class=\"bloom-audio-split-marker\">\u200B</span>",
                     "|"
                 );
-                content = content.Trim();   // remove leading and trailing whitespace, which is not meaningful.
-                content = content.Replace("<br>", ""); // remove <br> tags which should not exist.
-                content = content.Replace("<br />", ""); // remove <br /> tags which should not exist.
-                content = Regex.Replace(content, "\\s+", " "); // collapse multiple whitespace characters.
+                // Replace <br> line breaks with a space rather than removing them outright, so
+                // that words on either side of a soft line break (e.g. Shift+Enter in a paragraph)
+                // are not run together in the exported text.
+                content = content.Replace("<br>", " ");
+                content = content.Replace("<br />", " ");
+                // Collapse runs of ordinary (breaking) whitespace to a single space. We deliberately
+                // do NOT use \s here: in .NET, \s also matches non-breaking spaces (U+00A0, U+202F,
+                // etc.), which are meaningful (e.g. French punctuation spacing, keeping words
+                // together) and must be preserved in the export.
+                content = Regex.Replace(content, "[ \t\r\n\f\v]+", " ");
+                content = content.Trim(); // remove leading and trailing whitespace, which is not meaningful.
                 // Don't just test content, it typically contains paragraph markup.
                 if (String.IsNullOrWhiteSpace(editable.InnerText))
                 {
