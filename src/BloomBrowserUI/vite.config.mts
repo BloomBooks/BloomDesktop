@@ -573,6 +573,48 @@ export default defineConfig(async ({ command }) => {
     return {
         // PLUGINS: Extend Vite's functionality (runs during build and/or dev)
         plugins: [
+            // Resolve the game theme editor's bare dependency imports
+            // (@emotion/react, @emotion/cache, react, react-dom, react-rnd) from
+            // BloomBrowserUI's node_modules. The editor is a self-contained project
+            // whose source lives in a sibling directory (../gameThemeEditor/src; see
+            // its README.md), so Rollup/Vite can't find those deps by walking up out
+            // of that folder. Scoped to importers inside the editor directory, so
+            // resolution for the rest of the app is completely unchanged. Re-resolving
+            // through this.resolve (rather than aliasing to a path) keeps a single,
+            // deduped copy of react et al. and honors each package's exports map.
+            //
+            // Runs in every mode — production build, Vitest, AND the dev server —
+            // because the sibling-resolution problem is the same in all three (the dev
+            // server can't walk up out of ../gameThemeEditor to find react/react-dom/
+            // @emotion/react either). Applying it uniformly is the single mechanism for
+            // the editor's dep resolution; the optimizeDeps.include entries below are
+            // now belt-and-suspenders for dev pre-bundling.
+            {
+                name: "resolve-game-theme-editor-deps",
+                enforce: "pre",
+                async resolveId(source, importer) {
+                    if (
+                        !importer ||
+                        source.startsWith(".") ||
+                        path.isAbsolute(source)
+                    ) {
+                        return null;
+                    }
+                    const editorDir = path.resolve(
+                        __dirname,
+                        "../gameThemeEditor",
+                    );
+                    if (!path.resolve(importer).startsWith(editorDir)) {
+                        return null;
+                    }
+                    // Resolve as if imported from BloomBrowserUI's own root.
+                    return this.resolve(
+                        source,
+                        path.resolve(__dirname, "vite.config.mts"),
+                        { skipSelf: true },
+                    );
+                },
+            } as Plugin,
             // React plugin: Enables JSX, Fast Refresh, and React-specific optimizations
             react({
                 reactRefreshHost: `http://localhost:${devServerPort}`,
@@ -762,6 +804,12 @@ export default defineConfig(async ({ command }) => {
             // This matches our webpack configuration
             alias: {
                 "@": path.resolve(__dirname, "."), // @ = project root
+                // The self-contained game theme editor project (sibling of BloomBrowserUI).
+                // Bloom consumes its TypeScript source directly; see src/gameThemeEditor/README.md.
+                gameThemeEditor: path.resolve(
+                    __dirname,
+                    "../gameThemeEditor/src",
+                ),
                 // Browser shims for Node built-ins used by some dependencies
                 os: path.resolve(__dirname, "shims/os.ts"),
                 // Module resolution paths to match webpack configuration
@@ -852,6 +900,12 @@ export default defineConfig(async ({ command }) => {
             include: [
                 "jquery", // Always pre-bundle jQuery
                 "comicaljs", // Pre-bundle comicaljs (webpack UMD bundle needs processing)
+                // The game theme editor project lives outside BloomBrowserUI (../gameThemeEditor),
+                // so Vite can't auto-resolve its bare deps from BloomBrowserUI/node_modules by
+                // walking up from those files. Pre-bundling react-rnd here makes the bare id
+                // resolvable from the editor's source regardless of its location.
+                "react-rnd",
+                "@emotion/cache",
             ],
             exclude: [
                 "lib/localizationManager/localizationManager", // Don't pre-bundle this

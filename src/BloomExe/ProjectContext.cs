@@ -199,6 +199,7 @@ namespace Bloom
                                 typeof(WorkspaceTabSelection),
                                 typeof(CopyrightAndLicenseApi),
                                 typeof(ExternalApi),
+                                typeof(GameThemeEditorApi),
                                 typeof(PublishView),
                             }.Contains(t)
                         );
@@ -451,6 +452,7 @@ namespace Bloom
             _scope.Resolve<AudioSegmentationApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ProblemReportApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CopyrightAndLicenseApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<GameThemeEditorApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<FileIOApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ProgressDialogApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<EditingViewApi>().RegisterWithApiHandler(server.ApiHandler);

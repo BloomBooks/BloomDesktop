@@ -40,7 +40,20 @@
         // this solved the 'foo' cannot be used as a JSX component. Its instance type 'foo' is not a valid JSX element,
         // which came in when we were at react 17 but some things are going towards 18
         "paths": {
-            "react": ["./node_modules/@types/react"]
+            "react": ["./node_modules/@types/react"],
+            // The self-contained game theme editor project (see vite.config.mts resolve.alias).
+            "gameThemeEditor": ["../gameThemeEditor/src/index.tsx"],
+            // The game theme editor's source lives in a sibling directory
+            // (../gameThemeEditor/src), so the type checker can't resolve its bare
+            // dependency imports by walking up into BloomBrowserUI/node_modules. Map
+            // them explicitly here, just as we do for "react" above. (The Vite build
+            // solves the same problem separately via optimizeDeps.include; see
+            // vite.config.mts.)
+            "react-dom": ["./node_modules/@types/react-dom"],
+            "react-dom/client": ["./node_modules/@types/react-dom/client"],
+            "@emotion/react": ["./node_modules/@emotion/react"],
+            "@emotion/cache": ["./node_modules/@emotion/cache"],
+            "react-rnd": ["./node_modules/react-rnd"]
         }
     },
     "exclude": [

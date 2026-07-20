@@ -353,6 +353,21 @@
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
         <note>{0} will be replaced with the name of the collection that the user currently has open for editing.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.NewTheme" translate="no">
+        <source xml:lang="en">New…</source>
+        <note>ID: EditTab.Toolbox.Games.NewTheme</note>
+        <note>An item in the game "Theme" dropdown in the Games tool of the Edit tab's toolbox. Choosing it starts a brand-new game theme in the theme editor. The trailing ellipsis (…) signals that an editor will open.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.CustomizeTheme" translate="no">
+        <source xml:lang="en">Customize…</source>
+        <note>ID: EditTab.Toolbox.Games.CustomizeTheme</note>
+        <note>An item in the game "Theme" dropdown in the Games tool of the Edit tab's toolbox. Choosing it creates a new game theme that starts as a copy of the theme currently applied, then opens it in the theme editor. The trailing ellipsis (…) signals that an editor will open.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.Games.EditThemeColors" translate="no">
+        <source xml:lang="en">Edit theme colors</source>
+        <note>ID: EditTab.Toolbox.Games.EditThemeColors</note>
+        <note>Tooltip (hover text) on the pencil/edit button next to the game "Theme" dropdown in the Games tool of the Edit tab's toolbox. Clicking the button opens the game theme editor to change the current theme's colors.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

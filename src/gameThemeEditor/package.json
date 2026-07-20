@@ -1,0 +1,21 @@
+{
+    "name": "bloom-game-theme-editor",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Self-contained editor for Bloom game themes (sets of CSS custom properties). Embedded by Bloom via mount()/IGameThemeEditorHost; depends on nothing in BloomBrowserUI.",
+    "type": "module",
+    "main": "src/index.tsx",
+    "scripts": {
+        "lint": "eslint src --ext .ts,.tsx"
+    },
+    "dependencies": {
+        "@emotion/cache": "^11.11.0",
+        "@emotion/react": "^11.11.4",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "react-rnd": "^10.4.13"
+    },
+    "devDependencies": {
+        "typescript": "^5.7.3"
+    }
+}
