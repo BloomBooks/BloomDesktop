@@ -392,18 +392,16 @@ import { ReaderToolsModel } from "../readerToolsModel";
                     const style = (element as HTMLElement).getAttribute(
                         "style",
                     );
-                    // rgba? and the optional "." handle highlight colors that carry an
-                    // alpha component (CKEditor serializes those as rgba(r, g, b, a)).
+                    // CKeditor copies the highlight style as a barebones inline style containing
+                    // only the background-color property.
                     return (
                         !!style &&
-                        /^background-color: rgba?\([0-9, .]*\);$/.test(style)
+                        /^background-color: [^;]*;$/.test(style)
                     );
                 })
                 .contents()
                 .unwrap();
             // remove spans belonging to CKEditor that are hidden.
-            // (Use *= not ~=: ~= matches a whole whitespace-separated token, so it can
-            // never match the multi-word value "display: none;". *= matches the substring.)
             $(this)
                 .find("span[id^=cke_][style*='display: none;']")
                 .remove();
