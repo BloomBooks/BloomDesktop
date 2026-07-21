@@ -92,6 +92,7 @@ import {
 import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { isDraggable, kDraggableIdAttribute } from "./canvasElementDraggables";
 import { setGeneratedDraggableId } from "./CanvasElementItem";
+import { launchAiImageEditor } from "./aiEditorLauncher";
 import {
     makeFieldTypeMenuItem,
     makeLanguageMenuItem,
@@ -501,6 +502,30 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         }),
         action: () => {
             getCanvasElementManager()?.resetCropping();
+        },
+    },
+    // "Edit with AI…" — the entry point for the AI Image Editor integration. The heavy
+    // lifting (launch, iframe overlay, postMessage handshake, commit) lives in
+    // aiEditorLauncher.ts; see that file's header for the full flow.
+    editWithAi: {
+        kind: "command",
+        id: "editWithAi",
+        featureName: "AiImageEditing",
+        l10nId: "EditTab.Image.EditWithAI",
+        englishLabel: "Edit with AI...",
+        iconScale: 0.75,
+        icon: React.createElement("img", {
+            src: "/bloom/images/ai-edit.svg",
+            alt: "",
+            className: "canvas-context-menu-monochrome-icon",
+        }),
+        action: (ctx, runtime) => {
+            const img = getImage(ctx);
+            if (!img) {
+                return;
+            }
+            launchAiImageEditor(img, getImageContainer(ctx), ctx.canvasElement);
+            runtime.closeMenu(true);
         },
     },
     expandToFillSpace: {
@@ -1229,6 +1254,7 @@ export const controlSections: Record<SectionId, IControlSection> = {
                 "becomeBackground",
                 "imageFieldType",
                 "imageBackground",
+                "editWithAi",
             ],
         },
     },
