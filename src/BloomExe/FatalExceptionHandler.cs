@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.web.controllers;
@@ -66,6 +67,9 @@ namespace Bloom
         /// ------------------------------------------------------------------------------------
         protected void HandleTopLevelError(object sender, ThreadExceptionEventArgs e)
         {
+            if (IsHarmlessInputLanguageCultureException(e.Exception))
+                return;
+
             if (!GetShouldHandleException(sender, e.Exception))
                 return;
 
@@ -96,6 +100,12 @@ namespace Bloom
         /// ------------------------------------------------------------------------------------
         protected new void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
+            // Note: we do NOT try to suppress the harmless input-language CultureNotFoundException
+            // here (see IsHarmlessInputLanguageCultureException / HandleTopLevelError). That crash
+            // arrives on the UI thread's WndProc and is delivered to Application.ThreadException,
+            // which lets us return and carry on. AppDomain.UnhandledException, by contrast, fires
+            // when the CLR is already terminating; returning early cannot prevent the exit, so
+            // swallowing it here would only hide the crash report without saving the process.
             if (!GetShouldHandleException(sender, e.ExceptionObject as Exception))
                 return;
 
@@ -112,6 +122,37 @@ namespace Bloom
                 DisplayError(e.ExceptionObject as Exception);
             else
                 DisplayError(new ApplicationException("Got unknown exception"));
+        }
+
+        /// <summary>
+        /// Returns true for the harmless CultureNotFoundException that WinForms throws while
+        /// processing WM_INPUTLANGCHANGE when the user switches to a keyboard whose input language
+        /// reports a BCP-47 tag that .NET cannot turn into a CultureInfo (e.g. the Keyman IPA
+        /// keyboard's "und-Latn"). See BL-16536.
+        ///
+        /// BloomWebView2 already swallows this when the message reaches the WebView2 control itself,
+        /// but Windows delivers WM_INPUTLANGCHANGE to whichever window has focus, so the same
+        /// exception can surface from any of our WinForms controls (the stack shows a bare
+        /// UserControl.WndProc). Rather than subclass every control, we catch it here, at the
+        /// thread-exception level, so it can never take Bloom down. Bloom does all its text editing
+        /// inside WebView2, which tracks its own input language independently of WinForms, so there
+        /// is nothing to lose by ignoring WinForms' inability to represent the keyboard.
+        /// </summary>
+        private static bool IsHarmlessInputLanguageCultureException(Exception exception)
+        {
+            // The distinctive marker is a CultureNotFoundException whose stack runs through the
+            // WM_INPUTLANGCHANGE handling (WmInputLangChange / InputLanguageChangedEventArgs).
+            if (!(exception is CultureNotFoundException))
+                return false;
+            var stack = exception.StackTrace;
+            if (stack == null || !stack.Contains("InputLang"))
+                return false;
+
+            Logger.WriteMinorEvent(
+                "Ignoring unsupported input-language culture from keyboard (BL-16536): "
+                    + exception.Message
+            );
+            return true;
         }
 
         protected override bool ShowUI
