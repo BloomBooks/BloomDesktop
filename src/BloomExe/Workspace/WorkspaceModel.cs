@@ -97,7 +97,21 @@ namespace Bloom.Workspace
             // shared collection-level files each startup. So if the shared collection is updated with
             // new enterprise credentials, things will self-heal. We decided it's OK for that much
             // TC functionality to go on working even with enterprise disabled.
-            _tcManager.CheckDisablingTeamCollections(_collectionSettings);
+            //
+            // Cloud Team Collections are an exception to running this check right away: the
+            // collection-file sync a few lines below (not this call) is what actually refreshes the
+            // on-disk SubscriptionCode from the repo for a cloud TC, and that sync depends on cloud
+            // sign-in having completed -- so checking here, before sync, can intermittently judge a
+            // healthy cloud TC's subscription before it's known (see GOING-LIVE.md Phase 5's
+            // "Subscription-tier check timing" entry and CheckDisablingTeamCollections'
+            // GetSubscriptionForDisablingCheck). So for a cloud TC we defer this call until after
+            // that sync, in the whenDone wrapper below; folder TCs (and the no-TC case) keep the
+            // original, byte-identical timing since they have no such dependency.
+            var isCloudTeamCollection =
+                _tcManager.CurrentCollectionEvenIfDisconnected
+                is Bloom.TeamCollection.Cloud.CloudTeamCollection;
+            if (!isCloudTeamCollection)
+                _tcManager.CheckDisablingTeamCollections(_collectionSettings);
             // Before loading up the collection, update with anything new from any TeamCollection we are linked to.
             // To do this the TC if any needs to know the CollectionId. (We're not having autofac give it the
             // CollectionSettings because circular dependencies would result.)
@@ -114,7 +128,15 @@ namespace Bloom.Workspace
             // This won't do much if disabled, but it can clean out the status files for
             // books copied from another collection, and update checkout status for
             // an offline TC.
-            _tcManager.CurrentCollectionEvenIfDisconnected?.SynchronizeRepoAndLocal(whenDone);
+            _tcManager.CurrentCollectionEvenIfDisconnected?.SynchronizeRepoAndLocal(() =>
+            {
+                // Deferred cloud tier check (see above): now that sync has had a chance to refresh
+                // the local SubscriptionCode from the repo, evaluate it -- its own cloud path
+                // re-reads that file fresh rather than trusting a snapshot older than the sync.
+                if (isCloudTeamCollection)
+                    _tcManager.CheckDisablingTeamCollections(_collectionSettings);
+                whenDone();
+            });
         }
 
         // Alternative for GetBookCollections() that returns folder paths of all source collections.

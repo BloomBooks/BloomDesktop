@@ -296,6 +296,20 @@ namespace Bloom.web.controllers
             );
         }
 
+        /// <summary>
+        /// Whether the "Cloud Team Collections" checkbox is shown on the Advanced settings tab.
+        /// For 6.5 this option is hidden from most end users; it appears only when a developer or
+        /// tester opts in by setting the `cloudCollections` environment variable to "true". This
+        /// gates the checkbox's VISIBILITY only — subscription tier and the "not currently connected
+        /// to a cloud collection" rule still govern whether it is enabled/changeable.
+        /// </summary>
+        internal static bool CloudTeamCollectionOptionVisible =>
+            string.Equals(
+                Environment.GetEnvironmentVariable("cloudCollections"),
+                "true",
+                StringComparison.OrdinalIgnoreCase
+            );
+
         private object GetAdvancedSettingsData()
         {
             var dialog = DialogBeingEdited;
@@ -316,6 +330,10 @@ namespace Bloom.web.controllers
                         ?? ExperimentalFeatures.IsFeatureEnabled(
                             ExperimentalFeatures.kTeamCollections
                         ),
+                    allowCloudTeamCollection = dialog?.PendingAllowCloudTeamCollection
+                        ?? ExperimentalFeatures.IsFeatureEnabled(
+                            ExperimentalFeatures.kCloudTeamCollections
+                        ),
                     allowAppBuilder = dialog?.PendingAllowAppBuilder
                         ?? ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kAppBuilder),
                     showQrCode = dialog?.PendingShowQrCode
@@ -327,6 +345,9 @@ namespace Bloom.web.controllers
                 showExperimentalBookSourcesOption = dialog?.ShowExperimentalBookSourcesOption
                     ?? false,
                 allowTeamCollectionEnabled = dialog?.AllowTeamCollectionOptionEnabled ?? true,
+                allowCloudTeamCollectionEnabled = dialog?.AllowCloudTeamCollectionOptionEnabled
+                    ?? true,
+                showAllowCloudTeamCollection = CloudTeamCollectionOptionVisible,
             };
         }
 
@@ -350,6 +371,16 @@ namespace Bloom.web.controllers
                 var previousValue = dialog.PendingAllowTeamCollection;
                 dialog.PendingAllowTeamCollection = allowTeamCollection;
                 if (allowTeamCollection != previousValue)
+                    dialog.ChangeThatRequiresRestart();
+            }
+
+            var allowCloudTeamCollectionToken = data["allowCloudTeamCollection"];
+            if (allowCloudTeamCollectionToken != null)
+            {
+                var allowCloudTeamCollection = allowCloudTeamCollectionToken.Value<bool>();
+                var previousValue = dialog.PendingAllowCloudTeamCollection;
+                dialog.PendingAllowCloudTeamCollection = allowCloudTeamCollection;
+                if (allowCloudTeamCollection != previousValue)
                     dialog.ChangeThatRequiresRestart();
             }
 

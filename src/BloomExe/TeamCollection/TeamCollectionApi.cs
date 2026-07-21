@@ -31,6 +31,15 @@ namespace Bloom.TeamCollection
         private BookSelection _bookSelection; // configured by autofac, tells us what book is selected
         private BookServer _bookServer;
         private string CurrentUser => TeamCollectionManager.CurrentUser;
+
+        /// <summary>
+        /// The identity checkout ownership is compared against in status JSON: the collection's
+        /// own notion (cloud: the signed-in account; folder: the registration email). Must match
+        /// what TeamCollection.CurrentUserIdentity uses for the C#-side editability checks, or
+        /// the UI and the edit gate disagree about whose checkout this is.
+        /// </summary>
+        private string CurrentUserForStatus =>
+            _tcManager?.CurrentCollectionEvenIfDisconnected?.CurrentUserIdentity ?? CurrentUser;
         private BloomWebSocketServer _socketServer;
         private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
         private CollectionSettings _settings;
@@ -61,6 +70,29 @@ namespace Bloom.TeamCollection
         }
 
         public WorkspaceView WorkspaceView { get; set; }
+
+        /// <summary>
+        /// Exposes this project's <see cref="ITeamCollectionManager"/> so the app-level
+        /// <see cref="Bloom.web.controllers.SharingApi"/> (which, unlike this class, is registered
+        /// once at the application level so it also works before any project is loaded -- see
+        /// SharingApi's own file comment) can reach whichever project happens to be currently open
+        /// via <see cref="TheOneInstance"/>, without SharingApi needing its own project-scoped
+        /// dependencies. Read-only; task 06 addition.
+        /// </summary>
+        public ITeamCollectionManager TcManager => _tcManager;
+
+        /// <summary>Same purpose as <see cref="TcManager"/>: lets the app-level SharingApi push
+        /// websocket events (e.g. "sharing"/"membersChanged") on the SAME socket connection the
+        /// currently-open project's UI actually listens on. BloomWebSocketServer is a per-project
+        /// singleton (see ProjectContext's registration), so SharingApi -- registered once at the
+        /// application level -- cannot resolve that same instance through DI; it must reach it via
+        /// whichever project is currently loaded, exactly like TcManager above.</summary>
+        public BloomWebSocketServer SocketServer => _socketServer;
+
+        /// <summary>The folder name of the currently selected book, or null if none -- lets
+        /// SharingApi's history endpoint implement its "current book only" filter without its own
+        /// project-scoped BookSelection dependency.</summary>
+        public string CurrentBookFolderName => BookFolderName;
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
@@ -182,6 +214,202 @@ namespace Bloom.TeamCollection
                 null,
                 false
             );
+
+            // --- Cloud Team Collections (task 06, Wave 3): additive endpoints. Folder Team
+            // Collections continue to use every endpoint above completely unchanged. ---
+            // NOTE: teamCollection/capabilities is deliberately NOT registered here. It is an
+            // application-level endpoint (registered by SharingApi) because callers legitimately
+            // probe it when no project is open -- e.g. the E2E harness's readiness poll, or a
+            // late request from a closing collection tab while the chooser is on screen -- and a
+            // project-level registration made every such probe raise a "Cannot Find API Endpoint"
+            // toast (post-batch defect, 10 Jul 2026).
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/tcStatusMetadata",
+                HandleTcStatusMetadata,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/cloudCollectionId",
+                HandleCloudCollectionId,
+                false
+            );
+            apiHandler.RegisterBooleanEndpointHandler(
+                "teamCollection/isUserAdmin",
+                HandleIsUserAdmin,
+                null,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/receiveUpdates",
+                HandleReceiveUpdates,
+                true
+            );
+            // "Send All" (cloud terminology) is exactly checkInAllBooks under a name that matches
+            // the cloud UI's button label -- same handler, so there is exactly one implementation
+            // of "check in every checked-out book" to keep in sync.
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/sendAllBooks",
+                HandleCheckInAllBooks,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/createCloudTeamCollection",
+                HandleCreateCloudTeamCollection,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "teamCollection/showCreateCloudTeamCollectionDialog",
+                HandleShowCreateCloudTeamCollectionDialog,
+                true
+            );
+        }
+
+        // ------------------------------------------------------------------
+        // Cloud Team Collections (task 06): additive endpoint handlers. Every one of these reads
+        // ONLY from the currently-open collection (never mutates TeamCollectionApi's own folder-TC
+        // code paths above), and every field/flag defaults to exactly today's folder-TC behavior
+        // (false/empty/null) when there is no cloud collection open -- see CONTRACTS.md's
+        // "Book-status JSON" section and ITeamCollectionCapabilities in teamCollectionApi.tsx.
+        // ------------------------------------------------------------------
+
+        // (teamCollection/capabilities' handler moved to the app-level SharingApi -- see the note
+        // in RegisterWithApiHandler above.)
+
+        /// <summary>Live metadata behind the status button/chip (e.g. "Updates Available (3
+        /// books)"). Cloud-only; a folder TC (or no collection) simply reports no count.</summary>
+        private void HandleTcStatusMetadata(ApiRequest request)
+        {
+            var updatesAvailableCount = (
+                _tcManager.CurrentCollection as Cloud.CloudTeamCollection
+            )?.GetUpdatesAvailableCount();
+            request.ReplyWithJson(new { updatesAvailableCount });
+        }
+
+        /// <summary>The cloud collection id (server `collections.id`) of the currently open
+        /// collection, needed by SharingApi calls. Empty string for a folder TC or none open.</summary>
+        private void HandleCloudCollectionId(ApiRequest request)
+        {
+            request.ReplyWithText(
+                (_tcManager.CurrentCollection as Cloud.CloudTeamCollection)?.CloudCollectionId ?? ""
+            );
+        }
+
+        /// <summary>Whether the current user administers the currently open Team Collection.
+        /// Reuses the same flag folder TCs already compute (collection-settings-edit permission),
+        /// since "administrator" means the same thing for both backends from the UI's point of
+        /// view (drives the collection-tab Share button's manage-vs-read-only mode).</summary>
+        private bool HandleIsUserAdmin(ApiRequest request) => _tcManager.OkToEditCollectionSettings;
+
+        /// <summary>"Receive Updates": pulls every book with a newer repo version than what's on
+        /// this machine down to disk. Thin pass-through to the same Receive path folder TCs use
+        /// (CopyBookFromRepoToLocal) -- no cloud-specific business logic here; the branching
+        /// (what's newer) already lives in CloudTeamCollection's cache.</summary>
+        private void HandleReceiveUpdates(ApiRequest request)
+        {
+            // This can take a while (multiple book downloads), so reply immediately like
+            // checkInAllBooks does and report progress via the existing progress websocket.
+            request.PostSucceeded();
+
+            var collection = _tcManager.CurrentCollection;
+            var cloudCollection = collection as Cloud.CloudTeamCollection;
+            if (cloudCollection == null)
+                return; // Not a cloud TC (or disconnected); nothing to receive.
+
+            var progress = new WebSocketProgress(_socketServer, "teamCollection-status");
+            progress.LogAllMessages = true;
+            var (receivedCount, skippedCheckedOutCount) = cloudCollection.ReceiveAllUpdates(
+                progress
+            );
+            progress.MessageWithoutLocalizing("Done receiving updates.");
+            UpdateUiForBook();
+            // Tell javascript-land to re-query book statuses NOW (same event
+            // CollectionTabView/WorkspaceView send): the poll above also queued base-class
+            // change events, but those only surface at the next Application.Idle, and a user
+            // who just clicked "Receive Updates" deserves an immediate refresh.
+            _socketServer.SendEvent("bookTeamCollectionStatus", "reload");
+
+            // Analytics audit (task 10): "Receive Updates" had no analytics at all before this,
+            // unlike per-book checkout/checkin. Byte-level uploaded-vs-skipped counts would be a
+            // nice future enhancement, but the current download path (CopyBookFromRepoToLocal)
+            // doesn't cheaply expose per-book byte counts without extra S3 requests -- book
+            // counts are a cheap, still-useful proxy for now.
+            Analytics.Track(
+                "TeamCollectionReceiveUpdates",
+                new Dictionary<string, string>()
+                {
+                    { "CollectionId", _settings?.CollectionId },
+                    { "CollectionName", _settings?.CollectionName },
+                    { "Backend", collection.GetBackendType() },
+                    { "User", CurrentUser },
+                    { "BooksReceived", receivedCount.ToString() },
+                    { "BooksSkippedCheckedOutHere", skippedCheckedOutCount.ToString() },
+                }
+            );
+        }
+
+        /// <summary>Kicks off the cloud Team Collection creation flow: uploads the current local
+        /// collection as the initial version of a new cloud-backed Team Collection, using this
+        /// collection's own CollectionId GUID as the server's `collections.id` (CONTRACTS.md).
+        /// Mirrors HandleCreateTeamCollection's folder-TC counterpart.</summary>
+        public void HandleCreateCloudTeamCollection(ApiRequest request)
+        {
+            try
+            {
+                Debug.Assert(!string.IsNullOrWhiteSpace(CurrentUser));
+
+                _tcManager.ConnectToCloudCollection(_settings.CollectionId);
+                _callbackToReopenCollection?.Invoke();
+
+                Analytics.Track(
+                    "TeamCollectionCreate",
+                    new Dictionary<string, string>()
+                    {
+                        { "CollectionId", _settings?.CollectionId },
+                        { "CollectionName", _settings?.CollectionName },
+                        { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
+                        { "User", CurrentUser },
+                    }
+                );
+
+                request.PostSucceeded();
+            }
+            catch (Exception e)
+            {
+                var msgEnglish = "Error creating cloud Team Collection: {0}";
+                var msgFmt = LocalizationManager.GetString(
+                    "TeamCollection.ErrorCreatingCloud",
+                    msgEnglish
+                );
+                ErrorReport.NotifyUserOfProblem(e, msgFmt, e.Message);
+                Logger.WriteError(String.Format(msgEnglish, e.Message), e);
+                NonFatalProblem.ReportSentryOnly(
+                    e,
+                    $"Something went wrong for {request.LocalPath()}"
+                );
+
+                // Since we have already informed the user above, it is better to just report a
+                // success here. Otherwise, they will also get a toast.
+                request.PostSucceeded();
+            }
+        }
+
+        /// <summary>Shows the cloud create-collection dialog (sign-in -> immutable-name ack ->
+        /// initial Send), the cloud counterpart of HandleShowCreateTeamCollectionDialog. Reuses the
+        /// same React bundle/entry file (CreateTeamCollection.tsx hosts the folder dialog, the
+        /// cloud dialog, and the sign-in dialog, selected via the dialogKind prop) -- see that
+        /// file's own CreateTeamCollectionBundleDispatcher/WireUpForWinforms wiring.</summary>
+        private void HandleShowCreateCloudTeamCollectionDialog(ApiRequest request)
+        {
+            ReactDialog.ShowOnIdle(
+                "createTeamCollectionDialogBundle",
+                new { dialogKind = "cloud" },
+                600,
+                580,
+                null,
+                null,
+                "Create Team Collection"
+            );
+            request.PostSucceeded();
         }
 
         private bool HandleLogImportant(ApiRequest arg)
@@ -196,7 +424,16 @@ namespace Bloom.TeamCollection
             request.ReplyWithEnum(_tcManager?.CollectionStatus ?? TeamCollectionStatus.None);
         }
 
-        private void HandleForceUnlock(ApiRequest request)
+        /// <summary>
+        /// Force-unlocks the currently selected book. Backend-agnostic: <c>ForceUnlock</c> already
+        /// dispatches to <c>UnlockInRepo(force: true)</c>, which a cloud backend overrides to call
+        /// the audited <c>force_unlock</c> RPC (CONTRACTS.md) -- so this one implementation is
+        /// already correct for both. Internal (not private) so the app-level
+        /// <see cref="Bloom.web.controllers.SharingApi"/> can register the exact same handler under
+        /// "sharing/forceUnlock" (the endpoint name the cloud UI posts to; task 06) without
+        /// duplicating this logic.
+        /// </summary>
+        internal void HandleForceUnlock(ApiRequest request)
         {
             if (!_tcManager.CheckConnection())
             {
@@ -303,7 +540,14 @@ namespace Bloom.TeamCollection
         {
             ReactDialog.ShowOnIdle(
                 "createTeamCollectionDialogBundle",
-                new { defaultRepoFolder = DropboxUtils.GetDropboxFolderPath() },
+                // dialogKind tells the shared bundle (see CreateTeamCollection.tsx's
+                // CreateTeamCollectionBundleDispatcher) which of its three top-level dialogs to
+                // render -- required now that the bundle hosts more than one.
+                new
+                {
+                    dialogKind = "folder",
+                    defaultRepoFolder = DropboxUtils.GetDropboxFolderPath(),
+                },
                 600,
                 580,
                 null,
@@ -514,7 +758,7 @@ namespace Bloom.TeamCollection
 
             if (bookFolderName == null)
             {
-                return JsonConvert.SerializeObject(
+                var noBookJson = JsonConvert.SerializeObject(
                     new
                     {
                         // Keep this in sync with IBookTeamCollectionStatus defined in TeamCollectionApi.tsx
@@ -523,7 +767,7 @@ namespace Bloom.TeamCollection
                         whoSurname = "",
                         when = DateTime.Now.ToShortDateString(),
                         where = "",
-                        currentUser = CurrentUser,
+                        currentUser = CurrentUserForStatus,
                         currentUserName = TeamCollectionManager.CurrentUserFirstName,
                         currentMachine = TeamCollectionManager.CurrentMachine,
                         hasAProblem = false,
@@ -536,6 +780,7 @@ namespace Bloom.TeamCollection
                         isUserAdmin = _tcManager.OkToEditCollectionSettings,
                     }
                 );
+                return AddCloudBookStatusFields(noBookJson, null);
             }
 
             bool isNewLocalBook = false;
@@ -564,7 +809,7 @@ namespace Bloom.TeamCollection
                     // of all books. In that case, book is null, but it's fairly safe to assume it's a new local book.
                     if (book?.IsSaveable ?? true)
                     {
-                        whoHasBookLocked = CurrentUser;
+                        whoHasBookLocked = CurrentUserForStatus;
                         isNewLocalBook = true;
                     }
                     else
@@ -592,7 +837,7 @@ namespace Bloom.TeamCollection
                 book == null || !Directory.Exists(book.FolderPath)
                     ? ""
                     : BookHistory.GetPendingCheckinMessage(book);
-            return JsonConvert.SerializeObject(
+            var bookJson = JsonConvert.SerializeObject(
                 new
                 {
                     // Keep this in sync with IBookTeamCollectionStatus defined in TeamCollectionApi.tsx
@@ -607,7 +852,7 @@ namespace Bloom.TeamCollection
                     where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(
                         bookFolderName
                     ),
-                    currentUser = CurrentUser,
+                    currentUser = CurrentUserForStatus,
                     currentUserName = TeamCollectionManager.CurrentUserFirstName,
                     currentMachine = TeamCollectionManager.CurrentMachine,
                     hasConflictingChange,
@@ -622,6 +867,95 @@ namespace Bloom.TeamCollection
                     isUserAdmin = _tcManager.OkToEditCollectionSettings,
                 }
             );
+            return AddCloudBookStatusFields(bookJson, bookFolderName);
+        }
+
+        /// <summary>
+        /// Additively merges CONTRACTS.md's cloud-only book-status JSON fields
+        /// (localVersionSeq/repoVersionSeq/signedIn/requiresSignIn/offlineDisabledReason) into an
+        /// already-serialized status JSON string. Returns <paramref name="baseJson"/> completely
+        /// UNCHANGED (not even re-parsed) whenever the current collection isn't a cloud one, so
+        /// folder-TC responses stay byte-identical to before this task.
+        /// <paramref name="bookFolderName"/> null means the "no book selected" shape, which only
+        /// gets the collection-wide signedIn/requiresSignIn flags (there's no specific book to
+        /// report a version/offline status for).
+        /// </summary>
+        internal string AddCloudBookStatusFields(string baseJson, string bookFolderName)
+        {
+            if (!(_tcManager.CurrentCollection is Cloud.CloudTeamCollection cloudCollection))
+                return baseJson;
+
+            var json = Newtonsoft.Json.Linq.JObject.Parse(baseJson);
+            json["signedIn"] = cloudCollection.Auth.IsSignedIn;
+            json["requiresSignIn"] = cloudCollection.RequiresSignIn;
+            // In a cloud TC, identity is the signed-in ACCOUNT, not Bloom's registration email
+            // (CONTRACTS.md identity model; the server stamps locks from the token). The base
+            // JSON's currentUser is the registration email, so the panel's who === currentUser
+            // check called the user's own checkout "someone else" in the first two-instance
+            // smoke test (registration was john_thomson@sil.org; the lock was alice@dev.local).
+            var accountEmail = cloudCollection.Auth.CurrentEmail;
+            if (!string.IsNullOrEmpty(accountEmail))
+            {
+                // The base JSON stamps `who` from the same registration identity for books whose
+                // "checkout" is purely local -- a brand-new local book, or one not in the repo --
+                // so those displayed as checked out to the REGISTRATION name (dogfood bug #17:
+                // Bob's new book said "checked out to John1"). Rewrite it to the account, and
+                // clear the registration first/surname that came with it; a real repo lock's
+                // `who` is a member email (never the registration email) and is left alone.
+                var registrationUser = (string)json["currentUser"];
+                if (
+                    !string.IsNullOrEmpty(registrationUser)
+                    && string.Equals(
+                        (string)json["who"],
+                        registrationUser,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                    && !string.Equals(
+                        registrationUser,
+                        accountEmail,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                {
+                    json["who"] = accountEmail;
+                    json["whoFirstName"] = null;
+                    json["whoSurname"] = null;
+                }
+                json["currentUser"] = accountEmail;
+                // Same identity rule for the avatar dialog's display name (base stamps the
+                // registration first name). Prefer the account's admin-editable display name
+                // (e.g. "Alice Admin"); fall back to the email when it isn't resolvable.
+                json["currentUserName"] = cloudCollection.CurrentUserDisplayName ?? accountEmail;
+            }
+            // A new/local-only book's whoFirstName/whoSurname come from the REGISTRATION name
+            // (base WhoHasBookLockedFirstName's FakeUserIndicatingNewBook branch), and the
+            // status panel/book buttons prefer those name fields over `who` -- so such books
+            // displayed as "checked out to John1" even though `who` already carried the account
+            // identity (bug #17's real culprit; the who-rewrite above only covers a signed-out
+            // registration leak). Replace them with the current account's display name so the
+            // avatar shows the same initials + full name as a real checkout by this user (e.g.
+            // "AA"/"Alice Admin"); when the display name isn't resolvable this leaves whoFirstName
+            // null, so the display falls back to `who` (the account email) exactly as before.
+            if ((bool?)json["isNewLocalBook"] == true)
+            {
+                json["whoFirstName"] = cloudCollection.CurrentUserDisplayName;
+                json["whoSurname"] = null;
+            }
+            if (bookFolderName != null)
+            {
+                var repoVersionSeq = cloudCollection.GetRepoVersionSeq(bookFolderName);
+                var localVersionSeq = cloudCollection.GetLocalVersionSeq(bookFolderName);
+                json["repoVersionSeq"] = repoVersionSeq;
+                json["localVersionSeq"] = localVersionSeq;
+                if (cloudCollection.IsDisconnected && !localVersionSeq.HasValue)
+                {
+                    // Non-localized, matching the precedent of this same method's pre-existing
+                    // `error`/`invalidRepoDataErrorMsg` fields (see their own comments above).
+                    json["offlineDisabledReason"] =
+                        "This book has never been downloaded to this computer, so it can't be used while offline.";
+                }
+            }
+            return json.ToString(Newtonsoft.Json.Formatting.None);
         }
 
         public void HandleSelectedBookStatus(ApiRequest request)
@@ -977,7 +1311,8 @@ namespace Bloom.TeamCollection
                             bookInfo.FolderPath,
                             true,
                             false,
-                            reportProgressFraction
+                            reportProgressFraction,
+                            checkinComment: message
                         );
                     }
                     catch (Exception)
@@ -1284,6 +1619,16 @@ namespace Bloom.TeamCollection
                         return;
                     }
                 }
+                // E2E-9 discovery: if NO open form is the active one AND none of them is a Shell
+                // (observed for a Bloom window that has never received OS focus -- e.g. a
+                // background/automated instance, but plausible any time the app is minimized or
+                // another window has focus at the moment a check-in completes), the code used to
+                // fall through to `Form.ActiveForm.Invoke(...)` below with `Form.ActiveForm` still
+                // null, throwing a NullReferenceException. That NRE propagated out of a successful
+                // check-in (this method runs AFTER PutBook already committed) and was reported to
+                // the caller as a check-in FAILURE -- a real, misleading regression, not just a
+                // missed UI refresh. There is no window to update in this case, so just skip it.
+                return;
             }
             Form.ActiveForm.Invoke(
                 (Action)(

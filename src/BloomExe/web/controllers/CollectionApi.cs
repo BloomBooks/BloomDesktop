@@ -18,6 +18,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.SafeXml;
 using Bloom.TeamCollection;
+using Bloom.TeamCollection.Cloud;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
@@ -174,6 +175,22 @@ namespace Bloom.web.controllers
                             try
                             {
                                 newBookInfo = GetBookInfoFromPost(request);
+                                if (
+                                    newBookInfo == null
+                                    && TryPrioritizeNotYetDownloadedBook(request)
+                                )
+                                {
+                                    // Batch item 7 (progressive join): the id belongs to a
+                                    // not-yet-downloaded Cloud Team Collection placeholder (no
+                                    // local BookInfo exists for it yet, so GetBookInfoFromPost
+                                    // found nothing). There's no book to select yet -- bump its
+                                    // background download to the front of the queue and reply
+                                    // gracefully instead of falling through to the null-reference
+                                    // below (SAFETY: no dangerous action -- edit/checkout/publish/
+                                    // delete/rename -- is reachable on a placeholder).
+                                    request.PostSucceeded();
+                                    break;
+                                }
                                 var titleString = newBookInfo.QuickTitleUserDisplay;
                                 using (
                                     PerformanceMeasurement.Global?.Measure(
@@ -670,16 +687,21 @@ namespace Bloom.web.controllers
                     {
                         title = info.ThumbnailLabel;
                     }
-                    return new
+                    return new BookListEntry
                     {
                         id = info.Id,
-                        title,
+                        title = title,
                         collectionId = collection.PathToDirectory,
                         folderName = info.FolderName,
                         folderPath = info.FolderPath,
                         isFactory = collection.IsFactoryInstalled,
+                        notYetDownloaded = false,
                     };
                 })
+                // Batch item 7 (progressive join): repo books in a Cloud Team Collection that have
+                // no local folder yet get a placeholder entry appended, so the collection can open
+                // immediately while they download in the background.
+                .Concat(GetNotYetDownloadedBookEntries(collection, bookInfos))
                 .ToArray();
 
             // The goal here is to draw the book buttons before we tie up the UI thread for a long time loading
@@ -701,6 +723,114 @@ namespace Bloom.web.controllers
 
             var json = DynamicJson.Serialize(jsonInfos);
             request.ReplyWithJson(json);
+        }
+
+        /// <summary>
+        /// One book's entry in the collections/books JSON. A named type (not just an anonymous
+        /// one, as this file's other DTOs usually are) so the real-book entries and the
+        /// not-yet-downloaded placeholder entries (batch item 7, progressive join) can be
+        /// concatenated into a single array. Property names are lowerCamelCase to match the JSON
+        /// shape the TypeScript side expects (BooksOfCollection.tsx's IBookInfo), matching this
+        /// file's existing convention for API DTOs.
+        /// </summary>
+        internal class BookListEntry
+        {
+            public string id { get; set; }
+            public string title { get; set; }
+            public string collectionId { get; set; }
+            public string folderName { get; set; }
+            public string folderPath { get; set; }
+            public bool isFactory { get; set; }
+
+            /// <summary>True for a repo book that exists in a Cloud Team Collection but has no
+            /// local folder yet -- the client shows a download-in-progress placeholder for these
+            /// instead of the normal book button (batch item 7).</summary>
+            public bool notYetDownloaded { get; set; }
+        }
+
+        /// <summary>
+        /// Batch item 7 (progressive join): repo books that exist in a Cloud Team Collection's
+        /// server-side book list but have no local folder yet get a placeholder entry, so the
+        /// collection can open immediately while they download in the background (see
+        /// CloudJoinFlow.JoinCollection and TeamCollection.SyncAtStartup's cloud rerouting).
+        /// Returns nothing for folder Team Collections and for any collection that isn't the
+        /// current project's one editable collection (a join always targets that collection, and
+        /// a placeholder for, say, the Templates collection would make no sense).
+        /// </summary>
+        private static List<BookListEntry> GetNotYetDownloadedBookEntries(
+            BookCollection collection,
+            IEnumerable<BookInfo> localBookInfos
+        )
+        {
+            if (collection.Type != BookCollection.CollectionType.TheOneEditableCollection)
+                return new List<BookListEntry>();
+            if (
+                !(
+                    TeamCollectionApi.TheOneInstance?.TcManager?.CurrentCollection
+                    is CloudTeamCollection cloudCollection
+                )
+            )
+                return new List<BookListEntry>();
+
+            var localNames = new HashSet<string>(
+                localBookInfos.Select(i => i.FolderName),
+                StringComparer.OrdinalIgnoreCase
+            );
+            // BookInfo.Id IS the meta.json bookInstanceId -- the same identity the server's
+            // tc.books.instance_id carries (bug #15).
+            var localInstanceIds = new HashSet<string>(
+                localBookInfos.Select(i => i.Id).Where(id => !string.IsNullOrEmpty(id)),
+                StringComparer.OrdinalIgnoreCase
+            );
+            var repoBooks = cloudCollection
+                .GetBookList()
+                .Select(name =>
+                    (name, instanceId: cloudCollection.TryGetBookInstanceIdForName(name))
+                );
+            return ComputeNotYetDownloadedBookEntries(
+                localNames,
+                localInstanceIds,
+                repoBooks,
+                collection.PathToDirectory
+            );
+        }
+
+        /// <summary>
+        /// Pure merge logic (unit-tested by CollectionApiTests, no filesystem/network/repo access):
+        /// given the local book folder names AND local book instance ids already scanned from disk
+        /// and the full repo book list (folder name, stable instance id) for a Cloud Team
+        /// Collection, returns placeholder entries for repo books that have no local presence yet.
+        /// A repo book is locally present when a folder has its NAME or -- bug #15 (John's ruling:
+        /// instance id is the book's identity) -- when any local book has its INSTANCE ID, e.g. a
+        /// checked-out book whose local folder was renamed ahead of check-in; without the id check
+        /// that book grew a phantom "not yet downloaded" placeholder next to its real button.
+        /// </summary>
+        internal static List<BookListEntry> ComputeNotYetDownloadedBookEntries(
+            ISet<string> localBookFolderNames,
+            ISet<string> localBookInstanceIds,
+            IEnumerable<(string name, string instanceId)> repoBooks,
+            string collectionPathToDirectory
+        )
+        {
+            return repoBooks
+                .Where(b =>
+                    !localBookFolderNames.Contains(b.name)
+                    && (
+                        string.IsNullOrEmpty(b.instanceId)
+                        || !localBookInstanceIds.Contains(b.instanceId)
+                    )
+                )
+                .Select(b => new BookListEntry
+                {
+                    id = b.instanceId ?? b.name,
+                    title = b.name,
+                    collectionId = collectionPathToDirectory,
+                    folderName = b.name,
+                    folderPath = Path.Combine(collectionPathToDirectory, b.name),
+                    isFactory = false,
+                    notYetDownloaded = true,
+                })
+                .ToList();
         }
 
         // This needs to be thread-safe.
@@ -989,6 +1119,33 @@ namespace Bloom.web.controllers
             }
             var collection = GetCollectionOfRequest(request);
             return collection.GetBookInfos().FirstOrDefault(predicate);
+        }
+
+        /// <summary>
+        /// Batch item 7 (progressive join): if the given collections/selected-book POST's id
+        /// matches a repo book in the current Cloud Team Collection that has no local folder yet,
+        /// bumps its background download to the front of the queue and returns true. Returns false
+        /// (no-op) for folder Team Collections, when there's no Team Collection at all, or when the
+        /// id doesn't match any known not-yet-downloaded repo book -- callers should fall back to
+        /// their normal handling (which will then hit the usual "book not found" error path) in
+        /// that case, so this never masks a genuinely bad id.
+        /// </summary>
+        private bool TryPrioritizeNotYetDownloadedBook(ApiRequest request)
+        {
+            if (
+                !(
+                    TeamCollectionApi.TheOneInstance?.TcManager?.CurrentCollection
+                    is CloudTeamCollection cloudCollection
+                )
+            )
+                return false;
+
+            var id = request.GetParamOrNull("id") ?? request.RequiredPostString();
+            var bookName = cloudCollection.TryGetBookNameForInstanceId(id);
+            if (bookName == null)
+                return false;
+            cloudCollection.PrioritizeDownload(bookName);
+            return true;
         }
 
         private Book.Book GetBookObjectFromPost(ApiRequest request)
