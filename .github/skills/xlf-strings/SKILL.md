@@ -46,6 +46,8 @@ After the `<note>ID: ...</note>` line, add a **second `<note>`** whenever a tran
 
 The note should state: what UI element it labels, where it appears in the UI, and any constraints (e.g. "appears mid-sentence, should be lowercase", "step N of M in X instructions", "'Bloom' is a product name and must not be translated", "{0} is replaced with a count").
 
+**Never put a double hyphen (`--`) inside `<note>` text.** L10NSharp's XLIFF reader routes note content through XML-comment parsing, and `--` in a comment is illegal XML — Bloom then crashes at startup with "An XML comment cannot contain '--'" while loading localization (found 8 Jul 2026; it killed every launch). Use a period, semicolon, or single hyphen instead. (`--` in `<source>` text is fine.)
+
 Example with context note:
 ```xml
 <trans-unit id="ImageLibrary.PixabayStep4" translate="no">
