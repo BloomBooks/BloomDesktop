@@ -281,6 +281,61 @@ export function useApiData<T>(urlSuffix: string, defaultValue: T): T {
     return useApiDataInternal(urlSuffix, defaultValue);
 }
 
+// Like useWatchApiData, but also hands back a `reload()` the caller can invoke to force a
+// refetch (on top of the automatic refetch when the clientContext/eventId websocket event fires),
+// and skips fetching entirely while `urlSuffix` is undefined -- for the common case of a query
+// that can't run until some parameter is known (e.g. a collectionId). The value stays at
+// defaultValue until a real url is supplied. Extracted from the several cloud-Team-Collection
+// hooks that each hand-rolled this generation-counter + websocket + reload idiom.
+export function useWatchApiDataWithReload<T>(
+    urlSuffix: string | undefined,
+    defaultValue: T,
+    clientContext: string,
+    eventId: string,
+): { data: T; reload: () => void } {
+    const [generation, setGeneration] = useState(0);
+    const [data, setData] = useState<T>(defaultValue);
+    useSubscribeToWebSocketForEvent(clientContext, eventId, () =>
+        setGeneration((old) => old + 1),
+    );
+    useEffect(() => {
+        if (!urlSuffix) return;
+        get(urlSuffix, (result) => setData((result.data as T) ?? defaultValue));
+        // defaultValue is intentionally out of the deps (see useApiDataInternal's note on why a
+        // fresh default object each render would loop); urlSuffix already encodes the parameters.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [urlSuffix, generation]);
+    return { data, reload: () => setGeneration((old) => old + 1) };
+}
+
+// Fetches `urlSuffix` at most ONCE per page load, caching the resolved promise so every caller
+// shares a single HTTP request. `mapResult` turns the raw response data into T (and supplies the
+// fallback for missing data). For per-mount/per-book components where an uncached fetch would mean
+// hundreds of identical calls and the data is page-load-stable (changing it restarts Bloom or
+// reopens the page). Extracted from the duplicate cached-promise idiom in sharingApi /
+// teamCollectionApi.
+const apiDataOnceCache = new Map<string, Promise<unknown>>();
+
+export function getApiDataOnce<T>(
+    urlSuffix: string,
+    mapResult: (data: unknown) => T,
+): Promise<T> {
+    let cached = apiDataOnceCache.get(urlSuffix) as Promise<T> | undefined;
+    if (!cached) {
+        cached = new Promise<T>((resolve) =>
+            get(urlSuffix, (result) => resolve(mapResult(result.data))),
+        );
+        apiDataOnceCache.set(urlSuffix, cached);
+    }
+    return cached;
+}
+
+// Test-only: forget all cached getApiDataOnce fetches so each test's endpoint mocks are observed.
+// Call from beforeEach; production code must never call this.
+export function resetApiDataOnceCacheForTests() {
+    apiDataOnceCache.clear();
+}
+
 // Shared code for useApiData and useWatchApiData. If you are tempted to use it directly,
 // you should probably be using useWatchApiData.
 // The generation argument is a value that can be incremented to force redoing the main

@@ -91,6 +91,7 @@ export const RegistrationDialog: React.FunctionComponent<
                 initialInfo={info}
                 mayChangeEmail={mayChangeEmail}
                 emailRequiredForTeamCollection={emailRequiredForTeamCollection}
+                cloudAccountEmail={props.cloudAccountEmail}
                 onClose={(hasValidEmail: boolean) => {
                     props.onSave?.(hasValidEmail);
                     props.closeDialog();

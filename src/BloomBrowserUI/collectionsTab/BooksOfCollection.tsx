@@ -21,6 +21,11 @@ export interface IBookInfo {
     folderName: string;
     folderPath: string;
     isFactory: boolean;
+    // Batch item 7 (progressive join): true for a repo book in a Cloud Team Collection that has
+    // no local folder yet -- BookButton renders these as a download-in-progress placeholder
+    // instead of the normal, fully-interactive book button. Always false/undefined for folder
+    // Team Collections and ordinary local collections.
+    notYetDownloaded?: boolean;
 }
 
 // A very minimal set of collection properties for now

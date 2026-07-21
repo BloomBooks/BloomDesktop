@@ -21,6 +21,8 @@ export interface IRegistrationDialogProps {
     emailRequiredForTeamCollection?: boolean;
     onSave?: (hasValidEmail: boolean) => void;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
+    /** See IRegistrationContentsProps.cloudAccountEmail. */
+    cloudAccountEmail?: string;
 }
 
 // Module-level function that can be called from anywhere to show the dialog
@@ -51,6 +53,7 @@ export const RegistrationDialogLauncher: React.FunctionComponent<
             emailRequiredForTeamCollection={
                 props.emailRequiredForTeamCollection
             }
+            cloudAccountEmail={props.cloudAccountEmail}
             onSave={props.onSave}
         />
     );
@@ -66,6 +69,7 @@ export const RegistrationDialogEventLauncher: React.FunctionComponent = () => {
     const eventProps: IRegistrationDialogProps = {
         emailRequiredForTeamCollection:
             openingEvent?.emailRequiredForTeamCollection,
+        cloudAccountEmail: openingEvent?.cloudAccountEmail,
         onSave: openingEvent?.onSave,
     };
 
@@ -77,6 +81,7 @@ export const RegistrationDialogEventLauncher: React.FunctionComponent = () => {
             emailRequiredForTeamCollection={
                 eventProps.emailRequiredForTeamCollection
             }
+            cloudAccountEmail={eventProps.cloudAccountEmail}
             onSave={eventProps.onSave}
         />
     ) : null;
