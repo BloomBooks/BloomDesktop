@@ -617,7 +617,16 @@ namespace Bloom
 
             // If we are disposed, this will certainly fail. Likely we are shutting down and just
             // trying to navigate to a blank page.
-            if (!_webview.IsDisposed && !_webview.Disposing)
+            // One user reported a crash in this method which indicated that a null reference exception was
+            // thrown on the line with the Navigate method. (BL-16570) I don't know how that could happen.
+            // EnsureBrowserReadyToNavigate() should have prevented it, but it uses a while loop over
+            // Application.DoEvents() which is known to be unsafe.
+            if (
+                !_webview.IsDisposed
+                && !_webview.Disposing
+                && _readyToNavigate
+                && _webview.CoreWebView2 != null
+            )
                 _webview.CoreWebView2.Navigate(newUrl);
         }
 
