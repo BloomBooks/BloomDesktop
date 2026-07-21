@@ -46,6 +46,20 @@ export function isToolEnabledInToolbox(toolName: string): boolean {
     return enabledToolIds.has(toolName);
 }
 
+// a function to update the state of the checkboxes in the toolbox settings,
+// whenever a tool is enabled and activated using setToolEnabledFromSettings(). This
+// function starts out unimplemented, but is later implemented by SettingsToolControls.tsx
+// when it gets mounted.
+let changeToolboxSettingsState:
+    | ((which: string, value: boolean) => void)
+    | undefined;
+
+export function setToolboxSettingsChangeHandler(
+    handler: ((which: string, value: boolean) => void) | undefined,
+): void {
+    changeToolboxSettingsState = handler;
+}
+
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
 // can be asked to do by the rest of the system.
@@ -602,6 +616,14 @@ export class ToolBox {
         });
     }
 
+    // Enables a tool from an in-page action, ensuring the toolbox is visible.
+    public enableToolFromPage(toolId: string): void {
+        if (!this.toolboxIsShowing()) {
+            this.toggleToolbox();
+        }
+        setToolEnabledFromSettings(toolId, true);
+    }
+
     public activateToolFromId(toolId: string) {
         if (!getITool(toolId)) {
             // Normally we won't even give a way to see this tool if it's
@@ -768,6 +790,10 @@ export function setToolEnabledFromSettings(
         "editView/saveToolboxSetting",
         "active\t" + toolName + "Check\t" + (turnOn ? "1" : "0"),
     );
+
+    if (changeToolboxSettingsState !== undefined) {
+        changeToolboxSettingsState(toolName, turnOn);
+    }
 
     // A pending deferred open (below) reflects an earlier state; this call
     // supersedes it, so cancel it. Without this, ticking a tool on and then off
