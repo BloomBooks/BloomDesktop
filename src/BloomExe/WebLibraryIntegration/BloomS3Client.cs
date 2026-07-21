@@ -117,7 +117,17 @@ namespace Bloom.WebLibraryIntegration
             return CreateAmazonS3Client(s3Config, credentials);
         }
 
-        protected IAmazonS3 CreateAmazonS3Client(
+        /// <summary>
+        /// Builds an <see cref="IAmazonS3"/> client from explicit credentials (with or without a
+        /// session token). Doesn't touch any instance state, so it's also the shared helper Cloud
+        /// Team Collection's <see cref="Bloom.TeamCollection.Cloud.CloudBookTransfer"/> reuses for its
+        /// own session-credentialed client construction (per-book STS/AssumeRole creds from the
+        /// checkin-start/download-start edge functions) rather than duplicating this logic — see
+        /// Design/CloudTeamCollections/tasks/04-client-core.md. Internal, not protected: unlike the
+        /// bucketName overload above (which bloom-harvester overrides), nothing here is meant to be
+        /// specialized by a subclass.
+        /// </summary>
+        internal static IAmazonS3 CreateAmazonS3Client(
             AmazonS3Config s3Config,
             AmazonS3Credentials credentials
         )
