@@ -84,6 +84,9 @@ importers:
             axios:
                 specifier: 0.21.1
                 version: 0.21.1
+            bloom-ai-image-tools:
+                specifier: github:BloomBooks/bloom-ai-image-tools#dist-v0.1.0
+                version: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/0c57d9ad1b2cee224856ccb2da1edc88fafe2afa
             bloom-image-gallery:
                 specifier: github:BloomBooks/bloom-image-gallery
                 version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/51c5a75bb611c51dd24b40c9162929c6e75473eb(@types/react@18.3.31)(supports-color@5.5.0)
@@ -4042,6 +4045,15 @@ packages:
             {
                 integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==,
             }
+
+    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/0c57d9ad1b2cee224856ccb2da1edc88fafe2afa:
+        resolution:
+            {
+                gitHosted: true,
+                integrity: sha512-qn/wGUeKg2oD8u0SS3iUNLgwHGYdBDa1EB6wJqbbLmr/fMBECT+PjbX5MONkKkIhdIzODvcqrtQtcdBE3W6mJQ==,
+                tarball: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/0c57d9ad1b2cee224856ccb2da1edc88fafe2afa,
+            }
+        version: 0.1.0
 
     bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/51c5a75bb611c51dd24b40c9162929c6e75473eb:
         resolution:
@@ -13516,6 +13528,9 @@ snapshots:
         dependencies:
             file-uri-to-path: 1.0.0
         optional: true
+
+    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/0c57d9ad1b2cee224856ccb2da1edc88fafe2afa:
+        {}
 
     bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/51c5a75bb611c51dd24b40c9162929c6e75473eb(@types/react@18.3.31)(supports-color@5.5.0):
         dependencies:

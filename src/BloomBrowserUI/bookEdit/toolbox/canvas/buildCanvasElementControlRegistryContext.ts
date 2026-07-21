@@ -19,6 +19,7 @@ import { inferCanvasElementType } from "./canvasElementTypeInference";
 import { canvasElementControlRegistry } from "./canvasElementControlRegistry";
 import { CanvasElementType } from "./canvasElementTypes";
 import { IControlContext } from "./canvasControlTypes";
+import { isAiEditableImageSrc } from "./aiEditorImageFormats";
 
 const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
     if (!img) {
@@ -226,5 +227,9 @@ export const buildCanvasElementControlRegistryContext = (
             language2Name: "",
             language2Tag: "",
         },
+        // Default off; CanvasElementContextControls overlays the real feature
+        // status (which is async) when it assembles the context.
+        aiImageEditingAvailable: false,
+        imageIsAiEditableFormat: isAiEditableImageSrc(img?.getAttribute("src")),
     };
 };

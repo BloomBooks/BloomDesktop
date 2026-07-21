@@ -516,6 +516,20 @@ export default defineConfig(async ({ command }) => {
             ? parsedPort
             : 5173;
 
+    // LINKED LIBRARIES (set by `go.mjs --with`): alias each bare package import to its local
+    // checkout so edits there flow into this dev server. Format: "name=absPath;name=absPath".
+    // Empty/absent in a normal run, so the libraries resolve from node_modules as usual.
+    const linkedLibs: Record<string, string> = {};
+    for (const pair of (process.env.BLOOM_LINKED_LIBS ?? "")
+        .split(";")
+        .map((p) => p.trim())
+        .filter(Boolean)) {
+        const eq = pair.indexOf("=");
+        if (eq > 0) {
+            linkedLibs[pair.slice(0, eq)] = pair.slice(eq + 1);
+        }
+    }
+
     // ENTRY POINTS CONFIGURATION
     // Define all JavaScript/TypeScript entry points - these are the "root" files that
     // Vite will build into separate bundles. Each entry becomes a standalone .js file
@@ -618,6 +632,13 @@ export default defineConfig(async ({ command }) => {
                               {
                                   src: "node_modules/bloom-player/dist/*",
                                   dest: "./bloom-player/dist/",
+                              },
+                              // Copy the AI Image Editor's prebuilt app (dist-app/) so Bloom
+                              // serves it at /bloom/aiImageEditor/. Mirrors the dev-time
+                              // staging in go.mjs/aiEditorBuild.mjs.
+                              {
+                                  src: "node_modules/bloom-ai-image-tools/dist-app/*",
+                                  dest: "./aiImageEditor/",
                               },
                           ],
                       }),
@@ -783,6 +804,8 @@ export default defineConfig(async ({ command }) => {
                     "lib/long-press/jquery.longpress.js",
                 ),
                 "App.less": path.resolve(__dirname, "app/App.less"),
+                // Local checkouts of our libraries when launched via `go.sh --with <name>`.
+                ...linkedLibs,
             },
         },
 

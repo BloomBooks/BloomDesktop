@@ -1088,7 +1088,7 @@ function getFileLengthString(bytes): string {
 }
 
 // Gets the src attribute out of images, and the background-image:url() of everything else
-function GetRawImageUrl(imgOrDivWithBackgroundImage): string {
+export function GetRawImageUrl(imgOrDivWithBackgroundImage): string {
     if ($(imgOrDivWithBackgroundImage).hasAttr("src")) {
         return $(imgOrDivWithBackgroundImage).attr("src");
     }

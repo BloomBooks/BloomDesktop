@@ -31,6 +31,17 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
         visible: (ctx) => ctx.hasImage,
         enabled: (ctx) => ctx.isCropped,
     },
+    editWithAi: {
+        // Only offered when the AI Image Editing experimental feature is turned on.
+        // The AI Image Editor needs a real raster image to work on, the user must be
+        // allowed to modify it, and its format must be one the editor can actually edit
+        // (so it stays disabled for e.g. an svg the editor can't open).
+        visible: (ctx) => ctx.aiImageEditingAvailable && ctx.hasImage,
+        enabled: (ctx) =>
+            ctx.hasRealImage &&
+            ctx.canModifyImage &&
+            ctx.imageIsAiEditableFormat,
+    },
     missingMetadata: {
         surfacePolicy: {
             toolbar: {

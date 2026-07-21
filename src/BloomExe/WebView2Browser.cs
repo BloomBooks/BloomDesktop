@@ -509,11 +509,8 @@ namespace Bloom
             // e.g. (window as any).chrome.webview.postMessage("browser-clicked");
             _webview.WebMessageReceived += (o, e) =>
             {
-                // for now the only thing we're using this for is to close the page thumbnail list context menu when the user clicks outside it
-                if (e.TryGetWebMessageAsString() == "browser-clicked")
-                {
+                if (IsBrowserClickedMessage(e))
                     RaiseBrowserClick(null, null);
-                }
             };
 
             // Now do the same thing for any iframes. When an iframe is created...
@@ -527,10 +524,8 @@ namespace Bloom
                 // and thus tell us when it regained it.
                 e.Frame.WebMessageReceived += (a, b) =>
                 {
-                    if (b.TryGetWebMessageAsString() == "browser-clicked")
-                    {
+                    if (IsBrowserClickedMessage(b))
                         RaiseBrowserClick(null, null);
-                    }
                 };
             };
 
@@ -780,6 +775,16 @@ namespace Bloom
         {
             await _webview.ExecuteScriptAsync(script);
         }
+
+        // The only web message Bloom currently listens for is the plain "browser-clicked"
+        // string our JS posts. WebView2 has no non-throwing "is this a string message?" check
+        // (TryGetWebMessageAsString throws for JSON-object messages), but WebMessageAsJson always
+        // returns the JSON form — a string message arrives as the quoted literal — so we compare
+        // against that instead of catching an exception on every message.
+        private const string BrowserClickedMessageJson = "\"browser-clicked\"";
+
+        private static bool IsBrowserClickedMessage(CoreWebView2WebMessageReceivedEventArgs e) =>
+            e.WebMessageAsJson == BrowserClickedMessageJson;
 
         /// <summary>
         /// Run a javascript script asynchronously.

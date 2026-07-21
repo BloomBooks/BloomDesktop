@@ -145,6 +145,7 @@
         "@types/react-transition-group": "4.4.1",
         "@use-it/event-listener": "0.1.7",
         "axios": "0.21.1",
+        "bloom-ai-image-tools": "github:BloomBooks/bloom-ai-image-tools#dist-v0.1.0",
         "bloom-image-gallery": "github:BloomBooks/bloom-image-gallery",
         "bloom-player": "2.20.1",
         "calculate-aspect-ratio": "0.1.3",
