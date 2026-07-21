@@ -2538,6 +2538,51 @@ describe("audio recording tests", () => {
                 "Two.",
             );
         });
+
+        // BL-15300 regression (Problem 3): the whole-box-vs-first-sentence decision when
+        // switching to Record by Sentence must be based on the current box's actual mode, not a
+        // mode remembered from an earlier switch elsewhere in the (session-long) recorder. Here
+        // the user first works with a by-sentence box, then navigates to a box recorded By Whole
+        // Text Box, clears it, and switches to by-sentence. Only the FIRST sentence should be
+        // highlighted -- previously the whole box was, because the box was never split into spans.
+        it("highlights only the first sentence when switching a whole-text-box box to by-sentence after an earlier by-sentence switch", async () => {
+            setupDefaultApiResponses();
+            vi.spyOn(axios, "post").mockResolvedValue({});
+
+            const recording = new AudioRecording();
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+
+            // 1) Earlier in the session: a by-sentence text box; end on Sentence mode.
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="boxA" class="bloom-editable" data-test-preselect="true" data-audiorecordingmode="Sentence"><p><span id="a1" class="audio-sentence">Alpha one.</span></p></div></div></div>',
+            );
+            setHighlightedElementFromDom(recording);
+            recording.recordingMode = RecordingMode.Sentence;
+            await recording.setRecordingModeAsync(RecordingMode.Sentence);
+
+            // 2) Navigate to a page whose box was recorded By Whole Text Box, and let the tool
+            //    (re)derive the mode for the current box the way handleNewPageReady does.
+            SetupIFrameFromHtml(
+                '<div id="page2"><div class="bloom-translationGroup"><div id="boxB" class="bloom-editable audio-sentence" data-test-preselect="true" data-audiorecordingmode="TextBox"><p>First sentence. Second sentence.</p></div></div></div>',
+            );
+            getFrameElementById("page", "boxB")!.setAttribute(
+                "recordingmd5",
+                "fakeMd5",
+            );
+            setHighlightedElementFromDom(recording);
+            recording.initializeAudioRecordingMode();
+            // Sanity: the current box's mode is correctly read as TextBox.
+            expect(recording.recordingMode).toBe(RecordingMode.TextBox);
+
+            // 3) Clear the recording, then switch to Record by Sentence.
+            recording.uiState.buttons.clear = Status.Enabled;
+            await recording.clearRecordingAsync();
+            await recording.setRecordingModeAsync(RecordingMode.Sentence);
+
+            expect(getHighlightTexts(currentHighlightName)).toEqual([
+                "First sentence.",
+            ]);
+        });
     });
 });
 

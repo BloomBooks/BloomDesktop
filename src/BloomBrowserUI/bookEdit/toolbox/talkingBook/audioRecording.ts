@@ -170,7 +170,6 @@ export default class AudioRecording implements IAudioRecorder {
 
     private showingImageDescriptions: boolean;
     public recordingMode: RecordingMode;
-    private previousRecordMode: RecordingMode;
     private haveAudio: boolean;
     private inShowPlaybackOrderMode: boolean = false;
     private wholeTextBoxAudioFeatureStatus: FeatureStatus | undefined;
@@ -2358,9 +2357,16 @@ export default class AudioRecording implements IAudioRecorder {
         recordingMode: RecordingMode,
         forceOverwrite: boolean = false,
     ): Promise<void> {
-        if (this.previousRecordMode === undefined) {
-            this.previousRecordMode = this.recordingMode;
-        }
+        // Which branch we take below depends on the mode the current text box is in *before*
+        // this switch. Use this.recordingMode, which is re-derived from the current box/page
+        // (initializeAudioRecordingMode / updateDisplay). We must NOT use a remembered
+        // "previous mode" field here: this is a session-long singleton and such a field is not
+        // reset when the page or current box changes, so a stale value sends us down the wrong
+        // branch and skips the textbox->sentence markup conversion. That was BL-15300: after
+        // clearing a whole-text-box recording and switching to Record by Sentence, the whole
+        // box was highlighted instead of the first sentence, because the box was never split
+        // into per-sentence spans.
+        const modeBeforeSwitch = this.recordingMode;
         this.recordingMode = recordingMode;
 
         // Check if there are any audio recordings present.
@@ -2383,7 +2389,7 @@ export default class AudioRecording implements IAudioRecorder {
 
         let result;
         // Update the UI after clicking the checkbox
-        if (this.previousRecordMode === RecordingMode.TextBox) {
+        if (modeBeforeSwitch === RecordingMode.TextBox) {
             // This also implies converting the playback mode to Sentence, because we disallow Recording=Sentence,Playback=TextBox.
             // Enhance: Maybe don't bother if the current playback mode is already sentence?
             // Enhance: Maybe it means that you should be less aggressively trying to convert Markup into Playback=TextBox. Or that Clear should be more aggressively attempting ton convert into Playback=Sentence.
@@ -2420,7 +2426,6 @@ export default class AudioRecording implements IAudioRecorder {
                 result = this.changeStateAndSetExpectedAsync("record");
             }
         }
-        this.previousRecordMode = this.recordingMode;
         return result;
     }
 
