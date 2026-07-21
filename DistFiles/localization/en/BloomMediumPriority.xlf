@@ -39,6 +39,11 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
         <note>This checkbox enables the experimental publish-to-apps workflow.</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.CloudTeamCollections" translate="no">
+        <source xml:lang="en">Cloud Team Collections</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.CloudTeamCollections</note>
+        <note>Checkbox label in Settings > Advanced > Experimental Features (the list itself is already labeled experimental, so the name carries no caveat). Enables the cloud-backed (internet-synced) flavor of Team Collections, as opposed to the existing shared-folder-based one. "Cloud Team Collections" is this feature's name.</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>
@@ -1595,6 +1600,143 @@
         <source xml:lang="en">this page</source>
         <note>ID: ImageLibrary.ThisPage</note>
         <note>Short link text used in setup instructions (e.g., as in "go to this page"). Should be lowercase as it appears mid-sentence.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.ShareOnCloudServer.ToolTipWhenDisabled" translate="no">
+        <source xml:lang="en">Turn on the 'cloud-team-collections' experimental feature (Settings &gt; Advanced) to use this.</source>
+        <note>ID: TeamCollection.Sharing.ShareOnCloudServer.ToolTipWhenDisabled</note>
+        <note>Tooltip shown while the "Share this collection..." button is disabled, explaining how to enable the experimental feature that unlocks it.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.ReadOnlyNote" translate="no">
+        <source xml:lang="en">Only administrators can add, remove, or change the role of team members.</source>
+        <note>ID: TeamCollection.Sharing.ReadOnlyNote</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.LastAdminProtection" translate="no">
+        <source xml:lang="en">A Team Collection must always have at least one administrator.</source>
+        <note>ID: TeamCollection.Sharing.LastAdminProtection</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.RemoveWarning" translate="no">
+        <source xml:lang="en">Removing %0 will immediately force-unlock any books they currently have checked out. Continue?</source>
+        <note>ID: TeamCollection.Sharing.RemoveWarning</note>
+        <note>Confirmation shown before removing someone from a cloud Team Collection's approved-members list. %0 is replaced with the person's email address.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.ConfirmRemove" translate="no">
+        <source xml:lang="en">Remove</source>
+        <note>ID: TeamCollection.Sharing.ConfirmRemove</note>
+        <note>Button that confirms removing someone from a cloud Team Collection, in the warning described by TeamCollection.Sharing.RemoveWarning.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.EmailAddress" translate="no">
+        <source xml:lang="en">Email address</source>
+        <note>ID: TeamCollection.Sharing.EmailAddress</note>
+        <note>Label for a text field where the user types an email address; used both when adding someone to a cloud Team Collection and when signing in.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.SignInIntro" translate="no">
+        <source xml:lang="en">Sign in with your Bloom account to share this collection.</source>
+        <note>ID: TeamCollection.Sharing.SignInIntro</note>
+        <note>"Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.Password" translate="no">
+        <source xml:lang="en">Password</source>
+        <note>ID: TeamCollection.Sharing.Password</note>
+        <note>Label for the password field on the sign-in form used to create or join a cloud Team Collection.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.SignInWithBloomAccount" translate="no">
+        <source xml:lang="en">Sign in with your Bloom account</source>
+        <note>ID: TeamCollection.Sharing.SignInWithBloomAccount</note>
+        <note>Button label. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.SignInNotYetAvailable" translate="no">
+        <source xml:lang="en">Signing in with your Bloom account isn't available yet. Check back in a future version of Bloom.</source>
+        <note>ID: TeamCollection.Sharing.SignInNotYetAvailable</note>
+        <note>obsolete as of 6.5; "cloud" sign-in mode now routes to the browser-based sign-in flow (see TeamCollection.Sharing.SignInViaBrowser) instead of showing this message.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.SignInViaBrowser" translate="no">
+        <source xml:lang="en">Click "Sign In" to sign in with your Bloom account in your web browser. Come back to this window when you're done.</source>
+        <note>ID: TeamCollection.Sharing.SignInViaBrowser</note>
+        <note>Shown in the dedicated sign-in dialog when the collection uses the production ("cloud") sign-in mode. "Sign In" refers to the button below this text, labeled with the existing TeamCollection.Sharing.SignIn string. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.CloudNameWillWork" translate="no">
+        <source xml:lang="en">I think the name, "%0", will be a good one for the whole team. I understand that I will not be able to change this name once this becomes a Team Collection.</source>
+        <note>ID: TeamCollection.Sharing.CloudNameWillWork</note>
+        <note>Checkbox acknowledgement shown before sharing a collection on the cloud sharing server. %0 is replaced with the current collection's name.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.SendingInitialCollection" translate="no">
+        <source xml:lang="en">Sending your collection to the cloud sharing server. This may take a while depending on the size of your collection.</source>
+        <note>ID: TeamCollection.Sharing.SendingInitialCollection</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.TryAgain" translate="no">
+        <source xml:lang="en">Try Again</source>
+        <note>ID: TeamCollection.Sharing.TryAgain</note>
+        <note>Button shown after the initial upload to the cloud sharing server fails, to retry it.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.InitialSendComplete" translate="no">
+        <source xml:lang="en">Your Team Collection is ready. Invite your team from the Team Collection panel in Collection Settings.</source>
+        <note>ID: TeamCollection.Sharing.InitialSendComplete</note>
+        <note>Shown when creating a cloud Team Collection finishes. "Team Collection panel" and "Collection Settings" name the tab and dialog where the member-invitation controls live.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.MustSignInToJoin" translate="no">
+        <source xml:lang="en">Sign in with your Bloom account to join "%0".</source>
+        <note>ID: TeamCollection.Sharing.MustSignInToJoin</note>
+        <note>Shown in the join-collection dialog when the user isn't signed in yet. %0 is the Team Collection's name; "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.ApprovalRemoved" translate="no">
+        <source xml:lang="en">You are not currently on the approved list for "%0". Contact an administrator of this Team Collection to be added.</source>
+        <note>ID: TeamCollection.Sharing.ApprovalRemoved</note>
+        <note>Shown in the join-collection dialog when the signed-in user's email is not (or no longer) approved for the collection. %0 is the Team Collection's name.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.IncompleteLocalCopy" translate="no">
+        <source xml:lang="en">Bloom found an incomplete local copy of this Team Collection, probably left over from an earlier attempt to join. Bloom will download a fresh copy.</source>
+        <note>ID: TeamCollection.Sharing.IncompleteLocalCopy</note>
+        <note>"Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.Sharing.BloomWillPullDown" translate="no">
+        <source xml:lang="en">Bloom will download this Team Collection so you can work together with your team.</source>
+        <note>ID: TeamCollection.Sharing.BloomWillPullDown</note>
+        <note>"Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AlreadyJoined" translate="no">
+        <source xml:lang="en">This computer is already connected to this collection. Bloom will open it for you.</source>
+        <note>ID: TeamCollection.AlreadyJoined</note>
+        <note>Shown in the join-collection dialog when this computer already has a local copy linked to this same cloud Team Collection at the expected location. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AlreadyJoinedElsewhere" translate="no">
+        <source xml:lang="en">This computer is already connected to this collection, which appears to have moved. Bloom will fix things up and open it for you.</source>
+        <note>ID: TeamCollection.AlreadyJoinedElsewhere</note>
+        <note>Shown in the join-collection dialog when this computer already has a local copy linked to this same cloud Team Collection, but the local folder has moved since it was last used. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MatchingLocal" translate="no">
+        <source xml:lang="en">Matching local collection:</source>
+        <note>ID: TeamCollection.MatchingLocal</note>
+        <note>Short label in the join-collection dialog, immediately followed by a local folder path. Appears whenever a local collection folder matches the one being joined.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConflictingCollection" translate="no">
+        <source xml:lang="en">Bloom found another collection with this same name that is already connected to a different Team Collection. Click REPORT to get help from the Bloom team.</source>
+        <note>ID: TeamCollection.ConflictingCollection</note>
+        <note>Error shown in the join-collection dialog when a local collection with the same name exists but is linked to a DIFFERENT Team Collection than the one being joined. "REPORT" refers to the Report button shown alongside this message; "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.ConflictingCollectionLabel" translate="no">
+        <source xml:lang="en">Conflicting Team collection:</source>
+        <note>ID: TeamCollection.ConflictingCollectionLabel</note>
+        <note>Short label in the join-collection dialog's conflict error, immediately followed by a description of the other Team Collection the local folder is linked to.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.SameIds" translate="no">
+        <source xml:lang="en">(Different TC IDs)</source>
+        <note>ID: TeamCollection.SameIds</note>
+        <note>Short technical detail shown in the join-collection dialog's conflict error, for the rare case where a local collection has the same name as the one being joined but a different internal Team Collection identifier. "TC" abbreviates "Team Collection"; mainly seen by users contacting Bloom support about this specific conflict, so a literal/technical translation is fine.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CloudLocation" translate="no">
+        <source xml:lang="en">Cloud Storage Folder Location:</source>
+        <note>ID: TeamCollection.CloudLocation</note>
+        <note>Label above a link to the shared folder location for a FOLDER-based (not the newer server-hosted cloud) Team Collection. "Cloud" here refers to a cloud-sync service like Dropbox or Google Drive that the shared folder happens to live in, not Bloom's own Cloud Team Collections feature.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.AddingHelp" translate="no">
+        <source xml:lang="en">Need help adding someone to your Team Collection?</source>
+        <note>ID: TeamCollection.AddingHelp</note>
+        <note>Prompt shown above a help-link button, in the Team Collection tab of Collection Settings (folder-based Team Collections).</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.HowToAddSomeone" translate="no">
+        <source xml:lang="en">How to add someone to this Team Collection</source>
+        <note>ID: TeamCollection.HowToAddSomeone</note>
+        <note>Text of a button/link that opens Bloom's help documentation on adding a team member to a folder-based Team Collection.</note>
       </trans-unit>
     </body>
   </file>

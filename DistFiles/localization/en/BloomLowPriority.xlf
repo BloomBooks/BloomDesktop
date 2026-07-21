@@ -343,6 +343,11 @@
         <source xml:lang="en">Finished</source>
         <note>Common.Finished</note>
       </trans-unit>
+      <trans-unit id="Common.BloomIsBusy" translate="no">
+        <source xml:lang="en">Bloom is busy, please wait…</source>
+        <note>ID: Common.BloomIsBusy</note>
+        <note>Fallback message on the full-screen "busy" overlay that blocks the collection tab during a long operation; shown only when no more specific message is provided. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
       <trans-unit id="EditTab.PasteHyperlink.Currently">
         <source xml:lang="en">Currently %0</source>
         <note>ID: EditTab.PasteHyperlink.Currently</note>

@@ -19,6 +19,7 @@ interface IAdvancedSettings {
     autoUpdate?: boolean;
     showExperimentalBookSources?: boolean;
     allowTeamCollection?: boolean;
+    allowCloudTeamCollection?: boolean;
     allowAppBuilder?: boolean;
     showQrCode?: boolean;
     qrcodeCaption?: string;
@@ -32,9 +33,18 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const [allowTeamCollectionEnabled, setAllowTeamCollectionEnabled] =
         React.useState<boolean>(false);
     const [
+        allowCloudTeamCollectionEnabled,
+        setAllowCloudTeamCollectionEnabled,
+    ] = React.useState<boolean>(false);
+    const [
         showExperimentalBookSourcesOption,
         setShowExperimentalBookSourcesOption,
     ] = React.useState<boolean>(false);
+    // For 6.5 the Cloud Team Collections checkbox is hidden from most end users; the host only
+    // reports this true when the `cloudCollections` environment variable is set (see
+    // CollectionSettingsApi.CloudTeamCollectionOptionVisible).
+    const [showAllowCloudTeamCollection, setShowAllowCloudTeamCollection] =
+        React.useState<boolean>(false);
 
     const advancedProgramSettingsLabel = useL10n(
         "Advanced Program Settings",
@@ -59,6 +69,10 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const teamCollectionsLabel = useL10n(
         "Team Collections",
         "TeamCollection.TeamCollections",
+    );
+    const cloudTeamCollectionsLabel = useL10n(
+        "Cloud Team Collections",
+        "CollectionSettingsDialog.AdvancedTab.Experimental.CloudTeamCollections",
     );
     const appBuilderLabel = useL10n(
         "App Builder",
@@ -88,12 +102,21 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const featureStatus = useGetFeatureStatus("TeamCollection");
     const teamCollectionOptionEnabled =
         featureStatus === undefined ? true : featureStatus.enabled;
+    const cloudTeamCollectionFeatureStatus = useGetFeatureStatus(
+        "CloudTeamCollection",
+    );
+    const cloudTeamCollectionOptionEnabled =
+        cloudTeamCollectionFeatureStatus === undefined
+            ? true
+            : cloudTeamCollectionFeatureStatus.enabled;
     const appBuilderFeatureStatus = useGetFeatureStatus("AppBuilder");
     const appBuilderOptionEnabled =
         appBuilderFeatureStatus === undefined
             ? false
             : appBuilderFeatureStatus.enabled;
     const canChangeTeamCollectionOption = allowTeamCollectionEnabled !== false;
+    const canChangeCloudTeamCollectionOption =
+        allowCloudTeamCollectionEnabled !== false;
 
     const normalizeConfigrSettings = React.useCallback(
         (
@@ -125,8 +148,14 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
             setAllowTeamCollectionEnabled(
                 data["allowTeamCollectionEnabled"] ?? false,
             );
+            setAllowCloudTeamCollectionEnabled(
+                data["allowCloudTeamCollectionEnabled"] ?? false,
+            );
             setShowExperimentalBookSourcesOption(
                 data["showExperimentalBookSourcesOption"] ?? false,
+            );
+            setShowAllowCloudTeamCollection(
+                data["showAllowCloudTeamCollection"] ?? false,
             );
         });
     }, []);
@@ -236,6 +265,39 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                     />
                                 </div>
                             </div>
+                            {showAllowCloudTeamCollection && (
+                                <div
+                                    css={css`
+                                        .Mui-disabled {
+                                            opacity: 1;
+                                        }
+                                    `}
+                                >
+                                    <ConfigrBoolean
+                                        label={cloudTeamCollectionsLabel}
+                                        path="allowCloudTeamCollection"
+                                        disabled={
+                                            !cloudTeamCollectionOptionEnabled ||
+                                            !canChangeCloudTeamCollectionOption
+                                        }
+                                    ></ConfigrBoolean>{" "}
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            justify-content: flex-end;
+                                            .bloom-subscriptionIndicator {
+                                                font-size: 10pt;
+                                                font-weight: 700;
+                                            }
+                                        `}
+                                    >
+                                        <BloomSubscriptionIndicatorIconAndText
+                                            feature="CloudTeamCollection"
+                                            className="bloom-subscriptionIndicator"
+                                        />
+                                    </div>
+                                </div>
+                            )}
                             <div
                                 css={css`
                                     .Mui-disabled {

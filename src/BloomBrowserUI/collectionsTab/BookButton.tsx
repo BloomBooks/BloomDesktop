@@ -9,7 +9,12 @@ import {
 } from "../utils/bloomApi";
 import { Button, Menu } from "@mui/material";
 import TruncateMarkup from "react-truncate-markup";
-import { useTColBookStatus } from "../teamCollection/teamCollectionApi";
+import {
+    isCloudTeamCollection,
+    useTColBookStatus,
+    useTeamCollectionCapabilities,
+} from "../teamCollection/teamCollectionApi";
+import { NewerVersionAvailableMarker } from "../teamCollection/NewerVersionAvailableMarker";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import {
     kBloomBlue,
@@ -28,6 +33,7 @@ import { makeMenuItems, MenuItemSpec } from "./menuHelpers";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useL10n } from "../react_components/l10nHooks";
 import SettingsIcon from "@mui/icons-material/Settings";
+import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import { showBookSettingsDialog } from "../bookEdit/bookAndPageSettings/BookAndPageSettingsDialog";
 import { BookOnBlorgBadge } from "../react_components/BookOnBlorgBadge";
 
@@ -125,6 +131,22 @@ export const BookButton: React.FunctionComponent<{
         folderName,
         props.collection.isEditableCollection,
     );
+
+    // Cloud Team Collections: gates the "newer version exists" thumbnail marker below. Branches
+    // on capability (never on concrete backend type); folder Team Collections never populate
+    // repoVersionSeq/localVersionSeq (see IBookTeamCollectionStatus's comment), so this is
+    // effectively always false there even without the explicit isCloud check, but the check is
+    // kept for the same reason it's used elsewhere in this task: gating must never rely solely
+    // on the mere presence of a field.
+    const capabilities = useTeamCollectionCapabilities();
+    const isCloud = isCloudTeamCollection(capabilities);
+    const hasNewerVersionAvailable =
+        isCloud &&
+        !teamCollectionStatus?.who &&
+        typeof teamCollectionStatus?.repoVersionSeq === "number" &&
+        typeof teamCollectionStatus?.localVersionSeq === "number" &&
+        teamCollectionStatus.repoVersionSeq >
+            teamCollectionStatus.localVersionSeq;
 
     // BL-16199
     // Starting in 6.4, the Collection Tab no longer existing in the background when we
@@ -450,6 +472,74 @@ export const BookButton: React.FunctionComponent<{
         "This tooltip pops up when the user hovers over a disabled menu item.",
     );
 
+    // Batch item 7 (progressive join): tooltip for a not-yet-downloaded placeholder book. Called
+    // unconditionally (with the other hooks above) even though it's only used in the early-return
+    // placeholder branch below, per the rules of hooks.
+    const notYetDownloadedTooltip = useL10n(
+        "This book hasn't been downloaded to this computer yet. It will download automatically in the background.",
+        "CollectionTab.BookNotYetDownloaded",
+    );
+
+    // Batch item 7 (progressive join): a repo book with no local folder yet renders as a simple,
+    // non-interactive-looking placeholder instead of the normal book button -- no thumbnail (there
+    // is no local file to make one from), no context menu, no rename/edit/delete (SAFETY: no
+    // dangerous action must be reachable on a placeholder). Clicking it still posts to
+    // collections/selected-book like a normal click; CollectionApi gracefully treats that as "bump
+    // this book's download to the front of the queue" instead of a real selection (see
+    // CollectionApi.TryPrioritizeNotYetDownloadedBook).
+    if (props.book.notYetDownloaded) {
+        return (
+            <div
+                className="book-button not-yet-downloaded"
+                css={css`
+                    position: relative;
+                    height: ${bookButtonHeight}px;
+                    width: ${bookButtonWidth}px;
+                    box-sizing: border-box;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    border: 1px dashed rgba(255, 255, 255, 0.4);
+                    border-radius: 4px;
+                    cursor: pointer;
+                    color: white;
+                `}
+                data-book-id={props.book.id}
+                title={notYetDownloadedTooltip}
+                onClick={() => setSelectedBookIdWithApi(props.book.id)}
+            >
+                <CloudDownloadIcon
+                    css={css`
+                        color: rgba(255, 255, 255, 0.7);
+                        font-size: 28px;
+                    `}
+                />
+                <span
+                    css={css`
+                        color: white;
+                        text-transform: none;
+                        font-size: 12px;
+                        font-family:
+                            ${kDefaultLanguageFontStack},
+                            ${props.collection.languageFont};
+                        line-height: 14px;
+                        margin-top: 5px;
+                        width: 75px;
+                        text-align: center;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        display: -webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                    `}
+                >
+                    {bookLabel}
+                </span>
+            </div>
+        );
+    }
+
     // If relevant, compute the menu items for a right-click on this button.
     // contextMenuPoint has a value if this button has been right-clicked.
     // if it wasn't the selected button at the time, however, the menu will not show
@@ -501,7 +591,14 @@ export const BookButton: React.FunctionComponent<{
             {teamCollectionStatus?.who && (
                 <BloomAvatar
                     email={teamCollectionStatus.who}
-                    name={teamCollectionStatus.whoFirstName}
+                    // Cloud backends have no first/surname split (only the account email),
+                    // and a null name makes BloomAvatar draw its anonymous fallback instead
+                    // of an initial. Fall back to the email so the book-list overlay matches
+                    // the status panel's avatar.
+                    name={
+                        teamCollectionStatus.whoFirstName ||
+                        teamCollectionStatus.who
+                    }
                     avatarSizeInt={32}
                     borderColor={
                         teamCollectionStatus.who ===
@@ -540,6 +637,9 @@ export const BookButton: React.FunctionComponent<{
                         {props.collection.isEditableCollection && (
                             <BookOnBlorgBadge book={props.book} />
                         )}
+                        <NewerVersionAvailableMarker
+                            show={hasNewerVersionAvailable}
+                        />
                     </div>
                 }
             >

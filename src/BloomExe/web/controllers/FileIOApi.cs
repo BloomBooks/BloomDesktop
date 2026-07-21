@@ -14,7 +14,6 @@ using Bloom.Utils;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.PlatformUtilities;
-using ThirdParty.Json.LitJson;
 
 namespace Bloom.web.controllers
 {

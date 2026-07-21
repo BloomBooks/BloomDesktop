@@ -1,0 +1,27 @@
+{
+    "name": "bloom-cloudtc-e2e",
+    "private": true,
+    "version": "0.0.0",
+    "description": "Playwright-over-CDP E2E harness for Cloud Team Collections. See README.md for invocation, environment prerequisites, and the hard-won environment rules this harness encodes.",
+    "engines": {
+        "node": ">=22.11.0"
+    },
+    "scripts": {
+        "test": "playwright test",
+        "test:headed": "playwright test --headed --workers=1"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.48.0",
+        "@types/node": "^22.10.1",
+        "@types/pg": "^8.20.0",
+        "tsx": "^4.23.0",
+        "typescript": "^5.6.3"
+    },
+    "volta": {
+        "node": "22.21.1",
+        "yarn": "1.22.22"
+    },
+    "dependencies": {
+        "pg": "^8.22.0"
+    }
+}

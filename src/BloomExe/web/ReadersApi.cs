@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
-using Amazon.Runtime.Internal.Util;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;

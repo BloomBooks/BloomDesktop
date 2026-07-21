@@ -104,6 +104,19 @@ namespace Bloom.TeamCollection
         public string Param0 { get; set; }
         public string Param1 { get; set; }
 
+        /// <summary>
+        /// True for messages that must ABORT opening the collection entirely (show this message
+        /// and go back to the collection chooser) rather than falling back to the usual
+        /// Disconnected mode. Used by CloudTeamCollection.CheckConnection's NotAMember case
+        /// (batch item 9, account-switch behavior): only meaningful for the very first
+        /// CheckConnection call made while opening a collection (see
+        /// TeamCollectionManager.CheckConnection's allowHardRefusal parameter) -- a membership
+        /// loss discovered mid-session still just disconnects, it does not crash the running app.
+        /// Never round-tripped through ToPersistedForm/FromPersistedForm: a message carrying this
+        /// flag is acted on immediately and is never written into the persisted message log.
+        /// </summary>
+        public bool IsAccessRefusal { get; set; }
+
         // Indicates message is important enough for us to show the Messages in preference to History
         public bool Important =>
             MessageType == MessageAndMilestoneType.NewStuff

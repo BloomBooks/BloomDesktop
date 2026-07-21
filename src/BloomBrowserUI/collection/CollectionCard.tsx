@@ -26,6 +26,14 @@ export interface ICollectionInfo {
     isTeamCollection?: boolean;
     // True for the collection currently open in Bloom; that card is highlighted.
     isCurrentCollection?: boolean;
+    // The fields below are set only for a "join card" (dogfood batch 1, item 6): a cloud Team
+    // Collection the signed-in user belongs to but has no local copy of yet (see
+    // CollectionChooserApi.HandleGetJoinCards). A join card has no local folder, so none of the
+    // fields above (bookCount/checkedOutCount/unpublishedCount) are meaningful for it and none are
+    // fetched; clicking it invites the user to join instead of opening a local collection.
+    isJoinCard?: boolean;
+    collectionId?: string;
+    onJoinClick?: (collectionId: string, title: string) => void;
 }
 
 // The "..." menu button sits in the top-right corner of the card. The title row
@@ -148,14 +156,15 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
 
     // The unpublished count is somewhat expensive to calculate, so it's not likely to be
     // included in the initial data we get. Instead, we use an effect to fetch it when the
-    // card is rendered.
+    // card is rendered. A join card has no local folder to ask about, so it never fetches this
+    // (or anything else per-card -- see the batch plan's "no per-card fetches for join cards").
     React.useEffect(() => {
-        if (props.unpublishedCount !== undefined) return;
+        if (props.isJoinCard || props.unpublishedCount !== undefined) return;
         get(
             `collections/getUnpublishedCount?collectionPath=${encodeURIComponent(props.path)}`,
             (r) => setUnpublishedCount(r.data?.count),
         );
-    }, [props.path, props.unpublishedCount]);
+    }, [props.isJoinCard, props.path, props.unpublishedCount]);
 
     const bookCountSingular = useL10n(
         "{0} book",
@@ -187,6 +196,11 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
         undefined,
         String(unpublishedCount ?? 0),
     );
+    // Reuses the same "Get" wording the old "Get my Team Collections" sidebar used for its
+    // pull-down button, as the join cue for a join card (batch decision: "e.g. the existing
+    // 'Get'/join affordance").
+    const joinCueText = useL10n("Get", "CollectionChooser.PullDown", undefined);
+
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         event.stopPropagation();
         setMoreMenuAnchorEl(event.currentTarget);
@@ -206,11 +220,19 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
         <Card
             variant="outlined"
             css={[cardStyle, props.isCurrentCollection && currentCardStyle]}
+            data-testid={props.isJoinCard ? "join-collection-card" : undefined}
         >
             <CardActionArea
                 onClick={() => {
-                    if (!moreMenuAnchorEl)
-                        postString("workspace/openCollection", props.path);
+                    if (moreMenuAnchorEl) return;
+                    if (props.isJoinCard) {
+                        props.onJoinClick?.(
+                            props.collectionId ?? "",
+                            props.title,
+                        );
+                        return;
+                    }
+                    postString("workspace/openCollection", props.path);
                 }}
             >
                 <CardContent css={cardContentStyle}>
@@ -245,74 +267,98 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
                             )}
                         </div>
                         <div css={metadataRowStyle}>
-                            <span css={bookCountStyle}>{bookCountText}</span>
-                            {props.checkedOutCount ? (
-                                <Chip
-                                    size="small"
-                                    variant="outlined"
-                                    label={checkedOutText}
-                                    css={css`
-                                        ${chipBaseStyle};
-                                        color: ${kBloomRed};
-                                        border-color: ${kBloomRed}73;
-                                        background-color: transparent;
-                                    `}
-                                />
-                            ) : null}
-                            {unpublishedCount ? (
+                            {props.isJoinCard ? (
+                                // A join card isn't joined yet, so it has no local book
+                                // count / checkout / unpublished info to show — show the
+                                // "Get" join cue instead (dogfood batch 1, item 6).
                                 <span
-                                    css={unpublishedTextStyle}
-                                    title={unpublishedText}
+                                    css={css`
+                                        ${bookCountStyle};
+                                        color: ${kBloomBlue};
+                                    `}
                                 >
-                                    {unpublishedShortText}
+                                    {joinCueText}
                                 </span>
-                            ) : null}
+                            ) : (
+                                <React.Fragment>
+                                    <span css={bookCountStyle}>
+                                        {bookCountText}
+                                    </span>
+                                    {props.checkedOutCount ? (
+                                        <Chip
+                                            size="small"
+                                            variant="outlined"
+                                            label={checkedOutText}
+                                            css={css`
+                                                ${chipBaseStyle};
+                                                color: ${kBloomRed};
+                                                border-color: ${kBloomRed}73;
+                                                background-color: transparent;
+                                            `}
+                                        />
+                                    ) : null}
+                                    {unpublishedCount ? (
+                                        <span
+                                            css={unpublishedTextStyle}
+                                            title={unpublishedText}
+                                        >
+                                            {unpublishedShortText}
+                                        </span>
+                                    ) : null}
+                                </React.Fragment>
+                            )}
                         </div>
                     </div>
                 </CardContent>
             </CardActionArea>
-            {/* Outside CardActionArea so clicks don't bubble up and open the collection */}
-            <IconButton
-                aria-label="more"
-                aria-controls="long-menu"
-                aria-haspopup="true"
-                onClick={handleClick}
-                css={[
-                    moreButtonStyle,
-                    moreMenuIsOpen &&
-                        css`
-                            opacity: 1;
-                        `,
-                ]}
-                className="more-button"
-            >
-                <MoreVertIcon />
-            </IconButton>
-            <Menu
-                id="long-menu"
-                anchorEl={moreMenuAnchorEl}
-                keepMounted
-                open={moreMenuIsOpen}
-                onClose={handleMenuClose}
-                slotProps={{ paper: { sx: { maxWidth: 280 } } }}
-            >
-                <LocalizableMenuItem
-                    english={"Show in File Explorer"}
-                    l10nId={"CollectionTab.BookMenu.ShowInFileExplorer"}
-                    onClick={handleOpenInFileExplorer}
-                    hasLeadingIconSpace={false}
-                />
-                <hr />
-                <MenuItem
-                    disabled
-                    css={css`
-                        white-space: normal;
-                        word-break: break-all;
-                    `}
-                >
-                    {props.path}
-                </MenuItem>
-            </Menu>
+            {/* Outside CardActionArea so clicks don't bubble up and open the collection.
+                Omitted entirely for a join card: there is no local folder yet, so "Show in File
+                Explorer" and the path display below are both meaningless before joining. */}
+            {!props.isJoinCard && (
+                <React.Fragment>
+                    <IconButton
+                        aria-label="more"
+                        aria-controls="long-menu"
+                        aria-haspopup="true"
+                        onClick={handleClick}
+                        css={[
+                            moreButtonStyle,
+                            moreMenuIsOpen &&
+                                css`
+                                    opacity: 1;
+                                `,
+                        ]}
+                        className="more-button"
+                    >
+                        <MoreVertIcon />
+                    </IconButton>
+                    <Menu
+                        id="long-menu"
+                        anchorEl={moreMenuAnchorEl}
+                        keepMounted
+                        open={moreMenuIsOpen}
+                        onClose={handleMenuClose}
+                        slotProps={{ paper: { sx: { maxWidth: 280 } } }}
+                    >
+                        <LocalizableMenuItem
+                            english={"Show in File Explorer"}
+                            l10nId={"CollectionTab.BookMenu.ShowInFileExplorer"}
+                            onClick={handleOpenInFileExplorer}
+                            hasLeadingIconSpace={false}
+                        />
+                        <hr />
+                        <MenuItem
+                            disabled
+                            css={css`
+                                white-space: normal;
+                                word-break: break-all;
+                            `}
+                        >
+                            {props.path}
+                        </MenuItem>
+                    </Menu>
+                </React.Fragment>
+            )}
         </Card>
     );
 };
