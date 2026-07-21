@@ -100,9 +100,12 @@ namespace Bloom
         /// ------------------------------------------------------------------------------------
         protected new void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            if (IsHarmlessInputLanguageCultureException(e.ExceptionObject as Exception))
-                return;
-
+            // Note: we do NOT try to suppress the harmless input-language CultureNotFoundException
+            // here (see IsHarmlessInputLanguageCultureException / HandleTopLevelError). That crash
+            // arrives on the UI thread's WndProc and is delivered to Application.ThreadException,
+            // which lets us return and carry on. AppDomain.UnhandledException, by contrast, fires
+            // when the CLR is already terminating; returning early cannot prevent the exit, so
+            // swallowing it here would only hide the crash report without saving the process.
             if (!GetShouldHandleException(sender, e.ExceptionObject as Exception))
                 return;
 
