@@ -115,6 +115,12 @@ export function shouldIgnoreUnhandledError(message: string): boolean {
         // but the uncaught throw surfaces as an alarming error report. Swallow it. (The
         // accompanying "network name is no longer available" server log line is the same
         // teardown race seen from the C# side.)
+        // We deliberately match any plugin name, not just floatpanel, since the teardown race
+        // can cancel the load of any lazily-loaded plugin. This does mean a genuine plugin
+        // failure (e.g. a plugin.js missing from a build) is also swallowed here; that is an
+        // acceptable trade-off because such a failure is not a one-off teardown artifact but a
+        // consistent, reproducible breakage that shows up as a visibly non-working toolbar
+        // during normal editing, so it does not depend on this error report to be noticed.
         return true;
     }
     return false;
