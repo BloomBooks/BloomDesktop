@@ -25,6 +25,55 @@ import {
     splitHighlightNames,
 } from "./audioTextHighlightManager";
 
+// A controllable stand-in for the page-frame CanvasElementManager. By default it is DISABLED,
+// so getCanvasElementManager() returns undefined -- exactly how the real one behaves in tests
+// (there is no editable-page bundle) -- and every existing test is unaffected. A test that
+// needs to exercise the audio code's handling of an active canvas element calls __enable() and
+// __setActiveForTest(...). When enabled it is a Proxy so that any method the production code
+// happens to call (e.g. resumeComicEditing during image-description setup) is a safe no-op,
+// while getActiveElement returns the (possibly stale/detached) element the test supplied.
+const mockCanvasElement = vi.hoisted(() => {
+    let activeElement: HTMLElement | undefined = undefined;
+    let enabled = false;
+    const explicit: Record<string, unknown> = {
+        getActiveElement: () => activeElement,
+        setActiveElement: (element: HTMLElement | undefined) => {
+            activeElement = element;
+        },
+    };
+    const manager = new Proxy(explicit, {
+        get(target, prop: string) {
+            if (prop in target) return target[prop];
+            // Any other method the production code calls is a harmless no-op in tests.
+            return () => undefined;
+        },
+    });
+    return {
+        getManager: () => (enabled ? manager : undefined),
+        __enable: () => {
+            enabled = true;
+        },
+        __setActiveForTest: (element: HTMLElement | undefined) => {
+            activeElement = element;
+        },
+        __reset: () => {
+            activeElement = undefined;
+            enabled = false;
+        },
+    };
+});
+
+vi.mock("../canvas/canvasElementPageBridge", async (importActual) => {
+    const actual =
+        await importActual<
+            typeof import("../canvas/canvasElementPageBridge")
+        >();
+    return {
+        ...actual,
+        getCanvasElementManager: () => mockCanvasElement.getManager(),
+    };
+});
+
 class FakeHighlight {
     public ranges: Range[];
 
@@ -146,6 +195,7 @@ describe("audio recording tests", () => {
         // when tests finish before timers fire
         theOneAudioRecorder?.clearTimeouts();
         getPseudoHighlightsRegistry().clear();
+        mockCanvasElement.__reset();
     });
 
     // In an earlier version of our API, checkForAnyRecording was designed to fail (404) if there was no recording.
@@ -1630,6 +1680,56 @@ describe("audio recording tests", () => {
             // Verification
             const firstDiv = getFrameElementById("page", "div1")!;
             expect(recording.getAudioCurrentElement()).toBe(firstDiv);
+        });
+
+        // BL-15300 regression (Problem 1): in a picture book (e.g. Moon and Cap) the recordable
+        // text lives inside a canvas element (text over picture). Highlighting text makes that
+        // canvas element the CanvasElementManager's "active" element, and that reference is not
+        // cleared when you navigate to another page. When the next page loads,
+        // setCurrentAudioElementToDefaultAsync used to see the (now detached) active canvas
+        // element and return without highlighting anything -- so after a couple of page turns no
+        // text was highlighted at all. The new page's own text must still get highlighted even
+        // though a stale active canvas element from the previous page is still hanging around.
+        it("still highlights text on a new page when a stale canvas element from the previous page is still active", async () => {
+            setupDefaultApiResponses();
+            mockCanvasElement.__enable();
+
+            const canvasTextPage = (n: number) =>
+                `<div id="page${n}"><div class="bloom-canvas"><div class="bloom-canvas-element"><div class="bloom-translationGroup"><div id="box${n}" class="bloom-editable bloom-visibility-code-on" data-audiorecordingmode="Sentence"><p><span id="s${n}" class="audio-sentence">Page ${n} text.</span></p></div></div></div></div></div>`;
+
+            // Page 1: opens fine and highlights its text.
+            SetupIFrameFromHtml(canvasTextPage(1));
+            const recording = new AudioRecording();
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            recording.recordingMode = RecordingMode.Sentence;
+            await recording.handleNewPageReady();
+            expect(getHighlightTexts(currentHighlightName)).toEqual([
+                "Page 1 text.",
+            ]);
+
+            // Simulate the CanvasElementManager keeping page 1's canvas element active.
+            const page1CanvasElement = getPageWindow()!.document.querySelector(
+                ".bloom-canvas-element",
+            ) as HTMLElement;
+            mockCanvasElement.__setActiveForTest(page1CanvasElement);
+
+            // Navigate to page 2: replacing the body detaches page 1's nodes, so the still-active
+            // canvas element reference is now stale (not part of the current page).
+            SetupIFrameFromHtml(canvasTextPage(2));
+            getPseudoHighlightsRegistry().clear();
+            // Real navigation nulls the current highlight during teardown.
+            (
+                recording as unknown as {
+                    highlightedElement: HTMLElement | null;
+                }
+            ).highlightedElement = null;
+
+            await recording.handleNewPageReady();
+
+            // The regression: page 2's text should still be highlighted.
+            expect(getHighlightTexts(currentHighlightName)).toEqual([
+                "Page 2 text.",
+            ]);
         });
     });
 

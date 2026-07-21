@@ -3285,7 +3285,14 @@ export default class AudioRecording implements IAudioRecorder {
         }
         const activeCanvasElement =
             getCanvasElementManager()?.getActiveElement();
-        if (activeCanvasElement) {
+        // Only defer to the active canvas element if it actually belongs to the current page.
+        // The CanvasElementManager is a page-frame singleton whose activeElement is not reliably
+        // cleared on page navigation, so after paging it can still point at a detached element
+        // from a previous page. If we honored that stale reference we would return without
+        // highlighting any text and never fall through to the first-audio-sentence code below,
+        // leaving the new page with no highlight at all (BL-15300: "after 2 or 3 pages, text
+        // blocks are not highlighted").
+        if (activeCanvasElement && pageDocBody.contains(activeCanvasElement)) {
             // Stop if this appears to be a recursive call. See BL-14898.
             if (activeCanvasElement !== this.canvasElementBeingHighlighted) {
                 this.canvasElementBeingHighlighted = activeCanvasElement;
