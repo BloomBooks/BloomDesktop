@@ -9,6 +9,7 @@ using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
+using SIL.Reporting;
 
 namespace Bloom.TeamCollection
 {
@@ -34,6 +35,12 @@ namespace Bloom.TeamCollection
                 ? message
                 : string.Format(LocalizationManager.GetString(fullL10nId, message), param0, param1);
             progress.MessageWithoutLocalizing(msg, kind);
+            // Also record in the durable SIL log file: the progress dialog is transient and the
+            // TC message log lives in the collection folder (gone if the folder is deleted or, in
+            // E2E runs, wiped by the next scenario), so without this there is NO surviving record
+            // of what the startup sync decided (found diagnosing the 10 Jul 2026 silent
+            // background-download drop, where all three logs had vanished).
+            Logger.WriteEvent("TC sync: " + msg);
             _tcLog.WriteMessage(
                 (kind == ProgressKind.Progress)
                     ? MessageAndMilestoneType.History

@@ -90,11 +90,14 @@ namespace Bloom.TeamCollection
         ///     if necessary generating a unique name for it. If false, put it into the main repo
         ///     folder, overwriting any existing book.</param>
         /// <returns>The book's new status, with the new VersionCode</returns>
+        // checkinComment is unused here: for folder TCs the message is already inside the
+        // book's history.db, which travels within the .bloom file we are about to write.
         protected override void PutBookInRepo(
             string sourceBookFolderPath,
             BookStatus status,
             bool inLostAndFound = false,
-            Action<float> progressCallback = null
+            Action<float> progressCallback = null,
+            string checkinComment = null
         )
         {
             var bookFolderName = Path.GetFileName(sourceBookFolderPath);
@@ -256,28 +259,8 @@ namespace Bloom.TeamCollection
             return AvailablePath(bookFolderName, lfPath, ".bloom");
         }
 
-        private static string AvailablePath(
-            string bookFolderName,
-            string folderName,
-            string extension
-        )
-        {
-            string bookPath;
-            Directory.CreateDirectory(folderName);
-            int counter = 0;
-            do
-            {
-                counter++;
-                // Don't use ChangeExtension here, bookFolderName may have arbitrary period
-                bookPath =
-                    Path.Combine(
-                        folderName,
-                        bookFolderName + (counter == 1 ? "" : counter.ToString())
-                    ) + extension;
-            } while (RobustFile.Exists(bookPath));
-
-            return bookPath;
-        }
+        // (The AvailablePath helper this class used to define here was hoisted to the base
+        // TeamCollection so CloudTeamCollection's local Lost and Found can share it.)
 
         protected override void MoveRepoBookToLostAndFound(string bookName)
         {
