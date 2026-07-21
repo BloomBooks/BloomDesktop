@@ -153,6 +153,7 @@ namespace Bloom
                                 typeof(StylesAndFontsApi),
                                 typeof(SpreadsheetApi),
                                 typeof(BookMetadataApi),
+                                typeof(AiImageEditorApi),
                                 typeof(IndicatorInfoApi),
                                 typeof(PublishToBloomPubApi),
                                 typeof(PublishPdfApi),
@@ -181,17 +182,19 @@ namespace Bloom
                                 typeof(TeamCollectionApi),
                                 typeof(BrandingSettings),
                                 typeof(AppApi),
-                                typeof(I18NApi),
                                 typeof(SignLanguageApi),
                                 typeof(AudioSegmentationApi),
                                 typeof(FileIOApi),
                                 typeof(ProgressDialogApi),
                                 typeof(EditingViewApi),
+                                typeof(ImageGalleryApi),
                                 typeof(ProblemReportApi),
                                 typeof(FontsApi),
                                 typeof(BulkBloomPubCreator),
                                 typeof(PublishApi),
                                 typeof(LibraryPublishApi),
+                                typeof(AccountApi),
+                                typeof(AvatarApi),
                                 typeof(WorkspaceApi),
                                 typeof(BookCollectionHolder),
                                 typeof(WorkspaceTabSelection),
@@ -324,6 +327,21 @@ namespace Bloom
 
                     builder.RegisterType<BloomLibraryBookApiClient>().AsSelf().SingleInstance();
 
+                    // The avatar cache holds an in-memory known-photo map and disk cache shared across
+                    // the app (account menu + Team Collection avatars); it must be a single shared
+                    // instance, not one-per-lifetime-scope, so a child-scope resolve can't get a second
+                    // copy with a stale map.
+                    //
+                    // Register with an explicit factory rather than RegisterType<AvatarCache>(). Its
+                    // constructor has an OPTIONAL `string cacheFolder = null` parameter (a test seam),
+                    // and a plain string IS registered in this container (editableCollectionDirectory,
+                    // just below). Autofac injects a registered service into an optional parameter when
+                    // one exists, so RegisterType would hand AvatarCache the collection directory as its
+                    // cache folder -- scattering avatar cache files into the user's collection folder and
+                    // defeating the "app-wide, survives restart" design. `new AvatarCache()` forces the
+                    // parameterless path so it uses the intended app-data folder.
+                    builder.Register(c => new AvatarCache()).AsSelf().SingleInstance();
+
                     // Enhance: may need some way to test a release build in the sandbox.
                     builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();
                     builder.RegisterType<BookUpload>().AsSelf().SingleInstance();
@@ -381,7 +399,12 @@ namespace Bloom
             }
 
             var server = parentContainer.Resolve<BloomServer>();
-            server.SetCollectionSettingsDuringInitialization(_scope.Resolve<CollectionSettings>());
+            var collectionSettings = _scope.Resolve<CollectionSettings>();
+            server.SetCollectionSettingsDuringInitialization(collectionSettings);
+            // Let the application-level CommonApi (which can't take a project dependency in its
+            // constructor) report this collection's folder via common/instanceInfo, so external tools
+            // can pick the right running Bloom when several are open.
+            web.controllers.CommonApi.CurrentCollectionSettings = collectionSettings;
             server.EnsureListening();
 
             // A few APIs are now registered in the constructor of ApplicationContainer
@@ -416,6 +439,7 @@ namespace Bloom
             _scope.Resolve<BookSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<StylesAndFontsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<BookMetadataApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<AiImageEditorApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<IndicatorInfoApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ImageApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ReadersApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -429,11 +453,18 @@ namespace Bloom
             _scope.Resolve<AudioSegmentationApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ProblemReportApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CopyrightAndLicenseApi>().RegisterWithApiHandler(server.ApiHandler);
-            _scope.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<FileIOApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ProgressDialogApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<EditingViewApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<ImageGalleryApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<LibraryPublishApi>().RegisterWithApiHandler(server.ApiHandler);
+            var accountApi = _scope.Resolve<AccountApi>();
+            accountApi.RegisterWithApiHandler(server.ApiHandler);
+            accountApi.RestoreSavedLoginIfAny();
+            // Register the avatar endpoint. (The persisted known-photo map that gives a previously
+            // logged-in user their nicer avatar source across restarts is loaded lazily by AvatarCache
+            // on its first use -- serving the first avatar request -- not eagerly here.)
+            _scope.Resolve<AvatarApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<WorkspaceApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -854,9 +885,17 @@ namespace Bloom
             // We now keep BloomApiHandler alive for the application lifetime, but many endpoints are project-scoped.
             // Disposing the ProjectContext should fully shut down the project (including webviews) before we clear
             // those project-scoped endpoints.
-            var server = _scope.Resolve<BloomServer>();
             try
             {
+                // During application shutdown, WinForms can fire Application.ApplicationExit (for example as a
+                // worker thread's message context is torn down while publish artifacts are being created, as in
+                // the harvester's CreateArtifacts flow). That disposes the ApplicationContainer, which is the
+                // parent of _scope, before this Dispose runs. When that has happened, BloomServer (an
+                // application-level singleton) and all its API handlers are already gone, so resolving it throws
+                // ObjectDisposedException and there is nothing project-scoped left to clean up. In that case we
+                // just fall through to disposing our own scope.
+                var server = _scope.Resolve<BloomServer>();
+
                 // The order of these is tricky. The problem is that browsers could still be
                 // running and trying to call APIs while we are shutting down.
                 // Disposing the scope disposes the browsers, after which they shouldn't be able
@@ -867,10 +906,20 @@ namespace Bloom
                 // disposed. On the whole, I think it's best to clear the handlers first; that way,
                 // at least we avoid mysterious errors in the API handlers due to disposed objects.
                 server.ApiHandler.ClearProjectLevelHandlers();
-                _scope.Dispose();
+                // Clear the project-scoped collection settings we set on the application-level CommonApi
+                // (see constructor), so common/instanceInfo doesn't report stale collection info after the
+                // project is closed. A reload disposes this context before creating the next one, which
+                // sets it again, so clearing here is safe.
+                web.controllers.CommonApi.CurrentCollectionSettings = null;
+            }
+            catch (ObjectDisposedException)
+            {
+                // The application container was already disposed (see above); nothing project-scoped
+                // remains to clean up, so proceed to dispose our own scope below.
             }
             finally
             {
+                _scope.Dispose();
                 _scope = null;
             }
 

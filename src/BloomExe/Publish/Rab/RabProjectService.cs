@@ -12,6 +12,7 @@ using System.Net.Http;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Bloom.Api;
@@ -80,10 +81,10 @@ namespace Bloom.Publish.Rab
         private readonly CollectionSettings _collectionSettings;
         private readonly BloomWebSocketServer _webSocketServer;
         private readonly IWebSocketProgress _progress;
-        private string _activeProgressAction;
+        private volatile string _activeProgressAction;
         private int _lastBuildProgressPercent;
-        private string _lastLoggedProgressStage;
-        private int? _lastLoggedProgressPercent;
+        private volatile string _lastLoggedProgressStage;
+        private volatile int _lastLoggedProgressPercent = -1;
 
         // When non-null, RAB process output lines are collected here (in addition to being sent to
         // the progress log) so a build that produces no APK can surface RAB's own diagnostics.
@@ -372,6 +373,9 @@ namespace Bloom.Publish.Rab
                     )
                 );
 
+            // read this once early in the method to avoid returning inconsistent progress info if
+            // another thread changes it.
+            var activeAction = _activeProgressAction;
             var status = new RabProjectStatus()
             {
                 RabInstalled = rabInstalled,
@@ -386,6 +390,12 @@ namespace Bloom.Publish.Rab
                 TrackedBooks = trackedBooks,
                 TrackedBookTitles = trackedBooks.Select(book => book.Title).ToArray(),
                 PrepareSteps = prepareSteps,
+                ActiveAction = activeAction,
+                ActiveActionProgressStage = activeAction != null ? _lastLoggedProgressStage : null,
+                ActiveActionProgressPercent =
+                    activeAction != null
+                        ? (_lastLoggedProgressPercent < 0 ? 0 : _lastLoggedProgressPercent)
+                        : 0,
             };
 
             if (status.ProjectExists)
@@ -440,6 +450,52 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
+        /// True while a prepare/build/install action is running on a background thread.
+        /// </summary>
+        internal bool IsActionInProgress => _activeProgressAction != null;
+
+        /// <summary>
+        /// Atomically claims the action slot, setting <see cref="_activeProgressAction"/> to
+        /// <paramref name="action"/>. Returns true if this call won the slot, false if another
+        /// action is already running.
+        /// </summary>
+        internal bool TryBeginAction(string action)
+        {
+            if (Interlocked.CompareExchange(ref _activeProgressAction, action, null) != null)
+                return false;
+            // Reset stale progress from the previous action so a status poll that lands
+            // before the first ReportProgressStage call doesn't serve stale values.
+            _lastLoggedProgressStage = null;
+            _lastLoggedProgressPercent = -1;
+            return true;
+        }
+
+        /// <summary>
+        /// Releases the action slot. Called by <see cref="RabPublishApi"/> just before
+        /// <see cref="SendActionCompleteEvent"/> so the slot remains claimed until the
+        /// action is complete. (We clear it before actually sending the notification
+        /// so that the notification handlers correctly see that no task is running).
+        /// </summary>
+        internal void ClearAction()
+        {
+            _activeProgressAction = null;
+        }
+
+        /// <summary>
+        /// Sends an "actionComplete" websocket event so the Apps screen knows when a background
+        /// prepare/build/install has finished.  Called by RabPublishApi after ReportFailure (if
+        /// any) so the error message is logged before the UI tears down the progress subscriber.
+        /// </summary>
+        internal void SendActionCompleteEvent(string action, bool succeeded)
+        {
+            _webSocketServer.SendString(
+                kWebSocketContext,
+                RabPublishApi.kWebSocketEventId_ActionComplete,
+                $"{action}:{(succeeded ? "success" : "failure")}"
+            );
+        }
+
+        /// <summary>
         /// Reports an App Builder failure to Bloom's log and the progress channel used by the Apps screen.
         /// </summary>
         public void ReportFailure(string action, Exception error)
@@ -456,107 +512,93 @@ namespace Bloom.Publish.Rab
         private void Prepare()
         {
             var paths = GetPaths();
-            _activeProgressAction = "prepare";
-            try
+            ReportProgressStage("checking-installer", 0);
+            if (!EnsureRabInstalledForPrepare())
+                return;
+
+            // Prepare makes the on-disk RAB workspace match Bloom's current settings and tracked-book list,
+            // creating the project only on the first run and refreshing inputs after that.
+            EnsureWorkspaceFolders(paths);
+            EnsureRabBuildPrerequisites(paths);
+
+            ReportProgressStage("preparing-workspace", 0);
+            _progress.MessageWithoutLocalizing(
+                "Preparing the Reading App Builder workspace...",
+                ProgressKind.Heading
+            );
+
+            ReportProgressStage("exporting-bloompubs", 10);
+            var trackedBooks = ExportPrepareBooks(paths);
+            var effectiveSettings = GetEffectiveAppSettings(paths);
+            var supportFiles = EnsureProjectSupportFiles(paths);
+            var existingProjectPath = FindAppDefPath(paths);
+            RabPrepareState state;
+            var createdNewProject = string.IsNullOrEmpty(existingProjectPath);
+
+            if (createdNewProject)
             {
-                ReportProgressStage("checking-installer", 0);
-                if (!EnsureRabInstalledForPrepare())
-                    return;
+                ReportProgressStage("generating-signing-key", 55);
+                _progress.MessageWithoutLocalizing("Preparing Bloom's Android signing key...");
+                state = CreatePrepareState(EnsureBloomOwnedSigningState(paths));
 
-                // Prepare makes the on-disk RAB workspace match Bloom's current settings and tracked-book list,
-                // creating the project only on the first run and refreshing inputs after that.
-                EnsureWorkspaceFolders(paths);
-                EnsureRabBuildPrerequisites(paths);
-
-                ReportProgressStage("preparing-workspace", 0);
+                ReportProgressStage("creating-project", 70);
                 _progress.MessageWithoutLocalizing(
-                    "Preparing the Reading App Builder workspace...",
-                    ProgressKind.Heading
+                    "Creating the initial Reading App Builder project..."
+                );
+                RunRabCommand(
+                    BuildRabArgsForNewProject(
+                        paths,
+                        effectiveSettings,
+                        trackedBooks,
+                        state,
+                        supportFiles
+                    ),
+                    paths.RabRoot
                 );
 
-                ReportProgressStage("exporting-bloompubs", 10);
-                var trackedBooks = ExportPrepareBooks(paths);
-                var effectiveSettings = GetEffectiveAppSettings(paths);
-                var supportFiles = EnsureProjectSupportFiles(paths);
-                var existingProjectPath = FindAppDefPath(paths);
-                RabPrepareState state;
-                var createdNewProject = string.IsNullOrEmpty(existingProjectPath);
-
-                if (createdNewProject)
-                {
-                    ReportProgressStage("generating-signing-key", 55);
-                    _progress.MessageWithoutLocalizing("Preparing Bloom's Android signing key...");
-                    state = CreatePrepareState(EnsureBloomOwnedSigningState(paths));
-
-                    ReportProgressStage("creating-project", 70);
-                    _progress.MessageWithoutLocalizing(
-                        "Creating the initial Reading App Builder project..."
+                existingProjectPath = FindAppDefPath(paths);
+                if (string.IsNullOrEmpty(existingProjectPath))
+                    throw new ApplicationException(
+                        "Reading App Builder finished, but Bloom could not find the generated .appDef file."
                     );
-                    RunRabCommand(
-                        BuildRabArgsForNewProject(
-                            paths,
-                            effectiveSettings,
-                            trackedBooks,
-                            state,
-                            supportFiles
-                        ),
-                        paths.RabRoot
-                    );
-
-                    existingProjectPath = FindAppDefPath(paths);
-                    if (string.IsNullOrEmpty(existingProjectPath))
-                        throw new ApplicationException(
-                            "Reading App Builder finished, but Bloom could not find the generated .appDef file."
-                        );
-                }
-                else
-                {
-                    ReportProgressStage("updating-project", 70);
-                    _progress.MessageWithoutLocalizing(
-                        "The Reading App Builder project already exists. Refreshing BloomPUB inputs instead."
-                    );
-                    state = EnsureStateHasProjectAndSigningInfo(
-                        paths,
-                        LoadState(paths) ?? new RabPrepareState(),
-                        existingProjectPath
-                    );
-                    state = ApplyBloomOwnedSigningState(state, EnsureBloomOwnedSigningState(paths));
-                }
-
-                state = EnsureStateHasProjectAndSigningInfo(paths, state, existingProjectPath);
-                EnsureKeystore(state.KeystorePath, state.KeystorePassword);
-                state.Books = trackedBooks;
-
-                if (!createdNewProject)
-                {
-                    PrepareProjectForTrackedBookImport(existingProjectPath, trackedBooks);
-                    ReportProgressStage("updating-project", 85);
-                    RunRabCommand(
-                        BuildRabArgsForProjectUpdate(
-                            paths,
-                            state,
-                            trackedBooks,
-                            supportFiles,
-                            false
-                        ),
-                        paths.RabRoot
-                    );
-                }
-
-                ReconcileProjectWithImportedBooks(existingProjectPath, trackedBooks);
-                SynchronizeProjectFonts(existingProjectPath, trackedBooks);
-                EnsureProjectInterfaceLanguage(existingProjectPath);
-                ReportProgressStage("updating-project", 85);
-                SaveState(paths, state);
-
-                ReportProgressStage("complete", 100);
-                _progress.MessageWithoutLocalizing("Prepare complete.", ProgressKind.Heading);
-                _progress.MessageWithoutLocalizing($"Project file: {existingProjectPath}");
             }
-            finally
+            else
             {
-                _activeProgressAction = null;
+                ReportProgressStage("updating-project", 70);
+                _progress.MessageWithoutLocalizing(
+                    "The Reading App Builder project already exists. Refreshing BloomPUB inputs instead."
+                );
+                state = EnsureStateHasProjectAndSigningInfo(
+                    paths,
+                    LoadState(paths) ?? new RabPrepareState(),
+                    existingProjectPath
+                );
+                state = ApplyBloomOwnedSigningState(state, EnsureBloomOwnedSigningState(paths));
             }
+
+            state = EnsureStateHasProjectAndSigningInfo(paths, state, existingProjectPath);
+            EnsureKeystore(state.KeystorePath, state.KeystorePassword);
+            state.Books = trackedBooks;
+
+            if (!createdNewProject)
+            {
+                PrepareProjectForTrackedBookImport(existingProjectPath, trackedBooks);
+                ReportProgressStage("updating-project", 85);
+                RunRabCommand(
+                    BuildRabArgsForProjectUpdate(paths, state, trackedBooks, supportFiles, false),
+                    paths.RabRoot
+                );
+            }
+
+            ReconcileProjectWithImportedBooks(existingProjectPath, trackedBooks);
+            SynchronizeProjectFonts(existingProjectPath, trackedBooks);
+            EnsureProjectInterfaceLanguage(existingProjectPath);
+            ReportProgressStage("updating-project", 85);
+            SaveState(paths, state);
+
+            ReportProgressStage("complete", 100);
+            _progress.MessageWithoutLocalizing("Prepare complete.", ProgressKind.Heading);
+            _progress.MessageWithoutLocalizing($"Project file: {existingProjectPath}");
         }
 
         private bool EnsureRabInstalledForPrepare()
@@ -661,96 +703,85 @@ namespace Bloom.Publish.Rab
             // Build reuses BloomPUBs created during the current Apps-screen session and regenerates only missing ones.
             var paths = GetPaths();
             EnsureWorkspaceFolders(paths);
-            _activeProgressAction = "build";
             _lastBuildProgressPercent = 0;
+            ReportProgressStage("preparing-build", 0);
+            var state = LoadStateOrThrow(paths);
+            EnsureKeystore(state.KeystorePath, state.KeystorePassword);
+            EnsureRabBuildPrerequisites(paths);
+            ReportProgressStage("exporting-bloompubs", 10);
+            var trackedBooks = ExportTrackedBooks(paths, state);
+            var supportFiles = EnsureProjectSupportFiles(paths);
+
+            ReportProgressStage("updating-project", 35);
+            _progress.MessageWithoutLocalizing(
+                "Updating the Reading App Builder project with fresh BloomPUB files..."
+            );
+            PrepareProjectForTrackedBookImport(state.AppDefPath, trackedBooks);
+            RunRabCommand(
+                BuildRabArgsForProjectUpdate(paths, state, trackedBooks, supportFiles, false),
+                paths.RabRoot
+            );
+            ReconcileProjectWithImportedBooks(state.AppDefPath, trackedBooks);
+            SynchronizeProjectFonts(state.AppDefPath, trackedBooks);
+            EnsureProjectInterfaceLanguage(state.AppDefPath);
+            state.Books = trackedBooks;
+            SaveState(paths, state);
+
+            ReportProgressStage("building-android-app", 45);
+            _progress.MessageWithoutLocalizing(
+                "Building the Android app with Reading App Builder...",
+                ProgressKind.Heading
+            );
+            Directory.CreateDirectory(paths.SafeApkRoot);
+
+            // Capture this run's RAB output so that, if no APK is produced, we can surface
+            // Reading App Builder's own diagnostics (e.g. a missing font) instead of a generic
+            // "no APK was found" message that gives the user nothing to act on (BL-16467).
+            var buildOutput = new List<string>();
+            _rabOutputCapture = buildOutput;
             try
             {
-                ReportProgressStage("preparing-build", 0);
-                var state = LoadStateOrThrow(paths);
-                EnsureKeystore(state.KeystorePath, state.KeystorePassword);
-                EnsureRabBuildPrerequisites(paths);
-                ReportProgressStage("exporting-bloompubs", 10);
-                var trackedBooks = ExportTrackedBooks(paths, state);
-                var supportFiles = EnsureProjectSupportFiles(paths);
-
-                ReportProgressStage("updating-project", 35);
-                _progress.MessageWithoutLocalizing(
-                    "Updating the Reading App Builder project with fresh BloomPUB files..."
-                );
-                PrepareProjectForTrackedBookImport(state.AppDefPath, trackedBooks);
                 RunRabCommand(
-                    BuildRabArgsForProjectUpdate(paths, state, trackedBooks, supportFiles, false),
+                    BuildRabArgsForProjectUpdate(
+                        paths,
+                        state,
+                        Array.Empty<RabBookPublishInfo>(),
+                        supportFiles,
+                        true
+                    ),
                     paths.RabRoot
                 );
-                ReconcileProjectWithImportedBooks(state.AppDefPath, trackedBooks);
-                SynchronizeProjectFonts(state.AppDefPath, trackedBooks);
-                EnsureProjectInterfaceLanguage(state.AppDefPath);
-                state.Books = trackedBooks;
-                SaveState(paths, state);
-
-                ReportProgressStage("building-android-app", 45);
-                _progress.MessageWithoutLocalizing(
-                    "Building the Android app with Reading App Builder...",
-                    ProgressKind.Heading
-                );
-                Directory.CreateDirectory(paths.SafeApkRoot);
-
-                // Capture this run's RAB output so that, if no APK is produced, we can surface
-                // Reading App Builder's own diagnostics (e.g. a missing font) instead of a generic
-                // "no APK was found" message that gives the user nothing to act on (BL-16467).
-                var buildOutput = new List<string>();
-                _rabOutputCapture = buildOutput;
-                try
-                {
-                    RunRabCommand(
-                        BuildRabArgsForProjectUpdate(
-                            paths,
-                            state,
-                            Array.Empty<RabBookPublishInfo>(),
-                            supportFiles,
-                            true
-                        ),
-                        paths.RabRoot
-                    );
-                }
-                catch (ApplicationException e)
-                {
-                    // RAB exited with an error (RunProcess throws here on a non-zero exit code).
-                    // Its own stdout/stderr (collected in buildOutput) usually explains why — e.g. a
-                    // missing font — so surface those diagnostics alongside the exit-code summary
-                    // instead of leaving the user with a bare "cmd.exe exited with code N" (BL-16467).
-                    // The original exception is preserved as InnerException for the log.
-                    throw new ApplicationException(
-                        DescribeFailedRabBuild(e.Message, buildOutput),
-                        e
-                    );
-                }
-                finally
-                {
-                    _rabOutputCapture = null;
-                }
-
-                ReportProgressStage("finalizing-apk", 98);
-
-                var apkPath = FindLatestApkPath(paths);
-                if (string.IsNullOrEmpty(apkPath))
-                    throw new ApplicationException(DescribeMissingApkFailure(buildOutput));
-
-                ReportProgressStage("complete", 100);
-                _progress.MessageWithoutLocalizing("Build complete.", ProgressKind.Heading);
-                _progress.MessageWithoutLocalizing($"APK: {apkPath}");
-
-                state.LastBuiltInputSignature = ComputeBuildInputSignature(
-                    GetEffectiveAppSettings(paths),
-                    trackedBooks
-                );
-                state.LastBuiltApkPath = apkPath;
-                SaveState(paths, state);
+            }
+            catch (ApplicationException e)
+            {
+                // RAB exited with an error (RunProcess throws here on a non-zero exit code).
+                // Its own stdout/stderr (collected in buildOutput) usually explains why — e.g. a
+                // missing font — so surface those diagnostics alongside the exit-code summary
+                // instead of leaving the user with a bare "cmd.exe exited with code N" (BL-16467).
+                // The original exception is preserved as InnerException for the log.
+                throw new ApplicationException(DescribeFailedRabBuild(e.Message, buildOutput), e);
             }
             finally
             {
-                _activeProgressAction = null;
+                _rabOutputCapture = null;
             }
+
+            ReportProgressStage("finalizing-apk", 98);
+
+            var apkPath = FindLatestApkPath(paths);
+            if (string.IsNullOrEmpty(apkPath))
+                throw new ApplicationException(DescribeMissingApkFailure(buildOutput));
+
+            ReportProgressStage("complete", 100);
+            _progress.MessageWithoutLocalizing("Build complete.", ProgressKind.Heading);
+            _progress.MessageWithoutLocalizing($"APK: {apkPath}");
+
+            state.LastBuiltInputSignature = ComputeBuildInputSignature(
+                GetEffectiveAppSettings(paths),
+                trackedBooks
+            );
+            state.LastBuiltApkPath = apkPath;
+            SaveState(paths, state);
         }
 
         // Markers that flag a RAB output line as worth surfacing when a build produces no APK.
@@ -858,90 +889,73 @@ namespace Bloom.Publish.Rab
         {
             // Install re-reads package/app metadata from the project so launching uses the same identity that was built.
             var paths = GetPaths();
-            _activeProgressAction = "install";
-            try
+            var apkPath = FindLatestApkPath(paths);
+            if (string.IsNullOrEmpty(apkPath))
+                throw new ApplicationException(
+                    "Build the app before trying to install it on a phone."
+                );
+
+            var adbPath = FindAdbPath();
+            if (string.IsNullOrEmpty(adbPath))
+                throw new ApplicationException(
+                    "Bloom could not find adb. Install Android platform-tools or make adb available on PATH."
+                );
+
+            var project = LoadProjectOrNull(paths);
+            var packageName = project?.PackageName;
+            if (string.IsNullOrWhiteSpace(packageName))
+                packageName = GetPackageName();
+
+            var appName = project?.AppName;
+            if (string.IsNullOrWhiteSpace(appName))
+                appName = GetAppName();
+
+            ReportProgressStage("checking-device", 0);
+            _progress.MessageWithoutLocalizing("Checking for a connected Android device...");
+            var device = GetSingleConnectedDevice(adbPath);
+
+            ReportProgressStage("installing-on-phone", 45);
+            _progress.MessageWithoutLocalizing(
+                $"Installing {Path.GetFileName(apkPath)} on {device.DisplayName}...",
+                ProgressKind.Heading
+            );
+            var installResult = InstallApkOnDevice(adbPath, device.Serial, apkPath, paths.RabRoot);
+            if (installResult.ExitCode != 0)
             {
-                var apkPath = FindLatestApkPath(paths);
-                if (string.IsNullOrEmpty(apkPath))
-                    throw new ApplicationException(
-                        "Build the app before trying to install it on a phone."
-                    );
-
-                var adbPath = FindAdbPath();
-                if (string.IsNullOrEmpty(adbPath))
-                    throw new ApplicationException(
-                        "Bloom could not find adb. Install Android platform-tools or make adb available on PATH."
-                    );
-
-                var project = LoadProjectOrNull(paths);
-                var packageName = project?.PackageName;
-                if (string.IsNullOrWhiteSpace(packageName))
-                    packageName = GetPackageName();
-
-                var appName = project?.AppName;
-                if (string.IsNullOrWhiteSpace(appName))
-                    appName = GetAppName();
-
-                ReportProgressStage("checking-device", 0);
-                _progress.MessageWithoutLocalizing("Checking for a connected Android device...");
-                var device = GetSingleConnectedDevice(adbPath);
-
-                ReportProgressStage("installing-on-phone", 45);
-                _progress.MessageWithoutLocalizing(
-                    $"Installing {Path.GetFileName(apkPath)} on {device.DisplayName}...",
-                    ProgressKind.Heading
-                );
-                var installResult = InstallApkOnDevice(
-                    adbPath,
-                    device.Serial,
-                    apkPath,
-                    paths.RabRoot
-                );
-                if (installResult.ExitCode != 0)
+                if (IsUpdateIncompatibleInstallFailure(installResult.Output))
                 {
-                    if (IsUpdateIncompatibleInstallFailure(installResult.Output))
-                    {
-                        _progress.MessageWithoutLocalizing(
-                            $"A different signed copy of {appName} is already installed on {device.DisplayName}. Removing it and retrying...",
-                            ProgressKind.Warning
-                        );
-                        UninstallAppFromDevice(adbPath, device.Serial, packageName, paths.RabRoot);
-                        installResult = InstallApkOnDevice(
-                            adbPath,
-                            device.Serial,
-                            apkPath,
-                            paths.RabRoot
-                        );
-                    }
-
-                    if (installResult.ExitCode != 0)
-                    {
-                        throw new ApplicationException(
-                            $"{Path.GetFileName(adbPath)} exited with code {installResult.ExitCode}."
-                        );
-                    }
+                    _progress.MessageWithoutLocalizing(
+                        $"A different signed copy of {appName} is already installed on {device.DisplayName}. Removing it and retrying...",
+                        ProgressKind.Warning
+                    );
+                    UninstallAppFromDevice(adbPath, device.Serial, packageName, paths.RabRoot);
+                    installResult = InstallApkOnDevice(
+                        adbPath,
+                        device.Serial,
+                        apkPath,
+                        paths.RabRoot
+                    );
                 }
 
-                ReportProgressStage("launching-on-phone", 85);
-                _progress.MessageWithoutLocalizing(
-                    $"Launching {appName} on {device.DisplayName}...",
-                    ProgressKind.Heading
-                );
-                RunProcess(
-                    adbPath,
-                    BuildLaunchAppArguments(device.Serial, packageName),
-                    paths.RabRoot
-                );
-                ReportProgressStage("complete", 100);
-                _progress.MessageWithoutLocalizing(
-                    $"Install complete. Opened {appName} on {device.DisplayName}.",
-                    ProgressKind.Heading
-                );
+                if (installResult.ExitCode != 0)
+                {
+                    throw new ApplicationException(
+                        $"{Path.GetFileName(adbPath)} exited with code {installResult.ExitCode}."
+                    );
+                }
             }
-            finally
-            {
-                _activeProgressAction = null;
-            }
+
+            ReportProgressStage("launching-on-phone", 85);
+            _progress.MessageWithoutLocalizing(
+                $"Launching {appName} on {device.DisplayName}...",
+                ProgressKind.Heading
+            );
+            RunProcess(adbPath, BuildLaunchAppArguments(device.Serial, packageName), paths.RabRoot);
+            ReportProgressStage("complete", 100);
+            _progress.MessageWithoutLocalizing(
+                $"Install complete. Opened {appName} on {device.DisplayName}.",
+                ProgressKind.Heading
+            );
         }
 
         internal virtual RabWorkspacePaths GetPaths()
@@ -2768,30 +2782,60 @@ namespace Bloom.Publish.Rab
 
         internal virtual bool TryBringRunningRabToFront()
         {
-            foreach (var process in Process.GetProcesses())
+            var processes = Process.GetProcesses();
+            try
             {
-                try
+                foreach (var process in processes)
                 {
-                    if (process.MainWindowHandle == IntPtr.Zero)
-                        continue;
+                    try
+                    {
+                        if (process.MainWindowHandle == IntPtr.Zero)
+                            continue;
 
-                    if (
-                        process.MainWindowTitle.IndexOf(
-                            "Reading App Builder",
-                            StringComparison.OrdinalIgnoreCase
-                        ) < 0
-                    )
-                        continue;
+                        // RAB is a Java (Eclipse) app. Depending on how it is launched, its
+                        // window may belong to either java.exe or the console-less javaw.exe, so
+                        // accept both. This keeps us from matching, e.g., a browser tab whose
+                        // title happens to contain "Reading App Builder".
+                        if (
+                            !string.Equals(
+                                process.ProcessName,
+                                "java",
+                                StringComparison.OrdinalIgnoreCase
+                            )
+                            && !string.Equals(
+                                process.ProcessName,
+                                "javaw",
+                                StringComparison.OrdinalIgnoreCase
+                            )
+                        )
+                            continue;
 
-                    return ProcessExtra.SetForegroundWindow(process.MainWindowHandle);
+                        if (
+                            process.MainWindowTitle.IndexOf(
+                                "Reading App Builder",
+                                StringComparison.OrdinalIgnoreCase
+                            ) < 0
+                        )
+                            continue;
+
+                        return ProcessExtra.SetForegroundWindow(process.MainWindowHandle);
+                    }
+                    catch
+                    {
+                        // Ignore processes that cannot be inspected.
+                    }
                 }
-                catch
-                {
-                    // Ignore processes that cannot be inspected.
-                }
+
+                return false;
             }
-
-            return false;
+            finally
+            {
+                // Close every process handle we obtained to avoid leaking resources, but
+                // don't kill the processes. This includes any processes we never got to
+                // inspect because a match was found and we returned early.
+                foreach (var process in processes)
+                    process.Dispose();
+            }
         }
 
         internal virtual string GetRabSettingsFilePath()

@@ -1,7 +1,7 @@
 /**
  * Tests for Registration Dialog - Field Validation
  * Covers: required fields, input formats, length limits, whitespace handling
- * Run with: yarn test
+ * Run with: ../test.sh (or `pnpm test` from react_components/component-tester)
  */
 
 import { expect, test } from "../../component-tester/playwrightTest";

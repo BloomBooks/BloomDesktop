@@ -26,6 +26,7 @@ async function runWatcherFromCli() {
     const scopeArg = process.argv.find((arg) => arg.startsWith("--scope="));
     const scope = scopeArg ? scopeArg.split("=")[1] : "all";
     const once = process.argv.includes("--once");
+    const verbose = process.argv.includes("--verbose");
 
     const targets = [];
     if (scope === "all" || scope === "browser-ui") {
@@ -78,10 +79,24 @@ async function runWatcherFromCli() {
         metadataPath,
         targets,
         logger: once ? quietLogger : undefined,
+        // In the normal (watching) case, don't list every stylesheet during the
+        // initial sync; print a single summary line below instead. --verbose
+        // restores per-file logging.
+        quietInitialSync: !once && !verbose,
     });
 
     await manager.initialize();
     if (!once) {
+        if (!verbose) {
+            const compiled = manager.compiledCount;
+            const total = manager.entries.size;
+            const upToDate = total - compiled;
+            console.log(
+                compiled > 0
+                    ? `[LESS] ${compiled} compiled, ${upToDate} up-to-date (${total} total)`
+                    : `[LESS] ${total} stylesheets up-to-date`,
+            );
+        }
         await manager.startWatching();
     }
 

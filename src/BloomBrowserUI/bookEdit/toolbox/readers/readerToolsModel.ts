@@ -8,7 +8,6 @@
 /// <reference path="readerTools.ts" />
 import $ from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
-import { resizeWordList } from "./readerTools";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import "./libSynphony/jquery.text-markup";
 import { removeAllHtmlMarkupFromString } from "./libSynphony/jquery.text-markup";
@@ -51,10 +50,6 @@ export const MarkupType = {
     Decodable: 2,
 };
 
-const sortIconSelectedClass = "sortIconSelected"; // The class we apply to the selected sort icon
-const disabledIconClass = "disabledIcon"; // The class we apply to icons that are disabled.
-const disabledLimitClass = "disabledLimit"; // The class we apply to max values that are disabled (0).
-
 export class DRTState {
     public stage: number = 1;
     public level: number = 1;
@@ -62,9 +57,6 @@ export class DRTState {
 }
 
 export class ReaderToolsModel {
-    public previousHeight: number = 0;
-    public previousWidth: number = 0;
-
     public stageNumber: number = 1;
     public levelNumber: number = 1;
     public synphony: ReadersSynphonyWrapper | undefined; // to ensure detection of async issues, don't init until we load its settings
@@ -74,9 +66,10 @@ export class ReaderToolsModel {
     public texts: string[] = [];
     public setupType: string = "";
     public fontName: string = "";
-    public readableFileExtensions: string[] = [];
     public directoryWatcher: DirectoryWatcher | undefined;
     public maxAllowedWords: number = 10000;
+    public refreshFuncLeveled?: () => void;
+    public refreshFuncDecodable?: () => void;
 
     // remember words so we can update the counts real-time
     public pageIDToText: any[] = [];
@@ -117,17 +110,6 @@ export class ReaderToolsModel {
         return theOneLocalizationManager.loadStringsPromise(keys, null);
     }
 
-    // Copilot made this function because, while we temporarily have a hidden accordion that is
-    // initialized to create the controls for our legacy tools, we might have multiple elements
-    // with the same ID. We thought that was causing problems where we were getting the wrong one.
-    // Howerver, it is very clear that the real react root is first in the document, and
-    // document.getElementById() always returns the first one, so we don't need to do this.
-    // But, just in case, that changes, we have a common function to get the toolbox element
-    // with a given ID. For now, it can just use getElementById.
-    private getToolElementById(id: string): HTMLElement | null {
-        return document.getElementById(id);
-    }
-
     public clearForTest() {
         this.stageNumber = 1;
         this.levelNumber = 1;
@@ -138,7 +120,6 @@ export class ReaderToolsModel {
         this.texts = [];
         this.setupType = "";
         this.fontName = "";
-        this.readableFileExtensions = [];
         this.directoryWatcher = undefined;
         this.maxAllowedWords = 10000;
         this.pageIDToText = [];
@@ -183,83 +164,43 @@ export class ReaderToolsModel {
         }
 
         this.stageNumber = stage;
-        this.updateStageNOfMDisplay();
-        this.updateStageButtonsAvailability();
+        this.updateStageNumberIfNeeded(); // May change the stage number
 
-        return theOneLocalizationManager
-            .asyncGetText("Common.Loading", "Loading...", "")
-            .then((loadingMessage) => {
-                // this may result in a need to resize the word list
-                this.previousHeight = 0;
-                $("#letterList").html(loadingMessage);
-                $("#wordList").html(loadingMessage);
+        return setTimeoutPromise(async () => {
+            if (this.stageNumber === stage) {
+                this.stageGraphemes = this.getKnownGraphemes(stage);
+            }
 
-                // OK, now let that changed number and the "loading" messages
-                // make it to the user's screen, then start doing the work.
-                return setTimeoutPromise(async () => {
-                    if (this.stageNumber === stage) {
-                        this.stageGraphemes = this.getKnownGraphemes(stage);
-                    }
-
-                    // Both setting the letters and words require that to be done,
-                    // but they can be done independently of each other.
-                    // By separating them, we allow the letters to update while
-                    // the words are still being generated.
-                    const updateLetterListDonePromise = setTimeoutPromise(
-                        () => {
-                            // make sure this is still the stage they want
-                            // (it won't be if they are rapidly clicking the next/previous stage buttons)
-                            if (this.stageNumber === stage) {
-                                this.updateLetterList();
-                            }
-                        },
-                        0,
-                    );
-
-                    const updateWordListDonePromise = setTimeoutPromise(() => {
-                        // make sure this is still the stage they want
-                        // (it won't be if they are rapidly clicking the next/previous stage buttons)
-                        if (this.stageNumber === stage) {
-                            this.updateWordList();
-                        }
-                    }, 0);
-
-                    const defaultStagePostedPromise = new Promise<void>(
-                        (resolve, reject) => {
-                            if (!skipSave) {
-                                this.saveState();
-                                // When we're actually changing the stage number is the only time we want
-                                // to update the default.
-                                post(
-                                    "readers/io/defaultStage?stage=" +
-                                        this.stageNumber,
-                                    () => {
-                                        resolve();
-                                    },
-                                    (r) => {
-                                        reject(r);
-                                    },
-                                );
-                            } else {
+            const defaultStagePostedPromise = new Promise<void>(
+                (resolve, reject) => {
+                    if (!skipSave) {
+                        this.saveState();
+                        // When we're actually changing the stage number is the only time we want
+                        // to update the default.
+                        post(
+                            "readers/io/defaultStage?stage=" + this.stageNumber,
+                            () => {
                                 resolve();
-                            }
-                        },
-                    );
-
-                    if (this.readyToDoMarkup()) {
-                        this.doMarkup();
+                            },
+                            (r) => {
+                                reject(r);
+                            },
+                        );
+                    } else {
+                        resolve();
                     }
+                },
+            );
 
-                    return allPromiseSettled([
-                        updateLetterListDonePromise,
-                        updateWordListDonePromise,
-                        defaultStagePostedPromise,
-                    ]);
+            if (this.readyToDoMarkup()) {
+                this.doMarkup();
+            }
 
-                    // The 1/2 second delay here gives us a chance to click quickly and change the stage before we start working
-                    // If that happens, the check that is the first line of this setTimeout function will decide to bail out.
-                }, 500);
-            });
+            return allPromiseSettled([defaultStagePostedPromise]);
+
+            // The 1/2 second delay here gives us a chance to click quickly and change the stage before we start working
+            // If that happens, the check that is the first line of this setTimeout function will decide to bail out.
+        }, 500);
     }
 
     private updateStageNumberIfNeeded(): void {
@@ -268,29 +209,12 @@ export class ReaderToolsModel {
         }
         const stages = this.synphony.getStages();
         if (stages.length <= 0) {
-            // Note: an existing bug is that if you are on stage 2 of 2, then go to change settings, remove both stages, and accept,
-            // the decrement stage button will still show up.
-            // Nothing triggers updateStageButtonsAvailability to run again in that case, so it still retains the status back when it was on stage 2.
             return;
         }
         if (this.stageNumber > stages.length) {
             // You can reach this case if you had the last stage selected, then delete the last stage.
             this.stageNumber = stages.length;
         }
-    }
-
-    // Gets the string representing which stage we're on.
-    // Precondition: the stage number must be properly updated first. Synphony should be loaded too, else will return undefined.
-    public getStageLabel() {
-        if (!this.synphony) {
-            return undefined; // Synphony not loaded yet
-        }
-
-        const stages = this.synphony.getStages();
-        if (stages.length <= 0) {
-            return "0";
-        }
-        return stages[this.stageNumber - 1].getName();
     }
 
     public incrementLevel(): void {
@@ -310,9 +234,7 @@ export class ReaderToolsModel {
             return;
         }
         this.levelNumber = val;
-        this.updateLevelNOfMDisplay();
-        this.enableLevelButtons();
-        this.updateLevelLimits();
+        this.updateLevelNumberIfNeeded(); // May change the level number
         if (!skipSave) {
             this.saveState();
             // When we're actually changing the level is the only time we want
@@ -328,9 +250,6 @@ export class ReaderToolsModel {
         }
         const levels = this.synphony.getLevels();
         if (levels.length <= 0) {
-            // Note: an existing bug is that if you are on level 2 of 2, then go to change settings, remove both levels, and accept,
-            // the decrement level button will still show up.
-            // Nothing triggers enableLevelButtons to run again in that case, so it still retains the status back when it was on level 2.
             return;
         }
 
@@ -340,19 +259,20 @@ export class ReaderToolsModel {
         }
     }
 
-    // Gets the string representing which level we're on.
-    // Precondition: the level number must be properly updated first. Synphony should be loaded too, else will return undefined.
-    private getLevelLabel() {
+    // This function returns the list of reminders for the current level,
+    // seeing that the synphony has loaded and contains levels. This function
+    // is used by the React leveled reader tool to retrieve the current level's
+    // reminders to display them.
+    public getLevelReminders(): string[] {
         if (!this.synphony) {
-            return undefined; // Synphony not loaded yet
+            return [];
         }
-
         const levels = this.synphony.getLevels();
 
         if (levels.length <= 0) {
-            return "0";
+            return [];
         }
-        return levels[this.levelNumber - 1].getName();
+        return levels[this.levelNumber - 1]?.thingsToRemember ?? [];
     }
 
     public sortByLength(): void {
@@ -369,30 +289,9 @@ export class ReaderToolsModel {
 
     public setSort(sortType: string, skipSave?: boolean): void {
         this.sort = sortType;
-        this.updateSortStatus();
-        this.updateWordList();
         if (!skipSave) {
             this.saveState();
         }
-    }
-
-    public updateSortStatus(): void {
-        this.updateSelectedStatus(
-            "sortAlphabetic",
-            this.sort === SortType.alphabetic,
-        );
-        this.updateSelectedStatus(
-            "sortLength",
-            this.sort === SortType.byLength,
-        );
-        this.updateSelectedStatus(
-            "sortFrequency",
-            this.sort === SortType.byFrequency,
-        );
-    }
-
-    public updateSelectedStatus(eltId: string, isSelected: boolean): void {
-        this.setPresenceOfClass(eltId, isSelected, sortIconSelectedClass);
     }
 
     /**
@@ -400,70 +299,14 @@ export class ReaderToolsModel {
      * It updates various things in the UI to be consistent with the state of things in the model.
      */
     public updateControlContents(): void {
-        this.updateLetterList();
-        this.updateStageNOfMDisplay();
-        this.updateLevelNOfMDisplay();
-        this.updateStageButtonsAvailability();
-        this.enableLevelButtons();
-        this.updateLevelLimits();
-        this.updateWordList();
-    }
-
-    public updateStageNOfMDisplay() {
         this.updateStageNumberIfNeeded(); // May change the stage number
-
-        const stageParent = this.getToolElementById("stageNofM");
-        if (!stageParent) {
-            return;
-        }
-
-        this.updateStageNOfMInternal(stageParent);
-    }
-
-    public updateStageNOfMInternal(stageParent: HTMLElement) {
-        const stageLabel = this.getStageLabel() ?? "0";
-        const numStages = this.getNumberOfStages() ?? 0;
-
-        // Note: getText is synchronous. If the string's translation has not been loaded yet, it will just return the English synchronously.
-        // I want this function to be synchronous in order so that the callers and all their dependencies
-        // don't have to worry about asynchonously waiting for this function to complete.
-        // The constructor does pre-load the translations at construction time, and it does seem to complete with plenty of time to spare.
-        // So, hopefully we will always have the string in the UI language already ready to go when we reach here.
-        // If not, it's not the end of the world to display it in English at first. (This function gets called several times,
-        // so one would expect that even if the localizations aren't ready the first time, it ought to be ready by the last time)
-        const localizedFormattedText = theOneLocalizationManager.getText(
-            "EditTab.Toolbox.DecodableReaderTool.StageNofM",
-            "Stage {0} of {1}",
-            stageLabel,
-            numStages.toString(),
-        );
-
-        stageParent.innerText = localizedFormattedText;
-    }
-
-    public updateLevelNOfMDisplay() {
         this.updateLevelNumberIfNeeded(); // May change the level number
-
-        const levelParent = this.getToolElementById("levelNofM");
-        if (!levelParent) {
-            return;
+        if (this.refreshFuncLeveled !== undefined) {
+            this.refreshFuncLeveled();
         }
-
-        this.updateLevelNOfMInternal(levelParent);
-    }
-
-    public updateLevelNOfMInternal(levelParent: HTMLElement) {
-        const levelLabel = this.getLevelLabel() ?? "0";
-        const numLevels = this.getNumberOfLevels() ?? 0;
-
-        const localizedFormattedText = theOneLocalizationManager.getText(
-            "EditTab.Toolbox.LeveledReaderTool.LevelNofM",
-            "Level {0} of {1}",
-            levelLabel,
-            numLevels.toString(),
-        );
-
-        levelParent.innerText = localizedFormattedText;
+        if (this.refreshFuncDecodable !== undefined) {
+            this.refreshFuncDecodable();
+        }
     }
 
     public getNumberOfStages() {
@@ -472,319 +315,6 @@ export class ReaderToolsModel {
 
     public getNumberOfLevels() {
         return this.synphony?.getLevels().length;
-    }
-
-    public updateStageButtonsAvailability(): void {
-        this.updateDisabledStatus("decStage", this.stageNumber <= 1);
-        if (!this.synphony) {
-            return; // Synphony not loaded yet
-        }
-        this.updateDisabledStatus(
-            "incStage",
-            this.stageNumber >= this.synphony.getStages().length,
-        );
-    }
-
-    public updateDisabledStatus(eltId: string, isDisabled: boolean): void {
-        this.setPresenceOfClass(eltId, isDisabled, disabledIconClass);
-    }
-
-    /**
-     * Find the element with the indicated ID, and make sure that it has the className in its class attribute
-     * if isWanted is true, and not otherwise.
-     * (Tests currently assume it will be added last, but this is not required.)
-     * (class names used with this method should not occur as sub-strings within a longer class name)
-     */
-    public setPresenceOfClass(
-        eltId: string,
-        isWanted: boolean,
-        className: string,
-    ): void {
-        let old = this.getElementAttribute(eltId, "class");
-
-        // this can happen during testing
-        if (!old) old = "";
-
-        if (isWanted && old.indexOf(className) < 0) {
-            this.setElementAttribute(
-                eltId,
-                "class",
-                old + (old.length ? " " : "") + className,
-            );
-        } else if (!isWanted && old.indexOf(className) >= 0) {
-            this.setElementAttribute(
-                eltId,
-                "class",
-                old.replace(className, "").replace("  ", " ").trim(),
-            );
-        }
-    }
-
-    public enableLevelButtons(): void {
-        this.updateDisabledStatus("decLevel", this.levelNumber <= 1);
-        if (!this.synphony) {
-            return; // Synphony not loaded yet
-        }
-        this.updateDisabledStatus(
-            "incLevel",
-            this.levelNumber >= this.synphony.getLevels().length,
-        );
-    }
-
-    public updateLevelLimits(): void {
-        if (!this.synphony) {
-            return; // Synphony not loaded yet
-        }
-        let level = this.synphony.getLevels()[this.levelNumber - 1];
-        if (!level) level = new ReaderLevel("");
-
-        this.updateLevelLimit("maxWordsPerPage", level.getMaxWordsPerPage());
-        this.updateLevelLimit(
-            "maxWordsPerPageBook",
-            level.getMaxWordsPerPage(),
-        );
-        this.updateLevelLimit(
-            "maxWordsPerSentence",
-            level.getMaxWordsPerSentence(),
-        );
-        this.updateLevelLimit("maxWordsPerBook", level.getMaxWordsPerBook());
-        this.updateLevelLimit(
-            "maxUniqueWordsPerBook",
-            level.getMaxUniqueWordsPerBook(),
-        );
-        this.updateLevelLimit(
-            "maxAverageWordsPerSentence",
-            level.getMaxAverageWordsPerSentence(),
-        );
-        this.updateLevelLimit(
-            "maxAverageGlyphsPerWord",
-            level.getMaxAverageGlyphsPerWord(),
-        );
-        this.updateLevelLimit(
-            "maxAverageSentencesPerPage",
-            level.getMaxAverageSentencesPerPage(),
-        );
-        this.updateLevelLimit(
-            "maxAverageWordsPerPage",
-            level.getMaxAverageWordsPerPage(),
-        );
-        this.updateLevelLimit(
-            "maxSentencesPerPage",
-            level.getMaxSentencesPerPage(),
-        );
-        this.updateLevelLimit("maxLettersPerWord", level.getMaxGlyphsPerWord());
-
-        if (level.thingsToRemember.length) {
-            const list = this.getToolElementById("thingsToRemember");
-            if (list !== null) {
-                list.innerHTML = "";
-
-                for (let i = 0; i < level.thingsToRemember.length; i++) {
-                    const li = document.createElement("li");
-                    li.innerHTML = level.thingsToRemember[i];
-                    list.appendChild(li);
-                }
-            }
-        }
-    }
-
-    public updateLevelLimit(id: string, limit: number): void {
-        if (limit !== 0) {
-            this.updateElementContent(id, limit.toString());
-        }
-        this.updateDisabledLimit(id, limit === 0);
-    }
-
-    public updateDisabledLimit(eltId: string, isDisabled: boolean): void {
-        this.setPresenceOfClass(eltId, isDisabled, disabledLimitClass);
-    }
-
-    /**
-     * Displays the list of words for the current Stage.
-     */
-    public updateWordList(): void {
-        if (!this.synphony) {
-            return; // Synphony not loaded yet
-        }
-        // show the correct headings
-        //reviewSLog
-        const useAllowedWords = this.synphony.source
-            ? this.synphony.source.useAllowedWords === 1
-            : false;
-
-        // this happens during unit testing
-        const mlwld = this.getToolElementById("make-letter-word-list-div");
-        if (mlwld) {
-            mlwld.style.display = useAllowedWords ? "none" : "";
-            this.setDisplayForHTMLElementById(
-                "letters-in-this-stage",
-                useAllowedWords,
-            );
-            const ltrList = this.getToolElementById("letterList");
-            if (ltrList && ltrList.parentElement) {
-                this.setDisplayForHTMLElement(
-                    ltrList.parentElement,
-                    useAllowedWords,
-                );
-            }
-            this.setDisplayForHTMLElementById(
-                "sample-words-this-stage",
-                useAllowedWords,
-            );
-            this.setDisplayForHTMLElementById("sortFrequency", useAllowedWords);
-            this.setDisplayForHTMLElementById(
-                "allowed-words-this-stage",
-                !useAllowedWords,
-            );
-            this.setDisplayForHTMLElementById(
-                "allowed-word-list-truncated",
-                !useAllowedWords,
-            );
-        }
-
-        if (!this.readyToDoMarkup()) return;
-
-        const wordList = this.getToolElementById("wordList");
-        if (wordList) wordList.innerHTML = "";
-
-        const stages = this.synphony.getStages();
-        if (stages.length === 0) return;
-
-        let words: DataWord[] = [];
-        if (useAllowedWords)
-            words = this.getAllowedWordsAsObjects(this.stageNumber);
-        else {
-            const stageWords = this.getStageWordsAndSightWords(
-                this.stageNumber,
-            );
-            if (stageWords) {
-                words = stageWords;
-            }
-        }
-
-        resizeWordList(false);
-
-        // All cases use localeCompare for alphabetic sort. This is not ideal; it will use whatever
-        // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
-        switch (this.sort) {
-            case SortType.alphabetic:
-                words.sort((a: DataWord, b: DataWord) => {
-                    return a.Name.localeCompare(b.Name);
-                });
-                break;
-            case SortType.byLength:
-                words.sort((a: DataWord, b: DataWord) => {
-                    if (a.Name.length === b.Name.length) {
-                        return a.Name.localeCompare(b.Name);
-                    }
-                    return a.Name.length - b.Name.length;
-                });
-                break;
-            case SortType.byFrequency:
-                words.sort((a: DataWord, b: DataWord) => {
-                    const aFreq = a.Count;
-                    const bFreq = b.Count;
-                    if (aFreq === bFreq) {
-                        return a.Name.localeCompare(b.Name);
-                    }
-                    return bFreq - aFreq; // MOST frequent first
-                });
-                break;
-            default:
-        }
-
-        // add the words
-        let result = "";
-        let longestWord = "";
-        for (let i = 0; i < words.length; i++) {
-            const w: DataWord = words[i];
-            // Sigh. LangID is always null
-            // result += `<div lang='${
-            //     theOneLanguageDataInstance.LangID
-            // }' class="word ${w.isSightWord ? " sight-word" : ""}"> ${w.Name}-${
-            //     theOneLanguageDataInstance.LangID
-            // }</div>`;
-
-            // NOTE: The generated HTML would look nicer without the space immediately after lang1InATool
-            // NOTE 2: The HTML would also look nicer without the extra space between the end of the open tag and the contents
-            result += `<div class="word lang1InATool ${
-                w.isSightWord ? " sight-word" : ""
-            }"> ${w.Name}</div>`;
-
-            if (w.Name.length > longestWord.length) longestWord = w.Name;
-        }
-        const div = $("div.wordList");
-        div.css("font-family", this.fontName);
-
-        this.updateElementContent("wordList", result);
-
-        $.divsToColumnsBasedOnLongestWord("word", longestWord);
-    }
-
-    private setDisplayForHTMLElement(
-        element: HTMLElement,
-        conditionForNone: boolean,
-    ): void {
-        if (!element) return; // safety first!
-        element.style.display = conditionForNone ? "none" : "";
-    }
-
-    private setDisplayForHTMLElementById(
-        elementId: string,
-        conditionForNone: boolean,
-    ): void {
-        const elt = this.getToolElementById(elementId);
-        if (!elt) return;
-        this.setDisplayForHTMLElement(elt, conditionForNone);
-    }
-
-    /**
-     * Displays the list of letters for the current Stage.
-     */
-    public updateLetterList(): void {
-        if (!this.synphony) {
-            return; // Synphony not loaded yet
-        }
-        const stages = this.synphony.getStages();
-        if (stages.length === 0) {
-            // In case the user deletes all stages, and something had been displayed before.
-            this.updateElementContent("letterList", "");
-            return;
-        }
-
-        if (this.stageNumber > 0) {
-            this.stageGraphemes = this.getKnownGraphemes(this.stageNumber); //BL-838
-        }
-
-        // Letters up through current stage
-        const letters = this.stageGraphemes;
-
-        // All the letters in the order they were entered on the Letters tab in the set up dialog
-        const allLetters = this.synphony.source.letters.split(" ");
-
-        // Sort our letters based on the order they were entered
-        letters.sort((a, b) => {
-            return allLetters.indexOf(a) - allLetters.indexOf(b);
-        });
-
-        let result = "";
-        for (let i = 0; i < letters.length; i++) {
-            const letter = letters[i];
-            result +=
-                // Alas, LangID is always null in this monstrosity of a code base
-                // `<div lang='${
-                //     theOneLanguageDataInstance.LangID
-                // }' class="letter">` +
-                `<div lang='en' class="lang1InATool letter">` +
-                letter +
-                "</div>";
-        }
-        const div = $("div.letterList");
-        div.css("font-family", this.fontName);
-
-        this.updateElementContent("letterList", result);
-
-        $.divsToColumns("letter");
     }
 
     /**
@@ -855,6 +385,29 @@ export class ReaderToolsModel {
     }
 
     /**
+     * sorts the letters for the decodable reader tool
+     * @param stageNumber
+     * @returns a sorted array of letters
+     */
+    public getKnownGraphemesSorted(): string[] {
+        if (!this.synphony) {
+            return []; // Synphony not loaded yet
+        }
+
+        // Letters up through current stage
+        const letters = [...this.stageGraphemes];
+
+        // All the letters in the order they were entered on the Letters tab in the set up dialog
+        const allLetters = this.synphony.source.letters.split(" ");
+
+        // Sort our letters based on the order they were entered
+        letters.sort((a, b) => {
+            return allLetters.indexOf(a) - allLetters.indexOf(b);
+        });
+        return letters;
+    }
+
+    /**
      *
      * @returns An array of DataWord objects
      */
@@ -879,6 +432,46 @@ export class ReaderToolsModel {
         return _.uniq(stageWords.concat(sightWords), false, (w: DataWord) => {
             return w.Name;
         });
+    }
+
+    /**
+     * sorts the stage and sight words for the decodable reader tool
+     * @param stageNumber
+     * @returns a sorted array of the stage and sight words
+     */
+    public getStageSightWordsSorted(stageNumber: number): DataWord[] {
+        const dataWords: DataWord[] | null =
+            this.getStageWordsAndSightWords(stageNumber);
+        if (!dataWords) {
+            return [];
+        }
+        switch (this.sort) {
+            case SortType.alphabetic:
+                dataWords.sort((a: DataWord, b: DataWord) => {
+                    return a.Name.localeCompare(b.Name);
+                });
+                break;
+            case SortType.byLength:
+                dataWords.sort((a: DataWord, b: DataWord) => {
+                    if (a.Name.length === b.Name.length) {
+                        return a.Name.localeCompare(b.Name);
+                    }
+                    return a.Name.length - b.Name.length;
+                });
+                break;
+            case SortType.byFrequency:
+                dataWords.sort((a: DataWord, b: DataWord) => {
+                    const aFreq = a.Count;
+                    const bFreq = b.Count;
+                    if (aFreq === bFreq) {
+                        return a.Name.localeCompare(b.Name);
+                    }
+                    return bFreq - aFreq; // MOST frequent first
+                });
+                break;
+            default:
+        }
+        return dataWords;
     }
 
     /**
@@ -1280,10 +873,33 @@ export class ReaderToolsModel {
         this.pageIDToText = [];
         this.gettingTextOfWholeBook = false;
         this.bookStatistics = {};
+        this.bookStatsReady = false;
     }
 
     private gettingTextOfWholeBook = false;
     private bookStatistics = {};
+    private bookStatsReady: boolean = false; // boolean used by React leveled reader tool to determine when to update its book stats state
+
+    // a dictionary of starting values to be used by the React leveled reader tool
+    // upon loading into the tool, since bookStatistics may start off empty
+    private starterBookStats = {
+        levelNumber: 0,
+        pageCount: 0,
+        actualSentencesPerPage: 0,
+        actualLettersPerWord: 0,
+        actualWordsPerPage: 0,
+        actualWordsPerSentence: 0,
+        actualWordCount: 0,
+        actualWordsPerPageBook: 0,
+        actualUniqueWords: 0,
+        actualSentenceCount: 0,
+        actualMaxGlyphsPerWord: 0,
+        actualMaxWordsPerSentence: 0,
+        actualAverageWordsPerSentence: 0,
+        actualAverageWordsPerPage: 0,
+        actualAverageGlyphsPerWord: 0,
+        actualAverageSentencesPerPage: 0,
+    };
 
     public displayBookTotals(): void {
         if (this.gettingTextOfWholeBook) {
@@ -1304,6 +920,7 @@ export class ReaderToolsModel {
         }
 
         this.bookStatistics = {};
+        this.bookStatsReady = false;
         const pageStrings = _.values(this.pageIDToText).map((x) =>
             removeAllHtmlMarkupFromString(x),
         );
@@ -1322,78 +939,85 @@ export class ReaderToolsModel {
         this.bookStatistics["pageCount"] = sentenceFragmentsByPage.length;
         this.updateActualCount(
             ReaderToolsModel.countSentences(sentences),
-            this.maxSentencesPerPage(),
             "actualSentencesPerPage",
         );
 
         this.updateActualCount(
             ReaderToolsModel.maxWordLength(pageText),
-            this.maxGlyphsPerWord(),
             "actualLettersPerWord",
         );
 
         this.updateActualCount(
             pageElementsToCheck.getTotalWordCount(),
-            this.maxWordsPerPage(),
             "actualWordsPerPage",
         );
 
         this.updateActualCount(
             pageElementsToCheck.getMaxSentenceLength(),
-            this.maxWordsPerSentenceOnThisPage(),
             "actualWordsPerSentence",
         );
 
         this.updateActualCount(
             this.countWordsInBook(sentenceFragmentsByPage),
-            this.maxWordsPerBook(),
             "actualWordCount",
         );
         this.updateActualCount(
             this.maxWordsPerPageInBook(sentenceFragmentsByPage),
-            this.maxWordsPerPage(),
             "actualWordsPerPageBook",
         );
         this.updateActualCount(
             this.uniqueWordsInBook(sentenceFragmentsByPage),
-            this.maxUniqueWordsPerBook(),
             "actualUniqueWords",
         );
         this.updateActualCount(
             ReaderToolsModel.totalSentencesInBook(sentenceFragmentsByPage),
-            this.maxSentencesPerBook(),
             "actualSentenceCount",
         );
         this.updateActualCount(
             ReaderToolsModel.maxGlyphsInWord(sentenceFragmentsByPage),
-            this.maxGlyphsPerWord(),
             "actualMaxGlyphsPerWord",
         );
         this.updateActualCount(
             ReaderToolsModel.maxSentenceLengthInBook(sentenceFragmentsByPage),
-            this.maxWordsPerSentenceOnThisPage(),
             "actualMaxWordsPerSentence",
         );
         this.updateActualAverageCount(
             ReaderToolsModel.averageWordsInSentence(sentenceFragmentsByPage),
-            this.maxAverageWordsPerSentence(),
             "actualAverageWordsPerSentence",
         );
         this.updateActualAverageCount(
             ReaderToolsModel.averageWordsInPage(sentenceFragmentsByPage),
-            this.maxAverageWordsPerPage(),
             "actualAverageWordsPerPage",
         );
         this.updateActualAverageCount(
             ReaderToolsModel.averageGlyphsInWord(sentenceFragmentsByPage),
-            this.maxAverageGlyphsPerWord(),
             "actualAverageGlyphsPerWord",
         );
         this.updateActualAverageCount(
             ReaderToolsModel.averageSentencesInPage(sentenceFragmentsByPage),
-            this.maxAverageSentencesPerPage(),
             "actualAverageSentencesPerPage",
         );
+
+        // rerender the React leveled reader tool once book stats are ready
+        this.bookStatsReady = true;
+        if (this.refreshFuncLeveled !== undefined) {
+            this.refreshFuncLeveled();
+        }
+    }
+
+    // Returns the bookStatsReady boolean.
+    public areBookStatsReady(): boolean {
+        return this.bookStatsReady;
+    }
+
+    // returns a shallow copy of the starting book stats
+    public getStarterBookStats(): { [key: string]: number } {
+        return { ...this.starterBookStats };
+    }
+
+    // returns a shallow copy of the real book stats
+    public getActualBookStats(): { [key: string]: number } {
+        return { ...this.bookStatistics };
     }
 
     public copyLeveledReaderStatsToClipboard(): void {
@@ -1582,29 +1206,11 @@ export class ReaderToolsModel {
         return sentenceCount;
     }
 
-    public updateActualCount(actual: number, max: number, id: string): void {
-        this.updateElementContent(id, actual.toString());
-        const acceptable = actual <= max || max === 0;
-        // The two styles here must match ones defined in ReaderTools.htm or its stylesheet.
-        // It's important NOT to use two names where one is a substring of the other (e.g., unacceptable
-        // instead of tooLarge). That will mess things up going from the longer to the shorter.
-        this.setPresenceOfClass(id, acceptable, "acceptable");
-        this.setPresenceOfClass(id, !acceptable, "tooLarge");
+    public updateActualCount(actual: number, id: string): void {
         this.bookStatistics[id] = actual;
     }
 
-    public updateActualAverageCount(
-        average: number,
-        max: number,
-        id: string,
-    ): void {
-        this.updateElementContent(id, average.toFixed(1));
-        const acceptable = average <= max || max === 0;
-        // The two styles here must match ones defined in ReaderTools.htm or its stylesheet.
-        // It's important NOT to use two names where one is a substring of the other (e.g., unacceptable
-        // instead of tooLarge). That will mess things up going from the longer to the shorter.
-        this.setPresenceOfClass(id, acceptable, "acceptable");
-        this.setPresenceOfClass(id, !acceptable, "tooLarge");
+    public updateActualAverageCount(average: number, id: string): void {
         this.bookStatistics[id] = average;
     }
 
@@ -1655,40 +1261,6 @@ export class ReaderToolsModel {
     //   getSynphony(): ReadersSynphonyWrapper {
     //     return this.synphony;
     //   }
-
-    /**
-     * This group of functions uses jquery (if loaded) to update the real model.
-     * Unit testing should spy or otherwise replace these functions, since $ will not be usefully defined.
-     */
-    public updateElementContent(id: string, val: string): void {
-        const element = this.getToolElementById(id);
-        if (element) {
-            element.innerHTML = val;
-            return;
-        }
-        $("#" + id).html(val);
-    }
-
-    public getElementAttribute(id: string, attrName: string): string {
-        const element = this.getToolElementById(id);
-        if (element) {
-            return element.getAttribute(attrName) || "";
-        }
-        return $("#" + id).attr(attrName) || "";
-    }
-
-    public setElementAttribute(
-        id: string,
-        attrName: string,
-        val: string,
-    ): void {
-        const element = this.getToolElementById(id);
-        if (element) {
-            element.setAttribute(attrName, val);
-            return;
-        }
-        $("#" + id).attr(attrName, val);
-    }
 
     /**
      * Add words from a file to the list of all words. Does not produce duplicates.
@@ -1745,7 +1317,6 @@ export class ReaderToolsModel {
                 this.wordListLoaded = true;
                 this.updateControlContents(); // needed if user deletes all of the stages.
                 this.doMarkup();
-                this.updateWordList();
                 this.processWordListChangedListeners();
 
                 //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
@@ -1908,31 +1479,41 @@ export class ReaderToolsModel {
         const words: string[] = this.selectWordsFromAllowedLists(stageNumber);
         const returnVal: DataWord[] = [];
 
-        const uiLang = theOneLocalizationManager.getCurrentUILocale();
-
         for (let i = 0; i < words.length; i++) {
             returnVal.push(new DataWord(words[i]));
         }
 
-        // inform the user if the list was truncated
-        const msgDiv = this.getToolElementById("allowed-word-list-truncated");
-        const truncatedText = this.getToolElementById(
-            "allowed_word_list_truncated_text",
-        );
-
-        // if the list was truncated, show the message
-        if (words.length < this.maxAllowedWords) {
-            if (msgDiv) {
-                msgDiv.innerHTML = "";
-            }
-        } else if (msgDiv) {
-            msgDiv.innerHTML = theOneLocalizationManager.simpleFormat(
-                truncatedText?.innerHTML || "",
-                [this.maxAllowedWords.toLocaleString(uiLang)],
-            );
-        }
-
         return returnVal;
+    }
+
+    /**
+     * sorts the allowed words for the decodable reader tool
+     * @param stageNumber
+     * @returns a sorted array of the allowed words
+     */
+    public getAllowedWordsSorted(stageNumber: number): DataWord[] {
+        const stringWords: string[] =
+            this.selectWordsFromAllowedLists(stageNumber);
+        switch (this.sort) {
+            case SortType.alphabetic:
+                stringWords.sort((a: string, b: string) => {
+                    return a.localeCompare(b);
+                });
+                break;
+            case SortType.byLength:
+                stringWords.sort((a: string, b: string) => {
+                    if (a.length === b.length) {
+                        return a.localeCompare(b);
+                    }
+                    return a.length - b.length;
+                });
+                break;
+            default:
+        }
+        const dataWords: DataWord[] = stringWords.map(
+            (word) => new DataWord(word),
+        );
+        return dataWords;
     }
 
     public saveState(): void {

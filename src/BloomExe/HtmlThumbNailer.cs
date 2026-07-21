@@ -150,6 +150,15 @@ namespace Bloom
             var browser = GetBrowserForPaperSize(document.RawDom);
             if (browser == null)
                 return Resources.PagePlaceHolder;
+            // This adjustment to the zoom factor is needed to get the thumbnail to look right on high-DPI
+            // monitors.  The default zoom factor is 1.0, which is 100% of the default DPI (96).  If the
+            // monitor is higher than that, we need to scale down the zoom factor.  Since the browser never
+            // sets a parent window, its DPI is always set to the default monitor's DPI.  See BL-16439.
+            if (browser is WebView2Browser)
+            {
+                var dpi = browser.DeviceDpi;
+                (browser as WebView2Browser).InternalBrowser.ZoomFactor = 96.0 / dpi;
+            }
 
             var order = new ThumbnailOrder() { Options = options, Document = document };
             for (int i = 0; i < 4; i++)

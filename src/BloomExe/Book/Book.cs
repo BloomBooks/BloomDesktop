@@ -2628,15 +2628,23 @@ namespace Bloom.Book
 
         /// <summary>
         /// Convert old &lt;b&gt; and &lt;i&gt; to &lt;strong&gt; and &lt;em&gt; respectively.
-        /// Also remove instances like &lt;/b&gt;&lt;b&gt; altogether since such markup is redundant.
+        /// Remove instances like &lt;/b&gt;&lt;b&gt; altogether since such markup is redundant.
+        /// Cleanup instances like &lt;strong&gt;&lt;strong&gt;...&lt;/strong&gt;&lt;/strong&gt; to just &lt;strong&gt;...&lt;/strong&gt;.
+        /// Remove empty character markup like &lt;strong&gt;&lt;/strong&gt;, and seemingly empty markup that contains
+        /// only zero-width characters.
+        /// Doubled (nested) markup is handled only to one level, but that should be enough since Bloom can't
+        /// introduce such markup on its own.  Handling general nested markup would require more than regular
+        /// expressions to handle properly.
         /// </summary>
-        public void UpdateCharacterStyleMarkup(HtmlDom bookDOM)
+        public static void UpdateCharacterStyleMarkup(HtmlDom bookDOM)
         {
             var preserve = bookDOM.RawDom.PreserveWhitespace;
             bookDOM.RawDom.PreserveWhitespace = true;
             var paragraphs = bookDOM.SafeSelectNodes("//div[contains(@class,'bloom-editable')]/p");
             foreach (SafeXmlElement para in paragraphs)
             {
+                // spans are the only paragraph internal elements that should have any attributes.
+                RemoveUnwantedAttributesFromChildren(para);
                 string inner = para.InnerXml;
                 if (String.IsNullOrEmpty(inner) || !inner.Contains("<"))
                     continue;
@@ -2665,14 +2673,59 @@ namespace Bloom.Book
                     "<strong>$1</strong>",
                     RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                 );
+                if (inner.IndexOf("<b>", StringComparison.OrdinalIgnoreCase) >= 0) // handle one level of nesting
+                    inner = Regex.Replace(
+                        inner,
+                        @"<b>(.*?)</b>",
+                        "<strong>$1</strong>",
+                        RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
+                    );
                 inner = Regex.Replace(
                     inner,
                     @"<i>(.*?)</i>",
                     "<em>$1</em>",
                     RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
                 );
+                if (inner.IndexOf("<i>", StringComparison.OrdinalIgnoreCase) >= 0) // handle one level of nesting
+                    inner = Regex.Replace(
+                        inner,
+                        @"<i>(.*?)</i>",
+                        "<em>$1</em>",
+                        RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
+                    );
+                // Replace doubled (nested) markup with single markup.  This shouldn't happen, but it
+                // has been seen in the wild, possibly as a result of pasting text. (BL-16387)
+                // Only one level of nesting is handled, but that should (almost always) be enough.
+                inner = Regex.Replace(
+                    inner,
+                    @"<(strong|em|u)>([^<>]*)<\1>([^<>]*)</\1>([^<>]*)</\1>",
+                    "<$1>$2$3$4</$1>",
+                    RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
+                );
+                // Remove empty (or essentially empty) character markup tags.  (BL-16387)
+                // strong em sup u, empty or zero-width characters in between are all considered empty.
+                // \u200B = zero-width space, \u200C = zero-width non-joiner, \u200D = zero-width joiner
+                inner = Regex.Replace(
+                    inner,
+                    @"<(strong|em|sup|u)>(\u200B|\u200C|\u200D)*</\1>",
+                    "",
+                    RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
+                );
                 if (inner != para.InnerXml)
                     para.InnerXml = inner;
+            }
+        }
+
+        private static void RemoveUnwantedAttributesFromChildren(SafeXmlElement paraOrMarkup)
+        {
+            foreach (var child in paraOrMarkup.ChildNodes.OfType<SafeXmlElement>())
+            {
+                if (child.Name.ToLowerInvariant() != "span")
+                {
+                    foreach (var attrName in child.AttributeNames)
+                        child.RemoveAttribute(attrName);
+                }
+                RemoveUnwantedAttributesFromChildren(child);
             }
         }
 
@@ -3434,43 +3487,8 @@ namespace Bloom.Book
             );
         }
 
-        // returns the active color, be it from Apppearance or the Legacy system
-        public String GetCoverColor()
-        {
-            if (BookInfo.AppearanceSettings.CssThemeName != "legacy-5-6")
-            {
-                var color = BookInfo.AppearanceSettings.GetStringPropertyValueOrDefault(
-                    "cover-background-color",
-                    null
-                );
-                if (color != null)
-                {
-                    return color;
-                }
-            }
-
-            return GetCoverBackgroundColorFromOldInlineStyle(RawDom);
-        }
-
-        internal static String GetCoverBackgroundColorFromOldInlineStyle(SafeXmlDocument dom)
-        {
-            foreach (SafeXmlElement stylesheet in dom.SafeSelectNodes("//style"))
-            {
-                var content = stylesheet.InnerText;
-                // Our XML representation of an HTML DOM doesn't seem to have any object structure we can
-                // work with. The Stylesheet content is just raw CDATA text.
-                // Regex updated to handle comments and lowercase 'div' in the cover color rule.
-                var match = new Regex(
-                    @".*\.bloom-page\.coverColor\s*{.*?background-color:\s*(#[0-9a-fA-F]*|[a-z]*)",
-                    RegexOptions.Singleline
-                ).Match(content);
-                if (match.Success)
-                {
-                    return match.Groups[1].Value;
-                }
-            }
-            return "#FFFFFF";
-        }
+        // returns the active color, be it from Appearance or the Legacy system
+        public String GetCoverColor() => OurHtmlDom.GetCoverColor(BookInfo.AppearanceSettings);
 
         public void SetCoverColor(string color)
         {
@@ -4768,7 +4786,7 @@ namespace Bloom.Book
             {
                 HasFatalError = true;
                 FatalErrorDescription = error.Message;
-                throw error;
+                throw;
             }
         }
 

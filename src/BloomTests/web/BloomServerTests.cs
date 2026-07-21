@@ -50,7 +50,6 @@ namespace BloomTests.web
                 localizationDirectory,
                 "SIL/Bloom",
                 null,
-                "",
                 new string[] { }
             );
 
@@ -493,13 +492,15 @@ namespace BloomTests.web
             var directory = Path.Combine(testRootDir, "resources");
             Directory.CreateDirectory(directory);
             var tempFileRelativePath = Path.Combine(directory, "image.png");
-            RobustFile.Create(tempFileRelativePath);
-            var file = TempFile.TrackExisting(tempFileRelativePath);
-
-            // No need to create the file contents right now.
-            // Better (for unit tests) to do the minimum IO needed to make the test pass.
-
-            return file;
+            // This must be a real image, and the file must be closed once written. It used to be
+            // RobustFile.Create(path), which left the returned stream open (so the file was locked)
+            // and the file empty (not a valid PNG); the server's image processing then burned
+            // ~20 seconds in RetryUtility retry loops before giving up on the unreadable image.
+            using (var x = new Bitmap(100, 100))
+            {
+                x.Save(tempFileRelativePath, ImageFormat.Png);
+            }
+            return TempFile.TrackExisting(tempFileRelativePath);
         }
 
         [Test]

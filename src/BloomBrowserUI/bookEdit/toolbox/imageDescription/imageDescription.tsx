@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 import $ from "jquery";
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderForInstance } from "../../../utils/reactRender";
 import { post } from "../../../utils/bloomApi";
 import { ToolBox } from "../toolbox";
 import { getEditablePageBundleExports } from "../../js/workspaceFrames";
@@ -16,10 +16,8 @@ import {
     hideImageDescriptions,
     showImageDescriptions,
 } from "./imageDescriptionUtils";
-import {
-    getCanvasElementManager,
-    kBloomCanvasClass,
-} from "../canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
+import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 interface IImageDescriptionState {
     enabled: boolean;
     descriptionNotNeeded: boolean;
@@ -169,10 +167,10 @@ export class ImageDescriptionToolControls extends React.Component<
     }
 
     public static setup(root): ImageDescriptionToolControls {
-        return ReactDOM.render(
+        return renderForInstance<ImageDescriptionToolControls>(
             <ImageDescriptionToolControls />,
             root,
-        ) as unknown as ImageDescriptionToolControls;
+        );
     }
 
     public selectImageDescription(bloomCanvas: Element | null): void {

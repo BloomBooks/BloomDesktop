@@ -2,12 +2,12 @@
 {
 	partial class CollectionNameControl
 	{
-		/// <summary> 
+		/// <summary>
 		/// Required designer variable.
 		/// </summary>
 		private System.ComponentModel.IContainer components = null;
 
-		/// <summary> 
+		/// <summary>
 		/// Clean up any resources being used.
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -22,8 +22,8 @@
 
 		#region Component Designer generated code
 
-		/// <summary> 
-		/// Required method for Designer support - do not modify 
+		/// <summary>
+		/// Required method for Designer support - do not modify
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent()
@@ -35,10 +35,10 @@
             this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
-            // 
+            //
             // _collectionNameControl
-            // 
-            this._collectionNameControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            //
+            this._collectionNameControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this._collectionNameControl.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._L10NSharpExtender.SetLocalizableToolTip(this._collectionNameControl, null);
@@ -50,10 +50,10 @@
             this._collectionNameControl.Size = new System.Drawing.Size(229, 29);
             this._collectionNameControl.TabIndex = 10;
             this._collectionNameControl.TextChanged += new System.EventHandler(this._textCollectionName_TextChanged);
-            // 
+            //
             // _collectionInfoLabel
-            // 
-            this._collectionInfoLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            //
+            this._collectionInfoLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this._collectionInfoLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this._collectionInfoLabel.Enabled = false;
@@ -72,10 +72,10 @@
             this._collectionInfoLabel.Size = new System.Drawing.Size(321, 0);
             this._collectionInfoLabel.TabIndex = 14;
             this._collectionInfoLabel.TabStop = false;
-            // 
+            //
             // _nameCollectionLabel
-            // 
-            this._nameCollectionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            //
+            this._nameCollectionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this._nameCollectionLabel.Enabled = false;
             this._nameCollectionLabel.Font = new System.Drawing.Font("Segoe UI", 12F);
@@ -87,16 +87,16 @@
             this._nameCollectionLabel.Size = new System.Drawing.Size(321, 23);
             this._nameCollectionLabel.TabIndex = 15;
             this._nameCollectionLabel.Text = "What would you like to call this collection?";
-            // 
+            //
             // _L10NSharpExtender
-            // 
+            //
             this._L10NSharpExtender.LocalizationManagerId = "Bloom";
             this._L10NSharpExtender.PrefixForNewItems = "NewCollectionWizard.CollectionNamePage";
-            // 
+            //
             // CollectionNameControl
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            //
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.Controls.Add(this._nameCollectionLabel);
             this.Controls.Add(this._collectionInfoLabel);
             this.Controls.Add(this._collectionNameControl);

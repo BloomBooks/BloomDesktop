@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.MiscUI;
 using Bloom.web;
@@ -32,6 +34,12 @@ namespace Bloom.web.controllers
         // Needed so we can implement CheckForUpdates. Set by the WorkspaceView in its constructor, since
         // Autofac was not able to pass us one.
         public static WorkspaceView WorkspaceView { get; set; }
+
+        // The collection settings of the currently-open project, or null if no project is open.
+        // CommonApi is an application-level handler (created before any project is open and reused
+        // across projects), so it must NOT take CollectionSettings as a constructor dependency.
+        // Instead the project scope sets this when it opens a collection (see ProjectContext).
+        public static CollectionSettings CurrentCollectionSettings { get; set; }
 
         // Called by autofac, which creates the one instance and registers it with the server.
         public CommonApi(BookSelection bookSelection)
@@ -171,6 +179,12 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler(
+                "common/clipboardDataForTest",
+                HandleSetClipboardDataForTest,
+                false,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
                 "common/checkForUpdates",
                 request =>
                 {
@@ -251,6 +265,11 @@ namespace Bloom.web.controllers
                     executableDirectory = Path.GetDirectoryName(executablePath),
                     httpPort = BloomServer.portForHttp,
                     webSocketPort = BloomServer.WebSocketPort,
+                    // The folder of the editable collection this instance has open. An external tool that
+                    // has written/updated a book folder can find the right Bloom (when several are running)
+                    // by matching the parent of its book folder against this path.
+                    editableCollectionFolder = CurrentCollectionSettings?.FolderPath,
+                    collectionName = CurrentCollectionSettings?.CollectionName,
                     serverUrl = BloomServer.ServerUrl,
                     serverUrlWithBloomPrefix = BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
                     workspaceTabsUrl = BloomServer.ServerUrlWithBloomPrefixEndingInSlash
@@ -287,6 +306,181 @@ namespace Bloom.web.controllers
         }
 
         public Action ReloadProjectAction { get; set; }
+
+        private class ClipboardDataForTestRequest
+        {
+            public List<ClipboardDataForTestItem> Items { get; set; }
+            public string MimeType { get; set; }
+            public string Text { get; set; }
+            public string Base64 { get; set; }
+        }
+
+        private class ClipboardDataForTestItem
+        {
+            public string MimeType { get; set; }
+            public string Text { get; set; }
+            public string Base64 { get; set; }
+        }
+
+        private void HandleSetClipboardDataForTest(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Post)
+            {
+                request.Failed("Clipboard data endpoint only supports POST.");
+                return;
+            }
+
+            var requestData = request.RequiredPostObject<ClipboardDataForTestRequest>();
+            var clipboardItems = NormalizeClipboardDataForTestItems(requestData);
+            if (clipboardItems.Count == 0)
+            {
+                request.Failed("No clipboard data was provided.");
+                return;
+            }
+
+            Exception setClipboardException = null;
+            Program.MainContext.Send(
+                _ =>
+                {
+                    try
+                    {
+                        SetClipboardDataForTest(clipboardItems);
+                    }
+                    catch (Exception e)
+                    {
+                        setClipboardException = e;
+                    }
+                },
+                null
+            );
+
+            if (setClipboardException != null)
+            {
+                request.Failed("Failed to set clipboard data: " + setClipboardException.Message);
+                return;
+            }
+
+            request.PostSucceeded();
+        }
+
+        private static List<ClipboardDataForTestItem> NormalizeClipboardDataForTestItems(
+            ClipboardDataForTestRequest requestData
+        )
+        {
+            var result = requestData?.Items ?? new List<ClipboardDataForTestItem>();
+            if (result.Count > 0)
+            {
+                return result;
+            }
+
+            if (
+                requestData != null
+                && (
+                    !string.IsNullOrWhiteSpace(requestData.MimeType)
+                    || requestData.Text != null
+                    || !string.IsNullOrWhiteSpace(requestData.Base64)
+                )
+            )
+            {
+                result.Add(
+                    new ClipboardDataForTestItem
+                    {
+                        MimeType = requestData.MimeType,
+                        Text = requestData.Text,
+                        Base64 = requestData.Base64,
+                    }
+                );
+            }
+
+            return result;
+        }
+
+        private static void SetClipboardDataForTest(
+            IReadOnlyCollection<ClipboardDataForTestItem> clipboardItems
+        )
+        {
+            var dataObject = new DataObject();
+            var imagesToDispose = new List<Image>();
+            var hasAnyData = false;
+            try
+            {
+                foreach (var item in clipboardItems)
+                {
+                    var mimeType = item.MimeType;
+                    if (string.IsNullOrWhiteSpace(mimeType))
+                    {
+                        if (item.Text != null)
+                        {
+                            mimeType = "text/plain";
+                        }
+                        else
+                        {
+                            throw new ApplicationException("Clipboard item is missing a mimeType.");
+                        }
+                    }
+
+                    mimeType = mimeType.Trim();
+
+                    if (mimeType.StartsWith("text/", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var text = item.Text ?? string.Empty;
+                        dataObject.SetData(mimeType, text);
+                        dataObject.SetText(text, TextDataFormat.UnicodeText);
+                        hasAnyData = true;
+                        continue;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(item.Base64))
+                    {
+                        var bytes = Convert.FromBase64String(item.Base64);
+                        dataObject.SetData(mimeType, bytes);
+                        hasAnyData = true;
+
+                        if (
+                            mimeType.Equals("image/png", StringComparison.OrdinalIgnoreCase)
+                            || mimeType.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase)
+                            || mimeType.Equals("image/jpg", StringComparison.OrdinalIgnoreCase)
+                        )
+                        {
+                            using (var imageStream = new MemoryStream(bytes))
+                            using (var decodedImage = Image.FromStream(imageStream))
+                            {
+                                var bitmap = new Bitmap(decodedImage);
+                                imagesToDispose.Add(bitmap);
+                                dataObject.SetImage(bitmap);
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    if (item.Text != null)
+                    {
+                        dataObject.SetData(mimeType, item.Text);
+                        hasAnyData = true;
+                        continue;
+                    }
+
+                    throw new ApplicationException(
+                        "Clipboard item must provide either text or base64 data."
+                    );
+                }
+
+                if (!hasAnyData)
+                {
+                    throw new ApplicationException("No clipboard data could be set.");
+                }
+
+                Clipboard.SetDataObject(dataObject, true, 10, 50);
+            }
+            finally
+            {
+                foreach (var image in imagesToDispose)
+                {
+                    image.Dispose();
+                }
+            }
+        }
 
         private void HandleReloadCollection(ApiRequest request)
         {
@@ -435,11 +629,19 @@ namespace Bloom.web.controllers
             {
                 var bubbleLangs = new List<string>();
                 bubbleLangs.Add(LocalizationManager.UILanguageId);
-                bubbleLangs.Add(_bookSelection.CurrentSelection.BookData.MetadataLanguage1Tag);
-                if (_bookSelection.CurrentSelection.Language2Tag != null)
-                    bubbleLangs.Add(_bookSelection.CurrentSelection.Language2Tag);
-                if (_bookSelection.CurrentSelection.Language3Tag != null)
-                    bubbleLangs.Add(_bookSelection.CurrentSelection.Language3Tag);
+                // CurrentSelection can be null when no book is selected, e.g. when an off-screen
+                // editable page (external/process-book) loads and requests bubble languages while
+                // the book it is processing is not the selected book. Fall back to just the major
+                // languages in that case rather than crashing.
+                var currentBook = _bookSelection.CurrentSelection;
+                if (currentBook?.BookData != null)
+                {
+                    bubbleLangs.Add(currentBook.BookData.MetadataLanguage1Tag);
+                    if (currentBook.Language2Tag != null)
+                        bubbleLangs.Add(currentBook.Language2Tag);
+                    if (currentBook.Language3Tag != null)
+                        bubbleLangs.Add(currentBook.Language3Tag);
+                }
                 bubbleLangs.AddRange(new[] { "en", "fr", "sp", "ko", "zh-Hans" });
                 // If we don't have a hint in the UI language or any major language, it's still
                 // possible the page was made just for this langauge and has a hint in that language.
@@ -447,7 +649,8 @@ namespace Bloom.web.controllers
                 // Definitely wants to be after UILangage, otherwise we get the surprising result
                 // that in a French collection these hints stay French even when all the rest of the
                 // UI changes to English.
-                bubbleLangs.Add(_bookSelection.CurrentSelection.BookData.Language1.Tag);
+                if (currentBook?.BookData?.Language1 != null)
+                    bubbleLangs.Add(currentBook.BookData.Language1.Tag);
                 // if it isn't available in any of those we'll arbitrarily take the first one.
                 request.ReplyWithJson(JsonConvert.SerializeObject(new { langs = bubbleLangs }));
             }

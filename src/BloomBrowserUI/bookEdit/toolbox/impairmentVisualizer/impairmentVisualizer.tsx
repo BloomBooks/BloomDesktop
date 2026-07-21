@@ -9,7 +9,7 @@ import { RadioGroup } from "../../../react_components/RadioGroup";
 import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import { kImageContainerClass, isPlaceHolderImage } from "../../js/bloomImages";
-import { CanvasElementManager } from "../../js/CanvasElementManager";
+import { pxToNumber } from "../canvas/canvasElementCssUtils";
 import { ThemeProvider } from "@mui/material";
 import { ApiCheckbox } from "../../../react_components/ApiCheckbox";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
@@ -277,8 +277,8 @@ export class ImpairmentVisualizerControls extends React.Component<
         canvas.classList.add("ui-cbOverlay"); // used to remove them
         const context = canvas.getContext("2d");
         if (!context) return; // paranoid
-        const imgLeft = CanvasElementManager.pxToNumber(img.style.left ?? "0");
-        const imgTop = CanvasElementManager.pxToNumber(img.style.top ?? "0");
+        const imgLeft = pxToNumber(img.style.left ?? "0");
+        const imgTop = pxToNumber(img.style.top ?? "0");
         // This was determined pretty much by trial and error. The documentation of this function is very confusing.
         // Somehow, the first four arguments tell it what part of the image to draw, using natural dimensions. Thus,
         // the first four arguments tell it to draw the whole image (though this is larger than the canvas, if cropped).

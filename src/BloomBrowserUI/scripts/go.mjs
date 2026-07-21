@@ -1,9 +1,22 @@
 /* eslint-env node */
 /* global AbortSignal, clearTimeout, console, fetch, process, setTimeout */
 import { spawn } from "node:child_process";
+import fs from "node:fs";
 import net from "node:net";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+    killLinkedLibraryServers,
+    killProcessTree,
+    reapOrphanedBloomDevStacks,
+} from "./processTree.mjs";
+import { stageAiEditorForDefault } from "./aiEditorBuild.mjs";
+import {
+    getLibrary,
+    libraryNames,
+    resolveCheckoutDir,
+} from "./devLibraries.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,11 +26,41 @@ const devScriptPath = path.join(browserUIRoot, "scripts", "dev.mjs");
 const exeScriptPath = path.join(repoRoot, "scripts", "watchBloomExe.mjs");
 process.env.feedback = "off";
 const startupQuietMs = 1500;
-const viteHealthTimeoutMs = 15000;
+// Overall window to get a healthy /@vite/client response before giving up.
+const viteHealthTimeoutMs = 60000;
 const viteHealthPollMs = 250;
+// Per-request timeout for a single /@vite/client probe. This must comfortably
+// exceed Vite's real cold-start response latency, NOT just its steady-state
+// latency (a few ms). We probe at the most CPU-contended moment of startup:
+// Vite is still pre-bundling deps (optimizeDeps for jquery/comicaljs), the 7
+// file watchers are doing their initial scans, and LESS is compiling ~180
+// stylesheets, so Vite's event loop stalls in bursts. That contention multiplies
+// when several worktrees run at once (the supported case), so we allow generous
+// slack: a slow-but-listening server is healthy, not broken, and a genuinely
+// dead server still fails fast via ECONNREFUSED, so a long timeout only affects
+// the busy-but-fine case. Measured latency for a single stack reaches ~2.9s
+// (p99); 10s leaves headroom for a loaded machine.
+const viteHealthRequestTimeoutMs = 10000;
+// How many reachable probes (250ms apart) we require before declaring Vite up.
+// We probe only AFTER the dev output has already gone quiescent, so a single
+// success is enough evidence the server is serving; requiring more just adds
+// wall-clock and, under load, risks never stringing successes together at all.
+const requiredHealthProbeSuccesses = 1;
 const maxRandomVitePortAttempts = 10;
 const gracefulShutdownMs = 1500;
-const toViteOrigin = (port) => `http://localhost:${port}`;
+// How long to wait for a linked iframe-app (--with) dev server to print its URL. The first
+// cold run is slow: `pnpm dev` runs the package's prepare step (vp config) and vite-plus
+// optimizes dependencies before serving, all while Bloom's own Vite + dotnet build compete
+// for the machine, so it routinely exceeds a short fixed deadline. We therefore fail only
+// when the server goes silent for iframeUrlInactivityMs (no progress at all), with
+// iframeUrlMaxMs as an absolute backstop against a server that chatters but never serves.
+const iframeUrlInactivityMs = 60000;
+const iframeUrlMaxMs = 180000;
+// Probe both loopback families: Vite may bind only IPv6 (::1) on some machines,
+// and Node's fetch resolves "localhost" to IPv4 (127.0.0.1) first, so a
+// localhost-only probe can spuriously report Vite as unreachable.
+const viteLoopbackHosts = ["127.0.0.1", "[::1]"];
+const toViteOrigin = (host, port) => `http://${host}:${port}`;
 
 const parsePositiveInteger = (value) => {
     const parsed = Number.parseInt(value, 10);
@@ -27,6 +70,26 @@ const parsePositiveInteger = (value) => {
 
     return undefined;
 };
+
+// How many CPU cores each dev stack's esbuild (used by Vite for dep pre-bundling
+// and transforms) is allowed to use. esbuild is written in Go and honors the
+// GOMAXPROCS environment variable, which propagates from here through dev.mjs and
+// Vite to the esbuild service child. By default we cap each stack at roughly a
+// third of the machine's logical cores so up to ~3 worktrees can start in
+// parallel without oversubscribing the CPU (which is what inflates cold-start
+// latency past the health-check window and, at the extreme, thrashes the whole
+// machine). This trades some single-stack speed for parallel-run reliability;
+// override with BLOOM_GO_MAX_PROCS to widen or narrow the cap.
+const logicalCpuCount = (() => {
+    try {
+        return os.availableParallelism();
+    } catch {
+        return os.cpus().length;
+    }
+})();
+const esbuildMaxProcs =
+    parsePositiveInteger(process.env.BLOOM_GO_MAX_PROCS) ??
+    Math.max(2, Math.floor(logicalCpuCount / 3));
 
 const requireOptionValue = (args, index, optionName) => {
     const value = args[index + 1];
@@ -48,10 +111,32 @@ const parseRequiredPortValue = (optionName, value) => {
     return parsed;
 };
 
+// Parse a `--with` value of the form "name" or "name=path". The name may itself contain
+// no "=" (package names like "@sillsdev/config-r" don't), so we split on the first "=".
+const parseWithValue = (value) => {
+    const eq = value.indexOf("=");
+    if (eq === -1) {
+        return { name: value, checkoutPath: undefined };
+    }
+    return { name: value.slice(0, eq), checkoutPath: value.slice(eq + 1) };
+};
+
+const addWithLib = (options, value) => {
+    const { name, checkoutPath } = parseWithValue(value);
+    if (!getLibrary(name)) {
+        throw new Error(
+            `--with: unknown library "${name}". Valid names: ${libraryNames().join(", ")}.`,
+        );
+    }
+    options.withLibs.push({ name, checkoutPath });
+};
+
 const parseArgs = () => {
     const args = process.argv.slice(2);
     const options = {
         vitePort: undefined,
+        // Libraries to serve live from a local checkout: [{ name, checkoutPath? }, ...].
+        withLibs: [],
     };
 
     for (let index = 0; index < args.length; index++) {
@@ -73,6 +158,17 @@ const parseArgs = () => {
             );
             continue;
         }
+
+        if (arg === "--with") {
+            addWithLib(options, requireOptionValue(args, index, "--with"));
+            index++;
+            continue;
+        }
+
+        if (arg.startsWith("--with=")) {
+            addWithLib(options, arg.slice("--with=".length));
+            continue;
+        }
     }
 
     return options;
@@ -88,6 +184,10 @@ try {
 }
 
 const children = [];
+// Checkout dirs of linked libraries (--with) whose dev servers / watch-builds we spawned.
+// Their processes live under these paths (outside this repo), spawn through pnpm/cmd
+// layers, and can outrace taskkill /t, so we sweep these markers on startup and shutdown.
+const linkedCheckouts = new Set();
 let isShuttingDown = false;
 
 const delay = (milliseconds) =>
@@ -216,14 +316,23 @@ const pickRandomAvailablePort = () =>
     });
 
 const isViteClientReachable = async (port) => {
-    try {
-        const response = await fetch(`${toViteOrigin(port)}/@vite/client`, {
-            signal: AbortSignal.timeout(500),
-        });
-        return response.ok;
-    } catch {
-        return false;
+    for (const host of viteLoopbackHosts) {
+        try {
+            const response = await fetch(
+                `${toViteOrigin(host, port)}/@vite/client`,
+                {
+                    signal: AbortSignal.timeout(viteHealthRequestTimeoutMs),
+                },
+            );
+            if (response.ok) {
+                return true;
+            }
+        } catch {
+            // Try the next loopback host before giving up.
+        }
     }
+
+    return false;
 };
 
 const waitForViteClient = async (port, timeoutMs) => {
@@ -233,7 +342,7 @@ const waitForViteClient = async (port, timeoutMs) => {
     while (!isShuttingDown && Date.now() < deadline) {
         if (await isViteClientReachable(port)) {
             consecutiveSuccesses++;
-            if (consecutiveSuccesses >= 2) {
+            if (consecutiveSuccesses >= requiredHealthProbeSuccesses) {
                 return true;
             }
         } else {
@@ -246,6 +355,16 @@ const waitForViteClient = async (port, timeoutMs) => {
     return false;
 };
 
+// Terminate a spawned child AND all of its descendants.
+//
+// On Windows we do NOT rely on SIGINT propagation: terminating a Node child does
+// not terminate its descendants, so the dev.mjs subtree (Vite + ~7 watchers and
+// their own command children) would orphan if we merely signaled dev.mjs and
+// then trusted it to reap them before exiting. Instead we `taskkill /t /f` the
+// whole subtree directly, which is the only reliable way to leave zero orphans.
+//
+// On POSIX we keep the graceful SIGINT-then-force path so dotnet/Bloom can shut
+// down cleanly; terminals already propagate Ctrl-C to the process group there.
 const terminateChild = (child) =>
     new Promise((resolve) => {
         if (!child || child.exitCode !== null || child.signalCode) {
@@ -270,6 +389,14 @@ const terminateChild = (child) =>
 
         child.once("exit", finish);
 
+        if (process.platform === "win32") {
+            // Kill the entire subtree by pid; the "exit" event resolves us, and
+            // the watchdog covers the case where it never arrives.
+            void killProcessTree(child.pid);
+            forceTimer = setTimeout(finish, gracefulShutdownMs);
+            return;
+        }
+
         try {
             child.kill("SIGINT");
         } catch {
@@ -282,27 +409,7 @@ const terminateChild = (child) =>
                 return;
             }
 
-            if (process.platform === "win32") {
-                const killer = spawn(
-                    "taskkill",
-                    ["/pid", String(child.pid), "/t", "/f"],
-                    {
-                        stdio: "ignore",
-                        shell: false,
-                    },
-                );
-
-                killer.on("exit", finish);
-                killer.on("error", finish);
-                return;
-            }
-
-            try {
-                child.kill("SIGTERM");
-            } catch (error) {
-                void error;
-            }
-
+            void killProcessTree(child.pid, "SIGTERM");
             setTimeout(finish, 250);
         }, gracefulShutdownMs);
     });
@@ -317,6 +424,19 @@ const shutdown = async (exitCode = 0) => {
     console.log(`[go] Shutting down (exit ${normalizedExitCode})...`);
 
     await Promise.all(children.map((child) => terminateChild(child)));
+
+    // Reap any linked dev-server processes that escaped the tree-kill above. They spawn
+    // through pnpm/cmd/vite-plus layers under the library checkout and can outrace
+    // taskkill /t; an intermediate process often survives, so the orphan-scoped sweep
+    // would miss them. We own these (the user opted in via --with), so kill all matches.
+    for (const checkout of linkedCheckouts) {
+        await killLinkedLibraryServers({
+            commandLineMarker: checkout,
+            selfGoPid: process.pid,
+            log: (message) => console.log(`[go] ${message}`),
+        });
+    }
+
     process.exit(normalizedExitCode);
 };
 
@@ -346,6 +466,8 @@ const startDevServerOnPort = (port) =>
                 env: {
                     ...process.env,
                     PORT: String(port),
+                    // Cap this stack's esbuild (Go) parallelism; see esbuildMaxProcs.
+                    GOMAXPROCS: String(esbuildMaxProcs),
                 },
             },
         );
@@ -416,7 +538,7 @@ const startDevServerOnPort = (port) =>
                 sawInitialBuild = true;
             }
 
-            if (logTail.includes("Watching appearance migration files...")) {
+            if (logTail.includes("Watching for changes:")) {
                 sawWatchersStarted = true;
             }
 
@@ -546,11 +668,298 @@ const startBloomExe = (vitePort) => {
     });
 };
 
+// Spawn a long-running shell command (e.g. a library's watch-build) as a managed child so
+// it is piped, tracked, and torn down with the rest of the tree on shutdown.
+const startManagedCommand = (command, cwd, prefix) => {
+    const child = spawn(command, {
+        cwd,
+        stdio: ["ignore", "pipe", "pipe"],
+        shell: true,
+    });
+
+    children.push(child);
+    pipeChildOutput(child, prefix);
+
+    child.on("error", (error) => {
+        if (isShuttingDown) {
+            return;
+        }
+        console.error(`[go] ${prefix}failed to start: ${error.message}`);
+    });
+
+    return child;
+};
+
+// Start a linked iframe-app library's own Vite dev server and resolve with the URL it
+// prints (e.g. http://localhost:5173/). Rejects on timeout or early exit so launch fails
+// fast rather than pointing Bloom at a dead server.
+const startIframeDevServer = (entry, checkoutDir) =>
+    new Promise((resolve, reject) => {
+        const prefix = `[${entry.name}] `;
+        const child = spawn(entry.devCommand, {
+            cwd: checkoutDir,
+            stdio: ["ignore", "pipe", "pipe"],
+            shell: true,
+            // We embed this dev server in Bloom's iframe, so suppress its own auto-open.
+            // Vite honors BROWSER=none to skip opening a browser tab on startup.
+            env: { ...process.env, BROWSER: "none" },
+        });
+        children.push(child);
+
+        let settled = false;
+        let logTail = "";
+        let inactivityTimer;
+        let maxTimer;
+
+        // Settle the promise exactly once, tearing down both watchdog timers.
+        const finish = (action, value) => {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            clearTimeout(inactivityTimer);
+            clearTimeout(maxTimer);
+            action(value);
+        };
+
+        // (Re)arm the inactivity watchdog. Any output counts as progress and pushes the
+        // deadline back, so a slow-but-advancing cold start is not killed; we only give up
+        // if the server stalls entirely.
+        const armInactivityTimer = () => {
+            if (settled) {
+                return;
+            }
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                finish(
+                    reject,
+                    new Error(
+                        `${entry.name} dev server produced no output for ${iframeUrlInactivityMs / 1000}s while waiting for it to print a URL.`,
+                    ),
+                );
+            }, iframeUrlInactivityMs);
+        };
+
+        const onText = (text) => {
+            if (settled) {
+                return;
+            }
+            armInactivityTimer();
+            // Strip ANSI color codes first: Vite prints the URL with escapes spliced in
+            // (e.g. "http://localhost:\x1b[1m3001\x1b[22m/"), which would defeat the regex.
+            // eslint-disable-next-line no-control-regex
+            const plain = text.replace(/\x1b\[[0-9;]*m/g, "");
+            logTail = (logTail + plain).slice(-8000);
+            const match = logTail.match(
+                /(https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\]):\d+\/?)/i,
+            );
+            if (match) {
+                const url = match[1].endsWith("/") ? match[1] : `${match[1]}/`;
+                finish(resolve, url);
+            }
+        };
+
+        pipeChildOutput(child, prefix, onText);
+
+        child.on("error", (error) => {
+            finish(
+                reject,
+                new Error(
+                    `${entry.name} dev server failed to start: ${error.message}`,
+                ),
+            );
+        });
+
+        child.on("exit", (code) => {
+            finish(
+                reject,
+                new Error(
+                    `${entry.name} dev server exited before printing a URL (code ${code ?? 0}).`,
+                ),
+            );
+        });
+
+        maxTimer = setTimeout(() => {
+            finish(
+                reject,
+                new Error(
+                    `${entry.name} dev server did not print a URL within ${iframeUrlMaxMs / 1000}s.`,
+                ),
+            );
+        }, iframeUrlMaxMs);
+
+        armInactivityTimer();
+    });
+
+// Mirror a library's build-output directory into Bloom's output/ on change, so a linked
+// bundled lib whose assets are served as static files (e.g. bloom-player's dist/) stays
+// fresh while its watch-build runs. Waits for `src` to appear, copies once, then watches.
+const startMirrorWatcher = (src, dest, prefix) => {
+    let timer;
+
+    const copyOnce = () => {
+        try {
+            fs.mkdirSync(dest, { recursive: true });
+            fs.cpSync(src, dest, { recursive: true });
+            console.log(`[go] ${prefix}mirrored ${src} -> ${dest}`);
+        } catch (error) {
+            console.error(`[go] ${prefix}mirror failed: ${error.message}`);
+        }
+    };
+
+    const schedule = () => {
+        clearTimeout(timer);
+        timer = setTimeout(copyOnce, 250);
+    };
+
+    const begin = () => {
+        if (isShuttingDown) {
+            return;
+        }
+        if (!fs.existsSync(src)) {
+            setTimeout(begin, 500);
+            return;
+        }
+        copyOnce();
+        try {
+            fs.watch(src, { recursive: true }, schedule);
+        } catch (error) {
+            console.error(`[go] ${prefix}watch failed: ${error.message}`);
+        }
+    };
+
+    begin();
+};
+
+// Turn the parsed --with flags into resolved checkouts grouped by kind. Throws (fail fast)
+// if a requested library's checkout can't be found.
+const resolveLinks = () => {
+    const bundled = [];
+    let iframe;
+
+    for (const requested of options.withLibs) {
+        const entry = getLibrary(requested.name);
+        const dir = resolveCheckoutDir(entry, repoRoot, requested.checkoutPath);
+        if (!dir) {
+            throw new Error(
+                `--with ${requested.name}: no checkout found${requested.checkoutPath ? ` at ${requested.checkoutPath}` : ""}. Pass an explicit path: --with ${requested.name}=<path>.`,
+            );
+        }
+
+        if (entry.kind === "iframe-app") {
+            iframe = { entry, dir };
+        } else {
+            bundled.push({ entry, dir });
+        }
+    }
+
+    return { bundled, iframe };
+};
+
 const main = async () => {
+    // Defensive reap: a prior launcher that was hard-killed (terminal closed,
+    // SIGKILL, timeout) cannot run its shutdown handlers, so its Vite + watcher
+    // node processes orphan. Left uncleaned, these accumulate across worktrees and
+    // sessions until the machine is starved and launches fail their Vite health
+    // check. Reap orphans from EVERY worktree before we start (not just this one):
+    // it is safe because only dead-parented processes are targeted, so a live
+    // go.sh session -- whose processes still have a living parent chain up to its
+    // go.mjs -- is never touched. Killing a tree root takes its descendants
+    // (Vite, watchLess, onchange's command children) with it.
+    await reapOrphanedBloomDevStacks({
+        excludePids: [process.pid],
+        log: (message) => console.log(`[go] ${message}`),
+    });
+
+    const { bundled, iframe } = resolveLinks();
+
+    // Remember every linked checkout so shutdown can reap its servers, and reap any left
+    // behind by a previously hard-killed --with run before we start fresh ones. These paths
+    // live outside this repo, so the repo-root sweep above never matches them; and because
+    // --with means we own the library's dev server, we reap all matches, not just orphans.
+    for (const { dir } of bundled) {
+        linkedCheckouts.add(dir);
+    }
+    if (iframe) {
+        linkedCheckouts.add(iframe.dir);
+    }
+    for (const checkout of linkedCheckouts) {
+        await killLinkedLibraryServers({
+            commandLineMarker: checkout,
+            selfGoPid: process.pid,
+            log: (message) => console.log(`[go] ${message}`),
+        });
+    }
+
+    // Linked bundled libs: tell Bloom's Vite to alias them to the checkout (read in
+    // vite.config.mts), and run each checkout's watch-build so the alias target rebuilds.
+    if (bundled.length > 0) {
+        process.env.BLOOM_LINKED_LIBS = bundled
+            .map(
+                ({ entry, dir }) =>
+                    `${entry.name}=${path.resolve(dir, entry.aliasTo)}`,
+            )
+            .join(";");
+        console.log(
+            `[go] Linking bundled libraries: ${process.env.BLOOM_LINKED_LIBS}`,
+        );
+        for (const { entry, dir } of bundled) {
+            for (const command of entry.watchCommands) {
+                startManagedCommand(command, dir, `[${entry.name}] `);
+            }
+            if (entry.extraCopy) {
+                startMirrorWatcher(
+                    path.join(dir, entry.extraCopy.from),
+                    path.join(repoRoot, ...entry.extraCopy.to.split("/")),
+                    `[${entry.name}] `,
+                );
+            }
+        }
+    }
+
     console.log(
         "[go] Launching Vite first and waiting for it to go quiet before starting Bloom.",
     );
-    const dev = await startDevServer();
+
+    // AI Image Editor: either run its own dev server (linked, HMR) or stage the prebuilt
+    // app for Bloom to serve, before Bloom starts.
+    let dev;
+    if (iframe) {
+        // Bring Bloom's Vite up and confirm it healthy FIRST, THEN start the editor's own
+        // Vite dev server. Running two Vite startups (and the editor's dependency optimizer)
+        // at once starves Bloom's health check and makes it look unreachable.
+        dev = await startDevServer();
+        const url = await startIframeDevServer(iframe.entry, iframe.dir);
+        // Bloom.exe inherits process.env; AiImageEditorApi.GetEditorUrl reads this.
+        process.env[iframe.entry.devUrlEnv] = url;
+        console.log(`[go] AI editor: live dev server at ${url} (HMR).`);
+    } else {
+        // Default staging is best-effort and usually lightweight, so run it alongside
+        // Vite startup — but its checkout fallback can run a full editor build, and a
+        // slow or hung build must never keep Bloom itself from starting. If staging
+        // outlasts the grace period, start Bloom anyway and let staging finish (or
+        // fail) in the background; only "Edit with AI" is affected until it lands.
+        const staging = stageAiEditorForDefault({
+            repoRoot,
+            browserUIRoot,
+            log: (message) => console.log(`[go] ${message}`),
+        });
+        const stagingGraceMs = 120_000;
+        const stagingOrTimeout = new Promise((resolve) => {
+            const timer = setTimeout(() => {
+                console.log(
+                    "[go] AI editor: staging is still running after " +
+                        `${stagingGraceMs / 1000}s; starting Bloom without waiting for it.`,
+                );
+                resolve();
+            }, stagingGraceMs);
+            staging.finally(() => {
+                clearTimeout(timer);
+                resolve();
+            });
+        });
+        [dev] = await Promise.all([startDevServer(), stagingOrTimeout]);
+    }
     console.log(
         `[go] Vite is reachable and quiet on port ${dev.port}. Starting Bloom...`,
     );

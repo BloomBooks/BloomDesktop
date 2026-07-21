@@ -103,8 +103,6 @@ namespace Bloom.Utils
             // does not provide a specific field that gives the path, but the message follows
             // a pretty typical pattern that contains it.
             var splitAtQuotes = originalException.Message.Split("'");
-            var hidden = false;
-            string directoryPath = "";
             if (splitAtQuotes.Length == 3)
             {
                 // The bit inside the quotes is typically the path.

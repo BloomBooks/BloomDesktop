@@ -147,7 +147,7 @@ Notes:
 6. Use `node .github/skills/bloom-automation/switchWorkspaceTab.mjs --http-port <httpPort> --tab <collection|edit|publish>` for top bar interactions, or attach another confirmed client to `http://localhost:<cdpPort>` if you need lower-level inspection.
 7. Manipulate the UI by clicking or typing in the attached browser context. Do not use Bloom API endpoints to simulate the user action itself.
 8. Use browser-native inspection for DOM, console, and network.
-9. If the task is test-related, run the exe-backed Playwright suite with `BLOOM_HTTP_PORT=<httpPort> yarn playwright test --config playwright.bloom-exe.config.ts`.
+9. If the task is test-related, run the exe-backed Playwright suite with `BLOOM_HTTP_PORT=<httpPort> pnpm exec playwright test --config playwright.bloom-exe.config.ts`.
 
 ## Running Bloom Workflow
 Use this when the user says to reuse the already-running Bloom.
@@ -217,8 +217,8 @@ Reason: the current MCP wrappers in this environment control their own browser i
 
 ## Tests
 - Run from `src/BloomBrowserUI/react_components/component-tester`.
-- Use `BLOOM_HTTP_PORT=<httpPort> yarn playwright test --config playwright.bloom-exe.config.ts`.
-- Run one file with `BLOOM_HTTP_PORT=<httpPort> yarn playwright test --config playwright.bloom-exe.config.ts ../TopBar/component-tests/bloom-exe-tabs.uitest.ts`.
+- Use `BLOOM_HTTP_PORT=<httpPort> pnpm exec playwright test --config playwright.bloom-exe.config.ts`.
+- Run one file with `BLOOM_HTTP_PORT=<httpPort> pnpm exec playwright test --config playwright.bloom-exe.config.ts ../TopBar/component-tests/bloom-exe-tabs.uitest.ts`.
 
 These tests attach to the real Bloom.exe target over CDP and verify tab switching plus console and network observation.
 
@@ -232,6 +232,10 @@ These tests attach to the real Bloom.exe target over CDP and verify tab switchin
 - When more than one Bloom is running from the same worktree, repo-root matching is not enough. Use the explicit HTTP port workflow.
 - For ad hoc local debugging in this workspace, `dev-browser --connect http://localhost:<cdpPort>` can attach directly to the existing Bloom WebView2 target. Use it as a low-friction inspection client.
 - After attaching to Bloom's WebView2 target, if Bloom is on the Edit tab, the editable page content lives inside the iframe named `page`; the top-level document mostly hosts shell UI plus the root dialog container.
+- **"Bloom had a problem" report dialogs.** Bloom surfaces errors (including non-fatal ones, especially in Debug builds) as a modal "Bloom had a problem" dialog. It is hosted in its OWN WinForms window with its own WebView2, so it appears as a SEPARATE CDP page target — not inside the shell document or the `page` iframe — and in dev it is even served from the Vite port rather than the Bloom http port. Detect it by the `.problem-dialog` root (from `problemDialog/*.tsx`) present in ANY page target. Never just leave one sitting on screen, and never move past it silently.
+  - Use `node .github/skills/bloom-automation/dismissProblemDialog.mjs --http-port <httpPort> [--wait] [--json]`. It (1) finds the dialog by DOM (so it never closes a legitimate modal), (2) GATHERS the underlying problem — it clicks the dialog's own "Learn More" to reveal the exception + missing-file/stack that Bloom would send, and prints it, and (3) closes the dialog with the SAME action as its Close button, `POST /bloom/api/common/closeReactDialog`, which does NOT submit. It drains a backlog (Bloom queues reports and shows them one at a time), gathering each, up to a cap.
+  - NEVER click Submit / POST `problemReport/submit` in automation: that sends a report (with a screenshot and the book) to Bloom's servers.
+  - If the SAME problem keeps reappearing after being closed, it is a real recurring error in the code under test (e.g. a resource that 404s on every render) — read the gathered detail, fix the root cause, and re-test; do not just loop-dismiss. The Bloom log at `%TEMP%\SIL\Bloom\Log-*.txt` has the same detail if you need it out-of-band, but note its writes can lag, so the dialog's own "Learn More" (what the helper scrapes) is the authoritative live source.
 
 ## Completion Checks
 - Bloom's status is known: not running, running from current worktree, or running from different worktree.

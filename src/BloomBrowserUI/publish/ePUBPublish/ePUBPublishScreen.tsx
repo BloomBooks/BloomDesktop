@@ -9,7 +9,6 @@ import {
 } from "../commonPublish/PublishScreenBaseComponents";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
-import * as ReactDOM from "react-dom";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
     useSubscribeToWebSocketForStringMessage,

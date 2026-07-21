@@ -1847,8 +1847,18 @@ namespace Bloom.Book
             }
             catch (Exception e)
             {
-                Logger.WriteEvent("Failed folder rename: " + e.Message);
-                Debug.Fail("(debug mode only): could not rename the folder");
+                // The rename to the ideal (title-based) folder failed, most often because a
+                // different folder with that name already exists — e.g. another book with the same
+                // instanceId, which GetActualPathToSave deliberately reuses. This is recoverable: we
+                // simply keep the current folder (FolderPath is left unchanged below) and the book is
+                // already saved. We deliberately do NOT Debug.Fail here: that turned this handled,
+                // non-fatal condition into a hard crash in debug builds (e.g. external/process-book,
+                // which renames to the title on save and can hit an existing same-id/same-title
+                // folder). Just log it; release builds already behaved this way.
+                Logger.WriteEvent(
+                    $"Failed to rename book folder from '{FolderPath}' to '{actualSavePath}'; "
+                        + $"keeping the current folder. ({e.Message})"
+                );
             }
 
             OnFolderPathChanged();
@@ -3294,7 +3304,7 @@ namespace Bloom.Book
                 //if the source was locked, don't copy the lock over
                 RobustFile.SetAttributes(documentPath, FileAttributes.Normal);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 if (
                     documentPath.Contains(

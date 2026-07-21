@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
+using Bloom.Publish;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
@@ -41,6 +42,13 @@ namespace BloomTests.Publish.Epub
         protected static BloomServer s_testServer;
         protected static BookSelection s_bookSelection;
         protected static CollectionSettings s_collectionSettings;
+
+        // One off-screen page-checks browser shared by every epub export in the fixture (via
+        // PublishHelper.ExternalPageChecksBrowserForTests). Starting a WebView2 environment (browser
+        // process + dedicated thread) per export dominates the time of these tests; sharing one keeps
+        // each test running the real browser-based visibility checks while paying the startup cost
+        // only once per fixture.
+        protected static OffScreenBrowser s_pageChecksBrowser;
         protected BookServer _bookServer;
         protected string _defaultSourceValue;
 
@@ -61,11 +69,16 @@ namespace BloomTests.Publish.Epub
         {
             s_collectionSettings = new CollectionSettings();
             s_testServer = GetTestServer();
+            s_pageChecksBrowser = new OffScreenBrowser();
+            PublishHelper.ExternalPageChecksBrowserForTests = s_pageChecksBrowser;
         }
 
         [OneTimeTearDown]
         public virtual void OneTimeTearDown()
         {
+            PublishHelper.ExternalPageChecksBrowserForTests = null;
+            s_pageChecksBrowser.Dispose();
+            s_pageChecksBrowser = null;
             s_testServer.Dispose();
         }
 
@@ -301,6 +314,22 @@ namespace BloomTests.Publish.Epub
         {
             var entry = _epub.GetEntry(path);
             Assert.That(entry, Is.Null, "Should not have found entry at " + path);
+        }
+
+        /// <summary>
+        /// Verify that an image file exists in the epub, accepting either .png or .jpg extension
+        /// (since epub publishing may convert photographic PNGs to JPEG).
+        /// </summary>
+        /// <param name="pathWithoutExtension">Path including folder but without extension, e.g. "content/images/myImage"</param>
+        public void VerifyEpubImageExists(string pathWithoutExtension)
+        {
+            var pngEntry = _epub.GetEntry(pathWithoutExtension + ".png");
+            var jpgEntry = _epub.GetEntry(pathWithoutExtension + ".jpg");
+            Assert.That(
+                pngEntry ?? jpgEntry,
+                Is.Not.Null,
+                $"Should have found image entry at {pathWithoutExtension} (as .png or .jpg)"
+            );
         }
 
         internal static string StripXmlHeader(string data)
@@ -542,7 +571,9 @@ namespace BloomTests.Publish.Epub
             foreach (var image in images)
                 AssertThatXmlIn
                     .String(pageData)
-                    .HasAtLeastOneMatchForXpath("//img[@src='" + kImagesSlash + image + ".png']");
+                    .HasAtLeastOneMatchForXpath(
+                        $"//img[@src='{kImagesSlash}{image}.png' or @src='{kImagesSlash}{image}.jpg']"
+                    );
             AssertThatXmlIn
                 .String(pageData)
                 .HasAtLeastOneMatchForXpath(
@@ -676,13 +707,7 @@ namespace BloomTests.Publish.Epub
 
             foreach (var image in imageFiles)
                 assertThatManifest.HasAtLeastOneMatchForXpath(
-                    "package/manifest/item[@id='"
-                        + image
-                        + "' and @href='"
-                        + EpubMaker.kImagesFolder
-                        + "^slash^"
-                        + image
-                        + ".png']"
+                    $"package/manifest/item[@id='{image}' and (@href='{EpubMaker.kImagesFolder}^slash^{image}.png' or @href='{EpubMaker.kImagesFolder}^slash^{image}.jpg')]"
                 );
         }
 

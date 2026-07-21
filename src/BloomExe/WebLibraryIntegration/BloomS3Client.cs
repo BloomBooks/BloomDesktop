@@ -7,6 +7,7 @@ using System.Net;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
@@ -139,15 +140,6 @@ namespace Bloom.WebLibraryIntegration
         {
             get { return _s3Config.Timeout; }
             set { _s3Config.Timeout = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the timeout for socket read or write operations.
-        /// </summary>
-        public TimeSpan? ReadWriteTimeout
-        {
-            get { return _s3Config.ReadWriteTimeout; }
-            set { _s3Config.ReadWriteTimeout = value; }
         }
 
         /// <summary>
@@ -304,7 +296,22 @@ namespace Bloom.WebLibraryIntegration
                 request.Headers.ContentDisposition = "attachment";
         }
 
-        public string DownloadFile(string bucketName, string storageKeyOfFile)
+        /// <summary>
+        /// Downloads the (text) content of a single S3 object.
+        /// </summary>
+        /// <param name="timeout">
+        /// If supplied, the entire operation—connecting, receiving headers, and reading the
+        /// response body—is aborted if it exceeds this duration. This is enforced with a
+        /// cancellation token because, on .NET, the SDK's Timeout (HttpClient.Timeout) stops
+        /// counting once the response headers arrive and so does not cover reading the body.
+        /// (The SDK's ReadWriteTimeout, which used to guard the body read, is ignored on .NET Core
+        /// and later; only the legacy .NET Framework HttpWebRequest pipeline honored it.)
+        /// </param>
+        public string DownloadFile(
+            string bucketName,
+            string storageKeyOfFile,
+            TimeSpan? timeout = null
+        )
         {
             var request = new GetObjectRequest()
             {
@@ -313,16 +320,21 @@ namespace Bloom.WebLibraryIntegration
             };
             // We actually don't need any credentials to download the files we are dealing with because they are public read,
             // but it simplifies the code a bit to just reuse the existing IAmazonS3 object.
-            using (
-                var response = GetAmazonS3WithAccessKey(bucketName)
-                    .GetObjectAsync(request)
-                    .GetAwaiter()
-                    .GetResult()
-            )
-            using (var stream = response.ResponseStream)
-            using (var reader = new StreamReader(stream, Encoding.UTF8))
+            using (var cts = new CancellationTokenSource())
             {
-                return reader.ReadToEnd();
+                if (timeout.HasValue)
+                    cts.CancelAfter(timeout.Value);
+                using (
+                    var response = GetAmazonS3WithAccessKey(bucketName)
+                        .GetObjectAsync(request, cts.Token)
+                        .GetAwaiter()
+                        .GetResult()
+                )
+                using (var stream = response.ResponseStream)
+                using (var reader = new StreamReader(stream, Encoding.UTF8))
+                {
+                    return reader.ReadToEndAsync(cts.Token).GetAwaiter().GetResult();
+                }
             }
         }
 

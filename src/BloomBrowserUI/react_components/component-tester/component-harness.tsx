@@ -7,12 +7,12 @@
  * - Renders components based on __TEST_ELEMENT__ injection (for automated tests)
  * - Dynamically loads components defined via Playwright or manual configuration
  *
- * To run: `yarn dev` from the component-tester folder
- * Then open http://127.0.0.1:5173/ in your browser
+ * To run: `pnpm dev` from the component-tester folder
+ * Then open http://127.0.0.1:5183/ in your browser
  */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../utils/reactRender";
 // import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 // import { lightTheme } from "../../../../bloomMaterialUITheme";
 import { ComponentRenderRequest } from "./componentTypes";
@@ -116,14 +116,14 @@ if (pendingError) {
 } else if (!pendingRequest) {
     renderInstructions();
 } else {
-    ReactDOM.render(<div>Loading component…</div>, rootElement);
+    renderRoot(<div>Loading component…</div>, rootElement);
     void renderRequest(pendingRequest);
 }
 
 function renderInstructions(message?: string) {
     const componentNames = listComponentNames();
 
-    ReactDOM.render(
+    renderRoot(
         <div style={{ fontFamily: "sans-serif" }}>
             <h1>Bloom React Component Tester</h1>
             {message ? <p>{message}</p> : null}
@@ -155,7 +155,7 @@ async function renderRequest(request: ComponentRenderRequest<any>) {
         const Component = await loadComponent(request.descriptor);
         const element = React.createElement(Component, request.props ?? {});
 
-        ReactDOM.render(
+        renderRoot(
             // <StyledEngineProvider injectFirst>
             //     <ThemeProvider theme={lightTheme}>{element}</ThemeProvider>
             // </StyledEngineProvider>,
@@ -221,7 +221,7 @@ function renderError(error: unknown) {
             ? (error.stack ?? error.message)
             : JSON.stringify(error, null, 2);
 
-    ReactDOM.render(
+    renderRoot(
         <div>
             <h1>Component Tester Error</h1>
             <pre>{message}</pre>

@@ -109,7 +109,9 @@ namespace BloomTests.Publish.Rab
                 try
                 {
                     using (Image.FromFile(badIcon)) { }
-                    Assert.Fail("Expected GDI+ to throw a misleading exception for an undecodable image.");
+                    Assert.Fail(
+                        "Expected GDI+ to throw a misleading exception for an undecodable image."
+                    );
                 }
                 catch (Exception e)
                 {

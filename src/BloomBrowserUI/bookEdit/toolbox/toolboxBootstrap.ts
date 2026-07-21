@@ -4,23 +4,23 @@ import {
     getTheOneToolbox,
     applyToolboxStateToUpdatedPage,
     removeToolboxMarkup,
-    showOrHideTool_click,
     scheduleMarkupUpdateAfterPaste,
 } from "./toolbox";
 import { simulateBlurOnPageFrameMouseDown } from "../../utils/menuCloseOnBlur";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
-import { DecodableReaderToolboxTool } from "./readers/decodableReader/decodableReaderToolboxTool";
-import { LeveledReaderToolboxTool } from "./readers/leveledReader/leveledReaderToolboxTool";
+import { DecodableReaderTool } from "./readers/decodableReader/decodableReaderTool";
+import { LeveledReaderTool } from "./readers/leveledReader/leveledReaderTool";
 import { MusicToolAdaptor } from "./music/musicToolControls";
 import { ImpairmentVisualizerAdaptor } from "./impairmentVisualizer/impairmentVisualizer";
 import { MotionTool } from "./motion/motionTool";
-import TalkingBookTool from "./talkingBook/talkingBook";
+import TalkingBookTool from "./talkingBook/talkingBookTool";
 import { SignLanguageTool } from "./signLanguage/signLanguageTool";
 import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 import "errorHandler";
 import { CanvasTool } from "./canvas/canvasTool";
 import { GameTool, setActiveDragActivityTab } from "./games/GameTool";
+import { SettingsTool } from "./settings/settingsTool";
 // Explicit imports needed so that these symbols are in local scope for the window.toolboxBundle object
 import {
     addWordListChangedListener,
@@ -56,7 +56,7 @@ export interface IToolboxFrameExports {
 }
 
 // each of these exports shows up under this window's toolboxBundle object (see workspaceFrames.ts)
-export { removeToolboxMarkup, showOrHideTool_click, setActiveDragActivityTab };
+export { removeToolboxMarkup, setActiveDragActivityTab };
 export {
     showSetupDialog,
     initializeReaderSetupDialog,
@@ -121,8 +121,8 @@ $(document).ready(() => {
 // Make the one instance of each Toolbox class and register it with the master toolbox.
 // The imports we need to make these calls possible also serve to ensure that each
 // toolbox's code is made part of the bundle.
-ToolBox.registerTool(new DecodableReaderToolboxTool());
-ToolBox.registerTool(new LeveledReaderToolboxTool());
+ToolBox.registerTool(new DecodableReaderTool());
+ToolBox.registerTool(new LeveledReaderTool());
 ToolBox.registerTool(new MusicToolAdaptor());
 ToolBox.registerTool(new ImpairmentVisualizerAdaptor());
 ToolBox.registerTool(new MotionTool());
@@ -131,13 +131,13 @@ ToolBox.registerTool(new SignLanguageTool());
 ToolBox.registerTool(new ImageDescriptionAdapter());
 ToolBox.registerTool(new CanvasTool());
 ToolBox.registerTool(new GameTool());
+ToolBox.registerTool(new SettingsTool());
 
 const toolboxBundle: ToolboxBundleApi = {
     getTheOneToolbox,
     scheduleMarkupUpdateAfterPaste,
     applyToolboxStateToPage,
     removeToolboxMarkup,
-    showOrHideTool_click,
     showSetupDialog,
     initializeReaderSetupDialog,
     closeSetupDialog,

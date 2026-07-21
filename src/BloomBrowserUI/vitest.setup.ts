@@ -1,6 +1,72 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
+// Tell React 18 that this environment supports act(), suppressing the
+// "not configured to support act(...)" warning in every React component test.
+(globalThis as unknown as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT =
+    true;
+
+// Some legacy specs use the Jasmine/Jest-style fail() helper, which vitest does
+// not provide. Define it globally (throwing an Error) so those assertions both
+// work at runtime and type-check. Test-only: this file is loaded only by vitest.
+declare global {
+    function fail(message?: string): never;
+}
+(globalThis as unknown as { fail: (message?: string) => never }).fail = (
+    message?: string,
+): never => {
+    throw new Error(message ?? "fail() was called");
+};
+
+// Reduce test-runner stderr spam from intentional assertions in legacy code.
+const originalConsoleAssert = console.assert.bind(console);
+console.assert = (condition?: boolean, ...data: unknown[]) => {
+    if (condition) {
+        return;
+    }
+    if (process.env.VITEST_VERBOSE_ASSERTS === "1") {
+        originalConsoleAssert(condition, ...data);
+    }
+};
+
+const originalConsoleError = console.error.bind(console);
+console.error = (...args: unknown[]) => {
+    const serialized = args
+        .map((arg) => {
+            if (arg instanceof Error) {
+                return `${arg.name}: ${arg.message}\n${arg.stack || ""}`;
+            }
+            return String(arg);
+        })
+        .join("\n");
+
+    const isJsdomXhrAggregateError =
+        serialized.includes("AggregateError") &&
+        serialized.includes("jsdom") &&
+        serialized.includes("XMLHttpRequest-impl.js");
+
+    if (isJsdomXhrAggregateError) {
+        return;
+    }
+
+    // React 18 emits two families of act() warnings in jsdom test environments:
+    //   • "not configured to support act()" – the environment flag is absent
+    //   • "not wrapped in act(...)" – an async state update escaped an act() boundary
+    // Both arise from React 18's concurrent scheduler and from third-party libraries
+    // (e.g. MUI Accordion/Tooltip transitions) whose timer-based state updates fire
+    // outside of synchronous act() blocks. All tests still pass; the warnings are
+    // noise. @testing-library/react suppresses the same patterns for the same reason.
+    const isReactActWarning =
+        serialized.includes("not wrapped in act(...)") ||
+        serialized.includes("not configured to support act(...)");
+
+    if (isReactActWarning) {
+        return;
+    }
+
+    originalConsoleError(...args);
+};
+
 // =============================================================================
 // VITEST SETUP FILE
 // This file runs before each test file to configure the test environment.
@@ -184,6 +250,23 @@ HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
     if (proto === HTMLElement.prototype || proto === Element.prototype) {
         applyScrollIntoViewMock(proto);
     }
+});
+
+// jsdom does not implement media playback; mock to prevent repetitive stderr noise.
+Object.defineProperty(HTMLMediaElement.prototype, "play", {
+    configurable: true,
+    writable: true,
+    value: vi.fn(async () => undefined),
+});
+Object.defineProperty(HTMLMediaElement.prototype, "pause", {
+    configurable: true,
+    writable: true,
+    value: vi.fn(),
+});
+Object.defineProperty(HTMLMediaElement.prototype, "load", {
+    configurable: true,
+    writable: true,
+    value: vi.fn(),
 });
 
 // -----------------------------------------------------------------------------
@@ -395,6 +478,22 @@ globalThis.jQuery = jQuery;
 (jQuery.fn as any).dialog = vi.fn(function () {
     return this;
 });
+
+// -----------------------------------------------------------------------------
+// WEBSOCKET SUPPRESSION
+// -----------------------------------------------------------------------------
+
+// Prevent WebSocketManager from creating real WebSocket connections in tests.
+// Without this, code that calls WebSocketManager.addListener (e.g. the Talking
+// Book tool's setupForRecordingAsync) will open a WebSocket to ws://127.0.0.1:3001
+// (Bloom's backend port + 1). On Windows the TCP handshake for a closed port can
+// hang for many seconds rather than failing immediately. More critically,
+// WebSocketManager.continuouslyCheckForClosedSockets starts an infinite
+// setTimeout(looper, 2000) loop after a 10s initial delay. Both effects keep
+// worker-thread event loops alive after a test file finishes, preventing vitest
+// from assigning those workers to the remaining test files.
+// WebSocketManager already honours this flag for Storybook and Playwright tests.
+(window as any)._SKIP_WEBSOCKET_CREATION_ = true;
 
 // -----------------------------------------------------------------------------
 // C# INTEROP MOCKS

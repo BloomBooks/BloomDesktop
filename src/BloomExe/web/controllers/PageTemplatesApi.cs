@@ -482,12 +482,12 @@ namespace Bloom.web.controllers
                             $" While adding '{path}' to bookTemplatePaths. Possibly BL-10012.",
                             e
                         );
-                        throw e;
+                        throw;
                     }
                     catch (Exception e)
                     {
                         Logger.WriteError($" While adding '{path}' to bookTemplatePaths.", e);
-                        throw e;
+                        throw;
                     }
                 })
             );

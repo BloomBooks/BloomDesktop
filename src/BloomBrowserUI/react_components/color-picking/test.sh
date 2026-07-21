@@ -9,7 +9,7 @@ component_path="../color-picking/component-tests"
 
 if [ "${1:-}" = "--ui" ]; then
     shift
-    yarn test:ui "$component_path" "$@"
+    pnpm test:ui "$component_path" "$@"
 else
-    yarn test "$component_path" "$@"
+    pnpm test "$component_path" "$@"
 fi

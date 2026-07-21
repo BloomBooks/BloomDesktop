@@ -158,7 +158,7 @@ namespace Bloom.Book
             var path = Path.Combine(folderPath, imageFilePath);
             try
             {
-                return ImageUtils.FromFileRobustly(path);
+                return PalasoImage.FromFileRobustly(path);
             }
             catch (Exception e)
             {
@@ -324,49 +324,6 @@ namespace Bloom.Book
                 UpdateImgMetadataAttributesToMatchImage(folderPath, img, progress);
                 completed++;
             }
-        }
-
-        /// <summary>
-        /// We don't want to allow users to change the metadata in stock images that come with games,
-        /// but we do want those images to report their metadata for credits.  See BL-14610.
-        /// </summary>
-        struct GameStockImageInfo
-        {
-            public string Name;
-            public string Creator;
-            public string License;
-        }
-
-        static GameStockImageInfo[] _stockGameImages =
-        {
-            new GameStockImageInfo
-            {
-                Name = "smiling-flowers.gif",
-                Creator = "Ilona Spaeder",
-                License = "Pixabay",
-            },
-            new GameStockImageInfo
-            {
-                Name = "sad-face.gif",
-                Creator = "Ilona Spaeder",
-                License = "Pixabay",
-            },
-        };
-
-        public static bool ImageIsStockGameImage(string filename, Metadata metadata)
-        {
-            foreach (var imageInfo in _stockGameImages)
-            {
-                if (
-                    filename == imageInfo.Name
-                    && metadata.Creator == imageInfo.Creator
-                    && metadata.License.RightsStatement.Contains(imageInfo.License)
-                )
-                {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }

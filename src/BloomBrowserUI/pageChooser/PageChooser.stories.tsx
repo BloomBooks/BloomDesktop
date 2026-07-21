@@ -75,7 +75,7 @@ const TemplateBookPagesWrapper: React.FunctionComponent<
     return <TemplateBookPages {...props} titleGroup={bg!} />;
 };
 
-const PreviewFrame: React.FC = (props) => (
+const PreviewFrame: React.FC<{ children?: React.ReactNode }> = (props) => (
     <div
         css={css`
             height: 540px;

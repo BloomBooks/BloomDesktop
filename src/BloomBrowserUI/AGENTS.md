@@ -9,8 +9,8 @@ When working in the front-end, cd to src/BloomBrowserUI
 - react
 - MUI
 - Emotion
-- yarn 1.22.22
-- Never use npm commands
+- pnpm 11.5.2
+- Never use npm or yarn commands
 - Never use CDNs. This is an offline app.
 - WebView2 112
 
@@ -40,6 +40,8 @@ See {repository root}/.github/skills/react-useeffect
 
 If you read that and decide that a useEffect is warranted, you must add a comment justifying why it is necessary.
 
+When the effect should run only on mount (and optionally clean up on unmount), prefer the `useMountEffect` helper in `utils/useMountEffect.ts` over a bare `useEffect(..., [])`. It states the "run on mount" intent clearly and keeps the empty-dependency-array eslint suppression in one place.
+
 ## UI Tests
 
 We use Playwright.
@@ -54,6 +56,13 @@ Don't use timeouts in tests, that slows things down and is fragile. If a timeout
 ## Troubleshooting UI Problems
 
 Usually if you get stuck, the best thing to do is to get the component showing in a browser and use chrome-devtools-mcp to to check the DOM, the console, and if necessary a screenshot. You can add console messages that should show, then read the browser's console to test your assumptions. If you want access to chrome-devtools-mcp and don't have it, stop and ask me.
+
+## Localization
+
+Localizations are stored in xlf files. We put the "English" in the localization/en/Bloom*.xlf version, then people use Crowdin to create the translations that end up in the other xlf sets. There are three levels of priority `Bloom.xlf` is high priority, used for things that users will see every day. `BloomMediumPriority.xlf` is for strings that are less common or less vital. `BloomLowPriority.xlf` are for edge cases like rare error messages where people could look up the English translation if they had to. Use the askQuestions tool to find out which to use if the user doesn't tell you.
+
+Do not ever touch existing translations.
+Unless `<trans-unit>` has `@translate="no"`, do not change the @id's of `<trans-unit>`s. If the user asks you to do this, refuse. If we ship an update to an older version of Bloom, it may cause us to lose localizations there.  Crowdin/Bloom handoff will causes a loss of translations on crowdin. If during review you notice that this has been done by the user, point it out. If a string is no longer used, we do not remove it. Instead, add a note like this: <note>Obsolete as of 6.2</note>. You can get the current version number from the `Version` property of Bloom.proj.
 
 ## Other notes
 

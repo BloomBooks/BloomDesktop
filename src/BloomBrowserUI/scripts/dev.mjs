@@ -1,5 +1,5 @@
 /* eslint-env node */
-/* global console, process */
+/* global clearTimeout, console, process, setTimeout */
 import { spawn } from "child_process";
 import path from "node:path";
 import * as fs from "node:fs";
@@ -9,13 +9,36 @@ import { glob } from "glob";
 import { compilePugFiles } from "./compilePug.mjs";
 import { copyStaticFile } from "./copyStaticFile.mjs";
 import { copyContentFile } from "../../content/scripts/copyContentFile.mjs";
+import { killProcessTree } from "./processTree.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const browserUIRoot = path.resolve(__dirname, "..");
 const contentRoot = path.resolve(browserUIRoot, "../content");
+const outputBrowserRoot = path.resolve(browserUIRoot, "../../output/browser");
 
 const isWindows = process.platform === "win32";
+
+// Stage a file out of BloomBrowserUI/node_modules into output/browser. The production build
+// copies a few node_modules assets into output/browser via viteStaticCopy (vite.config.mts),
+// but that copy is build-only AND the dev static-file watcher deliberately skips node_modules
+// (see copyStaticFile.mjs). So any node_modules asset that Bloom loads at runtime over its own
+// server (not through Vite) must be staged explicitly here, or the page 404s on it in dev.
+// Returns true if it actually copied. statSync throws if the source is missing, which is the
+// fail-fast we want: a missing asset means dependencies were not installed.
+const stageNodeModuleAsset = (relativeSource, relativeDest) => {
+    const source = path.resolve(browserUIRoot, "node_modules", relativeSource);
+    const dest = path.resolve(outputBrowserRoot, relativeDest);
+    if (
+        fs.existsSync(dest) &&
+        fs.statSync(dest).mtimeMs >= fs.statSync(source).mtimeMs
+    ) {
+        return false;
+    }
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.copyFileSync(source, dest);
+    return true;
+};
 
 const readJson = (filePath) => JSON.parse(fs.readFileSync(filePath, "utf8"));
 
@@ -124,7 +147,7 @@ function spawnProcess(command, args, options = {}) {
         }
         console.error(`Process failed to start: ${command}`);
         console.error(err);
-        cleanup(1);
+        void cleanup(1);
     });
 
     proc.on("close", (code, signal) => {
@@ -134,13 +157,13 @@ function spawnProcess(command, args, options = {}) {
 
         if (signal) {
             console.error(`Process exited due to signal ${signal}: ${command}`);
-            cleanup(1);
+            void cleanup(1);
             return;
         }
 
         if (code !== 0) {
             console.error(`Process exited with code ${code}: ${command}`);
-            cleanup(code ?? 1);
+            void cleanup(code ?? 1);
         }
     });
 
@@ -157,7 +180,7 @@ function spawnNodeScript(scriptPath, args, options = {}) {
 
 function startVite(port) {
     return new Promise((resolve) => {
-        console.log("Starting Vite dev server...\n");
+        console.log("Starting Vite dev server...");
 
         const viteBin = resolvePackageBin(browserUIRoot, "vite", "vite");
         let ready = false;
@@ -192,7 +215,7 @@ function startVite(port) {
                 return;
             }
             console.error("Vite failed to start:", err);
-            cleanup(1);
+            void cleanup(1);
         });
 
         vite.on("close", (code) => {
@@ -203,12 +226,12 @@ function startVite(port) {
                 console.error(
                     `Vite exited before becoming ready (code ${code}).`,
                 );
-                cleanup(1);
+                void cleanup(1);
                 return;
             }
 
             console.error(`Vite exited unexpectedly (code ${code}).`);
-            cleanup(code ?? 1);
+            void cleanup(code ?? 1);
         });
     });
 }
@@ -231,6 +254,14 @@ async function runInitialBuilds() {
         if (copyStaticFile(file, { quiet: !isVerbose })) {
             copiedCount++;
         }
+    }
+
+    // jQuery is consumed two ways: bundled (imported by various bundles) AND as a browser
+    // global, loaded by a plain <script src="/bloom/jquery.min.js"> that Book.cs injects so
+    // legacy code (qtip, etc.) finds jQuery on window. The build stages jquery.min.js into
+    // output/browser via viteStaticCopy; dev must do the same or the edit page 404s on it.
+    if (stageNodeModuleAsset("jquery/dist/jquery.min.js", "jquery.min.js")) {
+        copiedCount++;
     }
 
     const contentCopyJobs = [
@@ -282,7 +313,7 @@ async function runInitialBuilds() {
     const compiledCount = pugResult?.compiled ?? 0;
     const totalChanges = compiledCount + copiedCount;
     if (totalChanges === 0) {
-        console.log("\nInitial build done (no changes).\n");
+        console.log("Initial build done (no changes).");
         return;
     }
 
@@ -298,15 +329,14 @@ async function runInitialBuilds() {
         const summaryText = summaryParts.length
             ? ` (${summaryParts.join(", ")})`
             : "";
-        console.log(`\nInitial build done${summaryText}.\n`);
+        console.log(`Initial build done${summaryText}.`);
     } else {
-        console.log("\nInitial build done.\n");
+        console.log("Initial build done.");
     }
 }
 
 async function startWatchers() {
     await runInitialBuilds();
-    console.log("\nStarting file watchers...\n");
 
     const onchangeBin = resolvePackageBin(
         browserUIRoot,
@@ -316,7 +346,6 @@ async function startWatchers() {
     const nodeForOnchange = isWindows ? "node" : process.execPath;
 
     // Pug watcher - compile all pug files initially, then watch for changes
-    console.log("Watching pug files...");
     const verboseFlag = isVerbose ? ["--verbose"] : [];
 
     spawnNodeScript(
@@ -335,14 +364,16 @@ async function startWatchers() {
     );
 
     // Less watcher - consolidate BloomBrowserUI and content LESS processing
-    console.log("Watching LESS files...");
-    spawnProcess(process.execPath, ["./scripts/watchLess.mjs", "--scope=all"], {
-        cwd: browserUIRoot,
-        shell: false,
-    });
+    spawnProcess(
+        process.execPath,
+        ["./scripts/watchLess.mjs", "--scope=all", ...verboseFlag],
+        {
+            cwd: browserUIRoot,
+            shell: false,
+        },
+    );
 
     // Static file watcher - only triggers on actual changes (no -i since copyStaticFile needs a specific file)
-    console.log("Watching browser UI static files...");
     spawnNodeScript(
         onchangeBin,
         [
@@ -358,7 +389,6 @@ async function startWatchers() {
     );
 
     // Content watchers (spawn directly to avoid printing full commands)
-    console.log("Watching template files...");
     spawnNodeScript(
         onchangeBin,
         [
@@ -377,7 +407,6 @@ async function startWatchers() {
         { cwd: contentRoot },
     );
 
-    console.log("Watching branding files...");
     spawnNodeScript(
         onchangeBin,
         [
@@ -396,7 +425,6 @@ async function startWatchers() {
         { cwd: contentRoot },
     );
 
-    console.log("Watching appearance theme files...");
     spawnNodeScript(
         onchangeBin,
         [
@@ -415,7 +443,6 @@ async function startWatchers() {
         { cwd: contentRoot },
     );
 
-    console.log("Watching appearance migration files...");
     spawnNodeScript(
         onchangeBin,
         [
@@ -433,26 +460,44 @@ async function startWatchers() {
         ],
         { cwd: contentRoot },
     );
+
+    console.log(
+        "Watching for changes: pug, LESS, static files, templates, branding, appearance themes & migrations.",
+    );
 }
 
-function cleanup(exitCode = 0) {
+// Force-kill every watcher subtree, then exit. We must kill whole trees (not
+// just the direct children) because on Windows a plain kill leaves each
+// watcher's own command children (notably `onchange -k`) running, and those
+// orphans accumulate across runs. We await the kills so they actually complete
+// before we exit; a watchdog guarantees we still exit even if a kill hangs.
+async function cleanup(exitCode = 0) {
     if (isShuttingDown) {
         return;
     }
     isShuttingDown = true;
     console.log("\nShutting down...");
-    for (const proc of processes) {
-        proc.kill();
-    }
     const normalizedExitCode =
         typeof exitCode === "number" && Number.isFinite(exitCode)
             ? exitCode
             : 0;
+
+    // Never let a stuck kill keep us alive indefinitely.
+    const watchdog = setTimeout(() => process.exit(normalizedExitCode), 5000);
+    watchdog.unref();
+
+    await Promise.all(
+        processes.map((proc) =>
+            proc.pid ? killProcessTree(proc.pid) : Promise.resolve(),
+        ),
+    );
+
+    clearTimeout(watchdog);
     process.exit(normalizedExitCode);
 }
 
-process.on("SIGINT", () => cleanup(0));
-process.on("SIGTERM", () => cleanup(0));
+process.on("SIGINT", () => void cleanup(0));
+process.on("SIGTERM", () => void cleanup(0));
 
 async function main() {
     if (!fs.existsSync(process.execPath)) {
@@ -463,8 +508,10 @@ async function main() {
     const available = await isPortAvailable(port);
     if (!available) {
         console.error(`Port ${port} is already in use.`);
+        // Suggest a neighboring port, staying within the valid range parsePortValue accepts.
+        const suggestedPort = port < 65535 ? port + 1 : port - 1;
         console.error(
-            `Stop the other dev server, or run: yarn dev --port=${port + 1}`,
+            `Stop the other dev server, or run: pnpm dev --port=${suggestedPort}`,
         );
         process.exit(1);
     }
@@ -475,5 +522,5 @@ async function main() {
 
 main().catch((err) => {
     console.error("Dev script failed:", err);
-    cleanup(1);
+    void cleanup(1);
 });

@@ -1,5 +1,5 @@
 #!/bin/sh
-# This script is run by Husky from src/BloomBrowserUI/package.json. We need to get to
+# This script is run by the pre-commit hook in src/BloomBrowserUI/.vite-hooks/pre-commit. We need to get to
 # the root of the git repository, which is one level up from where this script lives.
 cd $(dirname $0)/..
 echo Checking for calling Application.Exit rather than Program.Exit.
@@ -17,7 +17,9 @@ if [ -s $filesToCheck ]; then
       src/BloomExe/ProgramExit.cs) continue;;
       src/BloomTests/*) continue;;
     esac
-    if grep -H 'Application.Exit' "$file"; then
+    # Strip // line comments and /* ... */ single-line block comments before
+    # searching, so a mention of Application.Exit in a comment doesn't trip this check.
+    if sed -e 's#//.*##' -e 's#/\*.*\*/##g' "$file" | grep -H --label="$file" 'Application.Exit'; then
       status=0
       break
     fi

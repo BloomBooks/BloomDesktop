@@ -1,6 +1,6 @@
 /**
  * Tests for Registration Dialog - Initial Rendering & Layout
- * Run with: yarn test
+ * Run with: ../test.sh (or `pnpm test` from react_components/component-tester)
  */
 
 import { expect, test } from "../../component-tester/playwrightTest";

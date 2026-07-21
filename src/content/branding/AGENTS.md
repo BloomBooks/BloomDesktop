@@ -35,6 +35,6 @@ From `src/content/package.json`:
 - `build:branding:files` copies branding assets (`png/jpg/svg/css/json/htm`) to `output/browser/branding`.
 
 Useful commands (run in `src/content`):
-- `yarn build:branding:less`
-- `yarn build:branding:files`
-- `yarn build` (full content build)
+- `pnpm build:branding:less`
+- `pnpm build:branding:files`
+- `pnpm build` (full content build)

@@ -228,6 +228,31 @@ export function setLangData(data) {
     theOneLibSynphony.processVocabularyGroups();
 }
 
+// The zero-width and directional format characters that we treat as word boundaries.
+// U+200B ZERO WIDTH SPACE is the notable one: despite its name it is Unicode category
+// Cf (Format), NOT Zs (Space Separator), so it is NOT matched by \p{Z} or \s. Along with
+// the LTR/RTL marks (U+200E/U+200F), the directional embedding/override markers
+// (U+202A-U+202E), and the directional isolates (U+2066-U+2069), these can appear between
+// (or stray inside) words without being visible.
+// This is the body of a regex character class (no enclosing brackets). It MUST be kept in
+// sync between getWordsFromHtmlString (which splits story text into words on these) and
+// wrap_words_extra (which highlights those words in the HTML): if the two disagree about
+// where a word ends, a decodable word next to one of these characters gets left unmarked
+// or mis-marked. See BL-3933, BL-7081, and BL-16490.
+// NOTE: U+200C (ZWNJ) and U+200D (ZWJ) are deliberately excluded; they are legitimate
+// within words in some scripts and must NOT split or bound a word (BL-13428).
+// Built with String.fromCharCode (not string escapes) so this source file itself stays
+// free of the very invisible characters it describes.
+const zeroWidthAndDirectionalSplitters =
+    String.fromCharCode(0x200b) + // ZERO WIDTH SPACE
+    String.fromCharCode(0x200e, 0x200f) + // LEFT-TO-RIGHT / RIGHT-TO-LEFT MARK
+    String.fromCharCode(0x202a) +
+    "-" +
+    String.fromCharCode(0x202e) + // directional embedding/override markers
+    String.fromCharCode(0x2066) +
+    "-" +
+    String.fromCharCode(0x2069); // directional "isolate" markers
+
 /**
  * Class that holds Synphony-related functions
  * @returns {LibSynphony}
@@ -635,24 +660,20 @@ export class LibSynphony {
         // Originally the code had p{C} (all Control characters), but this was too all-encompassing.
         const whitespace = "\\p{Z}";
         const controlChars = "\\p{Cc}"; // "real" Control characters
-        // The following constants are Control(format) [p{Cf}] characters that should split words.
-        // e.g. ZERO WIDTH SPACE is a Control(format) charactor
+        // We also split on some Control(format) [p{Cf}] characters (ZERO WIDTH SPACE and the
+        // LTR/RTL/directional markers). e.g. ZERO WIDTH SPACE is a Control(format) character
         // (See http://issues.bloomlibrary.org/youtrack/issue/BL-3933),
-        // but so are ZERO WIDTH JOINER and NON JOINER (See https://issues.bloomlibrary.org/youtrack/issue/BL-7081).
+        // as are ZERO WIDTH JOINER and NON JOINER (See https://issues.bloomlibrary.org/youtrack/issue/BL-7081).
         // See list at: https://www.compart.com/en/unicode/category/Cf
-        const zeroWidthSplitters = "\u200b"; // ZERO WIDTH SPACE
-        const ltrrtl = "\u200e\u200f"; // LEFT-TO-RIGHT MARK / RIGHT-TO-LEFT MARK
-        const directional = "\u202A-\u202E"; // more LTR/RTL/directional markers
-        const isolates = "\u2066-\u2069"; // directional "isolate" markers
+        // These live in the shared zeroWidthAndDirectionalSplitters constant so that
+        // wrap_words_extra bounds words at exactly the same characters we split on here
+        // (See BL-16490).
         // split on whitespace, Control(control) and some Control(format) characters
         regex = XRegExp(
             "[" +
                 whitespace +
                 controlChars +
-                zeroWidthSplitters +
-                ltrrtl +
-                directional +
-                isolates +
+                zeroWidthAndDirectionalSplitters +
                 "]+",
             "xg",
         );
@@ -1445,9 +1466,21 @@ export class LibSynphony {
         if (extra.length > 0 && extra.substring(0, 1) !== " ")
             extra = " " + extra;
 
-        var beforeWord = "(^\\s*|>\\s*|[\\s\\p{Z}]|\\p{P}|&nbsp;)"; // word beginning delimiter
+        // Bound words at the same zero-width / directional splitters that
+        // getWordsFromHtmlString splits on (via zeroWidthAndDirectionalSplitters), in
+        // addition to ordinary whitespace/separators. Without this, a decodable word that
+        // touches (or is split by) an invisible character such as U+200B ZERO WIDTH SPACE
+        // is not matched here and so shows up unmarked or as not-decodable, even though the
+        // analyzer counted it. U+200B et al. are Unicode category Cf, so \p{Z} does NOT
+        // include them; they must be listed explicitly. See BL-16490.
+        const wordBoundaryChars =
+            "\\s\\p{Z}" + zeroWidthAndDirectionalSplitters;
+        var beforeWord =
+            "(^\\s*|>\\s*|[" + wordBoundaryChars + "]|\\p{P}|&nbsp;)"; // word beginning delimiter
         var afterWord =
-            "(?=(\\s*$|\\s*<|[\\s\\p{Z}]|\\p{P}+\\s|\\p{P}+<br|[\\s]*&nbsp;|\\p{P}+&nbsp;|\\p{P}+$))"; // word ending delimiter
+            "(?=(\\s*$|\\s*<|[" +
+            wordBoundaryChars +
+            "]|\\p{P}+\\s|\\p{P}+<br|[\\s]*&nbsp;|\\p{P}+&nbsp;|\\p{P}+$))"; // word ending delimiter
 
         // escape special characters
         var escapedWords = aWords.map(RegExp.quote);

@@ -214,10 +214,6 @@ let restartRequested = false;
 let awaitingManualRestart = false;
 let restartInProgress = false;
 
-console.log(
-    "watchBloomExe.mjs tracks the launched Bloom instance until it exits. Treat the latest 'Bloom ready.' line as the launch success signal and keep this terminal open while you target the reported HTTP port.",
-);
-
 const isProcessRunning = (pid) => {
     if (!Number.isInteger(pid) || pid <= 0) {
         return false;

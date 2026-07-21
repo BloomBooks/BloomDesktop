@@ -10,6 +10,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.ToPalaso;
 using SIL.IO;
+using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom
 {
@@ -308,10 +309,20 @@ namespace Bloom
             // intentionally letting any errors just escape, give us an error
         }
 
-        [Obsolete(
-            "This method is dangerous because it has to loop Application.DoEvents(). RunJavaScriptAsync() is preferred."
-        )]
-        public abstract string RunJavascriptWithStringResult_Sync_Dangerous(string script);
+        /// <summary>
+        /// Puts the HTML of the current page (the first .bloom-page element) on the clipboard.
+        /// This is a developer aid for inspecting/reporting page markup.
+        /// </summary>
+        public async void OnCopyPageHtml(object sender, EventArgs e)
+        {
+            Debug.Assert(!InvokeRequired);
+            var html = await GetStringFromJavascriptAsync(
+                "document.getElementsByClassName('bloom-page')[0]?.outerHTML"
+            );
+            // After the await we're back on the UI thread, so it's safe to use the clipboard.
+            if (!string.IsNullOrEmpty(html))
+                PortableClipboard.SetText(html);
+        }
 
         public abstract Task<string> GetStringFromJavascriptAsync(string script);
         public abstract Task<string> GetObjectFromJavascriptAsync(string script);
@@ -362,6 +373,11 @@ namespace Bloom
             adder.Add(
                 "Open Page in Edge", // dev only, no need to localize
                 OnOpenPageInEdge
+            );
+
+            adder.Add(
+                "Copy HTML", // dev only, no need to localize
+                OnCopyPageHtml
             );
         }
 
