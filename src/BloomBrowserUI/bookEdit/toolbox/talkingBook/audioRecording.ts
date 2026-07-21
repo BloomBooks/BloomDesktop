@@ -2100,6 +2100,16 @@ export default class AudioRecording implements IAudioRecorder {
         ) {
             await this.setRecordingModeAsync(RecordingMode.Sentence);
         }
+
+        // Re-establish the yellow current highlight (BL-15300). clearAudioSplit() above
+        // removed the blue split (::highlight) paint, but with pseudo-element highlighting
+        // nothing puts the yellow current highlight back the way removing bloom-postAudioSplit
+        // from the .ui-audioCurrent box used to do under the old background-color model. Without
+        // this, clearing a split whole-text-box recording leaves the box with no highlight.
+        // (When we switched to Sentence mode just above, setRecordingModeAsync already selected
+        // and highlighted the first sentence; refreshing again is harmless.)
+        this.refreshAudioTextHighlights();
+
         await this.changeStateAndSetExpectedAsync("record");
         this.updateDisplay();
     }

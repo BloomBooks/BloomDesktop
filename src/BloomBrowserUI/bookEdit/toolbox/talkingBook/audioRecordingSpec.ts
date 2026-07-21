@@ -2500,6 +2500,44 @@ describe("audio recording tests", () => {
                 [],
             ]);
         });
+
+        // BL-15300 regression (Problem 2): after recording a whole text box and splitting it,
+        // clearing the recording should return the text box to the yellow current highlight.
+        // The split (blue) highlights must be removed AND the yellow current highlight
+        // re-registered. In the old DOM-class model the yellow reappeared automatically once
+        // bloom-postAudioSplit was removed from the .ui-audioCurrent box; with pseudo-element
+        // highlights nothing re-registers it unless clearRecordingAsync asks for a refresh.
+        it("restores the yellow current highlight when a split text-box recording is cleared", async () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="div1" class="bloom-editable audio-sentence bloom-postAudioSplit" data-test-preselect="true" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0"><p><span id="span1" class="bloom-highlightSegment">One.</span> <span id="span2" class="bloom-highlightSegment">Two.</span></p></div></div></div>',
+            );
+
+            setupDefaultApiResponses();
+            vi.spyOn(axios, "post").mockResolvedValue({});
+
+            const recording = new AudioRecording();
+            setHighlightedElementFromDom(recording);
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            recording.recordingMode = RecordingMode.TextBox;
+
+            // Simulate the post-split state: blue segment highlights are showing, no yellow.
+            recording.markAudioSplit();
+            expect(getSplitHighlightTexts()).toEqual([["One."], ["Two."], []]);
+            expect(getHighlightTexts(currentHighlightName)).toEqual([]);
+
+            recording.uiState.buttons.clear = Status.Enabled;
+            await recording.clearRecordingAsync();
+
+            // The blue split highlights should be gone...
+            expect(getSplitHighlightTexts()).toEqual([[], [], []]);
+            // ...and the whole text box should be highlighted yellow again.
+            expect(getHighlightTexts(currentHighlightName).join("")).toContain(
+                "One.",
+            );
+            expect(getHighlightTexts(currentHighlightName).join("")).toContain(
+                "Two.",
+            );
+        });
     });
 });
 
