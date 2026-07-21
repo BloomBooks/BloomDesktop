@@ -224,15 +224,9 @@ export const launchAiImageEditor = (
                 (el) => fileNameOf(GetRawImageUrl(el)),
             );
             pairs.forEach(({ replacement: r, element: target }) => {
-                const creator = target.getAttribute("data-creator") || "";
-                const newCreator = /Edited with AI/i.test(creator)
-                    ? creator
-                    : creator
-                      ? creator + ", Edited with AI"
-                      : "Edited with AI";
                 changeImageByElement(target, {
                     src: r.newSrc as string,
-                    creator: newCreator,
+                    creator: target.getAttribute("data-creator") || "",
                     copyright: target.getAttribute("data-copyright") || "",
                     license: target.getAttribute("data-license") || "",
                     // The AI commit applies replacements book-wide in C#

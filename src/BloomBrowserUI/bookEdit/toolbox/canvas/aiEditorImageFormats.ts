@@ -27,7 +27,9 @@ export function isAiEditableImageSrc(src: string | null | undefined): boolean {
     );
     const filename = withoutQuery.substring(lastSlash + 1);
     const lastDot = filename.lastIndexOf(".");
-    if (lastDot < 0) {
+    // <= 0 (not < 0): a name whose only dot is the leading one (e.g. ".jpeg") is a
+    // hidden file with no base name, not an editable image.
+    if (lastDot <= 0) {
         return false;
     }
     const extension = filename.substring(lastDot + 1).toLowerCase();

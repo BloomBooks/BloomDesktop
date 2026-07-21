@@ -57,7 +57,7 @@ If you have the team's agent skills installed (see the Skills section of AGENTS.
 
 ### Developing a library alongside Bloom
 
-Bloom uses several libraries that we maintain in their own repositories (they behave like a loose monorepo). By default, `./go.sh` uses each library exactly as installed in `node_modules` (i.e. as last `yarn install`ed / published) — you don't need their source.
+Bloom uses several libraries that we maintain in their own repositories (they behave like a loose monorepo). By default, `./go.sh` uses each library exactly as installed in `node_modules` (i.e. as last `pnpm install`ed / published) — you don't need their source.
 
 When you're also working on one of those libraries, link your local checkout of it with the repeatable `--with` flag so your edits flow into the running Bloom:
 

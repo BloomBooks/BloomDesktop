@@ -51,8 +51,9 @@ namespace Bloom.web.controllers
     ///      BYTES never cross postMessage; they move only as files via aiImageEditor/file.
     ///
     /// DATA ON DISK
-    ///   Per-book folder `<book>/.ai-image-editor/` with `history/<id>.png` images and
-    ///   `history/<id>.json` sidecars. The history folder is the source of truth.
+    ///   Per-book folder `<book>/.ai-image-editor/` which contains a `history/` subfolder
+    ///   of `<id>.png` images and `<id>.json` sidecars. The history subfolder is the
+    ///   source of truth.
     ///
     /// SECURITY
     ///   A per-launch session token (query param) gates /file, /commit, /saveCredentials.
@@ -442,8 +443,6 @@ namespace Bloom.web.controllers
             @"^[a-zA-Z0-9_\-]+$",
             RegexOptions.Compiled
         );
-
-        private const string EditedWithAiCredit = "Edited with AI";
 
         private static bool IsImageFileName(string name) =>
             AllowedImageExtensions.Contains(Path.GetExtension(name));
@@ -931,9 +930,6 @@ namespace Bloom.web.controllers
                 UrlPathString.CreateFromUnencodedString(newFileName)
             );
 
-            // Keep existing copyright/license; mark the illustrator as AI-edited (once).
-            AppendEditedWithAiCredit(element);
-
             if (element.HasAttribute("data-book"))
                 pageForDataDivSync = page;
 
@@ -1042,25 +1038,6 @@ namespace Bloom.web.controllers
                     referenced.Add(Path.GetFileName(url));
             }
             return referenced;
-        }
-
-        /// <summary>
-        /// Adds the "Edited with AI" illustrator credit to the element's data-creator, once:
-        /// an empty creator becomes just the credit; an existing creator gets ", Edited with AI"
-        /// appended; and a creator that already mentions it (any case) is left unchanged.
-        /// Internal for testing.
-        /// </summary>
-        internal static void AppendEditedWithAiCredit(SafeXmlElement element)
-        {
-            var creator = element.GetAttribute("data-creator") ?? "";
-            if (creator.IndexOf(EditedWithAiCredit, StringComparison.OrdinalIgnoreCase) >= 0)
-                return;
-            element.SetAttribute(
-                "data-creator",
-                string.IsNullOrWhiteSpace(creator)
-                    ? EditedWithAiCredit
-                    : creator + ", " + EditedWithAiCredit
-            );
         }
     }
 }
