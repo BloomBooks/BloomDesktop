@@ -1,0 +1,10 @@
+# MinIO object storage data — never commit.
+# The directory itself IS committed (via .gitkeep): Podman, unlike Docker, does not
+# auto-create missing bind-mount directories, so a fresh clone must already have it.
+minio-data/*
+!minio-data/.gitkeep
+
+# Runtime log from `supabase functions serve --env-file server/dev/functions.env
+# > server/dev/.functions-serve.log &` (used during task 02's live verification) — never
+# commit, ephemeral.
+.functions-serve.log
