@@ -1,20 +1,23 @@
 import { FunctionComponent, useState } from "react";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
-import { isToolEnabledInToolbox, setToolEnabledFromSettings } from "../toolbox";
+import {
+    isToolEnabledInToolbox,
+    setToolEnabledFromSettings,
+    setToolboxSettingsChangeHandler,
+} from "../toolbox";
 import { css } from "@emotion/react";
 import { SubscriptionBadgeWithTooltipAndDialog } from "../../../react_components/requiresSubscription";
 import { ThemeProvider } from "@mui/material/styles";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
+import { useMountEffect } from "../../../utils/useMountEffect";
 
 const ToolboxCheckbox: FunctionComponent<{
     tool: string;
     l10nKeySuffix: string;
     toolLabel: string;
+    shouldCheck: boolean;
     requiresSubscription?: boolean;
 }> = (props) => {
-    const [checked, setChecked] = useState<boolean>(
-        isToolEnabledInToolbox(props.tool),
-    );
     return (
         <div
             css={css`
@@ -38,13 +41,12 @@ const ToolboxCheckbox: FunctionComponent<{
                 size="small"
                 label={props.toolLabel}
                 l10nKey={`EditTab.Toolbox.${props.l10nKeySuffix}`}
-                checked={checked}
+                checked={props.shouldCheck}
                 onCheckChanged={(checked) => {
                     // Pass true so that, when enabling, the tool opens after a
                     // brief delay letting the user see this checkbox tick before
                     // the "More..." section collapses to reveal the tool. (BL-16501)
                     setToolEnabledFromSettings(props.tool, checked!, true);
-                    setChecked(checked!);
                 }}
             />
             {props.requiresSubscription && (
@@ -64,6 +66,38 @@ const ToolboxCheckbox: FunctionComponent<{
 };
 
 export const SettingsToolControls: FunctionComponent = () => {
+    const [checkedState, setCheckedState] = useState<{
+        canvas: boolean;
+        decodableReader: boolean;
+        imageDescription: boolean;
+        impairmentVisualizer: boolean;
+        leveledReader: boolean;
+        motion: boolean;
+        music: boolean;
+        signLanguage: boolean;
+    }>({
+        canvas: isToolEnabledInToolbox("canvas"),
+        decodableReader: isToolEnabledInToolbox("decodableReader"),
+        imageDescription: isToolEnabledInToolbox("imageDescription"),
+        impairmentVisualizer: isToolEnabledInToolbox("impairmentVisualizer"),
+        leveledReader: isToolEnabledInToolbox("leveledReader"),
+        motion: isToolEnabledInToolbox("motion"),
+        music: isToolEnabledInToolbox("music"),
+        signLanguage: isToolEnabledInToolbox("signLanguage"),
+    });
+
+    function updateState(which: string, value: boolean): void {
+        setCheckedState((previous) => ({ ...previous, [which]: value }));
+    }
+
+    useMountEffect(() => {
+        setToolboxSettingsChangeHandler((which, value) =>
+            updateState(which, value),
+        );
+        return () => {
+            setToolboxSettingsChangeHandler(undefined);
+        };
+    });
     return (
         <ThemeProvider theme={toolboxTheme}>
             <div
@@ -75,44 +109,52 @@ export const SettingsToolControls: FunctionComponent = () => {
                     tool="canvas"
                     l10nKeySuffix="CanvasTool"
                     toolLabel="Canvas Tool"
+                    shouldCheck={checkedState.canvas}
                     requiresSubscription
                 />
                 <ToolboxCheckbox
                     tool="decodableReader"
                     l10nKeySuffix="DecodableReaderTool"
                     toolLabel="Decodable Reader Tool"
+                    shouldCheck={checkedState.decodableReader}
                 />
                 <ToolboxCheckbox
                     tool="imageDescription"
                     l10nKeySuffix="ImageDescriptionTool"
                     toolLabel="Image Description Tool"
+                    shouldCheck={checkedState.imageDescription}
                 />
                 <ToolboxCheckbox
                     tool="impairmentVisualizer"
                     l10nKeySuffix="ImpairmentVisualizer"
                     toolLabel="Impairment Visualizer"
+                    shouldCheck={checkedState.impairmentVisualizer}
                 />
                 <ToolboxCheckbox
                     tool="leveledReader"
                     l10nKeySuffix="LeveledReaderTool"
                     toolLabel="Leveled Reader Tool"
+                    shouldCheck={checkedState.leveledReader}
                 />
                 <ToolboxCheckbox
                     tool="motion"
                     l10nKeySuffix="MotionTool"
                     toolLabel="Motion Tool"
+                    shouldCheck={checkedState.motion}
                     requiresSubscription
                 />
                 <ToolboxCheckbox
                     tool="music"
                     l10nKeySuffix="MusicTool"
                     toolLabel="Music Tool"
+                    shouldCheck={checkedState.music}
                     requiresSubscription
                 />
                 <ToolboxCheckbox
                     tool="signLanguage"
                     l10nKeySuffix="SignLanguageTool"
                     toolLabel="Sign Language Tool"
+                    shouldCheck={checkedState.signLanguage}
                 />
             </div>
         </ThemeProvider>
