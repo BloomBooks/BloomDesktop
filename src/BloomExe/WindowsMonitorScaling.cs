@@ -65,12 +65,31 @@ namespace Bloom
 
         // Bloom uses this to scale images stored in spreadsheets during spreadsheet export to fit column width.
         // The third-party library that does the spreadsheet export apparently uses the primary monitor's scaling factor.
+        // Returns 100 (i.e. no scaling) if the scale factor can't be determined for any reason, so that spreadsheet
+        // export still works even when this Windows API is unavailable or fails. We call this from a static constructor,
+        // so an unhandled failure here would surface as a TypeInitializationException that breaks every export, not just
+        // the image sizing. PublishAudioVideoAPI.TryGetWindowScalePercent guards the same GetScaleFactorForMonitor call.
         internal static int GetScalingFactorForPrimaryMonitor()
         {
-            var ptZero = new POINT { X = 0, Y = 0 };
-            var hmonitor = MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
-            GetScaleFactorForMonitor(hmonitor, out int percentScaleFactor);
-            return percentScaleFactor;
+            try
+            {
+                var ptZero = new POINT { X = 0, Y = 0 };
+                var hmonitor = MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
+                if (hmonitor == IntPtr.Zero)
+                    return 100;
+                // GetScaleFactorForMonitor returns S_OK (0) on success; otherwise percentScaleFactor is unreliable.
+                if (GetScaleFactorForMonitor(hmonitor, out int percentScaleFactor) != 0 || percentScaleFactor <= 0)
+                    return 100;
+                return percentScaleFactor;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return 100;
+            }
+            catch (DllNotFoundException)
+            {
+                return 100;
+            }
         }
 
         // Bloom uses this to scale a Problem Report screenshot if the display resolution is > 100%.
