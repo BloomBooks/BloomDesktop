@@ -512,5 +512,18 @@ namespace Bloom.Properties {
                 this["ExportImportFileFolder"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string OpenRouterApiKey {
+            get {
+                return ((string)(this["OpenRouterApiKey"]));
+            }
+            set {
+                this["OpenRouterApiKey"] = value;
+            }
+        }
     }
 }

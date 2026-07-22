@@ -1,4 +1,8 @@
-import { Browser, Page, chromium } from "./playwrightTest";
+// The bloom-exe CDP suite runs against the repo-root Playwright install (`playwright/test`),
+// not the component-tester's own `@playwright/test`. Import from the same module the runner
+// uses so the whole run shares one Playwright instance (mixing the two throws
+// "Requiring @playwright/test a second time").
+import { Browser, Page, chromium } from "playwright/test";
 
 type WorkspaceTabId = "collection" | "edit" | "publish";
 const configuredCdpPort = process.env.BLOOM_CDP_PORT;

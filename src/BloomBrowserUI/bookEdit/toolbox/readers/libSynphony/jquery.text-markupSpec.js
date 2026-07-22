@@ -302,9 +302,9 @@ describe("jquery.text-markup", function () {
         ]);
 
         // ...but ZERO WIDTH JOINER is legitimate within a word and must NOT split it.
-        expect(
-            theOneLibSynphony.getWordsFromHtmlString(`ca${zwj}t`),
-        ).toEqual([`ca${zwj}t`]);
+        expect(theOneLibSynphony.getWordsFromHtmlString(`ca${zwj}t`)).toEqual([
+            `ca${zwj}t`,
+        ]);
     });
 
     it("wrap_words_extra matches words bounded by a ZERO WIDTH SPACE (BL-16490)", function () {
