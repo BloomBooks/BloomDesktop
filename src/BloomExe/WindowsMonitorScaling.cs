@@ -10,13 +10,24 @@ namespace Bloom
     /// </summary>
     internal static class WindowsMonitorScaling
     {
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
         [DllImport("Shcore.dll")]
         private static extern int GetScaleFactorForMonitor(IntPtr hmonitor, out int pScale);
 
         [DllImport("user32.dll")]
         private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
 
-        private const int MONITOR_DEFAULTTONEAREST = 0x00000002;
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
+        private const uint MONITOR_DEFAULTTOPRIMARY = 0x00000001;
+        private const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
 
         [DllImport("Shcore.dll")]
         private static extern int GetDpiForMonitor(
@@ -48,6 +59,15 @@ namespace Bloom
                 out uint dpiX,
                 out uint dpiY
             );
+            GetScaleFactorForMonitor(hmonitor, out int percentScaleFactor);
+            return percentScaleFactor;
+        }
+
+        // Bloom uses this to scale images stored in spreadsheets during spreadsheet export to fit column width.
+        internal static int GetScalingFactorForPrimaryMonitor()
+        {
+            var ptZero = new POINT { X = 0, Y = 0 };
+            var hmonitor = MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
             GetScaleFactorForMonitor(hmonitor, out int percentScaleFactor);
             return percentScaleFactor;
         }
