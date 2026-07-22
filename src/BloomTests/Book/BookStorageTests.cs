@@ -1144,19 +1144,46 @@ namespace BloomTests.Book
             }
         }
 
-        [TestCase("My Long Title - a1b2c3d4", "My Long Title", ExpectedResult = true)] // exact base + " - <hash>"
-        [TestCase("My Long Ti - a1b2c3d4", "My Long Title", ExpectedResult = true)] // truncated base + " - <hash>"
-        [TestCase("My Long Title - Copy-a1b2c3d4", "My Long Title", ExpectedResult = true)] // Duplicate() form
+        [TestCase("My Book - a1b2c3d4", "My Book", ExpectedResult = true)] // exact canonical base + " - <hash>"
+        [TestCase("My Book - Copy-a1b2c3d4", "My Book", ExpectedResult = true)] // Duplicate() form
         [TestCase("Book-a1b2c3d4", "Book", ExpectedResult = true)] // new-book bare-hyphen form
-        [TestCase("Something Else - a1b2c3d4", "My Long Title", ExpectedResult = false)] // a different title
-        [TestCase("My Long Title", "My Long Title", ExpectedResult = false)] // no unique suffix at all
-        [TestCase("My Long Title - notahex", "My Long Title", ExpectedResult = false)] // suffix isn't hex
-        public bool IsUniqueVariantOfIdealFolderName_RecognizesWorkAroundFoldersOnly(
+        [TestCase("My Bo - a1b2c3d4", "My Book", ExpectedResult = false)] // over-truncated base = a different, shorter title, so rename
+        [TestCase("Something Else - a1b2c3d4", "My Book", ExpectedResult = false)] // a different title
+        [TestCase("My Book", "My Book", ExpectedResult = false)] // no unique suffix at all
+        [TestCase("My Book - notahex", "My Book", ExpectedResult = false)] // suffix isn't hex
+        public bool IsUniqueVariantOfIdealFolderName_RecognizesCanonicalWorkAroundFoldersOnly(
             string currentFolderName,
             string idealFolderName
         )
         {
             return BookStorage.IsUniqueVariantOfIdealFolderName(currentFolderName, idealFolderName);
+        }
+
+        [Test]
+        public void IsUniqueVariantOfIdealFolderName_LongTitle_MatchesOnlyCanonicalTruncation()
+        {
+            // A title too long to fit whole alongside the " - <hash>" suffix. GetUniqueBookFolderName
+            // truncates the base to (kMaxFilenameLength - (" - ".Length + 8)) characters.
+            var idealFolderName = new string('a', 45);
+            var canonicalBaseLength = BookStorage.kMaxFilenameLength - (" - ".Length + 8); // 39
+            var canonicalBase = idealFolderName.Substring(0, canonicalBaseLength);
+
+            // The canonical truncated form is kept (this is the churn case the fix targets)...
+            Assert.That(
+                BookStorage.IsUniqueVariantOfIdealFolderName(
+                    canonicalBase + " - a1b2c3d4",
+                    idealFolderName
+                ),
+                Is.True
+            );
+            // ...but a base truncated to a different length reads as a different title (so, rename).
+            Assert.That(
+                BookStorage.IsUniqueVariantOfIdealFolderName(
+                    idealFolderName.Substring(0, canonicalBaseLength - 5) + " - a1b2c3d4",
+                    idealFolderName
+                ),
+                Is.False
+            );
         }
 
         [Test]
