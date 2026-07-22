@@ -64,6 +64,7 @@ namespace Bloom
         }
 
         // Bloom uses this to scale images stored in spreadsheets during spreadsheet export to fit column width.
+        // The third-party library that does the spreadsheet export apparently uses the primary monitor's scaling factor.
         internal static int GetScalingFactorForPrimaryMonitor()
         {
             var ptZero = new POINT { X = 0, Y = 0 };
