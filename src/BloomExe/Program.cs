@@ -365,7 +365,14 @@ namespace Bloom
                 {
                     if (IsLocalizationHarvestingLaunch(args))
                         LocalizationManager.IgnoreExistingEnglishTranslationFiles = true;
-                    else
+                    // An automated launch (e.g. the visual-regression test suite, which starts Bloom with a
+                    // collection-file argument) sets this so the DEBUG "attach debugger" prompt does not block
+                    // an unattended run. A developer launching by hand leaves it unset and still gets the prompt.
+                    else if (
+                        String.IsNullOrEmpty(
+                            Environment.GetEnvironmentVariable("BLOOM_SKIP_ATTACH_DEBUGGER_PROMPT")
+                        )
+                    )
                         // This allows us to debug things like  interpreting a URL.
                         MessageBox.Show("Attach debugger now");
                 }

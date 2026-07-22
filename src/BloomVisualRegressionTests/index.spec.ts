@@ -1,14 +1,13 @@
 import { execFile } from "child_process";
 import fetch from "node-fetch";
 import chalk from "chalk";
-import {
-    Browser,
-    BrowserContext,
-    chromium,
-    expect,
-    Page,
-} from "@playwright/test";
-import { afterAll, beforeAll, describe, test } from "vitest";
+import { Browser, BrowserContext, chromium, Page } from "@playwright/test";
+// Use vitest's expect, not @playwright/test's. This suite runs under the vitest runner, and
+// Playwright's expect reaches for runner state (this.customTesters) that vitest does not set up,
+// so a FAILING Playwright assertion throws "customTesters is not iterable" instead of a readable
+// failure. (Passing assertions happen not to touch it, which is why this stayed hidden until a
+// screenshot actually differed.)
+import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { argosScreenshot } from "@argos-ci/playwright";
 import * as fs from "fs";
 import { PNG } from "pngjs";
@@ -18,6 +17,26 @@ import * as Path from "path";
 // The Bloom HTTP origin the suite talks to. launchBloomIfNeeded resolves this at startup so we use
 // whatever port Bloom actually opened on, instead of assuming 8089.
 let bloomOrigin = "http://localhost:8089";
+
+// node-fetch has no request timeout. Without one, a wedged Bloom — whose HTTP socket still accepts
+// connections but whose UI thread is blocked (e.g. behind a modal error dialog, which is exactly
+// what happens when a stale Bloom.exe is missing an API endpoint the tests call) so it never
+// replies — makes an await here hang forever. That turns a bad Bloom into a multi-minute hook
+// timeout instead of a quick, legible failure. Route every Bloom API call through this wrapper so a
+// non-responsive Bloom aborts fast. The default is generous because real operations (e.g. staging a
+// BloomPUB) can legitimately take a while; a hung Bloom never responds, so any finite cap is enough.
+// AbortSignal.timeout is a Node global; node-fetch honors the passed signal (cast bridges the
+// DOM-vs-node-fetch AbortSignal type declarations).
+function bloomFetch(
+    url: string,
+    init?: Parameters<typeof fetch>[1],
+    timeoutMs = 60000,
+) {
+    return fetch(url, {
+        ...init,
+        signal: AbortSignal.timeout(timeoutMs) as any,
+    });
+}
 
 describe("All books", () => {
     let page: Page;
@@ -32,7 +51,14 @@ describe("All books", () => {
         // If a Bloom was already running on a different collection, every selectBook would fail
         // with a confusing NullReferenceException. Fail fast with a clear message instead.
         await assertOnBasicCollection();
-        browser = await chromium.launch();
+        // Disable subpixel (LCD/ClearType) text antialiasing so glyph edges render as deterministic
+        // grayscale. Subpixel AA renders text against the RGB subpixels, producing orange/blue edge
+        // fringes that vary by GPU/driver/run/machine and cause spurious few-pixel diffs (e.g. the
+        // page-number glyph). Grayscale AA is reproducible, so real layout changes still show up but
+        // this rendering noise does not.
+        browser = await chromium.launch({
+            args: ["--disable-lcd-text", "--font-render-hinting=none"],
+        });
         context = await browser.newContext();
         page = await context.newPage();
         playerPage = await context.newPage();
@@ -211,17 +237,20 @@ describe("All books", () => {
         // Branding is normally derived from the (checksum-validated) subscription code and can't
         // be set directly. This test-only endpoint (present in DEBUG builds only) forces the
         // branding and brings the selected book up to date so it picks up that branding's files.
-        let result = await fetch(`${bloomOrigin}/bloom/api/e2e/setBranding`, {
-            method: "POST",
-            body: branding,
-        });
+        let result = await bloomFetch(
+            `${bloomOrigin}/bloom/api/e2e/setBranding`,
+            {
+                method: "POST",
+                body: branding,
+            },
+        );
         expect(result.ok).toBe(true);
     }
     async function setTheme(theme: string) {
         // Appearance theme is a per-book setting. This test-only endpoint (present in DEBUG builds
         // only) sets it and brings the selected book up to date so its appearance.css is
         // regenerated for that theme.
-        let result = await fetch(`${bloomOrigin}/bloom/api/e2e/setTheme`, {
+        let result = await bloomFetch(`${bloomOrigin}/bloom/api/e2e/setTheme`, {
             method: "POST",
             body: theme,
         });
@@ -231,7 +260,7 @@ describe("All books", () => {
         // Enhance: get us on the correct collection (currently we can only handle the one collection)
 
         // get us on the correct book
-        let result = await fetch(
+        let result = await bloomFetch(
             `${bloomOrigin}/bloom/api/collections/selected-book?path=${bookPath}&collection-id=${encodeURIComponent(
                 Path.dirname(bookPath),
             )}`,
@@ -246,7 +275,7 @@ describe("All books", () => {
     // the same code path the UI uses. Staging a BloomPUB requires the publish tab; selecting a book
     // requires the collection tab.
     async function selectTab(tab: string) {
-        const result = await fetch(
+        const result = await bloomFetch(
             `${bloomOrigin}/bloom/api/workspace/selectTab`,
             {
                 method: "POST",
@@ -262,7 +291,7 @@ describe("All books", () => {
     // error box in Bloom). This test-only endpoint (DEBUG builds only) lets us poll safely instead.
     async function waitForCollectionReady() {
         for (let attempt = 0; attempt < 30; attempt++) {
-            const result = await fetch(
+            const result = await bloomFetch(
                 `${bloomOrigin}/bloom/api/e2e/isCollectionReady`,
             );
             if (result.ok && (await result.text()) === "true") return;
@@ -275,7 +304,7 @@ describe("All books", () => {
     // the localhost URL of the staged book's .htm file, for loading in bloom-player. Requires the
     // publish tab to be active. This test-only endpoint is present in DEBUG builds only.
     async function makeBloomPubPreview(): Promise<string> {
-        const result = await fetch(
+        const result = await bloomFetch(
             `${bloomOrigin}/bloom/api/e2e/makeBloomPubPreview`,
             {
                 method: "POST",
@@ -362,7 +391,7 @@ describe("All books", () => {
     // Fail fast if a Bloom instance was already running on a different collection: selecting one of
     // our test books would otherwise fail with a confusing NullReferenceException.
     async function assertOnBasicCollection() {
-        const result = await fetch(
+        const result = await bloomFetch(
             `${bloomOrigin}/bloom/api/common/instanceInfo`,
         );
         expect(result.ok).toBe(true);
@@ -428,12 +457,19 @@ async function findRunningBloomOnBasic(): Promise<string | null> {
     for (const port of CANDIDATE_PORTS) {
         const origin = `http://localhost:${port}`;
         try {
-            const r = await fetch(`${origin}/bloom/api/common/instanceInfo`);
+            // Short timeout: a healthy Bloom answers instantly, so a port that accepts the
+            // connection but does not reply quickly is a wedged Bloom we should skip, not wait on.
+            // (A live-but-wrong-collection Bloom is what makes this port answer at all.)
+            const r = await bloomFetch(
+                `${origin}/bloom/api/common/instanceInfo`,
+                undefined,
+                3000,
+            );
             if (!r.ok) continue;
             const info = (await r.json()) as { collectionName?: string };
             if (info.collectionName === "basic") return origin;
         } catch (e) {
-            // Nothing responding on that port; keep looking.
+            // Nothing responding on that port (or it hung past the timeout); keep looking.
         }
     }
     return null;
@@ -473,7 +509,12 @@ async function launchBloomIfNeeded() {
         );
     }
     console.log(`Launching ${exe} on ${collection}`);
-    execFile(exe, [collection]);
+    // BLOOM_SKIP_ATTACH_DEBUGGER_PROMPT keeps a DEBUG build from popping its "Attach debugger now"
+    // messagebox (see Program.cs), which is shown whenever Bloom is launched with an argument (here
+    // the collection path) and would otherwise block this unattended launch until someone clicks it.
+    execFile(exe, [collection], {
+        env: { ...process.env, BLOOM_SKIP_ATTACH_DEBUGGER_PROMPT: "1" },
+    });
 
     // Wait for it to come up on the test collection (a freshly launched Bloom takes the standard
     // 8089 block when it is free, but we still discover the actual port rather than assume it).
