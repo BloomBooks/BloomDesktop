@@ -1771,8 +1771,21 @@ namespace Bloom.Book
             // we can't use that as a file name because the first book exists, but it will pass this check,
             // so "A nice story about Bob" will be kept when we might prefer "A nice story 2". But this
             // won't cause dreadful problems and is pretty unlikely.
+            //
+            // We also keep the current name when it is a truncated "<base> - <hash>" work-around that
+            // GetUniqueBookFolderName produced for this same title. For a long title the folder base is
+            // truncated shorter than idealFolderName, so the plain StartsWith check below is false; without
+            // the IsUniqueVariantOfIdealFolderName check such a book would be given a brand new unique
+            // folder on every save. Because that new name normally collides with the book's own current
+            // folder, GetUniqueBookFolderName falls back to a fresh random GUID, so the folder churned to a
+            // different name each save. That orphaned folders and, worse, invalidated the page-iframe URLs
+            // the editor was using, producing spurious "Page expired" errors when changing page
+            // size/orientation (which saves the book). See BL-16596.
             if (
-                currentFolderName.StartsWith(idealFolderName)
+                (
+                    currentFolderName.StartsWith(idealFolderName)
+                    || IsUniqueVariantOfIdealFolderName(currentFolderName, idealFolderName)
+                )
                 && currentFolderName == SanitizeNameForFileSystem(currentFolderName)
             )
                 return Path.Combine(Path.GetDirectoryName(idealFolderPath), currentFolderName);
@@ -1780,6 +1793,32 @@ namespace Bloom.Book
             // so find a new variant that is not in use. Override the default separator since
             // this not typically a copy.
             return GetAvailableDirectoryPath(idealFolderPath, instanceId, " - ");
+        }
+
+        /// <summary>
+        /// True if <paramref name="currentFolderName"/> looks like a unique folder name that
+        /// GetUniqueBookFolderName (or Duplicate) would have produced for a book whose ideal
+        /// (sanitized) title is <paramref name="idealFolderName"/>: the ideal name, possibly
+        /// truncated, followed by a " - ", " - Copy-", or "-" separator and up to 8 hex digits of
+        /// an id (e.g. "My Long Title - a1b2c3d4"). We keep such a folder as-is on save rather than
+        /// generating yet another unique name each time (which orphaned folders and broke the
+        /// editor's page URLs; see the caller and BL-16596).
+        /// </summary>
+        internal static bool IsUniqueVariantOfIdealFolderName(
+            string currentFolderName,
+            string idealFolderName
+        )
+        {
+            var match = Regex.Match(
+                currentFolderName,
+                @"^(?<base>.+?)(?: - (?:Copy-)?|-)[0-9a-f]{1,8}$",
+                RegexOptions.Compiled
+            );
+            if (!match.Success)
+                return false;
+            // The base must be idealFolderName itself or a leading (truncated) portion of it, so we
+            // know this folder really is this book's title made unique/short and not a different name.
+            return idealFolderName.StartsWith(match.Groups["base"].Value, StringComparison.Ordinal);
         }
 
         public void SetBookName(string name)
