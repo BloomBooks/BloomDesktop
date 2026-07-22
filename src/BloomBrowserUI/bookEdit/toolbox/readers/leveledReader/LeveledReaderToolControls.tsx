@@ -6,22 +6,24 @@ import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import BloomButton from "../../../../react_components/bloomButton";
 import { ReaderToolNav } from "../ReaderToolNav";
+import { ReaderSetupButton } from "../ReaderSetupButton";
+import {
+    kReaderAccent,
+    kReaderMuted,
+    readerSectionHeaderCss,
+    readerTextButtonCss,
+} from "../readerToolStyles";
 import { Div, Span } from "../../../../react_components/l10nComponents";
-import { kBloomLightBlue } from "../../../../utils/colorUtils";
 import { useMountEffect } from "../../../../utils/useMountEffect";
 import { Link } from "../../../../react_components/link";
-import {
-    ContentCopySharp,
-    EditOutlined,
-    ReportProblemOutlined,
-} from "@mui/icons-material";
+import { ContentCopySharp, ReportProblemOutlined } from "@mui/icons-material";
 
 // Colors used to flag a measure as within/over the current level's limit.
 const kWithinLevelColor = "lightgreen";
 const kOverLevelColor = "orange";
 // Quiet grey used for the column headers and the (de-emphasized) Max values,
 // so the eye lands on the colored Actual figures instead of the limits.
-const kMutedColor = "rgba(255, 255, 255, 0.55)";
+const kMutedColor = kReaderMuted;
 
 // Small, quiet uppercase styling shared by the Measure/Max/Actual column headers.
 const kColumnHeaderCss = css`
@@ -152,15 +154,11 @@ const StatsGrid: FunctionComponent<{
                 <Div
                     l10nKey={`EditTab.Toolbox.LeveledReaderTool.${props.header1L10nText.replace(/\s/g, "")}`} // the ending of the l10n key is just the text, but with all spaces removed. So, remove all the spaces from the text to use it in the key.
                     css={css`
-                        color: ${kBloomLightBlue};
-                        text-transform: uppercase;
-                        letter-spacing: 0.08em;
-                        // Span the section header across all three columns and
-                        // underline it, so the section rule carries the structure
-                        // (the individual data rows are intentionally rule-free).
+                        ${readerSectionHeaderCss};
+                        // Span the section header across all three columns, so the
+                        // section rule carries the structure (the individual data
+                        // rows are intentionally rule-free).
                         grid-column: 1 / -1;
-                        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-                        padding-bottom: 5px;
                         margin-bottom: 2px;
                     `}
                 >
@@ -174,7 +172,7 @@ const StatsGrid: FunctionComponent<{
                         // "This Page" / "This Book" are sub-labels within a
                         // section: quieter, uppercase, spanning the full width.
                         grid-column: 1 / -1;
-                        color: rgba(255, 255, 255, 0.55);
+                        color: ${kMutedColor};
                         font-size: x-small;
                         letter-spacing: 0.1em;
                         text-transform: uppercase;
@@ -215,7 +213,7 @@ const StatsLegend: FunctionComponent = () => {
                 justify-content: flex-end;
                 margin-top: 8px;
                 font-size: x-small;
-                color: rgba(255, 255, 255, 0.55);
+                color: ${kMutedColor};
             `}
         >
             <span css={item}>
@@ -465,15 +463,7 @@ const LeveledReaderList: FunctionComponent<{
         >
             <Div
                 l10nKey={`EditTab.Toolbox.LeveledReaderTool.${props.l10nKeySuffix}`}
-                css={css`
-                    color: ${kBloomLightBlue};
-                    // Match the stats section headers: uppercase with a
-                    // full-width rule beneath.
-                    text-transform: uppercase;
-                    letter-spacing: 0.08em;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-                    padding-bottom: 5px;
-                `}
+                css={readerSectionHeaderCss}
             >
                 {props.listHeaderText}
             </Div>
@@ -561,7 +551,7 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
                     l10nKey={`EditTab.Toolbox.LeveledReaderTool.${linkSuffixes[idx]}`}
                     href={`api/externalLink?path=leveledRTInfo/leveledReaderInfo-en.html&fragment=${linkSuffixes[idx]}`}
                     css={css`
-                        color: ${kBloomLightBlue};
+                        color: ${kReaderAccent};
                         text-decoration: underline;
                     `}
                 >
@@ -591,92 +581,71 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
                     overflow-x: hidden;
                 `}
             >
-                {showTool && (
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        flex: 1 1 auto;
+                        min-height: 0;
+                        overflow-x: hidden;
+                        // A single horizontal padding on the whole panel keeps
+                        // every row (including "Level x of y") on one left edge,
+                        // instead of each section supplying its own left margin.
+                        padding: 8px 12px 0 12px;
+                    `}
+                >
+                    {showTool && (
+                        <>
+                            <ReaderToolNav
+                                isForLeveled={true}
+                                changeFunction={changeLevel}
+                            />
+                            {/* The over-level warning banner and the within/over
+                                legend only make sense when at least one measure is
+                                actually over the current level's limit. */}
+                            {isBookOverLevel(model, bookStats) && (
+                                <>
+                                    <OverLevelBanner
+                                        levelNumber={model.levelNumber}
+                                    />
+                                    <StatsLegend />
+                                </>
+                            )}
+                            <LeveledReaderStats bookStats={bookStats} />
+                            {levelReminders.length > 0 && (
+                                <LeveledReaderList
+                                    l10nKeySuffix="FoThisLevel"
+                                    listHeaderText="For this Level"
+                                    listItems={levelReminders}
+                                />
+                            )}
+                            <LeveledReaderList
+                                l10nKeySuffix="KeepInMind"
+                                listHeaderText="Keep in mind"
+                                listItems={getKeepInMindLinks()}
+                            />
+                        </>
+                    )}
+                    {/* Bottom group, top to bottom: Copy Book Stats, the "Book is
+                        Leveled" toggle, then the Set Up Levels button last. When
+                        the tool content is showing, margin-top:auto pushes the
+                        group to the bottom; it scrolls with the content when the
+                        panel overflows. The toggle stays mounted even when the
+                        content is hidden so the user can turn the book back into a
+                        leveled reader. */}
                     <div
                         css={css`
                             display: flex;
                             flex-direction: column;
-                            flex: 1 1 auto;
-                            min-height: 0;
-                            overflow-x: hidden;
-                            // A single horizontal padding on the whole panel keeps
-                            // every row (including "Level x of y") on one left edge,
-                            // instead of each section supplying its own left margin.
-                            padding: 8px 12px 0 12px;
+                            align-items: flex-start;
+                            gap: 8px;
+                            margin-bottom: 10px;
+                            ${showTool
+                                ? "margin-top: auto; padding-top: 12px;"
+                                : ""}
                         `}
                     >
-                        <div
-                            css={css`
-                                display: flex;
-                                margin-left: auto;
-                                margin-bottom: 10px;
-                            `}
-                        >
-                            <BloomButton
-                                href="javascript:window.toolboxBundle.showSetupDialog('levels');"
-                                l10nKey="EditTab.Toolbox.LeveledReaderTool.SetUpLevels"
-                                variant="text"
-                                enabled={true}
-                                hasText={true}
-                                iconBeforeText={
-                                    <EditOutlined
-                                        css={css`
-                                            color: ${kBloomLightBlue};
-                                            font-size: 16px;
-                                        `}
-                                    />
-                                }
-                                css={css`
-                                    font-size: 13px;
-                                    text-decoration: underline;
-                                    font-weight: normal;
-                                    height: 22px;
-                                    & .MuiButton-startIcon {
-                                        margin-right: 3px;
-                                    }
-                                    // && beats MUI's .MuiButton-textPrimary so the
-                                    // link text (and the currentColor icon) take
-                                    // the teal accent.
-                                    && {
-                                        color: ${kBloomLightBlue};
-                                    }
-                                    &:hover {
-                                        text-decoration: underline;
-                                    }
-                                `}
-                            >
-                                Set Up Levels
-                            </BloomButton>
-                        </div>
-                        <ReaderToolNav
-                            isForLeveled={true}
-                            changeFunction={changeLevel}
-                        />
-                        {isBookOverLevel(model, bookStats) && (
-                            <OverLevelBanner levelNumber={model.levelNumber} />
-                        )}
-                        <StatsLegend />
-                        <LeveledReaderStats bookStats={bookStats} />
-                        {levelReminders.length > 0 && (
-                            <LeveledReaderList
-                                l10nKeySuffix="FoThisLevel"
-                                listHeaderText="For this Level"
-                                listItems={levelReminders}
-                            />
-                        )}
-                        <LeveledReaderList
-                            l10nKeySuffix="KeepInMind"
-                            listHeaderText="Keep in mind"
-                            listItems={getKeepInMindLinks()}
-                        />
-                        <div
-                            css={css`
-                                display: flex;
-                                margin-right: auto;
-                                margin-top: 8px;
-                                margin-bottom: 10px;
-                            `}
-                        >
+                        {showTool && (
                             <BloomButton
                                 l10nKey="EditTab.Toolbox.LeveledReaderTool.CopyBookStatistics"
                                 variant="text"
@@ -685,48 +654,28 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
                                 iconBeforeText={
                                     <ContentCopySharp
                                         css={css`
-                                            color: white;
+                                            // currentColor picks up the button's
+                                            // accent text color.
+                                            color: currentColor;
                                         `}
                                     />
                                 }
                                 onClick={() =>
                                     model.copyLeveledReaderStatsToClipboard()
                                 }
-                                css={css`
-                                    // && beats MUI's own button styles so the
-                                    // outline, padding and larger text all take.
-                                    && {
-                                        text-transform: uppercase;
-                                        color: white;
-                                        font-weight: normal;
-                                        font-size: 11px;
-                                        border: 1px solid
-                                            rgba(255, 255, 255, 0.4);
-                                        border-radius: 4px;
-                                        padding: 9px 18px;
-                                        line-height: 1.2;
-                                    }
-
-                                    &:hover {
-                                        background-color: black;
-                                    }
-
-                                    &:active {
-                                        background-color: black;
-                                        transform: translateY(2px);
-                                    }
-                                `}
+                                css={readerTextButtonCss}
                             >
                                 Copy Book Stats
                             </BloomButton>
-                        </div>
+                        )}
+                        <ReaderToolSwitch
+                            isForLeveled={true}
+                            changeDisplayFunc={() =>
+                                setShowTool((prev) => !prev)
+                            }
+                        />
+                        {showTool && <ReaderSetupButton isForLeveled={true} />}
                     </div>
-                )}
-                <div>
-                    <ReaderToolSwitch
-                        isForLeveled={true}
-                        changeDisplayFunc={() => setShowTool((prev) => !prev)}
-                    />
                 </div>
             </div>
         </ThemeProvider>

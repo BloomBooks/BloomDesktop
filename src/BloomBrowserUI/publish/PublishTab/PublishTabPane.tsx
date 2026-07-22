@@ -302,7 +302,15 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                 }
                             `}
                         >
-                            <TabList>
+                            {/* Dark panel: the far-left tab strip scrolls and is
+                                dark, so opt it into Bloom's shared dark scrollbar
+                                style (bloomUI.less). The class goes on the tab-list
+                                only, not on BloomTabs, so the light tab panels
+                                (which are siblings, not descendants) are unaffected.
+                                react-tabs supplies "react-tabs__tab-list" only as a
+                                default className, so a custom className replaces it;
+                                we must repeat it here to keep the tab-list styling. */}
+                            <TabList className="react-tabs__tab-list bloomDarkScrollbars">
                                 {publishTabs.map((tab, index) => (
                                     <Tab
                                         key={index}

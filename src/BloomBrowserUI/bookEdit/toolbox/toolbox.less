@@ -101,7 +101,9 @@ div.ui-accordion-content:not([data-toolid="leveledReaderTool"]):not(
 }
 // Reserve space for the vertical scrollbar on the reader tools, so that when
 // their content grows tall enough to need one, the scrollbar's appearance
-// doesn't shrink the content width and reflow/crowd everything. (BL-16585)
+// doesn't shrink the content width and reflow/crowd everything. (The dark
+// scrollbar *styling* now comes from the shared `bloomDarkScrollbars` class on
+// the toolbox root — see bloomUI.less — rather than a rule here.) (BL-16585)
 div.ui-accordion-content[data-toolid="leveledReaderTool"],
 div.ui-accordion-content[data-toolid="decodableReaderTool"] {
     scrollbar-gutter: stable;

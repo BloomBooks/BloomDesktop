@@ -490,6 +490,8 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
 
     return (
         <div
+            // Dark panel: opt into Bloom's shared dark scrollbar style (bloomUI.less).
+            className="bloomDarkScrollbars"
             css={css`
                 height: 100%;
                 background-color: ${kPanelBackground};

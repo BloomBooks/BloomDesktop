@@ -4,6 +4,7 @@ import BloomButton from "../../../react_components/bloomButton";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import { css } from "@emotion/react";
 import { Span } from "../../../react_components/l10nComponents";
+import { kReaderAccent, kReaderMuted } from "./readerToolStyles";
 
 // This component displays the phase navigation for both the
 // decodable reader tool and the leveled reader tool (the part
@@ -44,9 +45,9 @@ export const ReaderToolNav: FunctionComponent<{
             width: 26px;
             height: 26px;
             padding: 0;
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid ${kReaderAccent};
             border-radius: 4px;
-            color: white;
+            color: ${kReaderAccent};
         }
         // With no button text, MUI's startIcon margin would shove the arrow
         // off-center; zero it so the arrow sits in the middle of the box.
@@ -98,7 +99,7 @@ export const ReaderToolNav: FunctionComponent<{
                     l10nParam0={numberOfPhases().toString()}
                     css={css`
                         font-size: 11px;
-                        color: rgba(255, 255, 255, 0.55);
+                        color: ${kReaderMuted};
                     `}
                 >
                     {"of {0}"}
@@ -114,7 +115,7 @@ export const ReaderToolNav: FunctionComponent<{
                     iconBeforeText={
                         <ArrowLeft
                             css={css`
-                                color: white;
+                                color: currentColor;
                             `}
                         />
                     }
@@ -130,7 +131,7 @@ export const ReaderToolNav: FunctionComponent<{
                     iconBeforeText={
                         <ArrowRight
                             css={css`
-                                color: white;
+                                color: currentColor;
                             `}
                         />
                     }

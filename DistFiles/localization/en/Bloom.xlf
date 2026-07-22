@@ -2638,6 +2638,17 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport" sil:dynamic="true">
         <source xml:lang="en">Generate a letter and word list report</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport</note>
+        <note>Obsolete as of 6.5 — shortened to "Generate Report" (DecodableReaderTool.GenerateReport) and moved into an outline button at the bottom of the tool.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport" translate="no">
+        <source xml:lang="en">Generate Report</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.GenerateReport</note>
+        <note>Label on a button at the bottom of the Decodable Reader tool. Clicking it generates and opens a text-file report of the letters and words available at each decodable stage.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport.ToolTip" translate="no">
+        <source xml:lang="en">Create and open a text file listing the letters and words available at each decodable stage.</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.GenerateReport.ToolTip</note>
+        <note>Tooltip for the "Generate Report" button at the bottom of the Decodable Reader tool. ".ToolTip" is a required suffix that Bloom's button code appends to the button's own id to find its tooltip; do not translate or remove it.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage" sil:dynamic="true">
         <source xml:lang="en">Sample words in this stage</source>
