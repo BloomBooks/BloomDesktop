@@ -36,18 +36,11 @@ namespace Bloom.Spreadsheet
         private const int languageColumnWidth = 30;
         private const int defaultImageWidth = 150; //width of images in pixels.
 
-        static int _scaleFactor = 100;
-
         static SpreadsheetIO()
         {
             // The package requires us to do this as a way of acknowledging that we
             // accept the terms of the NonCommercial license.
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
-            // This scaling factor seems to be used by the library for column sizing.
-            // We need to use it for sizing thumbnail images stored inside the spreadsheet.
-            // See BL-16529.
-            _scaleFactor = WindowsMonitorScaling.GetScalingFactorForPrimaryMonitor();
         }
 
         public static void WriteSpreadsheet(
@@ -57,6 +50,12 @@ namespace Bloom.Spreadsheet
             IWebSocketProgress progress = null
         )
         {
+            // The spreadsheet-export library sizes its columns using the primary monitor's scaling factor,
+            // so we read that same factor and use it to size the thumbnail images we store inside the
+            // spreadsheet. We read it here, once per export, so a change to the display configuration during
+            // the session is reflected the next time the user exports. See BL-16529.
+            int scaleFactor = WindowsMonitorScaling.GetScalingFactorForPrimaryMonitor();
+
             using (var package = new ExcelPackage())
             {
                 var worksheet = package.Workbook.Worksheets.Add("BloomBook");
@@ -218,8 +217,8 @@ namespace Bloom.Spreadsheet
                             var origImageHeight = image.Size.Height;
                             var origImageWidth = image.Size.Width;
                             int finalWidth = defaultImageWidth;
-                            if (_scaleFactor > 100)
-                                finalWidth = defaultImageWidth * _scaleFactor / 100;
+                            if (scaleFactor > 100)
+                                finalWidth = defaultImageWidth * scaleFactor / 100;
                             finalHeight = (int)(finalWidth * origImageHeight / origImageWidth);
                             var size = new Size(finalWidth, finalHeight);
                             using (
