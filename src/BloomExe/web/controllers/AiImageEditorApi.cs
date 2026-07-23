@@ -12,6 +12,8 @@ using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Newtonsoft.Json;
 using SIL.IO;
+using SIL.Reporting;
+using SIL.Windows.Forms.ClearShare;
 
 namespace Bloom.web.controllers
 {
@@ -918,6 +920,14 @@ namespace Bloom.web.controllers
             RobustFile.Copy(sourceBytesPath, Path.Combine(book.FolderPath, newFileName), true);
             newSrc = newFileName;
 
+            // A generated result carries no intellectual-property metadata of its own, so
+            // carry the replaced image's credits into the new file. Reused existing images
+            // (the sourceUrl branch) keep their own file metadata, so only do this for a
+            // freshly generated/uploaded result. See CarryCreditsToNewImageFile for why this
+            // has to be written into the FILE and not just the DOM attributes.
+            if (!string.IsNullOrEmpty(replacement.resultId))
+                CarryCreditsToNewImageFile(book.FolderPath, oldSrc, newFileName);
+
             if (isCurrentPage)
             {
                 // Leave the live (current) page to the front-end: it will call Bloom's
@@ -1038,6 +1048,78 @@ namespace Bloom.web.controllers
                     referenced.Add(Path.GetFileName(url));
             }
             return referenced;
+        }
+
+        /// <summary>
+        /// Copies the intellectual-property metadata (creator, copyright, license, and
+        /// collection info) embedded in the image being replaced onto the freshly written
+        /// replacement file, so the illustration's credits survive.
+        ///
+        /// This has to be written into the FILE, not just the DOM's data-copyright/
+        /// data-creator/data-license attributes: Bloom rebuilds those attributes FROM the
+        /// file's embedded metadata (ImageUpdater.UpdateImgMetadataAttributesToMatchImage,
+        /// run on book load and whenever the data div is synced). An AI-generated result has
+        /// no metadata of its own, so without this the attributes we carefully preserved
+        /// would be silently cleared the next time Bloom syncs — the "lost credits" bug.
+        ///
+        /// Internal for testing.
+        /// </summary>
+        internal static void CarryCreditsToNewImageFile(
+            string bookFolderPath,
+            string replacedImageSrc,
+            string newFileName
+        )
+        {
+            if (string.IsNullOrEmpty(replacedImageSrc))
+                return;
+            var oldPath = Path.Combine(bookFolderPath, replacedImageSrc);
+            if (!RobustFile.Exists(oldPath))
+                return;
+
+            Metadata source;
+            try
+            {
+                source = RobustFileIO.MetadataFromFile(oldPath);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError(
+                    $"AiImageEditorApi: could not read image metadata from {oldPath}",
+                    e
+                );
+                return;
+            }
+            if (source == null || source.IsEmpty || source.ExceptionCaughtWhileLoading != null)
+                return;
+
+            var newPath = Path.Combine(bookFolderPath, newFileName);
+            try
+            {
+                // Clear whatever the generator left in the file first: stray tags can trip up
+                // the TagLib library when we write (BL-16058). Then write just the IP fields.
+                using (var tagFile = RobustFileIO.CreateTaglibFile(newPath))
+                {
+                    tagFile.RemoveTags(TagLib.TagTypes.AllTags);
+                    RobustFileIO.SaveTaglibFile(tagFile);
+                }
+                var credits = new Metadata
+                {
+                    Creator = source.Creator,
+                    License = source.License,
+                    CopyrightNotice = source.CopyrightNotice,
+                    AttributionUrl = source.AttributionUrl,
+                    CollectionName = source.CollectionName,
+                    CollectionUri = source.CollectionUri,
+                };
+                credits.WriteIntellectualPropertyOnly(newPath);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError(
+                    $"AiImageEditorApi: could not copy image credits to {newPath}",
+                    e
+                );
+            }
         }
     }
 }

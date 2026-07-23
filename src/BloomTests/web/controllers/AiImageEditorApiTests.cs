@@ -1,10 +1,16 @@
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
 using Bloom.web.controllers;
 using NUnit.Framework;
+using SIL.Code;
+using SIL.IO;
 using SIL.TestUtilities;
+using SIL.Windows.Forms.ClearShare;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace BloomTests.web.controllers
 {
@@ -396,6 +402,94 @@ namespace BloomTests.web.controllers
                 ),
                 Is.False
             );
+        }
+
+        // ------------------------------------------------------------------
+        // CarryCreditsToNewImageFile: an AI-generated result file has no metadata of its
+        // own, and Bloom rebuilds the data-copyright/creator/license attributes from the
+        // file's metadata, so the replaced image's credits must be written into the new
+        // file or they are lost on the next sync.
+        // ------------------------------------------------------------------
+
+        // Writes a tiny PNG into the book folder with the given embedded credits, and
+        // returns its file name (not full path).
+        private string MakePngWithCredits(string name, string creator, string copyright)
+        {
+            var path = Path.Combine(_bookFolder.Path, name);
+            using (var bitmap = new Bitmap(10, 10))
+            {
+                RobustImageIO.SaveImage(bitmap, path, ImageFormat.Png);
+            }
+            using (var img = PalasoImage.FromFileRobustly(path))
+            {
+                img.Metadata.Creator = creator;
+                img.Metadata.CopyrightNotice = copyright;
+                img.Metadata.License = new CreativeCommonsLicense(
+                    true,
+                    true,
+                    CreativeCommonsLicense.DerivativeRules.Derivatives
+                );
+                RetryUtility.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
+            }
+            return name;
+        }
+
+        // Writes a tiny PNG with no embedded IP metadata (as an AI-generated result would
+        // arrive), and returns its file name.
+        private string MakePlainPng(string name)
+        {
+            var path = Path.Combine(_bookFolder.Path, name);
+            using (var bitmap = new Bitmap(10, 10))
+            {
+                RobustImageIO.SaveImage(bitmap, path, ImageFormat.Png);
+            }
+            return name;
+        }
+
+        [Test]
+        public void CarryCreditsToNewImageFile_CopiesReplacedImageCreditsIntoNewFile()
+        {
+            var oldName = MakePngWithCredits("old.png", "Jane Doe", "Copyright 2020 Jane Doe");
+            var newName = MakePlainPng("ai-image1.png");
+
+            // Sanity: the new file starts with no credits, so a non-empty result below is
+            // due to the call and not something already in the file.
+            var before = Metadata.FromFile(Path.Combine(_bookFolder.Path, newName));
+            Assert.That(
+                before.Creator,
+                Is.Null.Or.Empty,
+                "setup: the generated file should start with no creator"
+            );
+
+            AiImageEditorApi.CarryCreditsToNewImageFile(_bookFolder.Path, oldName, newName);
+
+            var after = Metadata.FromFile(Path.Combine(_bookFolder.Path, newName));
+            Assert.That(after.Creator, Is.EqualTo("Jane Doe"));
+            Assert.That(after.CopyrightNotice, Is.EqualTo("Copyright 2020 Jane Doe"));
+            Assert.That(
+                after.License,
+                Is.InstanceOf<CreativeCommonsLicense>(),
+                "the license should be carried over too"
+            );
+        }
+
+        [Test]
+        public void CarryCreditsToNewImageFile_ReplacedImageMissing_LeavesNewFileUnchanged()
+        {
+            var newName = MakePlainPng("ai-image1.png");
+
+            // Must not throw when the replaced image can't be found; the new file keeps
+            // whatever (empty) metadata it had.
+            Assert.DoesNotThrow(() =>
+                AiImageEditorApi.CarryCreditsToNewImageFile(
+                    _bookFolder.Path,
+                    "does-not-exist.png",
+                    newName
+                )
+            );
+
+            var after = Metadata.FromFile(Path.Combine(_bookFolder.Path, newName));
+            Assert.That(after.Creator, Is.Null.Or.Empty);
         }
     }
 }
