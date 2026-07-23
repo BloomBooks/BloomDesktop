@@ -440,24 +440,20 @@ describe("All books", () => {
         const referenceImage = PNG.sync.read(fs.readFileSync(referencePath));
         const testImage = PNG.sync.read(fs.readFileSync(testPath));
         const { width, height } = referenceImage;
-        const diff = new PNG({ width, height });
 
+        // Count differing pixels with pixelmatch (its anti-aliasing handling is what keeps the count
+        // stable). Pass null for the output so it only counts; we render our own, more legible diff
+        // below.
         const numberOfDifferentPixels = Pixelmatch(
             referenceImage.data,
             testImage.data,
-            diff.data,
+            null,
             width,
             height,
-            {
-                threshold: 0.1,
-                aaColor: [255, 0, 0], // the default is yellow. this sets it to red, the same as the non-anti-aliased pixels
-            },
+            { threshold: 0.1 },
         );
         if (numberOfDifferentPixels > 0) {
-            // PNG.sync.write returns a Node Buffer. TypeScript 6.0's newer lib types
-            // made Buffer/ArrayBufferView generic, so cast to Uint8Array (which Buffer
-            // extends) to satisfy fs.writeFileSync's parameter type.
-            fs.writeFileSync(diffPath, PNG.sync.write(diff) as Uint8Array);
+            writeDirectionalDiff(referenceImage, testImage, diffPath);
             console.log(
                 chalk.black.bgYellow(
                     `${testPath} differed from the reference by ${numberOfDifferentPixels} pixels. The diff image is at ${diffPath}`,
@@ -465,13 +461,49 @@ describe("All books", () => {
             );
             console.log(
                 chalk.yellow(
-                    `If the new version is correct, replace ${referencePath} with ${testPath}`,
+                    `Diff colors: blue = darker in the reference (e.g. old text), red = darker in the current (e.g. new text). ` +
+                        `If the new version is correct, replace ${referencePath} with ${testPath}`,
                 ),
             );
             expect(numberOfDifferentPixels).toBe(0);
         }
     }
 });
+
+// Write a human-friendly diff image that shows the DIRECTION of each significant change instead of a
+// flat "these pixels differ" mask. Per pixel: if the reference is significantly darker than the
+// current, paint blue (something dark was here in the reference and is gone/lighter now — e.g. text
+// at its old position); if the reference is significantly lighter, paint red (something dark is here
+// now that was not — e.g. text at its new position). Unchanged pixels are white so the changes stand
+// out. "Significant" is a luminance-delta threshold, which reads well for dark-text-on-light pages.
+function writeDirectionalDiff(reference: PNG, current: PNG, diffPath: string) {
+    const { width, height } = reference;
+    const out = new PNG({ width, height });
+    const THRESHOLD = 32; // luminance units (0..255) that count as a "significant" change
+    const luminance = (data: Buffer, i: number) =>
+        0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    for (let p = 0; p < width * height; p++) {
+        const i = p * 4;
+        const delta = luminance(reference.data, i) - luminance(current.data, i);
+        let r = 255,
+            g = 255,
+            b = 255; // unchanged -> white
+        if (delta < -THRESHOLD) {
+            r = 0; // reference darker than current -> blue
+            g = 0;
+            b = 255;
+        } else if (delta > THRESHOLD) {
+            r = 255; // reference lighter than current -> red
+            g = 0;
+            b = 0;
+        }
+        out.data[i] = r;
+        out.data[i + 1] = g;
+        out.data[i + 2] = b;
+        out.data[i + 3] = 255;
+    }
+    fs.writeFileSync(diffPath, PNG.sync.write(out) as Uint8Array);
+}
 
 // Ports Bloom uses: it takes the next free block starting at 8089 (8089, 8092, 8095, ...). We probe
 // these to find the port our launched instance opened on. A developer's own Bloom may also be on one
