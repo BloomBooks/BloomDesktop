@@ -926,6 +926,11 @@ function doWhenPageReady(action: () => void) {
 // I'm not absolutely sure all the care to do it only once is necessary...the bug
 // I was trying to fix turned out to be caused by multiple calls to doWhenCkEditorReady...
 // but it seems a precaution worth keeping.
+// NB: the page bundle has a separate, simpler cousin of this, scheduleRevealPageWhenReady() in
+// bloomEditing.ts, which also waits for all CKEditors to be ready. They aren't shared because this
+// one runs in the toolbox bundle and reaches cross-frame into the page (ToolBox.getPageFrame),
+// while that one runs inside the page frame. If you fix a CKEditor-readiness bug here, consider
+// whether that copy needs the same fix.
 function doWhenCkEditorReady(action: () => void, page: HTMLElement) {
     const removers = [];
     doWhenCkEditorReadyCore(

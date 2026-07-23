@@ -1136,6 +1136,12 @@ function AddXMatterLabelAfterPageLabel(_container) {
 // audio highlight and language tips -- a visible flicker. Instead we reveal once all CKEditors
 // on the page are ready, so the page appears once, already decorated. A fallback timer guarantees
 // the page is revealed even if CKEditor never reports ready, so it can never get stuck hidden.
+//
+// NB: the "wait until all CKEditors are ready" logic below is a deliberately-separate, simpler
+// cousin of toolbox.ts's doWhenCkEditorReady(). We don't share code because that one lives in the
+// toolbox bundle and runs cross-frame (it reaches into the page frame via ToolBox.getPageFrame),
+// whereas this runs inside the page frame itself and just uses window.CKEDITOR. If you change how
+// CKEditor readiness is detected in one, consider whether the other needs the same change.
 let pageRevealFallbackTimer: number | undefined;
 
 function revealPage(): void {
@@ -1151,7 +1157,7 @@ function scheduleRevealPageWhenReady(): void {
         return;
     }
     // Safety net: reveal no later than this, whatever happens with CKEditor. The worst case if it
-    // fires early (unusually slow CKEditor init) is simply today's behavior for that one page.
+    // fires early (unusually slow CKEditor init) is a little flicker.
     pageRevealFallbackTimer = window.setTimeout(revealPage, 2000);
 
     // Defer so this runs after the synchronous page setup (including attachToCkEditor) has run,
