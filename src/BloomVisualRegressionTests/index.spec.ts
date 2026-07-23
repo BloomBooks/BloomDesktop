@@ -229,7 +229,7 @@ describe("All books", () => {
         // Enhance: get us on the correct collection (currently we can only handle the one collection)
 
         // Branding is normally derived from the (checksum-validated) subscription code and can't
-        // be set directly. This test-only endpoint (present in DEBUG builds only) forces the
+        // be set directly. This test-only endpoint (registered only in e2e test mode) forces the
         // branding and brings the selected book up to date so it picks up that branding's files.
         let result = await fetch(`${bloomOrigin}/bloom/api/e2e/setBranding`, {
             method: "POST",
@@ -238,8 +238,8 @@ describe("All books", () => {
         expect(result.ok).toBe(true);
     }
     async function setTheme(theme: string) {
-        // Appearance theme is a per-book setting. This test-only endpoint (present in DEBUG builds
-        // only) sets it and brings the selected book up to date so its appearance.css is
+        // Appearance theme is a per-book setting. This test-only endpoint (registered only in e2e
+        // test mode) sets it and brings the selected book up to date so its appearance.css is
         // regenerated for that theme.
         let result = await fetch(`${bloomOrigin}/bloom/api/e2e/setTheme`, {
             method: "POST",
@@ -279,7 +279,7 @@ describe("All books", () => {
 
     // Wait until the editable collection is loaded and its books are enumerable. Switching to the
     // collection tab reloads its webview; selecting a book during that window throws (and pops an
-    // error box in Bloom). This test-only endpoint (DEBUG builds only) lets us poll safely instead.
+    // error box in Bloom). This test-only endpoint (e2e test mode only) lets us poll safely instead.
     async function waitForCollectionReady() {
         // Up to 30s: switching to the collection tab reloads its webview, which can be slow on a
         // loaded machine; a too-short wait was an occasional source of spurious failures.
@@ -295,7 +295,7 @@ describe("All books", () => {
 
     // Stage the currently selected book as a BloomPUB (exactly as Publish:BloomPub does) and return
     // the localhost URL of the staged book's .htm file, for loading in bloom-player. Requires the
-    // publish tab to be active. This test-only endpoint is present in DEBUG builds only.
+    // publish tab to be active. This test-only endpoint is registered only in e2e test mode.
     async function makeBloomPubPreview(): Promise<string> {
         const result = await fetch(
             `${bloomOrigin}/bloom/api/e2e/makeBloomPubPreview`,
@@ -643,11 +643,16 @@ async function launchDedicatedBloom() {
         "basic",
         "basic.bloomCollection",
     );
-    // The exe lands in a platform-specific folder depending on the build; try the known locations.
+    // The exe lands in a config/platform-specific folder depending on the build; try the known
+    // locations. Release is included because CI runs the suite against Release builds. Debug is
+    // listed first for the common local (go.sh) case; a clean CI checkout only has the config it built.
     const exeCandidates = [
         "../../output/Debug/x64/Bloom.exe",
         "../../output/Debug/AnyCPU/Bloom.exe",
         "../../output/Debug/Bloom.exe",
+        "../../output/Release/x64/Bloom.exe",
+        "../../output/Release/AnyCPU/Bloom.exe",
+        "../../output/Release/Bloom.exe",
     ];
     const exe = exeCandidates.find((c) => fs.existsSync(c));
     if (!exe) {

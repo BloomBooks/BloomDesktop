@@ -1,4 +1,3 @@
-#if DEBUG
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
@@ -12,9 +11,10 @@ namespace Bloom.web.controllers
     /// <summary>
     /// A collection of endpoints that exist ONLY to support end-to-end / visual-regression
     /// testing (see src/BloomVisualRegressionTests). They deliberately let a test do things that
-    /// no real user should be able to do, so the whole class is compiled only into DEBUG builds
-    /// and never ships to real users. It is also only registered with the api handler in DEBUG
-    /// builds (see ProjectContext).
+    /// no real user should be able to do, so they are registered ONLY when Bloom is launched in
+    /// e2e test mode (the --e2e flag; see Program.RunningE2eTests and ProjectContext). A normal run
+    /// never exposes them, in any build configuration. (These used to be compiled into DEBUG builds
+    /// only, but CI runs the e2e suite against Release builds, so the guard is now at runtime.)
     /// </summary>
     public class E2eTestingApi
     {
@@ -39,7 +39,7 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Register the test-only endpoints. Called (in DEBUG builds only) from ProjectContext.
+        /// Register the test-only endpoints. Called from ProjectContext only in e2e test mode.
         /// </summary>
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
@@ -198,4 +198,3 @@ namespace Bloom.web.controllers
         }
     }
 }
-#endif
