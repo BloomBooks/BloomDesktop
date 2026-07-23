@@ -89,6 +89,14 @@ namespace Bloom.Edit
             return _mainBrowser.Invoke(method);
         }
 
+        public IAsyncResult BeginInvoke(Delegate method)
+        {
+            if (_mainBrowser == null)
+                throw new InvalidOperationException("Main browser is not available.");
+
+            return _mainBrowser.BeginInvoke(method);
+        }
+
         public void Refresh()
         {
             _mainBrowser?.Refresh();

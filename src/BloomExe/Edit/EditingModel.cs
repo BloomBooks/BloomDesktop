@@ -469,6 +469,13 @@ namespace Bloom.Edit
         {
             _previouslySelectedPage = null;
             Visible = details.ToTab == Workspace.WorkspaceTab.edit;
+            // If an "Update Book" per-page pass is somehow still active as we leave the Edit tab
+            // (e.g. the chain stalled, or the user navigated away mid-pass), abandon it so its
+            // leftover state can't drive later page loads. In the normal case FinishUpdatingAllPages()
+            // has already cleared this before it switches back to the Collection tab, so this is just
+            // a safety net.
+            if (!Visible)
+                _updatingAllPages = false;
             _view.OnVisibleChanged(Visible);
         }
 
@@ -2120,7 +2127,125 @@ namespace Bloom.Edit
 
         public void HandlePageDomLoadedEvent(string pageId)
         {
-            _stateMachine.ToEditing(pageId);
+            var nowEditing = _stateMachine.ToEditing(pageId);
+            // If we are in the middle of the "Update Book" per-page pass, a page finishing loading
+            // (which means the edit-tab page setup code has run on it) is our cue to save it and
+            // move on to the next page. See StartUpdatingAllPages().
+            if (nowEditing && _updatingAllPages)
+                AdvanceUpdatingAllPages(pageId);
+        }
+
+        // Fields supporting the "Update Book" per-page pass (see StartUpdatingAllPages()).
+        // _updatingAllPages is true while we are visiting and saving every page in turn.
+        // _pageUpdateOrder is the list of page IDs to visit (in book order); _pagesRemainingToUpdate
+        // is the subset we have not yet visited on this pass.
+        private bool _updatingAllPages;
+        private List<string> _pageUpdateOrder;
+        private HashSet<string> _pagesRemainingToUpdate;
+
+        /// <summary>
+        /// Visit every page in the current book as if the user had clicked on each one in the Edit
+        /// tab, saving each page as we leave it. Visiting a page runs the normal edit-tab page setup
+        /// code (both the server-side edit DOM construction and the browser's SetupElements), and
+        /// saving it persists whatever that setup changed. This gives the "Update Book" command the
+        /// same effect as manually going to the Edit tab and clicking each page, which is what we
+        /// used to have to tell users to do (BL-16595).
+        ///
+        /// The pass is inherently asynchronous: each navigation waits for the browser to load the
+        /// page and report back (editView/pageDomLoaded -> HandlePageDomLoadedEvent), which then
+        /// drives us on to the next page via the normal save-then-navigate state machine. So this
+        /// method just sets things up and starts the first navigation; the chain continues in
+        /// AdvanceUpdatingAllPages() and ends in FinishUpdatingAllPages().
+        /// </summary>
+        public void StartUpdatingAllPages()
+        {
+            var book = CurrentBook;
+            if (book == null)
+                return;
+            var pageIds = book.GetPages().Select(p => p.Id).ToList();
+            if (pageIds.Count == 0)
+                return;
+
+            // If the book has structural errors, showing it in the Edit tab displays an error page
+            // instead of navigating to a real page (see the early return in OnBecomeVisible). That
+            // means no pageDomLoaded event would arrive to start the chain, and we would be left
+            // stuck with _updatingAllPages set. Skip the per-page pass in that case; the whole-book
+            // update (BringBookUpToDate) has already run.
+            if (!string.IsNullOrEmpty(book.CheckForErrors()))
+            {
+                Logger.WriteEvent(
+                    "Update Book: skipping the per-page pass because the book has errors."
+                );
+                return;
+            }
+
+            _pageUpdateOrder = pageIds;
+            _pagesRemainingToUpdate = new HashSet<string>(pageIds);
+            _updatingAllPages = true;
+            Logger.WriteEvent(
+                $"Update Book: visiting {pageIds.Count} page(s) to apply edit-tab updates to each."
+            );
+
+            if (Visible)
+            {
+                // We are already in the Edit tab. Kick off the chain by navigating to the first page.
+                // (SaveThen saves whatever page is currently showing, then navigates.)
+                var firstPageId = _pageUpdateOrder[0];
+                SaveThen(() => firstPageId, () => FinishUpdatingAllPages());
+            }
+            else
+            {
+                // Switch to the Edit tab. Becoming visible navigates to a page (see OnBecomeVisible),
+                // and that page's pageDomLoaded event starts the chain.
+                _view.WorkspaceView.ChangeTab(Workspace.WorkspaceTab.edit);
+            }
+        }
+
+        /// <summary>
+        /// Called (via HandlePageDomLoadedEvent) each time a page finishes loading during the
+        /// "Update Book" per-page pass. Saves the page we just visited and navigates to the next
+        /// page still needing a visit, or finishes the pass if this was the last one.
+        /// </summary>
+        private void AdvanceUpdatingAllPages(string loadedPageId)
+        {
+            _pagesRemainingToUpdate.Remove(loadedPageId);
+            var nextPageId = _pageUpdateOrder.FirstOrDefault(id =>
+                _pagesRemainingToUpdate.Contains(id)
+            );
+            if (nextPageId != null)
+            {
+                // Save the page we just visited (persisting the edit-tab setup that ran on it) and
+                // move on. Reusing the normal save-then-navigate cycle means each page gets exactly
+                // the treatment it would if the user clicked it in the Edit tab.
+                SaveThen(() => nextPageId, () => FinishUpdatingAllPages());
+            }
+            else
+            {
+                // We just visited the last page. Save it, then return to the Collection tab. We
+                // navigate to a blank page (returning null) because we are about to leave the Edit
+                // tab anyway. Switching tabs is deferred to after the save completes so we don't
+                // re-enter the state machine while it is still unwinding this save.
+                SaveThen(
+                    () => null,
+                    () => FinishUpdatingAllPages(),
+                    doAfterSaveToDisk: () => _view.BeginInvoke((Action)FinishUpdatingAllPages)
+                );
+            }
+        }
+
+        /// <summary>
+        /// Ends the "Update Book" per-page pass and returns to the Collection tab, where the command
+        /// was invoked. Guarded so it is harmless to call more than once.
+        /// </summary>
+        private void FinishUpdatingAllPages()
+        {
+            if (!_updatingAllPages)
+                return;
+            _updatingAllPages = false;
+            _pagesRemainingToUpdate = null;
+            _pageUpdateOrder = null;
+            Logger.WriteEvent("Update Book: finished visiting all pages.");
+            _view?.WorkspaceView?.ChangeTab(Workspace.WorkspaceTab.collection);
         }
 
         // This speeds up developing brandings. It may speed up other things, but I haven't tested those.
