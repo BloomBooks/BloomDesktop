@@ -16,6 +16,17 @@ body {
     --unselectedEdit-color: #1d94a434; // page structure color, but 20% opacity instead of 10%
 }
 
+// Hold the page content hidden until it is fully set up, then reveal it all at once.
+// CKEditor rewrites the editable content a beat after the raw saved HTML first paints, so
+// without this the user sees the raw text and then a re-render carrying the audio highlight and
+// language tips -- a "renders twice, once without the highlight and then with it" flicker.
+// bloomEditing.ts's scheduleRevealPageWhenReady() adds `bloom-page-ready` once all CKEditors are
+// ready (or after a fallback timeout, so a page can never get stuck hidden). We use
+// visibility:hidden (not display:none) so the page still has layout for CKEditor to initialize.
+body:not(.bloom-page-ready) .bloom-page {
+    visibility: hidden;
+}
+
 .bloom-page.cover {
     --page-structure-color: rgba(128, 128, 128, 0.268);
     --language-tag-color: rgba(128, 128, 128, 0.9);

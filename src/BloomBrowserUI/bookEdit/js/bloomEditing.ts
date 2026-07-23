@@ -1130,6 +1130,67 @@ function AddXMatterLabelAfterPageLabel(_container) {
         });
 }
 
+// While a page loads, editMode.less keeps its content hidden (body:not(.bloom-page-ready)
+// .bloom-page). CKEditor rewrites the editable content a beat after the raw saved HTML first
+// paints, so revealing immediately would show the raw text and then a re-render carrying the
+// audio highlight and language tips -- a visible flicker. Instead we reveal once all CKEditors
+// on the page are ready, so the page appears once, already decorated. A fallback timer guarantees
+// the page is revealed even if CKEditor never reports ready, so it can never get stuck hidden.
+let pageRevealFallbackTimer: number | undefined;
+
+function revealPage(): void {
+    if (pageRevealFallbackTimer !== undefined) {
+        window.clearTimeout(pageRevealFallbackTimer);
+        pageRevealFallbackTimer = undefined;
+    }
+    document.body.classList.add("bloom-page-ready");
+}
+
+function scheduleRevealPageWhenReady(): void {
+    if (document.body.classList.contains("bloom-page-ready")) {
+        return;
+    }
+    // Safety net: reveal no later than this, whatever happens with CKEditor. The worst case if it
+    // fires early (unusually slow CKEditor init) is simply today's behavior for that one page.
+    pageRevealFallbackTimer = window.setTimeout(revealPage, 2000);
+
+    // Defer so this runs after the synchronous page setup (including attachToCkEditor) has run,
+    // i.e. after this page's CKEditor instances exist.
+    window.setTimeout(() => {
+        const ckeditor = (window as unknown as { CKEDITOR?: typeof CKEDITOR })
+            .CKEDITOR;
+        const instances = ckeditor?.instances
+            ? Object.keys(ckeditor.instances).map(
+                  (id) => ckeditor.instances[id],
+              )
+            : [];
+        if (instances.length === 0) {
+            // No editors on this page (or CKEditor not in use); nothing to wait for.
+            revealPage();
+            return;
+        }
+        let pending = 0;
+        instances.forEach((instance) => {
+            const editorInstance = instance as CKEDITOR.editor & {
+                instanceReady?: boolean;
+            };
+            if (editorInstance.instanceReady) {
+                return;
+            }
+            pending++;
+            editorInstance.on("instanceReady", () => {
+                pending--;
+                if (pending === 0) {
+                    revealPage();
+                }
+            });
+        });
+        if (pending === 0) {
+            revealPage();
+        }
+    }, 0);
+}
+
 // Only put setup code here which is guaranteed to only be run once per page load.
 // e.g. Don't put setup for elements such as image containers or editable boxes which may get added after page load.
 function OneTimeSetup() {
@@ -1199,6 +1260,10 @@ export function bootstrap() {
 
     SetupElements(document.body);
     OneTimeSetup();
+
+    // Reveal the page (which editMode.less keeps hidden) once it is fully set up. This is deferred
+    // and driven by CKEditor readiness, so it is unaffected by the early returns below.
+    scheduleRevealPageWhenReady();
 
     // configure ckeditor
     if (typeof CKEDITOR === "undefined") return; // this happens during unit testing
