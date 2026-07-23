@@ -1,0 +1,169 @@
+# Nightly build + full test run of everything on master.
+#
+# This is a health check, not a release: it builds the front-end and the C# solution and
+# runs both test suites (vitest + NUnit), but produces no installer, does no signing, and
+# publishes nothing. It exists to catch breakage that the PR checks miss — e.g. tests
+# excluded from PR runs, or rot from dependency/runner drift — on a predictable cadence.
+#
+# Schedule: 04:00 UTC daily. GitHub cron is always UTC (== GMT, no DST), so this is a
+# literal 4am GMT. Note GitHub may delay scheduled runs during peak load; exact timing is
+# best-effort. Can also be run on demand via the Actions "Run workflow" button.
+
+name: Nightly Build and Test
+
+on:
+    schedule:
+        - cron: "0 4 * * *"
+    workflow_dispatch:
+
+# Don't stack nightlies: if a manual run overlaps the scheduled one, let the first finish.
+concurrency:
+    group: nightly
+    cancel-in-progress: false
+
+jobs:
+    build-and-test:
+        runs-on: windows-latest
+        timeout-minutes: 120
+
+        # checks: write lets the test-report step create its check run.
+        permissions:
+            contents: read
+            checks: write
+
+        env:
+            # VersionNumbers requires a 4-part BUILD_NUMBER; nightlies never publish, so a
+            # throwaway value that just identifies the run is fine.
+            BUILD_NUMBER: 0.0.${{ github.run_number }}.0
+
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            # ----- Toolchains -----
+
+            - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+              with:
+                  dotnet-version: 8.0.x
+
+            - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
+
+            - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+              with:
+                  package_json_file: src/BloomBrowserUI/package.json
+
+            - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+              with:
+                  # Track the repo's canonical Node version (.node-version, currently
+                  # 24.13.0 — also what package.json devEngines pins) rather than a
+                  # hardcoded major, so the nightly always tests the version developers
+                  # actually use and never drifts from it.
+                  node-version-file: .node-version
+                  cache: pnpm
+                  cache-dependency-path: |
+                      src/BloomBrowserUI/pnpm-lock.yaml
+                      src/content/pnpm-lock.yaml
+
+            # ----- Dependencies (mirrors init.sh) -----
+
+            - name: Get binary dependencies (TeamCity artifacts, chm, ffmpeg, etc.)
+              shell: bash
+              run: ./build/getDependencies-windows.sh
+
+            - name: pnpm install
+              shell: bash
+              run: |
+                  # Install the two workspaces in parallel, but wait on each PID
+                  # individually: a bare `wait` (no operands) always exits 0, so it would
+                  # mask a failed install (e.g. an out-of-date lockfile) and let the step
+                  # pass green. `wait <pid>` propagates that child's exit status instead,
+                  # so under the runner's `set -e` a failed install fails the step.
+                  (cd src/content && pnpm install --frozen-lockfile) &
+                  pid_content=$!
+                  (cd src/BloomBrowserUI && pnpm install --frozen-lockfile) &
+                  pid_ui=$!
+                  wait "$pid_content"
+                  wait "$pid_ui"
+
+            # Master/alpha builds always take the newest floating front-end deps rather
+            # than the lockfile-pinned versions (bloom-player from its alpha channel,
+            # latest comicaljs / language-chooser / image-gallery), matching the TeamCity
+            # master build.
+            - name: Update floating front-end dependencies
+              working-directory: src/BloomBrowserUI
+              shell: bash
+              run: pnpm update bloom-player@alpha comicaljs@latest "@ethnolib/language-chooser-react-mui@latest" bloom-image-gallery
+
+            # ----- Front-end build + tests -----
+
+            - name: Build browser UI (production)
+              id: build_frontend
+              working-directory: src/BloomBrowserUI
+              run: pnpm run build-prod
+
+            # The junit file feeds the "Publish test results" step at the end of the job.
+            - name: Run browser UI tests
+              working-directory: src/BloomBrowserUI
+              run: pnpm run test:ci -- --reporter=default --reporter=junit --outputFile.junit=../../output/Tests/vitest-junit.xml
+
+            # ----- C# build + tests -----
+            # We want the C# suite to run even when the front-end TESTS fail, so a broken
+            # night still reports C# breakage too — not just half the picture. But the C#
+            # build needs the front-end BUILD output, so the whole C# group is gated on
+            # build_frontend having succeeded. Each C# step additionally requires the
+            # previous one to have succeeded, which preserves fail-fast within the group (a
+            # failed restore shouldn't kick off a doomed build, etc.). !cancelled() is what
+            # lets these run despite the earlier front-end-test failure — it drops the
+            # implicit success() gate — while still skipping if the whole run is cancelled.
+            #
+            # Restore SIL.BuildTasks in its own msbuild invocation: Bloom.proj's UsingTask
+            # declarations only load if those dlls already exist, so a combined build would
+            # not see them. RestartBuild=false stops RestoreBuildTasks from ALSO running
+            # BuildInternal (it does that when the dlls were missing), which would compile
+            # the whole app twice — once here and once in the Build step below.
+            - name: Restore MSBuild build tasks
+              id: restore_build_tasks
+              if: ${{ !cancelled() && steps.build_frontend.outcome == 'success' }}
+              working-directory: build
+              shell: pwsh
+              run: msbuild Bloom.proj /t:RestoreBuildTasks /p:RestartBuild=false
+
+            - name: Build
+              id: build_csharp
+              if: ${{ !cancelled() && steps.restore_build_tasks.outcome == 'success' }}
+              working-directory: build
+              shell: pwsh
+              run: msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER
+
+            - name: Run C# tests
+              if: ${{ !cancelled() && steps.build_csharp.outcome == 'success' }}
+              working-directory: build
+              shell: pwsh
+              run: |
+                  msbuild Bloom.proj /t:TestOnly `
+                    /p:BUILD_NUMBER=$env:BUILD_NUMBER `
+                    /p:excludedCategories=SkipOnTeamCity
+
+            # Renders both suites as a human-readable report: pass/fail/skip counts in the
+            # job summary page, a check run on the commit, and per-test annotations for
+            # failures. always() so the report is still published when a test step fails —
+            # a failing step would otherwise skip this one, hiding exactly the run we care about.
+            - name: Publish test results
+              if: ${{ always() }}
+              uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+              with:
+                  check_name: Nightly test results
+                  junit_files: output/Tests/vitest-junit.xml
+                  nunit_files: output/Tests/Release/x64/TestResults.xml
+
+            - name: Upload test results
+              if: ${{ always() }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: nightly-test-results
+                  # Forward slashes: upload-artifact treats the path as a glob, where a
+                  # backslash is an escape character (not a separator) even on Windows, so
+                  # back-slashed paths can silently match nothing. Matches the publish step.
+                  path: |
+                      output/Tests/Release/x64/TestResults.xml
+                      output/Tests/vitest-junit.xml
+                  retention-days: 14
