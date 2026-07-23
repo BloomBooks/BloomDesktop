@@ -30,6 +30,11 @@ const repoCollectionsRoot = Path.join(process.cwd(), "collections");
 let tempCollectionsRoot: string | null = null;
 // The dedicated Bloom we launch, kept so we can shut it down afterwards.
 let bloomProcess: ChildProcess | null = null;
+// The PID of the Bloom actually serving our temp collection. Bloom can relaunch into a new process
+// after startup, so the process we spawned is not necessarily the one serving — killing only the
+// spawned PID left orphaned Blooms holding the temp folder open. We read the real PID from
+// instanceInfo and kill that too.
+let bloomServingPid: number | null = null;
 
 describe("All books", () => {
     let page: Page;
@@ -276,7 +281,9 @@ describe("All books", () => {
     // collection tab reloads its webview; selecting a book during that window throws (and pops an
     // error box in Bloom). This test-only endpoint (DEBUG builds only) lets us poll safely instead.
     async function waitForCollectionReady() {
-        for (let attempt = 0; attempt < 30; attempt++) {
+        // Up to 30s: switching to the collection tab reloads its webview, which can be slow on a
+        // loaded machine; a too-short wait was an occasional source of spurious failures.
+        for (let attempt = 0; attempt < 60; attempt++) {
             const result = await fetch(
                 `${bloomOrigin}/bloom/api/e2e/isCollectionReady`,
             );
@@ -505,7 +512,7 @@ function samePath(a: string, b: string): boolean {
 // the developer may already have open on the repo copy.
 async function findBloomServingCollection(
     wantFolder: string,
-): Promise<string | null> {
+): Promise<{ origin: string; processId?: number } | null> {
     for (const port of CANDIDATE_PORTS) {
         const origin = `http://localhost:${port}`;
         try {
@@ -513,12 +520,13 @@ async function findBloomServingCollection(
             if (!r.ok) continue;
             const info = (await r.json()) as {
                 editableCollectionFolder?: string;
+                processId?: number;
             };
             if (
                 info.editableCollectionFolder &&
                 samePath(info.editableCollectionFolder, wantFolder)
             )
-                return origin;
+                return { origin, processId: info.processId };
         } catch (e) {
             // Nothing responding on that port; keep looking.
         }
@@ -526,16 +534,107 @@ async function findBloomServingCollection(
     return null;
 }
 
-// Copy the committed collections to a throwaway temp folder and launch a dedicated Bloom on it, then
-// wait until that instance is serving the temp collection. We always launch our own (rather than
-// reusing a developer's Bloom) so the run is deterministic and never touches the repo collection.
+// Populate the throwaway temp collection that Bloom will open. By default we export the *committed*
+// (HEAD) state of collections/, so a run is deterministic and immune to accidental working-tree
+// changes — Bloom's own book rewrites, or a stray Bloom editing the repo copy. The reference images
+// still live in the working tree (see capturePlayerPages/saveScreenshot), so the
+// regenerate -> eyeball -> commit workflow is unaffected by this. Set BLOOM_VR_WORKING_TREE=1 to
+// instead render your uncommitted working-tree changes (for deliberately modifying or adding test
+// books). If git or tar is unavailable, or any step of the export fails, we fall back to copying the
+// working tree so the suite still runs.
+function populateTempCollections(dest: string) {
+    if (process.env.BLOOM_VR_WORKING_TREE === "1") {
+        console.log(
+            "BLOOM_VR_WORKING_TREE=1: rendering the working-tree collection (uncommitted changes included).",
+        );
+        fs.cpSync(repoCollectionsRoot, dest, { recursive: true });
+        return;
+    }
+    try {
+        // Export the COMMITTED (HEAD) tracked files under collections/ straight from git. We avoid
+        // `git archive` + `tar`: the HEAD:<subtree> tree-ish comes back empty in a git worktree, and
+        // system `tar` varies by platform (GNU vs bsdtar; only GNU has --force-local; each treats a
+        // "C:" path differently) — both bit us. We copy tracked files only: Bloom regenerates the
+        // gitignored support files (origami.css, branding.css, ...) itself, and the screenshots/
+        // reference images are read from the repo working tree, not this temp copy. Any git failure
+        // (git not on PATH, not a repo, a staged-but-uncommitted new file, ...) throws to the catch.
+        const listed = execFileSync("git", [
+            "ls-files",
+            "-z",
+            "--",
+            "collections",
+        ])
+            .toString()
+            .split("\0")
+            .filter(Boolean)
+            .filter((rel) => !rel.includes("/screenshots/"));
+        if (listed.length === 0)
+            throw new Error("git ls-files found no tracked collection files");
+        for (const rel of listed) {
+            // rel is cwd-relative, e.g. "collections/basic/basic.bloomCollection". Write its
+            // committed content to the matching path under dest (dest/basic/...). Keep it a Buffer,
+            // not a string, so binary book images round-trip exactly.
+            const content = execFileSync("git", ["show", `HEAD:./${rel}`], {
+                maxBuffer: 256 * 1024 * 1024,
+            });
+            const outPath = Path.join(dest, Path.relative("collections", rel));
+            fs.mkdirSync(Path.dirname(outPath), { recursive: true });
+            fs.writeFileSync(outPath, content);
+        }
+        if (!fs.existsSync(Path.join(dest, "basic", "basic.bloomCollection")))
+            throw new Error(
+                "committed collection is missing basic/basic.bloomCollection",
+            );
+        warnIfWorkingTreeBookChanges();
+        console.log(
+            "Rendering the committed (HEAD) test collection. Set BLOOM_VR_WORKING_TREE=1 to render working-tree changes.",
+        );
+    } catch (e) {
+        console.warn(
+            `Could not export the committed collection from git (${(e as Error).message}); ` +
+                "falling back to a working-tree copy.",
+        );
+        fs.cpSync(repoCollectionsRoot, dest, { recursive: true });
+    }
+}
+
+// Warn (never fail) when the working tree has uncommitted changes to book inputs under collections/,
+// so it is never a surprise that the default run ignored them (it renders committed HEAD). Reference
+// images (under screenshots/) are excluded — an uncommitted reference update is a normal state.
+function warnIfWorkingTreeBookChanges() {
+    try {
+        const out = execFileSync("git", [
+            "status",
+            "--porcelain",
+            "--",
+            "collections",
+        ]).toString();
+        const changed = out
+            .split("\n")
+            .map((line) => line.slice(3).trim())
+            .filter((p) => p && !p.includes("/screenshots/"));
+        if (changed.length > 0)
+            console.warn(
+                `Note: ignoring ${changed.length} uncommitted change(s) under collections/ ` +
+                    "(rendering committed HEAD; use BLOOM_VR_WORKING_TREE=1 to render them). e.g. " +
+                    changed.slice(0, 5).join(", "),
+            );
+    } catch (e) {
+        // best-effort; a warning is not worth failing the run over
+    }
+}
+
+// Populate a throwaway temp collection (committed HEAD by default; see populateTempCollections) and
+// launch a dedicated Bloom on it, then wait until that instance is serving it. We always launch our
+// own (rather than reusing a developer's Bloom) so the run is deterministic and never touches the
+// repo collection.
 async function launchDedicatedBloom() {
     // Canonicalize immediately: os.tmpdir() is an 8.3 short path on Windows, but Bloom reports the
     // long form, so we normalize here (and in samePath) to make the discovery match work.
     tempCollectionsRoot = canonicalPath(
         fs.mkdtempSync(Path.join(os.tmpdir(), "bloom-vr-")),
     );
-    fs.cpSync(repoCollectionsRoot, tempCollectionsRoot, { recursive: true });
+    populateTempCollections(tempCollectionsRoot);
     // Backstop: tidy up even if the run is aborted (e.g. by an unhandled rejection) before afterAll.
     process.once("exit", cleanupOnExit);
 
@@ -567,10 +666,13 @@ async function launchDedicatedBloom() {
     const wantFolder = Path.join(tempCollectionsRoot, "basic");
     const startTime = Date.now();
     while (Date.now() - startTime < 90000) {
-        const origin = await findBloomServingCollection(wantFolder);
-        if (origin) {
-            bloomOrigin = origin;
-            console.log(`Dedicated Bloom is ready at ${bloomOrigin}`);
+        const match = await findBloomServingCollection(wantFolder);
+        if (match) {
+            bloomOrigin = match.origin;
+            bloomServingPid = match.processId ?? null;
+            console.log(
+                `Dedicated Bloom is ready at ${bloomOrigin} (pid ${bloomServingPid ?? "?"})`,
+            );
             return;
         }
         await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -599,20 +701,27 @@ async function launchDedicatedBloom() {
     );
 }
 
-// Kill the dedicated Bloom we launched, along with its WebView2 child processes. Idempotent.
+// Kill the dedicated Bloom we launched, along with its WebView2 child processes. We kill both the
+// PID we spawned and the PID actually serving our collection: Bloom can relaunch into a new process
+// after startup, so those can differ, and killing only the spawned one left an orphaned Bloom
+// holding the temp folder open (which then failed to delete). Idempotent.
 function stopBloom() {
-    const pid = bloomProcess?.pid;
+    const pids = [bloomProcess?.pid, bloomServingPid].filter(
+        (p): p is number => typeof p === "number",
+    );
     bloomProcess = null;
-    if (pid == null) return;
-    try {
-        if (process.platform === "win32")
-            // /T kills the whole tree (Bloom spawns WebView2 child processes); /F forces it.
-            execFileSync("taskkill", ["/pid", String(pid), "/t", "/f"], {
-                stdio: "ignore",
-            });
-        else process.kill(pid, "SIGTERM");
-    } catch (e) {
-        // Already gone; nothing to do.
+    bloomServingPid = null;
+    for (const pid of pids) {
+        try {
+            if (process.platform === "win32")
+                // /T kills the whole tree (Bloom spawns WebView2 child processes); /F forces it.
+                execFileSync("taskkill", ["/pid", String(pid), "/t", "/f"], {
+                    stdio: "ignore",
+                });
+            else process.kill(pid, "SIGTERM");
+        } catch (e) {
+            // Already gone; nothing to do.
+        }
     }
 }
 
@@ -626,8 +735,8 @@ function cleanupTempCollections() {
         fs.rmSync(dir, {
             recursive: true,
             force: true,
-            maxRetries: 10,
-            retryDelay: 300,
+            maxRetries: 20,
+            retryDelay: 500,
         });
     } catch (e) {
         console.warn(`Could not remove temp collection copy at ${dir}: ${e}`);
