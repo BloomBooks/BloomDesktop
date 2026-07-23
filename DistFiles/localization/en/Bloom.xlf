@@ -2640,16 +2640,6 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport</note>
         <note>Obsolete as of 6.5 — shortened to "Generate Report" (DecodableReaderTool.GenerateReport) and moved into an outline button at the bottom of the tool.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport" sil:dynamic="true">
-        <source xml:lang="en">Generate Report</source>
-        <note>ID: EditTab.Toolbox.DecodableReaderTool.GenerateReport</note>
-        <note>Label on a button at the bottom of the Decodable Reader tool. Clicking it generates and opens a text-file report of the letters and words available at each decodable stage.</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport.ToolTip" sil:dynamic="true">
-        <source xml:lang="en">Create and open a text file listing the letters and words available at each decodable stage.</source>
-        <note>ID: EditTab.Toolbox.DecodableReaderTool.GenerateReport.ToolTip</note>
-        <note>Tooltip for the "Generate Report" button at the bottom of the Decodable Reader tool. ".ToolTip" is a required suffix that Bloom's button code appends to the button's own id to find its tooltip; do not translate or remove it.</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage" sil:dynamic="true">
         <source xml:lang="en">Sample words in this stage</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage</note>
@@ -2675,16 +2665,6 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNofM</note>
         <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
         <note>Obsolete as of 6.5 — split into DecodableReaderTool.StageNumber + ReaderTools.OfCount so the two parts can be styled separately in the toolbox.</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNumber" sil:dynamic="true">
-        <source xml:lang="en">Stage {0}</source>
-        <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNumber</note>
-        <note>Large first part of the decodable reader stage indicator, immediately followed by the smaller "of N" (ReaderTools.OfCount). {0} is the current stage number.</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ReaderTools.OfCount" sil:dynamic="true">
-        <source xml:lang="en">of {0}</source>
-        <note>ID: EditTab.Toolbox.ReaderTools.OfCount</note>
-        <note>Second, smaller part of the leveled/decodable reader phase indicator, shown right after the level/stage number (e.g. "Level 3" followed by "of 6"). {0} is the total number of levels or stages. Keep it short; it appears immediately after the number.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
         <source xml:lang="en">Image Description Tool</source>
@@ -2795,11 +2775,6 @@
         <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
         <note>Obsolete as of 6.5 — split into LeveledReaderTool.LevelNumber + ReaderTools.OfCount so the two parts can be styled separately in the toolbox.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelNumber" sil:dynamic="true">
-        <source xml:lang="en">Level {0}</source>
-        <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelNumber</note>
-        <note>Large first part of the leveled reader level indicator, immediately followed by the smaller "of N" (ReaderTools.OfCount). {0} is the current level number.</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
         <source xml:lang="en">Max</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.Max</note>
@@ -2812,11 +2787,6 @@
         <source xml:lang="en">longest sentence</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.MaxSentenceLength</note>
         <note>length of the longest sentence (in the book)</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Measure" sil:dynamic="true">
-        <source xml:lang="en">Measure</source>
-        <note>ID: EditTab.Toolbox.LeveledReaderTool.Measure</note>
-        <note>Column header over the list of statistic names (e.g. "per page", "total") in the leveled reader stats table. Displayed in all-caps via styling.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.PerPage" sil:dynamic="true">
         <source xml:lang="en">per page</source>
