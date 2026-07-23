@@ -153,7 +153,11 @@ jobs:
             # succeeded — build_csharp already implies build_frontend (the C# chain is gated on
             # it), but we require both explicitly for clarity. !cancelled() lets these run even
             # when the unit-test steps above failed, so the nightly still reports visual breakage.
+            # The run step then chains on this setup step's success (like the C# chain), so a
+            # failed install/browser-download cleanly skips the run rather than triggering a
+            # confusing secondary failure — the failed setup step still turns the job red.
             - name: Set up visual regression tests
+              id: setup_visual_regression
               if: ${{ !cancelled() && steps.build_frontend.outcome == 'success' && steps.build_csharp.outcome == 'success' }}
               working-directory: src/BloomVisualRegressionTests
               shell: bash
@@ -164,7 +168,7 @@ jobs:
 
             - name: Run visual regression tests
               id: visual_regression
-              if: ${{ !cancelled() && steps.build_frontend.outcome == 'success' && steps.build_csharp.outcome == 'success' }}
+              if: ${{ !cancelled() && steps.setup_visual_regression.outcome == 'success' }}
               working-directory: src/BloomVisualRegressionTests
               shell: bash
               run: pnpm test
