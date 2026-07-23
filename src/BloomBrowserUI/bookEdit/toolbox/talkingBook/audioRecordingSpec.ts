@@ -2494,6 +2494,43 @@ describe("audio recording tests", () => {
             expect(getHighlightTexts(currentHighlightName)).toEqual(["One."]);
         });
 
+        // BL-15300: the ensureHighlight loop (which reestablishCurrentHighlightIfNeeded drives)
+        // keeps running for a few seconds after a page loads. If the toolbox is closed during that
+        // window, handleToolHiding clears the highlight -- but the loop must NOT put it back. So
+        // reestablish must be a no-op while the tool is not showing (isShowing false). Without this
+        // guard the highlight stays stuck on the page after the toolbox is closed.
+        it("does not re-establish the current highlight while the tool is not showing", () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-editable" data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence">One.</span></p></div></div>',
+            );
+
+            const recording = new AudioRecording();
+            recording.recordingMode = RecordingMode.Sentence;
+            (
+                recording as unknown as {
+                    highlightedElement: HTMLElement | null;
+                }
+            ).highlightedElement = getFrameElementById("page", "span1");
+
+            const reestablish = (
+                recording as unknown as {
+                    reestablishCurrentHighlightIfNeeded(): void;
+                }
+            ).reestablishCurrentHighlightIfNeeded.bind(recording);
+
+            // Tool hidden (e.g., toolbox just closed): reestablish must not re-add the highlight.
+            (recording as unknown as { isShowing: boolean }).isShowing = false;
+            expect(getHighlightTexts(currentHighlightName)).toEqual([]);
+            reestablish();
+            expect(getHighlightTexts(currentHighlightName)).toEqual([]);
+
+            // Sanity/positive control: when the tool IS showing, it does establish the highlight
+            // (so the assertion above is meaningful, not a no-op for some unrelated reason).
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            reestablish();
+            expect(getHighlightTexts(currentHighlightName)).toEqual(["One."]);
+        });
+
         it("clears pseudo-element highlights when entering show playback order mode", async () => {
             SetupIFrameFromHtml(
                 '<div id="page1"><div class="bloom-translationGroup"><div class="bloom-editable" data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence" data-test-preselect="true">One.</span></p></div></div></div>',

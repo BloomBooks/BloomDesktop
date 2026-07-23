@@ -2852,6 +2852,14 @@ export default class AudioRecording implements IAudioRecorder {
     // and not go on using up cpu cycles forever. On my computer, 4 seconds is very generous...a half second
     // would do it...but other computers are slower.
     private ensureHighlight(repeats: number) {
+        // Stop the loop if the tool has been hidden (toolbox closed or a different tool selected).
+        // Otherwise we would re-establish the highlight that handleToolHiding just cleared, leaving
+        // it stuck on the page after the tool is gone (BL-15300). getActiveToolId() can still be
+        // "talkingBook" right after closing, so isShowing -- which handleToolHiding clears -- is the
+        // reliable signal that the tool is actually active.
+        if (!this.isShowing) {
+            return;
+        }
         this.reestablishCurrentHighlightIfNeeded();
         if (repeats > 0) {
             this.ensureHighlightToken = setTimeout(
@@ -2878,6 +2886,11 @@ export default class AudioRecording implements IAudioRecorder {
     // "connected" to that old document. So we test membership in the *current* page document
     // instead, re-point at the equivalent live node by id, and re-register the highlight.
     private reestablishCurrentHighlightIfNeeded(): void {
+        // Never (re-)establish the highlight while the tool is hidden; that would put back the
+        // highlight handleToolHiding cleared when the toolbox was closed (BL-15300).
+        if (!this.isShowing) {
+            return;
+        }
         const pageBody = this.getPageDocBody();
         if (!pageBody) {
             return;
