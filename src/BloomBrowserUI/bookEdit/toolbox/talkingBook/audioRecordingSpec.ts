@@ -523,6 +523,36 @@ describe("audio recording tests", () => {
             expect(spans.first().attr("class")).toBe("audio-sentence");
             expect(spans.last().attr("class")).toBe("audio-sentence");
         });
+        // BL-15300 (flicker): newPageReady is deliberately re-fired ~600ms after the first call
+        // (scheduleDelayedNewPageReady) as a settle-timing safety net, so this markup runs a
+        // second time with identical input. It must be idempotent: the second, identical pass
+        // must NOT rewrite the DOM -- doing so re-creates the sentence spans, repainting the text
+        // and dropping/re-adding the audio ::highlight (the "renders twice, once without the
+        // highlight and then with it" flicker). Verify the span nodes are preserved (same objects).
+        it("does not re-create audio-sentence spans on a repeated identical markup pass", () => {
+            const div = $("<div>One. Two.</div>");
+            const recording = new AudioRecording();
+
+            recording.makeAudioSentenceElementsTest(
+                div,
+                RecordingMode.Sentence,
+            );
+            const firstSpans = div.find("span.audio-sentence").toArray();
+            expect(firstSpans.length).toBe(2);
+            const htmlAfterFirst = div.html();
+
+            recording.makeAudioSentenceElementsTest(
+                div,
+                RecordingMode.Sentence,
+            );
+            const secondSpans = div.find("span.audio-sentence").toArray();
+
+            expect(secondSpans.length).toBe(2);
+            // Same DOM node objects, not rebuilt copies:
+            expect(secondSpans[0]).toBe(firstSpans[0]);
+            expect(secondSpans[1]).toBe(firstSpans[1]);
+            expect(div.html()).toBe(htmlAfterFirst);
+        });
         it("retains matching sentence spans with same ids.keeps md5s and adds missing ones", () => {
             const div = $(
                 '<div><p><span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> This is another</p></div>',
