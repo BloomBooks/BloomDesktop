@@ -62,6 +62,7 @@ jobs:
                   cache-dependency-path: |
                       src/BloomBrowserUI/pnpm-lock.yaml
                       src/content/pnpm-lock.yaml
+                      src/BloomVisualRegressionTests/pnpm-lock.yaml
 
             # ----- Dependencies (mirrors init.sh) -----
 
@@ -142,6 +143,46 @@ jobs:
                   msbuild Bloom.proj /t:TestOnly `
                     /p:BUILD_NUMBER=$env:BUILD_NUMBER `
                     /p:excludedCategories=SkipOnTeamCity
+
+            # ----- Visual regression tests -----
+            # src/BloomVisualRegressionTests drives a real Release Bloom.exe (which it finds at
+            # output/Release/x64/Bloom.exe) over HTTP and compares rendered screenshots against
+            # committed reference images (pixelmatch). It needs BOTH builds: the C# build (the
+            # Bloom.exe it launches) AND the front-end build (Bloom loads its UI from the built
+            # browser assets that the C# build copies into its output). So both must have
+            # succeeded — build_csharp already implies build_frontend (the C# chain is gated on
+            # it), but we require both explicitly for clarity. !cancelled() lets these run even
+            # when the unit-test steps above failed, so the nightly still reports visual breakage.
+            - name: Set up visual regression tests
+              if: ${{ !cancelled() && steps.build_frontend.outcome == 'success' && steps.build_csharp.outcome == 'success' }}
+              working-directory: src/BloomVisualRegressionTests
+              shell: bash
+              run: |
+                  pnpm install --frozen-lockfile
+                  # The suite drives a headless chromium (Playwright) to capture bloom-player pages.
+                  pnpm exec playwright install chromium
+
+            - name: Run visual regression tests
+              id: visual_regression
+              if: ${{ !cancelled() && steps.build_frontend.outcome == 'success' && steps.build_csharp.outcome == 'success' }}
+              working-directory: src/BloomVisualRegressionTests
+              shell: bash
+              run: pnpm test
+
+            # On failure, keep the current + diff images so a human can see what changed. The
+            # committed *-reference.png baselines are already in the repo; *-current.png and
+            # *-diff.png are generated (gitignored). if-no-files-found: ignore avoids a warning
+            # when the failure was not a pixel mismatch (e.g. Bloom failed to launch).
+            - name: Upload visual regression diffs
+              if: ${{ !cancelled() && steps.visual_regression.outcome == 'failure' }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: visual-regression-diffs
+                  path: |
+                      src/BloomVisualRegressionTests/collections/**/screenshots/*-current.png
+                      src/BloomVisualRegressionTests/collections/**/screenshots/*-diff.png
+                  retention-days: 14
+                  if-no-files-found: ignore
 
             # Renders both suites as a human-readable report: pass/fail/skip counts in the
             # job summary page, a check run on the commit, and per-test annotations for
