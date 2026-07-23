@@ -1211,6 +1211,13 @@ let reportedTextSelected = isTextSelected();
 // called inside document ready function
 // ---------------------------------------------------------------------------------
 export function bootstrap() {
+    // Reveal the page (which editMode.less keeps hidden until then) once it is fully set up.
+    // Call this FIRST, before any of the page-setup work below: it synchronously arms a fallback
+    // timer that reveals the page no matter what, so that if any later setup step throws, the page
+    // is not left permanently hidden. The actual readiness check is deferred (it waits for
+    // CKEditor), so calling it here does not reveal prematurely.
+    scheduleRevealPageWhenReady();
+
     bloomQtipUtils.setQtipZindex();
 
     $.fn.reverse = function (...args) {
@@ -1260,10 +1267,6 @@ export function bootstrap() {
 
     SetupElements(document.body);
     OneTimeSetup();
-
-    // Reveal the page (which editMode.less keeps hidden) once it is fully set up. This is deferred
-    // and driven by CKEditor readiness, so it is unaffected by the early returns below.
-    scheduleRevealPageWhenReady();
 
     // configure ckeditor
     if (typeof CKEDITOR === "undefined") return; // this happens during unit testing
