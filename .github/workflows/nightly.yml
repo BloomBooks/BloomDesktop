@@ -84,6 +84,7 @@ jobs:
             # ----- Front-end build + tests -----
 
             - name: Build browser UI (production)
+              id: build_frontend
               working-directory: src/BloomBrowserUI
               run: pnpm run build-prod
 
@@ -93,22 +94,36 @@ jobs:
               run: pnpm run test:ci -- --reporter=default --reporter=junit --outputFile.junit=../../output/Tests/vitest-junit.xml
 
             # ----- C# build + tests -----
+            # We want the C# suite to run even when the front-end TESTS fail, so a broken
+            # night still reports C# breakage too — not just half the picture. But the C#
+            # build needs the front-end BUILD output, so the whole C# group is gated on
+            # build_frontend having succeeded. Each C# step additionally requires the
+            # previous one to have succeeded, which preserves fail-fast within the group (a
+            # failed restore shouldn't kick off a doomed build, etc.). !cancelled() is what
+            # lets these run despite the earlier front-end-test failure — it drops the
+            # implicit success() gate — while still skipping if the whole run is cancelled.
+            #
             # Restore SIL.BuildTasks in its own msbuild invocation: Bloom.proj's UsingTask
             # declarations only load if those dlls already exist, so a combined build would
             # not see them. RestartBuild=false stops RestoreBuildTasks from ALSO running
             # BuildInternal (it does that when the dlls were missing), which would compile
             # the whole app twice — once here and once in the Build step below.
             - name: Restore MSBuild build tasks
+              id: restore_build_tasks
+              if: ${{ !cancelled() && steps.build_frontend.outcome == 'success' }}
               working-directory: build
               shell: pwsh
               run: msbuild Bloom.proj /t:RestoreBuildTasks /p:RestartBuild=false
 
             - name: Build
+              id: build_csharp
+              if: ${{ !cancelled() && steps.restore_build_tasks.outcome == 'success' }}
               working-directory: build
               shell: pwsh
               run: msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER
 
             - name: Run C# tests
+              if: ${{ !cancelled() && steps.build_csharp.outcome == 'success' }}
               working-directory: build
               shell: pwsh
               run: |
@@ -118,7 +133,8 @@ jobs:
 
             # Renders both suites as a human-readable report: pass/fail/skip counts in the
             # job summary page, a check run on the commit, and per-test annotations for
-            # failures. always() so the report appears precisely when tests DID fail.
+            # failures. always() so the report is still published when a test step fails —
+            # a failing step would otherwise skip this one, hiding exactly the run we care about.
             - name: Publish test results
               if: ${{ always() }}
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
