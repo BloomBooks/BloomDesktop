@@ -1172,9 +1172,18 @@ function scheduleRevealPageWhenReady(): void {
         let pending = 0;
         instances.forEach((instance) => {
             const editorInstance = instance as CKEDITOR.editor & {
+                status?: string;
                 instanceReady?: boolean;
             };
-            if (editorInstance.instanceReady) {
+            // An editor that is already ready must be skipped, not waited on: its instanceReady
+            // event has already fired, so a listener we add now would never fire and the page
+            // would stay hidden until the fallback timer (a ~2s blank). CKEditor exposes readiness
+            // as status === "ready" (instanceReady is the event name, not a property); we also
+            // check instanceReady defensively in case some build sets it.
+            if (
+                editorInstance.status === "ready" ||
+                editorInstance.instanceReady
+            ) {
                 return;
             }
             pending++;
