@@ -1832,10 +1832,19 @@ namespace Bloom.Book
                     _domBeingUpdated = OurHtmlDom;
                     _updateStackTrace = Environment.StackTrace;
                     _doingBookUpdate = true;
-                    EnsureUpToDateMemoryUnprotected(progress);
-                    _doingBookUpdate = false;
-                    _domBeingUpdated = null;
-                    _updateStackTrace = null;
+                    // Reset the guard in a finally: if the update throws, the flag must not
+                    // stay stuck (which would make every later update falsely look like a
+                    // concurrent BL-3166 update and, in DEBUG, pop a blocking MessageBox).
+                    try
+                    {
+                        EnsureUpToDateMemoryUnprotected(progress);
+                    }
+                    finally
+                    {
+                        _doingBookUpdate = false;
+                        _domBeingUpdated = null;
+                        _updateStackTrace = null;
+                    }
                 }
             }
             RemoveObsoleteSoundAttributes(OurHtmlDom);
