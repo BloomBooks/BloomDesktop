@@ -25,31 +25,6 @@ export const readerSectionHeaderCss = css`
     padding-bottom: 5px;
 `;
 
-// "Outline" button styling shared by the buttons along the bottom of the
-// reader tool panels (Set Up Stages/Levels, Generate Report, Copy Book Stats):
-// a quiet uppercase accent label inside a thin accent rounded rectangle. Any
-// icon uses currentColor so it takes the same accent. (BL-16585)
-export const readerOutlineButtonCss = css`
-    // && beats MUI's own button styles so the outline, padding and text all take.
-    && {
-        text-transform: uppercase;
-        color: ${kReaderAccent};
-        font-weight: normal;
-        font-size: 11px;
-        border: 1px solid ${kReaderAccent};
-        border-radius: 4px;
-        padding: 9px 18px;
-        line-height: 1.2;
-    }
-    &:hover {
-        background-color: black;
-    }
-    &:active {
-        background-color: black;
-        transform: translateY(2px);
-    }
-`;
-
 // "Contained" button styling for the primary Set Up Stages/Levels action: white
 // text on a kBloomBlue fill (the same fill Bloom uses for the accordion header
 // bar and the selected sort button), so the setup button reads as the main call
