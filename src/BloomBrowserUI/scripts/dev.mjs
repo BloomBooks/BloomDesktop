@@ -15,8 +15,30 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const browserUIRoot = path.resolve(__dirname, "..");
 const contentRoot = path.resolve(browserUIRoot, "../content");
+const outputBrowserRoot = path.resolve(browserUIRoot, "../../output/browser");
 
 const isWindows = process.platform === "win32";
+
+// Stage a file out of BloomBrowserUI/node_modules into output/browser. The production build
+// copies a few node_modules assets into output/browser via viteStaticCopy (vite.config.mts),
+// but that copy is build-only AND the dev static-file watcher deliberately skips node_modules
+// (see copyStaticFile.mjs). So any node_modules asset that Bloom loads at runtime over its own
+// server (not through Vite) must be staged explicitly here, or the page 404s on it in dev.
+// Returns true if it actually copied. statSync throws if the source is missing, which is the
+// fail-fast we want: a missing asset means dependencies were not installed.
+const stageNodeModuleAsset = (relativeSource, relativeDest) => {
+    const source = path.resolve(browserUIRoot, "node_modules", relativeSource);
+    const dest = path.resolve(outputBrowserRoot, relativeDest);
+    if (
+        fs.existsSync(dest) &&
+        fs.statSync(dest).mtimeMs >= fs.statSync(source).mtimeMs
+    ) {
+        return false;
+    }
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.copyFileSync(source, dest);
+    return true;
+};
 
 const readJson = (filePath) => JSON.parse(fs.readFileSync(filePath, "utf8"));
 
@@ -232,6 +254,14 @@ async function runInitialBuilds() {
         if (copyStaticFile(file, { quiet: !isVerbose })) {
             copiedCount++;
         }
+    }
+
+    // jQuery is consumed two ways: bundled (imported by various bundles) AND as a browser
+    // global, loaded by a plain <script src="/bloom/jquery.min.js"> that Book.cs injects so
+    // legacy code (qtip, etc.) finds jQuery on window. The build stages jquery.min.js into
+    // output/browser via viteStaticCopy; dev must do the same or the edit page 404s on it.
+    if (stageNodeModuleAsset("jquery/dist/jquery.min.js", "jquery.min.js")) {
+        copiedCount++;
     }
 
     const contentCopyJobs = [

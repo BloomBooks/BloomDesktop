@@ -153,6 +153,7 @@ namespace Bloom
                                 typeof(StylesAndFontsApi),
                                 typeof(SpreadsheetApi),
                                 typeof(BookMetadataApi),
+                                typeof(AiImageEditorApi),
                                 typeof(IndicatorInfoApi),
                                 typeof(PublishToBloomPubApi),
                                 typeof(PublishPdfApi),
@@ -446,6 +447,7 @@ namespace Bloom
             _scope.Resolve<BookSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<StylesAndFontsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<BookMetadataApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<AiImageEditorApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<IndicatorInfoApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ImageApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ReadersApi>().RegisterWithApiHandler(server.ApiHandler);
