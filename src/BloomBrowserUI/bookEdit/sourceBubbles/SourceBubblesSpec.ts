@@ -8,6 +8,9 @@ describe("SourceBubbles", () => {
     // reset fixture
     beforeEach(() => {
         $("body").html("");
+        // Clear the in-session most-recently-viewed source languages so tests don't leak
+        // state into each other (see recordSourceLangViewed / BL-14330).
+        (BloomSourceBubbles as any).recentlyViewedSourceLangs = [];
     });
     afterEach(() => {
         $("body").html("");
@@ -115,6 +118,59 @@ describe("SourceBubbles", () => {
         expect(listItems[0].getAttribute("id")).toBe("fr");
         expect(listItems[1].getAttribute("id")).toBe("tpi");
         expect(listItems[2].getAttribute("id")).toBe("es");
+    });
+
+    it("in-session recordSourceLangViewed takes precedence over injected settings (BL-14330)", () => {
+        // Reproduces the BL-14330 regression: choosing tabs during an editing session must reorder
+        // the tabs even though GetSettings() still returns the languages injected at page load.
+        const testHtml = $(
+            [
+                "<div id='testTarget' class='bloom-translationGroup'>",
+                "   <div class='bloom-editable' lang='es'>Spanish text</div>",
+                "   <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>English text</div>",
+                "   <div class='bloom-editable' lang='fr'>French text</div>",
+                "   <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>",
+                "</div>",
+            ].join("\n"),
+        );
+        $("body").append(testHtml);
+
+        // Injected (page-load) settings: without any in-session selection this would order fr, tpi, es
+        // (exactly the "including defaultSourceLanguage2" test above).
+        const oldGetSettings = (window as any).GetSettings;
+        (window as any).GetSettings = () => ({
+            defaultSourceLanguage: "en",
+            defaultSourceLanguage2: "fr",
+            currentCollectionLanguage2: "tpi",
+            currentCollectionLanguage3: null,
+        });
+
+        // Sanity check: nothing recorded yet, so the injected-settings order applies.
+        const before = BloomSourceBubbles.MakeSourceTextDivForGroup(
+            $("body").find("#testTarget")[0],
+        );
+        const beforeItems = before.find("nav ul li");
+        expect(beforeItems[0].getAttribute("id")).toBe("fr");
+        expect(beforeItems[1].getAttribute("id")).toBe("tpi");
+
+        // Now simulate the user viewing 'es' then 'tpi' during the session.
+        BloomSourceBubbles.recordSourceLangViewed("es");
+        BloomSourceBubbles.recordSourceLangViewed("tpi");
+
+        const result = BloomSourceBubbles.MakeSourceTextDivForGroup(
+            $("body").find("#testTarget")[0],
+        );
+
+        // Restore original GetSettings
+        (window as any).GetSettings = oldGetSettings;
+
+        // The most-recently-viewed languages (tpi, then es) now come first, ahead of the
+        // injected defaultSourceLanguage2 ('fr'), which drops to last.
+        const listItems = result.find("nav ul li");
+        expect(listItems.length).toBe(3);
+        expect(listItems[0].getAttribute("id")).toBe("tpi");
+        expect(listItems[1].getAttribute("id")).toBe("es");
+        expect(listItems[2].getAttribute("id")).toBe("fr");
     });
 
     it("Run CreateDropdownIfNecessary with pre-defined settings", () => {
