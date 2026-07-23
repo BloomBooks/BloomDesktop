@@ -365,8 +365,10 @@ namespace Bloom
                 {
                     if (IsLocalizationHarvestingLaunch(args))
                         LocalizationManager.IgnoreExistingEnglishTranslationFiles = true;
-                    else
+                    else if (!RunningE2eTests)
                         // This allows us to debug things like  interpreting a URL.
+                        // Skipped for e2e runs (--e2e), which launch Bloom with a collection
+                        // argument but must not block on a modal prompt nobody will dismiss.
                         MessageBox.Show("Attach debugger now");
                 }
                 var harvest = Environment.GetEnvironmentVariable("HARVEST_FOR_LOCALIZATION");
@@ -755,6 +757,7 @@ namespace Bloom
             StartupVitePort = null;
             StartupLabel = null;
             StartupAutomation = false;
+            RunningE2eTests = false;
 
             var remainingArgs = new List<string>();
 
@@ -784,6 +787,14 @@ namespace Bloom
                         "--automation",
                         () => StartupAutomation,
                         value => StartupAutomation = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupFlagArgument(
+                        args,
+                        ref i,
+                        "--e2e",
+                        () => RunningE2eTests,
+                        value => RunningE2eTests = value,
                         out errorMessage
                     )
                 )
@@ -2498,6 +2509,30 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 
         // Should be set to true if this is being called by Harvester, false otherwise.
         public static bool RunningHarvesterMode { get; set; }
+
+        private static bool _runningE2eTests;
+
+        // True while the visual-regression / e2e suite (see src/BloomVisualRegressionTests) is
+        // driving Bloom. Set by the --e2e command-line flag, which the suite passes when it launches
+        // its own dedicated Bloom. In this mode we suppress modal error dialogs so that a problem
+        // surfaces as a failed API call / logged error and fails the test, instead of popping a
+        // dialog nobody can dismiss and hanging the whole run. See NonFatalProblem.Report and
+        // FatalExceptionHandler.
+        public static bool RunningE2eTests
+        {
+            get => _runningE2eTests;
+            set
+            {
+                _runningE2eTests = value;
+                // Debug.Assert/Debug.Fail (e.g. BloomServer's request-error guard) otherwise pop a
+                // modal Windows assertion dialog. With no human to dismiss it, that dialog freezes
+                // the request/UI thread and every test times out, while hiding the real error behind
+                // it. Route assertions to the trace/log output instead while in e2e mode, and restore
+                // normal behavior when the suite turns the mode back off.
+                foreach (var listener in Trace.Listeners.OfType<DefaultTraceListener>())
+                    listener.AssertUiEnabled = !value;
+            }
+        }
 
         // Show UI for development and testing which isn't shown to the user.
         // e.g. the gfx/wv2 labels and the experimental feature checkbox for wv2.
