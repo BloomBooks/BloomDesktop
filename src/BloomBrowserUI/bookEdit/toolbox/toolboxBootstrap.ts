@@ -14,7 +14,7 @@ import { LeveledReaderTool } from "./readers/leveledReader/leveledReaderTool";
 import { MusicToolAdaptor } from "./music/musicToolControls";
 import { ImpairmentVisualizerAdaptor } from "./impairmentVisualizer/impairmentVisualizer";
 import { MotionTool } from "./motion/motionTool";
-import TalkingBookTool from "./talkingBook/talkingBook";
+import TalkingBookTool from "./talkingBook/talkingBookTool";
 import { SignLanguageTool } from "./signLanguage/signLanguageTool";
 import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 import "errorHandler";
