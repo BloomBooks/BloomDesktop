@@ -68,9 +68,17 @@ jobs:
             - name: pnpm install
               shell: bash
               run: |
+                  # Install the two workspaces in parallel, but wait on each PID
+                  # individually: a bare `wait` (no operands) always exits 0, so it would
+                  # mask a failed install (e.g. an out-of-date lockfile) and let the step
+                  # pass green. `wait <pid>` propagates that child's exit status instead,
+                  # so under the runner's `set -e` a failed install fails the step.
                   (cd src/content && pnpm install --frozen-lockfile) &
+                  pid_content=$!
                   (cd src/BloomBrowserUI && pnpm install --frozen-lockfile) &
-                  wait
+                  pid_ui=$!
+                  wait "$pid_content"
+                  wait "$pid_ui"
 
             # Master/alpha builds always take the newest floating front-end deps rather
             # than the lockfile-pinned versions (bloom-player from its alpha channel,
