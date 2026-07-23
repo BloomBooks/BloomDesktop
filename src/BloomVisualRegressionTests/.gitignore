@@ -10,11 +10,17 @@
 # Bloom-regenerated book files. When the tests run, Bloom rewrites/copies these into each book
 # folder every run, so they are outputs, not fixtures. They are NOT the change-detection baseline
 # (that is the committed *-reference.png), so we do not track them. Genuine fixture inputs stay
-# tracked: *.htm, meta.json, appearance.json, origami.css, image*.png, customCollectionStyles.css,
+# tracked: *.htm, meta.json, appearance.json, image*.png, customCollectionStyles.css,
 # ArithmeticTemplate.css, publish-settings.json.
 collections/**/branding.css
 collections/**/appearance.css
 collections/**/defaultLangStyles.css
+# origami.css is a shipping support file: BringBookUpToDate copies the current
+# output/browser/bookEdit/css/origami.css into every book folder (see BookStorage
+# supportFilesToUpdate / CssFilesThatAreAlwaysWanted), so it is an output like the three above,
+# not a fixture. Keeping it tracked made it drift every run; leaving it untracked also lets these
+# tests catch any unexpected change in what Bloom copies from the distribution.
+collections/**/origami.css
 collections/**/langVisibility.css
 collections/**/thumbnail.png
 collections/**/coverImage*.jpg

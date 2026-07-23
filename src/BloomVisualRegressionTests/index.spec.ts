@@ -188,8 +188,25 @@ describe("All books", () => {
     }
 
     async function saveScreenshot(imagePath: string) {
-        await page.goto(`${bloomOrigin}/bloom/book-preview/index.htm`);
-        await page.waitForSelector("body");
+        // The first preview load right after a book is brought up to date can occasionally come back
+        // before the book content is in the DOM (a cold-start race), which made the very first case
+        // time out waiting for the page. Retry the navigation until the book page is actually present,
+        // then screenshot. Waiting for .bloom-page (not just body) is also the real "content ready"
+        // signal we want before capturing.
+        for (let attempt = 0; ; attempt++) {
+            await page.goto(`${bloomOrigin}/bloom/book-preview/index.htm`, {
+                waitUntil: "networkidle",
+            });
+            const ready = await page
+                .waitForSelector(".bloom-page", { timeout: 15000 })
+                .then(() => true)
+                .catch(() => false);
+            if (ready) break;
+            if (attempt >= 2)
+                throw new Error(
+                    "book-preview never rendered a .bloom-page after 3 attempts",
+                );
+        }
 
         await argosScreenshot(page, imagePath.replace(".png", ""), {
             scale: "device",
@@ -300,6 +317,71 @@ describe("All books", () => {
         return `${bloomOrigin}/bloom/bloom-player/dist/bloomplayer.htm?${params.toString()}`;
     }
 
+    // Read the number of real (non-duplicate) player pages, waiting until the count stops changing.
+    // bloom-player builds its swiper slides asynchronously (and clones duplicates for looping), so a
+    // single early read can catch a partial set — which made the page count, and therefore which
+    // page each screenshot captured, vary from run to run. Poll until several consecutive reads agree.
+    async function stablePlayerPageCount(): Promise<number> {
+        let last = -1;
+        let agreements = 0;
+        for (let attempt = 0; attempt < 40; attempt++) {
+            const count = await playerPage.evaluate(
+                () =>
+                    (globalThis as any).document.querySelectorAll(
+                        ".swiper-slide:not(.swiper-slide-duplicate)",
+                    ).length,
+            );
+            if (count > 0 && count === last) {
+                if (++agreements >= 3) return count;
+            } else {
+                agreements = 0;
+                last = count;
+            }
+            await playerPage.waitForTimeout(250);
+        }
+        if (last < 1)
+            throw new Error("bloom-player page count never stabilized above 0");
+        return last;
+    }
+
+    // Wait until the active player page is actually ready to screenshot — not just present. The two
+    // things that otherwise render differently from run to run are the web font (bloom-player loads
+    // Andika asynchronously, and text metrics/shaping change the instant it arrives) and images; a
+    // fixed timeout raced both. Wait for document.fonts.ready, for every image on the active page to
+    // finish, and then for one more layout frame. Returns the active .bloom-page element to shoot.
+    async function waitForActivePageReady() {
+        const active = await playerPage.waitForSelector(
+            ".swiper-slide-active .bloom-page",
+            { timeout: 30000 },
+        );
+        await playerPage.evaluate(async () => {
+            const g = globalThis as any;
+            const doc = g.document;
+            await doc.fonts.ready;
+            const page = doc.querySelector(".swiper-slide-active .bloom-page");
+            const imgs = page ? Array.from(page.querySelectorAll("img")) : [];
+            await Promise.all(
+                imgs.map((img: any) =>
+                    img.complete
+                        ? Promise.resolve()
+                        : new Promise((resolve) => {
+                              img.addEventListener("load", resolve, {
+                                  once: true,
+                              });
+                              img.addEventListener("error", resolve, {
+                                  once: true,
+                              });
+                          }),
+                ),
+            );
+            // Fonts/images are in; let layout settle for two frames before we capture.
+            await new Promise((resolve) =>
+                g.requestAnimationFrame(() => g.requestAnimationFrame(resolve)),
+            );
+        });
+        return active;
+    }
+
     // Render the staged BloomPUB in bloom-player and capture (or compare) one clean image per page.
     async function capturePlayerPages(
         stagedUrl: string,
@@ -307,46 +389,32 @@ describe("All books", () => {
         screenshotsDir: string,
     ) {
         // Discover how many pages the player shows. bloom-player lazy-renders pages, so we can't
-        // count .bloom-page elements; count the (non-duplicate) swiper slides instead.
+        // count .bloom-page elements; count the (non-duplicate) swiper slides, once stable.
         await playerPage.goto(playerUrl(stagedUrl, 0), {
             waitUntil: "networkidle",
         });
         await playerPage
             .waitForSelector(".bloom-page", { timeout: 30000 })
             .catch(() => {});
-        await playerPage.waitForTimeout(1500);
-        const pageCount = await playerPage.evaluate(
-            () =>
-                (globalThis as any).document.querySelectorAll(
-                    ".swiper-slide:not(.swiper-slide-duplicate)",
-                ).length,
-        );
-        if (pageCount < 1) {
-            throw new Error(
-                `bloom-player showed no pages for ${labelBase}; staging or the player URL is wrong`,
-            );
-        }
+        const pageCount = await stablePlayerPageCount();
 
         for (let n = 0; n < pageCount; n++) {
             await playerPage.goto(playerUrl(stagedUrl, n), {
                 waitUntil: "networkidle",
             });
-            // Screenshot just the active page element, so the image is the book page itself with no
-            // player chrome or letterbox around it.
-            const pageElement = await playerPage.waitForSelector(
-                ".swiper-slide-active .bloom-page",
-                { timeout: 30000 },
-            );
             // Hide scrollbars: on pages whose text overflows the device page, bloom-player shows a
             // scrollbar (via the niceScroll plugin) whose thumb renders slightly differently from
             // run to run (a few hundred pixels of noise), which would make the comparison flaky. It
             // is player chrome, not book content, and its rails are position:absolute overlays (so
-            // hiding them does not reflow the page), so we remove it for a stable capture.
+            // hiding them does not reflow the page), so we remove it for a stable capture. Add it
+            // before the settle wait so it can't perturb layout timing afterward.
             await playerPage.addStyleTag({
                 content:
                     ".nicescroll-rails,.nicescroll-cursors{display:none!important}",
             });
-            await playerPage.waitForTimeout(1500); // let fonts/layout settle
+            // Screenshot just the active page element, so the image is the book page itself with no
+            // player chrome or letterbox around it — once fonts/images/layout have settled.
+            const pageElement = await waitForActivePageReady();
             await captureOrCompare(
                 `${labelBase}-player-p${n}`,
                 screenshotsDir,
