@@ -72,7 +72,10 @@ import {
 } from "../../../react_components/featureStatus";
 import { animateStyleName } from "../../../utils/shared";
 import jQuery from "jquery";
-import { AudioTextHighlightManager } from "./audioTextHighlightManager";
+import {
+    AudioTextHighlightManager,
+    currentHighlightName,
+} from "./audioTextHighlightManager";
 import { TalkingBookUiState, Status } from "./TalkingBookUiState";
 
 // ENHANCE: Replace AudioRecordingMode with this?
@@ -2849,12 +2852,71 @@ export default class AudioRecording implements IAudioRecorder {
     // and not go on using up cpu cycles forever. On my computer, 4 seconds is very generous...a half second
     // would do it...but other computers are slower.
     private ensureHighlight(repeats: number) {
-        this.getCurrentTextBox();
+        this.reestablishCurrentHighlightIfNeeded();
         if (repeats > 0) {
             this.ensureHighlightToken = setTimeout(
                 () => this.ensureHighlight(repeats - 1),
                 200,
             );
+        }
+    }
+
+    // Make sure the current-audio pseudo-element highlight is actually registered against the
+    // *live* page document. This runs repeatedly for a few seconds after a page loads (see
+    // ensureHighlight).
+    //
+    // The visible highlight is a ::highlight registered in the page frame's CSS.highlights, over
+    // Ranges pointing at nodes in the page document. this.highlightedElement holds those nodes.
+    // When the page frame reloads (which can happen a beat after we first select the current
+    // element), this.highlightedElement is left pointing at a node in the *previous*, now
+    // detached document. refreshHighlights then reads the highlight registry from that node's
+    // window -- which is null for a detached document -- and silently does nothing, so no
+    // highlight appears. This is intermittent because it depends on whether a reload lands after
+    // we selected the element (BL-15300: "on page change, text is rarely highlighted").
+    //
+    // isVisible()/isConnected can't catch this: a node in a detached document is still
+    // "connected" to that old document. So we test membership in the *current* page document
+    // instead, re-point at the equivalent live node by id, and re-register the highlight.
+    private reestablishCurrentHighlightIfNeeded(): void {
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) {
+            return;
+        }
+        const liveDocument = pageBody.ownerDocument;
+
+        const current = this.highlightedElement;
+        if (!current) {
+            // Nothing selected yet; select the default (which also registers the highlight).
+            this.setCurrentAudioElementToDefaultAsync();
+            return;
+        }
+
+        let mustRefresh = false;
+        if (!liveDocument.contains(current)) {
+            // Stale: current belongs to a previous (detached) version of the page. Re-point at
+            // the equivalent element in the live document, matched by id.
+            const liveEquivalent = current.id
+                ? liveDocument.getElementById(current.id)
+                : null;
+            if (!liveEquivalent) {
+                // The element no longer exists on this page; select the default instead.
+                this.setCurrentAudioElementToDefaultAsync();
+                return;
+            }
+            this.highlightedElement = liveEquivalent as HTMLElement;
+            mustRefresh = true;
+        }
+
+        // Also refresh if the highlight simply isn't registered (the "it unexpectedly went away"
+        // case this loop was originally written for), but don't needlessly re-register (and
+        // re-run color lookups) every tick when it is already present.
+        const liveWindow = liveDocument.defaultView as
+            | (Window & { CSS?: { highlights?: Map<string, unknown> } })
+            | null;
+        const alreadyRegistered =
+            !!liveWindow?.CSS?.highlights?.has(currentHighlightName);
+        if (mustRefresh || !alreadyRegistered) {
+            this.refreshAudioTextHighlights(this.highlightedElement);
         }
     }
     public clearTimeouts() {

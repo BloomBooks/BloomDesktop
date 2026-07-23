@@ -2417,6 +2417,53 @@ describe("audio recording tests", () => {
             expect(getHighlightTexts(currentHighlightName)).toEqual(["One."]);
         });
 
+        // BL-15300 regression: on page change the highlight was often missing. Cause: after the
+        // page frame reloads, highlightedElement can be left pointing at a same-id node from the
+        // previous (now detached) document. refreshHighlights reads the highlight registry from
+        // that node's window (null for a detached document) and silently does nothing, so nothing
+        // paints -- and isVisible()/isConnected don't catch it because the stale node is still
+        // "connected" to its old document. ensureHighlight's reestablishCurrentHighlightIfNeeded
+        // must detect the staleness, re-point at the live node, and re-register the highlight.
+        it("re-registers the current highlight against the live page when highlightedElement is stale", () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-editable" data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence">One.</span></p></div></div>',
+            );
+
+            const recording = new AudioRecording();
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            recording.recordingMode = RecordingMode.Sentence;
+
+            // Simulate the stale reference: a same-id element that is NOT in the live page
+            // document (as happens after the page frame reloads to a new document).
+            const pageDoc = (
+                parent.window.document.getElementById(
+                    "page",
+                ) as HTMLIFrameElement
+            ).contentDocument!;
+            const stale = pageDoc.createElement("span");
+            stale.id = "span1";
+            stale.className = "audio-sentence";
+            stale.textContent = "One.";
+            (
+                recording as unknown as { highlightedElement: HTMLElement }
+            ).highlightedElement = stale;
+
+            // Nothing registered yet, and the stale node is a different object than the live one.
+            expect(getHighlightTexts(currentHighlightName)).toEqual([]);
+            const liveSpan = getFrameElementById("page", "span1");
+            expect(stale).not.toBe(liveSpan);
+
+            (
+                recording as unknown as {
+                    reestablishCurrentHighlightIfNeeded(): void;
+                }
+            ).reestablishCurrentHighlightIfNeeded();
+
+            // Healed: highlightedElement now points at the LIVE span, and the highlight paints.
+            expect(recording.getAudioCurrentElement()).toBe(liveSpan);
+            expect(getHighlightTexts(currentHighlightName)).toEqual(["One."]);
+        });
+
         it("clears pseudo-element highlights when entering show playback order mode", async () => {
             SetupIFrameFromHtml(
                 '<div id="page1"><div class="bloom-translationGroup"><div class="bloom-editable" data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence" data-test-preselect="true">One.</span></p></div></div></div>',
