@@ -1,4 +1,4 @@
-import { execFile } from "child_process";
+import { execFile, execFileSync, ChildProcess } from "child_process";
 import fetch from "node-fetch";
 import chalk from "chalk";
 import {
@@ -11,13 +11,25 @@ import {
 import { afterAll, beforeAll, describe, test } from "vitest";
 import { argosScreenshot } from "@argos-ci/playwright";
 import * as fs from "fs";
+import * as os from "os";
 import { PNG } from "pngjs";
 import Pixelmatch from "pixelmatch";
 import * as Path from "path";
 
-// The Bloom HTTP origin the suite talks to. launchBloomIfNeeded resolves this at startup so we use
-// whatever port Bloom actually opened on, instead of assuming 8089.
+// The Bloom HTTP origin the suite talks to. launchDedicatedBloom resolves this at startup to the
+// port our launched instance actually opened on, instead of assuming 8089.
 let bloomOrigin = "http://localhost:8089";
+
+// We must not let Bloom mutate the committed collections: opening a book brings it up to date
+// (rewriting .htm/.css), regenerates thumbnail.png, copies branding files into the book folder, etc.
+// So each run copies the collections to a throwaway temp folder and launches a dedicated Bloom on
+// THAT. Reference/current/diff images still live under the repo book folders (they are committed and
+// the "accept the new render" workflow needs a stable path), so the two are decoupled: Bloom operates
+// on the temp copy (see toTempBookFolder); screenshots are read/written in the repo copy.
+const repoCollectionsRoot = Path.join(process.cwd(), "collections");
+let tempCollectionsRoot: string | null = null;
+// The dedicated Bloom we launch, kept so we can shut it down afterwards.
+let bloomProcess: ChildProcess | null = null;
 
 describe("All books", () => {
     let page: Page;
@@ -28,10 +40,7 @@ describe("All books", () => {
     let context: BrowserContext;
 
     beforeAll(async () => {
-        await launchBloomIfNeeded();
-        // If a Bloom was already running on a different collection, every selectBook would fail
-        // with a confusing NullReferenceException. Fail fast with a clear message instead.
-        await assertOnBasicCollection();
+        await launchDedicatedBloom();
         browser = await chromium.launch();
         context = await browser.newContext();
         page = await context.newPage();
@@ -39,25 +48,13 @@ describe("All books", () => {
         await playerPage.setViewportSize({ width: 900, height: 1200 });
     });
     afterAll(async () => {
-        // Leave every book on the Default branding. Otherwise each book stays in whatever
-        // branding was tested last, which leaves the fixture in a non-default state: an extra
-        // xmatter page (with a fresh page id), a changed brandingProjectName in meta.json, and
-        // branding-specific files copied into the book folder. Switching back to Default also
-        // makes Bloom clean up those branding-specific support files.
-        // Park the capture pages first (see parkCapturePages): the last test left them showing a
-        // book / staged BloomPUB, and the resets below rewrite those files.
-        await parkCapturePages();
-        // Selecting a book requires the collection tab (see selectBook); the last test left us in
-        // the publish tab. Switch back once and wait for it to be ready; selecting books and
-        // setting branding/theme below does not change tabs, so we stay ready.
-        await selectTab("collection");
-        await waitForCollectionReady();
-        for (const bookFolder of bookFolders) {
-            await selectBook(bookFolder);
-            await setBranding("Default");
-            await setTheme("default");
-        }
-        await browser.close();
+        // We drove a dedicated, throwaway Bloom on a temp copy of the collection, so there is
+        // nothing in the repo to reset (that is the whole point of the temp copy). Just shut
+        // everything down and delete the temp copy. This runs whether the tests passed or failed;
+        // cleanupOnExit is a backstop for the case where the run is aborted before we get here.
+        await browser?.close();
+        stopBloom();
+        cleanupTempCollections();
     });
 
     // NB: currently, we don't have a way of making Bloom change collections, or re-running it with a different collection
@@ -125,7 +122,8 @@ describe("All books", () => {
         await waitForCollectionReady();
         // Select the book first, then set branding and theme: each of setBranding/setTheme brings
         // the currently-selected book up to date so it picks up the corresponding files/appearance.
-        await selectBook(testCase.bookFolder);
+        // Bloom operates on the temp copy; screenshots (below) still go to the repo book folder.
+        await selectBook(toTempBookFolder(testCase.bookFolder));
         await setBranding(testCase.branding);
         await setTheme(testCase.theme);
         // Each of the calls above brings the book up to date, which rewrites the book's support
@@ -359,22 +357,6 @@ describe("All books", () => {
         }
     }
 
-    // Fail fast if a Bloom instance was already running on a different collection: selecting one of
-    // our test books would otherwise fail with a confusing NullReferenceException.
-    async function assertOnBasicCollection() {
-        const result = await fetch(
-            `${bloomOrigin}/bloom/api/common/instanceInfo`,
-        );
-        expect(result.ok).toBe(true);
-        const info = (await result.json()) as { collectionName: string };
-        if (info.collectionName !== "basic") {
-            throw new Error(
-                `Bloom is running the '${info.collectionName}' collection, not the 'basic' test collection. ` +
-                    `Close that Bloom instance (or open collections/basic/basic.bloomCollection) and re-run.`,
-            );
-        }
-    }
-
     async function comparePreviewImage(
         referencePath: string,
         testPath: string,
@@ -417,21 +399,58 @@ describe("All books", () => {
 });
 
 // Ports Bloom uses: it takes the next free block starting at 8089 (8089, 8092, 8095, ...). We probe
-// these to attach to an already-running Bloom on whatever port it happens to have opened, rather
-// than assuming 8089.
+// these to find the port our launched instance opened on. A developer's own Bloom may also be on one
+// of these ports, so we match on the open collection folder (below) rather than assuming a port.
 const CANDIDATE_PORTS = [8089, 8092, 8095, 8098, 8101, 8104];
 
-// Return the origin (e.g. "http://localhost:8092") of a running Bloom that has the test ("basic")
-// collection open, or null if none is found. Matching on the collection avoids attaching to some
-// other Bloom the developer has open on a different collection.
-async function findRunningBloomOnBasic(): Promise<string | null> {
+// Map a repo book folder to the corresponding folder in the temp copy that Bloom actually has open.
+// selectBook must point Bloom at the temp copy; screenshots stay under the repo book folder.
+function toTempBookFolder(repoBookFolder: string): string {
+    if (!tempCollectionsRoot)
+        throw new Error("Temp collection copy has not been created yet");
+    return Path.join(
+        tempCollectionsRoot,
+        Path.relative(repoCollectionsRoot, repoBookFolder),
+    );
+}
+
+// Resolve a path to its canonical on-disk form. On Windows this is essential because os.tmpdir()
+// returns an 8.3 short path (e.g. C:\Users\JOHNTH~1\...) while Bloom reports the long form
+// (C:\Users\JohnThomson\...); realpathSync.native expands the short name and fixes casing so the two
+// actually compare equal. Falls back to Path.resolve if the path does not exist yet.
+function canonicalPath(p: string): string {
+    try {
+        return fs.realpathSync.native(p);
+    } catch (e) {
+        return Path.resolve(p);
+    }
+}
+
+// Windows paths compare case-insensitively; canonicalize (see above) then lowercase before comparing.
+function samePath(a: string, b: string): boolean {
+    return canonicalPath(a).toLowerCase() === canonicalPath(b).toLowerCase();
+}
+
+// Return the origin (e.g. "http://localhost:8092") of the running Bloom whose open editable
+// collection is wantFolder, or null if none is found yet. Matching the collection folder (rather
+// than just the collection name "basic") is what distinguishes our temp-copy instance from a Bloom
+// the developer may already have open on the repo copy.
+async function findBloomServingCollection(
+    wantFolder: string,
+): Promise<string | null> {
     for (const port of CANDIDATE_PORTS) {
         const origin = `http://localhost:${port}`;
         try {
             const r = await fetch(`${origin}/bloom/api/common/instanceInfo`);
             if (!r.ok) continue;
-            const info = (await r.json()) as { collectionName?: string };
-            if (info.collectionName === "basic") return origin;
+            const info = (await r.json()) as {
+                editableCollectionFolder?: string;
+            };
+            if (
+                info.editableCollectionFolder &&
+                samePath(info.editableCollectionFolder, wantFolder)
+            )
+                return origin;
         } catch (e) {
             // Nothing responding on that port; keep looking.
         }
@@ -439,27 +458,25 @@ async function findRunningBloomOnBasic(): Promise<string | null> {
     return null;
 }
 
-async function launchBloomIfNeeded() {
-    // Prefer an already-running Bloom that is on the test collection and reuse it on whatever port
-    // it opened on. A developer usually already has one running (e.g. via ./go.sh); this is also
-    // the reliable path, since it doesn't depend on us building/launching Bloom correctly here.
-    const existing = await findRunningBloomOnBasic();
-    if (existing) {
-        bloomOrigin = existing;
-        console.log(`Using running Bloom at ${bloomOrigin}`);
-        return;
-    }
+// Copy the committed collections to a throwaway temp folder and launch a dedicated Bloom on it, then
+// wait until that instance is serving the temp collection. We always launch our own (rather than
+// reusing a developer's Bloom) so the run is deterministic and never touches the repo collection.
+async function launchDedicatedBloom() {
+    // Canonicalize immediately: os.tmpdir() is an 8.3 short path on Windows, but Bloom reports the
+    // long form, so we normalize here (and in samePath) to make the discovery match work.
+    tempCollectionsRoot = canonicalPath(
+        fs.mkdtempSync(Path.join(os.tmpdir(), "bloom-vr-")),
+    );
+    fs.cpSync(repoCollectionsRoot, tempCollectionsRoot, { recursive: true });
+    // Backstop: tidy up even if the run is aborted (e.g. by an unhandled rejection) before afterAll.
+    process.once("exit", cleanupOnExit);
 
-    // Otherwise launch one ourselves on the test collection. We launch the built exe with the
-    // collection path because the source-aware launcher (./go.sh) can't be told which collection to
-    // open — and opening the right collection is what makes selecting the test books work. The exe
-    // lands in a platform-specific folder depending on the build, so try the known locations.
     const collection = Path.join(
-        process.cwd(),
-        "collections",
+        tempCollectionsRoot,
         "basic",
         "basic.bloomCollection",
     );
+    // The exe lands in a platform-specific folder depending on the build; try the known locations.
     const exeCandidates = [
         "../../output/Debug/x64/Bloom.exe",
         "../../output/Debug/AnyCPU/Bloom.exe",
@@ -469,26 +486,89 @@ async function launchBloomIfNeeded() {
     if (!exe) {
         throw new Error(
             `Could not find a built Bloom.exe (looked in: ${exeCandidates.join(", ")}). ` +
-                `Build Bloom, or start it yourself on collections/basic/basic.bloomCollection, then re-run.`,
+                `Build Bloom, then re-run.`,
         );
     }
     console.log(`Launching ${exe} on ${collection}`);
-    execFile(exe, [collection]);
+    // --e2e: skip the DEBUG "Attach debugger now" prompt and suppress modal error dialogs so a
+    // Bloom problem fails the test instead of hanging the run. --automation: allow this instance to
+    // run alongside a Bloom the developer already has open (bypasses the single-instance token).
+    bloomProcess = execFile(exe, [collection, "--e2e", "--automation"]);
 
-    // Wait for it to come up on the test collection (a freshly launched Bloom takes the standard
-    // 8089 block when it is free, but we still discover the actual port rather than assume it).
+    // Discover which port our instance opened on by matching the collection folder it has open.
+    const wantFolder = Path.join(tempCollectionsRoot, "basic");
     const startTime = Date.now();
-    while (Date.now() - startTime < 60000) {
-        const origin = await findRunningBloomOnBasic();
+    while (Date.now() - startTime < 90000) {
+        const origin = await findBloomServingCollection(wantFolder);
         if (origin) {
             bloomOrigin = origin;
-            console.log(`Launched Bloom is ready at ${bloomOrigin}`);
+            console.log(`Dedicated Bloom is ready at ${bloomOrigin}`);
             return;
         }
         await new Promise((resolve) => setTimeout(resolve, 1500));
     }
-    expect(
-        false,
-        "Bloom did not start on the basic collection within 60s",
-    ).toBe(true);
+    // Timed out: report which instances we could see so a mismatch is diagnosable rather than opaque.
+    const seen: string[] = [];
+    for (const port of CANDIDATE_PORTS) {
+        try {
+            const r = await fetch(
+                `http://localhost:${port}/bloom/api/common/instanceInfo`,
+            );
+            if (!r.ok) continue;
+            const info = (await r.json()) as {
+                editableCollectionFolder?: string;
+            };
+            if (info.editableCollectionFolder)
+                seen.push(`${port} -> ${info.editableCollectionFolder}`);
+        } catch (e) {
+            // nothing on this port
+        }
+    }
+    throw new Error(
+        `The dedicated Bloom did not open the temp collection within 90s.\n` +
+            `  wanted: ${wantFolder}\n` +
+            `  Bloom instances seen: ${seen.length ? seen.join("; ") : "none"}`,
+    );
+}
+
+// Kill the dedicated Bloom we launched, along with its WebView2 child processes. Idempotent.
+function stopBloom() {
+    const pid = bloomProcess?.pid;
+    bloomProcess = null;
+    if (pid == null) return;
+    try {
+        if (process.platform === "win32")
+            // /T kills the whole tree (Bloom spawns WebView2 child processes); /F forces it.
+            execFileSync("taskkill", ["/pid", String(pid), "/t", "/f"], {
+                stdio: "ignore",
+            });
+        else process.kill(pid, "SIGTERM");
+    } catch (e) {
+        // Already gone; nothing to do.
+    }
+}
+
+// Delete the throwaway collection copy. Bloom may release file handles slightly after it dies, so
+// let rmSync retry a few times. Idempotent.
+function cleanupTempCollections() {
+    const dir = tempCollectionsRoot;
+    tempCollectionsRoot = null;
+    if (!dir) return;
+    try {
+        fs.rmSync(dir, {
+            recursive: true,
+            force: true,
+            maxRetries: 10,
+            retryDelay: 300,
+        });
+    } catch (e) {
+        console.warn(`Could not remove temp collection copy at ${dir}: ${e}`);
+    }
+}
+
+// Synchronous last-resort cleanup for the process 'exit' event (afterAll may not run if the run is
+// aborted). Both helpers are synchronous, as an 'exit' handler requires.
+function cleanupOnExit() {
+    stopBloom();
+    cleanupTempCollections();
 }
