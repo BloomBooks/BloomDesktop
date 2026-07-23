@@ -238,6 +238,34 @@ namespace BloomTests
         }
 
         [Test]
+        public void IsBenignUnobservedTaskSocketNoise_KeepsMixedChainContainingRealBug()
+        {
+            // An AggregateException can aggregate several faults. If a genuine bug is mixed in
+            // with the benign socket noise, the whole event must still be reported; one benign
+            // entry in the chain is not license to drop everything alongside it.
+            var sentryEvent = MakeEvent(
+                MakeException("System.NullReferenceException", "Object reference not set..."),
+                MakeException("System.Net.Sockets.SocketException", "aborted"),
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.False);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_KeepsBareAggregateExceptionWithNoBenignInner()
+        {
+            // An unobserved-Task event whose chain is only the AggregateException wrapper carries
+            // no evidence of socket noise, so it must be reported (guards the All from passing
+            // vacuously).
+            var sentryEvent = MakeEvent(
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.False);
+        }
+
+        [Test]
         public void IsBenignUnobservedTaskSocketNoise_KeepsSocketExceptionWithoutUnobservedMechanism()
         {
             // A SocketException reported through some other (e.g. handled) path is not this noise.

@@ -2161,14 +2161,25 @@ namespace Bloom
                 return false;
 
             // Must have come through the TaskScheduler.UnobservedTaskException integration.
+            // Any (not All) is required here: Sentry attaches the mechanism only to the outer
+            // AggregateException wrapper, never to the inner exceptions in the chain, so
+            // requiring it on every entry would mean the filter never matched anything.
             var isUnobservedTask = exceptions.Any(e =>
                 e.Mechanism?.Type == "UnobservedTaskException"
             );
             if (!isUnobservedTask)
                 return false;
 
-            // ...and the underlying fault must be a benign socket/IO abort (match on type, not text).
-            return exceptions.Any(e => IsBenignSocketAbortExceptionType(e.Type));
+            // ...and the underlying fault must be a benign socket/IO abort (match on type, not
+            // text). At least one benign abort must be present, and nothing else may be in the
+            // chain except the AggregateException wrapper the unobserved-Task path adds: an
+            // AggregateException can aggregate several faults, and if a real bug is mixed in
+            // with the socket noise we still want the report.
+            if (!exceptions.Any(e => IsBenignSocketAbortExceptionType(e.Type)))
+                return false;
+            return exceptions.All(e =>
+                e.Type == "System.AggregateException" || IsBenignSocketAbortExceptionType(e.Type)
+            );
         }
 
         /// <summary>
