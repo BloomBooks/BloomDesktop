@@ -173,6 +173,29 @@ describe("SourceBubbles", () => {
         expect(listItems[2].getAttribute("id")).toBe("fr");
     });
 
+    it("recordSourceLangViewed keeps only the two most-recent, mirroring the server (BL-14330)", () => {
+        // The server persists exactly two slots (LastSourceLanguageViewed/Viewed2); the in-session
+        // list must match, so it never grows past two and the oldest is evicted.
+        BloomSourceBubbles.recordSourceLangViewed("es");
+        BloomSourceBubbles.recordSourceLangViewed("fr");
+        expect((BloomSourceBubbles as any).recentlyViewedSourceLangs).toEqual([
+            "fr",
+            "es",
+        ]);
+        // A third distinct selection drops the oldest ('es'), leaving the two most recent.
+        BloomSourceBubbles.recordSourceLangViewed("tpi");
+        expect((BloomSourceBubbles as any).recentlyViewedSourceLangs).toEqual([
+            "tpi",
+            "fr",
+        ]);
+        // Re-viewing the current front is a no-op (no duplicate, no reorder).
+        BloomSourceBubbles.recordSourceLangViewed("tpi");
+        expect((BloomSourceBubbles as any).recentlyViewedSourceLangs).toEqual([
+            "tpi",
+            "fr",
+        ]);
+    });
+
     it("Run CreateDropdownIfNecessary with pre-defined settings", () => {
         const testHtml = $(
             [

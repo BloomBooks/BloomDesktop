@@ -269,19 +269,21 @@ export default class BloomSourceBubbles {
         editableDiv.css("min-height", "");
     }
 
-    // The source languages the user has viewed during this editing session, most-recently-viewed
-    // first. GetSettings().defaultSourceLanguage[2] only reflects the two remembered languages as
-    // of when C# injected them at page load; it is NOT refreshed as the user clicks tabs. So we
-    // mirror the tab selections here (see recordSourceLangViewed) and let them take precedence over
-    // the injected values when ordering tabs. Without this, choosing a tab updated the server-side
-    // Settings but the in-session tab order kept using the stale page-load values, so the second
-    // remembered tab was wrong until the page was reloaded. See BL-14330.
+    // The (up to) two source languages the user has viewed most recently during this editing
+    // session, most-recently-viewed first. GetSettings().defaultSourceLanguage[2] only reflects the
+    // two remembered languages as of when C# injected them at page load; it is NOT refreshed as the
+    // user clicks tabs. So we mirror the tab selections here (see recordSourceLangViewed) and let
+    // them take precedence over the injected values when ordering tabs. Without this, choosing a tab
+    // updated the server-side Settings but the in-session tab order kept using the stale page-load
+    // values, so the second remembered tab was wrong until the page was reloaded. See BL-14330.
+    // We keep only two, exactly mirroring the server's LastSourceLanguageViewed/Viewed2, so the
+    // in-session order matches what a reload would inject.
     private static recentlyViewedSourceLangs: string[] = [];
 
-    // Record that the user just viewed a source language tab, keeping the list most-recently-viewed
-    // first with no duplicates. Mirrors the shift logic in EditingViewApi.HandleSourceTextTab so the
-    // in-session tab ordering matches what the server persists (and will inject on the next load).
-    // 'hint' is ignored to match the server, which does not remember it.
+    // Record that the user just viewed a source language tab, keeping the two most-recently-viewed
+    // (most recent first, no duplicates). Mirrors the shift logic in EditingViewApi.HandleSourceTextTab
+    // so the in-session tab ordering matches what the server persists (and will inject on the next
+    // load). 'hint' is ignored to match the server, which does not remember it.
     public static recordSourceLangViewed(langTag: string): void {
         if (!langTag || langTag === "hint") return;
         BloomSourceBubbles.recentlyViewedSourceLangs = [
@@ -289,7 +291,7 @@ export default class BloomSourceBubbles {
             ...BloomSourceBubbles.recentlyViewedSourceLangs.filter(
                 (lang) => lang !== langTag,
             ),
-        ];
+        ].slice(0, 2);
     }
 
     // 'Smart' orders the tabs putting the latest viewed languages first, followed by others in the collection
