@@ -86,10 +86,10 @@ const StatsRow: FunctionComponent<{
                     min-width: 83px;
                     padding-right: 8px;
                     align-self: center;
-                    // The mockup capitalizes the first letter of each label
-                    // (e.g. "Per page"). Doing it here keeps the localized
-                    // source strings lowercase and avoids capitalizing every
-                    // word, which text-transform: capitalize would do.
+                    // Capitalize the first letter of each label (e.g. "Per
+                    // page"). Doing it here keeps the localized source strings
+                    // lowercase and avoids capitalizing every word, which
+                    // text-transform: capitalize would do.
                     &::first-letter {
                         text-transform: uppercase;
                     }

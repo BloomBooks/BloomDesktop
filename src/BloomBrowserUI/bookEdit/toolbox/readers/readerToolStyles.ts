@@ -3,10 +3,9 @@ import { kBloomBlue } from "../../../utils/colorUtils";
 
 // The reader tools (Decodable + Leveled) share one accent, brighter than
 // kBloomLightBlue, so the section headers, links, and the button/sort outlines
-// all read clearly (AA, ~5.4:1) against the dark toolbox panel and no longer
-// mix two different blues. kBloomBlue (#1d94a4) stays as a *fill* — the
-// accordion header bar and the selected-sort background — with white on top.
-// (BL-16585)
+// all read clearly (AA, ~5.4:1) against the dark toolbox panel. kBloomBlue
+// (#1d94a4) is used as a *fill* — the accordion header bar and the
+// selected-sort background — with white on top. (BL-16585)
 export const kReaderAccent = "#23b4c7";
 // Muted text in the reader tools ("of N", the Max column, the This Page/This
 // Book sub-labels, the within/over legend). (BL-16585)
