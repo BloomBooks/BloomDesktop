@@ -4,6 +4,7 @@ interface JQuery {
     getMaxSentenceLength(): number;
     getTotalWordCount(): number;
     removeSynphonyMarkup(): void;
+    removeCkEditorMarkup(): void;
 }
 
 interface JQueryStatic {
