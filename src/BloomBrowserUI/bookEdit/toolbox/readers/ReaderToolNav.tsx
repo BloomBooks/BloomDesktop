@@ -34,10 +34,10 @@ export const ReaderToolNav: FunctionComponent<{
         return props.isForLeveled ? model.levelNumber : model.stageNumber;
     }
 
-    // Boxed square buttons at the right, matching the mockup. Unlike before,
-    // the button at an end is shown but disabled (greyed) rather than hidden,
-    // so the pair of boxes is always present. Kept fairly small so the whole
-    // "Level N of M" line fits on a single row.
+    // Boxed square buttons at the right. The button at an end is shown but
+    // disabled (greyed) rather than hidden, so the pair of boxes is always
+    // present. Kept fairly small so the whole "Level N of M" line fits on a
+    // single row.
     const arrowButtonCss = css`
         // && beats MUI's .MuiButton-root sizing so the box stays square.
         && {
