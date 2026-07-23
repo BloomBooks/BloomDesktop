@@ -9,7 +9,7 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='BloomLocal.svg'/><div>This book was created with many Bloom Enterprise features enabled at no cost in order to support projects that are fully funded and managed by the language community.  Licensed to \"{personalization}\".</div>",
+            "content": "<img class='branding' src='BloomLocal.svg'/><div class='local-text'><p>Published with a Bloom Local subscription gifted from SIL Global to: <strong>{personalization}</strong></p><p><strong>Bloom Local</strong> subscriptions are reserved for projects resourced entirely by the local community.</p></div>",
             "condition": "always"
         }
     ]

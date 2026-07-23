@@ -541,6 +541,12 @@
         <source xml:lang="en">Get more books in the {0} language on BloomLibrary.org.</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText</note>
         <note>{0} will be replaced by a language name</note>
+        <note>obsolete as of 6.4; replaced by CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2 (the BloomLibrary.org URL is now shown on its own line beneath the caption).</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2">
+        <source xml:lang="en">More books in {0} language:</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2</note>
+        <note>The default caption on the "Made with Bloom" QR-code badge on a book's back cover. {0} is replaced by a language name (shown in bold). It ends with a colon because the BloomLibrary.org web address appears on the next line below it.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
         <source xml:lang="en">Special Script Settings</source>

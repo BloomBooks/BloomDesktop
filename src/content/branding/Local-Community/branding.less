@@ -7,20 +7,26 @@
 [data-book="outside-back-cover-branding-bottom-html"] {
     display: flex;
     flex-direction: row;
-    align-items: center;
-    gap: 10px; // space between the logo and the {personalization} text
-    border: solid #ce5546 3px;
-    border-radius: 4px;
-    background: white;
-    padding: 10px;
-    font-family: "Andika";
+    align-items: flex-start;
+    gap: 0.4cm; // space between the logo and the text
+    font-family: serif;
     font-size: 10.5pt;
     width: 9cm;
     margin-right: auto;
     margin-left: auto;
 
     img.branding {
-        height: 2cm;
-        margin-right: 10px;
+        height: 2.5cm;
+        flex-shrink: 0;
+        align-self: flex-start;
+    }
+
+    .local-text {
+        p {
+            margin: 0 0 0.6em 0;
+        }
+        p:last-child {
+            margin-bottom: 0;
+        }
     }
 }
