@@ -160,7 +160,10 @@ jobs:
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: nightly-test-results
+                  # Forward slashes: upload-artifact treats the path as a glob, where a
+                  # backslash is an escape character (not a separator) even on Windows, so
+                  # back-slashed paths can silently match nothing. Matches the publish step.
                   path: |
-                      output\Tests\Release\x64\TestResults.xml
-                      output\Tests\vitest-junit.xml
+                      output/Tests/Release/x64/TestResults.xml
+                      output/Tests/vitest-junit.xml
                   retention-days: 14
