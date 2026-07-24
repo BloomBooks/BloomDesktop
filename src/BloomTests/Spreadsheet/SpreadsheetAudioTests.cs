@@ -729,4 +729,135 @@ namespace BloomTests.Spreadsheet
             Assert.That(parsed.GetRun(2).Text, Is.EqualTo("in the middle of this sentences"));
         }
     }
+
+    /// <summary>
+    /// Regression tests for BL-16518. The export-time content normalization (trim, replace
+    /// &lt;br&gt; with a space, collapse runs of ordinary whitespace) must not fuse two
+    /// sentences that are separated only by a line break: the audio splitter relies on there
+    /// being whitespace between sentences, so if the boundary space were lost the re-imported
+    /// text would fragment into fewer sentences than there are recorded audio segments,
+    /// desynchronizing (or dropping) the audio. These verify the boundary survives export in
+    /// both split-TextBox and Sentence recording modes, with the segment/endtime mapping intact.
+    /// </summary>
+    public class Spreadsheet_AudioWhitespaceNormalization_Tests : SpreadsheetAudioTestsBase
+    {
+        // A split-TextBox editable whose two timed sentences are separated by a <br> and a run
+        // of spaces (as can happen from a Shift+Enter in the editor). id matches a real test mp3.
+        private const string splitTextBoxPage =
+            @"    <div class=""bloom-page numberedPage customPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""page-split"" data-page-number=""1"" lang="""">
+        <div class=""pageLabel"" lang=""en"">Basic Text</div>
+        <div class=""pageDescription"" lang=""en""></div>
+        <div class=""marginBox"">
+            <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
+                <div class=""bloom-editable normal-style audio-sentence bloom-postAudioSplit bloom-content1 bloom-visibility-code-on"" lang=""fr"" contenteditable=""true"" data-audiorecordingmode=""TextBox"" id=""a9d7b794-7a83-473a-8307-7968176ae4bc"" recordingmd5=""c93312969c38f815f4c9057f94bec2ab"" data-duration=""4.388571"" data-audiorecordingendtimes=""1.500 4.388571"">
+                    <p><span id=""seg1"" class=""bloom-highlightSegment"">First sentence.</span><br />  <span id=""seg2"" class=""bloom-highlightSegment"">Second sentence.</span></p>
+                </div>
+                <div class=""bloom-editable normal-style"" lang=""z"" contenteditable=""true""><p></p></div>
+            </div>
+        </div>
+    </div>";
+
+        // A sentence-mode editable whose two per-sentence recordings are separated by a <br> and
+        // a run of spaces. ids match real test mp3s.
+        private const string sentenceModePage =
+            @"    <div class=""bloom-page numberedPage customPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""page-sentence"" data-page-number=""2"" lang="""">
+        <div class=""pageLabel"" lang=""en"">Basic Text</div>
+        <div class=""pageDescription"" lang=""en""></div>
+        <div class=""marginBox"">
+            <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
+                <div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" lang=""fr"" contenteditable=""true"" data-audiorecordingmode=""Sentence"" id=""sentence-editable"">
+                    <p><span id=""i991ae1ac-db9a-4ad1-984b-8e679c1ae901"" class=""audio-sentence"" recordingmd5=""aaa"" data-duration=""2.899592"">First sentence.</span><br />  <span id=""i77c18c83-0224-405f-bb97-70d32078855c"" class=""audio-sentence"" recordingmd5=""bbb"" data-duration=""2.194286"">Second sentence.</span></p>
+                </div>
+                <div class=""bloom-editable normal-style"" lang=""z"" contenteditable=""true""><p></p></div>
+            </div>
+        </div>
+    </div>";
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            // Sanity checks on the test data: a false pass would be easy if the input didn't
+            // actually contain the <br> and multiple spaces the normalization is meant to handle.
+            Assert.That(
+                splitTextBoxPage,
+                Does.Contain("<br />"),
+                "test setup: split page should contain a line break between the two segments"
+            );
+            Assert.That(
+                splitTextBoxPage,
+                Does.Contain("  <span"),
+                "test setup: split page should contain a run of spaces before the second segment"
+            );
+            Assert.That(
+                sentenceModePage,
+                Does.Contain("<br />"),
+                "test setup: sentence page should contain a line break between the two sentences"
+            );
+
+            Setup(splitTextBoxPage + sentenceModePage);
+
+            // Sanity check that both content rows were produced in the expected order.
+            Assert.That(
+                PageContentRows.Count,
+                Is.EqualTo(2),
+                "expected one content row per page (split TextBox, then Sentence mode)"
+            );
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            TearDown();
+        }
+
+        private int FrIndex => AllRows.First().CellContents.IndexOf("[fr]");
+
+        [Test]
+        public void SplitTextBox_LineBreakBetweenSentences_ExportsAsSpaceSeparatedSentences()
+        {
+            var cell = PageContentRows[0].GetCell(FrIndex);
+            // The <br> and the run of spaces collapse to a single space, so the two sentences
+            // stay separated (not fused) in the exported text.
+            Assert.That(cell.Text, Is.EqualTo("First sentence. Second sentence."));
+            Assert.That(
+                cell.Content,
+                Does.Not.Contain("sentence.</span><span"),
+                "the two segments must not be fused with no whitespace between them"
+            );
+        }
+
+        [Test]
+        public void SplitTextBox_ExportsBothEndTimes()
+        {
+            var alignmentColIndex = AllRows.First().CellContents.IndexOf("[audio alignments fr]");
+            var alignment = PageContentRows[0].GetCell(alignmentColIndex).Content;
+            // Two end-times, matching the two sentences that survive normalization. If the
+            // sentences had been fused, the re-imported single sentence would mismatch these.
+            Assert.That(alignment, Is.EqualTo("1.500 4.388571"));
+            Assert.That(
+                alignment.Split(' ').Length,
+                Is.EqualTo(2),
+                "there should still be two audio segments"
+            );
+        }
+
+        [Test]
+        public void SentenceMode_LineBreakBetweenSentences_ExportsAsSpaceSeparatedSentences()
+        {
+            var cell = PageContentRows[1].GetCell(FrIndex);
+            Assert.That(cell.Text, Is.EqualTo("First sentence. Second sentence."));
+        }
+
+        [Test]
+        public void SentenceMode_ExportsBothAudioFilesInOrder()
+        {
+            var audioColIndex = AllRows.First().CellContents.IndexOf("[audio fr]");
+            Assert.That(
+                PageContentRows[1].GetCell(audioColIndex).Content,
+                Is.EqualTo(
+                    "./audio/i991ae1ac-db9a-4ad1-984b-8e679c1ae901.mp3, ./audio/i77c18c83-0224-405f-bb97-70d32078855c.mp3"
+                )
+            );
+        }
+    }
 }
