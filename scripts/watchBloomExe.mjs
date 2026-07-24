@@ -680,8 +680,10 @@ const spawnWatchChild = () => {
     });
 };
 
-const isWatchChildAlive = () =>
-    !!child && child.exitCode === null && !child.signalCode;
+const isChildAlive = (candidate) =>
+    !!candidate && candidate.exitCode === null && !candidate.signalCode;
+
+const isWatchChildAlive = () => isChildAlive(child);
 
 const restartWatchChild = async () => {
     if (restartInProgress) {
@@ -777,19 +779,35 @@ const quitBloom = async () => {
     clearLaunchTimeout();
     stopBloomMonitor();
 
-    // Set BEFORE taking Bloom down: quitting it can take up to 15 s, and if the
-    // watch child happens to exit during that window its exit handler must see
-    // that this was a deliberate stop. Otherwise it would fall through to
-    // exitForFinishedLaunch and take the whole stack (including Vite) down,
-    // which is the opposite of what /quit-bloom promises.
+    // Remember which watch child we set out to stop, and which launch we are
+    // acting on: closing Bloom below can take up to 15 s, and a /restart in
+    // that window recycles both.
+    const childToStop = child;
+    const launchToken = activeLaunchToken;
+
+    // Set BEFORE taking Bloom down: if the watch child happens to exit while we
+    // wait, its exit handler must see that this was a deliberate stop.
+    // Otherwise it would fall through to exitForFinishedLaunch and take the
+    // whole stack (including Vite) down, which is the opposite of what
+    // /quit-bloom promises.
     stopRequested = true;
 
     if (bloomProcessId) {
         await quitBloomProcessGracefully(bloomProcessId);
     }
 
-    if (isWatchChildAlive()) {
-        await terminateChild(child);
+    // A /restart that arrived while we were closing Bloom has already replaced
+    // the watch child (and cleared stopRequested). Terminating that replacement
+    // would kill the only process able to launch Bloom, so let the restart win.
+    if (launchToken !== activeLaunchToken) {
+        console.log(
+            "A restart took over while Bloom was closing; leaving the new watch cycle alone.",
+        );
+        return;
+    }
+
+    if (isChildAlive(childToStop)) {
+        await terminateChild(childToStop);
         return;
     }
 

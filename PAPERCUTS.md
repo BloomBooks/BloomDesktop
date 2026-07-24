@@ -19,6 +19,16 @@ House rules:
 
 ---
 
+## 2026-07-24 — agent-dotnet.sh collides with itself when a build and a test run overlap
+- **Cut:** The wrapper isolates per *terminal*, not per *command*, so a `build` started while
+  that same terminal's `test` is still running fails with MSB3027 — "Bloom.dll ... locked by:
+  testhost". Agents that kick a full suite into the background and keep working hit this and
+  can mistake it for a real build break.
+- **Idea:** Either serialize (a lock file in `output/agent/<key>/`) or give a concurrent
+  invocation its own subtree, and make the error message say "another agent-dotnet command is
+  using this tree" instead of a raw MSBuild copy failure.
+- **Context:** BloomDesktop, `/preflight` of PR #8107 (dev launcher control API).
+
 ## 2026-07-24 — go.sh "succeeds" on a fresh worktree whose output/browser was never built
 - **Cut:** On a never-initialized worktree, after fixing the obvious failures (pnpm install,
   getDependencies for CS0246), `./go.sh` launches and Bloom looks healthy — but opening a book
