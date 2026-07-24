@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using Bloom;
 using Bloom.Api;
 using Bloom.Book;
@@ -62,21 +63,31 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
-        public void PasteImage_WhenPasteFailsWithInvalidOperation_ReturnsBadRequest()
+        public void PasteImage_WhenPasteFailsWithInvalidOperation_ReturnsBadRequestWithMessageBody()
         {
-            _api.PasteImageAction = (_, __, ___) =>
-                throw new InvalidOperationException("No image on clipboard for paste image.");
+            // The front end shows this message to the user (falling back to a generic one if
+            // it doesn't arrive), so the exception message must survive the round trip in the
+            // response body. See handlePasteImageApiError in bloomImages.ts.
+            const string message =
+                "Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else.";
+            _api.PasteImageAction = (_, __, ___) => throw new InvalidOperationException(message);
 
-            var exception = Assert.Throws<HttpRequestException>(() =>
-                ApiTest.PostString(
-                    _server,
-                    "editView/pasteImage",
-                    "{\"imageId\":\"image-123\",\"imageSrc\":\"\",\"imageIsGif\":false}",
-                    ApiTest.ContentType.JSON
+            _server.EnsureListening();
+            using var client = new HttpClient();
+            using var response = client
+                .PostAsync(
+                    BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/editView/pasteImage",
+                    new StringContent(
+                        "{\"imageId\":\"image-123\",\"imageSrc\":\"\",\"imageIsGif\":false}",
+                        Encoding.UTF8,
+                        "application/json"
+                    )
                 )
-            );
+                .Result;
 
-            Assert.That(exception.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            var body = response.Content.ReadAsStringAsync().Result;
+            Assert.That(body, Is.EqualTo(message));
         }
 
         private class TestEditingViewApi : EditingViewApi

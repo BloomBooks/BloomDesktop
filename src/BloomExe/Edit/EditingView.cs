@@ -1,5 +1,6 @@
 //#define MEMORYCHECK
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -695,6 +696,20 @@ namespace Bloom.Edit
 
                     if (clipboardImage == null)
                     {
+                        // The clipboard held nothing we could even attempt to load as an image.
+                        // But if what's there looks like it was *meant* to be one (e.g. a copied
+                        // image file whose path no longer exists, or text that looks like a path
+                        // or URL to an image file), the "failed to interpret" message is more
+                        // helpful than telling the user to go copy an image.
+                        if (ClipboardContentsSuggestImage())
+                        {
+                            throw new InvalidOperationException(
+                                LocalizationManager.GetString(
+                                    "EditTab.NoValidImageFoundOnClipboard",
+                                    "Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else."
+                                )
+                            );
+                        }
                         throw new InvalidOperationException(
                             LocalizationManager.GetString(
                                 "EditTab.NoImageFoundOnClipboard",
@@ -821,6 +836,74 @@ namespace Bloom.Edit
         private static PalasoImage GetImageFromClipboard()
         {
             return PortableClipboard.GetImageFromClipboard();
+        }
+
+        // Extensions that suggest the user intended a file or path to be understood as an
+        // image. Deliberately broader than what Bloom can actually load: if the user copied
+        // a path to (say) a .webp file, they clearly meant it as an image, and "Bloom failed
+        // to interpret..." is a more helpful response than telling them to copy an image first.
+        private static readonly HashSet<string> _probableImageExtensions = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase
+        )
+        {
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".gif",
+            ".bmp",
+            ".tiff",
+            ".tif",
+            ".webp",
+            ".svg",
+            ".heic",
+            ".avif",
+        };
+
+        /// <summary>
+        /// True if the clipboard holds something that was probably intended as an image
+        /// even though we could not load it as one: a copied file with an image extension,
+        /// or text that looks like a path or URL to an image file.
+        /// </summary>
+        private static bool ClipboardContentsSuggestImage()
+        {
+            try
+            {
+                string[] fileDropPaths = Clipboard.ContainsFileDropList()
+                    ? Clipboard.GetFileDropList().Cast<string>().ToArray()
+                    : null;
+                var text = PortableClipboard.ContainsText() ? PortableClipboard.GetText() : null;
+                return ClipboardContentsSuggestImage(fileDropPaths, text);
+            }
+            catch (Exception)
+            {
+                // Clipboard reads can genuinely fail at any moment (another process may hold
+                // the clipboard). This method only chooses between two error messages, so
+                // failing to read just means we fall back to the generic one.
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The testable core of ClipboardContentsSuggestImage(): decides from the clipboard's
+        /// file-drop paths and/or text whether the user probably intended to paste an image.
+        /// </summary>
+        internal static bool ClipboardContentsSuggestImage(
+            IEnumerable<string> fileDropPaths,
+            string clipboardText
+        )
+        {
+            if (fileDropPaths != null && fileDropPaths.Any(HasProbableImageExtension))
+                return true;
+            return HasProbableImageExtension(clipboardText);
+        }
+
+        private static bool HasProbableImageExtension(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return false;
+            // Explorer's "Copy as path" wraps the path in quotes; ignore them, along with
+            // stray whitespace, so such a path is still recognized as image-intended.
+            return _probableImageExtensions.Contains(Path.GetExtension(path.Trim().Trim('"')));
         }
 
         private bool CopyImageToClipboard(
