@@ -148,7 +148,6 @@ const toolboxBundle: ToolboxBundleApi = {
     TalkingBookTool,
     canUndo,
     undo,
-    applyToolboxStateToPageLegacy: applyToolboxStateToPage,
     setActiveDragActivityTab,
     getTheOneAudioRecorderForExportOnly,
     copyLeveledReaderStatsToClipboard,

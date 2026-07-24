@@ -12,7 +12,6 @@ export default abstract class ToolboxToolReactAdaptor
     imageUpdated(_img: HTMLImageElement | undefined): void {
         // does nothing by default
     }
-    public hasRestoredSettings: boolean;
     public abstract makeRootElement(): HTMLDivElement;
     public abstract id(): string;
 
@@ -30,9 +29,6 @@ export default abstract class ToolboxToolReactAdaptor
         return wrapperDiv as HTMLDivElement;
     }
     public isAlwaysEnabled(): boolean {
-        return false;
-    }
-    public isExperimental(): boolean {
         return false;
     }
     public featureName?: string;
@@ -59,7 +55,6 @@ export default abstract class ToolboxToolReactAdaptor
     public newPageReady() {}
     public detachFromPage() {}
     public configureElements(_container: HTMLElement) {}
-    public finishToolLocalization(_pane: HTMLElement) {}
     /* eslint-enable @typescript-eslint/no-empty-function */
 
     public static getPageFrame(): HTMLIFrameElement {
