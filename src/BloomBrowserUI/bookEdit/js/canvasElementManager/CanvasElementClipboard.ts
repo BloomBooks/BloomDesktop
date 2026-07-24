@@ -226,23 +226,29 @@ export class CanvasElementClipboard {
             }
         }
 
-        // If there is an image canvas element (other than the background one) already selected
-        // and it is a placeholder, just set its image.
+        // If an image canvas element is currently selected, replace its image rather than
+        // creating a new overlay on top of it. This applies whether the selected element is the
+        // background image (as when a Standard Layout cover's picture is selected) or an overlay,
+        // and whether or not it currently holds a placeholder. It matches the behavior of the
+        // image context menu's Paste command and the expectation that pasting onto a selected
+        // image replaces that image. See BL-16542.
         const activeElement = this.host.getActiveElement();
-        if (
-            activeElement &&
-            !activeElement.classList.contains(kBackgroundImageClass)
-        ) {
+        if (activeElement) {
             const img = activeElement
                 .getElementsByClassName(kImageContainerClass)[0]
                 ?.getElementsByTagName("img")[0];
-            if (img && isPlaceHolderImage(img.getAttribute("src"))) {
+            if (img) {
                 changeImageInfo(img, imageInfo);
-                this.host.adjustContainerAspectRatio(
-                    activeElement as HTMLElement,
-                    true,
-                );
-                adjustTarget(activeElement, getTarget(activeElement));
+                if (activeElement.classList.contains(kBackgroundImageClass)) {
+                    this.host.adjustBackgroundImageSize(
+                        bloomCanvas,
+                        activeElement,
+                        true,
+                    );
+                } else {
+                    this.host.adjustContainerAspectRatio(activeElement, true);
+                    adjustTarget(activeElement, getTarget(activeElement));
+                }
                 notifyToolOfChangedImage(img);
                 return;
             }
