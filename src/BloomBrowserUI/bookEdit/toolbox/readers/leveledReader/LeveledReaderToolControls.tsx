@@ -6,31 +6,53 @@ import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import BloomButton from "../../../../react_components/bloomButton";
 import { ReaderToolNav } from "../ReaderToolNav";
-import { Div } from "../../../../react_components/l10nComponents";
-import { kBloomLightBlue } from "../../../../utils/colorUtils";
+import { ReaderSetupButton } from "../ReaderSetupButton";
+import {
+    kReaderAccent,
+    kReaderMuted,
+    readerSectionHeaderCss,
+    readerTextButtonCss,
+} from "../readerToolStyles";
+import { Div, Span } from "../../../../react_components/l10nComponents";
 import { useMountEffect } from "../../../../utils/useMountEffect";
 import { Link } from "../../../../react_components/link";
-import { ContentCopySharp } from "@mui/icons-material";
+import { ContentCopySharp, ReportProblemOutlined } from "@mui/icons-material";
+
+// Colors used to flag a measure as within/over the current level's limit.
+const kWithinLevelColor = "lightgreen";
+const kOverLevelColor = "orange";
+// Quiet grey used for the column headers and the (de-emphasized) Max values,
+// so the eye lands on the colored Actual figures instead of the limits.
+const kMutedColor = kReaderMuted;
+
+// Small, quiet uppercase styling shared by the Measure/Max/Actual column headers.
+const kColumnHeaderCss = css`
+    color: ${kMutedColor};
+    font-size: x-small;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    align-self: end;
+`;
 
 const MaxActualRow: FunctionComponent = () => {
     return (
         <>
-            {/* This div is intentionally included here, though empty, to ensure the grid
-             syling works for the header row.*/}
-            <div
+            <Div
+                l10nKey="EditTab.Toolbox.LeveledReaderTool.Measure"
                 css={css`
+                    ${kColumnHeaderCss};
                     grid-column: 1;
                 `}
-            ></div>
+            >
+                Measure
+            </Div>
             <Div
                 l10nKey="EditTab.Toolbox.LeveledReaderTool.Max"
                 css={css`
+                    ${kColumnHeaderCss};
                     max-width: 40px;
                     padding-right: 6px;
-                    word-wrap: break-word;
-                    overflow-wrap: break-word;
-                    text-align: center;
-                    align-self: start;
+                    text-align: right;
                 `}
             >
                 Max
@@ -38,12 +60,10 @@ const MaxActualRow: FunctionComponent = () => {
             <Div
                 l10nKey="EditTab.Toolbox.LeveledReaderTool.Actual"
                 css={css`
+                    ${kColumnHeaderCss};
                     max-width: 40px;
                     padding-right: 3px;
-                    word-wrap: break-word;
-                    overflow-wrap: break-word;
-                    text-align: center;
-                    align-self: start;
+                    text-align: right;
                 `}
             >
                 Actual
@@ -66,6 +86,13 @@ const StatsRow: FunctionComponent<{
                     min-width: 83px;
                     padding-right: 8px;
                     align-self: center;
+                    // Capitalize the first letter of each label (e.g. "Per
+                    // page"). Doing it here keeps the localized source strings
+                    // lowercase and avoids capitalizing every word, which
+                    // text-transform: capitalize would do.
+                    &::first-letter {
+                        text-transform: uppercase;
+                    }
                 `}
             >
                 {props.children}
@@ -76,13 +103,16 @@ const StatsRow: FunctionComponent<{
                     padding-right: 6px;
                     word-wrap: break-word;
                     overflow-wrap: break-word;
-                    text-align: center;
+                    text-align: right;
                     align-self: start;
+                    // The limit is de-emphasized (quiet grey) so the eye lands
+                    // on the colored Actual figure beside it.
+                    color: ${kMutedColor};
                 `}
             >
                 {props.maxNum !== 0 && props.maxNum !== Infinity
                     ? props.maxNum
-                    : ""}
+                    : "—"}
             </div>
             <div
                 css={css`
@@ -90,12 +120,12 @@ const StatsRow: FunctionComponent<{
                     padding-right: 3px;
                     word-wrap: break-word;
                     overflow-wrap: break-word;
-                    text-align: center;
+                    text-align: right;
                     align-self: start;
                     color: ${Number(props.actualNum) > props.maxNum &&
                     props.maxNum !== 0
-                        ? "orange"
-                        : "lightgreen"};
+                        ? kOverLevelColor
+                        : kWithinLevelColor};
                 `}
             >
                 {props.actualNum}
@@ -124,8 +154,12 @@ const StatsGrid: FunctionComponent<{
                 <Div
                     l10nKey={`EditTab.Toolbox.LeveledReaderTool.${props.header1L10nText.replace(/\s/g, "")}`} // the ending of the l10n key is just the text, but with all spaces removed. So, remove all the spaces from the text to use it in the key.
                     css={css`
-                        color: ${kBloomLightBlue};
-                        grid-column: 1;
+                        ${readerSectionHeaderCss};
+                        // Span the section header across all three columns, so the
+                        // section rule carries the structure (the individual data
+                        // rows are intentionally rule-free).
+                        grid-column: 1 / -1;
+                        margin-bottom: 2px;
                     `}
                 >
                     {props.header1L10nText}
@@ -135,8 +169,17 @@ const StatsGrid: FunctionComponent<{
                 <Div
                     l10nKey={`EditTab.Toolbox.LeveledReaderTool.${props.header2L10nText.replace(/\s/g, "")}`} // same deal here
                     css={css`
-                        color: white;
-                        grid-column: 1;
+                        // "This Page" / "This Book" are sub-labels within a
+                        // section: quieter, uppercase, spanning the full width.
+                        grid-column: 1 / -1;
+                        color: ${kMutedColor};
+                        font-size: x-small;
+                        letter-spacing: 0.1em;
+                        text-transform: uppercase;
+                        margin-top: 6px;
+                        // Half-em breathing room before the column headers/rows
+                        // that follow the "This Page"/"This Book" sub-label.
+                        margin-bottom: 0.5em;
                     `}
                 >
                     {props.header2L10nText}
@@ -148,10 +191,128 @@ const StatsGrid: FunctionComponent<{
     );
 };
 
+// Legend explaining the green/orange coloring of the Actual figures.
+const StatsLegend: FunctionComponent = () => {
+    const swatch = (color: string) => css`
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: ${color};
+        margin-right: 6px;
+    `;
+    const item = css`
+        display: inline-flex;
+        align-items: center;
+        margin-left: 16px;
+    `;
+    return (
+        <div
+            css={css`
+                display: flex;
+                justify-content: flex-end;
+                margin-top: 8px;
+                font-size: x-small;
+                color: ${kMutedColor};
+            `}
+        >
+            <span css={item}>
+                <span css={swatch(kWithinLevelColor)} />
+                <Div l10nKey="EditTab.Toolbox.LeveledReaderTool.WithinLevel">
+                    Within level
+                </Div>
+            </span>
+            <span css={item}>
+                <span css={swatch(kOverLevelColor)} />
+                <Div l10nKey="EditTab.Toolbox.LeveledReaderTool.OverLevel">
+                    Over level
+                </Div>
+            </span>
+        </div>
+    );
+};
+
+// Warning banner shown at the top of the stats when any measure with a
+// limit exceeds that limit for the current level.
+const OverLevelBanner: FunctionComponent<{ levelNumber: number }> = (props) => {
+    return (
+        <div
+            css={css`
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin: 10px 0 0 0;
+                padding: 8px 10px;
+                border-left: 3px solid ${kOverLevelColor};
+                background-color: rgba(255, 165, 0, 0.12);
+            `}
+        >
+            <ReportProblemOutlined
+                css={css`
+                    color: ${kOverLevelColor};
+                    font-size: 18px;
+                `}
+            />
+            <Span
+                l10nKey="EditTab.Toolbox.LeveledReaderTool.OverLevelWarning"
+                l10nParam0={props.levelNumber.toString()}
+                css={css`
+                    font-weight: bold;
+                `}
+            >
+                {"This book reads above Level {0}"}
+            </Span>
+        </div>
+    );
+};
+
 // This simple function is used in LeveledReaderStats to cut all
 // of the average values down to one decimal place
 function formatAverage(value: number): string {
     return value.toFixed(1);
+}
+
+// True when at least one measured statistic exceeds the current level's
+// limit. Mirrors the per-row orange coloring rule in StatsRow.
+function isBookOverLevel(
+    model: ReturnType<typeof getTheOneReaderToolsModel>,
+    stats: { [key: string]: number },
+): boolean {
+    const pairs: Array<[number, number | string]> = [
+        [model.maxWordsPerPage(), stats["actualWordsPerPage"]],
+        [
+            model.maxWordsPerSentenceOnThisPage(),
+            stats["actualWordsPerSentence"],
+        ],
+        [model.maxWordsPerBook(), stats["actualWordCount"]],
+        [model.maxWordsPerPage(), stats["actualWordsPerPageBook"]],
+        [model.maxUniqueWordsPerBook(), stats["actualUniqueWords"]],
+        [
+            model.maxAverageWordsPerSentence(),
+            stats["actualAverageWordsPerSentence"],
+        ],
+        [model.maxAverageWordsPerPage(), stats["actualAverageWordsPerPage"]],
+        [model.maxGlyphsPerWord(), stats["actualLettersPerWord"]],
+        [model.maxAverageGlyphsPerWord(), stats["actualAverageGlyphsPerWord"]],
+        [model.maxSentencesPerPage(), stats["actualSentencesPerPage"]],
+        [model.maxSentencesPerBook(), stats["actualSentenceCount"]],
+        [
+            model.maxAverageSentencesPerPage(),
+            stats["actualAverageSentencesPerPage"],
+        ],
+    ];
+    // Compare against the actual value rounded to the same one decimal place
+    // the rows display (see formatAverage), so the banner never disagrees with
+    // the per-row coloring: e.g. a raw 5.04 shows as "5.0" within-level, so it
+    // must not trip the "reads above level" banner either. Rounding is a no-op
+    // for the integer stats.
+    return pairs.some(([max, actual]) => {
+        if (max === 0 || max === Infinity) {
+            return false;
+        }
+        const roundedActual = Number(Number(actual).toFixed(1));
+        return roundedActual > max;
+    });
 }
 
 const LeveledReaderStats: FunctionComponent<{
@@ -162,7 +323,6 @@ const LeveledReaderStats: FunctionComponent<{
     return (
         <div
             css={css`
-                margin-left: 10px;
                 margin-top: 20px;
             `}
         >
@@ -186,8 +346,7 @@ const LeveledReaderStats: FunctionComponent<{
                 </StatsRow>
             </StatsGrid>
             {/* Here, header2 is used instead of header1 because the header text
-            "This Book" is supposed to have the normal white color, and it is
-            technically part of the "section" with the overall header "Word Counts" */}
+            "This Book" is a sub-label within the "Word Counts" section. */}
             <StatsGrid header2L10nText="This Book">
                 <StatsRow
                     l10nKeySuffix="Total"
@@ -298,16 +457,13 @@ const LeveledReaderList: FunctionComponent<{
     return (
         <div
             css={css`
-                padding-left: 10px;
                 margin-top: 15px;
                 margin-bottom: 5px;
             `}
         >
             <Div
                 l10nKey={`EditTab.Toolbox.LeveledReaderTool.${props.l10nKeySuffix}`}
-                css={css`
-                    color: ${kBloomLightBlue};
-                `}
+                css={readerSectionHeaderCss}
             >
                 {props.listHeaderText}
             </Div>
@@ -395,6 +551,7 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
                     l10nKey={`EditTab.Toolbox.LeveledReaderTool.${linkSuffixes[idx]}`}
                     href={`api/externalLink?path=leveledRTInfo/leveledReaderInfo-en.html&fragment=${linkSuffixes[idx]}`}
                     css={css`
+                        color: ${kReaderAccent};
                         text-decoration: underline;
                     `}
                 >
@@ -404,6 +561,14 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
         }
         return listOfLinks;
     }
+
+    // "For this Level" holds level-specific reminders the team entered in the
+    // setup dialog. An empty reminders field comes back as [""] (one blank
+    // string), so filter out blank entries; the section is only shown below
+    // when something real remains.
+    const levelReminders = model
+        .getLevelReminders()
+        .filter((reminder) => reminder.trim().length > 0);
 
     return (
         <ThemeProvider theme={toolboxTheme}>
@@ -416,72 +581,71 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
                     overflow-x: hidden;
                 `}
             >
-                {showTool && (
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        flex: 1 1 auto;
+                        min-height: 0;
+                        overflow-x: hidden;
+                        // A single horizontal padding on the whole panel keeps
+                        // every row (including "Level x of y") on one left edge,
+                        // instead of each section supplying its own left margin.
+                        padding: 8px 12px 0 12px;
+                    `}
+                >
+                    {showTool && (
+                        <>
+                            <ReaderToolNav
+                                isForLeveled={true}
+                                changeFunction={changeLevel}
+                            />
+                            {/* The over-level warning banner and the within/over
+                                legend only make sense when at least one measure is
+                                actually over the current level's limit. */}
+                            {isBookOverLevel(model, bookStats) && (
+                                <>
+                                    <OverLevelBanner
+                                        levelNumber={model.levelNumber}
+                                    />
+                                    <StatsLegend />
+                                </>
+                            )}
+                            <LeveledReaderStats bookStats={bookStats} />
+                            {levelReminders.length > 0 && (
+                                <LeveledReaderList
+                                    l10nKeySuffix="FoThisLevel"
+                                    listHeaderText="For this Level"
+                                    listItems={levelReminders}
+                                />
+                            )}
+                            <LeveledReaderList
+                                l10nKeySuffix="KeepInMind"
+                                listHeaderText="Keep in mind"
+                                listItems={getKeepInMindLinks()}
+                            />
+                        </>
+                    )}
+                    {/* Bottom group, top to bottom: Copy Book Stats, the "Book is
+                        Leveled" toggle, then the Set Up Levels button last. When
+                        the tool content is showing, margin-top:auto pushes the
+                        group to the bottom; it scrolls with the content when the
+                        panel overflows. The toggle stays mounted even when the
+                        content is hidden so the user can turn the book back into a
+                        leveled reader. */}
                     <div
                         css={css`
                             display: flex;
                             flex-direction: column;
-                            flex: 1 1 auto;
-                            min-height: 0;
-                            overflow-x: hidden;
+                            align-items: flex-start;
+                            gap: 8px;
+                            margin-bottom: 10px;
+                            ${showTool
+                                ? "margin-top: auto; padding-top: 12px;"
+                                : ""}
                         `}
                     >
-                        <div
-                            css={css`
-                                display: flex;
-                                margin-left: auto;
-                                margin-bottom: 10px;
-                                padding-right: 2px;
-                            `}
-                        >
-                            <BloomButton
-                                href="javascript:window.toolboxBundle.showSetupDialog('levels');"
-                                l10nKey="EditTab.Toolbox.LeveledReaderTool.SetUpLevels"
-                                variant="text"
-                                enabled={true}
-                                hasText={true}
-                                enabledImageFile="/bloom/bookEdit/toolbox/readers/edit-white.png"
-                                css={css`
-                                    font-size: xx-small;
-                                    text-decoration: underline;
-                                    font-weight: normal;
-                                    height: 22px;
-                                    img {
-                                        height: 14px;
-                                        margin-right: 2px;
-                                        margin-bottom: 2px;
-                                    }
-                                    &:hover {
-                                        text-decoration: underline;
-                                    }
-                                `}
-                            >
-                                Set Up Levels
-                            </BloomButton>
-                        </div>
-                        <ReaderToolNav
-                            isForLeveled={true}
-                            changeFunction={changeLevel}
-                        />
-                        <LeveledReaderStats bookStats={bookStats} />
-                        <LeveledReaderList
-                            l10nKeySuffix="FoThisLevel"
-                            listHeaderText="For this Level"
-                            listItems={getTheOneReaderToolsModel().getLevelReminders()}
-                        />
-                        <LeveledReaderList
-                            l10nKeySuffix="KeepInMind"
-                            listHeaderText="Keep in mind"
-                            listItems={getKeepInMindLinks()}
-                        />
-                        <div
-                            css={css`
-                                display: flex;
-                                margin-right: auto;
-                                margin-left: 8px;
-                                margin-bottom: 10px;
-                            `}
-                        >
+                        {showTool && (
                             <BloomButton
                                 l10nKey="EditTab.Toolbox.LeveledReaderTool.CopyBookStatistics"
                                 variant="text"
@@ -490,42 +654,28 @@ export const LeveledReaderToolControls: FunctionComponent = () => {
                                 iconBeforeText={
                                     <ContentCopySharp
                                         css={css`
-                                            color: white;
-                                            margin-right: -4px;
+                                            // currentColor picks up the button's
+                                            // accent text color.
+                                            color: currentColor;
                                         `}
                                     />
                                 }
                                 onClick={() =>
                                     model.copyLeveledReaderStatsToClipboard()
                                 }
-                                css={css`
-                                    text-transform: uppercase;
-                                    color: white;
-                                    font-weight: normal;
-                                    border-radius: 0;
-                                    text-align: left;
-                                    line-height: 15px;
-
-                                    &:hover {
-                                        background-color: black;
-                                    }
-
-                                    &:active {
-                                        background-color: black;
-                                        transform: translateY(2px);
-                                    }
-                                `}
+                                css={readerTextButtonCss}
                             >
                                 Copy Book Stats
                             </BloomButton>
-                        </div>
+                        )}
+                        <ReaderToolSwitch
+                            isForLeveled={true}
+                            changeDisplayFunc={() =>
+                                setShowTool((prev) => !prev)
+                            }
+                        />
+                        {showTool && <ReaderSetupButton isForLeveled={true} />}
                     </div>
-                )}
-                <div>
-                    <ReaderToolSwitch
-                        isForLeveled={true}
-                        changeDisplayFunc={() => setShowTool((prev) => !prev)}
-                    />
                 </div>
             </div>
         </ThemeProvider>

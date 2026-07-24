@@ -2638,6 +2638,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport" sil:dynamic="true">
         <source xml:lang="en">Generate a letter and word list report</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport</note>
+        <note>Obsolete as of 6.5 — shortened to "Generate Report" (DecodableReaderTool.GenerateReport) and moved into an outline button at the bottom of the tool.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage" sil:dynamic="true">
         <source xml:lang="en">Sample words in this stage</source>
@@ -2663,6 +2664,7 @@
         <source xml:lang="en">Stage {0} of {1}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNofM</note>
         <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <note>Obsolete as of 6.5 — split into DecodableReaderTool.StageNumber + ReaderTools.OfCount so the two parts can be styled separately in the toolbox.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
         <source xml:lang="en">Image Description Tool</source>
@@ -2771,6 +2773,7 @@
         <source xml:lang="en">Level {0} of {1}</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelNofM</note>
         <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <note>Obsolete as of 6.5 — split into LeveledReaderTool.LevelNumber + ReaderTools.OfCount so the two parts can be styled separately in the toolbox.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
         <source xml:lang="en">Max</source>
