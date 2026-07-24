@@ -11,6 +11,7 @@ namespace Bloom.WebLibraryIntegration
         public string LanguageTag { get; set; }
         public string DefaultName { get; set; }
         public string DesiredName { get; set; }
+        public bool IsRtl { get; set; }
         public string Country { get; set; }
     }
 }
