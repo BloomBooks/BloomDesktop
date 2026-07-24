@@ -726,6 +726,11 @@ const restartWatchChild = async () => {
         return;
     }
 
+    // Remember which child we set out to recycle: closing Bloom below takes a
+    // while, and the global `child` can be replaced meanwhile.
+    const childToRecycle = child;
+    const launchToken = activeLaunchToken;
+
     restartInProgress = true;
     restartRequested = true;
     awaitingManualRestart = false;
@@ -736,7 +741,21 @@ const restartWatchChild = async () => {
     stopBloomMonitor();
     clearLaunchTimeout();
     await closeAnyRunningBloom();
-    await terminateChild(child);
+
+    // If the watch child exited on its own while we were closing Bloom (losing
+    // Bloom often takes dotnet watch down with it), its exit handler already
+    // honored the restartRequested flag by spawning a replacement — that fresh
+    // cycle IS our restart. Terminating it here, through a `child` that now
+    // points at the replacement, would undo the restart and leave the launcher
+    // with nothing able to start Bloom.
+    if (launchToken !== activeLaunchToken) {
+        console.log(
+            "The watch child recycled itself while Bloom was closing; that fresh cycle is the restart.",
+        );
+        return;
+    }
+
+    await terminateChild(childToRecycle);
 };
 
 const runTaskkill = (args) =>
