@@ -126,7 +126,11 @@ function makeClipboard(host: ICanvasElementClipboardHost) {
 describe("CanvasElementClipboard paste refreshes the metadata button (BL-16605)", () => {
     beforeEach(() => {
         document.body.innerHTML = "";
-        vi.mocked(SetupMetadataButton).mockClear();
+        // mockReset (not mockClear) so an implementation installed by one test cannot leak
+        // into the next. Safe here because the mock factory gives SetupMetadataButton no
+        // implementation of its own.
+        vi.mocked(SetupMetadataButton).mockReset();
+        // changeImageInfo must keep the implementation from its factory, so only clear calls.
         vi.mocked(changeImageInfo).mockClear();
     });
 
@@ -172,7 +176,6 @@ describe("CanvasElementClipboard paste refreshes the metadata button (BL-16605)"
 
         expect(srcWhenButtonBuilt).toBe("pasted.png");
         expect(copyrightWhenButtonBuilt).toBe(pastedImageInfo.copyright);
-        vi.mocked(SetupMetadataButton).mockReset();
     });
 
     test("pasting into a selected overlay does not touch the metadata button", () => {
