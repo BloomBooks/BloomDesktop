@@ -58,8 +58,11 @@ namespace Bloom.web
         }
 
         /// <summary>
-        /// Poll the launcher until we ask it to restart us (after which this
-        /// process is about to be replaced anyway).
+        /// Poll the launcher for the life of the process, offering the restart
+        /// toast whenever it reports pending C# changes. While a restart request
+        /// is in flight we stay quiet (this process is about to be replaced), but
+        /// the loop keeps running so a request the launcher never honors leaves
+        /// the developer with the offer again rather than with nothing.
         /// The toast is re-sent on every poll rather than only when the change
         /// flag flips, because the dev loop reloads the browser page often
         /// (Vite) and a reload wipes the toast stack. Re-sending restores it;
@@ -68,7 +71,7 @@ namespace Bloom.web
         /// </summary>
         private static async Task MonitorForSourceChangesAsync()
         {
-            while (!s_restartRequested)
+            while (true)
             {
                 await Task.Delay(kPollInterval);
 
@@ -118,22 +121,44 @@ namespace Bloom.web
 
         /// <summary>
         /// Ask the dev launcher that started us to quit Bloom, rebuild, and
-        /// relaunch it. Fire-and-forget: the launcher replies 202 and then
-        /// closes this very process as part of the restart, so there is nobody
-        /// left to care about the outcome.
+        /// relaunch it. The launcher accepts with a 202 and then closes this very
+        /// process as part of the restart, so we do not wait for the restart
+        /// itself — only for the launcher to accept the request.
         /// </summary>
         private static void RequestRestart()
         {
             Logger.WriteEvent("Dev launcher restart requested from the restart toast.");
-            // Stop polling: the launcher is about to take this process down, and
-            // re-showing the toast in the meantime would just be noise.
+            // Stop polling while the request is in flight: the launcher is about to
+            // take this process down, and re-showing the toast meanwhile is noise.
             s_restartRequested = true;
-            Task.Run(() =>
-                s_client.PostAsync(
+            Task.Run(RequestRestartAsync);
+        }
+
+        private static async Task RequestRestartAsync()
+        {
+            try
+            {
+                var response = await s_client.PostAsync(
                     $"http://127.0.0.1:{Program.StartupLauncherPort}/restart",
                     new StringContent("")
-                )
-            );
+                );
+                if (response.IsSuccessStatusCode)
+                    return;
+
+                Logger.WriteEvent(
+                    $"The dev launcher refused the restart request: {(int)response.StatusCode}."
+                );
+            }
+            catch (Exception error)
+            {
+                Logger.WriteEvent($"Could not reach the dev launcher to restart: {error.Message}");
+            }
+
+            // Nobody is going to take this Bloom down after all (the launcher is
+            // gone, or refused), and ToastService already consumed the toast's
+            // one-shot callback. Let the still-running poll loop offer the restart
+            // again rather than leaving the developer with no affordance.
+            s_restartRequested = false;
         }
     }
 }

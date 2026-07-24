@@ -227,6 +227,9 @@ let lastAutomationInfo;
 // Set when the control API deliberately stops Bloom: tells the watch child's
 // exit handler to park in awaiting-restart instead of exiting the launcher.
 let stopRequested = false;
+// Set once we are exiting the launcher on purpose (teardownStack), so the exit
+// handler stays quiet instead of inviting the developer to relaunch.
+let tearingDownStack = false;
 // When dotnet watch last reported a source-file change (it kills + rebuilds
 // the app right after). Lets the Bloom-exit monitor tell "watch is rebuilding
 // Bloom" from "the developer closed Bloom".
@@ -236,10 +239,14 @@ let lastWatchRestartSignalAt;
 // Conservative: an edit dotnet watch hot-reloaded still counts, since for
 // Bloom a full restart is the only trusted way to take a .NET change.
 let sourceChangedSinceReady = false;
-// How fresh that signal must be to explain a Bloom exit. dotnet watch kills
-// the app within a beat of printing the file-changed line, so a short window
-// suffices; a hot reload that did NOT kill Bloom ages out past this quickly.
-const watchRestartSignalWindowMs = 10000;
+// How fresh that signal must be to explain a Bloom exit. dotnet watch usually
+// kills the app within a beat of printing the file-changed line, but on a busy
+// machine (or when it tries a hot reload first) the gap can stretch. Erring
+// generous is deliberate: mistaking a rebuild for "the developer closed Bloom"
+// destroys the whole dev stack, while the opposite mistake merely leaves the
+// stack up a little longer — and in that window dotnet watch would have
+// relaunched Bloom anyway.
+const watchRestartSignalWindowMs = 30000;
 
 const isProcessRunning = (pid) => {
     if (!Number.isInteger(pid) || pid <= 0) {
@@ -327,12 +334,18 @@ const handleBloomExitUnderWatch = async (exitedPid, runtimeMs) => {
     }
 
     // While we waited, a control-API restart/quit/shutdown may have taken
-    // over, or a new launch may have started. Defer to it.
+    // over, or the rebuilt Bloom may already have announced itself. Defer to it.
     if (
         launchToken !== activeLaunchToken ||
         restartInProgress ||
         stopRequested ||
         awaitingManualRestart ||
+        // A rebuilt Bloom that announced itself during the wait replaced
+        // bloomProcessId with its own live pid (a watch rebuild does not bump
+        // activeLaunchToken, so this is what "someone got there first" looks
+        // like). Note we cannot test launchCompleted here: it is still true
+        // from the launch whose Bloom just exited.
+        (bloomProcessId && isProcessRunning(bloomProcessId)) ||
         !isWatchChildAlive()
     ) {
         return;
@@ -346,8 +359,16 @@ const handleBloomExitUnderWatch = async (exitedPid, runtimeMs) => {
         launchCompleted = false;
         bloomProcessId = undefined;
         bloomReadyAt = undefined;
+        // Deliberately NO launch timeout while waiting for a watch rebuild. The
+        // usual reason the rebuilt Bloom doesn't appear is a C# compile error:
+        // dotnet watch has already killed Bloom, the build failed, and the
+        // watcher now waits for the developer to fix the code — a human-paced
+        // wait that easily outlasts launchTimeoutMs. Arming the timeout here
+        // would make that ordinary typo exit the launcher, and go.mjs would
+        // then tear down Vite too. The watch child is still alive, so a
+        // successful rebuild announces itself through reportAutomationReady;
+        // POST /restart (or Ctrl+C) is always available meanwhile.
         clearLaunchTimeout();
-        startLaunchTimeout();
         return;
     }
 
@@ -618,6 +639,11 @@ const spawnWatchChild = () => {
         // Park in awaiting-restart (like the human closing Bloom's window)
         // instead of exiting the launcher. Checked after restartRequested so
         // a restart requested mid-quit wins.
+        if (tearingDownStack) {
+            // teardownStack is about to process.exit; say nothing.
+            return;
+        }
+
         if (stopRequested) {
             stopRequested = false;
             stopBloomMonitor();
@@ -751,15 +777,23 @@ const quitBloom = async () => {
     clearLaunchTimeout();
     stopBloomMonitor();
 
+    // Set BEFORE taking Bloom down: quitting it can take up to 15 s, and if the
+    // watch child happens to exit during that window its exit handler must see
+    // that this was a deliberate stop. Otherwise it would fall through to
+    // exitForFinishedLaunch and take the whole stack (including Vite) down,
+    // which is the opposite of what /quit-bloom promises.
+    stopRequested = true;
+
     if (bloomProcessId) {
         await quitBloomProcessGracefully(bloomProcessId);
     }
 
     if (isWatchChildAlive()) {
-        stopRequested = true;
         await terminateChild(child);
         return;
     }
+
+    stopRequested = false;
 
     if (!awaitingManualRestart) {
         awaitingManualRestart = true;
@@ -774,6 +808,10 @@ const quitBloom = async () => {
 // handler shut down the Vite dev server and the rest.
 const teardownStack = async (reason) => {
     console.log(reason);
+    // Both flags: stopRequested keeps the child's exit handler from treating
+    // this as a finished launch, and tearingDownStack keeps it from printing
+    // the "press Enter to relaunch" invitation into a terminal that is exiting.
+    tearingDownStack = true;
     stopRequested = true;
     clearLaunchTimeout();
     stopBloomMonitor();
