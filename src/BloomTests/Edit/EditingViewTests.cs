@@ -37,6 +37,9 @@ namespace BloomTests.Edit
         [TestCase(@"C:\pictures\bird.png")]
         [TestCase(@"""C:\pictures\my bird.jpg""")] // Explorer "Copy as path" wraps in quotes
         [TestCase("https://example.com/images/bird.gif")]
+        [TestCase("https://example.com/images/bird.png?width=800")] // URL query string ignored
+        [TestCase("https://example.com/images/bird.gif#preview")] // URL fragment ignored
+        [TestCase(@"C:\pictures\my#photo.png")] // '#' is legal in a Windows file name
         [TestCase(@"  C:\pictures\bird.tif  ")]
         public void ClipboardContentsSuggestImage_TextLooksLikeImagePath_ReturnsTrue(string text)
         {
