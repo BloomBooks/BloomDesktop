@@ -41,21 +41,10 @@ test.describe("ToolboxRoot React mode", () => {
         await expect(talkingBook).toHaveAttribute("aria-expanded", "false");
     });
 
-    test("initial selection follows restored current tool", async ({
+    test("legacy code can make a section active through the adapter", async ({
         page,
     }) => {
         await routeToolboxApis(page);
-
-        await page.addInitScript(() => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any).toolboxBundle = {
-                getTheOneToolbox: () => ({
-                    getCurrentTool: () => ({
-                        id: () => "decodableReader",
-                    }),
-                }),
-            };
-        });
 
         await page.route("**/bloom/api/toolbox/enabledTools", async (route) => {
             await route.fulfill({
@@ -69,6 +58,14 @@ test.describe("ToolboxRoot React mode", () => {
 
         await expect(page.getByText("Loading component…")).toHaveCount(0, {
             timeout: 15000,
+        });
+
+        await page.evaluate(() => {
+            // The harness publishes this accessor for us; see ToolboxRootTestHarness.tsx.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (window as any)
+                .getToolboxReactAdapterForTests?.()
+                ?.setActiveToolByToolId("decodableReaderTool");
         });
 
         await expect(
@@ -90,16 +87,11 @@ test.describe("ToolboxRoot React mode", () => {
         await expect(page.getByText("Decodable Reader Tool")).toHaveCount(0);
 
         await page.evaluate(() => {
-            window.dispatchEvent(
-                new CustomEvent("toolbox-tool-added", {
-                    detail: { toolId: "decodableReaderTool" },
-                }),
-            );
             // The harness publishes this accessor for us; see ToolboxRootTestHarness.tsx.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any)
-                .getToolboxReactAdapterForTests?.()
-                ?.setActiveToolByToolId("decodableReaderTool");
+            const adapter = (window as any).getToolboxReactAdapterForTests?.();
+            adapter?.addTool("decodableReaderTool");
+            adapter?.setActiveToolByToolId("decodableReaderTool");
         });
 
         await expect(
@@ -162,11 +154,10 @@ test.describe("ToolboxRoot React mode", () => {
         });
 
         await page.evaluate(() => {
-            window.dispatchEvent(
-                new CustomEvent("toolbox-tool-added", {
-                    detail: { toolId: "decodableReaderTool" },
-                }),
-            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (window as any)
+                .getToolboxReactAdapterForTests?.()
+                ?.addTool("decodableReaderTool");
         });
 
         await expect(

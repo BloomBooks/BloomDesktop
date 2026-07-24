@@ -7,12 +7,6 @@
 @helpLinkTopMargin: 45px;
 @bloomEnterpriseBadgeSize: 20px;
 
-// The Games tool wants a white bar at the very top, so defeat the usual padding
-.ui-accordion .ui-accordion-content[data-toolid="dragActivityTool"] {
-    padding-top: 0;
-    padding-left: 1px !important;
-}
-
 div.toolboxRoot {
     display: inline-block;
     background-color: @toolboxBackgroundColor;
@@ -28,12 +22,6 @@ div.toolboxRoot {
     right: 0;
     width: @toolboxWidth;
     z-index: @toolboxZIndex;
-
-    .ui-widget-content {
-        background: none; // clear out the backgroudn image jquery-ui adds
-        background-color: @toolboxBackgroundColor;
-        border: none;
-    }
 
     // multiple tools add a Help link after the rest of the tool content
     .helpLinkWrapper {
@@ -70,34 +58,9 @@ div.toolboxRoot {
     }
 }
 
-.ui-accordion-header {
-    -moz-user-select: none;
-}
 span.scroll-button {
     color: white;
     float: left;
-}
-div.ui-accordion {
-    padding-left: 0;
-    padding-right: 0;
-}
-div.ui-accordion-content {
-    // Defeat some jquery-ui defaults
-    padding-left: 3px !important;
-    padding-right: 0 !important;
-}
-// The reader tools need the values above instead.
-// I would like to reset them like below, but there is some really complicated
-// stuff going on with the placement of the ReaderToolSwitch which I
-// haven't figured out and don't want to spend more time on.
-// Eventually this will all be replaced with React components anyway.
-div.ui-accordion-content:not([data-toolid="leveledReaderTool"]):not(
-        [data-toolid="decodableReaderTool"]
-    ) {
-    // Defeat some jquery-ui defaults
-    padding: 0 !important;
-    margin: 0 !important;
-    top: 0 !important;
 }
 
 .h1 {
@@ -146,66 +109,6 @@ div.checkbox {
     -moz-user-select: none;
 }
 
-.ui-accordion h3 {
-    padding-left: 28px;
-}
-
-.ui-accordion h3[data-toolId] {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding-right: 12px;
-}
-
-.ui-accordion-header .toolbox-accordion-header-text {
-    flex-grow: 1;
-}
-
-// We are fighting here to get our icons displayed instead of the ones the
-// accordion wants to display (typical expand/contract icons). The data-toolId
-// helps make this rule more specific so it beats the accordion rule.
-// The size makes our arbitrarily sized svg images fit. (Some panels have a
-// slightly different size icon and override.)
-// The background position defeats an accordion rule that is aimed at selecting
-// an icon from a collection-of-icons image by position.
-// The background-image:none prevents displaying one of the icons from the
-// accordion collection if one of our tools does not provide an icon.
-// It is usually overridden by a more specific rule with a particular data-toolId.
-// The display:inline-block defeats an accordion rule that sometimes tries to
-// hide the icon altogether (display:none).
-.ui-accordion h3[data-toolId] span.ui-accordion-header-icon {
-    background-size: 16px 16px;
-    background-position: 0 0;
-    display: inline-block;
-    background-image: none;
-}
-
-.ui-accordion h3[data-toolId="talkingBookTool"] span.ui-accordion-header-icon {
-    background-size: 12px 16px;
-    background-position: 2px 0;
-    display: inline-block;
-}
-
-// There should be one of these rules for each tool. Newer ones are being placed
-// in the tool's own less file. If your tool shouldn't have an icon you need a similar
-// rule to force it not to have a background image, since otherwise the one at
-// position 0,0 in the accordion image collection is used.
-.ui-accordion
-    h3[data-toolId="decodableReaderTool"]
-    span.ui-accordion-header-icon {
-    background-image: url("/bloom/images/keys-white.png") !important;
-}
-
-.ui-accordion
-    h3[data-toolId="leveledReaderTool"]
-    span.ui-accordion-header-icon {
-    background-image: url("/bloom/images/steps-white.png") !important;
-}
-
-.ui-accordion h3[data-toolId="talkingBookTool"] span.ui-accordion-header-icon {
-    background-image: url("/bloom/images/microphone-white.svg") !important;
-}
-
 .subscription-badge {
     background: no-repeat center/80%
         url("../../../images/bloom-enterprise-badge.svg") !important;
@@ -222,10 +125,6 @@ div.checkbox {
     z-index: 20000;
 }
 
-.hideExperimental .experimental {
-    display: none;
-}
-
 // override the color in this lib, which isn't under less control
 .pure-drawer,
 .pure-toggle-label {
@@ -235,18 +134,6 @@ div.checkbox {
 #pusherContainer {
     background-color: @bloom-darkestBackground !important;
 }
-#toolbox h3 {
-    background: none;
-    background-color: @bloom-unselectedTabBackground;
-    border-color: @bloom-unselectedTabBackground;
-    &.ui-state-hover,
-    &.ui-state-active {
-        background-color: @bloom-blue !important;
-        border-color: @bloom-blue !important;
-    }
-    z-index: 1005; // higher than disablingOverlay in Talking Book tool
-}
-
 *.disabled {
     opacity: 0.4;
     pointer-events: none;

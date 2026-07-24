@@ -1,11 +1,6 @@
-/// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
-
 import $ from "jquery";
-import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
-import "../../lib/jquery.i18n.custom";
 import axios from "axios";
 import { get, postString, wrapAxios } from "../../utils/bloomApi";
-import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { hookupLinkHandler } from "../../utils/linkHandler";
 import {
     ckeditableSelector,
@@ -14,8 +9,6 @@ import {
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
 import { isLongPressEvaluating } from "../longPressShared";
-import { getFeatureStatusAsync } from "../../react_components/featureStatus";
-import { showRequiresSubscriptionDialogInAnyView } from "../../react_components/requiresSubscription";
 import {
     callOnBlur,
     setExtraFunctionToHandleBlurTasks,
@@ -88,13 +81,9 @@ export interface ITool {
     // If this is true, the tool may only be selected on pages that have data-tool-id matching this tool's id.
     requiresToolId(): boolean;
 
-    // Implement this if the tool uses React.
     // It should return the main content of the tool, which must be a single div.
-    // (toolbox will construct the h3 element which goes along with it in the accordion
-    // and set its data-toolId attr; this method is however responsible to
-    // localize the content of the div.)
-    // It may be unimplemented for older tools where beginAddTool() already knows
-    // where to find an HTML file for the tool content.
+    // ToolboxRoot renders the section header (label, icon, subscription badge) around it;
+    // this method is however responsible to localize the content of the div.
     makeRootElement(): HTMLDivElement;
     // notifies the tool that an image has been changed on the page.
     // If the change only affects one image, it may be passed; otherwise, all should be fixed.
@@ -120,48 +109,39 @@ export class ToolBox {
         )).click();
     }
     private builtToolbox: boolean = false;
+    /**
+     * Adds or removes the tools that are only offered on pages that ask for them
+     * (see ITool.requiresToolId()), according to this page's data-tool-id, and makes
+     * the required tool current.
+     */
     public adjustToolListForPage(page: HTMLElement) {
         const requiredToolId = page.getAttribute("data-tool-id");
         newToolId = requiredToolId || undefined;
 
         // This function is the main task of adjustToolListForPage. It may have to be postponed
-        // until we've finished otherwise setting up the toolbox; in particular, we can't refresh
-        // the accordion before we first set it up.
+        // until we've finished otherwise setting up the toolbox.
         // It's possible there will be a tiny bit of flicker if the book opens on a page that
         // has a required tool as we first initialize the toolbox without that tool and then
         // add it. But this is fairly rare and I have not found it noticeable.
         const doAdjustment = () => {
-            if (!this.builtToolbox) {
+            const adapter = getToolboxReactAdapter();
+            if (!this.builtToolbox || !adapter) {
                 setTimeout(doAdjustment, 100);
                 return;
             }
-            const toolbox = document.getElementById("toolbox") as HTMLElement;
             let toolsAdjusted = false;
-            for (let i = 0; i < masterToolList.length; i++) {
-                if (masterToolList[i].requiresToolId()) {
-                    // We may need to add or remove the specified tool
-
-                    // Adapt the tool object id to the value used as the ID of the element
-                    // for that tool in the toolbox.
-                    const toolId = ToolBox.addToolToString(
-                        masterToolList[i].id(),
-                    );
-                    // Get the header element that represents the tool in the DOM.
-                    const toolHeader = toolbox.querySelector(
-                        "[data-toolid='" +
-                            ToolBox.addToolToString(toolId) +
-                            "']",
-                    ) as HTMLElement;
-                    const haveTool = !!toolHeader;
-                    const wantTool = requiredToolId === masterToolList[i].id();
-                    if (haveTool !== wantTool) {
-                        // add or remove as needed.
-                        showOrHideTool(
-                            ToolBox.addToolToString(masterToolList[i].id()),
-                            wantTool,
-                        ); // required tools don't have check boxes.
-                        toolsAdjusted = wantTool;
-                    }
+            for (const tool of masterToolList) {
+                if (!tool.requiresToolId()) {
+                    continue;
+                }
+                // We may need to add or remove this tool.
+                const toolId = ToolBox.addToolToString(tool.id());
+                const haveTool = adapter.hasTool(toolId);
+                const wantTool = requiredToolId === tool.id();
+                if (haveTool !== wantTool) {
+                    // add or remove as needed. (Required tools don't have check boxes.)
+                    showOrHideTool(toolId, wantTool);
+                    toolsAdjusted = wantTool;
                 }
             }
             // We haven't called showOrHideTool, so the active tool hasn't changed.
@@ -430,26 +410,11 @@ export class ToolBox {
                     }
 
                     toolsToLoad.push("settings");
-                    $("#toolbox").hide();
                     const loadNextTool = () => {
                         if (toolsToLoad.length === 0) {
-                            $("#toolbox").accordion({
-                                heightStyle: "fill",
-                            });
-                            $("body").find("*[data-i18n]").localize(); // run localization
-
-                            // Now bind the window's resize function to the toolbox resizer
-                            $(window).bind("resize", () => {
-                                clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
-                                resizeTimer = setTimeout(resizeToolbox, 100);
-                            });
                             this.builtToolbox = true;
                             // loaded them all, now we can deal with settings.
                             restoreToolboxSettings();
-                            $("#toolbox").show();
-                            // resizeToolbox fits the toolbox root to the window; do it on a
-                            // later cycle, once the toolbox has been laid out.
-                            setTimeout(resizeToolbox, 0);
                         } else {
                             // optimize: maybe we can overlap these?
                             const nextToolId = toolsToLoad.pop();
@@ -463,12 +428,12 @@ export class ToolBox {
         );
     }
 
+    /**
+     * Is the toolbox currently offering this tool a section? (Despite the name, this does
+     * not mean the tool is the *current* tool; it never did.)
+     */
     public isToolActive(toolId: string): boolean {
-        const tools = $("*[data-toolId]");
-        const filteredTools = tools.filter(function () {
-            return $(this).attr("data-toolId") === toolId;
-        });
-        return filteredTools.length > 0;
+        return !!getToolboxReactAdapter()?.hasTool(toolId);
     }
 
     // Enables a tool from an in-page action, ensuring the toolbox is visible.
@@ -479,15 +444,16 @@ export class ToolBox {
         setToolEnabledFromSettings(toolId, true);
     }
 
+    /**
+     * Makes the given tool (id without the "Tool" suffix) the current tool, enabling it
+     * first if necessary. Called in response to in-page actions, e.g. clicking a video
+     * placeholder to get the Sign Language tool.
+     */
     public activateToolFromId(toolId: string) {
         if (!getITool(toolId)) {
-            // Normally we won't even give a way to see this tool if it's
-            // not available for experimental reasons, but sometimes (e.g.
-            // clicking on a video placeholder, it will help the user to
-            // say why nothing is happening.
-            const msg =
-                "This tool requires that you enable Settings : Advanced Program Settings : Show Experimental Features";
-            alert(msg);
+            // Every tool we know about is registered unconditionally, so this means the
+            // caller asked for a tool that doesn't exist.
+            console.error(`activateToolFromId: there is no tool "${toolId}".`);
             return;
         }
         // Making it visible first allows the simulated click to actually activate the tool.
@@ -499,23 +465,17 @@ export class ToolBox {
             this.toggleToolbox();
         }
 
-        if (isToolEnabledInToolbox(toolId)) {
-            // Already enabled; just make it the active tool.
+        // The tool may be present without being in enabledToolIds if it is a
+        // required-for-this-page tool (see adjustToolListForPage).
+        if (
+            isToolEnabledInToolbox(toolId) ||
+            this.isToolActive(ToolBox.addToolToString(toolId))
+        ) {
             setCurrentTool(toolId);
         } else {
-            // Not a required-for-this-page tool that's already present, and not yet enabled.
-            const toolbox = document.getElementById("toolbox") as HTMLElement;
-            const toolHeader = toolbox.querySelector(
-                "[data-toolid='" + ToolBox.addToolToString(toolId) + "']",
-            ) as HTMLElement;
-            if (toolHeader) {
-                // Present in the accordion (e.g. a required tool) but not in enabledToolIds.
-                setCurrentTool(toolId);
-            } else {
-                // Genuinely disabled: enable it, which persists the state and updates
-                // enabledToolIds, then activates it (showOrHideTool opens it by default).
-                setToolEnabledFromSettings(toolId, true);
-            }
+            // Genuinely disabled: enable it, which persists the state and updates
+            // enabledToolIds, then activates it (showOrHideTool opens it by default).
+            setToolEnabledFromSettings(toolId, true);
         }
     }
 
@@ -651,18 +611,8 @@ function showOrHideTool(
     if (turnOn) {
         beginAddTool(tool, openTool);
     } else {
-        $("*[data-toolId]")
-            .filter(function () {
-                return $(this).attr("data-toolId") === tool;
-            })
-            .remove();
-        window.dispatchEvent(
-            new CustomEvent("toolbox-tool-removed", {
-                detail: { toolId: tool },
-            }),
-        );
+        getToolboxReactAdapter()?.removeTool(tool);
     }
-    resizeToolbox();
 }
 
 export function restoreToolboxSettings() {
@@ -928,51 +878,25 @@ function switchTool(newToolName: string): void {
 
 function activateTool(newTool: ITool) {
     if (newTool && toolbox.toolboxIsShowing()) {
-        const toolElt = getToolElement(newTool);
-        if (!toolElt) {
+        if (!isToolInitialized(newTool)) {
             return;
         }
         // Always re-restore settings so tool state tracks the current book.
         newTool
             .beginRestoreSettings(savedSettings as unknown as string)
             .then(() => {
-                activateToolInternalAsync(newTool, toolElt);
+                activateToolInternalAsync(newTool);
             });
     }
 }
 
-function getToolElement(tool: ITool): HTMLElement | null {
-    let toolElement: HTMLElement | null = null;
-    if (tool) {
-        const toolName = ToolBox.addToolToString(tool.id());
-        $("#toolbox")
-            .find("> h3")
-            .each(function () {
-                if ($(this).attr("data-toolId") === toolName) {
-                    // REVIEW: this may in fact be unneeded but I'm just trying to get eslint set up and conceivably it is intentional
-                    // eslint-disable-next-line @typescript-eslint/no-this-alias
-                    toolElement = this;
-                    return false; // break from the each() loop
-                }
-                return true; // continue the each() loop
-            });
-    }
-    return toolElement;
-}
-
+// Does the toolbox have a section for this tool? Only then does it have somewhere to
+// display itself and does it make sense to run its lifecycle methods.
 function isToolInitialized(tool: ITool): boolean {
-    return !!getToolElement(tool);
+    return toolbox.isToolActive(ToolBox.addToolToString(tool.id()));
 }
 
-async function activateToolInternalAsync(
-    newTool: ITool,
-    toolElt: HTMLElement | null,
-): Promise<void> {
-    if (!toolElt) {
-        throw new Error(
-            `activateToolInternalAsync called for uninitialized tool: ${newTool.id()}`,
-        );
-    }
+async function activateToolInternalAsync(newTool: ITool): Promise<void> {
     // Await it so that we can guarantee that newPageReady() happens after showTool.
     await newTool.showTool();
 
@@ -985,8 +909,9 @@ async function activateToolInternalAsync(
 }
 
 /**
- * This function attempts to activate the tool whose "data-toolId" attribute is equal to the value
- * of "currentTool" (the last tool displayed).
+ * Attempts to make the given tool the current one (normally the tool the book was last
+ * using). If the toolbox isn't offering that tool, falls back to the first tool it does
+ * offer. Passing an empty id also means "whatever tool is first".
  */
 function setCurrentTool(toolID: string) {
     // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
@@ -995,7 +920,7 @@ function setCurrentTool(toolID: string) {
 
     const adapter = getToolboxReactAdapter();
     if (!adapter) {
-        // ToolboxRoot has not mounted yet, so there is no React accordion to activate
+        // ToolboxRoot has not mounted yet, so there is no toolbox UI to activate
         // anything in. We don't expect this: see getToolboxReactAdapter().
         return;
     }
@@ -1007,12 +932,10 @@ function setCurrentTool(toolID: string) {
         toolboxReactActivationHooked = true;
     }
 
-    // NOTE: tools without a "data-toolId" attribute (such as the More tool) cannot be the "currentTool."
+    // NOTE: the More (settings) section cannot be the "currentTool", so getFirstToolId()
+    // never returns it.
     if (!toolID) {
-        toolID =
-            ($("#toolbox").find("> h3").first().attr("data-toolId") as
-                | string
-                | undefined) ?? "";
+        toolID = adapter.getFirstToolId() ?? "";
     }
 
     if (toolID) {
@@ -1023,10 +946,7 @@ function setCurrentTool(toolID: string) {
         if (tool && !isToolInitialized(tool)) {
             // The tool we were asked for isn't in the toolbox (e.g., it was disabled
             // since we saved the setting), so fall back to whatever is first.
-            toolID =
-                ($("#toolbox").find("> h3").first().attr("data-toolId") as
-                    | string
-                    | undefined) ?? "";
+            toolID = adapter.getFirstToolId() ?? "";
         }
     }
 
@@ -1035,9 +955,9 @@ function setCurrentTool(toolID: string) {
     }
 }
 
-// Parameter 'toolId' is the complete tool id with the 'Tool' suffix
-// Can return undefined in the case of an experimental tool with
-// Advanced Program Settings: Show Experimental Features unchecked.
+// Parameter 'toolId' may be spelled with or without the 'Tool' suffix.
+// Returns undefined if we know of no such tool, e.g. because the book's settings were
+// saved by a version of Bloom that had a tool this one doesn't.
 function getITool(toolId: string): ITool {
     // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
     // For now I'm just making functions work with either form.
@@ -1049,18 +969,15 @@ function getITool(toolId: string): ITool {
 }
 
 /**
- * Requests a tool from localhost and loads it into the toolbox.
- * These tools are the tools enabled by the user, tools that are
- * always enabled (like the talking book tool), and the settings
- * "tool".
+ * Tells the toolbox UI to offer a section for this tool, and optionally to open it.
+ * These tools are the tools enabled by the user, tools that are always enabled
+ * (like the talking book tool), and the settings ("More...") tool.
  */
-// these last three parameters were never used: function requestTool(checkBoxId, toolId, loadNextCallback, tools, currentTool) {
 function beginAddTool(
     toolId: string,
     openTool: boolean,
     whenLoaded?: () => void,
 ): void {
-    // new-style tool implemented in React
     const tool = getITool(toolId);
     if (!tool) {
         console.error(
@@ -1069,76 +986,19 @@ function beginAddTool(
         return;
     }
 
-    if (isToolInitialized(tool)) {
-        if (openTool && toolbox.toolboxIsShowing()) {
-            const toolName = ToolBox.addToolToString(tool.id());
-            getToolboxReactAdapter()?.setActiveToolByToolId(toolName);
-        }
-
-        if (whenLoaded) {
-            whenLoaded();
-        }
-        return;
-    }
-
-    const content = $(tool.makeRootElement());
-
-    // the settings for the toolbox is React, but
-    // its localization works a little differently
-    // than the other toolbox tools. So, special-case
-    // handling is needed for the settings
-    const isSettingsTool = tool.id() === "settings";
-
     const toolName = ToolBox.addToolToString(tool.id());
-    // const parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
-    //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
+    const adapter = getToolboxReactAdapter();
+    // Adding a tool that is already there does nothing, so it is safe to do this
+    // whether or not the toolbox is already offering it.
+    adapter?.addTool(toolName);
 
-    const toolIdUpper =
-        tool.id()[0].toUpperCase() + tool.id().substring(1, tool.id().length);
-    const i18Id = isSettingsTool
-        ? "EditTab.Toolbox.More"
-        : "EditTab.Toolbox." +
-          toolIdUpper +
-          (toolName.indexOf(checkLeaveOffTool) === -1 ? "Tool" : "");
-    // Not sure this will always work, but we can do something more complicated...maybe a new method
-    // on ITool...if we need it. Note that this is just a way to come up with the English,
-    // we don't do it to localizations. But in English, the code value beats the xlf one.
-    const toolLabel = isSettingsTool
-        ? "More..."
-        : ToolBox.addToolToString(
-              toolIdUpper.replace(/([A-Z])/g, " $1").trim(),
-              true,
-          );
-
-    const reactTool = tool as unknown as IReactTool;
-
-    // Currently, all subscription tools are React, so we haven't implemented a way to add the subscription badge to old-style tools
-    const possibleSubscriptionBadge = reactTool.featureName
-        ? `<span class="subscription-badge"></span>`
-        : "";
-    const header = $(
-        `<h3><div class="toolbox-accordion-header-text" data-i18n=${i18Id}>${toolLabel}</div>${possibleSubscriptionBadge}</span></h3>`,
-    );
-    header.attr("data-toolId", toolName);
-    content.attr("data-toolId", toolName);
-
-    // Check feature status asynchronously and apply subscription requirements if needed
-    if (reactTool.featureName) {
-        header.attr("data-feature", reactTool.featureName);
-        addFeatureStatusMessageTitlesToSubscriptionBadges(header);
-
-        getFeatureStatusAsync(reactTool.featureName).then((featureStatus) => {
-            if (featureStatus && featureStatus.subscriptionTier !== "Basic") {
-                header.addClass("requiresSubscription");
-            }
-        });
+    if (openTool && toolbox.toolboxIsShowing()) {
+        adapter?.setActiveToolByToolId(toolName);
     }
 
-    loadToolboxTool(header, content, toolId, openTool);
     if (whenLoaded) {
         whenLoaded();
     }
-    //}
 }
 
 let keydownEventCounter = 0;
@@ -1492,136 +1352,6 @@ export function removeCommentsFromEditableHtml(editable: HTMLElement) {
     }
 }
 
-let resizeTimer;
-function resizeToolbox() {
-    const windowHeight = $(window).height();
-    const root = $(".toolboxRoot");
-    // Set toolbox container height to fit in new window size
-    // Then toolbox Resize() will adjust it to fit the container
-    root.height(windowHeight - 25); // 25 is the top: value set for div.toolboxRoot in toolbox.less
-}
-
-/**
- * Gets the localized title text for a feature based on its status
- * @param featureName The name of the feature to get status for
- * @returns A Promise that resolves to the localized title text
- */
-async function getFeatureEnabledAndMessage(
-    featureName: string,
-): Promise<{ enabled: boolean; message: string }> {
-    return new Promise<{ enabled: boolean; message: string }>((resolve) => {
-        get(`features/status?featureName=${featureName}`, (c) => {
-            const featureStatus = c.data;
-            const localizedTier = featureStatus?.localizedTier;
-
-            let titleText: string;
-            if (featureStatus.enabled) {
-                titleText = theOneLocalizationManager.getText(
-                    "Subscription.FeatureIsIncludedSentence",
-                    "This feature is included in your {0} subscription.",
-                    localizedTier,
-                );
-            } else {
-                titleText = theOneLocalizationManager.getText(
-                    "Subscription.RequiredTierForFeatureSentence",
-                    'This feature requires a Bloom subscription tier of at least "{0}".',
-                    localizedTier,
-                );
-            }
-            resolve({ enabled: featureStatus.enabled, message: titleText });
-        });
-    });
-}
-
-function showSubscriptionDialog(featureName: string): void {
-    showRequiresSubscriptionDialogInAnyView(featureName);
-}
-
-/**
- * Adds feature status message titles to subscription badges found in the specified jQuery element
- * @param element The jQuery element containing subscription badges
- */
-async function addFeatureStatusMessageTitlesToSubscriptionBadges(
-    element: JQuery,
-): Promise<void> {
-    const subscriptionBadges = element.find(".subscription-badge");
-    const promises: Promise<void>[] = [];
-    subscriptionBadges.each(function (_i, subscriptionBadge: HTMLElement) {
-        if (subscriptionBadge.hasAttribute("title")) return;
-        const featureName =
-            subscriptionBadge.parentElement?.getAttribute("data-feature");
-        if (!featureName) return;
-
-        const promise = (async () => {
-            const { enabled, message } =
-                await getFeatureEnabledAndMessage(featureName);
-            subscriptionBadge.setAttribute("title", message);
-            if (!enabled) {
-                subscriptionBadge.addEventListener("click", () =>
-                    showSubscriptionDialog(featureName),
-                );
-                subscriptionBadge.style.cursor = "pointer";
-            }
-        })();
-
-        promises.push(promise);
-    });
-
-    // Wait for all the promises to complete
-    await Promise.all(promises);
-}
-
-function loadToolboxTool(
-    header: JQuery,
-    content: JQuery,
-    toolId,
-    openTool: boolean,
-) {
-    const toolboxElt = $("#toolbox");
-    const label = header.text();
-
-    // Where to insert the new tool? We want to keep them alphabetical except for More...which is always last,
-    // so insert before the first one with text alphabetically greater than this (if any).
-    if (toolboxElt.children().length === 0) {
-        // none yet...this will be the "more" tool which we insert first.
-        toolboxElt.append(header);
-        toolboxElt.append(content);
-    } else {
-        let insertBefore = toolboxElt
-            .children() // children() includes both the headers and the contents of the tools
-            .filter(".ui-accordion-header") // we only want to sort this into the headers...
-            .filter(function () {
-                // Note that we aren't (as of 4.4) setting the "locale" of the browser to match the
-                // UI language. In my tests, it's stuck at "en-US" (navigator.language). But if we ever do
-                // set this, then this will do a better job of ordering. Meanwhile, no worse.
-                return label.localeCompare($(this).text()) < 0;
-            })
-            .first();
-        if (insertBefore.length === 0) {
-            // Nothing is greater, but still insert before "More". Two children represent "More", so before the second last.
-            insertBefore = $(
-                toolboxElt.children()[toolboxElt.children.length - 2],
-            );
-        }
-        header.insertBefore(insertBefore);
-        content.insertBefore(insertBefore);
-    }
-
-    // if requested, open the tool that was just inserted
-    if (openTool && toolbox.toolboxIsShowing()) {
-        const insertedToolId = header.attr("data-toolId");
-        if (insertedToolId) {
-            getToolboxReactAdapter()?.setActiveToolByToolId(insertedToolId);
-        }
-    }
-
-    window.dispatchEvent(
-        new CustomEvent("toolbox-tool-added", {
-            detail: { toolId: toolId },
-        }),
-    );
-}
-
 function showToolboxChanged(wasShowing: boolean): void {
     postString(
         "editView/saveToolboxSetting",
@@ -1640,20 +1370,12 @@ function showToolboxChanged(wasShowing: boolean): void {
         }
     } else {
         // starting up for the very first time in this book...no tool is current,
-        // so select and properly initialize the first one.
-        let newToolName = $("#toolbox")
-            .find("> h3")
-            .first()
-            .attr("data-toolId");
-        if (!newToolName) {
-            // This should never happen; we're just being defensive.
-            // At one point (BL-5330) this code could run against the document in the wrong iframe
-            // and fail to find the #toolbox div; then we get a null and end up saving
-            // current tool as "undefined" with various bad results. Just in case it happens again
-            // somehow, we hard code that in this situation we default to
-            // the talking book tool.
-            newToolName = "talkingBookTool";
-        }
-        getToolboxReactAdapter()?.setActiveToolByToolId(newToolName);
+        // so select and properly initialize the first one. If the toolbox somehow has
+        // no tool sections at all, fall back to the talking book tool, which is always
+        // enabled. (This should never happen; we're just being defensive.)
+        const adapter = getToolboxReactAdapter();
+        adapter?.setActiveToolByToolId(
+            adapter.getFirstToolId() ?? "talkingBookTool",
+        );
     }
 }

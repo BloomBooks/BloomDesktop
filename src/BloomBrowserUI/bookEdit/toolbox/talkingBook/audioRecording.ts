@@ -4420,7 +4420,7 @@ export default class AudioRecording implements IAudioRecorder {
 
     private getElementsToUpdateForCursor(): (Element | null)[] {
         const elementsToUpdate: (Element | null)[] = [];
-        elementsToUpdate.push(document.getElementById("toolbox"));
+        elementsToUpdate.push(document.querySelector(".toolboxRoot"));
 
         const pageBody = this.getPageDocBody();
         if (pageBody) {
