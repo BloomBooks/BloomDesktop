@@ -19,6 +19,15 @@ House rules:
 
 ---
 
+## 2026-07-24 — killBloomProcess.mjs --help kills Bloom instead of printing usage
+- **Cut:** Running `node .github/skills/bloom-automation/killBloomProcess.mjs --help` to check
+  its options killed the running Bloom (output: "Killed process IDs: 56212, 55352"). Unknown
+  flags are ignored and the destructive default action runs, so the conventional "let me read
+  the usage first" move is itself the dangerous one. The sibling scripts may have the same shape.
+- **Idea:** Have these scripts recognize `--help`/`-h` (print usage, exit 0) and reject unknown
+  flags instead of silently proceeding — especially the ones that kill processes.
+- **Context:** BloomDesktop, during `/preflight` live verification of PR #8107.
+
 ## 2026-07-24 — agent-dotnet.sh collides with itself when a build and a test run overlap
 - **Cut:** The wrapper isolates per *terminal*, not per *command*, so a `build` started while
   that same terminal's `test` is still running fails with MSB3027 — "Bloom.dll ... locked by:
