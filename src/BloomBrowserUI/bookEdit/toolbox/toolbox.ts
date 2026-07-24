@@ -84,15 +84,9 @@ export interface ITool {
     newPageReady();
     detachFromPage(); // called when a page is going away AND before hideTool
     id(): string; // without trailing "Tool"!
-    hasRestoredSettings: boolean;
     isAlwaysEnabled(): boolean;
-    isExperimental(): boolean;
     // If this is true, the tool may only be selected on pages that have data-tool-id matching this tool's id.
     requiresToolId(): boolean;
-
-    // Some things were impossible to do i18n on via the jade/pug
-    // This gives us a hook to finish up the more difficult spots
-    finishToolLocalization(pane: HTMLElement);
 
     // Implement this if the tool uses React.
     // It should return the main content of the tool, which must be a single div.
@@ -457,53 +451,6 @@ export class ToolBox {
                             });
                             $("body").find("*[data-i18n]").localize(); // run localization
 
-                            get("currentUiLanguage", (result) => {
-                                const langName = result.data;
-
-                                const nodeList = document.querySelectorAll(
-                                    ':not([data-i18n=""])',
-                                );
-                                for (let i = 0; i < nodeList.length; ++i) {
-                                    const node = nodeList.item(i);
-
-                                    if (!node.hasAttribute("data-i18n")) {
-                                        // Nodes which don't have data-18n will match the selector that it's not equal to "",
-                                        // but we definitely don't want to apply language text-specific markup to those non-leaf nodes.
-                                        continue;
-                                    }
-
-                                    // TODO: This only works when the tool is loaded up for the first time.
-                                    // It doesn't work if you open a new tool after the talking book tool is initialized for the first time.
-                                    // TODO: How to re-translate when UI lang changed.
-                                    const i18nId =
-                                        node.getAttribute("data-i18n");
-                                    if (!i18nId) {
-                                        node.setAttribute("lang", langName);
-                                    } else {
-                                        // Double-check that it's actually in this language and not just using an English fallback
-                                        theOneLocalizationManager
-                                            .asyncGetTextInLang(
-                                                i18nId,
-                                                "",
-                                                langName,
-                                                "",
-                                            )
-                                            .done((result) => {
-                                                if (result) {
-                                                    node.setAttribute(
-                                                        "lang",
-                                                        langName,
-                                                    );
-                                                } else {
-                                                    node.removeAttribute(
-                                                        "lang",
-                                                    ); // Or maybe set to "en" instead?
-                                                }
-                                            });
-                                    }
-                                }
-                            });
-
                             // Now bind the window's resize function to the toolbox resizer
                             $(window).bind("resize", () => {
                                 clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
@@ -529,91 +476,12 @@ export class ToolBox {
         );
     }
 
-    // Adds "lang" attributes into the DOM for toolbox elements which have internationalization. (AKA, have data-i18n)
-    // TODO: This only works with non-React toolbox components. For now, we only need it for talking book tool though.
-    public static insertLangAttributesIntoToolboxElements() {
-        get("currentUiLanguage", (result) => {
-            const langName = result.data;
-
-            const nodeList = document.querySelectorAll(':not([data-i18n=""])');
-            for (let i = 0; i < nodeList.length; ++i) {
-                const node = nodeList.item(i);
-
-                if (!node.hasAttribute("data-i18n")) {
-                    // Nodes which don't have data-18n will match the selector that it's not equal to "",
-                    // but we definitely don't want to apply language text-specific markup to those non-leaf nodes.
-                    continue;
-                }
-
-                const i18nId = node.getAttribute("data-i18n");
-                if (!i18nId) {
-                    node.setAttribute("lang", langName);
-                } else {
-                    // Double-check that it's actually in this language and not just using an English fallback
-                    theOneLocalizationManager
-                        .asyncGetTextInLang(i18nId, "", langName, "")
-                        .done((result) => {
-                            if (result) {
-                                node.setAttribute("lang", langName);
-                            } else {
-                                node.removeAttribute("lang"); // Or maybe set to "en" instead?
-                            }
-                        });
-                }
-            }
-        });
-    }
-
-    //currently just a wrapper around the global, to be enhanced someday when we get rid of all the globals
-    public getToolIfOffered(toolId: string): ITool {
-        return getITool(toolId);
-    }
-
     public isToolActive(toolId: string): boolean {
         const tools = $("*[data-toolId]");
         const filteredTools = tools.filter(function () {
             return $(this).attr("data-toolId") === toolId;
         });
         return filteredTools.length > 0;
-    }
-
-    // Ensure the requested tool is available in the toolbox accordion without changing the
-    // currently-active tool. This supports scenarios like clicking on a canvas background while
-    // another tool is open: we want to make Canvas available, but not steal focus.
-    public ensureToolEnabled(toolId: string): void {
-        const toolIdWithTool = ToolBox.addToolToString(toolId);
-        if (this.isToolActive(toolIdWithTool)) {
-            return;
-        }
-        const toolboxElt = $("#toolbox");
-        const activeToolId = getActiveToolIdFromCurrentToolboxUi();
-        beginAddTool(toolIdWithTool, false, () => {
-            const adapter = getToolboxReactAdapter();
-            if (adapter) {
-                if (activeToolId) {
-                    adapter.setActiveToolByToolId(activeToolId);
-                }
-                return;
-            }
-
-            toolboxElt.accordion("refresh");
-            if (activeToolId) {
-                const activeHeader = toolboxElt
-                    .find("> h3")
-                    .filter(function () {
-                        return $(this).attr("data-toolId") === activeToolId;
-                    })
-                    .first();
-                if (activeHeader.length > 0) {
-                    const activeIndex = toolboxElt
-                        .find("> h3")
-                        .index(activeHeader);
-                    if (activeIndex >= 0) {
-                        toolboxElt.accordion("option", "active", activeIndex);
-                    }
-                }
-            }
-        });
     }
 
     // Enables a tool from an in-page action, ensuring the toolbox is visible.
@@ -711,18 +579,6 @@ function getToolboxReactAdapter(): IToolboxReactAdapter | undefined {
         return undefined;
     }
     return adapter;
-}
-
-function getActiveToolIdFromCurrentToolboxUi(): string | undefined {
-    const adapter = getToolboxReactAdapter();
-    if (adapter) {
-        return adapter.getActiveToolId();
-    }
-
-    const activeHeader = $("#toolbox")
-        .find("> h3.ui-accordion-header-active")
-        .get(0) as HTMLElement | undefined;
-    return activeHeader?.getAttribute("data-toolId") || undefined;
 }
 
 // This primarily calls the detachFromPage method of the current tool, if any.
@@ -1114,7 +970,6 @@ function activateTool(newTool: ITool) {
             return;
         }
         // Always re-restore settings so tool state tracks the current book.
-        newTool.hasRestoredSettings = true;
         newTool
             .beginRestoreSettings(savedSettings as unknown as string)
             .then(() => {
@@ -1155,10 +1010,7 @@ async function activateToolInternalAsync(
             `activateToolInternalAsync called for uninitialized tool: ${newTool.id()}`,
         );
     }
-    newTool.finishToolLocalization(toolElt);
-
-    // Await it so that we can guarantee that newPageReady() and insertLangAttributesIntoToolboxElements()
-    // happen after showTool.
+    // Await it so that we can guarantee that newPageReady() happens after showTool.
     await newTool.showTool();
 
     postString("logger/writeEvent", `Toolbox activated: ${newTool.id()}`);
@@ -1167,9 +1019,6 @@ async function activateToolInternalAsync(
     // (This apparently solves the single flash mentioned in BL-10471.)
     await newTool.newPageReady();
     scheduleDelayedNewPageReady(newTool);
-
-    // Note: Begins some async work too, but currently no need to await its result.
-    ToolBox.insertLangAttributesIntoToolboxElements();
 }
 
 /**
@@ -1816,34 +1665,6 @@ async function addFeatureStatusMessageTitlesToSubscriptionBadges(
     await Promise.all(promises);
 }
 
-/**
- * Adds one tool to the toolbox
- * @param {String} newContent
- * @param {String} toolId
- * @param {Boolean} openTool
- */
-function loadToolboxToolText(
-    newContent: string,
-    toolId: string,
-    openTool: boolean,
-) {
-    const parts = $($.parseHTML(newContent, document, true));
-
-    parts.filter("*[data-i18n]").localize();
-    parts.find("*[data-i18n]").localize();
-
-    // expect parts to have 2 items, an h3 and a div
-    if (parts.length < 2) return;
-
-    // get the toolbox tool label
-    const header = parts.filter("h3").first();
-    if (header.length < 1) return; // we used to have a tool that was empty and didn't get added.
-
-    // get the tool content div
-    const content = parts.filter("div").first();
-
-    loadToolboxTool(header, content, toolId, openTool);
-}
 function loadToolboxTool(
     header: JQuery,
     content: JQuery,
