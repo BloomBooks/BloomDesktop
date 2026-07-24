@@ -95,9 +95,11 @@ test.describe("ToolboxRoot React mode", () => {
                     detail: { toolId: "decodableReaderTool" },
                 }),
             );
-            window.toolboxReactAdapter?.setActiveToolByToolId(
-                "decodableReaderTool",
-            );
+            // The harness publishes this accessor for us; see ToolboxRootTestHarness.tsx.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (window as any)
+                .getToolboxReactAdapterForTests?.()
+                ?.setActiveToolByToolId("decodableReaderTool");
         });
 
         await expect(
