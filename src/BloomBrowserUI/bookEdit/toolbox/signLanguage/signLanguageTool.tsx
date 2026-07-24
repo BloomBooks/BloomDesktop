@@ -21,7 +21,6 @@ import { chooseAndProcessVideo } from "../../js/ChooseAndProcessVideo";
 import { selectVideoContainer } from "../../js/videoUtils";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
-import $ from "jquery";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 
@@ -985,21 +984,6 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         root.setAttribute("class", "signLanguageBody");
         this.reactControls = SignLanguageToolControls.setup(root);
         return root as HTMLDivElement;
-    }
-
-    public isExperimental(): boolean {
-        return false;
-    }
-
-    public toolRequiresEnterprise(): boolean {
-        return false;
-    }
-
-    public beginRestoreSettings(settings: string): JQueryPromise<void> {
-        // Nothing to do, so return an already-resolved promise.
-        const result = $.Deferred<void>();
-        result.resolve();
-        return result;
     }
 
     // Specify 'true' to get only containers marked as selected
