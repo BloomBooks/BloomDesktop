@@ -17,8 +17,8 @@
 //   node driveAiImageEditor.mjs --http-port 8092 dummy-edit --match ai-image1.png --shot out.png
 //
 // The "Local Dummy (No AI)" model runs entirely in-browser (no OpenRouter, no key, no cost);
-// Bloom only offers it when it sends showDeveloperTools:true (a developer/debug build), which
-// AiImageEditorApi.HandleLaunch does via ApplicationUpdateSupport.IsDev.
+// Bloom only offers it when it sends showDeveloperTools:true, which AiImageEditorApi.HandleLaunch
+// does via ApplicationUpdateSupport.IsDevOrAlpha (developer + alpha/unstable builds).
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

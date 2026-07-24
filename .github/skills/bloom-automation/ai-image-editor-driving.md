@@ -18,8 +18,9 @@ Reusable driver: **`driveAiImageEditor.mjs`** in this folder.
   image. It's a model choice on every tool, so it exercises the full edit→commit flow.
 - The dummy model is **gated**: Bloom only offers it when the launch payload has
   `showDeveloperTools: true`, which `AiImageEditorApi.HandleLaunch` sets from
-  `ApplicationUpdateSupport.IsDev` (true for a developer/`go.sh` build). Shipped builds never
-  expose it. So this only works from a source launch, which is what you want anyway.
+  `ApplicationUpdateSupport.IsDevOrAlpha` (true for developer **and** alpha/unstable builds, so
+  human alpha testers can use it too). Release/beta builds never expose it. A `go.sh` source
+  run is a developer build, so this always works there.
 
 ## 1. Launch Bloom with the editor linked (HMR) + dev tools
 
