@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 /// <reference path="./StyleEditor.ts" />
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 
@@ -439,5 +439,93 @@ describe("StyleEditor", () => {
         MakeBigger2("#testTarget2");
 
         expect(GetRuleForCoverTitleStyle()).not.toBeNull();
+    });
+
+    it("changeWordSpace still updates the style rules after UpdateControlsToReflectAppliedStyle fails partway", () => {
+        // GetSettings is normally injected into the page by C#.
+        (globalThis as any).GetSettings = () => ({
+            languageForNewTextBoxes: "xyz",
+        });
+        try {
+            $("body").append(
+                "<div id='testTarget' class='foo-style' lang='xyz'></div>" +
+                    "<select id='word-space-select'><option>Normal</option><option>Wide</option><option>Extra Wide</option></select>",
+            );
+            const editor = new StyleEditor(
+                "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+            );
+            editor.boxBeingEdited = $("#testTarget").get(0);
+            // cleanupAfterStyleChange does page-layout work (overflow checking, box
+            // resizing) that requires real browser layout, not jsdom; it is irrelevant
+            // to the rule-writing and control-guard behavior under test here.
+            vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+                () => {},
+            );
+
+            const select = document.getElementById(
+                "word-space-select",
+            ) as HTMLSelectElement;
+            select.selectedIndex = 1; // Wide
+            editor.changeWordSpace();
+            // sanity check: the control works before anything goes wrong
+            expect(
+                GetRuleMatchingSelector('.foo-style[lang="xyz"]')?.cssText,
+            ).toContain("word-spacing: 5pt");
+
+            // Simulate a failure occurring somewhere in the middle of
+            // UpdateControlsToReflectAppliedStyle (which runs when the user applies a
+            // different style in the Format dialog, after it sets ignoreControlChanges).
+            vi.spyOn(editor, "changeCanvasElementProps").mockImplementation(
+                () => {
+                    throw new Error("simulated failure");
+                },
+            );
+            expect(() =>
+                editor.UpdateControlsToReflectAppliedStyle(""),
+            ).toThrow("simulated failure");
+
+            // The dialog controls must not be left permanently dead: choosing a new
+            // word spacing must still change the document.
+            select.selectedIndex = 2; // Extra Wide
+            editor.changeWordSpace();
+            expect(
+                GetRuleMatchingSelector('.foo-style[lang="xyz"]')?.cssText,
+            ).toContain("word-spacing: 10pt");
+        } finally {
+            delete (globalThis as any).GetSettings;
+        }
+    });
+
+    it("UpdateControlsToReflectAppliedStyle passes the real highlight colors to changeHiliteProps", () => {
+        $("body").append(
+            "<div id='testTarget' class='foo-style' lang='xyz'></div>",
+        );
+        const editor = new StyleEditor(
+            "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit",
+        );
+        editor.boxBeingEdited = $("#testTarget").get(0);
+        // cleanupAfterStyleChange does page-layout work that needs real browser layout.
+        vi.spyOn(editor, "cleanupAfterStyleChange").mockImplementation(
+            () => {},
+        );
+        // Give the style a custom audio-highlight text and background color.
+        editor.putAudioHiliteRulesInDom(
+            "foo-style",
+            "rgb(1, 2, 3)",
+            "rgb(4, 5, 6)",
+        );
+        // sanity check that getFormatValues sees those colors
+        expect(editor.getFormatValues().hiliteTextColor).toBe("rgb(1, 2, 3)");
+
+        const spy = vi.spyOn(editor, "changeHiliteProps");
+        editor.UpdateControlsToReflectAppliedStyle("");
+        // The highlight controls must be re-rendered with the style's actual highlight
+        // colors, not with the ordinary text color in the hiliteTextColor slot (which
+        // both displayed wrongly and could then be written back into the book).
+        expect(spy).toHaveBeenCalledWith(
+            "rgb(1, 2, 3)",
+            "rgb(4, 5, 6)",
+            expect.any(String),
+        );
     });
 });
