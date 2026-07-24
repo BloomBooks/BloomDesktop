@@ -31,7 +31,7 @@ namespace Bloom.web
 
         private static readonly TimeSpan kPollInterval = TimeSpan.FromSeconds(5);
 
-        // These are tiny loopback calls; a launcher that does not answer
+        // These are tiny loopback calls to the launcher; one that does not answer
         // promptly is effectively dead, hence the short timeout.
         private static readonly HttpClient s_client = new HttpClient
         {
@@ -101,8 +101,11 @@ namespace Bloom.web
 
         private static void ShowRestartToast()
         {
+            // Update, not Warning: nothing is wrong, there is just a newer build
+            // waiting — the same message Bloom's own "new version downloaded"
+            // toast carries.
             ToastService.ShowToast(
-                ToastType.Warning,
+                ToastType.Update,
                 text: kRestartToastText,
                 action: new ToastAction
                 {
