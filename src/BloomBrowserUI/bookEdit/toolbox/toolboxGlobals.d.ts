@@ -1,13 +1,6 @@
 export {};
 
 declare global {
-    interface ToolboxReactAdapterApi {
-        isEnabled: () => boolean;
-        setActiveToolByToolId: (toolId: string) => void;
-        getActiveToolId: () => string | undefined;
-        onActiveToolChanged: (callback: (toolId: string) => void) => void;
-    }
-
     interface ToolboxToolApi {
         makeRootElement?: () => HTMLDivElement;
     }
@@ -42,7 +35,6 @@ declare global {
     }
 
     interface Window {
-        toolboxReactAdapter?: ToolboxReactAdapterApi;
         toolboxBundle?: ToolboxBundleApi;
     }
 }

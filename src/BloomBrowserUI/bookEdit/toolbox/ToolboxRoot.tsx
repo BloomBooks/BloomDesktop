@@ -16,6 +16,7 @@ import {
 } from "../../utils/colorUtils";
 import { getMasterToolList } from "./toolbox";
 import { kToolboxHeaderZIndex } from "./toolboxZIndexes";
+import { setToolboxReactAdapter } from "./toolboxReactAdapter";
 import { SubscriptionBadgeWithTooltipAndDialog } from "../../react_components/requiresSubscription";
 
 // React host for the toolbox sidebar.
@@ -585,24 +586,16 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             }
         }
 
-        // We expose this adapter on the window so legacy code which may not even be useing module syntax
-        // can use it. We can change it to an export when all tools are modules, and get rid of it when
-        // all tools are React components.
-        window.toolboxReactAdapter = {
-            isEnabled: () => true,
+        // Register the adapter that the legacy toolbox code uses to drive and observe
+        // which accordion section is active. See toolboxReactAdapter.ts.
+        setToolboxReactAdapter({
             setActiveToolByToolId: (toolId: string) => {
                 setActiveSection(normalizeToolId(toolId));
-            },
-            getActiveToolId: () => {
-                if (!expandedSectionId) {
-                    return undefined;
-                }
-                return toToolboxToolId(expandedSectionId);
             },
             onActiveToolChanged: (callback: (toolId: string) => void) => {
                 activeToolChangedCallbacks.current.push(callback);
             },
-        };
+        });
     }, [expandedSectionId, sections, setActiveSection]);
 
     // The old jQuery toolbox logic still runs for now, and it calls .show() on #toolbox.
