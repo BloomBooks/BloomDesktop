@@ -2,7 +2,8 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import { get } from "../utils/bloomApi";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useMountEffect } from "../utils/useMountEffect";
 import { BloomTooltip } from "./BloomToolTip";
 import { Link } from "../react_components/link";
 import { useSubscribeToWebSocketForStringMessage } from "../utils/WebSocketManager";
@@ -49,6 +50,12 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
                     setBadge(BadgeType.None);
                 }
             },
+            () => {
+                // A transient network failure (e.g. offline, server not ready) should not
+                // throw an unhandled promise rejection to Sentry (BLOOM-DESKTOP-FFG). Silently
+                // leave the badge in its previous state; the websocket subscription above will
+                // refresh it when the server next reports a change.
+            },
         );
     };
 
@@ -62,9 +69,12 @@ export const BookOnBlorgBadge: React.FunctionComponent<{
         },
     );
 
-    useEffect(() => {
-        updateBadge();
-    });
+    // Fetch the badge once when the component mounts. Previously this was a bare
+    // useEffect with no dependency array, so it re-ran on every render; with many badges
+    // visible in a collection, any re-render (websocket broadcast, selection change) refired
+    // every badge's network request, amplifying transient network hiccups into bursts of
+    // errors (BLOOM-DESKTOP-FFG). The websocket subscription above handles later updates.
+    useMountEffect(updateBadge);
 
     return (
         <div
