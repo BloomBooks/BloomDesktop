@@ -447,7 +447,13 @@ namespace Bloom.Api
             // sanitized to ASCII (mangling localized text) and many HTTP clients don't expose
             // it at all; the body is what client code (e.g. axios error.response.data) actually
             // reads, and it can carry the full UTF-8 message.
-            _actualContext.Response.Close(Encoding.UTF8.GetBytes(errorDescription), false);
+            // A HEAD response must not have a body (see WriteOutput and ReplyWithFileContent);
+            // http.sys throws ProtocolViolationException if we try, which would leave the
+            // client hanging without a response.
+            if (_actualContext.Request.HttpMethod == "HEAD")
+                _actualContext.Response.Close();
+            else
+                _actualContext.Response.Close(Encoding.UTF8.GetBytes(errorDescription), false);
             HaveFullyProcessedRequest = true;
         }
 
