@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -125,6 +126,13 @@ namespace Bloom.web.controllers
                                 {
                                     result = PortableClipboard.GetText();
                                 }
+                                catch (ExternalException e)
+                                {
+                                    // The clipboard was momentarily locked by some other program (BL-16459).
+                                    // This is transient and not Bloom's fault, so we don't want a scary
+                                    // problem-report dialog; just a gentle toast.
+                                    ReportClipboardBusy(e);
+                                }
                                 catch (Exception e)
                                 {
                                     // Need to make sure to handle exceptions.
@@ -155,6 +163,13 @@ namespace Bloom.web.controllers
                                     try
                                     {
                                         PortableClipboard.SetText(content);
+                                    }
+                                    catch (ExternalException e)
+                                    {
+                                        // The clipboard was momentarily locked by some other program (BL-16459).
+                                        // This is transient and not Bloom's fault, so we don't want a scary
+                                        // problem-report dialog; just a gentle toast.
+                                        ReportClipboardBusy(e);
                                     }
                                     catch (Exception e)
                                     {
@@ -278,6 +293,27 @@ namespace Bloom.web.controllers
                     vitePort,
                     cdpOrigin = cdpPort.HasValue ? $"http://localhost:{cdpPort.Value}" : null,
                 }
+            );
+        }
+
+        /// <summary>
+        /// Sometimes a clipboard copy/paste fails because another program is momentarily holding
+        /// the Windows clipboard (BL-16459). Windows reports this as an ExternalException. It is
+        /// transient and not caused by Bloom, so rather than alarm the user with a problem-report
+        /// dialog we just show a gentle toast (and still log/send to Sentry so we can track it).
+        /// </summary>
+        private static void ReportClipboardBusy(ExternalException e)
+        {
+            NonFatalProblem.Report(
+                ModalIf.None,
+                PassiveIf.All,
+                LocalizationManager.GetDynamicString(
+                    "Bloom",
+                    "EditTab.Image.CopyImageFailed",
+                    "Bloom had problems using your computer's clipboard. Some other program may be interfering."
+                ),
+                exception: e,
+                showSendReport: false
             );
         }
 
