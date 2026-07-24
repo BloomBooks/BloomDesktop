@@ -735,9 +735,7 @@ const restartWatchChild = async () => {
     // dotnet watch child (whose tree-kill would hard-kill Bloom otherwise).
     stopBloomMonitor();
     clearLaunchTimeout();
-    if (bloomProcessId) {
-        await quitBloomProcessGracefully(bloomProcessId);
-    }
+    await closeAnyRunningBloom();
     await terminateChild(child);
 };
 
@@ -798,6 +796,35 @@ const quitBloomProcessGracefully = async (pid) => {
     } catch {}
 };
 
+// Closes whatever Bloom is running right now, and keeps going if another one turns
+// up while we are working: a dotnet-watch rebuild can announce a replacement Bloom
+// while we are still closing the previous one, and because the watch child is the
+// same process that does NOT bump activeLaunchToken. Any Bloom left alive when we
+// then stop the watch child is orphaned, not killed with it — terminateChild kills
+// the watcher by pid, so Windows leaves its descendants running, and a stray Bloom
+// means port conflicts and a duplicate instance next time.
+// Bounded on purpose: each pass closes at most one Bloom, and a watcher that keeps
+// producing new instances faster than we close them is a runaway we should not spin
+// on forever.
+const closeAnyRunningBloom = async () => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+        const pid = bloomProcessId;
+        if (!pid || !isProcessRunning(pid)) {
+            return;
+        }
+
+        await quitBloomProcessGracefully(pid);
+
+        if (bloomProcessId === pid) {
+            return; // nothing newer announced itself while we closed that one
+        }
+
+        console.log(
+            `A rebuilt Bloom (PID ${bloomProcessId}) appeared while PID ${pid} was closing; closing it too.`,
+        );
+    }
+};
+
 // Control-API action: durably stop Bloom. Unlike the human closing Bloom's
 // window (which leaves dotnet watch alive, so the next C# edit silently
 // respawns Bloom), this also stops the watch child; the launcher parks in
@@ -819,9 +846,7 @@ const quitBloom = async () => {
     // /quit-bloom promises.
     stopRequested = true;
 
-    if (bloomProcessId) {
-        await quitBloomProcessGracefully(bloomProcessId);
-    }
+    await closeAnyRunningBloom();
 
     // A /restart that arrived while we were closing Bloom has already replaced
     // the watch child (and cleared stopRequested). Terminating that replacement
@@ -861,9 +886,7 @@ const teardownStack = async (reason) => {
     clearLaunchTimeout();
     stopBloomMonitor();
 
-    if (bloomProcessId) {
-        await quitBloomProcessGracefully(bloomProcessId);
-    }
+    await closeAnyRunningBloom();
 
     await terminateChild(child);
     process.exit(0);
