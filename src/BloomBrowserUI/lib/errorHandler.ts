@@ -88,6 +88,44 @@ export function reportPreliminaryError(
     });
 }
 
+// Decides whether an otherwise-unhandled error message is a known, benign nuisance that
+// should be logged and swallowed rather than reported to the user. Kept as a pure,
+// exported function so it can be unit tested.
+export function shouldIgnoreUnhandledError(message: string): boolean {
+    if (
+        message.includes(
+            "ResizeObserver loop completed with undelivered notifications",
+        )
+    ) {
+        // We've done some investigation of this error. It doesn't seem to come from our code,
+        // but from something deep in React. It signifies (roughly) that changes made by one resize observer
+        // changed the size of something causing another resize observer to fire at a higher
+        // level in the document, and that handler is going to be postponed to the next animation frame.
+        // It doesn't seem to be causing any harm, and ongoing reports of it are a nuisance.
+        return true;
+    }
+    if (message.includes("[CKEDITOR.resourceManager.load] Resource name")) {
+        // BL-16587: CKEditor loads its plugins (floatpanel, colorbutton, etc.) lazily by
+        // injecting a <script> for each plugin's plugin.js. When the user switches tabs or
+        // pages quickly, the edit page (and its editor instance) is torn down while such a
+        // request is still in flight; the request gets cancelled, the script loader reports a
+        // failure, and CKEditor's resourceManager throws (as a bare string)
+        // '[CKEDITOR.resourceManager.load] Resource name "floatpanel" was not found at "...".'.
+        // The editor that triggered the load is being discarded anyway, so this is harmless,
+        // but the uncaught throw surfaces as an alarming error report. Swallow it. (The
+        // accompanying "network name is no longer available" server log line is the same
+        // teardown race seen from the C# side.)
+        // We deliberately match any plugin name, not just floatpanel, since the teardown race
+        // can cancel the load of any lazily-loaded plugin. This does mean a genuine plugin
+        // failure (e.g. a plugin.js missing from a build) is also swallowed here; that is an
+        // acceptable trade-off because such a failure is not a one-off teardown artifact but a
+        // consistent, reproducible breakage that shows up as a visibly non-working toolbar
+        // during normal editing, so it does not depend on this error report to be noticed.
+        return true;
+    }
+    return false;
+}
+
 // This collects javascript exceptions not handled in a try...catch block and forwards them to the server.
 // Catching them like this allows us to apply stacktrace-js to the stack, converting it
 // from locations in our packed bundles to locations in the original source files.
@@ -97,16 +135,7 @@ export function reportPreliminaryError(
 if (typeof window !== "undefined") {
     window.onerror = (msg, url, line, col, error) => {
         const message = msg.toString();
-        if (
-            message.includes(
-                "ResizeObserver loop completed with undelivered notifications",
-            )
-        ) {
-            // We've done some investigation of this error. It doesn't seem to come from our code,
-            // but from something deep in React. It signifies (roughly) that changes made by one resize observer
-            // changed the size of something causing another resize observer to fire at a higher
-            // level in the document, and that handler is going to be postponed to the next animation frame.
-            // It doesn't seem to be causing any harm, and ongoing reports of it are a nuisance.
+        if (shouldIgnoreUnhandledError(message)) {
             console.error("Ignoring: " + message);
             return true; // suppress normal handling.
         }
