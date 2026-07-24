@@ -362,12 +362,4 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
     public detachFromPage() {
         ImpairmentVisualizerControls.removeImpairmentVisualizerMarkup();
     }
-
-    public isExperimental(): boolean {
-        return false;
-    }
-
-    public toolRequiresEnterprise(): boolean {
-        return false;
-    }
 }

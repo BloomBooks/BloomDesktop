@@ -17,7 +17,6 @@ declare global {
     }
 
     interface ToolboxApi {
-        getToolIfOffered?: (toolId: string) => ToolboxToolApi | undefined;
         getCurrentTool?: () => CurrentToolApi | undefined;
     }
 
@@ -37,7 +36,6 @@ declare global {
         TalkingBookTool: unknown;
         canUndo: unknown;
         undo: unknown;
-        applyToolboxStateToPageLegacy: unknown;
         setActiveDragActivityTab: unknown;
         getTheOneAudioRecorderForExportOnly: unknown;
         copyLeveledReaderStatsToClipboard: unknown;
