@@ -101,9 +101,13 @@ jobs:
               run: pnpm run build-prod
 
             # The junit file feeds the "Publish test results" step at the end of the job.
+            # Use the string form --outputFile=, NOT --outputFile.junit=: this project's
+            # vite.config.mts sets outputFile to a plain string, and the dotted CLI form does
+            # not override it — vitest silently falls back to the config path and no file lands
+            # at output/Tests. The string form overrides correctly and vitest creates the dir.
             - name: Run browser UI tests
               working-directory: src/BloomBrowserUI
-              run: pnpm run test:ci -- --reporter=default --reporter=junit --outputFile.junit=../../output/Tests/vitest-junit.xml
+              run: pnpm run test:ci -- --reporter=default --reporter=junit --outputFile=../../output/Tests/vitest-junit.xml
 
             # ----- C# build + tests -----
             # We want the C# suite to run even when the front-end TESTS fail, so a broken
@@ -152,8 +156,11 @@ jobs:
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
               with:
                   check_name: Nightly test results
-                  junit_files: output/Tests/vitest-junit.xml
-                  nunit_files: output/Tests/Release/x64/TestResults.xml
+                  # Unified files input (junit_files/nunit_files are deprecated); the action
+                  # auto-detects each file's format (JUnit for vitest, NUnit3 for the C# suite).
+                  files: |
+                      output/Tests/vitest-junit.xml
+                      output/Tests/Release/x64/TestResults.xml
 
             - name: Upload test results
               if: ${{ always() }}
