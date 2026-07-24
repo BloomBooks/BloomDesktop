@@ -10,7 +10,11 @@ import {
     notifyToolOfChangedImage,
     wrapWithRequestPageContentDelay,
 } from "../bloomEditing";
-import { isPlaceHolderImage, kImageContainerClass } from "../bloomImages";
+import {
+    isPlaceHolderImage,
+    kImageContainerClass,
+    SetupMetadataButton,
+} from "../bloomImages";
 import {
     adjustTarget,
     correctTabIndex,
@@ -200,6 +204,38 @@ export class CanvasElementClipboard {
         );
     }
 
+    // Put a pasted image into an image that is already on the page, then bring the canvas
+    // element up to date the way the ordinary (non-clipboard) image-change path does.
+    // changeImage() in bloomEditing.ts routes through
+    // CanvasElementManager.updateCanvasElementForChangedImage(), which fixes the geometry and,
+    // for a background image, rebuilds the copyright/metadata button. The clipboard path gets
+    // dispatched here before that happens, so it has to do the equivalent itself; forgetting
+    // the metadata button is what BL-16605 was about.
+    // Only background images have a metadata button (see SetupMetadataButton), so there is
+    // nothing to refresh on the overlay path.
+    private replaceImageInCanvasElement(
+        bloomCanvas: HTMLElement,
+        canvasElement: HTMLElement,
+        img: HTMLElement,
+        imageInfo: IImageInfo,
+    ): void {
+        changeImageInfo(img, imageInfo);
+        if (canvasElement.classList.contains(kBackgroundImageClass)) {
+            this.host.adjustBackgroundImageSize(
+                bloomCanvas,
+                canvasElement,
+                true,
+            );
+            // changeImageInfo() has already set src and the data-copyright/creator/license
+            // attributes synchronously, so the button we build now reflects the new image.
+            SetupMetadataButton(canvasElement);
+        } else {
+            this.host.adjustContainerAspectRatio(canvasElement, true);
+            adjustTarget(canvasElement, getTarget(canvasElement));
+        }
+        notifyToolOfChangedImage(img);
+    }
+
     public finishPasteImageFromClipboard(imageInfo: IImageInfo): void {
         const bloomCanvas = this.host.getActiveOrFirstBloomCanvasOnPage()!;
         const canvasElements =
@@ -215,13 +251,12 @@ export class CanvasElementClipboard {
         ) {
             const bgimg = canvasElements[0].getElementsByTagName("img")[0];
             if (isPlaceHolderImage(bgimg.getAttribute("src"))) {
-                changeImageInfo(bgimg, imageInfo);
-                this.host.adjustBackgroundImageSize(
+                this.replaceImageInCanvasElement(
                     bloomCanvas,
                     canvasElements[0] as HTMLElement,
-                    true,
+                    bgimg,
+                    imageInfo,
                 );
-                notifyToolOfChangedImage(bgimg);
                 return;
             }
         }
@@ -237,13 +272,12 @@ export class CanvasElementClipboard {
                 .getElementsByClassName(kImageContainerClass)[0]
                 ?.getElementsByTagName("img")[0];
             if (img && isPlaceHolderImage(img.getAttribute("src"))) {
-                changeImageInfo(img, imageInfo);
-                this.host.adjustContainerAspectRatio(
+                this.replaceImageInCanvasElement(
+                    bloomCanvas,
                     activeElement as HTMLElement,
-                    true,
+                    img,
+                    imageInfo,
                 );
-                adjustTarget(activeElement, getTarget(activeElement));
-                notifyToolOfChangedImage(img);
                 return;
             }
         }
