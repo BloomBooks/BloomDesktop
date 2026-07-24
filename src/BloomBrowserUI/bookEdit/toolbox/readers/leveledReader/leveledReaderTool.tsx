@@ -33,9 +33,13 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
     public beginRestoreSettings(opts: string): JQueryPromise<void> {
         return beginInitializeLeveledReaderTool().then(() => {
             const restoreDone = $.Deferred<void>();
+            // opts can be undefined/null when the tool is activated for a book that has no
+            // saved leveled-reader settings. Guard before indexing so we fall through to the
+            // default-level path instead of throwing an unhandled promise rejection that
+            // aborts tool activation (Sentry BLOOM-DESKTOP-FFH).
             const leveledReaderState = (
-                opts as unknown as Record<string, string>
-            )["leveledReaderState"];
+                opts as unknown as Record<string, string> | undefined
+            )?.["leveledReaderState"];
             if (leveledReaderState) {
                 // The true passed here prevents re-saving the state we just read.
                 // One non-obvious implication is that simply opening a level-4 book
