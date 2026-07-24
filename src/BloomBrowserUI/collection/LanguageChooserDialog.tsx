@@ -33,6 +33,7 @@ export interface ILanguageData {
     LanguageTag: string | null;
     DefaultName: string | null;
     DesiredName: string | null;
+    IsRtl: boolean;
     Country?: string | null;
 }
 
@@ -46,11 +47,13 @@ export function getLanguageData(
         (selection?.language
             ? defaultDisplayName(selection.language) || null
             : null);
+    const isRtl = selection?.script?.isRtl;
     // Ensure values are null rather than undefined. Otherwise, the property won't be serialized at all.
     return {
         LanguageTag: languageTag || null,
         DefaultName: defaultName,
         DesiredName: selection?.customDetails?.customDisplayName || defaultName,
+        IsRtl: isRtl !== undefined ? isRtl : false,
         Country: languageTag
             ? defaultRegionForLangTag(languageTag, selection?.language)?.name ||
               null
