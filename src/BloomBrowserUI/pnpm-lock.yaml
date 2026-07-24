@@ -34,8 +34,8 @@ importers:
                 specifier: 11.14.1
                 version: 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
             "@ethnolib/language-chooser-react-mui":
-                specifier: 0.3.2
-                version: 0.3.2(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+                specifier: 0.4.0
+                version: 0.4.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
             "@fortawesome/fontawesome-svg-core":
                 specifier: 6.4.0
                 version: 6.4.0
@@ -1919,22 +1919,22 @@ packages:
             }
         engines: { node: ^18.18.0 || ^20.9.0 || >=21.1.0 }
 
-    "@ethnolib/find-language@0.3.2":
+    "@ethnolib/find-language@0.4.0":
         resolution:
             {
-                integrity: sha512-NbaOW7ji8dzsC/mtylac7H9BB1YKPiQzWd+uXIOkygwq/xWOGMGWewlv44EpR3g+un2Y6FO+TCZaHy8mFmpTcw==,
+                integrity: sha512-W4EWlcvwBzYWZLYl/6tX1345MBL8QGeVV6wa6+KJDBPrkuGgOVaH/xwigcRLFysE8SjMlvO9FdP0cDKE9VqUwg==,
             }
 
-    "@ethnolib/language-chooser-react-hook@0.3.2":
+    "@ethnolib/language-chooser-react-hook@0.3.3":
         resolution:
             {
-                integrity: sha512-gISOxUFHM3KiZU+H+psAE7pbaWBVWv6MlnwZRFK60K1LCCxaAEnVA8Z/tsFj1dLepYukXfzj6ND0IUre3W+0Sw==,
+                integrity: sha512-jACaEjvfkdQ31jjrtbIrGOFslDDiV94RcYvcvXhOGP79HjmXM53XahG2DOqLyTx8VKXWIXejVxS/tTp8QAcnGg==,
             }
 
-    "@ethnolib/language-chooser-react-mui@0.3.2":
+    "@ethnolib/language-chooser-react-mui@0.4.0":
         resolution:
             {
-                integrity: sha512-lyX5n/8OMyI5t9rUtoNuoLCd5y5Wpew9EvkLBgg5X5M+AXken9AHlpoBQy5+D4jYP0E1izK1ZolvLr2v3g79qQ==,
+                integrity: sha512-FtJfAwKWXyEPxVEqJJ6ObDBUwQ26+M9H0nH6gAhMAlE5YOplwvKcWv+dr7gMMvLMWUNltyf5kieCttae9Rabbg==,
             }
         peerDependencies:
             "@emotion/react": ^11.11.4
@@ -5874,10 +5874,10 @@ packages:
                 integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==,
             }
 
-    fuse.js@7.4.2:
+    fuse.js@7.1.0:
         resolution:
             {
-                integrity: sha512-LVbzjD4WA6UP5B1UnP8wuaXJiLnqMdM/E4fiJXTJ5haJ5b/MBNsK29h2fm6swEoQaVQjvYFWKLE2RanyZIoRVQ==,
+                integrity: sha512-trLf4SzuuUxfusZADLINj+dE8clK1frKdmqiJNb1Es75fmI5oY6X2mxLVUciLLjxqw/xr72Dhy+lER6dGd02FQ==,
             }
         engines: { node: ">=10" }
 
@@ -6835,10 +6835,10 @@ packages:
                 integrity: sha512-MHjWc+yIdAqx5w5d0+KdHzOaA+jJUGhP7BSKvIkSarRQzDURbmHSjO6B2Ea2TWdFZwb845d5OG2kotApIHkJtQ==,
             }
 
-    iso-3166@4.4.0:
+    iso-3166@4.3.0:
         resolution:
             {
-                integrity: sha512-I6ylkNQgxVh7cYADMUJpqBUdremGvyGZkDRSk9Cdic/ITBUemsllQnUeRpz7yDKyfgAXI9oPa5A9dia+7IXLqw==,
+                integrity: sha512-H4kM/sVbxTjSl9xnQCYOrNWdpN0R8Uz26j1BuXI9E6U+kw5wmd3HyPgr/v4+NCuvV/NcvwTfZxd5XZ4lPKvBNA==,
             }
 
     isobject@2.1.0:
@@ -12091,28 +12091,28 @@ snapshots:
             "@eslint/core": 0.15.2
             levn: 0.4.1
 
-    "@ethnolib/find-language@0.3.2":
+    "@ethnolib/find-language@0.4.0":
         dependencies:
-            fuse.js: 7.4.2
+            fuse.js: 7.1.0
             iso-15924: 3.2.0
-            iso-3166: 4.4.0
+            iso-3166: 4.3.0
 
-    "@ethnolib/language-chooser-react-hook@0.3.2":
+    "@ethnolib/language-chooser-react-hook@0.3.3":
         dependencies:
-            "@ethnolib/find-language": 0.3.2
-            fuse.js: 7.4.2
+            "@ethnolib/find-language": 0.4.0
+            fuse.js: 7.1.0
             iso-15924: 3.2.0
-            iso-3166: 4.4.0
+            iso-3166: 4.3.0
 
-    "@ethnolib/language-chooser-react-mui@0.3.2(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)":
+    "@ethnolib/language-chooser-react-mui@0.4.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)":
         dependencies:
             "@emotion/react": 11.14.0(@types/react@18.3.31)(react@18.3.1)
             "@emotion/styled": 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
-            "@ethnolib/find-language": 0.3.2
-            "@ethnolib/language-chooser-react-hook": 0.3.2
+            "@ethnolib/find-language": 0.4.0
+            "@ethnolib/language-chooser-react-hook": 0.3.3
             "@mui/icons-material": 5.18.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
             "@mui/material": 5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-            lodash: 4.18.1
+            lodash: 4.17.21
             react: 18.3.1
             react-dom: 18.3.1(react@18.3.1)
             react-lazyload: 3.2.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -14776,7 +14776,7 @@ snapshots:
         dependencies:
             deepmerge: 2.2.1
             hoist-non-react-statics: 3.3.2
-            lodash: 4.17.21
+            lodash: 4.18.1
             lodash-es: 4.18.1
             react: 18.3.1
             react-fast-compare: 2.0.4
@@ -14829,7 +14829,7 @@ snapshots:
 
     functions-have-names@1.2.3: {}
 
-    fuse.js@7.4.2: {}
+    fuse.js@7.1.0: {}
 
     generator-function@2.0.1: {}
 
@@ -15359,7 +15359,7 @@ snapshots:
 
     iso-15924@3.2.0: {}
 
-    iso-3166@4.4.0: {}
+    iso-3166@4.3.0: {}
 
     isobject@2.1.0:
         dependencies:

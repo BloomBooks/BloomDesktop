@@ -109,6 +109,7 @@ namespace Bloom.CollectionCreating
             string languageTag,
             string desiredName,
             string defaultName,
+            bool IsRtl,
             string country
         )
         {
@@ -116,6 +117,8 @@ namespace Bloom.CollectionCreating
                 return;
 
             _collectionInfo.Language1.Tag = languageTag;
+            _collectionInfo.Language1.IsRightToLeft = IsRtl;
+            _fontDetails.RightToLeft = IsRtl;
             _collectionInfo.Language1.SetName(desiredName, desiredName != defaultName);
             _collectionInfo.Country = country;
             SetNextButtonState(true, languageTag != null);
