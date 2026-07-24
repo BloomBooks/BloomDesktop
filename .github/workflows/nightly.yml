@@ -177,10 +177,39 @@ jobs:
               shell: bash
               run: pnpm test
 
-            # On failure, keep the current + diff images so a human can see what changed. The
-            # committed *-reference.png baselines are already in the repo; *-current.png and
-            # *-diff.png are generated (gitignored). if-no-files-found: ignore avoids a warning
-            # when the failure was not a pixel mismatch (e.g. Bloom failed to launch).
+            # When the visual-regression step fails, the most useful clue is usually Bloom's own
+            # log (it launches a real Bloom.exe and talks to it over HTTP). Bloom writes to
+            # %TEMP%\SIL\Bloom\Log.txt (and, depending on how far it got, %LOCALAPPDATA%\SIL\Bloom);
+            # a crash on startup often leaves a .NET Watson/CLR entry in the Windows Application
+            # event log. Gather whatever exists into a fixed folder so the next step can upload it,
+            # rather than losing the one thing that explains a "Bloom never came up" failure.
+            # Best-effort throughout: never let missing logs turn this diagnostic step red.
+            - name: Collect Bloom diagnostics
+              if: ${{ !cancelled() && steps.visual_regression.outcome == 'failure' }}
+              shell: bash
+              run: |
+                  set +e
+                  dest="bloom-diagnostics"
+                  mkdir -p "$dest"
+                  for src in "$TEMP/SIL/Bloom" "$LOCALAPPDATA/SIL/Bloom" "$LOCALAPPDATA/Temp/SIL/Bloom"; do
+                      if [ -d "$src" ]; then
+                          echo "Found Bloom logs in: $src"
+                          # Flatten the source root into the name so two Log.txt don't collide.
+                          tag=$(echo "$src" | tr '/:\\ ' '____')
+                          cp -r "$src" "$dest/$tag" 2>/dev/null
+                      fi
+                  done
+                  # .NET runtime crashes (e.g. a missing WebView2 runtime) surface here even when
+                  # Bloom wrote no log of its own.
+                  powershell -NoProfile -Command "Get-WinEvent -LogName Application -MaxEvents 40 -ErrorAction SilentlyContinue | Where-Object { \$_.ProviderName -match 'Application Error|.NET Runtime|Windows Error Reporting' } | Format-List TimeCreated, ProviderName, Message" > "$dest/windows-application-events.txt" 2>&1
+                  echo "----- collected diagnostics -----"
+                  ls -R "$dest" || true
+
+            # On failure, keep the current + diff images so a human can see what changed, plus the
+            # Bloom logs / crash events gathered above. The committed *-reference.png baselines are
+            # already in the repo; *-current.png and *-diff.png are generated (gitignored).
+            # if-no-files-found: ignore avoids a warning when the failure was not a pixel mismatch
+            # (e.g. Bloom failed to launch, so no screenshots were produced).
             - name: Upload visual regression diffs
               if: ${{ !cancelled() && steps.visual_regression.outcome == 'failure' }}
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -189,6 +218,7 @@ jobs:
                   path: |
                       src/BloomVisualRegressionTests/collections/**/screenshots/*-current.png
                       src/BloomVisualRegressionTests/collections/**/screenshots/*-diff.png
+                      bloom-diagnostics/**
                   retention-days: 14
                   if-no-files-found: ignore
 
