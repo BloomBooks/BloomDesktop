@@ -222,6 +222,8 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                 css={css`
                     padding-bottom: 0;
                     margin-bottom: 0;
+                    font-size: 20px;
+                    font-weight: 500;
                 `}
             />
             {
@@ -271,7 +273,11 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                     css={css`
                         .react-tabs__tab-panel--selected > div {
                             padding: 0; // This cancels a rule in BloomUI.less which is too global
-                            padding-top: 20px;
+                            padding-top: 24px;
+                        }
+                        .react-tabs__tab {
+                            font-size: 14px;
+                            letter-spacing: 0.05em;
                         }
                     `}
                 >
