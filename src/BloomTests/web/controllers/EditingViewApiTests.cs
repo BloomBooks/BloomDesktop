@@ -90,6 +90,23 @@ namespace BloomTests.web.controllers
             Assert.That(body, Is.EqualTo(message));
         }
 
+        [Test]
+        public void HeadRequest_ToMissingEndpoint_Returns404WithoutHanging()
+        {
+            // WriteError sends the message as the response body, but a HEAD response must not
+            // have one: http.sys throws if we try, and the client would hang with no response
+            // at all instead of getting its 404.
+            _server.EnsureListening();
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+            using var request = new HttpRequestMessage(
+                HttpMethod.Head,
+                BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/no/such/endpoint"
+            );
+            using var response = client.SendAsync(request).Result;
+
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+        }
+
         private class TestEditingViewApi : EditingViewApi
         {
             public Action<string, UrlPathString, bool> PasteImageAction { get; set; }
