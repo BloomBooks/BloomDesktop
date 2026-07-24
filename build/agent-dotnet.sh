@@ -43,6 +43,9 @@ fi
 
 echo "[agent-dotnet] isolated build dir: $SCRATCH" >&2
 
+# OutDir must be a global -p: (see Directory.Build.props). Apphost suppression used to
+# be a global here too, but it has to vary per project — WebView2PdfMaker's apphost is
+# the BloomPdfMaker.exe the PDF tests shell out to — so it now lives in
+# Directory.Build.props, which a global property would have overridden.
 BLOOM_AGENT_BUILD_DIR="$SCRATCH" exec dotnet "$@" \
-    -p:OutDir="$SCRATCH/bin/" \
-    -p:UseAppHost=false
+    -p:OutDir="$SCRATCH/bin/"

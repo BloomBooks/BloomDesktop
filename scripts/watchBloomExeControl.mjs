@@ -70,6 +70,23 @@ export const getMissingInitMarkers = (repoRoot) =>
 // Bloom exit is the watcher rebuilding the app, not the developer closing it.
 // Deliberately narrow: the idle line "Waiting for a file to change before
 // restarting ..." (printed when the app exits on its own) must NOT match.
+//
+// IF YOU ARE HERE BECAUSE THE WHOLE DEV STACK DIED WHILE YOU WERE JUST EDITING C#:
+// this regex is very likely the culprit. It is the only thing distinguishing "the
+// watcher killed Bloom and is rebuilding it" (wait) from "the developer closed
+// Bloom" (tear the stack down, freeing dotnet watch and Vite). When it fails to
+// match, an ordinary C# edit is misread as a deliberate close and the launcher
+// shuts everything down — see handleBloomExitUnderWatch in watchBloomExe.mjs.
+// The wording is SDK-dependent and has already changed once: .NET 10 prints
+// "File updated" where older SDKs printed "File changed". So compare the verb the
+// installed SDK actually prints (run ./go.sh, touch a .cs file, read the watcher's
+// line) against the alternatives below and add the new phrasing here.
+// This was reviewed and deliberately kept as a plain text match rather than made
+// more robust: Devin flagged the brittleness on PR #8107 and we chose to accept it
+// (the failure is rare and recoverable by restarting ./go.sh) rather than add a
+// grace-wait state machine. If it bites more than once, revisit that call —
+// the alternative on the table was to wait a bounded period for a rebuilt Bloom
+// to appear before ever concluding the developer closed it.
 export const isDotnetWatchRestartSignal = (line) =>
     /dotnet watch/i.test(line) &&
     // The verb varies by SDK version: .NET 10's watcher says "File updated".

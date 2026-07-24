@@ -57,7 +57,12 @@ means you do **not** need to stop the developer's Bloom to build or run unit tes
 multiple terminals can build/test at once. See `Directory.Build.props` for how it works.
 
 - This wrapper is for **building and running tests only**. To *run* Bloom, still use
-  `./go.sh` (see "Running Bloom" below) — the wrapper builds without a native apphost.
+  `./go.sh` (see "Running Bloom" below) — the wrapper builds no `Bloom.exe` apphost.
+  (`BloomPdfMaker.exe` is the one apphost it does build, because Bloom's PDF code shells
+  out to that file by name and the PDF tests fail without it.)
+- The full C# suite is expected to be **green** through this wrapper. If you see the
+  PdfMaker or xmatter-locating tests fail, that is a real regression in the wrapper /
+  `Directory.Build.props`, not the known environment noise it used to be.
 - The first build in a fresh terminal is a full (cold) build into that terminal's private
   tree; subsequent builds there are incremental. `output/` is gitignored.
 
