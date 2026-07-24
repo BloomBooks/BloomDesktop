@@ -1130,6 +1130,82 @@ function AddXMatterLabelAfterPageLabel(_container) {
         });
 }
 
+// While a page loads, editMode.less keeps its content hidden (body:not(.bloom-page-ready)
+// .bloom-page). CKEditor rewrites the editable content a beat after the raw saved HTML first
+// paints, so revealing immediately would show the raw text and then a re-render carrying the
+// audio highlight and language tips -- a visible flicker. Instead we reveal once all CKEditors
+// on the page are ready, so the page appears once, already decorated. A fallback timer guarantees
+// the page is revealed even if CKEditor never reports ready, so it can never get stuck hidden.
+//
+// NB: the "wait until all CKEditors are ready" logic below is a deliberately-separate, simpler
+// cousin of toolbox.ts's doWhenCkEditorReady(). We don't share code because that one lives in the
+// toolbox bundle and runs cross-frame (it reaches into the page frame via ToolBox.getPageFrame),
+// whereas this runs inside the page frame itself and just uses window.CKEDITOR. If you change how
+// CKEditor readiness is detected in one, consider whether the other needs the same change.
+let pageRevealFallbackTimer: number | undefined;
+
+function revealPage(): void {
+    if (pageRevealFallbackTimer !== undefined) {
+        window.clearTimeout(pageRevealFallbackTimer);
+        pageRevealFallbackTimer = undefined;
+    }
+    document.body.classList.add("bloom-page-ready");
+}
+
+function scheduleRevealPageWhenReady(): void {
+    if (document.body.classList.contains("bloom-page-ready")) {
+        return;
+    }
+    // Safety net: reveal no later than this, whatever happens with CKEditor. The worst case if it
+    // fires early (unusually slow CKEditor init) is a little flicker.
+    pageRevealFallbackTimer = window.setTimeout(revealPage, 2000);
+
+    // Defer so this runs after the synchronous page setup (including attachToCkEditor) has run,
+    // i.e. after this page's CKEditor instances exist.
+    window.setTimeout(() => {
+        const ckeditor = (window as unknown as { CKEDITOR?: typeof CKEDITOR })
+            .CKEDITOR;
+        const instances = ckeditor?.instances
+            ? Object.keys(ckeditor.instances).map(
+                  (id) => ckeditor.instances[id],
+              )
+            : [];
+        if (instances.length === 0) {
+            // No editors on this page (or CKEditor not in use); nothing to wait for.
+            revealPage();
+            return;
+        }
+        let pending = 0;
+        instances.forEach((instance) => {
+            const editorInstance = instance as CKEDITOR.editor & {
+                status?: string;
+                instanceReady?: boolean;
+            };
+            // An editor that is already ready must be skipped, not waited on: its instanceReady
+            // event has already fired, so a listener we add now would never fire and the page
+            // would stay hidden until the fallback timer (a ~2s blank). CKEditor exposes readiness
+            // as status === "ready" (instanceReady is the event name, not a property); we also
+            // check instanceReady defensively in case some build sets it.
+            if (
+                editorInstance.status === "ready" ||
+                editorInstance.instanceReady
+            ) {
+                return;
+            }
+            pending++;
+            editorInstance.on("instanceReady", () => {
+                pending--;
+                if (pending === 0) {
+                    revealPage();
+                }
+            });
+        });
+        if (pending === 0) {
+            revealPage();
+        }
+    }, 0);
+}
+
 // Only put setup code here which is guaranteed to only be run once per page load.
 // e.g. Don't put setup for elements such as image containers or editable boxes which may get added after page load.
 function OneTimeSetup() {
@@ -1150,6 +1226,13 @@ let reportedTextSelected = isTextSelected();
 // called inside document ready function
 // ---------------------------------------------------------------------------------
 export function bootstrap() {
+    // Reveal the page (which editMode.less keeps hidden until then) once it is fully set up.
+    // Call this FIRST, before any of the page-setup work below: it synchronously arms a fallback
+    // timer that reveals the page no matter what, so that if any later setup step throws, the page
+    // is not left permanently hidden. The actual readiness check is deferred (it waits for
+    // CKEditor), so calling it here does not reveal prematurely.
+    scheduleRevealPageWhenReady();
+
     bloomQtipUtils.setQtipZindex();
 
     $.fn.reverse = function (...args) {

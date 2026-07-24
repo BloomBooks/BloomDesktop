@@ -72,7 +72,10 @@ import {
 } from "../../../react_components/featureStatus";
 import { animateStyleName } from "../../../utils/shared";
 import jQuery from "jquery";
-import { AudioTextHighlightManager } from "./audioTextHighlightManager";
+import {
+    AudioTextHighlightManager,
+    currentHighlightName,
+} from "./audioTextHighlightManager";
 import { TalkingBookUiState, Status } from "./TalkingBookUiState";
 
 // ENHANCE: Replace AudioRecordingMode with this?
@@ -2849,12 +2852,84 @@ export default class AudioRecording implements IAudioRecorder {
     // and not go on using up cpu cycles forever. On my computer, 4 seconds is very generous...a half second
     // would do it...but other computers are slower.
     private ensureHighlight(repeats: number) {
-        this.getCurrentTextBox();
+        // Stop the loop if the tool has been hidden (toolbox closed or a different tool selected).
+        // Otherwise we would re-establish the highlight that handleToolHiding just cleared, leaving
+        // it stuck on the page after the tool is gone (BL-15300). getActiveToolId() can still be
+        // "talkingBook" right after closing, so isShowing -- which handleToolHiding clears -- is the
+        // reliable signal that the tool is actually active.
+        if (!this.isShowing) {
+            return;
+        }
+        this.reestablishCurrentHighlightIfNeeded();
         if (repeats > 0) {
             this.ensureHighlightToken = setTimeout(
                 () => this.ensureHighlight(repeats - 1),
                 200,
             );
+        }
+    }
+
+    // Make sure the current-audio pseudo-element highlight is actually registered against the
+    // *live* page document. This runs repeatedly for a few seconds after a page loads (see
+    // ensureHighlight).
+    //
+    // The visible highlight is a ::highlight registered in the page frame's CSS.highlights, over
+    // Ranges pointing at nodes in the page document. this.highlightedElement holds those nodes.
+    // When the page frame reloads (which can happen a beat after we first select the current
+    // element), this.highlightedElement is left pointing at a node in the *previous*, now
+    // detached document. refreshHighlights then reads the highlight registry from that node's
+    // window -- which is null for a detached document -- and silently does nothing, so no
+    // highlight appears. This is intermittent because it depends on whether a reload lands after
+    // we selected the element (BL-15300: "on page change, text is rarely highlighted").
+    //
+    // isVisible()/isConnected can't catch this: a node in a detached document is still
+    // "connected" to that old document. So we test membership in the *current* page document
+    // instead, re-point at the equivalent live node by id, and re-register the highlight.
+    private reestablishCurrentHighlightIfNeeded(): void {
+        // Never (re-)establish the highlight while the tool is hidden; that would put back the
+        // highlight handleToolHiding cleared when the toolbox was closed (BL-15300).
+        if (!this.isShowing) {
+            return;
+        }
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) {
+            return;
+        }
+        const liveDocument = pageBody.ownerDocument;
+
+        const current = this.highlightedElement;
+        if (!current) {
+            // Nothing selected yet; select the default (which also registers the highlight).
+            this.setCurrentAudioElementToDefaultAsync();
+            return;
+        }
+
+        let mustRefresh = false;
+        if (!liveDocument.contains(current)) {
+            // Stale: current belongs to a previous (detached) version of the page. Re-point at
+            // the equivalent element in the live document, matched by id.
+            const liveEquivalent = current.id
+                ? liveDocument.getElementById(current.id)
+                : null;
+            if (!liveEquivalent) {
+                // The element no longer exists on this page; select the default instead.
+                this.setCurrentAudioElementToDefaultAsync();
+                return;
+            }
+            this.highlightedElement = liveEquivalent as HTMLElement;
+            mustRefresh = true;
+        }
+
+        // Also refresh if the highlight simply isn't registered (the "it unexpectedly went away"
+        // case this loop was originally written for), but don't needlessly re-register (and
+        // re-run color lookups) every tick when it is already present.
+        const liveWindow = liveDocument.defaultView as
+            | (Window & { CSS?: { highlights?: Map<string, unknown> } })
+            | null;
+        const alreadyRegistered =
+            !!liveWindow?.CSS?.highlights?.has(currentHighlightName);
+        if (mustRefresh || !alreadyRegistered) {
+            this.refreshAudioTextHighlights(this.highlightedElement);
         }
     }
     public clearTimeouts() {
@@ -3690,6 +3765,33 @@ export default class AudioRecording implements IAudioRecorder {
 
         return () => {
             // set the html (if this function gets called, that is, if there hasn't already been another keystroke)
+            //
+            // But only if it actually differs from what is already there. newPageReady fires
+            // twice for each page change (a known toolbox behavior), so this action typically
+            // runs a second time with markup identical to what the first run just produced.
+            // Unconditionally re-setting innerHTML re-creates the audio-sentence spans, which
+            // repaints the text and detaches the audio ::highlight registered over those spans --
+            // the highlight then has to be re-registered, producing a visible "renders twice,
+            // once without the highlight and then with it" flicker (BL-15300). Comparing against
+            // the current content (minus the transient format button / current-audio marker,
+            // which are not part of newHtml) lets the redundant pass leave the DOM -- and the
+            // highlight -- untouched. When the markup genuinely changed (typing, first setup,
+            // mode switch) the strings differ and we rewrite exactly as before.
+            const contentWithoutTransientChildren = elt.clone();
+            contentWithoutTransientChildren.find("#formatButton").remove();
+            contentWithoutTransientChildren
+                .find(".bloom-ui-current-audio-marker")
+                .remove();
+            // Normalize newHtml through the browser's serializer so the comparison isn't defeated
+            // by trivial differences (attribute spacing/order) between our hand-built string and
+            // what the DOM produces.
+            const normalizer = elt[0].ownerDocument.createElement("div");
+            normalizer.innerHTML = newHtml;
+            if (
+                contentWithoutTransientChildren.html() === normalizer.innerHTML
+            ) {
+                return;
+            }
             elt.html(newHtml);
             elt.append(formatButton);
         };

@@ -523,6 +523,36 @@ describe("audio recording tests", () => {
             expect(spans.first().attr("class")).toBe("audio-sentence");
             expect(spans.last().attr("class")).toBe("audio-sentence");
         });
+        // BL-15300 (flicker): newPageReady is deliberately re-fired ~600ms after the first call
+        // (scheduleDelayedNewPageReady) as a settle-timing safety net, so this markup runs a
+        // second time with identical input. It must be idempotent: the second, identical pass
+        // must NOT rewrite the DOM -- doing so re-creates the sentence spans, repainting the text
+        // and dropping/re-adding the audio ::highlight (the "renders twice, once without the
+        // highlight and then with it" flicker). Verify the span nodes are preserved (same objects).
+        it("does not re-create audio-sentence spans on a repeated identical markup pass", () => {
+            const div = $("<div>One. Two.</div>");
+            const recording = new AudioRecording();
+
+            recording.makeAudioSentenceElementsTest(
+                div,
+                RecordingMode.Sentence,
+            );
+            const firstSpans = div.find("span.audio-sentence").toArray();
+            expect(firstSpans.length).toBe(2);
+            const htmlAfterFirst = div.html();
+
+            recording.makeAudioSentenceElementsTest(
+                div,
+                RecordingMode.Sentence,
+            );
+            const secondSpans = div.find("span.audio-sentence").toArray();
+
+            expect(secondSpans.length).toBe(2);
+            // Same DOM node objects, not rebuilt copies:
+            expect(secondSpans[0]).toBe(firstSpans[0]);
+            expect(secondSpans[1]).toBe(firstSpans[1]);
+            expect(div.html()).toBe(htmlAfterFirst);
+        });
         it("retains matching sentence spans with same ids.keeps md5s and adds missing ones", () => {
             const div = $(
                 '<div><p><span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> This is another</p></div>',
@@ -2414,6 +2444,90 @@ describe("audio recording tests", () => {
                 forceRedisplay: true,
             });
 
+            expect(getHighlightTexts(currentHighlightName)).toEqual(["One."]);
+        });
+
+        // BL-15300 regression: on page change the highlight was often missing. Cause: after the
+        // page frame reloads, highlightedElement can be left pointing at a same-id node from the
+        // previous (now detached) document. refreshHighlights reads the highlight registry from
+        // that node's window (null for a detached document) and silently does nothing, so nothing
+        // paints -- and isVisible()/isConnected don't catch it because the stale node is still
+        // "connected" to its old document. ensureHighlight's reestablishCurrentHighlightIfNeeded
+        // must detect the staleness, re-point at the live node, and re-register the highlight.
+        it("re-registers the current highlight against the live page when highlightedElement is stale", () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-editable" data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence">One.</span></p></div></div>',
+            );
+
+            const recording = new AudioRecording();
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            recording.recordingMode = RecordingMode.Sentence;
+
+            // Simulate the stale reference: a same-id element that is NOT in the live page
+            // document (as happens after the page frame reloads to a new document).
+            const pageDoc = (
+                parent.window.document.getElementById(
+                    "page",
+                ) as HTMLIFrameElement
+            ).contentDocument!;
+            const stale = pageDoc.createElement("span");
+            stale.id = "span1";
+            stale.className = "audio-sentence";
+            stale.textContent = "One.";
+            (
+                recording as unknown as { highlightedElement: HTMLElement }
+            ).highlightedElement = stale;
+
+            // Nothing registered yet, and the stale node is a different object than the live one.
+            expect(getHighlightTexts(currentHighlightName)).toEqual([]);
+            const liveSpan = getFrameElementById("page", "span1");
+            expect(stale).not.toBe(liveSpan);
+
+            (
+                recording as unknown as {
+                    reestablishCurrentHighlightIfNeeded(): void;
+                }
+            ).reestablishCurrentHighlightIfNeeded();
+
+            // Healed: highlightedElement now points at the LIVE span, and the highlight paints.
+            expect(recording.getAudioCurrentElement()).toBe(liveSpan);
+            expect(getHighlightTexts(currentHighlightName)).toEqual(["One."]);
+        });
+
+        // BL-15300: the ensureHighlight loop (which reestablishCurrentHighlightIfNeeded drives)
+        // keeps running for a few seconds after a page loads. If the toolbox is closed during that
+        // window, handleToolHiding clears the highlight -- but the loop must NOT put it back. So
+        // reestablish must be a no-op while the tool is not showing (isShowing false). Without this
+        // guard the highlight stays stuck on the page after the toolbox is closed.
+        it("does not re-establish the current highlight while the tool is not showing", () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-editable" data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence">One.</span></p></div></div>',
+            );
+
+            const recording = new AudioRecording();
+            recording.recordingMode = RecordingMode.Sentence;
+            (
+                recording as unknown as {
+                    highlightedElement: HTMLElement | null;
+                }
+            ).highlightedElement = getFrameElementById("page", "span1");
+
+            const reestablish = (
+                recording as unknown as {
+                    reestablishCurrentHighlightIfNeeded(): void;
+                }
+            ).reestablishCurrentHighlightIfNeeded.bind(recording);
+
+            // Tool hidden (e.g., toolbox just closed): reestablish must not re-add the highlight.
+            (recording as unknown as { isShowing: boolean }).isShowing = false;
+            expect(getHighlightTexts(currentHighlightName)).toEqual([]);
+            reestablish();
+            expect(getHighlightTexts(currentHighlightName)).toEqual([]);
+
+            // Sanity/positive control: when the tool IS showing, it does establish the highlight
+            // (so the assertion above is meaningful, not a no-op for some unrelated reason).
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            reestablish();
             expect(getHighlightTexts(currentHighlightName)).toEqual(["One."]);
         });
 
