@@ -186,19 +186,25 @@ function processDLRMessage(event: MessageEvent): void {
     }
 }
 
+/**
+ * Loads the Synphony (reader) settings and updates the Decodable Reader tool's controls
+ * to match. Returns a promise that resolves when that is done.
+ */
 export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
     // load synphony settings and then finish init
     return beginLoadSynphonySettings().then(() => {
         getTheOneReaderToolsModel().updateControlContents();
-        $("#toolbox").accordion("refresh");
     });
 }
 
+/**
+ * Loads the Synphony (reader) settings and updates the Leveled Reader tool's controls
+ * to match. Returns a promise that resolves when that is done.
+ */
 export function beginInitializeLeveledReaderTool(): JQueryPromise<void> {
     // load synphony settings
     return beginLoadSynphonySettings().then(() => {
         getTheOneReaderToolsModel().updateControlContents();
-        $("#toolbox").accordion("refresh");
     });
 }
 
