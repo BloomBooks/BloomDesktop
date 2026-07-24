@@ -11,6 +11,7 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Newtonsoft.Json;
+using SIL.Core.ClearShare;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
@@ -263,6 +264,12 @@ namespace Bloom.web.controllers
                     // OpenRouter API key. The editor disables its credential UI when
                     // this is true; HandleSaveCredentials also refuses to persist.
                     demoOnly = book.IsPlayground,
+                    // Let the editor reveal its developer/tester tools (e.g. the "Local Dummy
+                    // (No AI)" model, for cost-free testing) on developer AND alpha/unstable
+                    // builds, so human alpha testers can exercise the editor without spending
+                    // real AI credits. The editor hides those tools unless the host opts in, so
+                    // release/beta builds (IsDevOrAlpha false) never expose them to end users.
+                    showDeveloperTools = ApplicationUpdateSupport.IsDevOrAlpha,
                 }
             );
         }
@@ -531,6 +538,39 @@ namespace Bloom.web.controllers
 
             /// <summary>For a reused existing image: its host-served URL, resolved to a book file.</summary>
             public string sourceUrl { get; set; }
+
+            /// <summary>
+            /// The credits (intellectual-property metadata) the editor determined for this
+            /// result — carried from whatever source it was derived from, and possibly amended
+            /// by the editor. Null when the editor doesn't supply them (an older editor build),
+            /// in which case Bloom falls back to the replaced slot's own file metadata.
+            /// Only meaningful for a generated/uploaded result (<see cref="resultId"/>).
+            /// </summary>
+            public ImageCredits credits { get; set; }
+        }
+
+        /// <summary>
+        /// The intellectual-property metadata that travels between Bloom and the editor for a
+        /// single image, in both directions: outbound on each launch <c>bookImages</c> entry
+        /// (the image's current credits) and inbound on each commit replacement (the credits
+        /// the editor chose for the result). These are the six ClearShare fields Bloom reads
+        /// and writes. The license is a single opaque string the editor carries verbatim: the
+        /// license URL for a Creative Commons license (its canonical form), otherwise the
+        /// free-text rights statement for a custom license. Any field may be null/empty.
+        /// Property names are the wire (JSON) names, matching the editor's ImageCredits.
+        /// </summary>
+        internal class ImageCredits
+        {
+            public string copyrightNotice { get; set; }
+            public string creator { get; set; }
+
+            /// <summary>The license as one string: a creativecommons.org URL for a CC license,
+            /// otherwise a free-text rights statement for a custom license. Empty for none.</summary>
+            public string license { get; set; }
+
+            public string attributionUrl { get; set; }
+            public string collectionName { get; set; }
+            public string collectionUri { get; set; }
         }
 
         /// <summary>
@@ -584,6 +624,11 @@ namespace Bloom.web.controllers
                             // The editor shows its own placeholder graphic for empty slots
                             // rather than trying to load the (book-less) placeHolder.png.
                             isPlaceholder = ImageUtils.IsPlaceholderImageFilename(relativePath),
+                            // The image's current credits, so a result derived from it can carry
+                            // (and, in future, amend) them. The editor owns the credit *decision*
+                            // and hands the chosen credits back on commit; Bloom only embeds them
+                            // into the file. Null when the image has no usable metadata.
+                            credits = GetCreditsForImageFile(book.FolderPath, relativePath),
                         }
                     );
                 }
@@ -921,12 +966,19 @@ namespace Bloom.web.controllers
             newSrc = newFileName;
 
             // A generated result carries no intellectual-property metadata of its own, so
-            // carry the replaced image's credits into the new file. Reused existing images
-            // (the sourceUrl branch) keep their own file metadata, so only do this for a
-            // freshly generated/uploaded result. See CarryCreditsToNewImageFile for why this
-            // has to be written into the FILE and not just the DOM attributes.
+            // give it credits. The editor owns the credit decision and hands them back in
+            // replacement.credits (carried from the source it edited, possibly amended); if it
+            // doesn't (an older editor), we fall back to the replaced slot's own file metadata.
+            // Reused existing images (the sourceUrl branch) keep their own file metadata, so we
+            // only do this for a freshly generated/uploaded result. See CarryCreditsToNewImageFile
+            // for why this has to be written into the FILE and not just the DOM attributes.
             if (!string.IsNullOrEmpty(replacement.resultId))
-                CarryCreditsToNewImageFile(book.FolderPath, oldSrc, newFileName);
+                CarryCreditsToNewImageFile(
+                    book.FolderPath,
+                    oldSrc,
+                    newFileName,
+                    replacement.credits
+                );
 
             if (isCurrentPage)
             {
@@ -1051,9 +1103,57 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Copies the intellectual-property metadata (creator, copyright, license, and
-        /// collection info) embedded in the image being replaced onto the freshly written
-        /// replacement file, so the illustration's credits survive.
+        /// Reads one book image's intellectual-property metadata (creator, copyright, license,
+        /// collection info) into the small <see cref="ImageCredits"/> shape shared with the
+        /// editor, or null when the file is missing or has no usable metadata. Used at launch to
+        /// hand each book image its current credits, so a result the editor derives from it can
+        /// carry (and amend) them. Internal for testing.
+        /// </summary>
+        internal static ImageCredits GetCreditsForImageFile(
+            string bookFolderPath,
+            string relativePath
+        )
+        {
+            if (string.IsNullOrEmpty(relativePath))
+                return null;
+            var path = Path.Combine(bookFolderPath, relativePath);
+            if (!RobustFile.Exists(path))
+                return null;
+
+            Metadata meta;
+            try
+            {
+                meta = RobustFileIO.MetadataFromFile(path);
+            }
+            catch (Exception)
+            {
+                // A corrupt/unreadable image must not fail the whole launch; it simply travels
+                // to the editor without credits.
+                return null;
+            }
+            if (meta == null || meta.IsEmpty || meta.ExceptionCaughtWhileLoading != null)
+                return null;
+
+            return new ImageCredits
+            {
+                copyrightNotice = meta.CopyrightNotice,
+                creator = meta.Creator,
+                license = LicenseToWireString(meta.License),
+                attributionUrl = meta.AttributionUrl,
+                collectionName = meta.CollectionName,
+                collectionUri = meta.CollectionUri,
+            };
+        }
+
+        /// <summary>
+        /// Gives a freshly written replacement file its credits (intellectual-property
+        /// metadata), so the illustration's credits survive.
+        ///
+        /// The credits come from one of two places: the <paramref name="credits"/> the editor
+        /// supplied for the result — its preferred source, since the editor knows what the
+        /// result was derived from and may have amended the credits — or, when the editor
+        /// supplied none (an older build), the metadata of the image being replaced
+        /// (<paramref name="replacedImageSrc"/>).
         ///
         /// This has to be written into the FILE, not just the DOM's data-copyright/
         /// data-creator/data-license attributes: Bloom rebuilds those attributes FROM the
@@ -1067,14 +1167,65 @@ namespace Bloom.web.controllers
         internal static void CarryCreditsToNewImageFile(
             string bookFolderPath,
             string replacedImageSrc,
-            string newFileName
+            string newFileName,
+            ImageCredits credits = null
+        )
+        {
+            Metadata source;
+            if (credits != null)
+            {
+                // The editor spoke: use exactly the credits it chose for this result. An
+                // all-empty object means "this result has no credits", so leave the clean
+                // generated file clean rather than writing empty tags.
+                if (CreditsAreEmpty(credits))
+                    return;
+                source = MetadataFromCredits(credits);
+            }
+            else
+            {
+                // Fallback for an older editor that doesn't send credits: carry the replaced
+                // image's own file metadata, as before.
+                source = ReadReplacedImageCredits(bookFolderPath, replacedImageSrc);
+                if (source == null)
+                    return;
+            }
+
+            var newPath = Path.Combine(bookFolderPath, newFileName);
+            try
+            {
+                // Clear whatever the generator left in the file first: stray tags can trip up
+                // the TagLib library when we write (BL-16058). Then write just the IP fields.
+                using (var tagFile = RobustFileIO.CreateTaglibFile(newPath))
+                {
+                    tagFile.RemoveTags(TagLib.TagTypes.AllTags);
+                    RobustFileIO.SaveTaglibFile(tagFile);
+                }
+                source.WriteIntellectualPropertyOnly(newPath);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError(
+                    $"AiImageEditorApi: could not copy image credits to {newPath}",
+                    e
+                );
+            }
+        }
+
+        /// <summary>
+        /// The fallback source of credits (used when the editor supplies none): the replaced
+        /// image's own file metadata, returned as a clean IP-only <see cref="Metadata"/>, or
+        /// null when the file is missing or has no usable metadata.
+        /// </summary>
+        private static Metadata ReadReplacedImageCredits(
+            string bookFolderPath,
+            string replacedImageSrc
         )
         {
             if (string.IsNullOrEmpty(replacedImageSrc))
-                return;
+                return null;
             var oldPath = Path.Combine(bookFolderPath, replacedImageSrc);
             if (!RobustFile.Exists(oldPath))
-                return;
+                return null;
 
             Metadata source;
             try
@@ -1087,39 +1238,88 @@ namespace Bloom.web.controllers
                     $"AiImageEditorApi: could not read image metadata from {oldPath}",
                     e
                 );
-                return;
+                return null;
             }
             if (source == null || source.IsEmpty || source.ExceptionCaughtWhileLoading != null)
-                return;
+                return null;
 
-            var newPath = Path.Combine(bookFolderPath, newFileName);
-            try
+            return new Metadata
             {
-                // Clear whatever the generator left in the file first: stray tags can trip up
-                // the TagLib library when we write (BL-16058). Then write just the IP fields.
-                using (var tagFile = RobustFileIO.CreateTaglibFile(newPath))
-                {
-                    tagFile.RemoveTags(TagLib.TagTypes.AllTags);
-                    RobustFileIO.SaveTaglibFile(tagFile);
-                }
-                var credits = new Metadata
-                {
-                    Creator = source.Creator,
-                    License = source.License,
-                    CopyrightNotice = source.CopyrightNotice,
-                    AttributionUrl = source.AttributionUrl,
-                    CollectionName = source.CollectionName,
-                    CollectionUri = source.CollectionUri,
-                };
-                credits.WriteIntellectualPropertyOnly(newPath);
-            }
-            catch (Exception e)
-            {
-                Logger.WriteError(
-                    $"AiImageEditorApi: could not copy image credits to {newPath}",
-                    e
-                );
-            }
+                Creator = source.Creator,
+                License = source.License,
+                CopyrightNotice = source.CopyrightNotice,
+                AttributionUrl = source.AttributionUrl,
+                CollectionName = source.CollectionName,
+                CollectionUri = source.CollectionUri,
+            };
         }
+
+        /// <summary>
+        /// Builds an IP-only <see cref="Metadata"/> from the credits the editor supplied,
+        /// reconstructing the license from its URL and/or rights statement.
+        /// </summary>
+        private static Metadata MetadataFromCredits(ImageCredits credits)
+        {
+            return new Metadata
+            {
+                Creator = credits.creator,
+                CopyrightNotice = credits.copyrightNotice,
+                AttributionUrl = credits.attributionUrl,
+                CollectionName = credits.collectionName,
+                CollectionUri = credits.collectionUri,
+                License = BuildLicense(credits.license),
+            };
+        }
+
+        /// <summary>
+        /// Collapses a ClearShare license to the single wire string the editor carries: the
+        /// license URL for a Creative Commons license (its canonical form), otherwise the
+        /// free-text rights statement for a custom license. Null when there is no license.
+        /// </summary>
+        private static string LicenseToWireString(LicenseInfo license)
+        {
+            if (license == null)
+                return null;
+            // Url/RightsStatement are on the LicenseInfo base, so this works for Creative
+            // Commons, custom, and null licenses alike.
+            return string.IsNullOrEmpty(license.Url) ? license.RightsStatement : license.Url;
+        }
+
+        /// <summary>
+        /// Reconstructs a ClearShare license from the wire representation (URL + rights
+        /// statement): a creativecommons.org URL becomes a proper CreativeCommonsLicense; any
+        /// other rights statement becomes a CustomLicense so the text is preserved; nothing at
+        /// all becomes a NullLicense. Always returns non-null. Mirrors the image gallery's
+        /// BuildLicenseInfoFromGallery, including the guard against handing a non-CC URL to
+        /// FromLicenseUrl (which misparses such URLs instead of throwing).
+        /// </summary>
+        private static LicenseInfo BuildLicense(string license)
+        {
+            if (string.IsNullOrEmpty(license))
+                return new NullLicense();
+            // Only hand actual creativecommons.org URLs to the CC parser: FromLicenseUrl
+            // misparses unrelated URLs instead of throwing (see ImageGalleryApi).
+            if (license.Contains("creativecommons.org"))
+            {
+                try
+                {
+                    return CreativeCommonsLicense.FromLicenseUrl(license);
+                }
+                catch
+                {
+                    // Malformed CC URL — fall through and preserve it as custom text.
+                }
+            }
+            return new CustomLicense { RightsStatement = license };
+        }
+
+        /// <summary>True when every field of the supplied credits is null/empty.</summary>
+        private static bool CreditsAreEmpty(ImageCredits c) =>
+            string.IsNullOrEmpty(c.creator)
+            && string.IsNullOrEmpty(c.copyrightNotice)
+            && string.IsNullOrEmpty(c.license)
+            && string.IsNullOrEmpty(c.attributionUrl)
+            && string.IsNullOrEmpty(c.collectionName)
+            && string.IsNullOrEmpty(c.collectionUri);
     }
 }

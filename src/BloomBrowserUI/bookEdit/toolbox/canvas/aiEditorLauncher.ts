@@ -22,7 +22,7 @@
 //      down. (There is intentionally no C#->iframe message channel; init flows from
 //      here, the overlay JS, because only the browser can postMessage to the iframe.)
 
-import { post, postJson } from "../../../utils/bloomApi";
+import { post, postJson, postThatMightNavigate } from "../../../utils/bloomApi";
 import {
     getImageUrlFromImageContainer,
     GetRawImageUrl,
@@ -331,10 +331,12 @@ export const launchAiImageEditor = (
                             // apply exception) so the editor overlay can't hang.
                             let finalOk = false;
                             let message: string | undefined;
+                            let currentPageApplied = 0;
                             try {
                                 const cp = applyCurrentPageReplacements(
                                     result?.results,
                                 );
+                                currentPageApplied = cp.applied;
                                 const serverOk = result?.ok !== false;
                                 finalOk =
                                     serverOk && cp.applied === cp.expected;
@@ -354,6 +356,19 @@ export const launchAiImageEditor = (
                                 ackEditor(finalOk, message);
                                 if (finalOk) {
                                     cleanup();
+                                }
+                                // changeImageByElement only mutated the LIVE page DOM;
+                                // unlike the off-page slots (which C# saved), a current-page
+                                // swap is not otherwise persisted. Save + rethink the page so
+                                // storage matches the live DOM — otherwise a relaunch would
+                                // enumerate the stale storage (showing the pre-edit image) and
+                                // a later commit's oldSrc, read from that stale storage, would
+                                // no longer match the live page ("0 of N could be updated").
+                                // Mirrors doVideoCommand's save after updateVideoInContainer.
+                                if (currentPageApplied > 0) {
+                                    postThatMightNavigate(
+                                        "common/saveChangesAndRethinkPageEvent",
+                                    );
                                 }
                             }
                         },
