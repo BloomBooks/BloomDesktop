@@ -241,12 +241,19 @@ let lastWatchRestartSignalAt;
 let sourceChangedSinceReady = false;
 // How fresh that signal must be to explain a Bloom exit. dotnet watch usually
 // kills the app within a beat of printing the file-changed line, but on a busy
-// machine (or when it tries a hot reload first) the gap can stretch. Erring
-// generous is deliberate: mistaking a rebuild for "the developer closed Bloom"
-// destroys the whole dev stack, while the opposite mistake merely leaves the
-// stack up a little longer — and in that window dotnet watch would have
-// relaunched Bloom anyway.
+// machine the gap can stretch. Erring generous is deliberate: mistaking a rebuild
+// for "the developer closed Bloom" destroys the whole dev stack, whereas the
+// opposite mistake only delays freeing memory.
+// This window is only trusted while Bloom actually died in it — see
+// disarmSignalIfBloomSurvives, which throws the signal away once Bloom is seen
+// surviving the change (i.e. the watcher hot-reloaded and will NOT relaunch).
 const watchRestartSignalWindowMs = 30000;
+// How long to let dotnet watch act on a file change before concluding it chose a
+// hot reload over killing Bloom. Comfortably longer than the "prints the line,
+// then kills the app" gap, and short enough that a close right after an edit is
+// still read as a close.
+const watchHotReloadGraceMs = 15000;
+let hotReloadCheckTimer;
 
 const isProcessRunning = (pid) => {
     if (!Number.isInteger(pid) || pid <= 0) {
@@ -285,6 +292,8 @@ const resetLaunchState = () => {
     bloomReadyAt = undefined;
     lastAutomationInfo = undefined;
     lastWatchRestartSignalAt = undefined;
+    clearTimeout(hotReloadCheckTimer);
+    hotReloadCheckTimer = undefined;
     sourceChangedSinceReady = false;
     // A restart won over any in-flight quit; drop the stale stop request so it
     // cannot mis-park a later, unrelated child exit.
@@ -313,6 +322,23 @@ const exitForFinishedLaunch = (exitCode = 0) => {
 const hasFreshWatchRestartSignal = () =>
     lastWatchRestartSignalAt !== undefined &&
     Date.now() - lastWatchRestartSignalAt < watchRestartSignalWindowMs;
+
+// A file-changed line means a rebuild is imminent ONLY if dotnet watch is going to
+// kill Bloom. When it hot-reloads instead, Bloom keeps running and no rebuilt
+// instance ever announces itself — so nothing would clear the signal, and a close
+// minutes later (well, up to watchRestartSignalWindowMs later) would be misread as
+// "a rebuild is coming", leaving the whole stack waiting forever for a Bloom that
+// is never rebuilt. So: if Bloom is still alive a beat after the change line, the
+// watcher chose hot reload, and this signal no longer explains any later exit.
+const disarmSignalIfBloomSurvives = () => {
+    clearTimeout(hotReloadCheckTimer);
+    hotReloadCheckTimer = setTimeout(() => {
+        hotReloadCheckTimer = undefined;
+        if (bloomProcessId && isProcessRunning(bloomProcessId)) {
+            lastWatchRestartSignalAt = undefined;
+        }
+    }, watchHotReloadGraceMs);
+};
 
 // Bloom exited while dotnet watch is still alive. Two possibilities:
 // - dotnet watch is rebuilding Bloom because a source file changed: keep the
@@ -482,6 +508,7 @@ const handleOutputLine = (launchToken, line) => {
     if (isDotnetWatchRestartSignal(line)) {
         lastWatchRestartSignalAt = Date.now();
         sourceChangedSinceReady = true;
+        disarmSignalIfBloomSurvives();
     }
 
     if (!line.startsWith(automationReadyPrefix)) {
