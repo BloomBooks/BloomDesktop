@@ -10,6 +10,7 @@
     },
     "devDependencies": {
         "@argos-ci/cli": "6.0.0",
+        "@types/node": "24.13.0",
         "typescript": "6.0.3",
         "vite": "7.1.5",
         "vitest": "4.1.10"
