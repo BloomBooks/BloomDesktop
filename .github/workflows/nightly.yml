@@ -156,6 +156,13 @@ jobs:
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
               with:
                   check_name: Nightly test results
+                  # This is a health check, not a PR gate: publish the check run, job-summary
+                  # counts, and per-test annotations, but do NOT post a PR comment. The action
+                  # defaults to comment_mode: always, which on a dispatch run against a branch
+                  # with an open PR tries to POST a PR comment and fails with 403 "Resource not
+                  # accessible by integration" (the job grants checks: write, not
+                  # pull-requests: write); the scheduled master run has no PR to comment on anyway.
+                  comment_mode: "off"
                   # Unified files input (junit_files/nunit_files are deprecated); the action
                   # auto-detects each file's format (JUnit for vitest, NUnit3 for the C# suite).
                   files: |
