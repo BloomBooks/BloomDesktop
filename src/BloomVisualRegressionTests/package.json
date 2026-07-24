@@ -4,8 +4,8 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "test": "vitest",
-        "testPatient": "vitest --test-timeout=5000000",
+        "test": "vitest run",
+        "testPatient": "vitest run --test-timeout=5000000",
         "upload": "pnpm exec argos upload ./screenshots"
     },
     "devDependencies": {

@@ -41,25 +41,9 @@ export function canvasElementDescription(
 
 export function showCanvasTool() {
     const handleToolbox = (toolbox: {
-        toolboxIsShowing: () => boolean;
-        activateToolFromId: (toolId: string) => void;
-        ensureToolEnabled?: (toolId: string) => void;
-        setCurrentTool?: (toolId: string) => void;
+        enableToolFromPage: (toolId: string) => void;
     }) => {
-        if (toolbox.toolboxIsShowing()) {
-            if (typeof toolbox.ensureToolEnabled === "function") {
-                toolbox.ensureToolEnabled(kCanvasToolId);
-            }
-            if (typeof toolbox.setCurrentTool === "function") {
-                toolbox.setCurrentTool(kCanvasToolId);
-            }
-        } else {
-            toolbox.activateToolFromId(kCanvasToolId);
-        }
-        postString(
-            "editView/saveToolboxSetting",
-            "active\t" + kCanvasToolId + "Check\t1",
-        );
+        toolbox.enableToolFromPage(kCanvasToolId);
     };
 
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();

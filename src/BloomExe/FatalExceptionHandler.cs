@@ -162,6 +162,14 @@ namespace Bloom
 
         protected override bool DisplayError(Exception exception)
         {
+            if (Program.RunningE2eTests)
+            {
+                // No human is present during an e2e/visual-regression run to dismiss a modal, so
+                // showing the fatal-error dialog would hang the whole run. Log it instead and return
+                // true so the caller exits normally; the dead Bloom will fail the test.
+                Logger.WriteError("Fatal error during e2e run (dialog suppressed)", exception);
+                return true;
+            }
             ProblemReportApi.ShowProblemDialog(Form.ActiveForm, exception, "", "fatal");
             return true;
         }
