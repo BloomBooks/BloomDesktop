@@ -903,7 +903,19 @@ namespace Bloom.Edit
                 return false;
             // Explorer's "Copy as path" wraps the path in quotes; ignore them, along with
             // stray whitespace, so such a path is still recognized as image-intended.
-            return _probableImageExtensions.Contains(Path.GetExtension(path.Trim().Trim('"')));
+            var candidate = path.Trim().Trim('"');
+            // For URLs, ignore any query string or fragment (".../bird.png?width=800").
+            // Only for URLs: '#' is a legal character in a Windows file name.
+            if (
+                candidate.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                || candidate.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                var cut = candidate.IndexOfAny(new[] { '?', '#' });
+                if (cut >= 0)
+                    candidate = candidate.Substring(0, cut);
+            }
+            return _probableImageExtensions.Contains(Path.GetExtension(candidate));
         }
 
         private bool CopyImageToClipboard(
