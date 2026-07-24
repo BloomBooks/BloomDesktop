@@ -30,6 +30,18 @@ const repoCollectionsRoot = Path.join(process.cwd(), "collections");
 let tempCollectionsRoot: string | null = null;
 // The dedicated Bloom we launch, kept so we can shut it down afterwards.
 let bloomProcess: ChildProcess | null = null;
+// Everything Bloom writes to stdout/stderr, kept so that when a launch fails (Bloom crashed, or its
+// server never came up) we can report WHY instead of an opaque "did not open within 90s" timeout.
+// Capped so a chatty-but-healthy Bloom can't grow this unbounded.
+let bloomOutput = "";
+const MAX_BLOOM_OUTPUT = 20000;
+function recordBloomOutput(chunk: string) {
+    bloomOutput = (bloomOutput + chunk).slice(-MAX_BLOOM_OUTPUT);
+}
+// Set if the Bloom process we spawned exits before it starts serving our collection. Distinguishes a
+// crash-on-startup (fail fast with the exit code) from a still-running-but-not-ready poll.
+let bloomExit: { code: number | null; signal: NodeJS.Signals | null } | null =
+    null;
 // The PID of the Bloom actually serving our temp collection. Bloom can relaunch into a new process
 // after startup, so the process we spawned is not necessarily the one serving — killing only the
 // spawned PID left orphaned Blooms holding the temp folder open. We read the real PID from
@@ -698,6 +710,27 @@ async function launchDedicatedBloom() {
     // Bloom problem fails the test instead of hanging the run. --automation: allow this instance to
     // run alongside a Bloom the developer already has open (bypasses the single-instance token).
     bloomProcess = execFile(exe, [collection, "--e2e", "--automation"]);
+    // Capture Bloom's output and watch for an early exit. Without this a launch failure (crash on
+    // startup, missing WebView2 runtime, first-run dialog) is invisible: the poll below just runs
+    // out the full 90s and reports "seen: none" with no clue why. Echo to our own stderr too so the
+    // CI step log shows Bloom's startup output inline. execFile (no stdio:'ignore') gives us pipes.
+    bloomProcess.stdout?.on("data", (d) => {
+        const s = d.toString();
+        recordBloomOutput(s);
+        process.stderr.write(`[bloom stdout] ${s}`);
+    });
+    bloomProcess.stderr?.on("data", (d) => {
+        const s = d.toString();
+        recordBloomOutput(s);
+        process.stderr.write(`[bloom stderr] ${s}`);
+    });
+    // 'error' fires when the exe can't even be spawned (e.g. not found / not executable).
+    bloomProcess.on("error", (err) =>
+        recordBloomOutput(`\n[spawn error] ${err.message}\n`),
+    );
+    bloomProcess.on("exit", (code, signal) => {
+        bloomExit = { code, signal };
+    });
 
     // Discover which port our instance opened on by matching the collection folder it has open.
     const wantFolder = Path.join(tempCollectionsRoot, "basic");
@@ -711,6 +744,17 @@ async function launchDedicatedBloom() {
                 `Dedicated Bloom is ready at ${bloomOrigin} (pid ${bloomServingPid ?? "?"})`,
             );
             return;
+        }
+        // Fail fast if Bloom died on startup instead of waiting out the full timeout: the exit code
+        // plus captured output tells us it crashed rather than that discovery merely couldn't see it.
+        if (bloomExit) {
+            throw new Error(
+                `The dedicated Bloom exited before serving the temp collection ` +
+                    `(code ${bloomExit.code}, signal ${bloomExit.signal}).\n` +
+                    `  exe: ${exe}\n` +
+                    `  wanted: ${wantFolder}\n` +
+                    formatBloomOutput(),
+            );
         }
         await new Promise((resolve) => setTimeout(resolve, 1500));
     }
@@ -733,9 +777,20 @@ async function launchDedicatedBloom() {
     }
     throw new Error(
         `The dedicated Bloom did not open the temp collection within 90s.\n` +
+            `  exe: ${exe}\n` +
             `  wanted: ${wantFolder}\n` +
-            `  Bloom instances seen: ${seen.length ? seen.join("; ") : "none"}`,
+            `  still running: ${bloomExit ? "no (already exited)" : "yes"}\n` +
+            `  Bloom instances seen: ${seen.length ? seen.join("; ") : "none"}\n` +
+            formatBloomOutput(),
     );
+}
+
+// Render the tail of Bloom's captured stdout/stderr for inclusion in a launch-failure error, so the
+// CI log shows what Bloom actually said. Kept separate so both failure paths format it identically.
+function formatBloomOutput(): string {
+    const trimmed = bloomOutput.trim();
+    if (!trimmed) return `  Bloom output: (none captured)`;
+    return `  Bloom output (last ${MAX_BLOOM_OUTPUT} chars):\n${trimmed}`;
 }
 
 // Kill the dedicated Bloom we launched, along with its WebView2 child processes. We kill both the

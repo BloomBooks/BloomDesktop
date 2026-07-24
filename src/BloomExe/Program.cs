@@ -352,12 +352,25 @@ namespace Bloom
                 // by the user.
                 if (!Settings.Default.LicenseAccepted)
                 {
-                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
-                    using (var dlg = new LicenseDialog("license.htm"))
-                        if (dlg.ShowDialog() != DialogResult.OK)
-                            return 1;
-                    Settings.Default.LicenseAccepted = true;
-                    Settings.Default.Save();
+                    if (RunningE2eTests)
+                    {
+                        // e2e / visual-regression runs (--e2e) launch Bloom with a collection
+                        // argument and no human to click Accept. Showing the modal LicenseDialog
+                        // would block startup forever (Bloom never opens the collection or starts
+                        // its server), so treat the license as accepted and proceed. Mirrors the
+                        // debugger-prompt skip below.
+                        Settings.Default.LicenseAccepted = true;
+                        Settings.Default.Save();
+                    }
+                    else
+                    {
+                        using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
+                        using (var dlg = new LicenseDialog("license.htm"))
+                            if (dlg.ShowDialog() != DialogResult.OK)
+                                return 1;
+                        Settings.Default.LicenseAccepted = true;
+                        Settings.Default.Save();
+                    }
                 }
 
 #if DEBUG

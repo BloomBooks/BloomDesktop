@@ -62,6 +62,7 @@ jobs:
                   cache-dependency-path: |
                       src/BloomBrowserUI/pnpm-lock.yaml
                       src/content/pnpm-lock.yaml
+                      src/BloomVisualRegressionTests/pnpm-lock.yaml
 
             # ----- Dependencies (mirrors init.sh) -----
 
@@ -101,9 +102,13 @@ jobs:
               run: pnpm run build-prod
 
             # The junit file feeds the "Publish test results" step at the end of the job.
+            # Use the string form --outputFile=, NOT --outputFile.junit=: this project's
+            # vite.config.mts sets outputFile to a plain string, and the dotted CLI form does
+            # not override it — vitest silently falls back to the config path and no file lands
+            # at output/Tests. The string form overrides correctly and vitest creates the dir.
             - name: Run browser UI tests
               working-directory: src/BloomBrowserUI
-              run: pnpm run test:ci -- --reporter=default --reporter=junit --outputFile.junit=../../output/Tests/vitest-junit.xml
+              run: pnpm run test:ci -- --reporter=default --reporter=junit --outputFile=../../output/Tests/vitest-junit.xml
 
             # ----- C# build + tests -----
             # We want the C# suite to run even when the front-end TESTS fail, so a broken
@@ -143,6 +148,80 @@ jobs:
                     /p:BUILD_NUMBER=$env:BUILD_NUMBER `
                     /p:excludedCategories=SkipOnTeamCity
 
+            # ----- Visual regression tests -----
+            # src/BloomVisualRegressionTests drives a real Release Bloom.exe (which it finds at
+            # output/Release/x64/Bloom.exe) over HTTP and compares rendered screenshots against
+            # committed reference images (pixelmatch). It needs BOTH builds: the C# build (the
+            # Bloom.exe it launches) AND the front-end build (Bloom loads its UI from the built
+            # browser assets that the C# build copies into its output). So both must have
+            # succeeded — build_csharp already implies build_frontend (the C# chain is gated on
+            # it), but we require both explicitly for clarity. !cancelled() lets these run even
+            # when the unit-test steps above failed, so the nightly still reports visual breakage.
+            # The run step then chains on this setup step's success (like the C# chain), so a
+            # failed install/browser-download cleanly skips the run rather than triggering a
+            # confusing secondary failure — the failed setup step still turns the job red.
+            - name: Set up visual regression tests
+              id: setup_visual_regression
+              if: ${{ !cancelled() && steps.build_frontend.outcome == 'success' && steps.build_csharp.outcome == 'success' }}
+              working-directory: src/BloomVisualRegressionTests
+              shell: bash
+              run: |
+                  pnpm install --frozen-lockfile
+                  # The suite drives a headless chromium (Playwright) to capture bloom-player pages.
+                  pnpm exec playwright install chromium
+
+            - name: Run visual regression tests
+              id: visual_regression
+              if: ${{ !cancelled() && steps.setup_visual_regression.outcome == 'success' }}
+              working-directory: src/BloomVisualRegressionTests
+              shell: bash
+              run: pnpm test
+
+            # When the visual-regression step fails, the most useful clue is usually Bloom's own
+            # log (it launches a real Bloom.exe and talks to it over HTTP). Bloom writes to
+            # %TEMP%\SIL\Bloom\Log.txt (and, depending on how far it got, %LOCALAPPDATA%\SIL\Bloom);
+            # a crash on startup often leaves a .NET Watson/CLR entry in the Windows Application
+            # event log. Gather whatever exists into a fixed folder so the next step can upload it,
+            # rather than losing the one thing that explains a "Bloom never came up" failure.
+            # Best-effort throughout: never let missing logs turn this diagnostic step red.
+            - name: Collect Bloom diagnostics
+              if: ${{ !cancelled() && steps.visual_regression.outcome == 'failure' }}
+              shell: bash
+              run: |
+                  set +e
+                  dest="bloom-diagnostics"
+                  mkdir -p "$dest"
+                  for src in "$TEMP/SIL/Bloom" "$LOCALAPPDATA/SIL/Bloom" "$LOCALAPPDATA/Temp/SIL/Bloom"; do
+                      if [ -d "$src" ]; then
+                          echo "Found Bloom logs in: $src"
+                          # Flatten the source root into the name so two Log.txt don't collide.
+                          tag=$(echo "$src" | tr '/:\\ ' '____')
+                          cp -r "$src" "$dest/$tag" 2>/dev/null
+                      fi
+                  done
+                  # .NET runtime crashes (e.g. a missing WebView2 runtime) surface here even when
+                  # Bloom wrote no log of its own.
+                  powershell -NoProfile -Command "Get-WinEvent -LogName Application -MaxEvents 40 -ErrorAction SilentlyContinue | Where-Object { \$_.ProviderName -match 'Application Error|.NET Runtime|Windows Error Reporting' } | Format-List TimeCreated, ProviderName, Message" > "$dest/windows-application-events.txt" 2>&1
+                  echo "----- collected diagnostics -----"
+                  ls -R "$dest" || true
+
+            # On failure, keep the current + diff images so a human can see what changed, plus the
+            # Bloom logs / crash events gathered above. The committed *-reference.png baselines are
+            # already in the repo; *-current.png and *-diff.png are generated (gitignored).
+            # if-no-files-found: ignore avoids a warning when the failure was not a pixel mismatch
+            # (e.g. Bloom failed to launch, so no screenshots were produced).
+            - name: Upload visual regression diffs
+              if: ${{ !cancelled() && steps.visual_regression.outcome == 'failure' }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: visual-regression-diffs
+                  path: |
+                      src/BloomVisualRegressionTests/collections/**/screenshots/*-current.png
+                      src/BloomVisualRegressionTests/collections/**/screenshots/*-diff.png
+                      bloom-diagnostics/**
+                  retention-days: 14
+                  if-no-files-found: ignore
+
             # Renders both suites as a human-readable report: pass/fail/skip counts in the
             # job summary page, a check run on the commit, and per-test annotations for
             # failures. always() so the report is still published when a test step fails —
@@ -152,8 +231,18 @@ jobs:
               uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
               with:
                   check_name: Nightly test results
-                  junit_files: output/Tests/vitest-junit.xml
-                  nunit_files: output/Tests/Release/x64/TestResults.xml
+                  # This is a health check, not a PR gate: publish the check run, job-summary
+                  # counts, and per-test annotations, but do NOT post a PR comment. The action
+                  # defaults to comment_mode: always, which on a dispatch run against a branch
+                  # with an open PR tries to POST a PR comment and fails with 403 "Resource not
+                  # accessible by integration" (the job grants checks: write, not
+                  # pull-requests: write); the scheduled master run has no PR to comment on anyway.
+                  comment_mode: "off"
+                  # Unified files input (junit_files/nunit_files are deprecated); the action
+                  # auto-detects each file's format (JUnit for vitest, NUnit3 for the C# suite).
+                  files: |
+                      output/Tests/vitest-junit.xml
+                      output/Tests/Release/x64/TestResults.xml
 
             - name: Upload test results
               if: ${{ always() }}
