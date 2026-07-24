@@ -17,6 +17,14 @@ import {
     libraryNames,
     resolveCheckoutDir,
 } from "./devLibraries.mjs";
+import {
+    discoveryFileSchemaVersion,
+    getDiscoveryFilePath,
+    getMissingInitMarkers,
+    readDiscoveryFile,
+    removeDiscoveryFile,
+    writeDiscoveryFile,
+} from "../../../scripts/watchBloomExeControl.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -189,6 +197,141 @@ const children = [];
 // layers, and can outrace taskkill /t, so we sweep these markers on startup and shutdown.
 const linkedCheckouts = new Set();
 let isShuttingDown = false;
+
+const discoveryFilePath = getDiscoveryFilePath(repoRoot);
+const launcherStartedAt = new Date().toISOString();
+
+const isPidAlive = (pid) => {
+    if (!Number.isInteger(pid) || pid <= 0) {
+        return false;
+    }
+    try {
+        process.kill(pid, 0);
+        return true;
+    } catch {
+        return false;
+    }
+};
+
+// Advertises this launch from the very first moment, BEFORE the control server
+// exists (watchBloomExe.mjs later overwrites this with the full record that has
+// a controlUrl). Init + Vite startup can take minutes; without this early
+// record an agent's --ensure-running would see "nobody home" and start a
+// second stack. `phase` tells watchers what stage we're in.
+const updateLauncherPhase = (phase) => {
+    try {
+        writeDiscoveryFile(discoveryFilePath, {
+            schemaVersion: discoveryFileSchemaVersion,
+            kind: "bloom-launcher",
+            state: "starting",
+            phase,
+            goPid: process.pid,
+            repoRoot,
+            startedAt: launcherStartedAt,
+        });
+    } catch (error) {
+        console.warn(
+            `[go] Could not write launcher discovery file: ${error.message}`,
+        );
+    }
+};
+
+const warnIfAnotherLauncherActive = async () => {
+    const existing = readDiscoveryFile(discoveryFilePath);
+    if (!existing || existing.goPid === process.pid) {
+        return;
+    }
+
+    if (existing.controlUrl) {
+        try {
+            const response = await fetch(`${existing.controlUrl}/status`, {
+                signal: AbortSignal.timeout(1000),
+            });
+            if (response.ok) {
+                console.warn(
+                    `[go] Another Bloom launcher (go PID ${existing.goPid}) is already running for this worktree. Continuing; the discovery file follows the last launcher started.`,
+                );
+            }
+        } catch {
+            // Nobody home; the file is stale, which is normal after a hard kill.
+        }
+        return;
+    }
+
+    if (existing.state === "starting" && isPidAlive(existing.goPid)) {
+        console.warn(
+            `[go] Another Bloom launcher (go PID ${existing.goPid}) appears to be starting for this worktree (phase: ${existing.phase}). Continuing; the discovery file follows the last launcher started.`,
+        );
+    }
+};
+
+// On Windows, prefer Git's bash explicitly: a bare "bash" on PATH can resolve
+// to the WSL stub in System32, which cannot run our repo scripts.
+const findBash = () => {
+    if (process.platform !== "win32") {
+        return "bash";
+    }
+
+    return (
+        [
+            "C:\\Program Files\\Git\\bin\\bash.exe",
+            "C:\\Program Files (x86)\\Git\\bin\\bash.exe",
+        ].find((candidate) => fs.existsSync(candidate)) ?? "bash"
+    );
+};
+
+// Worktrees are normally initialized (./init.sh) right after creation, but a
+// skipped or half-finished init produces confusing late failures: the C# build
+// dies with CS0246, or Bloom launches fine and then can't serve bundles that
+// only `pnpm build` produces. Detect that state here — the one place every
+// launch path goes through — and run init.sh before proceeding.
+const ensureWorktreeInitialized = async () => {
+    const missing = getMissingInitMarkers(repoRoot);
+    if (missing.length === 0) {
+        return;
+    }
+
+    console.log(
+        "[go] This worktree has not been (fully) initialized. Missing:",
+    );
+    for (const [relativePath, description] of missing) {
+        console.log(`[go]   ${relativePath}  — ${description}`);
+    }
+    console.log(
+        "[go] Running ./init.sh first; this one-time step takes a few minutes...",
+    );
+    updateLauncherPhase("init");
+
+    await new Promise((resolve, reject) => {
+        const child = spawn(findBash(), ["./init.sh"], {
+            cwd: repoRoot,
+            stdio: ["ignore", "pipe", "pipe"],
+            shell: false,
+        });
+        children.push(child);
+        pipeChildOutput(child, "[init] ");
+
+        child.on("error", (error) => {
+            reject(new Error(`Could not run init.sh: ${error.message}`));
+        });
+        child.on("exit", (code) => {
+            if (code === 0) {
+                resolve();
+            } else {
+                reject(new Error(`init.sh failed with exit code ${code}.`));
+            }
+        });
+    });
+
+    const stillMissing = getMissingInitMarkers(repoRoot);
+    if (stillMissing.length > 0) {
+        throw new Error(
+            `init.sh completed but these are still missing: ${stillMissing.map(([relativePath]) => relativePath).join(", ")}`,
+        );
+    }
+
+    console.log("[go] init.sh finished; continuing the launch.");
+};
 
 const delay = (milliseconds) =>
     new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -436,6 +579,16 @@ const shutdown = async (exitCode = 0) => {
             log: (message) => console.log(`[go] ${message}`),
         });
     }
+
+    // Remove the launcher discovery file if it belongs to this stack (both the
+    // early "starting" record and watchBloomExe's full record carry our pid as
+    // goPid). watchBloomExe usually cannot clean up itself here because the
+    // tree-kill above gives it no chance to run exit handlers.
+    try {
+        if (readDiscoveryFile(discoveryFilePath)?.goPid === process.pid) {
+            removeDiscoveryFile(discoveryFilePath);
+        }
+    } catch {}
 
     process.exit(normalizedExitCode);
 };
@@ -857,6 +1010,9 @@ const resolveLinks = () => {
 };
 
 const main = async () => {
+    await warnIfAnotherLauncherActive();
+    updateLauncherPhase("starting");
+
     // Defensive reap: a prior launcher that was hard-killed (terminal closed,
     // SIGKILL, timeout) cannot run its shutdown handlers, so its Vite + watcher
     // node processes orphan. Left uncleaned, these accumulate across worktrees and
@@ -870,6 +1026,8 @@ const main = async () => {
         excludePids: [process.pid],
         log: (message) => console.log(`[go] ${message}`),
     });
+
+    await ensureWorktreeInitialized();
 
     const { bundled, iframe } = resolveLinks();
 
@@ -920,6 +1078,7 @@ const main = async () => {
     console.log(
         "[go] Launching Vite first and waiting for it to go quiet before starting Bloom.",
     );
+    updateLauncherPhase("dev-server");
 
     // AI Image Editor: either run its own dev server (linked, HMR) or stage the prebuilt
     // app for Bloom to serve, before Bloom starts.
@@ -963,6 +1122,9 @@ const main = async () => {
     console.log(
         `[go] Vite is reachable and quiet on port ${dev.port}. Starting Bloom...`,
     );
+    // watchBloomExe overwrites this with the full record (controlUrl etc.)
+    // as soon as its control server is up.
+    updateLauncherPhase("starting-bloom");
     startBloomExe(dev.port);
 };
 

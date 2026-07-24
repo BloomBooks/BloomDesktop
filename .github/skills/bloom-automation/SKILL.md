@@ -58,6 +58,71 @@ node "$repo_root/.github/skills/bloom-automation/bloomProcessStatus.mjs" --http-
 
 Reports Bloom.exe processes, detected repo roots, attributable `dotnet watch` parents, ambiguous watchers, and whether the workspace API and CDP endpoint are reachable.
 
+### Launcher control (preferred whenever go.sh is running)
+
+The go.sh launcher (`scripts/watchBloomExe.mjs`) runs a loopback-only HTTP
+control server and advertises it in `<repoRoot>/output/bloom-launcher.json`
+plus a `BLOOM_LAUNCHER_READY {...}` stdout line. `launcherControl.mjs` wraps
+it; use it INSTEAD of kill-and-relaunch or asking the human to press Enter:
+
+```bash
+node "$repo_root/.github/skills/bloom-automation/launcherControl.mjs" --status --json
+node "$repo_root/.github/skills/bloom-automation/launcherControl.mjs" --restart --wait-ready --json   # rebuild + relaunch, any state
+node "$repo_root/.github/skills/bloom-automation/launcherControl.mjs" --start --wait-ready --json     # relaunch only when parked (awaiting-restart)
+node "$repo_root/.github/skills/bloom-automation/launcherControl.mjs" --quit-bloom --json             # graceful WM_CLOSE quit; also stops the watch child, so C# edits do NOT respawn Bloom
+node "$repo_root/.github/skills/bloom-automation/launcherControl.mjs" --shutdown --json               # whole stack: Bloom + dotnet watch + launcher + Vite
+node "$repo_root/.github/skills/bloom-automation/launcherControl.mjs" --ensure-running --wait-ready --json  # start the stack if nobody's home
+```
+
+Semantics agents rely on:
+- **Liveness is HTTP truth, never the file.** A discovery file whose
+  `controlUrl` does not answer means nobody is home (hard-killed launcher);
+  the helper reports `launcherFound:false, staleFile:true` and exits 2. A
+  fresh launcher overwrites the stale file.
+- **A launch-in-progress is advertised too.** go.mjs writes an early record
+  (`state:"starting"`, a `phase` of `starting`/`init`/`dev-server`/
+  `starting-bloom`, and its `goPid`) from the first moment, before the control
+  server exists. The helper reports it as `launcherFound:false, starting:true,
+  phase:...` (exit 2) and `--ensure-running` WAITS for it instead of starting
+  a second stack. Startup can take minutes: `init` means the worktree was
+  uninitialized and go.mjs is running ./init.sh for you (go.mjs detects
+  missing node_modules / lib/dotnet deps / output/browser bundles and runs
+  init automatically — agents never need to run init.sh themselves).
+- `--status` states: `building`, `bloom-running`, `awaiting-restart`
+  (reached only via `--quit-bloom` — see below), `restarting`,
+  `launch-failed`. During a dotnet-watch hot rebuild the state passes
+  through `building` transiently — poll for `bloom-running` (`--wait-ready`
+  does) rather than sampling once.
+- **The human closing Bloom (window X) tears the whole stack down** —
+  launcher, dotnet watch, and Vite all exit, so an idle stack stops holding
+  memory. If `--status` suddenly reports nobody home, that is the normal
+  meaning; just `--ensure-running` when you need Bloom again. (The launcher
+  distinguishes this from a dotnet-watch rebuild via the watcher's
+  file-changed output, so C# edits do not kill the stack.) Only
+  `--quit-bloom` leaves the launcher parked in `awaiting-restart`.
+- `/status` also reports `sourceChangedSinceReady`: whether dotnet watch has
+  seen C# source changes since the current Bloom became ready — i.e. whether
+  a `--restart` would incorporate anything new. Bloom itself polls that field
+  (only when launched by go.sh via `--launcher-port`, see `DevLauncher.cs`) and
+  shows a dev-only non-expiring toast whose "Restart" action posts the same
+  `/restart`.
+- `--wait-ready` waits for a NEW launch (`launchNumber` increased) to reach
+  `bloom-running` and prints the fresh `httpPort`/`cdpPort` — this replaces
+  grepping logs for `Bloom ready. HTTP`.
+- `--ensure-running` starts the stack decoupled from your session when no
+  launcher answers: in an Orca terminal tab titled "go.sh" when the Orca
+  runtime is reachable, else as a detached process logging to
+  `output/bloom-launcher.log` (reported as `logPath` in `/status`). A
+  `output/bloom-launcher.starting.lock` prevents two agents double-launching.
+- Every action prints a `[control] ... requested` line in the launcher's
+  terminal so the human can see why Bloom moved.
+- The raw API (for tools, not typed curl): `GET /status`, `POST /restart`,
+  `POST /start`, `POST /quit-bloom`, `POST /shutdown` on the `controlUrl`
+  from the discovery file.
+
+The status/kill helpers below remain the fallback for Bloom instances that
+have no live launcher (started outside go.sh, or the launcher was killed).
+
 Use `--running-bloom` when the user explicitly wants the already-running Bloom instead of a worktree-owned instance. This scans Bloom's standard HTTP port range, asks any running Bloom for `common/instanceInfo`, and reports the ports that instance says it is using.
 Use `--http-port <port>` when you launched Bloom through `./go.sh` or another repo-supported source-aware launcher and want the exact instance that owns that HTTP port. This is the preferred multi-instance workflow because it gives you the precise Bloom PID and CDP port even when several Blooms from the same worktree are running.
 ### Kill Bloom
@@ -72,9 +137,15 @@ node "$repo_root/.github/skills/bloom-automation/killBloomProcess.mjs" --pid 123
 Use the plain form to stop all detected Bloom-related processes. Use `--only-mismatched` to stop only the Bloom instance that does not belong to the current worktree.
 Use `--http-port <port>` to stop the exact Bloom instance bound to that HTTP port, together with any `dotnet` parent in its process chain. Use `--pid` or `--watch-pid` only when you already know the exact process IDs you want to stop.
 
-Important: if Bloom was started with `dotnet watch run`, killing only `Bloom.exe` is not enough because the watcher will restart it. Prefer the provided kill script so the watcher and child process are both terminated.
+Important: if Bloom was started with `dotnet watch run`, killing only `Bloom.exe` is not enough because the watcher will restart it. Prefer `launcherControl.mjs --quit-bloom` / `--shutdown` when the launcher is live (they handle the watcher for you); otherwise use the provided kill script so the watcher and child process are both terminated.
 
 ### Start Bloom
+
+Preferred: `launcherControl.mjs --ensure-running --wait-ready` (see "Launcher
+control" above) — it reuses a live launcher or starts one decoupled from your
+session, so other agents and the human share it. Launch `./go.sh` from your
+own shell only when the control surface can't be used (e.g. you are debugging
+the launcher itself):
 
 ```bash
 "$repo_root/go.sh"
@@ -110,6 +181,14 @@ node "$repo_root/.github/skills/bloom-automation/switchWorkspaceTab.mjs" --http-
 ```
 
 This helper attaches to the reported WebView2 target over CDP, clicks the real top bar tab, waits for `workspace/tabs` to report it active, and prints the resulting state.
+
+### Screenshot
+
+```bash
+node "$repo_root/.claude/skills/run-bloom/screenshotBloom.mjs" --http-port <httpPort> --out output/screenshots/bloom.png --json
+```
+
+(Lives in the Claude-specific run-bloom skill directory but works for any agent; output/ is gitignored.)
 
 ## Minimal Running Bloom Attach Workflow
 
@@ -164,6 +243,7 @@ Use this when the user says to reuse the already-running Bloom.
 - Reuse it.
 - Attach over CDP and drive the UI directly.
 - Do not restart unless the user explicitly wants a fresh run or you need to load new code.
+- When you DO need to load new .NET code, use `launcherControl.mjs --restart --wait-ready` (if the launcher is live) instead of killing and relaunching by hand or asking the human to quit Bloom.
 
 ### Do not accumulate worktree-owned instances
 - Do not start another Bloom from the same worktree just because explicit ports are available.
@@ -236,6 +316,51 @@ These tests attach to the real Bloom.exe target over CDP and verify tab switchin
   - Use `node .github/skills/bloom-automation/dismissProblemDialog.mjs --http-port <httpPort> [--wait] [--json]`. It (1) finds the dialog by DOM (so it never closes a legitimate modal), (2) GATHERS the underlying problem — it clicks the dialog's own "Learn More" to reveal the exception + missing-file/stack that Bloom would send, and prints it, and (3) closes the dialog with the SAME action as its Close button, `POST /bloom/api/common/closeReactDialog`, which does NOT submit. It drains a backlog (Bloom queues reports and shows them one at a time), gathering each, up to a cap.
   - NEVER click Submit / POST `problemReport/submit` in automation: that sends a report (with a screenshot and the book) to Bloom's servers.
   - If the SAME problem keeps reappearing after being closed, it is a real recurring error in the code under test (e.g. a resource that 404s on every render) — read the gathered detail, fix the root cause, and re-test; do not just loop-dismiss. The Bloom log at `%TEMP%\SIL\Bloom\Log-*.txt` has the same detail if you need it out-of-band, but note its writes can lag, so the dialog's own "Learn More" (what the helper scrapes) is the authoritative live source.
+
+## Field-verified gotchas (all hit in real agent runs)
+
+- **WMI/wmic can go blind mid-session.** `bloomProcessStatus.mjs` (plain
+  mode) and `killBloomProcess.mjs` enumerate processes via `wmic`; WMI has
+  stopped answering partway through a session — status reported zero Bloom
+  processes while one was demonstrably serving HTTP, and `Get-CimInstance`
+  hung for minutes. Trust the HTTP-based `--running-bloom` discovery and
+  `instanceInfo` over process enumeration.
+- **`killBloomProcess.mjs` under-kills.** Observed both `killedProcessIds:
+  []` for a valid target and partial kills where the `dotnet watch` parents
+  died but Bloom.exe survived. Always verify the port went dark
+  (`instanceInfo` curl fails) and the Bloom PID is gone; PowerShell
+  `Stop-Process -Id <pid> -Force` any survivors. (The launcher control API's
+  `--quit-bloom`/`--shutdown` avoid this whole class of problem — prefer
+  them whenever a launcher is live.)
+- **Orphaned `dotnet watch` chains relaunch Bloom.** If Bloom.exe is killed
+  but its watcher chain survives (e.g. Task Manager kills), the watchers sit
+  at "Waiting for a file to change" and respawn Bloom on the next C# edit.
+  Check `bloomProcessStatus.mjs --json` (`watchProcesses`) and stop stale
+  ones.
+- **Never type `taskkill /PID ...` in Git Bash** — MSYS rewrites `/PID` to
+  `C:/Program Files/Git/PID`. Use the node helpers or PowerShell.
+- **Grep launch logs for `Bloom ready\. HTTP`, not `Bloom ready\.`** — early
+  in the log watchBloomExe prints an instructional message that *quotes* the
+  phrase `'Bloom ready.'`, which matches the looser pattern long before
+  launch completes. (Better: poll `launcherControl.mjs --status` instead of
+  grepping logs at all.)
+- **`dotnet watch` noise:** the launch log contains scary
+  `⚠ msbuild: [Failure] Package 'X' was restored using .NETFramework...`
+  lines. They are warnings; launch still succeeds. Don't grep the log for
+  bare `Failure`/`error` as a failure signal — wait for `Bloom ready.` /
+  `exited shortly after`, or use `--status`.
+- **`bloomProcessStatus.mjs` may print
+  `Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)`** (libuv, on
+  exit, after the JSON is complete). Ignore it; the JSON on stdout is valid.
+- **Agent shells may auto-background long commands.** Capture the task
+  output file and read it; don't assume the inline result is the output.
+- `body.className` of the top-level page is `developer` in dev builds; page
+  URLs look like `http://localhost:<port>/bloom/C%3A/...Temp/bloomXXXX.htm`.
+- **Uninitialized worktrees self-heal at launch.** go.mjs detects missing
+  node_modules / `lib/dotnet` deps / `output/browser` bundles and runs
+  `./init.sh` itself (discovery file shows `phase:"init"`, takes minutes).
+  CS0246 (`PodcastUtilities` etc.) on other build paths still means init
+  hasn't run.
 
 ## Completion Checks
 - Bloom's status is known: not running, running from current worktree, or running from different worktree.

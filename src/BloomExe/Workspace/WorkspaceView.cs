@@ -1546,6 +1546,8 @@ window.showWorkspaceInitializationFailure = function(message) {
             );
             // Whether we showed the dialog or not we'll check for a new version in 1 minute.
             _applicationUpdateCheckTimer.Enabled = true;
+            // Dev only: does nothing unless the go.sh launcher started this Bloom.
+            DevLauncher.StartMonitoringForSourceChanges();
             SendTopBarState();
         }
 
