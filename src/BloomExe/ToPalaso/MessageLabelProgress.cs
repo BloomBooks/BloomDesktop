@@ -51,7 +51,7 @@ namespace Bloom.ToPalaso
 #if DEBUG
                 Debug.Fail(error.Message);
 #else
-                MiscUtils.SuppressUnusedExceptionVarWarning(error);
+                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(error);
 #endif
             }
         }
@@ -68,7 +68,7 @@ namespace Bloom.ToPalaso
 #if DEBUG
                 Debug.Fail(error.Message);
 #else
-                MiscUtils.SuppressUnusedExceptionVarWarning(error);
+                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(error);
 #endif
             }
         }
