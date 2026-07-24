@@ -19,6 +19,17 @@ House rules:
 
 ---
 
+## 2026-07-24 — go.sh "succeeds" on a fresh worktree whose output/browser was never built
+- **Cut:** On a never-initialized worktree, after fixing the obvious failures (pnpm install,
+  getDependencies for CS0246), `./go.sh` launches and Bloom looks healthy — but opening a book
+  fails with "Cannot Find File: bookPreviewBundle.js", because a few entry points are served
+  from `output/browser` (populated only by init.sh's one-shot `pnpm build`), not by the Vite
+  dev server. Neither go.sh nor the run-bloom skill warns about this half-initialized state.
+- **Idea:** Have go.mjs (or the run-bloom skill's preflight) check for a marker like
+  `output/browser/bookPreviewBundle.js` and say "run ./init.sh first" instead of launching
+  into a Bloom that fails later.
+- **Context:** BuildServer worktree, while verifying the new launcher control surface.
+
 
 ## 2026-07-15 — agent-dotnet full suite can never be fully green (9 environmental failures)
 
