@@ -5,7 +5,7 @@ import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { LeveledReaderToolControls } from "./LeveledReaderToolControls";
-import $ from "jquery";
+import { IToolboxSettings } from "../../toolbox";
 
 // This class renders the LeveledReaderToolControls React component
 // in the toolbox, and implements all the functionality/logic needed
@@ -35,41 +35,39 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
     // this function restores the level that was last saved,
     // as well as the data for that stage, so that the tool
     // doesn't restart at level 1 all the time
-    public beginRestoreSettings(opts: string): JQueryPromise<void> {
-        return beginInitializeLeveledReaderTool().then(() => {
-            const restoreDone = $.Deferred<void>();
-            // opts can be undefined/null when the tool is activated for a book that has no
-            // saved leveled-reader settings. Guard before indexing so we fall through to the
-            // default-level path instead of throwing an unhandled promise rejection that
-            // aborts tool activation (Sentry BLOOM-DESKTOP-FFH).
-            const leveledReaderState = (
-                opts as unknown as Record<string, string> | undefined
-            )?.["leveledReaderState"];
-            if (leveledReaderState) {
-                // The true passed here prevents re-saving the state we just read.
-                // One non-obvious implication is that simply opening a level-4 book
-                // will not switch the default level for new books to 4. That only
-                // happens when you CHANGE the level in the toolbox.
-                getTheOneReaderToolsModel().setLevelNumber(
-                    parseInt(leveledReaderState, 10),
-                    true,
-                );
-                restoreDone.resolve();
-            } else {
-                get(
-                    "readers/io/defaultLevel",
-                    (result) => {
-                        // Presumably a brand new book. We'd better save the settings we come up with in it.
-                        getTheOneReaderToolsModel().setLevelNumber(
-                            parseInt(result.data, 10),
-                        );
-                        restoreDone.resolve();
-                    },
-                    () => restoreDone.resolve(),
-                );
-            }
-
-            return restoreDone.promise();
+    public async beginRestoreSettings(
+        settings: IToolboxSettings,
+    ): Promise<void> {
+        await beginInitializeLeveledReaderTool();
+        // Despite the type, settings can be undefined/null at runtime when the tool is
+        // activated for a book that has no saved leveled-reader settings. Guard before
+        // indexing so we fall through to the default-level path instead of throwing an
+        // unhandled promise rejection that aborts tool activation
+        // (Sentry BLOOM-DESKTOP-FFH).
+        const leveledReaderState = settings?.["leveledReaderState"];
+        if (leveledReaderState) {
+            // The true passed here prevents re-saving the state we just read.
+            // One non-obvious implication is that simply opening a level-4 book
+            // will not switch the default level for new books to 4. That only
+            // happens when you CHANGE the level in the toolbox.
+            getTheOneReaderToolsModel().setLevelNumber(
+                parseInt(leveledReaderState, 10),
+                true,
+            );
+            return;
+        }
+        await new Promise<void>((resolve) => {
+            get(
+                "readers/io/defaultLevel",
+                (result) => {
+                    // Presumably a brand new book. We'd better save the settings we come up with in it.
+                    getTheOneReaderToolsModel().setLevelNumber(
+                        parseInt(result.data, 10),
+                    );
+                    resolve();
+                },
+                () => resolve(),
+            );
         });
     }
 

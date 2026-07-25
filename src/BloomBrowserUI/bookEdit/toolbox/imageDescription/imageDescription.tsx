@@ -4,7 +4,7 @@ import $ from "jquery";
 import * as React from "react";
 import { renderForInstance } from "../../../utils/reactRender";
 import { post } from "../../../utils/bloomApi";
-import { ToolBox } from "../toolbox";
+import { getPageIframeBody, isXmatterPage } from "../../../utils/shared";
 import { getEditablePageBundleExports } from "../../js/workspaceFrames";
 import "./imageDescription.less";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
@@ -185,12 +185,12 @@ export class ImageDescriptionToolControls extends React.Component<
         this.setState({
             enabled: true,
             descriptionNotNeeded: noDescriptionNeeded === "true",
-            isXmatterPage: ToolBox.isXmatterPage(),
+            isXmatterPage: isXmatterPage(),
         });
     }
 
     public setStateForNewPage(): void {
-        const page = ToolboxToolReactAdaptor.getPage();
+        const page = getPageIframeBody();
         if (!page) {
             this.setDisabledState();
             return;
@@ -358,7 +358,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        const page = ToolBox.getPage();
+        const page = getPageIframeBody();
         if (page) {
             hideImageDescriptions(page);
         }
@@ -394,7 +394,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         const imageDescControls = this.reactControls;
         if (imageDescControls) {
             imageDescControls.setStateForNewPage();
-            const page = ToolBox.getPage();
+            const page = getPageIframeBody();
             if (!page) {
                 return;
             }
