@@ -29,6 +29,10 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     public id(): string {
         return "decodableReader";
     }
+    /** The icon for this tool's section header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/images/keys-white.png";
+    }
     public newPageReady(): void {
         const model = getTheOneReaderToolsModel();
         model.setMarkupType(isReaderToolEnabledOnCurrentPage(false) ? 1 : 0);

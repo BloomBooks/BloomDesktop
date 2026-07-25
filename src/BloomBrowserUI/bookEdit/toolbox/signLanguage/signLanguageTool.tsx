@@ -1045,6 +1045,11 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return "signLanguage";
     }
 
+    /** The icon for this tool's section header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/bookEdit/toolbox/signLanguage/signLanguageTool.svg";
+    }
+
     // This function is saved in a variable so we can remove the same listener we added.
     private containerClickListener: EventListener = (event: MouseEvent) => {
         // The reason for the listener: to select the current element

@@ -27,6 +27,11 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
         return "leveledReader";
     }
 
+    /** The icon for this tool's section header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/images/steps-white.png";
+    }
+
     // this function restores the level that was last saved,
     // as well as the data for that stage, so that the tool
     // doesn't restart at level 1 all the time

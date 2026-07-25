@@ -1,6 +1,5 @@
 import * as React from "react";
 import { renderRoot } from "../../utils/reactRender";
-import axios from "axios";
 import { css } from "@emotion/react";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
@@ -18,42 +17,40 @@ import { getMasterToolList } from "./toolbox";
 import { kToolboxHeaderZIndex } from "./toolboxZIndexes";
 import { setToolboxReactAdapter } from "./toolboxReactAdapter";
 import { SubscriptionBadgeWithTooltipAndDialog } from "../../react_components/requiresSubscription";
+import {
+    compareToolsByLabel,
+    getToolLabelInfo,
+    kSettingsToolId,
+    kTalkingBookToolId,
+    toPersistedToolName,
+} from "./toolIds";
 
-// React host for the toolbox sidebar. It owns which tools the toolbox is offering, which
-// one is expanded, and the DOM node that each tool renders itself into.
+// React host for the toolbox sidebar. It holds the list of tools the toolbox is offering,
+// which one is expanded, and the DOM node that each tool renders itself into.
+//
+// It does not decide which tools to offer: toolbox.ts asks the server which tools the book
+// has enabled and tells us about each one through the adapter's addTool(), which is the
+// only way a section is ever created.
 //
 // Each tool still hands us a plain DOM element (from its ITool.makeRootElement()) rather
 // than a React component, so a small host component (ToolBodyHost) puts that element into
 // the React layout. When every tool is a React component, each section can render its
 // tool directly and both that host and toolboxReactAdapter.ts can go away.
 
+// Everything the toolbox needs in order to show one tool's section. It all comes from the
+// tool itself (see ITool) or is derived from its id (see toolIds.ts).
 type ToolboxSection = {
-    // The tool's id without the historical "Tool" suffix, e.g. "canvas".
+    // The tool's canonical id, i.e. what its ITool.id() returns, e.g. "canvas".
     id: string;
     englishLabel: string;
     l10nKey: string;
+    // The icon to show in the section header; undefined for sections without one.
+    iconPath?: string;
+    // Set only for tools that require a subscription, in which case the section header
+    // gets a badge for this feature.
+    featureName?: string;
     // The element the tool renders itself into. Created once, when the section is created.
-    toolBodyElement?: HTMLDivElement;
-};
-
-// Tools the toolbox offers whether or not the enabledTools API mentions them.
-// "settings" is the "More..." section, which is how the user enables the others.
-const alwaysOnToolIds: string[] = ["talkingBook", "settings"];
-
-const subscriptionToolIds = new Set<string>(["canvas", "motion", "music"]);
-
-const toolIconPathByToolId: Record<string, string> = {
-    talkingBook: "/bloom/images/microphone-white.svg",
-    decodableReader: "/bloom/images/keys-white.png",
-    leveledReader: "/bloom/images/steps-white.png",
-    signLanguage: "/bloom/bookEdit/toolbox/signLanguage/signLanguageTool.svg",
-    music: "/bloom/bookEdit/toolbox/music/music-notes-white.svg",
-    motion: "/bloom/bookEdit/toolbox/motion/motion.svg",
-    canvas: "/bloom/bookEdit/toolbox/canvas/Canvas%20Icon.svg",
-    imageDescription:
-        "/bloom/bookEdit/toolbox/imageDescription/ImageDescriptionToolIcon.svg",
-    impairmentVisualizer:
-        "/bloom/bookEdit/toolbox/impairmentVisualizer/blind-eye-white.svg",
+    toolBodyElement: HTMLDivElement;
 };
 
 const toolboxHeaderIconStyles = css`
@@ -66,88 +63,25 @@ const toolboxHeaderIconStyles = css`
     flex-shrink: 0;
 `;
 
-// Normalize mixed naming conventions (e.g., "canvas" vs "canvasTool") so
-// React and legacy code can refer to the same logical tool.
-const normalizeToolId = (toolId: string): string => {
-    if (!toolId) {
-        return toolId;
-    }
-
-    if (toolId.endsWith("Tool")) {
-        return toolId.substring(0, toolId.length - 4);
-    }
-
-    return toolId;
-};
-
-// Convert normalized IDs back to the toolbox's traditional "*Tool" names when
-// we need to notify the legacy toolbox code.
-const toToolboxToolId = (toolId: string): string => {
-    if (!toolId) {
-        return toolId;
-    }
-    if (toolId.endsWith("Tool") || toolId.endsWith("Visualizer")) {
-        return toolId;
-    }
-    return `${toolId}Tool`;
-};
-
-const getToolboxLabelInfo = (
-    toolId: string,
-): { englishLabel: string; l10nKey: string } => {
-    const normalizedToolId = normalizeToolId(toolId);
-    if (normalizedToolId === "settings") {
-        return {
-            englishLabel: "More...",
-            l10nKey: "EditTab.Toolbox.More",
-        };
-    }
-
-    const toolIdUpper =
-        normalizedToolId[0].toUpperCase() +
-        normalizedToolId.substring(1, normalizedToolId.length);
-    const englishBaseLabel = toolIdUpper.replace(/([A-Z])/g, " $1").trim();
-    const endsWithVisualizer = normalizedToolId.endsWith("Visualizer");
-
-    return {
-        englishLabel: endsWithVisualizer
-            ? englishBaseLabel
-            : `${englishBaseLabel} Tool`,
-        l10nKey: endsWithVisualizer
-            ? `EditTab.Toolbox.${toolIdUpper}`
-            : `EditTab.Toolbox.${toolIdUpper}Tool`,
-    };
-};
-
-// Ask the tool for the element it renders itself into. Returns undefined if we don't know
-// about the tool at all, which can happen if settings were saved by a later version of Bloom.
-const makeToolBodyElement = (
-    normalizedToolId: string,
-): HTMLDivElement | undefined => {
-    const tool = getMasterToolList().find(
-        (candidate) => candidate.id() === normalizedToolId,
-    );
-    if (!tool) {
-        return undefined;
-    }
-
-    const toolBodyElement = tool.makeRootElement();
-    // Some tool stylesheets still select their body by this attribute.
-    toolBodyElement.setAttribute(
-        "data-toolid",
-        toToolboxToolId(normalizedToolId),
-    );
-    return toolBodyElement;
-};
-
+// Gathers everything we need to show a section for this tool. The tool must be one the
+// toolbox knows about: toolbox.ts only asks us for tools it found in the master list.
 const makeSectionFromToolId = (toolId: string): ToolboxSection => {
-    const normalizedToolId = normalizeToolId(toolId);
-    const labelInfo = getToolboxLabelInfo(normalizedToolId);
+    const tool = getMasterToolList().find(
+        (candidate) => candidate.id() === toolId,
+    )!;
+    const labelInfo = getToolLabelInfo(toolId);
+    const toolBodyElement = tool.makeRootElement();
+    // Some tool stylesheets still select their body by this attribute, using the
+    // historical "Tool"-suffixed name.
+    toolBodyElement.setAttribute("data-toolid", toPersistedToolName(toolId));
+
     return {
-        id: normalizedToolId,
+        id: toolId,
         englishLabel: labelInfo.englishLabel,
         l10nKey: labelInfo.l10nKey,
-        toolBodyElement: makeToolBodyElement(normalizedToolId),
+        iconPath: tool.iconPath(),
+        featureName: tool.featureName,
+        toolBodyElement: toolBodyElement,
     };
 };
 
@@ -155,33 +89,17 @@ const sortSectionsAlphabeticallyWithSettingsLast = (
     sections: ToolboxSection[],
 ): ToolboxSection[] => {
     const settingsSection = sections.find(
-        (section) => section.id === "settings",
+        (section) => section.id === kSettingsToolId,
     );
     const nonSettingsSections = sections
-        .filter((section) => section.id !== "settings")
-        .sort((a, b) =>
-            a.englishLabel.localeCompare(b.englishLabel, undefined, {
-                sensitivity: "base",
-            }),
-        );
+        .filter((section) => section.id !== kSettingsToolId)
+        .sort((a, b) => compareToolsByLabel(a.id, b.id));
 
     if (!settingsSection) {
         return nonSettingsSections;
     }
 
     return [...nonSettingsSections, settingsSection];
-};
-
-const parseEnabledToolIds = (value: string): string[] => {
-    const normalized = value
-        .split(",")
-        .map((toolId) => toolId.trim())
-        .filter((toolId) => !!toolId)
-        .map((toolId) => normalizeToolId(toolId));
-
-    const toolIds = new Set<string>(normalized);
-    alwaysOnToolIds.forEach((toolId) => toolIds.add(toolId));
-    return Array.from(toolIds);
 };
 
 // Puts a tool's own DOM element (the one it renders itself into) into the React layout,
@@ -257,43 +175,12 @@ export const ToolboxRoot: React.FunctionComponent = () => {
         [],
     );
 
-    const makeToolActive = React.useCallback((normalizedToolId: string) => {
-        setExpandedSectionId(normalizedToolId);
-        const toolboxToolId = toToolboxToolId(normalizedToolId);
+    const makeToolActive = React.useCallback((toolId: string) => {
+        setExpandedSectionId(toolId);
         activeToolChangedCallbacks.current.forEach((callback) => {
-            callback(toolboxToolId);
+            callback(toolId);
         });
     }, []);
-
-    // Load the tools the toolbox should offer. (The legacy toolbox code independently
-    // announces the same tools through addTool(); whichever gets there first wins, and
-    // the other is a no-op.)
-    React.useEffect(() => {
-        axios
-            .get<string>("/bloom/api/toolbox/enabledTools")
-            .then((response) => {
-                const parsedIds = parseEnabledToolIds(response.data);
-                const masterList = getMasterToolList();
-                const knownIds = parsedIds.filter((toolId) =>
-                    masterList.some((tool) => tool.id() === toolId),
-                );
-                const existingIds = new Set(
-                    sectionsRef.current.map((section) => section.id),
-                );
-                const newSections = knownIds
-                    .filter((toolId) => !existingIds.has(toolId))
-                    .map((toolId) => makeSectionFromToolId(toolId));
-                applySections(
-                    sortSectionsAlphabeticallyWithSettingsLast([
-                        ...sectionsRef.current,
-                        ...newSections,
-                    ]),
-                );
-            })
-            .catch((error) => {
-                throw error;
-            });
-    }, [applySections]);
 
     // Register the adapter that the legacy toolbox code uses to say which tools the
     // toolbox offers, to make one of them active, and to observe which one is active.
@@ -301,31 +188,27 @@ export const ToolboxRoot: React.FunctionComponent = () => {
     React.useEffect(() => {
         setToolboxReactAdapter({
             setActiveToolByToolId: (toolId: string) => {
-                makeToolActive(normalizeToolId(toolId));
+                makeToolActive(toolId);
             },
             onActiveToolChanged: (callback: (toolId: string) => void) => {
                 activeToolChangedCallbacks.current.push(callback);
             },
             addTool: (toolId: string) => {
-                const normalizedToolId = normalizeToolId(toolId);
                 if (
-                    sectionsRef.current.some(
-                        (section) => section.id === normalizedToolId,
-                    )
+                    sectionsRef.current.some((section) => section.id === toolId)
                 ) {
                     return;
                 }
                 applySections(
                     sortSectionsAlphabeticallyWithSettingsLast([
                         ...sectionsRef.current,
-                        makeSectionFromToolId(normalizedToolId),
+                        makeSectionFromToolId(toolId),
                     ]),
                 );
             },
             removeTool: (toolId: string) => {
-                const normalizedToolId = normalizeToolId(toolId);
                 const remainingSections = sectionsRef.current.filter(
-                    (section) => section.id !== normalizedToolId,
+                    (section) => section.id !== toolId,
                 );
                 if (remainingSections.length === sectionsRef.current.length) {
                     return;
@@ -335,24 +218,20 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                 // one. The awkward functional update guards against a stale value of
                 // expandedSectionId.
                 setExpandedSectionId((previousExpandedSectionId) =>
-                    previousExpandedSectionId === normalizedToolId
+                    previousExpandedSectionId === toolId
                         ? remainingSections[0]?.id
                         : previousExpandedSectionId,
                 );
             },
             hasTool: (toolId: string) => {
-                const normalizedToolId = normalizeToolId(toolId);
                 return sectionsRef.current.some(
-                    (section) => section.id === normalizedToolId,
+                    (section) => section.id === toolId,
                 );
             },
             getFirstToolId: () => {
-                const firstToolSection = sectionsRef.current.find(
-                    (section) => section.id !== "settings",
-                );
-                return firstToolSection
-                    ? toToolboxToolId(firstToolSection.id)
-                    : undefined;
+                return sectionsRef.current.find(
+                    (section) => section.id !== kSettingsToolId,
+                )?.id;
             },
         });
     }, [applySections, makeToolActive]);
@@ -485,8 +364,10 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                 `}
                             >
                                 <span
+                                    // The talking book icon is a tall, narrow microphone,
+                                    // so it gets a narrower box than the others.
                                     css={
-                                        section.id === "talkingBook"
+                                        section.id === kTalkingBookToolId
                                             ? [
                                                   toolboxHeaderIconStyles,
                                                   css`
@@ -498,7 +379,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                     }
                                     data-toolid={section.id}
                                     style={{
-                                        backgroundImage: `url(${toolIconPathByToolId[section.id] || ""})`,
+                                        backgroundImage: `url(${section.iconPath ?? ""})`,
                                     }}
                                 ></span>
                                 <Typography
@@ -511,10 +392,10 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                         {section.englishLabel}
                                     </LocalizedString>
                                 </Typography>
-                                {subscriptionToolIds.has(section.id) && (
+                                {section.featureName && (
                                     <span>
                                         <SubscriptionBadgeWithTooltipAndDialog
-                                            featureName={section.id}
+                                            featureName={section.featureName}
                                         />
                                     </span>
                                 )}
@@ -549,15 +430,9 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                         }
                                     `}
                                 >
-                                    {section.toolBodyElement ? (
-                                        <ToolBodyHost
-                                            element={section.toolBodyElement}
-                                        />
-                                    ) : (
-                                        <Typography>
-                                            Loading {section.englishLabel}...
-                                        </Typography>
-                                    )}
+                                    <ToolBodyHost
+                                        element={section.toolBodyElement}
+                                    />
                                 </div>
                             </AccordionDetails>
                         </Accordion>

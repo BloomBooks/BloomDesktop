@@ -7,6 +7,7 @@ import { getAudioRecorder, getOrCreateAudioRecorder } from "./audioRecording";
 import * as AudioRecorder from "./audioRecording";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { TalkingBookToolControls } from "./TalkingBookToolControls";
+import { kImageDescriptionToolId, kTalkingBookToolId } from "../toolIds";
 
 // This class renders the TalkingBookToolControls React component
 // in the toolbox, and passes into it an instance of the audioRecorder.
@@ -164,7 +165,7 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     }
 
     private isImageDescriptionToolActive(): boolean {
-        return getTheOneToolbox().isToolActive("imageDescriptionTool");
+        return getTheOneToolbox().isToolActive(kImageDescriptionToolId);
     }
 
     private showImageDescriptionsIfAny() {
@@ -197,6 +198,11 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     }
 
     public id() {
-        return "talkingBook";
+        return kTalkingBookToolId;
+    }
+
+    /** The icon for this tool's section header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/images/microphone-white.svg";
     }
 }

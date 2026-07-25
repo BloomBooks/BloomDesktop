@@ -349,6 +349,11 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
         return "impairmentVisualizer";
     }
 
+    /** The icon for this tool's section header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/bookEdit/toolbox/impairmentVisualizer/blind-eye-white.svg";
+    }
+
     public showTool() {
         if (!this.controlsElement) return;
         this.controlsElement.updateSimulations(undefined);

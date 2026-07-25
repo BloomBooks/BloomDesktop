@@ -17,8 +17,8 @@ namespace Bloom.Edit
     /// Thus, unlike other View classes in Bloom, ToolboxView does not inherit from a Control class,
     /// nor are there ever any instances; all methods are currently static.
     /// Currently necessary steps to add a new tool:
-    /// - Add the tool's folder to ToolboxView.GetToolboxServerDirectories().
     /// - Create a folder under BloomBrowserUI/bookEdit/toolbox. Its name should match the toolId (see below).
+    /// - Usually you will add a line for that folder to GetToolboxServerDirectories() in this file.
     /// - Create a file in that folder with extension .tsx to contain the React code of the panel
     ///		- it (or another file) should have a class which implements ITool
     ///			- minimally this must implement id() to return the tool ID
@@ -28,20 +28,18 @@ namespace Bloom.Edit
     ///				ToolBox.registerTool(new MyWonderfulTool());
     ///			- should implement makeRootElement() to create one div, the react root.
     ///				- the returned root should already have been passed to ReactDOM.render().
-    ///			- Make a new xlf entry with ID EditTab.Toolbox.{UCToolId}.Heading,
-    ///				where UCToolId is the capitalized version of your tool Id, e.g., "Music".
-    ///				We currently assume the default English value of this will be UCToolId Tool, e.g., "Music Tool"
-    ///				(This supports localization of the tool's accordion tab label.)
-    /// - In some toolbox less file (typically a new one for your tool, but could be toolbox.less)
-    ///		you need to create a rule like
-    ///			.ui-accordion h3[data-toolId="motionTool"] span.ui-accordion-header-icon {
-    ///				background-image:url('/bloom/images/motion.svg') !important;
-    ///			}
-    ///		which specifies the icon for your tool. (And create the icon in the BloomBrowserUI/images folder).
-    /// - Usually you will add a line to GetToolboxServerDirectories() in this file
-    /// - Add two lines like this to src\BloomBrowserUI\bookEdit\toolbox\settings\Settings.pug
-    ///		.checkbox.clear#musicCheck(data-tool='musicTool', onclick='workspaceBundle.showOrHideTool_click(this);')
-    ///		.checkbox-label(data-i18n='EditTab.Toolbox.Music.Heading') Music Tool
+    ///			- should implement iconPath() to return the URL of the icon for the tool's section
+    ///				header, e.g. "/bloom/bookEdit/toolbox/motion/motion.svg" (create the icon in the
+    ///				tool's own folder, or in BloomBrowserUI/images).
+    ///		- Make a new xlf entry with ID EditTab.Toolbox.{UCToolId}Tool, where UCToolId is the
+    ///			capitalized version of your tool Id, e.g., "Music", giving the key
+    ///			"EditTab.Toolbox.MusicTool". We currently assume the default English value of this
+    ///			will be UCToolId Tool, e.g., "Music Tool". (This localizes both the tool's section
+    ///			header and its checkbox in the "More..." section. See toolIds.ts, which derives
+    ///			the label and key from the tool id, for the exact convention.)
+    /// That is all: the toolbox derives the section header (label, icon, subscription badge) and
+    /// the tool's checkbox in the "More..." section from the ITool implementation, so there is no
+    /// list of tools to add to anywhere else.
     /// </summary>
     public class ToolboxView
     {
