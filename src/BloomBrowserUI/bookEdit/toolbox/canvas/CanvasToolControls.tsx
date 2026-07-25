@@ -3,7 +3,7 @@ import tinycolor from "tinycolor2";
 
 import * as React from "react";
 import { useState, useEffect, useCallback, useRef } from "react";
-import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
+import { isXmatterPage } from "../../../utils/shared";
 import "./canvasTool.less";
 import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
 import {
@@ -117,7 +117,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
     // and partly we want to show a special message if someone tries to use it there.
     const [pageTypeForbidsCanvasTools, setPageTypeForbidsCanvasTools] =
         useState(
-            ToolboxToolReactAdaptor.isXmatter({
+            isXmatterPage({
                 returnFalseForCustomPage: true,
             }),
         );
@@ -238,7 +238,7 @@ const CanvasToolControls: React.FunctionComponent = () => {
     const refreshFromCurrentPage = useCallback(() => {
         bubbleSpecInitialization();
         setPageTypeForbidsCanvasTools(
-            ToolboxToolReactAdaptor.isXmatter({
+            isXmatterPage({
                 returnFalseForCustomPage: true,
             }),
         );

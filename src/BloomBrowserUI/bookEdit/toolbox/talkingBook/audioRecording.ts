@@ -41,7 +41,7 @@ import * as toastr from "toastr";
 import WebSocketManager, {
     IBloomWebSocketEvent,
 } from "../../../utils/WebSocketManager";
-import { getActiveToolId, ToolBox } from "../toolbox";
+import { getActiveToolId } from "../toolbox";
 import * as React from "react";
 import { renderRoot } from "../../../utils/reactRender";
 import {
@@ -70,7 +70,7 @@ import {
     FeatureStatus,
     getFeatureStatusAsync,
 } from "../../../react_components/featureStatus";
-import { animateStyleName } from "../../../utils/shared";
+import { animateStyleName, getPageIframeBody } from "../../../utils/shared";
 import jQuery from "jquery";
 import {
     AudioHighlightManager,
@@ -2280,7 +2280,7 @@ export default class AudioRecording implements IAudioRecorder {
     // together in one place.
     public async setShowingImageDescriptions(isOn: boolean) {
         this.showingImageDescriptions = isOn;
-        const page = ToolBox.getPage();
+        const page = getPageIframeBody();
         if (this.showingImageDescriptions) {
             if (page) {
                 // we should always have a page, but testing makes lint happy
