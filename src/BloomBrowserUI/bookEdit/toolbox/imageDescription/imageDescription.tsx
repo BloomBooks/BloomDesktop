@@ -368,6 +368,11 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         return ImageDescriptionAdapter.kToolID;
     }
 
+    /** The icon for this tool's section header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/bookEdit/toolbox/imageDescription/ImageDescriptionToolIcon.svg";
+    }
+
     // If we declare the function in this normal way and pass it to addEventListener,
     // we get the wrong 'this' and can't get at this.reactControls.
     // private descriptionGotFocus(e: Event) {

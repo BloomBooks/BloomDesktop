@@ -12,9 +12,9 @@
 // When all the tools are React components, each one will belong to its own accordion
 // section and manage its own state and lifecycle, and this module can go away.
 //
-// Every toolId parameter and result here may be spelled with or without the historical
-// "Tool" suffix ("canvas" and "canvasTool" mean the same tool); the implementation
-// normalizes them.
+// Every toolId parameter and result here is a canonical tool id, i.e. what the tool's
+// ITool.id() returns, with no "Tool" suffix (e.g. "canvas", not "canvasTool"). See
+// toolIds.ts for where the suffixed spellings are converted at our boundaries.
 export interface IToolboxReactAdapter {
     // Makes the tool with this id the active, expanded section of the React accordion.
     setActiveToolByToolId(toolId: string): void;
@@ -29,13 +29,17 @@ export interface IToolboxReactAdapter {
     removeTool(toolId: string): void;
     // Is the toolbox currently offering a section for this tool?
     hasTool(toolId: string): boolean;
-    // The id (with the "Tool" suffix) of the first tool section, or undefined if there
-    // are no tool sections. The "More..." (settings) section doesn't count; it is not a
-    // tool that can be current.
+    // The id of the first tool section, or undefined if there are no tool sections.
+    // The "More..." (settings) section doesn't count; it is not a tool that can be current.
     getFirstToolId(): string | undefined;
 }
 
 let theOneToolboxReactAdapter: IToolboxReactAdapter | undefined;
+
+// Actions given to whenToolboxReactAdapterReady() before ToolboxRoot had mounted. Each is
+// run (and forgotten) as soon as it has.
+const actionsWaitingForAdapter: ((adapter: IToolboxReactAdapter) => void)[] =
+    [];
 
 /**
  * Called by ToolboxRoot once it has mounted, making the adapter available to the legacy
@@ -43,6 +47,24 @@ let theOneToolboxReactAdapter: IToolboxReactAdapter | undefined;
  */
 export function setToolboxReactAdapter(adapter: IToolboxReactAdapter): void {
     theOneToolboxReactAdapter = adapter;
+    actionsWaitingForAdapter.splice(0).forEach((action) => action(adapter));
+}
+
+/**
+ * Runs the action as soon as ToolboxRoot has published its adapter (immediately, if it
+ * already has). Startup renders ToolboxRoot before initializing the rest of the toolbox,
+ * but React mounts asynchronously, so code that must not silently do nothing (in
+ * particular, populating the toolbox with the book's tools) waits here rather than
+ * assuming the adapter already exists.
+ */
+export function whenToolboxReactAdapterReady(
+    action: (adapter: IToolboxReactAdapter) => void,
+): void {
+    if (theOneToolboxReactAdapter) {
+        action(theOneToolboxReactAdapter);
+        return;
+    }
+    actionsWaitingForAdapter.push(action);
 }
 
 /**

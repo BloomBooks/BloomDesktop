@@ -1,6 +1,7 @@
 import { renderRoot } from "../../../utils/reactRender";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { SettingsToolControls } from "./SettingsToolControls";
+import { kSettingsToolId } from "../toolIds";
 
 // This class renders the SettingsToolControls React component
 // for the toolbox. The settings are the menu of tools that
@@ -22,6 +23,6 @@ export class SettingsTool extends ToolboxToolReactAdaptor {
     // returns the id for this "tool" so that it
     // can be properly bootstrapped
     public id(): string {
-        return "settings";
+        return kSettingsToolId;
     }
 }
