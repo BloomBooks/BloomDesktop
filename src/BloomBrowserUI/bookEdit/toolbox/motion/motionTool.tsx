@@ -24,7 +24,7 @@ import { getFeatureStatusAsync } from "../../../react_components/featureStatus";
 import { TransformBasedAnimator } from "bloom-player";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
-import { animateStyleName } from "../../../utils/shared";
+import { animateStyleName, isXmatterPage } from "../../../utils/shared";
 import { ThemeProvider } from "@mui/material/styles";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
 
@@ -964,7 +964,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
         let motionChecked = true;
         let motionPossible = !doNotHaveAPicture;
-        if (!bloomCanvasToAnimate || ToolboxToolReactAdaptor.isXmatter()) {
+        if (!bloomCanvasToAnimate || isXmatterPage()) {
             // if there's no place to put an image, we can't be enabled.
             // And we don't support Motion in xmatter (BL-5427),
             // in part because we use background-image there and haven't fully supported
