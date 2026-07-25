@@ -461,6 +461,11 @@ export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
         return kMusicToolId;
     }
 
+    /** The icon for this tool's section header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/bookEdit/toolbox/music/music-notes-white.svg";
+    }
+
     public featureName? = kMusicToolId;
 
     public showTool() {

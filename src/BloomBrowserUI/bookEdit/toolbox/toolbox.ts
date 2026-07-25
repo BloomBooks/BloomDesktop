@@ -13,11 +13,19 @@ import {
     callOnBlur,
     setExtraFunctionToHandleBlurTasks,
 } from "../../utils/menuCloseOnBlur";
-import { getToolboxReactAdapter } from "./toolboxReactAdapter";
+import {
+    getToolboxReactAdapter,
+    whenToolboxReactAdapterReady,
+} from "./toolboxReactAdapter";
+import {
+    kSettingsToolId,
+    kTalkingBookToolId,
+    toCanonicalToolId,
+    toEnabledSettingName,
+    toPersistedToolName,
+} from "./toolIds";
 export { isLongPressEvaluating };
 export { callOnBlur as registerMenuCloseOnBlur };
-
-const checkLeaveOffTool: string = "Visualizer";
 
 type ToolboxSettings = Record<string, string> & {
     current?: string;
@@ -28,15 +36,14 @@ let savedSettings: ToolboxSettings = {};
 
 let keypressTimer: ReturnType<typeof setTimeout> | null = null;
 
-// This variable stores all the ids of the enabled tools, so
+// This variable stores the canonical ids of all the enabled tools, so
 // that the React toolbox settings can initially check the
 // checkboxes that correspond to the enabled tools
 let enabledToolIds = new Set<string>();
 
-// checks if the tool is currently enabled by using its
-// name and the enabledToolIds set
-export function isToolEnabledInToolbox(toolName: string): boolean {
-    return enabledToolIds.has(toolName);
+// Is the tool with this canonical id currently enabled?
+export function isToolEnabledInToolbox(toolId: string): boolean {
+    return enabledToolIds.has(toolId);
 }
 
 // a function to update the state of the checkboxes in the toolbox settings,
@@ -53,11 +60,19 @@ export function setToolboxSettingsChangeHandler(
     changeToolboxSettingsState = handler;
 }
 
+export interface IReactTool {
+    // For tools that require a subscription. This will trigger an indicator communicating that this
+    // featureName requires a subscription.
+    featureName?: string;
+}
+
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
-// can be asked to do by the rest of the system.
+// can be asked to do by the rest of the system. Everything the toolbox needs to know
+// about a tool, including the metadata it shows in the tool's section header, comes from
+// here (or is derived from id(); see toolIds.ts).
 // See ToolboxView.cs class comment for a summary of how to add a new tool.
-export interface ITool {
+export interface ITool extends IReactTool {
     beginRestoreSettings(settings: string): JQueryPromise<void>;
     configureElements(container: HTMLElement);
     showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
@@ -76,7 +91,7 @@ export interface ITool {
     // allow for this possibility and not repeat any work that was already done.
     newPageReady();
     detachFromPage(); // called when a page is going away AND before hideTool
-    id(): string; // without trailing "Tool"!
+    id(): string; // the canonical id, without trailing "Tool"!
     isAlwaysEnabled(): boolean;
     // If this is true, the tool may only be selected on pages that have data-tool-id matching this tool's id.
     requiresToolId(): boolean;
@@ -88,12 +103,10 @@ export interface ITool {
     // notifies the tool that an image has been changed on the page.
     // If the change only affects one image, it may be passed; otherwise, all should be fixed.
     imageUpdated(img: HTMLImageElement | undefined): void;
-}
-
-export interface IReactTool {
-    // For tools that require a subscription. This will trigger an indicator communicating that this
-    // featureName requires a subscription.
-    featureName?: string;
+    // The URL of the icon to show in this tool's toolbox section header, e.g.
+    // "/bloom/images/microphone-white.svg". Undefined for the few sections that don't
+    // have an icon.
+    iconPath(): string | undefined;
 }
 
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
@@ -135,12 +148,11 @@ export class ToolBox {
                     continue;
                 }
                 // We may need to add or remove this tool.
-                const toolId = ToolBox.addToolToString(tool.id());
-                const haveTool = adapter.hasTool(toolId);
+                const haveTool = adapter.hasTool(tool.id());
                 const wantTool = requiredToolId === tool.id();
                 if (haveTool !== wantTool) {
                     // add or remove as needed. (Required tools don't have check boxes.)
-                    showOrHideTool(toolId, wantTool);
+                    showOrHideTool(tool.id(), wantTool);
                     toolsAdjusted = wantTool;
                 }
             }
@@ -299,27 +311,6 @@ export class ToolBox {
         getTheOneToolbox().doWhenClosingTool.push(task);
     }
 
-    // Append "Tool" to the tool name if it's not already there.
-    // Put a space between the name and "Tool" if addSpace is true.
-    public static addToolToString(
-        toolName: string,
-        addSpace: boolean = false,
-    ): string {
-        if (toolName) {
-            if (
-                toolName.indexOf(checkLeaveOffTool) === -1 &&
-                toolName.indexOf("Tool") === -1
-            ) {
-                if (addSpace) {
-                    return toolName + " Tool";
-                } else {
-                    return toolName + "Tool";
-                }
-            }
-        }
-        return toolName;
-    }
-
     // In the process of moving this to shared.ts, but a lot of
     // code still expects to find it here.
     public static getPageFrame(): HTMLIFrameElement {
@@ -351,9 +342,13 @@ export class ToolBox {
         masterToolList.push(tool);
     }
 
+    /**
+     * The tools the book has enabled, as a comma-separated list of tool names. This is the
+     * one place we ask; the answer drives which sections the toolbox offers.
+     */
     private getEnabledTools() {
-        // Using axios directly because api calls for returning the promise.
-        return axios.get("/bloom/api/toolbox/enabledTools");
+        // Using axios directly because we want the promise.
+        return axios.get<string>("/bloom/api/toolbox/enabledTools");
     }
 
     // Called from document.ready, initializes the whole toolbox.
@@ -370,73 +365,70 @@ export class ToolBox {
         });
         hookupLinkHandler();
 
-        // Using axios directly because bloomApi doesn't support merging promises with .all
         wrapAxios(
-            axios.all([this.getEnabledTools()]).then(
-                axios.spread((enabledTools) => {
-                    // remove any experimental tools the user doesn't want
-                    // TODO: give each experimental tool it's own setting once we have any experimental tools again.
-                    // Presumably use the tool id as the keyword in the list of experimental features.
-                    const toolsToLoad = enabledTools.data
-                        .split(",")
-                        .map((toolId: string) => toolId.trim())
-                        .filter((toolId: string) => toolId.length > 0)
-                        .map((toolId: string) =>
-                            toolId.endsWith("Tool")
-                                ? toolId.substring(0, toolId.length - 4)
-                                : toolId,
-                        );
-                    // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
-                    for (let i = toolsToLoad.length - 1; i >= 0; i--) {
-                        if (
-                            !masterToolList.some(
-                                (mod) => mod.id() === toolsToLoad[i],
-                            )
-                        ) {
-                            toolsToLoad.splice(i, 1);
-                        }
+            this.getEnabledTools().then((enabledTools) => {
+                // TODO: give each experimental tool its own setting once we have any
+                // experimental tools again. Presumably use the tool id as the keyword in
+                // the list of experimental features.
+                // The names in this list come from the book's meta.json, so they may have
+                // the historical "Tool" suffix; from here on we work in canonical ids.
+                const toolsToLoad = enabledTools.data
+                    .split(",")
+                    .map((toolName: string) => toolName.trim())
+                    .filter((toolName: string) => toolName.length > 0)
+                    .map((toolName: string) => toCanonicalToolId(toolName));
+                // remove any tools we don't know about. This might happen where settings were saved in a later version of Bloom.
+                for (let i = toolsToLoad.length - 1; i >= 0; i--) {
+                    if (
+                        !masterToolList.some(
+                            (mod) => mod.id() === toolsToLoad[i],
+                        )
+                    ) {
+                        toolsToLoad.splice(i, 1);
                     }
+                }
 
-                    enabledToolIds = new Set(toolsToLoad);
+                enabledToolIds = new Set(toolsToLoad);
 
-                    for (let j = 0; j < masterToolList.length; j++) {
-                        // add any tools we always show
-                        if (
-                            masterToolList[j].isAlwaysEnabled() &&
-                            !toolsToLoad.includes(masterToolList[j].id())
-                        ) {
-                            toolsToLoad.push(masterToolList[j].id());
-                        }
+                for (let j = 0; j < masterToolList.length; j++) {
+                    // add any tools we always show
+                    if (
+                        masterToolList[j].isAlwaysEnabled() &&
+                        !toolsToLoad.includes(masterToolList[j].id())
+                    ) {
+                        toolsToLoad.push(masterToolList[j].id());
                     }
+                }
 
-                    toolsToLoad.push("settings");
-                    const loadNextTool = () => {
-                        if (toolsToLoad.length === 0) {
-                            this.builtToolbox = true;
-                            // loaded them all, now we can deal with settings.
-                            restoreToolboxSettings();
-                        } else {
-                            // optimize: maybe we can overlap these?
-                            const nextToolId = toolsToLoad.pop();
-                            const toolId = ToolBox.addToolToString(nextToolId);
-                            beginAddTool(toolId, false, () => loadNextTool());
-                        }
-                    };
-                    loadNextTool();
-                }),
-            ),
+                // The "More..." section, which is how the user enables the other tools,
+                // is always offered.
+                toolsToLoad.push(kSettingsToolId);
+                const loadNextTool = () => {
+                    if (toolsToLoad.length === 0) {
+                        this.builtToolbox = true;
+                        // loaded them all, now we can deal with settings.
+                        restoreToolboxSettings();
+                    } else {
+                        // optimize: maybe we can overlap these?
+                        const nextToolId = toolsToLoad.pop()!;
+                        beginAddTool(nextToolId, false, () => loadNextTool());
+                    }
+                };
+                // Adding the tools requires the toolbox UI, which mounts asynchronously.
+                whenToolboxReactAdapterReady(() => loadNextTool());
+            }),
         );
     }
 
     /**
-     * Is the toolbox currently offering this tool a section? (Despite the name, this does
-     * not mean the tool is the *current* tool; it never did.)
+     * Is the toolbox currently offering this tool (canonical id) a section? (Despite the
+     * name, this does not mean the tool is the *current* tool; it never did.)
      */
     public isToolActive(toolId: string): boolean {
         return !!getToolboxReactAdapter()?.hasTool(toolId);
     }
 
-    // Enables a tool from an in-page action, ensuring the toolbox is visible.
+    // Enables a tool (canonical id) from an in-page action, ensuring the toolbox is visible.
     public enableToolFromPage(toolId: string): void {
         if (!this.toolboxIsShowing()) {
             this.toggleToolbox();
@@ -445,9 +437,9 @@ export class ToolBox {
     }
 
     /**
-     * Makes the given tool (id without the "Tool" suffix) the current tool, enabling it
-     * first if necessary. Called in response to in-page actions, e.g. clicking a video
-     * placeholder to get the Sign Language tool.
+     * Makes the given tool (canonical id) the current tool, enabling it first if
+     * necessary. Called in response to in-page actions, e.g. clicking a video placeholder
+     * to get the Sign Language tool.
      */
     public activateToolFromId(toolId: string) {
         if (!getITool(toolId)) {
@@ -467,10 +459,7 @@ export class ToolBox {
 
         // The tool may be present without being in enabledToolIds if it is a
         // required-for-this-page tool (see adjustToolListForPage).
-        if (
-            isToolEnabledInToolbox(toolId) ||
-            this.isToolActive(ToolBox.addToolToString(toolId))
-        ) {
+        if (isToolEnabledInToolbox(toolId) || this.isToolActive(toolId)) {
             setCurrentTool(toolId);
         } else {
             // Genuinely disabled: enable it, which persists the state and updates
@@ -530,7 +519,7 @@ export function getActiveToolId(): string | undefined {
 // it just long enough for the user to see the checkbox they ticked. (BL-16501)
 const kShowToolAfterEnableDelayMs = 300;
 
-// Pending deferred "open this tool" timers, keyed by tool name, so a later toggle
+// Pending deferred "open this tool" timers, keyed by canonical tool id, so a later toggle
 // of the same tool can cancel an open that hasn't fired yet.
 // We deliberately don't clear this map on toolbox teardown/navigation: each timer
 // is ~300ms and removes its own entry when it fires, so at most a couple of very
@@ -541,7 +530,7 @@ const pendingShowToolTimeouts = new Map<
 >();
 
 // modifies the enabledToolIds set, the saved active
-// state of the tool in question, and the presence of
+// state of the tool in question (canonical id), and the presence of
 // the tool in the toolbox, whenever the tool is checked
 // or unchecked in the toolbox settings.
 // deferShowToRevealCheckbox is set only by the "More..." settings checkboxes:
@@ -550,38 +539,33 @@ const pendingShowToolTimeouts = new Map<
 // ticked. Other callers (e.g. activating a tool from an in-page action) leave it
 // false so the tool opens immediately. (BL-16501)
 export function setToolEnabledFromSettings(
-    toolName: string,
+    toolId: string,
     turnOn: boolean,
     deferShowToRevealCheckbox: boolean = false,
 ): void {
     if (turnOn) {
-        enabledToolIds.add(toolName);
+        enabledToolIds.add(toolId);
     } else {
-        enabledToolIds.delete(toolName);
+        enabledToolIds.delete(toolId);
     }
-
-    const toolId =
-        toolName.indexOf(checkLeaveOffTool) === -1
-            ? toolName + "Tool"
-            : toolName;
 
     postString(
         "editView/saveToolboxSetting",
-        "active\t" + toolName + "Check\t" + (turnOn ? "1" : "0"),
+        "active\t" + toEnabledSettingName(toolId) + "\t" + (turnOn ? "1" : "0"),
     );
 
     if (changeToolboxSettingsState !== undefined) {
-        changeToolboxSettingsState(toolName, turnOn);
+        changeToolboxSettingsState(toolId, turnOn);
     }
 
     // A pending deferred open (below) reflects an earlier state; this call
     // supersedes it, so cancel it. Without this, ticking a tool on and then off
     // again within the delay would let the stale timer re-add the disabled tool
     // (the disable runs synchronously and would otherwise be overtaken).
-    const pendingTimeout = pendingShowToolTimeouts.get(toolName);
+    const pendingTimeout = pendingShowToolTimeouts.get(toolId);
     if (pendingTimeout !== undefined) {
         clearTimeout(pendingTimeout);
-        pendingShowToolTimeouts.delete(toolName);
+        pendingShowToolTimeouts.delete(toolId);
     }
 
     if (turnOn && deferShowToRevealCheckbox) {
@@ -591,27 +575,27 @@ export function setToolEnabledFromSettings(
         // checkbox they just ticked. Briefly delay so the checkmark is visible
         // before the section collapses to reveal the newly-enabled tool. (BL-16501)
         const timeout = setTimeout(() => {
-            pendingShowToolTimeouts.delete(toolName);
+            pendingShowToolTimeouts.delete(toolId);
             // Guard against the tool having been turned off again during the delay.
-            if (enabledToolIds.has(toolName)) {
+            if (enabledToolIds.has(toolId)) {
                 showOrHideTool(toolId, true);
             }
         }, kShowToolAfterEnableDelayMs);
-        pendingShowToolTimeouts.set(toolName, timeout);
+        pendingShowToolTimeouts.set(toolId, timeout);
     } else {
         showOrHideTool(toolId, turnOn);
     }
 }
 
 function showOrHideTool(
-    tool: string,
+    toolId: string,
     turnOn: boolean,
     openTool: boolean = true,
 ) {
     if (turnOn) {
-        beginAddTool(tool, openTool);
+        beginAddTool(toolId, openTool);
     } else {
-        getToolboxReactAdapter()?.removeTool(tool);
+        getToolboxReactAdapter()?.removeTool(toolId);
     }
 }
 
@@ -636,13 +620,11 @@ export function applyToolboxStateToUpdatedPage() {
         savedSettings = result.data;
         // savedSettings["current"] is always set to the last active tool for the book,
         // except for new books where it is null. In that case, the default value
-        // should be talkingBookTool.  (BL-16026)
-        const currentFromBook = ToolBox.addToolToString(
-            (savedSettings && savedSettings["current"]) || "talkingBookTool",
+        // should be the talking book tool.  (BL-16026)
+        const currentFromBook = toCanonicalToolId(
+            (savedSettings && savedSettings["current"]) || kTalkingBookToolId,
         );
-        const currentInToolbox = currentTool
-            ? ToolBox.addToolToString(currentTool.id())
-            : "";
+        const currentInToolbox = currentTool ? currentTool.id() : "";
         const shouldBeVisible = !!(
             savedSettings && savedSettings["visibility"]
         );
@@ -818,9 +800,9 @@ function restoreToolboxSettingsWhenPageReady(settings: ToolboxSettings) {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         const opts = settings;
         // currentTool is always set except for new books. For new books, it is undefined and we want
-        // to treat that the same as if it were set to "talkingBookTool" so that the tool will display
-        // the first time the user opens the toolbox. (BL-16026)
-        const currentTool = opts["current"] || "talkingBookTool";
+        // to treat that the same as if it were set to the talking book tool so that the tool will
+        // display the first time the user opens the toolbox. (BL-16026)
+        const currentTool = opts["current"] || kTalkingBookToolId;
         const shouldBeVisible = !!opts["visibility"];
 
         if (toolbox.toolboxIsShowing() !== shouldBeVisible) {
@@ -841,20 +823,22 @@ export function removeToolboxMarkup() {
     detachCurrentTool();
 }
 
-function switchTool(newToolName: string): void {
-    // Have Bloom remember which tool is active. (Might be none)
-    postString("editView/saveToolboxSetting", "current\t" + newToolName);
+/**
+ * Called when the toolbox UI reports that a different section is now the active one.
+ * newToolId is a canonical tool id (the toolbox UI only ever reports tools it is offering,
+ * and it was told about them by their canonical ids).
+ */
+function switchTool(newToolId: string): void {
+    // Have Bloom remember which tool is active. (Might be none.) The book's meta.json
+    // has always stored this with the historical "Tool" suffix.
+    postString(
+        "editView/saveToolboxSetting",
+        "current\t" + toPersistedToolName(newToolId),
+    );
     let newTool: ITool | null = null;
-    if (newToolName) {
-        for (let i = 0; i < masterToolList.length; i++) {
-            // the newToolName comes from meta.json and we've changed our minds a few times about
-            // whether it should end in "Tool" so what's in the meta.json might have it or not.
-            // For robustness we will recognize any tool name that starts with the (no -Tool)
-            // name we're looking for.
-            if (newToolName.startsWith(masterToolList[i].id())) {
-                newTool = masterToolList[i];
-            }
-        }
+    if (newToolId) {
+        newTool =
+            masterToolList.find((tool) => tool.id() === newToolId) ?? null;
     }
     const canActivateNewTool = !!newTool && isToolInitialized(newTool);
     const shouldSwitchAwayFromCurrent =
@@ -893,7 +877,7 @@ function activateTool(newTool: ITool) {
 // Does the toolbox have a section for this tool? Only then does it have somewhere to
 // display itself and does it make sense to run its lifecycle methods.
 function isToolInitialized(tool: ITool): boolean {
-    return toolbox.isToolActive(ToolBox.addToolToString(tool.id()));
+    return toolbox.isToolActive(tool.id());
 }
 
 async function activateToolInternalAsync(newTool: ITool): Promise<void> {
@@ -912,11 +896,11 @@ async function activateToolInternalAsync(newTool: ITool): Promise<void> {
  * Attempts to make the given tool the current one (normally the tool the book was last
  * using). If the toolbox isn't offering that tool, falls back to the first tool it does
  * offer. Passing an empty id also means "whatever tool is first".
+ * The id may arrive in either spelling, because one caller passes the book's saved
+ * "current" tool name straight from meta.json.
  */
-function setCurrentTool(toolID: string) {
-    // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
-    // For now I'm just making functions work with either form.
-    toolID = ToolBox.addToolToString(toolID);
+function setCurrentTool(toolId: string) {
+    toolId = toCanonicalToolId(toolId);
 
     const adapter = getToolboxReactAdapter();
     if (!adapter) {
@@ -926,46 +910,41 @@ function setCurrentTool(toolID: string) {
     }
 
     if (!toolboxReactActivationHooked) {
-        adapter.onActiveToolChanged((newToolName: string) => {
-            switchTool(newToolName);
+        adapter.onActiveToolChanged((newToolId: string) => {
+            switchTool(newToolId);
         });
         toolboxReactActivationHooked = true;
     }
 
     // NOTE: the More (settings) section cannot be the "currentTool", so getFirstToolId()
     // never returns it.
-    if (!toolID) {
-        toolID = adapter.getFirstToolId() ?? "";
+    if (!toolId) {
+        toolId = adapter.getFirstToolId() ?? "";
     }
 
-    if (toolID) {
+    if (toolId) {
         const tool = masterToolList.find(
-            (possibleTool) =>
-                ToolBox.addToolToString(possibleTool.id()) === toolID,
+            (possibleTool) => possibleTool.id() === toolId,
         );
         if (tool && !isToolInitialized(tool)) {
             // The tool we were asked for isn't in the toolbox (e.g., it was disabled
             // since we saved the setting), so fall back to whatever is first.
-            toolID = adapter.getFirstToolId() ?? "";
+            toolId = adapter.getFirstToolId() ?? "";
         }
     }
 
-    if (toolID) {
-        adapter.setActiveToolByToolId(toolID);
+    if (toolId) {
+        adapter.setActiveToolByToolId(toolId);
     }
 }
 
-// Parameter 'toolId' may be spelled with or without the 'Tool' suffix.
+// Parameter 'toolId' may be spelled with or without the 'Tool' suffix, since it may have
+// come from persisted data.
 // Returns undefined if we know of no such tool, e.g. because the book's settings were
 // saved by a version of Bloom that had a tool this one doesn't.
 function getITool(toolId: string): ITool {
-    // I'm downright grumpy about how this code sometimes uses names with "Tool" appended, sometimes doesn't.
-    // For now I'm just making functions work with either form.
-    const reactToolId =
-        toolId.indexOf("Tool") > -1
-            ? toolId.substring(0, toolId.length - 4)
-            : toolId; // strip off "Tool"
-    return masterToolList.find((tool) => tool.id() === reactToolId)!;
+    const canonicalToolId = toCanonicalToolId(toolId);
+    return masterToolList.find((tool) => tool.id() === canonicalToolId)!;
 }
 
 /**
@@ -986,14 +965,13 @@ function beginAddTool(
         return;
     }
 
-    const toolName = ToolBox.addToolToString(tool.id());
     const adapter = getToolboxReactAdapter();
     // Adding a tool that is already there does nothing, so it is safe to do this
     // whether or not the toolbox is already offering it.
-    adapter?.addTool(toolName);
+    adapter?.addTool(tool.id());
 
     if (openTool && toolbox.toolboxIsShowing()) {
-        adapter?.setActiveToolByToolId(toolName);
+        adapter?.setActiveToolByToolId(tool.id());
     }
 
     if (whenLoaded) {
@@ -1375,7 +1353,7 @@ function showToolboxChanged(wasShowing: boolean): void {
         // enabled. (This should never happen; we're just being defensive.)
         const adapter = getToolboxReactAdapter();
         adapter?.setActiveToolByToolId(
-            adapter.getFirstToolId() ?? "talkingBookTool",
+            adapter.getFirstToolId() ?? kTalkingBookToolId,
         );
     }
 }

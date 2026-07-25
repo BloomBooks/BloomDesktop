@@ -19,6 +19,15 @@ export default abstract class ToolboxToolReactAdaptor
         return false;
     }
 
+    /**
+     * The URL of the icon for this tool's toolbox section header. Tools that don't show one
+     * (the "More..." section, and tools that only appear on pages that ask for them) don't
+     * override this.
+     */
+    public iconPath(): string | undefined {
+        return undefined;
+    }
+
     protected adaptReactElement(
         element: ReactElement<unknown>,
     ): HTMLDivElement {

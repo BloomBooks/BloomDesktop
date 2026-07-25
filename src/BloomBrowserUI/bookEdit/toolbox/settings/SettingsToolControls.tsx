@@ -1,7 +1,9 @@
 import { FunctionComponent, useState } from "react";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import {
+    getMasterToolList,
     isToolEnabledInToolbox,
+    ITool,
     setToolEnabledFromSettings,
     setToolboxSettingsChangeHandler,
 } from "../toolbox";
@@ -10,14 +12,38 @@ import { SubscriptionBadgeWithTooltipAndDialog } from "../../../react_components
 import { ThemeProvider } from "@mui/material/styles";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import { useMountEffect } from "../../../utils/useMountEffect";
+import {
+    compareToolsByLabel,
+    getToolLabelInfo,
+    kSettingsToolId,
+} from "../toolIds";
 
+/**
+ * The tools the "More..." section offers a checkbox for, in the order it shows them:
+ * every registered tool except the ones the user has no say over, that is, the tools that
+ * are always enabled (Talking Book), the tools that are only offered on pages that ask for
+ * them (Games; see ITool.requiresToolId()), and this "More..." section itself.
+ * The order is the same one the toolbox uses for its sections: alphabetical by label.
+ */
+const getToolsOfferedAsCheckboxes = (): ITool[] =>
+    getMasterToolList()
+        .filter(
+            (tool) =>
+                !tool.isAlwaysEnabled() &&
+                !tool.requiresToolId() &&
+                tool.id() !== kSettingsToolId,
+        )
+        .sort((a, b) => compareToolsByLabel(a.id(), b.id()));
+
+// One tool's checkbox. Everything except whether it is currently ticked comes from the
+// tool itself (see ITool) or is derived from its id (see toolIds.ts).
 const ToolboxCheckbox: FunctionComponent<{
-    tool: string;
-    l10nKeySuffix: string;
-    toolLabel: string;
+    toolId: string;
+    // Set only for tools that require a subscription, in which case we show a badge.
+    featureName?: string;
     shouldCheck: boolean;
-    requiresSubscription?: boolean;
 }> = (props) => {
+    const labelInfo = getToolLabelInfo(props.toolId);
     return (
         <div
             css={css`
@@ -39,17 +65,17 @@ const ToolboxCheckbox: FunctionComponent<{
                     margin-top: 1px;
                 `}
                 size="small"
-                label={props.toolLabel}
-                l10nKey={`EditTab.Toolbox.${props.l10nKeySuffix}`}
+                label={labelInfo.englishLabel}
+                l10nKey={labelInfo.l10nKey}
                 checked={props.shouldCheck}
                 onCheckChanged={(checked) => {
                     // Pass true so that, when enabling, the tool opens after a
                     // brief delay letting the user see this checkbox tick before
                     // the "More..." section collapses to reveal the tool. (BL-16501)
-                    setToolEnabledFromSettings(props.tool, checked!, true);
+                    setToolEnabledFromSettings(props.toolId, checked!, true);
                 }}
             />
-            {props.requiresSubscription && (
+            {props.featureName && (
                 <div
                     css={css`
                         display: inline-flex;
@@ -57,7 +83,7 @@ const ToolboxCheckbox: FunctionComponent<{
                     `}
                 >
                     <SubscriptionBadgeWithTooltipAndDialog
-                        featureName={props.tool}
+                        featureName={props.featureName}
                     />
                 </div>
             )}
@@ -66,55 +92,14 @@ const ToolboxCheckbox: FunctionComponent<{
 };
 
 export const SettingsToolControls: FunctionComponent = () => {
-    const kToolDefs = [
-        {
-            tool: "canvas",
-            l10nKeySuffix: "CanvasTool",
-            toolLabel: "Canvas Tool",
-            requiresSubscription: true,
-        },
-        {
-            tool: "decodableReader",
-            l10nKeySuffix: "DecodableReaderTool",
-            toolLabel: "Decodable Reader Tool",
-        },
-        {
-            tool: "imageDescription",
-            l10nKeySuffix: "ImageDescriptionTool",
-            toolLabel: "Image Description Tool",
-        },
-        {
-            tool: "impairmentVisualizer",
-            l10nKeySuffix: "ImpairmentVisualizer",
-            toolLabel: "Impairment Visualizer",
-        },
-        {
-            tool: "leveledReader",
-            l10nKeySuffix: "LeveledReaderTool",
-            toolLabel: "Leveled Reader Tool",
-        },
-        {
-            tool: "motion",
-            l10nKeySuffix: "MotionTool",
-            toolLabel: "Motion Tool",
-            requiresSubscription: true,
-        },
-        {
-            tool: "music",
-            l10nKeySuffix: "MusicTool",
-            toolLabel: "Music Tool",
-            requiresSubscription: true,
-        },
-        {
-            tool: "signLanguage",
-            l10nKeySuffix: "SignLanguageTool",
-            toolLabel: "Sign Language Tool",
-        },
-    ];
+    const toolsOffered = getToolsOfferedAsCheckboxes();
     const [checkedState, setCheckedState] = useState<Record<string, boolean>>(
         () =>
             Object.fromEntries(
-                kToolDefs.map((t) => [t.tool, isToolEnabledInToolbox(t.tool)]),
+                toolsOffered.map((tool) => [
+                    tool.id(),
+                    isToolEnabledInToolbox(tool.id()),
+                ]),
             ),
     );
 
@@ -137,11 +122,12 @@ export const SettingsToolControls: FunctionComponent = () => {
                     margin-top: 6px;
                 `}
             >
-                {kToolDefs.map((t) => (
+                {toolsOffered.map((tool) => (
                     <ToolboxCheckbox
-                        key={t.tool}
-                        {...t}
-                        shouldCheck={!!checkedState[t.tool]}
+                        key={tool.id()}
+                        toolId={tool.id()}
+                        featureName={tool.featureName}
+                        shouldCheck={!!checkedState[tool.id()]}
                     />
                 ))}
             </div>
