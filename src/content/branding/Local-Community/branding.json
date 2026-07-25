@@ -9,7 +9,7 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='BloomLocal.svg'/><div>This book was created with many Bloom Enterprise features enabled at no cost in order to support projects that are fully funded and managed by the language community.  Licensed to \"{personalization}\".</div>",
+            "content": "<div class='bloom-branding-wrapper local-community-branding'><a class='local-community-badge' href='https://bloomlibrary.org/'><img class='local-community-logo' src='BloomLocal.svg'/><div class='local-community-message'>This book was created with many Bloom Enterprise features enabled at no cost in order to support projects that are fully funded and managed by the language community.  Licensed to \"{personalization}\".</div></a></div>",
             "condition": "always"
         }
     ]
