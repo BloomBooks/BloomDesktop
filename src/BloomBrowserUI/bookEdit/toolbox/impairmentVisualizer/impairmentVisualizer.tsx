@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
+import { getPageIframeBody } from "../../../utils/shared";
 import { Div, Span } from "../../../react_components/l10nComponents";
 import { get, postDataWithConfig } from "../../../utils/bloomApi";
 import "./impairmentVisualizer.less";
@@ -142,7 +143,7 @@ export class ImpairmentVisualizerControls extends React.Component<
     // ones, which are done a pixel at a time, so if they are being updated  frequently (like
     // during a drag), this optimization really helps make things less jerky.
     public updateSimulations(img: HTMLImageElement | undefined) {
-        const page = ToolboxToolReactAdaptor.getPage();
+        const page = getPageIframeBody();
         if (!page || !page.ownerDocument) return;
         const body = page.ownerDocument.body;
         if (this.simulatingCataracts) {
@@ -190,7 +191,7 @@ export class ImpairmentVisualizerControls extends React.Component<
     }
 
     public static removeImpairmentVisualizerMarkup() {
-        const page = ToolboxToolReactAdaptor.getPage();
+        const page = getPageIframeBody();
         if (!page || !page.ownerDocument) return;
         ImpairmentVisualizerControls.removeColorBlindnessMarkup(page);
         const body = page.ownerDocument.body;
@@ -238,7 +239,7 @@ export class ImpairmentVisualizerControls extends React.Component<
             // updates to correctly handle when it shows and hides.
             return;
         }
-        const page = ToolboxToolReactAdaptor.getPage();
+        const page = getPageIframeBody();
         if (!page || !page.ownerDocument) return;
         const canvas = page.ownerDocument.createElement("canvas");
         const imageContainer = img.parentElement;

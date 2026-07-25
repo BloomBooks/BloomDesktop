@@ -177,7 +177,7 @@ Two lifecycle facts that shape everything:
 - Registration is already done: `ToolBox.registerTool(new TalkingBookTool())` in
   `toolboxBootstrap.ts`; `talkingBook` is in `alwaysOnToolIds` and has an icon entry in
   `ToolboxRoot.tsx`.
-- `IReactTool.featureName` exists for subscription-badged tools; Talking Book doesn't
+- `ITool.featureName` exists for subscription-badged tools; Talking Book doesn't
   need it.
 - Styling: MUI (`@mui/material`) + Emotion `css` prop, wrapped in
   `<ThemeProvider theme={toolboxTheme}>` (from `bloomMaterialUITheme`), using Bloom's

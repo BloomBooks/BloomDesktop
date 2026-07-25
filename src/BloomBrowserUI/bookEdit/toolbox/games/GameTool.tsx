@@ -22,7 +22,7 @@ import {
     CanvasElementVideoItem,
     setGeneratedDraggableId,
 } from "../canvas/CanvasElementItem";
-import { ToolBox } from "../toolbox";
+import { getBloomPageElement, getPageIframeBody } from "../../../utils/shared";
 import {
     adjustDraggablesForLanguage,
     classSetter,
@@ -672,7 +672,7 @@ export const playTabIndex = 3;
 // the page itself, because we don't want it saved. It's better than putting it on the body,
 // because that doesn't work in Bloom Player due to the way we polyfill scoped styles.
 const updateTabClass = (tabIndex: number) => {
-    const pageBody = ToolBox.getPage();
+    const pageBody = getPageIframeBody();
     const page = pageBody?.getElementsByClassName(
         "bloom-page",
     )[0] as HTMLElement;
@@ -701,7 +701,7 @@ const updateTabClass = (tabIndex: number) => {
 };
 
 const getPage = () => {
-    const pageBody = ToolBox.getPage();
+    const pageBody = getPageIframeBody();
     return pageBody?.getElementsByClassName("bloom-page")[0] as HTMLElement;
 };
 
@@ -972,7 +972,7 @@ const DragActivityControls: React.FunctionComponent<{
     // Get various state values from the current page, initially and whenever it changes.
     useEffect(() => {
         const getStateFromPage = () => {
-            const pageBody = ToolBox.getPage();
+            const pageBody = getPageIframeBody();
             const page = pageBody?.getElementsByClassName(
                 "bloom-page",
             )[0] as HTMLElement;
@@ -1715,7 +1715,7 @@ export class GameTool extends ToolboxToolReactAdaptor {
         this.renderRoot();
     }
     public static areGameTabsActive(): boolean {
-        const page = GameTool.getBloomPage();
+        const page = getBloomPageElement();
         return (
             !!page &&
             !!page.ownerDocument.getElementById(kIdForDragActivityTabControl)
@@ -1778,7 +1778,7 @@ export class GameTool extends ToolboxToolReactAdaptor {
         // This really only needs to be done once, but I haven't found a good place to do that,
         // and it's not expensive.
         setDefaultSoundUrls(defaultCorrectSoundUrl, defaultWrongSoundUrl);
-        const page = GameTool.getBloomPage();
+        const page = getBloomPageElement();
         randomlyAssignTargetsIfNeeded(page);
 
         const pageFrameExports = getEditablePageBundleExports();
@@ -1819,7 +1819,7 @@ export class GameTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        const page = GameTool.getBloomPage();
+        const page = getBloomPageElement();
         if (page) {
             undoPrepareActivity(page);
         }
@@ -1926,7 +1926,7 @@ function scheduleRemoveBloomSelectedFromTargets(page: HTMLElement): void {
 // getToolboxBundleExports()?.setActiveDragActivityTab(), which works in any bundle.
 // Even in this file, a calling function could be running in the page bundle.
 export function setActiveDragActivityTab(tab: number) {
-    const page = GameTool.getBloomPage();
+    const page = getBloomPageElement();
     const pageFrameExports = getEditablePageBundleExports();
     if (!page || !pageFrameExports) {
         // just loading page??
@@ -2040,7 +2040,7 @@ export function setActiveDragActivityTab(tab: number) {
 
 // Replace the origami control with the Game tab control if the page is a game.
 export function setupDragActivityTabControl() {
-    const page = GameTool.getBloomPage();
+    const page = getBloomPageElement();
     if (!page) {
         return;
     }

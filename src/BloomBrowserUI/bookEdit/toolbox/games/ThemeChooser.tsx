@@ -1,7 +1,7 @@
 import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { ToolBox } from "../toolbox";
+import { getPageIframeBody } from "../../../utils/shared";
 import { getVariationsOnClass } from "../../../utils/getVariationsOnClass";
 import {
     kOptionPanelBackgroundColor,
@@ -13,7 +13,7 @@ import { InfoIconUrl } from "../../../react_components/icons/InfoIconUrl";
 import BloomSelect from "../../../react_components/bloomSelect";
 
 const getPage = () => {
-    const pageBody = ToolBox.getPage();
+    const pageBody = getPageIframeBody();
     return pageBody?.getElementsByClassName("bloom-page")[0] as HTMLElement;
 };
 

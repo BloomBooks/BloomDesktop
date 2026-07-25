@@ -27,12 +27,24 @@ import {
 export { isLongPressEvaluating };
 export { callOnBlur as registerMenuCloseOnBlur };
 
-type ToolboxSettings = Record<string, string> & {
+/**
+ * The toolbox settings for the current book, as the server sends them (GET
+ * /bloom/api/toolbox/settings; see ToolboxView.HandleSettings()). Apart from "current" and
+ * "visibility", it has one "<toolId>State" property for each tool that has saved state in
+ * this book; the value is whatever opaque string that tool chose to save, and only that tool
+ * knows how to interpret it (e.g. settings["decodableReaderState"]).
+ */
+export interface IToolboxSettings {
+    // The tool the book was last using, in the historical persisted spelling (e.g.
+    // "talkingBookTool"). Missing or empty for a new book.
     current?: string;
+    // "visible" if the toolbox was open in this book, otherwise an empty string.
     visibility?: string;
-};
+    // The per-tool state properties described above, keyed "<toolId>State".
+    [stateKey: string]: string | undefined;
+}
 
-let savedSettings: ToolboxSettings = {};
+let savedSettings: IToolboxSettings = {};
 
 let keypressTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -60,20 +72,21 @@ export function setToolboxSettingsChangeHandler(
     changeToolboxSettingsState = handler;
 }
 
-export interface IReactTool {
-    // For tools that require a subscription. This will trigger an indicator communicating that this
-    // featureName requires a subscription.
-    featureName?: string;
-}
-
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
 // can be asked to do by the rest of the system. Everything the toolbox needs to know
 // about a tool, including the metadata it shows in the tool's section header, comes from
 // here (or is derived from id(); see toolIds.ts).
 // See ToolboxView.cs class comment for a summary of how to add a new tool.
-export interface ITool extends IReactTool {
-    beginRestoreSettings(settings: string): JQueryPromise<void>;
+export interface ITool {
+    // For tools that require a subscription. This will trigger an indicator communicating that this
+    // featureName requires a subscription.
+    readonly featureName?: string;
+    // Gives the tool a chance to restore whatever it saved in the book's toolbox settings
+    // (its own "<toolId>State" property, if any) before it is shown. Called each time the
+    // tool becomes the current tool, so it also serves to make the tool's state track the
+    // current book. The returned promise must resolve when the tool is ready to be shown.
+    beginRestoreSettings(settings: IToolboxSettings): Promise<void>;
     configureElements(container: HTMLElement);
     showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
     hideTool(); // called when changing tools or hiding the toolbox.
@@ -309,33 +322,6 @@ export class ToolBox {
         // This is used to add a task that should be run when the current tool is closed.
         // It is used by the Talking Book tool to clean up the CkEditor markup.
         getTheOneToolbox().doWhenClosingTool.push(task);
-    }
-
-    // In the process of moving this to shared.ts, but a lot of
-    // code still expects to find it here.
-    public static getPageFrame(): HTMLIFrameElement {
-        return getPageIFrame();
-    }
-
-    // In the process of moving this to shared.ts as getPageIframeBody, but a lot of
-    // code still expects to find it here.
-    // The body of the editable page, a root for searching for document content.
-    public static getPage(): HTMLElement | null {
-        return getPageIframeBody();
-    }
-
-    public static isXmatterPage(): boolean {
-        const page = ToolBox.getPage();
-        if (!page) return false;
-        const bloomPage = page.querySelector(".bloom-page");
-        if (!bloomPage) return false;
-        const classes = bloomPage.getAttribute("class");
-        if (!classes) return false;
-        return (
-            // Enhance: when our typescript "groks" string.include(), it would simplify things.
-            classes.indexOf("bloom-frontMatter") > -1 ||
-            classes.indexOf("bloom-backMatter") > -1
-        );
     }
 
     public static registerTool(tool: ITool) {
@@ -602,7 +588,7 @@ function showOrHideTool(
 export function restoreToolboxSettings() {
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
-        const pageFrame = ToolBox.getPageFrame();
+        const pageFrame = getPageIFrame();
         const contentWin = pageFrame.contentWindow;
         if (contentWin && contentWin.document.readyState === "loading") {
             // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
@@ -643,27 +629,23 @@ export function applyToolboxStateToUpdatedPage() {
             doWhenPageReady(() => {
                 const activeTool = currentTool;
                 if (activeTool && isToolInitialized(activeTool)) {
-                    activeTool
-                        .beginRestoreSettings(
-                            savedSettings as unknown as string,
-                        )
-                        .then(() => {
-                            if (currentTool !== activeTool) {
-                                return;
-                            }
+                    activeTool.beginRestoreSettings(savedSettings).then(() => {
+                        if (currentTool !== activeTool) {
+                            return;
+                        }
 
-                            // Re-run tool UI setup on page/book switches. Some tools
-                            // (for example reader toggle controls) are initialized in showTool().
-                            Promise.resolve(activeTool.showTool()).then(() => {
-                                if (
-                                    currentTool === activeTool &&
-                                    isToolInitialized(activeTool)
-                                ) {
-                                    activeTool.newPageReady();
-                                    scheduleDelayedNewPageReady(activeTool);
-                                }
-                            });
+                        // Re-run tool UI setup on page/book switches. Some tools
+                        // (for example reader toggle controls) are initialized in showTool().
+                        Promise.resolve(activeTool.showTool()).then(() => {
+                            if (
+                                currentTool === activeTool &&
+                                isToolInitialized(activeTool)
+                            ) {
+                                activeTool.newPageReady();
+                                scheduleDelayedNewPageReady(activeTool);
+                            }
                         });
+                    });
                     // We used to call updateMarkup() here
                     // Now we don't because it would mess up the Talking Book Tool
                     // if you really need it, add call to updateMarkup to currentTool's implementation of newPageReady.
@@ -688,8 +670,8 @@ function scheduleDelayedNewPageReady(tool: ITool): void {
 }
 
 function doWhenPageReady(action: () => void) {
-    const page = ToolBox.getPage();
-    if (!page || !ToolBox.getPageFrame()) {
+    const page = getPageIframeBody();
+    if (!page || !getPageIFrame()) {
         // Somehow, despite firing this function when the document is supposedly ready,
         // it may not really be ready when this is first called. If it doesn't even have a body yet,
         // we need to try again later.
@@ -727,7 +709,7 @@ function doWhenCkEditorReadyCore(
     },
     page: HTMLElement,
 ): void {
-    const contentWindow = ToolBox.getPageFrame().contentWindow as
+    const contentWindow = getPageIFrame().contentWindow as
         | (Window & { CKEDITOR?: typeof CKEDITOR })
         | null;
     if (contentWindow?.CKEDITOR) {
@@ -795,7 +777,7 @@ function doWhenCkEditorReadyCore(
     }
 }
 
-function restoreToolboxSettingsWhenPageReady(settings: ToolboxSettings) {
+function restoreToolboxSettingsWhenPageReady(settings: IToolboxSettings) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         const opts = settings;
@@ -866,11 +848,9 @@ function activateTool(newTool: ITool) {
             return;
         }
         // Always re-restore settings so tool state tracks the current book.
-        newTool
-            .beginRestoreSettings(savedSettings as unknown as string)
-            .then(() => {
-                activateToolInternalAsync(newTool);
-            });
+        newTool.beginRestoreSettings(savedSettings).then(() => {
+            activateToolInternalAsync(newTool);
+        });
     }
 }
 
