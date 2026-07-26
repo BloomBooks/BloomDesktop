@@ -5,9 +5,12 @@ Code organization
     - ToolboxRoot.tsx    the React root: one MUI Accordion section per tool, whose body is
                          the element the tool's ITool.makeRootElement() returns.
     - toolbox.ts         the ITool interface and the non-React orchestration: it asks the
-                         server which tools this book has enabled, drives each tool's
-                         lifecycle (showTool/newPageReady/updateMarkup/...), and owns the
-                         keystroke-to-markup machinery.
+                         server which tools this book has enabled and drives each tool's
+                         lifecycle (showTool/newPageReady/updateMarkup/...).
+    - pageEditingMarkup.ts  the keystroke-to-markup machinery: the keypress/paste handlers on
+                         the .bloom-editable divs, and the CKEditor bookmark coordination that
+                         keeps the current tool's markup up to date as the user edits without
+                         losing the insertion point.
     - toolboxReactAdapter.ts  the narrow channel by which toolbox.ts tells ToolboxRoot which
                          tools to offer and which one is active. (Separate module only to
                          avoid an import cycle.)
