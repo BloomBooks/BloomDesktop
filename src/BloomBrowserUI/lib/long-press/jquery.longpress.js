@@ -196,7 +196,7 @@ import "./jquery.mousewheel.js";
     }
 
     function onKeyDown(e) {
-        // See comment for BL-5215 in toolbox.ts
+        // See comment for BL-5215 in pageEditingMarkup.ts
         window.top[isLongPressEvaluating] = true;
 
         /* we had to disable thes because ckeditor was seeing them and messing things up. Hopefully in the future it can be reinstated:
@@ -473,7 +473,7 @@ import "./jquery.mousewheel.js";
         }, 1);
     }
 
-    // See notes on BL-3900 in toolbox.ts for important regression information.
+    // See notes on BL-3900 in pageEditingMarkup.ts for important regression information.
     function replacePreviousLetterWithNewLetter(newLetter) {
         if (isTextArea()) {
             const pos = getTextAreaCaretPosition(activeElement);
