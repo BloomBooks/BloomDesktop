@@ -379,9 +379,13 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                             : toolboxHeaderIconStyles
                                     }
                                     data-toolid={section.id}
-                                    style={{
-                                        backgroundImage: `url(${section.iconPath ?? ""})`,
-                                    }}
+                                    style={
+                                        section.iconPath
+                                            ? {
+                                                  backgroundImage: `url(${section.iconPath})`,
+                                              }
+                                            : undefined
+                                    }
                                 ></span>
                                 <Typography
                                     css={css`
