@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { cleanUpNbsps, removeCommentsFromEditableHtml } from "./toolbox";
+import {
+    cleanUpNbsps,
+    removeCommentsFromEditableHtml,
+} from "./pageEditingMarkup";
 
-describe("toolbox tests", () => {
+describe("pageEditingMarkup tests", () => {
     it("removeCommentsFromEditableHtml removes comments correctly including ones with new lines", () => {
         const p = document.createElement("p");
         const span1 = document.createElement("span");
