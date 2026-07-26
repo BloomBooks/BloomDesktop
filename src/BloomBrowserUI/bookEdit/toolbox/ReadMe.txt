@@ -1,11 +1,45 @@
-﻿The intended code organization of the toolbox is as follows:
-- Files in the root folder (this one, toolbox) should contain only generic code for managing the toolbox as a whole
-- Anything that is part of the implementation of a particular tool should be in one of the child folders, of which there is one for each tool in the accordion.
+The toolbox is the sidebar of the Edit tab. Every tool in it is a React component.
 
-A partial exception to this is a chunk of code which is either shared by the Decodable Reader and Leveled Reader tool,
-or at least has not yet been teased apart. Much of this code is in files or folders with names starting with Reader or containing Synphony.
-For now, all such code is in the decodableReader folder (since a slightly larger share of it really belongs there).
+Code organization
+- Files in this root folder are the generic machinery for managing the toolbox as a whole:
+    - ToolboxRoot.tsx    the React root: one MUI Accordion section per tool, whose body is
+                         the element the tool's ITool.makeRootElement() returns.
+    - toolbox.ts         the ITool interface and the non-React orchestration: it asks the
+                         server which tools this book has enabled, drives each tool's
+                         lifecycle (showTool/newPageReady/updateMarkup/...), and owns the
+                         keystroke-to-markup machinery.
+    - toolboxReactAdapter.ts  the narrow channel by which toolbox.ts tells ToolboxRoot which
+                         tools to offer and which one is active. (Separate module only to
+                         avoid an import cycle.)
+    - toolIds.ts         the canonical tool ids, and the single place that knows how a
+                         canonical id maps to the other spellings at our boundaries (the
+                         historical "Tool"/"Check" suffixes in persisted data, and the
+                         English label and l10n key of a tool).
+    - toolboxToolReactAdaptor.tsx  the base class real tools extend; it supplies no-op
+                         lifecycle defaults so a tool implements only what it cares about.
+    - toolboxBootstrap.ts  the toolbox bundle's entry point: renders ToolboxRoot, registers
+                         one instance of each tool, and starts toolbox.ts.
+- Anything that is part of the implementation of a particular tool belongs in that tool's
+  own child folder, one per tool.
 
-It is a goal of our design that code outside the folder of an individual tool should not know about the tool.
-Ideally it should be possible to add a new tool to the accordion without modifying any file outside the new folder
-that is added, except for modifying toolbox.jade to get the files included.
+A partial exception is a chunk of code shared by the Decodable Reader and Leveled Reader
+tools, or at least not yet teased apart. Its files and folders have names starting with
+Reader or containing Synphony, and for now all of it is in the readers folder.
+
+It is a goal of our design that code outside the folder of an individual tool should not
+know about the tool.
+
+To add a new tool
+1. Create a folder here whose name is the tool's canonical id (no "Tool" suffix).
+2. In it, write a class that extends ToolboxToolReactAdaptor, implementing at least id()
+   and makeRootElement(), plus iconPath() if the section header should show an icon, and
+   whichever lifecycle methods the tool needs (see the ITool comments in toolbox.ts).
+3. Register one instance of it in toolboxBootstrap.ts: ToolBox.registerTool(new MyTool()).
+4. Add an XLF entry for the label, whose key follows the convention in toolIds.ts
+   getToolLabelInfo() (e.g. id "music" gives key "EditTab.Toolbox.MusicTool" and English
+   "Music Tool"); see .github/skills/xlf-strings/SKILL.md.
+
+That is all. The section header (label, icon, subscription badge), the tool's checkbox in
+the "More..." section, and the alphabetical ordering are all derived from the ITool
+implementation and its id, so there is no list of tools to update anywhere else.
+See also the ToolboxView class comment in src/BloomExe/Edit/ToolboxView.cs.

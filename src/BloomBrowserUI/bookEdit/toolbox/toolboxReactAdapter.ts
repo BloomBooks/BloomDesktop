@@ -1,16 +1,14 @@
-// The root of the toolbox is a React component (ToolboxRoot.tsx), but a good deal of the
-// toolbox is still the legacy, non-React code in toolbox.ts. This module is the single
-// narrow channel between the two: ToolboxRoot registers an implementation of
-// IToolboxReactAdapter when it mounts, and the legacy code uses it to say which tools the
-// toolbox is offering, to make one of them active, and to be notified when the user makes
-// a different tool active.
+// Every tool is a React component, and the toolbox UI is a React component
+// (ToolboxRoot.tsx), but the code that orchestrates the toolbox — asking the server which
+// tools this book has enabled, and running each tool's lifecycle as pages, books and tools
+// change — is still the non-React code in toolbox.ts. This module is the single narrow
+// channel between the two: ToolboxRoot registers an implementation of IToolboxReactAdapter
+// when it mounts, and toolbox.ts uses it to say which tools the toolbox is offering, to
+// make one of them active, and to be notified when the user makes a different tool active.
 //
 // It lives in its own module (rather than being exported from ToolboxRoot.tsx) because
 // ToolboxRoot.tsx imports from toolbox.ts, so having toolbox.ts import from ToolboxRoot.tsx
 // would create an import cycle.
-//
-// When all the tools are React components, each one will belong to its own accordion
-// section and manage its own state and lifecycle, and this module can go away.
 //
 // Every toolId parameter and result here is a canonical tool id, i.e. what the tool's
 // ITool.id() returns, with no "Tool" suffix (e.g. "canvas", not "canvasTool"). See
@@ -42,8 +40,8 @@ const actionsWaitingForAdapter: ((adapter: IToolboxReactAdapter) => void)[] =
     [];
 
 /**
- * Called by ToolboxRoot once it has mounted, making the adapter available to the legacy
- * toolbox code.
+ * Called by ToolboxRoot once it has mounted, making the adapter available to the
+ * orchestration code in toolbox.ts.
  */
 export function setToolboxReactAdapter(adapter: IToolboxReactAdapter): void {
     theOneToolboxReactAdapter = adapter;
@@ -70,9 +68,9 @@ export function whenToolboxReactAdapterReady(
 /**
  * The adapter published by ToolboxRoot. Returns undefined only until ToolboxRoot has
  * mounted; in practice that is before anything asks for it, since toolboxBootstrap
- * renders ToolboxRoot before initializing the legacy toolbox, and the legacy code only
- * asks for the adapter in response to a user action or an API response. Callers must
- * still allow for undefined, but need not do anything useful in that case.
+ * renders ToolboxRoot before initializing toolbox.ts, and toolbox.ts only asks for the
+ * adapter in response to a user action or an API response. Callers must still allow for
+ * undefined, but need not do anything useful in that case.
  */
 export function getToolboxReactAdapter(): IToolboxReactAdapter | undefined {
     return theOneToolboxReactAdapter;
