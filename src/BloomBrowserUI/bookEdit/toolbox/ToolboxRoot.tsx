@@ -31,10 +31,11 @@ import {
 // has enabled and tells us about each one through the adapter's addTool(), which is the
 // only way a section is ever created.
 //
-// Each tool still hands us a plain DOM element (from its ITool.makeRootElement()) rather
-// than a React component, so a small host component (ToolBodyHost) puts that element into
-// the React layout. When every tool is a React component, each section can render its
-// tool directly and both that host and toolboxReactAdapter.ts can go away.
+// Every tool is a React component, but a tool hands us the already-rendered root DOM
+// element of its component (from its ITool.makeRootElement()) rather than an element type
+// we could render ourselves. So a small host component (ToolBodyHost) puts that element
+// into the React layout, which also means a tool keeps its state as sections open and
+// close.
 
 // Everything the toolbox needs in order to show one tool's section. It all comes from the
 // tool itself (see ITool) or is derived from its id (see toolIds.ts).
@@ -161,9 +162,9 @@ export const ToolboxRoot: React.FunctionComponent = () => {
     const activeToolChangedCallbacks = React.useRef<
         ((toolId: string) => void)[]
     >([]);
-    // The authoritative copy of the sections, so that the adapter methods the legacy
-    // toolbox code calls can read and update the list synchronously. (React state is
-    // updated from it, for rendering.)
+    // The authoritative copy of the sections, so that the adapter methods toolbox.ts
+    // calls can read and update the list synchronously. (React state is updated from it,
+    // for rendering.)
     const sectionsRef = React.useRef<ToolboxSection[]>([]);
 
     const applySections = React.useCallback(
@@ -181,8 +182,8 @@ export const ToolboxRoot: React.FunctionComponent = () => {
         });
     }, []);
 
-    // Register the adapter that the legacy toolbox code uses to say which tools the
-    // toolbox offers, to make one of them active, and to observe which one is active.
+    // Register the adapter that toolbox.ts uses to say which tools the toolbox offers,
+    // to make one of them active, and to observe which one is active.
     // See toolboxReactAdapter.ts.
     React.useEffect(() => {
         setToolboxReactAdapter({
