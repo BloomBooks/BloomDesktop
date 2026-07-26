@@ -3275,7 +3275,7 @@ export default class AudioRecording implements IAudioRecorder {
             // the async actions complete.
             await this.resetCurrentAudioElementAsync(currentTextBox);
 
-            // cleanUpNbsps() in toolbox.ts runs synchronously while we are suspended at the
+            // cleanUpNbsps() in pageEditingMarkup.ts runs synchronously while we are suspended at the
             // first await above.  It unconditionally sets editableDiv.innerHTML, detaching
             // the span that resetCurrentAudioElementAsync just registered as highlightedElement.
             // IDs are preserved through that replacement, so we can recover the live DOM node.
