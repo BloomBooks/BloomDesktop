@@ -151,13 +151,16 @@ export const GameThemeEditorPanel: React.FunctionComponent<{
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // A freshly-created "Untitled …" theme wants a real name, so highlight the field on open
-    // so the user can just start typing. We focus immediately and again after a short delay,
-    // because when opened from the theme dropdown the closing menu restores focus to the
-    // dropdown right after we mount, which would otherwise steal it back.
+    // A freshly-created theme wants a real name, so highlight the field on open so the user can
+    // just start typing. We focus immediately and again after a short delay, because when opened
+    // from the theme dropdown the closing menu restores focus to the dropdown right after we
+    // mount, which would otherwise steal it back. Keyed off isNewTheme (the host's explicit "new"
+    // signal) rather than sniffing the name for "Untitled": that literal is the English suggested
+    // name, so matching it would both misfire on a user theme actually called "Untitled ..." and
+    // break silently if the suggested name is ever localized.
     const nameInputRef = useRef<HTMLInputElement>(null);
     useEffect(() => {
-        if (!displayName.startsWith("Untitled")) return;
+        if (!isNewTheme) return;
         const selectName = () => {
             nameInputRef.current?.focus();
             nameInputRef.current?.select();

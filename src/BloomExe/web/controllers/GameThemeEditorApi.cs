@@ -239,8 +239,12 @@ namespace Bloom.web.controllers
             var pattern =
                 @"\.bloom-page\.game-theme-" + Regex.Escape(theme.slug) + @"(?![\w-])\s*\{[^}]*\}";
             var regex = new Regex(pattern);
+            // Substitute via a MatchEvaluator rather than passing `rule` as a replacement string:
+            // Regex.Replace treats "$" in a replacement as a substitution token ($1, $&, ...), so a
+            // variable value containing "$" would be silently mangled. The evaluator inserts the
+            // rule verbatim.
             if (regex.IsMatch(css))
-                return regex.Replace(css, rule, 1);
+                return regex.Replace(css, _ => rule, 1);
 
             var trimmed = css.TrimEnd();
             return trimmed.Length == 0 ? rule + "\n" : trimmed + "\n\n" + rule + "\n";
