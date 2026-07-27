@@ -21,6 +21,8 @@ export function getChecksum(message: string): string {
     // However, we don't want the sentence markup to be updated because the checksums differ (since a character was deleted).
     //
     // Thus, our checksum function needs to ignore the vertical line character when computing the checksum.
-    const adjustedMessage = message.replace("|", "");
+    // Use a global replace: a single audio-sentence can contain more than one delimiter
+    // (e.g. "one | two | three."), and every one of them must be stripped (BL-16586).
+    const adjustedMessage = message.replace(/\|/g, "");
     return getMd5(adjustedMessage);
 }

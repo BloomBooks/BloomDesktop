@@ -51,6 +51,7 @@ namespace Bloom.Collection
 
         internal bool PendingAllowTeamCollection;
         internal bool PendingAllowAppBuilder;
+        internal bool PendingAllowAiImageEditing;
         internal bool AllowTeamCollectionOptionEnabled = false;
 
         // "Internal" so CollectionSettingsApi can update these.
@@ -120,6 +121,9 @@ namespace Bloom.Collection
             );
             PendingAllowAppBuilder = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kAppBuilder
+            );
+            PendingAllowAiImageEditing = ExperimentalFeatures.IsFeatureEnabled(
+                ExperimentalFeatures.kAiImageEditing
             );
 
             if (
@@ -276,6 +280,8 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingLanguage1.Tag = args.LanguageTag;
+                if (args.IsRtl.HasValue)
+                    PendingLanguage1.IsRightToLeft = args.IsRtl.Value;
                 PendingLanguage1.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
                 ChangeThatRequiresRestart();
             }
@@ -291,6 +297,8 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingLanguage2.Tag = args.LanguageTag;
+                if (args.IsRtl.HasValue)
+                    PendingLanguage2.IsRightToLeft = args.IsRtl.Value;
                 PendingLanguage2.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
                 ChangeThatRequiresRestart();
             }
@@ -306,6 +314,8 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingLanguage3.Tag = args.LanguageTag;
+                if (args.IsRtl.HasValue)
+                    PendingLanguage3.IsRightToLeft = args.IsRtl.Value;
                 PendingLanguage3.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
                 ChangeThatRequiresRestart();
             }
@@ -410,6 +420,7 @@ namespace Bloom.Collection
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
             UpdateAppBuilderAllowed();
+            UpdateAiImageEditingAllowed();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -828,6 +839,15 @@ namespace Bloom.Collection
         {
             // NB: This change does not require a restart.
             ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, PendingAllowAppBuilder);
+        }
+
+        private void UpdateAiImageEditingAllowed()
+        {
+            // NB: This change does not require a restart.
+            ExperimentalFeatures.SetValue(
+                ExperimentalFeatures.kAiImageEditing,
+                PendingAllowAiImageEditing
+            );
         }
     }
 }

@@ -20,6 +20,22 @@ House rules:
 ---
 
 
+## 2026-07-24 — agent-dotnet.sh test exits 0 even when tests fail
+
+- **Cut:** `build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj` returned exit code 0 on a
+  run whose own summary line read `Failed! - Failed: 11, Passed: 2913`. Anything that trusts the
+  exit code instead of parsing the output — an agent, a hook, a CI step, a background-task
+  notification that just reports "completed (exit code 0)" — will conclude the suite passed. During
+  this run the harness reported the failing suite as a success and it was only caught by reading the
+  summary line.
+- **Idea:** Have the wrapper propagate `dotnet test`'s real exit code (it presumably exits on the
+  last command in a pipeline, or swallows the status while redirecting into the private output
+  tree). Until then, treat "did the C# suite pass?" as a question only the output can answer.
+- **Context:** BloomDesktop, found during `/preflight` of PR #7992 (BL-16459 clipboard toast).
+  Related to the 2026-07-15 entry below, but distinct: that one is about *which* tests fail under
+  the wrapper, this one is about the wrapper reporting failure as success.
+
+
 ## 2026-07-15 — agent-dotnet full suite can never be fully green (9 environmental failures)
 
 - **Cut:** Running the full C# suite through `build/agent-dotnet.sh` always fails 9 tests for
@@ -28,6 +44,8 @@ House rules:
   `src/BloomTests/xMatter/Test-XMatter` packs from that tree (5 failures in
   `XMatterHelperTests` and `InsertPageAfter_FromDifferentBook_MergesStyles`). Agents can't get
   a green full-suite baseline, so every preflight has to re-establish that these 9 are noise.
+- seen again: 2026-07-27, preflight of moreHighlightFixes2 (PR #8100) — same 9, re-triaged as
+  environmental; developer decided "leave as is" for that run.
 - **Idea:** Make the wrapper copy/link `BloomPdfMaker.exe` into its private output tree and fix
   the xmatter file-locator path (or document the 9 known failures in AGENTS.md as expected under
   the wrapper).

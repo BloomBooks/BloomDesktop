@@ -140,6 +140,7 @@ namespace Bloom.web.controllers
                             LanguageTag = data.LanguageTag,
                             DesiredName = data.DesiredName,
                             DefaultName = data.DefaultName,
+                            IsRtl = data.IsRtl,
                             Country = data.Country,
                         }
                     );
@@ -318,6 +319,10 @@ namespace Bloom.web.controllers
                         ),
                     allowAppBuilder = dialog?.PendingAllowAppBuilder
                         ?? ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kAppBuilder),
+                    allowAiImageEditing = dialog?.PendingAllowAiImageEditing
+                        ?? ExperimentalFeatures.IsFeatureEnabled(
+                            ExperimentalFeatures.kAiImageEditing
+                        ),
                     showQrCode = dialog?.PendingShowQrCode
                         ?? _collectionSettings.ShowBlorgLanguageQrCode,
                     qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
@@ -358,6 +363,13 @@ namespace Bloom.web.controllers
             {
                 var allowAppBuilder = allowAppBuilderToken.Value<bool>();
                 dialog.PendingAllowAppBuilder = allowAppBuilder;
+            }
+
+            var allowAiImageEditingToken = data["allowAiImageEditing"];
+            if (allowAiImageEditingToken != null)
+            {
+                var allowAiImageEditing = allowAiImageEditingToken.Value<bool>();
+                dialog.PendingAllowAiImageEditing = allowAiImageEditing;
             }
 
             var showQrCodeToken = data["showQrCode"];

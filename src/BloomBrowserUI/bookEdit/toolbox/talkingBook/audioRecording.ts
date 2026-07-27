@@ -72,7 +72,10 @@ import {
 } from "../../../react_components/featureStatus";
 import { animateStyleName } from "../../../utils/shared";
 import jQuery from "jquery";
-import { AudioTextHighlightManager } from "./audioTextHighlightManager";
+import {
+    AudioTextHighlightManager,
+    currentHighlightName,
+} from "./audioTextHighlightManager";
 import { TalkingBookUiState, Status } from "./TalkingBookUiState";
 
 // ENHANCE: Replace AudioRecordingMode with this?
@@ -170,7 +173,6 @@ export default class AudioRecording implements IAudioRecorder {
 
     private showingImageDescriptions: boolean;
     public recordingMode: RecordingMode;
-    private previousRecordMode: RecordingMode;
     private haveAudio: boolean;
     private inShowPlaybackOrderMode: boolean = false;
     private wholeTextBoxAudioFeatureStatus: FeatureStatus | undefined;
@@ -192,6 +194,12 @@ export default class AudioRecording implements IAudioRecorder {
 
     private playbackOrderCache: IPlaybackOrderInfo[] = [];
     private audioTextHighlightManager = new AudioTextHighlightManager();
+
+    // Incremented each time setHighlightToAsync starts. During page setup several rounds of it
+    // can overlap (newPageReady fires twice, and a quick page change can leave the previous
+    // page's setup chain still running); after the await inside it, each round checks this to
+    // see whether it has been superseded and should do nothing (BL-15300 highlight flash).
+    private setHighlightSession = 0;
 
     constructor(maySetHighlight: boolean = true) {
         // Initialize to Unknown (as opposed to setting to the default Sentence) so we can identify
@@ -516,7 +524,13 @@ export default class AudioRecording implements IAudioRecorder {
     // Called by TalkingBookModel.detachFromPage(), which is called when changing tools, hiding the toolbox,
     // or saving (leaving) pages.
     public removeRecordingSetup() {
-        this.removeAudioCurrentFromPageDocBody();
+        // NB: deliberately do NOT clear the current highlight here. detachFromPage also runs
+        // during the periodic save-the-page cycle while the user stays on the page; clearing
+        // made the highlight blink off for the detach/reattach interval (BL-15300). Nothing
+        // needs cleaning for the save: the ::highlight registry is not part of the DOM, and
+        // the icon marker is a bloom-ui element, which the save pipeline strips. When the tool
+        // is really going away, handleToolHiding() clears the highlight; when the page is
+        // going away, the highlight dies with its document.
         const page = this.getPageDocBodyJQuery();
         if (this.inShowPlaybackOrderMode) {
             // We are removing the UI because we're changing tools or pages, but we want to leave
@@ -996,8 +1010,7 @@ export default class AudioRecording implements IAudioRecorder {
             return;
         }
 
-        // Get rid of all the audio-currents just to be sure.
-        this.removeAudioCurrentFromPageDocBody();
+        const session = ++this.setHighlightSession;
 
         if (!this.inShowPlaybackOrderMode) {
             // It's good for this to happen before awaiting the subsequent async behavior,
@@ -1031,14 +1044,50 @@ export default class AudioRecording implements IAudioRecorder {
             }
         }
 
+        if (session !== this.setHighlightSession) {
+            // While we awaited, another call started moving the highlight somewhere else;
+            // let that newer call win rather than clobbering (and visibly re-flashing) it.
+            return;
+        }
+
+        // Clear the old highlight (and icon marker) only now, in the SAME task that installs
+        // the new one, so the browser paints the change as a single swap. When this clear
+        // happened up front, before the await above, every round of this method painted
+        // "no highlight" for the length of an HTTP round trip -- and page setup can run
+        // several rounds in quick succession (newPageReady fires twice; changing pages
+        // quickly leaves the previous page's setup chain still finishing), which showed as
+        // the highlight flashing off and on (BL-15300).
+        this.removeAudioCurrentFromPageDocBody();
+        if (!this.inShowPlaybackOrderMode) {
+            // removeAudioCurrent nulled this; restore it.
+            this.highlightedElement = newElement as HTMLElement;
+        }
+
         this.refreshAudioTextHighlights(newElement, suppressHighlight);
     }
+
+    // Whether the last refresh deliberately suppressed the current highlight (e.g. playing an
+    // element with no audio). Repair code must not "fix" a highlight that is intentionally
+    // absent.
+    private currentHighlightSuppressed = false;
 
     private refreshAudioTextHighlights(
         currentHighlight?: Element | null,
         suppressCurrentHighlight?: boolean,
     ) {
+        this.currentHighlightSuppressed = !!suppressCurrentHighlight;
         const activeHighlight = currentHighlight ?? this.getCurrentHighlight();
+        // Whatever document we are putting a highlight into, watch it so the highlight gets
+        // repaired if later DOM changes (e.g. CKEditor's initialization) detach its Ranges.
+        // This matters especially when a leftover async chain from the previous page puts the
+        // first highlight onto a newly-loaded page before handleNewPageReady has run.
+        if (
+            activeHighlight &&
+            activeHighlight.ownerDocument.body !==
+                this.highlightIntegrityObservedBody
+        ) {
+            this.watchForHighlightGettingDetached();
+        }
         const currentTextBox = activeHighlight
             ? ((this.getTextBoxOfElement(
                   activeHighlight,
@@ -2100,6 +2149,16 @@ export default class AudioRecording implements IAudioRecorder {
         ) {
             await this.setRecordingModeAsync(RecordingMode.Sentence);
         }
+
+        // Re-establish the yellow current highlight (BL-15300). clearAudioSplit() above
+        // removed the blue split (::highlight) paint, but with pseudo-element highlighting
+        // nothing puts the yellow current highlight back the way removing bloom-postAudioSplit
+        // from the .ui-audioCurrent box used to do under the old background-color model. Without
+        // this, clearing a split whole-text-box recording leaves the box with no highlight.
+        // (When we switched to Sentence mode just above, setRecordingModeAsync already selected
+        // and highlighted the first sentence; refreshing again is harmless.)
+        this.refreshAudioTextHighlights();
+
         await this.changeStateAndSetExpectedAsync("record");
         this.updateDisplay();
     }
@@ -2348,9 +2407,16 @@ export default class AudioRecording implements IAudioRecorder {
         recordingMode: RecordingMode,
         forceOverwrite: boolean = false,
     ): Promise<void> {
-        if (this.previousRecordMode === undefined) {
-            this.previousRecordMode = this.recordingMode;
-        }
+        // Which branch we take below depends on the mode the current text box is in *before*
+        // this switch. Use this.recordingMode, which is re-derived from the current box/page
+        // (initializeAudioRecordingMode / updateDisplay). We must NOT use a remembered
+        // "previous mode" field here: this is a session-long singleton and such a field is not
+        // reset when the page or current box changes, so a stale value sends us down the wrong
+        // branch and skips the textbox->sentence markup conversion. That was BL-15300: after
+        // clearing a whole-text-box recording and switching to Record by Sentence, the whole
+        // box was highlighted instead of the first sentence, because the box was never split
+        // into per-sentence spans.
+        const modeBeforeSwitch = this.recordingMode;
         this.recordingMode = recordingMode;
 
         // Check if there are any audio recordings present.
@@ -2373,7 +2439,7 @@ export default class AudioRecording implements IAudioRecorder {
 
         let result;
         // Update the UI after clicking the checkbox
-        if (this.previousRecordMode === RecordingMode.TextBox) {
+        if (modeBeforeSwitch === RecordingMode.TextBox) {
             // This also implies converting the playback mode to Sentence, because we disallow Recording=Sentence,Playback=TextBox.
             // Enhance: Maybe don't bother if the current playback mode is already sentence?
             // Enhance: Maybe it means that you should be less aggressively trying to convert Markup into Playback=TextBox. Or that Clear should be more aggressively attempting ton convert into Playback=Sentence.
@@ -2410,7 +2476,6 @@ export default class AudioRecording implements IAudioRecorder {
                 result = this.changeStateAndSetExpectedAsync("record");
             }
         }
-        this.previousRecordMode = this.recordingMode;
         return result;
     }
 
@@ -2662,6 +2727,7 @@ export default class AudioRecording implements IAudioRecorder {
         await this.setShowingImageDescriptions(this.showingImageDescriptions);
 
         this.watchElementsThatMightChangeAffectingVisibility(); // before we might return early if there are none!
+        this.watchForHighlightGettingDetached();
         const editable = this.getRecordableDivs(true, false);
         docBody?.addEventListener(
             "mousedown",
@@ -2768,6 +2834,57 @@ export default class AudioRecording implements IAudioRecorder {
         }
     }
 
+    private highlightIntegrityObserver: MutationObserver | null = null;
+    // The body the integrity observer is currently watching, so repair code can notice when
+    // the page frame has navigated to a new document that isn't being watched yet.
+    private highlightIntegrityObservedBody: HTMLElement | null = null;
+
+    private removeHighlightIntegrityObserver() {
+        if (this.highlightIntegrityObserver) {
+            this.highlightIntegrityObserver.disconnect();
+            this.highlightIntegrityObserver = null;
+        }
+        this.highlightIntegrityObservedBody = null;
+    }
+
+    // CKEditor's initialization can replace paragraphs inside an editable a beat after the
+    // page loads. That silently detaches the nodes the current highlight's Ranges point at:
+    // the highlight stays registered but paints nothing, so it visibly flashed off until the
+    // next ensureHighlight tick (up to 200ms later) re-registered it (BL-15300). Instead,
+    // watch for DOM changes that kill the highlight and repair it on the spot -- a
+    // MutationObserver callback runs before the browser paints the frame containing the
+    // mutation, so the repair never shows.
+    private watchForHighlightGettingDetached() {
+        this.removeHighlightIntegrityObserver();
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) {
+            return;
+        }
+        this.highlightIntegrityObserver = new MutationObserver(() => {
+            // Repair-in-place only. Never select something new from here: during typing, the
+            // markup update replaces spans and then moves the highlight itself, and a
+            // select-the-default round from this observer would race it.
+            // Also do nothing if this instance is not the current AudioRecording (mainly a
+            // concern in unit tests, which create several instances against a shared page).
+            if (
+                !this.isShowing ||
+                !this.highlightedElement ||
+                (theOneAudioRecorder && theOneAudioRecorder !== this)
+            ) {
+                return;
+            }
+            const currentPageBody = this.getPageDocBody();
+            if (currentPageBody) {
+                this.repairCurrentHighlightInPlace(currentPageBody);
+            }
+        });
+        this.highlightIntegrityObserver.observe(pageBody, {
+            childList: true,
+            subtree: true,
+        });
+        this.highlightIntegrityObservedBody = pageBody;
+    }
+
     private watchElementsThatMightChangeAffectingVisibility() {
         this.removeVisibilityObserver();
         this.visibilityObserver = new MutationObserver((_) => {
@@ -2834,13 +2951,119 @@ export default class AudioRecording implements IAudioRecorder {
     // and not go on using up cpu cycles forever. On my computer, 4 seconds is very generous...a half second
     // would do it...but other computers are slower.
     private ensureHighlight(repeats: number) {
-        this.getCurrentTextBox();
+        // Stop the loop if the tool has been hidden (toolbox closed or a different tool selected).
+        // Otherwise we would re-establish the highlight that handleToolHiding just cleared, leaving
+        // it stuck on the page after the tool is gone (BL-15300). getActiveToolId() can still be
+        // "talkingBook" right after closing, so isShowing -- which handleToolHiding clears -- is the
+        // reliable signal that the tool is actually active.
+        if (!this.isShowing) {
+            return;
+        }
+        this.reestablishCurrentHighlightIfNeeded();
         if (repeats > 0) {
             this.ensureHighlightToken = setTimeout(
                 () => this.ensureHighlight(repeats - 1),
                 200,
             );
         }
+    }
+
+    // Make sure the current-audio pseudo-element highlight is actually registered against the
+    // *live* page document. This runs repeatedly for a few seconds after a page loads (see
+    // ensureHighlight).
+    //
+    // The visible highlight is a ::highlight registered in the page frame's CSS.highlights, over
+    // Ranges pointing at nodes in the page document. this.highlightedElement holds those nodes.
+    // When the page frame reloads (which can happen a beat after we first select the current
+    // element), this.highlightedElement is left pointing at a node in the *previous*, now
+    // detached document. refreshHighlights then reads the highlight registry from that node's
+    // window -- which is null for a detached document -- and silently does nothing, so no
+    // highlight appears. This is intermittent because it depends on whether a reload lands after
+    // we selected the element (BL-15300: "on page change, text is rarely highlighted").
+    //
+    // isVisible()/isConnected can't catch this: a node in a detached document is still
+    // "connected" to that old document. So we test membership in the *current* page document
+    // instead, re-point at the equivalent live node by id, and re-register the highlight.
+    private reestablishCurrentHighlightIfNeeded(): void {
+        // Never (re-)establish the highlight while the tool is hidden; that would put back the
+        // highlight handleToolHiding cleared when the toolbox was closed (BL-15300).
+        if (!this.isShowing) {
+            return;
+        }
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) {
+            return;
+        }
+        if (!this.repairCurrentHighlightInPlace(pageBody)) {
+            // Nothing is selected, or the selected element no longer exists on this page;
+            // select the default (which also registers the highlight).
+            this.setCurrentAudioElementToDefaultAsync();
+        }
+    }
+
+    // Repair the current highlight in place after the DOM changed under it: re-point
+    // this.highlightedElement at the live element with the same id if its document was
+    // replaced, and re-register the ::highlight if it is missing or its Ranges point at
+    // detached nodes (CKEditor's initialization can replace the paragraphs they lived in,
+    // leaving a highlight that paints nothing). Deliberately does NOT choose a new selection:
+    // returns false when there is no highlighted element, or its element no longer exists on
+    // the page at all, and leaves what to do about that to the caller. Returns true when the
+    // highlight is healthy (repaired, already fine, or intentionally suppressed).
+    private repairCurrentHighlightInPlace(pageBody: HTMLElement): boolean {
+        const liveDocument = pageBody.ownerDocument;
+
+        // The previous page's ensureHighlight ticks can carry the highlight onto a NEW page
+        // document (repairing by id below) well before that page's own handleNewPageReady has
+        // attached the integrity observer. Without an observer, a CKEditor paragraph
+        // replacement in that window kills the highlight visibly. So make sure whatever
+        // document we are repairing into is being watched.
+        if (pageBody !== this.highlightIntegrityObservedBody) {
+            this.watchForHighlightGettingDetached();
+        }
+
+        const current = this.highlightedElement;
+        if (!current) {
+            return false;
+        }
+
+        if (this.currentHighlightSuppressed || this.inShowPlaybackOrderMode) {
+            // The highlight is intentionally not showing; nothing to repair.
+            return true;
+        }
+
+        let mustRefresh = false;
+        if (!liveDocument.contains(current)) {
+            // Stale: current belongs to a previous (detached) version of the page, or was
+            // replaced within it. Re-point at the equivalent live element, matched by id.
+            const liveEquivalent = current.id
+                ? liveDocument.getElementById(current.id)
+                : null;
+            if (!liveEquivalent) {
+                return false;
+            }
+            this.highlightedElement = liveEquivalent as HTMLElement;
+            mustRefresh = true;
+        }
+
+        // Also refresh if the highlight simply isn't registered (the "it unexpectedly went away"
+        // case the ensureHighlight loop was originally written for), or if it is registered but
+        // its Ranges are dead. But don't needlessly re-register (and re-run color lookups) when
+        // it is already present and healthy.
+        const liveWindow = liveDocument.defaultView as
+            | (Window & { CSS?: { highlights?: Map<string, unknown> } })
+            | null;
+        const alreadyRegistered =
+            !!liveWindow?.CSS?.highlights?.has(currentHighlightName);
+        if (
+            mustRefresh ||
+            !alreadyRegistered ||
+            this.audioTextHighlightManager.currentHighlightHasDeadRanges(
+                pageBody,
+            )
+        ) {
+            this.refreshAudioTextHighlights(this.highlightedElement);
+        }
+        return true;
     }
     public clearTimeouts() {
         this.clearSubElementHighlightTimeout();
@@ -2870,6 +3093,7 @@ export default class AudioRecording implements IAudioRecorder {
         // Don't want to leave this markup around to confuse other things.
         this.removeAudioCurrentFromPageDocBody();
         this.removeVisibilityObserver();
+        this.removeHighlightIntegrityObserver();
         this.getPageDocBody()?.removeEventListener(
             "mousedown",
             this.moveRecordingHighlightToClick,
@@ -3270,7 +3494,14 @@ export default class AudioRecording implements IAudioRecorder {
         }
         const activeCanvasElement =
             getCanvasElementManager()?.getActiveElement();
-        if (activeCanvasElement) {
+        // Only defer to the active canvas element if it actually belongs to the current page.
+        // The CanvasElementManager is a page-frame singleton whose activeElement is not reliably
+        // cleared on page navigation, so after paging it can still point at a detached element
+        // from a previous page. If we honored that stale reference we would return without
+        // highlighting any text and never fall through to the first-audio-sentence code below,
+        // leaving the new page with no highlight at all (BL-15300: "after 2 or 3 pages, text
+        // blocks are not highlighted").
+        if (activeCanvasElement && pageDocBody.contains(activeCanvasElement)) {
             // Stop if this appears to be a recursive call. See BL-14898.
             if (activeCanvasElement !== this.canvasElementBeingHighlighted) {
                 this.canvasElementBeingHighlighted = activeCanvasElement;
@@ -3498,7 +3729,7 @@ export default class AudioRecording implements IAudioRecorder {
                         name != "u" && // ckeditor underline
                         name != "sup" && // ckeditor superscript
                         name != "a" && // Allow users to manually insert hyperlinks 4.5, and support 4.6 hyperlinks
-                        $(child).attr("id") !== "formatButton"
+                        !$(child).hasClass("bloom-ui") // don't process transient UI elements (e.g. the format button)
                     ) {
                         processedChild = true;
                         updateFuncs.push(
@@ -3541,14 +3772,13 @@ export default class AudioRecording implements IAudioRecorder {
     public getActionToMakeAudioSentenceElementsLeaf(elt: JQuery): () => void {
         const copy = elt.clone(); // don't modify elt except in the function we return
         // When all text is deleted, we get in a temporary state with no paragraph elements, so the root editable div
-        // may be processed...and if this happens during editing the format button may be present. The body of this function
-        // will do weird things with it (wrap it in a sentence span, for example) so the easiest thing is to remove
-        // it at the start and reinstate it at the end. Fortunately its position is predictable. But I wish this
-        // otherwise fairly generic code didn't have to know about it.
+        // may be processed...and if this happens during editing, transient UI elements (marked with the bloom-ui
+        // class, such as the format button or the current-audio marker) may be present. The body of this function
+        // will do weird things with them (wrap them in a sentence span, for example) so the easiest thing is to
+        // remove them all at the start. The format button gets reinstated at the end; fortunately its position
+        // is predictable.
         const formatButton = copy.find("#formatButton");
-        formatButton.remove(); // nothing happens if not found
-        const currentMarker = copy.find(".bloom-ui-current-audio-marker");
-        currentMarker.remove();
+        copy.find(".bloom-ui").remove(); // remove transient UI elements (nothing happens if none found)
 
         this.cleanUpCkEditorHtml(elt.get(0), copy.get(0));
 
@@ -3668,6 +3898,30 @@ export default class AudioRecording implements IAudioRecorder {
 
         return () => {
             // set the html (if this function gets called, that is, if there hasn't already been another keystroke)
+            //
+            // But only if it actually differs from what is already there. newPageReady fires
+            // twice for each page change (a known toolbox behavior), so this action typically
+            // runs a second time with markup identical to what the first run just produced.
+            // Unconditionally re-setting innerHTML re-creates the audio-sentence spans, which
+            // repaints the text and detaches the audio ::highlight registered over those spans --
+            // the highlight then has to be re-registered, producing a visible "renders twice,
+            // once without the highlight and then with it" flicker (BL-15300). Comparing against
+            // the current content (minus transient bloom-ui elements such as the format button
+            // and current-audio marker, which are not part of newHtml) lets the redundant pass
+            // leave the DOM -- and the highlight -- untouched. When the markup genuinely changed
+            // (typing, first setup, mode switch) the strings differ and we rewrite exactly as before.
+            const contentWithoutTransientChildren = elt.clone();
+            contentWithoutTransientChildren.find(".bloom-ui").remove();
+            // Normalize newHtml through the browser's serializer so the comparison isn't defeated
+            // by trivial differences (attribute spacing/order) between our hand-built string and
+            // what the DOM produces.
+            const normalizer = elt[0].ownerDocument.createElement("div");
+            normalizer.innerHTML = newHtml;
+            if (
+                contentWithoutTransientChildren.html() === normalizer.innerHTML
+            ) {
+                return;
+            }
             elt.html(newHtml);
             elt.append(formatButton);
         };
