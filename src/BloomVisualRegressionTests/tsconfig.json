@@ -3,9 +3,7 @@
         "target": "ES2022",
         "useDefineForClassFields": true,
         "module": "ES2022",
-        "lib": [
-            "ES2022"
-        ],
+        "lib": ["ES2022"],
         "skipLibCheck": true,
         /* Bundler mode */
         "moduleResolution": "bundler",
@@ -16,10 +14,7 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noFallthroughCasesInSwitch": true,
-        "allowSyntheticDefaultImports": true
-    },
-    "types": [
-        "node",
-    ],
-    "type": "module"
+        "allowSyntheticDefaultImports": true,
+        "types": ["node"]
+    }
 }
