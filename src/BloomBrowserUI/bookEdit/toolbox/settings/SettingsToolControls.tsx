@@ -9,8 +9,6 @@ import {
 } from "../toolbox";
 import { css } from "@emotion/react";
 import { SubscriptionBadgeWithTooltipAndDialog } from "../../../react_components/requiresSubscription";
-import { ThemeProvider } from "@mui/material/styles";
-import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import { useMountEffect } from "../../../utils/useMountEffect";
 import {
     compareToolsByLabel,
@@ -116,21 +114,19 @@ export const SettingsToolControls: FunctionComponent = () => {
         };
     });
     return (
-        <ThemeProvider theme={toolboxTheme}>
-            <div
-                css={css`
-                    margin-top: 6px;
-                `}
-            >
-                {toolsOffered.map((tool) => (
-                    <ToolboxCheckbox
-                        key={tool.id()}
-                        toolId={tool.id()}
-                        featureName={tool.featureName}
-                        shouldCheck={!!checkedState[tool.id()]}
-                    />
-                ))}
-            </div>
-        </ThemeProvider>
+        <div
+            css={css`
+                margin-top: 6px;
+            `}
+        >
+            {toolsOffered.map((tool) => (
+                <ToolboxCheckbox
+                    key={tool.id()}
+                    toolId={tool.id()}
+                    featureName={tool.featureName}
+                    shouldCheck={!!checkedState[tool.id()]}
+                />
+            ))}
+        </div>
     );
 };
