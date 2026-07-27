@@ -15,7 +15,7 @@ import uiFontFacesCss from "../bloomUIFontFaces.css?raw";
 // The document.fonts check is reliable at the time we are called because pending stylesheet
 // <link>s block script execution, so any statically-linked declarations are already in the
 // font set before any of our code runs.
-export const ensureUiFontFacesInstalled = (doc: Document = document): void => {
+export function ensureUiFontFacesInstalled(doc: Document = document): void {
     if (doc.getElementById(kUiFontFacesStyleId)) return;
     // doc.fonts is undefined in jsdom (unit tests); there, treat the faces as not declared
     // and fall through to injecting, which is harmless.
@@ -29,6 +29,6 @@ export const ensureUiFontFacesInstalled = (doc: Document = document): void => {
     style.id = kUiFontFacesStyleId;
     style.textContent = uiFontFacesCss;
     doc.head.appendChild(style);
-};
+}
 
 const kUiFontFacesStyleId = "bloom-ui-font-faces";
