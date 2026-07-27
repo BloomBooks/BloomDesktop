@@ -109,6 +109,17 @@ namespace Bloom
 
                 Logger.WriteError("NonFatalProblem: " + fullDetailedMessage, exception);
 
+                if (Program.RunningE2eTests)
+                {
+                    // During an e2e/visual-regression run there is no human to dismiss a dialog, so a
+                    // modal (or even a toast) here would hang the whole test run. The problem is
+                    // already logged above, and the API call that triggered it has failed, which is
+                    // what fails the test. Echo it to stderr so it shows in the test output, then
+                    // return without showing any UI.
+                    Console.Error.WriteLine($"Nonfatal problem (e2e): {fullDetailedMessage}");
+                    return;
+                }
+
                 if (Program.RunningInConsoleMode)
                 {
                     // This is "nonfatal", so report as best we can (standard error) and keep going...

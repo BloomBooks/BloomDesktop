@@ -237,6 +237,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
 
         // remove previous synphony markup
         this.removeSynphonyMarkup();
+        this.removeCkEditorMarkup();
 
         // get all text
         this.each(function () {
@@ -380,6 +381,31 @@ import { ReaderToolsModel } from "../readerToolsModel";
             $("body", page.contentWindow.document)
                 .find("div." + cssTooMuchStuffOnPage)
                 .removeClass(cssTooMuchStuffOnPage);
+    };
+
+    $.fn.removeCkEditorMarkup = function () {
+        this.each(function () {
+            // remove CKEditor-specific markup inserted when replacing marked text
+            $(this)
+                .find("span[style]")
+                .filter((_index, element) => {
+                    const style = (element as HTMLElement).getAttribute(
+                        "style",
+                    );
+                    // CKeditor copies the highlight style as a barebones inline style containing
+                    // only the background-color property.
+                    return (
+                        !!style &&
+                        /^background-color: [^;]*;$/.test(style)
+                    );
+                })
+                .contents()
+                .unwrap();
+            // remove spans belonging to CKEditor that are hidden.
+            $(this)
+                .find("span[id^=cke_][style*='display: none;']")
+                .remove();
+        });
     };
 
     $.extend({

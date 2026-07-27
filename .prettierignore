@@ -3,5 +3,9 @@ ThemaData.json
 *.xlf
 csharpier.json
 
-# prettier fails on this file and causes the pre-commit hook to fail
-src/BloomVisualRegressionTests/collections/basic/A5 Portrait/A5 Portrait.htm
+# The files under the visual-regression test collections are Bloom-generated fixtures
+# (book HTML, meta.json, appearance.json, origami.css, etc.). Bloom writes them in its own
+# format (e.g. meta.json is minified), so prettifying them here would make every test run
+# leave a dirty working tree, and prettier outright fails on the book .htm files. Leave the
+# whole collection alone so the committed fixtures match what Bloom writes.
+src/BloomVisualRegressionTests/collections/

@@ -1,5 +1,7 @@
 using Bloom;
 using NUnit.Framework;
+using Sentry;
+using Sentry.Protocol;
 
 namespace BloomTests
 {
@@ -131,6 +133,153 @@ namespace BloomTests
             Assert.That(errorMessage, Is.EqualTo("Bloom requires a value after --label."));
             Assert.That(Program.StartupLabel, Is.Null);
             Assert.That(remainingArgs, Is.Empty);
+        }
+
+        // --- IsBenignUnobservedTaskSocketNoise: the Sentry BeforeSend filter for
+        //     BLOOM-DESKTOP-EQ4 / -E4J / -E9K ---
+
+        private static SentryException MakeException(
+            string type,
+            string value = null,
+            string mechanismType = null
+        )
+        {
+            var exception = new SentryException { Type = type, Value = value };
+            if (mechanismType != null)
+                exception.Mechanism = new Mechanism { Type = mechanismType, Handled = false };
+            return exception;
+        }
+
+        private static SentryEvent MakeEvent(params SentryException[] exceptions)
+        {
+            return new SentryEvent { SentryExceptions = exceptions };
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_DropsUnobservedSocketAbort()
+        {
+            // The shape Sentry actually serialized for BLOOM-DESKTOP-EQ4: an inner SocketException,
+            // wrapped in an AggregateException carrying the UnobservedTaskException mechanism.
+            var sentryEvent = MakeEvent(
+                MakeException(
+                    "System.Net.Sockets.SocketException",
+                    "The I/O operation has been aborted because of either a thread exit or an application request."
+                ),
+                MakeException(
+                    "System.AggregateException",
+                    "A Task's exception(s) were not observed...",
+                    "UnobservedTaskException"
+                )
+            );
+
+            // Sanity check the setup before asserting the method's behavior.
+            Assert.That(
+                sentryEvent.SentryExceptions,
+                Is.Not.Empty,
+                "test setup should produce an exception chain"
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.True);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_DropsUnobservedIoAbort()
+        {
+            var sentryEvent = MakeEvent(
+                MakeException("System.IO.IOException", "aborted"),
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.True);
+        }
+
+        [TestCase("System.OperationCanceledException")]
+        [TestCase("System.Threading.Tasks.TaskCanceledException")]
+        public void IsBenignUnobservedTaskSocketNoise_DropsUnobservedCancellation(
+            string cancellationType
+        )
+        {
+            // A shutdown race can cancel the fire-and-forget send instead of aborting the socket;
+            // that is still benign teardown noise, so both cancellation types are dropped.
+            var sentryEvent = MakeEvent(
+                MakeException(cancellationType, "A task was canceled."),
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.True);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_DropsRegardlessOfLocalizedMessage()
+        {
+            // The message is localized by the user's OS (this is the Spanish variant,
+            // BLOOM-DESKTOP-E4J). The filter must decide on TYPE + mechanism, not text.
+            var sentryEvent = MakeEvent(
+                MakeException(
+                    "System.Net.Sockets.SocketException",
+                    "Se ha anulado la operacion de E/S debido a la salida del subproceso o a una solicitud de la aplicacion."
+                ),
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.True);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_KeepsUnobservedTaskThatIsNotSocketNoise()
+        {
+            // A genuine unobserved-Task bug (not a socket/IO abort) must still be reported.
+            var sentryEvent = MakeEvent(
+                MakeException("System.NullReferenceException", "Object reference not set..."),
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.False);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_KeepsMixedChainContainingRealBug()
+        {
+            // An AggregateException can aggregate several faults. If a genuine bug is mixed in
+            // with the benign socket noise, the whole event must still be reported; one benign
+            // entry in the chain is not license to drop everything alongside it.
+            var sentryEvent = MakeEvent(
+                MakeException("System.NullReferenceException", "Object reference not set..."),
+                MakeException("System.Net.Sockets.SocketException", "aborted"),
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.False);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_KeepsBareAggregateExceptionWithNoBenignInner()
+        {
+            // An unobserved-Task event whose chain is only the AggregateException wrapper carries
+            // no evidence of socket noise, so it must be reported (guards the All from passing
+            // vacuously).
+            var sentryEvent = MakeEvent(
+                MakeException("System.AggregateException", null, "UnobservedTaskException")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.False);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_KeepsSocketExceptionWithoutUnobservedMechanism()
+        {
+            // A SocketException reported through some other (e.g. handled) path is not this noise.
+            var sentryEvent = MakeEvent(
+                MakeException("System.Net.Sockets.SocketException", "connection reset")
+            );
+
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(sentryEvent), Is.False);
+        }
+
+        [Test]
+        public void IsBenignUnobservedTaskSocketNoise_KeepsEventWithNoExceptions()
+        {
+            Assert.That(Program.IsBenignUnobservedTaskSocketNoise(new SentryEvent()), Is.False);
         }
     }
 }
