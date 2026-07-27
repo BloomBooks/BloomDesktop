@@ -23,7 +23,12 @@ import { getFeatureStatusAsync } from "../../../react_components/featureStatus";
 import { TransformBasedAnimator } from "bloom-player";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
-import { animateStyleName, isXmatterPage } from "../../../utils/shared";
+import {
+    animateStyleName,
+    getPageIframeDocument,
+    getPageIFrame,
+    isXmatterPage,
+} from "../../../utils/shared";
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
@@ -120,7 +125,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             return;
         }
 
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (!page) return; // paranoid
         // enhance: if more than one image...do what??
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
@@ -300,7 +305,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             this.cleanupAnimation();
         }
 
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (page) {
             this.removeElt(page.getElementById("animationStart"));
             this.removeElt(page.getElementById("animationEnd"));
@@ -321,7 +326,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private removeCurrentAudioMarkup(): void {
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (!page) return;
         const currentAudioElts = page.getElementsByClassName("ui-audioCurrent");
         if (currentAudioElts.length) {
@@ -341,7 +346,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     public featureName? = kMotionToolId;
 
     private getBloomCanvasToAnimate(): HTMLElement | null {
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         return page?.getElementsByClassName(
             kBloomCanvasClass,
         )[0] as HTMLElement;
@@ -551,7 +556,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
         bloomCanvasToAnimate?.removeAttribute("data-initialrect");
         bloomCanvasToAnimate?.removeAttribute("data-finalrect");
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (page) {
             this.removeElt(page.getElementById("animationStart"));
             this.removeElt(page.getElementById("animationEnd"));
@@ -667,7 +672,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
     private updateDataAttributes(): void {
         //alert("updating data attributes " + new Error().stack);
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (!page) return; // paranoid
         const startRect = page.getElementById("animationStart");
         const endRect = page.getElementById("animationEnd");
@@ -730,9 +735,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         }
         getCanvasElementManager()?.setActiveElement(undefined);
 
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (!page || !page.documentElement) return; // paranoid
-        const contentWindow = this.getPageFrame().contentWindow;
+        const contentWindow = getPageIFrame().contentWindow;
         if (!contentWindow) return; // paranoid
         this.scrollXBeforePreview = contentWindow.scrollX;
         this.scrollYBeforePreview = contentWindow.scrollY;
@@ -887,9 +892,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private cleanupAnimation() {
-        const page = this.getPage();
+        const page = getPageIframeDocument();
         if (!page) return;
-        const contentWindow = this.getPageFrame().contentWindow;
+        const contentWindow = getPageIFrame().contentWindow;
 
         // stop the animation by removing any elements it added to the page.
         const animationElements = Array.from(
@@ -968,18 +973,6 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     private wrapperClassName = "bloom-ui-animationWrapper";
-    private getPageFrame(): HTMLIFrameElement {
-        return parent.window.document.getElementById(
-            "page",
-        ) as HTMLIFrameElement;
-    }
-
-    // The document object of the editable page, a root for searching for document content.
-    private getPage(): HTMLDocument | null {
-        const page = this.getPageFrame();
-        if (!page || !page.contentWindow) return null;
-        return page.contentWindow.document;
-    }
 
     private getStateFromHtml(): IMotionHtmlState {
         // enhance: if more than one image...do what??
