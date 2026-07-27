@@ -23,7 +23,7 @@ import { Status } from "./TalkingBookUiState";
 import {
     currentHighlightName,
     splitHighlightNames,
-} from "../../js/textHighlightManager";
+} from "./audioHighlightManager";
 
 // A controllable stand-in for the page-frame CanvasElementManager. By default it is DISABLED,
 // so getCanvasElementManager() returns undefined -- exactly how the real one behaves in tests
