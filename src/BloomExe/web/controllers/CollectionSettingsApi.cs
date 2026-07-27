@@ -140,6 +140,7 @@ namespace Bloom.web.controllers
                             LanguageTag = data.LanguageTag,
                             DesiredName = data.DesiredName,
                             DefaultName = data.DefaultName,
+                            IsRtl = data.IsRtl,
                             Country = data.Country,
                         }
                     );
