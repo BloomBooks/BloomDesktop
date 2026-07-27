@@ -129,6 +129,87 @@ namespace BloomTests.web.controllers
             }
 
             /// <summary>
+            /// Writes a JPEG carrying the given EXIF orientation, by splicing a hand-built APP1
+            /// segment in directly after the start-of-image marker. Done by hand because
+            /// System.Drawing cannot construct a PropertyItem to attach, and pulling WPF into
+            /// this test project just to write a fixture would be a heavier price than 20 bytes
+            /// of well-specified header.
+            /// </summary>
+            private string WriteJpegWithExifOrientation(
+                string name,
+                int width,
+                int height,
+                ushort orientation
+            )
+            {
+                var path = Path.Combine(_tempFolder, name);
+                byte[] jpeg;
+                using (var bitmap = new Bitmap(width, height, PixelFormat.Format24bppRgb))
+                using (var memory = new MemoryStream())
+                {
+                    using (var g = Graphics.FromImage(bitmap))
+                        g.Clear(Color.CornflowerBlue);
+                    bitmap.Save(memory, ImageFormat.Jpeg);
+                    jpeg = memory.ToArray();
+                }
+                Assert.That(
+                    jpeg[0] == 0xFF && jpeg[1] == 0xD8,
+                    Is.True,
+                    "Test setup: expected the file to start with a JPEG start-of-image marker"
+                );
+
+                // APP1 holding a minimal little-endian TIFF header whose only IFD entry is
+                // tag 274 (0x0112, Orientation), type 3 (SHORT), one value.
+                var app1 = new byte[]
+                {
+                    0xFF,
+                    0xE1, // APP1 marker
+                    0x00,
+                    0x22, // segment length (34), including these two bytes
+                    0x45,
+                    0x78,
+                    0x69,
+                    0x66,
+                    0x00,
+                    0x00, // "Exif\0\0"
+                    0x49,
+                    0x49,
+                    0x2A,
+                    0x00, // little-endian TIFF header
+                    0x08,
+                    0x00,
+                    0x00,
+                    0x00, // offset of IFD0 from the TIFF header
+                    0x01,
+                    0x00, // one directory entry
+                    0x12,
+                    0x01, // tag 0x0112 = Orientation
+                    0x03,
+                    0x00, // type 3 = SHORT
+                    0x01,
+                    0x00,
+                    0x00,
+                    0x00, // one value
+                    (byte)(orientation & 0xFF),
+                    (byte)(orientation >> 8),
+                    0x00,
+                    0x00, // the value, in the entry itself
+                    0x00,
+                    0x00,
+                    0x00,
+                    0x00, // no next IFD
+                };
+
+                using (var file = File.Create(path))
+                {
+                    file.Write(jpeg, 0, 2); // the start-of-image marker
+                    file.Write(app1, 0, app1.Length);
+                    file.Write(jpeg, 2, jpeg.Length - 2); // the rest of the original
+                }
+                return path;
+            }
+
+            /// <summary>
             /// Writes a TIFF, optionally with see-through areas. TIFF is the format the browser
             /// cannot draw, so these are the fixtures for the stand-in-because-of-format path.
             /// </summary>
@@ -220,6 +301,46 @@ namespace BloomTests.web.controllers
                 {
                     File.Delete(previewPath);
                 }
+            }
+
+            // The eight EXIF orientations. 5-8 are the ones that stand the image on its side,
+            // so for those the dimensions the viewer ends up seeing are the stored ones swapped.
+            [TestCase((ushort)1, 400, 200, TestName = "Orientation1_Upright")]
+            [TestCase((ushort)2, 400, 200, TestName = "Orientation2_MirroredHorizontally")]
+            [TestCase((ushort)3, 400, 200, TestName = "Orientation3_UpsideDown")]
+            [TestCase((ushort)4, 400, 200, TestName = "Orientation4_MirroredVertically")]
+            [TestCase((ushort)5, 200, 400, TestName = "Orientation5_Transposed")]
+            [TestCase((ushort)6, 200, 400, TestName = "Orientation6_QuarterTurnedClockwise")]
+            [TestCase((ushort)7, 200, 400, TestName = "Orientation7_Transverse")]
+            [TestCase((ushort)8, 200, 400, TestName = "Orientation8_QuarterTurnedAnticlockwise")]
+            public void GetImageDimensions_AllowsForExifRotation(
+                ushort orientation,
+                int expectedWidth,
+                int expectedHeight
+            )
+            {
+                // Stored 400x200 every time; only the orientation tag differs.
+                var path = WriteJpegWithExifOrientation(
+                    $"rotated{orientation}.jpg",
+                    400,
+                    200,
+                    orientation
+                );
+
+                var (width, height) = ImageGalleryApi.GetImageDimensions(path);
+
+                Assert.That(width, Is.EqualTo(expectedWidth));
+                Assert.That(height, Is.EqualTo(expectedHeight));
+            }
+
+            [Test]
+            public void GetImageDimensions_TreatsAnOutOfRangeOrientationAsUpright()
+            {
+                // 9 is not a real EXIF orientation; the reader should ignore it rather than
+                // feed it to the rotation table.
+                var path = WriteJpegWithExifOrientation("nonsense.jpg", 400, 200, 9);
+
+                Assert.That(ImageGalleryApi.GetImageDimensions(path), Is.EqualTo((400, 200)));
             }
 
             [Test]

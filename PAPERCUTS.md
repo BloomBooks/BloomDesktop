@@ -48,6 +48,10 @@ House rules:
   the xmatter file-locator path (or document the 9 known failures in AGENTS.md as expected under
   the wrapper).
 - **Context:** BloomDesktop, found during `/preflight` of PR #8067 (speedUpCSharpTests).
+- **seen again 2026-07-27:** `/preflight` of PR #8111 (BL-16597). Exactly the same 9, identical
+  across four full runs. Cost here was having to open each failure and reason it back to the
+  wrapper before the run could be called clean — the thing the "document them in AGENTS.md" half
+  of the Idea would have saved. John chose to log rather than fix while reviewing that preflight.
 
 
 ## 2026-07-13 — pnpm-lock.yaml reformats wholesale on any install (format drift)
