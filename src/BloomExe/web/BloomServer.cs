@@ -2436,6 +2436,27 @@ namespace Bloom.Api
         private bool IsWorkerThread(Thread thread) =>
             thread?.Name?.IndexOf(WorkerThreadNamePrefix) == 0;
 
+        /// <summary>
+        /// A one-line snapshot of the worker pool's state, for logging when we suspect something is
+        /// stuck waiting on the server. If every worker is busy or blocked while requests sit in the
+        /// queue, then whatever the stuck code is waiting for cannot be served, and we are looking at
+        /// a starvation deadlock rather than mere slowness.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately reads the counters WITHOUT locking _queue: this gets called precisely when we
+        /// suspect the pool is wedged, and taking that lock could block the very report we need. The
+        /// numbers are therefore a possibly-inconsistent snapshot, which is all a diagnostic needs.
+        /// </remarks>
+        public static string GetWorkerPoolDiagnostics()
+        {
+            var server = _theOneInstance;
+            if (server == null)
+                return "BloomServer: none running";
+            return $"BloomServer: workers={server._workers.Count}, busy={server._busyThreads}, "
+                + $"blocked={server._countBlockedThreads}, "
+                + $"recursive={server._threadsDoingRecursiveRequests}, queued={server._queue.Count}";
+        }
+
         private string GetHtmlForRootOfBloomUI()
         {
             return ReactControl.GetHtmlForReactBundle(
