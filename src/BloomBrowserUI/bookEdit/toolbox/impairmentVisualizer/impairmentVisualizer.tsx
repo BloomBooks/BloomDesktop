@@ -11,9 +11,7 @@ import { deuteranopia, tritanopia, achromatopsia } from "color-blind";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
 import { kImageContainerClass, isPlaceHolderImage } from "../../js/bloomImages";
 import { pxToNumber } from "../canvas/canvasElementCssUtils";
-import { ThemeProvider } from "@mui/material";
 import { ApiCheckbox } from "../../../react_components/ApiCheckbox";
-import { toolboxTheme } from "../../../bloomMaterialUITheme";
 
 interface IState {
     kindOfColorBlindness: string;
@@ -47,62 +45,55 @@ export class ImpairmentVisualizerControls extends React.Component<
 
     public render() {
         return (
-            <ThemeProvider theme={toolboxTheme}>
-                <div className="impairmentVisualizerBody">
-                    <div className="impairmentVisualizerInnerWrapper">
-                        <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
-                            You can use these check boxes to have Bloom simulate
-                            how your images would look with various visual
-                            impairments.
-                        </Div>
-                        <ApiCheckbox
-                            label="Cataracts"
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
-                            apiEndpoint="accessibilityCheck/cataracts"
-                            onChange={(simulate) =>
-                                this.updateCataracts(simulate)
-                            }
-                            size="small"
-                        />
-                        <ApiCheckbox
-                            label="Color Blindness"
-                            l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
-                            apiEndpoint="accessibilityCheck/colorBlindness"
-                            onChange={(simulate) =>
-                                this.updateColorBlindnessCheck(simulate)
-                            }
-                            size="small"
-                        />
-                        <RadioGroup
-                            onChange={(val) =>
-                                this.updateColorBlindnessRadio(val)
-                            }
-                            value={this.state.kindOfColorBlindness}
-                            choices={{
-                                RedGreen: this.radioLabelElement(
-                                    "Red-Green",
-                                    "EditTab.Toolbox.ImpairmentVisualizer.RedGreen",
-                                ),
-                                BlueYellow: this.radioLabelElement(
-                                    "Blue-Yellow",
-                                    "EditTab.Toolbox.ImpairmentVisualizer.BlueYellow",
-                                ),
-                                Complete: this.radioLabelElement(
-                                    "Complete",
-                                    "EditTab.Toolbox.ImpairmentVisualizer.Complete",
-                                ),
-                            }}
-                            radioSize="small"
-                            css={css`
-                                margin-left: 25px;
-                                padding-top: 8px;
-                            `}
-                        ></RadioGroup>
-                    </div>
-
-                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm" />
+            <div className="impairmentVisualizerBody">
+                <div className="impairmentVisualizerInnerWrapper">
+                    <Div l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Overview">
+                        You can use these check boxes to have Bloom simulate how
+                        your images would look with various visual impairments.
+                    </Div>
+                    <ApiCheckbox
+                        label="Cataracts"
+                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.Cataracts"
+                        apiEndpoint="accessibilityCheck/cataracts"
+                        onChange={(simulate) => this.updateCataracts(simulate)}
+                        size="small"
+                    />
+                    <ApiCheckbox
+                        label="Color Blindness"
+                        l10nKey="EditTab.Toolbox.ImpairmentVisualizer.ColorBlindness"
+                        apiEndpoint="accessibilityCheck/colorBlindness"
+                        onChange={(simulate) =>
+                            this.updateColorBlindnessCheck(simulate)
+                        }
+                        size="small"
+                    />
+                    <RadioGroup
+                        onChange={(val) => this.updateColorBlindnessRadio(val)}
+                        value={this.state.kindOfColorBlindness}
+                        choices={{
+                            RedGreen: this.radioLabelElement(
+                                "Red-Green",
+                                "EditTab.Toolbox.ImpairmentVisualizer.RedGreen",
+                            ),
+                            BlueYellow: this.radioLabelElement(
+                                "Blue-Yellow",
+                                "EditTab.Toolbox.ImpairmentVisualizer.BlueYellow",
+                            ),
+                            Complete: this.radioLabelElement(
+                                "Complete",
+                                "EditTab.Toolbox.ImpairmentVisualizer.Complete",
+                            ),
+                        }}
+                        radioSize="small"
+                        css={css`
+                            margin-left: 25px;
+                            padding-top: 8px;
+                        `}
+                    ></RadioGroup>
                 </div>
-            </ThemeProvider>
+
+                <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Impairment_Visualizer/Impairment_Visualizer_overview.htm" />
+            </div>
         );
     }
 

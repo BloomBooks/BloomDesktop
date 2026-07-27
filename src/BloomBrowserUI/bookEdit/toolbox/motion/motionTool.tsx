@@ -24,8 +24,6 @@ import { TransformBasedAnimator } from "bloom-player";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 import { animateStyleName, isXmatterPage } from "../../../utils/shared";
-import { ThemeProvider } from "@mui/material/styles";
-import { toolboxTheme } from "../../../bloomMaterialUITheme";
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
@@ -1060,128 +1058,119 @@ export class MotionControl extends React.Component<IMotionProps, IMotionState> {
     public render() {
         return (
             <RequiresSubscriptionOverlayWrapper featureName={kMotionToolId}>
-                <ThemeProvider theme={toolboxTheme}>
-                    <div
-                        className={
-                            "ui-motionBody" +
-                            (this.state.motionPossible ? "" : " disabled")
-                        }
-                    >
-                        <div>
-                            <Div
-                                l10nKey="EditTab.Toolbox.Motion.Intro"
-                                l10nComment="Shown at the top of the 'Motion Tool' in the Edit tab"
-                                className="intro"
-                            >
-                                Motion Books are Bloom Reader books with two
-                                modes. Normally, they are Talking Books. When
-                                you turn the phone sideways, the image fills the
-                                screen. It pans and zooms from rectangle "1" to
-                                rectangle "2".
-                            </Div>
-                            <span
-                                css={css`
-                                    .MuiFormControlLabel-root {
-                                        // The whole tool has a margin, so this is not needed;
-                                        // and the default causes extraneous wrapping.
-                                        margin-right: 0;
+                <div
+                    className={
+                        "ui-motionBody" +
+                        (this.state.motionPossible ? "" : " disabled")
+                    }
+                >
+                    <div>
+                        <Div
+                            l10nKey="EditTab.Toolbox.Motion.Intro"
+                            l10nComment="Shown at the top of the 'Motion Tool' in the Edit tab"
+                            className="intro"
+                        >
+                            Motion Books are Bloom Reader books with two modes.
+                            Normally, they are Talking Books. When you turn the
+                            phone sideways, the image fills the screen. It pans
+                            and zooms from rectangle "1" to rectangle "2".
+                        </Div>
+                        <span
+                            css={css`
+                                .MuiFormControlLabel-root {
+                                    // The whole tool has a margin, so this is not needed;
+                                    // and the default causes extraneous wrapping.
+                                    margin-right: 0;
+                                }
+                            `}
+                        >
+                            <BloomCheckbox
+                                label="Enable motion on this page"
+                                l10nKey="EditTab.Toolbox.Motion.ThisPage"
+                                // tslint:disable-next-line:max-line-length
+                                l10nComment="Motion here refers to panning and zooms image when it is viewed in Bloom Reader. Google 'Ken Burns effect' to see exactly what we mean."
+                                className="enable-checkbox"
+                                onCheckChanged={(checked) =>
+                                    this.onMotionChanged(!!checked)
+                                }
+                                checked={this.state.motionChecked}
+                                size="small"
+                            />
+                        </span>
+                        <div
+                            className={
+                                "button-label-wrapper" +
+                                (this.state.motionChecked ? "" : " disabled")
+                            }
+                            id="motion-play-wrapper"
+                        >
+                            <div className="button-wrapper">
+                                <button
+                                    id="motion-preview"
+                                    className={
+                                        "ui-motion-button ui-button enabled" +
+                                        (this.state.playing ? " playing" : "")
                                     }
-                                `}
-                            >
+                                    onClick={() => this.props.onPreviewClick()}
+                                />
+                                <div className="previewSettingsWrapper">
+                                    <Div
+                                        className="motion-label"
+                                        l10nKey="EditTab.Toolbox.Motion.Preview"
+                                    >
+                                        Preview
+                                    </Div>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            className={
+                                this.state.motionChecked ? "" : " disabled"
+                            }
+                            css={css`
+                                display: flex;
+                                flex-direction: column;
+                                margin-left: 45px;
+                            `}
+                        >
+                            <span className="disabled">
                                 <BloomCheckbox
-                                    label="Enable motion on this page"
-                                    l10nKey="EditTab.Toolbox.Motion.ThisPage"
-                                    // tslint:disable-next-line:max-line-length
-                                    l10nComment="Motion here refers to panning and zooms image when it is viewed in Bloom Reader. Google 'Ken Burns effect' to see exactly what we mean."
-                                    className="enable-checkbox"
-                                    onCheckChanged={(checked) =>
-                                        this.onMotionChanged(!!checked)
-                                    }
-                                    checked={this.state.motionChecked}
+                                    label="Motion"
+                                    l10nKey="EditTab.Toolbox.Motion.Preview.Motion"
+                                    checked={true}
+                                    onCheckChanged={(_checked): void => {
+                                        // do nothing (checkbox is always disabled)
+                                    }}
                                     size="small"
                                 />
                             </span>
-                            <div
-                                className={
-                                    "button-label-wrapper" +
-                                    (this.state.motionChecked
-                                        ? ""
-                                        : " disabled")
+                            <BloomCheckbox
+                                label="Voice"
+                                l10nKey="EditTab.Toolbox.Motion.Preview.Voice"
+                                onCheckChanged={(checked) =>
+                                    this.setState({
+                                        previewVoice: !!checked,
+                                    })
                                 }
-                                id="motion-play-wrapper"
-                            >
-                                <div className="button-wrapper">
-                                    <button
-                                        id="motion-preview"
-                                        className={
-                                            "ui-motion-button ui-button enabled" +
-                                            (this.state.playing
-                                                ? " playing"
-                                                : "")
-                                        }
-                                        onClick={() =>
-                                            this.props.onPreviewClick()
-                                        }
-                                    />
-                                    <div className="previewSettingsWrapper">
-                                        <Div
-                                            className="motion-label"
-                                            l10nKey="EditTab.Toolbox.Motion.Preview"
-                                        >
-                                            Preview
-                                        </Div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div
-                                className={
-                                    this.state.motionChecked ? "" : " disabled"
+                                checked={this.state.previewVoice}
+                                size="small"
+                            />
+                            <BloomCheckbox
+                                label="Music"
+                                l10nKey="EditTab.Toolbox.Motion.Preview.Music"
+                                onCheckChanged={(checked) =>
+                                    this.setState({
+                                        previewMusic: !!checked,
+                                    })
                                 }
-                                css={css`
-                                    display: flex;
-                                    flex-direction: column;
-                                    margin-left: 45px;
-                                `}
-                            >
-                                <span className="disabled">
-                                    <BloomCheckbox
-                                        label="Motion"
-                                        l10nKey="EditTab.Toolbox.Motion.Preview.Motion"
-                                        checked={true}
-                                        onCheckChanged={(_checked): void => {
-                                            // do nothing (checkbox is always disabled)
-                                        }}
-                                        size="small"
-                                    />
-                                </span>
-                                <BloomCheckbox
-                                    label="Voice"
-                                    l10nKey="EditTab.Toolbox.Motion.Preview.Voice"
-                                    onCheckChanged={(checked) =>
-                                        this.setState({
-                                            previewVoice: !!checked,
-                                        })
-                                    }
-                                    checked={this.state.previewVoice}
-                                    size="small"
-                                />
-                                <BloomCheckbox
-                                    label="Music"
-                                    l10nKey="EditTab.Toolbox.Motion.Preview.Music"
-                                    onCheckChanged={(checked) =>
-                                        this.setState({
-                                            previewMusic: !!checked,
-                                        })
-                                    }
-                                    checked={this.state.previewMusic}
-                                    size="small"
-                                />
-                            </div>
+                                checked={this.state.previewMusic}
+                                size="small"
+                            />
                         </div>
-                        <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Motion_Tool/Motion_Tool_overview.htm" />
-                        <audio id="pzMusicPlayer" preload="none" />
                     </div>
-                </ThemeProvider>
+                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Motion_Tool/Motion_Tool_overview.htm" />
+                    <audio id="pzMusicPlayer" preload="none" />
+                </div>
             </RequiresSubscriptionOverlayWrapper>
         );
     }
