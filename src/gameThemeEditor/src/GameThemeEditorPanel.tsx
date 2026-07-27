@@ -236,7 +236,13 @@ export const GameThemeEditorPanel: React.FunctionComponent<{
             return;
         }
         // Don't clobber a different existing theme by renaming/creating onto its name.
-        if (theme.slug !== startingSlug && host.themeExists(theme.slug)) {
+        // Compare against renameFromSlug, not startingSlug: for a New/Customize theme
+        // renameFromSlug is "" (we are not replacing anything), so naming it after the theme it
+        // was based on correctly trips this guard. startingSlug is the theme the page was showing
+        // when the editor opened, which for those modes IS the base theme -- comparing against it
+        // silently skipped the check and let the save overwrite the base. When simply editing a
+        // theme in place, renameFromSlug equals its own slug, so saving over itself is still fine.
+        if (theme.slug !== renameFromSlug && host.themeExists(theme.slug)) {
             setStatus(
                 `A theme named "${theme.displayName}" already exists. Please choose another name.`,
             );
