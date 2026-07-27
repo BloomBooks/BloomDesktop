@@ -489,23 +489,42 @@ namespace Bloom.web.controllers
                 BitmapCacheOption.None
             );
             var frame = decoder.Frames[0];
-            var exifOrientation = 1;
-            try
+            return (
+                frame.PixelWidth,
+                frame.PixelHeight,
+                ReadExifOrientation(frame.Metadata as BitmapMetadata)
+            );
+        }
+
+        /// <summary>
+        /// The EXIF orientation recorded in the given metadata, or 1 ("upright") if there is
+        /// none. The chooser accepts TIFFs as well as JPEGs, and the tag lives at a different
+        /// query path in each, so both are tried.
+        /// </summary>
+        private static int ReadExifOrientation(BitmapMetadata metadata)
+        {
+            if (metadata == null)
+                return 1;
+            // 274 (0x112) is the EXIF "Orientation" tag. In a JPEG it hangs off the APP1
+            // marker segment; in a TIFF it is in the top-level IFD.
+            foreach (var query in new[] { "/app1/ifd/{ushort=274}", "/ifd/{ushort=274}" })
             {
-                // 274 (0x112) is the EXIF "Orientation" tag.
-                if (
-                    frame.Metadata is BitmapMetadata metadata
-                    && metadata.GetQuery("/app1/ifd/{ushort=274}") is ushort orientation
-                    && orientation >= 1
-                    && orientation <= 8
-                )
-                    exifOrientation = orientation;
+                try
+                {
+                    if (
+                        metadata.GetQuery(query) is ushort orientation
+                        && orientation >= 1
+                        && orientation <= 8
+                    )
+                        return orientation;
+                }
+                catch (Exception)
+                {
+                    // Plenty of images carry no EXIF block at all, and asking a decoder for a
+                    // query path its format doesn't have is how we find that out.
+                }
             }
-            catch (Exception)
-            {
-                // Plenty of images carry no EXIF block at all; the default is what we want.
-            }
-            return (frame.PixelWidth, frame.PixelHeight, exifOrientation);
+            return 1;
         }
 
         /// <summary>Whether the given EXIF orientation swaps width and height.</summary>
@@ -678,8 +697,9 @@ namespace Bloom.web.controllers
             }
 
             // Images past a certain size don't render in the browser at all, so substitute a
-            // downscaled copy (BL-16597). Generated once and reused, since the gallery asks
-            // for this URL as both the thumbnail and the large preview.
+            // downscaled copy (BL-16597). Once made, a stand-in is reused, since the gallery
+            // asks for this URL as both the thumbnail and the large preview. For an image
+            // that doesn't need one, all this repeats is the header read, which is cheap.
             string pathToServe;
             lock (_previewLock)
             {
