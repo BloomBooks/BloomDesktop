@@ -8,6 +8,9 @@ import * as AudioRecorder from "./audioRecording";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { TalkingBookToolControls } from "./TalkingBookToolControls";
 import { kImageDescriptionToolId, kTalkingBookToolId } from "../toolIds";
+// Gets these styles into the toolbox document. (The page frame links the compiled
+// audioRecording.css separately; see the styleSheets list in editablePage.ts.)
+import "./audioRecording.less";
 
 // This class renders the TalkingBookToolControls React component
 // in the toolbox, and passes into it an instance of the audioRecorder.

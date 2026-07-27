@@ -6,9 +6,8 @@ block headContent
 	//- Keep this list in sync with WorkspaceView.GetWorkspaceAdditionalHtml() and ViteDevBodyEndHtml imports.
 	link(rel='stylesheet', href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css')
 	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/toolbox.css')
-	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/talkingBook/audioRecording.css')
-	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/motion/motion.css')
-	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/music/music.css')
+	//- The individual tools' stylesheets are not listed here: each tool imports its own
+	//- .less from its component, which the build turns into a <style> in this document.
 	link(rel='stylesheet', href='/bloom/bookEdit/css/rc-slider-bloom.css')
 	link(rel='stylesheet', href='/bloom/lib/jquery.qtip.css')
 	link(rel='stylesheet', href='/bloom/writingSystemDisplayForUI.css')
