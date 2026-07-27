@@ -1,4 +1,9 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
+// The UI @font-face declarations. editMode.css is linked in the edit page's <head> by the C#
+// (so it is present before first paint) and is never included in published books; it is the
+// ONE place the edit-page document gets these declarations. See bloomUIFontFaces.css for why
+// they must not arrive again later (BL-15300 text flicker).
+@import (less) "../../bloomUIFontFaces.css";
 @import "../../bloomUI.less";
 @import "../sourceBubbles/sourceBubbles.less";
 @import "../../placeHolderImages.less";
