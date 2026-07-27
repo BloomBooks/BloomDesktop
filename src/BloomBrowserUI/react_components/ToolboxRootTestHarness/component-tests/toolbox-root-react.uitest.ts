@@ -87,7 +87,12 @@ test.describe("ToolboxRoot React mode", () => {
             timeout: 15000,
         });
 
-        await expect(page.getByText("Decodable Reader Tool")).toHaveCount(0);
+        // Scoped to the accordion headers on purpose: the "More..." panel lists every
+        // registered tool as a checkbox, so a bare getByText would match that label and
+        // report the tool as present before it has been added as a section.
+        await expect(getToolHeader(page, "Decodable Reader Tool")).toHaveCount(
+            0,
+        );
 
         await page.evaluate(() => {
             window.dispatchEvent(
@@ -100,9 +105,7 @@ test.describe("ToolboxRoot React mode", () => {
             );
         });
 
-        await expect(
-            page.getByText("Decodable Reader Tool").first(),
-        ).toBeVisible({
+        await expect(getToolHeader(page, "Decodable Reader Tool")).toBeVisible({
             timeout: 10000,
         });
         await expect(
@@ -206,9 +209,7 @@ test.describe("ToolboxRoot React mode", () => {
         ]);
     });
 
-    test("header shows icons and subscription badges without chevrons", async ({
-        page,
-    }) => {
+    test("headers show tool names without chevrons", async ({ page }) => {
         await routeToolboxApis(page);
 
         await page.route("**/bloom/api/toolbox/enabledTools", async (route) => {
@@ -236,17 +237,60 @@ test.describe("ToolboxRoot React mode", () => {
         await expect(
             page.locator(".MuiAccordionSummary-expandIconWrapper"),
         ).toHaveCount(0);
-
-        await expect(page.locator(".subscription-badge")).toHaveCount(3);
-
-        await expect(
-            page.locator(".toolbox-react-header-icon[data-toolid='canvas']"),
-        ).toHaveCSS("background-image", /Canvas%20Icon\.svg|Canvas Icon\.svg/);
-        await expect(
-            page.locator(".toolbox-react-header-icon[data-toolid='motion']"),
-        ).toHaveCSS("background-image", /motion\.svg/);
-        await expect(
-            page.locator(".toolbox-react-header-icon[data-toolid='music']"),
-        ).toHaveCSS("background-image", /music-notes-white\.svg/);
     });
+
+    // Split out of the test above and disabled rather than deleted, because it asserts on
+    // things the React header has never produced, and deciding what it *should* produce is a
+    // product question, not a test fix:
+    //  - ".subscription-badge" is emitted by the legacy jQuery toolbox
+    //    (toolbox.ts buildToolboxHeader), not by the React header, so the count is 0 here.
+    //  - ".toolbox-react-header-icon" does not exist anywhere in the app — no component or
+    //    stylesheet has ever defined that class.
+    // It also checks tool icons via computed background-image, which
+    // src/BloomBrowserUI/AGENTS.md tells us not to do ("Don't check for styles in tests as a
+    // way to know the status of something... have components add css classes"). So whoever
+    // re-enables this should first decide whether the React header renders subscription
+    // badges and icons at all, then give those elements stable classes/test ids to assert on.
+    test.fixme(
+        "header shows icons and subscription badges",
+        async ({ page }) => {
+            await routeToolboxApis(page);
+
+            await page.route(
+                "**/bloom/api/toolbox/enabledTools",
+                async (route) => {
+                    await route.fulfill({
+                        status: 200,
+                        contentType: "text/plain",
+                        body: "canvas,motion,music,settings",
+                    });
+                },
+            );
+
+            await page.goto("/?component=ToolboxRootTestHarness");
+
+            await expect(page.getByText("Loading component…")).toHaveCount(0, {
+                timeout: 15000,
+            });
+
+            await expect(page.locator(".subscription-badge")).toHaveCount(3);
+
+            await expect(
+                page.locator(
+                    ".toolbox-react-header-icon[data-toolid='canvas']",
+                ),
+            ).toHaveCSS(
+                "background-image",
+                /Canvas%20Icon\.svg|Canvas Icon\.svg/,
+            );
+            await expect(
+                page.locator(
+                    ".toolbox-react-header-icon[data-toolid='motion']",
+                ),
+            ).toHaveCSS("background-image", /motion\.svg/);
+            await expect(
+                page.locator(".toolbox-react-header-icon[data-toolid='music']"),
+            ).toHaveCSS("background-image", /music-notes-white\.svg/);
+        },
+    );
 });
