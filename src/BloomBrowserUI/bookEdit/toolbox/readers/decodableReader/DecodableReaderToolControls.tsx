@@ -22,6 +22,7 @@ import { ReaderToolNav } from "../ReaderToolNav";
 import { toolboxTheme } from "../../../../bloomMaterialUITheme";
 import { useMountEffect } from "../../../../utils/useMountEffect";
 import { BloomTooltip } from "../../../../react_components/BloomToolTip";
+import { getWorkspaceBundleExports } from "../../../js/workspaceFrames";
 
 // This component displays a list of words in a grid
 // where the number of rows and columns is dynamically
@@ -414,12 +415,15 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
                                 `}
                             >
                                 <BloomButton
-                                    href="javascript:window.toolboxBundle.showSetupDialog('stages');"
                                     l10nKey="EditTab.Toolbox.DecodableReaderTool.SetUpStages"
                                     variant="text"
                                     enabled={true}
                                     hasText={true}
                                     enabledImageFile="/bloom/bookEdit/toolbox/readers/edit-white.png"
+                                    onClick={() => {
+                                        model.setupType = "stages";
+                                        getWorkspaceBundleExports().showDecodableReaderSetupDialog();
+                                    }}
                                     css={css`
                                         font-size: xx-small;
                                         text-decoration: underline;

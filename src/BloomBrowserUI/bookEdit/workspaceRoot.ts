@@ -51,6 +51,8 @@ export interface IWorkspaceExports {
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
     showBookSettingsDialog(initiallySelectedPageKey?: string): void;
+    showDecodableReaderSetupDialog(): void;
+    closeDecodableReaderSetupDialog(): void;
     showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
 }
 
@@ -73,6 +75,10 @@ export { showPageChooserDialog };
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookAndPageSettings/BookAndPageSettingsDialog";
 export { showBookSettingsDialog };
+import {
+    closeDecodableReaderSetupDialog,
+    showDecodableReaderSetupDialog,
+} from "./toolbox/readers/readerSetup/DecodableReaderSetupDialog";
 import { showRegistrationDialogForEditTab } from "../react_components/registration/registrationDialog";
 export { showRegistrationDialogForEditTab as showRegistrationDialog };
 import { showAboutDialog } from "../react_components/aboutDialog";
@@ -432,6 +438,8 @@ interface WorkspaceBundleApi {
     getEditablePageBundleExports: typeof getEditablePageBundleExports;
     showPageChooserDialog: typeof showPageChooserDialog;
     showBookSettingsDialog: typeof showBookSettingsDialog;
+    showDecodableReaderSetupDialog: typeof showDecodableReaderSetupDialog;
+    closeDecodableReaderSetupDialog: typeof closeDecodableReaderSetupDialog;
     showRegistrationDialog: typeof showRegistrationDialogForEditTab;
     showAboutDialog: typeof showAboutDialog;
 }
@@ -477,6 +485,8 @@ window.workspaceBundle = {
     getEditablePageBundleExports,
     showPageChooserDialog,
     showBookSettingsDialog,
+    showDecodableReaderSetupDialog,
+    closeDecodableReaderSetupDialog,
     showRegistrationDialog: showRegistrationDialogForEditTab,
     showAboutDialog,
 };
