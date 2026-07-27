@@ -85,10 +85,12 @@ namespace Bloom.Edit
         /// </summary>
         public static IEnumerable<string> GetToolboxServerDirectories()
         {
+            // toolbox.css is linked by both toolbox.pug and WorkspaceView's injected html.
             yield return BloomFileLocator.GetBrowserDirectory("bookEdit", "toolbox");
+            // audioRecording.css is linked into the page frame; see editablePage.ts.
+            // (The toolbox itself gets those styles from talkingBookTool.tsx's import.)
             yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/talkingBook");
-            yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/motion");
-            yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/music");
+            // readerSetup's dialog fetches ReaderSetup.html and readerSetup.css.
             yield return BloomFileLocator.GetBrowserDirectory(
                 "bookEdit/toolbox/readers/readerSetup"
             );
