@@ -128,6 +128,22 @@ namespace BloomTests.web.controllers
                 return path;
             }
 
+            /// <summary>
+            /// Writes a TIFF, optionally with see-through areas. TIFF is the format the browser
+            /// cannot draw, so these are the fixtures for the stand-in-because-of-format path.
+            /// </summary>
+            private string WriteTiff(string name, int width, int height, bool transparent)
+            {
+                var path = Path.Combine(_tempFolder, name);
+                using (var bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb))
+                {
+                    using (var g = Graphics.FromImage(bitmap))
+                        g.Clear(transparent ? Color.Transparent : Color.CornflowerBlue);
+                    bitmap.Save(path, ImageFormat.Tiff);
+                }
+                return path;
+            }
+
             [Test]
             public void GetImageDimensions_ReturnsThePixelDimensions()
             {
@@ -198,6 +214,102 @@ namespace BloomTests.web.controllers
                         Is.EqualTo(
                             ImageGalleryApi.kPreviewMaxDimension * originalHeight / originalWidth
                         )
+                    );
+                }
+                finally
+                {
+                    File.Delete(previewPath);
+                }
+            }
+
+            [Test]
+            public void MakeBrowserSafePreview_MakesAStandInForATiff_EvenASmallOne()
+            {
+                // No browser will draw a TIFF, so size is not the only reason to substitute one.
+                const int width = 300;
+                const int height = 200;
+                Assert.That(
+                    (long)width * height,
+                    Is.LessThan(ImageGalleryApi.kMaxPreviewPixels),
+                    "Test setup: this one is meant to be under the size threshold, so that only "
+                        + "its format can be the reason for a stand-in"
+                );
+                var path = WriteTiff("scan.tif", width, height, transparent: false);
+
+                var previewPath = ImageGalleryApi.MakeBrowserSafePreview(path);
+
+                Assert.That(previewPath, Is.Not.Null, "A TIFF always needs a stand-in");
+                try
+                {
+                    using var preview = Image.FromFile(previewPath);
+                    Assert.That(
+                        preview.RawFormat.Guid,
+                        Is.EqualTo(ImageFormat.Jpeg.Guid),
+                        "The stand-in has to be something the browser can draw"
+                    );
+                    // Small enough already; there is no reason to enlarge it.
+                    Assert.That(preview.Width, Is.EqualTo(width));
+                    Assert.That(preview.Height, Is.EqualTo(height));
+                }
+                finally
+                {
+                    File.Delete(previewPath);
+                }
+            }
+
+            [Test]
+            public void MakeBrowserSafePreview_ShowsSeeThroughAreasAsWhite_NotBlack()
+            {
+                // JPEG has no alpha channel, so without compositing first, a fully transparent
+                // pixel encodes as whatever is in its colour channels — normally black.
+                var path = WriteTiff("transparent.tif", 120, 90, transparent: true);
+
+                var previewPath = ImageGalleryApi.MakeBrowserSafePreview(path);
+
+                Assert.That(previewPath, Is.Not.Null, "Test setup: expected a stand-in for a TIFF");
+                try
+                {
+                    using var preview = new Bitmap(previewPath);
+                    var corner = preview.GetPixel(0, 0);
+                    var middle = preview.GetPixel(preview.Width / 2, preview.Height / 2);
+                    // JPEG is lossy, so allow a little drift rather than demanding pure 255s.
+                    Assert.That(
+                        corner.R + corner.G + corner.B,
+                        Is.GreaterThan(720),
+                        $"Transparent areas should come out white; the corner was {corner}"
+                    );
+                    Assert.That(
+                        middle.R + middle.G + middle.B,
+                        Is.GreaterThan(720),
+                        $"Transparent areas should come out white; the middle was {middle}"
+                    );
+                }
+                finally
+                {
+                    File.Delete(previewPath);
+                }
+            }
+
+            [Test]
+            public void MakeBrowserSafePreview_KeepsTheColoursOfAnOpaqueImage()
+            {
+                // Sanity check on the compositing above: it must not wash out a solid image.
+                var path = WriteTiff("solid.tif", 120, 90, transparent: false);
+
+                var previewPath = ImageGalleryApi.MakeBrowserSafePreview(path);
+
+                Assert.That(previewPath, Is.Not.Null, "Test setup: expected a stand-in for a TIFF");
+                try
+                {
+                    using var preview = new Bitmap(previewPath);
+                    var middle = preview.GetPixel(preview.Width / 2, preview.Height / 2);
+                    var expected = Color.CornflowerBlue;
+                    Assert.That(
+                        Math.Abs(middle.R - expected.R)
+                            + Math.Abs(middle.G - expected.G)
+                            + Math.Abs(middle.B - expected.B),
+                        Is.LessThan(30),
+                        $"Expected roughly {expected} but the stand-in had {middle}"
                     );
                 }
                 finally
