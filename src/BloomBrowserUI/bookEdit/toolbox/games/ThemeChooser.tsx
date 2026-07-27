@@ -16,6 +16,7 @@ import BloomSelect from "../../../react_components/bloomSelect";
 import EditIcon from "@mui/icons-material/Edit";
 import IconButton from "@mui/material/IconButton";
 import { getAsync } from "../../../utils/bloomApi";
+import { useMountEffect } from "../../../utils/useMountEffect";
 import {
     showGameThemeEditor,
     showNewGameThemeEditor,
@@ -69,22 +70,22 @@ export const ThemeChooser: React.FunctionComponent<{
     // Bumped when the editor closes, so we re-scan the available themes: a save may have added
     // or renamed one (a rename removes the old name's rule from the page).
     const [themesRefreshKey, setThemesRefreshKey] = useState(0);
-    useEffect(() => {
+    useMountEffect(() => {
         setEditorOpen(isGameThemeEditorOpen());
         return subscribeGameThemeEditorOpen(() => {
             const open = isGameThemeEditorOpen();
             setEditorOpen(open);
             if (!open) setThemesRefreshKey((k) => k + 1);
         });
-    }, []);
+    });
     // Whether Bloom is running from source (developers can edit factory themes). Non-developers
     // don't get the edit button on factory themes, since they can't change them.
     const [isDeveloper, setIsDeveloper] = useState(false);
-    useEffect(() => {
+    useMountEffect(() => {
         getAsync("gameThemeEditor/canSaveToFactorySource").then((result) => {
             setIsDeveloper(!!(result && (result as { data?: boolean }).data));
         });
-    }, []);
+    });
     // Tooltip for the edit (pencil) button that opens the game theme editor.
     const editThemeColorsTitle = useL10n(
         "Edit theme colors",
