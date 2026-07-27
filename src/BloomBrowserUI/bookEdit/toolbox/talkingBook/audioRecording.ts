@@ -73,9 +73,9 @@ import {
 import { animateStyleName } from "../../../utils/shared";
 import jQuery from "jquery";
 import {
-    AudioTextHighlightManager,
+    TextHighlightManager,
     currentHighlightName,
-} from "./audioTextHighlightManager";
+} from "../../js/textHighlightManager";
 import { TalkingBookUiState, Status } from "./TalkingBookUiState";
 
 // ENHANCE: Replace AudioRecordingMode with this?
@@ -193,7 +193,7 @@ export default class AudioRecording implements IAudioRecorder {
     public __testonly__sentenceToIdListMap = this.sentenceToIdListMap; // Exposing it for unit tests. Not meant for public use.
 
     private playbackOrderCache: IPlaybackOrderInfo[] = [];
-    private audioTextHighlightManager = new AudioTextHighlightManager();
+    private audioTextHighlightManager = new TextHighlightManager();
 
     // Incremented each time setHighlightToAsync starts. During page setup several rounds of it
     // can overlap (newPageReady fires twice, and a quick page change can leave the previous
