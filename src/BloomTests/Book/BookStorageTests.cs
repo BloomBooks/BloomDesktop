@@ -1144,6 +1144,113 @@ namespace BloomTests.Book
             }
         }
 
+        [TestCase("My Book - a1b2c3d4", "My Book", ExpectedResult = true)] // exact canonical base + " - <hash>"
+        [TestCase("My Book - Copy-a1b2c3d4", "My Book", ExpectedResult = true)] // Duplicate() form
+        [TestCase("Book-a1b2c3d4", "Book", ExpectedResult = true)] // new-book bare-hyphen form
+        [TestCase("My Bo - a1b2c3d4", "My Book", ExpectedResult = false)] // over-truncated base = a different, shorter title, so rename
+        [TestCase("Something Else - a1b2c3d4", "My Book", ExpectedResult = false)] // a different title
+        [TestCase("My Book", "My Book", ExpectedResult = false)] // no unique suffix at all
+        [TestCase("My Book - notahex", "My Book", ExpectedResult = false)] // suffix isn't hex
+        public bool IsUniqueVariantOfIdealFolderName_RecognizesCanonicalWorkAroundFoldersOnly(
+            string currentFolderName,
+            string idealFolderName
+        )
+        {
+            return BookStorage.IsUniqueVariantOfIdealFolderName(currentFolderName, idealFolderName);
+        }
+
+        [Test]
+        public void IsUniqueVariantOfIdealFolderName_LongTitle_MatchesOnlyCanonicalTruncation()
+        {
+            // A title too long to fit whole alongside the " - <hash>" suffix. GetUniqueBookFolderName
+            // truncates the base to (kMaxFilenameLength - (" - ".Length + 8)) characters.
+            var idealFolderName = new string('a', 45);
+            var canonicalBaseLength = BookStorage.kMaxFilenameLength - (" - ".Length + 8); // 39
+            var canonicalBase = idealFolderName.Substring(0, canonicalBaseLength);
+
+            // The canonical truncated form is kept (this is the churn case the fix targets)...
+            Assert.That(
+                BookStorage.IsUniqueVariantOfIdealFolderName(
+                    canonicalBase + " - a1b2c3d4",
+                    idealFolderName
+                ),
+                Is.True
+            );
+            // ...but a base truncated to a different length reads as a different title (so, rename).
+            Assert.That(
+                BookStorage.IsUniqueVariantOfIdealFolderName(
+                    idealFolderName.Substring(0, canonicalBaseLength - 5) + " - a1b2c3d4",
+                    idealFolderName
+                ),
+                Is.False
+            );
+        }
+
+        [Test]
+        public void SetBookName_AlreadyInTruncatedUniqueFolder_DoesNotRename()
+        {
+            // BL-16596: a book whose folder is a truncated "<base> - <hash>" work-around for a long
+            // title must NOT be re-hashed to a brand new folder on every save. Doing so orphaned
+            // folders and invalidated the editor's page-iframe URLs, producing spurious "Page expired"
+            // errors when changing page Size/Orientation (which saves the book).
+
+            // A title long enough that the folder base is truncated shorter than the sanitized ideal.
+            var longTitle = new string('a', 45); // < kMaxFilenameLength (50), so the ideal is the whole title
+            var suffixRoom = " - ".Length + 8; // GetUniqueBookFolderName reserves this for the hash suffix
+            var truncatedBase = longTitle.Substring(0, BookStorage.kMaxFilenameLength - suffixRoom); // 39 'a's
+            var currentFolderName = truncatedBase + " - abcd1234"; // a valid work-around folder name
+
+            using (var bookFolder = new TemporaryFolder(_folder, currentFolderName))
+            using (new TemporaryFolder(_folder, longTitle)) // ideal clean name is taken, forcing the work-around
+            using (var projectFolder = new TemporaryFolder("BookStorage_ProjectCollection"))
+            {
+                File.WriteAllText(
+                    Path.Combine(bookFolder.Path, currentFolderName + ".htm"),
+                    "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>"
+                );
+
+                var collectionSettings = new CollectionSettings(
+                    Path.Combine(projectFolder.Path, "test.bloomCollection")
+                );
+                var storage = new BookStorage(
+                    bookFolder.Path,
+                    _fileLocator,
+                    new BookRenamedEvent(),
+                    collectionSettings
+                );
+                storage.Save();
+
+                var foldersBefore = Directory.GetDirectories(_folder.Path);
+
+                // Sanity check: we really are in the churn-prone situation (folder base is a truncated
+                // form of the ideal name, so the simple StartsWith work-around check would fail).
+                Assert.That(
+                    currentFolderName.StartsWith(longTitle),
+                    Is.False,
+                    "test setup: the truncated folder base should not start with the full ideal name"
+                );
+
+                storage.SetBookName(longTitle);
+
+                var foldersAfter = Directory.GetDirectories(_folder.Path);
+                Assert.That(
+                    foldersAfter,
+                    Is.EquivalentTo(foldersBefore),
+                    "SetBookName should not have created or removed any folder"
+                );
+                Assert.That(
+                    Directory.Exists(bookFolder.Path),
+                    Is.True,
+                    "The book's existing work-around folder should be kept: " + bookFolder.Path
+                );
+                Assert.That(
+                    File.Exists(Path.Combine(bookFolder.Path, currentFolderName + ".htm")),
+                    Is.True,
+                    "The book's htm file should still be in its original folder"
+                );
+            }
+        }
+
         [Test]
         public void SanitizeNameForFileSystem_FileNameIsLong_Truncates()
         {

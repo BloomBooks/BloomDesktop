@@ -21,7 +21,6 @@ import { updateCanvasElementClass } from "../toolbox/canvas/canvasElementDomUtil
 import { farthest } from "../../utils/elementUtils";
 import { EditableDivUtils } from "./editableDivUtils";
 import { playingBloomGame } from "../toolbox/games/DragActivityTabControl";
-import { kPlaybackOrderContainerClass } from "../toolbox/talkingBook/audioRecording";
 import { getWorkspaceBundleExports } from "./workspaceFrames";
 import {
     changeImage,
@@ -651,8 +650,9 @@ export function handleMouseEnterBloomCanvas(bloomCanvas: HTMLElement): void {
     SetImageTooltip(bloomCanvas);
 
     if (
-        bloomCanvas.getElementsByClassName(kPlaybackOrderContainerClass)
-            .length > 0
+        bloomCanvas.getElementsByClassName(
+            "bloom-playbackOrderControlsContainer",
+        ).length > 0
     ) {
         return; // Playback order controls are active, deactivate bloom-canvas stuff.
     }
@@ -1088,7 +1088,7 @@ function getFileLengthString(bytes): string {
 }
 
 // Gets the src attribute out of images, and the background-image:url() of everything else
-function GetRawImageUrl(imgOrDivWithBackgroundImage): string {
+export function GetRawImageUrl(imgOrDivWithBackgroundImage): string {
     if ($(imgOrDivWithBackgroundImage).hasAttr("src")) {
         return $(imgOrDivWithBackgroundImage).attr("src");
     }

@@ -89,6 +89,14 @@ namespace Bloom.Edit
             return _mainBrowser.Invoke(method);
         }
 
+        public IAsyncResult BeginInvoke(Delegate method)
+        {
+            if (_mainBrowser == null)
+                throw new InvalidOperationException("Main browser is not available.");
+
+            return _mainBrowser.BeginInvoke(method);
+        }
+
         public void Refresh()
         {
             _mainBrowser?.Refresh();
@@ -107,6 +115,7 @@ namespace Bloom.Edit
             SignLanguageApi signLanguageApi,
             CommonApi commonApi,
             EditingViewApi editingViewApi,
+            AiImageEditorApi aiImageEditorApi,
             ImageGalleryApi imageGalleryApi,
             PageListApi pageListApi,
             BookRenamedEvent bookRenamedEvent,
@@ -134,6 +143,7 @@ namespace Bloom.Edit
             signLanguageApi.Model = _model;
             signLanguageApi.View = this;
             editingViewApi.View = this;
+            aiImageEditorApi.View = this;
             imageGalleryApi.View = this;
             commonApi.Model = _model;
             _copyrightAndLicenseApi = copyrightAndLicenseApi;

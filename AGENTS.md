@@ -61,6 +61,46 @@ multiple terminals can build/test at once. See `Directory.Build.props` for how i
 - The first build in a fresh terminal is a full (cold) build into that terminal's private
   tree; subsequent builds there are incremental. `output/` is gitignored.
 
+## Building / testing the front-end (web UI) while Bloom is running
+
+The developer usually launches Bloom with `./go.sh`, which starts a **Vite dev server** and
+has Bloom's WebView2 load the UI from it (not from a `vite build --watch`). Two consequences:
+
+- **Editing `.ts`/`.tsx`/`.less` needs no build at all.** The dev server pushes your change
+  into the running Bloom; to see it, attach and observe via the `bloom-automation` skill — do
+  **not** build. How the change lands varies: a `.less`/CSS edit hot-swaps in place (no
+  reload); a `.tsx` edit often triggers a Vite full page reload (React Fast Refresh falls back
+  to it), and for app-shell / entry components that reload briefly blanks the view until Bloom
+  re-navigates. So when observing over CDP, wait for the page to settle (or switch tabs and
+  back) before concluding an edit "didn't apply". (A few entry points aren't served by the dev
+  server and rely on a separate `pnpm watch` = `vite build --watch`; if the developer is
+  running that instead, your edits are still rebuilt for you — you still don't build.)
+- **Don't run `pnpm build` here** (see below): it wipes and repopulates the shared
+  `output\browser` via `clean.js`, disrupting the Bloom running against it, and it does
+  nothing useful anyway because the running Bloom loads JS from the dev server, not from
+  `output\browser`.
+
+**Automated front-end checks are always safe — run them freely.** None of these build or
+touch `output\browser`, so they never disturb the dev server or a watch:
+
+- `pnpm test` (Vitest) — runs in jsdom and transforms modules in memory. This is your primary
+  "does my logic/component work" check. (`pnpm lint` and `pnpm typecheck` are likewise safe.)
+
+**To confirm the real production bundle compiles** — bundling / CommonJS-interop errors and
+the manifest post-build step that the lenient dev server never exercises — use the isolated
+wrapper, the front-end twin of `build/agent-dotnet.sh`:
+
+```bash
+build/agent-vite.sh
+```
+
+(PowerShell: `build/agent-vite.ps1`.) It sets `BLOOM_UI_OUTDIR` so the whole Vite build lands
+in a private per-terminal tree under `output/agent/<key>/browser`, never touching the shared
+`output\browser` or any running dev server / watch, so multiple terminals can run it at once.
+Like the C# wrapper it is **build-only**: it confirms the bundle compiles; it does *not* let a
+running Bloom load those bundles (Bloom reads the fixed `output\browser` / dev server). It
+skips the pug/LESS/markdown/static-copy steps, so it is a fast pure-bundle check.
+
 
 # Terminal
 The vscode terminal often loses the first character sent from copilot agents. So if you send "cd" it might just say "bash: d: command not found". Try prefixing commands with a space.
@@ -74,8 +114,13 @@ The vscode terminal often loses the first character sent from copilot agents. So
 
 If you create new files for temporary purposes (e.g. output or artifact or log files), be sure to clean them up when you're done and be careful not to accidentally commit them.
 
-# Don't run pnpm build
-It is vital that you not run `pnpm build` unless instructed to. If there is already a "--watch" build running, you will wreck it and waste the developer's time. You are welcome to `pnpm lint` if you want to check for errors without building.
+# Don't run the full `pnpm build` yourself
+You have a complete set of faster, non-disruptive alternatives, so don't run the full `pnpm build`:
+- **Checks** — `pnpm lint`, `pnpm typecheck`, `pnpm test`. None of these build or touch `output\browser`.
+- **Confirm the real production bundle compiles** — `build/agent-vite.sh`, which builds into an isolated tree and leaves `output\browser` alone (see "Building / testing the front-end (web UI) while Bloom is running" above).
+- **See a change in the running Bloom** — just edit the source; the dev server pushes it in. No build.
+
+The full `pnpm build` exists to (re)populate the shared `output\browser` — `clean.js` plus content assets plus the bundle. It's slow, and it wrecks any running Vite dev server / `--watch` and the Bloom loading from it, so it's a developer/CI job, not something to spring on a live session. If you think you genuinely need it, ask the developer to run it (they can stop Bloom first) rather than running it yourself.
 
 # Localization
 Whenever you add, modify, or review localizable strings (XLF entries), follow `.github/skills/xlf-strings/SKILL.md`.

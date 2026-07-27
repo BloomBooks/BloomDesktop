@@ -248,6 +248,33 @@ describe("jquery.text-markup", function () {
         expect(out5).toBe(" This is a test, this is only a test. ");
     });
 
+    it("removeCkEditorMarkup unwraps spans with background-color in style", function () {
+        const input =
+            '<p>pre <span style="background-color: rgb(255, 255, 155);">new text</span> post</p>';
+
+        $("#text_entry1").html(input).removeCkEditorMarkup();
+
+        expect($("#text_entry1").html()).toBe("<p>pre new text post</p>");
+    });
+
+    it("removeCkEditorMarkup unwraps spans with rgba() background-color", function () {
+        const input =
+            '<p>pre <span style="background-color: rgba(255, 255, 155, 0.5);">new text</span> post</p>';
+
+        $("#text_entry1").html(input).removeCkEditorMarkup();
+
+        expect($("#text_entry1").html()).toBe("<p>pre new text post</p>");
+    });
+
+    it("removeCkEditorMarkup removes hidden cke_ spans", function () {
+        const input =
+            '<p>pre <span id="cke_1" style="display: none;">hidden</span> post</p>';
+
+        $("#text_entry1").html(input).removeCkEditorMarkup();
+
+        expect($("#text_entry1").html()).toBe("<p>pre  post</p>");
+    });
+
     it("checkWrapWordsExtraIgnoresEmptyItems", function () {
         const cssWordNotFound = "word-not-found";
         const cssPossibleWord = "possible-word";
@@ -302,9 +329,9 @@ describe("jquery.text-markup", function () {
         ]);
 
         // ...but ZERO WIDTH JOINER is legitimate within a word and must NOT split it.
-        expect(
-            theOneLibSynphony.getWordsFromHtmlString(`ca${zwj}t`),
-        ).toEqual([`ca${zwj}t`]);
+        expect(theOneLibSynphony.getWordsFromHtmlString(`ca${zwj}t`)).toEqual([
+            `ca${zwj}t`,
+        ]);
     });
 
     it("wrap_words_extra matches words bounded by a ZERO WIDTH SPACE (BL-16490)", function () {

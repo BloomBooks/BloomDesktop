@@ -368,6 +368,16 @@
         <note>ID: EditTab.Toolbox.Games.EditThemeColors</note>
         <note>Tooltip (hover text) on the pencil/edit button next to the game "Theme" dropdown in the Games tool of the Edit tab's toolbox. Clicking the button opens the game theme editor to change the current theme's colors.</note>
       </trans-unit>
+      <trans-unit id="EditTab.CopyTextFailed" translate="no" sil:dynamic="true">
+        <source xml:lang="en">Bloom was not able to copy that.</source>
+        <note>ID: EditTab.CopyTextFailed</note>
+        <note>Shown as a toast when Bloom fails to put text on the computer's clipboard, usually because some other program is momentarily holding the clipboard.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PasteTextFailed" translate="no" sil:dynamic="true">
+        <source xml:lang="en">Bloom was not able to paste.</source>
+        <note>ID: EditTab.PasteTextFailed</note>
+        <note>Shown as a toast when Bloom fails to read text from the computer's clipboard, usually because some other program is momentarily holding the clipboard.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

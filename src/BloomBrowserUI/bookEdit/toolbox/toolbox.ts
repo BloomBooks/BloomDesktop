@@ -46,6 +46,20 @@ export function isToolEnabledInToolbox(toolName: string): boolean {
     return enabledToolIds.has(toolName);
 }
 
+// a function to update the state of the checkboxes in the toolbox settings,
+// whenever a tool is enabled and activated using setToolEnabledFromSettings(). This
+// function starts out unimplemented, but is later implemented by SettingsToolControls.tsx
+// when it gets mounted.
+let changeToolboxSettingsState:
+    | ((which: string, value: boolean) => void)
+    | undefined;
+
+export function setToolboxSettingsChangeHandler(
+    handler: ((which: string, value: boolean) => void) | undefined,
+): void {
+    changeToolboxSettingsState = handler;
+}
+
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
 // can be asked to do by the rest of the system.
@@ -602,6 +616,14 @@ export class ToolBox {
         });
     }
 
+    // Enables a tool from an in-page action, ensuring the toolbox is visible.
+    public enableToolFromPage(toolId: string): void {
+        if (!this.toolboxIsShowing()) {
+            this.toggleToolbox();
+        }
+        setToolEnabledFromSettings(toolId, true);
+    }
+
     public activateToolFromId(toolId: string) {
         if (!getITool(toolId)) {
             // Normally we won't even give a way to see this tool if it's
@@ -768,6 +790,10 @@ export function setToolEnabledFromSettings(
         "editView/saveToolboxSetting",
         "active\t" + toolName + "Check\t" + (turnOn ? "1" : "0"),
     );
+
+    if (changeToolboxSettingsState !== undefined) {
+        changeToolboxSettingsState(toolName, turnOn);
+    }
 
     // A pending deferred open (below) reflects an earlier state; this call
     // supersedes it, so cancel it. Without this, ticking a tool on and then off
@@ -1273,114 +1299,88 @@ function beginAddTool(
     openTool: boolean,
     whenLoaded?: () => void,
 ): void {
-    const subpath = {
-        talkingBookTool: "talkingBook/talkingBookToolboxTool.html",
-        // none for music: done in React
-    };
-    const subPathToPremadeHtml = subpath[toolId];
-    if (subPathToPremadeHtml) {
-        // old-style tool implemented in pug and typescript
-        // Using axios because this is retrieving a file, not invoking an api,
-        // so the required path does not start with /bloom/api/
-        wrapAxios(
-            axios
-                .get("/bloom/bookEdit/toolbox/" + subPathToPremadeHtml)
-                .then((result) => {
-                    loadToolboxToolText(result.data, toolId, openTool);
-                    if (whenLoaded) {
-                        whenLoaded();
-                    }
-                }),
+    // new-style tool implemented in React
+    const tool = getITool(toolId);
+    if (!tool) {
+        console.error(
+            `Tool ${toolId} not found, assuming that was from a different version of Bloom.`,
         );
-    } else {
-        // new-style tool implemented in React
-        const tool = getITool(toolId);
-        if (!tool) {
-            console.error(
-                `Tool ${toolId} not found, assuming that was from a different version of Bloom.`,
-            );
-            return;
-        }
+        return;
+    }
 
-        if (isToolInitialized(tool)) {
-            if (openTool && toolbox.toolboxIsShowing()) {
-                const toolName = ToolBox.addToolToString(tool.id());
-                const adapter = getToolboxReactAdapter();
-                if (adapter) {
-                    adapter.setActiveToolByToolId(toolName);
-                }
+    if (isToolInitialized(tool)) {
+        if (openTool && toolbox.toolboxIsShowing()) {
+            const toolName = ToolBox.addToolToString(tool.id());
+            const adapter = getToolboxReactAdapter();
+            if (adapter) {
+                adapter.setActiveToolByToolId(toolName);
             }
-
-            if (whenLoaded) {
-                whenLoaded();
-            }
-            return;
         }
 
-        const content = $(tool.makeRootElement());
-
-        // the settings for the toolbox is React, but
-        // its localization works a little differently
-        // than the other toolbox tools. So, special-case
-        // handling is needed for the settings
-        const isSettingsTool = tool.id() === "settings";
-
-        const toolName = ToolBox.addToolToString(tool.id());
-        // const parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
-        //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
-
-        const toolIdUpper =
-            tool.id()[0].toUpperCase() +
-            tool.id().substring(1, tool.id().length);
-        const i18Id = isSettingsTool
-            ? "EditTab.Toolbox.More"
-            : "EditTab.Toolbox." +
-              toolIdUpper +
-              (toolName.indexOf(checkLeaveOffTool) === -1 ? "Tool" : "");
-        // Not sure this will always work, but we can do something more complicated...maybe a new method
-        // on ITool...if we need it. Note that this is just a way to come up with the English,
-        // we don't do it to localizations. But in English, the code value beats the xlf one.
-        const toolLabel = isSettingsTool
-            ? "More..."
-            : ToolBox.addToolToString(
-                  toolIdUpper.replace(/([A-Z])/g, " $1").trim(),
-                  true,
-              );
-
-        const reactTool = tool as unknown as IReactTool;
-
-        // Currently, all subscription tools are React, so we haven't implemented a way to add the subscription badge to old-style tools
-        const possibleSubscriptionBadge = reactTool.featureName
-            ? `<span class="subscription-badge"></span>`
-            : "";
-        const header = $(
-            `<h3><div class="toolbox-accordion-header-text" data-i18n=${i18Id}>${toolLabel}</div>${possibleSubscriptionBadge}</span></h3>`,
-        );
-        header.attr("data-toolId", toolName);
-        content.attr("data-toolId", toolName);
-
-        // Check feature status asynchronously and apply subscription requirements if needed
-        if (reactTool.featureName) {
-            header.attr("data-feature", reactTool.featureName);
-            addFeatureStatusMessageTitlesToSubscriptionBadges(header);
-
-            getFeatureStatusAsync(reactTool.featureName).then(
-                (featureStatus) => {
-                    if (
-                        featureStatus &&
-                        featureStatus.subscriptionTier !== "Basic"
-                    ) {
-                        header.addClass("requiresSubscription");
-                    }
-                },
-            );
-        }
-
-        loadToolboxTool(header, content, toolId, openTool);
         if (whenLoaded) {
             whenLoaded();
         }
+        return;
     }
+
+    const content = $(tool.makeRootElement());
+
+    // the settings for the toolbox is React, but
+    // its localization works a little differently
+    // than the other toolbox tools. So, special-case
+    // handling is needed for the settings
+    const isSettingsTool = tool.id() === "settings";
+
+    const toolName = ToolBox.addToolToString(tool.id());
+    // const parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
+    //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
+
+    const toolIdUpper =
+        tool.id()[0].toUpperCase() + tool.id().substring(1, tool.id().length);
+    const i18Id = isSettingsTool
+        ? "EditTab.Toolbox.More"
+        : "EditTab.Toolbox." +
+          toolIdUpper +
+          (toolName.indexOf(checkLeaveOffTool) === -1 ? "Tool" : "");
+    // Not sure this will always work, but we can do something more complicated...maybe a new method
+    // on ITool...if we need it. Note that this is just a way to come up with the English,
+    // we don't do it to localizations. But in English, the code value beats the xlf one.
+    const toolLabel = isSettingsTool
+        ? "More..."
+        : ToolBox.addToolToString(
+              toolIdUpper.replace(/([A-Z])/g, " $1").trim(),
+              true,
+          );
+
+    const reactTool = tool as unknown as IReactTool;
+
+    // Currently, all subscription tools are React, so we haven't implemented a way to add the subscription badge to old-style tools
+    const possibleSubscriptionBadge = reactTool.featureName
+        ? `<span class="subscription-badge"></span>`
+        : "";
+    const header = $(
+        `<h3><div class="toolbox-accordion-header-text" data-i18n=${i18Id}>${toolLabel}</div>${possibleSubscriptionBadge}</span></h3>`,
+    );
+    header.attr("data-toolId", toolName);
+    content.attr("data-toolId", toolName);
+
+    // Check feature status asynchronously and apply subscription requirements if needed
+    if (reactTool.featureName) {
+        header.attr("data-feature", reactTool.featureName);
+        addFeatureStatusMessageTitlesToSubscriptionBadges(header);
+
+        getFeatureStatusAsync(reactTool.featureName).then((featureStatus) => {
+            if (featureStatus && featureStatus.subscriptionTier !== "Basic") {
+                header.addClass("requiresSubscription");
+            }
+        });
+    }
+
+    loadToolboxTool(header, content, toolId, openTool);
+    if (whenLoaded) {
+        whenLoaded();
+    }
+    //}
 }
 
 let keydownEventCounter = 0;

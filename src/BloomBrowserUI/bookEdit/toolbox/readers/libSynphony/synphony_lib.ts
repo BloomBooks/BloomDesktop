@@ -1475,7 +1475,8 @@ export class LibSynphony {
         // include them; they must be listed explicitly. See BL-16490.
         const wordBoundaryChars =
             "\\s\\p{Z}" + zeroWidthAndDirectionalSplitters;
-        var beforeWord = "(^\\s*|>\\s*|[" + wordBoundaryChars + "]|\\p{P}|&nbsp;)"; // word beginning delimiter
+        var beforeWord =
+            "(^\\s*|>\\s*|[" + wordBoundaryChars + "]|\\p{P}|&nbsp;)"; // word beginning delimiter
         var afterWord =
             "(?=(\\s*$|\\s*<|[" +
             wordBoundaryChars +

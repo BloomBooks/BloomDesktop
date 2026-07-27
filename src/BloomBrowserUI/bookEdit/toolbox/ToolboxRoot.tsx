@@ -69,10 +69,6 @@ const toolIconPathByToolId: Record<string, string> = {
         "/bloom/bookEdit/toolbox/impairmentVisualizer/blind-eye-white.svg",
 };
 
-const legacyToolSubPathByToolId: Record<string, string> = {
-    talkingBook: "talkingBook/talkingBookToolboxTool.html",
-};
-
 const toolboxHeaderIconStyles = css`
     width: 16px;
     height: 16px;
@@ -154,7 +150,6 @@ const makeSectionFromToolId = (toolId: string): ToolboxSection => {
         id: toolId,
         englishLabel: labelInfo.englishLabel,
         l10nKey: labelInfo.l10nKey,
-        legacyToolHtmlSubPath: legacyToolSubPathByToolId[toolId],
     };
 };
 
@@ -261,12 +256,7 @@ const ensureReactToolBodyElement = (
     }
 
     const normalizedToolId = normalizeToolId(toolId);
-    // Do not create elements for legacy tools; they load their content from
-    // legacyToolHtmlSubPath and their makeRootElement() implementations throw
-    // "Method not implemented." if called directly.
-    if (legacyToolSubPathByToolId[normalizedToolId]) {
-        return undefined;
-    }
+
     const tool = getMasterToolList().find((candidate) => {
         return candidate.id() === normalizedToolId;
     });
@@ -413,6 +403,29 @@ export const ToolboxRoot: React.FunctionComponent = () => {
     >([]);
     const hydratedToolIds = React.useRef<Set<string>>(new Set());
 
+    // Expand the given section and tell the legacy toolbox code about it.
+    // The legacy code keeps its own idea of which tool is current and drives each tool's
+    // showTool()/hideTool() lifecycle from it, so every path that changes which section is
+    // expanded has to go through here. A path that quietly changed only the React state left
+    // the two out of sync, so the tool the user could see was never activated: that is how
+    // visiting a game page killed Talking Book highlighting (BL-16602).
+    // Passing undefined means "nothing is expanded"; we deliberately don't notify legacy in
+    // that case, since it has no representation for "no current tool" and re-expanding the
+    // same section will notify with the same tool anyway.
+    const setActiveSection = React.useCallback(
+        (sectionId: string | undefined) => {
+            setExpandedSectionId(sectionId);
+            if (!sectionId) {
+                return;
+            }
+            const toolId = toToolboxToolId(sectionId);
+            activeToolChangedCallbacks.current.forEach((callback) => {
+                callback(toolId);
+            });
+        },
+        [],
+    );
+
     // Resolve body content for a section.
     // Prefer a live legacy element to avoid duplicate tool roots; otherwise
     // load static legacy HTML as a temporary fallback.
@@ -454,36 +467,6 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                     };
                 }),
             );
-            return;
-        }
-
-        const legacyToolHtmlSubPath = legacyToolSubPathByToolId[toolId];
-        if (legacyToolHtmlSubPath) {
-            try {
-                const legacyToolBodyHtml = await loadLegacyToolBodyHtml({
-                    id: toolId,
-                    englishLabel: "",
-                    l10nKey: "",
-                    legacyToolHtmlSubPath,
-                });
-                setSections((previousSections) =>
-                    previousSections.map((section) => {
-                        if (section.id !== toolId) {
-                            return section;
-                        }
-                        return {
-                            ...section,
-                            legacyToolBodyHtml,
-                        };
-                    }),
-                );
-            } catch (error) {
-                hydratedToolIds.current.delete(toolId);
-                console.error(
-                    `Failed to load legacy toolbox HTML for ${toolId}.`,
-                    error,
-                );
-            }
             return;
         }
 
@@ -720,24 +703,26 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             const removedToolId = normalizeToolId(customEvent.detail.toolId);
             hydratedToolIds.current.delete(removedToolId);
 
-            setSections((previousSections) => {
-                const nextSections = previousSections.filter(
+            setSections((previousSections) =>
+                previousSections.filter(
                     (section) => section.id !== removedToolId,
-                );
+                ),
+            );
 
-                const firstSection = nextSections[0];
-                // actually changes the expanded section only if the removed tool was the expanded one.
-                // The awkward way of doing this is to guard against a stale value of expandedSectionId.
-                setExpandedSectionId((previousExpandedSectionId) =>
-                    previousExpandedSectionId === removedToolId
-                        ? firstSection
-                            ? firstSection.id
-                            : undefined
-                        : previousExpandedSectionId,
-                );
+            if (expandedSectionId !== removedToolId) {
+                // The tool that went away wasn't the active one, so the active tool is unaffected.
+                return;
+            }
 
-                return nextSections;
-            });
+            // The active tool has just been taken away from us (e.g. leaving a game page removes
+            // the Game tool, which that page required). Something else has to become active, and
+            // it must go through setActiveSection so that the legacy code actually activates it.
+            // (Before the React toolbox, the jQuery accordion's refresh did the equivalent, firing
+            // its activate event when the active panel disappeared.)
+            const replacementSection = sections.find(
+                (section) => section.id !== removedToolId,
+            );
+            setActiveSection(replacementSection?.id);
         };
 
         // These events get dispatched by legacy toolbox code when tools are added or removed
@@ -749,7 +734,11 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             window.removeEventListener("toolbox-tool-added", onToolAdded);
             window.removeEventListener("toolbox-tool-removed", onToolRemoved);
         };
-    }, [hydrateToolBody]);
+        // sections and expandedSectionId are dependencies because onToolRemoved has to know
+        // what is currently active and what is left to activate in its place. Re-subscribing
+        // when they change can't lose an event: the removal and re-adding of the listener
+        // happen together, synchronously, when React commits.
+    }, [hydrateToolBody, sections, expandedSectionId, setActiveSection]);
 
     // Expose activation adapter so legacy toolbox code can drive and observe React accordion state.
     React.useEffect(() => {
@@ -769,12 +758,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
         window.toolboxReactAdapter = {
             isEnabled: () => true,
             setActiveToolByToolId: (toolId: string) => {
-                const normalizedToolId = normalizeToolId(toolId);
-                setExpandedSectionId(normalizedToolId);
-                const callbackToolId = toToolboxToolId(normalizedToolId);
-                activeToolChangedCallbacks.current.forEach((callback) => {
-                    callback(callbackToolId);
-                });
+                setActiveSection(normalizeToolId(toolId));
             },
             getActiveToolId: () => {
                 if (!expandedSectionId) {
@@ -786,7 +770,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                 activeToolChangedCallbacks.current.push(callback);
             },
         };
-    }, [expandedSectionId, sections]);
+    }, [expandedSectionId, sections, setActiveSection]);
 
     // The old jQuery toolbox logic still runs for now, and it calls .show() on #toolbox.
     // Keep that legacy root hidden so only the React root is visible.
@@ -907,19 +891,9 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                             disableGutters
                             expanded={expandedSectionId === section.id}
                             onChange={(_event, expanded) => {
-                                const nextSectionId = expanded
-                                    ? section.id
-                                    : undefined;
-                                setExpandedSectionId(nextSectionId);
-                                if (nextSectionId) {
-                                    const toolId =
-                                        toToolboxToolId(nextSectionId);
-                                    activeToolChangedCallbacks.current.forEach(
-                                        (callback) => {
-                                            callback(toolId);
-                                        },
-                                    );
-                                }
+                                setActiveSection(
+                                    expanded ? section.id : undefined,
+                                );
                             }}
                         >
                             <AccordionSummary

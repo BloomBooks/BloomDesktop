@@ -509,11 +509,8 @@ namespace Bloom
             // e.g. (window as any).chrome.webview.postMessage("browser-clicked");
             _webview.WebMessageReceived += (o, e) =>
             {
-                // for now the only thing we're using this for is to close the page thumbnail list context menu when the user clicks outside it
-                if (e.TryGetWebMessageAsString() == "browser-clicked")
-                {
+                if (IsBrowserClickedMessage(e))
                     RaiseBrowserClick(null, null);
-                }
             };
 
             // Now do the same thing for any iframes. When an iframe is created...
@@ -527,10 +524,8 @@ namespace Bloom
                 // and thus tell us when it regained it.
                 e.Frame.WebMessageReceived += (a, b) =>
                 {
-                    if (b.TryGetWebMessageAsString() == "browser-clicked")
-                    {
+                    if (IsBrowserClickedMessage(b))
                         RaiseBrowserClick(null, null);
-                    }
                 };
             };
 
@@ -622,7 +617,16 @@ namespace Bloom
 
             // If we are disposed, this will certainly fail. Likely we are shutting down and just
             // trying to navigate to a blank page.
-            if (!_webview.IsDisposed && !_webview.Disposing)
+            // One user reported a crash in this method which indicated that a null reference exception was
+            // thrown on the line with the Navigate method. (BL-16570) I don't know how that could happen.
+            // EnsureBrowserReadyToNavigate() should have prevented it, but it uses a while loop over
+            // Application.DoEvents() which is known to be unsafe.
+            if (
+                !_webview.IsDisposed
+                && !_webview.Disposing
+                && _readyToNavigate
+                && _webview.CoreWebView2 != null
+            )
                 _webview.CoreWebView2.Navigate(newUrl);
         }
 
@@ -781,6 +785,16 @@ namespace Bloom
             await _webview.ExecuteScriptAsync(script);
         }
 
+        // The only web message Bloom currently listens for is the plain "browser-clicked"
+        // string our JS posts. WebView2 has no non-throwing "is this a string message?" check
+        // (TryGetWebMessageAsString throws for JSON-object messages), but WebMessageAsJson always
+        // returns the JSON form — a string message arrives as the quoted literal — so we compare
+        // against that instead of catching an exception on every message.
+        private const string BrowserClickedMessageJson = "\"browser-clicked\"";
+
+        private static bool IsBrowserClickedMessage(CoreWebView2WebMessageReceivedEventArgs e) =>
+            e.WebMessageAsJson == BrowserClickedMessageJson;
+
         /// <summary>
         /// Run a javascript script asynchronously.
         /// This version of the method simply makes it explicit that we are purposefully not awaiting the result.
@@ -788,7 +802,48 @@ namespace Bloom
         /// </summary>
         public override void RunJavascriptFireAndForget(string script)
         {
-            _webview.ExecuteScriptAsync(script);
+            // Guard against running when the browser isn't in a usable state. During app startup
+            // (before CoreWebView2 is initialized) or shutdown (while the control is disposing),
+            // ExecuteScriptAsync throws from inside its async state machine. Because nothing here
+            // awaits or otherwise observes the returned Task, that fault used to reach the GC
+            // finalizer thread and get rethrown as an UnobservedTaskException (Sentry
+            // BLOOM-DESKTOP-D07). This mirrors the readiness check in UpdateDisplay().
+            if (
+                _webview == null
+                || _webview.IsDisposed
+                || _webview.Disposing
+                || _webview.CoreWebView2 == null
+            )
+                return;
+
+            // Even with the guard above there is a tiny race window in which the control can start
+            // disposing between the check and the call, so we still observe the returned Task. On a
+            // fault we just log it: this is an expected startup/shutdown race, not a user-facing
+            // failure, so no MessageBox and no rethrow. Observing the Task is what structurally
+            // eliminates the UnobservedTaskException (BLOOM-DESKTOP-D07).
+            _webview
+                .ExecuteScriptAsync(script)
+                .ContinueWith(
+                    t =>
+                    {
+                        // Read the exception first so it is observed even if logging fails.
+                        var message = t.Exception?.GetBaseException().Message;
+                        try
+                        {
+                            Logger.WriteEvent(
+                                "WebView2Browser.RunJavascriptFireAndForget: ExecuteScriptAsync faulted (expected during startup/shutdown): "
+                                    + message
+                            );
+                        }
+                        catch
+                        {
+                            // Swallow any logging failure: letting it escape would fault this
+                            // continuation's own Task and reintroduce the very
+                            // UnobservedTaskException we are preventing (BLOOM-DESKTOP-D07).
+                        }
+                    },
+                    TaskContinuationOptions.OnlyOnFaulted
+                );
         }
 
         public override async Task<string> GetStringFromJavascriptAsync(string script)

@@ -153,6 +153,7 @@ namespace Bloom
                                 typeof(StylesAndFontsApi),
                                 typeof(SpreadsheetApi),
                                 typeof(BookMetadataApi),
+                                typeof(AiImageEditorApi),
                                 typeof(IndicatorInfoApi),
                                 typeof(PublishToBloomPubApi),
                                 typeof(PublishPdfApi),
@@ -162,6 +163,7 @@ namespace Bloom
                                 typeof(AccessibilityCheckApi),
                                 typeof(CollectionSettingsApi),
                                 typeof(SubscriptionSettingsEditorApi),
+                                typeof(E2eTestingApi),
                                 typeof(FeatureStatusApi),
                                 typeof(CollectionTabView),
                                 typeof(CollectionApi),
@@ -429,6 +431,11 @@ namespace Bloom
             _scope
                 .Resolve<SubscriptionSettingsEditorApi>()
                 .RegisterWithApiHandler(server.ApiHandler);
+            // Endpoints that exist only to support end-to-end/visual-regression testing. They let a
+            // caller do things no real user should, so we register them only when Bloom was launched
+            // in e2e test mode (--e2e); a normal run never exposes them, in any build configuration.
+            if (Program.RunningE2eTests)
+                _scope.Resolve<E2eTestingApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<FeatureStatusApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<CollectionApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<RegistrationApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -439,6 +446,7 @@ namespace Bloom
             _scope.Resolve<BookSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<StylesAndFontsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<BookMetadataApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<AiImageEditorApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<IndicatorInfoApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ImageApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<ReadersApi>().RegisterWithApiHandler(server.ApiHandler);

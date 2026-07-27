@@ -1,4 +1,4 @@
-import { test, expect } from "../../../component-tester/playwrightTest";
+import { test, expect } from "playwright/test";
 import {
     clickWorkspaceTab,
     connectToBloomExe,

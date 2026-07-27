@@ -1,5 +1,8 @@
 import { expect, test } from "../../component-tester/playwrightTest";
 
+const getToolHeader = (page: import("@playwright/test").Page, label: string) =>
+    page.locator(".MuiAccordionSummary-root", { hasText: label });
+
 const getToolHeaderTexts = async (
     page: import("@playwright/test").Page,
 ): Promise<string[]> => {
@@ -16,71 +19,26 @@ const routeToolboxApis = async (page: import("@playwright/test").Page) => {
             body: "talkingBook,settings",
         });
     });
-
-    await page.route(
-        "**/bloom/bookEdit/toolbox/talkingBook/talkingBookToolboxTool.html",
-        async (route) => {
-            await route.fulfill({
-                status: 200,
-                contentType: "text/html",
-                body: "<h3 data-toolId='talkingBookTool'>Talking Book</h3><div><div>Talking tool content injected</div></div>",
-            });
-        },
-    );
-
-    await page.route(
-        "**/bloom/bookEdit/toolbox/settings/Settings.html",
-        async (route) => {
-            await route.fulfill({
-                status: 200,
-                contentType: "text/html",
-                body: "<h3 data-toolId='settingsTool'>More...</h3><div><div>Settings tool content injected</div></div>",
-            });
-        },
-    );
-
-    await page.route(
-        "**/bloom/bookEdit/toolbox/readers/decodableReader/decodableReaderToolboxTool.html",
-        async (route) => {
-            await route.fulfill({
-                status: 200,
-                contentType: "text/html",
-                body: "<h3 data-toolId='decodableReaderTool'>Decodable Reader</h3><div><div>Decodable controls injected</div></div>",
-            });
-        },
-    );
 };
 
 test.describe("ToolboxRoot React mode", () => {
-    test("renders legacy HTML sections and switches active section", async ({
-        page,
-    }) => {
+    test("switches active React section", async ({ page }) => {
         await routeToolboxApis(page);
 
         await page.goto("/?component=ToolboxRootTestHarness");
 
-        await expect(page.getByText("Loading component…")).toHaveCount(0, {
-            timeout: 15000,
-        });
+        const talkingBook = getToolHeader(page, "Talking Book Tool");
+        const more = getToolHeader(page, "More...");
 
-        await expect(page.getByText("Talking Book Tool").first()).toBeVisible({
-            timeout: 10000,
-        });
-        await expect(page.getByText("More...").first()).toBeVisible({
-            timeout: 10000,
-        });
+        await expect(talkingBook).toBeVisible({ timeout: 10000 });
+        await expect(more).toBeVisible();
 
-        await page.getByText("Talking Book Tool").first().click();
+        await talkingBook.click();
+        await expect(talkingBook).toHaveAttribute("aria-expanded", "true");
 
-        await expect(
-            page.getByText("Talking tool content injected"),
-        ).toBeVisible();
-
-        await page.getByText("More...").first().click();
-
-        await expect(
-            page.getByText("Settings tool content injected"),
-        ).toBeVisible();
+        await more.click();
+        await expect(more).toHaveAttribute("aria-expanded", "true");
+        await expect(talkingBook).toHaveAttribute("aria-expanded", "false");
     });
 
     test("initial selection follows restored current tool", async ({
@@ -113,11 +71,9 @@ test.describe("ToolboxRoot React mode", () => {
             timeout: 15000,
         });
 
-        await expect(page.getByText("Decodable controls injected")).toBeVisible(
-            {
-                timeout: 10000,
-            },
-        );
+        await expect(
+            getToolHeader(page, "Decodable Reader Tool"),
+        ).toHaveAttribute("aria-expanded", "true");
     });
 
     test("dynamically added decodable reader can be activated", async ({
@@ -149,11 +105,9 @@ test.describe("ToolboxRoot React mode", () => {
         ).toBeVisible({
             timeout: 10000,
         });
-        await expect(page.getByText("Decodable controls injected")).toBeVisible(
-            {
-                timeout: 10000,
-            },
-        );
+        await expect(
+            getToolHeader(page, "Decodable Reader Tool"),
+        ).toHaveAttribute("aria-expanded", "true");
     });
 
     test("tools are alphabetical on initial render with More last", async ({
