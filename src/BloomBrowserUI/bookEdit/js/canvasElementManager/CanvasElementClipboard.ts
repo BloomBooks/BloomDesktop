@@ -216,7 +216,7 @@ export class CanvasElementClipboard {
     private replaceImageInCanvasElement(
         bloomCanvas: HTMLElement,
         canvasElement: HTMLElement,
-        img: HTMLElement,
+        img: HTMLImageElement,
         imageInfo: IImageInfo,
     ): void {
         changeImageInfo(img, imageInfo);
@@ -273,18 +273,15 @@ export class CanvasElementClipboard {
                 .getElementsByClassName(kImageContainerClass)[0]
                 ?.getElementsByTagName("img")[0];
             if (img) {
-                changeImageInfo(img, imageInfo);
-                if (activeElement.classList.contains(kBackgroundImageClass)) {
-                    this.host.adjustBackgroundImageSize(
-                        bloomCanvas,
-                        activeElement,
-                        true,
-                    );
-                } else {
-                    this.host.adjustContainerAspectRatio(activeElement, true);
-                    adjustTarget(activeElement, getTarget(activeElement));
-                }
-                notifyToolOfChangedImage(img);
+                // Reuse the shared helper rather than duplicating its geometry sequence, so the
+                // background-image case also rebuilds the copyright/metadata button (BL-16605).
+                // Inlining the geometry-only steps here previously skipped that rebuild.
+                this.replaceImageInCanvasElement(
+                    bloomCanvas,
+                    activeElement as HTMLElement,
+                    img,
+                    imageInfo,
+                );
                 return;
             }
         }
