@@ -394,17 +394,12 @@ import { ReaderToolsModel } from "../readerToolsModel";
                     );
                     // CKeditor copies the highlight style as a barebones inline style containing
                     // only the background-color property.
-                    return (
-                        !!style &&
-                        /^background-color: [^;]*;$/.test(style)
-                    );
+                    return !!style && /^background-color: [^;]*;$/.test(style);
                 })
                 .contents()
                 .unwrap();
-            // remove spans belonging to CKEditor that are hidden.
-            $(this)
-                .find("span[id^=cke_][style*='display: none;']")
-                .remove();
+            // leave CKEditor-specific hidden spans that serve as bookmarks intact so that
+            // the cursor can be restored after marking up the text.  (BL-16490)
         });
     };
 
