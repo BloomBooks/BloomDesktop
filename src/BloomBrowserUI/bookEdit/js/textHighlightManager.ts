@@ -1,4 +1,4 @@
-import StyleEditor from "../../StyleEditor/StyleEditor";
+import StyleEditor from "../StyleEditor/StyleEditor";
 
 const kSegmentClass = "bloom-highlightSegment";
 const kEnableHighlightClass = "ui-enableHighlight";
@@ -79,7 +79,7 @@ function getStyleEditorForColorLookup(): StyleEditor {
     return styleEditorForColorLookup;
 }
 
-export class AudioTextHighlightManager {
+export class TextHighlightManager {
     // Remove all current and split highlights from the registry for the document containing contextNode.
     public clearAllManagedHighlights(contextNode?: Node): void {
         if (!contextNode) {
@@ -302,7 +302,7 @@ export class AudioTextHighlightManager {
         const documentElement = getDocumentElement(styleSource);
         if (!documentElement) {
             console.error(
-                "AudioTextHighlightManager.updateCurrentHighlightColors() could not find documentElement for the style source.",
+                "TextHighlightManager.updateCurrentHighlightColors() could not find documentElement for the style source.",
             );
             return;
         }
@@ -384,7 +384,7 @@ export class AudioTextHighlightManager {
         const ownerDocument = node.ownerDocument;
         if (!ownerDocument) {
             console.error(
-                "AudioTextHighlightManager.makeRange() could not find ownerDocument for a highlighted node.",
+                "TextHighlightManager.makeRange() could not find ownerDocument for a highlighted node.",
             );
             return undefined;
         }
