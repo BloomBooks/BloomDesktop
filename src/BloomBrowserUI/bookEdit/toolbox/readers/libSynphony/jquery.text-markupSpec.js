@@ -121,6 +121,19 @@ describe("jquery.text-markup", function () {
         ]);
     });
 
+    it("checkLeveledReader stops highlighting once the violation is gone", function () {
+        const editable = $("#text_entry1");
+        editable
+            .html("<p>Cat elephant. Dog.</p>")
+            .checkLeveledReader({ maxGlyphsPerWord: 5 });
+        // sanity check that there is something to stop highlighting
+        expect(highlighted(kWordTooLongHighlight)).toEqual(["elephant"]);
+
+        // Raise the limit, as the user would by choosing a higher level.
+        editable.checkLeveledReader({ maxGlyphsPerWord: 20 });
+        expect(highlighted(kWordTooLongHighlight)).toEqual([]);
+    });
+
     // check the bug reported in BL-10119
     it("checkLeveledReader.handlesSentencesWithInitialMarkup", function () {
         const input =
