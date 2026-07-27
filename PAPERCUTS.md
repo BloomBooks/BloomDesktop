@@ -306,4 +306,16 @@ content-copy steps the tests need.
 - **Idea:** Regenerate/commit the lockfile once with the pinned pnpm so committed state
   matches `packageManager` output, or document the exact pnpm invocation the team uses so
   installs are format-stable. Until then, hash bumps need a manual lock edit.
+- **Correction + much cheaper workaround (2026-07-27, preflight of PR #8086):** the committed
+  style is not an "older pnpm serialization" — it is simply **prettier's** output. `pnpm-lock.yaml`
+  is not in `.prettierignore`, so prettier owns the file, and running
+  `node_modules/.bin/prettier --write pnpm-lock.yaml` right after any `pnpm install` restores the
+  committed style exactly (verified: `--check` then passes, and the diff drops from ~30,400 lines
+  to only the lines the install actually changed). So there is **no need to hand-patch hash
+  occurrences** — install normally, then run prettier on the lock. This branch had arrived with an
+  un-prettified lock, which is what made its diff 30,400 lines; one prettier run reduced it to 58.
+- **Better idea, given the above:** add `pnpm-lock.yaml` to the pre-commit prettier/lint-staged
+  step so the reformat can never be forgotten, or add it to `.prettierignore` and accept pnpm's
+  own style. Either removes the drift permanently; the current state (prettier owns it, pnpm
+  rewrites it, nothing enforces re-running prettier) is the worst of both.
 - **Context:** BL image-chooser integration PR (BloomDesktop #8059); local pnpm 11.5.2.
