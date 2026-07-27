@@ -1,6 +1,5 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { renderForInstance } from "../../../utils/reactRender";
 import $ from "jquery";
 import { Div } from "../../../react_components/l10nComponents";
 import { ToolBottomHelpLink } from "../../../react_components/ToolBottomHelpLink";
@@ -34,7 +33,15 @@ import { toolboxTheme } from "../../../bloomMaterialUITheme";
 
 /// The motion tool lets you define two rectangles; Bloom Reader will pan & zoom from one to the other
 export class MotionTool extends ToolboxToolReactAdaptor {
-    private rootControl: MotionControl;
+    // The MotionControl the toolbox has mounted for us, or null before our panel has been
+    // rendered (and again if the tool's section is removed). Everything below that drives
+    // the control only runs while the tool is showing, i.e. while it is mounted, so the
+    // null checks are just belt and braces.
+    private rootControl: MotionControl | null = null;
+    // The control instance we have already given its initial state and image observer.
+    // Kept so that we do that work once per mounted control, including if the tool's
+    // section is removed and added again (which mounts a new control).
+    private initializedRootControl: MotionControl | null = null;
     private narrationPlayer: AudioRecording;
     private stopPreviewTimeout: number;
     private scrollXBeforePreview = 0;
@@ -42,20 +49,32 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private hadSavedPreviewScrollPosition = false;
     private animationPreviewAspectRatio = 16 / 9; // width divided by height of desired simulated device screen
 
-    public makeRootElement(): HTMLDivElement {
-        const root = document.createElement("div");
-        this.rootControl = renderForInstance<MotionControl>(
-            <MotionControl
-                onPreviewClick={() => this.toggleMotionPreviewPlaying()}
-                onMotionChanged={(checked) => this.motionChanged(checked)}
-            />,
-            root,
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <MotionControl
+                    onPreviewClick={() => this.toggleMotionPreviewPlaying()}
+                    onMotionChanged={(checked) => this.motionChanged(checked)}
+                    ref={this.setRootControl}
+                />
+            </div>
         );
-        const initialState = this.getStateFromHtml();
-        this.rootControl.setState(initialState);
-        this.setupImageObserver();
-        return root as HTMLDivElement;
     }
+
+    // Callback ref for our MotionControl. It is an arrow-function field so that its
+    // identity is stable and React doesn't detach and re-attach it every time the toolbox
+    // re-renders. A control needs two things as soon as it mounts: the state read from
+    // the page, and an observer watching for image changes.
+    private setRootControl = (control: MotionControl | null): void => {
+        this.rootControl = control;
+        if (!control || control === this.initializedRootControl) {
+            return;
+        }
+        this.initializedRootControl = control;
+        control.setState(this.getStateFromHtml());
+        this.setupImageObserver();
+    };
+
     public isAlwaysEnabled(): boolean {
         return false;
     }
@@ -87,13 +106,18 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         }
         if (!this.subscriptionAllowsMotion) {
             return;
-        } // First, abort any preview that's in progress.
-        if (this.rootControl.state.playing) {
+        }
+        const rootControl = this.rootControl;
+        if (!rootControl) {
+            return; // our panel isn't mounted, so there is nothing to show anything in.
+        }
+        // First, abort any preview that's in progress.
+        if (rootControl.state.playing) {
             this.toggleMotionPreviewPlaying();
         }
         const newState = this.getStateFromHtml();
         this.setupImageObserver();
-        this.rootControl.setState(newState);
+        rootControl.setState(newState);
         if (!newState.motionChecked || newState.haveBloomCanvasButNoBgImage) {
             return;
         }
@@ -271,8 +295,9 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
-        if (this.rootControl.state.playing) {
-            this.rootControl.setState({ playing: false });
+        const rootControl = this.rootControl;
+        if (rootControl && rootControl.state.playing) {
+            rootControl.setState({ playing: false });
             window.clearTimeout(this.stopPreviewTimeout);
             this.cleanupAnimation();
         }
@@ -500,6 +525,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     private sizeObserver: ResizeObserver;
 
     private updateMotionRectanglesState(): void {
+        const rootControl = this.rootControl;
+        if (!rootControl) {
+            return; // our panel isn't mounted, so there is no state to update.
+        }
         let haveBgImage = false;
         const bgImage = this.getBackgroundImage();
         if (bgImage) {
@@ -510,12 +539,12 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (haveBgImage) {
             newState.haveBloomCanvasButNoBgImage = false;
             newState.motionPossible = true;
-            this.rootControl.setState(newState);
+            rootControl.setState(newState);
             this.makeRectsVisible();
         } else {
             newState.haveBloomCanvasButNoBgImage = true;
             newState.motionPossible = false;
-            this.rootControl.setState(newState);
+            rootControl.setState(newState);
             this.hideRectangles();
         }
     }
@@ -670,17 +699,21 @@ export class MotionTool extends ToolboxToolReactAdaptor {
     //hide everything on the page, make a copy of the canvas, and move it using the TransformBasedAnimator class from bloom-player
     //Enhance: refactor this method and bloom-player's Animation.setupAnimation() to share more of the code that sets up the HTML structure around the canvas
     private toggleMotionPreviewPlaying() {
+        const rootControl = this.rootControl;
+        if (!rootControl) {
+            return; // our panel isn't mounted, so nothing could have asked for a preview.
+        }
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
         if (
             !bloomCanvasToAnimate ||
-            this.rootControl.state.haveBloomCanvasButNoBgImage
+            rootControl.state.haveBloomCanvasButNoBgImage
         ) {
             return;
         }
-        const wasPlaying: boolean = this.rootControl.state.playing;
+        const wasPlaying: boolean = rootControl.state.playing;
         // A 'functional' mode of using setState is recommended when the new state is a function
         // of the old state, like this:
-        // this.rootControl.setState((oldState) => {
+        // rootControl.setState((oldState) => {
         //     return ({ playing: !oldState.playing });
         // });
         // But then, what do we do to determine whether to turn on or off? If we can't trust the
@@ -689,7 +722,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // There's probably a React function that notifies us of state change that we could
         // use. But it seems unnecessarily complicated. I don't think the user can click fast
         // enough for state not to have updated before the next click.
-        this.rootControl.setState({ playing: !wasPlaying });
+        rootControl.setState({ playing: !wasPlaying });
         if (wasPlaying) {
             // In case we start it again before the old timeout expires, we don't
             // want it to stop in the middle.
@@ -831,14 +864,14 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         );
         animationEngine.startAnimation();
 
-        if (this.rootControl.state.previewVoice) {
+        if (rootControl.state.previewVoice) {
             // Play the audio during animation. Don't mess with highlight while constructing
             // the recorder.
             this.narrationPlayer = new AudioRecording(false);
             this.narrationPlayer.setupForListen();
             this.narrationPlayer.listenAsync(bloomCanvasToAnimate);
         }
-        if (this.rootControl.state.previewMusic) {
+        if (rootControl.state.previewMusic) {
             MusicToolControls.previewBackgroundMusic(
                 this.getPlayer(),
                 // Enhance: implement pause, by adding playing to state.
@@ -849,7 +882,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         this.stopPreviewTimeout = window.setTimeout(
             () => {
                 this.cleanupAnimation();
-                this.rootControl.setState({ playing: false });
+                rootControl.setState({ playing: false });
             },
             (duration + 1) * 1000,
         );

@@ -1,5 +1,8 @@
 import $ from "jquery";
 import axios from "axios";
+// Type-only: ITool.renderPanel() returns a React node, but nothing in this module
+// actually uses React at runtime.
+import type * as React from "react";
 import { get, postString, wrapAxios } from "../../utils/bloomApi";
 import { hookupLinkHandler } from "../../utils/linkHandler";
 import {
@@ -108,10 +111,14 @@ export interface ITool {
     // If this is true, the tool may only be selected on pages that have data-tool-id matching this tool's id.
     requiresToolId(): boolean;
 
-    // It should return the main content of the tool, which must be a single div.
+    // Renders this tool's panel. ToolboxRoot renders it inside the tool's accordion
+    // section, in the toolbox's single React tree, so context (e.g. the MUI theme)
+    // reaches it normally.
+    // It should return the main content of the tool, which must be a single element
+    // (ToolboxRoot sizes that element to fill the section).
     // ToolboxRoot renders the section header (label, icon, subscription badge) around it;
-    // this method is however responsible to localize the content of the div.
-    makeRootElement(): HTMLDivElement;
+    // this method is however responsible to localize the content of the panel.
+    renderPanel(): React.ReactNode;
     // notifies the tool that an image has been changed on the page.
     // If the change only affects one image, it may be passed; otherwise, all should be fixed.
     imageUpdated(img: HTMLImageElement | undefined): void;

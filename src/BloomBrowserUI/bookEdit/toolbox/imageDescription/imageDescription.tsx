@@ -347,13 +347,15 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     private reactControls: ImageDescriptionToolControls | null;
     public static kToolID = "imageDescription";
 
-    public makeRootElement(): HTMLDivElement {
-        return super.adaptReactElement(
-            <ImageDescriptionToolControls
-                ref={(renderedElement) =>
-                    (this.reactControls = renderedElement)
-                }
-            />,
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <ImageDescriptionToolControls
+                    ref={(renderedElement) =>
+                        (this.reactControls = renderedElement)
+                    }
+                />
+            </div>
         );
     }
 

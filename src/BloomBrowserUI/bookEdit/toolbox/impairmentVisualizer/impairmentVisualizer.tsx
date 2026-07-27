@@ -331,13 +331,15 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
     // which has "| null".
     private controlsElement: ImpairmentVisualizerControls | null;
 
-    public makeRootElement(): HTMLDivElement {
-        return super.adaptReactElement(
-            <ImpairmentVisualizerControls
-                ref={(renderedElement) =>
-                    (this.controlsElement = renderedElement)
-                }
-            />,
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <ImpairmentVisualizerControls
+                    ref={(renderedElement) =>
+                        (this.controlsElement = renderedElement)
+                    }
+                />
+            </div>
         );
     }
     public imageUpdated(img: HTMLImageElement | undefined): void {

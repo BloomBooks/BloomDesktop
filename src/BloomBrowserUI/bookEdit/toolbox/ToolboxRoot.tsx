@@ -13,7 +13,7 @@ import {
     kBloomPanelBackground,
     kBloomUnselectedTabBackground,
 } from "../../utils/colorUtils";
-import { getMasterToolList } from "./toolbox";
+import { getMasterToolList, ITool } from "./toolbox";
 import { kToolboxHeaderZIndex } from "./toolboxZIndexes";
 import { useMountEffect } from "../../utils/useMountEffect";
 import { setToolboxReactAdapter } from "./toolboxReactAdapter";
@@ -26,18 +26,17 @@ import {
     toPersistedToolName,
 } from "./toolIds";
 
-// React host for the toolbox sidebar. It holds the list of tools the toolbox is offering,
-// which one is expanded, and the DOM node that each tool renders itself into.
+// React host for the toolbox sidebar. It holds the list of tools the toolbox is offering
+// and which one is expanded.
 //
 // It does not decide which tools to offer: toolbox.ts asks the server which tools the book
 // has enabled and tells us about each one through the adapter's addTool(), which is the
 // only way a section is ever created.
 //
-// Every tool is a React component, but a tool hands us the already-rendered root DOM
-// element of its component (from its ITool.makeRootElement()) rather than an element type
-// we could render ourselves. So a small host component (ToolBodyHost) puts that element
-// into the React layout, which also means a tool keeps its state as sections open and
-// close.
+// Every tool is a React component, and we render each one as an ordinary child (from its
+// ITool.renderPanel()), so the whole toolbox is a single React tree: context such as the
+// MUI theme reaches the tools normally. Collapsed sections keep their children mounted
+// (MUI's default), so a tool keeps its state as sections open and close.
 
 // Everything the toolbox needs in order to show one tool's section. It all comes from the
 // tool itself (see ITool) or is derived from its id (see toolIds.ts).
@@ -51,8 +50,9 @@ type ToolboxSection = {
     // Set only for tools that require a subscription, in which case the section header
     // gets a badge for this feature.
     featureName?: string;
-    // The element the tool renders itself into. Created once, when the section is created.
-    toolBodyElement: HTMLDivElement;
+    // The tool itself, so that we can render its panel (ITool.renderPanel()) as a child of
+    // this section.
+    tool: ITool;
 };
 
 const toolboxHeaderIconStyles = css`
@@ -72,10 +72,6 @@ const makeSectionFromToolId = (toolId: string): ToolboxSection => {
         (candidate) => candidate.id() === toolId,
     )!;
     const labelInfo = getToolLabelInfo(toolId);
-    const toolBodyElement = tool.makeRootElement();
-    // Some tool stylesheets still select their body by this attribute, using the
-    // historical "Tool"-suffixed name.
-    toolBodyElement.setAttribute("data-toolid", toPersistedToolName(toolId));
 
     return {
         id: toolId,
@@ -83,7 +79,7 @@ const makeSectionFromToolId = (toolId: string): ToolboxSection => {
         l10nKey: labelInfo.l10nKey,
         iconPath: tool.iconPath(),
         featureName: tool.featureName,
-        toolBodyElement: toolBodyElement,
+        tool: tool,
     };
 };
 
@@ -102,58 +98,6 @@ const sortSectionsAlphabeticallyWithSettingsLast = (
     }
 
     return [...nonSettingsSections, settingsSection];
-};
-
-// Puts a tool's own DOM element (the one it renders itself into) into the React layout,
-// keeping the original element instance so the tool's state and event wiring stay intact.
-const ToolBodyHost: React.FunctionComponent<{ element: HTMLDivElement }> = (
-    props,
-) => {
-    const hostRef = React.useRef<HTMLDivElement | null>(null);
-
-    React.useEffect(() => {
-        const host = hostRef.current;
-        if (!host) {
-            return;
-        }
-
-        if (!host.contains(props.element)) {
-            host.appendChild(props.element);
-        }
-
-        return () => {
-            if (host.contains(props.element)) {
-                host.removeChild(props.element);
-            }
-        };
-    }, [props.element]);
-
-    return (
-        <div
-            ref={hostRef}
-            css={css`
-                width: 100%;
-                height: 100%;
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                align-items: stretch;
-                min-height: 0;
-                min-width: 0;
-
-                // Tools expect their root element to fill the space the toolbox gives
-                // them; several of them then use height:100% internally to push a Help
-                // link to the bottom.
-                > * {
-                    width: 100%;
-                    height: 100%;
-                    min-width: 0;
-                    flex: 1 1 auto;
-                    display: block;
-                }
-            `}
-        ></div>
-    );
 };
 
 // This component is the root of the whole toolbox sidebar. It is rendered into a dedicated
@@ -417,6 +361,12 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                 `}
                             >
                                 <div
+                                    // Some tool stylesheets, and our automated tests,
+                                    // still select a tool's body by this attribute, using
+                                    // the historical "Tool"-suffixed name.
+                                    data-toolid={toPersistedToolName(
+                                        section.id,
+                                    )}
                                     css={css`
                                         width: 100%;
                                         display: flex;
@@ -429,16 +379,26 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                         // were laid out to suit the small left padding
                                         // that the old jQuery-UI accordion content panels
                                         // gave them, so keep that.
-                                        div[data-toolid="leveledReaderTool"],
-                                        div[data-toolid="decodableReaderTool"] {
+                                        &[data-toolid="leveledReaderTool"],
+                                        &[data-toolid="decodableReaderTool"] {
                                             padding-left: 3px;
                                             box-sizing: border-box;
                                         }
+
+                                        // Tools expect their root element to fill the
+                                        // space the toolbox gives them; several of them
+                                        // then use height:100% internally to push a Help
+                                        // link to the bottom.
+                                        > * {
+                                            width: 100%;
+                                            height: 100%;
+                                            min-width: 0;
+                                            flex: 1 1 auto;
+                                            display: block;
+                                        }
                                     `}
                                 >
-                                    <ToolBodyHost
-                                        element={section.toolBodyElement}
-                                    />
+                                    {section.tool.renderPanel()}
                                 </div>
                             </AccordionDetails>
                         </Accordion>
