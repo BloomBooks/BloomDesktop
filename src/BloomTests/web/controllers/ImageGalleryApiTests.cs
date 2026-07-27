@@ -1,6 +1,8 @@
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Threading;
 using Bloom.web.controllers;
 using NUnit.Framework;
 
@@ -196,6 +198,54 @@ namespace BloomTests.web.controllers
                         Is.EqualTo(
                             ImageGalleryApi.kPreviewMaxDimension * originalHeight / originalWidth
                         )
+                    );
+                }
+                finally
+                {
+                    File.Delete(previewPath);
+                }
+            }
+
+            [Test]
+            public void MakeBrowserSafePreview_WorksOnAnMtaBackgroundThread()
+            {
+                // This is the only place in Bloom that uses WPF's WIC-backed imaging, and the
+                // API server calls it from a thread-pool thread — not the STA thread NUnit
+                // runs tests on (see the Apartment attribute in BloomTests.csproj). WPF
+                // imaging is fine off the UI thread as long as the bitmaps are frozen, which
+                // MakeBrowserSafePreview does; this pins that down where it would otherwise
+                // only be true by inspection.
+                var path = WritePng("enormous-mta.png", 8000, 6000);
+                string previewPath = null;
+                Exception failure = null;
+                var thread = new Thread(() =>
+                {
+                    try
+                    {
+                        previewPath = ImageGalleryApi.MakeBrowserSafePreview(path);
+                    }
+                    catch (Exception e)
+                    {
+                        failure = e;
+                    }
+                });
+                thread.SetApartmentState(ApartmentState.MTA);
+                thread.Start();
+
+                Assert.That(
+                    thread.Join(TimeSpan.FromMinutes(1)),
+                    Is.True,
+                    "Preview generation did not finish"
+                );
+                Assert.That(failure, Is.Null, $"Preview generation threw: {failure}");
+                Assert.That(previewPath, Is.Not.Null, "Should have made a downscaled stand-in");
+                try
+                {
+                    using var preview = Image.FromFile(previewPath);
+                    Assert.That(
+                        preview.Width,
+                        Is.EqualTo(ImageGalleryApi.kPreviewMaxDimension),
+                        "The stand-in made off the UI thread should be scaled like any other"
                     );
                 }
                 finally
