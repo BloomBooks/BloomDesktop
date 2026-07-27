@@ -19,6 +19,7 @@ import {
 } from "../../../../utils/colorUtils";
 import { ReaderToolNav } from "../ReaderToolNav";
 import { ReaderSetupButton } from "../ReaderSetupButton";
+import { getWorkspaceBundleExports } from "../../../js/workspaceFrames";
 import {
     kReaderAccent,
     readerSectionHeaderCss,
@@ -503,7 +504,15 @@ export const DecodableReaderToolControls: FunctionComponent = () => {
                                 setShowTool((prev) => !prev)
                             }
                         />
-                        {showTool && <ReaderSetupButton isForLeveled={false} />}
+                        {showTool && (
+                            <ReaderSetupButton
+                                isForLeveled={false}
+                                onClick={() => {
+                                    model.setupType = "stages";
+                                    getWorkspaceBundleExports().showDecodableReaderSetupDialog();
+                                }}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
