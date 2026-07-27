@@ -697,20 +697,23 @@ export function removeToolboxMarkup() {
 
 /**
  * Called when the toolbox UI reports that a different section is now the active one.
- * newToolId is a canonical tool id (the toolbox UI only ever reports tools it is offering,
- * and it was told about them by their canonical ids).
+ * requestedToolId is a canonical tool id (the toolbox UI only ever reports tools it is
+ * offering, and it was told about them by their canonical ids).
+ * Note: do not name this parameter newToolId; that is the module-level variable this
+ * function clears at the end, and shadowing it silently breaks getActiveToolId().
  */
-function switchTool(newToolId: string): void {
+function switchTool(requestedToolId: string): void {
     // Have Bloom remember which tool is active. (Might be none.) The book's meta.json
     // has always stored this with the historical "Tool" suffix.
     postString(
         "editView/saveToolboxSetting",
-        "current\t" + toPersistedToolName(newToolId),
+        "current\t" + toPersistedToolName(requestedToolId),
     );
     let newTool: ITool | null = null;
-    if (newToolId) {
+    if (requestedToolId) {
         newTool =
-            masterToolList.find((tool) => tool.id() === newToolId) ?? null;
+            masterToolList.find((tool) => tool.id() === requestedToolId) ??
+            null;
     }
     const canActivateNewTool = !!newTool && isToolInitialized(newTool);
     const shouldSwitchAwayFromCurrent =

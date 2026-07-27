@@ -14,6 +14,7 @@ import {
     kBloomUnselectedTabBackground,
 } from "../../utils/colorUtils";
 import { getMasterToolList } from "./toolbox";
+import { useMountEffect } from "../../utils/useMountEffect";
 import { setToolboxReactAdapter } from "./toolboxReactAdapter";
 import { SubscriptionBadgeWithTooltipAndDialog } from "../../react_components/requiresSubscription";
 import {
@@ -185,7 +186,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
     // Register the adapter that toolbox.ts uses to say which tools the toolbox offers,
     // to make one of them active, and to observe which one is active.
     // See toolboxReactAdapter.ts.
-    React.useEffect(() => {
+    useMountEffect(() => {
         setToolboxReactAdapter({
             setActiveToolByToolId: (toolId: string) => {
                 makeToolActive(toolId);
@@ -234,7 +235,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                 )?.id;
             },
         });
-    }, [applySections, makeToolActive]);
+    });
 
     return (
         <div
