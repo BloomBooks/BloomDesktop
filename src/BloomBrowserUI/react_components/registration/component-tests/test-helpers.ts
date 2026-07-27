@@ -180,12 +180,3 @@ export async function waitForAndClickOptOutButton(page: Page) {
     });
     await optOutButton.click();
 }
-
-export async function getMarkedInvalid(
-    page: Page,
-    fieldHelper: FieldHelper,
-): Promise<boolean> {
-    const field = page.getByTestId(fieldHelper.name);
-    const ariaInvalid = await field.getAttribute("aria-invalid");
-    return ariaInvalid === "true";
-}
