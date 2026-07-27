@@ -30,9 +30,13 @@ declare global {
         showSetupDialog: unknown;
         initializeReaderSetupDialog: unknown;
         closeSetupDialog: unknown;
+        getDecodableStageMatchingWords: unknown;
+        addSampleTextFilesChangedListener: unknown;
         addWordListChangedListener: unknown;
         beginSaveChangedSettings: unknown;
         makeLetterWordList: unknown;
+        removeSampleTextFilesChangedListener: unknown;
+        removeWordListChangedListener: unknown;
         activateLongPressFor: unknown;
         TalkingBookTool: unknown;
         canUndo: unknown;
