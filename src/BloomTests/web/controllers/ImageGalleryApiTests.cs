@@ -1,3 +1,5 @@
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using Bloom.web.controllers;
 using NUnit.Framework;
@@ -86,6 +88,130 @@ namespace BloomTests.web.controllers
                 var (_, credits) = ImageGalleryApi.GetInstallerLicenseMetadata(_tempFolder);
 
                 Assert.That(credits, Is.EqualTo("Acme Publishing House"));
+            }
+        }
+
+        /// <summary>
+        /// Covers the machinery behind BL-16597: reporting the chosen file's real dimensions,
+        /// and substituting a downscaled JPEG for an image the browser cannot display.
+        /// </summary>
+        [TestFixture]
+        public class LargeImagePreviewTests
+        {
+            private string _tempFolder;
+
+            [SetUp]
+            public void Setup()
+            {
+                _tempFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                Directory.CreateDirectory(_tempFolder);
+            }
+
+            [TearDown]
+            public void TearDown()
+            {
+                Directory.Delete(_tempFolder, recursive: true);
+            }
+
+            /// <summary>
+            /// Writes a blank PNG of the given pixel size. 1-bit-per-pixel keeps even a
+            /// deliberately enormous test image down to a few megabytes of memory and a
+            /// trivially small file, so the over-the-threshold cases are cheap to run.
+            /// </summary>
+            private string WritePng(string name, int width, int height)
+            {
+                var path = Path.Combine(_tempFolder, name);
+                using (var bitmap = new Bitmap(width, height, PixelFormat.Format1bppIndexed))
+                    bitmap.Save(path, ImageFormat.Png);
+                return path;
+            }
+
+            [Test]
+            public void GetImageDimensions_ReturnsThePixelDimensions()
+            {
+                var path = WritePng("small.png", 640, 480);
+
+                var (width, height) = ImageGalleryApi.GetImageDimensions(path);
+
+                Assert.That(width, Is.EqualTo(640));
+                Assert.That(height, Is.EqualTo(480));
+            }
+
+            [Test]
+            public void GetImageDimensions_ReturnsZeros_ForMissingFile()
+            {
+                var path = Path.Combine(_tempFolder, "nothing-here.png");
+                Assert.That(File.Exists(path), Is.False, "Test setup: the file must not exist");
+
+                Assert.That(ImageGalleryApi.GetImageDimensions(path), Is.EqualTo((0, 0)));
+            }
+
+            [Test]
+            public void GetImageDimensions_ReturnsZeros_ForSomethingThatIsNotAnImage()
+            {
+                // An SVG is the realistic case: the chooser allows it, but WIC cannot read it.
+                var path = Path.Combine(_tempFolder, "drawing.svg");
+                File.WriteAllText(path, "<svg xmlns='http://www.w3.org/2000/svg'/>");
+
+                Assert.That(ImageGalleryApi.GetImageDimensions(path), Is.EqualTo((0, 0)));
+            }
+
+            [Test]
+            public void MakeBrowserSafePreview_ReturnsNull_WhenTheBrowserCanCopeWithTheOriginal()
+            {
+                var path = WritePng("modest.png", 2000, 1500);
+                Assert.That(
+                    2000L * 1500,
+                    Is.LessThan(ImageGalleryApi.kMaxPreviewPixels),
+                    "Test setup: this image is supposed to be under the threshold"
+                );
+
+                // Null means "serve the original".
+                Assert.That(ImageGalleryApi.MakeBrowserSafePreview(path), Is.Null);
+            }
+
+            [Test]
+            public void MakeBrowserSafePreview_DownscalesAnImageTooBigForTheBrowser()
+            {
+                const int originalWidth = 8000;
+                const int originalHeight = 6000;
+                Assert.That(
+                    (long)originalWidth * originalHeight,
+                    Is.GreaterThan(ImageGalleryApi.kMaxPreviewPixels),
+                    "Test setup: this image is supposed to be over the threshold"
+                );
+                var path = WritePng("enormous.png", originalWidth, originalHeight);
+
+                var previewPath = ImageGalleryApi.MakeBrowserSafePreview(path);
+
+                Assert.That(previewPath, Is.Not.Null, "Should have made a downscaled stand-in");
+                try
+                {
+                    Assert.That(File.Exists(previewPath), Is.True);
+                    using var preview = Image.FromFile(previewPath);
+                    // The longer side is constrained; the aspect ratio is preserved.
+                    Assert.That(preview.Width, Is.EqualTo(ImageGalleryApi.kPreviewMaxDimension));
+                    Assert.That(
+                        preview.Height,
+                        Is.EqualTo(
+                            ImageGalleryApi.kPreviewMaxDimension * originalHeight / originalWidth
+                        )
+                    );
+                }
+                finally
+                {
+                    File.Delete(previewPath);
+                }
+            }
+
+            [Test]
+            public void MakeBrowserSafePreview_ReturnsNull_ForAFormatItCannotRead()
+            {
+                var path = Path.Combine(_tempFolder, "drawing.svg");
+                File.WriteAllText(path, "<svg xmlns='http://www.w3.org/2000/svg'/>");
+
+                // Falling back to the original is right: the browser handles SVG fine.
+                Assert.That(ImageGalleryApi.MakeBrowserSafePreview(path), Is.Null);
             }
         }
     }
