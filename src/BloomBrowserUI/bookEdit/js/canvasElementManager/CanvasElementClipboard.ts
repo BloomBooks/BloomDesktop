@@ -11,7 +11,6 @@ import {
     wrapWithRequestPageContentDelay,
 } from "../bloomEditing";
 import {
-    isPlaceHolderImage,
     kImageContainerClass,
     SetupMetadataButton,
 } from "../bloomImages";
