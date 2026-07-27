@@ -40,8 +40,8 @@ namespace Bloom.web.controllers
         private string _lastPickedLocalImagePath;
 
         /// <summary>
-        /// A temporary downscaled JPEG standing in for _lastPickedLocalImagePath when the
-        /// original is too big for the browser to display (see MakeBrowserSafePreview).
+        /// A temporary JPEG standing in for _lastPickedLocalImagePath when the browser could
+        /// not display the original itself (see MakeBrowserSafePreview).
         /// Null when the original is served as-is. Deleted when another file is picked.
         /// </summary>
         private string _lastPickedLocalImagePreviewPath;
@@ -76,6 +76,7 @@ namespace Bloom.web.controllers
         /// Well below that hard ceiling, handing the renderer a hundred-megapixel image still
         /// costs it seconds of decode time and gigabytes of RAM, all to fill a preview pane a
         /// few hundred pixels tall. So past this threshold we substitute a downscaled JPEG.
+        /// (Size is only one of the two reasons for substituting one — see NeedsStandIn.)
         /// </summary>
         internal const long kMaxPreviewPixels = 40L * 1000 * 1000;
 
@@ -573,9 +574,98 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// If <paramref name="originalPath"/> is too large for the browser to display (see
-        /// kMaxPreviewPixels), writes a downscaled JPEG to a temp file and returns its path;
-        /// otherwise returns null, meaning "serve the original".
+        /// Lays the image over a white background, so that anything see-through in it becomes
+        /// white rather than whatever happens to be in the RGB channels underneath.
+        ///
+        /// A stand-in is encoded as JPEG, which has no alpha channel: without this, a large
+        /// image with transparent areas — a line-art scan on transparency, say — previews with
+        /// those areas solid black, because that is what is stored under a fully transparent
+        /// pixel. White is what the chooser and the page behind it both use.
+        ///
+        /// Done unconditionally rather than only for images that carry transparency, because
+        /// deciding that reliably means enumerating the pixel formats that can hold an alpha
+        /// channel *and* checking indexed palettes for a transparent entry, whereas this is one
+        /// pass over an image already capped at kPreviewMaxDimension — milliseconds against the
+        /// seconds the decode itself takes. Pure pixel arithmetic, so unlike the WPF rendering
+        /// stack it is safe on whatever thread the API server hands us.
+        /// </summary>
+        private static BitmapSource FlattenOntoWhite(BitmapSource source)
+        {
+            // Bgra32 is straight (non-premultiplied) alpha, which is what the blend below
+            // assumes; Pbgra32 would already have the colour scaled by the alpha.
+            var bgra = new FormatConvertedBitmap(
+                source,
+                System.Windows.Media.PixelFormats.Bgra32,
+                null,
+                0
+            );
+            int width = bgra.PixelWidth,
+                height = bgra.PixelHeight;
+            int stride = width * 4;
+            var pixels = new byte[(long)height * stride];
+            bgra.CopyPixels(pixels, stride, 0);
+            for (int i = 0; i < pixels.Length; i += 4)
+            {
+                byte alpha = pixels[i + 3];
+                if (alpha == 255)
+                    continue;
+                // result = colour*alpha + white*(1-alpha), in 0..255 integer arithmetic.
+                int inverse = 255 - alpha;
+                pixels[i] = (byte)((pixels[i] * alpha + 255 * inverse) / 255);
+                pixels[i + 1] = (byte)((pixels[i + 1] * alpha + 255 * inverse) / 255);
+                pixels[i + 2] = (byte)((pixels[i + 2] * alpha + 255 * inverse) / 255);
+                pixels[i + 3] = 255;
+            }
+            var flattened = BitmapSource.Create(
+                width,
+                height,
+                96,
+                96,
+                System.Windows.Media.PixelFormats.Bgra32,
+                null,
+                pixels,
+                stride
+            );
+            flattened.Freeze();
+            return flattened;
+        }
+
+        /// <summary>
+        /// File types the browser can put in an &lt;img&gt;. The chooser also offers .tif/.tiff,
+        /// which it cannot, so those get a stand-in (see NeedsStandIn). Matched on extension
+        /// rather than on the actual bytes deliberately: ReplyWithImage derives the response's
+        /// content type from the extension, so the extension is what the browser goes on.
+        /// </summary>
+        private static readonly HashSet<string> s_browserRenderableExtensions = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase
+        )
+        {
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".gif",
+            ".bmp",
+            ".svg",
+            ".webp",
+        };
+
+        /// <summary>
+        /// Whether the browser would fail to display this file as it stands, so that we should
+        /// serve it a re-encoded stand-in instead. Two separate reasons: the file is a format
+        /// the browser cannot draw at all, or it is so large the browser refuses to decode it
+        /// (see kMaxPreviewPixels).
+        /// </summary>
+        private static bool NeedsStandIn(string path, int width, int height)
+        {
+            if (!s_browserRenderableExtensions.Contains(Path.GetExtension(path)))
+                return true;
+            return (long)width * height > kMaxPreviewPixels;
+        }
+
+        /// <summary>
+        /// If the browser could not display <paramref name="originalPath"/> as it stands — too
+        /// many pixels, or a format it cannot draw — writes a JPEG stand-in to a temp file and
+        /// returns its path. Otherwise returns null, meaning "serve the original".
         ///
         /// WIC's DecodePixelWidth/Height does the scaling as part of the decode, so a 713
         /// megapixel JPEG costs about 2.5 seconds and under 100MB rather than the ~2.6GB a
@@ -586,13 +676,14 @@ namespace Bloom.web.controllers
             try
             {
                 var header = ReadImageHeader(originalPath);
-                long pixels = (long)header.width * header.height;
-                if (pixels <= kMaxPreviewPixels)
+                if (!NeedsStandIn(originalPath, header.width, header.height))
                     return null;
 
                 // Constrain the longer side; WIC preserves the aspect ratio when only one of
                 // DecodePixelWidth/DecodePixelHeight is set, and does the scaling as part of
-                // the decode rather than decoding full size and shrinking afterwards.
+                // the decode rather than decoding full size and shrinking afterwards. An image
+                // that is already smaller than that is left at its own size — a stand-in made
+                // only because of its format has no reason to be enlarged.
                 // A stream rather than a UriSource, because Uri would treat a "#" in a
                 // perfectly legal filename as the start of a fragment. CacheOption.OnLoad
                 // makes EndInit() do the decoding, so the stream can be closed right after.
@@ -603,10 +694,13 @@ namespace Bloom.web.controllers
                     scaled.StreamSource = stream;
                     scaled.CacheOption = BitmapCacheOption.OnLoad;
                     scaled.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
-                    if (header.width >= header.height)
-                        scaled.DecodePixelWidth = kPreviewMaxDimension;
-                    else
-                        scaled.DecodePixelHeight = kPreviewMaxDimension;
+                    if (Math.Max(header.width, header.height) > kPreviewMaxDimension)
+                    {
+                        if (header.width >= header.height)
+                            scaled.DecodePixelWidth = kPreviewMaxDimension;
+                        else
+                            scaled.DecodePixelHeight = kPreviewMaxDimension;
+                    }
                     scaled.EndInit();
                 }
                 scaled.Freeze();
@@ -629,14 +723,14 @@ namespace Bloom.web.controllers
                     "BloomImagePreview-" + Guid.NewGuid() + ".jpg"
                 );
                 var encoder = new JpegBitmapEncoder { QualityLevel = 85 };
-                encoder.Frames.Add(BitmapFrame.Create(upright));
+                encoder.Frames.Add(BitmapFrame.Create(FlattenOntoWhite(upright)));
                 using (var output = RobustFile.Create(previewPath))
                     encoder.Save(output);
 
                 Logger.WriteMinorEvent(
                     $"ImageGalleryApi made a {upright.PixelWidth}x{upright.PixelHeight} preview"
                         + $" for {Path.GetFileName(originalPath)}"
-                        + $" ({header.width}x{header.height}, too large for the browser)"
+                        + $" ({header.width}x{header.height}, which the browser could not display)"
                 );
                 return previewPath;
             }
