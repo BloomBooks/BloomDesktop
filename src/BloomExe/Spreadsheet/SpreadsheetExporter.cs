@@ -420,7 +420,11 @@ namespace Bloom.Spreadsheet
                 // etc.), which are meaningful (e.g. French punctuation spacing, keeping words
                 // together) and must be preserved in the export.
                 content = Regex.Replace(content, "[ \t\r\n\f\v]+", " ");
-                content = content.Trim(); // remove leading and trailing whitespace, which is not meaningful.
+                // Trim leading/trailing breaking whitespace (not meaningful), but only the same
+                // set the collapse above targets. We must NOT use parameterless Trim() here:
+                // Char.IsWhiteSpace is true for non-breaking spaces (U+00A0, U+202F, ...), so Trim()
+                // would strip the very NBSPs we deliberately preserved just above.
+                content = content.Trim(' ', '\t', '\r', '\n', '\f', '\v');
                 // Don't just test content, it typically contains paragraph markup.
                 if (String.IsNullOrWhiteSpace(editable.InnerText))
                 {

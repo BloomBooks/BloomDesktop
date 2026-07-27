@@ -208,6 +208,44 @@ namespace BloomTests.Spreadsheet
             );
         }
 
+        [Test]
+        public void ExportNormalizesContent_PreservesLeadingAndTrailingNbsp()
+        {
+            // A bare-text editable whose content begins and ends with a non-breaking space,
+            // with an ordinary trailing space that SHOULD be trimmed. Regression guard: a
+            // parameterless string.Trim() would strip the boundary NBSPs too (Char.IsWhiteSpace
+            // is true for U+00A0), undoing the NBSP preservation the collapse step guarantees.
+            const string editableInnerXml = "\u00A0\u00A0Indented text\u00A0 ";
+
+            // Sanity checks on the test data so a green result can't be a false pass.
+            Assert.That(
+                editableInnerXml.StartsWith("\u00A0"),
+                Is.True,
+                "test setup: input should start with a non-breaking space"
+            );
+            Assert.That(
+                editableInnerXml.EndsWith(" "),
+                Is.True,
+                "test setup: input should end with an ordinary space that must be trimmed"
+            );
+
+            var text = ExportSingleEnglishContentCellText(editableInnerXml);
+
+            // The leading and trailing non-breaking spaces survive; only the ordinary trailing
+            // space is trimmed away.
+            Assert.That(text, Is.EqualTo("\u00A0\u00A0Indented text\u00A0"));
+            Assert.That(
+                text.StartsWith("\u00A0\u00A0"),
+                Is.True,
+                "leading non-breaking spaces must be preserved, not stripped by Trim()"
+            );
+            Assert.That(
+                text.EndsWith("\u00A0"),
+                Is.True,
+                "a trailing non-breaking space must be preserved, not stripped by Trim()"
+            );
+        }
+
         /// <summary>
         /// Exports a minimal one-page book whose single English bloom-editable has the given
         /// inner XML, and returns the exported [en] page-content cell's text.
