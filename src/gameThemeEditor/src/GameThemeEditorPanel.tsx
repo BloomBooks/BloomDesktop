@@ -72,11 +72,10 @@ export const GameThemeEditorPanel: React.FunctionComponent<{
     // Default the Save button to wherever the theme already lives: a collection theme defaults to
     // "Save to Collection"; a factory theme to source; otherwise (book/new) to "Save to Book".
     const themeSource = isNewTheme ? "none" : host.getThemeSource();
-    const defaultTarget: "source" | "collection" | "book" = isFactory
-        ? "source"
-        : themeSource === "collection"
-          ? "collection"
-          : "book";
+    let defaultTarget: "source" | "collection" | "book";
+    if (isFactory) defaultTarget = "source";
+    else if (themeSource === "collection") defaultTarget = "collection";
+    else defaultTarget = "book";
     // Where this (non-factory) theme can be deleted from. New themes aren't saved anywhere yet.
     const locations = isNewTheme
         ? { inCollection: false, inBook: false }
