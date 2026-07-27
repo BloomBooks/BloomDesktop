@@ -1,4 +1,4 @@
-import { css, ThemeProvider } from "@emotion/react";
+import { css } from "@emotion/react";
 import * as React from "react";
 import { unmountRoot } from "../../../utils/reactRender";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
@@ -8,7 +8,6 @@ import {
     kBloomBlue,
     kOptionPanelBackgroundColor,
     toolboxMenuPopupTheme,
-    toolboxTheme,
 } from "../../../bloomMaterialUITheme";
 import { Div } from "../../../react_components/l10nComponents";
 import {
@@ -1208,68 +1207,65 @@ const DragActivityControls: React.FunctionComponent<{
         activityType === "simple-dom-choice" ||
         activityType === "simple-checkbox-quiz";
     return (
-        <ThemeProvider theme={toolboxTheme}>
-            <RequiresSubscriptionOverlayWrapper
-                featureName={kGameToolId as string}
-            >
-                {props.activeTab === startTabIndex && (
-                    <div>
-                        {anyDraggables && (
-                            <CanvasElementItemRegion
-                                l10nKey="EditTab.Toolbox.DragActivity.ObjectsToDrag"
-                                theme="blueOnTan"
-                            >
-                                <CanvasElementItemRow>
-                                    {showLetterDraggable && (
-                                        <CanvasElementTextItem
-                                            css={draggableWordCss}
-                                            l10nKey="EditTab.Toolbox.DragActivity.Letter"
-                                            makeTarget={true}
-                                            addClasses="draggable-text bloom-noAutoHeight"
-                                            userDefinedStyleName="GameDragMediumCenter"
+        <RequiresSubscriptionOverlayWrapper featureName={kGameToolId as string}>
+            {props.activeTab === startTabIndex && (
+                <div>
+                    {anyDraggables && (
+                        <CanvasElementItemRegion
+                            l10nKey="EditTab.Toolbox.DragActivity.ObjectsToDrag"
+                            theme="blueOnTan"
+                        >
+                            <CanvasElementItemRow>
+                                {showLetterDraggable && (
+                                    <CanvasElementTextItem
+                                        css={draggableWordCss}
+                                        l10nKey="EditTab.Toolbox.DragActivity.Letter"
+                                        makeTarget={true}
+                                        addClasses="draggable-text bloom-noAutoHeight"
+                                        userDefinedStyleName="GameDragMediumCenter"
+                                    />
+                                )}
+                                {showImageDraggable && (
+                                    <Fragment>
+                                        <CanvasElementImageItem
+                                            makeTarget={
+                                                activityType !==
+                                                "drag-word-chooser-slider"
+                                            }
+                                            makeMatchingTextBox={
+                                                activityType ===
+                                                "drag-word-chooser-slider"
+                                            }
+                                            color={kBloomBlue}
+                                            strokeColor={kBloomBlue}
+                                            showOuterRectangle={true}
                                         />
-                                    )}
-                                    {showImageDraggable && (
-                                        <Fragment>
-                                            <CanvasElementImageItem
+                                        {showVideoDraggable && (
+                                            <CanvasElementVideoItem
                                                 makeTarget={
                                                     activityType !==
                                                     "drag-word-chooser-slider"
                                                 }
-                                                makeMatchingTextBox={
-                                                    activityType ===
-                                                    "drag-word-chooser-slider"
-                                                }
-                                                color={kBloomBlue}
-                                                strokeColor={kBloomBlue}
                                                 showOuterRectangle={true}
                                             />
-                                            {showVideoDraggable && (
-                                                <CanvasElementVideoItem
-                                                    makeTarget={
-                                                        activityType !==
-                                                        "drag-word-chooser-slider"
-                                                    }
-                                                    showOuterRectangle={true}
-                                                />
-                                            )}
-                                        </Fragment>
-                                    )}
-                                </CanvasElementItemRow>
-                                <CanvasElementItemRow>
-                                    {showSoundDraggable && (
-                                        <CanvasElementSoundItem />
-                                    )}
-                                    <CanvasElementTextItem
-                                        css={draggableWordCss}
-                                        l10nKey="EditTab.Toolbox.DragActivity.Word"
-                                        makeTarget={true}
-                                        addClasses="draggable-text bloom-noAutoHeight"
-                                        hide={!showWordDraggable}
-                                        userDefinedStyleName="GameDragMediumCenter"
-                                    />
+                                        )}
+                                    </Fragment>
+                                )}
+                            </CanvasElementItemRow>
+                            <CanvasElementItemRow>
+                                {showSoundDraggable && (
+                                    <CanvasElementSoundItem />
+                                )}
+                                <CanvasElementTextItem
+                                    css={draggableWordCss}
+                                    l10nKey="EditTab.Toolbox.DragActivity.Word"
+                                    makeTarget={true}
+                                    addClasses="draggable-text bloom-noAutoHeight"
+                                    hide={!showWordDraggable}
+                                    userDefinedStyleName="GameDragMediumCenter"
+                                />
 
-                                    {/* Slider: rather than reinstating this item, make the "selected item is part of answer" control work.
+                                {/* Slider: rather than reinstating this item, make the "selected item is part of answer" control work.
                                 // Keeping this just as a reminder of what it might take to make that work.
                                  {activityType === "drag-word-chooser-slider" && (
                                     <CanvasElementWrongImageItem
@@ -1288,8 +1284,8 @@ const DragActivityControls: React.FunctionComponent<{
                                         }
                                     />
                                 )} */}
-                                </CanvasElementItemRow>
-                                {/* If we want this at all, it would only be in the drag-sort-sentence activity
+                            </CanvasElementItemRow>
+                            {/* If we want this at all, it would only be in the drag-sort-sentence activity
                             <CanvasElementTextItem
                                 css={textItemProps}
                                 l10nKey="EditTab.Toolbox.DragActivity.OrderSentence"
@@ -1298,191 +1294,190 @@ const DragActivityControls: React.FunctionComponent<{
                                 addClasses="drag-item-order-sentence"
                             />
                         </CanvasElementItemRow> */}
-                                {anyFixedInPlace && (
-                                    <div
-                                        css={css`
-                                            border-top: 3px solid ${kBloomBlue};
-                                            opacity: 0.15;
-                                            width: 100%;
-                                            margin-top: 10px;
-                                            //background-color: white;
-                                            //margin: 0 10px 0 10px;
-                                        `}
-                                    ></div>
-                                )}
-                            </CanvasElementItemRegion>
-                        )}
+                            {anyFixedInPlace && (
+                                <div
+                                    css={css`
+                                        border-top: 3px solid ${kBloomBlue};
+                                        opacity: 0.15;
+                                        width: 100%;
+                                        margin-top: 10px;
+                                        //background-color: white;
+                                        //margin: 0 10px 0 10px;
+                                    `}
+                                ></div>
+                            )}
+                        </CanvasElementItemRegion>
+                    )}
 
-                        {anyFixedInPlace && (
-                            <CanvasElementItemRegion
-                                // Items in this region are draggable in Start mode, but not in Play mode.
-                                l10nKey="EditTab.Toolbox.DragActivity.FixedInPlace"
-                                theme="blueOnTan"
-                            >
-                                <CanvasElementItemRow>
-                                    <CanvasElementImageItem
-                                        makeTarget={false}
-                                        color={kBloomBlue}
-                                        strokeColor={kBloomBlue}
-                                    />
-                                    <GameTextItem capitalize={true} />
-                                    <CanvasElementVideoItem />
-                                </CanvasElementItemRow>
-                                <CanvasElementItemRow>
-                                    <CanvasElementGifItem />
-                                    <CanvasElementRectangleItem />
-                                </CanvasElementItemRow>
-                            </CanvasElementItemRegion>
-                        )}
-                    </div>
-                )}
-                {props.activeTab === startTabIndex && (
-                    <div
-                        css={css`
-                            margin-left: 10px;
-                            // No idea why this is needed, but without it, simple dom choice games
-                            // result in the toolbar getting scroll bars. I've tried limiting the width
-                            // of the child elements and this whole div, but that does not prevent them.
-                            // I also tried deleting children; I have to delete all of the first three
-                            // children to get rid of the scroll bars. None of them has an explicit width;
-                            // they should naturally conform to the width of the parent (and they do).
-                            // They are entirely visible, so hiding overflow seems harmless, and I decided
-                            // it isn't worth further investigation.
-                            overflow-x: hidden;
-                        `}
-                    >
-                        <GameIntroText
-                            gameType={getGameType(activityType, getPage())}
-                        />
-                        <ThemeChooser pageGeneration={props.pageGeneration} />
-                        {legacyGame && (
-                            <>
-                                <SoundControls
-                                    soundType="correct"
-                                    whenTheAnswerIsSubKey="CorrectSound"
-                                    soundOptions={correctSoundOptions}
-                                    currentSound={correctSoundId}
-                                    onSoundItemChosen={onSoundItemChosen}
+                    {anyFixedInPlace && (
+                        <CanvasElementItemRegion
+                            // Items in this region are draggable in Start mode, but not in Play mode.
+                            l10nKey="EditTab.Toolbox.DragActivity.FixedInPlace"
+                            theme="blueOnTan"
+                        >
+                            <CanvasElementItemRow>
+                                <CanvasElementImageItem
+                                    makeTarget={false}
+                                    color={kBloomBlue}
+                                    strokeColor={kBloomBlue}
                                 />
-                                <SoundControls
-                                    soundType="wrong"
-                                    whenTheAnswerIsSubKey="WrongSound"
-                                    soundOptions={wrongSoundOptions}
-                                    currentSound={wrongSoundId}
-                                    onSoundItemChosen={onSoundItemChosen}
-                                />
-                            </>
-                        )}
-                        {anyOptions && (
-                            <Div
-                                css={css`
-                                    margin-top: 10px;
-                                `}
-                                l10nKey="EditTab.Toolbox.DragActivity.Options"
-                            ></Div>
-                        )}
-                        {anyOptions && (
-                            <div
-                                css={css`
-                                    display: flex;
-                                    margin-top: 5px;
-                                `}
-                            >
-                                <BloomTooltip
-                                    id="sameSize"
-                                    placement="top-end"
-                                    tip={
-                                        <Div l10nKey="EditTab.Toolbox.DragActivity.TargetsSameSize"></Div>
-                                    }
-                                >
-                                    <div
-                                        css={css`
-                                            ${optionCss(allItemsSameSize)}
-                                        `}
-                                        onClick={toggleAllSameSize}
-                                    >
-                                        <img src="images/uniform sized targets.svg"></img>
-                                    </div>
-                                </BloomTooltip>
-                                <BloomTooltip
-                                    id="sameSize"
-                                    placement="top-end"
-                                    tip={
-                                        <Div l10nKey="EditTab.Toolbox.DragActivity.ShowTargetsPlay"></Div>
-                                    }
-                                >
-                                    <div
-                                        css={css`
-                                            ${optionCss(showTargetsDuringPlay)}
-                                        `}
-                                        onClick={toggleShowTargetsDuringPlay}
-                                    >
-                                        <img src="images/Show Targets During Play.svg"></img>
-                                    </div>
-                                </BloomTooltip>
-
-                                <BloomTooltip
-                                    id="showAnswersInTargets"
-                                    placement="top"
-                                    tip={
-                                        <Div l10nKey="EditTab.Toolbox.DragActivity.ShowAnswersInTargets"></Div>
-                                    }
-                                >
-                                    <div
-                                        css={css`
-                                            ${optionCss(showAnswersInTargets)}
-                                        `}
-                                        onClick={toggleShowAnswersInTargets}
-                                    >
-                                        <img src="images/Show answers on targets.svg"></img>
-                                    </div>
-                                </BloomTooltip>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {props.activeTab === correctTabIndex && (
-                    <CorrectWrongControls
-                        soundType="correct"
-                        instructionsL10nKey="EditTab.Toolbox.DragActivity.CorrectInstructions"
-                        whenTheAnswerIsSubKey="CorrectSound"
-                        classToAddToItems="drag-item-correct"
-                        soundOptions={correctSoundOptions}
-                        currentSound={correctSoundId}
-                        onSoundItemChosen={onSoundItemChosen}
+                                <GameTextItem capitalize={true} />
+                                <CanvasElementVideoItem />
+                            </CanvasElementItemRow>
+                            <CanvasElementItemRow>
+                                <CanvasElementGifItem />
+                                <CanvasElementRectangleItem />
+                            </CanvasElementItemRow>
+                        </CanvasElementItemRegion>
+                    )}
+                </div>
+            )}
+            {props.activeTab === startTabIndex && (
+                <div
+                    css={css`
+                        margin-left: 10px;
+                        // No idea why this is needed, but without it, simple dom choice games
+                        // result in the toolbar getting scroll bars. I've tried limiting the width
+                        // of the child elements and this whole div, but that does not prevent them.
+                        // I also tried deleting children; I have to delete all of the first three
+                        // children to get rid of the scroll bars. None of them has an explicit width;
+                        // they should naturally conform to the width of the parent (and they do).
+                        // They are entirely visible, so hiding overflow seems harmless, and I decided
+                        // it isn't worth further investigation.
+                        overflow-x: hidden;
+                    `}
+                >
+                    <GameIntroText
+                        gameType={getGameType(activityType, getPage())}
                     />
-                )}
-
-                {
-                    // At one point, we had extra controls in the Wrong tab to add Try Again and Show Answer buttons,
-                    // but decided to build those in.
-                    props.activeTab === wrongTabIndex && (
-                        <CorrectWrongControls
-                            soundType="wrong"
-                            instructionsL10nKey="EditTab.Toolbox.DragActivity.WrongInstructions"
-                            whenTheAnswerIsSubKey="WrongSound"
-                            classToAddToItems="drag-item-wrong"
-                            soundOptions={wrongSoundOptions}
-                            currentSound={wrongSoundId}
-                            onSoundItemChosen={onSoundItemChosen}
-                        />
-                    )
-                }
-                {props.activeTab === playTabIndex && (
-                    <div>
+                    <ThemeChooser pageGeneration={props.pageGeneration} />
+                    {legacyGame && (
+                        <>
+                            <SoundControls
+                                soundType="correct"
+                                whenTheAnswerIsSubKey="CorrectSound"
+                                soundOptions={correctSoundOptions}
+                                currentSound={correctSoundId}
+                                onSoundItemChosen={onSoundItemChosen}
+                            />
+                            <SoundControls
+                                soundType="wrong"
+                                whenTheAnswerIsSubKey="WrongSound"
+                                soundOptions={wrongSoundOptions}
+                                currentSound={wrongSoundId}
+                                onSoundItemChosen={onSoundItemChosen}
+                            />
+                        </>
+                    )}
+                    {anyOptions && (
                         <Div
                             css={css`
-                                // Don't use margin here. It combines in some weird way with the negative
-                                // margin used by the accordion control and results in a scrollbar.
-                                padding: 5px;
+                                margin-top: 10px;
                             `}
-                            l10nKey="EditTab.Toolbox.DragActivity.TestInstructions"
-                        />
-                    </div>
-                )}
-            </RequiresSubscriptionOverlayWrapper>
-        </ThemeProvider>
+                            l10nKey="EditTab.Toolbox.DragActivity.Options"
+                        ></Div>
+                    )}
+                    {anyOptions && (
+                        <div
+                            css={css`
+                                display: flex;
+                                margin-top: 5px;
+                            `}
+                        >
+                            <BloomTooltip
+                                id="sameSize"
+                                placement="top-end"
+                                tip={
+                                    <Div l10nKey="EditTab.Toolbox.DragActivity.TargetsSameSize"></Div>
+                                }
+                            >
+                                <div
+                                    css={css`
+                                        ${optionCss(allItemsSameSize)}
+                                    `}
+                                    onClick={toggleAllSameSize}
+                                >
+                                    <img src="images/uniform sized targets.svg"></img>
+                                </div>
+                            </BloomTooltip>
+                            <BloomTooltip
+                                id="sameSize"
+                                placement="top-end"
+                                tip={
+                                    <Div l10nKey="EditTab.Toolbox.DragActivity.ShowTargetsPlay"></Div>
+                                }
+                            >
+                                <div
+                                    css={css`
+                                        ${optionCss(showTargetsDuringPlay)}
+                                    `}
+                                    onClick={toggleShowTargetsDuringPlay}
+                                >
+                                    <img src="images/Show Targets During Play.svg"></img>
+                                </div>
+                            </BloomTooltip>
+
+                            <BloomTooltip
+                                id="showAnswersInTargets"
+                                placement="top"
+                                tip={
+                                    <Div l10nKey="EditTab.Toolbox.DragActivity.ShowAnswersInTargets"></Div>
+                                }
+                            >
+                                <div
+                                    css={css`
+                                        ${optionCss(showAnswersInTargets)}
+                                    `}
+                                    onClick={toggleShowAnswersInTargets}
+                                >
+                                    <img src="images/Show answers on targets.svg"></img>
+                                </div>
+                            </BloomTooltip>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {props.activeTab === correctTabIndex && (
+                <CorrectWrongControls
+                    soundType="correct"
+                    instructionsL10nKey="EditTab.Toolbox.DragActivity.CorrectInstructions"
+                    whenTheAnswerIsSubKey="CorrectSound"
+                    classToAddToItems="drag-item-correct"
+                    soundOptions={correctSoundOptions}
+                    currentSound={correctSoundId}
+                    onSoundItemChosen={onSoundItemChosen}
+                />
+            )}
+
+            {
+                // At one point, we had extra controls in the Wrong tab to add Try Again and Show Answer buttons,
+                // but decided to build those in.
+                props.activeTab === wrongTabIndex && (
+                    <CorrectWrongControls
+                        soundType="wrong"
+                        instructionsL10nKey="EditTab.Toolbox.DragActivity.WrongInstructions"
+                        whenTheAnswerIsSubKey="WrongSound"
+                        classToAddToItems="drag-item-wrong"
+                        soundOptions={wrongSoundOptions}
+                        currentSound={wrongSoundId}
+                        onSoundItemChosen={onSoundItemChosen}
+                    />
+                )
+            }
+            {props.activeTab === playTabIndex && (
+                <div>
+                    <Div
+                        css={css`
+                            // Don't use margin here. It combines in some weird way with the negative
+                            // margin used by the accordion control and results in a scrollbar.
+                            padding: 5px;
+                        `}
+                        l10nKey="EditTab.Toolbox.DragActivity.TestInstructions"
+                    />
+                </div>
+            )}
+        </RequiresSubscriptionOverlayWrapper>
     );
 };
 
