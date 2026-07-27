@@ -194,3 +194,8 @@ pr-comments*.md
 # Per-developer Claude Code settings (the shared .claude/CLAUDE.md stays tracked).
 .claude/settings.json
 .claude/settings.local.json
+
+# Scratch folders the nightly's diagnostics steps create at the repo root (also created if you
+# run build/ci/watch-for-hung-bloom.ps1 locally). Never meant to be committed.
+bloom-diagnostics/
+bloom-watchdog/
