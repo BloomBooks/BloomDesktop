@@ -1821,20 +1821,37 @@ namespace Bloom.Book
             );
             if (!match.Success)
                 return false;
-            // Reproduce exactly the base that GetUniqueBookFolderName would use for this ideal title
-            // and this separator (same reserved-suffix length and trailing-character trimming).
-            var maxBaseLength = kMaxFilenameLength - (match.Groups["sep"].Value.Length + 8);
-            var expectedBase = idealFolderName;
-            if (expectedBase.Length > maxBaseLength)
-            {
-                expectedBase = MiscUtils.TruncateSafely(expectedBase, maxBaseLength);
-                expectedBase = Regex.Replace(expectedBase, "[\\s.]+$", "", RegexOptions.Compiled);
-            }
+            // Exactly the base that GetUniqueBookFolderName would use for this ideal title and
+            // this separator, since both use GetBaseForUniqueFolderName.
+            var expectedBase = GetBaseForUniqueFolderName(
+                idealFolderName,
+                match.Groups["sep"].Value
+            );
             return string.Equals(
                 match.Groups["base"].Value,
                 expectedBase,
                 StringComparison.Ordinal
             );
+        }
+
+        /// <summary>
+        /// The base-name part of a unique folder name "&lt;base&gt;&lt;separator&gt;&lt;8 hex id digits&gt;":
+        /// the given name, truncated (with trailing whitespace/periods trimmed) only when it is too
+        /// long to fit alongside the suffix within kMaxFilenameLength. Shared by
+        /// GetUniqueBookFolderName (generating such a name) and IsUniqueVariantOfIdealFolderName
+        /// (recognizing one) so the two can never drift apart.
+        /// </summary>
+        internal static string GetBaseForUniqueFolderName(string baseName, string separator)
+        {
+            // We need room for: separator (variable length) + 8 characters from instanceId
+            var suffixLength = separator.Length + 8; // 8 hex chars from GUID
+            var maxBaseNameLength = kMaxFilenameLength - suffixLength;
+            if (baseName.Length > maxBaseNameLength)
+            {
+                baseName = MiscUtils.TruncateSafely(baseName, maxBaseNameLength);
+                baseName = Regex.Replace(baseName, "[\\s.]+$", "", RegexOptions.Compiled);
+            }
+            return baseName;
         }
 
         public void SetBookName(string name)
@@ -3849,17 +3866,9 @@ namespace Bloom.Book
                 instanceId = Guid.NewGuid().ToString();
             }
 
-            // Calculate the maximum length for the base name
-            // We need room for: separator (variable length) + 8 characters from instanceId
-            var suffixLength = separator.Length + 8; // 8 hex chars from GUID
-            var maxBaseNameLength = kMaxFilenameLength - suffixLength;
-
-            // Truncate and clean the base name if necessary
-            if (baseName.Length > maxBaseNameLength)
-            {
-                baseName = MiscUtils.TruncateSafely(baseName, maxBaseNameLength);
-                baseName = Regex.Replace(baseName, "[\\s.]+$", "", RegexOptions.Compiled);
-            }
+            // Truncate and clean the base name if necessary (shared with
+            // IsUniqueVariantOfIdealFolderName, which must recognize exactly what we produce here)
+            baseName = GetBaseForUniqueFolderName(baseName, separator);
 
             string proposedName;
             do
