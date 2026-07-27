@@ -10,6 +10,12 @@ export class FakeHighlight {
     public constructor(...ranges: Range[]) {
         this.ranges = ranges;
     }
+
+    // A real Highlight is setlike over its Ranges, and TextHighlightManager.hasDeadRanges()
+    // iterates it, so the stand-in must be iterable too.
+    public [Symbol.iterator](): Iterator<Range> {
+        return this.ranges[Symbol.iterator]();
+    }
 }
 
 export type FakeHighlightRegistry = Map<string, FakeHighlight>;
