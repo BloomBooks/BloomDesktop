@@ -71,6 +71,164 @@ export function makeRangeForNodeContents(node: Node): Range | undefined {
     return range;
 }
 
+// One run of characters within a TextOffsetMap's text. Most come from a real Text node; the
+// rest are synthetic separators standing in for a visual break (a <br>, or the boundary of a
+// block element) which contributes no characters of its own but does separate words.
+interface TextPiece {
+    start: number; // offset of this piece within the map's text
+    length: number;
+    node?: Text; // undefined for a synthetic separator
+}
+
+// A snapshot of the visible text of an element, together with what is needed to turn a pair of
+// character offsets within that text back into a DOM Range. This is how a client can analyze
+// text as a plain string - which is far easier to get right than analyzing HTML - and still
+// highlight the result without touching the DOM.
+export interface TextOffsetMap {
+    text: string;
+    pieces: TextPiece[];
+}
+
+// Tags whose boundaries separate words even though they contribute no characters. Compare
+// removeAllHtmlMarkupFromString(), which substitutes a space for these in the HTML-string world.
+const kSeparatingTags = new Set([
+    "P",
+    "DIV",
+    "LI",
+    "TR",
+    "TD",
+    "TH",
+    "BLOCKQUOTE",
+    "H1",
+    "H2",
+    "H3",
+    "H4",
+    "H5",
+    "H6",
+]);
+
+// Walk root's descendants and build a TextOffsetMap of the text a reader actually sees.
+// shouldSkipElement lets the caller exclude a subtree entirely (transient UI, editor bookmarks,
+// invisible markers); its text is left out of both the string and the offset map.
+export function mapVisibleText(
+    root: Node,
+    shouldSkipElement?: (element: Element) => boolean,
+): TextOffsetMap {
+    const pieces: TextPiece[] = [];
+    let text = "";
+
+    const addPiece = (content: string, node?: Text): void => {
+        if (content.length === 0) {
+            return;
+        }
+        pieces.push({ start: text.length, length: content.length, node });
+        text += content;
+    };
+
+    const addSeparator = (): void => {
+        // No point starting with a separator, or doubling one up.
+        if (text.length > 0 && !text.endsWith(" ")) {
+            addPiece(" ");
+        }
+    };
+
+    const visitChildren = (parent: Node): void => {
+        for (let child = parent.firstChild; child; child = child.nextSibling) {
+            if (child.nodeType === Node.TEXT_NODE) {
+                const textNode = child as Text;
+                addPiece(textNode.data, textNode);
+                continue;
+            }
+            if (child.nodeType !== Node.ELEMENT_NODE) {
+                continue;
+            }
+            const element = child as Element;
+            if (shouldSkipElement?.(element)) {
+                continue;
+            }
+            if (element.tagName === "BR") {
+                addSeparator();
+                continue;
+            }
+            const isSeparating = kSeparatingTags.has(element.tagName);
+            if (isSeparating) {
+                addSeparator();
+            }
+            visitChildren(element);
+            if (isSeparating) {
+                addSeparator();
+            }
+        }
+    };
+
+    visitChildren(root);
+    return { text, pieces };
+}
+
+// Find the DOM position for an offset in the map's text. Offsets that land on a synthetic
+// separator have no DOM position of their own, so we snap to the nearest real text: forward for
+// the start of a range, backward for its end. That way a range never begins or ends on a
+// character that does not exist in the DOM.
+function positionForOffset(
+    map: TextOffsetMap,
+    offset: number,
+    isRangeStart: boolean,
+): { node: Text; offset: number } | undefined {
+    if (isRangeStart) {
+        for (const piece of map.pieces) {
+            if (piece.node && offset < piece.start + piece.length) {
+                return {
+                    node: piece.node,
+                    offset: Math.max(0, offset - piece.start),
+                };
+            }
+        }
+        return undefined;
+    }
+
+    for (let i = map.pieces.length - 1; i >= 0; i--) {
+        const piece = map.pieces[i];
+        if (piece.node && offset > piece.start) {
+            return {
+                node: piece.node,
+                offset: Math.min(piece.length, offset - piece.start),
+            };
+        }
+    }
+    return undefined;
+}
+
+// Make a Range covering [start, end) of the map's text, or undefined if that span contains no
+// actual DOM text.
+export function makeRangeFromTextOffsets(
+    map: TextOffsetMap,
+    start: number,
+    end: number,
+): Range | undefined {
+    if (end <= start) {
+        return undefined;
+    }
+    const startPosition = positionForOffset(map, start, true);
+    const endPosition = positionForOffset(map, end, false);
+    if (!startPosition || !endPosition) {
+        return undefined;
+    }
+
+    const ownerDocument = startPosition.node.ownerDocument;
+    if (!ownerDocument) {
+        console.error(
+            "textHighlightManager.makeRangeFromTextOffsets() could not find ownerDocument for a highlighted node.",
+        );
+        return undefined;
+    }
+
+    const range = ownerDocument.createRange();
+    range.setStart(startPosition.node, startPosition.offset);
+    range.setEnd(endPosition.node, endPosition.offset);
+    // Snapping can put the end before the start if the whole span was synthetic separators.
+    return range.collapsed ? undefined : range;
+}
+
 export class TextHighlightManager {
     // The highlight names this instance owns. clearAllManagedHighlights() removes exactly these.
     private readonly managedHighlightNames: readonly string[];

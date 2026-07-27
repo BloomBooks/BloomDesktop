@@ -24,6 +24,11 @@ import {
     currentHighlightName,
     splitHighlightNames,
 } from "./audioHighlightManager";
+import {
+    FakeHighlightRegistry,
+    getHighlightRegistry,
+    installHighlightPolyfill,
+} from "../../test/highlightTestSupport";
 
 // A controllable stand-in for the page-frame CanvasElementManager. By default it is DISABLED,
 // so getCanvasElementManager() returns undefined -- exactly how the real one behaves in tests
@@ -74,36 +79,6 @@ vi.mock("../canvas/canvasElementPageBridge", async (importActual) => {
     };
 });
 
-class FakeHighlight {
-    public ranges: Range[];
-
-    public constructor(...ranges: Range[]) {
-        this.ranges = ranges;
-    }
-}
-
-type FakeHighlightRegistry = Map<string, FakeHighlight>;
-type TestCssWithHighlights = {
-    highlights?: FakeHighlightRegistry;
-};
-
-const installPseudoHighlightPolyfill = (targetWindow: Window) => {
-    const targetWindowWithCss = targetWindow as Window & {
-        CSS?: TestCssWithHighlights;
-    };
-    if (!targetWindowWithCss.CSS) {
-        targetWindowWithCss.CSS = {};
-    }
-
-    const cssWithHighlights = targetWindowWithCss.CSS;
-    cssWithHighlights.highlights = new Map<string, FakeHighlight>();
-    (
-        targetWindow as Window & {
-            Highlight?: typeof FakeHighlight;
-        }
-    ).Highlight = FakeHighlight;
-};
-
 const getPageWindow = (): Window | undefined => {
     const iframe = parent.window.document.getElementById(
         "page",
@@ -111,20 +86,9 @@ const getPageWindow = (): Window | undefined => {
     return iframe?.contentWindow ?? undefined;
 };
 
+// The audio highlights are registered in the page iframe's document when there is one.
 const getPseudoHighlightsRegistry = (): FakeHighlightRegistry => {
-    const targetWindow = getPageWindow() ?? globalThis.window;
-    const cssWithHighlights = (
-        targetWindow as Window & {
-            CSS?: TestCssWithHighlights;
-        }
-    ).CSS;
-    if (!cssWithHighlights?.highlights) {
-        throw new Error(
-            "Expected CSS.highlights test polyfill to be installed",
-        );
-    }
-
-    return cssWithHighlights.highlights;
+    return getHighlightRegistry(getPageWindow() ?? globalThis.window);
 };
 
 const getSplitHighlightTexts = (): string[][] => {
@@ -180,13 +144,13 @@ const setHighlightedElementFromDom = (recording: AudioRecording) => {
 
 describe("audio recording tests", () => {
     beforeAll(async () => {
-        installPseudoHighlightPolyfill(globalThis.window);
+        installHighlightPolyfill(globalThis.window);
 
         await setupForAudioRecordingTests();
 
         const pageWindow = getPageWindow();
         if (pageWindow) {
-            installPseudoHighlightPolyfill(pageWindow);
+            installHighlightPolyfill(pageWindow);
         }
     });
 
