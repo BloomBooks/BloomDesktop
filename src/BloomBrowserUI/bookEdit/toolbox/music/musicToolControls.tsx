@@ -448,13 +448,15 @@ export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
     // This type has to match the 'ref' attribute below, which has "| null".
     private controlsElement: MusicToolControls | null;
 
-    public makeRootElement(): HTMLDivElement {
-        return super.adaptReactElement(
-            <MusicToolControls
-                ref={(renderedElement) =>
-                    (this.controlsElement = renderedElement)
-                }
-            />,
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <MusicToolControls
+                    ref={(renderedElement) =>
+                        (this.controlsElement = renderedElement)
+                    }
+                />
+            </div>
         );
     }
 

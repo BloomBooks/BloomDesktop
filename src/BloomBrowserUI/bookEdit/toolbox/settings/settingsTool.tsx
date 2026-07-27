@@ -1,4 +1,3 @@
-import { renderRoot } from "../../../utils/reactRender";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { SettingsToolControls } from "./SettingsToolControls";
 import { kSettingsToolId } from "../toolIds";
@@ -11,13 +10,13 @@ import { kSettingsToolId } from "../toolIds";
 // involving markup or attaching/detaching a tool that's
 // needed here.
 export class SettingsTool extends ToolboxToolReactAdaptor {
-    // renders the SettingsToolControls component as a
-    // div root element, to be displayed in the toolbox
-    public makeRootElement(): HTMLDivElement {
-        const root = document.createElement("div");
-
-        renderRoot(<SettingsToolControls />, root);
-        return root as HTMLDivElement;
+    // renders the SettingsToolControls component, to be displayed in the toolbox
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <SettingsToolControls />
+            </div>
+        );
     }
 
     // returns the id for this "tool" so that it

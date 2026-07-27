@@ -1,6 +1,5 @@
-import { renderRoot } from "../../utils/reactRender";
 import { ITool, IToolboxSettings } from "./toolbox";
-import { ReactElement } from "react";
+import type * as React from "react";
 import { isPageBloomGame } from "./games/GameInfo";
 import { getBloomPageElement } from "../../utils/shared";
 
@@ -10,7 +9,7 @@ export default abstract class ToolboxToolReactAdaptor implements ITool {
     imageUpdated(_img: HTMLImageElement | undefined): void {
         // does nothing by default
     }
-    public abstract makeRootElement(): HTMLDivElement;
+    public abstract renderPanel(): React.ReactNode;
     public abstract id(): string;
 
     public requiresToolId(): boolean {
@@ -26,15 +25,6 @@ export default abstract class ToolboxToolReactAdaptor implements ITool {
         return undefined;
     }
 
-    protected adaptReactElement(
-        element: ReactElement<unknown>,
-    ): HTMLDivElement {
-        // We need a wrapperDiv to hand back to our the toolbox because react wants some freedom to render asynchronously.
-        // So we just create empty div now to hand back to the toolbox, and ask React to render into it eventually.
-        const wrapperDiv = document.createElement("div");
-        renderRoot(element, wrapperDiv);
-        return wrapperDiv as HTMLDivElement;
-    }
     public isAlwaysEnabled(): boolean {
         return false;
     }

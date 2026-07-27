@@ -60,10 +60,8 @@ class StandInTool extends ToolboxToolReactAdaptor {
         return this.toolIconPath;
     }
 
-    public makeRootElement(): HTMLDivElement {
-        const root = document.createElement("div");
-        root.textContent = `Stand-in body for the ${this.toolId} tool.`;
-        return root as HTMLDivElement;
+    public renderPanel(): JSX.Element {
+        return <div>{`Stand-in body for the ${this.toolId} tool.`}</div>;
     }
 }
 

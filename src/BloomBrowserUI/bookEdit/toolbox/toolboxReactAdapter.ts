@@ -19,7 +19,7 @@ export interface IToolboxReactAdapter {
     // Registers a callback to be told whenever the active tool changes, including
     // as a result of setActiveToolByToolId().
     onActiveToolChanged(callback: (toolId: string) => void): void;
-    // Adds a section for this tool, building its body from the tool's makeRootElement().
+    // Adds a section for this tool, whose body is what the tool's renderPanel() returns.
     // Does nothing if the toolbox is already offering the tool.
     addTool(toolId: string): void;
     // Removes this tool's section, if it has one. If it was the active section, the first
