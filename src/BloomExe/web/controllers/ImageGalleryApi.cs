@@ -47,7 +47,17 @@ namespace Bloom.web.controllers
         private string _lastPickedLocalImagePreviewPath;
 
         /// <summary>
-        /// Guards _lastPickedLocalImagePreviewPath. The gallery uses the preview URL as both the
+        /// The file _lastPickedLocalImagePreviewPath was made from, or null if we have not yet
+        /// looked at any file. This is what the cache is keyed on, so that a stand-in can only
+        /// ever be served for the file it was made from — rather than that being an invariant
+        /// maintained by the order in which HandlePickLocalImageFile does things.
+        /// It is also how we remember that a file needs no stand-in, which is why it is set
+        /// even in that case: without it we would re-examine such a file on every request.
+        /// </summary>
+        private string _lastPickedLocalImagePreviewSourcePath;
+
+        /// <summary>
+        /// Guards the two fields above. The gallery uses the preview URL as both the
         /// thumbnail and the large preview, so two requests for it typically arrive at once;
         /// without this they would each spend seconds building a preview and one would leak.
         /// </summary>
@@ -405,9 +415,9 @@ namespace Bloom.web.controllers
                 )
             );
 
-            // Drop the previous pick's downscaled stand-in *before* authorizing the new path,
-            // so there is no instant in which a preview request for the new file would find,
-            // and serve, the previous file's stand-in.
+            // The previous pick's downscaled stand-in (if any) is now unreachable. Serving the
+            // wrong image is prevented by the cache's key, not by this; the point here is just
+            // to not leave the temp file lying around until the next pick.
             DeleteLastPickedImagePreview();
             _lastPickedLocalImagePath = selectedPath;
 
@@ -641,26 +651,30 @@ namespace Bloom.web.controllers
             }
         }
 
-        /// <summary>Deletes the cached downscaled preview, if there is one.</summary>
+        /// <summary>
+        /// Empties the preview cache, deleting the downscaled stand-in if there is one.
+        /// </summary>
         private void DeleteLastPickedImagePreview()
         {
             lock (_previewLock)
             {
-                if (string.IsNullOrEmpty(_lastPickedLocalImagePreviewPath))
-                    return;
-                try
+                if (!string.IsNullOrEmpty(_lastPickedLocalImagePreviewPath))
                 {
-                    RobustFile.Delete(_lastPickedLocalImagePreviewPath);
-                }
-                catch (Exception e)
-                {
-                    // Nothing to do about it; it's a temp file, and it is named
-                    // recognisably enough to be swept up later.
-                    Logger.WriteMinorEvent(
-                        $"ImageGalleryApi could not delete {_lastPickedLocalImagePreviewPath}: {e.Message}"
-                    );
+                    try
+                    {
+                        RobustFile.Delete(_lastPickedLocalImagePreviewPath);
+                    }
+                    catch (Exception e)
+                    {
+                        // Nothing to do about it; it's a temp file, and it is named
+                        // recognisably enough to be swept up later.
+                        Logger.WriteMinorEvent(
+                            $"ImageGalleryApi could not delete {_lastPickedLocalImagePreviewPath}: {e.Message}"
+                        );
+                    }
                 }
                 _lastPickedLocalImagePreviewPath = null;
+                _lastPickedLocalImagePreviewSourcePath = null;
             }
         }
 
@@ -697,17 +711,25 @@ namespace Bloom.web.controllers
             }
 
             // Images past a certain size don't render in the browser at all, so substitute a
-            // downscaled copy (BL-16597). Once made, a stand-in is reused, since the gallery
-            // asks for this URL as both the thumbnail and the large preview. For an image
-            // that doesn't need one, all this repeats is the header read, which is cheap.
+            // downscaled copy (BL-16597). What we worked out about a file is remembered and
+            // reused, since the gallery asks for this URL as both the thumbnail and the large
+            // preview — including the "this one is fine as it is" answer, which costs a header
+            // read to reach.
             string pathToServe;
             lock (_previewLock)
             {
-                if (
-                    _lastPickedLocalImagePreviewPath == null
-                    || !RobustFile.Exists(_lastPickedLocalImagePreviewPath)
-                )
+                var answerIsAboutThisFile =
+                    _lastPickedLocalImagePreviewSourcePath == fullPath
+                    && (
+                        _lastPickedLocalImagePreviewPath == null
+                        || RobustFile.Exists(_lastPickedLocalImagePreviewPath)
+                    );
+                if (!answerIsAboutThisFile)
+                {
+                    DeleteLastPickedImagePreview();
                     _lastPickedLocalImagePreviewPath = MakeBrowserSafePreview(fullPath);
+                    _lastPickedLocalImagePreviewSourcePath = fullPath;
+                }
                 pathToServe = _lastPickedLocalImagePreviewPath ?? fullPath;
             }
 
