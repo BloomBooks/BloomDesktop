@@ -134,6 +134,10 @@ namespace Bloom.Publish
                 }
                 catch (OffScreenBrowserTimeoutException e)
                 {
+                    // As above: if a newer publish superseded us, this is not a failure worth retrying or
+                    // reporting — whatever we produced is being discarded anyway.
+                    if (this != _latestInstance)
+                        return false;
                     whatWentWrong = e.Message;
                 }
 

@@ -347,9 +347,11 @@ namespace Bloom.Publish
             // for is a browser navigating to a page that BloomServer itself has to serve. If every worker
             // is blocked and none is left to serve that page, the navigation can never complete and we
             // would be waiting for something that cannot happen (BL-16612). Registering lets BloomServer
-            // spin up the worker that breaks the cycle.
+            // spin up the worker that breaks the cycle — and we use the ...AndEnsureAFreeWorker variant
+            // because the plain one only takes effect when the NEXT request arrives, which may be never:
+            // the request that would unblock us can already be sitting in the queue by the time we get here.
             var server = BloomServer._theOneInstance;
-            server?.RegisterThreadBlocking();
+            server?.RegisterThreadBlockingAndEnsureAFreeWorker();
             try
             {
                 bool completed;
@@ -365,6 +367,13 @@ namespace Bloom.Publish
                 }
                 if (!completed)
                 {
+                    // Nobody will ever await the task we are abandoning, so observe its exception here;
+                    // otherwise a later failure on it resurfaces as an unobserved TaskException. We already
+                    // have the diagnosis we need, so there is nothing else to do with it.
+                    _ = tcs.Task.ContinueWith(
+                        t => _ = t.Exception,
+                        TaskContinuationOptions.OnlyOnFaulted
+                    );
                     // The posted work is still queued or running on the dedicated thread and may yet touch
                     // the browser, so the browser is now in an unknown state: the caller must discard it
                     // (StartFreshBrowser) or stop using this instance.

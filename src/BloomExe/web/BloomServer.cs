@@ -2433,6 +2433,30 @@ namespace Bloom.Api
             }
         }
 
+        /// <summary>
+        /// Registers that the current thread is about to block (exactly as <see cref="RegisterThreadBlocking"/>)
+        /// and, if that leaves no worker free to take new work, adds one right away. Pair it with
+        /// <see cref="RegisterThreadUnblocked"/> just like the plain version.
+        /// </summary>
+        /// <remarks>
+        /// RegisterThreadBlocking on its own only makes starvation *visible*; the escape hatch in QueueRequest
+        /// acts on it when the NEXT request arrives. That is too late for a thread that blocks waiting on
+        /// something a queued request has to produce — the page an off-screen browser is loading, say — because
+        /// the request that would unblock it may already be sitting in the queue, with nothing new coming in
+        /// behind it to trigger the check. Then everyone waits forever. So callers who block on our own server
+        /// use this instead, and we do the check at the moment the count goes up (BL-16612).
+        /// </remarks>
+        public void RegisterThreadBlockingAndEnsureAFreeWorker()
+        {
+            RegisterThreadBlocking();
+            lock (_queue)
+            {
+                // SpinUpAWorker mutates _workers, so it must be called inside this lock.
+                if (_countBlockedThreads >= _workers.Count)
+                    SpinUpAWorker();
+            }
+        }
+
         private bool IsWorkerThread(Thread thread) =>
             thread?.Name?.IndexOf(WorkerThreadNamePrefix) == 0;
 
