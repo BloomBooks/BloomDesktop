@@ -112,6 +112,9 @@ export const ToolboxRoot: React.FunctionComponent = () => {
     // calls can read and update the list synchronously. (React state is updated from it,
     // for rendering.)
     const sectionsRef = React.useRef<ToolboxSection[]>([]);
+    // Likewise the authoritative copy of which section is expanded, so that removeTool()
+    // can tell synchronously whether it is removing the open one.
+    const expandedSectionIdRef = React.useRef<string | undefined>(undefined);
 
     const applySections = React.useCallback(
         (nextSections: ToolboxSection[]) => {
@@ -121,12 +124,28 @@ export const ToolboxRoot: React.FunctionComponent = () => {
         [],
     );
 
-    const makeToolActive = React.useCallback((toolId: string) => {
-        setExpandedSectionId(toolId);
-        activeToolChangedCallbacks.current.forEach((callback) => {
-            callback(toolId);
-        });
-    }, []);
+    const setExpandedSection = React.useCallback(
+        (sectionId: string | undefined) => {
+            expandedSectionIdRef.current = sectionId;
+            setExpandedSectionId(sectionId);
+        },
+        [],
+    );
+
+    // Expand this tool's section and tell toolbox.ts about it. toolbox.ts keeps its own
+    // idea of which tool is current and drives each tool's showTool()/hideTool() from it,
+    // so every path that changes which section is expanded to a real tool has to come
+    // through here; one that quietly changed only our state left the two out of sync and
+    // the tool the user could see was never activated (BL-16602).
+    const makeToolActive = React.useCallback(
+        (toolId: string) => {
+            setExpandedSection(toolId);
+            activeToolChangedCallbacks.current.forEach((callback) => {
+                callback(toolId);
+            });
+        },
+        [setExpandedSection],
+    );
 
     // Register the adapter that toolbox.ts uses to say which tools the toolbox offers,
     // to make one of them active, and to observe which one is active.
@@ -160,14 +179,25 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                     return;
                 }
                 applySections(remainingSections);
-                // Only change which section is expanded if we just removed the expanded
-                // one. The awkward functional update guards against a stale value of
-                // expandedSectionId.
-                setExpandedSectionId((previousExpandedSectionId) =>
-                    previousExpandedSectionId === toolId
-                        ? remainingSections[0]?.id
-                        : previousExpandedSectionId,
-                );
+                if (expandedSectionIdRef.current !== toolId) {
+                    // We removed a tool the user wasn't looking at, so which section is
+                    // open doesn't change.
+                    return;
+                }
+                const replacementToolId = remainingSections[0]?.id;
+                if (!replacementToolId) {
+                    // Nothing left to open. Don't notify toolbox.ts: it has no way to
+                    // represent "no current tool", and expanding a section later will
+                    // tell it then.
+                    setExpandedSection(undefined);
+                    return;
+                }
+                // Go through makeToolActive so toolbox.ts hears about the replacement.
+                // Leaving a game page removes the Game tool this way, and when this
+                // didn't notify, toolbox.ts went on believing Game was current and
+                // never called showTool() on the tool that replaced it, which killed
+                // Talking Book's highlighting and audio (BL-16602).
+                makeToolActive(replacementToolId);
             },
             hasTool: (toolId: string) => {
                 return sectionsRef.current.some(
@@ -270,7 +300,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                 if (expanded) {
                                     makeToolActive(section.id);
                                 } else {
-                                    setExpandedSectionId(undefined);
+                                    setExpandedSection(undefined);
                                 }
                             }}
                         >
