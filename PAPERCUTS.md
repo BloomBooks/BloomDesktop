@@ -20,20 +20,49 @@ House rules:
 ---
 
 
-## 2026-07-27 — ToolboxRoot's Playwright component tests have been dead since React 18
+## 2026-07-27 — The component-tester uitest suites still aren't in CI
 
-- **Cut:** All 7 tests in `react_components/ToolboxRootTestHarness/component-tests/
-  toolbox-root-react.uitest.ts` fail on master before rendering anything: the component-tester
-  workspace pins `react-dom` 17.0.2, so Vite can't resolve `react-dom/client`, which
-  `utils/reactRender.tsx` has imported since the app moved to React 18. Nobody noticed because
-  these tests aren't in CI. That harness was the natural home for a regression test of the
-  toolbox's activation bridge (BL-16602); the test had to go into a vitest spec instead.
-- **Idea:** Bump `react`/`react-dom`/`@types/*` in
-  `src/BloomBrowserUI/react_components/component-tester/package.json` to 18 to match the app,
-  re-verify the 7 tests, and consider whether these should run in CI — a harness nothing runs
-  will rot again.
-- **Context:** BloomDesktop, found during `/preflight` of PR #8112 (BL-16602). Note the
-  component-tester README already says these aren't run by CI or any script.
+- **Cut:** Nothing runs `react_components/component-tester`'s Playwright suites — `nightly.yml`
+  runs vitest, C# and visual-regression only, and doesn't even `pnpm install` that workspace. That
+  is why the whole harness sat broken (React 17 pin + a second-Playwright-copy config bug) without
+  anyone noticing. It is now green at 144 passed / 25 skipped, so it will silently rot again.
+- **Idea:** Add a nightly job mirroring the visual-regression one (`pnpm install --frozen-lockfile`
+  in the component-tester dir, `pnpm exec playwright install chromium`, then
+  `pnpm exec playwright test --config playwright.config.ts`) and publish its junit output. The
+  bloom-exe config needs a running Bloom.exe, so only the component config is CI-able for now.
+- **Context:** BloomDesktop, branch `fix-component-tester`. The component-tester README still
+  says these are "not currently run as part of CI or other script" — update it if this lands.
+
+
+## 2026-07-27 — Changing harness imports + `reuseExistingServer` = 20 bogus test failures
+
+- **Cut:** Adding one bare import (`jquery`) to `component-harness.tsx` invalidated Vite's dep
+  optimizer, but `playwright.config.ts` sets `reuseExistingServer: true`, so the already-running dev
+  server served a half-rebuilt `node_modules/.vite/deps` chunk. Every BookGridSetup test (21 of
+  them) failed with `styled_default is not a function` — which looks exactly like a real MUI/emotion
+  regression and cost a chunk of debugging. Killing the server and deleting `node_modules/.vite`
+  fixed it with no code change.
+- **Idea:** Note this in the component-tester README/AGENTS ("if you add or remove an import in the
+  harness, stop the dev server and `rm -rf node_modules/.vite` before trusting a red run"), or have
+  the config/dev script clear the deps cache when `component-harness.tsx` is newer than it.
+- **Context:** BloomDesktop, branch `fix-component-tester`.
+
+
+## 2026-07-27 — Toolbox test harness has to duplicate toolboxBootstrap's tool registration
+
+- **Cut:** `ToolboxRoot` only renders a section for a tool in `getMasterToolList()`, and tools land
+  there as a side effect of importing `toolboxBootstrap.ts`. The harness can't import that module —
+  it also does `$(document).ready(renderToolboxRoot)` and assigns `window.toolboxBundle`, which
+  would double-render the root and clobber the stub some tests install. So
+  `ToolboxRootTestHarness.tsx` now repeats the 11 `ToolBox.registerTool(...)` calls, with a
+  "keep in sync" comment — i.e. a list that will drift.
+- **Idea:** Extract the registrations into a side-effect-free `registerAllToolboxTools()` module
+  that both `toolboxBootstrap.ts` and the harness import. Probably best folded into the toolbox
+  React refactor (BL-16608 / PR #8109) rather than done separately.
+- **Context:** BloomDesktop, branch `fix-component-tester`. Related: one test there is now
+  `test.fixme` because it asserts on `.subscription-badge` (legacy-toolbox-only) and
+  `.toolbox-react-header-icon` (never existed) via computed `background-image`; re-enabling it
+  needs a decision on whether the React header renders badges/icons and what classes to expose.
 
 
 ## 2026-07-27 — C# test host aborts mid-run when the suite runs alongside vitest
