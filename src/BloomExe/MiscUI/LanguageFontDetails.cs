@@ -93,6 +93,7 @@ namespace Bloom.MiscUI
         public new bool RightToLeft
         {
             get { return _rightToLeftCheck.Checked; }
+            set { _rightToLeftCheck.Checked = value; }
         }
 
         public bool ExtraLineHeight
