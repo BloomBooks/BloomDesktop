@@ -9,7 +9,9 @@ block headContent
 	//- The individual tools' stylesheets are not listed here: each tool imports its own
 	//- .less from its component, which the build turns into a <style> in this document.
 	link(rel='stylesheet', href='/bloom/bookEdit/css/rc-slider-bloom.css')
-	link(rel='stylesheet', href='/bloom/lib/jquery.qtip.css')
+	//- No qtip stylesheet: the reader tools' tooltips are created in the page frame
+	//- (readerToolsModel posts "Qtips" to it), which links jquery.qtip.css itself.
+	//- See the styleSheets list in editablePage.ts.
 	link(rel='stylesheet', href='/bloom/writingSystemDisplayForUI.css')
 
 	//reviewslog: since we only access the ckeditor on the page, we should be able to reference that one, not addd one to this iframe script(src='/bloom/lib/ckeditor/ckeditor.js')

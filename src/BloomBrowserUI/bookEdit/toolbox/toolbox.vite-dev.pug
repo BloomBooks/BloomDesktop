@@ -108,7 +108,7 @@ block endBodyScripts
 		// The individual tools' stylesheets are not listed here: each tool imports its
 		// own .less from its component, so the dev server delivers them with the module.
 		await import("http://localhost:5173/bookEdit/css/rc-slider-bloom.less");
-		await import("http://localhost:5173/lib/jquery.qtip.css");
+		// No qtip stylesheet; see the note in toolbox.pug.
 
 		// Finally, load the app entry.
 		await import('http://localhost:5173/bookEdit/toolbox/toolboxBootstrap.ts');
