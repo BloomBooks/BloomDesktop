@@ -1314,19 +1314,22 @@ export class ReaderToolsModel {
 
             // The word list has been received. Now we are using setTimeout() to delay the remainder of the word
             // list processing so the UI doesn't appear frozen as long.
-            setTimeout(() => {
-                this.wordListLoaded = true;
-                this.updateControlContents(); // needed if user deletes all of the stages.
-                this.doMarkup();
-                this.processWordListChangedListeners();
+            return new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    this.wordListLoaded = true;
+                    this.updateControlContents(); // needed if user deletes all of the stages.
+                    this.doMarkup();
+                    this.processWordListChangedListeners();
 
-                //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
-                //This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
-                postData(
-                    "readers/io/synphonyLanguageData",
-                    theOneLanguageDataInstance,
-                );
-            }, 200);
+                    //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
+                    //This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
+                    postData(
+                        "readers/io/synphonyLanguageData",
+                        theOneLanguageDataInstance,
+                    );
+                    resolve();
+                }, 200);
+            });
         });
     }
 

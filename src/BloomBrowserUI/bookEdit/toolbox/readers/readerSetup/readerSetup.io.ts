@@ -10,9 +10,12 @@ import {
     setLevelValue,
 } from "./readerSetup.ui";
 import { ReaderStage, ReaderLevel, ReaderSettings } from "../ReaderSettings";
+import { cleanSpaceDelimitedList } from "./decodableStagesUtils";
 import "../../../../lib/jquery.onSafe";
 import * as _ from "underscore";
 import $ from "jquery";
+
+export { cleanSpaceDelimitedList };
 
 interface ILevelSetting {
     // in the right hand panel, the span for editing the value has this ID prefixed with "max-",
@@ -376,20 +379,4 @@ function getLevelValue(innerHTML: string): number {
     innerHTML = innerHTML.trim();
     if (innerHTML === "-") return 0;
     return parseInt(innerHTML);
-}
-
-/**
- * if the user enters a comma-separated list, remove the commas before saving (this is a space-delimited list)
- * Also converts newlines to spaces.
- * @param original
- * @returns {string}
- */
-export function cleanSpaceDelimitedList(original: string): string {
-    let cleaned: string = original
-        .replace(/,/g, " ")
-        .replace(/\r/g, " ")
-        .replace(/\n/g, " "); // replace commas and newlines
-    cleaned = cleaned.trim().replace(/ ( )+/g, " "); // remove consecutive spaces
-
-    return cleaned;
 }
