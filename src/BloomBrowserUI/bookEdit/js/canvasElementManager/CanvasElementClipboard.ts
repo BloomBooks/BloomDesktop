@@ -272,13 +272,6 @@ export class CanvasElementClipboard {
             const img = activeElement
                 .getElementsByClassName(kImageContainerClass)[0]
                 ?.getElementsByTagName("img")[0];
-//            if (img && isPlaceHolderImage(img.getAttribute("src"))) {
-//                this.replaceImageInCanvasElement(
-//                    bloomCanvas,
-//                    activeElement as HTMLElement,
-//                    img,
-//                    imageInfo,
-//                );
             if (img) {
                 changeImageInfo(img, imageInfo);
                 if (activeElement.classList.contains(kBackgroundImageClass)) {
