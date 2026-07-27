@@ -1,6 +1,6 @@
 import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
-import { renderRoot, unmountRoot } from "../../../utils/reactRender";
+import { unmountRoot } from "../../../utils/reactRender";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { kGameToolId } from "../toolIds";
 import { Fragment, useEffect, useMemo, useState } from "react";
@@ -1699,6 +1699,32 @@ export function getActiveGameTab(): number {
     return -1;
 }
 
+// What the Game tool's panel needs from the tool: which tab is active, and a counter the
+// tool bumps whenever it wants the panel to redo its page-dependent setup.
+interface IGamePanelState {
+    tab: number;
+    pageGeneration: number;
+}
+
+// The Game tool's panel. The tool itself is not part of the React tree (nothing can render
+// it), yet it needs to make the panel re-render when the active tab changes or a new page
+// arrives. So it acts as an external store and the panel subscribes to it.
+const GamePanel: React.FunctionComponent<{ tool: GameTool }> = (props) => {
+    const panelState = React.useSyncExternalStore(
+        props.tool.subscribeToPanelState,
+        props.tool.getPanelState,
+    );
+
+    return (
+        <div>
+            <DragActivityControls
+                activeTab={panelState.tab}
+                pageGeneration={panelState.pageGeneration}
+            />
+        </div>
+    );
+};
+
 export class GameTool extends ToolboxToolReactAdaptor {
     public static theOneDragActivityTool: GameTool | undefined;
 
@@ -1712,7 +1738,7 @@ export class GameTool extends ToolboxToolReactAdaptor {
 
     public setActiveTab(tab: number) {
         this.tab = tab;
-        this.renderRoot();
+        this.notifyPanel();
     }
     public static areGameTabsActive(): boolean {
         const page = getBloomPageElement();
@@ -1733,9 +1759,9 @@ export class GameTool extends ToolboxToolReactAdaptor {
     }
 
     // Activating the tool calls this right before newPageReady().
-    // Currently the latter does this.renderRoot(), so we don't need to do it here.
+    // Currently the latter notifies the panel, so we don't need to do it here.
     // public showTool() {
-    //     this.renderRoot();
+    //     this.notifyPanel();
     // }
 
     // This tool should only be offered if the page has a matching data-tool-id attribute.
@@ -1743,29 +1769,44 @@ export class GameTool extends ToolboxToolReactAdaptor {
         return true;
     }
 
-    private root: HTMLDivElement | undefined;
     private tab = 0;
+    // Incremented whenever we notify the panel; DragActivityControls uses it as an effect
+    // dependency so that it redoes its page-dependent setup. (The old imperative version
+    // bumped it on every re-render of the tool's own React root, which is exactly when we
+    // now notify.)
+    private pageGeneration = 1;
+    // The immutable snapshot useSyncExternalStore hands to the panel. Replaced, never
+    // mutated, so that React can see that something changed.
+    private panelState: IGamePanelState = {
+        tab: this.tab,
+        pageGeneration: this.pageGeneration,
+    };
+    private panelStateListeners = new Set<() => void>();
 
-    public makeRootElement(): HTMLDivElement {
-        this.root = document.createElement("div") as HTMLDivElement;
-        //root.setAttribute("class", "DragActivityBody");
+    // The two halves of the external store the panel subscribes to. They are
+    // arrow-function fields because useSyncExternalStore re-subscribes whenever the
+    // functions it is given change identity.
+    public subscribeToPanelState = (listener: () => void): (() => void) => {
+        this.panelStateListeners.add(listener);
+        return () => {
+            this.panelStateListeners.delete(listener);
+        };
+    };
+    public getPanelState = (): IGamePanelState => this.panelState;
 
-        this.renderRoot();
-        return this.root;
+    // Makes the panel re-render with the tool's current tab, and asks it to redo its
+    // page-dependent setup.
+    private notifyPanel(): void {
+        this.pageGeneration++;
+        this.panelState = {
+            tab: this.tab,
+            pageGeneration: this.pageGeneration,
+        };
+        this.panelStateListeners.forEach((listener) => listener());
     }
 
-    private pageGeneration = 0;
-
-    private renderRoot(): void {
-        if (!this.root) return;
-        this.pageGeneration++;
-        renderRoot(
-            <DragActivityControls
-                activeTab={this.tab}
-                pageGeneration={this.pageGeneration}
-            />,
-            this.root,
-        );
+    public renderPanel(): JSX.Element {
+        return <GamePanel tool={this} />;
     }
 
     public id(): string {

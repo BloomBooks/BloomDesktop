@@ -23,11 +23,13 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     imageUpdated(img: HTMLImageElement | undefined): void {
         // No action needed for this tool
     }
-    public makeRootElement(): HTMLDivElement {
-        return this.adaptReactElement(
-            <TalkingBookToolControls
-                audioRecorder={getOrCreateAudioRecorder()}
-            />,
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <TalkingBookToolControls
+                    audioRecorder={getOrCreateAudioRecorder()}
+                />
+            </div>
         );
     }
     /** This tool saves no state of its own; see ITool.beginRestoreSettings(). */

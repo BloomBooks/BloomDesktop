@@ -4,7 +4,6 @@ import { beginInitializeDecodableReaderTool } from "../readerTools";
 import { getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
 import { get } from "../../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
-import { renderRoot } from "../../../../utils/reactRender";
 import { isLongPressEvaluating, IToolboxSettings } from "../../toolbox";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
 import $ from "jquery";
@@ -17,11 +16,12 @@ import $ from "jquery";
 // and handling certain events such as focsuing in an element (such as
 // a textbox), focusing out of an element, and undo/redo.
 export class DecodableReaderTool extends ToolboxToolReactAdaptor {
-    public makeRootElement(): HTMLDivElement {
-        const root = document.createElement("div");
-
-        renderRoot(<DecodableReaderToolControls />, root);
-        return root as HTMLDivElement;
+    public renderPanel(): JSX.Element {
+        return (
+            <div>
+                <DecodableReaderToolControls />
+            </div>
+        );
     }
     public id(): string {
         return "decodableReader";

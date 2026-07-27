@@ -3,7 +3,10 @@ The toolbox is the sidebar of the Edit tab. Every tool in it is a React componen
 Code organization
 - Files in this root folder are the generic machinery for managing the toolbox as a whole:
     - ToolboxRoot.tsx    the React root: one MUI Accordion section per tool, whose body is
-                         the element the tool's ITool.makeRootElement() returns.
+                         what the tool's ITool.renderPanel() returns. There is exactly one
+                         React root for the whole toolbox, and each tool's panel is an
+                         ordinary child of it, so React context (e.g. the MUI theme)
+                         reaches the tools normally.
     - toolbox.ts         the ITool interface and the non-React orchestration: it asks the
                          server which tools this book has enabled and drives each tool's
                          lifecycle (showTool/newPageReady/updateMarkup/...).
@@ -35,8 +38,9 @@ know about the tool.
 To add a new tool
 1. Create a folder here whose name is the tool's canonical id (no "Tool" suffix).
 2. In it, write a class that extends ToolboxToolReactAdaptor, implementing at least id()
-   and makeRootElement(), plus iconPath() if the section header should show an icon, and
-   whichever lifecycle methods the tool needs (see the ITool comments in toolbox.ts).
+   and renderPanel() (which just returns the tool's React element), plus iconPath() if the
+   section header should show an icon, and whichever lifecycle methods the tool needs (see
+   the ITool comments in toolbox.ts).
 3. Register one instance of it in toolboxBootstrap.ts: ToolBox.registerTool(new MyTool()).
 4. Add an XLF entry for the label, whose key follows the convention in toolIds.ts
    getToolLabelInfo() (e.g. id "music" gives key "EditTab.Toolbox.MusicTool" and English

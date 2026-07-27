@@ -23,8 +23,9 @@ namespace Bloom.Edit
     ///			(which implements ITool, supplying do-nothing defaults for everything the tool
     ///			doesn't care about, e.g. beginRestoreSettings for a tool that saves no state)
     ///			- minimally this must implement id() to return the tool ID, and
-    ///				makeRootElement() to return the single div that is the tool's React root
-    ///				(the base class's adaptReactElement() does this for you).
+    ///				renderPanel() to return the tool's React element. The toolbox renders that
+    ///				element as an ordinary child of its own single React root, so React context
+    ///				(e.g. the MUI theme) reaches it normally.
     ///			- should implement iconPath() to return the URL of the icon for the tool's section
     ///				header, e.g. "/bloom/bookEdit/toolbox/motion/motion.svg" (create the icon in the
     ///				tool's own folder, or in BloomBrowserUI/images).
