@@ -8,14 +8,27 @@ import { readerContainedButtonCss } from "./readerToolStyles";
 // in the stage-vs-level wording. (BL-16585)
 export const ReaderSetupButton: FunctionComponent<{
     isForLeveled: boolean;
+    /**
+     * Supply this to open something other than the legacy jQuery setup dialog. The Decodable
+     * Reader passes it so its converted React dialog is used instead (BL-16607); the Leveled
+     * Reader has not been converted yet and so still falls back to the href below.
+     */
+    onClick?: () => void;
 }> = (props) => {
+    let legacyDialogHref: string | undefined;
+    if (props.onClick) {
+        legacyDialogHref = undefined; // the caller is opening its own dialog
+    } else if (props.isForLeveled) {
+        legacyDialogHref =
+            "javascript:window.toolboxBundle.showSetupDialog('levels');";
+    } else {
+        legacyDialogHref =
+            "javascript:window.toolboxBundle.showSetupDialog('stages');";
+    }
     return (
         <BloomButton
-            href={
-                props.isForLeveled
-                    ? "javascript:window.toolboxBundle.showSetupDialog('levels');"
-                    : "javascript:window.toolboxBundle.showSetupDialog('stages');"
-            }
+            href={legacyDialogHref}
+            onClick={props.onClick}
             l10nKey={
                 props.isForLeveled
                     ? "EditTab.Toolbox.LeveledReaderTool.SetUpLevels"

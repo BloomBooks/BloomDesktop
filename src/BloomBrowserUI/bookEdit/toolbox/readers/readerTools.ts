@@ -367,16 +367,16 @@ function refreshSettingsExceptSampleWords(newSettings) {
 }
 
 /**
- * Re-creates the one instance of LanguageData and ReadersSynphonyWrapper, populates them from the supplied or current
- * settings and sample word files, and updates the UI to match. Because of the convoluted way we build
- * the indexes inside the LanguageData object, this is the only currently feasible way to get it in
- * a consistent state after changes to the sample words files or the panel in the settings dialog.
+ * Refreshes the reader setup and, for sample-word mode, rebuilds its language data from the sample files.
  * Returns a promise which is resolved when all the sample words files are loaded and the model is ready to use.
  */
 function beginRefreshEverything(settings: ReaderSettings): JQueryPromise<void> {
-    // reset the file and word list
-    ResetLanguageDataInstance();
-    getTheOneReaderToolsModel().allWords = {};
+    // Allowed-word-list mode does not use sample-word data. Keep it available for
+    // a setup-dialog preview if the user temporarily switches back to stages.
+    if (!settings.useAllowedWords) {
+        ResetLanguageDataInstance();
+        getTheOneReaderToolsModel().allWords = {};
+    }
     // This helps with updating the matching words panel in the setup dialog. If we switched to the
     // sample words tab, changed sample words, and switched back, or if the user just edited the sample
     // words files in the background, nothing will have changed that indicates the cache is invalid;
@@ -413,20 +413,23 @@ export function beginSaveChangedSettings(
     settings: ReaderSettings,
     previousMoreWords: string,
     previousLetters: string,
+    previousUseAllowedWords?: number,
 ): Promise<void> {
     // Using axios directly because our api at this point calls for returning the promise.
+
+    const refreshAllBasedOnAllowedWords: number | boolean =
+        previousUseAllowedWords !== undefined
+            ? settings.useAllowedWords !== previousUseAllowedWords
+            : settings.useAllowedWords;
+
     return <any>(
         axios
             .post("/bloom/api/readers/io/readerToolSettings", settings)
             .then(() => {
-                // reviewslog: following previous logic that we need to reload files if useAllowedWords
-                // is true. Seems we should at least need to do it ALSO if it was PREVIOUSLY true.
-                // But that is a very obscure case...we don't expect users to switch back and forth
-                // in the basic mechanism by which they define stages.
                 if (
                     settings.moreWords !== previousMoreWords ||
                     settings.letters !== previousLetters ||
-                    settings.useAllowedWords
+                    refreshAllBasedOnAllowedWords
                 ) {
                     return beginRefreshEverything(settings); // caller will resolve when everything is refreshed
                 } else {
@@ -448,6 +451,46 @@ export function addWordListChangedListener(
     getTheOneReaderToolsModel().wordListChangedListeners[
         listenerNameAndContext
     ] = callback;
+}
+
+/** Removes a listener previously added for word-list changes. */
+export function removeWordListChangedListener(
+    listenerNameAndContext: string,
+): void {
+    delete getTheOneReaderToolsModel().wordListChangedListeners[
+        listenerNameAndContext
+    ];
+}
+
+/** Gets the loaded sample words decodable with the given graphemes. */
+export function getDecodableStageMatchingWords(knownGpcs: string[]): string[] {
+    return getTheOneReaderToolsModel().selectWordsFromSynphony(
+        true,
+        knownGpcs,
+        knownGpcs,
+        true,
+        true,
+    ) as string[];
+}
+
+/** Adds a listener that runs when the Sample Texts folder changes. */
+export function addSampleTextFilesChangedListener(
+    listenerNameAndContext: string,
+    callback: () => void,
+): void {
+    getTheOneReaderToolsModel().directoryWatcher!.onChanged(
+        listenerNameAndContext,
+        callback,
+    );
+}
+
+/** Removes a listener previously added for Sample Texts folder changes. */
+export function removeSampleTextFilesChangedListener(
+    listenerNameAndContext: string,
+): void {
+    getTheOneReaderToolsModel().directoryWatcher!.offChanged(
+        listenerNameAndContext,
+    );
 }
 
 export function makeLetterWordList(): void {
