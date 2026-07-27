@@ -189,6 +189,44 @@ jobs:
                   # The suite drives a headless chromium (Playwright) to capture bloom-player pages.
                   pnpm exec playwright install chromium
 
+            # This suite hangs intermittently (BL-16612): Bloom stops making progress, stops writing
+            # to its log, and every case then times out — so the run tells us only that something
+            # stopped, never what. What would identify it is each thread's stack while it was stuck,
+            # and we cannot collect that afterwards: the suite's own afterAll kills Bloom
+            # (taskkill /T /F) before any later step could look. So start a watchdog that runs
+            # ALONGSIDE the tests and grabs the stacks while Bloom is still wedged (on the observed
+            # failures it stayed stuck ~24 minutes, so there is plenty of time).
+            #
+            # Purely observational: it reads process state and never touches Bloom, so it cannot
+            # change the outcome of the run it is watching. Best-effort — `|| true` because a
+            # watchdog that fails to start must never turn the nightly red.
+            - name: Start the hung-Bloom watchdog
+              if: ${{ !cancelled() && steps.setup_visual_regression.outcome == 'success' }}
+              shell: pwsh
+              run: |
+                  try { dotnet tool install --global dotnet-stack } catch { Write-Host "dotnet-stack install skipped: $_" }
+                  $env:PATH = "$env:USERPROFILE\.dotnet\tools;$env:PATH"
+
+                  # Start-Process resolves relative paths against the PROCESS working directory, which is
+                  # not necessarily PowerShell's location, so be explicit about both. A watchdog that
+                  # silently fails to launch would cost us a whole night.
+                  $repo = (Get-Location).Path
+                  Start-Process pwsh `
+                    -ArgumentList '-NoProfile', '-File', "$repo\build\ci\watch-for-hung-bloom.ps1" `
+                    -WorkingDirectory $repo `
+                    -WindowStyle Hidden
+
+                  # Confirm it really came up, so a non-start is visible in this log rather than being
+                  # discovered as an empty artifact tomorrow.
+                  Start-Sleep -Seconds 5
+                  if (Test-Path "$repo\bloom-watchdog\samples.txt") {
+                      Write-Host "watchdog confirmed running:"
+                      Get-Content "$repo\bloom-watchdog\samples.txt"
+                  } else {
+                      Write-Host "WARNING: the watchdog did not start; the run continues without stack capture"
+                  }
+                  exit 0
+
             # Reporter flags rather than config so this suite's own vitest.config.ts stays about
             # timeouts. Same no-`--` rule as the browser UI tests above — see that step's comment.
             - name: Run visual regression tests
@@ -205,13 +243,23 @@ jobs:
             # event log. Gather whatever exists into a fixed folder so the next step can upload it,
             # rather than losing the one thing that explains a "Bloom never came up" failure.
             # Best-effort throughout: never let missing logs turn this diagnostic step red.
+            #
+            # Runs on SUCCESS as well as failure (BL-16612). Chasing an intermittent hang means the
+            # healthy runs are evidence too: without a known-good log and watchdog sample to compare
+            # against, a failing run's numbers mean nothing in isolation. Throwing away everything
+            # from the green runs is precisely what has made this bug so hard to pin down.
             - name: Collect Bloom diagnostics
-              if: ${{ !cancelled() && steps.visual_regression.outcome == 'failure' }}
+              if: ${{ !cancelled() && steps.visual_regression.outcome != 'skipped' }}
               shell: bash
               run: |
                   set +e
                   dest="bloom-diagnostics"
                   mkdir -p "$dest"
+                  # Thread stacks + process samples from the watchdog, if it saw anything worth keeping.
+                  if [ -d "bloom-watchdog" ]; then
+                      echo "Found watchdog output"
+                      cp -r "bloom-watchdog" "$dest/watchdog" 2>/dev/null
+                  fi
                   for src in "$TEMP/SIL/Bloom" "$LOCALAPPDATA/SIL/Bloom" "$LOCALAPPDATA/Temp/SIL/Bloom"; do
                       if [ -d "$src" ]; then
                           echo "Found Bloom logs in: $src"
@@ -226,13 +274,14 @@ jobs:
                   echo "----- collected diagnostics -----"
                   ls -R "$dest" || true
 
-            # On failure, keep the current + diff images so a human can see what changed, plus the
-            # Bloom logs / crash events gathered above. The committed *-reference.png baselines are
-            # already in the repo; *-current.png and *-diff.png are generated (gitignored).
-            # if-no-files-found: ignore avoids a warning when the failure was not a pixel mismatch
-            # (e.g. Bloom failed to launch, so no screenshots were produced).
+            # Keep the current + diff images so a human can see what changed, plus the Bloom logs /
+            # crash events / watchdog stacks gathered above. The committed *-reference.png baselines
+            # are already in the repo; *-current.png and *-diff.png are generated (gitignored).
+            # if-no-files-found: ignore avoids a warning when there was no pixel mismatch at all
+            # (e.g. a clean run, or Bloom failed to launch so no screenshots were produced).
+            # Uploaded on success too, for the reason given on the collect step above.
             - name: Upload visual regression diffs
-              if: ${{ !cancelled() && steps.visual_regression.outcome == 'failure' }}
+              if: ${{ !cancelled() && steps.visual_regression.outcome != 'skipped' }}
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: visual-regression-diffs
