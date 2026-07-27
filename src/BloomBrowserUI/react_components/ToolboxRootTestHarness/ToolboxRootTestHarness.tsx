@@ -5,11 +5,19 @@ import {
     IToolboxReactAdapter,
     whenToolboxReactAdapterReady,
 } from "../../bookEdit/toolbox/toolboxReactAdapter";
-import { ToolBox } from "../../bookEdit/toolbox/toolbox";
-import ToolboxToolReactAdaptor from "../../bookEdit/toolbox/toolboxToolReactAdaptor";
+import { ToolBox, getMasterToolList } from "../../bookEdit/toolbox/toolbox";
+import { DecodableReaderTool } from "../../bookEdit/toolbox/readers/decodableReader/decodableReaderTool";
+import { LeveledReaderTool } from "../../bookEdit/toolbox/readers/leveledReader/leveledReaderTool";
+import { MusicToolAdaptor } from "../../bookEdit/toolbox/music/musicToolControls";
 import { ImpairmentVisualizerAdaptor } from "../../bookEdit/toolbox/impairmentVisualizer/impairmentVisualizer";
+import { MotionTool } from "../../bookEdit/toolbox/motion/motionTool";
+import TalkingBookTool from "../../bookEdit/toolbox/talkingBook/talkingBookTool";
+import { SignLanguageTool } from "../../bookEdit/toolbox/signLanguage/signLanguageTool";
+import { ImageDescriptionAdapter } from "../../bookEdit/toolbox/imageDescription/imageDescription";
+import { CanvasTool } from "../../bookEdit/toolbox/canvas/canvasTool";
+import { GameTool } from "../../bookEdit/toolbox/games/GameTool";
 import { SettingsTool } from "../../bookEdit/toolbox/settings/settingsTool";
-import { kCanvasToolId, kMotionToolId } from "../../bookEdit/toolbox/toolIds";
+import { kMotionToolId, kSettingsToolId } from "../../bookEdit/toolbox/toolIds";
 import { useMountEffect } from "../../utils/useMountEffect";
 
 // A stand-alone host for ToolboxRoot, so that Playwright can drive the real toolbox UI
@@ -18,10 +26,9 @@ import { useMountEffect } from "../../utils/useMountEffect";
 // ToolboxRoot does not decide which tools to offer; in the real toolbox that is
 // toolbox.ts's job (it asks the server which tools the book has enabled, then calls the
 // adapter's addTool() for each, and finally makes the tool the book was last using the
-// current one). This harness stands in for exactly that: it registers a small set of tools
-// with the real ToolBox.registerTool(), then populates the toolbox through the real
-// adapter. Everything under test — the sections, their order, their headers, and which one
-// is expanded — is therefore production code driven the production way.
+// current one). This harness stands in for exactly that, driving the real adapter, so
+// everything under test — the sections, their order, their headers, which one is expanded,
+// and each tool's own panel — is production code driven the production way.
 
 declare global {
     interface Window {
@@ -34,74 +41,53 @@ declare global {
     }
 }
 
-/**
- * Stands in for one of the real subscription-requiring tools (Canvas, Motion). Their own
- * implementations would drag the canvas and audio-recording engines into this harness and
- * expect a page to be open for editing, but everything the toolbox itself asks of a tool is
- * cheap to supply. What the toolbox uses is real: the id is a real tool id (so the header
- * label, its l10n key, and the sort order all come from toolIds.ts), and the icon path and
- * feature name are the ones the real tool returns.
- */
-class StandInTool extends ToolboxToolReactAdaptor {
-    public constructor(
-        private toolId: string,
-        private toolIconPath: string,
-        featureName: string,
-    ) {
-        super();
-        this.featureName = featureName;
-    }
-
-    public id(): string {
-        return this.toolId;
-    }
-
-    public iconPath(): string {
-        return this.toolIconPath;
-    }
-
-    public renderPanel(): JSX.Element {
-        return <div>{`Stand-in body for the ${this.toolId} tool.`}</div>;
-    }
+// ToolboxRoot only builds a section for a tool that is in the master tool list, and tools
+// put themselves there by being registered. In the running app that happens as a side effect
+// of loading toolboxBootstrap. We deliberately do NOT import that module here: besides
+// registering tools it also renders its own toolbox root on $(document).ready and assigns
+// window.toolboxBundle, which would both duplicate the root this harness renders and
+// overwrite the toolboxBundle stub some tests install. So we register the same set of tools
+// ourselves. Keep this list in sync with toolboxBootstrap.ts.
+// The guard keys off the shared master list rather than a module-local flag on purpose.
+// This file is a valid React-Refresh boundary (its only export is a component), so editing
+// it during `pnpm dev` re-executes this module without reloading the page. A module-local
+// flag would reset to false while masterToolList — which lives in toolbox.ts and is not
+// invalidated — kept its entries, and ToolBox.registerTool is a bare push with no dedupe,
+// so we would end up with 11 duplicate tools and duplicate accordion sections.
+function registerToolsOnce() {
+    if (getMasterToolList().length > 0) return;
+    ToolBox.registerTool(new DecodableReaderTool());
+    ToolBox.registerTool(new LeveledReaderTool());
+    ToolBox.registerTool(new MusicToolAdaptor());
+    ToolBox.registerTool(new ImpairmentVisualizerAdaptor());
+    ToolBox.registerTool(new MotionTool());
+    ToolBox.registerTool(new TalkingBookTool());
+    ToolBox.registerTool(new SignLanguageTool());
+    ToolBox.registerTool(new ImageDescriptionAdapter());
+    ToolBox.registerTool(new CanvasTool());
+    ToolBox.registerTool(new GameTool());
+    ToolBox.registerTool(new SettingsTool());
 }
 
-// The tools this harness offers. The two real ones are the cheapest real tools to host
-// outside the real toolbox: neither needs CkEditor, the audio engine, or a page being
-// edited in order to render its section. Impairment Visualizer also exercises the one tool
-// id whose label and l10n key take no "Tool" suffix, and the Settings ("More...") tool is
-// the section that always sorts last.
-const impairmentVisualizerTool = new ImpairmentVisualizerAdaptor();
-const settingsTool = new SettingsTool();
-const motionTool = new StandInTool(
-    kMotionToolId,
-    "/bloom/bookEdit/toolbox/motion/motion.svg",
-    kMotionToolId,
-);
-const canvasTool = new StandInTool(
-    kCanvasToolId,
-    "/bloom/bookEdit/toolbox/canvas/Canvas%20Icon.svg",
-    kCanvasToolId,
-);
-
-// Registering at module scope, as toolboxBootstrap.ts does, so the tools are known before
-// anything asks the toolbox to offer one.
-[impairmentVisualizerTool, settingsTool, motionTool, canvasTool].forEach(
-    (tool) => ToolBox.registerTool(tool),
-);
+registerToolsOnce();
 
 // The sections the toolbox starts with, i.e. what toolbox.ts would add after asking the
 // server which tools this book has enabled. Canvas is deliberately left out so that a test
 // can add it later, the way ticking its checkbox in the "More..." section does.
+// Impairment Visualizer earns its place by being the one tool id whose label and l10n key
+// take no "Tool" suffix, and Settings ("More...") is the section that always sorts last.
+// (toolIds.ts has no constant for the impairment visualizer, since no production code
+// needs to name it.)
 const initiallyOfferedToolIds = [
-    impairmentVisualizerTool.id(),
-    motionTool.id(),
-    settingsTool.id(),
+    "impairmentVisualizer",
+    kMotionToolId,
+    kSettingsToolId,
 ];
 
 // The tool this "book" was last using, which toolbox.ts makes current once the sections
 // exist. Deliberately not the first section, so that a test can tell that it was restored
 // rather than just defaulted to.
-const restoredCurrentToolId = motionTool.id();
+const restoredCurrentToolId = kMotionToolId;
 
 export const ToolboxRootTestHarness: React.FunctionComponent = () => {
     // Publishing the test hook and populating the toolbox are side effects that have
