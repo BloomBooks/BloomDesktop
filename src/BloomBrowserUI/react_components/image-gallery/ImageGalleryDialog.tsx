@@ -101,16 +101,24 @@ const ImageGalleryDialog: React.FunctionComponent<{
             {},
         );
         if (!response) return undefined;
-        const { filePath, previewUrl } = response.data as {
+        const { filePath, previewUrl, width, height, size } = response.data as {
             filePath: string;
             previewUrl: string;
+            width: number;
+            height: number;
+            size: number;
         };
         if (!filePath) return undefined;
         return {
             thumbnailUrl: previewUrl,
             reasonableSizeUrl: previewUrl,
             localPath: filePath,
-            size: 0,
+            // C# reports the original file's dimensions and byte count. These matter because
+            // previewUrl may serve a downscaled stand-in for an image too large for the
+            // browser to display, and we want to report what the user actually chose.
+            width: width || undefined,
+            height: height || undefined,
+            size: size ?? 0,
             type: "image",
         };
     };
