@@ -671,6 +671,7 @@ export function SetupElements(
             const contentElements = $(this).find(
                 "textarea, div.bloom-editable",
             );
+            const originalOrder = contentElements.toArray();
             contentElements.sort((a, b) => {
                 //using negatives so that something with none of these labels ends up with a > score and at the end
                 //reviewSlog
@@ -690,8 +691,17 @@ export function SetupElements(
                 }
                 return 0;
             });
-            //do the actual rearrangement
-            $(this).append(contentElements);
+            //do the actual rearrangement -- but only if something actually needs to move.
+            // append() detaches and re-inserts every element even when the order is already
+            // correct (the normal case for a saved book), and that churn can cost a visible
+            // frame of blank text after a page loads (BL-15300), besides killing the audio
+            // highlight's Ranges and forcing a repair.
+            const orderChanged = contentElements
+                .toArray()
+                .some((el, index) => originalOrder[index] !== el);
+            if (orderChanged) {
+                $(this).append(contentElements);
+            }
         });
 
     //Convert Standard Format Markers in the pasted text to html spans

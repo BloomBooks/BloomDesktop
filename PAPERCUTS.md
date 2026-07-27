@@ -44,6 +44,8 @@ House rules:
   `src/BloomTests/xMatter/Test-XMatter` packs from that tree (5 failures in
   `XMatterHelperTests` and `InsertPageAfter_FromDifferentBook_MergesStyles`). Agents can't get
   a green full-suite baseline, so every preflight has to re-establish that these 9 are noise.
+- seen again: 2026-07-27, preflight of moreHighlightFixes2 (PR #8100) — same 9, re-triaged as
+  environmental; developer decided "leave as is" for that run.
 - **Idea:** Make the wrapper copy/link `BloomPdfMaker.exe` into its private output tree and fix
   the xmatter file-locator path (or document the 9 known failures in AGENTS.md as expected under
   the wrapper).
