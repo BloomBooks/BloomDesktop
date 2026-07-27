@@ -52,6 +52,17 @@
             "react-dom": ["./node_modules/@types/react-dom"],
             "react-dom/client": ["./node_modules/@types/react-dom/client"],
             "@emotion/react": ["./node_modules/@emotion/react"],
+            // The editor's tsconfig sets jsxImportSource to @emotion/react, so every
+            // .tsx file there resolves its JSX factory through @emotion/react/jsx-runtime.
+            // Without these two entries that lookup fails from the sibling directory and
+            // every editor component reports TS2875 -- which the typecheck gate does not
+            // fail on, so the editor's JSX would silently go unchecked.
+            "@emotion/react/jsx-runtime": [
+                "./node_modules/@emotion/react/jsx-runtime"
+            ],
+            "@emotion/react/jsx-dev-runtime": [
+                "./node_modules/@emotion/react/jsx-dev-runtime"
+            ],
             "@emotion/cache": ["./node_modules/@emotion/cache"],
             "react-rnd": ["./node_modules/react-rnd"]
         }
