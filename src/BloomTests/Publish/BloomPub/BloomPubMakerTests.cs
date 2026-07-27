@@ -2144,6 +2144,100 @@ namespace BloomTests.Publish.BloomPub
             }
         }
 
+        [Test]
+        public void EmbedFonts_GenericCssFontFamily_LeftAloneAndNotReported()
+        {
+            // A book that asks for the CSS generic keyword "serif" (as some brandings do, e.g.
+            // BL-16370). "serif" is not a real font on disk; the reader's browser resolves it.
+            // Bloom should not warn about it, embed it, or rewrite it to the default font.
+            var bookHeadContent =
+                @"
+						<style type='text/css' title='userModifiedStyles'>
+							/*<![CDATA[*/
+							.Generic-style[lang='en'] { font-family: serif ! important; font-size: 12pt  }
+							/*]]>*/
+						</style>";
+            var bookBodyContent =
+                @"
+					<div class='bloom-page' id='guid1'></div>";
+            var testBook = CreateBookWithPhysicalFile(
+                bookBodyContent,
+                bookHeadContent,
+                bringBookUpToDate: false
+            );
+            var fontFileFinder = new StubFontFinder();
+            FontsApi.AvailableFontMetadataDictionary.Clear();
+            fontFileFinder.NoteFontsWeCantInstall = true;
+            PublishHelper.ClearFontMetadataMapForTests();
+
+            var customStylesPath = Path.Combine(testBook.FolderPath, "customCollectionStyles.css");
+            File.WriteAllText(customStylesPath, ".someStyle {font-family: serif;}");
+
+            var stubProgress = new StubProgress();
+
+            // Include a bold variant too, mirroring the real scenario where a bold caption
+            // produced a second "serif Bold" warning.
+            var fontsWanted = new HashSet<PublishHelper.FontInfo>
+            {
+                new PublishHelper.FontInfo
+                {
+                    fontFamily = "serif",
+                    fontStyle = "normal",
+                    fontWeight = "400",
+                },
+                new PublishHelper.FontInfo
+                {
+                    fontFamily = "serif",
+                    fontStyle = "normal",
+                    fontWeight = "700",
+                },
+            };
+
+            // Sanity check: the styles reference "serif" before we run.
+            Assert.That(
+                File.ReadAllText(customStylesPath).Contains("serif"),
+                Is.True,
+                "test setup: customCollectionStyles.css should reference serif"
+            );
+
+            BloomPubMaker.EmbedFonts(testBook, stubProgress, fontsWanted, fontFileFinder);
+
+            // No warning or substitution message should mention the generic family.
+            Assert.That(
+                stubProgress.MessagesNotLocalized.Any(m => m.Contains("serif")),
+                Is.False,
+                "Bloom should not report anything about the generic 'serif' family"
+            );
+            Assert.That(
+                stubProgress.MessagesNotLocalized.Any(m => m.Contains("could not find that font")),
+                Is.False
+            );
+
+            // The generic keyword must be left alone in the book's CSS, NOT rewritten to Andika,
+            // so the reader's browser can resolve it.
+            var customCss = File.ReadAllText(customStylesPath);
+            Assert.That(
+                customCss.Contains(".someStyle {font-family: serif;}"),
+                Is.True,
+                "generic 'serif' reference should be left unchanged"
+            );
+
+            var styleNode = testBook.OurHtmlDom.SelectSingleNode(
+                "//head/style[@type='text/css' and @title='userModifiedStyles']"
+            );
+            Assert.That(styleNode, Is.Not.Null);
+            Assert.That(
+                styleNode.InnerXml.Contains("font-family: serif"),
+                Is.True,
+                "generic 'serif' reference in userModifiedStyles should be left unchanged"
+            );
+
+            // And no fonts.css @font-face rule should have been created for it.
+            var fontsCssPath = Path.Combine(testBook.FolderPath, "fonts.css");
+            if (File.Exists(fontsCssPath))
+                Assert.That(RobustFile.ReadAllText(fontsCssPath).Contains("serif"), Is.False);
+        }
+
         private static SafeXmlDocument MakeDom(string bodyInnerXml)
         {
             var doc = SafeXmlDocument.Create();

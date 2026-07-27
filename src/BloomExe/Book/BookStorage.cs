@@ -2790,6 +2790,30 @@ namespace Bloom.Book
             );
         }
 
+        // The markup for the default "Made with Bloom" QR badge. Branding.json files reference
+        // this via the {bloom-badge-default} token (expanded in BookData.MergeBrandingSettings)
+        // instead of repeating this verbose HTML in every branding. It is kept here, next to
+        // UpdateQrCode, because that method rewrites this exact structure at runtime: it replaces
+        // the placeholder href below with the language-specific BloomLibrary URL (or removes it
+        // when the QR code is turned off), swaps in the QR image, and builds the caption.
+        private const string kBloomBadgeDefaultHtml =
+            "<div class='bloom-branding-wrapper'>"
+            + "<a href='https://bloomlibrary.org/'>"
+            + "<img class='branding' src='made-with-bloom-badge-text.svg'/>"
+            + "</a></div>";
+
+        /// <summary>
+        /// Named family of branding badge markups, keyed by the token used in branding.json
+        /// (e.g. "bloom-badge-default" is written as "{bloom-badge-default}"). Adding a future
+        /// badge variant is just a new entry here plus its own token name; branding.json structure
+        /// does not have to change.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, string> BrandingBadgeHtmlByToken =
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["bloom-badge-default"] = kBloomBadgeDefaultHtml,
+            };
+
         public static void UpdateQrCode(
             HtmlDom dom,
             bool shouldHaveQrCode,
