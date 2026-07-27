@@ -240,8 +240,8 @@ export class CanvasElementClipboard {
         const bloomCanvas = this.host.getActiveOrFirstBloomCanvasOnPage()!;
         const canvasElements =
             bloomCanvas.getElementsByClassName(kCanvasElementClass);
-
-        // If it's an empty canvas, make this its background image.
+        // If it's an empty canvas, make this its background image.  An empty canvas may already
+        // have a background image, but no other content.  See BL-16542.
         // A possible special case is the custom game page, where the only canvas element is the
         // header. But that works out to our advantage, since we think a background is unlikely
         // in games, and would prefer to interpret the pasted image as a game item.
@@ -250,7 +250,7 @@ export class CanvasElementClipboard {
             canvasElements[0].classList.contains(kBackgroundImageClass)
         ) {
             const bgimg = canvasElements[0].getElementsByTagName("img")[0];
-            if (isPlaceHolderImage(bgimg.getAttribute("src"))) {
+            if (bgimg) {
                 this.replaceImageInCanvasElement(
                     bloomCanvas,
                     canvasElements[0] as HTMLElement,
