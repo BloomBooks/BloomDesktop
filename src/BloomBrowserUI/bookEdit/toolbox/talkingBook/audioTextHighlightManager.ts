@@ -108,6 +108,43 @@ export class AudioTextHighlightManager {
         splitHighlightNames.forEach((name) => registry.delete(name));
     }
 
+    // Returns true if the current-highlight entry in the registry for contextNode's document
+    // exists but any of its Ranges no longer cover live content, so the highlight is still
+    // registered but paints nothing (BL-15300). That happens two ways when page-setup code
+    // rewrites the DOM under the highlight:
+    // - the range's node itself was replaced (e.g. CKEditor's initialization replaces the
+    //   paragraph): the range points at a detached node;
+    // - an ANCESTOR of the range's node was removed (e.g. re-appending the bloom-editables to
+    //   reorder them): per the DOM spec the live Range is then COLLAPSED onto the
+    //   still-connected former parent, so a connectedness check alone would miss it.
+    public currentHighlightHasDeadRanges(contextNode?: Node): boolean {
+        if (!contextNode) {
+            return false;
+        }
+        const registry = getHighlightRegistry(contextNode);
+        if (!registry) {
+            return false;
+        }
+        // A real (Chromium) Highlight is setlike over its Ranges, so we can iterate it. Test
+        // environments may register a non-iterable stand-in; treat those as healthy.
+        const highlight = registry.get(currentHighlightName) as
+            | Iterable<Range>
+            | undefined;
+        if (!highlight || typeof highlight[Symbol.iterator] !== "function") {
+            return false;
+        }
+        for (const range of highlight) {
+            if (
+                range.collapsed ||
+                !range.startContainer.isConnected ||
+                range.startContainer.ownerDocument !== contextNode.ownerDocument
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // currentHighlight is the element currently selected for recording etc.
     // It might be a span (sentence mode) or text box (text box mode).
     // currentTextBox is either the same as currentHighlight (text box mode)
