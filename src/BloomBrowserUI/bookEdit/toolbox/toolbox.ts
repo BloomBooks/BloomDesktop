@@ -18,9 +18,16 @@ import {
     setExtraFunctionToHandleBlurTasks,
 } from "../../utils/menuCloseOnBlur";
 import {
-    getToolboxReactAdapter,
-    whenToolboxReactAdapterReady,
-} from "./toolboxReactAdapter";
+    getFirstOfferedToolId,
+    isToolEnabled,
+    isToolOffered,
+    offerTool,
+    setActiveTool,
+    setEnabledTools,
+    setToolEnabled,
+    subscribeToActiveToolChanges,
+    withdrawTool,
+} from "./toolboxState";
 import {
     kSettingsToolId,
     kTalkingBookToolId,
@@ -49,30 +56,6 @@ export interface IToolboxSettings {
 }
 
 let savedSettings: IToolboxSettings = {};
-
-// This variable stores the canonical ids of all the enabled tools, so
-// that the React toolbox settings can initially check the
-// checkboxes that correspond to the enabled tools
-let enabledToolIds = new Set<string>();
-
-// Is the tool with this canonical id currently enabled?
-export function isToolEnabledInToolbox(toolId: string): boolean {
-    return enabledToolIds.has(toolId);
-}
-
-// a function to update the state of the checkboxes in the toolbox settings,
-// whenever a tool is enabled and activated using setToolEnabledFromSettings(). This
-// function starts out unimplemented, but is later implemented by SettingsToolControls.tsx
-// when it gets mounted.
-let changeToolboxSettingsState:
-    | ((which: string, value: boolean) => void)
-    | undefined;
-
-export function setToolboxSettingsChangeHandler(
-    handler: ((which: string, value: boolean) => void) | undefined,
-): void {
-    changeToolboxSettingsState = handler;
-}
 
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
@@ -169,8 +152,7 @@ export class ToolBox {
         // has a required tool as we first initialize the toolbox without that tool and then
         // add it. But this is fairly rare and I have not found it noticeable.
         const doAdjustment = () => {
-            const adapter = getToolboxReactAdapter();
-            if (!this.builtToolbox || !adapter) {
+            if (!this.builtToolbox) {
                 setTimeout(doAdjustment, 100);
                 return;
             }
@@ -180,7 +162,7 @@ export class ToolBox {
                     continue;
                 }
                 // We may need to add or remove this tool.
-                const haveTool = adapter.hasTool(tool.id());
+                const haveTool = isToolOffered(tool.id());
                 const wantTool = requiredToolId === tool.id();
                 if (haveTool !== wantTool) {
                     // add or remove as needed. (Required tools don't have check boxes.)
@@ -249,6 +231,12 @@ export class ToolBox {
 
     // Called from document.ready, initializes the whole toolbox.
     public initialize(): void {
+        // From here on, whenever the user (or we ourselves) make a different tool the
+        // active one, run that tool's lifecycle. This is the only place we subscribe.
+        subscribeToActiveToolChanges((newlyActiveToolId: string) => {
+            switchTool(newlyActiveToolId);
+        });
+
         // It seems (see BL-5330) that the toolbox code is loaded into the edit document as well as the
         // toolbox one. Nothing outside toolbox imports it directly, so it must be some indirect link.
         // It's important that this function is only hooked up to the real toolbox instance.
@@ -284,7 +272,7 @@ export class ToolBox {
                     }
                 }
 
-                enabledToolIds = new Set(toolsToLoad);
+                setEnabledTools(toolsToLoad);
 
                 for (let j = 0; j < masterToolList.length; j++) {
                     // add any tools we always show
@@ -310,8 +298,7 @@ export class ToolBox {
                         beginAddTool(nextToolId, false, () => loadNextTool());
                     }
                 };
-                // Adding the tools requires the toolbox UI, which mounts asynchronously.
-                whenToolboxReactAdapterReady(() => loadNextTool());
+                loadNextTool();
             }),
         );
     }
@@ -321,7 +308,7 @@ export class ToolBox {
      * name, this does not mean the tool is the *current* tool; it never did.)
      */
     public isToolActive(toolId: string): boolean {
-        return !!getToolboxReactAdapter()?.hasTool(toolId);
+        return isToolOffered(toolId);
     }
 
     // Enables a tool (canonical id) from an in-page action, ensuring the toolbox is visible.
@@ -353,13 +340,13 @@ export class ToolBox {
             this.toggleToolbox();
         }
 
-        // The tool may be present without being in enabledToolIds if it is a
+        // The tool may be present without being enabled if it is a
         // required-for-this-page tool (see adjustToolListForPage).
-        if (isToolEnabledInToolbox(toolId) || this.isToolActive(toolId)) {
+        if (isToolEnabled(toolId) || this.isToolActive(toolId)) {
             setCurrentTool(toolId);
         } else {
-            // Genuinely disabled: enable it, which persists the state and updates
-            // enabledToolIds, then activates it (showOrHideTool opens it by default).
+            // Genuinely disabled: enable it, which persists the state and records it in
+            // the store, then activates it (showOrHideTool opens it by default).
             setToolEnabledFromSettings(toolId, true);
         }
     }
@@ -387,7 +374,6 @@ export function getMasterToolList() {
 // into this array in order to interact with the overall toolbox code.
 const masterToolList: ITool[] = [];
 let currentTool: ITool | undefined = undefined;
-let toolboxReactActivationHooked = false;
 
 // This primarily calls the detachFromPage method of the current tool, if any.
 // It also tries to find the current toolbox instance (in the right iframe, wherever it is called),
@@ -425,7 +411,7 @@ const pendingShowToolTimeouts = new Map<
     ReturnType<typeof setTimeout>
 >();
 
-// modifies the enabledToolIds set, the saved active
+// modifies the store's set of enabled tools, the saved active
 // state of the tool in question (canonical id), and the presence of
 // the tool in the toolbox, whenever the tool is checked
 // or unchecked in the toolbox settings.
@@ -439,20 +425,14 @@ export function setToolEnabledFromSettings(
     turnOn: boolean,
     deferShowToRevealCheckbox: boolean = false,
 ): void {
-    if (turnOn) {
-        enabledToolIds.add(toolId);
-    } else {
-        enabledToolIds.delete(toolId);
-    }
+    // The "More..." checkboxes render from the store, so this is also what re-ticks the
+    // checkbox when a tool is enabled from somewhere else (e.g. an in-page action).
+    setToolEnabled(toolId, turnOn);
 
     postString(
         "editView/saveToolboxSetting",
         "active\t" + toEnabledSettingName(toolId) + "\t" + (turnOn ? "1" : "0"),
     );
-
-    if (changeToolboxSettingsState !== undefined) {
-        changeToolboxSettingsState(toolId, turnOn);
-    }
 
     // A pending deferred open (below) reflects an earlier state; this call
     // supersedes it, so cancel it. Without this, ticking a tool on and then off
@@ -473,7 +453,7 @@ export function setToolEnabledFromSettings(
         const timeout = setTimeout(() => {
             pendingShowToolTimeouts.delete(toolId);
             // Guard against the tool having been turned off again during the delay.
-            if (enabledToolIds.has(toolId)) {
+            if (isToolEnabled(toolId)) {
                 showOrHideTool(toolId, true);
             }
         }, kShowToolAfterEnableDelayMs);
@@ -491,7 +471,7 @@ function showOrHideTool(
     if (turnOn) {
         beginAddTool(toolId, openTool);
     } else {
-        getToolboxReactAdapter()?.removeTool(toolId);
+        withdrawTool(toolId);
     }
 }
 
@@ -716,9 +696,9 @@ export function removeToolboxMarkup() {
 }
 
 /**
- * Called when the toolbox UI reports that a different section is now the active one.
- * requestedToolId is a canonical tool id (the toolbox UI only ever reports tools it is
- * offering, and it was told about them by their canonical ids).
+ * Called when the toolbox state reports that a different section is now the active one.
+ * requestedToolId is a canonical tool id (the store only ever holds tools the toolbox is
+ * offering, and they were put there by their canonical ids).
  * Note: do not name this parameter newToolId; that is the module-level variable this
  * function clears at the end, and shadowing it silently breaks getActiveToolId().
  */
@@ -795,24 +775,10 @@ async function activateToolInternalAsync(newTool: ITool): Promise<void> {
 function setCurrentTool(toolId: string) {
     toolId = toCanonicalToolId(toolId);
 
-    const adapter = getToolboxReactAdapter();
-    if (!adapter) {
-        // ToolboxRoot has not mounted yet, so there is no toolbox UI to activate
-        // anything in. We don't expect this: see getToolboxReactAdapter().
-        return;
-    }
-
-    if (!toolboxReactActivationHooked) {
-        adapter.onActiveToolChanged((newToolId: string) => {
-            switchTool(newToolId);
-        });
-        toolboxReactActivationHooked = true;
-    }
-
-    // NOTE: the More (settings) section cannot be the "currentTool", so getFirstToolId()
-    // never returns it.
+    // NOTE: the More (settings) section cannot be the "currentTool", so
+    // getFirstOfferedToolId() never returns it.
     if (!toolId) {
-        toolId = adapter.getFirstToolId() ?? "";
+        toolId = getFirstOfferedToolId() ?? "";
     }
 
     if (toolId) {
@@ -822,12 +788,12 @@ function setCurrentTool(toolId: string) {
         if (tool && !isToolInitialized(tool)) {
             // The tool we were asked for isn't in the toolbox (e.g., it was disabled
             // since we saved the setting), so fall back to whatever is first.
-            toolId = adapter.getFirstToolId() ?? "";
+            toolId = getFirstOfferedToolId() ?? "";
         }
     }
 
     if (toolId) {
-        adapter.setActiveToolByToolId(toolId);
+        setActiveTool(toolId);
     }
 }
 
@@ -841,7 +807,7 @@ function getITool(toolId: string): ITool {
 }
 
 /**
- * Tells the toolbox UI to offer a section for this tool, and optionally to open it.
+ * Records that the toolbox is offering a section for this tool, and optionally opens it.
  * These tools are the tools enabled by the user, tools that are always enabled
  * (like the talking book tool), and the settings ("More...") tool.
  */
@@ -858,13 +824,12 @@ function beginAddTool(
         return;
     }
 
-    const adapter = getToolboxReactAdapter();
-    // Adding a tool that is already there does nothing, so it is safe to do this
+    // Offering a tool that is already offered does nothing, so it is safe to do this
     // whether or not the toolbox is already offering it.
-    adapter?.addTool(tool.id());
+    offerTool(tool.id());
 
     if (openTool && toolbox.toolboxIsShowing()) {
-        adapter?.setActiveToolByToolId(tool.id());
+        setActiveTool(tool.id());
     }
 
     if (whenLoaded) {
@@ -893,9 +858,6 @@ function showToolboxChanged(wasShowing: boolean): void {
         // so select and properly initialize the first one. If the toolbox somehow has
         // no tool sections at all, fall back to the talking book tool, which is always
         // enabled. (This should never happen; we're just being defensive.)
-        const adapter = getToolboxReactAdapter();
-        adapter?.setActiveToolByToolId(
-            adapter.getFirstToolId() ?? kTalkingBookToolId,
-        );
+        setActiveTool(getFirstOfferedToolId() ?? kTalkingBookToolId);
     }
 }

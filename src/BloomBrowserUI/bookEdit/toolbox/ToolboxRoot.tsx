@@ -16,22 +16,26 @@ import {
 import { getMasterToolList, ITool } from "./toolbox";
 import { kToolboxHeaderZIndex } from "./toolboxZIndexes";
 import { useMountEffect } from "../../utils/useMountEffect";
-import { setToolboxReactAdapter } from "./toolboxReactAdapter";
+import {
+    clearActiveTool,
+    getToolboxUiState,
+    setActiveTool,
+    setToolboxUiMounted,
+    subscribeToToolboxUiState,
+} from "./toolboxState";
 import { SubscriptionBadgeWithTooltipAndDialog } from "../../react_components/requiresSubscription";
 import {
-    compareToolsByLabel,
     getToolLabelInfo,
-    kSettingsToolId,
     kTalkingBookToolId,
     toPersistedToolName,
 } from "./toolIds";
 
-// React host for the toolbox sidebar. It holds the list of tools the toolbox is offering
-// and which one is expanded.
+// React host for the toolbox sidebar. It shows a section for each tool the toolbox is
+// offering, and expands the active one.
 //
-// It does not decide which tools to offer: toolbox.ts asks the server which tools the book
-// has enabled and tells us about each one through the adapter's addTool(), which is the
-// only way a section is ever created.
+// It does not decide which tools to offer, nor own that fact: toolbox.ts asks the server
+// which tools the book has enabled and records them in the toolbox state store
+// (toolboxState.ts), which we subscribe to here.
 //
 // Every tool is a React component, and we render each one as an ordinary child (from its
 // ITool.renderPanel()), so the whole toolbox is a single React tree: context such as the
@@ -66,7 +70,7 @@ const toolboxHeaderIconStyles = css`
 `;
 
 // Gathers everything we need to show a section for this tool. The tool must be one the
-// toolbox knows about: toolbox.ts only asks us for tools it found in the master list.
+// toolbox knows about: toolbox.ts only offers tools it found in the master list.
 const makeSectionFromToolId = (toolId: string): ToolboxSection => {
     const tool = getMasterToolList().find(
         (candidate) => candidate.id() === toolId,
@@ -83,133 +87,26 @@ const makeSectionFromToolId = (toolId: string): ToolboxSection => {
     };
 };
 
-const sortSectionsAlphabeticallyWithSettingsLast = (
-    sections: ToolboxSection[],
-): ToolboxSection[] => {
-    const settingsSection = sections.find(
-        (section) => section.id === kSettingsToolId,
-    );
-    const nonSettingsSections = sections
-        .filter((section) => section.id !== kSettingsToolId)
-        .sort((a, b) => compareToolsByLabel(a.id, b.id));
-
-    if (!settingsSection) {
-        return nonSettingsSections;
-    }
-
-    return [...nonSettingsSections, settingsSection];
-};
-
 // This component is the root of the whole toolbox sidebar. It is rendered into a dedicated
 // host element created by the toolbox page pug.
 export const ToolboxRoot: React.FunctionComponent = () => {
-    const [sections, setSections] = React.useState<ToolboxSection[]>([]);
-    const [expandedSectionId, setExpandedSectionId] = React.useState<string>();
-    const activeToolChangedCallbacks = React.useRef<
-        ((toolId: string) => void)[]
-    >([]);
-    // The authoritative copy of the sections, so that the adapter methods toolbox.ts
-    // calls can read and update the list synchronously. (React state is updated from it,
-    // for rendering.)
-    const sectionsRef = React.useRef<ToolboxSection[]>([]);
-    // Likewise the authoritative copy of which section is expanded, so that removeTool()
-    // can tell synchronously whether it is removing the open one.
-    const expandedSectionIdRef = React.useRef<string | undefined>(undefined);
-
-    const applySections = React.useCallback(
-        (nextSections: ToolboxSection[]) => {
-            sectionsRef.current = nextSections;
-            setSections(nextSections);
-        },
-        [],
+    const toolboxUiState = React.useSyncExternalStore(
+        subscribeToToolboxUiState,
+        getToolboxUiState,
     );
+    // The store keeps the offered tools in the order we show them (alphabetical by label,
+    // with "More..." last), because withdrawing the active tool has to know which section
+    // replaces it.
+    const sections = toolboxUiState.offeredToolIds.map(makeSectionFromToolId);
+    const expandedSectionId = toolboxUiState.activeToolId;
 
-    const setExpandedSection = React.useCallback(
-        (sectionId: string | undefined) => {
-            expandedSectionIdRef.current = sectionId;
-            setExpandedSectionId(sectionId);
-        },
-        [],
-    );
-
-    // Expand this tool's section and tell toolbox.ts about it. toolbox.ts keeps its own
-    // idea of which tool is current and drives each tool's showTool()/hideTool() from it,
-    // so every path that changes which section is expanded to a real tool has to come
-    // through here; one that quietly changed only our state left the two out of sync and
-    // the tool the user could see was never activated (BL-16602).
-    const makeToolActive = React.useCallback(
-        (toolId: string) => {
-            setExpandedSection(toolId);
-            activeToolChangedCallbacks.current.forEach((callback) => {
-                callback(toolId);
-            });
-        },
-        [setExpandedSection],
-    );
-
-    // Register the adapter that toolbox.ts uses to say which tools the toolbox offers,
-    // to make one of them active, and to observe which one is active.
-    // See toolboxReactAdapter.ts.
+    // Let the rest of the toolbox know whether there is a toolbox UI at all; see
+    // IToolboxUiState.uiMounted.
     useMountEffect(() => {
-        setToolboxReactAdapter({
-            setActiveToolByToolId: (toolId: string) => {
-                makeToolActive(toolId);
-            },
-            onActiveToolChanged: (callback: (toolId: string) => void) => {
-                activeToolChangedCallbacks.current.push(callback);
-            },
-            addTool: (toolId: string) => {
-                if (
-                    sectionsRef.current.some((section) => section.id === toolId)
-                ) {
-                    return;
-                }
-                applySections(
-                    sortSectionsAlphabeticallyWithSettingsLast([
-                        ...sectionsRef.current,
-                        makeSectionFromToolId(toolId),
-                    ]),
-                );
-            },
-            removeTool: (toolId: string) => {
-                const remainingSections = sectionsRef.current.filter(
-                    (section) => section.id !== toolId,
-                );
-                if (remainingSections.length === sectionsRef.current.length) {
-                    return;
-                }
-                applySections(remainingSections);
-                if (expandedSectionIdRef.current !== toolId) {
-                    // We removed a tool the user wasn't looking at, so which section is
-                    // open doesn't change.
-                    return;
-                }
-                const replacementToolId = remainingSections[0]?.id;
-                if (!replacementToolId) {
-                    // Nothing left to open. Don't notify toolbox.ts: it has no way to
-                    // represent "no current tool", and expanding a section later will
-                    // tell it then.
-                    setExpandedSection(undefined);
-                    return;
-                }
-                // Go through makeToolActive so toolbox.ts hears about the replacement.
-                // Leaving a game page removes the Game tool this way, and when this
-                // didn't notify, toolbox.ts went on believing Game was current and
-                // never called showTool() on the tool that replaced it, which killed
-                // Talking Book's highlighting and audio (BL-16602).
-                makeToolActive(replacementToolId);
-            },
-            hasTool: (toolId: string) => {
-                return sectionsRef.current.some(
-                    (section) => section.id === toolId,
-                );
-            },
-            getFirstToolId: () => {
-                return sectionsRef.current.find(
-                    (section) => section.id !== kSettingsToolId,
-                )?.id;
-            },
-        });
+        setToolboxUiMounted(true);
+        return () => {
+            setToolboxUiMounted(false);
+        };
     });
 
     return (
@@ -298,9 +195,9 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                             expanded={expandedSectionId === section.id}
                             onChange={(_event, expanded) => {
                                 if (expanded) {
-                                    makeToolActive(section.id);
+                                    setActiveTool(section.id);
                                 } else {
-                                    setExpandedSection(undefined);
+                                    clearActiveTool();
                                 }
                             }}
                         >

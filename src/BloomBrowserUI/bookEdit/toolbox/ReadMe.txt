@@ -14,9 +14,11 @@ Code organization
                          the .bloom-editable divs, and the CKEditor bookmark coordination that
                          keeps the current tool's markup up to date as the user edits without
                          losing the insertion point.
-    - toolboxReactAdapter.ts  the narrow channel by which toolbox.ts tells ToolboxRoot which
-                         tools to offer and which one is active. (Separate module only to
-                         avoid an import cycle.)
+    - toolboxState.ts    the toolbox's UI state — which tools it is offering, which one is
+                         active, which ones the book has enabled, and whether the UI
+                         exists yet — as a plain external store that the React components
+                         subscribe to and toolbox.ts reads and updates. (Separate module
+                         only to avoid an import cycle.)
     - toolIds.ts         the canonical tool ids, and the single place that knows how a
                          canonical id maps to the other spellings at our boundaries (the
                          historical "Tool"/"Check" suffixes in persisted data, and the
