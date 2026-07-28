@@ -1,0 +1,45 @@
+@import "../branding-base.less";
+
+.outsideBackCover .marginBox .bloom-translationGroup {
+    display: none;
+}
+
+[data-book="outside-back-cover-branding-bottom-html"] {
+    flex-direction: column;
+    height: 100%;
+    margin-top: 0 !important;
+
+    // We set "order" on both children rather than relying on their order in the
+    // html, because books made before this branding was fixed still have the
+    // artwork first in their data-div, and that only gets rewritten when the
+    // branding presets are re-merged.
+    // The single "margin-bottom: auto", on the first of the two items, is what
+    // does the anchoring: it is the only auto margin along the column, so it
+    // soaks up all the free space, pinning the badge to the top and the artwork
+    // to the bottom. Giving *both* items an auto margin would instead split the
+    // free space between them and center the pair (BL-16598).
+
+    // The standard "Made with Bloom" QR-code badge is anchored to the top.
+    // (It lives in a .bloom-branding-wrapper, styled by branding-base.less; Bloom
+    // fills in the QR image and the "on bloomlibrary.org" label at runtime.)
+    .bloom-branding-wrapper {
+        order: 1;
+        margin-top: 0;
+        margin-bottom: auto;
+    }
+
+    // The partner's back-cover artwork is anchored to the bottom. Note the child
+    // selector: the badge has its own img.branding, and it must NOT get these
+    // rules. In particular, the percentage in max-height would resolve against
+    // the (much shorter) badge wrapper, go negative, and collapse the badge
+    // artwork to nothing (BL-16598).
+    > img.branding {
+        order: 2;
+        margin-top: 0;
+        margin-bottom: 0;
+        // Leave room above for the standard QR-code badge, which measures about
+        // 4.2cm tall, plus a little separation. This is only a guard; the artwork
+        // is wide and flat, so on a normal page its height is set by the page width.
+        max-height: calc(100% - 5cm);
+    }
+}
