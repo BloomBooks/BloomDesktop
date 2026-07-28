@@ -111,6 +111,34 @@ node "$repo_root/.github/skills/bloom-automation/switchWorkspaceTab.mjs" --http-
 
 This helper attaches to the reported WebView2 target over CDP, clicks the real top bar tab, waits for `workspace/tabs` to report it active, and prints the resulting state.
 
+## Driving Bloom HTTP APIs over CDP (host-header + IPv6 gotchas)
+
+Sometimes you need to drive Bloom through its HTTP API (e.g. `editView/topBar/layoutChoiceChange`, `editView/jumpToPage`) rather than by clicking, for example when scripting a batch of layout/page changes for screenshots. Two gotchas bite hard here, and they pull in opposite directions:
+
+1. **CDP wants IPv4.** On Windows, Node's `fetch`/`WebSocket` resolve `localhost` to IPv6 `::1` first, but the embedded WebView2 CDP debug port answers on IPv4 `127.0.0.1`. Hitting `http://localhost:<cdpPort>/json` from Node can return an empty or wrong target list (often a lone `about:blank`) while `curl` (IPv4) shows the real `appBundle` target. **Fix:** in Node, use `http://127.0.0.1:<cdpPort>/json` and rewrite the returned `webSocketDebuggerUrl` from `localhost` to `127.0.0.1` before connecting.
+
+2. **Bloom's HTTP server rejects `Host: 127.0.0.1`.** If you then try to POST the API directly from Node to `http://127.0.0.1:<httpPort>/bloom/api/...`, Bloom's server returns **400 Bad Request** (a generic HTML error page) because it validates the `Host` header and only accepts `localhost`. You can't easily override `Host` from `fetch` (it's a forbidden header).
+
+**The fix that satisfies both:** issue the API call *from inside the page* via CDP `Runtime.evaluate`, using a relative URL. The page's own origin is `http://localhost:<httpPort>`, so the `Host` header is correct, while your Node→CDP connection still uses IPv4.
+
+```js
+// connect (IPv4 for CDP)
+const ts = await (await fetch(`http://127.0.0.1:${cdpPort}/json`)).json();
+const target = ts.find(t => /appBundle/.test(t.title||"")) || ts.find(t => t.type==="page");
+const ws = new WebSocket(target.webSocketDebuggerUrl.replace("localhost","127.0.0.1"));
+// ... Runtime.enable, then:
+const evalJs = expr => send("Runtime.evaluate",{expression:expr,returnByValue:true,awaitPromise:true})
+                         .then(r => r?.result?.value);
+// POST JSON body (e.g. change layout):
+await evalJs(`fetch('/bloom/api/editView/topBar/layoutChoiceChange',
+  {method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({layoutChoiceId:'LetterPortrait'})}).then(r=>r.status)`);
+// POST raw string body (e.g. jump to a page by id):
+await evalJs(`fetch('/bloom/api/editView/jumpToPage',{method:'POST',body:'${pageId}'}).then(r=>r.status)`);
+```
+
+The edit-view page lives in the iframe named `page`; poll `document.getElementById('page').contentDocument.querySelector('.bloom-page').className` to confirm the layout class changed and the right page id is showing before you screenshot. Note this is the API-driven exception to the "drive via clicks" rule — use it for scripted batch operations (e.g. cycling every page size), not to fake a single user action you could click.
+
 ## Minimal Running Bloom Attach Workflow
 
 Use this exact path when the user says to reuse the already-running Bloom and you need the fewest possible steps.
