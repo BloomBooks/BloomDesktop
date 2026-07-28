@@ -536,17 +536,21 @@
         <source xml:lang="en">If your caption contains "{0}", Bloom will fill this in with the name of the language.</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption.Description</note>
         <note>{0} must not be translated but appear verbatim.</note>
+        <note>This appears under the "Caption" box in Collection Settings > Advanced, explaining what the user may type there to replace the default QR-badge caption (CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2). Bloom prints the BloomLibrary.org address on its own line beneath whatever caption is used, so the caption itself does not need to contain a web address.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText">
         <source xml:lang="en">Get more books in the {0} language on BloomLibrary.org.</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText</note>
+        <note>DO NOT TRANSLATE. Obsolete as of 6.4; replaced by CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2, because the BloomLibrary.org address is now printed on its own line beneath the caption rather than inside the sentence.</note>
         <note>{0} will be replaced by a language name</note>
-        <note>obsolete as of 6.4; replaced by CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2 (the BloomLibrary.org URL is now shown on its own line beneath the caption).</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2">
         <source xml:lang="en">More books in {0} language:</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2</note>
-        <note>The default caption on the "Made with Bloom" QR-code badge on a book's back cover. {0} is replaced by a language name (shown in bold). It ends with a colon because the BloomLibrary.org web address appears on the next line below it.</note>
+        <note>The default caption printed under the "Made with Bloom" QR-code badge on the outside back cover of a book. Please keep it short: the whole badge is only a few centimeters wide.</note>
+        <note>{0} must appear verbatim. Bloom replaces it with the name of the collection's language, and prints that name in bold.</note>
+        <note>Please do NOT put a web address in your translation. Bloom automatically prints "BloomLibrary.org/language:xx" on its own line directly beneath this caption. That is why the English ends with a colon; use whatever punctuation introduces a following line in your language.</note>
+        <note>For example, in a Hindi collection the English renders as two lines: "More books in Hindi language:" and then "BloomLibrary.org/language:hi".</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
         <source xml:lang="en">Special Script Settings</source>
