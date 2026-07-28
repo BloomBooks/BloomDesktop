@@ -2406,6 +2406,65 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void MergeBrandingSettings_WithBadgeToken_ExpandsInPlaceAndComposesWithOtherMarkup()
+        {
+            var tempFolder = new TemporaryFolder("MergeBrandingSettingsBadgeTest");
+            var mergeTestDir = Path.Combine(tempFolder.Path, "merge-test");
+            Directory.CreateDirectory(mergeTestDir);
+            var brandingFilePath = Path.Combine(mergeTestDir, "branding.json");
+
+            // Deliberately surround the token with other markup so we prove it expands
+            // wherever it appears in the content, not only when it is the whole value.
+            var brandingJson =
+                @"{
+              ""presets"": [
+                {
+            ""data-book"": ""outside-back-cover-branding-top-html"",
+            ""lang"": ""*"",
+            ""content"": ""<p>intro</p>{bloom-badge-default}<p>outro</p>"",
+            ""condition"": ""always""
+                }
+              ]
+            }";
+            File.WriteAllText(brandingFilePath, brandingJson);
+
+            try
+            {
+                var htmlDom = new HtmlDom();
+                var settings = CreateCollection(Language1LangTag: "en", Language1Name: "English");
+                var bookData = new BookData(htmlDom, settings, null);
+
+                // Sanity check the setup: the token is present and unexpanded before merging.
+                Assert.That(
+                    File.ReadAllText(brandingFilePath),
+                    Does.Contain("{bloom-badge-default}"),
+                    "test setup problem: branding.json should contain the token before merging"
+                );
+
+                bookData.MergeBrandingSettings(mergeTestDir);
+
+                var result = bookData
+                    .GetVariableOrNull("outside-back-cover-branding-top-html", "*")
+                    .Xml;
+
+                var expectedBadgeHtml = BookStorage.BrandingBadgeHtmlByToken["bloom-badge-default"];
+                Assert.That(
+                    result,
+                    Does.Not.Contain("{bloom-badge-default}"),
+                    "the token should have been replaced"
+                );
+                Assert.That(
+                    result,
+                    Is.EqualTo("<p>intro</p>" + expectedBadgeHtml + "<p>outro</p>")
+                );
+            }
+            finally
+            {
+                tempFolder.Dispose();
+            }
+        }
+
+        [Test]
         public void MigrateData_TopicInTokPisinButNotEnglish_ChangesLangToEnglish()
         {
             var bookDom = new HtmlDom(

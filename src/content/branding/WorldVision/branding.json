@@ -8,9 +8,10 @@
         },
 
         {
+            "//": "The 'Made with Bloom' QR badge. {bloom-badge-default} expands to the badge markup; the link and QR image are filled in at runtime.",
             "data-book": "outside-back-cover-branding-top-html",
             "lang": "*",
-            "content": "<img class='branding bloom-badge' src='made-with-bloom-badge.svg'/>",
+            "content": "{bloom-badge-default}",
             "condition": "always"
         },
         {

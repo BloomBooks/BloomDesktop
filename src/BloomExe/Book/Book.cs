@@ -5460,7 +5460,8 @@ namespace Bloom.Book
                 OurHtmlDom,
                 CollectionSettings.ShowBlorgLanguageQrCode,
                 CollectionSettings.PrimaryLangTagWithSignPrioritized,
-                CollectionSettings.BadgeQrCodeLabelLocalizedWithLang,
+                CollectionSettings.BadgeQrCodeLabelLocalized,
+                CollectionSettings.PrimaryLanguageWithSignPrioritized,
                 FolderPath,
                 updateQrCodeFileEvenIfItExists
             );
