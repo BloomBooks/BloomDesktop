@@ -1,10 +1,10 @@
 import * as React from "react";
 import { ToolboxRoot } from "../../bookEdit/toolbox/ToolboxRoot";
 import {
-    getToolboxReactAdapter,
-    IToolboxReactAdapter,
-    whenToolboxReactAdapterReady,
-} from "../../bookEdit/toolbox/toolboxReactAdapter";
+    offerTool,
+    setActiveTool,
+    withdrawTool,
+} from "../../bookEdit/toolbox/toolboxState";
 import { ToolBox, getMasterToolList } from "../../bookEdit/toolbox/toolbox";
 import { DecodableReaderTool } from "../../bookEdit/toolbox/readers/decodableReader/decodableReaderTool";
 import { LeveledReaderTool } from "../../bookEdit/toolbox/readers/leveledReader/leveledReaderTool";
@@ -24,20 +24,25 @@ import { useMountEffect } from "../../utils/useMountEffect";
 // (see component-tests/toolbox-root-react.uitest.ts).
 //
 // ToolboxRoot does not decide which tools to offer; in the real toolbox that is
-// toolbox.ts's job (it asks the server which tools the book has enabled, then calls the
-// adapter's addTool() for each, and finally makes the tool the book was last using the
-// current one). This harness stands in for exactly that, driving the real adapter, so
-// everything under test — the sections, their order, their headers, which one is expanded,
-// and each tool's own panel — is production code driven the production way.
+// toolbox.ts's job (it asks the server which tools the book has enabled, records each in
+// the toolbox state store, and finally makes the tool the book was last using the current
+// one). This harness stands in for exactly that, driving the real store, so everything
+// under test — the sections, their order, their headers, which one is expanded, and each
+// tool's own panel — is production code driven the production way.
+
+// The part of the toolbox state store that the Playwright tests need to drive.
+interface IToolboxStoreForTests {
+    offerTool(toolId: string): void;
+    withdrawTool(toolId: string): void;
+    setActiveTool(toolId: string): void;
+}
 
 declare global {
     interface Window {
-        // Test-only hook. toolbox.ts gets the adapter by importing
-        // getToolboxReactAdapter(), but our Playwright tests run inside the page, where
-        // they can't import a module, so this harness hands them the accessor. It is the
-        // accessor rather than the adapter itself because ToolboxRoot doesn't register an
-        // adapter until it has mounted.
-        getToolboxReactAdapterForTests?: () => IToolboxReactAdapter | undefined;
+        // Test-only hook. toolbox.ts drives the store by importing toolboxState.ts, but
+        // our Playwright tests run inside the page, where they can't import a module, so
+        // this harness hands them the mutators they need.
+        toolboxStoreForTests?: IToolboxStoreForTests;
     }
 }
 
@@ -94,19 +99,20 @@ export const ToolboxRootTestHarness: React.FunctionComponent = () => {
     // nothing to do with rendering, and they only need to happen once, so a mount effect is
     // the right home for them.
     useMountEffect(() => {
-        window.getToolboxReactAdapterForTests = getToolboxReactAdapter;
+        window.toolboxStoreForTests = {
+            offerTool,
+            withdrawTool,
+            setActiveTool,
+        };
 
-        // Stand in for ToolBox.initialize(). Like the real thing, wait for ToolboxRoot to
-        // publish its adapter rather than assuming it has already mounted.
-        whenToolboxReactAdapterReady((adapter) => {
-            initiallyOfferedToolIds.forEach((toolId) =>
-                adapter.addTool(toolId),
-            );
-            adapter.setActiveToolByToolId(restoredCurrentToolId);
-        });
+        // Stand in for ToolBox.initialize(). Like the real thing, just tell the store;
+        // the store exists from the moment its module loads, so there is nothing to wait
+        // for.
+        initiallyOfferedToolIds.forEach((toolId) => offerTool(toolId));
+        setActiveTool(restoredCurrentToolId);
 
         return () => {
-            window.getToolboxReactAdapterForTests = undefined;
+            window.toolboxStoreForTests = undefined;
         };
     });
 
