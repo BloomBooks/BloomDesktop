@@ -2621,6 +2621,11 @@ namespace Bloom.Publish.Rab
 
             while (true)
             {
+                // The installer download is in-process work (not an external process the
+                // cancellation can kill), and it can be large, so check between chunks. Otherwise
+                // leaving the Apps screen during a first-run download wouldn't stop it until the
+                // download finished or the HttpClient's 30-minute timeout elapsed.
+                ThrowIfActionCancelled();
                 var bytesRead = responseStream.Read(buffer, 0, buffer.Length);
                 if (bytesRead <= 0)
                     break;

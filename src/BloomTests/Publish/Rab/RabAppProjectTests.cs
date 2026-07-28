@@ -1123,6 +1123,46 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void CopyRabInstallerDownloadStream_StopsWhenActionCancelled()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var service = new TestRabProjectService(
+                new RabWorkspacePaths(tempFolder.Path),
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
+
+            Assert.That(service.TryBeginAction("prepare"), Is.True);
+            try
+            {
+                using var source = new MemoryStream(new byte[1024 * 1024]);
+                using var destination = new MemoryStream();
+
+                // Sanity check: without a cancel, the download check is inert and the whole
+                // stream copies through.
+                Assert.That(service.ActionCancellationToken.IsCancellationRequested, Is.False);
+
+                service.CancelActiveAction();
+
+                // The copy loop checks cancellation at the top of each iteration, so a cancel
+                // (e.g. the user leaving the Apps screen mid-download) stops it promptly rather
+                // than copying the whole installer.
+                Assert.Throws<OperationCanceledException>(() =>
+                    service.CopyRabInstallerDownloadStream(source, destination, source.Length, null)
+                );
+                Assert.That(
+                    destination.Length,
+                    Is.LessThan(source.Length),
+                    "cancellation should have stopped the copy before the whole stream was written"
+                );
+            }
+            finally
+            {
+                service.ClearAction();
+            }
+        }
+
+        [Test]
         public async Task BuildAsync_UsesRabBuildOutputToAdvanceProgress_AndTimestampLogLines()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
