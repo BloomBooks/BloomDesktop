@@ -82,6 +82,11 @@ namespace Bloom.Publish.Rab
         private readonly BloomWebSocketServer _webSocketServer;
         private readonly IWebSocketProgress _progress;
         private volatile string _activeProgressAction;
+
+        // Tripped by CancelActiveAction (e.g. when the user navigates away from the Apps screen)
+        // to abort the prepare/build/install action currently claimed in _activeProgressAction.
+        // Created when the action slot is claimed and disposed when it is released.
+        private volatile CancellationTokenSource _actionCancellation;
         private int _lastBuildProgressPercent;
         private volatile string _lastLoggedProgressStage;
         private volatile int _lastLoggedProgressPercent = -1;
@@ -467,6 +472,8 @@ namespace Bloom.Publish.Rab
             // before the first ReportProgressStage call doesn't serve stale values.
             _lastLoggedProgressStage = null;
             _lastLoggedProgressPercent = -1;
+            // Give this action its own cancellation source so CancelActiveAction can abort it.
+            _actionCancellation = new CancellationTokenSource();
             return true;
         }
 
@@ -479,6 +486,50 @@ namespace Bloom.Publish.Rab
         internal void ClearAction()
         {
             _activeProgressAction = null;
+            var cancellation = _actionCancellation;
+            _actionCancellation = null;
+            cancellation?.Dispose();
+        }
+
+        /// <summary>
+        /// The cancellation token for the action currently claimed via <see cref="TryBeginAction"/>,
+        /// or <see cref="CancellationToken.None"/> when no action is running. Tripped by
+        /// <see cref="CancelActiveAction"/>.
+        /// </summary>
+        internal CancellationToken ActionCancellationToken =>
+            _actionCancellation?.Token ?? CancellationToken.None;
+
+        /// <summary>
+        /// Requests cancellation of the prepare/build/install action currently in progress (if any).
+        /// Called when the user navigates away from the Apps screen so a long-running RAB build does
+        /// not keep running in the background. Killing the running child process (see
+        /// <see cref="RunProcess"/>) lets the background task unwind promptly through its normal
+        /// failure path. Safe to call when nothing is running.
+        /// </summary>
+        internal void CancelActiveAction()
+        {
+            var cancellation = _actionCancellation;
+            if (cancellation == null)
+                return;
+            try
+            {
+                cancellation.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // The action finished and released its cancellation source between our read and
+                // this Cancel() call; there is nothing left to cancel.
+            }
+        }
+
+        /// <summary>
+        /// Throws an <see cref="OperationCanceledException"/> if the current action has been
+        /// cancelled. Called at stage boundaries so a cancellation that arrives between external
+        /// processes stops the workflow promptly instead of starting the next step.
+        /// </summary>
+        private void ThrowIfActionCancelled()
+        {
+            ActionCancellationToken.ThrowIfCancellationRequested();
         }
 
         /// <summary>
@@ -509,8 +560,20 @@ namespace Bloom.Publish.Rab
                 _progress.MessageWithoutLocalizing($"Bloom log: {Logger.LogPath}");
         }
 
+        /// <summary>
+        /// Reports that an App Builder action was cancelled (e.g. because the user left the Apps
+        /// screen). Logged as an informational message rather than an error so an intentional
+        /// cancellation does not look like a build failure in the log or the progress channel.
+        /// </summary>
+        public void ReportCancelled(string action)
+        {
+            Logger.WriteEvent($"Reading App Builder {action} was cancelled.");
+            _progress.MessageWithoutLocalizing($"{action} cancelled.", ProgressKind.Warning);
+        }
+
         private void Prepare()
         {
+            ThrowIfActionCancelled();
             var paths = GetPaths();
             ReportProgressStage("checking-installer", 0);
             if (!EnsureRabInstalledForPrepare())
@@ -527,6 +590,7 @@ namespace Bloom.Publish.Rab
                 ProgressKind.Heading
             );
 
+            ThrowIfActionCancelled();
             ReportProgressStage("exporting-bloompubs", 10);
             var trackedBooks = ExportPrepareBooks(paths);
             var effectiveSettings = GetEffectiveAppSettings(paths);
@@ -700,6 +764,7 @@ namespace Bloom.Publish.Rab
 
         private void Build()
         {
+            ThrowIfActionCancelled();
             // Build reuses BloomPUBs created during the current Apps-screen session and regenerates only missing ones.
             var paths = GetPaths();
             EnsureWorkspaceFolders(paths);
@@ -708,6 +773,7 @@ namespace Bloom.Publish.Rab
             var state = LoadStateOrThrow(paths);
             EnsureKeystore(state.KeystorePath, state.KeystorePassword);
             EnsureRabBuildPrerequisites(paths);
+            ThrowIfActionCancelled();
             ReportProgressStage("exporting-bloompubs", 10);
             var trackedBooks = ExportTrackedBooks(paths, state);
             var supportFiles = EnsureProjectSupportFiles(paths);
@@ -887,6 +953,7 @@ namespace Bloom.Publish.Rab
 
         private void Install()
         {
+            ThrowIfActionCancelled();
             // Install re-reads package/app metadata from the project so launching uses the same identity that was built.
             var paths = GetPaths();
             var apkPath = FindLatestApkPath(paths);
@@ -2216,12 +2283,44 @@ namespace Bloom.Publish.Rab
 
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
-                process.WaitForExit();
+
+                // If the action is cancelled (e.g. the user leaves the Apps screen) while the
+                // process is running, kill it and its children so WaitForExit returns promptly.
+                var cancellationToken = ActionCancellationToken;
+                using (cancellationToken.Register(() => TryKillProcessTree(process)))
+                {
+                    process.WaitForExit();
+                }
+
+                // A killed-by-cancellation process reports a non-zero exit code; surface the
+                // cancellation instead of a misleading "exited with code N" failure.
+                cancellationToken.ThrowIfCancellationRequested();
 
                 if (process.ExitCode != 0)
                     throw new ApplicationException(
                         $"{Path.GetFileName(fileName)} exited with code {process.ExitCode}."
                     );
+            }
+        }
+
+        /// <summary>
+        /// Kills <paramref name="process"/> and its descendants. The RAB build spawns a
+        /// cmd.exe -> rab.bat -> Gradle/Java tree, so killing only the top process would orphan
+        /// the JVM. Best-effort: a process that already exited (including a race between the
+        /// HasExited check and Kill) is ignored, since the caller only needs the build to stop.
+        /// </summary>
+        private static void TryKillProcessTree(Process process)
+        {
+            try
+            {
+                if (!process.HasExited)
+                    process.Kill(entireProcessTree: true);
+            }
+            catch (Exception)
+            {
+                // The process may have exited on its own between the check and the kill, or the
+                // OS may refuse to kill a process that is already tearing down. Either way the
+                // build is stopping, which is all cancellation needs.
             }
         }
 
@@ -2313,7 +2412,13 @@ namespace Bloom.Publish.Rab
 
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
-                process.WaitForExit();
+
+                var cancellationToken = ActionCancellationToken;
+                using (cancellationToken.Register(() => TryKillProcessTree(process)))
+                {
+                    process.WaitForExit();
+                }
+                cancellationToken.ThrowIfCancellationRequested();
 
                 return (process.ExitCode, string.Join(Environment.NewLine, outputLines));
             }

@@ -131,6 +131,12 @@ namespace Bloom.Publish.Rab
                                 await _rabProjectService.PrepareAsync();
                                 succeeded = true;
                             }
+                            catch (OperationCanceledException)
+                            {
+                                // The user navigated away and Bloom cancelled the action; that is
+                                // expected, not a failure, so don't report it as an error.
+                                _rabProjectService.ReportCancelled("Prepare");
+                            }
                             catch (Exception error)
                             {
                                 // ReportFailure logs to the progress channel first so the error
@@ -172,6 +178,10 @@ namespace Bloom.Publish.Rab
                                 await _rabProjectService.BuildAsync();
                                 succeeded = true;
                             }
+                            catch (OperationCanceledException)
+                            {
+                                _rabProjectService.ReportCancelled("Build");
+                            }
                             catch (Exception error)
                             {
                                 _rabProjectService.ReportFailure("Build", error);
@@ -207,6 +217,10 @@ namespace Bloom.Publish.Rab
                                 await _rabProjectService.InstallAsync();
                                 succeeded = true;
                             }
+                            catch (OperationCanceledException)
+                            {
+                                _rabProjectService.ReportCancelled("Try on phone");
+                            }
                             catch (Exception error)
                             {
                                 _rabProjectService.ReportFailure("Try on phone", error);
@@ -218,6 +232,20 @@ namespace Bloom.Publish.Rab
                             _rabProjectService.SendActionCompleteEvent("install", succeeded);
                         }
                     });
+                    request.PostSucceeded();
+                },
+                false,
+                requiresSync: false
+            );
+
+            // Cancels whichever prepare/build/install action is currently running (if any) so a
+            // long RAB build does not keep running after the user leaves the Apps screen. This
+            // must run concurrently with the background action, so it takes no sync lock.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "cancel",
+                request =>
+                {
+                    _rabProjectService.CancelActiveAction();
                     request.PostSucceeded();
                 },
                 false,

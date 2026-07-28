@@ -77,6 +77,9 @@ export function useAppBuilderPublisherScreen(
     const statusRetryTimeoutRef = React.useRef<number>();
     const latestStatusRequestIdRef = React.useRef(0);
     const isMountedRef = React.useRef(true);
+    // Tracks the previous isActive value so we can detect the active->inactive transition
+    // (user switched away from the Apps sub-tab) and cancel any running action.
+    const wasActiveRef = React.useRef(isActive);
     const sizeEstimates = normalizeSizeEstimates(rawSizeEstimates);
 
     useSubscribeToWebSocketForStringMessage(
@@ -327,6 +330,21 @@ export function useAppBuilderPublisherScreen(
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isActive]);
 
+    // Cancel any in-progress prepare/build/install when the user leaves the Apps screen by
+    // switching to another publish sub-tab. We don't want a long RAB build to keep running in
+    // the background once the user has moved on. (Leaving the Publish tab entirely unmounts this
+    // screen instead; that case is handled in the unmount cleanup below.)
+    React.useEffect(() => {
+        const wasActive = wasActiveRef.current;
+        wasActiveRef.current = isActive;
+        if (wasActive && !isActive && busyActionRef.current) {
+            post("publish/rab/cancel");
+            setBusyAction(undefined);
+            setProgressPercent(0);
+            setProgressStageCode(undefined);
+        }
+    }, [isActive]);
+
     // This effect is warranted because the retry timer is an external browser resource that must be cleared on unmount.
     React.useEffect(() => {
         return () => {
@@ -334,6 +352,11 @@ export function useAppBuilderPublisherScreen(
             latestStatusRequestIdRef.current += 1;
             if (statusRetryTimeoutRef.current !== undefined) {
                 window.clearTimeout(statusRetryTimeoutRef.current);
+            }
+            // Leaving the Publish tab unmounts this screen; cancel any running action so a RAB
+            // build doesn't keep going in the background after the user has moved on.
+            if (busyActionRef.current) {
+                post("publish/rab/cancel");
             }
         };
     }, []);

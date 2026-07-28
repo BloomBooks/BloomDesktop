@@ -1069,6 +1069,60 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void CancelActiveAction_CancelsTheActiveAction_SoBuildAsyncStops()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
+
+            Assert.That(service.TryBeginAction("build"), Is.True);
+            try
+            {
+                // Sanity check: a freshly begun action is cancellable but not yet cancelled.
+                Assert.That(service.ActionCancellationToken.CanBeCanceled, Is.True);
+                Assert.That(service.ActionCancellationToken.IsCancellationRequested, Is.False);
+
+                service.CancelActiveAction();
+
+                Assert.That(service.ActionCancellationToken.IsCancellationRequested, Is.True);
+                // Build bails out at its first cancellation checkpoint rather than running RAB.
+                Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                    await service.BuildAsync()
+                );
+            }
+            finally
+            {
+                service.ClearAction();
+            }
+        }
+
+        [Test]
+        public void CancelActiveAction_IsSafeNoOp_WhenNoActionIsRunning()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var service = new TestRabProjectService(
+                new RabWorkspacePaths(tempFolder.Path),
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
+
+            // With no action claimed the token is inert and cancelling does nothing.
+            Assert.That(service.ActionCancellationToken.CanBeCanceled, Is.False);
+            Assert.DoesNotThrow(() => service.CancelActiveAction());
+
+            // After an action is begun and then cleared, the token is inert again and a late
+            // cancel (e.g. a leave that races the action finishing) must not throw.
+            Assert.That(service.TryBeginAction("build"), Is.True);
+            service.ClearAction();
+            Assert.That(service.ActionCancellationToken.CanBeCanceled, Is.False);
+            Assert.DoesNotThrow(() => service.CancelActiveAction());
+        }
+
+        [Test]
         public async Task BuildAsync_UsesRabBuildOutputToAdvanceProgress_AndTimestampLogLines()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
