@@ -1601,6 +1601,15 @@ function handlePageEditing(
                 // While this call came before it, the reader highlights were painted and then
                 // immediately detached on every pause in typing, and nothing reappeared until
                 // some other path redid the markup (e.g. changing the level).
+                //
+                // Not covered by a unit test: the pieces are (cleanUpNbsps in toolboxSpec.ts,
+                // which now checks that it leaves the text nodes alone when it has nothing to
+                // convert; the highlight primitives in textHighlightManagerSpec.ts), but the
+                // *ordering* between them is only exercised by running handlePageEditing, and
+                // that needs a live ckeditor instance on the editable div plus the parent
+                // window's "page" iframe and a real Selection - none of which we can stand up in
+                // jsdom. So if you reorder anything in here, test it by typing in a Leveled
+                // Reader book and watching the over-long sentences stay highlighted.
                 if (activeTool && !activeTool.isUpdateMarkupAsync()) {
                     // Note, the updateMarkup routine must be sure to use the result of
                     // ckEditor's getData() method, not the raw HTML of the editableDivs.

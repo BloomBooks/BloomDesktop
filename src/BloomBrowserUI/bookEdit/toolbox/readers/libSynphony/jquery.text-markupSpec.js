@@ -339,6 +339,26 @@ describe("jquery.text-markup", function () {
         expect($("#text_entry1").html()).toBe(input);
     });
 
+    it("checkDecodableReader leaves the selection bookmarks in place", function () {
+        // A bookmark span, holding CKEditor's usual zero-width placeholder, sits in the middle
+        // of the word the reader tool is about to mark.
+        const zwsp = String.fromCharCode(0x200b);
+        const input = `<p>bi<span id="cke_bm_1S" style="display: none;">${zwsp}</span>g</p>`;
+        $("#text_entry1")
+            .html(input)
+            .checkDecodableReader({
+                focusWords: ["a"],
+                knownGraphemes: ["a", "e", "s"],
+            });
+
+        // The bookmark must survive: toolbox.ts needs it to put the caret back afterwards.
+        expect($("#text_entry1").html()).toBe(input);
+        // One highlight, not two: the analysis saw "big" as a single word despite the bookmark
+        // splitting it. (The painted Range spans the bookmark, so its text still contains the
+        // invisible character.)
+        expect(highlighted(kWordNotDecodableHighlight)).toEqual([`bi${zwsp}g`]);
+    });
+
     // The words find_words_extra located, as substrings of the text it searched, so a test can
     // read its results without doing offset arithmetic.
     function foundWords(text, words) {
