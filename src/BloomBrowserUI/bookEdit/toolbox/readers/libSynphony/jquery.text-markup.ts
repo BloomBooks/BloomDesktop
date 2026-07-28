@@ -383,9 +383,14 @@ import {
                 .removeClass(cssTooMuchStuffOnPage);
     };
 
+    /**
+     * Undo the damage described in BL-16558: when the user replaced text that the reader tools
+     * had marked, CKEditor copied the marking span's computed background-color into an inline
+     * style of its own, which got saved into the book. We no longer give it anything to copy,
+     * but books edited by earlier versions still contain these spans.
+     */
     $.fn.removeCkEditorMarkup = function () {
         this.each(function () {
-            // remove CKEditor-specific markup inserted when replacing marked text
             $(this)
                 .find("span[style]")
                 .filter((_index, element) => {
@@ -398,8 +403,11 @@ import {
                 })
                 .contents()
                 .unwrap();
-            // remove spans belonging to CKEditor that are hidden.
-            $(this).find("span[id^=cke_][style*='display: none;']").remove();
+            // NB: do NOT remove CKEditor's hidden cke_* spans here. We used to, so that they
+            // could not skew the word markup, but mapReaderText() now simply skips them, and
+            // removing them moved the insertion point to the start of the text box after every
+            // typing pause: the hidden spans include the selection bookmarks that toolbox.ts
+            // inserts before calling us, and that it uses afterwards to put the caret back.
         });
     };
 
