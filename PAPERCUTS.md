@@ -38,6 +38,69 @@ House rules:
   using this tree" instead of a raw MSBuild copy failure.
 - **Context:** BloomDesktop, `/preflight` of PR #8107 (dev launcher control API).
 
+## 2026-07-27 — The component-tester uitest suites still aren't in CI
+
+- **Cut:** Nothing runs `react_components/component-tester`'s Playwright suites — `nightly.yml`
+  runs vitest, C# and visual-regression only, and doesn't even `pnpm install` that workspace. That
+  is why the whole harness sat broken (React 17 pin + a second-Playwright-copy config bug) without
+  anyone noticing. It is now green at 144 passed / 25 skipped, so it will silently rot again.
+- **Idea:** Add a nightly job mirroring the visual-regression one (`pnpm install --frozen-lockfile`
+  in the component-tester dir, `pnpm exec playwright install chromium`, then
+  `pnpm exec playwright test --config playwright.config.ts`) and publish its junit output. The
+  bloom-exe config needs a running Bloom.exe, so only the component config is CI-able for now.
+- **Context:** BloomDesktop, branch `fix-component-tester`. The component-tester README still
+  says these are "not currently run as part of CI or other script" — update it if this lands.
+
+
+## 2026-07-27 — Changing harness imports + `reuseExistingServer` = 20 bogus test failures
+
+- **Cut:** Adding one bare import (`jquery`) to `component-harness.tsx` invalidated Vite's dep
+  optimizer, but `playwright.config.ts` sets `reuseExistingServer: true`, so the already-running dev
+  server served a half-rebuilt `node_modules/.vite/deps` chunk. Every BookGridSetup test (21 of
+  them) failed with `styled_default is not a function` — which looks exactly like a real MUI/emotion
+  regression and cost a chunk of debugging. Killing the server and deleting `node_modules/.vite`
+  fixed it with no code change.
+- **Idea:** Note this in the component-tester README/AGENTS ("if you add or remove an import in the
+  harness, stop the dev server and `rm -rf node_modules/.vite` before trusting a red run"), or have
+  the config/dev script clear the deps cache when `component-harness.tsx` is newer than it.
+- **Context:** BloomDesktop, branch `fix-component-tester`.
+
+
+## 2026-07-27 — Toolbox test harness has to duplicate toolboxBootstrap's tool registration
+
+- **Cut:** `ToolboxRoot` only renders a section for a tool in `getMasterToolList()`, and tools land
+  there as a side effect of importing `toolboxBootstrap.ts`. The harness can't import that module —
+  it also does `$(document).ready(renderToolboxRoot)` and assigns `window.toolboxBundle`, which
+  would double-render the root and clobber the stub some tests install. So
+  `ToolboxRootTestHarness.tsx` now repeats the 11 `ToolBox.registerTool(...)` calls, with a
+  "keep in sync" comment — i.e. a list that will drift.
+- **Idea:** Extract the registrations into a side-effect-free `registerAllToolboxTools()` module
+  that both `toolboxBootstrap.ts` and the harness import. Probably best folded into the toolbox
+  React refactor (BL-16608 / PR #8109) rather than done separately.
+- **Context:** BloomDesktop, branch `fix-component-tester`. Related: one test there is now
+  `test.fixme` because it asserts on `.subscription-badge` (legacy-toolbox-only) and
+  `.toolbox-react-header-icon` (never existed) via computed `background-image`; re-enabling it
+  needs a decision on whether the React header renders badges/icons and what classes to expose.
+
+
+## 2026-07-27 — C# test host aborts mid-run when the suite runs alongside vitest
+
+- **Cut:** Two `build/agent-dotnet.sh test` runs started while `pnpm test` was also running
+  aborted after ~347 of 2946 tests with `Test host process crashed: Unhandled exception.
+  System.ObjectDisposedException: Cannot access a disposed object. Object name:
+  'System.Net.HttpRequestQueueV2Handle'` inside `HttpListener` response teardown. Worse, the
+  run still printed `Passed! - Failed: 0, Passed: 347` before `Test Run Aborted`, so a partial
+  run reads as a pass unless you notice the total. Run alone, the same command completed all
+  2946. Since the whole point of the agent wrapper is that several things can run at once,
+  this quietly removes that benefit for the C# suite.
+- **Idea:** Find why Bloom's test HTTP listener is disposed while a response is in flight
+  (likely a shared/fixed port colliding across processes, so pick a free port per run), and
+  make the wrapper fail loudly on `Test Run Aborted` rather than emitting a `Passed!` line.
+- **Context:** BloomDesktop, found during `/preflight` of PR #8112 (BL-16602). Related to the
+  2026-07-24 entry (wrapper reports failure as success) — same "trust the summary line, not
+  the exit code" hazard, different cause.
+
+
 ## 2026-07-24 — agent-dotnet.sh test exits 0 even when tests fail
 
 - **Cut:** `build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj` returned exit code 0 on a

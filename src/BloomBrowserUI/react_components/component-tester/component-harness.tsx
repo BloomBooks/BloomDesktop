@@ -12,6 +12,7 @@
  */
 
 import * as React from "react";
+import $ from "jquery";
 import { renderRoot } from "../../utils/reactRender";
 // import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 // import { lightTheme } from "../../../../bloomMaterialUITheme";
@@ -22,52 +23,21 @@ import {
 } from "./component-registry";
 import { bypassLocalization } from "../../lib/localizationManager/localizationManager";
 
-// Mock jQuery for localization system
-// The localization system uses jQuery promises ($.Deferred) which need done/fail methods
-(window as any).$ = (window as any).jQuery = {
-    Deferred: () => {
-        let resolveCallback: any;
-        let rejectCallback: any;
-        const promise = new Promise((resolve, reject) => {
-            resolveCallback = resolve;
-            rejectCallback = reject;
-        });
-
-        // Create the jQuery-style promise with done/fail methods
-        const jQueryPromise = {
-            done: (callback: any) => {
-                promise.then(callback);
-                return jQueryPromise;
-            },
-            fail: (callback: any) => {
-                promise.catch(callback);
-                return jQueryPromise;
-            },
-            then: (callback: any) => {
-                promise.then(callback);
-                return jQueryPromise;
-            },
-        };
-
-        const deferred = {
-            resolve: (value: any) => {
-                resolveCallback(value);
-                return deferred;
-            },
-            reject: (reason: any) => {
-                rejectCallback(reason);
-                return deferred;
-            },
-            fail: (callback: any) => {
-                promise.catch(callback);
-                return deferred;
-            },
-            promise: () => jQueryPromise,
-        };
-
-        return deferred;
-    },
-};
+// Expose the real jQuery as a global for the components under test.
+//
+// The localization system needs jQuery promises ($.Deferred), which real jQuery provides,
+// so there is nothing here worth mocking. It matters that this is the genuine jQuery: some
+// of our dependencies are jQuery *plugins* that attach themselves to $.fn at import time,
+// reading the global rather than any module import. select2 is the case that bit us — under
+// Vite it loads as an optimized ESM dep, so `module` is undefined and its UMD wrapper falls
+// through to the browser-globals branch, which does `factory(jQuery)` against window.jQuery.
+// A stand-in object with only Deferred on it has no `.fn`, so select2 threw at import time
+// and took down every component whose graph reaches StyleEditor (e.g. anything under the
+// toolbox). Assigning the real jQuery here keeps those plugins working.
+//
+// This runs before any component module is loaded: components are pulled in lazily by
+// renderRequest() below, well after this module's top-level code.
+window.$ = window.jQuery = $;
 
 const manualConfigModules = import.meta.glob<ManualConfigModule>(
     "./manualConfig.ts",
