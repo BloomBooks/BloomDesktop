@@ -235,11 +235,6 @@ const isolateExpr = (selector, index = null) => `(() => {
 })()`;
 
 // ---------- PDF rendering ----------
-export const PAPER_SIZES = {
-    Letter: { w: 8.5, h: 11 },
-    A4: { w: 8.27, h: 11.69 },
-};
-
 // Render a URL to a PDF file using Chrome's native --print-to-pdf. Chrome writes the
 // PDF straight to disk and exits on its own, so there is no CDP/WebSocket round-trip to
 // hang on. (The old CDP path called Page.printToPDF, which returns the entire PDF as one
@@ -264,39 +259,44 @@ export async function renderUrlToPdf(url, outPath, opts = {}) {
     } catch {
         /* ignore */
     }
-    await new Promise((resolve, reject) => {
-        const child = execFile(
-            chromePath,
-            [
-                "--headless=new",
-                "--no-sandbox",
-                "--disable-gpu",
-                "--hide-scrollbars",
-                "--run-all-compositor-stages-before-draw",
-                `--virtual-time-budget=${opts.virtualTimeBudgetMs ?? 15000}`,
-                "--no-pdf-header-footer",
-                `--user-data-dir=${udd}`,
-                `--print-to-pdf=${outPath}`,
-                url,
-            ],
-            { timeout: timeoutMs, maxBuffer: 8 * 1024 * 1024 },
-            (err) => {
-                // Chrome exits 0 after writing the PDF; the timeout kills it if it wedges.
-                // Either way success is decided by whether the file exists (checked below),
-                // so only reject when we have an error AND no output file.
-                if (err && !fs.existsSync(outPath)) reject(err);
-                else resolve();
-            },
-        );
-        child.on("error", reject);
-    });
-    if (!fs.existsSync(outPath))
-        throw new Error(`Chrome did not produce a PDF at ${outPath}`);
-    // Best-effort cleanup of the throwaway profile.
+    // The profile dir is removed in the finally block, so a Chrome failure or a
+    // missing-output throw can't leak it into the temp dir.
     try {
-        fs.rmSync(udd, { recursive: true, force: true });
-    } catch {
-        /* ignore */
+        await new Promise((resolve, reject) => {
+            const child = execFile(
+                chromePath,
+                [
+                    "--headless=new",
+                    "--no-sandbox",
+                    "--disable-gpu",
+                    "--hide-scrollbars",
+                    "--run-all-compositor-stages-before-draw",
+                    `--virtual-time-budget=${opts.virtualTimeBudgetMs ?? 15000}`,
+                    "--no-pdf-header-footer",
+                    `--user-data-dir=${udd}`,
+                    `--print-to-pdf=${outPath}`,
+                    url,
+                ],
+                { timeout: timeoutMs, maxBuffer: 8 * 1024 * 1024 },
+                (err) => {
+                    // Chrome exits 0 after writing the PDF; the timeout kills it if it wedges.
+                    // Either way success is decided by whether the file exists (checked below),
+                    // so only reject when we have an error AND no output file.
+                    if (err && !fs.existsSync(outPath)) reject(err);
+                    else resolve();
+                },
+            );
+            child.on("error", reject);
+        });
+        if (!fs.existsSync(outPath))
+            throw new Error(`Chrome did not produce a PDF at ${outPath}`);
+    } finally {
+        // Best-effort cleanup of the throwaway profile.
+        try {
+            fs.rmSync(udd, { recursive: true, force: true });
+        } catch {
+            /* ignore */
+        }
     }
     return outPath;
 }
