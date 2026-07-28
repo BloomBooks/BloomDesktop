@@ -3518,6 +3518,15 @@ namespace Bloom.Book
         internal void AddPreviewJavascript(HtmlDom dom)
         {
             dom.AddJavascriptFile("bookPreviewBundle.js".ToLocalhost());
+            // The bundle drags bloomUI.css into this document, and that stylesheet's `body` rule
+            // selects Bloom's UI font stack. The matching @font-face declarations used to ride
+            // along inside the same bundle, but BL-15300 moved them out to bloomUIFontFaces.css,
+            // leaving the font-family rule here with nothing to resolve against: any text that
+            // falls through to the body rule (e.g. a bloom-editable whose lang matches no
+            // defaultLangStyles rule) then renders in a system fallback font.
+            // Linked statically rather than injected from JS because this document's text is
+            // server-rendered, and a late-arriving @font-face is the very flicker BL-15300 fixed.
+            dom.EnsureStylesheetLinks("bloomUIFontFaces.css");
         }
 
         /// <summary>

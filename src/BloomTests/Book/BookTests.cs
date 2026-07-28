@@ -41,6 +41,28 @@ namespace BloomTests.Book
             );
         }
 
+        /// <summary>
+        /// Any document we put bookPreviewBundle.js into also gets bloomUI.css, whose `body` rule
+        /// selects Bloom's UI font stack; so it must also get the @font-face declarations for that
+        /// stack. When BL-15300 moved those declarations out of the bundle and nothing replaced them
+        /// here, preview text that falls through to the body rule silently dropped to a system
+        /// fallback font (caught by the visual regression suite: the lang="*" arithmetic editables
+        /// rendered in Arial instead of Roboto).
+        /// </summary>
+        [Test]
+        public void GetPreviewHtmlFileForWholeBook_LinksUiFontFaces()
+        {
+            var dom = CreateBook().GetPreviewHtmlFileForWholeBook();
+            // Sanity check: the bundle that brings in the UI css really is there, so that a future
+            // change removing it turns this into a deliberate decision rather than a silent pass.
+            Assert.That(
+                dom.InnerXml,
+                Does.Contain("bookPreviewBundle.js"),
+                "precondition: the preview DOM should load the preview bundle"
+            );
+            Assert.That(dom.InnerXml, Does.Contain("bloomUIFontFaces.css"));
+        }
+
         [Test]
         public void GetPreviewHtmlFileForWholeBook_BookHasThreePages_ResultHasAll()
         {
