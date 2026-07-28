@@ -2,7 +2,20 @@ import $ from "jquery";
 import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
 import "errorHandler";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
+import { ensureUiFontFacesInstalled } from "../../utils/uiFontFaces";
 import { CollectionsTabBookPane } from "./CollectionsTabBookPane";
+
+// The preview documents this bundle is loaded into (Book.AddPreviewJavascript(): the collection
+// tab's whole-book preview, single-page previews, and template-page thumbnails) are copies of the
+// book's own DOM plus previewMode.css. previewMode.less imports bloomUI.less by (reference), so
+// previewMode.css carries no @font-face at all, and the only such rules those documents do get
+// are the served book fonts (Andika, ABeeZee) that Bloom prepends to defaultLangStyles.css --
+// never Roboto/NotoSans/SymChar. No React root is mounted here either, so renderRoot()'s call
+// doesn't happen. Without this, the UI font stack falls back to whatever the system has, which
+// changes text metrics and shifts the layout. ensureUiFontFacesInstalled() adds only the
+// families the document is missing, so the Andika it already has is left alone rather than
+// duplicated. See bloomUIFontFaces.css.
+ensureUiFontFacesInstalled();
 
 $.fn.CenterVerticallyInParent = function () {
     return this.each(function () {

@@ -9,15 +9,30 @@
  * the text goes invisible for several frames while it re-loads ("FOIT"). That was the cause
  * of a visible text flicker on every page change in edit mode.
  *
+ * Equally, EVERY Bloom-managed document needs them: a document that lacks them silently falls
+ * back to whatever fonts the system happens to have, which changes text metrics and can shift
+ * the layout (that is how BL-14102's missing Andika shows up).
+ *
  * So: do NOT @import this file (or re-declare these fonts) in .less that gets compiled into
  * bundles or component styles. It is delivered in exactly two ways:
  *   1. A plain `@import (less)` in the root stylesheet of each document that contains
  *      server-rendered text (editMode.less, toolbox.less, readerSetup.less), all of which are
- *      linked in their document's <head> at parse time.
- *   2. ensureUiFontFacesInstalled() (utils/uiFontFaces.ts), which injects this file's text --
- *      only if the document doesn't already have these faces -- and is called from
- *      reactRender.tsx for every React root, covering all the WinForms-hosted React documents.
- * A unit test (uiFontFacesSingleSource.test.ts) enforces this.
+ *      linked in their document's <head> at parse time, so they are in effect before that text
+ *      first paints.
+ *   2. ensureUiFontFacesInstalled() (utils/uiFontFaces.ts), which injects the rules for the
+ *      families the document is missing. It is called from reactRender.tsx for every React
+ *      root, covering all the WinForms-hosted React documents, and from bookPreview.ts, whose
+ *      documents (the collection tab preview, single-page previews and template-page
+ *      thumbnails) have neither a stylesheet from (1) nor a React root.
+ *
+ * Note that (2) filters per family rather than injecting all or nothing, because a document may
+ * arrive already declaring some of these families and not others: Bloom prepends the served
+ * book fonts (Andika, ABeeZee, from /host/fonts/) to each book's defaultLangStyles.css, so any
+ * document that links a book's stylesheets already has an Andika face. Adding a second one late
+ * would cause exactly the blanking described above.
+ *
+ * A unit test (uiFontFacesSingleSource.test.ts) enforces both the single source and the two
+ * lists of approved delivery points.
  *
  * These were very helpful in compiling this file:
  * - google-webfonts-helper.herokuapp.com (for getting .woff2 Roboto with a maximum of charsets)
