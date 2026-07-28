@@ -26,6 +26,10 @@ namespace Bloom.Edit
     ///				renderPanel() to return the tool's React element. The toolbox renders that
     ///				element as an ordinary child of its own single React root, so React context
     ///				(e.g. the MUI theme) reaches it normally.
+    ///			- the lifecycle methods it does implement (beginRestoreSettings, showTool,
+    ///				newPageReady, detachFromPage, hideTool) need no wiring up: the section the
+    ///				toolbox renders for the tool runs them from a React effect for as long as
+    ///				that tool is the current tool of a showing toolbox (useToolLifecycle.ts).
     ///			- should implement iconPath() to return the URL of the icon for the tool's section
     ///				header, e.g. "/bloom/bookEdit/toolbox/motion/motion.svg" (create the icon in the
     ///				tool's own folder, or in BloomBrowserUI/images).

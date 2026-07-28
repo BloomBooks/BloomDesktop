@@ -50,14 +50,15 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     }
 
     // When are showTool, newPageReady, and updateMarkup called?
-    // Some scenarios:
+    // (The toolbox runs these from a React effect for whichever tool is the current tool of
+    // a showing toolbox; see useToolLifecycle.ts.) Some scenarios:
     // * Open the toolbox and Talking Book shows up  - showTool, newPageReady
     // * Open a book and Talking Book tool automatically opens - showTool, newPageReady
-    // * Creating a new page while tool is open - newPageReady, newPageReady (again)
+    // * Creating a new page while tool is open - showTool, newPageReady, newPageReady (again)
     // * Changing to an existing page while tool is open - same as above.
     // * Typing in a text box while tool is open - updateMarkup
-    // * Close the toolbox: hideTool()
-    // * hit the Toolbox's "More" switcher: hideTool()
+    // * Close the toolbox: detachFromPage(), hideTool()
+    // * hit the Toolbox's "More" switcher: detachFromPage(), hideTool()
     // * Switching from a different tool to Talking Book Tool - showTool, newPageReady
     // * Add a new text box using Origami ("Change Layout"), then turn off the Origami Editor: newPageReady, updateMarkup
     public async showTool(): Promise<void> {

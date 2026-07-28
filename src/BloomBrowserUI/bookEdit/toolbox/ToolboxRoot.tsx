@@ -29,6 +29,7 @@ import {
     kTalkingBookToolId,
     toPersistedToolName,
 } from "./toolIds";
+import { useToolLifecycle } from "./useToolLifecycle";
 
 // React host for the toolbox sidebar. It shows a section for each tool the toolbox is
 // offering, and expands the active one.
@@ -41,6 +42,10 @@ import {
 // ITool.renderPanel()), so the whole toolbox is a single React tree: context such as the
 // MUI theme reaches the tools normally. Collapsed sections keep their children mounted
 // (MUI's default), so a tool keeps its state as sections open and close.
+//
+// Rendering a tool's section is also what runs it: each section runs its tool's lifecycle
+// from an effect for as long as that tool is the current tool of a showing toolbox. See
+// useToolLifecycle.ts.
 
 // Everything the toolbox needs in order to show one tool's section. It all comes from the
 // tool itself (see ITool) or is derived from its id (see toolIds.ts).
@@ -85,6 +90,207 @@ const makeSectionFromToolId = (toolId: string): ToolboxSection => {
         featureName: tool.featureName,
         tool: tool,
     };
+};
+
+// One tool's section: its header, its panel, and its lifecycle.
+//
+// The lifecycle hook lives here, in the component that *contains* the panel, rather than
+// beside it: React runs a child's effects before its parent's, so by the time we tell the
+// tool to show itself its panel has mounted, as it always had under the old imperative
+// order.
+const ToolSection: React.FunctionComponent<{
+    section: ToolboxSection;
+    // Is this the expanded section? Purely how the accordion looks.
+    isExpanded: boolean;
+    // Is this the tool that is running? Not the same thing as being expanded; see
+    // IToolboxUiState.currentToolId.
+    isRunning: boolean;
+    pageGeneration: number;
+}> = ({ section, isExpanded, isRunning, pageGeneration }) => {
+    useToolLifecycle(section.tool, isRunning, pageGeneration);
+
+    return (
+        <Accordion
+            css={css`
+                background-color: ${kBloomUnselectedTabBackground};
+                color: white;
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                flex-shrink: 0;
+
+                &:before {
+                    display: none;
+                }
+
+                &.Mui-expanded {
+                    background-color: ${kBloomPanelBackground};
+                    flex: 1 1 auto;
+                    min-height: 0;
+                }
+
+                &.Mui-expanded > .MuiCollapse-root {
+                    display: flex;
+                    flex-direction: column;
+                    flex: 1;
+                    min-height: 0;
+                    overflow: hidden;
+                }
+
+                &.Mui-expanded > .MuiCollapse-root > .MuiCollapse-wrapper,
+                &.Mui-expanded
+                    > .MuiCollapse-root
+                    > .MuiCollapse-wrapper
+                    > .MuiCollapse-wrapperInner,
+                &.Mui-expanded
+                    > .MuiCollapse-root
+                    > .MuiCollapse-wrapper
+                    > .MuiCollapse-wrapperInner
+                    > .MuiAccordion-region {
+                    display: flex;
+                    flex-direction: column;
+                    flex: 1;
+                    min-height: 0;
+                    overflow: hidden;
+                }
+            `}
+            disableGutters
+            expanded={isExpanded}
+            onChange={(_event, expanded) => {
+                if (expanded) {
+                    setActiveTool(section.id);
+                } else {
+                    clearActiveTool();
+                }
+            }}
+        >
+            <AccordionSummary
+                css={css`
+                    min-height: 32px;
+                    padding-left: 5px;
+                    padding-right: 12px;
+                    // Keep the headers above the Talking Book tool's disabling
+                    // overlay, so they neither look grayed out nor stop
+                    // responding in Show Playback Order mode (BL-16630); see
+                    // toolboxZIndexes.ts for where the number comes from.
+                    // Only works while no ancestor creates a stacking context
+                    // -- a transform, filter, opacity or z-index on the
+                    // Accordion, the Collapse or the tool-body host would
+                    // trap it.
+                    position: relative;
+                    z-index: ${kToolboxHeaderZIndex};
+                    // The header has to paint its own background for that to
+                    // help. A collapsed header would otherwise be transparent
+                    // and show the Accordion root's background, which stays
+                    // under the overlay and so keeps being dimmed. Same colour
+                    // the root uses, so nothing changes visually.
+                    background-color: ${kBloomUnselectedTabBackground};
+
+                    & .MuiAccordionSummary-content {
+                        margin: 8px 0;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                    }
+
+                    &.Mui-expanded {
+                        min-height: 32px;
+                        background-color: ${kBloomBlue};
+                    }
+                `}
+            >
+                <span
+                    // The talking book icon is a tall, narrow microphone,
+                    // so it gets a narrower box than the others.
+                    css={
+                        section.id === kTalkingBookToolId
+                            ? [
+                                  toolboxHeaderIconStyles,
+                                  css`
+                                      width: 12px;
+                                      background-size: 12px 16px;
+                                  `,
+                              ]
+                            : toolboxHeaderIconStyles
+                    }
+                    data-toolid={section.id}
+                    style={
+                        section.iconPath
+                            ? {
+                                  backgroundImage: `url(${section.iconPath})`,
+                              }
+                            : undefined
+                    }
+                ></span>
+                <Typography
+                    css={css`
+                        flex-grow: 1;
+                        font-size: 11px;
+                    `}
+                >
+                    <LocalizedString l10nKey={section.l10nKey}>
+                        {section.englishLabel}
+                    </LocalizedString>
+                </Typography>
+                {section.featureName && (
+                    <span>
+                        <SubscriptionBadgeWithTooltipAndDialog
+                            featureName={section.featureName}
+                        />
+                    </span>
+                )}
+            </AccordionSummary>
+            <AccordionDetails
+                css={css`
+                    background-color: ${kBloomPanelBackground};
+                    padding: 0;
+                    flex: 1;
+                    display: flex;
+                    min-height: 0;
+                    overflow: auto;
+                `}
+            >
+                <div
+                    // Some tool stylesheets, and our automated tests,
+                    // still select a tool's body by this attribute, using
+                    // the historical "Tool"-suffixed name.
+                    data-toolid={toPersistedToolName(section.id)}
+                    css={css`
+                        width: 100%;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: stretch;
+                        min-height: 100%;
+                        overflow: visible;
+
+                        // The Decodable and Leveled reader tool bodies
+                        // were laid out to suit the small left padding
+                        // that the old jQuery-UI accordion content panels
+                        // gave them, so keep that.
+                        &[data-toolid="leveledReaderTool"],
+                        &[data-toolid="decodableReaderTool"] {
+                            padding-left: 3px;
+                            box-sizing: border-box;
+                        }
+
+                        // Tools expect their root element to fill the
+                        // space the toolbox gives them; several of them
+                        // then use height:100% internally to push a Help
+                        // link to the bottom.
+                        > * {
+                            width: 100%;
+                            height: 100%;
+                            min-width: 0;
+                            flex: 1 1 auto;
+                            display: block;
+                        }
+                    `}
+                >
+                    {section.tool.renderPanel()}
+                </div>
+            </AccordionDetails>
+        </Accordion>
+    );
 };
 
 // This component is the root of the whole toolbox sidebar. It is rendered into a dedicated
@@ -144,191 +350,16 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                     `}
                 >
                     {sections.map((section) => (
-                        <Accordion
+                        <ToolSection
                             key={section.id}
-                            css={css`
-                                background-color: ${kBloomUnselectedTabBackground};
-                                color: white;
-                                margin: 0;
-                                display: flex;
-                                flex-direction: column;
-                                flex-shrink: 0;
-
-                                &:before {
-                                    display: none;
-                                }
-
-                                &.Mui-expanded {
-                                    background-color: ${kBloomPanelBackground};
-                                    flex: 1 1 auto;
-                                    min-height: 0;
-                                }
-
-                                &.Mui-expanded > .MuiCollapse-root {
-                                    display: flex;
-                                    flex-direction: column;
-                                    flex: 1;
-                                    min-height: 0;
-                                    overflow: hidden;
-                                }
-
-                                &.Mui-expanded
-                                    > .MuiCollapse-root
-                                    > .MuiCollapse-wrapper,
-                                &.Mui-expanded
-                                    > .MuiCollapse-root
-                                    > .MuiCollapse-wrapper
-                                    > .MuiCollapse-wrapperInner,
-                                &.Mui-expanded
-                                    > .MuiCollapse-root
-                                    > .MuiCollapse-wrapper
-                                    > .MuiCollapse-wrapperInner
-                                    > .MuiAccordion-region {
-                                    display: flex;
-                                    flex-direction: column;
-                                    flex: 1;
-                                    min-height: 0;
-                                    overflow: hidden;
-                                }
-                            `}
-                            disableGutters
-                            expanded={expandedSectionId === section.id}
-                            onChange={(_event, expanded) => {
-                                if (expanded) {
-                                    setActiveTool(section.id);
-                                } else {
-                                    clearActiveTool();
-                                }
-                            }}
-                        >
-                            <AccordionSummary
-                                css={css`
-                                    min-height: 32px;
-                                    padding-left: 5px;
-                                    padding-right: 12px;
-                                    // Keep the headers above the Talking Book tool's disabling
-                                    // overlay, so they neither look grayed out nor stop
-                                    // responding in Show Playback Order mode (BL-16630); see
-                                    // toolboxZIndexes.ts for where the number comes from.
-                                    // Only works while no ancestor creates a stacking context
-                                    // -- a transform, filter, opacity or z-index on the
-                                    // Accordion, the Collapse or the tool-body host would
-                                    // trap it.
-                                    position: relative;
-                                    z-index: ${kToolboxHeaderZIndex};
-                                    // The header has to paint its own background for that to
-                                    // help. A collapsed header would otherwise be transparent
-                                    // and show the Accordion root's background, which stays
-                                    // under the overlay and so keeps being dimmed. Same colour
-                                    // the root uses, so nothing changes visually.
-                                    background-color: ${kBloomUnselectedTabBackground};
-
-                                    & .MuiAccordionSummary-content {
-                                        margin: 8px 0;
-                                        display: flex;
-                                        align-items: center;
-                                        gap: 12px;
-                                    }
-
-                                    &.Mui-expanded {
-                                        min-height: 32px;
-                                        background-color: ${kBloomBlue};
-                                    }
-                                `}
-                            >
-                                <span
-                                    // The talking book icon is a tall, narrow microphone,
-                                    // so it gets a narrower box than the others.
-                                    css={
-                                        section.id === kTalkingBookToolId
-                                            ? [
-                                                  toolboxHeaderIconStyles,
-                                                  css`
-                                                      width: 12px;
-                                                      background-size: 12px 16px;
-                                                  `,
-                                              ]
-                                            : toolboxHeaderIconStyles
-                                    }
-                                    data-toolid={section.id}
-                                    style={
-                                        section.iconPath
-                                            ? {
-                                                  backgroundImage: `url(${section.iconPath})`,
-                                              }
-                                            : undefined
-                                    }
-                                ></span>
-                                <Typography
-                                    css={css`
-                                        flex-grow: 1;
-                                        font-size: 11px;
-                                    `}
-                                >
-                                    <LocalizedString l10nKey={section.l10nKey}>
-                                        {section.englishLabel}
-                                    </LocalizedString>
-                                </Typography>
-                                {section.featureName && (
-                                    <span>
-                                        <SubscriptionBadgeWithTooltipAndDialog
-                                            featureName={section.featureName}
-                                        />
-                                    </span>
-                                )}
-                            </AccordionSummary>
-                            <AccordionDetails
-                                css={css`
-                                    background-color: ${kBloomPanelBackground};
-                                    padding: 0;
-                                    flex: 1;
-                                    display: flex;
-                                    min-height: 0;
-                                    overflow: auto;
-                                `}
-                            >
-                                <div
-                                    // Some tool stylesheets, and our automated tests,
-                                    // still select a tool's body by this attribute, using
-                                    // the historical "Tool"-suffixed name.
-                                    data-toolid={toPersistedToolName(
-                                        section.id,
-                                    )}
-                                    css={css`
-                                        width: 100%;
-                                        display: flex;
-                                        flex-direction: column;
-                                        align-items: stretch;
-                                        min-height: 100%;
-                                        overflow: visible;
-
-                                        // The Decodable and Leveled reader tool bodies
-                                        // were laid out to suit the small left padding
-                                        // that the old jQuery-UI accordion content panels
-                                        // gave them, so keep that.
-                                        &[data-toolid="leveledReaderTool"],
-                                        &[data-toolid="decodableReaderTool"] {
-                                            padding-left: 3px;
-                                            box-sizing: border-box;
-                                        }
-
-                                        // Tools expect their root element to fill the
-                                        // space the toolbox gives them; several of them
-                                        // then use height:100% internally to push a Help
-                                        // link to the bottom.
-                                        > * {
-                                            width: 100%;
-                                            height: 100%;
-                                            min-width: 0;
-                                            flex: 1 1 auto;
-                                            display: block;
-                                        }
-                                    `}
-                                >
-                                    {section.tool.renderPanel()}
-                                </div>
-                            </AccordionDetails>
-                        </Accordion>
+                            section={section}
+                            isExpanded={expandedSectionId === section.id}
+                            isRunning={
+                                toolboxUiState.currentToolId === section.id &&
+                                toolboxUiState.toolboxVisible
+                            }
+                            pageGeneration={toolboxUiState.pageGeneration}
+                        />
                     ))}
                 </div>
             </ThemeProvider>

@@ -7,18 +7,23 @@ Code organization
                          React root for the whole toolbox, and each tool's panel is an
                          ordinary child of it, so React context (e.g. the MUI theme)
                          reaches the tools normally.
+    - useToolLifecycle.ts  runs one tool's lifecycle (beginRestoreSettings, showTool,
+                         newPageReady, detachFromPage, hideTool) from an effect, so a tool
+                         runs because it is the current tool of a showing toolbox rather
+                         than because something called it. Each of ToolboxRoot's sections
+                         uses it.
     - toolbox.ts         the ITool interface and the non-React orchestration: it asks the
-                         server which tools this book has enabled and drives each tool's
-                         lifecycle (showTool/newPageReady/updateMarkup/...).
+                         server which tools this book has enabled, notices when the page or
+                         book changes, and records what it finds in toolboxState.ts.
     - pageEditingMarkup.ts  the keystroke-to-markup machinery: the keypress/paste handlers on
                          the .bloom-editable divs, and the CKEditor bookmark coordination that
                          keeps the current tool's markup up to date as the user edits without
                          losing the insertion point.
-    - toolboxState.ts    the toolbox's UI state — which tools it is offering, which one is
-                         active, which ones the book has enabled, and whether the UI
-                         exists yet — as a plain external store that the React components
-                         subscribe to and toolbox.ts reads and updates. (Separate module
-                         only to avoid an import cycle.)
+    - toolboxState.ts    the toolbox's state — which tools it is offering, which section is
+                         expanded, which tool is running, which tools the book has enabled,
+                         whether the toolbox is showing, and which page it is on — as a plain
+                         external store that the React components subscribe to and toolbox.ts
+                         reads and updates. (Separate module only to avoid an import cycle.)
     - toolIds.ts         the canonical tool ids, and the single place that knows how a
                          canonical id maps to the other spellings at our boundaries (the
                          historical "Tool"/"Check" suffixes in persisted data, and the
@@ -42,7 +47,8 @@ To add a new tool
 2. In it, write a class that extends ToolboxToolReactAdaptor, implementing at least id()
    and renderPanel() (which just returns the tool's React element), plus iconPath() if the
    section header should show an icon, and whichever lifecycle methods the tool needs (see
-   the ITool comments in toolbox.ts).
+   the ITool comments in toolbox.ts). You do not wire the lifecycle methods up to anything:
+   the toolbox calls them for whichever tool is running (useToolLifecycle.ts).
 3. Register one instance of it in toolboxBootstrap.ts: ToolBox.registerTool(new MyTool()).
 4. Add an XLF entry for the label, whose key follows the convention in toolIds.ts
    getToolLabelInfo() (e.g. id "music" gives key "EditTab.Toolbox.MusicTool" and English
