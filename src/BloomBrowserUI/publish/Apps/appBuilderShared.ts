@@ -142,7 +142,8 @@ export interface IProgressStageLabels {
 export const kAppBuilderWebSocketContext = "publish-rab";
 
 /// Websocket event id sent by the C# side when a prepare/build/install completes.
-/// The message payload is "{action}:success" or "{action}:failure".
+/// The message payload is "{action}:{outcome}", where outcome is "success",
+/// "cancelled", or "failure".
 export const kAppBuilderActionCompleteEventId = "actionComplete";
 
 export type AppBuilderAction = "prepare" | "build" | "install";

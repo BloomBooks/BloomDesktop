@@ -540,15 +540,25 @@ namespace Bloom.Publish.Rab
 
         /// <summary>
         /// Sends an "actionComplete" websocket event so the Apps screen knows when a background
-        /// prepare/build/install has finished.  Called by RabPublishApi after ReportFailure (if
-        /// any) so the error message is logged before the UI tears down the progress subscriber.
+        /// prepare/build/install has finished. The payload is "{action}:{outcome}" where outcome is
+        /// "success", "cancelled" (the user navigated away), or "failure". Called by RabPublishApi
+        /// after ReportFailure/ReportCancelled (if any) so that message is logged before the UI
+        /// tears down the progress subscriber. A cancellation is reported as its own outcome rather
+        /// than "failure" so it is not mistaken for a build error.
         /// </summary>
-        internal void SendActionCompleteEvent(string action, bool succeeded)
+        internal void SendActionCompleteEvent(string action, bool succeeded, bool cancelled)
         {
+            string outcome;
+            if (cancelled)
+                outcome = "cancelled";
+            else if (succeeded)
+                outcome = "success";
+            else
+                outcome = "failure";
             _webSocketServer.SendString(
                 kWebSocketContext,
                 RabPublishApi.kWebSocketEventId_ActionComplete,
-                $"{action}:{(succeeded ? "success" : "failure")}"
+                $"{action}:{outcome}"
             );
         }
 
@@ -568,8 +578,8 @@ namespace Bloom.Publish.Rab
 
         /// <summary>
         /// Reports that an App Builder action was cancelled (e.g. because the user left the Apps
-        /// screen). Logged as an informational message rather than an error so an intentional
-        /// cancellation does not look like a build failure in the log or the progress channel.
+        /// screen). Surfaced as a warning rather than an error so an intentional cancellation does
+        /// not look like a build failure in the log or the progress channel.
         /// </summary>
         public void ReportCancelled(string action)
         {

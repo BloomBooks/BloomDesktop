@@ -14,8 +14,8 @@ namespace Bloom.Publish.Rab
 
         /// <summary>
         /// WebSocket event id sent when a prepare/build/install action finishes.
-        /// The message payload is "{action}:success" or "{action}:failure"
-        /// (e.g. "build:success").
+        /// The message payload is "{action}:{outcome}", where outcome is "success",
+        /// "cancelled", or "failure" (e.g. "build:success").
         /// </summary>
         public const string kWebSocketEventId_ActionComplete = "actionComplete";
 
@@ -124,6 +124,7 @@ namespace Bloom.Publish.Rab
                     _ = Task.Run(async () =>
                     {
                         var succeeded = false;
+                        var cancelled = false;
                         try
                         {
                             try
@@ -135,6 +136,7 @@ namespace Bloom.Publish.Rab
                             {
                                 // The user navigated away and Bloom cancelled the action; that is
                                 // expected, not a failure, so don't report it as an error.
+                                cancelled = true;
                                 _rabProjectService.ReportCancelled("Prepare");
                             }
                             catch (Exception error)
@@ -151,7 +153,11 @@ namespace Bloom.Publish.Rab
                             // until the client is notified, preventing a status-poll in the gap
                             // from incorrectly clearing the client's busyAction via recovery logic.
                             _rabProjectService.ClearAction();
-                            _rabProjectService.SendActionCompleteEvent("prepare", succeeded);
+                            _rabProjectService.SendActionCompleteEvent(
+                                "prepare",
+                                succeeded,
+                                cancelled
+                            );
                         }
                     });
                     request.PostSucceeded();
@@ -171,6 +177,7 @@ namespace Bloom.Publish.Rab
                     _ = Task.Run(async () =>
                     {
                         var succeeded = false;
+                        var cancelled = false;
                         try
                         {
                             try
@@ -180,6 +187,7 @@ namespace Bloom.Publish.Rab
                             }
                             catch (OperationCanceledException)
                             {
+                                cancelled = true;
                                 _rabProjectService.ReportCancelled("Build");
                             }
                             catch (Exception error)
@@ -190,7 +198,11 @@ namespace Bloom.Publish.Rab
                         finally
                         {
                             _rabProjectService.ClearAction();
-                            _rabProjectService.SendActionCompleteEvent("build", succeeded);
+                            _rabProjectService.SendActionCompleteEvent(
+                                "build",
+                                succeeded,
+                                cancelled
+                            );
                         }
                     });
                     request.PostSucceeded();
@@ -210,6 +222,7 @@ namespace Bloom.Publish.Rab
                     _ = Task.Run(async () =>
                     {
                         var succeeded = false;
+                        var cancelled = false;
                         try
                         {
                             try
@@ -219,6 +232,7 @@ namespace Bloom.Publish.Rab
                             }
                             catch (OperationCanceledException)
                             {
+                                cancelled = true;
                                 _rabProjectService.ReportCancelled("Try on phone");
                             }
                             catch (Exception error)
@@ -229,7 +243,11 @@ namespace Bloom.Publish.Rab
                         finally
                         {
                             _rabProjectService.ClearAction();
-                            _rabProjectService.SendActionCompleteEvent("install", succeeded);
+                            _rabProjectService.SendActionCompleteEvent(
+                                "install",
+                                succeeded,
+                                cancelled
+                            );
                         }
                     });
                     request.PostSucceeded();
