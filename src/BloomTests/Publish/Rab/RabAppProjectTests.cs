@@ -1163,6 +1163,51 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void WriteRabInstallerDownloadToFile_CancelledMidDownload_LeavesNoLeftoverFile()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var service = new TestRabProjectService(
+                new RabWorkspacePaths(tempFolder.Path),
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
+            var installerPath = Path.Combine(tempFolder.Path, "installer", "rabsetup.exe");
+
+            Assert.That(service.TryBeginAction("prepare"), Is.True);
+            try
+            {
+                using var source = new MemoryStream(new byte[1024 * 1024]);
+                service.CancelActiveAction();
+
+                Assert.Throws<OperationCanceledException>(() =>
+                    service.WriteRabInstallerDownloadToFile(
+                        source,
+                        installerPath,
+                        source.Length,
+                        null
+                    )
+                );
+
+                // A cancelled download must not leave a truncated installer (which
+                // FindRabSetupInstallerPath would reuse) or an orphaned .partial file behind.
+                Assert.That(
+                    RobustFile.Exists(installerPath),
+                    Is.False,
+                    "a truncated installer must not be left where a later attempt would reuse it"
+                );
+                Assert.That(
+                    RobustFile.Exists(installerPath + ".partial"),
+                    Is.False,
+                    "the partial download must be cleaned up"
+                );
+            }
+            finally
+            {
+                service.ClearAction();
+            }
+        }
+
+        [Test]
         public async Task BuildAsync_UsesRabBuildOutputToAdvanceProgress_AndTimestampLogLines()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");

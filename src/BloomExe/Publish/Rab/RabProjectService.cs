@@ -2601,20 +2601,58 @@ namespace Bloom.Publish.Rab
                 .GetResult();
             response.EnsureSuccessStatusCode();
 
-            Directory.CreateDirectory(Path.GetDirectoryName(installerPath));
-
             using var responseStream = response
                 .Content.ReadAsStreamAsync(cancellationToken)
                 .GetAwaiter()
                 .GetResult();
-            using var fileStream = RobustFile.Create(installerPath);
 
-            CopyRabInstallerDownloadStream(
+            WriteRabInstallerDownloadToFile(
                 responseStream,
-                fileStream,
+                installerPath,
                 response.Content.Headers.ContentLength ?? -1,
                 reportProgress
             );
+        }
+
+        /// <summary>
+        /// Copies the installer download stream to <paramref name="installerPath"/> atomically:
+        /// it writes to a temporary file and moves it into place only after a complete copy,
+        /// deleting the temporary file if the copy is cancelled or fails. This keeps a cancelled
+        /// first-run download from leaving a truncated installer behind — one that
+        /// <see cref="FindRabSetupInstallerPath"/> would otherwise pick up on the next attempt and
+        /// hand to the installer, failing every retry.
+        /// </summary>
+        internal void WriteRabInstallerDownloadToFile(
+            Stream responseStream,
+            string installerPath,
+            long totalBytes,
+            Action<long, long> reportProgress
+        )
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(installerPath));
+            var partialPath = installerPath + ".partial";
+            try
+            {
+                using (var fileStream = RobustFile.Create(partialPath))
+                {
+                    CopyRabInstallerDownloadStream(
+                        responseStream,
+                        fileStream,
+                        totalBytes,
+                        reportProgress
+                    );
+                }
+                if (RobustFile.Exists(installerPath))
+                    RobustFile.Delete(installerPath);
+                RobustFile.Move(partialPath, installerPath);
+            }
+            catch
+            {
+                // Best-effort cleanup so a later attempt starts from a fresh download.
+                if (RobustFile.Exists(partialPath))
+                    RobustFile.Delete(partialPath);
+                throw;
+            }
         }
 
         internal virtual void CopyRabInstallerDownloadStream(
