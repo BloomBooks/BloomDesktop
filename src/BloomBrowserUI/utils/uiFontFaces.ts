@@ -46,10 +46,19 @@ export function selectMissingFontFaceRules(
 // would either strand those documents without the UI fonts or hand them a late duplicate
 // Andika; injecting only the missing families does neither.
 //
-// The doc.fonts check is reliable at the time we are called because pending stylesheet
-// <link>s block script execution, so any statically-linked declarations -- whether from
-// editMode.css and friends or from the book's own defaultLangStyles.css -- are already in the
-// font set before any of our code runs.
+// The doc.fonts check is reliable at the time we are called because a pending stylesheet
+// blocks script execution, so any statically-linked declarations -- whether from editMode.css
+// and friends or from the book's own defaultLangStyles.css -- are already in the font set
+// before any of our code runs.
+//
+// Note that this does NOT depend on the <link>s preceding the <script> in the document, which
+// is worth knowing because in one path they don't: Book.GetThumbnailXmlDocumentForPage() calls
+// AddPreviewJavascript() BEFORE EnsureStylesheetLinks(), and SortStyleSheetLinks() re-appends
+// every link to the end of <head> -- i.e. after the script. That ordering would matter for a
+// classic script (which only waits for stylesheets above it), but HtmlDom.AddScriptFile() gives
+// anything named *bundle.js type="module", and a module script is deferred: it runs only after
+// the whole document is parsed, by which point every stylesheet in <head> has been accounted
+// for wherever it sits.
 export function ensureUiFontFacesInstalled(doc: Document = document): void {
     if (doc.getElementById(kUiFontFacesStyleId)) return;
     // doc.fonts is undefined in jsdom (unit tests); there, treat nothing as declared and
