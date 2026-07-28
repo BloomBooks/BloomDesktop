@@ -485,10 +485,16 @@ namespace Bloom.Publish.Rab
         /// </summary>
         internal void ClearAction()
         {
-            _activeProgressAction = null;
+            // Tear down this action's cancellation source before freeing the slot. A concurrent
+            // TryBeginAction cannot claim the slot (its CompareExchange fails while
+            // _activeProgressAction is non-null), so freeing the slot last guarantees we only ever
+            // null/dispose *our own* CancellationTokenSource, never one a newly started action just
+            // installed. (The endpoints run with requiresSync: false, so a finishing action's
+            // ClearAction really can race a new action's TryBeginAction.)
             var cancellation = _actionCancellation;
             _actionCancellation = null;
             cancellation?.Dispose();
+            _activeProgressAction = null;
         }
 
         /// <summary>
