@@ -134,6 +134,55 @@ describe("jquery.text-markup", function () {
         expect(highlighted(kWordTooLongHighlight)).toEqual([]);
     });
 
+    // A <br> ends a line, so each line of a stanza counts as its own sentence rather than the
+    // whole verse counting as one long one. (When the markup worked on HTML, the sentence
+    // splitter saw <br> as a paragraph-ending placeholder; now mapVisibleText gives it a
+    // newline, which that splitter also counts as paragraph-ending.)
+    it("checkLeveledReader treats each <br> line as its own sentence", function () {
+        const input = "<p>One two three<br>four five six</p>";
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxWordsPerSentence: 4 });
+
+        expect($("#text_entry1").html()).toBe(input);
+        // Both lines are 3 words, so neither exceeds 4. Were the <br> only a space, this would
+        // be one 6-word sentence and would be marked.
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([]);
+
+        // Sanity/positive control: a limit of 2 marks each line separately.
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxWordsPerSentence: 2 });
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([
+            "One two three",
+            "four five six",
+        ]);
+    });
+
+    // Locating sentences relies on the splitter returning the text unchanged. It rewrites a
+    // literal "<br>" the user typed as text, which would shift every following offset, so in
+    // that case we skip sentence marking rather than highlight the wrong words.
+    it("checkLeveledReader does not mis-mark when the text contains a literal <br>", function () {
+        const input =
+            "<p>Type &lt;br&gt; to break. This sentence is far too long.</p>";
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxWordsPerSentence: 2 });
+
+        expect($("#text_entry1").html()).toBe(input);
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([]);
+
+        // Sanity/positive control: the same text without the literal "<br>" IS marked, so the
+        // assertion above is meaningful rather than passing for some unrelated reason.
+        $("#text_entry1")
+            .html("<p>Type to break. This sentence is far too long.</p>")
+            .checkLeveledReader({ maxWordsPerSentence: 2 });
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([
+            "Type to break.",
+            "This sentence is far too long.",
+        ]);
+    });
+
     // check the bug reported in BL-10119
     it("checkLeveledReader.handlesSentencesWithInitialMarkup", function () {
         const input =

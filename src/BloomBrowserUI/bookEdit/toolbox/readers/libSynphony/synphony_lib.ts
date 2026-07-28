@@ -1057,10 +1057,19 @@ export class LibSynphony {
         // These kinds of spaces are allowed, but only before a trailingPunct; otherwise,
         // they are considered part of the inter-sentence white space.
         // \\u202F: narrow non-breaking space that our long-press inserts for non-breaking space.
+        // \\u00A0: a real NO-BREAK SPACE. nbspReplacement above only stands in for the "&nbsp;"
+        // *entity*, which is what we see when the input is HTML. Callers that pass us plain text
+        // (the reader tools' mapVisibleText, and removeAllHtmlMarkupFromString, which decodes
+        // entities) have the actual character instead, and without it here a French-style
+        // "Bonjour ! " would break the sentence before its closing guillemet.
         // Using a non-capturing group here, because it's only to allow the space+trailing
         // sequence to repeat; we don't want to use it separately in the result.
         var afterSEP =
-            "(?:[" + nbspReplacement + "\\u202F]*" + trailingPunct + ")*";
+            "(?:[" +
+            nbspReplacement +
+            "\\u00A0\\u202F]*" +
+            trailingPunct +
+            ")*";
 
         // regex to find sentence ending sequences and inter-sentence space
         // \p{SEP} is defined as a list of sentence ending punctuation characters by a call to XRegExp.addUnicodeData

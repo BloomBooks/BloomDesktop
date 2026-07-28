@@ -89,6 +89,13 @@ export interface TextOffsetMap {
     pieces: TextPiece[];
 }
 
+// The character a visual break contributes to the mapped text. A newline, not a space, because
+// a <br> ends a line and consumers must be able to tell that from an ordinary word gap: Bloom's
+// sentence splitter counts a newline as paragraph-ending punctuation, so each line of a
+// <br>-separated stanza is analyzed as its own sentence, exactly as it was when the reader tools
+// fed raw HTML (where <br> became a paragraph-ending placeholder) to the splitter.
+const kBreakSeparator = "\n";
+
 // Tags whose boundaries separate words even though they contribute no characters. Compare
 // removeAllHtmlMarkupFromString(), which substitutes a space for these in the HTML-string world.
 const kSeparatingTags = new Set([
@@ -126,9 +133,11 @@ export function mapVisibleText(
     };
 
     const addSeparator = (): void => {
-        // No point starting with a separator, or doubling one up.
-        if (text.length > 0 && !text.endsWith(" ")) {
-            addPiece(" ");
+        // No point starting with a separator, or doubling one up. Note that we test for the
+        // separator itself, not for whitespace: text that already ends in a space still needs
+        // the break character, or a <br> after a space would stop ending the line.
+        if (text.length > 0 && !text.endsWith(kBreakSeparator)) {
+            addPiece(kBreakSeparator);
         }
     };
 
