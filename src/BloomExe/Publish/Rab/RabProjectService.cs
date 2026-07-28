@@ -2586,9 +2586,17 @@ namespace Bloom.Publish.Rab
             Action<long, long> reportProgress
         )
         {
+            // Pass the action's cancellation token through the request and stream so leaving the
+            // Apps screen interrupts a download that is stalled connecting or mid-read, not just
+            // one that is actively streaming chunks (see CopyRabInstallerDownloadStream).
+            var cancellationToken = ActionCancellationToken;
             using var httpClient = CreateRabInstallerHttpClient();
             using var response = httpClient
-                .GetAsync(kRabSetupDownloadUrl, HttpCompletionOption.ResponseHeadersRead)
+                .GetAsync(
+                    kRabSetupDownloadUrl,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cancellationToken
+                )
                 .GetAwaiter()
                 .GetResult();
             response.EnsureSuccessStatusCode();
@@ -2596,7 +2604,7 @@ namespace Bloom.Publish.Rab
             Directory.CreateDirectory(Path.GetDirectoryName(installerPath));
 
             using var responseStream = response
-                .Content.ReadAsStreamAsync()
+                .Content.ReadAsStreamAsync(cancellationToken)
                 .GetAwaiter()
                 .GetResult();
             using var fileStream = RobustFile.Create(installerPath);
@@ -2616,17 +2624,23 @@ namespace Bloom.Publish.Rab
             Action<long, long> reportProgress
         )
         {
+            // The installer download is in-process work (not an external process the cancellation
+            // can kill) and can be large, so honor cancellation both between chunks and during a
+            // read that is blocked waiting on the network. Otherwise leaving the Apps screen during
+            // a first-run download wouldn't stop it until the download finished or the HttpClient's
+            // 30-minute timeout elapsed.
+            var cancellationToken = ActionCancellationToken;
             var buffer = new byte[81920];
             long transferredBytes = 0;
 
             while (true)
             {
-                // The installer download is in-process work (not an external process the
-                // cancellation can kill), and it can be large, so check between chunks. Otherwise
-                // leaving the Apps screen during a first-run download wouldn't stop it until the
-                // download finished or the HttpClient's 30-minute timeout elapsed.
-                ThrowIfActionCancelled();
-                var bytesRead = responseStream.Read(buffer, 0, buffer.Length);
+                cancellationToken.ThrowIfCancellationRequested();
+                var bytesRead = responseStream
+                    .ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken)
+                    .AsTask()
+                    .GetAwaiter()
+                    .GetResult();
                 if (bytesRead <= 0)
                     break;
 
