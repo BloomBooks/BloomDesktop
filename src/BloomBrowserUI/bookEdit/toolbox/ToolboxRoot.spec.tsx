@@ -20,6 +20,11 @@ vi.mock("./toolbox", () => {
             makeFakeTool("game"),
             makeFakeTool("settings"),
         ],
+        // The sections' lifecycle hook wants these (see useToolLifecycle.ts). No tool is
+        // running in these tests — the store's currentToolId is never set — so they are
+        // never actually called; they are here so that this mock stays a complete stand-in.
+        getSavedToolboxSettings: () => ({}),
+        runTasksForClosingTool: () => undefined,
     };
 });
 
@@ -107,7 +112,7 @@ describe("ToolboxRoot", () => {
     };
 
     // BL-16602: visiting a game page auto-activates the Game tool; leaving the page removes
-    // it again. toolbox.ts owns each tool's showTool()/hideTool() lifecycle and learns about
+    // it again. Which tool runs follows from the current tool, and toolbox.ts learns about
     // activation changes only through the store's active-tool listeners, so if withdrawing
     // the active tool doesn't report the replacement, the tool the user can see is never
     // activated. That left the Talking Book tool doing no highlighting at all.
@@ -197,7 +202,8 @@ describe("ToolboxRoot", () => {
     });
 
     // Clicking a header is the other way a tool becomes active, and toolbox.ts has to hear
-    // about it (again, BL-16602: it is what drives showTool()).
+    // about it (again, BL-16602: it is what makes the tool the current one, which is what
+    // gets it shown).
     it("reports the tool whose header the user clicks", async () => {
         if (!container) {
             throw new Error("render container not initialized");
