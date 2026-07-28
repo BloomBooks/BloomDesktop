@@ -10,6 +10,7 @@
 // update-guard try/finally fix. See SKILL.md.
 import { execFile } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 export const CHROME_DEFAULT =
@@ -234,61 +235,65 @@ const isolateExpr = (selector, index = null) => `(() => {
 })()`;
 
 // ---------- PDF rendering ----------
-export const PAPER_SIZES = {
-    Letter: { w: 8.5, h: 11 },
-    A4: { w: 8.27, h: 11.69 },
-};
-
-// Render a URL to a PDF file using a short-lived, isolated headless Chrome (its own
-// CDP port + profile), so it never disturbs a running CaptureSession. Waits for all
-// images to finish loading before printing. paper is "Letter" | "A4".
+// Render a URL to a PDF file using Chrome's native --print-to-pdf. Chrome writes the
+// PDF straight to disk and exits on its own, so there is no CDP/WebSocket round-trip to
+// hang on. (The old CDP path called Page.printToPDF, which returns the entire PDF as one
+// base64 WebSocket frame; past a few MB Node's WebSocket silently drops it, so the
+// promise never resolved. The wedged Chrome then kept holding its fixed profile dir, so
+// the NEXT run's rmSync failed with EPERM — that was the "PDF failed: EPERM" cascade.)
+// Paper size and margins come from the page's own CSS @page rule (see control.mjs
+// buildPrintHtml). Each call gets a fresh, uniquely named throwaway profile, so a killed
+// or stuck run can never block the next one. --virtual-time-budget gives images time to
+// load before the print snapshot is taken.
 export async function renderUrlToPdf(url, outPath, opts = {}) {
-    const paper = PAPER_SIZES[opts.paper] || PAPER_SIZES.Letter;
-    const cdpPort = opts.cdpPort ?? 9334;
+    const chromePath = opts.chromePath || CHROME_DEFAULT;
     const udd =
-        opts.udd || path.join(path.dirname(outPath), ".chrome-pdf-profile");
-    const margin = opts.marginInches ?? 0.5;
-    const { child, wsUrl } = await launchChrome(
-        opts.chromePath || CHROME_DEFAULT,
-        cdpPort,
-        udd,
-    );
-    const cdp = cdpClient(wsUrl);
-    await cdp.ready;
-    await cdp.send("Page.enable");
-    await cdp.send("Runtime.enable");
+        opts.udd ||
+        path.join(
+            os.tmpdir(),
+            `bloom-pdf-profile-${process.pid}-${Date.now()}`,
+        );
+    const timeoutMs = opts.timeoutMs ?? 60000;
     try {
-        await cdp.send("Page.navigate", { url });
-        // Poll until the document is loaded and every <img> is complete (or give up).
-        for (let i = 0; i < 60; i++) {
-            await sleep(150);
-            const done = (
-                await cdp.send("Runtime.evaluate", {
-                    expression: `document.readyState==="complete" && [...document.images].every(im=>im.complete && im.naturalWidth>0)`,
-                    returnByValue: true,
-                })
-            ).result.value;
-            if (done) break;
-        }
-        const pdf = await cdp.send("Page.printToPDF", {
-            paperWidth: paper.w,
-            paperHeight: paper.h,
-            marginTop: margin,
-            marginBottom: margin,
-            marginLeft: margin,
-            marginRight: margin,
-            printBackground: true,
-            scale: 1,
+        fs.rmSync(outPath, { force: true });
+    } catch {
+        /* ignore */
+    }
+    // The profile dir is removed in the finally block, so a Chrome failure or a
+    // missing-output throw can't leak it into the temp dir.
+    try {
+        await new Promise((resolve, reject) => {
+            const child = execFile(
+                chromePath,
+                [
+                    "--headless=new",
+                    "--no-sandbox",
+                    "--disable-gpu",
+                    "--hide-scrollbars",
+                    "--run-all-compositor-stages-before-draw",
+                    `--virtual-time-budget=${opts.virtualTimeBudgetMs ?? 15000}`,
+                    "--no-pdf-header-footer",
+                    `--user-data-dir=${udd}`,
+                    `--print-to-pdf=${outPath}`,
+                    url,
+                ],
+                { timeout: timeoutMs, maxBuffer: 8 * 1024 * 1024 },
+                (err) => {
+                    // Chrome exits 0 after writing the PDF; the timeout kills it if it wedges.
+                    // Either way success is decided by whether the file exists (checked below),
+                    // so only reject when we have an error AND no output file.
+                    if (err && !fs.existsSync(outPath)) reject(err);
+                    else resolve();
+                },
+            );
+            child.on("error", reject);
         });
-        fs.writeFileSync(outPath, Buffer.from(pdf.data, "base64"));
+        if (!fs.existsSync(outPath))
+            throw new Error(`Chrome did not produce a PDF at ${outPath}`);
     } finally {
+        // Best-effort cleanup of the throwaway profile.
         try {
-            cdp.close();
-        } catch {
-            /* ignore */
-        }
-        try {
-            child.kill();
+            fs.rmSync(udd, { recursive: true, force: true });
         } catch {
             /* ignore */
         }

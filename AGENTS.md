@@ -138,6 +138,17 @@ All public methods should have a comment. So should most private ones!
 # Git Committing
 Always include a good description when creating a git commit.
 
+# Issue tracker
+This project tracks work in **YouTrack**, at https://issues.bloomlibrary.org/youtrack (Kanban
+boards). Ticket ids look like **`BL-16572`** (`BL-` plus a number). The skill that talks to it is
+**`youtrack-api`** — use it for any tracker operation (read an issue, find the id for the current
+work, list/post comments, set an issue's State); the higher-level `youtrack-*` skills build on it.
+
+To find the ticket id for the branch you are on, look for a `BL-XXXXX` token in the branch name,
+then the PR title, then recent commit messages. Not every branch has a card — some work (small
+cleanups, branding tweaks, tooling) is done without one, so finding no id is a normal outcome, not
+a reason to go hunting.
+
 # Skills
 Reusable, task-specific procedures for this repo live in `.github/skills/<name>/SKILL.md`.
 When a request matches one of these, READ the matching `SKILL.md` and follow it as the
