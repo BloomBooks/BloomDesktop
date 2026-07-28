@@ -533,16 +533,10 @@
         <note>The string labeled as Caption here is used in the QR Code badge to let the user know what the badge is used for.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Caption.Description">
-        <source xml:lang="en">If your caption contains "{0}", Bloom will fill this in with the name of the language.</source>
+        <source xml:lang="en">Bloom shows the BloomLibrary.org address on its own line beneath this caption, so you don't need to include it here. If your caption contains "{0}", Bloom will fill this in with the name of the language.</source>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Caption.Description</note>
         <note>{0} must not be translated but appear verbatim.</note>
-        <note>This appears under the "Caption" box in Collection Settings > Advanced, explaining what the user may type there to replace the default QR-badge caption (CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2). Bloom prints the BloomLibrary.org address on its own line beneath whatever caption is used, so the caption itself does not need to contain a web address.</note>
-      </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText">
-        <source xml:lang="en">Get more books in the {0} language on BloomLibrary.org.</source>
-        <note>ID: CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText</note>
-        <note>DO NOT TRANSLATE. Obsolete as of 6.4; replaced by CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2, because the BloomLibrary.org address is now printed on its own line beneath the caption rather than inside the sentence.</note>
-        <note>{0} will be replaced by a language name</note>
+        <note>This appears under the "Caption" box in Collection Settings > Advanced, explaining what the user may type there to replace the default QR-badge caption (CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2). "{0}" is shown to the user literally, as something they can type; it is not filled in here.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.QrCodeBadgeText2">
         <source xml:lang="en">More books in {0} language:</source>
