@@ -34,17 +34,25 @@ describe("textHighlightManager", () => {
             );
         });
 
-        it("puts a separator where a <br> visually breaks the text", () => {
-            // Without this, "Hello" and "world" would run together into one word.
-            expect(mapOf("Hello<br>world").text).toBe("Hello world");
+        it("puts a break where a <br> visually breaks the text", () => {
+            // A newline rather than a space, so that a consumer splitting into sentences treats
+            // each line of a <br>-separated stanza as its own sentence. Without any separator,
+            // "Hello" and "world" would run together into one word.
+            expect(mapOf("Hello<br>world").text).toBe("Hello\nworld");
         });
 
-        it("puts a separator at the boundaries of block elements", () => {
-            expect(mapOf("<p>Cat</p><p>Dog</p>").text).toBe("Cat Dog ");
+        it("puts a break at the boundaries of block elements", () => {
+            expect(mapOf("<p>Cat</p><p>Dog</p>").text).toBe("Cat\nDog\n");
         });
 
-        it("does not start with, or double up, a separator", () => {
-            expect(mapOf("<p>Cat<br><br>Dog</p>").text).toBe("Cat Dog ");
+        it("does not start with, or double up, a break", () => {
+            expect(mapOf("<p>Cat<br><br>Dog</p>").text).toBe("Cat\nDog\n");
+        });
+
+        it("still breaks the line when the text already ends in a space", () => {
+            // Testing for whitespace rather than for the break character itself would drop the
+            // break here, and the <br> would stop ending the line.
+            expect(mapOf("Hello <br>world").text).toBe("Hello \nworld");
         });
 
         it("leaves out the text of elements the caller skips", () => {
@@ -77,10 +85,10 @@ describe("textHighlightManager", () => {
         });
 
         it("snaps a boundary that lands on a synthetic separator onto real text", () => {
-            // "Cat Dog": the space at offset 3 exists in the map but not in the DOM, because it
-            // stands in for the <br>. A range over "Dog" must start in the second text node.
+            // "Cat\nDog": the newline at offset 3 exists in the map but not in the DOM, because
+            // it stands in for the <br>. A range over "Dog" must start in the second text node.
             const map = mapOf("Cat<br>Dog");
-            expect(map.text).toBe("Cat Dog");
+            expect(map.text).toBe("Cat\nDog");
 
             const range = makeRangeFromTextOffsets(map, 3, 7);
             expect(range?.toString()).toBe("Dog");

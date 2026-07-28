@@ -223,9 +223,22 @@ class ReaderHighlightManager {
         this.hideTip();
     };
 
+    // The layer whose tip should show for this mouse position, if any. Only layers that actually
+    // have a tip are considered: a too-long word sits inside a too-long sentence, and the word
+    // layer has nothing to say, so letting it match first would hide the sentence's explanation.
     private layerAtPoint(event: MouseEvent): ReaderHighlightLayer | undefined {
         const pageDocument = this.hoverDocument;
         if (!pageDocument) {
+            return undefined;
+        }
+        // Cheapest possible exit first. The listeners stay attached for the life of the page
+        // document, so with the tool turned off (or on a page with no violations) this runs on
+        // every mouse move and must not reach getCaretPosition(), which forces a layout.
+        const layersWithTips = readerHighlightLayers.filter(
+            (layer) =>
+                layer.tipL10nId && this.paintedRanges.get(layer.name)?.length,
+        );
+        if (layersWithTips.length === 0) {
             return undefined;
         }
         const target = event.target as Element | null;
@@ -242,9 +255,15 @@ class ReaderHighlightManager {
             return undefined;
         }
 
-        return readerHighlightLayers.find((layer) =>
+        return layersWithTips.find((layer) =>
             (this.paintedRanges.get(layer.name) ?? []).some(
                 (range) =>
+                    // Ranges whose content has been replaced since we painted are not under the
+                    // mouse, and asking isPointInRange about one whose root differs from the
+                    // caret's throws WrongDocumentError, so screen them out first.
+                    range.startContainer.isConnected &&
+                    range.startContainer.ownerDocument ===
+                        caret.node.ownerDocument &&
                     // The caret test is the cheap one, and narrows us to a single candidate
                     // range; then we confirm the mouse really is over the text it covers.
                     range.isPointInRange(caret.node, caret.offset) &&

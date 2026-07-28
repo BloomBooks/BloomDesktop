@@ -65,8 +65,11 @@ import {
         }
 
         // Clean out markup spans inserted by earlier versions of Bloom, which used to mark
-        // violations by modifying the DOM. Current code highlights without touching the DOM.
+        // violations by modifying the DOM, and the inline background-color spans CKEditor made
+        // from them (BL-16558). The leveled reader's markers were background-colored too, so it
+        // did the same damage the decodable reader did.
         this.removeSynphonyMarkup();
+        this.removeCkEditorMarkup();
 
         // initialize words per page
         let totalWordCount = 0;
@@ -90,8 +93,17 @@ import {
             const fragments = theOneLibSynphony.stringToSentences(map.text);
             const sentenceTooLongSpans: TextSpan[] = [];
 
-            // The fragments concatenate to exactly map.text, so a running total tells us where
-            // each one starts.
+            // Locating a sentence relies on the fragments concatenating to exactly the text we
+            // mapped, so that a running total tells us where each one starts. That holds for
+            // ordinary text, but stringToSentences canonicalizes a few HTML-ish sequences - it
+            // rewrites "<br>" to "<br />", for instance - so a box in which the user literally
+            // typed "<br>" would shift every following offset. Rather than mis-highlight, check,
+            // and if the text came back changed just don't mark sentences in this leaf. The word
+            // counts below are unaffected, as is word highlighting, which works from map.text.
+            const canLocateSentences =
+                fragments.map((fragment) => fragment.text).join("") ===
+                map.text;
+
             let offset = 0;
             for (let i = 0; i < fragments.length; i++) {
                 const fragment = fragments[i];
@@ -119,7 +131,10 @@ import {
                     if (sentenceWordCount) ++totalSentenceCount;
 
                     // check sentence length
-                    if (sentenceWordCount > opts.maxWordsPerSentence) {
+                    if (
+                        canLocateSentences &&
+                        sentenceWordCount > opts.maxWordsPerSentence
+                    ) {
                         sentenceTooLongSpans.push(
                             trimSpan(map.text, {
                                 start: offset,
