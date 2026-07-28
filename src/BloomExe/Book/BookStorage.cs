@@ -1771,8 +1771,22 @@ namespace Bloom.Book
             // we can't use that as a file name because the first book exists, but it will pass this check,
             // so "A nice story about Bob" will be kept when we might prefer "A nice story 2". But this
             // won't cause dreadful problems and is pretty unlikely.
+            //
+            // We also keep the current name when it is exactly the "<base> - <hash>" work-around that
+            // GetUniqueBookFolderName produced for this same title. For a long title the folder base is
+            // truncated shorter than idealFolderName, so the plain StartsWith check below is false; without
+            // the IsUniqueVariantOfIdealFolderName check such a book would be given a brand new unique
+            // folder on every save. Because that new name normally collides with the book's own current
+            // folder, GetUniqueBookFolderName falls back to a fresh random GUID, so the folder churned to a
+            // different name each save. That orphaned folders and, worse, invalidated the page-iframe URLs
+            // the editor was using, producing spurious "Page expired" errors when changing page
+            // size/orientation (which saves the book). See BL-16596. (The check demands the exact canonical
+            // base for the current title, so a genuine title change still renames the folder.)
             if (
-                currentFolderName.StartsWith(idealFolderName)
+                (
+                    currentFolderName.StartsWith(idealFolderName)
+                    || IsUniqueVariantOfIdealFolderName(currentFolderName, idealFolderName)
+                )
                 && currentFolderName == SanitizeNameForFileSystem(currentFolderName)
             )
                 return Path.Combine(Path.GetDirectoryName(idealFolderPath), currentFolderName);
@@ -1780,6 +1794,64 @@ namespace Bloom.Book
             // so find a new variant that is not in use. Override the default separator since
             // this not typically a copy.
             return GetAvailableDirectoryPath(idealFolderPath, instanceId, " - ");
+        }
+
+        /// <summary>
+        /// True if <paramref name="currentFolderName"/> is exactly the unique folder name that
+        /// GetUniqueBookFolderName (or Duplicate) would produce for a book whose ideal (sanitized)
+        /// title is <paramref name="idealFolderName"/>: the ideal name — truncated (with trailing
+        /// whitespace/periods trimmed) only if it is too long to fit alongside the suffix — followed
+        /// by a " - ", " - Copy-", or "-" separator and up to 8 hex digits of an id (e.g.
+        /// "My Long Title - a1b2c3d4"). We keep such a folder as-is on save rather than generating yet
+        /// another unique name each time (which orphaned folders and broke the editor's page URLs; see
+        /// the caller and BL-16596). We require the *exact* canonical base for the current title, not
+        /// merely a shared prefix, so that a routine same-title save keeps the folder (no churn) while
+        /// a real title change still renames the folder to match the new title.
+        /// </summary>
+        internal static bool IsUniqueVariantOfIdealFolderName(
+            string currentFolderName,
+            string idealFolderName
+        )
+        {
+            // Longest separator first so " - Copy-" wins over " - " and "-".
+            var match = Regex.Match(
+                currentFolderName,
+                @"^(?<base>.+?)(?<sep> - Copy-| - |-)[0-9a-f]{1,8}$",
+                RegexOptions.Compiled
+            );
+            if (!match.Success)
+                return false;
+            // Exactly the base that GetUniqueBookFolderName would use for this ideal title and
+            // this separator, since both use GetBaseForUniqueFolderName.
+            var expectedBase = GetBaseForUniqueFolderName(
+                idealFolderName,
+                match.Groups["sep"].Value
+            );
+            return string.Equals(
+                match.Groups["base"].Value,
+                expectedBase,
+                StringComparison.Ordinal
+            );
+        }
+
+        /// <summary>
+        /// The base-name part of a unique folder name "&lt;base&gt;&lt;separator&gt;&lt;8 hex id digits&gt;":
+        /// the given name, truncated (with trailing whitespace/periods trimmed) only when it is too
+        /// long to fit alongside the suffix within kMaxFilenameLength. Shared by
+        /// GetUniqueBookFolderName (generating such a name) and IsUniqueVariantOfIdealFolderName
+        /// (recognizing one) so the two can never drift apart.
+        /// </summary>
+        internal static string GetBaseForUniqueFolderName(string baseName, string separator)
+        {
+            // We need room for: separator (variable length) + 8 characters from instanceId
+            var suffixLength = separator.Length + 8; // 8 hex chars from GUID
+            var maxBaseNameLength = kMaxFilenameLength - suffixLength;
+            if (baseName.Length > maxBaseNameLength)
+            {
+                baseName = MiscUtils.TruncateSafely(baseName, maxBaseNameLength);
+                baseName = Regex.Replace(baseName, "[\\s.]+$", "", RegexOptions.Compiled);
+            }
+            return baseName;
         }
 
         public void SetBookName(string name)
@@ -3794,17 +3866,9 @@ namespace Bloom.Book
                 instanceId = Guid.NewGuid().ToString();
             }
 
-            // Calculate the maximum length for the base name
-            // We need room for: separator (variable length) + 8 characters from instanceId
-            var suffixLength = separator.Length + 8; // 8 hex chars from GUID
-            var maxBaseNameLength = kMaxFilenameLength - suffixLength;
-
-            // Truncate and clean the base name if necessary
-            if (baseName.Length > maxBaseNameLength)
-            {
-                baseName = MiscUtils.TruncateSafely(baseName, maxBaseNameLength);
-                baseName = Regex.Replace(baseName, "[\\s.]+$", "", RegexOptions.Compiled);
-            }
+            // Truncate and clean the base name if necessary (shared with
+            // IsUniqueVariantOfIdealFolderName, which must recognize exactly what we produce here)
+            baseName = GetBaseForUniqueFolderName(baseName, separator);
 
             string proposedName;
             do

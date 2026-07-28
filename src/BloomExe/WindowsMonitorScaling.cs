@@ -77,7 +77,10 @@ namespace Bloom
                 if (hmonitor == IntPtr.Zero)
                     return 100;
                 // GetScaleFactorForMonitor returns S_OK (0) on success; otherwise percentScaleFactor is unreliable.
-                if (GetScaleFactorForMonitor(hmonitor, out int percentScaleFactor) != 0 || percentScaleFactor <= 0)
+                if (
+                    GetScaleFactorForMonitor(hmonitor, out int percentScaleFactor) != 0
+                    || percentScaleFactor <= 0
+                )
                     return 100;
                 return percentScaleFactor;
             }

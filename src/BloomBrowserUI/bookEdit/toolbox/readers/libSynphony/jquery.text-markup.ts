@@ -403,11 +403,11 @@ import {
                 })
                 .contents()
                 .unwrap();
-            // NB: do NOT remove CKEditor's hidden cke_* spans here. We used to, so that they
-            // could not skew the word markup, but mapReaderText() now simply skips them, and
-            // removing them moved the insertion point to the start of the text box after every
-            // typing pause: the hidden spans include the selection bookmarks that toolbox.ts
-            // inserts before calling us, and that it uses afterwards to put the caret back.
+            // NB: do NOT remove CKEditor's hidden cke_* spans here. They include the selection
+            // bookmarks that toolbox.ts inserts before calling us and uses afterwards to put the
+            // caret back, so removing them moved the insertion point to the start of the text box
+            // after every typing pause (BL-16490). We used to remove them so that they could not
+            // skew the word markup; mapReaderText() now simply skips them instead.
         });
     };
 

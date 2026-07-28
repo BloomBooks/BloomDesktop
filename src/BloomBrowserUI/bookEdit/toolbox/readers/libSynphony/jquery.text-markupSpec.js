@@ -327,12 +327,11 @@ describe("jquery.text-markup", function () {
         expect($("#text_entry1").html()).toBe("<p>pre new text post</p>");
     });
 
-    // We used to remove these, so they could not skew the word markup. But the hidden cke_*
-    // spans include the selection bookmarks toolbox.ts inserts before asking us to update the
-    // markup and uses afterwards to put the caret back, so removing them sent the insertion
-    // point to the start of the text box after every typing pause. mapReaderText() skips them
-    // instead, so there is no longer any reason to touch them.
-    it("removeCkEditorMarkup leaves hidden cke_ spans alone, so the caret survives", function () {
+    it("removeCkEditorMarkup preserves hidden cke_ spans (BL-16490)", function () {
+        // The hidden cke_ spans are CKEditor bookmarks marking the cursor position. We must
+        // leave them intact so the cursor can be restored after the text is marked up; removing
+        // them here made the cursor jump to the start of the box. We used to remove them so they
+        // could not skew the word markup; mapReaderText() skips them instead.
         const input =
             '<p>pre <span id="cke_1" style="display: none;">hidden</span> post</p>';
 

@@ -106,6 +106,12 @@ namespace Bloom
         internal static string StartupLabel { get; private set; }
         internal static bool StartupAutomation { get; private set; }
 
+        // Control port of the dev launcher (scripts/watchBloomExe.mjs) that started
+        // this Bloom, passed as --launcher-port. When present, DevLauncher watches for
+        // pending C# changes and offers a dev-only toast that asks the launcher to
+        // rebuild and relaunch us.
+        internal static int? StartupLauncherPort { get; private set; }
+
         internal static string StartupRequestedPortSummary =>
             string.Join(
                 ", ",
@@ -113,6 +119,9 @@ namespace Bloom
                 {
                     StartupAutomation ? "automation=true" : null,
                     StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
+                    StartupLauncherPort.HasValue
+                        ? $"launcherPort={StartupLauncherPort.Value}"
+                        : null,
                 }.Where(value => value != null)
             );
 
@@ -770,6 +779,7 @@ namespace Bloom
             StartupVitePort = null;
             StartupLabel = null;
             StartupAutomation = false;
+            StartupLauncherPort = null;
             RunningE2eTests = false;
 
             var remainingArgs = new List<string>();
@@ -783,6 +793,14 @@ namespace Bloom
                         "--vite-port",
                         () => StartupVitePort,
                         value => StartupVitePort = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupPortArgument(
+                        args,
+                        ref i,
+                        "--launcher-port",
+                        () => StartupLauncherPort,
+                        value => StartupLauncherPort = value,
                         out errorMessage
                     )
                     || TryHandleStartupStringArgument(
