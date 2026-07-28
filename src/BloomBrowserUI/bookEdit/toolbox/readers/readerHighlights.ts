@@ -243,8 +243,12 @@ class ReaderHighlightManager {
         }
 
         return readerHighlightLayers.find((layer) =>
-            (this.paintedRanges.get(layer.name) ?? []).some((range) =>
-                range.isPointInRange(caret.node, caret.offset),
+            (this.paintedRanges.get(layer.name) ?? []).some(
+                (range) =>
+                    // The caret test is the cheap one, and narrows us to a single candidate
+                    // range; then we confirm the mouse really is over the text it covers.
+                    range.isPointInRange(caret.node, caret.offset) &&
+                    isPointOverRange(range, event.clientX, event.clientY),
             ),
         );
     }
@@ -271,6 +275,23 @@ class ReaderHighlightManager {
             this.tipElement.style.display = "none";
         }
     }
+}
+
+// Is the point actually inside the area the range's text occupies?
+// We have to ask, because caretPositionFromPoint() answers with the NEAREST text position even
+// when the point is nowhere near any text. Hovering the white space below the last paragraph, for
+// instance, gets you a position at the end of the last line, so a tip would appear or not
+// depending on whether that line happened to be highlighted. Exported for testing: a Range's
+// client rects need real layout, which the unit tests don't have.
+export function isPointOverRange(range: Range, x: number, y: number): boolean {
+    // A range spanning more than one line has one rect per line.
+    return Array.from(range.getClientRects()).some(
+        (rect) =>
+            x >= rect.left &&
+            x <= rect.right &&
+            y >= rect.top &&
+            y <= rect.bottom,
+    );
 }
 
 // The document position under a point, using whichever of the two spellings the browser has.
