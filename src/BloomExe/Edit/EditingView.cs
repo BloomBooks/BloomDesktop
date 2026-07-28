@@ -713,7 +713,7 @@ namespace Bloom.Edit
                         throw new InvalidOperationException(
                             LocalizationManager.GetString(
                                 "EditTab.NoImageFoundOnClipboard",
-                                "Before you can paste an image, copy one onto your 'clipboard', from another program."
+                                "Bloom did not find an image on your clipboard. Copy one first, then paste again."
                             )
                         );
                     }
