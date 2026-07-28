@@ -1300,6 +1300,11 @@ namespace Bloom.Publish.Rab
 
             for (var index = 0; index < booksToExport.Count; index++)
             {
+                // Exporting a BloomPUB per book is in-process work (not an external process the
+                // cancellation can kill), so check between books. Otherwise a cancel during a
+                // large multi-book export keeps building every remaining BloomPUB and only takes
+                // effect at the next stage boundary.
+                ThrowIfActionCancelled();
                 var bookInfo = booksToExport[index];
                 var book = _collectionModel.GetBookFromBookInfo(bookInfo);
                 var existing =
