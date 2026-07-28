@@ -1,14 +1,20 @@
-// The state of the toolbox UI: which tools it is offering, which of them is expanded,
-// which tools the book has enabled, and whether the UI exists yet.
+// The state of the toolbox: which tools it is offering, which of them is expanded, which
+// one is current, which tools the book has enabled, whether the toolbox is showing, and
+// which page it is looking at.
 //
 // Every tool is a React component, and the toolbox UI is a React component
-// (ToolboxRoot.tsx), but the code that orchestrates the toolbox — asking the server which
-// tools this book has enabled, and running each tool's lifecycle as pages, books and tools
-// change — is still the non-React code in toolbox.ts. Rather than have toolbox.ts push
-// facts into React, the facts live here and React subscribes: ToolboxRoot and
-// SettingsToolControls read this store with React.useSyncExternalStore(), and toolbox.ts
-// calls the mutators and queries below. (This is the same external-store pattern the Game
-// tool uses for its panel; see getPanelState/subscribeToPanelState in games/GameTool.tsx.)
+// (ToolboxRoot.tsx). The code that decides what goes in here — asking the server which
+// tools this book has enabled, noticing that the user opened a different page or book — is
+// still the non-React code in toolbox.ts. Rather than have toolbox.ts push facts into
+// React, the facts live here and React subscribes: ToolboxRoot and SettingsToolControls
+// read this store with React.useSyncExternalStore(), and toolbox.ts calls the mutators and
+// queries below. (This is the same external-store pattern the Game tool uses for its panel;
+// see getPanelState/subscribeToPanelState in games/GameTool.tsx.)
+//
+// Each tool's lifecycle then follows from this state rather than being driven by hand: the
+// section ToolboxRoot renders for a tool runs beginRestoreSettings/showTool/newPageReady
+// from an effect when it is the current tool of a showing toolbox, and detachFromPage/
+// hideTool from that effect's cleanup when it stops being. See useToolLifecycle.ts.
 //
 // Because this module's state exists as soon as the module is loaded, there is no
 // "the UI hasn't mounted yet" race to work around: toolbox.ts can offer tools and make one
@@ -32,8 +38,25 @@ export interface IToolboxUiState {
     // The tools the toolbox is offering a section for, in the order it shows them:
     // alphabetical by label, with the "More..." (settings) section last.
     readonly offeredToolIds: readonly string[];
-    // The tool whose section is expanded, or undefined if none is.
+    // The tool whose section is expanded, or undefined if none is. This is purely what the
+    // UI looks like; the tool that is actually running is currentToolId.
     readonly activeToolId: string | undefined;
+    // The tool that is running: the one that has been told to show itself, that is told
+    // when the page changes, and whose updateMarkup() runs as the user types.
+    //
+    // Normally this is the expanded section, but the two are NOT the same thing. Collapsing
+    // the open section (clearActiveTool) leaves its tool current — it stays shown and keeps
+    // marking up the page — which is what the toolbox has always done. Nor does the tool
+    // stop being current when the toolbox is hidden; it just stops running (see
+    // toolboxVisible).
+    readonly currentToolId: string | undefined;
+    // Is the toolbox sidebar showing? The current tool only runs while it is: hiding the
+    // toolbox detaches and hides the tool, and showing it again restores and shows it.
+    readonly toolboxVisible: boolean;
+    // Bumped each time the page being edited has been replaced (or reloaded) and is ready
+    // for the tools to look at. The current tool's lifecycle effect keys on this, which is
+    // what gets it a fresh beginRestoreSettings/showTool/newPageReady for the new page.
+    readonly pageGeneration: number;
     // The tools this book has enabled, which is what the "More..." checkboxes show.
     // Note that this is not the same as the tools being offered: tools that are always
     // enabled, and tools a page requires, get a section without being in here.
@@ -47,6 +70,9 @@ export interface IToolboxUiState {
 const emptyState: IToolboxUiState = {
     offeredToolIds: [],
     activeToolId: undefined,
+    currentToolId: undefined,
+    toolboxVisible: false,
+    pageGeneration: 0,
     enabledToolIds: new Set<string>(),
     uiMounted: false,
 };
@@ -55,8 +81,8 @@ let theState: IToolboxUiState = emptyState;
 
 const stateListeners = new Set<() => void>();
 
-// Told whenever a tool becomes the active one. toolbox.ts subscribes here to drive each
-// tool's showTool()/hideTool() lifecycle; see the comment on setActiveTool().
+// Told whenever a tool becomes the active one. toolbox.ts subscribes here so that it can
+// record the new current tool and persist it; see the comment on setActiveTool().
 const activeToolListeners = new Set<(toolId: string) => void>();
 
 // Replaces the snapshot and tells the subscribers. Never mutates the old snapshot.
@@ -154,10 +180,11 @@ export function withdrawTool(toolId: string): void {
         });
         return;
     }
-    // Notify, so toolbox.ts hears about the replacement. Leaving a game page withdraws
-    // the Game tool this way, and when this didn't notify, toolbox.ts went on believing
-    // Game was current and never called showTool() on the tool that replaced it, which
-    // killed Talking Book's highlighting and audio (BL-16602).
+    // Notify, so toolbox.ts records the replacement as the current tool (which is what
+    // gets its lifecycle run). Leaving a game page withdraws the Game tool this way, and
+    // when this didn't notify, the toolbox went on believing Game was current and the tool
+    // that replaced it was never shown, which killed Talking Book's highlighting and audio
+    // (BL-16602).
     updateState({
         offeredToolIds: remainingToolIds,
         activeToolId: replacementToolId,
@@ -188,10 +215,10 @@ function notifyActiveToolListeners(toolId: string): void {
 
 /**
  * Expands this tool's section and tells the active-tool listeners about it. toolbox.ts
- * keeps its own idea of which tool is current and drives each tool's showTool()/hideTool()
- * from it, so every path that makes a real tool the active one has to come through here;
- * one that quietly changed only what the UI shows left the two out of sync and the tool
- * the user could see was never activated (BL-16602).
+ * listens, and turns that into the current tool (setCurrentToolId), which is what actually
+ * runs the tool. So every path that makes a real tool the active one has to come through
+ * here; one that quietly changed only what the UI shows left the two out of sync and the
+ * tool the user could see was never activated (BL-16602).
  */
 export function setActiveTool(toolId: string): void {
     updateState({ activeToolId: toolId });
@@ -199,12 +226,64 @@ export function setActiveTool(toolId: string): void {
 }
 
 /**
- * Collapses whatever section is open, leaving none active. Deliberately does not notify
- * the active-tool listeners: toolbox.ts has no way to represent "no current tool", and
- * expanding a section later will tell it then.
+ * Collapses whatever section is open, so no section is expanded. Deliberately leaves the
+ * current tool alone: a tool whose section the user collapsed goes on running, as it always
+ * has. Also deliberately does not notify the active-tool listeners, which are about a tool
+ * *becoming* current; expanding a section later will tell them then.
  */
 export function clearActiveTool(): void {
     updateState({ activeToolId: undefined });
+}
+
+// ---------------------------------------------------------------------------
+// Which tool is running, whether the toolbox is showing, and which page it is on.
+// Together these say whether a given tool should currently be running its lifecycle;
+// see IToolboxUiState and useToolLifecycle.ts.
+// ---------------------------------------------------------------------------
+
+/** See IToolboxUiState.currentToolId. */
+export function getCurrentToolId(): string | undefined {
+    return theState.currentToolId;
+}
+
+/**
+ * Records which tool is now the running one, or undefined for none. Only toolbox.ts calls
+ * this, from its active-tool listener: it is the one that knows whether the tool the user
+ * asked for is a real tool the toolbox is offering.
+ */
+export function setCurrentToolId(toolId: string | undefined): void {
+    updateState({ currentToolId: toolId });
+}
+
+/** See IToolboxUiState.toolboxVisible. */
+export function isToolboxVisible(): boolean {
+    return theState.toolboxVisible;
+}
+
+/**
+ * Records whether the toolbox sidebar is showing. The sidebar itself is not ours (it is a
+ * checkbox in the workspace frame), so toolbox.ts mirrors its state here whenever it
+ * changes or is first read.
+ */
+export function setToolboxVisible(visible: boolean): void {
+    if (theState.toolboxVisible === visible) {
+        return;
+    }
+    updateState({ toolboxVisible: visible });
+}
+
+/** See IToolboxUiState.pageGeneration. */
+export function getPageGeneration(): number {
+    return theState.pageGeneration;
+}
+
+/**
+ * Says that the page being edited has been replaced (or reloaded) and is now ready for the
+ * tools. This is what re-runs the current tool's lifecycle for the new page, so call it
+ * only once the page really is ready (toolbox.ts waits for CKEditor first).
+ */
+export function notePageReady(): void {
+    updateState({ pageGeneration: theState.pageGeneration + 1 });
 }
 
 // ---------------------------------------------------------------------------

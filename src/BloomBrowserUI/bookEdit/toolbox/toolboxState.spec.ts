@@ -1,23 +1,29 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
     clearActiveTool,
+    getCurrentToolId,
     getFirstOfferedToolId,
+    getPageGeneration,
     getToolboxUiState,
     isToolEnabled,
     isToolOffered,
     isToolboxUiMounted,
+    isToolboxVisible,
+    notePageReady,
     offerTool,
     resetToolboxUiStateForTests,
     setActiveTool,
+    setCurrentToolId,
     setEnabledTools,
     setToolEnabled,
     setToolboxUiMounted,
+    setToolboxVisible,
     subscribeToActiveToolChanges,
     subscribeToToolboxUiState,
     withdrawTool,
 } from "./toolboxState";
 
-// The toolbox's UI state, tested without React. The behaviour that matters most here is
+// The toolbox's state, tested without React. The behaviour that matters most here is
 // what happens when the active tool is withdrawn (BL-16602); see that describe block.
 
 describe("toolboxState", () => {
@@ -26,7 +32,7 @@ describe("toolboxState", () => {
     });
 
     // Records every tool id reported to the active-tool listeners, which is how toolbox.ts
-    // learns that it must run a tool's showTool()/hideTool() lifecycle.
+    // learns which tool it must record as the current (running) one.
     const recordActiveToolReports = (): string[] => {
         const reportedToolIds: string[] = [];
         subscribeToActiveToolChanges((toolId) => reportedToolIds.push(toolId));
@@ -94,7 +100,7 @@ describe("toolboxState", () => {
     });
 
     describe("which tool is active", () => {
-        it("reports every tool made active, so toolbox.ts can run its lifecycle", () => {
+        it("reports every tool made active, so toolbox.ts can make it current", () => {
             const reportedToolIds = recordActiveToolReports();
             offerTool("motion");
 
@@ -112,17 +118,63 @@ describe("toolboxState", () => {
             clearActiveTool();
 
             expect(getToolboxUiState().activeToolId).toBeUndefined();
-            // Nothing is reported: toolbox.ts has no way to represent "no current tool".
+            // Nothing is reported: these listeners are about a tool *becoming* current.
             expect(reportedToolIds).toEqual(["motion"]);
+        });
+
+        it("leaves the current tool running when its section is collapsed", () => {
+            offerTool("motion");
+            setActiveTool("motion");
+            setCurrentToolId("motion");
+
+            clearActiveTool();
+
+            // Collapsing a section is only how the toolbox looks. The tool goes on
+            // running, as it always has.
+            expect(getCurrentToolId()).toBe("motion");
+        });
+    });
+
+    // What decides whether a tool actually runs; see useToolLifecycle.ts.
+    describe("what the current tool should be doing", () => {
+        it("starts with no current tool, hidden, on page generation 0", () => {
+            expect(getCurrentToolId()).toBeUndefined();
+            expect(isToolboxVisible()).toBe(false);
+            expect(getPageGeneration()).toBe(0);
+        });
+
+        it("records the current tool, and that there is none", () => {
+            setCurrentToolId("motion");
+            expect(getCurrentToolId()).toBe("motion");
+
+            setCurrentToolId(undefined);
+            expect(getCurrentToolId()).toBeUndefined();
+        });
+
+        it("says nothing changed when the toolbox is told the visibility it already has", () => {
+            setToolboxVisible(true);
+            const before = getToolboxUiState();
+
+            setToolboxVisible(true);
+
+            // Same snapshot, so React is not asked to re-render (and so no tool is
+            // needlessly re-activated).
+            expect(getToolboxUiState()).toBe(before);
+        });
+
+        it("bumps the page generation each time a page becomes ready", () => {
+            notePageReady();
+            notePageReady();
+            expect(getPageGeneration()).toBe(2);
         });
     });
 
     // BL-16602: visiting a game page offers the Game tool and makes it active; leaving the
-    // page withdraws it again. toolbox.ts owns each tool's showTool()/hideTool() lifecycle
-    // and learns about activation changes only from the active-tool listeners, so if
-    // withdrawing the active tool doesn't report the replacement, toolbox.ts goes on
-    // believing the withdrawn tool is current and never calls showTool() on the tool that
-    // replaced it. That killed Talking Book's highlighting and audio on leaving a game page.
+    // page withdraws it again. Which tool runs follows from the current tool, and toolbox.ts
+    // learns about activation changes only from the active-tool listeners, so if withdrawing
+    // the active tool doesn't report the replacement, the toolbox goes on believing the
+    // withdrawn tool is current and the tool that replaced it is never shown. That killed
+    // Talking Book's highlighting and audio on leaving a game page.
     describe("withdrawing a tool", () => {
         it("reports the replacement when the withdrawn tool was the active one", () => {
             offerTool("talkingBook");
@@ -167,8 +219,8 @@ describe("toolboxState", () => {
 
             expect(getToolboxUiState().offeredToolIds).toEqual([]);
             expect(getToolboxUiState().activeToolId).toBeUndefined();
-            // Deliberately silent: toolbox.ts has no way to represent "no current tool",
-            // and expanding a section later will tell it then.
+            // Deliberately silent: these listeners are about a tool *becoming* current,
+            // and expanding a section later will tell them then.
             expect(reportedToolIds).toEqual([]);
         });
 
