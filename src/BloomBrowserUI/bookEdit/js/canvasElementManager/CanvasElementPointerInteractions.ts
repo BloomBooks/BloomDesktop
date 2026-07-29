@@ -129,9 +129,14 @@ export class CanvasElementPointerInteractions {
             return undefined;
         }
 
-        // We really seem to need to handle both possibilities. I had it working with just the
-        // code for range, then restarted Bloom and started getting CaretPositions. Maybe a new
-        // version of WebView2 got auto-installed? Anyway, now it should handle both.
+        // We really do need to handle both possibilities, and here is why: a new version of
+        // WebView2 had indeed been auto-installed. Chromium added the standard
+        // caretPositionFromPoint (which answers a CaretPosition) in version 128; before that only
+        // its own caretRangeFromPoint (which answers a Range) existed. Since we prefer the
+        // standard one above, WebView2 128 and later take that branch and give us CaretPositions,
+        // while everything back to our minimum of 112 (WebView2Browser.kMinimumWebView2Version)
+        // falls through to the older call and gives us Ranges. So both branches below are live
+        // across the versions we support, and neither can be deleted while 112 is the minimum.
         let range: Range;
         if ("endContainer" in rangeOrCaret) {
             range = rangeOrCaret;
