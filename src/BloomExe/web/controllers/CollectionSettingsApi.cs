@@ -232,23 +232,25 @@ namespace Bloom.web.controllers
                         // This handler is registered handleOnUiThread:true, so the book work runs
                         // on the UI thread (safe). We update the in-memory selected book in place
                         // because the whole-book preview renders CurrentSelection directly.
-                        var body = request.RequiredPostString();
                         string branding = null,
                             layout = null,
                             xmatter = null;
-                        if (body.TrimStart().StartsWith("{"))
-                        {
-                            var o = Newtonsoft.Json.Linq.JObject.Parse(body);
-                            branding = (string)o["branding"];
-                            layout = (string)o["layout"];
-                            xmatter = (string)o["xmatter"];
-                        }
-                        else
-                        {
-                            branding = body;
-                        }
                         try
                         {
+                            // Read and parse inside the try as well: a malformed body is exactly
+                            // the sort of one-cell failure the catch below is meant to absorb.
+                            var body = request.RequiredPostString();
+                            if (body.TrimStart().StartsWith("{"))
+                            {
+                                var o = Newtonsoft.Json.Linq.JObject.Parse(body);
+                                branding = (string)o["branding"];
+                                layout = (string)o["layout"];
+                                xmatter = (string)o["xmatter"];
+                            }
+                            else
+                            {
+                                branding = body;
+                            }
                             if (!string.IsNullOrEmpty(branding))
                                 _collectionSettings.Subscription =
                                     SubscriptionAndFeatures.Subscription.ForUnitTestWithOverrideTierOrDescriptor(

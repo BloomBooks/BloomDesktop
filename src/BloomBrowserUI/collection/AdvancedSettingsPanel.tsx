@@ -81,7 +81,7 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "CollectionSettingsDialog.AdvancedTab.Caption",
     );
     const captionDescription = useL10n(
-        'If your caption contains "{0}", Bloom will fill this in with the name of the language.',
+        'Bloom shows the BloomLibrary.org address on its own line beneath this caption, so you don\'t need to include it here. If your caption contains "{0}", Bloom will fill this in with the name of the language.',
         "CollectionSettingsDialog.AdvancedTab.Caption.Description",
     );
 
