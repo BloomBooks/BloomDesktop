@@ -39,6 +39,17 @@ const allowedIncluders = [
     path.join("utils", "uiFontFaces.ts"),
 ];
 
+// Files allowed to import utils/uiFontFaces, i.e. to install the faces at runtime. The original
+// guard only enforced that the declarations are never DUPLICATED; nothing enforced the other
+// half -- that every Bloom-managed document actually gets them -- which is how BL-16624 slipped
+// through: the book preview documents ended up with neither a stylesheet from the list above nor
+// a React root, and so had no UI faces at all. Listing the delivery points here makes adding a
+// new one a deliberate decision rather than an oversight.
+// (Idea and implementation from John Thomson's PR #8124.)
+const allowedInstallCallers = [
+    path.join("utils", "reactRender.tsx"), // covers every React-rooted document
+];
+
 function walk(dir: string, results: string[] = []): string[] {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         const fullPath = path.join(dir, entry.name);
@@ -107,5 +118,34 @@ describe("UI @font-face single-source invariant (BL-15300)", () => {
             );
         });
         expect(realIncluders.sort()).toEqual([...allowedIncluders].sort());
+    });
+
+    it("keeps the set of uiFontFaces importers to the documented list", () => {
+        // The module itself and this file are not delivery points.
+        const notDeliveryPoints = [
+            path.join("utils", "uiFontFaces.ts"),
+            path.relative(browserUiRoot, __filename),
+        ];
+        // Match importing the MODULE rather than calling the function by name: that catches
+        // namespace imports, `await import(...)`, and aliased named imports, any of which would
+        // be a real extra delivery point while a call-site-name scan looked right. It also
+        // excludes prose -- bloomMaterialUITheme.ts names the function in a comment explaining
+        // why it must NOT install the faces, but imports nothing.
+        const importsTheModule =
+            /(?:from\s*|import\s*\(\s*)["'][^"']*\/uiFontFaces["']/;
+        const importers = allFiles
+            .filter(isScriptFile)
+            .map((file) => path.relative(browserUiRoot, file))
+            .filter(
+                (file) =>
+                    !notDeliveryPoints.includes(file) &&
+                    importsTheModule.test(
+                        fs.readFileSync(path.join(browserUiRoot, file), "utf8"),
+                    ),
+            );
+        // Sanity check that the scan is actually finding importers, so that moving or renaming
+        // the module can't turn this into a vacuously passing test.
+        expect(importers.length).toBeGreaterThan(0);
+        expect(importers.sort()).toEqual([...allowedInstallCallers].sort());
     });
 });

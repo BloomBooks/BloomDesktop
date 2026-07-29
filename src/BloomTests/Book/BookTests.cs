@@ -4155,9 +4155,10 @@ namespace BloomTests.Book
                 Does.Match(@"\[lang='xyz'\]\s*\{[^}]*font-family: 'FontChosenForL1'"),
                 "precondition: L1's own rule should have been written from current settings"
             );
+            // Anchor on the class half of the selector, which is the last one before the body.
             var match = System.Text.RegularExpressions.Regex.Match(
                 css,
-                @"\[lang='\*'\]\s*\{([^}]*)\}"
+                @"\.bloom-languageIndependent\s*\{([^}]*)\}"
             );
             Assert.That(match.Success, Is.True, "should write a rule for lang='*'");
             Assert.That(match.Groups[1].Value, Does.Contain("font-family: 'FontChosenForL1'"));
@@ -4175,6 +4176,15 @@ namespace BloomTests.Book
                     ".bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) [lang='*']"
                 ),
                 "the lang='*' rule must be scoped to content pages"
+            );
+            // ePUB export deletes the lang="*" attribute (validators reject "*"), leaving this
+            // class behind, so the rule has to match that form too or ePUBs miss out.
+            Assert.That(
+                css,
+                Does.Contain(
+                    ".bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) .bloom-languageIndependent"
+                ),
+                "the rule must also match the class ePUB export substitutes for lang='*'"
             );
             Assert.That(
                 css,
@@ -4225,7 +4235,7 @@ namespace BloomTests.Book
             );
             Assert.That(
                 after,
-                Does.Match(@"\[lang='\*'\]\s*\{[^}]*font-family: 'TheCurrentL1Font'"),
+                Does.Match(@"\.bloom-languageIndependent\s*\{[^}]*font-family: 'TheCurrentL1Font'"),
                 "the regenerated lang='*' rule should use the current L1 font"
             );
             // The retired-language rule is exactly what that preservation logic is for, so it must

@@ -517,9 +517,12 @@ namespace Bloom.Collection
             // elements directly would beat that inheritance and silently switch them to L1's font.
             // Also no word-break: whatever L1 does about breaking lines only at spaces is about its
             // script, and has nothing to say about digits and math symbols.
+            // Two forms of the same thing: lang="*" as authored, and the class ePUB export leaves
+            // behind when it has to delete that attribute (see HtmlDom.kLanguageIndependentClass).
+            const string contentPage = ".bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter)";
             WritingSystem.AddSelectorCssRule(
                 sb,
-                ".bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) [lang='*']",
+                $"{contentPage} [lang='*'],\n{contentPage} .{Book.HtmlDom.kLanguageIndependentClass}",
                 Language1.FontName,
                 Language1.IsRightToLeft,
                 -1, // suppresses line-height

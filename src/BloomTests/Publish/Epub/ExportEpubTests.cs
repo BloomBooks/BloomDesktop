@@ -1109,6 +1109,62 @@ namespace BloomTests.Publish.Epub
             AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@tabindex]");
         }
 
+        /// <summary>
+        /// ePUB validators reject "*" as a language code, so we delete those lang attributes --
+        /// but lang="*" is how Bloom marks text that is deliberately not in any language
+        /// (arithmetic equations and the like), and defaultLangStyles.css keys that text's font
+        /// off it. Leave a class behind so the rule can still find it; otherwise this is the one
+        /// kind of text in an ePUB with no font of its own. See BL-16624.
+        /// </summary>
+        [Test]
+        public void LanguageIndependentText_LangStarReplacedByClass()
+        {
+            var book = SetupBookLong(
+                "This is some text",
+                "en",
+                extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup'><div class='bloom-editable Equation-style bloom-content1 bloom-visibility-code-on' lang='*'>1 + 1</div></div>"
+            );
+            MakeEpub("output", "LanguageIndependentText_LangStarReplacedByClass", book);
+            CheckBasicsInManifest();
+
+            // The equation is on a content page, which sits after the front matter; find it
+            // rather than assuming an index, so front-matter changes can't silently break this.
+            string equationPage = null;
+            for (var n = 1; n <= 8 && equationPage == null; n++)
+            {
+                string data;
+                try
+                {
+                    data = GetPageNData(n);
+                }
+                catch
+                {
+                    break; // ran out of pages
+                }
+                if (data != null && data.Contains("Equation-style"))
+                    equationPage = data;
+            }
+            // Sanity check: if the element never made it into the ePUB at all, the assertions
+            // below would pass vacuously.
+            Assert.That(
+                equationPage,
+                Is.Not.Null,
+                "precondition: the lang='*' equation should survive into the ePUB"
+            );
+
+            // The attribute must be gone -- that is the validator's requirement...
+            AssertThatXmlIn.String(equationPage).HasNoMatchForXpath("//*[@lang='*']");
+            // ...but the element must still be identifiable as language-independent, so the font
+            // rule can reach it. (Other lang="*" elements on the page get the class too; this
+            // asserts on the equation specifically so it can't pass by matching something else.)
+            AssertThatXmlIn
+                .String(equationPage)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//*[contains(@class,'bloom-languageIndependent') and contains(@class,'Equation-style')]",
+                    1
+                );
+        }
+
         [Test]
         public void StandardStyleSheets_AreRemoved()
         {

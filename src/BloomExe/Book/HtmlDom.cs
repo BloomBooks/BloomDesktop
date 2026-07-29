@@ -37,6 +37,14 @@ namespace Bloom.Book
     public partial class HtmlDom
     {
         public const string RelativePathAttrName = "data-base";
+
+        /// <summary>
+        /// Marks content that is deliberately not in any language (arithmetic equations and the
+        /// like), normally expressed as lang="*". ePUB export has to delete those lang attributes
+        /// because validators reject "*" as a language code, so it leaves this class behind
+        /// instead and the font rule in defaultLangStyles.css matches either form. See BL-16624.
+        /// </summary>
+        public const string kLanguageIndependentClass = "bloom-languageIndependent";
         public static readonly char[] kHtmlClassDelimiters = new char[] { ' ' };
         private static readonly Regex s_regexBangImportant = new Regex(
             "\\s*!\\s*important\\s*",

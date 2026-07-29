@@ -3693,9 +3693,14 @@ namespace Bloom.Publish.Epub
             {
                 elt.RemoveAttribute("lang");
             }
-            // Validator doesn't like '*' as value of lang attributes, and they don't convey anything useful, so remove.
+            // Validator doesn't like '*' as value of lang attributes, so remove. It does convey
+            // something, though -- "this text is deliberately not in any language" -- and
+            // defaultLangStyles.css keys the font for such text off it (BL-16624). Leave a class
+            // behind so that rule can still find the element once the attribute is gone;
+            // otherwise this text is the one thing in an ePUB with no font of its own.
             foreach (SafeXmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='*']"))
             {
+                elt.AddClass(HtmlDom.kLanguageIndependentClass);
                 elt.RemoveAttribute("lang");
             }
         }
