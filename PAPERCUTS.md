@@ -19,6 +19,21 @@ House rules:
 
 ---
 
+## 2026-07-28 — One talkingBookSpec test fails only under full-suite worker load
+- **Cut:** `talkingBookSpec.ts > showTool(checksum=missing, audio=missing, scenario=PreTextBox) => UPDATE`
+  fails intermittently in `pnpm test`, but passes when its file is run alone, passes on a
+  re-run of the identical tree, and passes if you exclude *any* one unrelated spec file
+  (`--exclude "**/textHighlightManagerSpec.ts"` works just as well as excluding a related
+  one). So it's sensitive to how many files the pool is juggling, not to any code change —
+  but it reads as a real regression and costs 15+ minutes to clear each time it appears.
+- **Idea:** Make the test wait for the audio player's `src` deterministically instead of
+  relying on timing, or mark it as needing serial execution. Failing that, note it in the
+  spec so the next person doesn't re-triage it from scratch.
+- **Context:** BL-16558 preflight. Full suite 611 passing; this test failed on two
+  consecutive runs then passed on the third with no code change in between.
+
+---
+
 ## 2026-07-24 — killBloomProcess.mjs --help kills Bloom instead of printing usage
 - **Cut:** Running `node .github/skills/bloom-automation/killBloomProcess.mjs --help` to check
   its options killed the running Bloom (output: "Killed process IDs: 56212, 55352"). Unknown
