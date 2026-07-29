@@ -326,7 +326,7 @@ class ReaderHighlightManager {
 }
 
 // Is the point actually inside the area the range's text occupies?
-// We have to ask, because caretPositionFromPoint() answers with the NEAREST text position even
+// We have to ask, because getCaretPosition() answers with the NEAREST text position even
 // when the point is nowhere near any text. Hovering the white space below the last paragraph, for
 // instance, gets you a position at the end of the last line, so a tip would appear or not
 // depending on whether that line happened to be highlighted. Exported for testing: a Range's
@@ -342,33 +342,21 @@ export function isPointOverRange(range: Range, x: number, y: number): boolean {
     );
 }
 
-// The document position under a point, using whichever of the two spellings the browser has.
+// The document position under a point.
+// We use Chromium's older caretRangeFromPoint rather than the standard caretPositionFromPoint
+// because it works on every WebView2 Bloom supports: the standard one only arrived in Chromium
+// 128, and WebView2Browser.kMinimumWebView2Version is still 112, where it does not exist. (jsdom
+// has neither, which is why the hover tip cannot be unit-tested end to end.)
 function getCaretPosition(
     pageDocument: Document,
     x: number,
     y: number,
 ): { node: Node; offset: number } | undefined {
-    const documentWithCaretApis = pageDocument as Document & {
-        caretPositionFromPoint?: (
-            x: number,
-            y: number,
-        ) => { offsetNode: Node; offset: number } | null;
-        caretRangeFromPoint?: (x: number, y: number) => Range | null;
-    };
-
-    if (documentWithCaretApis.caretPositionFromPoint) {
-        const position = documentWithCaretApis.caretPositionFromPoint(x, y);
-        return position
-            ? { node: position.offsetNode, offset: position.offset }
-            : undefined;
-    }
-    if (documentWithCaretApis.caretRangeFromPoint) {
-        const range = documentWithCaretApis.caretRangeFromPoint(x, y);
-        return range
-            ? { node: range.startContainer, offset: range.startOffset }
-            : undefined;
-    }
-    return undefined;
+    // It returns null when the point is outside the document; anywhere in a text box is not.
+    const caretRange = pageDocument.caretRangeFromPoint(x, y);
+    return caretRange
+        ? { node: caretRange.startContainer, offset: caretRange.startOffset }
+        : undefined;
 }
 
 export const theOneReaderHighlightManager = new ReaderHighlightManager();
