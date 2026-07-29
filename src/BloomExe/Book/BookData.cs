@@ -2915,6 +2915,15 @@ namespace Bloom.Book
                             );
                     }
 
+                    // Expand branding badge tokens like {bloom-badge-default} into their canonical
+                    // HTML. This keeps the (identical, verbose) badge markup in one place rather
+                    // than repeated across every branding.json. A token can sit anywhere in the
+                    // content string, so a branding can combine a badge with other markup.
+                    foreach (var badge in BookStorage.BrandingBadgeHtmlByToken)
+                    {
+                        content = content.Replace("{" + badge.Key + "}", badge.Value);
+                    }
+
                     content = MergeInPersonalization(content);
 
                     Set(item.DataBook, XmlString.FromXml(content), item.Lang);

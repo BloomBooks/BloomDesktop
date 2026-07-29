@@ -65,6 +65,43 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void AppendCaptionWithBoldLanguage_WrapsLanguageNameInBold()
+        {
+            var doc = SafeXmlDocument.Create();
+            var captionDiv = doc.CreateElement("div");
+            // Sanity check: the caption starts empty, so anything we assert afterward is our doing.
+            Assert.That(captionDiv.InnerXml, Is.Empty);
+
+            BookStorage.AppendCaptionWithBoldLanguage(
+                captionDiv,
+                "More books in {0} language:",
+                "Foobar"
+            );
+
+            Assert.That(
+                captionDiv.InnerXml,
+                Is.EqualTo("More books in <b>Foobar</b> language:")
+            );
+        }
+
+        [Test]
+        public void AppendCaptionWithBoldLanguage_NoPlaceholder_UsesPatternVerbatim()
+        {
+            var doc = SafeXmlDocument.Create();
+            var captionDiv = doc.CreateElement("div");
+            Assert.That(captionDiv.InnerXml, Is.Empty);
+
+            BookStorage.AppendCaptionWithBoldLanguage(
+                captionDiv,
+                "A caption with no placeholder",
+                "Foobar"
+            );
+
+            // With no {0} there is nothing to bold, so the language name must not appear.
+            Assert.That(captionDiv.InnerXml, Is.EqualTo("A caption with no placeholder"));
+        }
+
+        [Test]
         public void RepairEmptyPages_VariousEmptyPages_DoesIt()
         {
             var testFolder = new TemporaryFolder(_fixtureFolder.Path);
