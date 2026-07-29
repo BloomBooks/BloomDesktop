@@ -1,5 +1,11 @@
-import { describe, it, expect } from "vitest";
-import { isPointOverRange, trimSpan } from "./readerHighlights";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import {
+    isPointOverRange,
+    kWordNotDecodableHighlight,
+    theOneReaderHighlightManager,
+    trimSpan,
+} from "./readerHighlights";
+import { installHighlightPolyfill } from "../../test/highlightTestSupport";
 
 describe("readerHighlights", () => {
     describe("isPointOverRange", () => {
@@ -58,6 +64,67 @@ describe("readerHighlights", () => {
 
         it("is false when the range occupies nothing", () => {
             expect(isPointOverRange(rangeWithRects([]), 120, 60)).toBe(false);
+        });
+    });
+
+    // The tip needs a mousemove handler on the page, but there is nothing to hover over once the
+    // highlights are gone, and an idle handler would do work (including forcing a layout) on
+    // every mouse move for the rest of the page's life.
+    describe("the hover handler's lifetime", () => {
+        let added: string[];
+        let removed: string[];
+        let root: HTMLElement;
+
+        beforeEach(() => {
+            document.body.innerHTML = "";
+            installHighlightPolyfill(window);
+            root = document.createElement("div");
+            document.body.appendChild(root);
+            added = [];
+            removed = [];
+            vi.spyOn(document, "addEventListener").mockImplementation(
+                (type: string) => {
+                    added.push(type);
+                },
+            );
+            vi.spyOn(document, "removeEventListener").mockImplementation(
+                (type: string) => {
+                    removed.push(type);
+                },
+            );
+        });
+
+        afterEach(() => {
+            vi.restoreAllMocks();
+            theOneReaderHighlightManager.clearAll(document.body);
+        });
+
+        // Something to hover over: one range under a layer that has a tip.
+        function paintOneHighlight(): void {
+            root.textContent = "Cat";
+            const range = document.createRange();
+            range.selectNodeContents(root);
+            theOneReaderHighlightManager.beginPass();
+            theOneReaderHighlightManager.addRanges(kWordNotDecodableHighlight, [
+                range,
+            ]);
+            theOneReaderHighlightManager.endPass(root);
+        }
+
+        it("is attached while highlights are painted and detached when they are cleared", () => {
+            paintOneHighlight();
+            expect(added).toContain("mousemove");
+            expect(removed).not.toContain("mousemove");
+
+            // The user turns the reader tool off, or moves to a page with nothing to mark.
+            theOneReaderHighlightManager.clearAll(root);
+            expect(removed).toContain("mousemove");
+        });
+
+        it("is not attached at all by a pass that finds no violations", () => {
+            theOneReaderHighlightManager.beginPass();
+            theOneReaderHighlightManager.endPass(root);
+            expect(added).not.toContain("mousemove");
         });
     });
 
