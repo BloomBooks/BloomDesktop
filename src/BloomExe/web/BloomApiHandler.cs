@@ -323,6 +323,15 @@ namespace Bloom.Api
                     // otherwise it's a programmer error we want to know about.
                     ReportMissingApiEndpoint(info, localPath);
                 }
+                else if (IsExternalToolEndpoint(endpointPath))
+                {
+                    // Not worth bothering the user about (see IsExternalToolEndpoint), but
+                    // knowing which tool asked for what is useful when diagnosing why an
+                    // external integration silently did nothing.
+                    SIL.Reporting.Logger.WriteEvent(
+                        $"BloomServer received a request for the unregistered external-tool API endpoint {info.RawUrl}"
+                    );
+                }
                 // If the user continues from there, we need to pretend to have handled
                 // the request. Otherwise the caller will keep trying to handle it in
                 // other ways.
@@ -332,6 +341,14 @@ namespace Bloom.Api
             return false;
         }
 
+        /// <summary>
+        /// Should a request for this (unregistered) endpoint be reported to the user as a problem?
+        /// True for anything we believe only our own code would ask for, since that means a
+        /// programmer error we want to hear about. False for the handful of endpoints we know
+        /// get requested by clients we don't control. Note that either way the request still
+        /// gets a 404; this only decides whether we also bother the user about it.
+        /// The whole set is the subject of BL-16576.
+        /// </summary>
         private static bool ShouldReportMissingApiEndpoint(string endpointPath)
         {
             // There are older books out in the wild in which the src for branding images included
@@ -339,7 +356,35 @@ namespace Bloom.Api
             // Note that this will eventually result in a 404. That's ok because
             // the docs in the wild have `onerror="this.style.display='none'"`,
             // so we don't get the missing image indicator in the preview. See BL-16300.
-            return endpointPath != "branding/image";
+            if (endpointPath == "branding/image")
+                return false;
+
+            // We deliberately removed this endpoint in BL-15934, and no current code calls it.
+            // But it is still being POSTed in the field (Sentry is still seeing it from 6.3.x
+            // releases), presumably by javascript left over from before the removal. Since the
+            // endpoint is gone for good, there is nothing the user or we can do about it.
+            if (endpointPath == "edit/pagecontrols/cleanup")
+                return false;
+
+            return !IsExternalToolEndpoint(endpointPath);
+        }
+
+        /// <summary>
+        /// Is this endpoint part of the API surface we expose to other processes (BloomBridge,
+        /// automation scripts, the visual regression harness) rather than to our own browser?
+        /// Those tools scan for a running Bloom and then discover what it can do by simply
+        /// asking, treating a non-2xx answer as "this Bloom is too old for that". So a request
+        /// for one of these that we can't satisfy is normal version negotiation with a client we
+        /// don't control, not a programmer error, and the user (who may not even know a tool is
+        /// talking to Bloom) should not see a problem report about it. The cost of covering the
+        /// whole `external/` namespace rather than just today's endpoints is that a typo in some
+        /// future endpoint of ours here won't report itself; that's a good trade, because nothing
+        /// inside Bloom calls these, so such a mistake shows up immediately in the external tool.
+        /// </summary>
+        private static bool IsExternalToolEndpoint(string endpointPath)
+        {
+            return endpointPath == "common/instanceinfo"
+                || endpointPath.StartsWith("external/", StringComparison.InvariantCulture);
         }
 
         private static void ReportMissingApiEndpoint(IRequestInfo info, string localPath)

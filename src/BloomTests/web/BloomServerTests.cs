@@ -250,6 +250,65 @@ namespace BloomTests.web
             }
         }
 
+        // BL-16576: this endpoint was deliberately removed in BL-15934, but stale clients in the
+        // field still POST it, and there is nothing the user can do about that.
+        [Test]
+        public async Task MissingPageControlsCleanupApiEndpoint_DoesNotReportNonFatalProblem()
+        {
+            using (var server = CreateBloomServer())
+            {
+                server.ApiHandler.RegisterEndpointHandler(
+                    "existingProjectEndpoint",
+                    request => request.ReplyWithText("ok"),
+                    true
+                );
+                NonFatalProblem.LastNonFatalProblemReported = null;
+                var transaction = new PretendRequestInfo(
+                    BloomServer.ServerUrlWithBloomPrefixEndingInSlash
+                        + "api/edit/pageControls/cleanup",
+                    HttpMethods.Post
+                );
+
+                await server.ApiHandler.ProcessRequestAsync(
+                    transaction,
+                    "api/edit/pageControls/cleanup"
+                );
+
+                Assert.That(transaction.StatusCode, Is.EqualTo(404));
+                Assert.That(transaction.StatusDescription, Is.EqualTo("API endpoint not found"));
+                Assert.That(NonFatalProblem.LastNonFatalProblemReported, Is.Null);
+            }
+        }
+
+        // BL-16576: external tools (BloomBridge, automation) find a running Bloom and then
+        // discover what it supports by asking; a 404 is how they learn this Bloom is too old.
+        // The user shouldn't see a problem report from that negotiation.
+        [TestCase("api/common/instanceInfo")]
+        [TestCase("api/external/some-endpoint-this-bloom-is-too-old-for")]
+        public async Task MissingExternalToolApiEndpoint_DoesNotReportNonFatalProblem(
+            string localPath
+        )
+        {
+            using (var server = CreateBloomServer())
+            {
+                server.ApiHandler.RegisterEndpointHandler(
+                    "existingProjectEndpoint",
+                    request => request.ReplyWithText("ok"),
+                    true
+                );
+                NonFatalProblem.LastNonFatalProblemReported = null;
+                var transaction = new PretendRequestInfo(
+                    BloomServer.ServerUrlWithBloomPrefixEndingInSlash + localPath
+                );
+
+                await server.ApiHandler.ProcessRequestAsync(transaction, localPath);
+
+                Assert.That(transaction.StatusCode, Is.EqualTo(404));
+                Assert.That(transaction.StatusDescription, Is.EqualTo("API endpoint not found"));
+                Assert.That(NonFatalProblem.LastNonFatalProblemReported, Is.Null);
+            }
+        }
+
         [Test]
         public async Task MissingNonLegacyApiEndpoint_ReportsNonFatalProblem()
         {
