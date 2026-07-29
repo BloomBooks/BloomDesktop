@@ -6137,6 +6137,77 @@ namespace BloomTests.Book
             Assert.IsFalse(result);
         }
 
+        // The "Made with Bloom" badge as BookStorage.UpdateQrCode leaves it: a branding image plus
+        // the QR code image. Neither is part of the book's content.
+        private const string kBadgeWithQrCodeHtml =
+            @"<div class='bloom-branding-wrapper'>
+					<a href='https://bloomlibrary.org/language:xyz'>
+						<img class='branding' src='made-with-bloom-badge-text.svg'/>
+						<img class='bloom-qrcode' src='lang-qr-code.png' alt='QR code linking to book online'/>
+						<div class='bloom-lang-on-blorg'>More xyz books at BloomLibrary.org</div>
+					</a>
+				</div>";
+
+        [Test]
+        public void HasImages_OnlyBrandingBadgeWithQrCode_ReturnsFalse()
+        {
+            // Test setup
+            _bookDom = new HtmlDom(
+                $@"
+				<html><head></head><body>
+					<div class='bloom-page bloom-backMatter' id='page1'>
+						<div class='marginBox'>
+							{kBadgeWithQrCodeHtml}
+						</div>
+					</div>
+				</body></html>"
+            );
+            var book = CreateBook();
+            var qrCodePath = book.FolderPath.CombineForPath("lang-qr-code.png");
+            MakeSamplePngImageWithMetadata(qrCodePath);
+            // Sanity check: the QR code file really is there, so it is the class that keeps it from
+            // counting, not a missing file.
+            Assert.That(File.Exists(qrCodePath), Is.True, "test setup should have made a QR code");
+
+            // System under test //
+            bool result = book.HasImages();
+
+            // Verification //
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void HasImages_BrandingBadgeWithQrCodeAndContentImage_ReturnsTrue()
+        {
+            // Test setup
+            _bookDom = new HtmlDom(
+                $@"
+				<html><head></head><body>
+					<div class='bloom-page numberedPage' id='page1' data-page-number='1'>
+						<div class='marginBox'>
+							<div class='bloom-canvas'>
+								<img src='picture.png'/>
+							</div>
+						</div>
+					</div>
+					<div class='bloom-page bloom-backMatter' id='page2'>
+						<div class='marginBox'>
+							{kBadgeWithQrCodeHtml}
+						</div>
+					</div>
+				</body></html>"
+            );
+            var book = CreateBook();
+            MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("lang-qr-code.png"));
+            MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("picture.png"));
+
+            // System under test //
+            bool result = book.HasImages();
+
+            // Verification //
+            Assert.IsTrue(result);
+        }
+
         [TestCase("span")]
         [TestCase("div")]
         public void HasFullAudioCoverage_ContainsMissingAudioElements_ReturnsFalse(
