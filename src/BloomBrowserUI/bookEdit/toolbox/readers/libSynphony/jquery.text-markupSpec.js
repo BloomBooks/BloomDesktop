@@ -121,6 +121,22 @@ describe("jquery.text-markup", function () {
         ]);
     });
 
+    // The Talking Book tool's phrase markers are invisible, zero-width, and saved in the book,
+    // so the reader tools must see straight through them. Unlike Bloom's transient in-page UI
+    // they carry no bloom-ui class, which is why they need their own exclusion.
+    it("checkLeveledReader sees through a Talking Book phrase marker inside a word", function () {
+        const input =
+            '<p>ele<span class="bloom-audio-split-marker">|</span>phant</p>';
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxGlyphsPerWord: 5 });
+
+        expect($("#text_entry1").html()).toBe(input);
+        // One 8-letter word over the limit, not two short ones under it. (The painted Range
+        // spans the marker, so its text still shows up in the highlight.)
+        expect(highlighted(kWordTooLongHighlight)).toEqual(["ele|phant"]);
+    });
+
     it("checkLeveledReader stops highlighting once the violation is gone", function () {
         const editable = $("#text_entry1");
         editable
