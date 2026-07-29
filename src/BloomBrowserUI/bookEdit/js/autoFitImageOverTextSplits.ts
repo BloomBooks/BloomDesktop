@@ -9,18 +9,28 @@ import { EditableDivUtils } from "./editableDivUtils";
 // ── Auto-fit image/text origami splits (off-screen process-book only) ───────────────────────────
 //
 // A page that is a single illustration in the first pane and a single text block in the second pane
-// is usually saved at whatever ratio it was authored with (commonly 50/50). That often leaves a lot
-// of empty space after the text while the image is much smaller than it could be. This grows the
-// image pane (shrinking the text pane) as far as it can WITHOUT making the text overflow, but no
-// further than the point where the image already fills the constraining page dimension (for
-// top/bottom splits, the page width; for left/right splits, the page height). Growing past that just
-// adds whitespace around the image.
+// is usually saved at whatever ratio it was authored with (commonly 50/50) — a number that is right
+// only by accident. This moves the divider to the size the content actually calls for, in EITHER
+// direction:
 //
-// Governing rule: never leave the text overflowing. We don't estimate font/text sizes — we measure
-// the real browser layout with OverflowChecker, and bias toward a hair more text room than the
-// strict minimum. Wasted space is only a cosmetic ding; clipped text is a failure.
+//   - GROW the image pane (shrinking the text pane) when the text leaves room to spare, but no
+//     further than the point where the image already fills the constraining page dimension (for
+//     top/bottom splits, the page width; for left/right splits, the page height). Growing past that
+//     just adds whitespace around the image.
+//   - SHRINK the image pane when it is bigger than the image needs. Past the fill point the surplus
+//     is dead space, so trimming it costs the illustration NOTHING — it renders at exactly the same
+//     size — and hands the difference to the text. And when the text needs more than even that,
+//     shrink the image for real: clipped text is a failure, a smaller picture is not.
 //
-// Called by captureContentForExternalProcessing() (when process-book asks for it) so the grown
+// Governing rule: never leave the text overflowing, and never waste space to no one's benefit. We
+// don't estimate font/text sizes — we measure the real browser layout with OverflowChecker, and bias
+// toward a hair more text room than the strict minimum.
+//
+// The one thing we won't do is wreck a page we can't fix: if the text overflows even when given
+// almost the whole page, the page is simply over-full, and shrinking the image to a sliver would
+// leave it BOTH clipped and ugly. Those we leave exactly as authored.
+//
+// Called by captureContentForExternalProcessing() (when process-book asks for it) so the fitted
 // split persists into the saved HTML. Mutates the live DOM; relies on the fresh disposable browser
 // per page that the off-screen path uses.
 
@@ -28,6 +38,9 @@ import { EditableDivUtils } from "./editableDivUtils";
 const kFitTextCushionPercent = 1.5;
 // Never shrink the text pane below this percent of the split-pane height.
 const kFitMinTextPercent = 5;
+// Don't touch the divider for a move smaller than this (percent of split-pane size). Keeps
+// rounding noise from rewriting a split — and re-fitting every background image — for nothing.
+const kFitMinMovePercent = 0.5;
 
 // Auto-fit every qualifying image/text page in the document. Returns true if any page's split was
 // changed (so the caller knows to re-fit the background images afterward).
@@ -53,7 +66,7 @@ interface SplitConfig {
     secondInner: Element;
 }
 
-// Returns true if it changed this page's split (grew the image), false if it left the page alone.
+// Returns true if it changed this page's split (in either direction), false if it left it alone.
 function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
     const marginBox = page.querySelector(".marginBox");
     if (!marginBox) return false;
@@ -162,8 +175,10 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
     }
     const minTextPercent = hi;
 
-    // Cap how far the image can grow: once it fills the page width, growing the image pane further
-    // just adds whitespace around the image, so don't shrink the text below that point.
+    // The point past which the image gains nothing: once it fills the page width (or height, for a
+    // left/right split) a bigger pane only adds whitespace around it. So this is the text pane's
+    // FLOOR — the text is welcome to every percent above it, in either direction from where the page
+    // was authored, because those percents are dead space as far as the illustration is concerned.
     const imageFitFirstPanePercent = computeImageFitFirstPanePercent(
         splitPane,
         firstCanvas,
@@ -176,14 +191,17 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
         if (finalTextPercent < textFloorForImageFit)
             finalTextPercent = textFloorForImageFit;
     }
+    // Note there is no cap at the authored split: when the text needs more than the image's fill
+    // point, finalTextPercent stays at what the text needs and the image really does get smaller.
+    // That is deliberate — text the reader can't see is a failure; a smaller picture is a trade.
     finalTextPercent = Math.min(
         Math.max(finalTextPercent, kFitMinTextPercent),
         hiBound,
     );
 
-    // Only ever grow the image (shrink the text). If our computed split wouldn't enlarge the image,
-    // leave the page as authored.
-    if (finalTextPercent >= originalTextPercent) {
+    // Nothing worth doing (the authored split is already about right): put it back exactly as we
+    // found it rather than rewriting the style with a rounding-noise difference.
+    if (Math.abs(finalTextPercent - originalTextPercent) < kFitMinMovePercent) {
         setTextPercent(originalTextPercent);
         return false;
     }
@@ -311,6 +329,15 @@ function computeImageFitFirstPanePercent(
 // adjustBackgroundImageSizeToFit() (split-pane.ts getImagePercent()) uses, so our width cap agrees
 // with how the image will actually be re-fit afterward. The background canvas element keeps its
 // load-time size while we resize panes, so this aspect is stable across the binary search.
+//
+// CAVEAT for freshly imported books: this box is whatever the importer wrote, which is not
+// necessarily the picture's shape. BloomBridge, for one, emits the background element at the
+// full PANE rect, so on the first process-book pass we read the PANE's aspect and conclude the
+// image already fills its pane — i.e. the image-fit cap says "no room to reclaim" even when the
+// pane is half empty. The binary search still keeps text from overflowing (it measures real
+// text), so the guarantee holds; we just don't reclaim all the dead space until a pass where the
+// box reflects the image. Don't "fix" this by preferring naturalWidth/naturalHeight — that would
+// ignore cropping and disagree with the re-fit that follows.
 function getImageAspectRatio(bloomCanvas: HTMLElement): number | undefined {
     const bg = bloomCanvas.getElementsByClassName(
         "bloom-backgroundImage",
