@@ -3710,7 +3710,13 @@ namespace Bloom.Publish.Epub
             // Content pages only. Xmatter's lang="*" fields (the ISBN, the branding blocks) are
             // meant to follow the metadata language they inherit from their page div (BL-8545);
             // giving them L1's font would break that just as surely as giving them L1's lang.
-            var languageIndependentFont = Book.BookData.Language1.FontName;
+            // Read the font from the same place the rule we are standing in for reads it:
+            // GetCollectionStylesCss builds the [lang='*'] rule from CollectionSettings.Language1.
+            // BookData.Language1 currently returns the same thing, but its own docs describe it as
+            // "the crucial method for book-specific language setting" that merely "defers to the
+            // collection settings" for now -- so using it here would quietly diverge from the rule
+            // the day book-specific languages arrive.
+            var languageIndependentFont = Book.CollectionSettings.Language1.FontName;
             foreach (SafeXmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='*']"))
             {
                 var page = elt.ParentOrSelfWithClass("bloom-page");
