@@ -3693,14 +3693,42 @@ namespace Bloom.Publish.Epub
             {
                 elt.RemoveAttribute("lang");
             }
-            // Validator doesn't like '*' as value of lang attributes, so remove. It does convey
-            // something, though -- "this text is deliberately not in any language" -- and
-            // defaultLangStyles.css keys the font for such text off it (BL-16624). Leave a class
-            // behind so that rule can still find the element once the attribute is gone;
-            // otherwise this text is the one thing in an ePUB with no font of its own.
+            // "*" is not a language tag -- it is the wildcard from HTTP content negotiation -- so
+            // BCP 47, and therefore the ePUB validator, rejects it. But it does convey something to
+            // us: "deliberately not in any language". defaultLangStyles.css keys such text's font
+            // off it (BL-16624), and simply deleting the attribute, as we had done since the first
+            // ePUB commit in 2015, left this the one kind of text in an ePUB with no font of its
+            // own. So carry the font over explicitly before the attribute goes.
+            //
+            // Note what we deliberately do NOT do: rewrite the attribute to a real language tag.
+            // That was tried and reverted. It makes language-neutral text claim to be in L1, so a
+            // book published with the vernacular turned off still contains elements tagged with it
+            // -- UserSpecifiedNoVernacular_VernacularRemoved catches exactly that. An inline font
+            // makes no such claim, and it still yields to the user's own font choice, which
+            // StyleEditor writes as !important.
+            //
+            // Content pages only. Xmatter's lang="*" fields (the ISBN, the branding blocks) are
+            // meant to follow the metadata language they inherit from their page div (BL-8545);
+            // giving them L1's font would break that just as surely as giving them L1's lang.
+            var languageIndependentFont = Book.BookData.Language1.FontName;
             foreach (SafeXmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='*']"))
             {
-                elt.AddClass(HtmlDom.kLanguageIndependentClass);
+                var page = elt.ParentOrSelfWithClass("bloom-page");
+                var onContentPage =
+                    page != null
+                    && !page.HasClass("bloom-frontMatter")
+                    && !page.HasClass("bloom-backMatter");
+                if (onContentPage && !string.IsNullOrEmpty(languageIndependentFont))
+                {
+                    var existing = elt.GetAttribute("style");
+                    var fontRule = $"font-family: '{languageIndependentFont}'";
+                    elt.SetAttribute(
+                        "style",
+                        string.IsNullOrEmpty(existing)
+                            ? fontRule
+                            : existing.TrimEnd().TrimEnd(';') + "; " + fontRule
+                    );
+                }
                 elt.RemoveAttribute("lang");
             }
         }
