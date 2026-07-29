@@ -2872,11 +2872,43 @@ namespace Bloom.Book
             );
         }
 
+        // The markup for the default "Made with Bloom" QR badge. Branding.json files reference
+        // this via the {bloom-badge-default} token (expanded in BookData.MergeBrandingSettings)
+        // instead of repeating this verbose HTML in every branding. It is kept here, next to
+        // UpdateQrCode, because that method rewrites this exact structure at runtime: it replaces
+        // the placeholder href below with the language-specific BloomLibrary URL (or removes it
+        // when the QR code is turned off), swaps in the QR image, and builds the caption.
+        private const string kBloomBadgeDefaultHtml =
+            "<div class='bloom-branding-wrapper'>"
+            + "<a href='https://bloomlibrary.org/'>"
+            + "<img class='branding' src='made-with-bloom-badge-text.svg'/>"
+            + "</a></div>";
+
+        /// <summary>
+        /// Named family of branding badge markups, keyed by the token used in branding.json
+        /// (e.g. "bloom-badge-default" is written as "{bloom-badge-default}"). Adding a future
+        /// badge variant is just a new entry here plus its own token name; branding.json structure
+        /// does not have to change.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, string> BrandingBadgeHtmlByToken =
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["bloom-badge-default"] = kBloomBadgeDefaultHtml,
+            };
+
+        /// <summary>
+        /// The class on the QR code image of the "Made with Bloom" badge (see UpdateQrCode).
+        /// Like the badge's "branding" image, it is not part of the book's content, so code that
+        /// asks "does this book have images?" or manipulates content images must skip it.
+        /// </summary>
+        public const string kQrCodeClass = "bloom-qrcode";
+
         public static void UpdateQrCode(
             HtmlDom dom,
             bool shouldHaveQrCode,
             string langCode,
-            string badgeQrCodeLabelLocalizedWithLang,
+            string badgeCaptionPattern,
+            string languageName,
             string bookFolderPath,
             bool updateQrCodeFileEvenIfItExists = true
         )
@@ -2886,6 +2918,10 @@ namespace Bloom.Book
                 )
                 .Cast<SafeXmlElement>();
             var url = "https://bloomlibrary.org/language:" + langCode;
+            // The address we actually show to the reader on the badge. We deliberately drop the
+            // "https://" and use the friendlier capitalization, but keep the same path as the real
+            // link and QR code target above.
+            var displayUrl = "BloomLibrary.org/language:" + langCode;
 
             string qrFileName = null;
             const string kQrFileName = "lang-qr-code.png";
@@ -2901,7 +2937,7 @@ namespace Bloom.Book
                     continue; // html structure is corrupt/empty: nothing we can do
 
                 var imgBranding = FindChildElement(anchor, "img", "branding");
-                var imgQr = FindChildElement(anchor, "img", "bloom-qrcode");
+                var imgQr = FindChildElement(anchor, "img", kQrCodeClass);
                 var label = FindChildElement(anchor, "div", "bloom-lang-on-blorg");
 
                 if (!shouldHaveQrCode)
@@ -2927,7 +2963,9 @@ namespace Bloom.Book
                     imgQr,
                     label,
                     qrFileName,
-                    badgeQrCodeLabelLocalizedWithLang
+                    badgeCaptionPattern,
+                    languageName,
+                    displayUrl
                 );
             }
         }
@@ -2979,7 +3017,9 @@ namespace Bloom.Book
             SafeXmlNode imgQr,
             SafeXmlNode label,
             string qrFileName,
-            string badgeLabel
+            string badgeCaptionPattern,
+            string languageName,
+            string displayUrl
         )
         {
             if (imgBranding != null)
@@ -2997,7 +3037,7 @@ namespace Bloom.Book
             if (imgQr == null)
             {
                 imgQr = anchor.OwnerDocument.CreateElement("img");
-                imgQr.SetAttribute("class", "bloom-qrcode");
+                imgQr.SetAttribute("class", kQrCodeClass);
                 anchor.AppendChild(imgQr);
             }
             imgQr.SetAttribute("src", qrFileName);
@@ -3006,11 +3046,56 @@ namespace Bloom.Book
             if (label == null)
             {
                 label = anchor.OwnerDocument.CreateElement("div");
-                label.SetAttribute("class", "bloom-lang-on-blorg");
+                ((SafeXmlElement)label).SetAttribute("class", "bloom-lang-on-blorg");
                 anchor.AppendChild(label);
             }
 
-            label.InnerText = badgeLabel;
+            // The caption block has two lines: the caption text (with the language name in bold)
+            // on the first line, and the BloomLibrary.org address on its own line below it. We
+            // clear any previous content so re-running (e.g. after the language or caption changes)
+            // rebuilds it cleanly.
+            label.InnerXml = "";
+            var doc = anchor.OwnerDocument;
+
+            var captionDiv = doc.CreateElement("div");
+            captionDiv.SetAttribute("class", "bloom-blorg-caption");
+            AppendCaptionWithBoldLanguage(captionDiv, badgeCaptionPattern, languageName);
+            label.AppendChild(captionDiv);
+
+            var urlDiv = doc.CreateElement("div");
+            urlDiv.SetAttribute("class", "bloom-blorg-url");
+            urlDiv.AppendChild(doc.CreateTextNode(displayUrl));
+            label.AppendChild(urlDiv);
+        }
+
+        /// <summary>
+        /// Fills the caption element with the caption text, wrapping the language name (the "{0}"
+        /// placeholder in the pattern) in a bold element. If the pattern has no "{0}" placeholder
+        /// (e.g. a user cleared it out of their custom caption), the pattern is used verbatim.
+        /// </summary>
+        internal static void AppendCaptionWithBoldLanguage(
+            SafeXmlElement captionDiv,
+            string captionPattern,
+            string languageName
+        )
+        {
+            var doc = captionDiv.OwnerDocument;
+            const string placeholder = "{0}";
+            var idx = captionPattern.IndexOf(placeholder, StringComparison.Ordinal);
+            if (idx < 0)
+            {
+                captionDiv.AppendChild(doc.CreateTextNode(captionPattern));
+                return;
+            }
+            var before = captionPattern.Substring(0, idx);
+            var after = captionPattern.Substring(idx + placeholder.Length);
+            if (before.Length > 0)
+                captionDiv.AppendChild(doc.CreateTextNode(before));
+            var bold = doc.CreateElement("b");
+            bold.AppendChild(doc.CreateTextNode(languageName));
+            captionDiv.AppendChild(bold);
+            if (after.Length > 0)
+                captionDiv.AppendChild(doc.CreateTextNode(after));
         }
 
         private static string GenerateQrCodeImage(string bookFolderPath, string url)
