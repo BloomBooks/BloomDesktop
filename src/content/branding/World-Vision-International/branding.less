@@ -1,9 +1,8 @@
 @import "../branding-base.less";
-[data-book="outside-back-cover-branding-top-html"] img {
-    margin-left: auto;
-    margin-right: 0;
-    width: 20%;
-}
+// The top slot now holds the "Made with Bloom" QR badge (.bloom-branding-wrapper),
+// which sizes and centers itself via branding-base.less. We deliberately do NOT set a
+// width on the images here: a rule like `img { width: 20% }` would override the wrapper's
+// own logo (4.7cm) and QR code (2.8cm) sizes and break the badge layout.
 [data-book="outside-back-cover-branding-bottom-html"] img {
     width: 60%;
 }

@@ -7,9 +7,16 @@
             "condition": "always"
         },
         {
+            "//": "The 'Made with Bloom' QR badge sits above the Bloom Local branding content (which is in the bottom slot). {bloom-badge-default} expands to the badge markup; the link and QR image are filled in at runtime.",
+            "data-book": "outside-back-cover-branding-top-html",
+            "lang": "*",
+            "content": "{bloom-badge-default}",
+            "condition": "always"
+        },
+        {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='BloomLocal.svg'/><div>This book was created with many Bloom Enterprise features enabled at no cost in order to support projects that are fully funded and managed by the language community.  Licensed to \"{personalization}\".</div>",
+            "content": "<img class='branding' src='BloomLocal.svg'/><div class='local-text'><p>Published with a Bloom Local subscription gifted from SIL Global to: <strong>{personalization}</strong></p><p><strong>Bloom Local</strong> subscriptions are reserved for projects resourced entirely by the local community.</p></div>",
             "condition": "always"
         }
     ]

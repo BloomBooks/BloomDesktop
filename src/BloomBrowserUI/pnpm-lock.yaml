@@ -34,8 +34,8 @@ importers:
                 specifier: 11.14.1
                 version: 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
             "@ethnolib/language-chooser-react-mui":
-                specifier: 0.4.0
-                version: 0.4.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+                specifier: 0.4.3
+                version: 0.4.3(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
             "@fortawesome/fontawesome-svg-core":
                 specifier: 6.4.0
                 version: 6.4.0
@@ -1919,22 +1919,22 @@ packages:
             }
         engines: { node: ^18.18.0 || ^20.9.0 || >=21.1.0 }
 
-    "@ethnolib/find-language@0.4.0":
+    "@ethnolib/find-language@0.4.3":
         resolution:
             {
-                integrity: sha512-W4EWlcvwBzYWZLYl/6tX1345MBL8QGeVV6wa6+KJDBPrkuGgOVaH/xwigcRLFysE8SjMlvO9FdP0cDKE9VqUwg==,
+                integrity: sha512-9DzoM6ont2UTX9HJcl6+1mkTUWkAGiLlhAES4OUjPtqflHuF7VMLXwMnlTZenXwEEpRwdw4Rk/9+0MCo0wDGmQ==,
             }
 
-    "@ethnolib/language-chooser-react-hook@0.3.3":
+    "@ethnolib/language-chooser-react-hook@0.3.6":
         resolution:
             {
-                integrity: sha512-jACaEjvfkdQ31jjrtbIrGOFslDDiV94RcYvcvXhOGP79HjmXM53XahG2DOqLyTx8VKXWIXejVxS/tTp8QAcnGg==,
+                integrity: sha512-WSBo1ZQLkXBlC6B/3I/xf+OjZ3dTd8UZHGrSSGZg9wyXOh4aEEqV3MV2//2E1NA/1NDvX9YsXSdNNkgsj07q5A==,
             }
 
-    "@ethnolib/language-chooser-react-mui@0.4.0":
+    "@ethnolib/language-chooser-react-mui@0.4.3":
         resolution:
             {
-                integrity: sha512-FtJfAwKWXyEPxVEqJJ6ObDBUwQ26+M9H0nH6gAhMAlE5YOplwvKcWv+dr7gMMvLMWUNltyf5kieCttae9Rabbg==,
+                integrity: sha512-NOcogSQ39+jVpJ4ufww3GFkK3/Jcdym09T353xx+xjcWpd2VuM8Vxo4pwoX7dyvQVxUsithaR7K1rF53eBwh2A==,
             }
         peerDependencies:
             "@emotion/react": ^11.11.4
@@ -12091,25 +12091,25 @@ snapshots:
             "@eslint/core": 0.15.2
             levn: 0.4.1
 
-    "@ethnolib/find-language@0.4.0":
+    "@ethnolib/find-language@0.4.3":
         dependencies:
             fuse.js: 7.1.0
             iso-15924: 3.2.0
             iso-3166: 4.3.0
 
-    "@ethnolib/language-chooser-react-hook@0.3.3":
+    "@ethnolib/language-chooser-react-hook@0.3.6":
         dependencies:
-            "@ethnolib/find-language": 0.4.0
+            "@ethnolib/find-language": 0.4.3
             fuse.js: 7.1.0
             iso-15924: 3.2.0
             iso-3166: 4.3.0
 
-    "@ethnolib/language-chooser-react-mui@0.4.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)":
+    "@ethnolib/language-chooser-react-mui@0.4.3(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)":
         dependencies:
             "@emotion/react": 11.14.0(@types/react@18.3.31)(react@18.3.1)
             "@emotion/styled": 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
-            "@ethnolib/find-language": 0.4.0
-            "@ethnolib/language-chooser-react-hook": 0.3.3
+            "@ethnolib/find-language": 0.4.3
+            "@ethnolib/language-chooser-react-hook": 0.3.6
             "@mui/icons-material": 5.18.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
             "@mui/material": 5.18.0(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
             lodash: 4.17.21
@@ -14776,7 +14776,7 @@ snapshots:
         dependencies:
             deepmerge: 2.2.1
             hoist-non-react-statics: 3.3.2
-            lodash: 4.18.1
+            lodash: 4.17.21
             lodash-es: 4.18.1
             react: 18.3.1
             react-fast-compare: 2.0.4
