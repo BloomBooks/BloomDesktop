@@ -3275,7 +3275,7 @@ namespace Bloom.Book
 
         /// <summary>
         /// Determines whether the book references an existing image file other than
-        /// branding, placeholder, or license images.
+        /// branding, placeholder, license, or QR code images.
         /// </summary>
         /// <returns></returns>
         public bool HasImages()
@@ -3294,7 +3294,14 @@ namespace Bloom.Book
         {
             if (image.Name == "img")
             {
-                if (image.HasClass("branding") || image.HasClass("licenseImage"))
+                // The QR code of the "Made with Bloom" badge is as much a part of the branding as
+                // the badge image itself (which has the "branding" class), so it doesn't count as
+                // one of the book's images.
+                if (
+                    image.HasClass("branding")
+                    || image.HasClass("licenseImage")
+                    || image.HasClass(BookStorage.kQrCodeClass)
+                )
                     return false;
             }
             var imageUrl = HtmlDom.GetImageElementUrl(image);

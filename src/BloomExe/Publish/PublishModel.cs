@@ -460,7 +460,7 @@ namespace Bloom.Publish
             foreach (var img in coverImgNodes)
             {
                 var classAttr = img.GetAttribute("class");
-                if (classAttr.Contains("branding") || classAttr.Contains("bloom-qrcode"))
+                if (classAttr.Contains("branding") || classAttr.Contains(BookStorage.kQrCodeClass))
                     continue;
                 var src = img.GetAttribute("src");
                 if (!string.IsNullOrEmpty(src))

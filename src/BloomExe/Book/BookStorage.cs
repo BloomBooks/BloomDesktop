@@ -2814,6 +2814,13 @@ namespace Bloom.Book
                 ["bloom-badge-default"] = kBloomBadgeDefaultHtml,
             };
 
+        /// <summary>
+        /// The class on the QR code image of the "Made with Bloom" badge (see UpdateQrCode).
+        /// Like the badge's "branding" image, it is not part of the book's content, so code that
+        /// asks "does this book have images?" or manipulates content images must skip it.
+        /// </summary>
+        public const string kQrCodeClass = "bloom-qrcode";
+
         public static void UpdateQrCode(
             HtmlDom dom,
             bool shouldHaveQrCode,
@@ -2848,7 +2855,7 @@ namespace Bloom.Book
                     continue; // html structure is corrupt/empty: nothing we can do
 
                 var imgBranding = FindChildElement(anchor, "img", "branding");
-                var imgQr = FindChildElement(anchor, "img", "bloom-qrcode");
+                var imgQr = FindChildElement(anchor, "img", kQrCodeClass);
                 var label = FindChildElement(anchor, "div", "bloom-lang-on-blorg");
 
                 if (!shouldHaveQrCode)
@@ -2948,7 +2955,7 @@ namespace Bloom.Book
             if (imgQr == null)
             {
                 imgQr = anchor.OwnerDocument.CreateElement("img");
-                imgQr.SetAttribute("class", "bloom-qrcode");
+                imgQr.SetAttribute("class", kQrCodeClass);
                 anchor.AppendChild(imgQr);
             }
             imgQr.SetAttribute("src", qrFileName);
