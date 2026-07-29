@@ -1163,6 +1163,32 @@ namespace BloomTests.Publish.Epub
                     "//*[contains(@class,'bloom-languageIndependent') and contains(@class,'Equation-style')]",
                     1
                 );
+
+            // Applying the class is only half of it; the rule that uses it is scoped to content
+            // pages, so the export has to preserve both ends of that. Check the element really
+            // does sit inside a .bloom-page that is neither front nor back matter...
+            AssertThatXmlIn
+                .String(equationPage)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//xhtml:div[contains(@class,'bloom-page')"
+                        + " and not(contains(@class,'bloom-frontMatter'))"
+                        + " and not(contains(@class,'bloom-backMatter'))]"
+                        + "//*[contains(@class,'bloom-languageIndependent')"
+                        + " and contains(@class,'Equation-style')]",
+                    _ns,
+                    1
+                );
+            // ...and that the stylesheet carrying the rule is in the ePUB, with a selector that
+            // matches the class. Without this the class would be inert decoration.
+            var langStyles = ExportEpubTestsBaseClass.GetZipContent(
+                _epub,
+                "content/" + EpubMaker.kCssFolder + "/defaultLangStyles.css"
+            );
+            Assert.That(
+                langStyles,
+                Does.Contain(".bloom-languageIndependent"),
+                "the ePUB's defaultLangStyles.css should carry the rule that styles this text"
+            );
         }
 
         [Test]

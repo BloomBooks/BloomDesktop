@@ -522,7 +522,7 @@ namespace Bloom.Collection
             const string contentPage = ".bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter)";
             WritingSystem.AddSelectorCssRule(
                 sb,
-                $"{contentPage} [lang='*'],\n{contentPage} .{Book.HtmlDom.kLanguageIndependentClass}",
+                $"{contentPage} [lang='*'], {contentPage} .{Book.HtmlDom.kLanguageIndependentClass}",
                 Language1.FontName,
                 Language1.IsRightToLeft,
                 -1, // suppresses line-height
