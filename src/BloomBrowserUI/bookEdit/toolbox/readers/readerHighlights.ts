@@ -72,12 +72,15 @@ const allReaderHighlightNames = readerHighlightLayers.map(
 // zero-width phrase markers. This replaces what removeAllHtmlMarkupFromString() used to strip
 // out of the HTML string.
 function shouldSkipElementForReaderText(element: Element): boolean {
+    // Covers Bloom's transient in-page UI generally, including the format cog (StyleEditor
+    // creates it as <div id="formatButton" class="bloom-ui">).
     if (element.classList.contains("bloom-ui")) {
         return true;
     }
-    if (element.id === "formatButton") {
-        return true;
-    }
+    // The Talking Book tool's phrase markers need their own case: unlike the UI above they are
+    // real saved content (invisible and zero-width), and they carry no other class - Bloom's
+    // spreadsheet export/import writes them as class="bloom-audio-split-marker" exactly, and
+    // MarkedUpText.cs matches that attribute for equality, so bloom-ui cannot be added to them.
     if (element.classList.contains("bloom-audio-split-marker")) {
         return true;
     }
