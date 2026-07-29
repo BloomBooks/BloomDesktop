@@ -229,6 +229,12 @@ namespace Bloom.Spreadsheet
                                 )
                             )
                             {
+                                // ResizeImageIfNecessary never enlarges an image, so when the source
+                                // is smaller than the (DPI-scaled) target the thumbnail is embedded at
+                                // its original, smaller size. Size the row from the thumbnail we actually
+                                // embedded, not from the requested finalHeight; otherwise small images
+                                // get a row that is much too tall. See BL-16529.
+                                finalHeight = thumbnail.Height;
                                 using (var ms = new MemoryStream())
                                 {
                                     thumbnail.Save(ms, ImageFormat.Jpeg);

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using Bloom;
@@ -8,6 +9,8 @@ using BloomTemp;
 using BloomTests.TeamCollection;
 using Moq;
 using NUnit.Framework;
+using OfficeOpenXml;
+using OfficeOpenXml.Drawing;
 using SIL.IO;
 
 namespace BloomTests.Spreadsheet
@@ -650,6 +653,108 @@ namespace BloomTests.Spreadsheet
                     Is.Empty,
                     "Exporting images with conflicting names should not report any warnings."
                 );
+            }
+        }
+
+        // A minimal book with a single small image (smaller than the thumbnail target width).
+        private const string smallImageBook =
+            @"
+<html><head></head>
+<body data-l1=""en"" data-l2="""" data-l3="""">
+    <div id=""bloomDataDiv""></div>
+    <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""aaaaaaaa-1111-1111-1111-111111111111"" data-page-number=""1"" lang="""">
+        <div class=""pageLabel"" lang=""en"">Image</div>
+        <div class=""pageDescription"" lang=""en""></div>
+        <div class=""marginBox"">
+            <div class=""bloom-canvas bloom-leadingElement bloom-has-canvas-element"">
+                <div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 100px; height: 100px"">
+                    <div class=""bloom-imageContainer"">
+                        <img src=""man.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body></html>";
+
+        /// <summary>
+        /// Regression test for BL-16529 (image cells too high). ResizeImageIfNecessary never
+        /// enlarges an image, so a source smaller than the (possibly DPI-scaled) thumbnail target
+        /// is embedded at its original size. The row height must be sized from the image we actually
+        /// embed, not from the larger target width; otherwise small images get a row that is much
+        /// too tall. This invariant holds regardless of the exporting machine's display scaling.
+        /// </summary>
+        [Test]
+        public void Export_SmallImage_RowNotTallerThanEmbeddedImage()
+        {
+            using (var bookFolder = new TemporaryFolder("SmallImageRowHeight_Book"))
+            using (var outputFolder = new TemporaryFolder("SmallImageRowHeight_Out"))
+            {
+                var sourceImage = Path.Combine(
+                    SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
+                        _pathToTestImages
+                    ),
+                    "man.jpg"
+                );
+                RobustFile.Copy(sourceImage, Path.Combine(bookFolder.FolderPath, "man.jpg"));
+
+                int sourceImageHeightPx;
+                using (var img = Image.FromFile(sourceImage))
+                {
+                    // Sanity check: this test only exercises the bug if the source is small enough
+                    // that the exporter won't enlarge it (source width < the 150px thumbnail target).
+                    Assert.That(
+                        img.Width,
+                        Is.LessThan(150),
+                        "Setup sanity check: the test image must be narrower than the thumbnail target "
+                            + "so that it is embedded at its original (un-enlarged) size."
+                    );
+                    sourceImageHeightPx = img.Height;
+                }
+
+                var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+                mockLangDisplayNameResolver
+                    .Setup(x => x.GetLanguageDisplayName("en"))
+                    .Returns("English");
+                var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
+
+                exporter.ExportToFolder(
+                    new HtmlDom(smallImageBook, true),
+                    bookFolder.FolderPath,
+                    outputFolder.FolderPath,
+                    out string outputPath,
+                    new ProgressSpy(),
+                    OverwriteOptions.Overwrite
+                );
+
+                using (var package = new ExcelPackage(new FileInfo(outputPath)))
+                {
+                    var worksheet = package.Workbook.Worksheets[0];
+                    var picture = worksheet.Drawings.OfType<ExcelPicture>().Single();
+                    // The image is anchored in the row where the exporter placed it (0-based From.Row).
+                    var imageRow = worksheet.Row(picture.From.Row + 1);
+
+                    // Row height is in points; convert to pixels (72 points/inch, 96 px/inch). The
+                    // exporter adds a few pixels so the image isn't flush against the row edge.
+                    const double pointsToPixels = 96.0 / 72.0;
+                    var rowHeightPx = imageRow.Height * pointsToPixels;
+
+                    // Sanity check: the row must be at least tall enough to show the whole image.
+                    Assert.That(
+                        rowHeightPx,
+                        Is.GreaterThanOrEqualTo(sourceImageHeightPx),
+                        "The row should be tall enough to display the embedded image."
+                    );
+                    // The actual regression check: the row must not be dramatically taller than the
+                    // image it contains. Before the fix the row was sized from the (up to DPI-scaled)
+                    // target width, making it far taller than the small image embedded in it.
+                    Assert.That(
+                        rowHeightPx,
+                        Is.LessThanOrEqualTo(sourceImageHeightPx + 15),
+                        $"Row height ({rowHeightPx:0}px) is much taller than the embedded image "
+                            + $"({sourceImageHeightPx}px); small image rows should not be over-sized (BL-16529)."
+                    );
+                }
             }
         }
     }
