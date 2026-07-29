@@ -2096,7 +2096,7 @@
         <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
       </trans-unit>
       <trans-unit id="EditTab.NoImageFoundOnClipboard">
-        <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
+        <source xml:lang="en">Bloom did not find an image on your clipboard. Copy one first, then paste again.</source>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
       </trans-unit>
       <trans-unit id="EditTab.NoValidImageFoundOnClipboard">
