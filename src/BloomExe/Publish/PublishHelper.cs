@@ -1574,6 +1574,41 @@ namespace Bloom.Publish
         public const string DefaultFont = "Andika";
 
         /// <summary>
+        /// The CSS generic font-family keywords. These are not real fonts that live in a file;
+        /// every browser resolves them to some installed font on its own. So when a book asks for
+        /// one of these (e.g. "font-family: serif") there is nothing for us to find, embed, or
+        /// substitute, and we must leave the keyword alone in the book's CSS so the reader's
+        /// browser can resolve it. See BL-16370.
+        /// </summary>
+        private static readonly HashSet<string> s_genericCssFontFamilies = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase
+        )
+        {
+            "serif",
+            "sans-serif",
+            "monospace",
+            "cursive",
+            "fantasy",
+            "system-ui",
+            "ui-serif",
+            "ui-sans-serif",
+            "ui-monospace",
+            "ui-rounded",
+            "math",
+            "emoji",
+            "fangsong",
+        };
+
+        /// <summary>
+        /// True if the given font-family name is a CSS generic keyword (serif, sans-serif, etc.)
+        /// rather than the name of an actual font that Bloom would need to find and embed.
+        /// </summary>
+        public static bool IsGenericCssFontFamily(string fontFamily)
+        {
+            return fontFamily != null && s_genericCssFontFamilies.Contains(fontFamily.Trim());
+        }
+
+        /// <summary>
         /// Checks the wanted fonts for being valid for  embedding, both for licensing and for the type of file
         /// (based on the filename extension).
         /// The list of rejected fonts is returned in badFonts and the list of files to copy for good fonts is
@@ -1611,6 +1646,13 @@ namespace Bloom.Publish
             var filesAlreadyAdded = new HashSet<string>();
             foreach (var font in fontsWanted.OrderBy(x => x.ToString()))
             {
+                // CSS generic font families (serif, sans-serif, monospace, ...) are not real
+                // fonts on disk; the reader's browser resolves them itself. There's nothing to
+                // find or embed, and we must NOT add them to badFonts, because that would cause
+                // us to rewrite the keyword to the default font in the book's CSS. Just leave
+                // the keyword alone and move on. See BL-16370.
+                if (IsGenericCssFontFamily(font.fontFamily))
+                    continue;
                 var fontFile = fontFileFinder.GetFileForFont(
                     font.fontFamily,
                     font.fontStyle,

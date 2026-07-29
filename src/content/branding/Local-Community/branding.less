@@ -4,23 +4,43 @@
 }*/
 @import "../branding-base.less";
 
+// The outside back cover's marginBox is a flex column: [badge] [editable "more info" text box]
+// [Bloom Local logo + text]. We want the badge at the top and the Bloom Local block anchored to
+// the bottom of the page, with the flexible space between them. The middle box
+// (.bloom-translationGroup) growing (flex:1) is what pushes the Bloom Local block down to the
+// bottom, so we keep that. But its shared default also sets min-height:30%, and on short
+// (landscape) back covers that floor can't shrink, forcing the bottom block off the page. We
+// drop the floor to 0 so on a short page the gap simply collapses and everything fits, while on
+// a tall page the box still expands to hold the badge at the top and the local block at the
+// bottom. (The box still grows to fit any text the user actually types there.)
+.outsideBackCover .marginBox .bloom-translationGroup {
+    min-height: 0;
+    flex: 1; // grow to fill the space between the top badge and the bottom-anchored local block
+}
+
 [data-book="outside-back-cover-branding-bottom-html"] {
     display: flex;
     flex-direction: row;
-    align-items: center;
-    gap: 10px; // space between the logo and the {personalization} text
-    border: solid #ce5546 3px;
-    border-radius: 4px;
-    background: white;
-    padding: 10px;
-    font-family: "Andika";
+    align-items: flex-start;
+    gap: 0.4cm; // space between the logo and the text
+    font-family: serif;
     font-size: 10.5pt;
     width: 9cm;
     margin-right: auto;
     margin-left: auto;
 
     img.branding {
-        height: 2cm;
-        margin-right: 10px;
+        height: 2.5cm;
+        flex-shrink: 0;
+        align-self: flex-start;
+    }
+
+    .local-text {
+        p {
+            margin: 0 0 0.6em 0;
+        }
+        p:last-child {
+            margin-bottom: 0;
+        }
     }
 }
