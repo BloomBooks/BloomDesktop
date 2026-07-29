@@ -178,7 +178,12 @@ class ReaderHighlightManager {
             );
         });
 
-        this.ensureHoverHandler(contextNode.ownerDocument ?? undefined);
+        // Only listen for hovers while there is actually something to explain.
+        if (this.paintedRanges.size > 0) {
+            this.ensureHoverHandler(contextNode.ownerDocument ?? undefined);
+        } else {
+            this.detachHoverHandler();
+        }
     }
 
     // Remove all the reader highlights, e.g. when the user turns the tool off.
@@ -186,7 +191,7 @@ class ReaderHighlightManager {
         this.rangesInProgress = new Map<string, Range[]>();
         this.paintedRanges = new Map<string, Range[]>();
         this.highlights.clearAllManagedHighlights(contextNode);
-        this.hideTip();
+        this.detachHoverHandler();
     }
 
     private ensureHoverHandler(pageDocument: Document | undefined): void {
@@ -194,10 +199,31 @@ class ReaderHighlightManager {
             return;
         }
         // A new page means a new document; the old one is being discarded along with its handler.
+        this.detachHoverHandler();
         this.hoverDocument = pageDocument;
-        this.tipElement = undefined;
         pageDocument.addEventListener("mousemove", this.handleMouseMove);
         pageDocument.addEventListener("mouseleave", this.handleMouseLeave);
+    }
+
+    // Stop listening, and take our tip out of the page. There is nothing to hover over once the
+    // highlights are gone, and leaving the handler attached would mean doing work on every mouse
+    // move for the rest of the page's life. endPass() attaches it again when there is.
+    private detachHoverHandler(): void {
+        this.hideTip();
+        this.tipElement?.remove();
+        this.tipElement = undefined;
+        if (!this.hoverDocument) {
+            return;
+        }
+        this.hoverDocument.removeEventListener(
+            "mousemove",
+            this.handleMouseMove,
+        );
+        this.hoverDocument.removeEventListener(
+            "mouseleave",
+            this.handleMouseLeave,
+        );
+        this.hoverDocument = undefined;
     }
 
     // Since there is no element to hang a tooltip on, we hit-test the mouse against the ranges we
