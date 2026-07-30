@@ -140,7 +140,20 @@ export class ToolBox {
     }
     private builtToolbox: boolean = false;
     public adjustToolListForPage(page: HTMLElement) {
-        const requiredToolId = page.getAttribute("data-tool-id");
+        let requiredToolId = page.getAttribute("data-tool-id");
+        // Books made from the Leveled/Decodable Reader templates have pages that carry
+        // data-tool-id="leveledReader" or "decodableReader". Unlike the Game tool, these
+        // reader tools don't actually require a particular page type, and honoring the
+        // attribute here would force the reader tool open and keep the book "stuck" to its
+        // original type, preventing the user from switching to (and staying on) another
+        // tool. So we ignore those values and leave the last tool shown (stored in the
+        // book's metadata) as the current tool. (BL-16615)
+        if (
+            requiredToolId === "leveledReader" ||
+            requiredToolId === "decodableReader"
+        ) {
+            requiredToolId = null;
+        }
         newToolId = requiredToolId || undefined;
 
         // This function is the main task of adjustToolListForPage. It may have to be postponed
