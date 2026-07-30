@@ -225,8 +225,14 @@ describe("All books", () => {
                 );
         }
 
+        // Capture the body element rather than the whole page. A full-page capture's height comes
+        // from documentElement.scrollHeight, which includes the last .bloom-page's escaping 15px
+        // bottom margin (previewMode.css); that trailing background is not part of what we are
+        // testing, and a change in it makes every case fail on "Image sizes do not match" -- which
+        // aborts before any diff image is written. body's box stops at the content.
         await argosScreenshot(page, imagePath.replace(".png", ""), {
             scale: "device",
+            element: "body",
         });
     }
 

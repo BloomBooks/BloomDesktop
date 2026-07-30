@@ -4130,6 +4130,113 @@ namespace BloomTests.Book
             Program.RunningHarvesterMode = false;
         }
 
+        /// <summary>
+        /// Content marked lang="*" is language-independent by design (arithmetic equations and
+        /// similar, BL-5616), so no per-language rule matches it and it used to inherit whatever
+        /// font the surrounding document supplied -- which differed between the Edit tab, the
+        /// preview and published output. It now gets L1's font like everything else (BL-16624).
+        /// </summary>
+        [Test]
+        public void BringBookUpToDate_WritesFontRuleForLanguageIndependentText()
+        {
+            var book = CreateBook();
+            book.CollectionSettings.Language1.FontName = "FontChosenForL1";
+            book.CollectionSettings.Language1.IsRightToLeft = true; // see the direction check below
+
+            book.BringBookUpToDate(new NullProgress()); // SUT
+
+            var css = RobustFile.ReadAllText(
+                Path.Combine(book.FolderPath, "defaultLangStyles.css")
+            );
+            // Sanity check: L1's own rule is there with the font we just set, so we know the file
+            // really was regenerated from current settings and the comparison below means something.
+            Assert.That(
+                css,
+                Does.Match(@"\[lang='xyz'\]\s*\{[^}]*font-family: 'FontChosenForL1'"),
+                "precondition: L1's own rule should have been written from current settings"
+            );
+            var match = System.Text.RegularExpressions.Regex.Match(
+                css,
+                @"\[lang='\*'\]\s*\{([^}]*)\}"
+            );
+            Assert.That(match.Success, Is.True, "should write a rule for lang='*'");
+            Assert.That(match.Groups[1].Value, Does.Contain("font-family: 'FontChosenForL1'"));
+            // Deliberately font-only: digits and math symbols are not the writing system's text,
+            // so we must not flip them even though L1 is right-to-left here, nor impose L1's
+            // line-breaking on them.
+            Assert.That(match.Groups[1].Value, Does.Not.Contain("direction:"));
+            Assert.That(match.Groups[1].Value, Does.Not.Contain("word-break:"));
+            // It must be scoped to content pages. An unscoped [lang='*'] rule would match directly
+            // on xmatter fields (the ISBN, the branding html blocks) and so beat the inheritance
+            // XMatterHelper deliberately gives them from the metadata language (BL-8545).
+            Assert.That(
+                css,
+                Does.Contain(
+                    ".bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) [lang='*']"
+                ),
+                "the lang='*' rule must be scoped to content pages"
+            );
+            Assert.That(
+                css,
+                Does.Not.Match(@"(?m)^\s*\[lang='\*'\]"),
+                "there must be no unscoped lang='*' rule, which would override xmatter's inherited font"
+            );
+        }
+
+        /// <summary>
+        /// The lang="*" rule must be regenerated from the current L1 font on every rewrite. The
+        /// scan in CreateOrUpdateDefaultLangStyles that preserves rules for retired languages
+        /// matches on a bare "[lang='" prefix, so without "*" being treated as already-handled it
+        /// would copy the old block forward and the rule would silently stop following L1.
+        /// </summary>
+        [Test]
+        public void BringBookUpToDate_StaleLanguageIndependentFontRule_IsRegeneratedNotPreserved()
+        {
+            var book = CreateBook();
+            book.CollectionSettings.Language1.FontName = "TheCurrentL1Font";
+            var path = Path.Combine(book.FolderPath, "defaultLangStyles.css");
+            RobustFile.WriteAllText(
+                path,
+                @"/* *** DO NOT EDIT! *** */
+
+[lang='*']
+{
+ font-family: 'SomeFontChosenLongAgo';
+}
+
+[lang='qaa']
+{
+ font-family: 'AFontForARetiredLanguage';
+}
+"
+            );
+            // Sanity check: the stale values really are in the file before we act.
+            var before = RobustFile.ReadAllText(path);
+            Assert.That(before, Does.Contain("SomeFontChosenLongAgo"));
+            Assert.That(before, Does.Contain("AFontForARetiredLanguage"));
+
+            book.BringBookUpToDate(new NullProgress()); // SUT
+
+            var after = RobustFile.ReadAllText(path);
+            Assert.That(
+                after,
+                Does.Not.Contain("SomeFontChosenLongAgo"),
+                "the lang='*' rule should have been regenerated, not carried over"
+            );
+            Assert.That(
+                after,
+                Does.Match(@"\[lang='\*'\]\s*\{[^}]*font-family: 'TheCurrentL1Font'"),
+                "the regenerated lang='*' rule should use the current L1 font"
+            );
+            // The retired-language rule is exactly what that preservation logic is for, so it must
+            // still survive -- this change must not break it.
+            Assert.That(
+                after,
+                Does.Contain("AFontForARetiredLanguage"),
+                "rules for languages no longer in the collection should still be preserved"
+            );
+        }
+
         [Test]
         public void FixBookIdAndLineageIfNeeded_WithPageTemplateSourceBasicBook_SetsMissingLineageToBasicBook()
         {

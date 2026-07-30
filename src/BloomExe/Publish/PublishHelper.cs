@@ -528,6 +528,11 @@ namespace Bloom.Publish
                 foreach (SafeXmlElement elt in page.SafeSelectNodes(".//div"))
                 {
                     StoreFontUsed(elt);
+                    // Only for ePUB: it is the one output that deletes lang="*" and so needs to
+                    // be told the font beforehand. Doing it unconditionally would leave the
+                    // attribute behind in BloomPub, where nothing consumes it.
+                    if (epubMaker != null)
+                        StoreComputedFontForLanguageIndependentText(elt);
                 }
                 //Debug.WriteLine($"Removing {toBeDeleted.Count} elements from page");
                 RemoveTempIds(page); // don't need temporary IDs any more.
@@ -750,6 +755,39 @@ namespace Bloom.Publish
             var fonts = fontFamily.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             // Fonts whose names contain spaces are quoted: remove the quotes.
             return fonts[0].Replace("\"", "");
+        }
+
+        /// <summary>
+        /// The font an element actually resolved to, recorded on the element itself so a later
+        /// step can use it after the browser is gone. See StoreComputedFontForLanguageIndependentText.
+        /// </summary>
+        internal const string kComputedFontAttr = "data-bloom-computed-font";
+
+        /// <summary>
+        /// ePUB export has to delete lang="*" attributes, because "*" is not a valid BCP 47 tag,
+        /// and it then writes the font inline so the text is not left fontless (BL-16624). Which
+        /// font is not something it can work out for itself: the answer depends on the whole
+        /// cascade, including a user's own choice, which StyleEditor stores as
+        /// `.SomeStyle[lang="*"] { font-family: X !important }` -- a rule that stops matching the
+        /// moment that attribute goes.
+        ///
+        /// We are the only part of publishing with a browser, we run before the attribute is
+        /// removed, and we have already measured this element. So record what it resolved to,
+        /// while its temp id still lets us look it up. EpubMaker.RemoveSpuriousLinks consumes the
+        /// attribute and removes it again.
+        /// </summary>
+        private void StoreComputedFontForLanguageIndependentText(SafeXmlElement elt)
+        {
+            if (elt.GetAttribute("lang") != "*")
+                return;
+            var id = elt.GetAttribute("id");
+            if (string.IsNullOrEmpty(id))
+                return;
+            if (!_mapIdToFontInfo.TryGetValue(id, out var fontInfo))
+                return; // e.g. an empty box, which the browser reports no font for; nothing to carry
+            var font = ExtractFontNameFromFontFamily(fontInfo.fontFamily);
+            if (!string.IsNullOrEmpty(font))
+                elt.SetAttribute(kComputedFontAttr, font);
         }
 
         /// <summary>

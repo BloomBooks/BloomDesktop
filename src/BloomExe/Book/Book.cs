@@ -2263,6 +2263,13 @@ namespace Bloom.Book
                 {
                     CollectionSettings.Language1Tag,
                     CollectionSettings.Language2Tag,
+                    // "*" is not a language whose rule we might need to preserve from an older
+                    // version of the book -- GetCollectionStylesCss regenerates it every time from
+                    // the current L1 font (BL-16624). Without this, the crude "[lang='" scan below
+                    // would treat it like a retired language and copy the old block forward, so the
+                    // rule would freeze at whatever font it was first written with and silently stop
+                    // following L1.
+                    "*",
                 };
                 if (!String.IsNullOrEmpty(CollectionSettings.Language3Tag))
                     languagesWeAlreadyHave.Add(CollectionSettings.Language3Tag);
@@ -3524,6 +3531,12 @@ namespace Bloom.Book
         /// <param name="dom"></param>
         internal void AddPreviewJavascript(HtmlDom dom)
         {
+            // Keep this bundle free of Bloom's UI css. It goes into book documents (preview,
+            // thumbnails, printing), so anything UI-ish it drags in gets applied to the rendered
+            // book: bloomUI.css used to come along and put the UI font stack on book text, which
+            // then broke when BL-15300 moved the matching @font-face declarations out of the
+            // bundle. These documents deliberately carry no UI font faces, so a re-leak shows up
+            // as a wrong font rather than rendering plausibly.
             dom.AddJavascriptFile("bookPreviewBundle.js".ToLocalhost());
         }
 

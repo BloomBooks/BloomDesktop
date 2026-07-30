@@ -1109,6 +1109,190 @@ namespace BloomTests.Publish.Epub
             AssertThatXmlIn.String(_page1Data).HasNoMatchForXpath("//*[@tabindex]");
         }
 
+        /// <summary>
+        /// Returns the content of the first page whose xhtml contains the given marker, or null.
+        /// Walks only pages that actually exist -- GetPageNData asserts when one doesn't, and NUnit
+        /// records that as a failure even if we catch it.
+        /// </summary>
+        private string FindPageContaining(string marker)
+        {
+            // Zip entries always use forward slashes; Path.GetDirectoryName gives backslashes on
+            // Windows, and GetEntry would then never match.
+            var dir = System.IO.Path.GetDirectoryName(_manifestFile).Replace("\\", "/");
+            for (var n = 1; ; n++)
+            {
+                if (_epub.GetEntry($"{dir}/{n}.xhtml") == null)
+                    return null; // ran out of pages
+                var data = GetPageNData(n);
+                if (data != null && data.Contains(marker))
+                    return data;
+            }
+        }
+
+        /// <summary>
+        /// "*" is not a valid BCP 47 tag, so it cannot survive into an ePUB -- but it is how Bloom
+        /// marks text deliberately in no language (arithmetic equations and the like), and
+        /// defaultLangStyles.css keys that text's font off it. Export therefore writes the font
+        /// inline before dropping the attribute. Until BL-16624 the attribute was simply deleted,
+        /// leaving this the one kind of text in an ePUB with no font of its own.
+        ///
+        /// It writes a font rather than a real language tag on purpose: tagging the text with L1
+        /// would make a book published without the vernacular still contain elements claiming to
+        /// be in it (see UserSpecifiedNoVernacular_VernacularRemoved).
+        /// </summary>
+        [Test]
+        public void LanguageIndependentText_GetsFontInlineAndLosesLangStar()
+        {
+            var book = SetupBookLong(
+                "This is some text",
+                "en",
+                extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup'><div class='bloom-editable Equation-style langStarUnderTest bloom-content1 bloom-visibility-code-on' lang='*'>1 + 1</div></div>"
+            );
+            // This fixture's collection has no L1 font configured, and with none there is nothing
+            // to write. Give it one for the duration of the test; the settings object is shared
+            // across the fixture, so put it back afterwards.
+            var savedFont = book.CollectionSettings.Language1.FontName;
+            book.CollectionSettings.Language1.FontName = "FontForLanguageIndependentText";
+            try
+            {
+                MakeEpub("output", "LanguageIndependentText_GetsFontInlineAndLosesLangStar", book);
+            }
+            finally
+            {
+                book.CollectionSettings.Language1.FontName = savedFont;
+            }
+            CheckBasicsInManifest();
+
+            var equationPage = FindPageContaining("langStarUnderTest");
+            // Sanity check: if the element never reached the ePUB, everything below would pass
+            // vacuously.
+            Assert.That(
+                equationPage,
+                Is.Not.Null,
+                "precondition: the lang='*' equation should survive into the ePUB"
+            );
+
+            // The attribute is gone -- the validator's requirement...
+            AssertThatXmlIn.String(equationPage).HasNoMatchForXpath("//*[@lang='*']");
+            // (That it was not swapped for a language claim -- which would put the vernacular back
+            // into books published without it -- is guarded by
+            // UserSpecifiedNoVernacular_VernacularRemoved.)
+            // ...but the font came across, so the text is not left to a system fallback.
+            var expectedFont = "FontForLanguageIndependentText";
+            Assert.That(
+                equationPage,
+                Does.Match(
+                    "langStarUnderTest[^>]*style=\"[^\"]*font-family: '"
+                        + System.Text.RegularExpressions.Regex.Escape(expectedFont)
+                        + "'"
+                ),
+                "the element that had lang='*' should carry L1's font inline"
+            );
+        }
+
+        /// <summary>
+        /// The font we write must be the one the book actually renders with, not merely L1's.
+        /// A user's own choice is stored by StyleEditor as a rule keyed off the very attribute we
+        /// are about to delete -- `.Equation-style[lang="*"] {...!important}` -- so nothing in the
+        /// exported file could still deliver it. PublishHelper measures the element in its browser
+        /// while the selector still matches; this test proves that measurement is what we write.
+        /// </summary>
+        [Test]
+        public void LanguageIndependentText_UserChoseAFont_EpubGetsThatFontNotL1s()
+        {
+            var userChosenFont = "FontTheUserChoseForEquations";
+            var book = SetupBookLong(
+                "This is some text",
+                "en",
+                extraContentOutsideTranslationGroup: "<div class='bloom-translationGroup'><div class='bloom-editable Equation-style langStarUnderTest bloom-content1 bloom-visibility-code-on' lang='*'>1 + 1</div></div>",
+                // Exactly the shape StyleEditor.GetOrCreateRuleForStyle writes for an editable.
+                extraHeadContent: "<style type='text/css' title='userModifiedStyles'>.Equation-style[lang=\"*\"] { font-family: "
+                    + userChosenFont
+                    + " !important; }</style>"
+            );
+            var savedFont = book.CollectionSettings.Language1.FontName;
+            book.CollectionSettings.Language1.FontName = "FontForLanguageIndependentText";
+            try
+            {
+                MakeEpub(
+                    "output",
+                    "LanguageIndependentText_UserChoseAFont_EpubGetsThatFontNotL1s",
+                    book
+                );
+            }
+            finally
+            {
+                book.CollectionSettings.Language1.FontName = savedFont;
+            }
+            CheckBasicsInManifest();
+
+            var equationPage = FindPageContaining("langStarUnderTest");
+            Assert.That(
+                equationPage,
+                Is.Not.Null,
+                "precondition: the lang='*' equation should survive into the ePUB"
+            );
+
+            // Only the element that had lang='*' should have been given a font; its siblings are
+            // the other languages of the same group and are left alone.
+            var styledTags = System
+                .Text.RegularExpressions.Regex.Matches(
+                    equationPage,
+                    "<div[^>]*langStarUnderTest[^>]*>"
+                )
+                .Cast<System.Text.RegularExpressions.Match>()
+                .Select(m => m.Value)
+                .Where(tag => tag.Contains("font-family"))
+                .ToList();
+            Assert.That(
+                styledTags.Count,
+                Is.EqualTo(1),
+                "exactly one equation element -- the one that had lang='*' -- should carry an inline font"
+            );
+            Assert.That(
+                styledTags[0],
+                Does.Contain("font-family: '" + userChosenFont + "'"),
+                "the user's font should have been measured and written inline"
+            );
+            // The point of the test: it must not have fallen back to L1's font. Without the
+            // measurement that is exactly what would happen, so check it explicitly rather than
+            // trusting the match above to have failed for the right reason.
+            Assert.That(
+                styledTags[0],
+                Does.Not.Contain("FontForLanguageIndependentText"),
+                "L1's font should not appear; the user's choice outranks it"
+            );
+            // Our own bookkeeping attribute is not part of the ePUB.
+            Assert.That(equationPage, Does.Not.Contain(PublishHelper.kComputedFontAttr));
+        }
+
+        /// <summary>
+        /// Xmatter must be left alone. Its lang="*" fields -- the ISBN, the branding blocks -- are
+        /// meant to follow the metadata language they inherit from their page div (BL-8545), so
+        /// stamping L1's font on them would break that in ePUBs just as tagging them with L1 would.
+        /// </summary>
+        [Test]
+        public void LanguageIndependentText_InXmatter_GetsNoInlineFont()
+        {
+            var book = SetupBookLong("This is some text", "en");
+            MakeEpub("output", "LanguageIndependentText_InXmatter_GetsNoInlineFont", book);
+            CheckBasicsInManifest();
+
+            // Page 1 is the front cover. Assert that rather than hunting, so this cannot quietly
+            // end up checking nothing.
+            var coverPage = GetPageNData(1);
+            Assert.That(
+                coverPage,
+                Does.Contain("bloom-frontMatter"),
+                "precondition: page 1 should be front matter"
+            );
+
+            // Nothing on it should have picked up an inline font from the lang="*" handling.
+            AssertThatXmlIn
+                .String(coverPage)
+                .HasNoMatchForXpath("//*[contains(@style,'font-family')]");
+        }
+
         [Test]
         public void StandardStyleSheets_AreRemoved()
         {
