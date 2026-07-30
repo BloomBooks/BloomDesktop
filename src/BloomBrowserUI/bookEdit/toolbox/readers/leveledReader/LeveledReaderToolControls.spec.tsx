@@ -11,6 +11,10 @@ import { LeveledReaderStats } from "./LeveledReaderToolControls";
 const kMaxWordsPerSentence = 10;
 const kMaxGlyphsPerWord = 5;
 const kMaxAverageWordsPerSentence = 9;
+// A second level, used to check that the limits are re-read when the level changes.
+// Its glyph limit is high enough that the statistic that is too large for level 1
+// is acceptable here.
+const kLevel2MaxGlyphsPerWord = 20;
 
 const bookStats = {
     levelNumber: 1,
@@ -91,6 +95,10 @@ describe("LeveledReaderStats", () => {
                     maxWordsPerSentence: kMaxWordsPerSentence,
                     maxGlyphsPerWord: kMaxGlyphsPerWord,
                     maxAverageWordsPerSentence: kMaxAverageWordsPerSentence,
+                    thingsToRemember: [""],
+                },
+                {
+                    maxGlyphsPerWord: kLevel2MaxGlyphsPerWord,
                     thingsToRemember: [""],
                 },
             ],
@@ -180,5 +188,26 @@ describe("LeveledReaderStats", () => {
         expect(
             getRow(container, "ThisPage", "PerPage").maxCell.textContent,
         ).toBe("");
+    });
+
+    it("re-reads the level's limits when the level changes", () => {
+        // The conversion dropped the tests that covered this, and the whole fix
+        // depends on the limits being current whenever we render.
+        const atLevel1 = getRow(container, "WordLengths", "MaxInBook");
+        expect(atLevel1.actualCell.classList).toContain("tooLarge");
+
+        getTheOneReaderToolsModel().setLevelNumber(2, true);
+        act(() => {
+            renderRoot(<LeveledReaderStats bookStats={bookStats} />, container);
+        });
+
+        // 6 is within level 2's much larger glyph limit, so it is no longer flagged.
+        const atLevel2 = getRow(container, "WordLengths", "MaxInBook");
+        expect(atLevel2.actualCell.textContent).toBe("6");
+        expect(atLevel2.actualCell.classList).toContain("acceptable");
+        // "this page" displays the new level's limit.
+        expect(
+            getRow(container, "WordLengths", "ThisPageLC").maxCell.textContent,
+        ).toBe(`${kLevel2MaxGlyphsPerWord}`);
     });
 });
