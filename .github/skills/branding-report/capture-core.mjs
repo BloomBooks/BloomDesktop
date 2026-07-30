@@ -235,11 +235,6 @@ const isolateExpr = (selector, index = null) => `(() => {
 })()`;
 
 // ---------- PDF rendering ----------
-export const PAPER_SIZES = {
-    Letter: { w: 8.5, h: 11 },
-    A4: { w: 8.27, h: 11.69 },
-};
-
 // Render a URL to a PDF file using Chrome's native --print-to-pdf. Chrome writes the
 // PDF straight to disk and exits on its own, so there is no CDP/WebSocket round-trip to
 // hang on. (The old CDP path called Page.printToPDF, which returns the entire PDF as one
