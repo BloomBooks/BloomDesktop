@@ -19,6 +19,29 @@ House rules:
 
 ---
 
+## 2026-07-28 — Editing branding.json needs a full Bloom restart, not just a re-stamp
+- **Cut:** After changing which slot each preset targets in a `branding.json`, rebuilding and
+  re-stamping the book (branding-report's `survey.mjs`, i.e. `BringBookUpToDate`) kept applying
+  the OLD presets — the deployed `output/browser/branding/FCH/branding.json` was correct, but
+  Bloom had the parsed settings cached in memory. Only `launcherControl.mjs --restart` picked
+  them up. The `bloom-branding` skill says "content build + reopen the book", which reads as
+  sufficient and isn't — CSS changes hot-reload, but `branding.json` does not.
+- **Idea:** Amend the `bloom-branding` skill to say `branding.json` edits require a Bloom
+  restart (CSS/asset edits don't), and ideally have branding-report warn or re-read.
+- **Context:** BL-16623, switching the FCH badge/logo between back-cover slots.
+
+## 2026-07-28 — init.sh can leave output/browser unbuilt and still exit 0
+- **Cut:** On a fresh worktree, `./init.sh` finished with exit code 0 but never produced
+  `output/browser`. Its final `pnpm run build` had failed in the typecheck gate with ~30
+  bogus `TS2305: Module '@storybook/react-vite' has no exported member 'Meta'` errors —
+  apparently a race with the parallel `pnpm install`s that had just finished, because
+  re-running `node scripts/typecheck.js` immediately afterwards passed cleanly. The failure
+  was invisible unless you looked at the log, and `go.sh` then launched a half-initialized
+  Bloom (cf. the 2026-07-24 cut below).
+- **Idea:** Make init.sh fail loudly (its `wait` swallows the build's status through the
+  pipeline), and/or have the typecheck gate not run until the installs have quiesced.
+- **Context:** BL-16623 FCH branding, on a worktree that had never been initialized.
+
 ## 2026-07-24 — killBloomProcess.mjs --help kills Bloom instead of printing usage
 - **Cut:** Running `node .github/skills/bloom-automation/killBloomProcess.mjs --help` to check
   its options killed the running Bloom (output: "Killed process IDs: 56212, 55352"). Unknown
