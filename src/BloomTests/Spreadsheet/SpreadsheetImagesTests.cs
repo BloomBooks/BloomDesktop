@@ -679,13 +679,19 @@ namespace BloomTests.Spreadsheet
 
         /// <summary>
         /// Regression test for BL-16529 (image cells too high). ResizeImageIfNecessary never
-        /// enlarges an image, so a source smaller than the (possibly DPI-scaled) thumbnail target
-        /// is embedded at its original size. The row height must be sized from the image we actually
-        /// embed, not from the larger target width; otherwise small images get a row that is much
-        /// too tall. This invariant holds regardless of the exporting machine's display scaling.
+        /// enlarges an image, so a source smaller than the (possibly DPI-scaled) thumbnail target is
+        /// embedded at its original size. The row must be sized from the thumbnail we actually embed,
+        /// not from the larger target; otherwise small images get a row that is much too tall.
+        ///
+        /// Note we assert only an upper bound (the row is not sized from the oversized target), not a
+        /// lower bound: the row height is in points, which the spreadsheet viewer does not scale for a
+        /// high-DPI display even though it scales the columns, so on a >100% display the exporter
+        /// deliberately makes the row's nominal height *smaller* than the embedded image (it is scaled
+        /// back up when displayed). A "row must be at least as tall as the image" assertion would be
+        /// wrong there. The upper bound holds regardless of the exporting machine's display scaling.
         /// </summary>
         [Test]
-        public void Export_SmallImage_RowNotTallerThanEmbeddedImage()
+        public void Export_SmallImage_RowNotSizedFromOversizedTarget()
         {
             using (var bookFolder = new TemporaryFolder("SmallImageRowHeight_Book"))
             using (var outputFolder = new TemporaryFolder("SmallImageRowHeight_Out"))
@@ -734,25 +740,29 @@ namespace BloomTests.Spreadsheet
                     // The image is anchored in the row where the exporter placed it (0-based From.Row).
                     var imageRow = worksheet.Row(picture.From.Row + 1);
 
-                    // Row height is in points; convert to pixels (72 points/inch, 96 px/inch). The
-                    // exporter adds a few pixels so the image isn't flush against the row edge.
+                    // Row height is in points; convert to its nominal pixels (72 points/inch,
+                    // 96 px/inch). The exporter adds a few pixels so the image isn't flush against the
+                    // row edge.
                     const double pointsToPixels = 96.0 / 72.0;
                     var rowHeightPx = imageRow.Height * pointsToPixels;
 
-                    // Sanity check: the row must be at least tall enough to show the whole image.
+                    // Sanity check: the row is a real, non-trivial height (it was actually set).
                     Assert.That(
                         rowHeightPx,
-                        Is.GreaterThanOrEqualTo(sourceImageHeightPx),
-                        "The row should be tall enough to display the embedded image."
+                        Is.GreaterThan(30),
+                        "The image row should have been given a real height."
                     );
-                    // The actual regression check: the row must not be dramatically taller than the
-                    // image it contains. Before the fix the row was sized from the (up to DPI-scaled)
-                    // target width, making it far taller than the small image embedded in it.
+                    // The regression check: the row must be sized from the embedded thumbnail, not the
+                    // oversized target. The un-enlarged thumbnail is the source image's height, so the
+                    // row's nominal height must not exceed that (plus a few px of padding). Before the
+                    // fix the row was sized from finalWidth*aspect (e.g. 150*154/118 = 195px for this
+                    // 118x154 image), far taller than the 154px image actually embedded.
                     Assert.That(
                         rowHeightPx,
                         Is.LessThanOrEqualTo(sourceImageHeightPx + 15),
-                        $"Row height ({rowHeightPx:0}px) is much taller than the embedded image "
-                            + $"({sourceImageHeightPx}px); small image rows should not be over-sized (BL-16529)."
+                        $"Row height ({rowHeightPx:0}px) is taller than the embedded image "
+                            + $"({sourceImageHeightPx}px), so it was sized from the oversized target "
+                            + "rather than the image actually embedded (BL-16529)."
                     );
                 }
             }
