@@ -1172,7 +1172,12 @@ namespace Bloom.web.controllers
         {
             if (string.IsNullOrEmpty(relativePath))
                 return null;
-            var path = Path.Combine(bookFolderPath, relativePath);
+            // A book's image src can still be percent-encoded, so decode our way to the real
+            // file the way the rest of Bloom does (BL-3901) instead of a plain Path.Combine.
+            // Getting this wrong doesn't just miss a file: we'd report credits:null, the AI
+            // image editor would believe the image has none, and a result derived from it would
+            // legitimately get none — losing exactly the credits this code exists to carry.
+            var path = UrlPathString.GetFullyDecodedPath(bookFolderPath, ref relativePath);
             if (!RobustFile.Exists(path))
                 return null;
 

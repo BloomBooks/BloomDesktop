@@ -567,6 +567,39 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
+        public void GetCreditsForImageFile_PercentEncodedName_StillFindsTheFile()
+        {
+            // A book's image src can arrive percent-encoded (BL-3901). If we don't decode it,
+            // the file lookup misses and we tell the AI image editor the image has no credits —
+            // so a result derived from it legitimately gets none, losing the very credits this
+            // code exists to carry. The name here has a space, which encodes to %20.
+            var name = MakePngWithCredits("my pic.png", "Ada Lovelace", "Copyright 1843 Ada");
+
+            // Sanity: the undecoded name really does not name a file, so a non-null result
+            // below can only come from the decoding.
+            Assert.That(
+                RobustFile.Exists(Path.Combine(_bookFolder.Path, "my%20pic.png")),
+                Is.False,
+                "setup: the encoded form should not exist on disk"
+            );
+            Assert.That(
+                RobustFile.Exists(Path.Combine(_bookFolder.Path, name)),
+                Is.True,
+                "setup: the decoded form should exist on disk"
+            );
+
+            var credits = AiImageEditorApi.GetCreditsForImageFile(_bookFolder.Path, "my%20pic.png");
+
+            Assert.That(
+                credits,
+                Is.Not.Null,
+                "an encoded src should still resolve to its file and yield its credits"
+            );
+            Assert.That(credits.creator, Is.EqualTo("Ada Lovelace"));
+            Assert.That(credits.copyrightNotice, Is.EqualTo("Copyright 1843 Ada"));
+        }
+
+        [Test]
         public void GetCreditsForImageFile_NoMetadata_ReturnsNull()
         {
             var name = MakePlainPng("plain.png");

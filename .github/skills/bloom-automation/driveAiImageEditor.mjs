@@ -89,11 +89,16 @@ const dumpImages = async (page) => {
         ).map((el) => {
             const isImg = el.tagName === "IMG";
             const bg = getComputedStyle(el).backgroundImage;
-            const src = isImg
-                ? el.getAttribute("src")
-                : bg && bg !== "none"
-                  ? (bg.match(/url\(["']?([^"')]+)/)?.[1] ?? "")
-                  : "";
+            // An <img> carries its url in src; a background-image element has it inside a
+            // css url(...) wrapper we have to unwrap.
+            let src;
+            if (isImg) {
+                src = el.getAttribute("src");
+            } else if (bg && bg !== "none") {
+                src = bg.match(/url\(["']?([^"')]+)/)?.[1] ?? "";
+            } else {
+                src = "";
+            }
             return {
                 tag: el.tagName.toLowerCase(),
                 src: src || "",
