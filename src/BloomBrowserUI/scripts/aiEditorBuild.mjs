@@ -13,9 +13,9 @@
 // local-checkout build/staging path and its helpers should be deleted; Bloom would then
 // just use the prebuilt dist-app/ from the installed package.
 //
-// The editor is a SEPARATE app (the `bloom-ai-image-tools` package). Bloom loads it in an
-// <iframe> at {ServerUrl}/bloom/aiImageEditor/index.html, which BloomServer serves from
-// output/browser/aiImageEditor/ (see AiImageEditorApi.GetEditorUrl).
+// The AI image editor is a SEPARATE app (the `bloom-ai-image-tools` package). Bloom loads it
+// in an <iframe> at {ServerUrl}/bloom/aiImageEditor/index.html, which BloomServer serves from
+// output/browser/aiImageEditor/ (see AiImageEditorApi.GetAiImageEditorUrl).
 //
 // Preferred source: the prebuilt dist-app/ shipped in the INSTALLED package
 // (node_modules/bloom-ai-image-tools/dist-app). That is the uniform "as installed" model.

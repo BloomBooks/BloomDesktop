@@ -4,18 +4,18 @@
 // all of the actual integration logic lives here because it is large and self-contained.
 //
 // This is the front-end half of a feature whose C# half is AiImageEditorApi.cs
-// (read that file's header for the full picture). The editor is a SEPARATE web app
+// (read that file's header for the full picture). The AI image editor is a SEPARATE web app
 // (the `bloom-ai-image-tools` package); we do not import it — we load it into an
 // <iframe> overlay. The flow:
 //   1. POST aiImageEditor/launch -> C# mints a session, makes the per-book
-//      .ai-image-editor folder, and returns the editor URL + the whole-book image
+//      .ai-image-editor folder, and returns the AI image editor URL + the whole-book image
 //      list + enumerated history + httpBase/sessionToken.
 //   2. Build a fixed overlay <div id="ai-editor-overlay"> holding an <iframe> at
 //      that URL with ?mode=bloom-iframe.
 //   3. Handshake over window.postMessage on channel "bloom-ai-image-tools": the
-//      editor posts `ready`; we post `init` (the launch reply + the right-clicked
+//      AI image editor posts `ready`; we post `init` (the launch reply + the right-clicked
 //      image as selectedBookImageId). Image bytes never ride postMessage — they go
-//      over HTTP via aiImageEditor/file; the editor references results by id.
+//      over HTTP via aiImageEditor/file; the AI image editor references results by id.
 //   4. On `commit` we POST aiImageEditor/commit; C# applies replacements to all
 //      non-current pages and returns {oldSrc,newSrc} for any on the live page, which
 //      we apply here via Bloom's changeImageByElement(). `cancel`/close just tear the overlay
@@ -58,16 +58,16 @@ export const launchAiImageEditor = (
                 name?: string;
             }>;
             // Enumerated by C# from the per-book history folder; rides through
-            // the `...launchData` spread into the editor's init payload.
+            // the `...launchData` spread into the AI image editor's init payload.
             history?: Array<{
                 id: string;
                 url: string;
                 metadata?: Record<string, unknown> | null;
             }>;
             apiKey?: string | null;
-            // Playground/demo context: the editor must disable its
+            // Playground/demo context: the AI image editor must disable its
             // "set OpenRouter API key" UI. Rides through the `...launchData`
-            // spread below into the editor's init payload.
+            // spread below into the AI image editor's init payload.
             demoOnly?: boolean;
         };
         const hostWindow = (window.top ?? window) as Window & {
@@ -81,11 +81,11 @@ export const launchAiImageEditor = (
         iframeUrl.searchParams.set("mode", "bloom-iframe");
         // Bloom (C#) enumerates every user-changeable image in the whole book
         // and supplies them as `launchData.bookImages`, each with a stable
-        // "{pageId}:{ordinal}" id the editor echoes back on commit. The host
+        // "{pageId}:{ordinal}" id the AI image editor echoes back on commit. The host
         // applies replacements book-wide in C#, so there is no per-image DOM
         // id wrangling here anymore.
 
-        // Identify the image the user actually right-clicked so the editor can
+        // Identify the image the user actually right-clicked so the AI image editor can
         // open with it already in the "Image to Edit" slot. We match by page +
         // filename rather than DOM ordinal, because the live page has extra
         // injected UI images that would throw positional indices off.
@@ -326,9 +326,9 @@ export const launchAiImageEditor = (
                                 | undefined;
                             // The server reports whether it staged every replacement;
                             // for current-page slots only this live DOM knows if the
-                            // edit actually landed. Combine both so the editor's ack
+                            // edit actually landed. Combine both so the AI image editor's ack
                             // reflects the true outcome, and always ack (even on an
-                            // apply exception) so the editor overlay can't hang.
+                            // apply exception) so the AI image editor overlay can't hang.
                             let finalOk = false;
                             let message: string | undefined;
                             let currentPageApplied = 0;
@@ -387,10 +387,9 @@ export const launchAiImageEditor = (
                     );
                     break;
                 case "saveCredentials":
-                    // Bloom owns the OpenRouter API key. When the user pastes a key
-                    // in the editor, the editor hands it up here so Bloom persists it
-                    // per-user (and supplies it on the next launch). A null apiKey
-                    // clears the stored key.
+                    // Bloom owns the OpenRouter API key. A key the user pastes into the AI
+                    // image editor is handed up here so Bloom persists it per-user (and
+                    // supplies it on the next launch). A null apiKey clears the stored key.
                     postJson(
                         "aiImageEditor/saveCredentials?session=" +
                             encodeURIComponent(launchData.sessionToken),

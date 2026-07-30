@@ -167,7 +167,7 @@ namespace BloomTests.web.controllers
         // non-server URL unchanged), so these run without a live server.
         // ------------------------------------------------------------------
 
-        // Builds the kind of URL EnumerateBookImages hands the editor: the book folder
+        // Builds the kind of URL EnumerateBookImages hands the AI image editor: the book folder
         // path plus a relative part, forward-slashed.
         private string BookUrl(string relative) =>
             _bookFolder.Path.Replace('\\', '/') + "/" + relative;
@@ -223,10 +223,11 @@ namespace BloomTests.web.controllers
         [Test]
         public void TryResolveServedUrlToBookFile_NonEditableImageFormat_Fails()
         {
-            // An svg is a real image, but the AI editor can't edit it, so it must not
+            // An svg is a real image, but the AI image editor can't edit it, so it must not
             // resolve as a reusable source (see AllowedImageExtensions).
             var svgPath = MakeFile("drawing.svg");
-            // Sanity: the file exists, so a False result is due to the format check, not absence.
+            // Sanity: the file exists, so a False result is due to the format check, not
+            // absence.
             Assert.That(File.Exists(svgPath), Is.True, "setup");
 
             var ok = AiImageEditorApi.TryResolveServedUrlToBookFile(
@@ -238,7 +239,7 @@ namespace BloomTests.web.controllers
             Assert.That(
                 ok,
                 Is.False,
-                "an svg (a format the editor cannot edit) must not resolve as a reusable source"
+                "an svg (a format the AI image editor cannot edit) must not resolve as a source"
             );
             Assert.That(resolved, Is.Null);
         }
@@ -252,7 +253,8 @@ namespace BloomTests.web.controllers
             File.WriteAllText(outsidePath, "x");
             try
             {
-                // Sanity: the target exists, so a False result is due to the guard, not absence.
+                // Sanity: the target exists, so a False result is due to the guard, not
+                // absence.
                 Assert.That(File.Exists(outsidePath), Is.True, "setup");
 
                 var ok = AiImageEditorApi.TryResolveServedUrlToBookFile(
@@ -301,8 +303,8 @@ namespace BloomTests.web.controllers
         }
 
         // ------------------------------------------------------------------
-        // TryParseIncomingId: parsing/validation of the "{pageId}:{ordinal}" slot id
-        // that the editor echoes back on commit (and which we interpolate into an XPath).
+        // TryParseIncomingId: parsing/validation of the "{pageId}:{ordinal}" slot id that the
+        // AI image editor echoes back on commit (and which we interpolate into an XPath).
         // ------------------------------------------------------------------
 
         [Test]
@@ -406,10 +408,12 @@ namespace BloomTests.web.controllers
         }
 
         // ------------------------------------------------------------------
-        // CarryCreditsToNewImageFile: an AI-generated result file has no metadata of its
-        // own, and Bloom rebuilds the data-copyright/creator/license attributes from the
-        // file's metadata, so the replaced image's credits must be written into the new
-        // file or they are lost on the next sync.
+        // EmbedCreditsInNewImageFile: an AI-generated result file has no metadata of its own,
+        // and Bloom rebuilds the data-copyright/creator/license attributes from the file's
+        // metadata, so whatever credits the result should have must be written into the new
+        // file or they are lost on the next sync. The AI image editor decides what those
+        // credits are; when it sends none, the result gets none — Bloom must never reach for
+        // the replaced image's credits, because the user may have made an entirely new image.
         // ------------------------------------------------------------------
 
         // Writes a tiny PNG into the book folder with the given embedded credits, and
@@ -448,9 +452,8 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
-        public void CarryCreditsToNewImageFile_CopiesReplacedImageCreditsIntoNewFile()
+        public void EmbedCreditsInNewImageFile_WritesTheSuppliedCreditsIntoTheFile()
         {
-            var oldName = MakePngWithCredits("old.png", "Jane Doe", "Copyright 2020 Jane Doe");
             var newName = MakePlainPng("ai-image1.png");
 
             // Sanity: the new file starts with no credits, so a non-empty result below is
@@ -462,73 +465,18 @@ namespace BloomTests.web.controllers
                 "setup: the generated file should start with no creator"
             );
 
-            AiImageEditorApi.CarryCreditsToNewImageFile(_bookFolder.Path, oldName, newName);
+            var credits = new AiImageEditorApi.ImageCredits
+            {
+                creator = "Jane Doe",
+                copyrightNotice = "Copyright 2020 Jane Doe",
+                license = "http://creativecommons.org/licenses/by/4.0/",
+            };
+
+            AiImageEditorApi.EmbedCreditsInNewImageFile(_bookFolder.Path, newName, credits);
 
             var after = Metadata.FromFile(Path.Combine(_bookFolder.Path, newName));
             Assert.That(after.Creator, Is.EqualTo("Jane Doe"));
             Assert.That(after.CopyrightNotice, Is.EqualTo("Copyright 2020 Jane Doe"));
-            Assert.That(
-                after.License,
-                Is.InstanceOf<CreativeCommonsLicense>(),
-                "the license should be carried over too"
-            );
-        }
-
-        [Test]
-        public void CarryCreditsToNewImageFile_ReplacedImageMissing_LeavesNewFileUnchanged()
-        {
-            var newName = MakePlainPng("ai-image1.png");
-
-            // Must not throw when the replaced image can't be found; the new file keeps
-            // whatever (empty) metadata it had.
-            Assert.DoesNotThrow(() =>
-                AiImageEditorApi.CarryCreditsToNewImageFile(
-                    _bookFolder.Path,
-                    "does-not-exist.png",
-                    newName
-                )
-            );
-
-            var after = Metadata.FromFile(Path.Combine(_bookFolder.Path, newName));
-            Assert.That(after.Creator, Is.Null.Or.Empty);
-        }
-
-        // ------------------------------------------------------------------
-        // Editor-supplied credits (the protocol path): the editor owns the credit decision
-        // and hands them back on commit; Bloom embeds exactly those (and only falls back to
-        // the replaced file when the editor supplies none).
-        // ------------------------------------------------------------------
-
-        [Test]
-        public void CarryCreditsToNewImageFile_EditorSuppliedCredits_TakePrecedenceOverReplacedFile()
-        {
-            // The replaced file has one set of credits; the editor supplies a DIFFERENT set (as
-            // it would after amending). The editor's choice must win over the file's.
-            var oldName = MakePngWithCredits("old.png", "Old Creator", "Copyright 2000 Old");
-            var newName = MakePlainPng("ai-image1.png");
-
-            // Sanity: the replaced file really has the OLD creator, so "New Creator" below can
-            // only come from the editor-supplied credits, not the replaced file.
-            var oldMeta = Metadata.FromFile(Path.Combine(_bookFolder.Path, oldName));
-            Assert.That(oldMeta.Creator, Is.EqualTo("Old Creator"), "setup");
-
-            var credits = new AiImageEditorApi.ImageCredits
-            {
-                creator = "New Creator",
-                copyrightNotice = "Copyright 2026 New",
-                license = "http://creativecommons.org/licenses/by/4.0/",
-            };
-
-            AiImageEditorApi.CarryCreditsToNewImageFile(
-                _bookFolder.Path,
-                oldName,
-                newName,
-                credits
-            );
-
-            var after = Metadata.FromFile(Path.Combine(_bookFolder.Path, newName));
-            Assert.That(after.Creator, Is.EqualTo("New Creator"));
-            Assert.That(after.CopyrightNotice, Is.EqualTo("Copyright 2026 New"));
             Assert.That(
                 after.License,
                 Is.InstanceOf<CreativeCommonsLicense>(),
@@ -538,7 +486,7 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
-        public void CarryCreditsToNewImageFile_EditorSuppliedCustomLicense_PreservesRightsStatement()
+        public void EmbedCreditsInNewImageFile_CustomLicense_PreservesRightsStatement()
         {
             // A rights statement with no CC URL must survive as a CustomLicense — losing it
             // would be exactly the kind of silent credit loss this whole change guards against.
@@ -549,7 +497,7 @@ namespace BloomTests.web.controllers
                 license = "All rights reserved; ask first.",
             };
 
-            AiImageEditorApi.CarryCreditsToNewImageFile(_bookFolder.Path, null, newName, credits);
+            AiImageEditorApi.EmbedCreditsInNewImageFile(_bookFolder.Path, newName, credits);
 
             var after = Metadata.FromFile(Path.Combine(_bookFolder.Path, newName));
             Assert.That(after.Creator, Is.EqualTo("Someone"));
@@ -564,35 +512,45 @@ namespace BloomTests.web.controllers
             );
         }
 
-        [Test]
-        public void CarryCreditsToNewImageFile_EmptyEditorCredits_LeavesGeneratedFileClean()
+        // Both ways the AI image editor can say "this result has no credits": no credits
+        // object at all, and one whose every field is empty.
+        [TestCase(false, TestName = "EmbedCreditsInNewImageFile_NullCredits_LeavesFileClean")]
+        [TestCase(true, TestName = "EmbedCreditsInNewImageFile_EmptyCredits_LeavesFileClean")]
+        public void EmbedCreditsInNewImageFile_NoCredits_LeavesGeneratedFileClean(
+            bool emptyRatherThanNull
+        )
         {
-            // Even though the replaced file HAS credits, an empty credits object from the editor
-            // means "this result has no credits" and must win: nothing is copied from the file.
+            // The image being replaced HAS credits, and used to be Bloom's fallback source.
+            // It must not be: the user may have edited that illustration for a while and then
+            // made an entirely new image, which is not entitled to the old one's credits.
             var oldName = MakePngWithCredits("old.png", "Jane Doe", "Copyright 2020 Jane Doe");
             var newName = MakePlainPng("ai-image1.png");
 
-            AiImageEditorApi.CarryCreditsToNewImageFile(
+            // Sanity: the replaced image really does have credits that could leak.
+            var oldMeta = Metadata.FromFile(Path.Combine(_bookFolder.Path, oldName));
+            Assert.That(oldMeta.Creator, Is.EqualTo("Jane Doe"), "setup");
+
+            AiImageEditorApi.EmbedCreditsInNewImageFile(
                 _bookFolder.Path,
-                oldName,
                 newName,
-                new AiImageEditorApi.ImageCredits()
+                emptyRatherThanNull ? new AiImageEditorApi.ImageCredits() : null
             );
 
             var after = Metadata.FromFile(Path.Combine(_bookFolder.Path, newName));
             Assert.That(
                 after.Creator,
                 Is.Null.Or.Empty,
-                "empty editor credits must not fall back to the replaced file's credits"
+                "no credits from the AI image editor means no credits on the result"
             );
             Assert.That(after.CopyrightNotice, Is.Null.Or.Empty);
         }
 
         [Test]
-        public void GetCreditsForImageFile_RoundTripsEmbeddedCreditsForTheEditor()
+        public void GetCreditsForImageFile_RoundTripsEmbeddedCreditsForTheAiImageEditor()
         {
-            // The outbound half: what EnumerateBookImages hands the editor must reflect the
-            // file's embedded credits, so a result derived from the image can carry them.
+            // The outbound half: what EnumerateBookImages hands the AI image editor must
+            // reflect the file's embedded credits, so a result derived from the image can
+            // carry them.
             var name = MakePngWithCredits("pic.png", "Ada Lovelace", "Copyright 1843 Ada");
 
             var credits = AiImageEditorApi.GetCreditsForImageFile(_bookFolder.Path, name);
@@ -603,7 +561,7 @@ namespace BloomTests.web.controllers
             Assert.That(
                 credits.license,
                 Does.Contain("creativecommons.org"),
-                "the CC license URL should travel to the editor as the license string"
+                "the CC license URL should travel to the AI image editor as the license string"
             );
         }
 
