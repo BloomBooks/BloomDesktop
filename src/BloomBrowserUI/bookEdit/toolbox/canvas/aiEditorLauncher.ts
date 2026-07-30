@@ -257,9 +257,24 @@ export const launchAiImageEditor = (
                       payload?: {
                           level?: string;
                           message?: string;
+                          // We relay this array to C# as-is, so every field the AI
+                          // image editor sends is declared here even though nothing
+                          // on this side reads them. Rebuilding the array field by
+                          // field instead of passing it through would silently drop
+                          // `credits`, and the result would lose its credits — the
+                          // bug this whole feature exists to prevent.
                           replacements?: Array<{
                               incomingId?: string;
                               resultId?: string;
+                              sourceUrl?: string;
+                              credits?: {
+                                  copyrightNotice?: string;
+                                  creator?: string;
+                                  license?: string;
+                                  attributionUrl?: string;
+                                  collectionName?: string;
+                                  collectionUri?: string;
+                              } | null;
                           }>;
                           apiKey?: string | null;
                       };
