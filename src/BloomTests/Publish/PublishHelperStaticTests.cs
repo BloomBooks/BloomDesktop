@@ -90,5 +90,93 @@ namespace BloomTests.Publish
                 1
             );
         }
+
+        /// <summary>
+        /// A font that cannot be embedded is swapped for the default everywhere it is named, and
+        /// that has to include an element's own style attribute. ePUB export writes the font for
+        /// language-independent text there (BL-16624), and until this was added that one
+        /// declaration escaped the substitution and named a font the book never packaged.
+        /// </summary>
+        [Test]
+        public void FixXmlDomReferencesForBadFonts_ReplacesBadFontInInlineStyle()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(
+                @"<html><head>
+    <style type='text/css' title='userModifiedStyles'>.Equation-style[lang=""*""] { font-family: NotLicensed !important; }</style>
+</head><body>
+    <div id='equation' style=""text-align: center; font-family: 'NotLicensed'"">1 + 1</div>
+    <div id='quoteless' style=""font-family: NotLicensed"">2 + 2</div>
+    <div id='innocent' style=""font-family: 'PerfectlyFine'"">3 + 3</div>
+    <div id='nofont' style=""text-align: center"">4 + 4</div>
+</body></html>"
+            );
+            // Sanity check the starting state, so this cannot pass without the substitution
+            // actually happening.
+            Assert.That(
+                dom.SelectSingleNode("//div[@id='equation']").GetAttribute("style"),
+                Does.Contain("NotLicensed"),
+                "precondition: the equation should start out naming the bad font"
+            );
+
+            var fixedSomething = PublishHelper.FixXmlDomReferencesForBadFonts(
+                dom,
+                "Andika",
+                new HashSet<string> { "NotLicensed" }
+            );
+
+            Assert.That(fixedSomething, Is.True);
+            // The bad font is gone from the inline styles, quoted or not, and the rest of each
+            // style attribute survives.
+            Assert.That(
+                dom.SelectSingleNode("//div[@id='equation']").GetAttribute("style"),
+                Is.EqualTo("text-align: center; font-family: 'Andika'")
+            );
+            Assert.That(
+                dom.SelectSingleNode("//div[@id='quoteless']").GetAttribute("style"),
+                Is.EqualTo("font-family: 'Andika'")
+            );
+            // Elements naming a different font, or no font, are left exactly as they were.
+            Assert.That(
+                dom.SelectSingleNode("//div[@id='innocent']").GetAttribute("style"),
+                Is.EqualTo("font-family: 'PerfectlyFine'")
+            );
+            Assert.That(
+                dom.SelectSingleNode("//div[@id='nofont']").GetAttribute("style"),
+                Is.EqualTo("text-align: center")
+            );
+            // The userModifiedStyles element is still handled too.
+            Assert.That(
+                dom.SelectSingleNode("//style").InnerXml,
+                Does.Contain("font-family: Andika !important;")
+            );
+        }
+
+        /// <summary>
+        /// With no bad font present there is nothing to do, and in particular we must not report
+        /// having changed something -- callers save the file only when we say we did.
+        /// </summary>
+        [Test]
+        public void FixXmlDomReferencesForBadFonts_NoBadFontPresent_ReportsNoChange()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(
+                @"<html><head></head><body>
+    <div id='equation' style=""font-family: 'PerfectlyFine'"">1 + 1</div>
+</body></html>"
+            );
+
+            var fixedSomething = PublishHelper.FixXmlDomReferencesForBadFonts(
+                dom,
+                "Andika",
+                new HashSet<string> { "NotLicensed" }
+            );
+
+            Assert.That(fixedSomething, Is.False);
+            Assert.That(
+                dom.SelectSingleNode("//div[@id='equation']").GetAttribute("style"),
+                Is.EqualTo("font-family: 'PerfectlyFine'")
+            );
+        }
     }
 }

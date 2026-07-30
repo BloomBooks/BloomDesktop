@@ -1940,7 +1940,8 @@ namespace Bloom.Publish
         }
 
         /// <summary>
-        /// Fix the userModifiedStyles in the HTML DOM to replace any fonts listed in badFonts with the defaultFont
+        /// Fix the font references in the HTML DOM -- both the userModifiedStyles element and any
+        /// inline style attributes -- replacing any fonts listed in badFonts with the defaultFont
         /// value.  Note that ePUB uses namespaces in its XHTML files while BloomPub does not use namespaces.
         /// </summary>
         /// <returns><c>true</c> if any references for bad fonts were fixed, <c>false</c> otherwise.</returns>
@@ -1952,6 +1953,11 @@ namespace Bloom.Publish
             string nsPrefix = ""
         ) // these two arguments needed for processing ePUB files.
         {
+            var fixedSomething = FixInlineStyleReferencesForBadFonts(
+                bookDoc,
+                defaultFont,
+                badFonts
+            );
             // Now for styles defined in the dom...
             var xpath =
                 $"//{nsPrefix}head/{nsPrefix}style[@type='text/css' and @title='userModifiedStyles']";
@@ -1977,10 +1983,58 @@ namespace Bloom.Publish
                 if (cssText != cssTextOrig)
                 {
                     userStylesNode.InnerXml = cssText;
-                    return true;
+                    fixedSomething = true;
                 }
             }
-            return false;
+            return fixedSomething;
+        }
+
+        /// <summary>
+        /// Replace any badFonts named by an element's own style attribute with defaultFont.
+        /// </summary>
+        /// <remarks>
+        /// ePUB export writes the font for language-independent (lang="*") text straight onto the
+        /// element, because the attribute its css rule keys off cannot survive into an ePUB
+        /// (BL-16624). That declaration has to take part in this substitution like every other font
+        /// reference; otherwise the one bit of text we just gave a font to would go on naming a
+        /// font the book is not allowed to package, and a reader would render it in whatever it
+        /// happened to have. Found by Devin on PR #8122.
+        /// </remarks>
+        private static bool FixInlineStyleReferencesForBadFonts(
+            SafeXmlDocument bookDoc,
+            string defaultFont,
+            HashSet<string> badFonts
+        )
+        {
+            var fixedSomething = FixInlineStyleReferencesForBadFonts(
+                bookDoc,
+                defaultFont,
+                badFonts
+            );
+            // No namespace prefix needed: "*" matches an element in any namespace, and an
+            // unprefixed attribute is in none.
+            foreach (var elt in bookDoc.SafeSelectNodes("//*[@style]").Cast<SafeXmlElement>())
+            {
+                var styleOrig = elt.GetAttribute("style");
+                if (string.IsNullOrEmpty(styleOrig) || !styleOrig.Contains("font-family"))
+                    continue;
+                var style = styleOrig;
+                foreach (var font in badFonts)
+                {
+                    // The font name may or may not be quoted, and the declaration may or may not
+                    // be the last one in the attribute, so do not require a trailing semicolon.
+                    var regex = new System.Text.RegularExpressions.Regex(
+                        $"font-family:\\s*(['\"]?){System.Text.RegularExpressions.Regex.Escape(font)}\\1"
+                    );
+                    style = regex.Replace(style, $"font-family: '{defaultFont}'");
+                }
+                if (style != styleOrig)
+                {
+                    elt.SetAttribute("style", style);
+                    fixedSomething = true;
+                }
+            }
+            return fixedSomething;
         }
 
         public static async Task ReportInvalidFontsAsync(
