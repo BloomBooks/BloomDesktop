@@ -69,8 +69,17 @@ const bloomPage = (browser) =>
                 !p.url().startsWith("devtools://"),
         );
 const contentFrame = (page) => page.frames().find((f) => f.name() === "page");
+// The editor overlay's url depends on where the editor came from: its own Vite dev server
+// (./go.sh --with bloom-ai-image-tools=<path>) or the built dist-app BloomServer serves at
+// /bloom/aiImageEditor/index.html. Recognize both, so this driver works on a plain ./go.sh run.
 const editorFrame = (page) =>
-    page.frames().find((f) => f.url().includes("localhost:3000"));
+    page
+        .frames()
+        .find(
+            (f) =>
+                f.url().includes("localhost:3000") ||
+                f.url().includes("/aiImageEditor/"),
+        );
 
 const dumpImages = async (page) => {
     const f = contentFrame(page);
@@ -122,8 +131,7 @@ const openEditorOverlay = async (page) => {
         await page.waitForTimeout(500);
         ef = editorFrame(page);
     }
-    if (!ef)
-        throw new Error("editor overlay frame (localhost:3000) never appeared");
+    if (!ef) throw new Error("editor overlay frame never appeared");
     await ef.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(1500); // let the ready/init handshake settle
     return ef;
@@ -131,10 +139,20 @@ const openEditorOverlay = async (page) => {
 
 // Editor-UI recipe mirrors bloom-ai-image-tools/tests/bloom-host-harness.spec.ts.
 const dummyEditAndCommit = async (ef, page) => {
-    await ef.getByRole("button", { name: /Enhance/i }).click();
-    await ef.getByText("Custom Edit", { exact: true }).click();
+    // .first(): the editor has more than one control matching /Enhance/i (the section header
+    // and a tool inside it); the header comes first and is the one that expands the section.
+    await ef
+        .getByRole("button", { name: /Enhance/i })
+        .first()
+        .click();
+    // The tool button's text is its name FOLLOWED BY its description ("Custom EditEdit the
+    // image, optionally with additional…"), so match on a leading-anchored name, not exact text.
+    await ef
+        .getByRole("button", { name: /^Custom Edit/ })
+        .first()
+        .click();
     await ef.getByTestId("tool-model-picker-custom").click();
-    await ef.getByText("Local Dummy (No AI)").click();
+    await ef.getByText("Local Dummy (No AI)").first().click();
     await ef.locator("body").press("Escape");
     await ef.getByTestId("input-prompt").fill("Add a dummy banner");
     await ef.getByRole("button", { name: /Apply Changes/i }).click();
@@ -185,14 +203,23 @@ try {
         const ef = await openEditorOverlay(page);
         log("editor opened:", ef.url());
         await dummyEditAndCommit(ef, page);
-        await page.screenshot({ path: shot });
+        // The screenshot is a nicety and it does sometimes time out on a page still
+        // rethinking after the commit — don't let it swallow the "after" report, which is
+        // the whole point of the run.
+        let shotTaken = false;
+        try {
+            await page.screenshot({ path: shot, timeout: 15000 });
+            shotTaken = true;
+        } catch (e) {
+            log("screenshot failed (continuing):", e.message.split("\n")[0]);
+        }
         log(
             "after :",
             JSON.stringify(
                 (await dumpImages(page)).filter((i) => i.inCanvasElement),
             ),
         );
-        log("screenshot ->", shot);
+        if (shotTaken) log("screenshot ->", shot);
     } else {
         log(
             `Unknown command "${command}". Use: frames | images | credits | dummy-edit`,

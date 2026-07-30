@@ -184,3 +184,29 @@ brand-new worktree (`Version6.4-2`). Two things blocked that, neither documented
 
 Worth writing down somewhere: the minimum steps to make a new worktree test-capable, and
 whether an agent may run a one-time front-end build for that purpose.
+
+## 2026-07-30 — The AI-editor CDP driver breaks on editor-UI drift, silently
+
+`driveAiImageEditor.mjs dummy-edit` drives the `bloom-ai-image-tools` overlay by
+role/text selectors copied from that repo's own e2e spec. Two of them had drifted since
+they were written, and each failure is a 30-second Playwright timeout naming a selector,
+with no hint that the UI simply changed shape:
+
+- `getByText("Custom Edit", { exact: true })` — the tool button's text is now the name
+  *followed by its description* ("Custom EditEdit the image, optionally with additional…"),
+  so exact-text never matches. Fixed to `getByRole("button", {name: /^Custom Edit/})`.
+- `getByRole("button", {name: /Enhance/i})` now resolves to two elements (strict-mode
+  violation). Fixed with `.first()`.
+
+Also, `editorFrame` only recognized the editor at `localhost:3000`, so the driver worked
+*only* under `./go.sh --with bloom-ai-image-tools=<path>` and not on a plain `./go.sh`,
+where BloomServer serves the built dist-app at `/bloom/aiImageEditor/index.html`. Fixed to
+accept both.
+
+**Idea:** these selectors are a cross-repo contract with no test on either side. Either
+give the editor stable `data-testid`s for the tool tiles and category headers (it already
+has them for the model picker, prompt, and commit button — those did NOT drift), or have
+the editor repo publish its host-harness selectors so this driver can import rather than
+copy them.
+
+**Context:** BL-16603, verifying the credits fix end-to-end against a real Bloom.

@@ -17,8 +17,10 @@
 //      image as selectedBookImageId). Image bytes never ride postMessage — they go
 //      over HTTP via aiImageEditor/file; the AI image editor references results by id.
 //   4. On `commit` we POST aiImageEditor/commit; C# applies replacements to all
-//      non-current pages and returns {oldSrc,newSrc} for any on the live page, which
-//      we apply here via Bloom's changeImageByElement(). `cancel`/close just tear the overlay
+//      non-current pages and returns {oldSrc,newSrc,copyright,creator,license} for any on
+//      the live page, which we apply here via Bloom's changeImageByElement(). The credits
+//      come from the host because it read them off the new image file; see the comment at
+//      the changeImageByElement call. `cancel`/close just tear the overlay
 //      down. (There is intentionally no C#->iframe message channel; init flows from
 //      here, the overlay JS, because only the browser can postMessage to the iframe.)
 
@@ -196,6 +198,11 @@ export const launchAiImageEditor = (
                 isCurrentPage?: boolean;
                 oldSrc?: string;
                 newSrc?: string;
+                // The data-copyright/data-creator/data-license the new file's embedded
+                // metadata calls for, as the host read them back off that file.
+                copyright?: string;
+                creator?: string;
+                license?: string;
             }>,
             onApplied?: () => void,
         ): { applied: number; expected: number } => {
@@ -231,9 +238,15 @@ export const launchAiImageEditor = (
             pairs.forEach(({ replacement: r, element: target }) => {
                 changeImageByElement(target, {
                     src: r.newSrc as string,
-                    creator: target.getAttribute("data-creator") || "",
-                    copyright: target.getAttribute("data-copyright") || "",
-                    license: target.getAttribute("data-license") || "",
+                    // Take the credits from the host, which read them off the new image
+                    // file. Reading them off `target` instead would carry the REPLACED
+                    // image's credits forward, so the page would go on showing credits
+                    // (and no "missing information" indicator) for a new image that has
+                    // none — until the next book-up-to-date pass re-derived them from the
+                    // file and they silently vanished (BL-16603).
+                    creator: r.creator ?? "",
+                    copyright: r.copyright ?? "",
+                    license: r.license ?? "",
                     // The AI commit applies replacements book-wide in C#
                     // (saved directly, not undoable), so don't register a
                     // separate per-image undo for the current-page piece.
@@ -342,6 +355,9 @@ export const launchAiImageEditor = (
                                           isCurrentPage?: boolean;
                                           oldSrc?: string;
                                           newSrc?: string;
+                                          copyright?: string;
+                                          creator?: string;
+                                          license?: string;
                                       }>;
                                   }
                                 | undefined;

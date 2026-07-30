@@ -9,6 +9,7 @@ using NUnit.Framework;
 using SIL.Code;
 using SIL.Core.ClearShare;
 using SIL.IO;
+using SIL.Progress;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
@@ -575,6 +576,84 @@ namespace BloomTests.web.controllers
                 Is.Null,
                 "an image with no embedded metadata should yield no credits object"
             );
+        }
+
+        // ------------------------------------------------------------------
+        // ReadCreditAttributes: what a current-page replacement sends the front-end to put in
+        // data-copyright/data-creator/data-license. The front-end used to copy those attributes
+        // off the element being replaced, so a credit-less new image inherited the old image's
+        // credits in the DOM: the edit tab showed no "missing information" indicator even though
+        // the file (and the credits dialog) had none (BL-16603).
+        // ------------------------------------------------------------------
+
+        [Test]
+        public void ReadCreditAttributes_ReadsThemFromTheFilesEmbeddedMetadata()
+        {
+            var name = MakePngWithCredits("pic.png", "Ada Lovelace", "Copyright 1843 Ada");
+
+            var attributes = AiImageEditorApi.ReadCreditAttributes(_bookFolder.Path, name);
+
+            Assert.That(attributes.creator, Is.EqualTo("Ada Lovelace"));
+            Assert.That(attributes.copyright, Is.EqualTo("Copyright 1843 Ada"));
+            Assert.That(
+                attributes.license,
+                Is.EqualTo("cc-by"),
+                "data-license holds the short ClearShare token, not the license URL"
+            );
+        }
+
+        [Test]
+        public void ReadCreditAttributes_NoMetadata_ReturnsEmptyStrings()
+        {
+            // The case that made the bug visible: an AI-generated result with no credits. Empty
+            // strings (not nulls) are what the attributes must end up holding, because an empty
+            // data-copyright is what makes the edit tab show "missing information".
+            var name = MakePlainPng("ai-image1.png");
+
+            var attributes = AiImageEditorApi.ReadCreditAttributes(_bookFolder.Path, name);
+
+            Assert.That(attributes.copyright, Is.Empty);
+            Assert.That(attributes.creator, Is.Empty);
+            Assert.That(attributes.license, Is.Empty);
+        }
+
+        [Test]
+        public void ReadCreditAttributes_MissingFile_ReturnsEmptyStrings()
+        {
+            var attributes = AiImageEditorApi.ReadCreditAttributes(
+                _bookFolder.Path,
+                "no-such-file.png"
+            );
+
+            Assert.That(attributes.copyright, Is.Empty);
+            Assert.That(attributes.creator, Is.Empty);
+            Assert.That(attributes.license, Is.Empty);
+        }
+
+        [Test]
+        public void ReadCreditAttributes_MatchesWhatBloomsOwnUpdaterWouldWrite()
+        {
+            // The point of this method is that a current-page element (updated by the
+            // front-end from these values) says the same thing as an off-page element
+            // (updated by ImageUpdater) and as the next book-up-to-date pass. Pin that
+            // agreement down rather than trusting the two to stay in step by inspection.
+            var name = MakePngWithCredits("pic.png", "Ada Lovelace", "Copyright 1843 Ada");
+            var img = MakeImgWithClass(null); // its src is "pic.png", the file we just made
+
+            ImageUpdater.UpdateImgMetadataAttributesToMatchImage(
+                _bookFolder.Path,
+                img,
+                new NullProgress()
+            );
+
+            // Sanity: the updater really did put something there, so an agreeing pair below
+            // isn't just two empty results.
+            Assert.That(img.GetAttribute("data-creator"), Is.EqualTo("Ada Lovelace"), "setup");
+
+            var attributes = AiImageEditorApi.ReadCreditAttributes(_bookFolder.Path, name);
+            Assert.That(attributes.copyright, Is.EqualTo(img.GetAttribute("data-copyright")));
+            Assert.That(attributes.creator, Is.EqualTo(img.GetAttribute("data-creator")));
+            Assert.That(attributes.license, Is.EqualTo(img.GetAttribute("data-license")));
         }
     }
 }

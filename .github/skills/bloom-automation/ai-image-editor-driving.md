@@ -90,7 +90,8 @@ await ef.getByTestId("bloom-host-commit-current-result").click(); // posts commi
 ```
 
 Commit split: off-page slots are applied + saved in C# (`HandleCommit`); the **current page**
-is returned as `{oldSrc,newSrc}` and applied by `aiEditorLauncher.ts` via `changeImageByElement`
+is returned as `{oldSrc,newSrc,copyright,creator,license}` and applied by `aiEditorLauncher.ts`
+via `changeImageByElement`
 on the live DOM, which then fires `common/saveChangesAndRethinkPageEvent` to persist it (you'll
 see the shell URL gain a `?pageSrc=…` as the page rethinks).
 
@@ -103,7 +104,10 @@ node .github/skills/bloom-automation/driveAiImageEditor.mjs --http-port 8092 dum
 Then confirm three independent surfaces agree:
 
 1. **Live DOM** — `… images` shows the canvas image's `src` = the new file, with
-   `data-copyright/creator/license` intact.
+   `data-copyright/creator/license` matching what the **new file** carries (surface 3), not
+   what the replaced image had. These attributes come from the commit reply, not from the
+   element being replaced: copying them forward is BL-16603, where the page kept showing
+   credits (and no "missing information" indicator) for an image that had none.
 2. **Storage on disk** — the book's main `*.htm` (e.g. `<book>/<name>.htm`) `coverImage`/img
    now references the **new** file with the credit attributes. If storage still shows the *old*
    file, the current-page save didn't fire (the original stale-storage bug: editor reopens on

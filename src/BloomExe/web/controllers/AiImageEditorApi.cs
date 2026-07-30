@@ -13,6 +13,7 @@ using Bloom.SafeXml;
 using Newtonsoft.Json;
 using SIL.Core.ClearShare;
 using SIL.IO;
+using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 
@@ -69,7 +70,8 @@ namespace Bloom.web.controllers
     /// COMMIT SPLIT
     ///   Off-page images are edited directly in the whole-book DOM here and saved. The
     ///   currently-open page is owned by the live browser, so those replacements are
-    ///   returned as {oldSrc,newSrc} for the overlay JS to apply via Bloom's changeImage().
+    ///   returned as {oldSrc,newSrc,copyright,creator,license} for the overlay JS to apply via
+    ///   Bloom's changeImage().
     ///
     /// AI IMAGE EDITOR REPO: bloom-ai-image-tools — App.tsx (mode=bloom-iframe),
     ///   services/host/BloomHostBridge.ts (createIframeBloomHostBridge),
@@ -585,6 +587,23 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// The three data-* attributes Bloom mirrors on an image element from the image file's
+        /// embedded metadata. Not the same thing as <see cref="ImageCredits"/>: this is the
+        /// small subset the edit-tab DOM carries, in the DOM's own spelling (a license here is
+        /// its short ClearShare token, e.g. "cc-by", not the URL the AI image editor uses), and
+        /// every field is a string, never null, because that is what the attributes hold.
+        /// Sent to the front-end for a current-page replacement, which is the one slot this
+        /// class can't write itself. Property names are the wire (JSON) names, matching
+        /// PageEditingModel.ImageInfoForJavascript, which the front-end already consumes.
+        /// </summary>
+        internal class ImageCreditAttributes
+        {
+            public string copyright { get; set; }
+            public string creator { get; set; }
+            public string license { get; set; }
+        }
+
+        /// <summary>
         /// Enumerates every image the user is allowed to change across the whole book — all
         /// pages including front cover and xmatter, including empty placeholder slots —
         /// excluding only branding and license images. Each entry is a reference (id +
@@ -797,6 +816,7 @@ namespace Bloom.web.controllers
                     out var isCurrentPage,
                     out var oldSrc,
                     out var newSrc,
+                    out var creditAttributes,
                     out var pageNeedingDataDivSync
                 );
                 results.Add(
@@ -808,6 +828,11 @@ namespace Bloom.web.controllers
                         isCurrentPage,
                         oldSrc,
                         newSrc,
+                        // Only set for a current-page slot, the one case where the front-end
+                        // (not this code) writes the element's mirrored credit attributes.
+                        copyright = creditAttributes?.copyright,
+                        creator = creditAttributes?.creator,
+                        license = creditAttributes?.license,
                     }
                 );
                 if (applied)
@@ -858,9 +883,10 @@ namespace Bloom.web.controllers
         /// Applies one replacement to the slot named by incomingId ("{pageId}:{ordinal}"),
         /// copying the new image bytes (from history or a reused book file) into the book
         /// folder under a fresh name. An off-page slot is edited here in the storage DOM
-        /// (caller saves); a current-page slot is left untouched — we return oldSrc/newSrc
-        /// (via the out params) for the front-end to apply to the live DOM. Returns false
-        /// with <paramref name="error"/> set when the replacement can't be applied.
+        /// (caller saves); a current-page slot is left untouched — we return oldSrc/newSrc and
+        /// the new file's <paramref name="creditAttributes"/> (via the out params) for the
+        /// front-end to apply to the live DOM. Returns false with <paramref name="error"/> set
+        /// when the replacement can't be applied.
         /// </summary>
         private bool TryApplyReplacement(
             Bloom.Book.Book book,
@@ -872,6 +898,7 @@ namespace Bloom.web.controllers
             out bool isCurrentPage,
             out string oldSrc,
             out string newSrc,
+            out ImageCreditAttributes creditAttributes,
             out SafeXmlElement pageForDataDivSync
         )
         {
@@ -879,6 +906,7 @@ namespace Bloom.web.controllers
             isCurrentPage = false;
             oldSrc = null;
             newSrc = null;
+            creditAttributes = null;
             pageForDataDivSync = null;
 
             if (replacement == null || string.IsNullOrEmpty(replacement.incomingId))
@@ -993,16 +1021,31 @@ namespace Bloom.web.controllers
             if (!string.IsNullOrEmpty(replacement.resultId))
                 EmbedCreditsInNewImageFile(book.FolderPath, newFileName, replacement.credits);
 
+            // Bloom mirrors an image file's IP metadata on the element as data-copyright/
+            // data-creator/data-license, and the edit tab's credits indicator reads
+            // data-copyright to decide whether to show "missing information". Those attributes
+            // describe the OLD file, so they have to be re-derived from the new one; carrying
+            // them forward would leave the page claiming credits the new file doesn't have
+            // (BL-16603).
             if (isCurrentPage)
             {
                 // Leave the live (current) page to the front-end: it will call Bloom's
-                // changeImage() with newSrc so the canvas + normal save flow handle it.
+                // changeImage() with newSrc and these attributes so the canvas + normal save
+                // flow handle it.
+                creditAttributes = ReadCreditAttributes(book.FolderPath, newFileName);
                 return true;
             }
 
             HtmlDom.SetImageElementUrl(
                 element,
                 UrlPathString.CreateFromUnencodedString(newFileName)
+            );
+            // Now that the element points at the new file, Bloom's own updater can re-derive
+            // the mirrored attributes for us.
+            ImageUpdater.UpdateImgMetadataAttributesToMatchImage(
+                book.FolderPath,
+                element,
+                new NullProgress()
             );
 
             if (element.HasAttribute("data-book"))
@@ -1155,6 +1198,51 @@ namespace Bloom.web.controllers
                 attributionUrl = meta.AttributionUrl,
                 collectionName = meta.CollectionName,
                 collectionUri = meta.CollectionUri,
+            };
+        }
+
+        /// <summary>
+        /// Reads an image file's embedded metadata into the three attribute values Bloom mirrors
+        /// on the element (data-copyright/data-creator/data-license). Mirrors what
+        /// ImageUpdater.UpdateImgMetadataAttributesToMatchImage would write, so a current-page
+        /// element the front-end updates ends up saying exactly what the equivalent off-page
+        /// element does — and what the next book-up-to-date pass would say. A missing or
+        /// unreadable file yields empty strings; the updater removes the attributes outright in
+        /// that case, which comes to the same thing for every reader (they all treat an absent
+        /// attribute and an empty one alike). We can't actually get there anyway — the caller
+        /// has just copied the file into place. Internal for testing.
+        /// </summary>
+        internal static ImageCreditAttributes ReadCreditAttributes(
+            string bookFolderPath,
+            string fileName
+        )
+        {
+            var none = new ImageCreditAttributes
+            {
+                copyright = "",
+                creator = "",
+                license = "",
+            };
+            var path = Path.Combine(bookFolderPath, fileName);
+            if (!RobustFile.Exists(path))
+                return none;
+            Metadata meta;
+            try
+            {
+                meta = RobustFileIO.MetadataFromFile(path);
+            }
+            catch (Exception)
+            {
+                return none;
+            }
+            if (meta == null)
+                return none;
+            return new ImageCreditAttributes
+            {
+                copyright = meta.CopyrightNotice ?? "",
+                creator = meta.Creator ?? "",
+                // A NullLicense stringifies to "", so an image with no license gets "".
+                license = meta.License?.ToString() ?? "",
             };
         }
 
