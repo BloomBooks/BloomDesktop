@@ -1151,8 +1151,11 @@ namespace BloomTests.Publish.Epub
             // This fixture's collection has no L1 font configured, and with none there is nothing
             // to write. Give it one for the duration of the test; the settings object is shared
             // across the fixture, so put it back afterwards.
+            // It has to be a font we can actually embed (ABeeZee ships with Bloom): a made-up name
+            // would be treated as unusable and swapped for the default on the way out, which would
+            // tell us nothing about which font we chose.
             var savedFont = book.CollectionSettings.Language1.FontName;
-            book.CollectionSettings.Language1.FontName = "FontForLanguageIndependentText";
+            book.CollectionSettings.Language1.FontName = "ABeeZee";
             try
             {
                 MakeEpub("output", "LanguageIndependentText_GetsFontInlineAndLosesLangStar", book);
@@ -1178,15 +1181,19 @@ namespace BloomTests.Publish.Epub
             // into books published without it -- is guarded by
             // UserSpecifiedNoVernacular_VernacularRemoved.)
             // ...but the font came across, so the text is not left to a system fallback.
-            var expectedFont = "FontForLanguageIndependentText";
             Assert.That(
                 equationPage,
-                Does.Match(
-                    "langStarUnderTest[^>]*style=\"[^\"]*font-family: '"
-                        + System.Text.RegularExpressions.Regex.Escape(expectedFont)
-                        + "'"
-                ),
+                Does.Match("langStarUnderTest[^>]*style=\"[^\"]*font-family: 'ABeeZee'"),
                 "the element that had lang='*' should carry L1's font inline"
+            );
+            // And it is a font the reader will actually have: it was embedded in the book.
+            Assert.That(
+                ExportEpubTestsBaseClass.GetZipContent(
+                    _epub,
+                    "content/" + EpubMaker.kCssFolder + "/fonts.css"
+                ),
+                Does.Contain("ABeeZee"),
+                "the font written inline should be one the ePUB embeds"
             );
         }
 
@@ -1200,7 +1207,10 @@ namespace BloomTests.Publish.Epub
         [Test]
         public void LanguageIndependentText_UserChoseAFont_EpubGetsThatFontNotL1s()
         {
-            var userChosenFont = "FontTheUserChoseForEquations";
+            // Two fonts that both ship with Bloom, so both survive the "unusable font" swap that
+            // would otherwise collapse them onto the same default and hide which one we picked.
+            var userChosenFont = "ABeeZee";
+            var l1Font = "Andika";
             var book = SetupBookLong(
                 "This is some text",
                 "en",
@@ -1211,7 +1221,7 @@ namespace BloomTests.Publish.Epub
                     + " !important; }</style>"
             );
             var savedFont = book.CollectionSettings.Language1.FontName;
-            book.CollectionSettings.Language1.FontName = "FontForLanguageIndependentText";
+            book.CollectionSettings.Language1.FontName = l1Font;
             try
             {
                 MakeEpub(
@@ -1259,7 +1269,7 @@ namespace BloomTests.Publish.Epub
             // trusting the match above to have failed for the right reason.
             Assert.That(
                 styledTags[0],
-                Does.Not.Contain("FontForLanguageIndependentText"),
+                Does.Not.Contain(l1Font),
                 "L1's font should not appear; the user's choice outranks it"
             );
             // Our own bookkeeping attribute is not part of the ePUB.
