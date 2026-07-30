@@ -97,6 +97,15 @@ const StatsRow: FunctionComponent<{
                     : ""}
             </div>
             <div
+                // Says whether this value violates the level's limit, so that tests
+                // (and any future styling) have something stable to look at instead of
+                // the color. These are the names the pre-React code used; as it noted,
+                // neither may be a substring of the other.
+                className={
+                    isOverMax(props.actualNum, props.maxNum)
+                        ? "tooLarge"
+                        : "acceptable"
+                }
                 css={css`
                     max-width: 40px;
                     padding-right: 3px;

@@ -6,69 +6,74 @@ import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import ReadersSynphonyWrapper from "../ReadersSynphonyWrapper";
 import { LeveledReaderStats } from "./LeveledReaderToolControls";
 
-// The level we test against. Deliberately leaves most limits unset (0 = "this
-// level does not limit that statistic") so that we also cover the "no limit"
-// case, and so that the two statistics under test have limits that the book
-// stats below exceed.
+// The level we test against. It deliberately leaves most limits unset (0 means
+// "this level does not limit that statistic") so we also cover the no-limit case.
 const kMaxWordsPerSentence = 10;
 const kMaxGlyphsPerWord = 5;
 const kMaxAverageWordsPerSentence = 9;
 
-// Each value is unique so a cell can be located by its text.
 const bookStats = {
     levelNumber: 1,
     pageCount: 1,
-    actualWordsPerPage: 1,
+    actualWordsPerPage: 12, // no limit for this level
     actualWordsPerSentence: 2,
     actualWordCount: 3,
     actualWordsPerPageBook: 4,
     actualUniqueWords: 5,
     actualSentencesPerPage: 8,
     actualSentenceCount: 12,
-    actualLettersPerWord: 4.5, // reported as an integer elsewhere; kept distinct here
-    // Over kMaxWordsPerSentence: "This Book / longest sentence" must be orange (BL-16408).
+    actualLettersPerWord: 4, // under kMaxGlyphsPerWord
+    // Over kMaxWordsPerSentence: "This Book / longest sentence" (BL-16408).
     actualMaxWordsPerSentence: 16,
-    // Over kMaxGlyphsPerWord: "Word Lengths / max in book" must be orange (BL-16628).
+    // Over kMaxGlyphsPerWord: "Word Lengths / max in book" (BL-16628).
     actualMaxGlyphsPerWord: 6,
-    // Rounds to "9.0" but is really over kMaxAverageWordsPerSentence, so orange.
+    // Rounds to "9.0" but is really over kMaxAverageWordsPerSentence.
     actualAverageWordsPerSentence: 9.04,
     actualAverageWordsPerPage: 7,
     actualAverageGlyphsPerWord: 2.2,
     actualAverageSentencesPerPage: 1.5,
 };
 
-// Find the single element whose own text is exactly the given string. Used to
-// locate a stats cell by the number it displays.
-function getCellShowing(container: HTMLElement, text: string): HTMLElement {
-    const matches = Array.from(container.querySelectorAll("div")).filter(
-        (div) => div.textContent?.trim() === text,
-    );
-    if (matches.length !== 1) {
-        fail(
-            `Expected exactly one cell showing "${text}", found ${matches.length}. The test data may no longer be unique.`,
-        );
-    }
-    return matches[0] as HTMLElement;
-}
+// Row labels and section headers are localized, and in tests the localization
+// manager is mocked, so each renders as its l10n key. That makes the key the
+// most precise way to find a row.
+const kKeyPrefix = "EditTab.Toolbox.LeveledReaderTool.";
 
-// Emotion puts each css block in a class of its own, so we read the color out of
-// the stylesheet rule for the cell's class rather than from an inline style.
-function getColorOf(cell: HTMLElement): string {
-    const allCss = Array.from(document.querySelectorAll("style"))
-        .map((style) => style.textContent ?? "")
-        .join("\n");
-    for (const className of Array.from(cell.classList)) {
-        const rule = new RegExp(`\\.${className}\\s*\\{([^}]*)\\}`).exec(
-            allCss,
-        );
-        const color = rule && /color:\s*([^;}]+)/.exec(rule[1]);
-        if (color) {
-            return color[1].trim();
-        }
-    }
-    fail(
-        `Found no color rule for cell "${cell.textContent}" (classes: ${cell.className}).`,
+// Each stats grid lays its cells out as a flat list of children: one or two
+// section headers, then the Max/Actual header row, then three cells per
+// statistic (label, max, actual). Find a row by its label and return the other
+// two cells of that row.
+function getRow(
+    container: HTMLElement,
+    sectionHeaderKeySuffix: string,
+    rowLabelKeySuffix: string,
+): { maxCell: HTMLElement; actualCell: HTMLElement } {
+    const grids = Array.from(container.firstElementChild!.children);
+    const grid = grids.find((g) =>
+        // Only the leading children are section headers; a row label never is.
+        Array.from(g.children)
+            .slice(0, 2)
+            .some(
+                (child) =>
+                    child.textContent === kKeyPrefix + sectionHeaderKeySuffix,
+            ),
     );
+    if (!grid) {
+        fail(`Found no stats grid headed "${sectionHeaderKeySuffix}".`);
+    }
+    const cells = Array.from(grid.children);
+    const labelIndex = cells.findIndex(
+        (cell) => cell.textContent === kKeyPrefix + rowLabelKeySuffix,
+    );
+    if (labelIndex < 0) {
+        fail(
+            `Found no "${rowLabelKeySuffix}" row in the "${sectionHeaderKeySuffix}" grid.`,
+        );
+    }
+    return {
+        maxCell: cells[labelIndex + 1] as HTMLElement,
+        actualCell: cells[labelIndex + 2] as HTMLElement,
+    };
 }
 
 describe("LeveledReaderStats", () => {
@@ -95,8 +100,8 @@ describe("LeveledReaderStats", () => {
         api.loadSettings(settings);
         getTheOneReaderToolsModel().setLevelNumber(1, true);
 
-        // Sanity check: without these limits the color assertions below would
-        // pass for the wrong reason.
+        // Sanity check: without these limits the assertions below would pass for
+        // the wrong reason.
         expect(
             getTheOneReaderToolsModel().maxWordsPerSentenceOnThisPage(),
         ).toBe(kMaxWordsPerSentence);
@@ -116,43 +121,64 @@ describe("LeveledReaderStats", () => {
         container.remove();
     });
 
-    it("shows a statistic that is over the level's limit in orange", () => {
-        // "This Book / longest sentence" and "Word Lengths / max in book" both
-        // exceed a limit of the current level. They regressed to green in the
-        // React conversion because their limit was hardcoded to 0 (BL-16408).
-        expect(getColorOf(getCellShowing(container, "16"))).toBe("orange");
-        expect(getColorOf(getCellShowing(container, "6"))).toBe("orange");
-    });
-
-    it("shows a statistic that is within the level's limit in lightgreen", () => {
-        // "Word Lengths / this page" shares max in book's limit and is under it.
-        expect(getColorOf(getCellShowing(container, "4.5"))).toBe("lightgreen");
-    });
-
-    it("shows a statistic with no limit for this level in lightgreen", () => {
-        // Nothing limits words per page in this level, so no value is too large.
-        expect(getColorOf(getCellShowing(container, "1"))).toBe("lightgreen");
-    });
-
-    it("leaves the Max cell blank for the two rows that share the limit above them", () => {
-        // Pre-React behavior we are keeping: the limit is used for coloring but
-        // not displayed on these rows, so it appears exactly once per grid.
-        const maxCellsShowingTheSentenceLimit = Array.from(
-            container.querySelectorAll("div"),
-        ).filter(
-            (div) => div.textContent?.trim() === `${kMaxWordsPerSentence}`,
+    it("marks a statistic that is over the level's limit as too large", () => {
+        // These two rows regressed to "acceptable" in the React conversion
+        // because their limit was hardcoded to 0 (BL-16408, BL-16628).
+        const longestSentence = getRow(
+            container,
+            "ThisBook",
+            "MaxSentenceLength",
         );
-        expect(maxCellsShowingTheSentenceLimit.length).toBe(1);
-        const maxCellsShowingTheGlyphLimit = Array.from(
-            container.querySelectorAll("div"),
-        ).filter((div) => div.textContent?.trim() === `${kMaxGlyphsPerWord}`);
-        // kMaxGlyphsPerWord is also the value of actualUniqueWords, so the Max
-        // cell of "Word Lengths / this page" plus that one actual value = 2.
-        expect(maxCellsShowingTheGlyphLimit.length).toBe(2);
+        expect(longestSentence.actualCell.textContent).toBe("16");
+        expect(longestSentence.actualCell.classList).toContain("tooLarge");
+
+        const maxInBook = getRow(container, "WordLengths", "MaxInBook");
+        expect(maxInBook.actualCell.textContent).toBe("6");
+        expect(maxInBook.actualCell.classList).toContain("tooLarge");
+    });
+
+    it("marks a statistic that is within the level's limit as acceptable", () => {
+        // "Word Lengths / this page" shares max in book's limit and is under it.
+        const thisPage = getRow(container, "WordLengths", "ThisPageLC");
+        expect(thisPage.actualCell.textContent).toBe("4");
+        expect(thisPage.actualCell.classList).toContain("acceptable");
+    });
+
+    it("marks a statistic with no limit for this level as acceptable", () => {
+        // Nothing limits words per page in this level, so no value is too large.
+        const perPage = getRow(container, "ThisPage", "PerPage");
+        expect(perPage.actualCell.textContent).toBe("12");
+        expect(perPage.actualCell.classList).toContain("acceptable");
+    });
+
+    it("shows the level's limit in the Max cell, except on the two rows that share the limit above them", () => {
+        // Pre-React behavior we are keeping: on these two rows the limit decides
+        // the color but is not displayed, because the row above already shows it.
+        expect(
+            getRow(container, "WordLengths", "ThisPageLC").maxCell.textContent,
+        ).toBe(`${kMaxGlyphsPerWord}`);
+        expect(
+            getRow(container, "WordLengths", "MaxInBook").maxCell.textContent,
+        ).toBe("");
+        expect(
+            getRow(container, "ThisPage", "PerSentence").maxCell.textContent,
+        ).toBe(`${kMaxWordsPerSentence}`);
+        expect(
+            getRow(container, "ThisBook", "MaxSentenceLength").maxCell
+                .textContent,
+        ).toBe("");
     });
 
     it("compares averages at full precision, not as displayed", () => {
         // 9.04 displays as "9.0" but is over the level's average limit of 9.
-        expect(getColorOf(getCellShowing(container, "9.0"))).toBe("orange");
+        const average = getRow(container, "ThisBook", "Average");
+        expect(average.actualCell.textContent).toBe("9.0");
+        expect(average.actualCell.classList).toContain("tooLarge");
+    });
+
+    it("leaves the Max cell blank when this level has no limit for a statistic", () => {
+        expect(
+            getRow(container, "ThisPage", "PerPage").maxCell.textContent,
+        ).toBe("");
     });
 });
