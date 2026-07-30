@@ -55,7 +55,17 @@ const MaxActualRow: FunctionComponent = () => {
 const StatsRow: FunctionComponent<{
     l10nKeySuffix: string;
     maxNum: number;
-    actualNum: number | string;
+    actualNum: number;
+    // When true, the Max cell is left blank, but maxNum is still used to decide
+    // whether the actual value is over the limit (and so shown in orange).
+    // Two rows have always behaved this way: "This Book / longest sentence" and
+    // "Word Lengths / max in book" share their limit with the row above them,
+    // and the pre-React version never displayed it. See BL-16408.
+    hideMaxNum?: boolean;
+    // Averages are displayed rounded to one decimal place. They are still
+    // compared to the max at full precision, so e.g. an average of 9.04 with a
+    // max of 9 counts as over the limit even though it displays as "9.0".
+    isAverage?: boolean;
     children: string;
 }> = (props) => {
     return (
@@ -80,7 +90,9 @@ const StatsRow: FunctionComponent<{
                     align-self: start;
                 `}
             >
-                {props.maxNum !== 0 && props.maxNum !== Infinity
+                {props.maxNum !== 0 &&
+                props.maxNum !== Infinity &&
+                !props.hideMaxNum
                     ? props.maxNum
                     : ""}
             </div>
@@ -92,13 +104,14 @@ const StatsRow: FunctionComponent<{
                     overflow-wrap: break-word;
                     text-align: center;
                     align-self: start;
-                    color: ${Number(props.actualNum) > props.maxNum &&
-                    props.maxNum !== 0
+                    color: ${isOverMax(props.actualNum, props.maxNum)
                         ? "orange"
                         : "lightgreen"};
                 `}
             >
-                {props.actualNum}
+                {props.isAverage
+                    ? formatAverage(props.actualNum)
+                    : props.actualNum}
             </div>
         </>
     );
@@ -154,7 +167,16 @@ function formatAverage(value: number): string {
     return value.toFixed(1);
 }
 
-const LeveledReaderStats: FunctionComponent<{
+// A statistic violates the current level when it exceeds the level's maximum.
+// A maximum of 0 means the level does not limit this statistic at all, and
+// Infinity means we don't know the limit yet (no level data loaded); neither
+// counts as a violation.
+function isOverMax(actualNum: number, maxNum: number): boolean {
+    return maxNum !== 0 && actualNum > maxNum;
+}
+
+// Exported for testing.
+export const LeveledReaderStats: FunctionComponent<{
     bookStats: { [key: string]: number };
 }> = (props) => {
     const model = getTheOneReaderToolsModel();
@@ -212,7 +234,11 @@ const LeveledReaderStats: FunctionComponent<{
                 </StatsRow>
                 <StatsRow
                     l10nKeySuffix="MaxSentenceLength"
-                    maxNum={0} // Here, maxNum is hardcoded as 0 because this stat is meant to be unlimtited.
+                    // The longest sentence in the book is measured against the same
+                    // limit as the longest sentence on this page, but (as before the
+                    // React conversion) we don't repeat the number in the Max column.
+                    maxNum={model.maxWordsPerSentenceOnThisPage()}
+                    hideMaxNum={true}
                     actualNum={props.bookStats["actualMaxWordsPerSentence"]}
                 >
                     longest sentence
@@ -220,18 +246,16 @@ const LeveledReaderStats: FunctionComponent<{
                 <StatsRow
                     l10nKeySuffix="Average"
                     maxNum={model.maxAverageWordsPerSentence()}
-                    actualNum={formatAverage(
-                        props.bookStats["actualAverageWordsPerSentence"],
-                    )}
+                    actualNum={props.bookStats["actualAverageWordsPerSentence"]}
+                    isAverage={true}
                 >
                     avg per sentence
                 </StatsRow>
                 <StatsRow
                     l10nKeySuffix="AveragePerPage"
                     maxNum={model.maxAverageWordsPerPage()}
-                    actualNum={formatAverage(
-                        props.bookStats["actualAverageWordsPerPage"],
-                    )}
+                    actualNum={props.bookStats["actualAverageWordsPerPage"]}
+                    isAverage={true}
                 >
                     avg per page
                 </StatsRow>
@@ -246,7 +270,10 @@ const LeveledReaderStats: FunctionComponent<{
                 </StatsRow>
                 <StatsRow
                     l10nKeySuffix="MaxInBook"
-                    maxNum={0} // maxNum is also hardcoded to be 0 here because the stat is intended to be unlimited
+                    // Like "longest sentence" above, this shares the limit of the row
+                    // above it ("this page"), so we don't repeat it in the Max column.
+                    maxNum={model.maxGlyphsPerWord()}
+                    hideMaxNum={true}
                     actualNum={props.bookStats["actualMaxGlyphsPerWord"]}
                 >
                     max in book
@@ -254,9 +281,8 @@ const LeveledReaderStats: FunctionComponent<{
                 <StatsRow
                     l10nKeySuffix="AverageInBook"
                     maxNum={model.maxAverageGlyphsPerWord()}
-                    actualNum={formatAverage(
-                        props.bookStats["actualAverageGlyphsPerWord"],
-                    )}
+                    actualNum={props.bookStats["actualAverageGlyphsPerWord"]}
+                    isAverage={true}
                 >
                     avg in book
                 </StatsRow>
@@ -279,9 +305,8 @@ const LeveledReaderStats: FunctionComponent<{
                 <StatsRow
                     l10nKeySuffix="AverageInBook"
                     maxNum={model.maxAverageSentencesPerPage()}
-                    actualNum={formatAverage(
-                        props.bookStats["actualAverageSentencesPerPage"],
-                    )}
+                    actualNum={props.bookStats["actualAverageSentencesPerPage"]}
+                    isAverage={true}
                 >
                     avg in book
                 </StatsRow>

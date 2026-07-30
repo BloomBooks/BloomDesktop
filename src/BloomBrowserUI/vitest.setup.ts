@@ -167,6 +167,10 @@ vi.mock("./lib/localizationManager/localizationManager", () => {
                 };
             },
             simpleFormat,
+            // The real one turns a little markdown into html. Tests that render
+            // localized components (e.g. the Div in l10nComponents) go through
+            // it, and none of them care about the markdown, so pass text along.
+            processSimpleMarkdown: (text: string) => text,
             loadStringsPromise: (_keys: string[], _lang: string | null) => {
                 // Return a Promise that resolves immediately
                 return Promise.resolve();
