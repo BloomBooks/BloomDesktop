@@ -185,6 +185,10 @@ export const launchAiImageEditor = (
         // it), so it returns oldSrc/newSrc and we use Bloom's changeImageByElement()
         // on the live DOM. We match by oldSrc rather than index because the live
         // page has extra UI images that would throw off positional ordinals.
+        // onApplied fires after each successful swap. The caller counts with it rather
+        // than with the returned `applied`, because a throw part-way through this loop
+        // never returns: the live DOM would then hold swaps that nothing had counted,
+        // so nothing would save them (see the save call in the commit handler).
         const applyCurrentPageReplacements = (
             results?: Array<{
                 incomingId?: string;
@@ -193,6 +197,7 @@ export const launchAiImageEditor = (
                 oldSrc?: string;
                 newSrc?: string;
             }>,
+            onApplied?: () => void,
         ): { applied: number; expected: number } => {
             const toApply = (results ?? []).filter(
                 (r) => r && r.ok && r.isCurrentPage && r.newSrc && r.oldSrc,
@@ -234,6 +239,7 @@ export const launchAiImageEditor = (
                     // separate per-image undo for the current-page piece.
                     undoable: "false",
                 });
+                onApplied?.();
             });
             return { applied: pairs.length, expected: toApply.length };
         };
@@ -335,8 +341,8 @@ export const launchAiImageEditor = (
                             try {
                                 const cp = applyCurrentPageReplacements(
                                     result?.results,
+                                    () => currentPageApplied++,
                                 );
-                                currentPageApplied = cp.applied;
                                 const serverOk = result?.ok !== false;
                                 finalOk =
                                     serverOk && cp.applied === cp.expected;
@@ -365,6 +371,8 @@ export const launchAiImageEditor = (
                                 // a later commit's oldSrc, read from that stale storage, would
                                 // no longer match the live page ("0 of N could be updated").
                                 // Mirrors doVideoCommand's save after updateVideoInContainer.
+                                // currentPageApplied is counted per swap as it happens, so a
+                                // throw part-way through still saves the swaps that landed.
                                 if (currentPageApplied > 0) {
                                     postThatMightNavigate(
                                         "common/saveChangesAndRethinkPageEvent",
