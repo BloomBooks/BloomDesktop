@@ -2352,6 +2352,13 @@ namespace Bloom.Publish.Rab
                         ReportProcessOutputLine(args.Data, ProgressKind.Warning);
                 };
 
+                // Don't launch another subprocess if the user has already asked to cancel: otherwise
+                // a long step (e.g. the Gradle build) would run to completion before the post-exit
+                // check below noticed it, leaving the user — with navigation locked — stuck watching
+                // it finish (BL-16350). The protected recovery is exempt (it must complete).
+                if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                    throw new OperationCanceledException();
+
                 if (!process.Start())
                     throw new ApplicationException($"Bloom could not start {fileName}.");
 
@@ -2361,6 +2368,16 @@ namespace Bloom.Publish.Rab
                 {
                     lock (_currentProcessLock)
                         _currentProcess = process;
+                }
+                // Close the race between Start() above and registering _currentProcess: a cancel that
+                // arrived in that window found no process to kill, so kill it now.
+                if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                {
+                    try
+                    {
+                        process.Kill(true);
+                    }
+                    catch (Exception) { }
                 }
                 try
                 {
@@ -2470,6 +2487,13 @@ namespace Bloom.Publish.Rab
                     ReportProcessOutputLine(args.Data, ProgressKind.Warning);
                 };
 
+                // Don't launch another subprocess if the user has already asked to cancel: otherwise
+                // a long step would run to completion before the post-exit check below noticed it,
+                // leaving the user — with navigation locked — stuck waiting (BL-16350). The protected
+                // recovery is exempt (it must complete).
+                if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                    throw new OperationCanceledException();
+
                 if (!process.Start())
                     throw new ApplicationException($"Bloom could not start {fileName}.");
 
@@ -2479,6 +2503,16 @@ namespace Bloom.Publish.Rab
                 {
                     lock (_currentProcessLock)
                         _currentProcess = process;
+                }
+                // Close the race between Start() above and registering _currentProcess: a cancel that
+                // arrived in that window found no process to kill, so kill it now.
+                if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                {
+                    try
+                    {
+                        process.Kill(true);
+                    }
+                    catch (Exception) { }
                 }
                 try
                 {
