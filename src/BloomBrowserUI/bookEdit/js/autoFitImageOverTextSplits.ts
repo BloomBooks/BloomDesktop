@@ -30,6 +30,15 @@ import { EditableDivUtils } from "./editableDivUtils";
 // almost the whole page, the page is simply over-full, and shrinking the image to a sliver would
 // leave it BOTH clipped and ugly. Those we leave exactly as authored.
 //
+// We also handle one NESTED shape: a top-to-bottom STACK of panes — text above / illustration /
+// text below, and the like — where exactly one pane holds the illustration and the rest hold text.
+// That is a very common layout in scanned story books, and it needs us more than the two-pane case
+// does, because nothing ever set its dividers on purpose: an importer emits it as a right-nested
+// chain of horizontal splits, and with no explicit percentages Bloom's 50/50-per-split CSS default
+// cascades into an effective 50/25/25. Those numbers describe the nesting, not the content, so the
+// top text block gets half the page for its one line while the last (usually longest) one is
+// clipped. See fitImageTextStack() for the arithmetic.
+//
 // Called by captureContentForExternalProcessing() (when process-book asks for it) so the fitted
 // split persists into the saved HTML. Mutates the live DOM; relies on the fresh disposable browser
 // per page that the off-screen path uses.
@@ -71,13 +80,26 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
     const marginBox = page.querySelector(".marginBox");
     if (!marginBox) return false;
 
-    // We only handle the simple case: the marginBox's content is a single top-level two-pane split
-    // with no nested splits.
+    // The marginBox's content has to be a single top-level split.
     const splitPane = marginBox.querySelector(
         ":scope > .split-pane.horizontal-percent, :scope > .split-pane.vertical-percent",
     ) as HTMLElement | null;
     if (!splitPane) return false;
-    if (splitPane.querySelector(".split-pane")) return false; // nested split: too complex, skip
+
+    if (splitPane.querySelector(".split-pane")) {
+        // Nested. The one nested shape we understand is a STACK: panes in a single row along one
+        // axis, exactly one of them the illustration and the rest text (see fitImageTextStack).
+        // Anything else nested is too complex — leave it alone.
+        const stack = collectSplitStack(splitPane);
+        if (!stack) return false;
+        // Top/bottom stacks only. In a left/right stack the panes have different WIDTHS, so a text
+        // block's required height depends on how wide its own pane is; the panes stop being
+        // independent and the one-at-a-time measurement fitImageTextStack relies on doesn't hold.
+        if (stack.orientation !== "horizontal") return false;
+        if (stack.slots.filter((slot) => slot.kind === "image").length !== 1)
+            return false;
+        return fitImageTextStack(stack);
+    }
 
     const splitConfig = getSplitConfig(splitPane);
     if (!splitConfig) return false;
@@ -117,36 +139,12 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
     const originalTextPercent = readSecondPanePercent(splitConfig);
 
     const setTextPercent = (percent: number) => {
-        const value = percent + "%";
-        if (splitConfig.orientation === "horizontal") {
-            splitConfig.firstComponent.style.bottom = value;
-            splitConfig.divider.style.bottom = value;
-            splitConfig.secondComponent.style.height = value;
-        } else {
-            splitConfig.firstComponent.style.right = value;
-            splitConfig.divider.style.right = value;
-            splitConfig.secondComponent.style.width = value;
-        }
+        setSecondPanePercent(splitConfig, percent);
         // Force a synchronous reflow so the measurements below see the new layout.
         void splitPane.offsetHeight;
     };
 
-    const textEditables = () =>
-        Array.from(
-            secondTextGroup.querySelectorAll(
-                ".bloom-editable.bloom-visibility-code-on",
-            ),
-        ) as HTMLElement[];
-
-    // True if any visible text box has more text than fits in the (current) text pane. We check both
-    // kinds of overflow OverflowChecker knows about: the box overflowing itself (type 1) and the box
-    // overflowing its pane/ancestor (type 2, the usual one for auto-height origami text).
-    const textOverflows = (): boolean =>
-        textEditables().some(
-            (e) =>
-                OverflowChecker.IsOverflowingSelf(e) ||
-                OverflowChecker.overflowingAncestor(e) !== null,
-        );
+    const textOverflows = (): boolean => textGroupOverflows(secondTextGroup);
 
     // Upper bound for the search: a text pane this tall is assumed to fit any text we'd auto-fit.
     const hiBound = Math.max(originalTextPercent, 90);
@@ -206,6 +204,328 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
         return false;
     }
     setTextPercent(finalTextPercent);
+    return true;
+}
+
+// Write a split's position: the SECOND pane takes `percent` of the split's own box, and the first
+// pane and the divider are inset from the far edge by the same amount. Callers force the reflow.
+function setSecondPanePercent(config: SplitConfig, percent: number): void {
+    const value = percent + "%";
+    if (config.orientation === "horizontal") {
+        config.firstComponent.style.bottom = value;
+        config.divider.style.bottom = value;
+        config.secondComponent.style.height = value;
+    } else {
+        config.firstComponent.style.right = value;
+        config.divider.style.right = value;
+        config.secondComponent.style.width = value;
+    }
+}
+
+// True if any visible text box in this group has more text than fits. We check both kinds of overflow
+// OverflowChecker knows about: the box overflowing itself (type 1) and the box overflowing its
+// pane/ancestor (type 2, the usual one for auto-height origami text).
+function textGroupOverflows(textGroup: HTMLElement): boolean {
+    const editables = Array.from(
+        textGroup.querySelectorAll(".bloom-editable.bloom-visibility-code-on"),
+    ) as HTMLElement[];
+    return editables.some(
+        (e) =>
+            OverflowChecker.IsOverflowingSelf(e) ||
+            OverflowChecker.overflowingAncestor(e) !== null,
+    );
+}
+
+// ── Stacks of three or more panes ───────────────────────────────────────────────────────────────
+
+// One pane of a stack, and which of the two kinds of content it holds.
+interface StackSlot {
+    kind: "image" | "text";
+    component: HTMLElement; // the .split-pane-component whose size we control
+    canvas?: HTMLElement; // image slots only
+    textGroup?: HTMLElement; // text slots only
+}
+
+export interface SplitStack {
+    orientation: SplitOrientation;
+    splitPane: HTMLElement; // the OUTERMOST split pane; its box is the whole stack
+    splits: SplitConfig[]; // outermost → innermost; one fewer than slots
+    slots: StackSlot[]; // in visual order (top → bottom, or left → right)
+}
+
+// Decide what a single pane holds. A pane we can't confidently call "just an illustration" or "just
+// text" makes the whole page out of scope, so this returns undefined rather than guessing.
+function classifySlot(
+    inner: Element,
+    component: HTMLElement,
+): StackSlot | undefined {
+    const canvas = inner.querySelector(
+        kBloomCanvasSelector,
+    ) as HTMLElement | null;
+    const textGroup = inner.querySelector(
+        ".bloom-translationGroup",
+    ) as HTMLElement | null;
+    if (canvas && !textGroup) {
+        // Overlays (canvas elements other than the background image) put the page out of scope for
+        // the same reason as in the two-pane case: our math reasons only about the background
+        // image's aspect ratio, and overlays don't scale with it predictably.
+        if (
+            canvas.querySelector(
+                `${kCanvasElementSelector}:not(.${kBackgroundImageClass})`,
+            )
+        )
+            return undefined;
+        return { kind: "image", component, canvas };
+    }
+    if (textGroup && !canvas) return { kind: "text", component, textGroup };
+    return undefined;
+}
+
+// Deepest sane nesting we'll walk. Real stacks are three or four panes; anything deeper is a layout
+// we don't understand and shouldn't be rearranging.
+const kMaxStackDepth = 8;
+
+// Recognize a stack: splits of ONE axis chained down their second panes, each contributing its first
+// pane as a slot and the innermost contributing its second pane as the last slot. That right-leaning
+// chain is exactly what origami (and BloomBridge) produce for a row of panes along one axis.
+// Returns undefined for any other arrangement — a split nested in a FIRST pane, mixed axes, a second
+// pane holding a split alongside other content, or a pane whose content we can't classify.
+export function collectSplitStack(
+    splitPane: HTMLElement,
+): SplitStack | undefined {
+    const splits: SplitConfig[] = [];
+    const slots: StackSlot[] = [];
+    let current = splitPane;
+    let orientation: SplitOrientation | undefined;
+    for (;;) {
+        const config = getSplitConfig(current);
+        if (!config) return undefined;
+        if (orientation === undefined) orientation = config.orientation;
+        else if (config.orientation !== orientation) return undefined;
+
+        // A split inside the first pane means this is not a simple one-axis chain.
+        if (config.firstInner.querySelector(".split-pane")) return undefined;
+        const firstSlot = classifySlot(
+            config.firstInner,
+            config.firstComponent,
+        );
+        if (!firstSlot) return undefined;
+        splits.push(config);
+        slots.push(firstSlot);
+
+        const nested = config.secondInner.querySelector(
+            ":scope > .split-pane",
+        ) as HTMLElement | null;
+        if (!nested) {
+            const lastSlot = classifySlot(
+                config.secondInner,
+                config.secondComponent,
+            );
+            if (!lastSlot) return undefined;
+            slots.push(lastSlot);
+            return { orientation, splitPane, splits, slots };
+        }
+        // The second pane continues the chain, so it must hold the nested split and nothing else.
+        if (config.secondInner.children.length !== 1) return undefined;
+        if (splits.length >= kMaxStackDepth) return undefined;
+        current = nested;
+    }
+}
+
+// The stored percentages, turned into pane sizes in px along the stack axis. Each split's percentage
+// is relative to ITS OWN box, not the page: the outermost split sees the whole stack, the next only
+// what is left after the first pane, and so on — which is precisely why the CSS default of 50% per
+// split reads as 50/25/25 rather than thirds.
+export function readStackSizesPx(stack: SplitStack, totalPx: number): number[] {
+    const sizes: number[] = [];
+    let remaining = totalPx;
+    for (const config of stack.splits) {
+        const secondPx = (remaining * readSecondPanePercent(config)) / 100;
+        sizes.push(remaining - secondPx);
+        remaining = secondPx;
+    }
+    sizes.push(remaining);
+    return sizes;
+}
+
+// Remember every style attribute the fitting is about to overwrite, so a page we end up declining can
+// be put back byte-for-byte. Re-deriving the percentages instead would write an explicit "50%" onto
+// panes that had no style at all, needlessly changing the saved HTML of a page we chose not to touch.
+export function captureStackStyles(
+    stack: SplitStack,
+): Array<[HTMLElement, string | null]> {
+    const saved: Array<[HTMLElement, string | null]> = [];
+    for (const config of stack.splits)
+        for (const el of [
+            config.firstComponent,
+            config.divider,
+            config.secondComponent,
+        ])
+            saved.push([el, el.getAttribute("style")]);
+    return saved;
+}
+
+export function restoreStackStyles(
+    saved: Array<[HTMLElement, string | null]>,
+    stack: SplitStack,
+): void {
+    for (const [el, style] of saved) {
+        if (style === null) el.removeAttribute("style");
+        else el.setAttribute("style", style);
+    }
+    void stack.splitPane.offsetHeight;
+}
+
+// The inverse of readStackSizesPx: lay the stack out with these pane sizes (px, visual order).
+export function applyStackSizesPx(
+    stack: SplitStack,
+    sizesPx: number[],
+    totalPx: number,
+): void {
+    let remaining = totalPx;
+    for (let i = 0; i < stack.splits.length; i++) {
+        const secondPx = remaining - sizesPx[i];
+        setSecondPanePercent(stack.splits[i], (secondPx / remaining) * 100);
+        remaining = secondPx;
+    }
+    // One synchronous reflow at the end, so measurements afterward see the new layout.
+    void stack.splitPane.offsetHeight;
+}
+
+// The pane size at which the illustration already fills the stack's width, so a taller pane would
+// only add whitespace around it. The px counterpart of computeImageFitFirstPanePercent, simpler
+// because every pane in a top/bottom stack is the full width of the stack.
+function computeImageFitPaneSizePx(
+    stack: SplitStack,
+    slot: StackSlot,
+): number | undefined {
+    const aspectRatio = getImageAspectRatio(slot.canvas!);
+    if (aspectRatio === undefined) return undefined;
+    const width = stack.splitPane.offsetWidth;
+    if (width <= 0) return undefined;
+    const scale = EditableDivUtils.getPageScale() || 1;
+    // Whatever the pane spends on padding/chrome rather than on the picture itself.
+    const extra =
+        (slot.component.offsetHeight - slot.canvas!.offsetHeight) / scale;
+    return width / aspectRatio + extra;
+}
+
+// Fit a top/bottom stack of three or more panes holding exactly one illustration.
+//
+// What makes this tractable is that every pane in such a stack is the same WIDTH. A text block's
+// required height therefore doesn't depend on where any divider sits, so we can measure each text
+// pane on its own (give it a size, ask whether it overflows, binary-search the boundary) and then
+// simply add the answers up. Same measured-not-estimated rule as the two-pane case.
+//
+// Returns true if it changed the page.
+function fitImageTextStack(stack: SplitStack): boolean {
+    const totalPx = stack.splitPane.offsetHeight;
+    if (totalPx <= 0) return false;
+
+    const imageIndex = stack.slots.findIndex((slot) => slot.kind === "image");
+    const originalSizesPx = readStackSizesPx(stack, totalPx);
+    const minPanePx = (totalPx * kFitMinTextPercent) / 100;
+    const cushionPx = (totalPx * kFitTextCushionPercent) / 100;
+    const savedStyles = captureStackStyles(stack);
+    const restore = () => restoreStackStyles(savedStyles, stack);
+
+    // Measure the illustration's cap NOW, while the stack is still laid out as it was saved. Both
+    // inputs are read off the rendered boxes, and the probing below deliberately squeezes whichever
+    // panes it isn't testing — including this one — so measuring afterward would read the picture's
+    // chrome out of a pane collapsed to its minimum.
+    const imageFitPx = computeImageFitPaneSizePx(
+        stack,
+        stack.slots[imageIndex],
+    );
+
+    // Lay the stack out with one pane at `sizePx` and the rest sharing what's left equally. Only the
+    // pane under test is measured, so whatever this does to the others doesn't matter.
+    const probe = (index: number, sizePx: number) => {
+        const each = (totalPx - sizePx) / (stack.slots.length - 1);
+        applyStackSizesPx(
+            stack,
+            stack.slots.map((_, i) => (i === index ? sizePx : each)),
+            totalPx,
+        );
+    };
+
+    // The most any one pane can have while the others still keep their floor.
+    const hiPx = totalPx - minPanePx * (stack.slots.length - 1);
+
+    // Smallest height at which each text pane's text still fits.
+    const requiredPx: number[] = [];
+    for (let i = 0; i < stack.slots.length; i++) {
+        const slot = stack.slots[i];
+        if (slot.kind !== "text") {
+            requiredPx.push(0);
+            continue;
+        }
+        probe(i, hiPx);
+        if (textGroupOverflows(slot.textGroup!)) {
+            // This block doesn't fit even with nearly the whole page to itself, so the page is
+            // simply over-full. Same call as the two-pane case: leave it exactly as authored rather
+            // than shuffling dividers to produce something both clipped AND ugly.
+            restore();
+            return false;
+        }
+        let lo = minPanePx; // largest known-overflowing size as we narrow (starts as a guess)
+        let hi = hiPx; // smallest known-fitting size
+        probe(i, lo);
+        if (textGroupOverflows(slot.textGroup!)) {
+            for (let n = 0; n < 12; n++) {
+                const mid = (lo + hi) / 2;
+                probe(i, mid);
+                if (textGroupOverflows(slot.textGroup!)) lo = mid;
+                else hi = mid;
+            }
+        } else {
+            hi = lo; // even the smallest pane we'd use fits
+        }
+        requiredPx.push(hi);
+    }
+
+    // Each text pane gets what it needs plus the same hair of extra room the two-pane case allows.
+    const textTargetsPx = requiredPx.map((px, i) =>
+        stack.slots[i].kind === "text" ? px + cushionPx : 0,
+    );
+    const textTotalPx = textTargetsPx.reduce((a, b) => a + b, 0);
+
+    // Individually they all fit, but together they may still not — and then there is no arrangement
+    // of these dividers that works, so don't rearrange them.
+    if (textTotalPx > totalPx - minPanePx) {
+        restore();
+        return false;
+    }
+
+    // The illustration takes everything the text doesn't need, up to the point where it already
+    // fills the width; past that a taller pane is pure whitespace.
+    let imagePx = totalPx - textTotalPx;
+    if (imageFitPx !== undefined)
+        imagePx = Math.min(imagePx, Math.max(imageFitPx, minPanePx));
+
+    // Whatever the illustration declines goes back to the text panes rather than sitting dead,
+    // shared out in proportion to what each of them needed.
+    const targetsPx = textTargetsPx.slice();
+    targetsPx[imageIndex] = imagePx;
+    const leftoverPx = totalPx - textTotalPx - imagePx;
+    if (leftoverPx > 0 && textTotalPx > 0) {
+        for (let i = 0; i < targetsPx.length; i++)
+            if (stack.slots[i].kind === "text")
+                targetsPx[i] += (leftoverPx * textTargetsPx[i]) / textTotalPx;
+    }
+
+    // Nothing worth doing (the stack is already about right): put it back exactly as we found it
+    // rather than rewriting every split — and re-fitting the illustration — for rounding noise.
+    const minMovePx = (totalPx * kFitMinMovePercent) / 100;
+    if (
+        targetsPx.every(
+            (px, i) => Math.abs(px - originalSizesPx[i]) < minMovePx,
+        )
+    ) {
+        restore();
+        return false;
+    }
+    applyStackSizesPx(stack, targetsPx, totalPx);
     return true;
 }
 
