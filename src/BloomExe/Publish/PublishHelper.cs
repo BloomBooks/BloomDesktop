@@ -2017,10 +2017,15 @@ namespace Bloom.Publish
                 var style = styleOrig;
                 foreach (var font in badFonts)
                 {
-                    // The font name may or may not be quoted, and the declaration may or may not
-                    // be the last one in the attribute, so do not require a trailing semicolon.
+                    var name = System.Text.RegularExpressions.Regex.Escape(font);
+                    // The name may be quoted or bare. When it is bare the match has to end at a
+                    // real boundary, or a bad "Andika" would eat the start of "Andika New Basic"
+                    // and leave `font-family: 'Andika' New Basic` behind. The boundary is a
+                    // semicolon, a comma (the name may head a fallback list), or the end of the
+                    // attribute -- an inline declaration often has no trailing semicolon, which is
+                    // why we cannot simply require one as the stylesheet versions above do.
                     var regex = new System.Text.RegularExpressions.Regex(
-                        $"font-family:\\s*(['\"]?){System.Text.RegularExpressions.Regex.Escape(font)}\\1"
+                        $"font-family:\\s*(?:(['\"]){name}\\1|{name}(?=\\s*(?:[;,]|$)))"
                     );
                     style = regex.Replace(style, $"font-family: '{defaultFont}'");
                 }

@@ -2263,13 +2263,6 @@ namespace Bloom.Book
                 {
                     CollectionSettings.Language1Tag,
                     CollectionSettings.Language2Tag,
-                    // "*" is not a language whose rule we might need to preserve from an older
-                    // version of the book -- GetCollectionStylesCss regenerates it every time from
-                    // the current L1 font (BL-16624). Without this, the crude "[lang='" scan below
-                    // would treat it like a retired language and copy the old block forward, so the
-                    // rule would freeze at whatever font it was first written with and silently stop
-                    // following L1.
-                    "*",
                 };
                 if (!String.IsNullOrEmpty(CollectionSettings.Language3Tag))
                     languagesWeAlreadyHave.Add(CollectionSettings.Language3Tag);

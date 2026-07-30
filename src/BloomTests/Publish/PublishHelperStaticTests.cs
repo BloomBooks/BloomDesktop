@@ -153,6 +153,48 @@ namespace BloomTests.Publish
         }
 
         /// <summary>
+        /// A bare font name has to match only a whole name. Bloom ships families whose names are
+        /// prefixes of others -- "Andika" and "Andika New Basic" -- so matching without an end
+        /// boundary would rewrite part of the longer name and leave nonsense like
+        /// `font-family: 'Andika' New Basic`. Found by Devin on PR #8122.
+        /// </summary>
+        [Test]
+        public void FixXmlDomReferencesForBadFonts_BadNameIsPrefixOfAnother_LeavesTheLongerNameAlone()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(
+                @"<html><head></head><body>
+    <div id='longer' style=""font-family: Andika New Basic"">1 + 1</div>
+    <div id='exact' style=""font-family: Andika"">2 + 2</div>
+    <div id='heads-a-list' style=""font-family: Andika, serif"">3 + 3</div>
+</body></html>"
+            );
+
+            var fixedSomething = PublishHelper.FixXmlDomReferencesForBadFonts(
+                dom,
+                "Substitute",
+                new HashSet<string> { "Andika" }
+            );
+
+            Assert.That(fixedSomething, Is.True);
+            // The whole point: a different family that merely starts with the bad name is untouched.
+            Assert.That(
+                dom.SelectSingleNode("//div[@id='longer']").GetAttribute("style"),
+                Is.EqualTo("font-family: Andika New Basic"),
+                "a longer family name that starts with the bad one must not be rewritten"
+            );
+            Assert.That(
+                dom.SelectSingleNode("//div[@id='exact']").GetAttribute("style"),
+                Is.EqualTo("font-family: 'Substitute'")
+            );
+            // A bad font at the head of a fallback list is still replaced, and the list survives.
+            Assert.That(
+                dom.SelectSingleNode("//div[@id='heads-a-list']").GetAttribute("style"),
+                Is.EqualTo("font-family: 'Substitute', serif")
+            );
+        }
+
+        /// <summary>
         /// With no bad font present there is nothing to do, and in particular we must not report
         /// having changed something -- callers save the file only when we say we did.
         /// </summary>

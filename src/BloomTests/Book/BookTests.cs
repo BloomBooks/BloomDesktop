@@ -4184,22 +4184,25 @@ namespace BloomTests.Book
         }
 
         /// <summary>
-        /// The lang="*" rule must be regenerated from the current L1 font on every rewrite. The
-        /// scan in CreateOrUpdateDefaultLangStyles that preserves rules for retired languages
-        /// matches on a bare "[lang='" prefix, so without "*" being treated as already-handled it
-        /// would copy the old block forward and the rule would silently stop following L1.
+        /// The language-independent rule must follow L1's font, being regenerated from current
+        /// settings on every rewrite rather than carried over from the version of the file already
+        /// on disk. CreateOrUpdateDefaultLangStyles deliberately copies some blocks forward -- the
+        /// ones for languages that have left the collection -- so this checks that our rule is not
+        /// among them, while the retired-language block beside it still is.
         /// </summary>
         [Test]
-        public void BringBookUpToDate_StaleLanguageIndependentFontRule_IsRegeneratedNotPreserved()
+        public void BringBookUpToDate_LanguageIndependentFontRule_FollowsL1NotTheFileOnDisk()
         {
             var book = CreateBook();
             book.CollectionSettings.Language1.FontName = "TheCurrentL1Font";
             var path = Path.Combine(book.FolderPath, "defaultLangStyles.css");
+            // The rule exactly as GetCollectionStylesCss writes it, but with an old font -- i.e.
+            // what a book saved by an earlier session actually looks like.
             RobustFile.WriteAllText(
                 path,
                 @"/* *** DO NOT EDIT! *** */
 
-[lang='*']
+.bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) [lang='*']
 {
  font-family: 'SomeFontChosenLongAgo';
 }
@@ -4221,15 +4224,15 @@ namespace BloomTests.Book
             Assert.That(
                 after,
                 Does.Not.Contain("SomeFontChosenLongAgo"),
-                "the lang='*' rule should have been regenerated, not carried over"
+                "the language-independent rule should have been regenerated, not carried over"
             );
             Assert.That(
                 after,
                 Does.Match(@"\[lang='\*'\]\s*\{[^}]*font-family: 'TheCurrentL1Font'"),
-                "the regenerated lang='*' rule should use the current L1 font"
+                "the regenerated rule should use the current L1 font"
             );
             // The retired-language rule is exactly what that preservation logic is for, so it must
-            // still survive -- this change must not break it.
+            // still survive.
             Assert.That(
                 after,
                 Does.Contain("AFontForARetiredLanguage"),
