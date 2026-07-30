@@ -472,6 +472,15 @@ namespace Bloom.Publish.Rab
         internal bool IsActionInProgress => _activeProgressAction != null;
 
         /// <summary>
+        /// True when the user has actually requested cancellation of the current action. Lets the API
+        /// layer tell a user-initiated <see cref="OperationCanceledException"/> apart from one thrown
+        /// by library code (e.g. an HttpClient download timeout, whose TaskCanceledException also
+        /// derives from OperationCanceledException), so a genuine failure isn't misreported — and
+        /// unlogged — as a cancellation.
+        /// </summary>
+        internal bool IsCancellationRequested => _cancelRequested;
+
+        /// <summary>
         /// Atomically claims the action slot, setting <see cref="_activeProgressAction"/> to
         /// <paramref name="action"/>. Returns true if this call won the slot, false if another
         /// action is already running.

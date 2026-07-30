@@ -150,8 +150,13 @@ namespace Bloom.Publish.Rab
                                 succeeded = true;
                             }
                             catch (OperationCanceledException)
+                                when (_rabProjectService.IsCancellationRequested)
                             {
-                                // ReportCancellation logs before the UI tears down the subscription.
+                                // Only a real user cancel lands here; an OperationCanceledException
+                                // from library code (e.g. a download timeout) falls through to the
+                                // failure handler below so it's reported and logged, not silently
+                                // shown as "cancelled". ReportCancellation logs before the UI tears
+                                // down the subscription.
                                 _rabProjectService.ReportCancellation("Prepare");
                             }
                             catch (Exception error)
@@ -198,6 +203,7 @@ namespace Bloom.Publish.Rab
                                 succeeded = true;
                             }
                             catch (OperationCanceledException)
+                                when (_rabProjectService.IsCancellationRequested)
                             {
                                 _rabProjectService.ReportCancellation("Build");
                             }
@@ -239,6 +245,7 @@ namespace Bloom.Publish.Rab
                                 succeeded = true;
                             }
                             catch (OperationCanceledException)
+                                when (_rabProjectService.IsCancellationRequested)
                             {
                                 _rabProjectService.ReportCancellation("Try on phone");
                             }
