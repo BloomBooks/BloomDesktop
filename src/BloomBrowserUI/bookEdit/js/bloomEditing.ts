@@ -1561,9 +1561,11 @@ export function captureContentForExternalProcessing(
 ): void {
     window.__bloomExternalPageContent = undefined;
 
-    // Optionally auto-fit simple single-image/single-text origami pages so the fitted split persists
-    // into the saved HTML. This currently handles both image-above-text and image-left-of-text when
-    // the image is in the first pane. We do this UP FRONT, before the delay-wait below, for two reasons:
+    // Optionally auto-fit image/text origami pages so the fitted split persists into the saved HTML.
+    // This handles two-pane image-above-text and image-left-of-text (image in the first pane), plus
+    // top-to-bottom STACKS of three or more panes holding one illustration and text in the rest —
+    // text above / picture / text below and the like.
+    // We do this UP FRONT, before the delay-wait below, for two reasons:
     //  - It must run on the fully settled, real browser layout (which it now is: bootstrap() and the
     //    load-time fix-ups have run before C# calls us).
     //  - Resizing the image pane means the background image must be re-fit to the new pane size. That

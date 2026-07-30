@@ -43,13 +43,15 @@ namespace Bloom.Book
         /// the WebView2 it drives lives on the OffScreenBrowser's own dedicated thread, and this method just
         /// blocks on it. The book, however, must not be touched by another thread while we process it.
         ///
-        /// When <paramref name="fitImageTextSplits"/> is true, simple two-pane origami pages with a
-        /// single illustration in the first pane and a single text block in the second pane have their
-        /// split auto-fit. This currently covers both image-above-text and image-left-of-text layouts.
-        /// The image pane is grown (and the text pane shrunk) as far as it can without making the text
-        /// overflow, but no further than the image filling the relevant page dimension. This uses the
-        /// real off-screen browser layout (no font/text estimation); see fitImageOverTextSplits() in
-        /// bloomEditing.ts.
+        /// When <paramref name="fitImageTextSplits"/> is true, origami image/text pages have their
+        /// split auto-fit: two-pane pages with one illustration in the first pane and one text block in
+        /// the second (both image-above-text and image-left-of-text), plus top-to-bottom stacks of
+        /// three or more panes holding one illustration and text in the rest -- text above / picture /
+        /// text below and the like. Each divider moves to the size the content actually calls for, in
+        /// either direction, but never so far that text overflows, and never past the point where the
+        /// illustration already fills the relevant page dimension (beyond which a bigger pane is only
+        /// whitespace). This uses the real off-screen browser layout (no font/text estimation); see
+        /// fitImageOverTextSplits() in bloomEditing.ts.
         /// </summary>
         public static int ProcessBook(Book book, bool fitImageTextSplits = false)
         {

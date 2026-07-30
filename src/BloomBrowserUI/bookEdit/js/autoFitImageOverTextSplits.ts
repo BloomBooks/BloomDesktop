@@ -275,7 +275,9 @@ function classifySlot(
     if (canvas && !textGroup) {
         // Overlays (canvas elements other than the background image) put the page out of scope for
         // the same reason as in the two-pane case: our math reasons only about the background
-        // image's aspect ratio, and overlays don't scale with it predictably.
+        // image's aspect ratio, and overlays don't scale with it predictably. Not redundant with the
+        // `!textGroup` test above, though it looks it: that one already excludes TEXT bubbles (a
+        // bubble contains a translationGroup), so this is what excludes image/video/other overlays.
         if (
             canvas.querySelector(
                 `${kCanvasElementSelector}:not(.${kBackgroundImageClass})`,
@@ -666,12 +668,14 @@ function computeImageFitFirstPanePercent(
 // load-time size while we resize panes, so this aspect is stable across the binary search.
 //
 // CAVEAT for freshly imported books: this box is whatever the importer wrote, which is not
-// necessarily the picture's shape. BloomBridge, for one, emits the background element at the
-// full PANE rect, so on the first process-book pass we read the PANE's aspect and conclude the
-// image already fills its pane — i.e. the image-fit cap says "no room to reclaim" even when the
-// pane is half empty. The binary search still keeps text from overflowing (it measures real
-// text), so the guarantee holds; we just don't reclaim all the dead space until a pass where the
-// box reflects the image. Don't "fix" this by preferring naturalWidth/naturalHeight — that would
+// guaranteed to be the picture's shape. If an importer sizes the background element to the whole
+// PANE, we read the PANE's aspect and conclude the image already fills it — i.e. the image-fit cap
+// says "no room to reclaim" even when the pane is half empty. That only costs us whitespace: the
+// binary search still keeps text from overflowing, because it measures real text, so the guarantee
+// holds and the dead space gets reclaimed on a later pass once the box reflects the picture.
+// (Measured on BloomBridge output, 2026-07: it writes an aspect-CORRECT box — the pane's height by
+// the picture's proportional width — so this doesn't currently bite there. Don't rely on that for
+// other importers.) Don't "fix" any of this by preferring naturalWidth/naturalHeight: that would
 // ignore cropping and disagree with the re-fit that follows.
 function getImageAspectRatio(bloomCanvas: HTMLElement): number | undefined {
     const bg = bloomCanvas.getElementsByClassName(
