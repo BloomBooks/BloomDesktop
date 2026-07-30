@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Bloom.Collection;
@@ -972,6 +973,238 @@ namespace BloomTests.Publish.Rab
             Assert.That(error.Message, Is.EqualTo("adb.exe exited with code 1."));
             Assert.That(service.UninstallCommands, Is.Empty);
             Assert.That(service.InstallCommandCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task InstallAsync_WhenCancelledBeforeRetry_DoesNotUninstallExistingApp()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.PrepareAsync();
+            await service.BuildAsync();
+
+            // The first install attempt reports the differently-signed-package failure that would
+            // normally trigger the uninstall-and-retry recovery.
+            service.InstallApkResults.Enqueue(
+                (
+                    1,
+                    "adb.exe: failed to install sample.apk: Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package org.sil.en.stories signatures do not match newer version; ignoring!]"
+                )
+            );
+
+            // The user cancels while that first attempt is running.
+            Assert.That(service.TryBeginAction("install"), Is.True);
+            service.RequestCancellation();
+
+            Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                await service.InstallAsync()
+            );
+
+            // We bailed before the destructive uninstall, so the phone's existing app is left
+            // untouched and no second install was attempted.
+            Assert.That(service.UninstallCommands, Is.Empty);
+            Assert.That(service.InstallCommandCount, Is.EqualTo(1));
+
+            service.ClearAction();
+        }
+
+        [Test]
+        public async Task InstallAsync_WhenCancelledDuringReplace_StillReinstallsBeforeHonoringCancel()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.PrepareAsync();
+            await service.BuildAsync();
+
+            service.InstallApkResults.Enqueue(
+                (
+                    1,
+                    "adb.exe: failed to install sample.apk: Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package org.sil.en.stories signatures do not match newer version; ignoring!]"
+                )
+            );
+            service.InstallApkResults.Enqueue((0, "Performing Streamed Install"));
+
+            Assert.That(service.TryBeginAction("install"), Is.True);
+            // Simulate the user cancelling at the moment the old app has just been uninstalled.
+            service.DuringUninstall = () => service.RequestCancellation();
+
+            Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                await service.InstallAsync()
+            );
+
+            // Even though the cancel landed mid-recovery, we finished the reinstall (one uninstall
+            // followed by a second install) before honoring the cancellation, so the phone is never
+            // left with no app.
+            Assert.That(service.UninstallCommands.Count, Is.EqualTo(1));
+            Assert.That(service.InstallCommandCount, Is.EqualTo(2));
+
+            service.ClearAction();
+        }
+
+        [Test]
+        public async Task BuildAsync_WhenBuildFails_DeletesIntermediateApkButKeepsPreviousGoodApk()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.PrepareAsync();
+            await service.BuildAsync();
+
+            // Sanity check: a successful build produced a signed app in SafeApkRoot and left no
+            // stray .apk under the build folder.
+            var goodApk = service.FindLatestApkPath(paths);
+            Assert.That(goodApk, Is.Not.Null, "setup: the first build should produce an APK");
+            Assert.That(
+                Path.GetDirectoryName(goodApk),
+                Is.EqualTo(paths.SafeApkRoot),
+                "setup: the finished APK should live in SafeApkRoot"
+            );
+            Assert.That(
+                Directory.GetFiles(paths.BuildRoot, "*.apk", SearchOption.AllDirectories),
+                Is.Empty,
+                "setup: a successful build should not leave an APK under BuildRoot"
+            );
+
+            // A rebuild that fails after Gradle wrote an unsigned intermediate under BuildRoot.
+            service.FailNextBuild = true;
+            Assert.ThrowsAsync<ApplicationException>(async () => await service.BuildAsync());
+
+            // The intermediate under BuildRoot is deleted so it can't later be mistaken for a
+            // finished app by FindLatestApkPath...
+            Assert.That(
+                Directory.GetFiles(paths.BuildRoot, "*.apk", SearchOption.AllDirectories),
+                Is.Empty,
+                "a failed build should delete intermediate APKs under BuildRoot"
+            );
+            // ...while the previously-built good APK in SafeApkRoot is left intact.
+            Assert.That(
+                File.Exists(goodApk),
+                Is.True,
+                "a failed rebuild should keep the previous good APK"
+            );
+            Assert.That(service.FindLatestApkPath(paths), Is.EqualTo(goodApk));
+        }
+
+        [Test]
+        public void SaveDownloadStreamAtomically_WhenCancelledMidDownload_LeavesNoInstallerFile()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
+            var installerPath = Path.Combine(tempFolder.Path, "Rab-Setup.exe");
+
+            // Simulate a download that writes some bytes and is then cancelled partway through.
+            service.CopyDownloadStreamOverride = fileStream =>
+            {
+                var partialBytes = Encoding.UTF8.GetBytes("partial installer bytes");
+                fileStream.Write(partialBytes, 0, partialBytes.Length);
+                throw new OperationCanceledException();
+            };
+
+            using var responseStream = new MemoryStream();
+            Assert.Throws<OperationCanceledException>(() =>
+                service.SaveDownloadStreamAtomically(
+                    installerPath,
+                    responseStream,
+                    -1,
+                    (transferred, total) => { },
+                    CancellationToken.None
+                )
+            );
+
+            // Neither the real installer name nor the temp file is left behind, so a later
+            // FindRabSetupInstallerPath cannot pick up (and try to run) a truncated installer.
+            Assert.That(
+                File.Exists(installerPath),
+                Is.False,
+                "a cancelled download must not leave a file at the installer name"
+            );
+            Assert.That(
+                File.Exists(installerPath + ".part"),
+                Is.False,
+                "the temporary download file should be cleaned up on cancellation"
+            );
+        }
+
+        [Test]
+        public void SaveDownloadStreamAtomically_WhenDownloadCompletes_ReplacesAnyOlderInstaller()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
+            var installerPath = Path.Combine(tempFolder.Path, "Rab-Setup.exe");
+            // A stale installer from a previous run is present; a completed download must replace it
+            // (RobustFile.Move would otherwise fail because it does not overwrite).
+            RobustFile.WriteAllText(installerPath, "old installer");
+
+            service.CopyDownloadStreamOverride = fileStream =>
+            {
+                var bytes = Encoding.UTF8.GetBytes("complete installer");
+                fileStream.Write(bytes, 0, bytes.Length);
+            };
+
+            using var responseStream = new MemoryStream();
+            service.SaveDownloadStreamAtomically(
+                installerPath,
+                responseStream,
+                -1,
+                (transferred, total) => { },
+                CancellationToken.None
+            );
+
+            Assert.That(File.Exists(installerPath), Is.True);
+            Assert.That(File.ReadAllText(installerPath), Is.EqualTo("complete installer"));
+            Assert.That(
+                File.Exists(installerPath + ".part"),
+                Is.False,
+                "the temporary download file should be removed after a successful download"
+            );
         }
 
         [Test]
@@ -2582,6 +2815,19 @@ namespace BloomTests.Publish.Rab
             public List<string> UninstallCommands { get; } = new List<string>();
             public List<string> RunProcessCommands { get; } = new List<string>();
             public int InstallCommandCount { get; private set; }
+
+            // When true, the next simulated build writes an unsigned intermediate .apk under
+            // BuildRoot (as Gradle would) and then fails, so tests can verify the interrupted-build
+            // cleanup removes it.
+            public bool FailNextBuild { get; set; }
+
+            // Invoked from the simulated UninstallAppFromDevice so a test can act (e.g. request
+            // cancellation) at the exact moment the phone's existing app has just been removed.
+            public Action DuringUninstall { get; set; }
+
+            // When set, replaces the real chunk-copy so a test can simulate a download that writes
+            // some bytes to the given (temp) file stream and then completes or throws.
+            public Action<Stream> CopyDownloadStreamOverride { get; set; }
             public RabAdbConnectedDevice ConnectedDeviceToReturn { get; set; } =
                 new RabAdbConnectedDevice
                 {
@@ -2715,6 +2961,24 @@ namespace BloomTests.Publish.Rab
                 if (tokens.Contains("-load") && tokens.Contains("-build"))
                 {
                     EmitSimulatedBuildOutput(string.Join(" ", rabArguments));
+                    if (FailNextBuild)
+                    {
+                        // Mimic Gradle having written an unsigned intermediate .apk under the build
+                        // folder before the build failed; the interrupted-build cleanup should delete
+                        // it while leaving any finished app in SafeApkRoot alone.
+                        var intermediateApk = Path.Combine(
+                            _paths.BuildRoot,
+                            "app",
+                            "build",
+                            "outputs",
+                            "apk",
+                            "release",
+                            "app-release-unsigned.apk"
+                        );
+                        Directory.CreateDirectory(Path.GetDirectoryName(intermediateApk));
+                        RobustFile.WriteAllText(intermediateApk, "unsigned-intermediate");
+                        throw new ApplicationException("cmd.exe exited with code 1.");
+                    }
                     CreateApk(tokens);
                 }
             }
@@ -2876,6 +3140,30 @@ namespace BloomTests.Publish.Rab
             )
             {
                 UninstallCommands.Add($"-s \"{deviceSerial}\" uninstall \"{packageName}\"");
+                DuringUninstall?.Invoke();
+            }
+
+            internal override void CopyRabInstallerDownloadStream(
+                Stream responseStream,
+                Stream fileStream,
+                long totalBytes,
+                Action<long, long> reportProgress,
+                CancellationToken cancellationToken
+            )
+            {
+                if (CopyDownloadStreamOverride != null)
+                {
+                    CopyDownloadStreamOverride(fileStream);
+                    return;
+                }
+
+                base.CopyRabInstallerDownloadStream(
+                    responseStream,
+                    fileStream,
+                    totalBytes,
+                    reportProgress,
+                    cancellationToken
+                );
             }
 
             internal override void RunProcess(

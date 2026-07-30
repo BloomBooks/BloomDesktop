@@ -20,10 +20,25 @@ namespace Bloom.Publish.Rab
         public const string kWebSocketEventId_ActionComplete = "actionComplete";
 
         private readonly RabProjectService _rabProjectService;
+        private readonly PublishView _publishView;
 
-        public RabPublishApi(RabProjectService rabProjectService)
+        public RabPublishApi(RabProjectService rabProjectService, PublishView publishView)
         {
             _rabProjectService = rabProjectService;
+            _publishView = publishView;
+        }
+
+        /// <summary>
+        /// Enables or disables the main workspace tabs (Collections/Edit/Publish) for the duration
+        /// of a prepare/build/install action. While an action runs — i.e. while its Cancel button is
+        /// showing — the operation is modal: the user cannot navigate to another workspace tab until
+        /// it finishes or is cancelled. Mirrors how a BloomLibrary upload locks the tabs (see
+        /// LibraryPublishApi.SetParentControlsState). The publish-tool switcher on the Publish tab is
+        /// blocked separately on the React side (PublishTabPane).
+        /// </summary>
+        private void SetWorkspaceTabsEnabled(bool enable)
+        {
+            _publishView?.WorkspaceView?.SetTabsEnabled(enable);
         }
 
         /// <summary>
@@ -121,6 +136,9 @@ namespace Bloom.Publish.Rab
                         request.Failed("A prepare/build/install action is already running.");
                         return;
                     }
+                    // Lock the workspace tabs for the duration so the action is modal (see
+                    // SetWorkspaceTabsEnabled); re-enabled in the finally below.
+                    SetWorkspaceTabsEnabled(false);
                     _ = Task.Run(async () =>
                     {
                         var succeeded = false;
@@ -130,6 +148,11 @@ namespace Bloom.Publish.Rab
                             {
                                 await _rabProjectService.PrepareAsync();
                                 succeeded = true;
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                // ReportCancellation logs before the UI tears down the subscription.
+                                _rabProjectService.ReportCancellation("Prepare");
                             }
                             catch (Exception error)
                             {
@@ -145,6 +168,7 @@ namespace Bloom.Publish.Rab
                             // until the client is notified, preventing a status-poll in the gap
                             // from incorrectly clearing the client's busyAction via recovery logic.
                             _rabProjectService.ClearAction();
+                            SetWorkspaceTabsEnabled(true);
                             _rabProjectService.SendActionCompleteEvent("prepare", succeeded);
                         }
                     });
@@ -162,6 +186,7 @@ namespace Bloom.Publish.Rab
                         request.Failed("A prepare/build/install action is already running.");
                         return;
                     }
+                    SetWorkspaceTabsEnabled(false);
                     _ = Task.Run(async () =>
                     {
                         var succeeded = false;
@@ -172,6 +197,10 @@ namespace Bloom.Publish.Rab
                                 await _rabProjectService.BuildAsync();
                                 succeeded = true;
                             }
+                            catch (OperationCanceledException)
+                            {
+                                _rabProjectService.ReportCancellation("Build");
+                            }
                             catch (Exception error)
                             {
                                 _rabProjectService.ReportFailure("Build", error);
@@ -180,6 +209,7 @@ namespace Bloom.Publish.Rab
                         finally
                         {
                             _rabProjectService.ClearAction();
+                            SetWorkspaceTabsEnabled(true);
                             _rabProjectService.SendActionCompleteEvent("build", succeeded);
                         }
                     });
@@ -197,6 +227,7 @@ namespace Bloom.Publish.Rab
                         request.Failed("A prepare/build/install action is already running.");
                         return;
                     }
+                    SetWorkspaceTabsEnabled(false);
                     _ = Task.Run(async () =>
                     {
                         var succeeded = false;
@@ -207,6 +238,10 @@ namespace Bloom.Publish.Rab
                                 await _rabProjectService.InstallAsync();
                                 succeeded = true;
                             }
+                            catch (OperationCanceledException)
+                            {
+                                _rabProjectService.ReportCancellation("Try on phone");
+                            }
                             catch (Exception error)
                             {
                                 _rabProjectService.ReportFailure("Try on phone", error);
@@ -215,9 +250,20 @@ namespace Bloom.Publish.Rab
                         finally
                         {
                             _rabProjectService.ClearAction();
+                            SetWorkspaceTabsEnabled(true);
                             _rabProjectService.SendActionCompleteEvent("install", succeeded);
                         }
                     });
+                    request.PostSucceeded();
+                },
+                false,
+                requiresSync: false
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "cancel",
+                request =>
+                {
+                    _rabProjectService.RequestCancellation();
                     request.PostSucceeded();
                 },
                 false,

@@ -93,6 +93,23 @@ namespace Bloom.Publish.Rab
         private List<string> _rabOutputCapture;
         private readonly object _rabOutputCaptureLock = new object();
 
+        // Cancellation state for the currently running action (prepare/build/install).
+        private volatile bool _cancelRequested;
+        private readonly object _currentProcessLock = new object();
+        private Process _currentProcess;
+
+        // While true, the RAB/adb subprocess helpers run to completion without being killed by a
+        // cancellation and without throwing on a pending cancel. Used to make the "uninstall the old
+        // copy, then reinstall" recovery in Install atomic, so a cancel arriving mid-recovery cannot
+        // leave the phone with the old app removed and nothing put back in its place.
+        private volatile bool _protectCurrentProcessFromCancellation;
+
+        // Cancels in-process async I/O (currently the installer download) that killing a subprocess
+        // would not interrupt, so a stalled HTTP request aborts immediately on cancel instead of
+        // hanging until the HttpClient timeout. Guarded by _currentProcessLock, which serializes all
+        // of the current action's cancellation state.
+        private CancellationTokenSource _actionCancellationSource;
+
         public RabProjectService(
             CollectionModel collectionModel,
             BookSelection bookSelection,
@@ -467,7 +484,78 @@ namespace Bloom.Publish.Rab
             // before the first ReportProgressStage call doesn't serve stale values.
             _lastLoggedProgressStage = null;
             _lastLoggedProgressPercent = -1;
+            _cancelRequested = false;
+            lock (_currentProcessLock)
+            {
+                _actionCancellationSource?.Dispose();
+                _actionCancellationSource = new CancellationTokenSource();
+            }
             return true;
+        }
+
+        /// <summary>
+        /// Requests cancellation of the currently running prepare/build/install action.
+        /// Kills the active RAB subprocess (if any) so the background thread unblocks and can clean up,
+        /// and cancels the action's token so any in-flight async I/O (e.g. a stalled installer
+        /// download) aborts immediately instead of blocking until its timeout.
+        /// </summary>
+        internal void RequestCancellation()
+        {
+            _cancelRequested = true;
+            Process processToKill;
+            CancellationTokenSource sourceToCancel;
+            lock (_currentProcessLock)
+            {
+                processToKill = _currentProcess;
+                sourceToCancel = _actionCancellationSource;
+            }
+            // Cancel outside the lock so any read-abort continuations the token fires don't run while
+            // we hold it. The source can be disposed by a concurrent ClearAction, so tolerate that.
+            try
+            {
+                sourceToCancel?.Cancel();
+            }
+            catch (ObjectDisposedException) { }
+            if (processToKill != null)
+            {
+                try
+                {
+                    processToKill.Kill(true);
+                }
+                catch (Exception) { } // Process may have already exited
+            }
+        }
+
+        /// <summary>
+        /// The current action's cancellation token, or <see cref="CancellationToken.None"/> when no
+        /// action is running. Used to make blocking async I/O (the installer download) abort promptly
+        /// when the user cancels.
+        /// </summary>
+        private CancellationToken CurrentCancellationToken
+        {
+            get
+            {
+                lock (_currentProcessLock)
+                    return _actionCancellationSource?.Token ?? CancellationToken.None;
+            }
+        }
+
+        /// <summary>
+        /// Throws <see cref="OperationCanceledException"/> if the user has requested cancellation of
+        /// the current action, so callers can bail at a safe point.
+        /// </summary>
+        private void ThrowIfCancellationRequested()
+        {
+            if (_cancelRequested)
+                throw new OperationCanceledException();
+        }
+
+        /// <summary>
+        /// Logs a user-facing "cancelled" message to the progress channel.
+        /// </summary>
+        public void ReportCancellation(string action)
+        {
+            _progress.MessageWithoutLocalizing($"{action} cancelled.");
         }
 
         /// <summary>
@@ -479,6 +567,11 @@ namespace Bloom.Publish.Rab
         internal void ClearAction()
         {
             _activeProgressAction = null;
+            lock (_currentProcessLock)
+            {
+                _actionCancellationSource?.Dispose();
+                _actionCancellationSource = null;
+            }
         }
 
         /// <summary>
@@ -741,25 +834,42 @@ namespace Bloom.Publish.Rab
             _rabOutputCapture = buildOutput;
             try
             {
-                RunRabCommand(
-                    BuildRabArgsForProjectUpdate(
-                        paths,
-                        state,
-                        Array.Empty<RabBookPublishInfo>(),
-                        supportFiles,
-                        true
-                    ),
-                    paths.RabRoot
-                );
+                try
+                {
+                    RunRabCommand(
+                        BuildRabArgsForProjectUpdate(
+                            paths,
+                            state,
+                            Array.Empty<RabBookPublishInfo>(),
+                            supportFiles,
+                            true
+                        ),
+                        paths.RabRoot
+                    );
+                }
+                catch (ApplicationException e)
+                {
+                    // RAB exited with an error (RunProcess throws here on a non-zero exit code).
+                    // Its own stdout/stderr (collected in buildOutput) usually explains why — e.g. a
+                    // missing font — so surface those diagnostics alongside the exit-code summary
+                    // instead of leaving the user with a bare "cmd.exe exited with code N" (BL-16467).
+                    // The original exception is preserved as InnerException for the log.
+                    throw new ApplicationException(
+                        DescribeFailedRabBuild(e.Message, buildOutput),
+                        e
+                    );
+                }
             }
-            catch (ApplicationException e)
+            catch (Exception)
             {
-                // RAB exited with an error (RunProcess throws here on a non-zero exit code).
-                // Its own stdout/stderr (collected in buildOutput) usually explains why — e.g. a
-                // missing font — so surface those diagnostics alongside the exit-code summary
-                // instead of leaving the user with a bare "cmd.exe exited with code N" (BL-16467).
-                // The original exception is preserved as InnerException for the log.
-                throw new ApplicationException(DescribeFailedRabBuild(e.Message, buildOutput), e);
+                // The build didn't finish — the user cancelled, or RAB failed partway. Gradle may
+                // have left a partial or unsigned intermediate .apk under BuildRoot; delete those so
+                // a later status check or "Try on phone" cannot mistake one for a finished, signed
+                // app (FindLatestApkPath scans BuildRoot). This runs only on the abnormal path, so a
+                // successful build is untouched, and it never touches SafeApkRoot, so a failed
+                // rebuild still keeps the previous good APK.
+                DeleteIntermediateBuildApks(paths);
+                throw;
             }
             finally
             {
@@ -924,17 +1034,41 @@ namespace Bloom.Publish.Rab
             {
                 if (IsUpdateIncompatibleInstallFailure(installResult.Output))
                 {
+                    // The first attempt failed only because a differently-signed copy is already
+                    // installed, and that copy is still intact. If the user asked to cancel during
+                    // that attempt, stop here — before the destructive uninstall — so their existing
+                    // app is left untouched.
+                    ThrowIfCancellationRequested();
+
                     _progress.MessageWithoutLocalizing(
                         $"A different signed copy of {appName} is already installed on {device.DisplayName}. Removing it and retrying...",
                         ProgressKind.Warning
                     );
-                    UninstallAppFromDevice(adbPath, device.Serial, packageName, paths.RabRoot);
-                    installResult = InstallApkOnDevice(
-                        adbPath,
-                        device.Serial,
-                        apkPath,
-                        paths.RabRoot
-                    );
+
+                    // Uninstalling removes the phone's current copy, so once we start we must finish
+                    // the reinstall even if the user cancels in between; otherwise the phone would be
+                    // left with no app at all. Shield this pair of adb calls from cancellation, then
+                    // honor any pending cancel once the app is safely back.
+                    _protectCurrentProcessFromCancellation = true;
+                    try
+                    {
+                        UninstallAppFromDevice(adbPath, device.Serial, packageName, paths.RabRoot);
+                        installResult = InstallApkOnDevice(
+                            adbPath,
+                            device.Serial,
+                            apkPath,
+                            paths.RabRoot
+                        );
+                    }
+                    finally
+                    {
+                        _protectCurrentProcessFromCancellation = false;
+                    }
+
+                    // The app is reinstalled; if the user cancelled during the protected recovery,
+                    // honor it now. (A failed reinstall falls through to the error check below.)
+                    if (installResult.ExitCode == 0)
+                        ThrowIfCancellationRequested();
                 }
 
                 if (installResult.ExitCode != 0)
@@ -1227,6 +1361,13 @@ namespace Bloom.Publish.Rab
 
             for (var index = 0; index < booksToExport.Count; index++)
             {
+                // Creating a BloomPUB runs entirely in-process (no RAB subprocess whose exit lets
+                // RunProcess notice cancellation), so a user who clicks Cancel during a multi-book
+                // export would otherwise wait for every remaining book to finish. Check between
+                // books so cancellation takes effect promptly.
+                if (_cancelRequested)
+                    throw new OperationCanceledException();
+
                 var bookInfo = booksToExport[index];
                 var book = _collectionModel.GetBookFromBookInfo(bookInfo);
                 var existing =
@@ -2214,9 +2355,30 @@ namespace Bloom.Publish.Rab
                 if (!process.Start())
                     throw new ApplicationException($"Bloom could not start {fileName}.");
 
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-                process.WaitForExit();
+                // When protected, don't register the process for the cancellation kill so this call
+                // runs to completion even if the user cancels (see _protectCurrentProcessFromCancellation).
+                if (!_protectCurrentProcessFromCancellation)
+                {
+                    lock (_currentProcessLock)
+                        _currentProcess = process;
+                }
+                try
+                {
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                    process.WaitForExit();
+                }
+                finally
+                {
+                    if (!_protectCurrentProcessFromCancellation)
+                    {
+                        lock (_currentProcessLock)
+                            _currentProcess = null;
+                    }
+                }
+
+                if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                    throw new OperationCanceledException();
 
                 if (process.ExitCode != 0)
                     throw new ApplicationException(
@@ -2311,9 +2473,30 @@ namespace Bloom.Publish.Rab
                 if (!process.Start())
                     throw new ApplicationException($"Bloom could not start {fileName}.");
 
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-                process.WaitForExit();
+                // When protected, don't register the process for the cancellation kill so this call
+                // runs to completion even if the user cancels (see _protectCurrentProcessFromCancellation).
+                if (!_protectCurrentProcessFromCancellation)
+                {
+                    lock (_currentProcessLock)
+                        _currentProcess = process;
+                }
+                try
+                {
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                    process.WaitForExit();
+                }
+                finally
+                {
+                    if (!_protectCurrentProcessFromCancellation)
+                    {
+                        lock (_currentProcessLock)
+                            _currentProcess = null;
+                    }
+                }
+
+                if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                    throw new OperationCanceledException();
 
                 return (process.ExitCode, string.Join(Environment.NewLine, outputLines));
             }
@@ -2460,34 +2643,91 @@ namespace Bloom.Publish.Rab
             Action<long, long> reportProgress
         )
         {
+            // Downloading the RAB installer can take many minutes on a slow connection and runs
+            // entirely in-process (no subprocess whose exit lets RunProcess notice cancellation).
+            // Thread the action's cancellation token through the HTTP calls so a Cancel click aborts
+            // even a stalled request/response immediately rather than waiting for the HttpClient
+            // timeout. When the user cancels, these calls throw an OperationCanceledException that
+            // RabPublishApi reports as a cancellation.
+            var cancellationToken = CurrentCancellationToken;
             using var httpClient = CreateRabInstallerHttpClient();
             using var response = httpClient
-                .GetAsync(kRabSetupDownloadUrl, HttpCompletionOption.ResponseHeadersRead)
+                .GetAsync(
+                    kRabSetupDownloadUrl,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cancellationToken
+                )
                 .GetAwaiter()
                 .GetResult();
             response.EnsureSuccessStatusCode();
 
-            Directory.CreateDirectory(Path.GetDirectoryName(installerPath));
-
             using var responseStream = response
-                .Content.ReadAsStreamAsync()
+                .Content.ReadAsStreamAsync(cancellationToken)
                 .GetAwaiter()
                 .GetResult();
-            using var fileStream = RobustFile.Create(installerPath);
 
-            CopyRabInstallerDownloadStream(
+            SaveDownloadStreamAtomically(
+                installerPath,
                 responseStream,
-                fileStream,
                 response.Content.Headers.ContentLength ?? -1,
-                reportProgress
+                reportProgress,
+                cancellationToken
             );
+        }
+
+        /// <summary>
+        /// Copies a download stream to <paramref name="installerPath"/> by writing to a temporary
+        /// ".part" file next to it and moving it into place only after the whole download succeeds.
+        /// If the download is cancelled or fails, the partial file is deleted, so a half-written (or
+        /// zero-byte) file is never left at the real installer name — where <see
+        /// cref="FindRabSetupInstallerPath"/> would otherwise find it and Bloom would try to run a
+        /// truncated installer, a broken state that would not self-heal on the next attempt.
+        /// </summary>
+        internal void SaveDownloadStreamAtomically(
+            string installerPath,
+            Stream responseStream,
+            long totalBytes,
+            Action<long, long> reportProgress,
+            CancellationToken cancellationToken
+        )
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(installerPath));
+            var partialPath = installerPath + ".part";
+            try
+            {
+                using (var fileStream = RobustFile.Create(partialPath))
+                {
+                    CopyRabInstallerDownloadStream(
+                        responseStream,
+                        fileStream,
+                        totalBytes,
+                        reportProgress,
+                        cancellationToken
+                    );
+                }
+                // The download finished; publish it under the real installer name. Delete any older
+                // installer first because RobustFile.Move does not overwrite.
+                RobustFile.Delete(installerPath);
+                RobustFile.Move(partialPath, installerPath);
+            }
+            catch (Exception)
+            {
+                // Cancelled or failed: don't leave a partial download behind.
+                try
+                {
+                    RobustFile.Delete(partialPath);
+                }
+                catch (Exception) { }
+                throw;
+            }
         }
 
         internal virtual void CopyRabInstallerDownloadStream(
             Stream responseStream,
             Stream fileStream,
             long totalBytes,
-            Action<long, long> reportProgress
+            Action<long, long> reportProgress,
+            CancellationToken cancellationToken
         )
         {
             var buffer = new byte[81920];
@@ -2495,11 +2735,24 @@ namespace Bloom.Publish.Rab
 
             while (true)
             {
-                var bytesRead = responseStream.Read(buffer, 0, buffer.Length);
+                // Reading the network stream can block indefinitely if the connection stalls, so pass
+                // the cancellation token into the read/write: a Cancel click then aborts the stalled
+                // read immediately. The _cancelRequested check is a cheap backstop that also stops the
+                // loop between chunks if this ever runs without an active-action token.
+                if (_cancelRequested)
+                    throw new OperationCanceledException();
+
+                var bytesRead = responseStream
+                    .ReadAsync(buffer, 0, buffer.Length, cancellationToken)
+                    .GetAwaiter()
+                    .GetResult();
                 if (bytesRead <= 0)
                     break;
 
-                fileStream.Write(buffer, 0, bytesRead);
+                fileStream
+                    .WriteAsync(buffer, 0, bytesRead, cancellationToken)
+                    .GetAwaiter()
+                    .GetResult();
                 transferredBytes += bytesRead;
                 reportProgress?.Invoke(transferredBytes, totalBytes);
             }
@@ -3680,6 +3933,40 @@ namespace Bloom.Publish.Rab
                 .GetFiles(paths.RabRoot, "*.appDef", SearchOption.AllDirectories)
                 .OrderBy(path => path.Length)
                 .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Deletes any intermediate .apk files Gradle may have written under the build folder. These
+        /// are never the deliverable — a finished build signs the app and writes it to SafeApkRoot —
+        /// so removing them after an interrupted or failed build keeps a partial or unsigned
+        /// intermediate from later being picked up by <see cref="FindLatestApkPath"/> as if it were a
+        /// finished app. SafeApkRoot is intentionally left alone so a failed rebuild still keeps the
+        /// previous good APK.
+        /// </summary>
+        private static void DeleteIntermediateBuildApks(RabWorkspacePaths paths)
+        {
+            if (!Directory.Exists(paths.BuildRoot))
+                return;
+
+            foreach (
+                var apkPath in Directory.GetFiles(
+                    paths.BuildRoot,
+                    "*.apk",
+                    SearchOption.AllDirectories
+                )
+            )
+            {
+                try
+                {
+                    RobustFile.Delete(apkPath);
+                }
+                catch (Exception)
+                {
+                    // A leftover we can't delete (e.g. still locked by a lingering Gradle process) is
+                    // not worth failing the cancellation/failure path over; it will be superseded by
+                    // the next successful build's signed APK in SafeApkRoot.
+                }
+            }
         }
 
         internal virtual string FindLatestApkPath(RabWorkspacePaths paths)
