@@ -74,14 +74,13 @@
         }
     }
     // Quarter Letter Landscape is the shortest page (5.5 x 4.25 in). Even after
-    // reclaiming the major inter-section gaps, the contributions block's default
-    // 3em margins pushed the bottom branding logo off the page. Tighten just those
+    // reclaiming the major inter-section gaps, the contributions text's default
+    // 3em margins pushed the bottom branding logo off the page. Tighten those
     // margins (spacing only; fonts unchanged) so the logo — anchored after
-    // #funding's margin-top:auto — sits fully on the page.
+    // #funding's margin-top:auto — sits fully on the page. The surrounding
+    // translation group's own bottom margin is handled by the next rule, which
+    // covers this size too.
     &.QuarterLetterLandscape {
-        #contributions {
-            margin-bottom: 0.5em;
-        }
         .OriginalContributions-style.bloom-contentNational1 {
             margin-top: 0.5em;
             margin-bottom: 0.5em;
@@ -97,6 +96,9 @@
     &.QuarterLetterPortrait,
     &.HalfLetterLandscape,
     &.Device16x9Landscape {
+        // This is the rule that sets the contributions group's bottom margin on all
+        // four short sizes: collapse it entirely, because the reclaimed space is what
+        // lets the printing-history block and the bottom branding logo both fit.
         #contributions {
             margin-bottom: 0;
         }

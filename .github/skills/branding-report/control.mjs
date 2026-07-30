@@ -421,10 +421,11 @@ const server = http.createServer(async (req, res) => {
             const html = buildPrintHtml(paper);
             fs.writeFileSync(path.join(opts.out, "report-print.html"), html);
             const pdfName = "branding-report.pdf";
+            // No paper/margin opts: renderUrlToPdf takes those from the page's
+            // own @page rule, which buildPrintHtml emits.
             await renderUrlToPdf(
                 `http://localhost:${opts.port}/report-print.html`,
                 path.join(opts.out, pdfName),
-                { paper },
             );
             return sendJson(res, { file: pdfName });
         } catch (e) {

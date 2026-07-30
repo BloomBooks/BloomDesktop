@@ -1,0 +1,18 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-top-html",
+            "lang": "*",
+            "//": "The FCH (Kurdish Central) logo sits high on the outside back cover.",
+            "content": "<img class='branding' src='KurdishCentral.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "//": "The Bloom badge goes at the bottom, under a hairline rule. The wrapper/anchor structure is what makes it QR-capable: at runtime BookStorage.UpdateQrCode fills in the language QR code and rewrites the href.",
+            "content": "<div class='bloom-branding-wrapper'><a href='https://bloomlibrary.org/'><img class='branding' src='made-with-bloom-badge-text.svg'/></a></div>",
+            "condition": "always"
+        }
+    ]
+}
