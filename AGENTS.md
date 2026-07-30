@@ -57,7 +57,12 @@ means you do **not** need to stop the developer's Bloom to build or run unit tes
 multiple terminals can build/test at once. See `Directory.Build.props` for how it works.
 
 - This wrapper is for **building and running tests only**. To *run* Bloom, still use
-  `./go.sh` (see "Running Bloom" below) — the wrapper builds without a native apphost.
+  `./go.sh` (see "Running Bloom" below) — the wrapper builds no `Bloom.exe` apphost.
+  (`BloomPdfMaker.exe` is the one apphost it does build, because Bloom's PDF code shells
+  out to that file by name and the PDF tests fail without it.)
+- The full C# suite is expected to be **green** through this wrapper. If you see the
+  PdfMaker or xmatter-locating tests fail, that is a real regression in the wrapper /
+  `Directory.Build.props`, not the known environment noise it used to be.
 - The first build in a fresh terminal is a full (cold) build into that terminal's private
   tree; subsequent builds there are incremental. `output/` is gitignored.
 
@@ -132,6 +137,17 @@ All public methods should have a comment. So should most private ones!
 
 # Git Committing
 Always include a good description when creating a git commit.
+
+# Issue tracker
+This project tracks work in **YouTrack**, at https://issues.bloomlibrary.org/youtrack (Kanban
+boards). Ticket ids look like **`BL-16572`** (`BL-` plus a number). The skill that talks to it is
+**`youtrack-api`** — use it for any tracker operation (read an issue, find the id for the current
+work, list/post comments, set an issue's State); the higher-level `youtrack-*` skills build on it.
+
+To find the ticket id for the branch you are on, look for a `BL-XXXXX` token in the branch name,
+then the PR title, then recent commit messages. Not every branch has a card — some work (small
+cleanups, branding tweaks, tooling) is done without one, so finding no id is a normal outcome, not
+a reason to go hunting.
 
 # Skills
 Reusable, task-specific procedures for this repo live in `.github/skills/<name>/SKILL.md`.

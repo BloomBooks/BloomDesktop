@@ -13,8 +13,9 @@
 #   This wrapper redirects the whole build (obj + bin) into a private per-terminal tree
 #   under output/agent/<key>/, so you can build and run unit tests while a Bloom keeps
 #   running and while other terminals do their own builds. See Directory.Build.props
-#   for the mechanism (obj is redirected there via BLOOM_AGENT_BUILD_DIR; bin/OutDir
-#   and UseAppHost are the global -p: values this script appends).
+#   for the mechanism (obj is redirected there via BLOOM_AGENT_BUILD_DIR; bin/OutDir is
+#   the one global -p: this script appends, and apphost policy lives in that same props
+#   file because it has to vary per project).
 #
 # Usage (exactly like dotnet, just build/test through this script):
 #   build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj --filter "FullyQualifiedName~UrlPathStringTests"
@@ -43,6 +44,9 @@ fi
 
 echo "[agent-dotnet] isolated build dir: $SCRATCH" >&2
 
+# OutDir must be a global -p: (see Directory.Build.props). Apphost suppression used to
+# be a global here too, but it has to vary per project — WebView2PdfMaker's apphost is
+# the BloomPdfMaker.exe the PDF tests shell out to — so it now lives in
+# Directory.Build.props, which a global property would have overridden.
 BLOOM_AGENT_BUILD_DIR="$SCRATCH" exec dotnet "$@" \
-    -p:OutDir="$SCRATCH/bin/" \
-    -p:UseAppHost=false
+    -p:OutDir="$SCRATCH/bin/"

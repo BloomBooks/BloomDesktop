@@ -871,9 +871,6 @@ export default defineConfig(async ({ command }) => {
             maxWorkers: 4,
             minWorkers: 2,
             sourcemap: true, // Enable source maps for debugging test code
-            deps: {
-                inline: ["vitest-canvas-mock"], // Force this dep to be bundled (not externalized)
-            },
             browser: {
                 // This whole block is unused since enabled is false. The settings are our current
                 // best guess for our next attempt to get browser mode working.

@@ -280,6 +280,8 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingLanguage1.Tag = args.LanguageTag;
+                if (args.IsRtl.HasValue)
+                    PendingLanguage1.IsRightToLeft = args.IsRtl.Value;
                 PendingLanguage1.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
                 ChangeThatRequiresRestart();
             }
@@ -295,6 +297,8 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingLanguage2.Tag = args.LanguageTag;
+                if (args.IsRtl.HasValue)
+                    PendingLanguage2.IsRightToLeft = args.IsRtl.Value;
                 PendingLanguage2.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
                 ChangeThatRequiresRestart();
             }
@@ -310,6 +314,8 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingLanguage3.Tag = args.LanguageTag;
+                if (args.IsRtl.HasValue)
+                    PendingLanguage3.IsRightToLeft = args.IsRtl.Value;
                 PendingLanguage3.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
                 ChangeThatRequiresRestart();
             }
