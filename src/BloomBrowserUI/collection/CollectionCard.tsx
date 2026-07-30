@@ -19,6 +19,10 @@ import { TeamCollectionIcon } from "../teamCollection/TeamCollectionIcon";
 
 export interface ICollectionInfo {
     path: string;
+    // The folder that contains the .bloomCollection file. Shown (rather than the
+    // file path itself) in the "..." menu. Optional so stories/tests can omit it;
+    // when absent we derive it from path.
+    folderPath?: string;
     title: string;
     bookCount: number;
     checkedOutCount?: number;
@@ -97,9 +101,8 @@ const cardTitleStyle = css`
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    // Grow to fill the row so the team icon is pushed to the right (up to the
-    // space reserved for the "..." button), and truncate a long name with an
-    // ellipsis before it reaches that button.
+    // Grow to fill the row (up to the space reserved for the "..." button) and
+    // truncate a long name with an ellipsis before it reaches that button.
     min-width: 0;
     flex: 1 1 auto;
 `;
@@ -202,6 +205,12 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
     const bookCountText =
         props.bookCount === 1 ? bookCountSingular : bookCountPlural;
 
+    // Show the collection's folder, not the .bloomCollection file inside it. The
+    // backend supplies folderPath; fall back to stripping the file name from path
+    // (e.g. for stories that only set path).
+    const folderPath =
+        props.folderPath ?? props.path.replace(/[\\/][^\\/]*$/, "");
+
     return (
         <Card
             variant="outlined"
@@ -225,17 +234,17 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
                             css={css`
                                 display: flex;
                                 align-items: center;
-                                gap: 8px;
                                 width: 100%;
                                 margin-bottom: 10px;
-                                // Keep the title (and team icon) clear of the
-                                // top-right "..." button.
+                                // Keep the title clear of the top-right "..." button.
                                 padding-right: ${kMoreButtonReservedSpace};
                             `}
                         >
                             <Typography variant="body1" css={cardTitleStyle}>
                                 {props.title}
                             </Typography>
+                        </div>
+                        <div css={metadataRowStyle}>
                             {props.isTeamCollection && (
                                 <TeamCollectionIcon
                                     css={css`
@@ -243,8 +252,6 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
                                     `}
                                 />
                             )}
-                        </div>
-                        <div css={metadataRowStyle}>
                             <span css={bookCountStyle}>{bookCountText}</span>
                             {props.checkedOutCount ? (
                                 <Chip
@@ -310,7 +317,7 @@ export const CollectionCard: React.FunctionComponent<ICollectionInfo> = (
                         word-break: break-all;
                     `}
                 >
-                    {props.path}
+                    {folderPath}
                 </MenuItem>
             </Menu>
         </Card>

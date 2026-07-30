@@ -749,7 +749,9 @@ export default class BloomField {
         if ($(field).hasClass("WordFind-style")) return;
 
         BloomField.ConvertTopLevelTextNodesToParagraphs(field);
-        $(field).find("br").remove();
+        // Replace <br> with a space instead of removing it to avoid mushing words together
+        // None of these should exist in Bloom books, but some antique books may have them.  See BL-16518.
+        $(field).find("br").replaceWith(" ");
 
         // in cases where we are embedding images inside of bloom-editables, the paragraphs actually have to go at the
         // end, for reason of wrapping. See SHRP C1P4 Pupils Book
