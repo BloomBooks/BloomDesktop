@@ -144,6 +144,13 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
         void splitPane.offsetHeight;
     };
 
+    // Undo the probing exactly, for the paths that end up declining the page — see
+    // captureSplitStyles. Writing back `originalTextPercent` instead would look equivalent but isn't:
+    // on a split with no explicit percentage (the common case, defaulting to 50%) it would leave an
+    // explicit "50%" behind on a page we decided not to touch.
+    const savedStyles = captureSplitStyles([splitConfig]);
+    const restore = () => restoreSplitStyles(savedStyles, splitPane);
+
     const textOverflows = (): boolean => textGroupOverflows(secondTextGroup);
 
     // Upper bound for the search: a text pane this tall is assumed to fit any text we'd auto-fit.
@@ -153,7 +160,7 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
     // growing the image (it's just over-full). Leave it exactly as we found it.
     setTextPercent(hiBound);
     if (textOverflows()) {
-        setTextPercent(originalTextPercent);
+        restore();
         return false;
     }
 
@@ -200,7 +207,7 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
     // Nothing worth doing (the authored split is already about right): put it back exactly as we
     // found it rather than rewriting the style with a rounding-noise difference.
     if (Math.abs(finalTextPercent - originalTextPercent) < kFitMinMovePercent) {
-        setTextPercent(originalTextPercent);
+        restore();
         return false;
     }
     setTextPercent(finalTextPercent);
@@ -349,13 +356,15 @@ export function readStackSizesPx(stack: SplitStack, totalPx: number): number[] {
 }
 
 // Remember every style attribute the fitting is about to overwrite, so a page we end up declining can
-// be put back byte-for-byte. Re-deriving the percentages instead would write an explicit "50%" onto
-// panes that had no style at all, needlessly changing the saved HTML of a page we chose not to touch.
-export function captureStackStyles(
-    stack: SplitStack,
+// be put back byte-for-byte. Measuring means laying the splits out over and over, so by the time we
+// decide a page is out of reach its styles have all been rewritten; re-deriving the percentages to
+// undo that would stamp an explicit "50%" onto panes that had no style at all, putting a page we
+// chose NOT to touch into the saved HTML's diff for nothing.
+export function captureSplitStyles(
+    configs: SplitConfig[],
 ): Array<[HTMLElement, string | null]> {
     const saved: Array<[HTMLElement, string | null]> = [];
-    for (const config of stack.splits)
+    for (const config of configs)
         for (const el of [
             config.firstComponent,
             config.divider,
@@ -365,15 +374,16 @@ export function captureStackStyles(
     return saved;
 }
 
-export function restoreStackStyles(
+export function restoreSplitStyles(
     saved: Array<[HTMLElement, string | null]>,
-    stack: SplitStack,
+    reflowFrom: HTMLElement,
 ): void {
     for (const [el, style] of saved) {
         if (style === null) el.removeAttribute("style");
         else el.setAttribute("style", style);
     }
-    void stack.splitPane.offsetHeight;
+    // Force a synchronous reflow so anything measured afterward sees the restored layout.
+    void reflowFrom.offsetHeight;
 }
 
 // The inverse of readStackSizesPx: lay the stack out with these pane sizes (px, visual order).
@@ -404,7 +414,12 @@ function computeImageFitPaneSizePx(
     const width = stack.splitPane.offsetWidth;
     if (width <= 0) return undefined;
     const scale = EditableDivUtils.getPageScale() || 1;
-    // Whatever the pane spends on padding/chrome rather than on the picture itself.
+    // Whatever the pane spends on padding/chrome rather than on the picture itself. Only this term is
+    // scale-divided, matching computeImageFitFirstPanePercent and the reference getImagePercent() in
+    // lib/split-pane/split-pane.ts. Don't "fix" the asymmetry here alone: it would put this out of
+    // step with the re-fit that runs afterward. It costs nothing in the off-screen processor (scale
+    // is 1), and even at another scale it can only skew this whitespace cap — never the no-overflow
+    // guarantee, which comes from measuring the real text.
     const extra =
         (slot.component.offsetHeight - slot.canvas!.offsetHeight) / scale;
     return width / aspectRatio + extra;
@@ -426,8 +441,8 @@ function fitImageTextStack(stack: SplitStack): boolean {
     const originalSizesPx = readStackSizesPx(stack, totalPx);
     const minPanePx = (totalPx * kFitMinTextPercent) / 100;
     const cushionPx = (totalPx * kFitTextCushionPercent) / 100;
-    const savedStyles = captureStackStyles(stack);
-    const restore = () => restoreStackStyles(savedStyles, stack);
+    const savedStyles = captureSplitStyles(stack.splits);
+    const restore = () => restoreSplitStyles(savedStyles, stack.splitPane);
 
     // Measure the illustration's cap NOW, while the stack is still laid out as it was saved. Both
     // inputs are read off the rendered boxes, and the probing below deliberately squeezes whichever

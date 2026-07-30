@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
     applyStackSizesPx,
-    captureStackStyles,
+    captureSplitStyles,
     collectSplitStack,
     readStackSizesPx,
-    restoreStackStyles,
+    restoreSplitStyles,
 } from "./autoFitImageOverTextSplits";
 
 // These tests cover the two parts of the nested-stack support that don't need a real browser
@@ -264,12 +264,12 @@ describe("stack size arithmetic", () => {
         // reach its styles have all been rewritten. Putting back the ORIGINAL attributes (rather than
         // re-deriving 50%) is what keeps a page we chose not to touch out of the saved HTML's diff.
         const stack = collectSplitStack(textImageTextStack())!;
-        const saved = captureStackStyles(stack);
+        const saved = captureSplitStyles(stack.splits);
         applyStackSizesPx(stack, [120, 460, 220], 800);
         expect(stack.splits[0].secondComponent.getAttribute("style")).not.toBe(
             null,
         );
-        restoreStackStyles(saved, stack);
+        restoreSplitStyles(saved, stack.splitPane);
         for (const config of stack.splits)
             for (const el of [
                 config.firstComponent,
@@ -282,9 +282,9 @@ describe("stack size arithmetic", () => {
     it("restores an authored split to its exact original text", () => {
         const stack = collectSplitStack(textImageTextStack())!;
         stack.splits[0].secondComponent.setAttribute("style", "height: 62%");
-        const saved = captureStackStyles(stack);
+        const saved = captureSplitStyles(stack.splits);
         applyStackSizesPx(stack, [120, 460, 220], 800);
-        restoreStackStyles(saved, stack);
+        restoreSplitStyles(saved, stack.splitPane);
         expect(stack.splits[0].secondComponent.getAttribute("style")).toBe(
             "height: 62%",
         );
