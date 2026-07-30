@@ -40,8 +40,8 @@ const footerBandStyle = css`
     margin-right: -24px;
     margin-bottom: -10px;
     padding: 14px 24px;
-    background-color: #fafafa;
-    border-top: 1px solid #eee;
+    background-color: #f0f0f0;
+    border-top: 1px solid #e0e0e0;
     & > div {
         padding-top: 0;
     }
