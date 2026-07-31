@@ -1,6 +1,11 @@
 import { ReaderSettings } from "../ReaderSettings";
 import { theOneLanguageDataInstance } from "../libSynphony/synphony_lib";
 
+/**
+ * Copies the settings so the setup dialog can edit a draft without touching the live
+ * model. The stage and level objects are copied too, since the dialog edits their fields;
+ * the arrays inside them (e.g. stage.words) are shared, as the dialog never mutates those.
+ */
 export const cloneReaderSettings = (source: ReaderSettings): ReaderSettings => {
     return {
         ...source,
@@ -9,6 +14,12 @@ export const cloneReaderSettings = (source: ReaderSettings): ReaderSettings => {
     } as ReaderSettings;
 };
 
+/**
+ * if the user enters a comma-separated list, remove the commas before saving (this is a space-delimited list)
+ * Also converts newlines to spaces.
+ * @param original
+ * @returns {string}
+ */
 export function cleanSpaceDelimitedList(original: string): string {
     let cleaned: string = original
         .replace(/,/g, " ")
@@ -18,6 +29,28 @@ export function cleanSpaceDelimitedList(original: string): string {
 
     return cleaned;
 }
+
+/**
+ * Returns a copy of the settings with every space-delimited field normalized the way
+ * storage expects. Each of these fields is later re-split on plain spaces (see
+ * ReadersSynphonyWrapper.loadSettings), so the commas and newlines a user may type into
+ * the dialog's text boxes have to be collapsed here; otherwise a line like "cat\ndog" is
+ * stored — and then loaded — as a single run-together word.
+ */
+export const prepareSettingsForSave = (
+    settings: ReaderSettings,
+): ReaderSettings => {
+    const settingsToSave = cloneReaderSettings(settings);
+    settingsToSave.letters = cleanSpaceDelimitedList(settingsToSave.letters);
+    settingsToSave.moreWords = cleanSpaceDelimitedList(
+        settingsToSave.moreWords,
+    );
+    for (const stage of settingsToSave.stages) {
+        stage.letters = cleanSpaceDelimitedList(stage.letters);
+        stage.sightWords = cleanSpaceDelimitedList(stage.sightWords);
+    }
+    return settingsToSave;
+};
 
 /** Splits a word into configured graphemes using Synphony's legacy matching order. */
 const getGpcForm = (word: string, allGpcs: string[]): string[] => {

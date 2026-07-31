@@ -45,14 +45,12 @@ const commonHeaderStyles = css`
     text-transform: uppercase;
 `;
 
-type SettingsTabProps = {
-    settings: ReaderSettings;
-    setSettings: (value: ReaderSettings) => void;
-};
-
 /** Applies a tab change to a cloned settings object and publishes the updated draft. */
 const updateSettings = (
-    props: SettingsTabProps,
+    props: {
+        settings: ReaderSettings;
+        setSettings: (value: ReaderSettings) => void;
+    },
     update: (settings: ReaderSettings) => void,
 ) => {
     const updatedSettings = cloneReaderSettings(props.settings);
@@ -74,6 +72,10 @@ export const DecodableStagesSetup: React.FunctionComponent<{
     const stagesTab = useL10n(
         "Decodable Stages",
         "ReaderSetup.DecodableStages",
+    );
+    const tabsLabel = useL10n(
+        "Set up Decodable Reader Tool",
+        "ReaderSetup.SetUpDecodableReaderTool",
     );
 
     let activeTab: React.ReactNode;
@@ -121,7 +123,10 @@ export const DecodableStagesSetup: React.FunctionComponent<{
         >
             <Tabs
                 value={curTab}
-                aria-label="Reader setup tabs"
+                // onChange (rather than onClick on each Tab) is what lets MUI's own
+                // arrow-key navigation actually change tabs, not just move focus.
+                onChange={(_event, newTab: number) => setCurTab(newTab)}
+                aria-label={tabsLabel}
                 css={css`
                     min-height: 50px;
                     padding: 0 6px;
@@ -143,9 +148,9 @@ export const DecodableStagesSetup: React.FunctionComponent<{
                     }
                 `}
             >
-                <Tab label={lettersTab} onClick={() => setCurTab(0)} />
-                <Tab label={sampleWordsTab} onClick={() => setCurTab(1)} />
-                <Tab label={stagesTab} onClick={() => setCurTab(2)} />
+                <Tab label={lettersTab} />
+                <Tab label={sampleWordsTab} />
+                <Tab label={stagesTab} />
             </Tabs>
             <div
                 css={css`
@@ -165,16 +170,20 @@ export const DecodableStagesSetup: React.FunctionComponent<{
     );
 };
 
-const LettersTab: React.FunctionComponent<
-    SettingsTabProps & {
-        fontName: string;
-    }
-> = (props) => {
+const LettersTab: React.FunctionComponent<{
+    settings: ReaderSettings;
+    setSettings: (value: ReaderSettings) => void;
+    fontName: string;
+}> = (props) => {
     const updateLetters = (value: string) => {
         updateSettings(props, (updatedSettings) => {
             updatedSettings.letters = value;
         });
     };
+    const lettersBoxLabel = useL10n(
+        "Letters and Letter Combinations",
+        "ReaderSetup.Letters.Header",
+    );
     return (
         <div
             css={css`
@@ -196,6 +205,7 @@ const LettersTab: React.FunctionComponent<
             <ReaderDialogTextarea
                 updateSettings={updateLetters}
                 value={props.settings.letters}
+                ariaLabel={lettersBoxLabel}
                 extraStyles={css`
                     display: block;
                     width: 325px;
@@ -274,11 +284,11 @@ const LettersTab: React.FunctionComponent<
     );
 };
 
-const SampleWordsTab: React.FunctionComponent<
-    SettingsTabProps & {
-        fontName: string;
-    }
-> = (props) => {
+const SampleWordsTab: React.FunctionComponent<{
+    settings: ReaderSettings;
+    setSettings: (value: ReaderSettings) => void;
+    fontName: string;
+}> = (props) => {
     const [sampleTextFiles, setSampleTextFiles] = useState<string[]>([]);
 
     useMountEffect(() => {
@@ -332,6 +342,10 @@ const SampleWordsTab: React.FunctionComponent<
             updatedSettings.moreWords = value;
         });
     };
+    const moreWordsBoxLabel = useL10n(
+        "1) Type Words Here",
+        "ReaderSetup.Words.TypeWordsHere",
+    );
 
     return (
         <div
@@ -422,6 +436,7 @@ const SampleWordsTab: React.FunctionComponent<
                             <ReaderDialogTextarea
                                 updateSettings={updateMoreWords}
                                 value={props.settings.moreWords}
+                                ariaLabel={moreWordsBoxLabel}
                                 extraStyles={css`
                                     flex: 1 1 auto;
                                     min-height: 100px;
@@ -514,15 +529,15 @@ const SampleWordsTab: React.FunctionComponent<
     );
 };
 
-type StagesTabProps = SettingsTabProps & {
+const StagesTab: React.FunctionComponent<{
+    settings: ReaderSettings;
+    setSettings: (value: ReaderSettings) => void;
     setCurTab: (value: number) => void;
     fontName: string;
     curStageIndex: number;
     setCurStageIndex: (value: number) => void;
     maxAllowedWords: number;
-};
-
-const StagesTab: React.FunctionComponent<StagesTabProps> = (props) => {
+}> = (props) => {
     const [wordListVersion, setWordListVersion] = useState(0);
     const [allowedWords, setAllowedWords] = useState<string[]>([]);
 
@@ -724,6 +739,10 @@ const StagesTab: React.FunctionComponent<StagesTabProps> = (props) => {
         "Remove from this stage",
         "ReaderSetup.RemoveWordList",
     );
+    const sightWordsBoxLabel = useL10n(
+        "New Sight Words",
+        "ReaderSetup.SightWordLabel",
+    );
 
     return (
         <div
@@ -792,6 +811,7 @@ const StagesTab: React.FunctionComponent<StagesTabProps> = (props) => {
                         <ReaderDialogTextarea
                             updateSettings={updateSightWords}
                             value={stage.sightWords}
+                            ariaLabel={sightWordsBoxLabel}
                             extraStyles={css`
                                 display: block;
                                 width: 325px;
@@ -806,7 +826,9 @@ const StagesTab: React.FunctionComponent<StagesTabProps> = (props) => {
                                 ${commonTextStyles}
                             `}
                         >
-                            Separate words with spaces.
+                            <Span l10nKey="ReaderSetup.SeparateWordsWithSpaces">
+                                Separate words with spaces.
+                            </Span>
                         </div>
                         <div
                             css={css`
@@ -890,7 +912,7 @@ const StagesTab: React.FunctionComponent<StagesTabProps> = (props) => {
                             `}
                         >
                             <Span l10nKey="ReaderSetup.ClickLetter">
-                                Click a letter to add it to this stage.
+                                Click on letters to add them to this stage.
                             </Span>
                         </div>
                     </div>
