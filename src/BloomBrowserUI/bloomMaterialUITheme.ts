@@ -1,5 +1,8 @@
 import { createTheme, Theme } from "@mui/material/styles";
-import "./bloomWebFonts.less";
+// NB: this module must NOT import bloomUIFontFaces.css (or anything else that emits
+// @font-face). It loads into documents that already have those declarations (like the edit
+// page), and a late duplicate blanks rendered text (BL-15300). Documents get the UI fonts
+// from ensureUiFontFacesInstalled() in reactRender.tsx, or from their statically-linked css.
 import {
     kBloomDisabledOpacity,
     kBloomDisabledText,

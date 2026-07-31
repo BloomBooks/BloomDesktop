@@ -1771,8 +1771,22 @@ namespace Bloom.Book
             // we can't use that as a file name because the first book exists, but it will pass this check,
             // so "A nice story about Bob" will be kept when we might prefer "A nice story 2". But this
             // won't cause dreadful problems and is pretty unlikely.
+            //
+            // We also keep the current name when it is exactly the "<base> - <hash>" work-around that
+            // GetUniqueBookFolderName produced for this same title. For a long title the folder base is
+            // truncated shorter than idealFolderName, so the plain StartsWith check below is false; without
+            // the IsUniqueVariantOfIdealFolderName check such a book would be given a brand new unique
+            // folder on every save. Because that new name normally collides with the book's own current
+            // folder, GetUniqueBookFolderName falls back to a fresh random GUID, so the folder churned to a
+            // different name each save. That orphaned folders and, worse, invalidated the page-iframe URLs
+            // the editor was using, producing spurious "Page expired" errors when changing page
+            // size/orientation (which saves the book). See BL-16596. (The check demands the exact canonical
+            // base for the current title, so a genuine title change still renames the folder.)
             if (
-                currentFolderName.StartsWith(idealFolderName)
+                (
+                    currentFolderName.StartsWith(idealFolderName)
+                    || IsUniqueVariantOfIdealFolderName(currentFolderName, idealFolderName)
+                )
                 && currentFolderName == SanitizeNameForFileSystem(currentFolderName)
             )
                 return Path.Combine(Path.GetDirectoryName(idealFolderPath), currentFolderName);
@@ -1780,6 +1794,64 @@ namespace Bloom.Book
             // so find a new variant that is not in use. Override the default separator since
             // this not typically a copy.
             return GetAvailableDirectoryPath(idealFolderPath, instanceId, " - ");
+        }
+
+        /// <summary>
+        /// True if <paramref name="currentFolderName"/> is exactly the unique folder name that
+        /// GetUniqueBookFolderName (or Duplicate) would produce for a book whose ideal (sanitized)
+        /// title is <paramref name="idealFolderName"/>: the ideal name — truncated (with trailing
+        /// whitespace/periods trimmed) only if it is too long to fit alongside the suffix — followed
+        /// by a " - ", " - Copy-", or "-" separator and up to 8 hex digits of an id (e.g.
+        /// "My Long Title - a1b2c3d4"). We keep such a folder as-is on save rather than generating yet
+        /// another unique name each time (which orphaned folders and broke the editor's page URLs; see
+        /// the caller and BL-16596). We require the *exact* canonical base for the current title, not
+        /// merely a shared prefix, so that a routine same-title save keeps the folder (no churn) while
+        /// a real title change still renames the folder to match the new title.
+        /// </summary>
+        internal static bool IsUniqueVariantOfIdealFolderName(
+            string currentFolderName,
+            string idealFolderName
+        )
+        {
+            // Longest separator first so " - Copy-" wins over " - " and "-".
+            var match = Regex.Match(
+                currentFolderName,
+                @"^(?<base>.+?)(?<sep> - Copy-| - |-)[0-9a-f]{1,8}$",
+                RegexOptions.Compiled
+            );
+            if (!match.Success)
+                return false;
+            // Exactly the base that GetUniqueBookFolderName would use for this ideal title and
+            // this separator, since both use GetBaseForUniqueFolderName.
+            var expectedBase = GetBaseForUniqueFolderName(
+                idealFolderName,
+                match.Groups["sep"].Value
+            );
+            return string.Equals(
+                match.Groups["base"].Value,
+                expectedBase,
+                StringComparison.Ordinal
+            );
+        }
+
+        /// <summary>
+        /// The base-name part of a unique folder name "&lt;base&gt;&lt;separator&gt;&lt;8 hex id digits&gt;":
+        /// the given name, truncated (with trailing whitespace/periods trimmed) only when it is too
+        /// long to fit alongside the suffix within kMaxFilenameLength. Shared by
+        /// GetUniqueBookFolderName (generating such a name) and IsUniqueVariantOfIdealFolderName
+        /// (recognizing one) so the two can never drift apart.
+        /// </summary>
+        internal static string GetBaseForUniqueFolderName(string baseName, string separator)
+        {
+            // We need room for: separator (variable length) + 8 characters from instanceId
+            var suffixLength = separator.Length + 8; // 8 hex chars from GUID
+            var maxBaseNameLength = kMaxFilenameLength - suffixLength;
+            if (baseName.Length > maxBaseNameLength)
+            {
+                baseName = MiscUtils.TruncateSafely(baseName, maxBaseNameLength);
+                baseName = Regex.Replace(baseName, "[\\s.]+$", "", RegexOptions.Compiled);
+            }
+            return baseName;
         }
 
         public void SetBookName(string name)
@@ -2800,11 +2872,43 @@ namespace Bloom.Book
             );
         }
 
+        // The markup for the default "Made with Bloom" QR badge. Branding.json files reference
+        // this via the {bloom-badge-default} token (expanded in BookData.MergeBrandingSettings)
+        // instead of repeating this verbose HTML in every branding. It is kept here, next to
+        // UpdateQrCode, because that method rewrites this exact structure at runtime: it replaces
+        // the placeholder href below with the language-specific BloomLibrary URL (or removes it
+        // when the QR code is turned off), swaps in the QR image, and builds the caption.
+        private const string kBloomBadgeDefaultHtml =
+            "<div class='bloom-branding-wrapper'>"
+            + "<a href='https://bloomlibrary.org/'>"
+            + "<img class='branding' src='made-with-bloom-badge-text.svg'/>"
+            + "</a></div>";
+
+        /// <summary>
+        /// Named family of branding badge markups, keyed by the token used in branding.json
+        /// (e.g. "bloom-badge-default" is written as "{bloom-badge-default}"). Adding a future
+        /// badge variant is just a new entry here plus its own token name; branding.json structure
+        /// does not have to change.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, string> BrandingBadgeHtmlByToken =
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["bloom-badge-default"] = kBloomBadgeDefaultHtml,
+            };
+
+        /// <summary>
+        /// The class on the QR code image of the "Made with Bloom" badge (see UpdateQrCode).
+        /// Like the badge's "branding" image, it is not part of the book's content, so code that
+        /// asks "does this book have images?" or manipulates content images must skip it.
+        /// </summary>
+        public const string kQrCodeClass = "bloom-qrcode";
+
         public static void UpdateQrCode(
             HtmlDom dom,
             bool shouldHaveQrCode,
             string langCode,
-            string badgeQrCodeLabelLocalizedWithLang,
+            string badgeCaptionPattern,
+            string languageName,
             string bookFolderPath,
             bool updateQrCodeFileEvenIfItExists = true
         )
@@ -2814,6 +2918,10 @@ namespace Bloom.Book
                 )
                 .Cast<SafeXmlElement>();
             var url = "https://bloomlibrary.org/language:" + langCode;
+            // The address we actually show to the reader on the badge. We deliberately drop the
+            // "https://" and use the friendlier capitalization, but keep the same path as the real
+            // link and QR code target above.
+            var displayUrl = "BloomLibrary.org/language:" + langCode;
 
             string qrFileName = null;
             const string kQrFileName = "lang-qr-code.png";
@@ -2829,7 +2937,7 @@ namespace Bloom.Book
                     continue; // html structure is corrupt/empty: nothing we can do
 
                 var imgBranding = FindChildElement(anchor, "img", "branding");
-                var imgQr = FindChildElement(anchor, "img", "bloom-qrcode");
+                var imgQr = FindChildElement(anchor, "img", kQrCodeClass);
                 var label = FindChildElement(anchor, "div", "bloom-lang-on-blorg");
 
                 if (!shouldHaveQrCode)
@@ -2855,7 +2963,9 @@ namespace Bloom.Book
                     imgQr,
                     label,
                     qrFileName,
-                    badgeQrCodeLabelLocalizedWithLang
+                    badgeCaptionPattern,
+                    languageName,
+                    displayUrl
                 );
             }
         }
@@ -2907,7 +3017,9 @@ namespace Bloom.Book
             SafeXmlNode imgQr,
             SafeXmlNode label,
             string qrFileName,
-            string badgeLabel
+            string badgeCaptionPattern,
+            string languageName,
+            string displayUrl
         )
         {
             if (imgBranding != null)
@@ -2925,7 +3037,7 @@ namespace Bloom.Book
             if (imgQr == null)
             {
                 imgQr = anchor.OwnerDocument.CreateElement("img");
-                imgQr.SetAttribute("class", "bloom-qrcode");
+                imgQr.SetAttribute("class", kQrCodeClass);
                 anchor.AppendChild(imgQr);
             }
             imgQr.SetAttribute("src", qrFileName);
@@ -2934,11 +3046,56 @@ namespace Bloom.Book
             if (label == null)
             {
                 label = anchor.OwnerDocument.CreateElement("div");
-                label.SetAttribute("class", "bloom-lang-on-blorg");
+                ((SafeXmlElement)label).SetAttribute("class", "bloom-lang-on-blorg");
                 anchor.AppendChild(label);
             }
 
-            label.InnerText = badgeLabel;
+            // The caption block has two lines: the caption text (with the language name in bold)
+            // on the first line, and the BloomLibrary.org address on its own line below it. We
+            // clear any previous content so re-running (e.g. after the language or caption changes)
+            // rebuilds it cleanly.
+            label.InnerXml = "";
+            var doc = anchor.OwnerDocument;
+
+            var captionDiv = doc.CreateElement("div");
+            captionDiv.SetAttribute("class", "bloom-blorg-caption");
+            AppendCaptionWithBoldLanguage(captionDiv, badgeCaptionPattern, languageName);
+            label.AppendChild(captionDiv);
+
+            var urlDiv = doc.CreateElement("div");
+            urlDiv.SetAttribute("class", "bloom-blorg-url");
+            urlDiv.AppendChild(doc.CreateTextNode(displayUrl));
+            label.AppendChild(urlDiv);
+        }
+
+        /// <summary>
+        /// Fills the caption element with the caption text, wrapping the language name (the "{0}"
+        /// placeholder in the pattern) in a bold element. If the pattern has no "{0}" placeholder
+        /// (e.g. a user cleared it out of their custom caption), the pattern is used verbatim.
+        /// </summary>
+        internal static void AppendCaptionWithBoldLanguage(
+            SafeXmlElement captionDiv,
+            string captionPattern,
+            string languageName
+        )
+        {
+            var doc = captionDiv.OwnerDocument;
+            const string placeholder = "{0}";
+            var idx = captionPattern.IndexOf(placeholder, StringComparison.Ordinal);
+            if (idx < 0)
+            {
+                captionDiv.AppendChild(doc.CreateTextNode(captionPattern));
+                return;
+            }
+            var before = captionPattern.Substring(0, idx);
+            var after = captionPattern.Substring(idx + placeholder.Length);
+            if (before.Length > 0)
+                captionDiv.AppendChild(doc.CreateTextNode(before));
+            var bold = doc.CreateElement("b");
+            bold.AppendChild(doc.CreateTextNode(languageName));
+            captionDiv.AppendChild(bold);
+            if (after.Length > 0)
+                captionDiv.AppendChild(doc.CreateTextNode(after));
         }
 
         private static string GenerateQrCodeImage(string bookFolderPath, string url)
@@ -3794,17 +3951,9 @@ namespace Bloom.Book
                 instanceId = Guid.NewGuid().ToString();
             }
 
-            // Calculate the maximum length for the base name
-            // We need room for: separator (variable length) + 8 characters from instanceId
-            var suffixLength = separator.Length + 8; // 8 hex chars from GUID
-            var maxBaseNameLength = kMaxFilenameLength - suffixLength;
-
-            // Truncate and clean the base name if necessary
-            if (baseName.Length > maxBaseNameLength)
-            {
-                baseName = MiscUtils.TruncateSafely(baseName, maxBaseNameLength);
-                baseName = Regex.Replace(baseName, "[\\s.]+$", "", RegexOptions.Compiled);
-            }
+            // Truncate and clean the base name if necessary (shared with
+            // IsUniqueVariantOfIdealFolderName, which must recognize exactly what we produce here)
+            baseName = GetBaseForUniqueFolderName(baseName, separator);
 
             string proposedName;
             do

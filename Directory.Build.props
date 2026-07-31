@@ -43,6 +43,18 @@
     <PropertyGroup Condition="'$(BLOOM_AGENT_BUILD_DIR)' != ''">
         <BaseIntermediateOutputPath>$(BLOOM_AGENT_BUILD_DIR)\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
         <!--
+            No native apphosts (.exe launchers) in the private tree: nobody runs Bloom
+            from here (use ./go.sh for that), so generating them is wasted work.
+            WebView2PdfMaker is the one exception. Bloom does not reference its assembly;
+            it shells out to the file BloomPdfMaker.exe by name
+            (Publish/PDF/MakePdfUsingExternalPdfMakerProgram.cs), so without that one
+            apphost every PdfMakerTests case fails in the private tree with
+            "BloomPdfMaker.exe seems to be missing" while passing in a normal build.
+            This lives here rather than as a -p: on the wrapper's command line because a
+            global property cannot be varied per project.
+        -->
+        <UseAppHost Condition="'$(MSBuildProjectName)' != 'WebView2PdfMaker'">false</UseAppHost>
+        <!--
             Once obj moves out of the project directory, the SDK no longer treats the
             conventional in-tree obj\ and bin\ as intermediate output, so their stale
             auto-generated *.cs (AssemblyInfo, .AssemblyAttributes) left over from a

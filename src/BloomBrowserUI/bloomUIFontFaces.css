@@ -1,0 +1,153 @@
+/*
+ * The @font-face declarations for the fonts Bloom's own UI uses. Book content gets its fonts from
+ * defaultLangStyles.css and friends, not from here.
+ *
+ * IMPORTANT (BL-15300): these declarations must appear EXACTLY ONCE per document, in CSS that
+ * is present before the document first paints. When a stylesheet containing a duplicate
+ * @font-face for a family that is already rendered arrives later (e.g. injected by a JS
+ * bundle), CSS font matching switches the rendered text to the new, not-yet-loaded face, and
+ * the text goes invisible for several frames while it re-loads ("FOIT"). That was the cause
+ * of a visible text flicker on every page change in edit mode.
+ *
+ * So: do NOT @import this file (or re-declare these fonts) in .less that gets compiled into
+ * bundles or component styles. It is delivered in exactly two ways:
+ *   1. A plain `@import (less)` in the root stylesheet of each document that contains
+ *      server-rendered text (editMode.less, toolbox.less, readerSetup.less), all of which are
+ *      linked in their document's <head> at parse time.
+ *   2. ensureUiFontFacesInstalled() (utils/uiFontFaces.ts), which injects this file's text --
+ *      only if the document doesn't already have these faces -- and is called from
+ *      reactRender.tsx for every React root, covering all the WinForms-hosted React documents.
+ * A unit test (uiFontFacesSingleSource.test.ts) enforces this.
+ *
+ * Book documents (preview, page thumbnails, printing) get neither route, by design: they should
+ * never name these fonts. bloomUI.css did leak into them for a while via bookPreviewBundle.js,
+ * putting the UI font stack on book text; the fix was to stop the leak, not to ship the faces
+ * into book documents. Keeping them out means a future leak shows up as a visibly wrong font in
+ * the visual regression suite instead of rendering plausibly.
+ *
+ * These were very helpful in compiling this file:
+ * - google-webfonts-helper.herokuapp.com (for getting .woff2 Roboto with a maximum of charsets)
+ * - transfonter.org (for making .woff2 files from .ttf fonts)
+ * - scriptsource.org (for finding Unicode ranges for specific scripts)
+ * - www.metaltoad.com/blog/how-use-font-face-avoid-faux-italic-and-bold-browser-styles
+ */
+
+/* This Roboto covers latin, latin-ext, greek, greek-ext, cyrillic, cyrillic-ext and vietnamese Unicode blocks. */
+@font-face {
+    font-family: "Roboto";
+    src: url("/bloom/fonts/Roboto-Regular.woff2") format("woff2");
+    font-weight: normal;
+}
+@font-face {
+    font-family: "Roboto";
+    src: url("/bloom/fonts/Roboto-Medium.woff2") format("woff2");
+    font-weight: 500;
+}
+/* This Roboto covers latin, latin-ext, greek, greek-ext, cyrillic, cyrillic-ext and vietnamese Unicode blocks,
+   when asked for bold. */
+@font-face {
+    font-family: "Roboto";
+    src: url("/bloom/fonts/Roboto-Bold.woff2") format("woff2");
+    font-weight: bold;
+}
+
+/* This Noto Sans font only covers Unicode points used by Devanagari scripts (at least Hindi and Nepali). */
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansDevanagari-Regular.woff2") format("woff2");
+    unicode-range: U+0900-097F, U+A8E0-A8FF;
+    font-weight: normal;
+}
+
+/* This Noto Sans font only covers Unicode points used by Devanagari scripts (at least Hindi and Nepali),
+   when asked for bold. */
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansDevanagari-Bold.woff2") format("woff2");
+    unicode-range: U+0900-097F, U+A8E0-A8FF;
+    font-weight: bold;
+}
+
+/* This Noto Sans font only covers Unicode points used by Thai scripts. */
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansThai-Regular.woff2") format("woff2");
+    unicode-range: U+0E00-0E7F;
+    font-weight: normal;
+}
+
+/* This Noto Sans font only covers Unicode points used by Thai scripts when asked for bold. */
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansThai-Bold.woff2") format("woff2");
+    unicode-range: U+0E00-0E7F;
+    font-weight: bold;
+}
+
+/* This Noto Sans font only covers Unicode points used by Bengali scripts. */
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansBengali-Regular.woff2") format("woff2");
+    unicode-range: U+0980-09FF;
+    font-weight: normal;
+}
+
+/* This Noto Sans font only covers Unicode points used by Bengali scripts when asked for bold. */
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansBengali-Bold.woff2") format("woff2");
+    unicode-range: U+0980-09FF;
+    font-weight: bold;
+}
+
+/* This Noto Sans font only covers Unicode points used by Simplified Chinese scripts. */
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansSc-Regular.woff2") format("woff2");
+    unicode-range: U+3000-303F, U+FF00-FFEF, U+4E00-9FFF;
+    font-weight: normal;
+}
+/* Unfortunately, copying the Chinese definition here doesn't actually make it show bold,
+   but it does allow the browser to use this font when it is asked for bold at these code points.
+   We could get bold Chinese in selected yellow bubble tabs by adding the bold font here...
+   at the cost of 1.5Mb. */
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansSc-Regular.woff2") format("woff2");
+    unicode-range: U+3000-303F, U+FF00-FFEF, U+4E00-9FFF;
+    font-weight: bold;
+}
+
+/* This Noto Sans font only covers Unicode points used by Arabic scripts. */
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansArabic-Regular.woff2") format("woff2");
+    unicode-range: U+0600-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+    font-weight: normal;
+}
+
+/* This Noto Sans font only covers Unicode points used by Arabic scripts when asked for bold. */
+@font-face {
+    font-family: "NotoSans";
+    src: url("/bloom/fonts/NotoSansArabic-Bold.woff2") format("woff2");
+    unicode-range: U+0600-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+    font-weight: bold;
+}
+
+/* This font is only used (for now) for the "Show Invisibles" mode. (Ctrl-Shift-Space) */
+@font-face {
+    font-family: "SymChar";
+    src: url("/bloom/fonts/SymChar-Regular.woff2") format("woff2");
+    font-weight: normal;
+}
+
+/* There are at least two places in the UI where we expect to use Andika:
+   - the font chooser (it lists font names in their font)
+   - the book titles in the collection tab book lists
+   Without this rule, if the user doesn't have Andika installed
+   (which is likely), they will get a fallback font. See BL-14102. */
+@font-face {
+    font-family: "Andika";
+    src: url("/bloom/fonts/Andika-Regular.woff2") format("woff2");
+    font-weight: normal;
+}

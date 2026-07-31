@@ -266,13 +266,16 @@ describe("jquery.text-markup", function () {
         expect($("#text_entry1").html()).toBe("<p>pre new text post</p>");
     });
 
-    it("removeCkEditorMarkup removes hidden cke_ spans", function () {
+    it("removeCkEditorMarkup preserves hidden cke_ spans (BL-16490)", function () {
+        // The hidden cke_ spans are CKEditor bookmarks marking the cursor position.
+        // We must leave them intact so the cursor can be restored after the text is
+        // marked up; removing them here made the cursor jump to the start of the box.
         const input =
             '<p>pre <span id="cke_1" style="display: none;">hidden</span> post</p>';
 
         $("#text_entry1").html(input).removeCkEditorMarkup();
 
-        expect($("#text_entry1").html()).toBe("<p>pre  post</p>");
+        expect($("#text_entry1").html()).toBe(input);
     });
 
     it("checkWrapWordsExtraIgnoresEmptyItems", function () {

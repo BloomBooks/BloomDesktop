@@ -95,6 +95,8 @@ namespace Bloom.Api
         {
             StatusCode = errorCode;
             StatusDescription = errorDescription;
+            // The real RequestInfo also sends the message as the response body.
+            ReplyContents = errorDescription;
             HaveFullyProcessedRequest = true;
         }
 

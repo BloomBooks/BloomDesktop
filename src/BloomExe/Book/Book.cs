@@ -1832,10 +1832,19 @@ namespace Bloom.Book
                     _domBeingUpdated = OurHtmlDom;
                     _updateStackTrace = Environment.StackTrace;
                     _doingBookUpdate = true;
-                    EnsureUpToDateMemoryUnprotected(progress);
-                    _doingBookUpdate = false;
-                    _domBeingUpdated = null;
-                    _updateStackTrace = null;
+                    // Reset the guard in a finally: if the update throws, the flag must not
+                    // stay stuck (which would make every later update falsely look like a
+                    // concurrent BL-3166 update and, in DEBUG, pop a blocking MessageBox).
+                    try
+                    {
+                        EnsureUpToDateMemoryUnprotected(progress);
+                    }
+                    finally
+                    {
+                        _doingBookUpdate = false;
+                        _domBeingUpdated = null;
+                        _updateStackTrace = null;
+                    }
                 }
             }
             RemoveObsoleteSoundAttributes(OurHtmlDom);
@@ -3319,7 +3328,7 @@ namespace Bloom.Book
 
         /// <summary>
         /// Determines whether the book references an existing image file other than
-        /// branding, placeholder, or license images.
+        /// branding, placeholder, license, or QR code images.
         /// </summary>
         /// <returns></returns>
         public bool HasImages()
@@ -3338,7 +3347,14 @@ namespace Bloom.Book
         {
             if (image.Name == "img")
             {
-                if (image.HasClass("branding") || image.HasClass("licenseImage"))
+                // The QR code of the "Made with Bloom" badge is as much a part of the branding as
+                // the badge image itself (which has the "branding" class), so it doesn't count as
+                // one of the book's images.
+                if (
+                    image.HasClass("branding")
+                    || image.HasClass("licenseImage")
+                    || image.HasClass(BookStorage.kQrCodeClass)
+                )
                     return false;
             }
             var imageUrl = HtmlDom.GetImageElementUrl(image);
@@ -3508,6 +3524,12 @@ namespace Bloom.Book
         /// <param name="dom"></param>
         internal void AddPreviewJavascript(HtmlDom dom)
         {
+            // Keep this bundle free of Bloom's UI css. It goes into book documents (preview,
+            // thumbnails, printing), so anything UI-ish it drags in gets applied to the rendered
+            // book: bloomUI.css used to come along and put the UI font stack on book text, which
+            // then broke when BL-15300 moved the matching @font-face declarations out of the
+            // bundle. These documents deliberately carry no UI font faces, so a re-leak shows up
+            // as a wrong font rather than rendering plausibly.
             dom.AddJavascriptFile("bookPreviewBundle.js".ToLocalhost());
         }
 
@@ -5469,7 +5491,8 @@ namespace Bloom.Book
                 OurHtmlDom,
                 CollectionSettings.ShowBlorgLanguageQrCode,
                 CollectionSettings.PrimaryLangTagWithSignPrioritized,
-                CollectionSettings.BadgeQrCodeLabelLocalizedWithLang,
+                CollectionSettings.BadgeQrCodeLabelLocalized,
+                CollectionSettings.PrimaryLanguageWithSignPrioritized,
                 FolderPath,
                 updateQrCodeFileEvenIfItExists
             );
