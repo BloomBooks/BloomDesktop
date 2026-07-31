@@ -25,8 +25,8 @@ import { ReaderStage } from "../ReaderSettings";
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { DecodableStagesSetup } from "./DecodableStagesSetup";
 import {
-    cleanSpaceDelimitedList,
     cloneReaderSettings,
+    prepareSettingsForSave,
 } from "./decodableStagesUtils";
 import { kBloomBlue } from "../../../../utils/colorUtils";
 import { lightTheme } from "../../../../bloomMaterialUITheme";
@@ -70,14 +70,7 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
                 "The reader settings must load before they can be saved.",
             );
         }
-        const settingsToSave = cloneReaderSettings(settings);
-        settingsToSave.letters = cleanSpaceDelimitedList(
-            settingsToSave.letters,
-        );
-        for (const stage of settingsToSave.stages) {
-            stage.letters = cleanSpaceDelimitedList(stage.letters);
-            stage.sightWords = cleanSpaceDelimitedList(stage.sightWords);
-        }
+        const settingsToSave = prepareSettingsForSave(settings);
         void toolboxBundle
             .beginSaveChangedSettings(
                 settingsToSave,
