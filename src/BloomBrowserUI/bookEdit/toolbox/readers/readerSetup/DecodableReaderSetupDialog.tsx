@@ -71,12 +71,19 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
             );
         }
         const settingsToSave = prepareSettingsForSave(settings);
+        // Compare like with like: what we save has been normalized, so the "what did it
+        // look like before?" baseline has to be normalized the same way. Otherwise stored
+        // settings that happen to contain a comma or a doubled space look changed every
+        // time, and we needlessly re-read every sample text file.
+        const initialForComparison = prepareSettingsForSave(
+            initialSettings.current,
+        );
         void toolboxBundle
             .beginSaveChangedSettings(
                 settingsToSave,
-                initialSettings.current.moreWords,
-                initialSettings.current.letters,
-                initialSettings.current.useAllowedWords,
+                initialForComparison.moreWords,
+                initialForComparison.letters,
+                initialForComparison.useAllowedWords,
             )
             .then(close);
     };
