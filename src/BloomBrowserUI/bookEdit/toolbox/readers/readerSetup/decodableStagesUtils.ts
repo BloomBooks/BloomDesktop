@@ -31,6 +31,19 @@ export function cleanSpaceDelimitedList(original: string): string {
 }
 
 /**
+ * Normalizes the typed sample-word list for storage: a space-delimited list with no
+ * duplicates. The legacy dialog also de-duplicated (`_.uniq` in readerSetup.io.ts), and it
+ * matters because every copy is fed to LanguageData.addWord, which counts repeats as
+ * higher word frequency.
+ */
+export const cleanSampleWordList = (original: string): string => {
+    const words = cleanSpaceDelimitedList(original)
+        .split(" ")
+        .filter((word) => word !== "");
+    return Array.from(new Set(words)).join(" ");
+};
+
+/**
  * Returns a copy of the settings with every space-delimited field normalized the way
  * storage expects. Each of these fields is later re-split on plain spaces (see
  * ReadersSynphonyWrapper.loadSettings), so the commas and newlines a user may type into
@@ -42,9 +55,7 @@ export const prepareSettingsForSave = (
 ): ReaderSettings => {
     const settingsToSave = cloneReaderSettings(settings);
     settingsToSave.letters = cleanSpaceDelimitedList(settingsToSave.letters);
-    settingsToSave.moreWords = cleanSpaceDelimitedList(
-        settingsToSave.moreWords,
-    );
+    settingsToSave.moreWords = cleanSampleWordList(settingsToSave.moreWords);
     for (const stage of settingsToSave.stages) {
         stage.letters = cleanSpaceDelimitedList(stage.letters);
         stage.sightWords = cleanSpaceDelimitedList(stage.sightWords);

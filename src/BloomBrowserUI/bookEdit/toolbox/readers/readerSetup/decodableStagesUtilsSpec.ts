@@ -100,6 +100,23 @@ describe("prepareSettingsForSave", () => {
         expect(saved.moreWords.split(" ")).toEqual(["zebra", "quokka"]);
     });
 
+    // The legacy dialog de-duplicated the typed words (_.uniq in readerSetup.io.ts).
+    // Duplicates are not harmless: each copy is fed to LanguageData.addWord, which treats
+    // repeats as a higher word frequency.
+    it("removes duplicate sample words, as the legacy dialog did", () => {
+        const settings = makeSettings({ moreWords: "cat\ndog\ncat\n dog " });
+
+        const saved = prepareSettingsForSave(settings);
+
+        expect(saved.moreWords).toBe("cat dog");
+    });
+
+    it("keeps distinct sample words in the order they were typed", () => {
+        const settings = makeSettings({ moreWords: "dog cat bird" });
+
+        expect(prepareSettingsForSave(settings).moreWords).toBe("dog cat bird");
+    });
+
     it("cleans the alphabet and every stage's letters and sight words", () => {
         const settings = makeSettings({
             letters: " a,b  c ",
