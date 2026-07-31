@@ -566,20 +566,29 @@ namespace Bloom.web.controllers
         /// editor for a single image, in both directions: outbound on each launch
         /// <c>bookImages</c> entry (the image's current credits) and inbound on each commit
         /// replacement (the credits the AI image editor chose for the result). These are the
-        /// six ClearShare fields Bloom reads and writes. The license is a single opaque string
-        /// the AI image editor carries verbatim: the license URL for a Creative Commons
-        /// license (its canonical form), otherwise the free-text rights statement for a custom
-        /// license. Any field may be null/empty. Property names are the wire (JSON) names,
-        /// matching the AI image editor's ImageCredits.
+        /// ClearShare fields Bloom reads and writes. Any field may be null/empty. The AI image
+        /// editor treats the whole object as opaque — it carries it along an edit chain and
+        /// hands it back verbatim, never reading or filling in a field — so these names are
+        /// the wire (JSON) names and match the AI image editor's ImageCredits.
+        ///
+        /// The license takes TWO fields because that is what an image file can actually hold
+        /// (dc:rights plus the cc:license URL), and either alone loses information: a CC
+        /// license may carry license notes as well as its URL, and flattening the pair into
+        /// one string dropped those notes (BL-16603).
         /// </summary>
         internal class ImageCredits
         {
             public string copyrightNotice { get; set; }
             public string creator { get; set; }
 
-            /// <summary>The license as one string: a creativecommons.org URL for a CC license,
-            /// otherwise a free-text rights statement for a custom license. Empty for none.</summary>
-            public string license { get; set; }
+            /// <summary>The Creative Commons license URL, its canonical form. Empty for a
+            /// custom license or none at all, neither of which has a URL.</summary>
+            public string licenseUrl { get; set; }
+
+            /// <summary>The free-text rights statement (dc:rights): for a custom license the
+            /// license itself, and for a Creative Commons license the extra "license notes"
+            /// restrictions the user added alongside it. Empty for none.</summary>
+            public string licenseRightsStatement { get; set; }
 
             public string attributionUrl { get; set; }
             public string collectionName { get; set; }
@@ -1199,7 +1208,10 @@ namespace Bloom.web.controllers
             {
                 copyrightNotice = meta.CopyrightNotice,
                 creator = meta.Creator,
-                license = LicenseToWireString(meta.License),
+                // Both halves of the license travel, because a CC license can have license
+                // notes as well as a URL and sending only the URL loses them (BL-16603).
+                licenseUrl = meta.License?.Url,
+                licenseRightsStatement = meta.License?.RightsStatement,
                 attributionUrl = meta.AttributionUrl,
                 collectionName = meta.CollectionName,
                 collectionUri = meta.CollectionUri,
@@ -1318,58 +1330,53 @@ namespace Bloom.web.controllers
                 AttributionUrl = credits.attributionUrl,
                 CollectionName = credits.collectionName,
                 CollectionUri = credits.collectionUri,
-                License = BuildLicense(credits.license),
+                License = BuildLicense(credits.licenseUrl, credits.licenseRightsStatement),
             };
         }
 
         /// <summary>
-        /// Collapses a ClearShare license to the single wire string the AI image editor
-        /// carries: the license URL for a Creative Commons license (its canonical form),
-        /// otherwise the free-text rights statement for a custom license. Null when there is
-        /// no license.
+        /// Reconstructs a ClearShare license from the wire representation (a CC license URL
+        /// and/or a free-text rights statement). This deliberately mirrors ClearShare's own
+        /// LicenseUtils.FromXmp, which is how the license comes back OUT of an image file: a
+        /// creativecommons.org URL becomes a CreativeCommonsLicense; failing that, a rights
+        /// statement becomes a CustomLicense; nothing at all becomes a NullLicense. Matching
+        /// FromXmp is what makes the round trip faithful — anything we can express here that it
+        /// can't express is a license the file could not store and Bloom would not read back.
+        ///
+        /// The rights statement rides along on a CC license rather than replacing it, because
+        /// ClearShare keeps both (a CC license plus the extra "license notes" restrictions the
+        /// user added) and dropping the notes was BL-16603.
+        ///
+        /// Always returns non-null.
         /// </summary>
-        private static string LicenseToWireString(LicenseInfo license)
+        private static LicenseInfo BuildLicense(string licenseUrl, string rightsStatement)
         {
-            if (license == null)
-                return null;
-            // Url/RightsStatement are on the LicenseInfo base, so this works for Creative
-            // Commons, custom, and null licenses alike.
-            return string.IsNullOrEmpty(license.Url) ? license.RightsStatement : license.Url;
-        }
-
-        /// <summary>
-        /// Reconstructs a ClearShare license from the wire representation (URL + rights
-        /// statement): a creativecommons.org URL becomes a proper CreativeCommonsLicense; any
-        /// other rights statement becomes a CustomLicense so the text is preserved; nothing at
-        /// all becomes a NullLicense. Always returns non-null. Mirrors the image gallery's
-        /// BuildLicenseInfoFromGallery, including the guard against handing a non-CC URL to
-        /// FromLicenseUrl (which misparses such URLs instead of throwing).
-        /// </summary>
-        private static LicenseInfo BuildLicense(string license)
-        {
-            if (string.IsNullOrEmpty(license))
-                return new NullLicense();
             // Only hand actual creativecommons.org URLs to the CC parser: FromLicenseUrl
             // misparses unrelated URLs instead of throwing (see ImageGalleryApi).
-            if (license.Contains("creativecommons.org"))
+            if (!string.IsNullOrEmpty(licenseUrl) && licenseUrl.Contains("creativecommons.org"))
             {
                 try
                 {
-                    return CreativeCommonsLicense.FromLicenseUrl(license);
+                    var ccLicense = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
+                    ccLicense.RightsStatement = rightsStatement;
+                    return ccLicense;
                 }
                 catch
                 {
-                    // Malformed CC URL — fall through and preserve it as custom text.
+                    // Malformed CC URL — fall through, so any rights statement still survives.
                 }
             }
-            return new CustomLicense { RightsStatement = license };
+            if (!string.IsNullOrEmpty(rightsStatement))
+                return new CustomLicense { RightsStatement = rightsStatement };
+            return new NullLicense();
         }
 
         /// <summary>True when every field of the supplied credits is null/empty.</summary>
         private static bool CreditsAreEmpty(ImageCredits c) =>
             string.IsNullOrEmpty(c.creator)
             && string.IsNullOrEmpty(c.copyrightNotice)
-            && string.IsNullOrEmpty(c.license)
+            && string.IsNullOrEmpty(c.licenseUrl)
+            && string.IsNullOrEmpty(c.licenseRightsStatement)
             && string.IsNullOrEmpty(c.attributionUrl)
             && string.IsNullOrEmpty(c.collectionName)
             && string.IsNullOrEmpty(c.collectionUri);

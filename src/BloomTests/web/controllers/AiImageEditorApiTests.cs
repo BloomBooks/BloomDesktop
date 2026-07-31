@@ -418,8 +418,15 @@ namespace BloomTests.web.controllers
         // ------------------------------------------------------------------
 
         // Writes a tiny PNG into the book folder with the given embedded credits, and
-        // returns its file name (not full path).
-        private string MakePngWithCredits(string name, string creator, string copyright)
+        // returns its file name (not full path). When licenseNotes is supplied it becomes the
+        // rights statement alongside the CC license — the free-text "license notes" a user can
+        // add to a Creative Commons license to spell out extra restrictions.
+        private string MakePngWithCredits(
+            string name,
+            string creator,
+            string copyright,
+            string licenseNotes = null
+        )
         {
             var path = Path.Combine(_bookFolder.Path, name);
             using (var bitmap = new Bitmap(10, 10))
@@ -435,6 +442,8 @@ namespace BloomTests.web.controllers
                     true,
                     CreativeCommonsLicense.DerivativeRules.Derivatives
                 );
+                if (licenseNotes != null)
+                    img.Metadata.License.RightsStatement = licenseNotes;
                 RetryUtility.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
             }
             return name;
@@ -470,7 +479,7 @@ namespace BloomTests.web.controllers
             {
                 creator = "Jane Doe",
                 copyrightNotice = "Copyright 2020 Jane Doe",
-                license = "http://creativecommons.org/licenses/by/4.0/",
+                licenseUrl = "http://creativecommons.org/licenses/by/4.0/",
             };
 
             AiImageEditorApi.EmbedCreditsInNewImageFile(_bookFolder.Path, newName, credits);
@@ -495,7 +504,7 @@ namespace BloomTests.web.controllers
             var credits = new AiImageEditorApi.ImageCredits
             {
                 creator = "Someone",
-                license = "All rights reserved; ask first.",
+                licenseRightsStatement = "All rights reserved; ask first.",
             };
 
             AiImageEditorApi.EmbedCreditsInNewImageFile(_bookFolder.Path, newName, credits);
@@ -510,6 +519,54 @@ namespace BloomTests.web.controllers
             Assert.That(
                 after.License.RightsStatement,
                 Is.EqualTo("All rights reserved; ask first.")
+            );
+        }
+
+        [Test]
+        public void CreditsRoundTrip_RightsStatementWithNoCcUrl_MatchesWhatTheSourceFileReadsBack()
+        {
+            // Why the wire carries no license *type* token, only the URL and the rights
+            // statement: an image file stores just those two things (cc:license and dc:rights),
+            // and ClearShare derives the type from them when reading (LicenseUtils.FromXmp) — a
+            // rights statement with no CC URL always comes back as a CustomLicense no matter
+            // which type was originally set. So BuildLicense deliberately mirrors FromXmp, which
+            // makes the round trip faithful to the file: the copy's license reads back exactly
+            // as the source's does. Set the source up the hard way here — a "contact the
+            // copyright holder" NullLicense that also has notes — because that is the case a
+            // type token would supposedly rescue. If ClearShare ever does start distinguishing
+            // more license types in the file, this test fails and the wire needs that token.
+            var sourceName = MakePlainPng("source.png");
+            var sourcePath = Path.Combine(_bookFolder.Path, sourceName);
+            using (var img = PalasoImage.FromFileRobustly(sourcePath))
+            {
+                img.Metadata.CopyrightNotice = "Copyright 2019 Someone";
+                img.Metadata.License = new NullLicense { RightsStatement = "Email us first." };
+                RetryUtility.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
+            }
+
+            // What the SOURCE file itself reads back as — the most any trip through a file
+            // could preserve, and so the bar our round trip has to meet.
+            var sourceAsRead = Metadata.FromFile(sourcePath);
+            Assert.That(
+                sourceAsRead.License.RightsStatement,
+                Is.EqualTo("Email us first."),
+                "setup: the source file should have kept its rights statement"
+            );
+
+            var newName = MakePlainPng("ai-image1.png");
+            var credits = AiImageEditorApi.GetCreditsForImageFile(_bookFolder.Path, sourceName);
+            AiImageEditorApi.EmbedCreditsInNewImageFile(_bookFolder.Path, newName, credits);
+
+            var after = Metadata.FromFile(Path.Combine(_bookFolder.Path, newName));
+            Assert.That(
+                after.License.GetType(),
+                Is.EqualTo(sourceAsRead.License.GetType()),
+                "the copy's license type should match what the source file reads back as"
+            );
+            Assert.That(
+                after.License.RightsStatement,
+                Is.EqualTo(sourceAsRead.License.RightsStatement),
+                "and so should its rights statement"
             );
         }
 
@@ -560,9 +617,80 @@ namespace BloomTests.web.controllers
             Assert.That(credits.creator, Is.EqualTo("Ada Lovelace"));
             Assert.That(credits.copyrightNotice, Is.EqualTo("Copyright 1843 Ada"));
             Assert.That(
-                credits.license,
+                credits.licenseUrl,
                 Does.Contain("creativecommons.org"),
-                "the CC license URL should travel to the AI image editor as the license string"
+                "the CC license URL should travel to the AI image editor"
+            );
+        }
+
+        [Test]
+        public void GetCreditsForImageFile_CcLicenseWithNotes_SendsTheNotesAsWellAsTheUrl()
+        {
+            // A Creative Commons license can carry free-text license notes as well as its URL.
+            // We used to flatten the license to a single wire string, which for a CC license
+            // meant just the URL — so the notes never reached the AI image editor and could not
+            // come back, and the AI-edited copy of the illustration lost them (BL-16603).
+            var name = MakePngWithCredits(
+                "pic.png",
+                "Ada Lovelace",
+                "Copyright 1843 Ada",
+                "Not to be used in advertising."
+            );
+
+            var credits = AiImageEditorApi.GetCreditsForImageFile(_bookFolder.Path, name);
+
+            Assert.That(credits, Is.Not.Null, "an image with metadata should yield credits");
+            Assert.That(
+                credits.licenseUrl,
+                Does.Contain("creativecommons.org"),
+                "the CC license URL should still travel"
+            );
+            Assert.That(
+                credits.licenseRightsStatement,
+                Is.EqualTo("Not to be used in advertising."),
+                "the license notes must travel alongside the URL rather than being dropped"
+            );
+        }
+
+        [Test]
+        public void CreditsRoundTrip_CcLicenseWithNotes_KeepsTheNotesOnTheNewFile()
+        {
+            // The whole BL-16603 journey for a CC-licensed illustration that has license notes:
+            // out to the AI image editor on launch, back verbatim on commit (the AI image editor
+            // carries the credits object opaquely), and embedded into the generated result. The
+            // notes have to survive all of it, not just the first hop.
+            var sourceName = MakePngWithCredits(
+                "source.png",
+                "Ada Lovelace",
+                "Copyright 1843 Ada",
+                "Not to be used in advertising."
+            );
+            var newName = MakePlainPng("ai-image1.png");
+
+            // Sanity: the generated result starts with no license of its own, so anything we
+            // find on it afterwards came from the round trip.
+            var before = Metadata.FromFile(Path.Combine(_bookFolder.Path, newName));
+            Assert.That(
+                before.License?.RightsStatement,
+                Is.Null.Or.Empty,
+                "setup: the generated file should start with no rights statement"
+            );
+
+            var credits = AiImageEditorApi.GetCreditsForImageFile(_bookFolder.Path, sourceName);
+            AiImageEditorApi.EmbedCreditsInNewImageFile(_bookFolder.Path, newName, credits);
+
+            var after = Metadata.FromFile(Path.Combine(_bookFolder.Path, newName));
+            Assert.That(after.Creator, Is.EqualTo("Ada Lovelace"));
+            Assert.That(
+                after.License,
+                Is.InstanceOf<CreativeCommonsLicense>(),
+                "the CC license itself should survive the round trip"
+            );
+            Assert.That(after.License.Url, Does.Contain("creativecommons.org"));
+            Assert.That(
+                after.License.RightsStatement,
+                Is.EqualTo("Not to be used in advertising."),
+                "and so should its license notes (BL-16603)"
             );
         }
 

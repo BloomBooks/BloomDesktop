@@ -137,10 +137,26 @@ export const launchAiImageEditor = (
 
         hostWindow.__bloomAiImageEditorCleanup?.();
 
+        // Set once a current-page swap has landed in the live DOM and so needs saving
+        // (see the commit handler, which explains why). The save is DEFERRED to
+        // cleanup() because saveChangesAndRethinkPageEvent reloads the page frame, and
+        // everything that operates this overlay — the message listener, the ✕ button's
+        // handler, this cleanup function itself — is code belonging to that frame, even
+        // though the overlay div lives in the top window. Saving while the overlay is
+        // still up therefore kills its controls and leaves a full-screen overlay the
+        // user can't close without restarting Bloom. That matters because on a partial
+        // failure we deliberately keep the overlay up for the user to read the error,
+        // so the save has to wait until they close it.
+        let livePageNeedsSaving = false;
+
         const cleanup = () => {
             hostWindow.removeEventListener("message", handleMessage);
             hostDocument.getElementById("ai-editor-overlay")?.remove();
             delete hostWindow.__bloomAiImageEditorCleanup;
+            if (livePageNeedsSaving) {
+                livePageNeedsSaving = false;
+                postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+            }
         };
 
         const overlay = hostDocument.createElement("div");
@@ -283,7 +299,12 @@ export const launchAiImageEditor = (
                               credits?: {
                                   copyrightNotice?: string;
                                   creator?: string;
-                                  license?: string;
+                                  // Two license fields, not one: a CC license has both a
+                                  // URL and (possibly) free-text license notes, and
+                                  // flattening them into one string lost the notes
+                                  // (BL-16603). See AiImageEditorApi.ImageCredits.
+                                  licenseUrl?: string;
+                                  licenseRightsStatement?: string;
                                   attributionUrl?: string;
                                   collectionName?: string;
                                   collectionUri?: string;
@@ -391,9 +412,6 @@ export const launchAiImageEditor = (
                                         : String(e));
                             } finally {
                                 ackEditor(finalOk, message);
-                                if (finalOk) {
-                                    cleanup();
-                                }
                                 // changeImageByElement only mutated the LIVE page DOM;
                                 // unlike the off-page slots (which C# saved), a current-page
                                 // swap is not otherwise persisted. Save + rethink the page so
@@ -404,10 +422,15 @@ export const launchAiImageEditor = (
                                 // Mirrors doVideoCommand's save after updateVideoInContainer.
                                 // currentPageApplied is counted per swap as it happens, so a
                                 // throw part-way through still saves the swaps that landed.
+                                // cleanup() is what actually saves, so flag it BEFORE the
+                                // cleanup() call below: on success the save then happens at
+                                // once, and on a partial failure it waits for the user to
+                                // close the overlay they are reading the error in.
                                 if (currentPageApplied > 0) {
-                                    postThatMightNavigate(
-                                        "common/saveChangesAndRethinkPageEvent",
-                                    );
+                                    livePageNeedsSaving = true;
+                                }
+                                if (finalOk) {
+                                    cleanup();
                                 }
                             }
                         },
