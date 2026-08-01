@@ -2947,8 +2947,14 @@ export async function setupForAudioRecordingTests() {
     // The real implementation constructs from iframe.src, but in tests iframe.src is "about:blank"
     // Real format: "/bloom/api/audio/wavFile?id=" + bookFolderUrl + "audio/"
     // In tests, we simulate the full path as if bookFolderUrl was "http://localhost:63315/bloom/C%23Injection/"
+    // Spy on the PROTOTYPE rather than on theOneAudioRecorder: the code under test does not always
+    // drive the player through that one instance (audioRecording.ts itself allows for another one,
+    // see its `theOneAudioRecorder !== this` check), and an instance spy stops applying the moment a
+    // different AudioRecording is the one asking for a URL. The real urlPrefix then ran, its relative
+    // URL was resolved against jsdom's own origin, and the assertion failed with localhost:3000 in
+    // place of the mocked port — intermittently, depending on how the run happened to be scheduled.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.spyOn(theOneAudioRecorder as any, "urlPrefix").mockReturnValue(
+    vi.spyOn(AudioRecording.prototype as any, "urlPrefix").mockReturnValue(
         "http://localhost:63315/bloom/api/audio/wavFile?id=audio/",
     );
 }
