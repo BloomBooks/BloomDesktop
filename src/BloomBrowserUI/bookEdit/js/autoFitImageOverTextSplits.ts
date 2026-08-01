@@ -8,9 +8,9 @@ import { EditableDivUtils } from "./editableDivUtils";
 
 // ── Auto-fit image/text origami splits (off-screen process-book only) ───────────────────────────
 //
-// A page that is a single illustration in the first pane and a single text block in the second pane
-// is usually saved at whatever ratio it was authored with (commonly 50/50) — a number that is right
-// only by accident. This moves the divider to the size the content actually calls for, in EITHER
+// A page that is a single illustration in one pane and a single text block in the other is usually
+// saved at whatever ratio it was authored with (commonly 50/50) — a number that is right only by
+// accident. This moves the divider to the size the content actually calls for, in EITHER
 // direction:
 //
 //   - GROW the image pane (shrinking the text pane) when the text leaves room to spare, but no
@@ -30,14 +30,19 @@ import { EditableDivUtils } from "./editableDivUtils";
 // almost the whole page, the page is simply over-full, and shrinking the image to a sliver would
 // leave it BOTH clipped and ugly. Those we leave exactly as authored.
 //
-// We also handle one NESTED shape: a top-to-bottom STACK of panes — text above / illustration /
-// text below, and the like — where exactly one pane holds the illustration and the rest hold text.
-// That is a very common layout in scanned story books, and it needs us more than the two-pane case
-// does, because nothing ever set its dividers on purpose: an importer emits it as a right-nested
-// chain of horizontal splits, and with no explicit percentages Bloom's 50/50-per-split CSS default
-// cascades into an effective 50/25/25. Those numbers describe the nesting, not the content, so the
-// top text block gets half the page for its one line while the last (usually longest) one is
-// clipped. See fitImageTextStack() for the arithmetic.
+// Two shapes reach that in two different ways. A two-pane page with the illustration FIRST is
+// handled by fitImageOverTextSplitOnPage itself, which drives the divider directly. Everything else
+// goes to the STACK fitter: panes in a single top-to-bottom row — text above / illustration / text
+// below, picture over text, text over picture — holding illustrations and text and nothing else.
+// Stacks of three or more panes are a very common layout in scanned story books, and they need us
+// more than the two-pane case does, because nothing ever set their dividers on purpose: an importer
+// emits one as a right-nested chain of horizontal splits, and with no explicit percentages Bloom's
+// 50/50-per-split CSS default cascades into an effective 50/25/25. Those numbers describe the
+// nesting, not the content, so the top text block gets half the page for its one line while the last
+// (usually longest) one is clipped. A stack may hold SEVERAL illustrations (a figure above the text
+// and another below it is a common way to lay out a page whose source wrapped the text around both),
+// in which case the pictures divide up whatever the text turns out not to need. See
+// fitImageTextStack() for the arithmetic.
 //
 // Called by captureContentForExternalProcessing() (when process-book asks for it) so the fitted
 // split persists into the saved HTML. Mutates the live DOM; relies on the fresh disposable browser
@@ -86,23 +91,26 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
     ) as HTMLElement | null;
     if (!splitPane) return false;
 
-    if (splitPane.querySelector(".split-pane")) {
-        // Nested. The one nested shape we understand is a STACK: panes in a single row along one
-        // axis, exactly one of them the illustration and the rest text (see fitImageTextStack).
-        // Anything else nested is too complex — leave it alone.
-        const stack = collectSplitStack(splitPane);
-        if (!stack) return false;
-        // Top/bottom stacks only. In a left/right stack the panes have different WIDTHS, so a text
-        // block's required height depends on how wide its own pane is; the panes stop being
-        // independent and the one-at-a-time measurement fitImageTextStack relies on doesn't hold.
-        if (stack.orientation !== "horizontal") return false;
-        if (stack.slots.filter((slot) => slot.kind === "image").length !== 1)
-            return false;
-        return fitImageTextStack(stack);
-    }
+    // Nested. The one nested shape we understand is a STACK: panes in a single row along one axis,
+    // each of them either an illustration or text (see tryFitAsStack). Anything else nested is too
+    // complex — leave it alone.
+    if (splitPane.querySelector(".split-pane")) return tryFitAsStack(splitPane);
 
     const splitConfig = getSplitConfig(splitPane);
     if (!splitConfig) return false;
+
+    // Everything below assumes the illustration is in the FIRST pane. A top/bottom page with the
+    // text above and the picture below is the same problem mirrored, and it is also just a two-slot
+    // stack — the stack fitter doesn't care which slot holds the picture — so hand it over rather
+    // than growing a second copy of the measurement here. A page the stack fitter turns down would
+    // have been turned down by the tests below anyway (they require a canvas in the first pane).
+    if (
+        splitConfig.orientation === "horizontal" &&
+        !splitConfig.firstInner.querySelector(kBloomCanvasSelector) &&
+        splitConfig.secondInner.querySelector(kBloomCanvasSelector)
+    ) {
+        return tryFitAsStack(splitPane);
+    }
 
     // First pane must be a plain background image with no overlays; second pane must be text-only.
     const firstCanvas = splitConfig.firstInner.querySelector(
@@ -212,6 +220,24 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
     }
     setTextPercent(finalTextPercent);
     return true;
+}
+
+// Fit `splitPane` as a stack of panes along one axis, if that is what it is. Returns false for any
+// shape the stack fitter doesn't understand, so a caller can treat it as "not my kind of page".
+function tryFitAsStack(splitPane: HTMLElement): boolean {
+    const stack = collectSplitStack(splitPane);
+    if (!stack) return false;
+    // Top/bottom stacks only. In a left/right stack the panes have different WIDTHS, so a text
+    // block's required height depends on how wide its own pane is; the panes stop being independent
+    // and the one-at-a-time measurement fitImageTextStack relies on doesn't hold.
+    if (stack.orientation !== "horizontal") return false;
+    // It takes both kinds of content to have anything to weigh. An all-TEXT stack has no picture to
+    // absorb the slack, so every percent the text doesn't claim would have to go somewhere
+    // arbitrary; an all-PICTURE stack has no text that could be clipped, which is the only thing
+    // this is here to prevent. Either way, leave the page as authored.
+    if (!stack.slots.some((slot) => slot.kind === "image")) return false;
+    if (!stack.slots.some((slot) => slot.kind === "text")) return false;
+    return fitImageTextStack(stack);
 }
 
 // Write a split's position: the SECOND pane takes `percent` of the split's own box, and the first
@@ -427,32 +453,82 @@ function computeImageFitPaneSizePx(
     return width / aspectRatio + extra;
 }
 
-// Fit a top/bottom stack of three or more panes holding exactly one illustration.
+// Divide `availablePx` among the illustrations of a stack, given what each one WANTS (the pane size
+// at which it already fills the stack's width; see computeImageFitPaneSizePx). Nobody is given more
+// than it wants, because past that point a taller pane is pure whitespace, and nobody is dropped
+// below `floorPx`. When the pictures want more than there is, they share what there is in proportion
+// to what they wanted, which lands them all at the same rendered WIDTH: a pane height proportional
+// to 1/aspect is exactly the height at which two contained pictures come out equally wide. When they
+// want less, the surplus is left for the caller to hand back to the text.
+//
+// Exported for unit testing: this is the part of the multi-illustration case that is pure arithmetic
+// and so can be checked without a real browser layout.
+export function shareImagePanesPx(
+    wantsPx: number[],
+    availablePx: number,
+    floorPx: number,
+): number[] {
+    // A picture that wants less than the floor still gets the floor, so treating the floor as its
+    // want keeps the two rules below from contradicting each other.
+    const wants = wantsPx.map((px) => Math.max(px, floorPx));
+    const sizes = new Array<number>(wants.length).fill(0);
+    const open = wants.map(() => true);
+    let remaining = availablePx;
+    for (;;) {
+        const openIndexes = wants.map((_, i) => i).filter((i) => open[i]);
+        if (openIndexes.length === 0) return sizes;
+        const wantsTotal = openIndexes.reduce((sum, i) => sum + wants[i], 0);
+        // Shares are proportional to what each picture wants. wantsTotal is only ever 0 if a caller
+        // passed all-zero wants with a zero floor; then there is nothing to be proportional to, so
+        // split evenly.
+        const shareOf = (i: number) =>
+            wantsTotal > 0
+                ? (remaining * wants[i]) / wantsTotal
+                : remaining / openIndexes.length;
+        // Pin the first pane whose proportional share overshoots what it wants, else the first that
+        // undershoots the floor, then re-share what is left among the rest. Each pass pins one pane,
+        // so this ends.
+        const overshoot = openIndexes.find((i) => shareOf(i) > wants[i]);
+        const pinIndex =
+            overshoot ?? openIndexes.find((i) => shareOf(i) < floorPx);
+        if (pinIndex === undefined) {
+            for (const i of openIndexes) sizes[i] = shareOf(i);
+            return sizes;
+        }
+        sizes[pinIndex] = overshoot === undefined ? floorPx : wants[pinIndex];
+        open[pinIndex] = false;
+        remaining -= sizes[pinIndex];
+    }
+}
+
+// Fit a top/bottom stack of three or more panes: illustrations in some of them, text in the rest.
 //
 // What makes this tractable is that every pane in such a stack is the same WIDTH. A text block's
 // required height therefore doesn't depend on where any divider sits, so we can measure each text
 // pane on its own (give it a size, ask whether it overflows, binary-search the boundary) and then
-// simply add the answers up. Same measured-not-estimated rule as the two-pane case.
+// simply add the answers up. Same measured-not-estimated rule as the two-pane case. The pictures get
+// what the text leaves, shared out by shareImagePanesPx.
 //
 // Returns true if it changed the page.
 function fitImageTextStack(stack: SplitStack): boolean {
     const totalPx = stack.splitPane.offsetHeight;
     if (totalPx <= 0) return false;
 
-    const imageIndex = stack.slots.findIndex((slot) => slot.kind === "image");
+    const imageIndexes = stack.slots
+        .map((_, i) => i)
+        .filter((i) => stack.slots[i].kind === "image");
     const originalSizesPx = readStackSizesPx(stack, totalPx);
     const minPanePx = (totalPx * kFitMinTextPercent) / 100;
     const cushionPx = (totalPx * kFitTextCushionPercent) / 100;
     const savedStyles = captureSplitStyles(stack.splits);
     const restore = () => restoreSplitStyles(savedStyles, stack.splitPane);
 
-    // Measure the illustration's cap NOW, while the stack is still laid out as it was saved. Both
+    // Measure each illustration's cap NOW, while the stack is still laid out as it was saved. Both
     // inputs are read off the rendered boxes, and the probing below deliberately squeezes whichever
-    // panes it isn't testing — including this one — so measuring afterward would read the picture's
+    // panes it isn't testing — including these — so measuring afterward would read a picture's
     // chrome out of a pane collapsed to its minimum.
-    const imageFitPx = computeImageFitPaneSizePx(
-        stack,
-        stack.slots[imageIndex],
+    const imageFitPx = imageIndexes.map((i) =>
+        computeImageFitPaneSizePx(stack, stack.slots[i]),
     );
 
     // Lay the stack out with one pane at `sizePx` and the rest sharing what's left equally. Only the
@@ -508,23 +584,31 @@ function fitImageTextStack(stack: SplitStack): boolean {
     const textTotalPx = textTargetsPx.reduce((a, b) => a + b, 0);
 
     // Individually they all fit, but together they may still not — and then there is no arrangement
-    // of these dividers that works, so don't rearrange them.
-    if (textTotalPx > totalPx - minPanePx) {
+    // of these dividers that works, so don't rearrange them. Every picture needs its floor too.
+    if (textTotalPx > totalPx - minPanePx * imageIndexes.length) {
         restore();
         return false;
     }
 
-    // The illustration takes everything the text doesn't need, up to the point where it already
-    // fills the width; past that a taller pane is pure whitespace.
-    let imagePx = totalPx - textTotalPx;
-    if (imageFitPx !== undefined)
-        imagePx = Math.min(imagePx, Math.max(imageFitPx, minPanePx));
+    // The illustrations take everything the text doesn't need, each up to the point where it already
+    // fills the width; past that a taller pane is pure whitespace. An illustration whose aspect we
+    // couldn't read has no opinion about its own size, so let it ask for an equal share.
+    const availableForImagesPx = totalPx - textTotalPx;
+    const fairSharePx = availableForImagesPx / imageIndexes.length;
+    const imageSizesPx = shareImagePanesPx(
+        imageFitPx.map((px) => px ?? fairSharePx),
+        availableForImagesPx,
+        minPanePx,
+    );
 
-    // Whatever the illustration declines goes back to the text panes rather than sitting dead,
+    // Whatever the illustrations decline goes back to the text panes rather than sitting dead,
     // shared out in proportion to what each of them needed.
     const targetsPx = textTargetsPx.slice();
-    targetsPx[imageIndex] = imagePx;
-    const leftoverPx = totalPx - textTotalPx - imagePx;
+    imageIndexes.forEach((slotIndex, n) => {
+        targetsPx[slotIndex] = imageSizesPx[n];
+    });
+    const leftoverPx =
+        availableForImagesPx - imageSizesPx.reduce((a, b) => a + b, 0);
     if (leftoverPx > 0 && textTotalPx > 0) {
         for (let i = 0; i < targetsPx.length; i++)
             if (stack.slots[i].kind === "text")

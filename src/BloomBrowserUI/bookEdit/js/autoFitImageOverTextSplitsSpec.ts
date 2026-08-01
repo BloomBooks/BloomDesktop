@@ -5,6 +5,7 @@ import {
     collectSplitStack,
     readStackSizesPx,
     restoreSplitStyles,
+    shareImagePanesPx,
 } from "./autoFitImageOverTextSplits";
 
 // These tests cover the two parts of the nested-stack support that don't need a real browser
@@ -123,6 +124,38 @@ describe("collectSplitStack", () => {
         ]);
     });
 
+    it("recognizes a stack holding more than one illustration", () => {
+        // A figure above the text and another below it: what an importer produces for a source page
+        // that wrapped its text around two small pictures. The pictures then divide up whatever the
+        // text doesn't need (see shareImagePanesPx).
+        const stack = collectSplitStack(
+            topSplitOf(
+                split(
+                    "horizontal",
+                    kImagePane,
+                    split("horizontal", kTextPane, kImagePane),
+                ),
+            ),
+        );
+        expect(stack!.slots.map((s) => s.kind)).toEqual([
+            "image",
+            "text",
+            "image",
+        ]);
+    });
+
+    it("reads a plain two-pane text-over-picture page as a two-slot stack", () => {
+        // Not nested at all, but the stack fitter is what handles it: the two-pane code in
+        // fitImageOverTextSplitOnPage drives the divider from the illustration's own pane and so
+        // assumes the picture is FIRST. Text above, picture below is the mirror image of that.
+        const stack = collectSplitStack(
+            topSplitOf(split("horizontal", kTextPane, kImagePane)),
+        );
+        expect(stack!.slots.map((s) => s.kind)).toEqual(["text", "image"]);
+        // Two panes, so one divider and one split to write.
+        expect(stack!.splits.length).toBe(1);
+    });
+
     it("reads a side-by-side stack but reports it as vertical, so the caller can decline it", () => {
         const stack = collectSplitStack(
             topSplitOf(
@@ -221,6 +254,60 @@ describe("collectSplitStack", () => {
     });
 });
 
+describe("shareImagePanesPx", () => {
+    // What each picture "wants" is the pane height at which it already fills the stack's width,
+    // i.e. width / aspect. A tall narrow figure wants far more height than any page has; a wide one
+    // wants little.
+    const kFloor = 40;
+
+    it("gives every picture what it wants when there is room to spare", () => {
+        const sizes = shareImagePanesPx([100, 150], 400, kFloor);
+        expect(sizes).toEqual([100, 150]);
+        // The 150 left over is the caller's to hand back to the text, so it must NOT be padded in
+        // here: that is the difference between a picture at its natural size and one in a pane with
+        // 150px of whitespace around it.
+        expect(sizes.reduce((a, b) => a + b, 0)).toBe(250);
+    });
+
+    it("shares in proportion when the pictures want more than there is", () => {
+        const sizes = shareImagePanesPx([1400, 800], 330, kFloor);
+        expect(sizes[0]).toBeCloseTo((330 * 1400) / 2200, 6);
+        expect(sizes[1]).toBeCloseTo((330 * 800) / 2200, 6);
+        expect(sizes[0] + sizes[1]).toBeCloseTo(330, 6);
+    });
+
+    it("lands two height-limited pictures at the same rendered width", () => {
+        // This is the point of sharing by what each wants rather than evenly. Both figures are taller
+        // than any pane we could give them, so each renders at (pane height x its aspect); heights
+        // proportional to 1/aspect are exactly the heights at which those widths come out equal.
+        const stackWidth = 469;
+        const aspects = [0.33, 0.58];
+        const wants = aspects.map((a) => stackWidth / a);
+        expect(wants[0]).toBeGreaterThan(350); // sanity: both really are height-limited here
+        expect(wants[1]).toBeGreaterThan(350);
+        const sizes = shareImagePanesPx(wants, 350, kFloor);
+        const renderedWidths = sizes.map((h, i) => h * aspects[i]);
+        expect(renderedWidths[0]).toBeCloseTo(renderedWidths[1], 6);
+    });
+
+    it("never drops a picture below the floor, and never hands out more than there is", () => {
+        // The second picture's proportional share would be ~10px. It gets the floor instead, and the
+        // first one absorbs the difference rather than the stack overflowing.
+        const sizes = shareImagePanesPx([1000, 50], 200, 50);
+        expect(sizes[1]).toBe(50);
+        expect(sizes[0]).toBeCloseTo(150, 6);
+    });
+
+    it("caps a picture at what it wants even while another is squeezed", () => {
+        // A wide picture (wants only 60) and a tall one (wants 1000) sharing 300. The wide one is
+        // held to the floor rather than its even share, and everything left goes to the tall one.
+        const sizes = shareImagePanesPx([60, 1000], 300, kFloor);
+        expect(sizes[0]).toBe(kFloor);
+        expect(sizes[1]).toBeCloseTo(260, 6);
+        expect(sizes[0] + sizes[1]).toBeCloseTo(300, 6);
+    });
+});
+
 describe("stack size arithmetic", () => {
     it("reads unset splits as 50/25/25 — the nesting artifact this feature fixes", () => {
         // Neither split carries a percentage, so each falls back to the CSS default of 50%. Because
@@ -288,6 +375,22 @@ describe("stack size arithmetic", () => {
         expect(stack.splits[0].secondComponent.getAttribute("style")).toBe(
             "height: 62%",
         );
+    });
+
+    it("reads an illustration/text/illustration stack as 50/25/25 as well", () => {
+        // The shape from a real import (FUV_Taale_Taale_Fulbe page 16: a figure, the story text, a
+        // second figure) whose source wrapped the text around both pictures. Unsized, the text block
+        // gets a quarter of the page for what needs about half of it, which is what the fitting fixes.
+        const stack = collectSplitStack(
+            topSplitOf(
+                split(
+                    "horizontal",
+                    kImagePane,
+                    split("horizontal", kTextPane, kImagePane),
+                ),
+            ),
+        )!;
+        expect(readStackSizesPx(stack, 800)).toEqual([400, 200, 200]);
     });
 
     it("round-trips a four-pane stack too", () => {
