@@ -198,7 +198,11 @@ namespace Bloom.Utils
                 // Something may be holding it for only an instant -- including the WebView2
                 // process finishing the very operation we are checking on. Don't cry wolf over
                 // that; we are looking for a clipboard held long enough to break the operation.
-                Thread.Sleep(kOpenRetryDelayMs);
+                //
+                // Nothing to wait for after the last attempt, and this runs on the UI thread for
+                // the Paste toolbar command, so a wasted 50ms is 50ms of frozen window.
+                if (attempt < kOpenAttempts - 1)
+                    Thread.Sleep(kOpenRetryDelayMs);
             }
             return false;
         }
