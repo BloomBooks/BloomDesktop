@@ -2954,11 +2954,6 @@ export async function setupForAudioRecordingTests() {
     // when the audio id CHANGES, a test whose id was already current never overwrote that stale
     // value, and then compared localhost:3000 against the mocked localhost:63315. It depended on
     // which ids earlier work happened to leave behind, so it passed locally and failed in CI.
-    //
-    // The prototype also matters because the code under test does not always drive the player
-    // through that one instance (audioRecording.ts itself allows for another one, see its
-    // `theOneAudioRecorder !== this` check), and an instance spy stops applying the moment a
-    // different AudioRecording is the one asking for a URL.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.spyOn(AudioRecording.prototype as any, "urlPrefix").mockReturnValue(
         "http://localhost:63315/bloom/api/audio/wavFile?id=audio/",
