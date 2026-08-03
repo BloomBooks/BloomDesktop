@@ -63,51 +63,43 @@ export const prepareSettingsForSave = (
     return settingsToSave;
 };
 
-/** Splits a word into configured graphemes using Synphony's legacy matching order. */
+/**
+ * Splits a word into the graphemes the language teaches, using Synphony's own segmentation so
+ * that a word typed into this dialog is judged by exactly the same rules as a word that came
+ * from a sample text (which Synphony segments when it loads the word into its vocabulary).
+ *
+ * getGpcForm takes the grapheme list as an argument and reads no state off the LanguageData it
+ * hangs from, which is what makes it usable here: this dialog runs in the workspace frame,
+ * whose copy of the Synphony data is empty, and the alphabet we want to match against is the
+ * one currently in the dialog rather than the one last saved.
+ */
 const getGpcForm = (word: string, allGpcs: string[]): string[] => {
+    // Synphony expects the graphemes pre-sorted longest-first, so that "ch" wins over "c".
     const sortedGpcs = Array.from(
         new Set(allGpcs.map((gpc) => gpc.toLowerCase()).filter(Boolean)),
     ).sort((firstGpc, secondGpc) => secondGpc.length - firstGpc.length);
-    const gpcForm: string[] = [];
-    let remainingWord = word.toLowerCase();
 
-    while (remainingWord.length > 0) {
-        const matchingGpc = sortedGpcs.find((gpc) =>
-            remainingWord.endsWith(gpc),
-        );
-        if (matchingGpc) {
-            gpcForm.unshift(matchingGpc);
-            remainingWord = remainingWord.slice(0, -matchingGpc.length);
-            continue;
-        }
-
-        const lastCharacter = remainingWord.charAt(remainingWord.length - 1);
-        const lastCharacterCode = lastCharacter.charCodeAt(0);
-        const characterLength =
-            0xd800 <= lastCharacterCode && lastCharacterCode <= 0xdfff ? 2 : 1;
-        gpcForm.unshift(remainingWord.slice(-characterLength));
-        remainingWord = remainingWord.slice(0, -characterLength);
-    }
-
-    return gpcForm;
+    return theOneLanguageDataInstance.getGpcForm(
+        word.toLowerCase(),
+        sortedGpcs,
+    );
 };
 
-/** Returns whether a word contains only taught or language-defined allowed graphemes. */
+/**
+ * Returns whether a word contains only graphemes the reader has been taught, plus any symbols
+ * the language allows at any stage (a syllable break, a stress mark, and so on). Those symbols
+ * have to be supplied by the caller, because only the toolbox frame has the Synphony data that
+ * defines them — see getSynphonyAlwaysMatchSymbols in readerTools.
+ */
 export const hasOnlyKnownGraphemes = (
     word: string,
     allGpcs: string[],
     knownGpcs: string[],
+    alwaysMatchSymbols: string[],
 ): boolean => {
     const allowedGpcs = new Set(knownGpcs.map((gpc) => gpc.toLowerCase()));
-    for (const value of [
-        theOneLanguageDataInstance["AlwaysMatch"],
-        theOneLanguageDataInstance["SyllableBreak"],
-        theOneLanguageDataInstance["StressSymbol"],
-        theOneLanguageDataInstance["MorphemeBreak"],
-    ]) {
-        if (typeof value === "string" && value !== "") {
-            allowedGpcs.add(value);
-        }
+    for (const symbol of alwaysMatchSymbols) {
+        allowedGpcs.add(symbol);
     }
 
     return getGpcForm(word, allGpcs).every((gpc) => allowedGpcs.has(gpc));

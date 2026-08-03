@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
     cleanSpaceDelimitedList,
     cloneReaderSettings,
@@ -6,10 +6,7 @@ import {
     prepareSettingsForSave,
 } from "./decodableStagesUtils";
 import { ReaderSettings, ReaderStage, ReaderLevel } from "../ReaderSettings";
-import {
-    LanguageData,
-    theOneLanguageDataInstance,
-} from "../libSynphony/synphony_lib";
+import { LanguageData } from "../libSynphony/synphony_lib";
 
 /** Builds settings with one stage per supplied letters string. */
 function makeSettings(options: {
@@ -145,108 +142,111 @@ describe("prepareSettingsForSave", () => {
 
 describe("hasOnlyKnownGraphemes", () => {
     const alphabet = ["a", "b", "c", "ch", "d", "o", "g", "t", "h", "s"];
-
-    beforeEach(() => {
-        // These fields are not declared on LanguageData; clear any left by another test.
-        for (const field of [
-            "AlwaysMatch",
-            "SyllableBreak",
-            "StressSymbol",
-            "MorphemeBreak",
-        ]) {
-            delete theOneLanguageDataInstance[field];
-        }
-    });
+    const noSymbols: string[] = [];
 
     it("accepts a word built only from taught letters", () => {
-        expect(hasOnlyKnownGraphemes("dog", alphabet, ["d", "o", "g"])).toBe(
-            true,
-        );
+        expect(
+            hasOnlyKnownGraphemes("dog", alphabet, ["d", "o", "g"], noSymbols),
+        ).toBe(true);
     });
 
     it("rejects a word using a letter that has not been taught yet", () => {
-        expect(hasOnlyKnownGraphemes("dog", alphabet, ["d", "o"])).toBe(false);
+        expect(
+            hasOnlyKnownGraphemes("dog", alphabet, ["d", "o"], noSymbols),
+        ).toBe(false);
     });
 
     it("prefers the longest grapheme, so 'ch' is one unit rather than 'c'+'h'", () => {
         // "chat" is decodable once ch/a/t are taught, even though "c" alone is not.
-        expect(hasOnlyKnownGraphemes("chat", alphabet, ["ch", "a", "t"])).toBe(
-            true,
-        );
+        expect(
+            hasOnlyKnownGraphemes(
+                "chat",
+                alphabet,
+                ["ch", "a", "t"],
+                noSymbols,
+            ),
+        ).toBe(true);
         // Teaching only c and h (not the digraph) must not make "chat" decodable.
         expect(
-            hasOnlyKnownGraphemes("chat", alphabet, ["c", "h", "a", "t"]),
+            hasOnlyKnownGraphemes(
+                "chat",
+                alphabet,
+                ["c", "h", "a", "t"],
+                noSymbols,
+            ),
         ).toBe(false);
     });
 
     it("ignores case in both the word and the grapheme lists", () => {
-        expect(hasOnlyKnownGraphemes("DOG", alphabet, ["D", "o", "g"])).toBe(
-            true,
-        );
+        expect(
+            hasOnlyKnownGraphemes("DOG", alphabet, ["D", "o", "g"], noSymbols),
+        ).toBe(true);
     });
 
-    it("allows symbols listed in the language's always-match fields", () => {
-        theOneLanguageDataInstance["SyllableBreak"] = "-";
-
-        expect(hasOnlyKnownGraphemes("do-g", alphabet, ["d", "o", "g"])).toBe(
-            true,
-        );
+    // These come from the toolbox frame via getSynphonyAlwaysMatchSymbols, because only that
+    // frame's Synphony data defines them.
+    it("allows a symbol the language marks as always matching", () => {
+        expect(
+            hasOnlyKnownGraphemes("do-g", alphabet, ["d", "o", "g"], ["-"]),
+        ).toBe(true);
     });
 
     it("rejects that same symbol when the language does not define it", () => {
-        expect(hasOnlyKnownGraphemes("do-g", alphabet, ["d", "o", "g"])).toBe(
-            false,
-        );
+        expect(
+            hasOnlyKnownGraphemes("do-g", alphabet, ["d", "o", "g"], noSymbols),
+        ).toBe(false);
     });
 });
 
-// The dialog splits typed sample words into graphemes itself, while sample-text words are
-// split by Synphony (LanguageData.getGpcForm). If the two ever disagree, the same word
-// would be judged decodable by different rules depending on where it came from. These
-// tests pin the dialog's splitter to Synphony's.
-describe("grapheme splitting agrees with Synphony's own", () => {
+// The dialog no longer carries its own copy of the word-splitting logic: hasOnlyKnownGraphemes
+// segments through Synphony's LanguageData.getGpcForm, the same routine that segments the words
+// Synphony loads from sample texts. These cases assert the resulting decodability decisions
+// outright (rather than comparing the two, which would now be comparing one thing with itself),
+// so they still fail if that wiring is broken or the sorting of multi-letter graphemes is lost.
+describe("decodability decisions, via Synphony's segmentation", () => {
     const alphabet = ["a", "b", "c", "ch", "d", "e", "g", "h", "o", "s", "t"];
+    const noSymbols: string[] = [];
 
-    /** True when Synphony considers every grapheme of the word to be a known one. */
-    function synphonySaysDecodable(word: string, knownGpcs: string[]): boolean {
+    const cases: { word: string; known: string[]; expected: boolean }[] = [
+        { word: "dog", known: ["d", "o", "g"], expected: true },
+        { word: "dog", known: ["d", "o"], expected: false },
+        // "ch" must be taken as one grapheme, so c+h alone is not enough...
+        { word: "chat", known: ["ch", "a", "t"], expected: true },
+        { word: "chat", known: ["c", "h", "a", "t"], expected: false },
+        { word: "cheese", known: ["ch", "e", "s"], expected: true },
+        // ...but "the" has no digraph in this alphabet, so t+h+e is enough.
+        { word: "the", known: ["t", "h", "e"], expected: true },
+        { word: "bogus", known: ["b", "o", "g"], expected: false },
+    ];
+
+    // Guard against a vacuous suite: a bug that made everything decodable (or nothing) would
+    // otherwise be invisible if every case expected the same answer.
+    it("covers both decodable and non-decodable words", () => {
+        const expectations = cases.map((oneCase) => oneCase.expected);
+        expect(expectations).toContain(true);
+        expect(expectations).toContain(false);
+    });
+
+    for (const { word, known, expected } of cases) {
+        it(`"${word}" with [${known.join(",")}] taught is ${expected ? "" : "not "}decodable`, () => {
+            expect(
+                hasOnlyKnownGraphemes(word, alphabet, known, noSymbols),
+            ).toBe(expected);
+        });
+    }
+
+    // Sanity check that we really are going through Synphony, by confirming its own segmentation
+    // of one of the words above is what these expectations assume.
+    it("relies on Synphony splitting 'chat' as ch + a + t", () => {
         const languageData = new LanguageData();
-        for (const grapheme of alphabet) languageData.addGrapheme(grapheme);
         const sortedGraphemes = alphabet
             .slice()
             .sort((first, second) => second.length - first.length);
-        const gpcForm: string[] = languageData.getGpcForm(
-            word.toLowerCase(),
-            sortedGraphemes,
-        );
-        const known = knownGpcs.map((gpc) => gpc.toLowerCase());
-        return gpcForm.every((gpc) => known.includes(gpc));
-    }
 
-    const cases: { word: string; known: string[] }[] = [
-        { word: "dog", known: ["d", "o", "g"] },
-        { word: "dog", known: ["d", "o"] },
-        { word: "chat", known: ["ch", "a", "t"] },
-        { word: "chat", known: ["c", "h", "a", "t"] },
-        { word: "cheese", known: ["ch", "e", "s"] },
-        { word: "the", known: ["t", "h", "e"] },
-        { word: "bogus", known: ["b", "o", "g"] },
-    ];
-
-    // Guard against a vacuous suite: if every case were decodable, the comparisons above
-    // could pass while the two implementations actually disagreed about rejection.
-    it("exercises both decodable and non-decodable words", () => {
-        const outcomes = cases.map((c) =>
-            synphonySaysDecodable(c.word, c.known),
-        );
-        expect(outcomes).toContain(true);
-        expect(outcomes).toContain(false);
+        expect(languageData.getGpcForm("chat", sortedGraphemes)).toEqual([
+            "ch",
+            "a",
+            "t",
+        ]);
     });
-
-    for (const { word, known } of cases) {
-        it(`agrees on "${word}" with [${known.join(",")}] taught`, () => {
-            expect(hasOnlyKnownGraphemes(word, alphabet, known)).toBe(
-                synphonySaysDecodable(word, known),
-            );
-        });
-    }
 });

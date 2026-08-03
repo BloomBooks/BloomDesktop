@@ -30,6 +30,7 @@ declare global {
         initializeReaderSetupDialog: unknown;
         closeSetupDialog: unknown;
         getDecodableStageMatchingWords: unknown;
+        getSynphonyAlwaysMatchSymbols: unknown;
         addSampleTextFilesChangedListener: unknown;
         addWordListChangedListener: unknown;
         beginSaveChangedSettings: unknown;
