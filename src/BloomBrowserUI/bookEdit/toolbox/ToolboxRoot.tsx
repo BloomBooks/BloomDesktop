@@ -816,6 +816,15 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                     min-height: 32px;
                                     padding-left: 5px;
                                     padding-right: 12px;
+                                    // The Talking Book tool covers the whole toolbox with a
+                                    // translucent #disablingOverlay (z-index 1001) while in
+                                    // Show Playback Order mode. The tool headers must stay above
+                                    // it, both so they don't look grayed out and so the user can
+                                    // still switch tools (BL-16630). Until 6.4 this was done by
+                                    // the "#toolbox h3" rule in toolbox.less, which no longer
+                                    // applies now that the headers are MUI AccordionSummaries.
+                                    position: relative;
+                                    z-index: 1005;
 
                                     & .MuiAccordionSummary-content {
                                         margin: 8px 0;

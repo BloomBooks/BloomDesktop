@@ -496,12 +496,18 @@ body .cursor-progress {
     display: none;
 }
 
+// Dims and blocks clicks on the whole toolbox while in Show Playback Order mode.
+// Anything that must remain usable (the tool headers, the Help link, the Show Playback
+// Order switch itself) gives itself a z-index above @disablingOverlayZindex.
 #disablingOverlay {
     z-index: @disablingOverlayZindex;
     opacity: 0.7;
     position: fixed;
-    top: inherit;
+    // Cover the toolbox viewport exactly. This used to be "top: inherit" and
+    // "width: calc(100% - 20px)"; the missing 20px left a strip on the right that was
+    // neither dimmed nor click-blocked, which became visible in 6.4 (BL-16630).
+    top: 0;
     background-color: @toolboxBackgroundColor;
     height: 100%;
-    width: calc(100% - 20px);
+    width: 100%;
 }
