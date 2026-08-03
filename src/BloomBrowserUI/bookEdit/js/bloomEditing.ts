@@ -1701,9 +1701,15 @@ export const cutSelection = () => {
 async function cutSelectionImpl() {
     const sel = document.getSelection();
     if (!sel) return;
-    // Don't delete what we failed to copy: that would lose the text outright. The user has
-    // been told the copy failed and can try the cut again.
-    if (!(await copyTextToClipboard(sel.toString()))) return;
+    const selectedText = sel.toString();
+    // Don't delete text we failed to copy: that would lose it outright. The user has been told the
+    // copy failed and can try the cut again.
+    //
+    // Only when there was text, though. A selection with nothing textual in it -- a picture on its
+    // own, say -- gives us nothing to put on the clipboard, and a plain-text copy never could have
+    // carried it anyway; treating that as a failed copy would make the Cut button do nothing at
+    // all, which is not what it used to do.
+    if (selectedText && !(await copyTextToClipboard(selectedText))) return;
     // Using ckeditor here because it's the only way I've found to integrate clipboard
     // ops into an Undo stack that we can operate from an external button.
     // We do a Save before and after to make sure that the cut is distinct from
