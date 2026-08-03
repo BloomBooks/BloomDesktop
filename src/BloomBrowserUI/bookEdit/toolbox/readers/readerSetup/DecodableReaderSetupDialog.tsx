@@ -20,6 +20,7 @@ import {
     DialogOkButton,
 } from "../../../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../../../react_components/l10nHooks";
+import { useMountEffect } from "../../../../utils/useMountEffect";
 import type { ReaderSettings } from "../ReaderSettings";
 import { ReaderStage } from "../ReaderSettings";
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
@@ -54,6 +55,14 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
         return copy;
     });
     const initialSettings = useRef(settings);
+
+    // Lock the edit view from here rather than from showDecodableReaderSetupDialog, so that the
+    // same component owns both turning the lock on and (in close, below) turning it off. If the
+    // settings check above throws, this never runs, and the user is not left staring at an edit
+    // view they cannot touch with no dialog to dismiss.
+    useMountEffect(() => {
+        postBoolean("editView/setModalState", true);
+    });
 
     const close = () => {
         setOpen(false);
@@ -168,7 +177,7 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
 /** Shows the React-hosted decodable reader setup dialog. */
 export const showDecodableReaderSetupDialog = (): void => {
     get("readers/io/readerSettingsEditForbidden", (result) => {
-        postBoolean("editView/setModalState", true);
+        // The edit view's modal lock is set by the dialog component itself, on mount.
         getWorkspaceBundleExports().ShowEditViewDialog(
             <DecodableReaderSetupDialogLauncher
                 editingForbiddenMessage={result.data || undefined}
