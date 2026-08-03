@@ -157,6 +157,20 @@ $deadline = (Get-Date).AddMinutes($GiveUpAfterMinutes)
 
 $lastLogSize = -1
 $everSawProcess = $false
+# Whether Bloom's log already existed when we began. This decides what counts as stale: if the file
+# appeared only after we started watching, then nothing in it predates us and all of it is fair game.
+# Baselining it anyway -- which is what the first version did -- discarded Bloom's own opening lines, and
+# would have discarded a trigger line too had the navigation failed in the first seconds, losing exactly
+# the capture this exists for.
+# Test existence rather than trusting Find-BloomLog to imply it: with an explicit -LogPath it returns
+# that path whether the file is there or not.
+$startLogPath = Find-BloomLog
+$logExistedAtStart = ($startLogPath -ne "") -and (Test-Path $startLogPath)
+if ($logExistedAtStart) {
+    Write-Sample "Bloom's log already existed before this watch began; its current contents count as stale"
+} else {
+    Write-Sample "Bloom's log does not exist yet, so everything written from here on is new"
+}
 # Length of the log when we started watching. Anything already in it is from before this watch began
 # (an earlier step in the job, or an earlier Bloom launch) and must not fire the trigger: we care about
 # the navigation failing NOW, and spending our two captures on a stale line would point them at the
@@ -190,9 +204,14 @@ while ((Get-Date) -lt $deadline) {
                 $lastLogSize = $logText.Length
             }
             if ($baselineLogSize -lt 0) {
-                $baselineLogSize = $logText.Length
-                if ($baselineLogSize -gt 0) {
-                    Write-Sample "  ignoring the $baselineLogSize bytes already in the log; only new lines can trigger"
+                if ($logExistedAtStart) {
+                    $baselineLogSize = $logText.Length
+                    if ($baselineLogSize -gt 0) {
+                        Write-Sample "  ignoring the $baselineLogSize bytes that predate this watch; only new lines can trigger"
+                    }
+                } else {
+                    $baselineLogSize = 0
+                    Write-Sample "  log appeared after the watch began, so all $($logText.Length) bytes of it count as new"
                 }
             }
             # Bloom may recreate its log rather than append, which makes it shorter than our baseline.
