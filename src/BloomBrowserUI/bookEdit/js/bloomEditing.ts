@@ -1803,31 +1803,26 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
         return;
     }
 
-    if (isKey("x", "KeyX")) {
-        // Do the cut ourselves rather than letting Chromium do it. Chromium deletes the selected
-        // text and then silently discards the failed clipboard write, so a cut from a locked
-        // clipboard loses the text outright (BL-16459). cutSelection copies through C# first and
-        // leaves the text alone if that fails -- the same thing the Cut button does. Only take
-        // over where that implementation applies; elsewhere, let the browser cut and just check.
-        const editor = CKEDITOR.currentInstance;
-        // Only plain Ctrl+X. Ctrl+Shift+X is not a cut, and preventDefaulting it would invent one.
-        if (
-            !e.shiftKey &&
-            document.activeElement?.closest(".bloom-editable") &&
-            editor
-        ) {
-            e.preventDefault();
-            cutSelection();
-        } else {
+    if (isKey("x", "KeyX") || isKey("c", "KeyC")) {
+        // Both are left to Chromium, which is the only one of us that can put the full HTML
+        // flavor -- formatting, links, inline pictures -- on the clipboard. We just check
+        // afterwards and report a failure.
+        //
+        // Ctrl+X deserves more than that, because Chromium deletes the selection and then
+        // discards a failed clipboard write, losing the text outright (BL-16459). An earlier
+        // version of this handler therefore did the cut itself through C#, the way the Cut
+        // button does. That protected the text but put only *plain* text on the clipboard, so
+        // cutting a formatted phrase or an inline picture silently dropped everything but the
+        // words -- a worse bug, and one that struck every cut rather than only failing ones.
+        // Fixing it properly means teaching the copy path to carry several clipboard formats at
+        // once; until then the honest thing is to let the browser cut and tell the user when it
+        // didn't work. See the PR discussion.
+        //
+        // Nothing selected means nothing was copied, so there is nothing to report -- checking
+        // anyway would announce the failure of an operation that never happened.
+        if (document.getSelection()?.toString()) {
             verifyBrowserCopyAfterDefault();
         }
-        return;
-    }
-
-    if (isKey("c", "KeyC")) {
-        // Left to Chromium: its copy carries the HTML flavor, which matters when pasting into
-        // other programs, and unlike cut a failure loses nothing. We just check afterwards.
-        verifyBrowserCopyAfterDefault();
     }
 });
 
