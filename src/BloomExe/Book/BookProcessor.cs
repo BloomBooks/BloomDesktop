@@ -39,9 +39,12 @@ namespace Bloom.Book
         /// and on save the actual CSS files), then run the per-page browser fix-up over every page and
         /// save the result to disk. Returns the number of pages processed.
         ///
-        /// All-or-nothing: a failure on any page (capture error or timeout) throws, the save at the
-        /// end is skipped, and nothing is persisted. The caller (external/process-book) surfaces this
-        /// as an error so BloomBridge can re-run, rather than leaving a half-processed book on disk.
+        /// All-or-nothing for the HTML: a failure on any page (capture error or timeout) throws and
+        /// the save at the end is skipped, so none of the page fix-up is persisted. The caller
+        /// (external/process-book) surfaces this as an error so BloomBridge can re-run, rather than
+        /// leaving a half-processed book on disk. (The up-front image shrink is the one exception:
+        /// it rewrites image files in place before the page loop, and a later failure does not undo
+        /// it -- harmless, since a re-run simply finds those images already small enough.)
         ///
         /// Can run on any thread (and the caller runs it on a background thread so the UI stays responsive):
         /// the WebView2 it drives lives on the OffScreenBrowser's own dedicated thread, and this method just
@@ -86,10 +89,12 @@ namespace Bloom.Book
             // already carries a modern maintenance level, so BringBookUpToDate below treats that
             // migration as already done and skips it. So we do the shrink ourselves, unconditionally
             // (not gated by mediaMaintenanceLevel), and it must come BEFORE BringBookUpToDate: (a) on
-            // a book old enough that the migration WOULD run, it now finds nothing left to shrink, so
-            // its modal progress dialog is never created on this background thread (where a WinForms
-            // dialog is illegal, BL-16646); (b) the off-screen per-page fix-up then measures and lays
-            // out against the final, already-shrunk images.
+            // a book old enough that the migration WOULD run, it normally finds nothing left to
+            // shrink, so its modal progress dialog is not created on this background thread (where a
+            // WinForms dialog is illegal, BL-16646) -- "normally" because a GraphicsMagick failure can
+            // leave an image oversized, in which case that narrow old-book case can still hit the
+            // dialog; (b) the off-screen per-page fix-up then measures and lays out against the
+            // final, already-shrunk images.
             if (ImageUtils.NeedToShrinkImages(book.FolderPath))
             {
                 Log("shrinking oversized images in the book folder");
