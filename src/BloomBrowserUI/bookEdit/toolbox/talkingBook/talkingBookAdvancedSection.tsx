@@ -65,12 +65,6 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
         <ThemeProvider theme={toolboxTheme}>
             <TriangleCollapse
                 initiallyOpen={false}
-                // The tool body switches pointer events off while the Show Playback Order
-                // overlay is showing, so this header has to opt back in. Otherwise a user
-                // who comes back to a page with that mode still on is stuck: the section
-                // starts collapsed, which puts the one switch that turns the mode off out
-                // of sight, and without this they could not expand it to reach it (BL-16630).
-                extraButtonCss="pointer-events: auto;"
                 css={css`
                     padding-left: 10px;
                 `}
@@ -212,9 +206,6 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                 <BloomTooltip
                     css={css`
                         z-index: 1002; // has to be above the disableOverlay because this is the one control we don't want to disable in show playback order mode
-                        // ...and for the same reason it has to opt back in to clicks, since
-                        // the tool body turns pointer events off while that overlay is showing.
-                        pointer-events: auto;
                     `}
                     tip={{
                         l10nKey:

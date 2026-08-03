@@ -9,6 +9,10 @@
 @splitAnimationTime: 300ms;
 @textOnLightBackground: black;
 @disablingOverlayZindex: 1001; // higher than #audio-devlist
+// Width kept clear on the right so #disablingOverlay never covers the toolbox scrollbar.
+// Generous: a WebView2 scrollbar is nearer 15px, and the extra lands on the panel
+// background where it is invisible.
+@disablingOverlayScrollbarAllowance: 20px;
 
 // See BL-7442: When low line height causes lines to overlap, the highlighting overlaps and
 // can over up the bottom of the characters in the line above. For Chrome/Safari we have
@@ -496,39 +500,23 @@ body .cursor-progress {
     display: none;
 }
 
-// Dims the whole toolbox while in Show Playback Order mode.
+// Dims and blocks clicks on the toolbox while in Show Playback Order mode.
 // Anything that must remain usable (the tool headers, the Help link, the Show Playback
 // Order switch itself) gives itself a z-index above @disablingOverlayZindex.
 #disablingOverlay {
     z-index: @disablingOverlayZindex;
     opacity: 0.7;
     position: fixed;
-    // Cover the toolbox viewport exactly. This used to be "top: inherit" and
-    // "width: calc(100% - 20px)"; the missing 20px left a strip on the right that was
-    // neither dimmed nor click-blocked, which became visible in 6.4 (BL-16630).
+    // Covers the toolbox iframe's viewport. This was "top: inherit", which resolved to 0
+    // only by way of a "top: 0 !important" rule that happens to apply to the parent --
+    // same result, but no longer by accident.
     top: 0;
     background-color: @toolboxBackgroundColor;
     height: 100%;
-    width: 100%;
-    // Dim only, never intercept. Because this is a full-width fixed sheet, swallowing
-    // clicks here would also swallow the toolbox scrollbar, and on a short window the
-    // user could then be unable to scroll down to the one switch that turns this mode
-    // off. The click-blocking is done by the tool body below instead, which leaves the
-    // scrollbar (owned by an ancestor) alone.
-    pointer-events: none;
-}
-
-// The click-blocking half of the disabling overlay. Kept in sync with the overlay by
-// keying off its own hidden class, so there is only one piece of state to toggle.
-// The scrollbar is unaffected because it belongs to an ancestor of .ui-audioBody, not
-// to a descendant.
-#disablingOverlay:not(.hiddenOverlay) ~ .ui-audioBody {
-    pointer-events: none;
-
-    // ...except the controls we deliberately leave live while the rest is disabled.
-    // (The Show Playback Order switch does the same thing for itself where it is
-    // defined, in talkingBookAdvancedSection.tsx.)
-    .help-link {
-        pointer-events: auto;
-    }
+    // Deliberately stops short of the toolbox's scrollbar so it stays undimmed and
+    // draggable: on a short window that scrollbar is how the user reaches the switch that
+    // turns this mode off. Making this 100% was tried and reverted during BL-16630 -- it
+    // dimmed the scrollbar and swallowed drags on it, and working around that took a
+    // second, separate disabling mechanism. Not worth it.
+    width: calc(100% - @disablingOverlayScrollbarAllowance);
 }
