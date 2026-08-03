@@ -110,6 +110,12 @@ namespace Bloom.Publish.Rab
         // of the current action's cancellation state.
         private CancellationTokenSource _actionCancellationSource;
 
+        // Set while a Bloom-run installer is in progress and only cleared on a clean finish, so a
+        // later Prepare in this session reinstalls over a possibly half-installed tree instead of
+        // trusting it (BL-16350; Devin). In-memory (not a persisted marker) on purpose: it must not
+        // survive to hide a real install — e.g. one the user completes manually — from GetStatus.
+        private volatile bool _rabInstallInterrupted;
+
         public RabProjectService(
             CollectionModel collectionModel,
             BookSelection bookSelection,
@@ -707,7 +713,11 @@ namespace Bloom.Publish.Rab
         {
             ReportProgressStage("checking-installer", 0);
 
-            if (IsRabInstalledForPrepare())
+            // If a Bloom-run install this session was interrupted, don't trust a possibly
+            // half-installed tree even if rab.bat + keytool happen to be present — reinstall (the
+            // installer is idempotent and completes/repairs). This gates only the install decision,
+            // not GetStatus, so a genuinely-installed RAB is never reported as missing (BL-16350).
+            if (!_rabInstallInterrupted && IsRabInstalledForPrepare())
                 return true;
 
             var installerPath = GetRabSetupInstallerPath();
@@ -2649,13 +2659,6 @@ namespace Bloom.Publish.Rab
 
         internal virtual bool IsRabInstalledForPrepare()
         {
-            // A previous install that was cancelled or failed partway can leave rab.bat + keytool
-            // present yet the tree incomplete; the in-progress marker forces a reinstall until an
-            // install finishes cleanly (BL-16350; Devin). Only Bloom's own installer writes it, so an
-            // externally-installed RAB (no marker) still reads as installed.
-            if (IsRabInstallIncomplete())
-                return false;
-
             var installDir = GetRabRegistryValue("InstallDir");
             if (string.IsNullOrWhiteSpace(installDir))
                 return false;
@@ -2997,11 +3000,11 @@ namespace Bloom.Publish.Rab
             if (!_protectCurrentProcessFromCancellation && _cancelRequested)
                 throw new OperationCanceledException();
 
-            // Mark the install as in progress before launching. If the installer is killed or fails
-            // partway, this marker stays and the next Prepare treats the (possibly half-written) tree
-            // as not-installed and re-runs setup, instead of trusting a partial install (BL-16350;
-            // Devin). It is cleared only after a clean finish below.
-            MarkRabInstallIncomplete();
+            // Flag the install as in progress before launching. If the installer is killed or fails
+            // partway, this stays set and a later Prepare this session reinstalls over the
+            // (possibly half-written) tree instead of trusting it (BL-16350; Devin). Cleared only
+            // after a clean finish below.
+            _rabInstallInterrupted = true;
 
             using var process = StartShellProcess(
                 new ProcessStartInfo()
@@ -3062,48 +3065,8 @@ namespace Bloom.Publish.Rab
                     $"Reading App Builder installer exited with code {process.ExitCode}."
                 );
 
-            // Clean finish — the install completed, so clear the in-progress marker.
-            ClearRabInstallIncompleteMarker();
-        }
-
-        /// <summary>
-        /// Path of the marker written while a Reading App Builder install is in progress
-        /// (see <see cref="MarkRabInstallIncomplete"/>). Lives in the Bloom-owned installer staging folder.
-        /// </summary>
-        private string GetRabInstallIncompleteMarkerPath()
-        {
-            return Path.Combine(GetRabInstallerStagingDirectory(), "install-incomplete.marker");
-        }
-
-        /// <summary>
-        /// Records that an install has started but not yet finished, so a later Prepare re-runs setup
-        /// if the installer was killed or failed partway (BL-16350).
-        /// </summary>
-        private void MarkRabInstallIncomplete()
-        {
-            var markerPath = GetRabInstallIncompleteMarkerPath();
-            Directory.CreateDirectory(Path.GetDirectoryName(markerPath));
-            RobustFile.WriteAllText(markerPath, DateTime.UtcNow.ToString("o"));
-        }
-
-        /// <summary>
-        /// Clears the install-in-progress marker after a clean install (see <see cref="MarkRabInstallIncomplete"/>).
-        /// </summary>
-        private void ClearRabInstallIncompleteMarker()
-        {
-            var markerPath = GetRabInstallIncompleteMarkerPath();
-            if (RobustFile.Exists(markerPath))
-                RobustFile.Delete(markerPath);
-        }
-
-        /// <summary>
-        /// True if a Reading App Builder install was started but never confirmed complete (see
-        /// <see cref="MarkRabInstallIncomplete"/>). Used by <see cref="IsRabInstalledForPrepare"/> to
-        /// force a reinstall over a possibly half-installed tree.
-        /// </summary>
-        private bool IsRabInstallIncomplete()
-        {
-            return RobustFile.Exists(GetRabInstallIncompleteMarkerPath());
+            // Clean finish — the install completed, so this attempt is no longer interrupted.
+            _rabInstallInterrupted = false;
         }
 
         /// <summary>
