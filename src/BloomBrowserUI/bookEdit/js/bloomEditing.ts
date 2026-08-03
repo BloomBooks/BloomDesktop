@@ -1688,7 +1688,14 @@ async function copyImpl() {
 
 // See comment on copySelection
 export const cutSelection = () => {
-    cutSelectionImpl();
+    // Wrapped because the cut now waits for a round trip to C# before it deletes anything, and
+    // src/BloomBrowserUI/AGENTS.md requires asynchronous changes to the editable page DOM to hold
+    // off a concurrent page save; otherwise a save landing in that gap could capture the page
+    // half-cut. The paste path above does the same.
+    wrapWithRequestPageContentDelay(
+        () => cutSelectionImpl(),
+        "cutSelectionImpl",
+    );
 };
 
 async function cutSelectionImpl() {
@@ -1777,7 +1784,9 @@ document.addEventListener("paste", pasteHandler);
 document.addEventListener("keydown", (e: KeyboardEvent) => {
     // Not AltGr, which Windows reports as Ctrl+Alt: on many keyboard layouts AltGr+letter is how
     // the user types a character, and it must not be mistaken for a clipboard shortcut (least of
-    // all Ctrl+X, where we preventDefault).
+    // all Ctrl+X, where we preventDefault). This also means Ctrl+Alt+V no longer reaches
+    // pasteHandler as it used to; that is not a paste shortcut anyone documents, and letting a
+    // character key double as one is the bigger problem.
     if (!e.ctrlKey || e.altKey) return;
     const key = e.key?.toLowerCase();
     const isKey = (letter: string, code: string) =>

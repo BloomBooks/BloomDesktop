@@ -70,10 +70,18 @@ namespace Bloom.Utils
         }
 
         /// <summary>
-        /// Read text from the clipboard. Returns false (having told the user) if the clipboard
-        /// could not be read; note that an *empty* clipboard is a success, yielding "".
+        /// Read text from the clipboard. Returns false if the clipboard could not be read; note
+        /// that an *empty* clipboard is a success, yielding "".
         /// </summary>
-        public static bool TryGetText(out string text)
+        /// <param name="reportFailure">
+        /// Whether to tell the user when the read fails. Pass false when nothing was asked of the
+        /// clipboard on the user's behalf -- code that is merely checking whether there is text to
+        /// paste, so it can enable a menu item or a button. Such a check can run at any time (when
+        /// a menu opens, or while a page loads), and a clipboard momentarily held by another
+        /// program must not put an unexplained "Bloom was not able to paste" in front of someone
+        /// who never tried to paste.
+        /// </param>
+        public static bool TryGetText(out string text, bool reportFailure = true)
         {
             text = "";
 
@@ -82,7 +90,8 @@ namespace Bloom.Utils
             // otherwise be indistinguishable from an empty clipboard and reported to nobody.
             if (!TryOpenClipboardBriefly(out var lastError))
             {
-                RunOnUiThread(() => ReportPasteFailure(new Win32Exception(lastError)));
+                if (reportFailure)
+                    RunOnUiThread(() => ReportPasteFailure(new Win32Exception(lastError)));
                 return false;
             }
 
@@ -96,7 +105,8 @@ namespace Bloom.Utils
                 }
                 catch (Exception e)
                 {
-                    ReportPasteFailure(e);
+                    if (reportFailure)
+                        ReportPasteFailure(e);
                 }
             });
             text = result ?? "";

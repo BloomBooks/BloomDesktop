@@ -33,7 +33,10 @@ export function tryProcessHyperlink(
 export function getHyperlinkFromClipboard(
     callback: (url: string) => void,
 ): void {
-    get("common/clipboardText", (result) => {
+    // The availability-check read: this runs to decide whether the paste-hyperlink button should
+    // be enabled -- including during page initialization -- not because the user asked to paste,
+    // so C# must not report a momentarily unreadable clipboard as a failed paste.
+    get("common/clipboardText?checkingAvailability=true", (result) => {
         if (!result.data) {
             callback("");
         }

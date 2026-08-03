@@ -21,7 +21,8 @@ import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { useGetFeatureStatus } from "../../../react_components/featureStatus";
 import { kBloomDisabledOpacity } from "../../../utils/colorUtils";
-import { getAsync, useApiObject } from "../../../utils/bloomApi";
+import { useApiObject } from "../../../utils/bloomApi";
+import { readClipboardTextForAvailabilityCheck } from "../hostClipboard";
 import { audioExistsForIdsAsync } from "../../toolbox/talkingBook/audioUtils";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { canvasElementControlRegistry } from "../../toolbox/canvas/canvasElementControlRegistry";
@@ -184,16 +185,15 @@ const CanvasElementContextControls: React.FunctionComponent<{
         let isCurrent = true;
         setHasClipboardText(false);
 
-        getAsync("common/clipboardText")
-            .then((response) => {
+        // The availability-check read, so that opening this menu while another program happens to
+        // be holding the clipboard doesn't tell the user we couldn't paste something they never
+        // asked us to paste.
+        readClipboardTextForAvailabilityCheck()
+            .then((clipboardText) => {
                 if (!isCurrent) {
                     return;
                 }
 
-                const clipboardText =
-                    typeof response.data === "string"
-                        ? response.data
-                        : (response.data?.data ?? "");
                 setHasClipboardText(clipboardText.length > 0);
             })
             .catch((error) => {

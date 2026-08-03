@@ -15,19 +15,32 @@
 import { AxiosResponse } from "axios";
 import { getAsync, postJson, postJsonAsync } from "../../utils/bloomApi";
 
-// Put text on the clipboard. Resolves true if it actually got there; if not, C# has
-// already told the user, and callers that are about to destroy the original (cut) should
-// leave it alone.
+// Put text on the clipboard. Resolves true if it actually got there. False covers both "the
+// clipboard refused it" -- in which case C# has already told the user -- and "there was nothing
+// to copy", which C# reports as false without bothering anyone. Either way a caller that is
+// about to destroy the original (cut) should leave it alone.
 export async function copyTextToClipboard(text: string): Promise<boolean> {
     const response = await postJsonAsync("common/clipboardText", { text });
     return (response as AxiosResponse | undefined)?.data === true;
 }
 
-// Read text from the clipboard, or "" if there is none. If the clipboard could not be read
-// at all, C# has told the user and we get "" here too -- so callers do nothing, which is
-// the same thing they would do with an empty clipboard.
+// Read text from the clipboard on the user's behalf, i.e. for an actual paste, or "" if there
+// is none. If the clipboard could not be read at all, C# has told the user and we get "" here
+// too -- so callers do nothing, which is the same thing they would do with an empty clipboard.
 export async function readTextFromClipboard(): Promise<string> {
     const response = await getAsync("common/clipboardText");
+    return typeof response.data === "string" ? response.data : "";
+}
+
+// Read the clipboard only to find out whether there is text to paste -- to decide whether to
+// enable a menu item or a button -- rather than to paste it. C# deliberately stays silent about
+// a failure here: these checks run on their own schedule (when a canvas element's menu opens,
+// while a page initializes), and the user has not asked for anything, so a clipboard held for a
+// moment by another program must not produce an "unable to paste" message out of nowhere.
+export async function readClipboardTextForAvailabilityCheck(): Promise<string> {
+    const response = await getAsync(
+        "common/clipboardText?checkingAvailability=true",
+    );
     return typeof response.data === "string" ? response.data : "";
 }
 

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
     copyTextToClipboard,
     listenForBrowserClipboardOperations,
+    readClipboardTextForAvailabilityCheck,
     readTextFromClipboard,
     verifyBrowserCopyAfterDefault,
     verifyBrowserCopyReachedClipboard,
@@ -78,6 +79,30 @@ describe("readTextFromClipboard", () => {
         mockGetAsync.mockResolvedValue({ data: undefined } as never);
 
         expect(await readTextFromClipboard()).toBe("");
+    });
+});
+
+describe("readClipboardTextForAvailabilityCheck", () => {
+    // These reads happen on their own schedule -- when a canvas element's menu opens, or while a
+    // page initializes -- so they must ask C# to keep quiet. Without the flag, a clipboard held
+    // for a moment by another program tells the user we couldn't paste something they never asked
+    // us to paste.
+    test("asks C# not to report a failure", async () => {
+        mockGetAsync.mockResolvedValue({ data: "something" } as never);
+
+        expect(await readClipboardTextForAvailabilityCheck()).toBe("something");
+        expect(mockGetAsync).toHaveBeenCalledWith(
+            "common/clipboardText?checkingAvailability=true",
+        );
+    });
+
+    // The contrast that matters: a real paste does ask for failures to be reported.
+    test("differs from the paste read, which does want failures reported", async () => {
+        mockGetAsync.mockResolvedValue({ data: "" } as never);
+
+        await readTextFromClipboard();
+
+        expect(mockGetAsync).toHaveBeenCalledWith("common/clipboardText");
     });
 });
 

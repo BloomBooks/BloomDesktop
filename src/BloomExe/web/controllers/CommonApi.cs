@@ -117,10 +117,19 @@ namespace Bloom.web.controllers
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
-                        // BloomClipboard toasts if the clipboard can't be read, and gives us ""
-                        // in that case, which is also what an empty clipboard gives us. The
-                        // caller wants text either way.
-                        BloomClipboard.TryGetText(out var result);
+                        // Two quite different callers share this GET: an actual paste, and code
+                        // merely asking whether there is any text to paste so it can enable a
+                        // menu item or button (which happens when a canvas element's menu opens,
+                        // and while a page initializes -- see the note above). Only a real paste
+                        // may tell the user about a failure; a background availability check must
+                        // stay quiet, or a clipboard briefly held by another program produces an
+                        // "unable to paste" message the user did nothing to provoke.
+                        var isAvailabilityCheck =
+                            request.GetParamOrNull("checkingAvailability") == "true";
+                        // Either way we reply with the text we managed to get, which is "" when
+                        // the clipboard was unreadable -- the same as an empty clipboard, and all
+                        // the caller can act on.
+                        BloomClipboard.TryGetText(out var result, !isAvailabilityCheck);
                         request.ReplyWithText(result);
                     }
                     else
