@@ -24,11 +24,17 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
     return (response as AxiosResponse | undefined)?.data === true;
 }
 
+// The clipboard endpoint replies with text/plain, but axios runs JSON.parse over every response
+// body by default, so a clipboard holding 42 would arrive as a number, one holding true as a
+// boolean, and one holding {"a":1} as an object -- and then be discarded as "not a string",
+// meaning pasting a number silently inserted nothing. Ask for the body exactly as sent.
+const kReplyIsPlainText = { transformResponse: [(body: string) => body] };
+
 // Read text from the clipboard on the user's behalf, i.e. for an actual paste, or "" if there
 // is none. If the clipboard could not be read at all, C# has told the user and we get "" here
 // too -- so callers do nothing, which is the same thing they would do with an empty clipboard.
 export async function readTextFromClipboard(): Promise<string> {
-    const response = await getAsync("common/clipboardText");
+    const response = await getAsync("common/clipboardText", kReplyIsPlainText);
     return typeof response.data === "string" ? response.data : "";
 }
 
@@ -40,6 +46,7 @@ export async function readTextFromClipboard(): Promise<string> {
 export async function readClipboardTextForAvailabilityCheck(): Promise<string> {
     const response = await getAsync(
         "common/clipboardText?checkingAvailability=true",
+        kReplyIsPlainText,
     );
     return typeof response.data === "string" ? response.data : "";
 }

@@ -64,7 +64,10 @@ describe("readTextFromClipboard", () => {
         mockGetAsync.mockResolvedValue({ data: "clipboard contents" } as never);
 
         expect(await readTextFromClipboard()).toBe("clipboard contents");
-        expect(mockGetAsync).toHaveBeenCalledWith("common/clipboardText");
+        expect(mockGetAsync).toHaveBeenCalledWith(
+            "common/clipboardText",
+            expect.any(Object),
+        );
     });
 
     // A failed read gets us "" from C# (it has already toasted), and so does an empty
@@ -82,6 +85,30 @@ describe("readTextFromClipboard", () => {
     });
 });
 
+// axios JSON-parses every response body by default, which turned a clipboard holding "42" into
+// the number 42 -- and the "is it a string?" check below then threw it away, so pasting a number
+// inserted nothing at all. Both reads must ask for the body untouched.
+describe.each([
+    ["readTextFromClipboard", readTextFromClipboard],
+    [
+        "readClipboardTextForAvailabilityCheck",
+        readClipboardTextForAvailabilityCheck,
+    ],
+])("%s", (_name, read) => {
+    test("asks axios not to parse the reply, so number-like clipboard text survives", async () => {
+        mockGetAsync.mockResolvedValue({ data: "42" } as never);
+
+        expect(await read()).toBe("42");
+
+        const config = mockGetAsync.mock.calls[0][1] as
+            | { transformResponse?: ((body: string) => unknown)[] }
+            | undefined;
+        expect(config?.transformResponse).toBeDefined();
+        // The transform must hand the body back exactly as it arrived.
+        expect(config!.transformResponse![0]("42")).toBe("42");
+    });
+});
+
 describe("readClipboardTextForAvailabilityCheck", () => {
     // These reads happen on their own schedule -- when a canvas element's menu opens, or while a
     // page initializes -- so they must ask C# to keep quiet. Without the flag, a clipboard held
@@ -93,6 +120,7 @@ describe("readClipboardTextForAvailabilityCheck", () => {
         expect(await readClipboardTextForAvailabilityCheck()).toBe("something");
         expect(mockGetAsync).toHaveBeenCalledWith(
             "common/clipboardText?checkingAvailability=true",
+            expect.any(Object),
         );
     });
 
@@ -102,7 +130,10 @@ describe("readClipboardTextForAvailabilityCheck", () => {
 
         await readTextFromClipboard();
 
-        expect(mockGetAsync).toHaveBeenCalledWith("common/clipboardText");
+        expect(mockGetAsync).toHaveBeenCalledWith(
+            "common/clipboardText",
+            expect.any(Object),
+        );
     });
 });
 

@@ -201,8 +201,11 @@ export function get(
 }
 
 // This method is used to get a result from Bloom.
-export async function getAsync(urlSuffix: string) {
-    return await axios.get(getBloomApiPrefix() + urlSuffix);
+// The optional config is passed straight to axios; the one known need for it is a caller that
+// must switch off axios's default response transform, which runs JSON.parse on every body and so
+// turns a text/plain reply of "42" into a number (see kReplyIsPlainText in hostClipboard.ts).
+export async function getAsync(urlSuffix: string, config?: AxiosRequestConfig) {
+    return await axios.get(getBloomApiPrefix() + urlSuffix, config);
 }
 
 // A react hook for controlling an API-backed boolean from a React pure functional component
