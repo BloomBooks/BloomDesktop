@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import { ThemeProvider } from "@mui/material/styles";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as React from "react";
 import {
     getToolboxBundleExports,
@@ -64,13 +64,29 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
         postBoolean("editView/setModalState", true);
     });
 
+    const hasClosed = useRef(false);
     const close = () => {
+        // Closing twice must not post the unlock twice. Closing does not unmount this
+        // component, so the handle below stays live afterwards; without this guard a later
+        // closeSetupDialog() would re-unlock the edit view even though something else may by
+        // then be relying on it staying locked.
+        if (hasClosed.current) {
+            return;
+        }
+        hasClosed.current = true;
         setOpen(false);
-        closeDialog = () => {};
         postBoolean("editView/setModalState", false);
     };
 
-    closeDialog = close;
+    // Publish the close handle from an effect, not from the render body: assigning module-level
+    // state while rendering runs again on every re-render (and twice under StrictMode). No
+    // dependency list, so the handle always points at the current close; cleared on unmount.
+    useEffect(() => {
+        closeDialog = close;
+        return () => {
+            closeDialog = () => {};
+        };
+    });
 
     const save = () => {
         const toolboxBundle = getToolboxBundleExports();
