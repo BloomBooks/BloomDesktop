@@ -295,6 +295,14 @@ function formatAverage(value: number): string {
     return value.toFixed(1);
 }
 
+// A statistic violates the current level when it exceeds the level's maximum.
+// A maximum of 0 means the level does not limit this statistic at all, and
+// Infinity means we don't know the limit yet (no level data loaded); neither
+// counts as a violation.
+function isOverMax(actualNum: number, maxNum: number): boolean {
+    return maxNum != 0 && maxNum != Infinity && actualNum > maxNum;
+}
+
 // True when at least one measured statistic exceeds the current level's
 // limit. Mirrors the per-row orange coloring rule in StatsRow.
 function isBookOverLevel(
