@@ -147,6 +147,7 @@ $loggedLogPath = $false
 $deadline = (Get-Date).AddMinutes($GiveUpAfterMinutes)
 
 $lastLogSize = -1
+$everSawProcess = $false
 
 while ((Get-Date) -lt $deadline) {
     $interval = $PollSeconds
@@ -180,7 +181,12 @@ while ((Get-Date) -lt $deadline) {
 
         if ($procs.Count -eq 0) {
             Write-Sample "no $ProcessName process running"
-            $interval = $EarlyPollSeconds   # poll briskly until it appears, so we see its first seconds
+            # Poll briskly only while waiting for it to appear, so we catch its first seconds. Once it
+            # has come and gone the tests are done with it, and staying brisk would just add hundreds of
+            # identical lines to the artifact for the rest of the watchdog's hour.
+            if (-not $everSawProcess) {
+                $interval = $EarlyPollSeconds
+            }
         }
 
         foreach ($proc in $procs) {
@@ -192,6 +198,7 @@ while ((Get-Date) -lt $deadline) {
                 continue
             }
 
+            $everSawProcess = $true
             Write-Sample ("pid={0} age={1}s cpu={2} threads={3} workingSetMB={4}" -f `
                     $proc.Id, $ageSeconds, $proc.CPU, $proc.Threads.Count,
                 [int]($proc.WorkingSet64 / 1MB))
