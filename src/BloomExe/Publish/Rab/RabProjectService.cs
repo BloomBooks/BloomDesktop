@@ -849,7 +849,7 @@ namespace Bloom.Publish.Rab
             // Snapshot the deliverable APKs before the build so the abnormal-path cleanup below can
             // tell a previous good APK (untouched by this attempt) from one this attempt created or
             // rewrote. See DeleteApksWrittenDuringBuild for why this matters.
-            var preBuildApkWriteTimes = SnapshotSafeApkWriteTimes(paths);
+            var preBuildApkWriteTimes = SnapshotDeliverableApkWriteTimes(paths);
 
             // Capture this run's RAB output so that, if no APK is produced, we can surface
             // Reading App Builder's own diagnostics (e.g. a missing font) instead of a generic
@@ -4147,72 +4147,60 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// Records the last-write time (UTC) of every deliverable APK currently in SafeApkRoot, keyed
-        /// by full path. Taken just before a build so <see cref="DeleteApksWrittenDuringBuild"/> can
-        /// distinguish a previous good APK the build never touched from one the build created or
-        /// rewrote.
+        /// Records the last-write time (UTC) of every deliverable APK present before the build, across
+        /// all deliverable roots (see <see cref="GetExistingDeliverableApkRoots"/>), keyed by full
+        /// path. Taken just before a build so the abnormal-path helpers can distinguish a previous good
+        /// APK the build never touched from one the build created or rewrote. Must cover the same roots
+        /// <see cref="FindLatestApkPath"/> searches, or an APK in a root the snapshot missed would be
+        /// wrongly treated as "written this build" (BL-16350; Devin).
         /// </summary>
-        private static IReadOnlyDictionary<string, DateTime> SnapshotSafeApkWriteTimes(
+        private static IReadOnlyDictionary<string, DateTime> SnapshotDeliverableApkWriteTimes(
             RabWorkspacePaths paths
         )
         {
             var snapshot = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
-            if (Directory.Exists(paths.SafeApkRoot))
-            {
-                foreach (
-                    var apkPath in Directory.GetFiles(
-                        paths.SafeApkRoot,
-                        "*.apk",
-                        SearchOption.AllDirectories
-                    )
-                )
-                    snapshot[apkPath] = RobustFile.GetLastWriteTimeUtc(apkPath);
-            }
+            foreach (var root in GetExistingDeliverableApkRoots(paths))
+            foreach (var apkPath in Directory.GetFiles(root, "*.apk", SearchOption.AllDirectories))
+                snapshot[apkPath] = RobustFile.GetLastWriteTimeUtc(apkPath);
             return snapshot;
         }
 
         /// <summary>
-        /// Removes a deliverable APK in SafeApkRoot only if this build attempt left it truncated.
+        /// Removes a deliverable APK (in any deliverable root — see
+        /// <see cref="GetExistingDeliverableApkRoots"/>) only if this build attempt left it truncated.
         /// Called only on the abnormal path (cancel/failure), with a <paramref name="preBuildApkWriteTimes"/>
-        /// snapshot taken before the build. Reading App Builder writes the finished, signed APK to
-        /// SafeApkRoot as its final step, and Bloom cannot see whether that write is atomic, so a build
-        /// killed mid-write could leave a truncated APK at the deliverable name that <see cref="GetStatus"/>
-        /// and <see cref="Install"/> (both scan the directory via <see cref="FindLatestApkPath"/>) would
-        /// treat as a finished app (BL-16350). An APK is deleted only when BOTH: this attempt created or
-        /// rewrote it (its write time changed), AND it is no longer a complete, readable APK. That leaves
-        /// alone (a) a previous good APK this attempt never touched, and — crucially — (b) a complete APK
-        /// that RAB finished writing before a cancel/failure a moment later arrived: deleting that would
-        /// needlessly discard a usable build and, for a same-named rebuild, the previous one it replaced
-        /// (a regression Devin caught in the first version of this fix). Only a write cut off mid-stream,
-        /// the truncation this exists for, leaves an unreadable file, and only that is removed.
+        /// snapshot taken before the build over those same roots. Reading App Builder writes the
+        /// finished, signed APK as its final step, and Bloom cannot see whether that write is atomic, so
+        /// a build killed mid-write could leave a truncated APK at the deliverable name that
+        /// <see cref="GetStatus"/> and <see cref="Install"/> (both resolve the app via
+        /// <see cref="FindLatestApkPath"/>) would treat as a finished app (BL-16350). An APK is deleted
+        /// only when BOTH: this attempt created or rewrote it (its write time changed), AND it is no
+        /// longer a complete, readable APK. That leaves alone (a) a previous good APK this attempt never
+        /// touched, and — crucially — (b) a complete APK that RAB finished writing before a
+        /// cancel/failure a moment later arrived: deleting that would needlessly discard a usable build
+        /// and, for a same-named rebuild, the previous one it replaced (a regression Devin caught in the
+        /// first version of this fix). Only a write cut off mid-stream, the truncation this exists for,
+        /// leaves an unreadable file, and only that is removed.
         /// </summary>
         private static void DeleteApksWrittenDuringBuild(
             RabWorkspacePaths paths,
             IReadOnlyDictionary<string, DateTime> preBuildApkWriteTimes
         )
         {
-            if (!Directory.Exists(paths.SafeApkRoot))
-                return;
-
-            foreach (
-                var apkPath in Directory.GetFiles(
-                    paths.SafeApkRoot,
-                    "*.apk",
-                    SearchOption.AllDirectories
-                )
-            )
+            foreach (var root in GetExistingDeliverableApkRoots(paths))
+            foreach (var apkPath in Directory.GetFiles(root, "*.apk", SearchOption.AllDirectories))
             {
-                // Keep an APK that was already present and unchanged since before this build: it is a
-                // previous good build this attempt never wrote to, so it is still trustworthy.
+                // Keep an APK that was already present and unchanged since before this build: it is
+                // a previous good build this attempt never wrote to, so it is still trustworthy.
                 if (
                     preBuildApkWriteTimes.TryGetValue(apkPath, out var previousWriteTimeUtc)
                     && RobustFile.GetLastWriteTimeUtc(apkPath) == previousWriteTimeUtc
                 )
                     continue;
 
-                // This attempt created or rewrote this APK. Keep it if it is still a complete, readable
-                // app — RAB had finished writing it before the cancel/failure, so it is usable and must
-                // not be thrown away. Only a truncated (unreadable) file is deleted.
+                // This attempt created or rewrote this APK. Keep it if it is still a complete,
+                // readable app — RAB had finished writing it before the cancel/failure, so it is
+                // usable and must not be thrown away. Only a truncated (unreadable) file is deleted.
                 if (IsCompleteApk(apkPath))
                     continue;
 
@@ -4222,8 +4210,8 @@ namespace Bloom.Publish.Rab
                 }
                 catch (Exception)
                 {
-                    // Best-effort, exactly like DeleteIntermediateBuildApks: a file we can't delete is
-                    // not worth failing the already-failing build over, and the next successful build
+                    // Best-effort, like DeleteIntermediateBuildApks: a file we can't delete is not
+                    // worth failing the already-failing build over, and the next successful build
                     // overwrites it anyway.
                 }
             }
@@ -4251,21 +4239,26 @@ namespace Bloom.Publish.Rab
             }
         }
 
-        internal virtual string FindLatestApkPath(RabWorkspacePaths paths)
+        /// <summary>
+        /// The existing directories a finished, signed APK can live in: the collection-local ApkRoot
+        /// and SafeApkRoot (where RAB is told to write via apk.output) — NOT BuildRoot (or RabRoot,
+        /// which contains build/), whose APKs are unsigned Gradle intermediates. Lookup, pre-build
+        /// snapshotting, and abnormal-path cleanup all use this same set so an APK cannot look
+        /// "written this build" to one helper yet "pre-existing" to another (BL-16350; Devin). ApkRoot
+        /// is first so it wins the FindLatestApkPath tie-break when the same APK exists in both roots
+        /// with equal timestamps (OrderByDescending is stable).
+        /// </summary>
+        private static string[] GetExistingDeliverableApkRoots(RabWorkspacePaths paths)
         {
-            // Only the deliverable locations — NOT BuildRoot (or RabRoot, which contains build/).
-            // RAB is told to write the finished, signed APK to SafeApkRoot (apk.output=SafeApkRoot);
-            // ApkRoot is the collection-local deliverable directory. The APKs Gradle leaves under
-            // BuildRoot are unsigned intermediates, never the app, so searching there risked returning
-            // one as "the app" and made the BuildRoot cleanup look as though it could delete a
-            // deliverable (BL-16350; Devin). Restricting the search to the deliverable roots removes
-            // both. ApkRoot is listed first so it wins the tie-break when a copy exists in both roots
-            // with the same timestamp (OrderByDescending is stable).
-            var searchRoots = new[] { paths.ApkRoot, paths.SafeApkRoot }
+            return new[] { paths.ApkRoot, paths.SafeApkRoot }
                 .Where(Directory.Exists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
+        }
 
+        internal virtual string FindLatestApkPath(RabWorkspacePaths paths)
+        {
+            var searchRoots = GetExistingDeliverableApkRoots(paths);
             if (!searchRoots.Any())
                 return null;
 

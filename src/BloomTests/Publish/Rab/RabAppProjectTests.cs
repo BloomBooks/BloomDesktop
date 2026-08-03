@@ -1346,6 +1346,58 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public async Task BuildAsync_WhenFailedWithAnOlderApkInApkRoot_DoesNotRecordItAsFreshlyBuilt()
+        {
+            // Devin: the pre-build snapshot must span the same roots FindLatestApkPath searches
+            // (ApkRoot + SafeApkRoot). Otherwise a pre-existing APK in ApkRoot is not in the snapshot,
+            // so a cancelled/failed build treats it as "written this build" and records it as current
+            // — telling the user the app is up to date and offering a stale build.
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.PrepareAsync();
+
+            // A complete but stale APK, predating this build, living in ApkRoot (not SafeApkRoot).
+            Directory.CreateDirectory(paths.ApkRoot);
+            var staleApk = Path.Combine(paths.ApkRoot, "old-app.apk");
+            using (var archive = ZipFile.Open(staleApk, ZipArchiveMode.Create))
+                archive.CreateEntry("AndroidManifest.xml");
+
+            Assert.That(
+                service.GetStatus().BuildNeeded,
+                Is.True,
+                "setup: with no signature recorded yet, a build should be needed"
+            );
+
+            // A build that fails without producing a new complete APK for this attempt.
+            service.FailNextBuild = true;
+            Assert.ThrowsAsync<ApplicationException>(async () => await service.BuildAsync());
+
+            Assert.That(
+                RobustFile.Exists(staleApk),
+                Is.True,
+                "the untouched stale APK should not be deleted"
+            );
+            Assert.That(
+                service.GetStatus().BuildNeeded,
+                Is.True,
+                "a failed build must not record a pre-existing ApkRoot APK as freshly built"
+            );
+        }
+
+        [Test]
         public void SaveDownloadStreamAtomically_WhenCancelledMidDownload_LeavesNoInstallerFile()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
