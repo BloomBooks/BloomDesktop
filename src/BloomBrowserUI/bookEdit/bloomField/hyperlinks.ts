@@ -1,4 +1,5 @@
 import { get } from "../../utils/bloomApi";
+import { readClipboardTextForAvailabilityCheck } from "../js/hostClipboard";
 
 // returns empty string if the URL is not valid.
 // returns the url as is if it is external
@@ -33,18 +34,23 @@ export function tryProcessHyperlink(
 export function getHyperlinkFromClipboard(
     callback: (url: string) => void,
 ): void {
-    // The availability-check read: this runs to decide whether the paste-hyperlink button should
-    // be enabled -- including during page initialization -- not because the user asked to paste,
-    // so C# must not report a momentarily unreadable clipboard as a failed paste.
-    get("common/clipboardText?checkingAvailability=true", (result) => {
-        if (!result.data) {
+    // The availability-check read, via hostClipboard: this runs to decide whether the
+    // paste-hyperlink button should be enabled -- including during page initialization -- not
+    // because the user asked to paste, so C# must not report a momentarily unreadable clipboard as
+    // a failed paste. Going through that helper also means the reply arrives as the text it really
+    // is: read directly, axios would turn a clipboard holding 42 into a number and the URL
+    // handling below would throw on it while a page was loading.
+    readClipboardTextForAvailabilityCheck().then((clipboardText) => {
+        if (!clipboardText) {
             callback("");
+            return;
         }
         get("app/selectedBookInfo", (bookInfo) => {
             if (!bookInfo.data) {
                 callback("");
+                return;
             }
-            callback(tryProcessHyperlink(result.data, bookInfo.data.id));
+            callback(tryProcessHyperlink(clipboardText, bookInfo.data.id));
         });
     });
 }

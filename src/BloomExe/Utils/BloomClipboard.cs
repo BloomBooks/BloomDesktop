@@ -101,7 +101,11 @@ namespace Bloom.Utils
             {
                 try
                 {
-                    result = PortableClipboard.GetText() ?? "";
+                    // Windows programs put CRLF on the clipboard, and this read hands it back
+                    // verbatim -- where navigator.clipboard.readText(), which the front end used
+                    // before, normalized line endings for us. Keep doing that, so a multi-line
+                    // paste doesn't start gaining stray breaks in the editor.
+                    result = NormalizeLineEndings(PortableClipboard.GetText());
                 }
                 catch (Exception e)
                 {
@@ -211,6 +215,18 @@ namespace Bloom.Utils
 
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool CloseClipboard();
+
+        /// <summary>
+        /// Turns any CRLF or lone CR into LF, matching what the browser's own clipboard read gave
+        /// the front end before this class existed. Nothing downstream wants Windows line endings:
+        /// the text goes into the editor, where a stray CR can show up as an extra line break.
+        /// </summary>
+        internal static string NormalizeLineEndings(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return text ?? "";
+            return text.Replace("\r\n", "\n").Replace("\r", "\n");
+        }
 
         private static void ReportCopyFailure(Exception e)
         {
