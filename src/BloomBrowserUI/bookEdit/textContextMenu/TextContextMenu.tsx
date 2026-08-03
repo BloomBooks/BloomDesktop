@@ -4,9 +4,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import Menu from "@mui/material/Menu";
 import { ThemeProvider } from "@mui/material/styles";
-import { default as NoIndentIcon } from "@mui/icons-material/FormatIndentDecreaseSharp";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { LocalizableMenuItem } from "../../react_components/localizableMenuItem";
+import { LocalizableSelectableMenuItem } from "../../react_components/localizableMenuItem";
 import {
     canToggleNoIndent,
     findParagraphForTextContextMenu,
@@ -55,11 +54,10 @@ const TextContextMenu: React.FunctionComponent<{
                     }
                 `}
             >
-                <LocalizableMenuItem
+                <LocalizableSelectableMenuItem
                     english="No Indent"
                     l10nId="EditTab.TextContextMenu.NoIndent"
-                    icon={<NoIndentIcon />}
-                    checked={noIndentIsOn}
+                    selected={noIndentIsOn}
                     disabled={!canToggleNoIndent(props.paragraph)}
                     onClick={handleNoIndentClick}
                 />

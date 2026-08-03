@@ -72,10 +72,6 @@ export interface ILocalizableMenuItemProps
     // override MUI's inline-flex and allow the item to size vertically to its content.
     labelCss?: SerializedStyles;
     value?: string | number | readonly string[];
-    // For an item that toggles something on and off: shows a check at the end of the row when
-    // the thing is on, while leaving the leading icon slot free for the command's own icon.
-    // (Contrast LocalizableSelectableMenuItem below, which puts the check in the icon slot.)
-    checked?: boolean;
 }
 
 export interface ILocalizableSelectableMenuItemProps
@@ -177,16 +173,6 @@ export const LocalizableMenuItem: React.FunctionComponent<
         />
     );
 
-    const checkElement = props.checked ? (
-        <CheckIcon
-            css={css`
-                color: ${menuItemColor};
-                font-size: 1.3rem;
-                margin-left: 10px;
-            `}
-        />
-    ) : null;
-
     const localizedSubLabel = useL10n("", props.subLabelL10nId ?? null);
     const subLabel =
         props.subLabel ?? props.generatedSubLabel ?? localizedSubLabel;
@@ -227,7 +213,6 @@ export const LocalizableMenuItem: React.FunctionComponent<
                         primary={label + ellipsis}
                         secondary={subLabel !== "" ? subLabel : null} // null is needed to not leave an empty row
                     ></ListItemText>
-                    {checkElement}
                     {subscriptionElement}
                 </React.Fragment>
             </MenuItem>
