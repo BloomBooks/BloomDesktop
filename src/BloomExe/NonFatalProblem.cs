@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -58,7 +58,11 @@ namespace Bloom
             bool isShortMessagePreEncoded = false,
             bool skipSentryReport = false,
             bool showRequestDetails = false,
-            string[] additionalFilesToInclude = null
+            string[] additionalFilesToInclude = null,
+            // Let an identical message through when it arrives again, instead of being suppressed
+            // as a duplicate. For problems where a repeat means the user just tried again and hit
+            // the same wall, and needs to see that acknowledged. See ToastService.ShowToast.
+            bool showToastEvenIfDuplicate = false
         )
         {
             var originalException = exception;
@@ -191,7 +195,8 @@ namespace Bloom
                             exception,
                             fullDetailedMessage,
                             showSendReport,
-                            showRequestDetails
+                            showRequestDetails,
+                            showToastEvenIfDuplicate
                         );
                     }
                     finally
@@ -354,7 +359,8 @@ namespace Bloom
             Exception exception,
             string fullDetailedMessage,
             bool showSendReport = true,
-            bool showDetailsOnRequest = false
+            bool showDetailsOnRequest = false,
+            bool showEvenIfDuplicate = false
         )
         {
             ToastAction action = null;
@@ -404,7 +410,8 @@ namespace Bloom
                 ToastType.Warning,
                 text: shortUserLevelMessage,
                 durationSeconds: 15,
-                action: action
+                action: action,
+                showEvenIfDuplicate: showEvenIfDuplicate
             );
         }
 

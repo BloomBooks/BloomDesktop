@@ -56,13 +56,21 @@ namespace Bloom.web
         /// Do not use toastId for unrelated toasts that merely happen to have similar text; those
         /// should remain independent so each one can carry its own lifecycle and action.
         /// </summary>
+        /// <param name="showEvenIfDuplicate">
+        /// By default the browser suppresses a message identical to one already showing, which
+        /// stops repeated notices piling up. Pass true when a repeat means something new happened
+        /// that the user must see acknowledged -- a second failed copy, for instance, where showing
+        /// nothing reads as "that one worked". Such a toast is refreshed, and its time on screen
+        /// restarted, rather than dropped. Keep in sync with ToastInfo in src/BloomBrowserUI/toast.
+        /// </param>
         public static void ShowToast(
             string type = ToastType.Notice,
             string text = null,
             string l10nId = null,
             int? durationSeconds = null,
             ToastAction action = null,
-            string toastId = null
+            string toastId = null,
+            bool showEvenIfDuplicate = false
         )
         {
             CleanupExpiredCallbacks();
@@ -76,6 +84,8 @@ namespace Bloom.web
                 bundle.l10nId = l10nId;
             if (durationSeconds.HasValue)
                 bundle.durationSeconds = durationSeconds.Value;
+            if (showEvenIfDuplicate)
+                bundle.showEvenIfDuplicate = true;
 
             if (action != null)
             {

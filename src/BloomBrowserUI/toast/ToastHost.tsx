@@ -126,6 +126,17 @@ export const ToastHost: React.FunctionComponent<{
                     return;
                 }
 
+                // A repeat that the sender says matters: refresh it and restart its time on
+                // screen, rather than dropping it as a duplicate. Without this, a second failed
+                // attempt produces no visible reaction at all, which reads as though it worked.
+                if (incomingToast.showEvenIfDuplicate) {
+                    updateToast({
+                        ...existingToast,
+                        ...incomingToast,
+                    });
+                    return;
+                }
+
                 if (
                     getToastLifetimeSeconds(incomingToast) >
                     getToastLifetimeSeconds(existingToast)

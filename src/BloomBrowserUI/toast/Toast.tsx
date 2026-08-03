@@ -36,6 +36,12 @@ type ToastInfoBase = {
     l10nId?: string;
     durationSeconds?: number;
     actionInfo?: ToastActionInfo;
+    // Normally a message identical to one already showing is suppressed, which keeps repeated
+    // notices from piling up. Set this when the same message arriving again means a *new* thing
+    // happened that the user needs to see reacted to -- a second failed copy, say, where silence
+    // reads as "that one worked". Such a toast is refreshed (and its time on screen restarted)
+    // instead of being dropped. Keep in sync with ToastService.ShowToast in C#.
+    showEvenIfDuplicate?: boolean;
 };
 
 export type ToastInfo = RequireAtLeastOne<ToastInfoBase, "text" | "l10nId">;
