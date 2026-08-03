@@ -15,6 +15,7 @@ using Bloom.Properties;
 using Bloom.SafeXml;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.Workspace;
 using L10NSharp;
@@ -22,7 +23,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SIL.IO;
 using SIL.PlatformUtilities;
-using SIL.Windows.Forms.Miscellaneous;
 using SIL.Xml;
 
 namespace Bloom.Api
@@ -236,7 +236,10 @@ namespace Bloom.Api
                 // It's in the json data, but not asked for in the clipboard copying.
                 var stringToSave =
                     headerBldr.ToString() + Environment.NewLine + dataBldr.ToString();
-                PortableClipboard.SetText(stringToSave);
+                // BloomClipboard, not PortableClipboard: it marshals to the UI thread (we are on
+                // a server thread here) and toasts instead of throwing if the clipboard is
+                // unavailable, which it can be at any moment (BL-16459).
+                BloomClipboard.TrySetText(stringToSave);
             }
             catch (IOException e)
             {

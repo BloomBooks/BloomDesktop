@@ -18,6 +18,13 @@ import {
     removeTransientVideoTimestampParams,
     SetupVideoEditing,
 } from "./bloomVideo";
+import {
+    copyTextToClipboard,
+    listenForBrowserClipboardOperations,
+    readTextFromClipboard,
+    verifyBrowserCopyAfterDefault,
+    verifyBrowserPasteAfterDefault,
+} from "./hostClipboard";
 import { SetupWidgetEditing } from "./bloomWidgets";
 import { setupOrigami, cleanupOrigami } from "./origami";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
@@ -1643,11 +1650,12 @@ export function topBarButtonClick(button: { command: string }) {
     }
 }
 
-// These clipboard functions are implemented in Javascript because WebView2 doesn't seem to have
+// These clipboard functions are driven from Javascript because WebView2 doesn't seem to have
 // a C# api for doing them. I've made the exported functions synchronous because I'm not sure
 // what complications might come from calling an async function from C#. The implementations
-// mostly use clipboard API functions that are async, so those functions must be async.
-// We don't need to await them because nothing is using the result.
+// are async because they hand the actual clipboard work to C# over the API (see
+// hostClipboard.ts for why they must, rather than using navigator.clipboard), so the exported
+// functions do not await them; nothing is using the result.
 // The buttons that implement clipboard operations are currently only in Edit mode, so
 // this is a reasonable place for this code. If we support them elsewhere, we'll have to
 // find a way to share the code (and call it when not part of the workspaceBundle).
@@ -1670,12 +1678,12 @@ async function copyImpl() {
         // whitespace. But there's a greater chance they **don't** want unintended
         // trailing line breaks. This ".trimEnd()" works around an issue where multiple
         // copy/pastes can result in an extra line break being added. See BL-14051.
-        navigator.clipboard.writeText(
+        await copyTextToClipboard(
             activeCanvasElementEditable.innerText.trimEnd(),
         );
         return;
     }
-    navigator.clipboard.writeText(sel.toString());
+    await copyTextToClipboard(sel.toString());
 }
 
 // See comment on copySelection
@@ -1686,7 +1694,9 @@ export const cutSelection = () => {
 async function cutSelectionImpl() {
     const sel = document.getSelection();
     if (!sel) return;
-    await navigator.clipboard.writeText(sel.toString());
+    // Don't delete what we failed to copy: that would lose the text outright. The user has
+    // been told the copy failed and can try the cut again.
+    if (!(await copyTextToClipboard(sel.toString()))) return;
     // Using ckeditor here because it's the only way I've found to integrate clipboard
     // ops into an Undo stack that we can operate from an external button.
     // We do a Save before and after to make sure that the cut is distinct from
@@ -1761,13 +1771,63 @@ document.addEventListener("paste", pasteHandler);
 // end up pasting text into contenteditable elements twice, presumably
 // once because of our handler here and once because the other handler
 // is not looking for exactly this event and still gets called.
+// Clipboard keyboard shortcuts. These are handled from keydown rather than from the copy/cut/
+// paste events because CKEditor gets to those first inside a bloom-editable: it preventDefaults
+// copy and cut, and swallows paste before it reaches the document. keydown always arrives.
 document.addEventListener("keydown", (e: KeyboardEvent) => {
+    // Not AltGr, which Windows reports as Ctrl+Alt: on many keyboard layouts AltGr+letter is how
+    // the user types a character, and it must not be mistaken for a clipboard shortcut (least of
+    // all Ctrl+X, where we preventDefault).
+    if (!e.ctrlKey || e.altKey) return;
     const key = e.key?.toLowerCase();
-    const isCtrlV = e.ctrlKey && (key === "v" || e.code === "KeyV");
-    if (isCtrlV) {
+    const isKey = (letter: string, code: string) =>
+        key === letter || e.code === code;
+
+    if (isKey("v", "KeyV")) {
         pasteHandler(e);
+        // If pasteHandler took over (it preventDefaults when it is going to handle an image
+        // paste itself) it reports its own failures through the API. Otherwise Chromium is doing
+        // the paste, and only C# can tell us whether the clipboard was actually readable.
+        if (!e.defaultPrevented) {
+            verifyBrowserPasteAfterDefault();
+        }
+        return;
+    }
+
+    if (isKey("x", "KeyX")) {
+        // Do the cut ourselves rather than letting Chromium do it. Chromium deletes the selected
+        // text and then silently discards the failed clipboard write, so a cut from a locked
+        // clipboard loses the text outright (BL-16459). cutSelection copies through C# first and
+        // leaves the text alone if that fails -- the same thing the Cut button does. Only take
+        // over where that implementation applies; elsewhere, let the browser cut and just check.
+        const editor = CKEDITOR.currentInstance;
+        // Only plain Ctrl+X. Ctrl+Shift+X is not a cut, and preventDefaulting it would invent one.
+        if (
+            !e.shiftKey &&
+            document.activeElement?.closest(".bloom-editable") &&
+            editor
+        ) {
+            e.preventDefault();
+            cutSelection();
+        } else {
+            verifyBrowserCopyAfterDefault();
+        }
+        return;
+    }
+
+    if (isKey("c", "KeyC")) {
+        // Left to Chromium: its copy carries the HTML flavor, which matters when pasting into
+        // other programs, and unlike cut a failure loses nothing. We just check afterwards.
+        verifyBrowserCopyAfterDefault();
     }
 });
+
+// Ctrl+C, Ctrl+X and Ctrl+V in a text box are handled entirely inside Chromium, which never
+// tells us whether the clipboard worked. (For paste, note that pasteHandler above deliberately
+// bows out when focus is in a bloom-editable, so C# is not involved at all.) This gets each one
+// checked on the C# side so the user finds out, instead of pasting stale content -- or nothing
+// -- and concluding that their copy never happened (BL-16459).
+listenForBrowserClipboardOperations(document);
 
 async function pasteImpl(imageAvailable: boolean) {
     const canvasElementManager = theOneCanvasElementManager;
@@ -1785,7 +1845,7 @@ async function pasteImpl(imageAvailable: boolean) {
         "bloom-editable bloom-visibility-code-on",
     )[0] as HTMLElement;
 
-    const textToPaste = await navigator.clipboard.readText();
+    const textToPaste = await readTextFromClipboard();
     if (!textToPaste) {
         return;
     }

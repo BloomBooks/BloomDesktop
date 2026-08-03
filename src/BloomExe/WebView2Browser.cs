@@ -12,6 +12,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Properties;
+using Bloom.Utils;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using Microsoft.Win32;
@@ -896,6 +897,15 @@ namespace Bloom
             // result (we only care about the side effects on the document).
             _pasteCommand.Implementer = () =>
             {
+                // Check that the clipboard is readable at all before deciding it holds no image.
+                // The catch below cannot tell "this isn't an image" from "the clipboard is being
+                // held by another program", and treating the latter as the former is how a failed
+                // paste came to be reported to the user as "Bloom did not find an image on your
+                // clipboard. Copy one first" -- advice about a clipboard that may be perfectly
+                // full. BloomClipboard toasts the real reason and we stop here (BL-16459).
+                if (!BloomClipboard.VerifyUsableAfterBrowserPaste())
+                    return;
+
                 PalasoImage clipboardImage = null;
                 try
                 {

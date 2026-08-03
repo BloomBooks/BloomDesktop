@@ -11,13 +11,13 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.MiscUI;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
-using SIL.Windows.Forms.Miscellaneous;
 using Timer = System.Windows.Forms.Timer;
 
 namespace Bloom.web.controllers
@@ -117,36 +117,10 @@ namespace Bloom.web.controllers
                 {
                     if (request.HttpMethod == HttpMethods.Get)
                     {
-                        string result = ""; // initial value is not used, delegate will set it.
-                        Program.MainContext.Send(
-                            o =>
-                            {
-                                try
-                                {
-                                    result = PortableClipboard.GetText();
-                                }
-                                catch (Exception e)
-                                {
-                                    // Need to make sure to handle exceptions.
-                                    // If the worker thread dies with an unhandled exception,
-                                    // it causes the whole program to immediately crash without opportunity for error reporting
-                                    // A clipboard failure is not worth a modal problem-report dialog: whatever the
-                                    // cause, all the user can do is try again (BL-16459). So we just toast, which
-                                    // still offers a "Report" link and still tells Sentry.
-                                    NonFatalProblem.Report(
-                                        ModalIf.None,
-                                        PassiveIf.All,
-                                        LocalizationManager.GetDynamicString(
-                                            "BloomLowPriority",
-                                            "EditTab.PasteTextFailed",
-                                            "Bloom was not able to paste."
-                                        ),
-                                        exception: e
-                                    );
-                                }
-                            },
-                            null
-                        );
+                        // BloomClipboard toasts if the clipboard can't be read, and gives us ""
+                        // in that case, which is also what an empty clipboard gives us. The
+                        // caller wants text either way.
+                        BloomClipboard.TryGetText(out var result);
                         request.ReplyWithText(result);
                     }
                     else
@@ -154,40 +128,40 @@ namespace Bloom.web.controllers
                         // post
                         var requestData = DynamicJson.Parse(request.RequiredPostJson());
                         string content = requestData.text;
-                        if (!string.IsNullOrEmpty(content))
-                        {
-                            Program.MainContext.Post(
-                                o =>
-                                {
-                                    try
-                                    {
-                                        PortableClipboard.SetText(content);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        // Need to make sure to handle exceptions.
-                                        // If the worker thread dies with an unhandled exception,
-                                        // it causes the whole program to immediately crash without opportunity for error reporting
-                                        // A clipboard failure is not worth a modal problem-report dialog: whatever the
-                                        // cause, all the user can do is try again (BL-16459). So we just toast, which
-                                        // still offers a "Report" link and still tells Sentry.
-                                        NonFatalProblem.Report(
-                                            ModalIf.None,
-                                            PassiveIf.All,
-                                            LocalizationManager.GetDynamicString(
-                                                "BloomLowPriority",
-                                                "EditTab.CopyTextFailed",
-                                                "Bloom was not able to copy that."
-                                            ),
-                                            exception: e
-                                        );
-                                    }
-                                },
-                                null
-                            );
-                        }
-                        request.PostSucceeded();
+                        // We reply with whether the copy actually happened (BloomClipboard has
+                        // already toasted if it didn't) so that callers who are about to destroy
+                        // the original -- cut, as opposed to copy -- can leave it alone.
+                        var succeeded =
+                            !string.IsNullOrEmpty(content) && BloomClipboard.TrySetText(content);
+                        request.ReplyWithBoolean(succeeded);
                     }
+                },
+                false,
+                false
+            );
+            // Called by the browser just after it has done a copy itself (a plain Ctrl+C or
+            // Ctrl+X in a text box, which Chromium handles internally). Chromium discards
+            // clipboard errors without telling Javascript, so this is the only way such a
+            // failure can reach the user: we look at the clipboard right afterwards and toast
+            // if it turns out not to be usable. See BloomClipboard for the details and limits.
+            apiHandler.RegisterEndpointHandler(
+                "common/verifyClipboardAfterBrowserCopy",
+                request =>
+                {
+                    request.ReplyWithBoolean(BloomClipboard.VerifyUsableAfterBrowserCopy());
+                },
+                false,
+                false
+            );
+            // The same, for a paste the browser performs itself. Ctrl+V in a text box is
+            // deliberately left to Chromium (see pasteHandler in bloomEditing.ts), so this is the
+            // only thing standing between a failed paste and the user concluding that whatever
+            // they copied earlier never made it to the clipboard.
+            apiHandler.RegisterEndpointHandler(
+                "common/verifyClipboardAfterBrowserPaste",
+                request =>
+                {
+                    request.ReplyWithBoolean(BloomClipboard.VerifyUsableAfterBrowserPaste());
                 },
                 false,
                 false

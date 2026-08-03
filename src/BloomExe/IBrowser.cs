@@ -9,8 +9,8 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using SIL.IO;
-using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom
 {
@@ -320,8 +320,10 @@ namespace Bloom
                 "document.getElementsByClassName('bloom-page')[0]?.outerHTML"
             );
             // After the await we're back on the UI thread, so it's safe to use the clipboard.
+            // This method is 'async void', so a clipboard exception here would take the whole
+            // program down; BloomClipboard toasts instead of throwing.
             if (!string.IsNullOrEmpty(html))
-                PortableClipboard.SetText(html);
+                BloomClipboard.TrySetText(html);
         }
 
         public abstract Task<string> GetStringFromJavascriptAsync(string script);

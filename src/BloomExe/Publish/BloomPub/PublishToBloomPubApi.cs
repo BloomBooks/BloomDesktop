@@ -11,13 +11,13 @@ using Bloom.Properties;
 using Bloom.Publish.BloomPub.file;
 using Bloom.Publish.BloomPub.wifi;
 using Bloom.SubscriptionAndFeatures;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
-using SIL.Windows.Forms.Miscellaneous;
 #if !__MonoCS__
 using Bloom.Publish.BloomPub.usb;
 #endif
@@ -245,7 +245,9 @@ namespace Bloom.Publish.BloomPub
                 kApiUrlPart + "textToClipboard",
                 request =>
                 {
-                    PortableClipboard.SetText(request.RequiredPostString());
+                    // BloomClipboard toasts rather than throwing if the clipboard is being held
+                    // by something else at this moment (BL-16459).
+                    BloomClipboard.TrySetText(request.RequiredPostString());
                     request.PostSucceeded();
                 },
                 true
