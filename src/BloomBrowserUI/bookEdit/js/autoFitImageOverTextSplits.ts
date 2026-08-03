@@ -135,6 +135,14 @@ function fitImageOverTextSplitOnPage(page: HTMLElement): boolean {
         splitConfig.secondInner.querySelector(kBloomCanvasSelector);
     if (!firstCanvas || firstHasText || firstHasOverlay) return false;
     if (!secondTextGroup || secondHasCanvas) return false;
+    // A pane with more than one translation group would be measured only on the first one, so
+    // the fit could leave the others clipped — decline rather than guess (same rule as
+    // classifySlot in the stack path).
+    if (
+        splitConfig.secondInner.querySelectorAll(".bloom-translationGroup")
+            .length > 1
+    )
+        return false;
 
     const splitPaneRelevantSize =
         splitConfig.orientation === "horizontal"
@@ -312,7 +320,13 @@ function classifySlot(
             return undefined;
         return { kind: "image", component, canvas };
     }
-    if (textGroup && !canvas) return { kind: "text", component, textGroup };
+    if (textGroup && !canvas) {
+        // A pane with more than one translation group would be measured only on the first one,
+        // so the fit could leave the others clipped — decline rather than guess.
+        if (inner.querySelectorAll(".bloom-translationGroup").length > 1)
+            return undefined;
+        return { kind: "text", component, textGroup };
+    }
     return undefined;
 }
 

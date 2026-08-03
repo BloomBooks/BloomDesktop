@@ -239,6 +239,20 @@ describe("collectSplitStack", () => {
         ).toBeUndefined();
     });
 
+    it("declines a pane holding two translation groups (only the first would be measured)", () => {
+        expect(
+            collectSplitStack(
+                topSplitOf(
+                    split(
+                        "horizontal",
+                        kTextPane + kTextPane,
+                        split("horizontal", kImagePane, kTextPane),
+                    ),
+                ),
+            ),
+        ).toBeUndefined();
+    });
+
     it("declines an empty pane", () => {
         expect(
             collectSplitStack(
