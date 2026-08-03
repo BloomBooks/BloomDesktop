@@ -823,6 +823,11 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                     // still switch tools (BL-16630). Until 6.4 this was done by
                                     // the "#toolbox h3" rule in toolbox.less, which no longer
                                     // applies now that the headers are MUI AccordionSummaries.
+                                    // Note this only works while no ancestor creates a stacking
+                                    // context: adding a transform, filter, opacity or z-index to
+                                    // the Accordion, the Collapse, or the tool-body host would
+                                    // trap this z-index inside it and put the header back under
+                                    // the overlay -- which is exactly how BL-16630 happened.
                                     position: relative;
                                     z-index: 1005;
 
