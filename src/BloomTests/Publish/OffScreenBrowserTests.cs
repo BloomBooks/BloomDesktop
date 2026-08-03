@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,6 +66,47 @@ namespace BloomTests.Publish
                     result,
                     Is.EqualTo("3"),
                     "javascript executed on the dedicated-thread browser should return its result"
+                );
+            }
+        }
+
+        /// <summary>
+        /// The point of the backstop timeout (BL-16612): a browser that stops making progress must fail the
+        /// caller rather than block it forever. Blocking forever used to wedge the calling thread, and when
+        /// that thread was a BloomServer worker it took publishing down with it for the rest of the session.
+        /// </summary>
+        [Test]
+        public void RunJavascript_WhenTheBrowserDoesNotComeBackInTime_ThrowsRatherThanBlockingForever()
+        {
+            using (var host = new OffScreenBrowser())
+            {
+                // SANITY: a normal script works on this browser, so the failure below is really about the
+                // timeout and not about a browser that never worked in the first place.
+                Assert.That(
+                    host.RunJavascript("(1 + 2).toString()"),
+                    Is.EqualTo("3"),
+                    "setup: the browser should run a trivial script before we test the timeout"
+                );
+
+                const int kBackstopMs = 500;
+                const int kScriptMs = 5000;
+                host.DefaultBlockTimeoutMsForTests = kBackstopMs;
+
+                // A script that keeps the renderer busy for far longer than the backstop. It does finish on
+                // its own, so we leave no spinning renderer behind for the rest of the suite.
+                var timer = Stopwatch.StartNew();
+                Assert.That(
+                    () =>
+                        host.RunJavascript(
+                            $"const end = Date.now() + {kScriptMs}; while (Date.now() < end) {{}} 'done'"
+                        ),
+                    Throws.TypeOf<OffScreenBrowserTimeoutException>(),
+                    "a browser that does not come back must fail the caller, not block it forever"
+                );
+                Assert.That(
+                    timer.ElapsedMilliseconds,
+                    Is.LessThan(kScriptMs),
+                    "should have given up at the backstop rather than waiting out the whole script"
                 );
             }
         }

@@ -31,10 +31,16 @@ namespace Bloom.Publish
     /// message loop, and THAT thread — not the caller — services the browser's callbacks. So a caller can
     /// simply block for a result. It never has to pump the MAIN UI message loop the way
     /// Browser.RunJavascriptWithStringResult_Sync_Dangerous does (Application.DoEvents), which lets unrelated
-    /// user commands run in the middle of the call stack — the reentrancy blamed for BL-12614 / BL-13120. And
-    /// it never deadlocks, because the thread that blocks is never the thread that must pump. Async
-    /// continuations for the browser's operations run on the owning thread, so the WebView2 is only ever
-    /// touched by that thread.
+    /// user commands run in the middle of the call stack — the reentrancy blamed for BL-12614 / BL-13120.
+    /// Async continuations for the browser's operations run on the owning thread, so the WebView2 is only
+    /// ever touched by that thread.
+    ///
+    /// Blocking here cannot deadlock on the message loop, since the thread that blocks is never the thread
+    /// that must pump. But it is NOT immune to deadlock in general: navigation asks BloomServer for the page,
+    /// so a caller that blocks while holding the last free BloomServer worker would be waiting for a page
+    /// that nobody is left to serve. What keeps that survivable (BL-16612) is that every blocking call is
+    /// bounded by a backstop timeout and throws <see cref="OffScreenBrowserTimeoutException"/> rather than
+    /// waiting forever.
     ///
     /// The browser is a real <see cref="WebView2Browser"/> (not a bare WebView2 control) so navigation goes
     /// through Bloom's BloomServer/in-memory-file plumbing and resolves CSS, fonts, and relative paths.
@@ -62,6 +68,25 @@ namespace Bloom.Publish
 
         private const int kInitTimeoutMs = 20000;
 
+        // Longest we will block a caller waiting for work we posted to the dedicated thread. This is a
+        // BACKSTOP, not a normal budget: the operations that can legitimately take a while carry their own
+        // timeout (Navigate, and the browser creation inside StartFreshBrowser) and pass it plus a margin,
+        // so the only way to hit this is a WebView2 — or the message loop that services it — that has
+        // stopped making progress altogether. We used to block forever in that case, which wedged the
+        // calling thread permanently; when the caller was a BloomServer worker that wedged publishing with
+        // it, and the process never recovered (BL-16612).
+        private const int kDefaultBlockTimeoutMs = 30000;
+
+        // Added to an operation's own timeout to get the backstop for waiting on it, so a normal timeout
+        // (which makes the operation return by itself) always wins over the backstop.
+        private const int kBlockTimeoutMarginMs = 15000;
+
+        /// <summary>
+        /// Test hook: shortens the backstop of <see cref="kDefaultBlockTimeoutMs"/> so a test can prove it
+        /// fires without having to wedge a real browser for 30 seconds. Never set in production.
+        /// </summary>
+        internal int? DefaultBlockTimeoutMsForTests;
+
         /// <summary>
         /// Starts the dedicated thread and blocks until its WebView2 is initialized and ready to navigate.
         /// </summary>
@@ -70,7 +95,17 @@ namespace Bloom.Publish
             _thread = new Thread(ThreadMain) { IsBackground = true, Name = "OffScreenBrowser" };
             _thread.SetApartmentState(ApartmentState.STA);
             _thread.Start();
-            _ready.Wait();
+            // Bounded for the same reason as RunAndBlock: InitializeAsync enforces kInitTimeoutMs itself,
+            // but only once its message loop is actually pumping. If the thread never gets that far, _ready
+            // is never set, and an unbounded wait here would hang whoever asked for the browser.
+            if (!_ready.Wait(kInitTimeoutMs + kBlockTimeoutMarginMs))
+            {
+                Dispose();
+                throw new OffScreenBrowserTimeoutException(
+                    $"The off-screen browser's thread did not finish initializing within "
+                        + $"{kInitTimeoutMs + kBlockTimeoutMarginMs}ms."
+                );
+            }
             if (_startupError != null)
             {
                 // Initialization failed (e.g. the WebView2 readiness timeout). The dedicated thread may still be
@@ -165,6 +200,9 @@ namespace Bloom.Publish
         /// timeout or cancellation — matching NavigateAndWaitTillDone's contract for the caller. The source
         /// controls how BloomServer serves the page (e.g. JustCheckingPage swaps videos for placeholders,
         /// Frame serves the page as-is for the editing bundle).
+        ///
+        /// Throws <see cref="OffScreenBrowserTimeoutException"/> in the separate case where the browser stops
+        /// responding altogether, so it cannot even tell us it timed out.
         /// </summary>
         public bool Navigate(
             HtmlDom htmlDom,
@@ -173,7 +211,12 @@ namespace Bloom.Publish
             InMemoryHtmlFileSource source = InMemoryHtmlFileSource.JustCheckingPage
         )
         {
-            return RunAndBlock(() => NavigateAsync(htmlDom, timeoutMs, cancelCheck, source));
+            // NavigateAsync enforces timeoutMs and returns false by itself, so the backstop only has to be
+            // comfortably larger than that.
+            return RunAndBlock(
+                () => NavigateAsync(htmlDom, timeoutMs, cancelCheck, source),
+                timeoutMs + kBlockTimeoutMarginMs
+            );
         }
 
         /// <summary>
@@ -258,19 +301,29 @@ namespace Bloom.Publish
         /// </summary>
         public void StartFreshBrowser()
         {
-            RunAndBlock(async () =>
-            {
-                _browser?.Dispose();
-                await CreateInnerBrowserAndWaitReadyAsync();
-                return true;
-            });
+            RunAndBlock(
+                async () =>
+                {
+                    _browser?.Dispose();
+                    await CreateInnerBrowserAndWaitReadyAsync();
+                    return true;
+                },
+                // CreateInnerBrowserAndWaitReadyAsync enforces kInitTimeoutMs itself.
+                kInitTimeoutMs + kBlockTimeoutMarginMs
+            );
         }
 
         // Marshals an async function onto the dedicated thread and BLOCKS the calling thread for its result.
         // Blocking is safe here precisely because the dedicated thread — not the caller — pumps the messages
         // that let the awaited WebView2 operations complete.
-        private T RunAndBlock<T>(Func<Task<T>> asyncFunc)
+        //
+        // timeoutMs is the backstop for the wait (see kDefaultBlockTimeoutMs): callers whose operation has
+        // its own timeout pass that plus kBlockTimeoutMarginMs, so the operation's own timeout normally
+        // wins and this only fires when the browser has stopped making progress entirely.
+        private T RunAndBlock<T>(Func<Task<T>> asyncFunc, int? timeoutMs = null)
         {
+            var effectiveTimeoutMs =
+                timeoutMs ?? DefaultBlockTimeoutMsForTests ?? kDefaultBlockTimeoutMs;
             var tcs = new TaskCompletionSource<T>();
             _ctx.Post(
                 async _ =>
@@ -286,6 +339,34 @@ namespace Bloom.Publish
                 },
                 null
             );
+
+            bool completed;
+            try
+            {
+                completed = tcs.Task.Wait(effectiveTimeoutMs);
+            }
+            catch (AggregateException)
+            {
+                // The work threw. Fall through to GetResult() below, which rethrows the original
+                // exception rather than the AggregateException that Wait wraps it in.
+                completed = true;
+            }
+            if (!completed)
+            {
+                // Nobody will ever await the task we are abandoning, so observe its exception here;
+                // otherwise a later failure on it resurfaces as an unobserved TaskException. We already
+                // have the diagnosis we need, so there is nothing else to do with it.
+                _ = tcs.Task.ContinueWith(
+                    t => _ = t.Exception,
+                    TaskContinuationOptions.OnlyOnFaulted
+                );
+                // The posted work is still queued or running on the dedicated thread and may yet touch
+                // the browser, so the browser is now in an unknown state: the caller must discard it
+                // (StartFreshBrowser) or stop using this instance.
+                throw new OffScreenBrowserTimeoutException(
+                    $"The off-screen browser did not respond within {effectiveTimeoutMs}ms."
+                );
+            }
             return tcs.Task.GetAwaiter().GetResult();
         }
 
@@ -316,5 +397,17 @@ namespace Bloom.Publish
             }
             _thread.Join(5000);
         }
+    }
+
+    /// <summary>
+    /// Thrown when the off-screen browser stops making progress: it did not finish initializing, or work we
+    /// posted to its thread did not come back within the backstop timeout. Distinct from a plain
+    /// ApplicationException so callers can tell "the browser is wedged" (retry on a fresh one, or fail the
+    /// operation) from an error thrown by the script or navigation itself.
+    /// </summary>
+    public class OffScreenBrowserTimeoutException : ApplicationException
+    {
+        public OffScreenBrowserTimeoutException(string message)
+            : base(message) { }
     }
 }
