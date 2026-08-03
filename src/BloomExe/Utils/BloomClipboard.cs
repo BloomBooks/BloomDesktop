@@ -129,8 +129,13 @@ namespace Bloom.Utils
         /// wolf.
         ///
         /// The probe does take the clipboard itself, for the microseconds between opening and
-        /// closing it. That is unavoidable in a truthful check, and it runs after the browser's
-        /// operation has completed, so it is not in a position to disturb it.
+        /// closing it, and that is not as harmless as it first looks. The browser defers the check
+        /// only by a zero-length timeout plus one localhost round trip, while Chromium's actual
+        /// write happens asynchronously in its own process -- so the two can in principle race,
+        /// and if the probe wins, Chromium's write fails (silently, since it discards clipboard
+        /// errors) and this check would have caused the very failure it then reports. The window
+        /// is small and unmeasured; whether it needs closing -- by delaying the probe, or by not
+        /// taking the clipboard at all -- is on the PR as an open question.
         /// </summary>
         public static bool VerifyUsableAfterBrowserCopy()
         {
