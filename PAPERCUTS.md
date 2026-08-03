@@ -19,6 +19,21 @@ House rules:
 
 ---
 
+## 2026-07-30 — Visual regression suite reports only the first stale image per case
+- **Cut:** Each case in `src/BloomVisualRegressionTests/index.spec.ts` compares the book preview
+  and then every bloom-player page in sequence, and every comparison throws on failure — so the
+  first stale baseline kills the case and the later comparisons never even capture their images.
+  After BL-16370 the stale previews meant **no** player page was compared for weeks: BL-16638
+  started as 10 baselines, became 22, and would have taken three accept-and-rerun rounds to
+  bottom out (10 previews → 10 player pages → 2 more hidden behind those). Each layer costs a
+  full ~3-minute run to discover, and the nightly reads as "one failure per case" the whole time.
+- **Idea:** Accumulate per-comparison failures for the case (label, pixel count, diff path), let
+  the preview capture and the whole player loop run to completion, then fail once at the end with
+  the full list. Proven to work — the change was made temporarily during BL-16638 to capture all
+  84 images in one run, then reverted. Roughly 20–30 lines, confined to that spec file.
+- **Context:** BL-16638 / PR #8134. Andrew chose "make a papercut entry" over fixing it inline.
+  Loop at `index.spec.ts:426`, assertion at `index.spec.ts:486`.
+
 ## 2026-07-24 — killBloomProcess.mjs --help kills Bloom instead of printing usage
 - **Cut:** Running `node .github/skills/bloom-automation/killBloomProcess.mjs --help` to check
   its options killed the running Bloom (output: "Killed process IDs: 56212, 55352"). Unknown

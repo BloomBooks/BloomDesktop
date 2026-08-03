@@ -1,6 +1,6 @@
 /*
- * The @font-face declarations for the fonts Bloom's own UI uses (the content of books gets
- * its fonts from defaultLangStyles.css and friends, not from here).
+ * The @font-face declarations for the fonts Bloom's own UI uses. Book content gets its fonts from
+ * defaultLangStyles.css and friends, not from here.
  *
  * IMPORTANT (BL-15300): these declarations must appear EXACTLY ONCE per document, in CSS that
  * is present before the document first paints. When a stylesheet containing a duplicate
@@ -18,6 +18,12 @@
  *      only if the document doesn't already have these faces -- and is called from
  *      reactRender.tsx for every React root, covering all the WinForms-hosted React documents.
  * A unit test (uiFontFacesSingleSource.test.ts) enforces this.
+ *
+ * Book documents (preview, page thumbnails, printing) get neither route, by design: they should
+ * never name these fonts. bloomUI.css did leak into them for a while via bookPreviewBundle.js,
+ * putting the UI font stack on book text; the fix was to stop the leak, not to ship the faces
+ * into book documents. Keeping them out means a future leak shows up as a visibly wrong font in
+ * the visual regression suite instead of rendering plausibly.
  *
  * These were very helpful in compiling this file:
  * - google-webfonts-helper.herokuapp.com (for getting .woff2 Roboto with a maximum of charsets)
