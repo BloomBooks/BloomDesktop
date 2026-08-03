@@ -8,7 +8,7 @@ import {
     expect,
     Page,
 } from "@playwright/test";
-import { afterAll, beforeAll, describe, test } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, test } from "vitest";
 import { argosScreenshot } from "@argos-ci/playwright";
 import * as fs from "fs";
 import * as os from "os";
@@ -243,33 +243,123 @@ describe("All books", () => {
         return path;
     }
 
+    // How long we allow any single request to Bloom. Generously more than the few seconds these take
+    // when healthy (a whole case is normally 12-25s), but comfortably under vitest's 120s testTimeout,
+    // so that when Bloom stops answering we report WHICH call hung instead of an opaque "test timed
+    // out" pointing at the test function, which is all BL-16612 gave us to go on.
+    const kRequestTimeoutMs = 45000;
+    // Staging a whole BloomPUB is the slowest thing we ask Bloom for, so it gets more room.
+    const kStagingTimeoutMs = 60000;
+    // A trivial read used in a polling loop; it should answer at once.
+    const kQuickReadTimeoutMs = 10000;
+
+    // Set once Bloom fails to answer. Bloom is one process shared by every case in this file, so once
+    // it stops answering, no later case can pass either: each would burn the full 120s testTimeout and
+    // tell us nothing new (12 cases x 120s = the 24 wasted minutes in BL-16612). So the rest fail
+    // immediately instead. Deliberately NOT done for ordinary assertion/image-diff failures — there we
+    // want every case to run so we get every diff.
+    let bloomWedged: string | null = null;
+
+    // Runs a request to Bloom under a single timeout that covers BOTH the fetch and whatever the caller
+    // does with the response (`use`). The abort signal stays armed until the body is consumed, so reading
+    // the body outside this would reject with a raw error that never got the "which call hung" treatment.
+    // On failure we say which call it was, and on a timeout we remember that Bloom stopped answering.
+    async function bloomRequest<T>(
+        what: string,
+        url: string,
+        init: Parameters<typeof fetch>[1],
+        timeoutMs: number,
+        use: (response: Awaited<ReturnType<typeof fetch>>) => Promise<T>,
+    ): Promise<T> {
+        // Check .aborted rather than the error's name/class: it is the signal itself, not whatever error
+        // node-fetch chooses to throw, that reliably tells us we hit the timeout. (It throws AbortError,
+        // not TimeoutError, so testing the name would silently never match.)
+        const signal = AbortSignal.timeout(timeoutMs);
+        try {
+            return await use(await fetch(url, { ...init, signal }));
+        } catch (e) {
+            // Only a timeout means Bloom has stopped answering and no later case can pass. A one-off
+            // connection error may be transient, and if Bloom really has died then every later case fails
+            // fast by itself anyway (a refused connection returns at once) — so we don't need the flag for
+            // that, and leaving it unset means a single blip can't mask the remaining image diffs.
+            if (signal.aborted) {
+                bloomWedged = `Bloom did not answer ${what} within ${timeoutMs}ms (${url}). Look at the end of Bloom's log for the last thing it managed to do.`;
+                throw new Error(bloomWedged);
+            }
+            throw new Error(
+                `The request to Bloom for ${what} failed (${url}): ${
+                    (e as Error)?.message
+                }`,
+            );
+        }
+    }
+
+    // The common case: we only care whether Bloom accepted the request.
+    async function bloomFetchOk(
+        what: string,
+        url: string,
+        init?: Parameters<typeof fetch>[1],
+        timeoutMs = kRequestTimeoutMs,
+    ) {
+        return bloomRequest(what, url, init, timeoutMs, async (r) => r.ok);
+    }
+
+    // For the calls whose reply we actually read.
+    async function bloomFetchText(
+        what: string,
+        url: string,
+        init?: Parameters<typeof fetch>[1],
+        timeoutMs = kRequestTimeoutMs,
+    ) {
+        return bloomRequest(what, url, init, timeoutMs, async (r) => ({
+            ok: r.ok,
+            text: await r.text(),
+        }));
+    }
+
+    // Once Bloom is wedged, waiting out each remaining case's timeout adds nothing, so fail at once
+    // with the reason we already know.
+    beforeEach(() => {
+        if (bloomWedged)
+            throw new Error(`Bloom is no longer responding: ${bloomWedged}`);
+    });
+
     async function setBranding(branding: string) {
         // Enhance: get us on the correct collection (currently we can only handle the one collection)
 
         // Branding is normally derived from the (checksum-validated) subscription code and can't
         // be set directly. This test-only endpoint (registered only in e2e test mode) forces the
         // branding and brings the selected book up to date so it picks up that branding's files.
-        let result = await fetch(`${bloomOrigin}/bloom/api/e2e/setBranding`, {
-            method: "POST",
-            body: branding,
-        });
-        expect(result.ok).toBe(true);
+        let ok = await bloomFetchOk(
+            "setBranding",
+            `${bloomOrigin}/bloom/api/e2e/setBranding`,
+            {
+                method: "POST",
+                body: branding,
+            },
+        );
+        expect(ok).toBe(true);
     }
     async function setTheme(theme: string) {
         // Appearance theme is a per-book setting. This test-only endpoint (registered only in e2e
         // test mode) sets it and brings the selected book up to date so its appearance.css is
         // regenerated for that theme.
-        let result = await fetch(`${bloomOrigin}/bloom/api/e2e/setTheme`, {
-            method: "POST",
-            body: theme,
-        });
-        expect(result.ok).toBe(true);
+        let ok = await bloomFetchOk(
+            "setTheme",
+            `${bloomOrigin}/bloom/api/e2e/setTheme`,
+            {
+                method: "POST",
+                body: theme,
+            },
+        );
+        expect(ok).toBe(true);
     }
     async function selectBook(bookPath: string) {
         // Enhance: get us on the correct collection (currently we can only handle the one collection)
 
         // get us on the correct book
-        let result = await fetch(
+        let ok = await bloomFetchOk(
+            "selectBook",
             `${bloomOrigin}/bloom/api/collections/selected-book?path=${bookPath}&collection-id=${encodeURIComponent(
                 Path.dirname(bookPath),
             )}`,
@@ -277,14 +367,15 @@ describe("All books", () => {
                 method: "POST",
             },
         );
-        expect(result.ok).toBe(true);
+        expect(ok).toBe(true);
     }
 
     // Switch Bloom to the given workspace tab ("collection" | "edit" | "publish"), going through
     // the same code path the UI uses. Staging a BloomPUB requires the publish tab; selecting a book
     // requires the collection tab.
     async function selectTab(tab: string) {
-        const result = await fetch(
+        const ok = await bloomFetchOk(
+            `selectTab(${tab})`,
             `${bloomOrigin}/bloom/api/workspace/selectTab`,
             {
                 method: "POST",
@@ -292,7 +383,7 @@ describe("All books", () => {
                 body: JSON.stringify({ tab }),
             },
         );
-        expect(result.ok).toBe(true);
+        expect(ok).toBe(true);
     }
 
     // Wait until the editable collection is loaded and its books are enumerable. Switching to the
@@ -302,10 +393,13 @@ describe("All books", () => {
         // Up to 30s: switching to the collection tab reloads its webview, which can be slow on a
         // loaded machine; a too-short wait was an occasional source of spurious failures.
         for (let attempt = 0; attempt < 60; attempt++) {
-            const result = await fetch(
+            const { ok, text } = await bloomFetchText(
+                "isCollectionReady",
                 `${bloomOrigin}/bloom/api/e2e/isCollectionReady`,
+                undefined,
+                kQuickReadTimeoutMs,
             );
-            if (result.ok && (await result.text()) === "true") return;
+            if (ok && text === "true") return;
             await new Promise((resolve) => setTimeout(resolve, 500));
         }
         throw new Error("The collection tab did not become ready in time");
@@ -315,15 +409,17 @@ describe("All books", () => {
     // the localhost URL of the staged book's .htm file, for loading in bloom-player. Requires the
     // publish tab to be active. This test-only endpoint is registered only in e2e test mode.
     async function makeBloomPubPreview(): Promise<string> {
-        const result = await fetch(
+        const { ok, text } = await bloomFetchText(
+            "makeBloomPubPreview",
             `${bloomOrigin}/bloom/api/e2e/makeBloomPubPreview`,
             {
                 method: "POST",
                 body: "",
             },
+            kStagingTimeoutMs,
         );
-        expect(result.ok).toBe(true);
-        return result.text();
+        expect(ok).toBe(true);
+        return text;
     }
 
     // Build the bloom-player URL for the staged book at a specific page (0-based). Mirrors what the

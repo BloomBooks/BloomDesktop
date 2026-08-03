@@ -38,10 +38,9 @@ namespace Bloom.Publish
     /// Blocking here cannot deadlock on the message loop, since the thread that blocks is never the thread
     /// that must pump. But it is NOT immune to deadlock in general: navigation asks BloomServer for the page,
     /// so a caller that blocks while holding the last free BloomServer worker would be waiting for a page
-    /// that nobody is left to serve. Two things address that (BL-16612): every blocking call is bounded by a
-    /// backstop timeout and throws <see cref="OffScreenBrowserTimeoutException"/> rather than waiting
-    /// forever, and we register the block with BloomServer so its own starvation logic can see this thread
-    /// at all (see RunAndBlock).
+    /// that nobody is left to serve. Two things guard against that (BL-16612): we register the block with
+    /// BloomServer so it can add a worker (see RunAndBlock), and every blocking call is bounded by a backstop
+    /// timeout and throws <see cref="OffScreenBrowserTimeoutException"/> rather than waiting forever.
     ///
     /// The browser is a real <see cref="WebView2Browser"/> (not a bare WebView2 control) so navigation goes
     /// through Bloom's BloomServer/in-memory-file plumbing and resolves CSS, fonts, and relative paths.
@@ -344,11 +343,16 @@ namespace Bloom.Publish
             // Tell BloomServer that this thread is about to block, in case it is one of its workers.
             // BloomServer does NOT work that out for itself (see RegisterThreadBlocking): a worker that
             // blocks without registering is invisible to the logic in QueueRequest that adds a worker when
-            // every existing one is blocked. Thread stacks from the 2026-08-03 nightly hang show exactly
-            // that blind spot: six workers, five of them registered as blocked on the API lock and the
-            // sixth -- this one -- blocked here without registering, so the top-up test asked 5 >= 6 and
-            // said no while the true state was 6 of 6 unavailable (BL-16612).
+            // every existing one is blocked. That matters a great deal here, because what we are waiting
+            // for is a browser navigating to a page that BloomServer itself has to serve. If every worker
+            // is blocked and none is left to serve that page, the navigation can never complete and we
+            // would be waiting for something that cannot happen (BL-16612).
+            //
+            // NoteWorkerPoolHeadroom is pure measurement: it records how close the pool came to having
+            // nothing left to serve requests, which is what makes the starvation theory testable on a
+            // healthy run instead of only after a failure.
             var server = BloomServer._theOneInstance;
+            server?.NoteWorkerPoolHeadroom();
             server?.RegisterThreadBlocking();
             try
             {
@@ -376,7 +380,8 @@ namespace Bloom.Publish
                     // the browser, so the browser is now in an unknown state: the caller must discard it
                     // (StartFreshBrowser) or stop using this instance.
                     throw new OffScreenBrowserTimeoutException(
-                        $"The off-screen browser did not respond within {effectiveTimeoutMs}ms."
+                        $"The off-screen browser did not respond within {effectiveTimeoutMs}ms. "
+                            + BloomServer.GetWorkerPoolDiagnostics()
                     );
                 }
                 return tcs.Task.GetAwaiter().GetResult();

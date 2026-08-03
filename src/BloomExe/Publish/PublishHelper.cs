@@ -41,6 +41,10 @@ namespace Bloom.Publish
                 );
             }
             _latestInstance = this;
+            // One PublishHelper is created per publish (BloomPubMaker wraps one in a using; EpubMaker
+            // keeps one for the whole epub), so this bounds the measurement reported in Dispose to this
+            // publish rather than the whole session.
+            BloomServer.ResetTightestWorkerPoolReport();
         }
 
         public static void Cancel()
@@ -104,6 +108,7 @@ namespace Bloom.Publish
             var browser = GetOrCreatePageChecksBrowser();
             for (var attempt = 1; attempt <= kPageChecksAttempts; attempt++)
             {
+                var timer = Stopwatch.StartNew();
                 string whatWentWrong;
                 try
                 {
@@ -140,8 +145,14 @@ namespace Bloom.Publish
                     whatWentWrong = e.Message;
                 }
 
+                // Log the worker-pool state too: if every BloomServer worker is busy or blocked while
+                // requests sit in the queue, then the page we asked the browser to load could not be served
+                // and we are looking at starvation, not a slow renderer. That is the open question behind
+                // BL-16612, so leave this in even once the retry usually saves us.
                 var message =
-                    $"Page checks failed on attempt {attempt} of {kPageChecksAttempts}: {whatWentWrong}";
+                    $"Page checks failed on attempt {attempt} of {kPageChecksAttempts} after "
+                    + $"{timer.ElapsedMilliseconds}ms: {whatWentWrong}. "
+                    + BloomServer.GetWorkerPoolDiagnostics();
                 Debug.WriteLine(message);
                 Logger.WriteEvent(message);
 
@@ -1589,6 +1600,14 @@ namespace Bloom.Publish
                 if (disposing)
                 {
                     ReleaseBrowser();
+                    // One line per publish saying how much headroom the server had while we were blocked
+                    // on the page-checks browser. Logged on success as much as on failure, on purpose:
+                    // it is what lets a HEALTHY run speak to whether worker starvation could be behind
+                    // the intermittent hang, instead of us only ever seeing the pool once it is too late
+                    // (BL-16612).
+                    Logger.WriteEvent(
+                        "Publish finished. " + BloomServer.GetTightestWorkerPoolReport()
+                    );
                 }
                 _isDisposed = true;
             }

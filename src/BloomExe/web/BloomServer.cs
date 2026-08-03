@@ -2433,8 +2433,87 @@ namespace Bloom.Api
             }
         }
 
+        // The worker-pool snapshot from the tightest moment seen so far — the moment when the fewest
+        // workers were left able to pick up new work — since the last ResetTightestWorkerPoolReport().
+        // A hang blamed on starvation needs the pool to actually run near empty, so this is the number
+        // that makes the hypothesis testable on a HEALTHY run: if the pool never drops below a
+        // comfortable margin during a normal publish, starvation is not a plausible explanation, and we
+        // learn that without having to catch a failure in the act (BL-16612).
+        private static int _tightestIdleWorkers = int.MaxValue;
+        private static string _tightestSnapshot;
+
+        /// <summary>
+        /// Start a fresh measurement window for <see cref="GetTightestWorkerPoolReport"/> — e.g. at the
+        /// start of one publish, so the report describes that publish rather than the whole session.
+        /// </summary>
+        public static void ResetTightestWorkerPoolReport()
+        {
+            _tightestIdleWorkers = int.MaxValue;
+            _tightestSnapshot = null;
+        }
+
+        /// <summary>
+        /// How close the worker pool came to having nothing left to serve requests during the current
+        /// measurement window. "no blocking measured" means we never blocked on the server at all.
+        /// </summary>
+        public static string GetTightestWorkerPoolReport()
+        {
+            return _tightestSnapshot == null
+                ? "BloomServer: no blocking measured"
+                : "BloomServer at its tightest: " + _tightestSnapshot;
+        }
+
+        /// <summary>
+        /// Records how much headroom the worker pool has at this instant, keeping the tightest reading
+        /// seen since the last <see cref="ResetTightestWorkerPoolReport"/>. Call it right before blocking
+        /// on something this server has to serve.
+        /// </summary>
+        /// <remarks>
+        /// Pure measurement, deliberately kept as its own method rather than folded into the registering
+        /// of a blocked thread: measuring stands on its own merits, while anything that CHANGES what the
+        /// pool does rests on the still-unproven starvation theory in BL-16612. Keeping them apart means
+        /// this measurement survives whatever we decide about that.
+        ///
+        /// Busy (not merely blocked) is the right measure of "cannot take new work": a worker busy
+        /// serving a long request is just as unable to serve the page we are waiting for as a blocked one.
+        /// </remarks>
+        public void NoteWorkerPoolHeadroom()
+        {
+            lock (_queue)
+            {
+                var idleWorkers = _workers.Count - _busyThreads;
+                if (idleWorkers < _tightestIdleWorkers)
+                {
+                    _tightestIdleWorkers = idleWorkers;
+                    // Safe to call under the lock: it deliberately takes no lock of its own.
+                    _tightestSnapshot = GetWorkerPoolDiagnostics();
+                }
+            }
+        }
+
         private bool IsWorkerThread(Thread thread) =>
             thread?.Name?.IndexOf(WorkerThreadNamePrefix) == 0;
+
+        /// <summary>
+        /// A one-line snapshot of the worker pool's state, for logging when we suspect something is
+        /// stuck waiting on the server. If every worker is busy or blocked while requests sit in the
+        /// queue, then whatever the stuck code is waiting for cannot be served, and we are looking at
+        /// a starvation deadlock rather than mere slowness.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately reads the counters WITHOUT locking _queue: this gets called precisely when we
+        /// suspect the pool is wedged, and taking that lock could block the very report we need. The
+        /// numbers are therefore a possibly-inconsistent snapshot, which is all a diagnostic needs.
+        /// </remarks>
+        public static string GetWorkerPoolDiagnostics()
+        {
+            var server = _theOneInstance;
+            if (server == null)
+                return "BloomServer: none running";
+            return $"BloomServer: workers={server._workers.Count}, busy={server._busyThreads}, "
+                + $"blocked={server._countBlockedThreads}, "
+                + $"recursive={server._threadsDoingRecursiveRequests}, queued={server._queue.Count}";
+        }
 
         private string GetHtmlForRootOfBloomUI()
         {

@@ -111,6 +111,60 @@ namespace BloomTests.Publish
             }
         }
 
+        /// <summary>
+        /// The diagnostics we log when something is stuck waiting on the server have to work at exactly the
+        /// moment things are going wrong, so at least prove they report real counts rather than throwing.
+        /// </summary>
+        [Test]
+        public void GetWorkerPoolDiagnostics_WithAServerRunning_ReportsWorkerCounts()
+        {
+            var diagnostics = BloomServer.GetWorkerPoolDiagnostics();
+
+            Assert.That(
+                diagnostics,
+                Does.Contain("workers="),
+                "diagnostics should report the worker count"
+            );
+            Assert.That(
+                diagnostics,
+                Does.Contain("blocked="),
+                "diagnostics should report how many workers are blocked, the key number for a starvation hang"
+            );
+            Assert.That(
+                diagnostics,
+                Does.Not.Contain("none running"),
+                "the fixture's BloomServer should have been found"
+            );
+        }
+
+        /// <summary>
+        /// The per-publish "how much headroom did the server have" line is what lets a PASSING run speak
+        /// to the starvation hypothesis, so it has to actually record something when we block.
+        /// </summary>
+        [Test]
+        public void TightestWorkerPoolReport_AfterBlocking_ReportsTheSnapshot()
+        {
+            BloomServer.ResetTightestWorkerPoolReport();
+
+            // SANITY: with nothing measured yet it must say so rather than invent a number, otherwise a
+            // publish that never blocked would look like one that ran the pool dry.
+            Assert.That(
+                BloomServer.GetTightestWorkerPoolReport(),
+                Does.Contain("no blocking measured"),
+                "before any blocking, the report should say nothing was measured"
+            );
+
+            // Note the headroom, which is what the measurement hangs off — deliberately independent of
+            // whether we also add a worker, so the measurement survives any decision about the guard.
+            s_bloomServer.NoteWorkerPoolHeadroom();
+
+            Assert.That(
+                BloomServer.GetTightestWorkerPoolReport(),
+                Does.Contain("at its tightest").And.Contain("workers="),
+                "after noting the headroom, the report should carry the pool snapshot from that moment"
+            );
+        }
+
         [Test]
         public void MultipleInstances_CanNavigateConcurrently_WithoutCrossContamination()
         {
