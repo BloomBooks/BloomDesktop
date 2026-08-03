@@ -49,7 +49,24 @@ namespace Bloom.Workspace
         public event EventHandler ReopenCurrentProject;
         public static float DPIOfThisAccount;
         private ZoomModel _zoomModel;
+
+        // Whether the main workspace tabs are currently navigable. Derived from _tabDisablers
+        // (true only when nothing is holding a lock) and read by SendTopBarState; never set directly.
         private bool _tabsEnabled = true;
+
+        // The set of independent reasons the workspace tabs are currently locked. Several features
+        // lock navigation on their own (an Apps build, a library upload, an Edit-tab modal or save),
+        // so a single boolean let one feature's "unlock" clobber another's "lock" (BL-16350). Keying
+        // each lock by reason makes them reference-count: the tabs re-enable only once every reason
+        // has been released. UI-thread only, like the rest of this view.
+        private readonly HashSet<string> _tabDisablers = new HashSet<string>();
+
+        // Reasons passed to SetTabsEnabled. Public so PublishView (which clears a possibly-stuck Edit
+        // lock as it enters the Publish tab) names the same reasons the Edit code locks with.
+        public const string EditModalTabLock = "edit-modal-dialog";
+        public const string EditSaveTabLock = "edit-save-transition";
+        public const string LibraryUploadTabLock = "library-upload";
+        public const string AppBuilderActionTabLock = "app-builder-action";
 
         public delegate WorkspaceView Factory();
 
@@ -1750,11 +1767,24 @@ window.showWorkspaceInitializationFailure = function(message) {
             ProblemReportApi.ShowProblemDialog(this, null);
         }
 
-        public void SetTabsEnabled(bool enable)
+        /// <summary>
+        /// Locks or unlocks the main workspace tabs for a named <paramref name="reason"/>. Several
+        /// features lock navigation independently (an Apps build, a library upload, an Edit-tab modal
+        /// or save); each passes its own reason so they reference-count rather than fight over a single
+        /// flag — the tabs re-enable only once every reason has been released (BL-16350). enable=false
+        /// adds the reason; enable=true removes it. Idempotent per reason, so a caller that reasserts
+        /// the same state (e.g. nested Edit modals) does no harm.
+        /// </summary>
+        public void SetTabsEnabled(bool enable, string reason)
         {
-            _tabsEnabled = enable;
-            SendTopBarState();
-            // Display a log message to track down who called this method with what value and when. (BL-16290)
+            if (string.IsNullOrEmpty(reason))
+                throw new ArgumentException("A tab-lock reason is required.", nameof(reason));
+            if (enable)
+                _tabDisablers.Remove(reason);
+            else
+                _tabDisablers.Add(reason);
+            UpdateTabsEnabledFromDisablers();
+            // Display a log message to track down who changed this and when. (BL-16290)
             // Trim the stack trace to remove the top two redundant lines and limit the number of lines shown to 5.
             // The further down the stack trace, the less relevant it is to figure out what called this method.
             // (The top two lines are always this method and a stracktrace method.)
@@ -1763,12 +1793,32 @@ window.showWorkspaceInitializationFailure = function(message) {
             for (int i = 2; i < Math.Min(7, stackLines.Length); i++)
                 stackList.Add(stackLines[i]);
             var stackTop = string.Join(Environment.NewLine, stackList);
+            var holders = _tabDisablers.Count == 0 ? "none" : string.Join(",", _tabDisablers);
             var msg =
-                $"WorkSpaceView.SetTabsEnabled({enable}) - {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff")}"
+                $"WorkSpaceView.SetTabsEnabled({enable}, {reason}) -> enabled={_tabsEnabled} holders=[{holders}] - {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff")}"
                 + Environment.NewLine
                 + stackTop;
             Logger.WriteMinorEvent(msg);
             Debug.WriteLine(msg);
+        }
+
+        /// <summary>
+        /// Releases any Edit-tab locks. A safety net used when entering the Publish tab in case an
+        /// Edit save/modal re-enable callback was missed (BL-16350; formerly a bare
+        /// SetTabsEnabled(true)). Deliberately leaves non-Edit reasons (e.g. a library upload) alone so
+        /// it cannot clobber another feature's lock.
+        /// </summary>
+        public void ReleaseEditTabLocks()
+        {
+            _tabDisablers.Remove(EditModalTabLock);
+            _tabDisablers.Remove(EditSaveTabLock);
+            UpdateTabsEnabledFromDisablers();
+        }
+
+        private void UpdateTabsEnabledFromDisablers()
+        {
+            _tabsEnabled = _tabDisablers.Count == 0;
+            SendTopBarState();
         }
 
         private void ShowTrainingVideos()

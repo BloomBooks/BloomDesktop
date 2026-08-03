@@ -102,8 +102,9 @@ namespace Bloom.Publish
         private void Activate()
         {
             // Safety net: any Edit-tab save lock must be complete before we reach Publish,
-            // so ensure tab switching is enabled in case the re-enable callback was missed.
-            WorkspaceView?.SetTabsEnabled(true);
+            // so release any lingering Edit-tab lock in case the re-enable callback was missed.
+            // (Only the Edit locks — a library upload's lock must survive switching to Publish.)
+            WorkspaceView?.ReleaseEditTabLocks();
             PublishHelper.InPublishTab = true;
             var hostForm = GetHostControlForInvoke() as Form;
             PublishEpubApi.ControlForInvoke = hostForm;

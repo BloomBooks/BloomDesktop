@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Bloom.Api;
+using Bloom.Workspace;
 
 namespace Bloom.Publish.Rab
 {
@@ -38,7 +39,10 @@ namespace Bloom.Publish.Rab
         /// </summary>
         private void SetWorkspaceTabsEnabled(bool enable)
         {
-            _publishView?.WorkspaceView?.SetTabsEnabled(enable);
+            _publishView?.WorkspaceView?.SetTabsEnabled(
+                enable,
+                WorkspaceView.AppBuilderActionTabLock
+            );
         }
 
         /// <summary>
