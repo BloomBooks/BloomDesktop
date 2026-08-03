@@ -2941,16 +2941,25 @@ export async function setupForAudioRecordingTests() {
         },
     };
 
-    await initializeTalkingBookToolAsync();
-
     // Mock urlPrefix to return the correct base URL for tests
     // The real implementation constructs from iframe.src, but in tests iframe.src is "about:blank"
     // Real format: "/bloom/api/audio/wavFile?id=" + bookFolderUrl + "audio/"
     // In tests, we simulate the full path as if bookFolderUrl was "http://localhost:63315/bloom/C%23Injection/"
+    //
+    // This must go on the PROTOTYPE and BEFORE initializeTalkingBookToolAsync, not on
+    // theOneAudioRecorder afterwards. theOneAudioRecorder does not exist until that call creates
+    // it, and the call itself already sets the player's src. So a mock installed afterwards left
+    // that first src built by the REAL urlPrefix -- a relative URL, which jsdom resolves against
+    // its own base of http://localhost:3000/. Because setCurrentAudioId only refreshes the player
+    // when the audio id CHANGES, a test whose id was already current never overwrote that stale
+    // value, and then compared localhost:3000 against the mocked localhost:63315. It depended on
+    // which ids earlier work happened to leave behind, so it passed locally and failed in CI.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.spyOn(theOneAudioRecorder as any, "urlPrefix").mockReturnValue(
+    vi.spyOn(AudioRecording.prototype as any, "urlPrefix").mockReturnValue(
         "http://localhost:63315/bloom/api/audio/wavFile?id=audio/",
     );
+
+    await initializeTalkingBookToolAsync();
 }
 
 export function StripPlayerSrcNoCacheSuffix(url: string): string {
