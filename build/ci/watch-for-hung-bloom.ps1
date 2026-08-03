@@ -107,6 +107,10 @@ function Read-LogText([string] $path) {
     }
 }
 
+# Where Bloom writes its log. The visual-regression suite launches Bloom with no special logging
+# configuration, so it lands in one of the standard SIL locations; probe them in the order the
+# nightly's own diagnostics step uses. Returns "" when none exists yet, which simply means Bloom has
+# not started writing -- the caller treats that as "no trigger yet", never as an error.
 function Find-BloomLog() {
     if ($LogPath -ne "") { return $LogPath }
     $candidates = @(
@@ -148,6 +152,11 @@ $deadline = (Get-Date).AddMinutes($GiveUpAfterMinutes)
 
 $lastLogSize = -1
 $everSawProcess = $false
+# Length of the log when we started watching. Anything already in it is from before this watch began
+# (an earlier step in the job, or an earlier Bloom launch) and must not fire the trigger: we care about
+# the navigation failing NOW, and spending our two captures on a stale line would point them at the
+# wrong moment. -1 means we have not read the log yet.
+$baselineLogSize = -1
 
 while ((Get-Date) -lt $deadline) {
     $interval = $PollSeconds
@@ -167,14 +176,37 @@ while ((Get-Date) -lt $deadline) {
                 Write-Sample "  Bloom log now $($logText.Length) bytes"
                 $lastLogSize = $logText.Length
             }
+            if ($baselineLogSize -lt 0) {
+                $baselineLogSize = $logText.Length
+                if ($baselineLogSize -gt 0) {
+                    Write-Sample "  ignoring the $baselineLogSize bytes already in the log; only new lines can trigger"
+                }
+            }
+            # Bloom may recreate its log rather than append, which makes it shorter than our baseline.
+            if ($logText.Length -lt $baselineLogSize) {
+                Write-Sample "  log shrank, so it was recreated; rebaselining"
+                $baselineLogSize = 0
+            }
+        }
+        # Only the text appended since we started watching, so the trigger is edge-sensitive.
+        $newLogText = ""
+        if ($baselineLogSize -ge 0 -and $logText.Length -gt $baselineLogSize) {
+            $newLogText = $logText.Substring($baselineLogSize)
         }
         # Decide once per poll, not once per process, so the decision cannot depend on which process
         # we happen to be looking at.
-        $triggerMatched = ($logText -match $TriggerPattern)
+        $triggerMatched = ($newLogText -match $TriggerPattern)
         if ($triggerMatched -and -not $triggerSeen) {
             $triggerSeen = $true
             $nextTriggerCaptureAt = Get-Date
             Write-Sample "TRIGGER matched in log: /$TriggerPattern/ -- this is the moment that decides causation"
+        }
+        # $interval is reset to the slow default at the top of every poll, and the early-window rule
+        # below stops applying once the trigger has fired -- so without this the follow-up capture would
+        # land a full slow interval later instead of TriggerGapSeconds later, blunting the whole point of
+        # comparing two closely-spaced snapshots.
+        if ($triggerMatched -and $triggerShotsTaken -lt $TriggerCaptures) {
+            $interval = $EarlyPollSeconds
         }
 
         $procs = @(Get-Process -Name $ProcessName -ErrorAction SilentlyContinue)
