@@ -131,6 +131,44 @@ describe("prepareSettingsForSave", () => {
         expect(saved.stages[1].sightWords).toBe("a cat");
     });
 
+    // The legacy dialog did not save a stage with nothing in it, and renumbered the rest.
+    it("drops stages with no data and renumbers the survivors", () => {
+        const settings = makeSettings({
+            stages: [
+                { letters: "a b", sightWords: "" },
+                { letters: "", sightWords: "" }, // nothing entered — should not be saved
+                { letters: "", sightWords: "the" },
+            ],
+        });
+
+        expect(settings.stages).toHaveLength(3); // sanity check
+
+        const saved = prepareSettingsForSave(settings);
+
+        expect(saved.stages).toHaveLength(2);
+        expect(saved.stages.map((stage) => stage.name)).toEqual(["1", "2"]);
+        expect(saved.stages[0].letters).toBe("a b");
+        expect(saved.stages[1].sightWords).toBe("the");
+    });
+
+    it("keeps a stage whose only content is an allowed-words file", () => {
+        const settings = makeSettings({
+            stages: [{ letters: "", sightWords: "" }],
+        });
+        settings.stages[0].allowedWordsFile = "list.txt";
+
+        expect(prepareSettingsForSave(settings).stages).toHaveLength(1);
+    });
+
+    // A stage holding only whitespace counts as empty, because the fields are cleaned first.
+    it("treats a whitespace-only stage as empty", () => {
+        const settings = makeSettings({
+            stages: [{ letters: "  ", sightWords: " \n " }],
+        });
+
+        expect(prepareSettingsForSave(settings).stages).toEqual([]);
+    });
+
     it("does not modify the settings it was given", () => {
         const settings = makeSettings({ moreWords: "zebra\nquokka" });
 

@@ -60,6 +60,19 @@ export const prepareSettingsForSave = (
         stage.letters = cleanSpaceDelimitedList(stage.letters);
         stage.sightWords = cleanSpaceDelimitedList(stage.sightWords);
     }
+
+    // Match the legacy dialog, which did not save a stage the user had put nothing into, and
+    // renumbered the survivors so their names still matched their positions. One consequence
+    // worth knowing: the empty Stage 1 this dialog shows a collection that has no stages yet
+    // is not persisted until something is actually entered into it — which is also what the old
+    // dialog did, so such collections legitimately have zero saved stages.
+    settingsToSave.stages = settingsToSave.stages.filter(
+        (stage) => stage.letters || stage.sightWords || stage.allowedWordsFile,
+    );
+    settingsToSave.stages.forEach((stage, index) => {
+        stage.name = (index + 1).toString();
+    });
+
     return settingsToSave;
 };
 

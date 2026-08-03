@@ -515,7 +515,17 @@ export function getSynphonyAlwaysMatchSymbols(): string[] {
     );
 }
 
-/** Gets the loaded sample words decodable with the given graphemes. */
+/**
+ * Gets the loaded sample words decodable with the given graphemes.
+ *
+ * The `true` first argument asks for word names rather than DataWord objects, which is all the
+ * setup dialog wants. It is worth noting that this is a *different* entry point from the one the
+ * toolbox's own getStageWords uses (which passes `false`), because that looks like a discrepancy
+ * on a quick read and was raised as one during review. It is not: both end up in
+ * libSynphony's selectGPCWordsWithArrayCompare with the same arguments, and the names variant
+ * simply plucks Name off the results. The only real difference is that the `false` path memoizes
+ * through theOneWordCache while this one does not, so this always reflects the current data.
+ */
 export function getDecodableStageMatchingWords(knownGpcs: string[]): string[] {
     return getTheOneReaderToolsModel().selectWordsFromSynphony(
         true,
