@@ -40,7 +40,10 @@
     is swallowed: a broken watchdog must never turn a nightly red.
 
 .PARAMETER TriggerPattern
-    The log line meaning "the page-checks navigation just gave up". Matched as a regex.
+    The log line meaning "the page-checks navigation just gave up". Matched as a regex. Includes the DOM
+    name on purpose: Bloom logs "Failed to navigate fully" from two different places (page checks in
+    RemoveUnwantedContentInternal, and the separate font scan in ReportInvalidFontsAsync), and matching
+    the shorter string would let the fonts path spend both captures on a moment we are not asking about.
 
 .PARAMETER HungAfterSeconds
     How long a Bloom.exe must have been alive before we treat it as hung. Healthy visual-regression
@@ -59,7 +62,7 @@
     Overridable for the same reason. When empty, the usual Bloom log locations are probed.
 #>
 param(
-    [string] $TriggerPattern = "Failed to navigate fully",
+    [string] $TriggerPattern = "Failed to navigate fully to RemoveUnwantedContentInternal",
     [int] $TriggerCaptures = 2,
     [int] $TriggerGapSeconds = 15,
     [int] $HungAfterSeconds = 480,
@@ -88,11 +91,13 @@ function Write-Sample([string] $text) {
 }
 
 # Bloom holds its log open, so read with explicit read/write sharing rather than Get-Content, which can
-# fail on a locked file. Returns "" for any problem: a log we cannot read just means no trigger, and the
-# hung-Bloom captures still happen.
+# fail on a locked file. Returns $null -- NOT "" -- when the log cannot be read, because the caller must
+# be able to tell "unreadable this instant" from "genuinely empty". Conflating them let a momentary read
+# failure look like Bloom having recreated the log, which reset the stale-line baseline and would then let
+# old lines fire the trigger, spending the run's only captures on the wrong moment.
 function Read-LogText([string] $path) {
     try {
-        if (-not (Test-Path $path)) { return "" }
+        if (-not (Test-Path $path)) { return $null }
         $stream = [System.IO.File]::Open(
             $path,
             [System.IO.FileMode]::Open,
@@ -103,7 +108,7 @@ function Read-LogText([string] $path) {
             try { return $reader.ReadToEnd() } finally { $reader.Dispose() }
         } finally { $stream.Dispose() }
     } catch {
-        return ""
+        return $null
     }
 }
 
@@ -165,13 +170,21 @@ while ((Get-Date) -lt $deadline) {
         # confirms we can actually read it (a silent unreadable log would otherwise look identical to
         # a run that simply never triggered) and marks in the sample timeline when Bloom went quiet.
         $logFile = Find-BloomLog
-        $logText = ""
+        $logText = $null
         if ($logFile -ne "") {
             if (-not $loggedLogPath) {
                 Write-Sample "watching Bloom log: $logFile"
                 $loggedLogPath = $true
             }
             $logText = Read-LogText $logFile
+        }
+        # A read we could not complete tells us nothing: leave the baseline and the trigger alone rather
+        # than drawing conclusions from an absence we know to be unreliable.
+        if ($null -eq $logText) {
+            if ($logFile -ne "") {
+                Write-Sample "  could not read the log this poll; leaving the baseline untouched"
+            }
+        } else {
             if ($logText.Length -ne $lastLogSize) {
                 Write-Sample "  Bloom log now $($logText.Length) bytes"
                 $lastLogSize = $logText.Length
@@ -190,7 +203,7 @@ while ((Get-Date) -lt $deadline) {
         }
         # Only the text appended since we started watching, so the trigger is edge-sensitive.
         $newLogText = ""
-        if ($baselineLogSize -ge 0 -and $logText.Length -gt $baselineLogSize) {
+        if ($null -ne $logText -and $baselineLogSize -ge 0 -and $logText.Length -gt $baselineLogSize) {
             $newLogText = $logText.Substring($baselineLogSize)
         }
         # Decide once per poll, not once per process, so the decision cannot depend on which process
