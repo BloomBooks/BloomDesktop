@@ -346,7 +346,8 @@ function isBookOverLevel(
     });
 }
 
-const LeveledReaderStats: FunctionComponent<{
+// Exported for LeveledReaderToolControls.spec.tsx, which renders it directly.
+export const LeveledReaderStats: FunctionComponent<{
     bookStats: { [key: string]: number };
 }> = (props) => {
     const model = getTheOneReaderToolsModel();
