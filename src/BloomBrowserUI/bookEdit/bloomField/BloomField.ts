@@ -9,6 +9,7 @@ import { EditableDivUtils } from "../js/editableDivUtils";
 import $ from "jquery";
 import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
 import { getLocalization } from "../../react_components/l10n";
+import { kNoIndentClass } from "../textContextMenu/noIndent";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -258,11 +259,36 @@ export default class BloomField {
                 }
             });
         }
+        // BL-16649: "No Indent" (see the text context menu) marks one
+        // paragraph as the continuation of a paragraph on the previous page. Pressing Enter
+        // in such a paragraph makes a genuinely new paragraph, which should indent normally
+        // -- but ckeditor builds it by shallow-cloning the paragraph it split, so it would
+        // inherit the class. We note which paragraphs existed just before the Enter, then
+        // take the class off any that the split created. Only paragraphs are considered:
+        // the class is only ever put on a <p>, never on a heading (see kBlockElementSelector).
+        let paragraphsBeforeEnter: HTMLParagraphElement[] | undefined;
         ckeditor.on("key", (event) => {
             if (event.data.keyCode === CKEDITOR.SHIFT + 13) {
                 BloomField.InsertLineBreak();
                 event.cancel();
+            } else if (event.data.keyCode === 13) {
+                paragraphsBeforeEnter = Array.from(
+                    bloomEditableDiv.getElementsByTagName("p"),
+                );
             }
+        });
+        ckeditor.on("afterCommandExec", (event) => {
+            if (event.data.name !== "enter") return;
+            const paragraphsBefore = paragraphsBeforeEnter;
+            paragraphsBeforeEnter = undefined;
+            if (!paragraphsBefore) return;
+            Array.from(bloomEditableDiv.getElementsByTagName("p")).forEach(
+                (paragraph) => {
+                    if (!paragraphsBefore.includes(paragraph)) {
+                        paragraph.classList.remove(kNoIndentClass);
+                    }
+                },
+            );
         });
         ckeditor.on("selectionChange", () => {
             this.EnsureCaretNotInsideLineBreakSpan();

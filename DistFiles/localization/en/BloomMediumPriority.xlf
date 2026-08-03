@@ -14,6 +14,11 @@
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
         <note>This checkbox enables the experimental publish-to-apps workflow.</note>
       </trans-unit>
+      <trans-unit id="EditTab.TextContextMenu.NoIndent" translate="no">
+        <source xml:lang="en">No Indent</source>
+        <note>ID: EditTab.TextContextMenu.NoIndent</note>
+        <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. It is a checkable on/off command that removes the first-line indent from just that one paragraph, overriding the indent that the paragraph's style gives it. Typically used on a paragraph continued from the previous page.</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>
