@@ -24,6 +24,7 @@ import { SettingsTool } from "./settings/settingsTool";
 // Explicit imports needed so that these symbols are in local scope for the window.toolboxBundle object
 import {
     getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
     addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
@@ -52,6 +53,8 @@ export interface IToolboxFrameExports {
     removeWordListChangedListener(listenerNameAndContext: string): void;
 
     getDecodableStageMatchingWords(knownGpcs: string[]): string[];
+
+    getSynphonyAlwaysMatchSymbols(): string[];
 
     addSampleTextFilesChangedListener(
         listenerNameAndContext: string,
@@ -86,6 +89,7 @@ export {
 } from "./readers/readerSetup/readerSetupDialog";
 export {
     getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
     addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
@@ -168,6 +172,7 @@ const toolboxBundle: ToolboxBundleApi = {
     initializeReaderSetupDialog,
     closeSetupDialog,
     getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
     addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,

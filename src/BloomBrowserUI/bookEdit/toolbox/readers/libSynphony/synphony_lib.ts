@@ -29,6 +29,18 @@ import $ from "jquery";
 export function ResetLanguageDataInstance() {
     theOneLanguageDataInstance = new LanguageData();
 }
+
+/**
+ * Clears just the grapheme side of the one LanguageData, leaving the loaded vocabulary alone.
+ * Callers that may have changed the alphabet need this: addGrapheme only ever *adds*, so
+ * nothing otherwise removes a letter combination the user deleted, and stale entries here go
+ * on being counted as single letters by ReaderToolsModel.getWordLength. Clears exactly the
+ * fields ReadersSynphonyWrapper.loadSettings repopulates, so call it immediately before that.
+ */
+export function ResetLanguageDataGraphemes() {
+    theOneLanguageDataInstance.GPCS = [];
+    theOneLanguageDataInstance.LanguageSortOrder = [];
+}
 var alwaysMatch: any[] = [];
 
 /**
