@@ -38,9 +38,10 @@ namespace Bloom.Publish
     /// Blocking here cannot deadlock on the message loop, since the thread that blocks is never the thread
     /// that must pump. But it is NOT immune to deadlock in general: navigation asks BloomServer for the page,
     /// so a caller that blocks while holding the last free BloomServer worker would be waiting for a page
-    /// that nobody is left to serve. What keeps that survivable (BL-16612) is that every blocking call is
-    /// bounded by a backstop timeout and throws <see cref="OffScreenBrowserTimeoutException"/> rather than
-    /// waiting forever.
+    /// that nobody is left to serve. Two things address that (BL-16612): every blocking call is bounded by a
+    /// backstop timeout and throws <see cref="OffScreenBrowserTimeoutException"/> rather than waiting
+    /// forever, and we register the block with BloomServer so its own starvation logic can see this thread
+    /// at all (see RunAndBlock).
     ///
     /// The browser is a real <see cref="WebView2Browser"/> (not a bare WebView2 control) so navigation goes
     /// through Bloom's BloomServer/in-memory-file plumbing and resolves CSS, fonts, and relative paths.
@@ -340,34 +341,50 @@ namespace Bloom.Publish
                 null
             );
 
-            bool completed;
+            // Tell BloomServer that this thread is about to block, in case it is one of its workers.
+            // BloomServer does NOT work that out for itself (see RegisterThreadBlocking): a worker that
+            // blocks without registering is invisible to the logic in QueueRequest that adds a worker when
+            // every existing one is blocked. Thread stacks from the 2026-08-03 nightly hang show exactly
+            // that blind spot: six workers, five of them registered as blocked on the API lock and the
+            // sixth -- this one -- blocked here without registering, so the top-up test asked 5 >= 6 and
+            // said no while the true state was 6 of 6 unavailable (BL-16612).
+            var server = BloomServer._theOneInstance;
+            server?.RegisterThreadBlocking();
             try
             {
-                completed = tcs.Task.Wait(effectiveTimeoutMs);
+                bool completed;
+                try
+                {
+                    completed = tcs.Task.Wait(effectiveTimeoutMs);
+                }
+                catch (AggregateException)
+                {
+                    // The work threw. Fall through to GetResult() below, which rethrows the original
+                    // exception rather than the AggregateException that Wait wraps it in.
+                    completed = true;
+                }
+                if (!completed)
+                {
+                    // Nobody will ever await the task we are abandoning, so observe its exception here;
+                    // otherwise a later failure on it resurfaces as an unobserved TaskException. We already
+                    // have the diagnosis we need, so there is nothing else to do with it.
+                    _ = tcs.Task.ContinueWith(
+                        t => _ = t.Exception,
+                        TaskContinuationOptions.OnlyOnFaulted
+                    );
+                    // The posted work is still queued or running on the dedicated thread and may yet touch
+                    // the browser, so the browser is now in an unknown state: the caller must discard it
+                    // (StartFreshBrowser) or stop using this instance.
+                    throw new OffScreenBrowserTimeoutException(
+                        $"The off-screen browser did not respond within {effectiveTimeoutMs}ms."
+                    );
+                }
+                return tcs.Task.GetAwaiter().GetResult();
             }
-            catch (AggregateException)
+            finally
             {
-                // The work threw. Fall through to GetResult() below, which rethrows the original
-                // exception rather than the AggregateException that Wait wraps it in.
-                completed = true;
+                server?.RegisterThreadUnblocked();
             }
-            if (!completed)
-            {
-                // Nobody will ever await the task we are abandoning, so observe its exception here;
-                // otherwise a later failure on it resurfaces as an unobserved TaskException. We already
-                // have the diagnosis we need, so there is nothing else to do with it.
-                _ = tcs.Task.ContinueWith(
-                    t => _ = t.Exception,
-                    TaskContinuationOptions.OnlyOnFaulted
-                );
-                // The posted work is still queued or running on the dedicated thread and may yet touch
-                // the browser, so the browser is now in an unknown state: the caller must discard it
-                // (StartFreshBrowser) or stop using this instance.
-                throw new OffScreenBrowserTimeoutException(
-                    $"The off-screen browser did not respond within {effectiveTimeoutMs}ms."
-                );
-            }
-            return tcs.Task.GetAwaiter().GetResult();
         }
 
         /// <summary>
