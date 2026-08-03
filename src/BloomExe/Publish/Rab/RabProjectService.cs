@@ -4091,15 +4091,19 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// Removes any deliverable APK in SafeApkRoot that this build attempt created or rewrote,
-        /// given a <paramref name="preBuildApkWriteTimes"/> snapshot taken before the build. Called
-        /// only on the abnormal path (cancel/failure). Reading App Builder writes the finished, signed
-        /// APK to SafeApkRoot as its final step, and Bloom cannot see whether that write is atomic, so
-        /// a build killed mid-write could leave a truncated APK at the deliverable name that
-        /// <see cref="GetStatus"/> and <see cref="Install"/> (both scan the directory via
-        /// <see cref="FindLatestApkPath"/>) would treat as a finished app (BL-16350). Deleting only the
-        /// files this attempt touched removes that risk while preserving a previous good APK that this
-        /// attempt left unmodified, so a failed rebuild still falls back to the last good build.
+        /// Removes a deliverable APK in SafeApkRoot only if this build attempt left it truncated.
+        /// Called only on the abnormal path (cancel/failure), with a <paramref name="preBuildApkWriteTimes"/>
+        /// snapshot taken before the build. Reading App Builder writes the finished, signed APK to
+        /// SafeApkRoot as its final step, and Bloom cannot see whether that write is atomic, so a build
+        /// killed mid-write could leave a truncated APK at the deliverable name that <see cref="GetStatus"/>
+        /// and <see cref="Install"/> (both scan the directory via <see cref="FindLatestApkPath"/>) would
+        /// treat as a finished app (BL-16350). An APK is deleted only when BOTH: this attempt created or
+        /// rewrote it (its write time changed), AND it is no longer a complete, readable APK. That leaves
+        /// alone (a) a previous good APK this attempt never touched, and — crucially — (b) a complete APK
+        /// that RAB finished writing before a cancel/failure a moment later arrived: deleting that would
+        /// needlessly discard a usable build and, for a same-named rebuild, the previous one it replaced
+        /// (a regression Devin caught in the first version of this fix). Only a write cut off mid-stream,
+        /// the truncation this exists for, leaves an unreadable file, and only that is removed.
         /// </summary>
         private static void DeleteApksWrittenDuringBuild(
             RabWorkspacePaths paths,
@@ -4125,6 +4129,12 @@ namespace Bloom.Publish.Rab
                 )
                     continue;
 
+                // This attempt created or rewrote this APK. Keep it if it is still a complete, readable
+                // app — RAB had finished writing it before the cancel/failure, so it is usable and must
+                // not be thrown away. Only a truncated (unreadable) file is deleted.
+                if (IsCompleteApk(apkPath))
+                    continue;
+
                 try
                 {
                     RobustFile.Delete(apkPath);
@@ -4135,6 +4145,28 @@ namespace Bloom.Publish.Rab
                     // not worth failing the already-failing build over, and the next successful build
                     // overwrites it anyway.
                 }
+            }
+        }
+
+        /// <summary>
+        /// Returns true if <paramref name="apkPath"/> is a complete, readable APK (a valid zip archive
+        /// with at least one entry). A build killed while Reading App Builder was writing the APK leaves
+        /// a truncated file whose zip central directory is missing or unreadable, so opening it throws;
+        /// a fully-written APK opens fine. Used to tell a truncated deliverable (safe to delete) from a
+        /// finished one (must keep).
+        /// </summary>
+        private static bool IsCompleteApk(string apkPath)
+        {
+            try
+            {
+                // Opening and reading the entry list forces the zip central directory (written last) to
+                // be parsed; a truncated APK throws here rather than reporting a bogus entry count.
+                using var archive = ZipFile.OpenRead(apkPath);
+                return archive.Entries.Count > 0;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 

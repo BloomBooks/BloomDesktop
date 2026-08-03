@@ -1197,6 +1197,60 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public async Task BuildAsync_WhenAbnormalAfterApkFinished_KeepsTheCompletedApk()
+        {
+            // Guards the late-cancel case (Devin): RunProcess throws OperationCanceledException after
+            // WaitForExit whenever a cancel was requested, even when RAB already exited cleanly having
+            // written a complete, signed APK. The interrupted-build cleanup must keep that finished app,
+            // not delete it (deleting it would also lose the previous app it replaced in place).
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.PrepareAsync();
+            await service.BuildAsync();
+
+            var deliverableApk = service.FindLatestApkPath(paths);
+            Assert.That(
+                deliverableApk,
+                Is.Not.Null,
+                "setup: the first build should produce an APK"
+            );
+
+            // A rebuild that wrote a complete, valid new APK and only then ended abnormally.
+            service.FailNextBuild = true;
+            service.CompleteSafeApkBeforeFailure = true;
+            Assert.ThrowsAsync<ApplicationException>(async () => await service.BuildAsync());
+
+            // The completed APK this attempt wrote is kept (it is a usable app), so "Try on phone"
+            // still has something to install rather than the user being left with nothing.
+            Assert.That(
+                File.Exists(deliverableApk),
+                Is.True,
+                "cleanup must keep a complete APK that finished writing before the abnormal exit"
+            );
+            // Sanity check it really is a complete, readable APK and is still what would be installed.
+            using (var archive = ZipFile.OpenRead(deliverableApk))
+                Assert.That(
+                    archive.Entries.Count,
+                    Is.GreaterThan(0),
+                    "setup: the kept APK should be a complete, readable archive"
+                );
+            Assert.That(service.FindLatestApkPath(paths), Is.EqualTo(deliverableApk));
+        }
+
+        [Test]
         public void SaveDownloadStreamAtomically_WhenCancelledMidDownload_LeavesNoInstallerFile()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -2900,6 +2954,12 @@ namespace BloomTests.Publish.Rab
             // truncated file.
             public bool TruncateSafeApkOnFailedBuild { get; set; }
 
+            // When true (used with FailNextBuild, and not with TruncateSafeApkOnFailedBuild), the
+            // failing build first writes a complete, valid deliverable APK to SafeApkRoot, mimicking
+            // RAB finishing the APK before the build ended abnormally (e.g. a late cancel); the
+            // interrupted-build cleanup should keep that usable app rather than delete it.
+            public bool CompleteSafeApkBeforeFailure { get; set; }
+
             // Invoked from the simulated UninstallAppFromDevice so a test can act (e.g. request
             // cancellation) at the exact moment the phone's existing app has just been removed.
             public Action DuringUninstall { get; set; }
@@ -3052,6 +3112,13 @@ namespace BloomTests.Publish.Rab
                                 Path.Combine(_paths.SafeApkRoot, GetAppSlug() + ".apk"),
                                 "PK-truncated"
                             );
+                        }
+                        else if (CompleteSafeApkBeforeFailure)
+                        {
+                            // Mimic RAB finishing a complete, signed APK in SafeApkRoot and only then
+                            // the build ending abnormally (e.g. a cancel that arrived a moment later);
+                            // the interrupted-build cleanup must keep this usable app, not delete it.
+                            CreateApk(tokens);
                         }
                         // Mimic Gradle having written an unsigned intermediate .apk under the build
                         // folder before the build failed; the interrupted-build cleanup should delete
