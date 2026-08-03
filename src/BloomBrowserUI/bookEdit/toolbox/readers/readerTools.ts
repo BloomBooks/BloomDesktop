@@ -10,6 +10,7 @@ import theOneLocalizationManager from "../../../lib/localizationManager/localiza
 import {
     theOneLanguageDataInstance,
     theOneLibSynphony,
+    ResetLanguageDataGraphemes,
     ResetLanguageDataInstance,
 } from "./libSynphony/synphony_lib";
 import "./libSynphony/synphony_lib";
@@ -393,9 +394,14 @@ function refreshSettingsExceptSampleWords(newSettings) {
  * Returns a promise which is resolved when all the sample words files are loaded and the model is ready to use.
  */
 function beginRefreshEverything(settings: ReaderSettings): JQueryPromise<void> {
-    // Allowed-word-list mode does not use sample-word data. Keep it available for
-    // a setup-dialog preview if the user temporarily switches back to stages.
-    if (!settings.useAllowedWords) {
+    if (settings.useAllowedWords) {
+        // Allowed-word-list mode does not use sample-word data, and we deliberately keep what
+        // is already loaded so the setup dialog can still preview matching words if the user
+        // switches back to stages mode. The graphemes must still be rebuilt though: loadSettings
+        // only adds them, so without this a letter combination the user just deleted would keep
+        // being counted as one letter (getWordLength) for the rest of the session.
+        ResetLanguageDataGraphemes();
+    } else {
         ResetLanguageDataInstance();
         getTheOneReaderToolsModel().allWords = {};
     }
@@ -482,6 +488,22 @@ export function removeWordListChangedListener(
     delete getTheOneReaderToolsModel().wordListChangedListeners[
         listenerNameAndContext
     ];
+}
+
+/**
+ * Gets the symbols this language allows inside a word regardless of the reader's stage — a
+ * syllable break, a stress mark and so on. They live only on the toolbox frame's copy of the
+ * Synphony data (and only when the collection's imported language data defines them), so the
+ * setup dialog, which runs in the workspace frame, has to ask for them across the bundle
+ * boundary the same way it asks for matching words.
+ */
+export function getSynphonyAlwaysMatchSymbols(): string[] {
+    return [
+        theOneLanguageDataInstance["AlwaysMatch"],
+        theOneLanguageDataInstance["SyllableBreak"],
+        theOneLanguageDataInstance["StressSymbol"],
+        theOneLanguageDataInstance["MorphemeBreak"],
+    ].filter((symbol) => typeof symbol === "string" && symbol !== "");
 }
 
 /** Gets the loaded sample words decodable with the given graphemes. */

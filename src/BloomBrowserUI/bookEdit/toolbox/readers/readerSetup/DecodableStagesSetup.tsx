@@ -558,6 +558,12 @@ const StagesTab: React.FunctionComponent<{
         return () => toolbox.removeWordListChangedListener(listenerName);
     });
 
+    // Drops from every stage any letter that is no longer in the alphabet. Note this runs on
+    // every mount, and only the active tab is rendered, so it also runs each time the user
+    // leaves the Letters tab and comes back here — which means a letter mid-way through being
+    // retyped over there can get pruned out of the stages. Reviewed 2026-08 (BL-16607) and
+    // deliberately left alone: the legacy dialog reconciles at effectively the same moments, so
+    // this is not a regression, and making it precise is not worth the added complexity.
     useMountEffect(() => {
         const configuredLetters = new Set(
             cleanSpaceDelimitedList(props.settings.letters)
@@ -653,20 +659,27 @@ const StagesTab: React.FunctionComponent<{
                 cleanSpaceDelimitedList(oneStage.sightWords).split(/\s+/),
             )
             .filter(Boolean);
-        const typedSampleWords = cleanSpaceDelimitedList(
-            props.settings.moreWords,
-        )
-            .split(/\s+/)
-            .filter(Boolean)
-            .filter((word) =>
-                hasOnlyKnownGraphemes(word, allLetters, knownGpcs),
-            );
         const toolbox = getToolboxBundleExports();
         if (!toolbox) {
             throw new Error(
                 "The Reader toolbox must be loaded before its setup dialog.",
             );
         }
+        // Only the toolbox frame's Synphony data knows these, so they have to come from there.
+        const alwaysMatchSymbols = toolbox.getSynphonyAlwaysMatchSymbols();
+        const typedSampleWords = cleanSpaceDelimitedList(
+            props.settings.moreWords,
+        )
+            .split(/\s+/)
+            .filter(Boolean)
+            .filter((word) =>
+                hasOnlyKnownGraphemes(
+                    word,
+                    allLetters,
+                    knownGpcs,
+                    alwaysMatchSymbols,
+                ),
+            );
         const sampleTextMatchingWords =
             knownGpcs.length === 0
                 ? []
