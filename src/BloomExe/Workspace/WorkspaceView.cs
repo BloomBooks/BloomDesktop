@@ -58,8 +58,11 @@ namespace Bloom.Workspace
         // lock navigation on their own (an Apps build, a library upload, an Edit-tab modal or save),
         // so a single boolean let one feature's "unlock" clobber another's "lock" (BL-16350). Keying
         // each lock by reason makes them reference-count: the tabs re-enable only once every reason
-        // has been released. UI-thread only, like the rest of this view.
+        // has been released. Mutated from BloomServer request threads and background tasks as well as
+        // the UI thread, so all access is guarded by _tabDisablersLock (a bare bool was atomic; a
+        // HashSet is not).
         private readonly HashSet<string> _tabDisablers = new HashSet<string>();
+        private readonly object _tabDisablersLock = new object();
 
         // Reasons passed to SetTabsEnabled. Public so PublishView (which clears a possibly-stuck Edit
         // lock as it enters the Publish tab) names the same reasons the Edit code locks with.
@@ -1779,11 +1782,20 @@ window.showWorkspaceInitializationFailure = function(message) {
         {
             if (string.IsNullOrEmpty(reason))
                 throw new ArgumentException("A tab-lock reason is required.", nameof(reason));
-            if (enable)
-                _tabDisablers.Remove(reason);
-            else
-                _tabDisablers.Add(reason);
-            UpdateTabsEnabledFromDisablers();
+            // Guard the set and the derived flag: this runs on BloomServer request threads and
+            // background tasks as well as the UI thread. Snapshot the holders inside the lock too,
+            // so the log line below can't enumerate the set while another thread mutates it.
+            string holders;
+            lock (_tabDisablersLock)
+            {
+                if (enable)
+                    _tabDisablers.Remove(reason);
+                else
+                    _tabDisablers.Add(reason);
+                _tabsEnabled = _tabDisablers.Count == 0;
+                holders = _tabDisablers.Count == 0 ? "none" : string.Join(",", _tabDisablers);
+            }
+            SendTopBarState();
             // Display a log message to track down who changed this and when. (BL-16290)
             // Trim the stack trace to remove the top two redundant lines and limit the number of lines shown to 5.
             // The further down the stack trace, the less relevant it is to figure out what called this method.
@@ -1793,7 +1805,6 @@ window.showWorkspaceInitializationFailure = function(message) {
             for (int i = 2; i < Math.Min(7, stackLines.Length); i++)
                 stackList.Add(stackLines[i]);
             var stackTop = string.Join(Environment.NewLine, stackList);
-            var holders = _tabDisablers.Count == 0 ? "none" : string.Join(",", _tabDisablers);
             var msg =
                 $"WorkSpaceView.SetTabsEnabled({enable}, {reason}) -> enabled={_tabsEnabled} holders=[{holders}] - {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff")}"
                 + Environment.NewLine
@@ -1810,14 +1821,12 @@ window.showWorkspaceInitializationFailure = function(message) {
         /// </summary>
         public void ReleaseEditTabLocks()
         {
-            _tabDisablers.Remove(EditModalTabLock);
-            _tabDisablers.Remove(EditSaveTabLock);
-            UpdateTabsEnabledFromDisablers();
-        }
-
-        private void UpdateTabsEnabledFromDisablers()
-        {
-            _tabsEnabled = _tabDisablers.Count == 0;
+            lock (_tabDisablersLock)
+            {
+                _tabDisablers.Remove(EditModalTabLock);
+                _tabDisablers.Remove(EditSaveTabLock);
+                _tabsEnabled = _tabDisablers.Count == 0;
+            }
             SendTopBarState();
         }
 
