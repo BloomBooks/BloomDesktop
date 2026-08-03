@@ -40,6 +40,8 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
     const model = getTheOneReaderToolsModel();
 
     const [open, setOpen] = useState(true);
+    // 2 is the Decodable Stages tab, which is the one this dialog opens on.
+    const [curTab, setCurTab] = useState(2);
     const [settings, setSettings] = useState<ReaderSettings>(() => {
         const source = model.synphony?.source;
         if (!source) {
@@ -113,6 +115,14 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
             .then(close);
     };
 
+    let helpId =
+        "Tasks/Edit_tasks/Decodable_Reader_Tool/Decodable_Stages_tab.htm";
+    if (curTab === 0) {
+        helpId = "Tasks/Edit_tasks/Decodable_Reader_Tool/Letters_tab.htm";
+    } else if (curTab === 1) {
+        helpId = "Tasks/Edit_tasks/Decodable_Reader_Tool/Words_tab.htm";
+    }
+
     const title = useL10n(
         "Set up Decodable Reader Tool",
         "ReaderSetup.SetUpDecodableReaderTool",
@@ -160,6 +170,8 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
                             setSettings={setSettings}
                             fontName={model.fontName}
                             maxAllowedWords={model.maxAllowedWords}
+                            curTab={curTab}
+                            setCurTab={setCurTab}
                         />
                     )}
                 </DialogMiddle>
@@ -177,7 +189,7 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
                 >
                     {!props.editingForbiddenMessage && (
                         <DialogBottomLeftButtons>
-                            <DialogHelpButton helpId="Tasks/Edit_tasks/Decodable_Reader_Tool/Decodable_Stages_tab.htm" />
+                            <DialogHelpButton helpId={helpId} />
                         </DialogBottomLeftButtons>
                     )}
                     {!props.editingForbiddenMessage && (

@@ -62,8 +62,13 @@ export const DecodableStagesSetup: React.FunctionComponent<{
     setSettings: React.Dispatch<React.SetStateAction<ReaderSettings>>;
     fontName: string;
     maxAllowedWords: number;
+    // The tab lives in the dialog above us because the Help button, which is down in the
+    // dialog's button row, has to open the help page for whichever tab is showing.
+    curTab: number;
+    setCurTab: (value: number) => void;
 }> = (props) => {
-    const [curTab, setCurTab] = useState(2);
+    const curTab = props.curTab;
+    const setCurTab = props.setCurTab;
     const [selectedStageIndex, setSelectedStageIndex] = useState(0);
 
     const lettersTab = useL10n("Letters", "ReaderSetup.Letters");
