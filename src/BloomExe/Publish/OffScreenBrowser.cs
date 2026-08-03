@@ -346,14 +346,13 @@ namespace Bloom.Publish
             // every existing one is blocked. That matters a great deal here, because what we are waiting
             // for is a browser navigating to a page that BloomServer itself has to serve. If every worker
             // is blocked and none is left to serve that page, the navigation can never complete and we
-            // would be waiting for something that cannot happen (BL-16612).
-            //
-            // NoteWorkerPoolHeadroom is pure measurement: it records how close the pool came to having
-            // nothing left to serve requests, which is what makes the starvation theory testable on a
-            // healthy run instead of only after a failure.
+            // would be waiting for something that cannot happen (BL-16612). Registering lets BloomServer
+            // spin up the worker that breaks the cycle — and we use the ...AndEnsureAFreeWorker variant
+            // because the plain one only takes effect when the NEXT request arrives, which may be never:
+            // the request that would unblock us can already be sitting in the queue by the time we get here.
             var server = BloomServer._theOneInstance;
             server?.NoteWorkerPoolHeadroom();
-            server?.RegisterThreadBlocking();
+            server?.RegisterThreadBlockingAndEnsureAFreeWorker();
             try
             {
                 bool completed;

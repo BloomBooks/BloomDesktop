@@ -2433,6 +2433,19 @@ namespace Bloom.Api
             }
         }
 
+        /// <summary>
+        /// Registers that the current thread is about to block (exactly as <see cref="RegisterThreadBlocking"/>)
+        /// and, if that leaves no worker free to take new work, adds one right away. Pair it with
+        /// <see cref="RegisterThreadUnblocked"/> just like the plain version.
+        /// </summary>
+        /// <remarks>
+        /// RegisterThreadBlocking on its own only makes starvation *visible*; the escape hatch in QueueRequest
+        /// acts on it when the NEXT request arrives. That is too late for a thread that blocks waiting on
+        /// something a queued request has to produce — the page an off-screen browser is loading, say — because
+        /// the request that would unblock it may already be sitting in the queue, with nothing new coming in
+        /// behind it to trigger the check. Then everyone waits forever. So callers who block on our own server
+        /// use this instead, and we do the check at the moment the count goes up (BL-16612).
+        /// </remarks>
         // The worker-pool snapshot from the tightest moment seen so far — the moment when the fewest
         // workers were left able to pick up new work — since the last ResetTightestWorkerPoolReport().
         // A hang blamed on starvation needs the pool to actually run near empty, so this is the number
@@ -2463,16 +2476,44 @@ namespace Bloom.Api
                 : "BloomServer at its tightest: " + _tightestSnapshot;
         }
 
+        public void RegisterThreadBlockingAndEnsureAFreeWorker()
+        {
+            RegisterThreadBlocking();
+            var addedWorker = false;
+            lock (_queue)
+            {
+                // SpinUpAWorker mutates _workers, so it must be called inside this lock.
+                if (_countBlockedThreads >= _workers.Count)
+                {
+                    SpinUpAWorker();
+                    addedWorker = true;
+                }
+            }
+            // Say so when we actually had to add one. This is the only POSITIVE evidence that the
+            // starvation BL-16612 suspects is real: every other diagnostic here speaks only after
+            // something has already gone wrong, which means a guard that is quietly doing its job looks
+            // exactly like a bug that quietly went away. If this line shows up in a passing run's log,
+            // the condition was real and this is what kept requests moving.
+            // Logged outside the lock so we never hold it while writing to a file.
+            if (addedWorker)
+                Logger.WriteEvent(
+                    "Every server worker was blocked, so added one to keep requests moving. "
+                        + GetWorkerPoolDiagnostics()
+                );
+        }
+
         /// <summary>
         /// Records how much headroom the worker pool has at this instant, keeping the tightest reading
         /// seen since the last <see cref="ResetTightestWorkerPoolReport"/>. Call it right before blocking
         /// on something this server has to serve.
         /// </summary>
         /// <remarks>
-        /// Pure measurement, deliberately kept as its own method rather than folded into the registering
-        /// of a blocked thread: measuring stands on its own merits, while anything that CHANGES what the
-        /// pool does rests on the still-unproven starvation theory in BL-16612. Keeping them apart means
-        /// this measurement survives whatever we decide about that.
+        /// Deliberately separate from <see cref="RegisterThreadBlockingAndEnsureAFreeWorker"/>, even
+        /// though both take the queue lock and callers want both: this is pure measurement and stands on
+        /// its own, whereas adding a worker is a behavior change resting on the (still unproven)
+        /// starvation theory in BL-16612. Keeping them apart means the measurement can be kept whatever
+        /// we decide about the guard. The extra lock acquisition costs nothing measurable -- it happens
+        /// once per blocking call and holds the lock for a few field reads.
         ///
         /// Busy (not merely blocked) is the right measure of "cannot take new work": a worker busy
         /// serving a long request is just as unable to serve the page we are waiting for as a blocked one.
