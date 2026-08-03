@@ -36,6 +36,12 @@ export function ResetLanguageDataInstance() {
  * nothing otherwise removes a letter combination the user deleted, and stale entries here go
  * on being counted as single letters by ReaderToolsModel.getWordLength. Clears exactly the
  * fields ReadersSynphonyWrapper.loadSettings repopulates, so call it immediately before that.
+ *
+ * Known limitation, reviewed and accepted 2026-08 (BL-16607): the words we keep were each split
+ * into graphemes when they were added, and they hold on to that split. So after the alphabet
+ * changes they still carry the *old* segmentation until something reloads them. That is narrower
+ * than the bug this fixes (word lengths are right again either way), and it corrects itself on
+ * the next full refresh; re-splitting the whole vocabulary here was judged not worth the cost.
  */
 export function ResetLanguageDataGraphemes() {
     theOneLanguageDataInstance.GPCS = [];
