@@ -416,6 +416,8 @@ export function captureSplitStyles(
     return saved;
 }
 
+// Put back the style attributes captured by captureSplitStyles exactly as they were, removing the
+// attribute entirely where there wasn't one, so a declined page ends up byte-for-byte as authored.
 export function restoreSplitStyles(
     saved: Array<[HTMLElement, string | null]>,
     reflowFrom: HTMLElement,
