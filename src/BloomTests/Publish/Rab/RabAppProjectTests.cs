@@ -1251,6 +1251,101 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public async Task BuildAsync_WhenAbnormalAfterApkFinished_RecordsItSoBuildIsNotStillNeeded()
+        {
+            // Item 2 (Devin): a late cancel/failure unwinds out of Build() before the tail that saves
+            // the build signature, so a freshly-built (and kept) APK would otherwise leave GetStatus
+            // still reporting that a build is needed. The abnormal path now records a complete APK it
+            // produced, so status stays consistent with the app that actually exists.
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.PrepareAsync();
+
+            // Sanity check: with nothing built yet, a build is needed.
+            Assert.That(
+                service.GetStatus().BuildNeeded,
+                Is.True,
+                "setup: a build should be needed before anything is built"
+            );
+
+            // A first build that wrote a complete APK and only then ended abnormally (late cancel).
+            service.FailNextBuild = true;
+            service.CompleteSafeApkBeforeFailure = true;
+            Assert.ThrowsAsync<ApplicationException>(async () => await service.BuildAsync());
+
+            Assert.That(
+                service.FindLatestApkPath(paths),
+                Is.Not.Null,
+                "the finished APK should have been kept"
+            );
+            Assert.That(
+                service.GetStatus().BuildNeeded,
+                Is.False,
+                "a build that produced a complete APK before ending abnormally should be recorded, so Build is not still shown as needed"
+            );
+        }
+
+        [Test]
+        public void FindLatestApkPath_ReturnsDeliverable_IgnoringApksUnderBuildRoot()
+        {
+            // Item 1 (Devin): FindLatestApkPath must look only at the deliverable roots, never
+            // BuildRoot, so an unsigned Gradle intermediate is never returned as "the app" (and the
+            // BuildRoot cleanup cannot appear to delete a deliverable).
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
+
+            Directory.CreateDirectory(paths.SafeApkRoot);
+            var deliverable = Path.Combine(paths.SafeApkRoot, "sample-app.apk");
+            RobustFile.WriteAllText(deliverable, "signed-deliverable");
+
+            // A Gradle intermediate under BuildRoot, written afterwards so it is at least as new as
+            // the deliverable — the old search-all-roots behavior could have returned it.
+            var intermediate = Path.Combine(
+                paths.BuildRoot,
+                "app",
+                "build",
+                "outputs",
+                "apk",
+                "release",
+                "app-release-unsigned.apk"
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(intermediate));
+            RobustFile.WriteAllText(intermediate, "unsigned-intermediate");
+
+            // Sanity check the setup: both files exist before we assert which one is chosen.
+            Assert.That(RobustFile.Exists(deliverable), Is.True, "setup: deliverable should exist");
+            Assert.That(
+                RobustFile.Exists(intermediate),
+                Is.True,
+                "setup: intermediate should exist"
+            );
+
+            Assert.That(
+                service.FindLatestApkPath(paths),
+                Is.EqualTo(deliverable),
+                "FindLatestApkPath should return the SafeApkRoot deliverable, never a BuildRoot intermediate"
+            );
+        }
+
+        [Test]
         public void SaveDownloadStreamAtomically_WhenCancelledMidDownload_LeavesNoInstallerFile()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
