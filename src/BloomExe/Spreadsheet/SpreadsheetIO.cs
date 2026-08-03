@@ -229,6 +229,16 @@ namespace Bloom.Spreadsheet
                                 )
                             )
                             {
+                                // Size the row from the thumbnail we actually embedded (which, since
+                                // ResizeImageIfNecessary never enlarges, may be smaller than the target
+                                // computed above), not from that target. The row's height is in points,
+                                // which the spreadsheet viewer does NOT scale for a high-DPI display even
+                                // though it scales the columns; so at >100% we divide the height back down
+                                // by the same factor so the displayed row matches the image. See BL-16529.
+                                if (scaleFactor > 100)
+                                    finalHeight = thumbnail.Height * 100 / scaleFactor;
+                                else
+                                    finalHeight = thumbnail.Height;
                                 using (var ms = new MemoryStream())
                                 {
                                     thumbnail.Save(ms, ImageFormat.Jpeg);

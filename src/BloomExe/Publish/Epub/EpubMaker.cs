@@ -3693,9 +3693,50 @@ namespace Bloom.Publish.Epub
             {
                 elt.RemoveAttribute("lang");
             }
-            // Validator doesn't like '*' as value of lang attributes, and they don't convey anything useful, so remove.
+            // "*" is not a language tag -- it is the wildcard from HTTP content negotiation -- so
+            // BCP 47, and therefore the ePUB validator, rejects it. But it does convey something to
+            // us: "deliberately not in any language". defaultLangStyles.css keys such text's font
+            // off it (BL-16624), and simply deleting the attribute, as we had done since the first
+            // ePUB commit in 2015, left this the one kind of text in an ePUB with no font of its
+            // own. So carry the font over explicitly before the attribute goes.
+            //
+            // Note what we deliberately do NOT do: rewrite the attribute to a real language tag.
+            // That was tried and reverted. It makes language-neutral text claim to be in L1, so a
+            // book published with the vernacular turned off still contains elements tagged with it
+            // -- UserSpecifiedNoVernacular_VernacularRemoved catches exactly that. An inline font
+            // makes no such claim.
+            //
+            // Content pages only. Xmatter's lang="*" fields (the ISBN, the branding blocks) are
+            // meant to follow the metadata language they inherit from their page div (BL-8545);
+            // giving them L1's font would break that just as surely as giving them L1's lang.
+            // Fallback only. Normally we use the font PublishHelper measured in the browser for
+            // this very element, which is the only way to honour a user's own choice: StyleEditor
+            // stores that as `.SomeStyle[lang="*"] { ... !important }`, and that selector stops
+            // matching the instant we delete the attribute below. CollectionSettings.Language1 is
+            // the same source GetCollectionStylesCss builds the [lang='*'] rule from, so falling
+            // back to it gives the same answer the rule would have.
+            var fallbackFont = Book.CollectionSettings.Language1.FontName;
             foreach (SafeXmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='*']"))
             {
+                var page = elt.ParentOrSelfWithClass("bloom-page");
+                var onContentPage =
+                    page != null
+                    && !page.HasClass("bloom-frontMatter")
+                    && !page.HasClass("bloom-backMatter");
+                var measuredFont = elt.GetAttribute(PublishHelper.kComputedFontAttr);
+                elt.RemoveAttribute(PublishHelper.kComputedFontAttr); // it is ours, not part of the ePUB
+                var font = string.IsNullOrEmpty(measuredFont) ? fallbackFont : measuredFont;
+                if (onContentPage && !string.IsNullOrEmpty(font))
+                {
+                    var existing = elt.GetAttribute("style");
+                    var fontRule = $"font-family: '{font}'";
+                    elt.SetAttribute(
+                        "style",
+                        string.IsNullOrEmpty(existing)
+                            ? fontRule
+                            : existing.TrimEnd().TrimEnd(';') + "; " + fontRule
+                    );
+                }
                 elt.RemoveAttribute("lang");
             }
         }
