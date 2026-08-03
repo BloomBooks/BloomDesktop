@@ -5418,6 +5418,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Previous and New Letters</source>
         <note>ID: ReaderSetup.SelectedLetters</note>
       </trans-unit>
+      <trans-unit id="ReaderSetup.NoSampleTextsYet" translate="no">
+        <source xml:lang="en">No sample texts yet. Add text files to the Sample Texts folder.</source>
+        <note>ID: ReaderSetup.NoSampleTextsYet</note>
+        <note>Shown in place of the file list on the Sample Words tab of the Decodable Reader setup dialog, when the collection's Sample Texts folder is empty. "Sample Texts folder" is the name of a folder in the collection and is also the label of the link just above this message.</note>
+      </trans-unit>
       <trans-unit id="ReaderSetup.SeparateWordsWithSpaces" translate="no">
         <source xml:lang="en">Separate words with spaces.</source>
         <note>ID: ReaderSetup.SeparateWordsWithSpaces</note>

@@ -17,7 +17,7 @@ import { useL10n } from "../../../../react_components/l10nHooks";
 import { Div, Span } from "../../../../react_components/l10nComponents";
 import BloomButton from "../../../../react_components/bloomButton";
 import { ReaderSettings, ReaderStage } from "../ReaderSettings";
-import { kBloomBlue } from "../../../../utils/colorUtils";
+import { kBloomBlue, kBloomRed } from "../../../../utils/colorUtils";
 import { ReaderDialogPhaseSection } from "./ReaderDialogPhaseSection";
 import {
     cleanSpaceDelimitedList,
@@ -30,7 +30,6 @@ import { BloomTooltip } from "../../../../react_components/BloomToolTip";
 import { ReaderDialogTextarea } from "./ReaderDialogTextarea";
 
 const kMutedText = "#707477";
-const kSampleTextFileExtensions = ["txt", "js", "json"];
 
 const commonTextStyles = css`
     color: ${kMutedText};
@@ -289,7 +288,9 @@ const SampleWordsTab: React.FunctionComponent<{
     setSettings: (value: ReaderSettings) => void;
     fontName: string;
 }> = (props) => {
-    const [sampleTextFiles, setSampleTextFiles] = useState<string[]>([]);
+    const [sampleTextFiles, setSampleTextFiles] = useState<
+        { path: string; readable: boolean; hasExtension: boolean }[]
+    >([]);
 
     useMountEffect(() => {
         let isMounted = true;
@@ -304,19 +305,15 @@ const SampleWordsTab: React.FunctionComponent<{
         const refreshSampleTextFiles = () => {
             get("readers/ui/sampleTextsList", (result) => {
                 if (isMounted) {
+                    // Every file is listed, including ones Bloom cannot read; those are shown
+                    // with an explanation instead of being silently dropped. The toolbox does
+                    // the classifying so this agrees with the files Bloom actually loads.
                     setSampleTextFiles(
-                        result.data
-                            .split("\r")
-                            .filter((path) => path)
-                            .filter((path) => {
-                                const extension = path.split(".").pop();
-                                return (
-                                    extension !== undefined &&
-                                    kSampleTextFileExtensions.includes(
-                                        extension,
-                                    )
-                                );
-                            }),
+                        toolbox.classifySampleTextFiles(
+                            result.data
+                                .split("\r")
+                                .filter((path: string) => path),
+                        ),
                     );
                 }
             });
@@ -488,9 +485,20 @@ const SampleWordsTab: React.FunctionComponent<{
                                     ${commonTextStyles}
                                 `}
                             >
-                                {sampleTextFiles.map((path) => (
+                                {sampleTextFiles.length === 0 && (
+                                    <Div
+                                        l10nKey="ReaderSetup.NoSampleTextsYet"
+                                        css={css`
+                                            padding: 12px;
+                                        `}
+                                    >
+                                        No sample texts yet. Add text files to
+                                        the Sample Texts folder.
+                                    </Div>
+                                )}
+                                {sampleTextFiles.map((file) => (
                                     <div
-                                        key={path}
+                                        key={file.path}
                                         css={css`
                                             display: flex;
                                             align-items: center;
@@ -516,11 +524,46 @@ const SampleWordsTab: React.FunctionComponent<{
                                                 white-space: nowrap;
                                             `}
                                         >
-                                            {path.split(/[\\/]/).pop()}
+                                            {file.path.split(/[\\/]/).pop()}
                                         </div>
+                                        {/* Say why a file is being ignored, rather than
+                                            hiding it and leaving the user to wonder. */}
+                                        {!file.readable && (
+                                            <Span
+                                                l10nKey={
+                                                    file.hasExtension
+                                                        ? "ReaderSetup.FormatNotSupported"
+                                                        : "ReaderSetup.FileNeedsTxtExtension"
+                                                }
+                                                css={css`
+                                                    flex: none;
+                                                    margin-left: 10px;
+                                                    font-style: italic;
+                                                    color: ${kBloomRed};
+                                                `}
+                                            >
+                                                {file.hasExtension
+                                                    ? "Cannot read this format"
+                                                    : "File needs .TXT extension"}
+                                            </Span>
+                                        )}
                                     </div>
                                 ))}
                             </div>
+                            {sampleTextFiles.some((file) => !file.readable) && (
+                                <Link
+                                    l10nKey="ReaderSetup.HowToExport"
+                                    href="/bloom/api/help?topic=Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm"
+                                    css={css`
+                                        margin-top: 8px;
+                                        font-size: inherit;
+                                        font-weight: inherit;
+                                    `}
+                                >
+                                    Help exporting and converting files to use
+                                    as sample texts
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </>

@@ -56,6 +56,34 @@ export class DRTState {
     public markupType: number = MarkupType.Decodable;
 }
 
+/**
+ * The sample-text file types Bloom can actually read. Single source of truth: the setup dialog
+ * asks for this (through the toolbox bundle) rather than keeping its own copy, so what the dialog
+ * lists cannot drift from what Bloom loads.
+ */
+export const kReadableSampleTextFileExtensions = ["txt", "js", "json"];
+
+/** Gets a file's extension, lowercased, or undefined when it has none. */
+export function getFileExtension(path: string): string | undefined {
+    const parts = path.split(".");
+    // "foo" (no dot) splits to one part; a leading-dot name like ".txt" is still an extension.
+    if (parts.length < 2) return undefined;
+    const extension = parts.pop();
+    return extension ? extension.toLowerCase() : undefined;
+}
+
+/**
+ * Whether Bloom can read this sample-text file. Compared without regard to case, so a file
+ * named .TXT counts just as .txt does.
+ */
+export function isReadableSampleTextFile(path: string): boolean {
+    const extension = getFileExtension(path);
+    return (
+        extension !== undefined &&
+        kReadableSampleTextFileExtensions.includes(extension)
+    );
+}
+
 export class ReaderToolsModel {
     public stageNumber: number = 1;
     public levelNumber: number = 1;
@@ -131,7 +159,7 @@ export class ReaderToolsModel {
         this.wordListChangedListeners = {};
     }
     public getReadableFileExtensions() {
-        return ["txt", "js", "json"];
+        return kReadableSampleTextFileExtensions;
     }
 
     public readyToDoMarkup(): boolean {
@@ -1304,11 +1332,7 @@ export class ReaderToolsModel {
 
     public beginSetTextsList(textsArg: string[]): Promise<void> {
         // only save the file types we can read
-        this.texts = textsArg.filter((t) => {
-            const ext = t.split(".").pop();
-            if (!ext) return false;
-            return this.getReadableFileExtensions().indexOf(ext) > -1;
-        });
+        this.texts = textsArg.filter((t) => isReadableSampleTextFile(t));
         return this.beginGetAllSampleFiles().then(() => {
             this.addWordsToSynphony();
 

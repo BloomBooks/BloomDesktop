@@ -31,6 +31,7 @@ declare global {
         closeSetupDialog: unknown;
         getDecodableStageMatchingWords: unknown;
         getSynphonyAlwaysMatchSymbols: unknown;
+        classifySampleTextFiles: unknown;
         addSampleTextFilesChangedListener: unknown;
         addWordListChangedListener: unknown;
         beginSaveChangedSettings: unknown;

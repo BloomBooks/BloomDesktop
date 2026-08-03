@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
-import { ReaderToolsModel } from "./readerToolsModel";
+import {
+    getFileExtension,
+    isReadableSampleTextFile,
+    ReaderToolsModel,
+} from "./readerToolsModel";
 import { theOneLanguageDataInstance } from "./libSynphony/synphony_lib";
 import { TextFragment } from "./libSynphony/bloomSynphonyExtensions";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
@@ -193,5 +197,38 @@ describe("maxWordLength tests", () => {
                 "the cat sat on the 'ma\u0301ntle\u0301pi\u0301ece\u0301'",
             ),
         ).toBe(11);
+    });
+});
+
+// The setup dialog lists these files and Bloom loads them; both go through this, so a file the
+// dialog shows as usable is one Bloom will actually read.
+describe("sample text file readability", () => {
+    it("accepts the readable extensions", () => {
+        expect(isReadableSampleTextFile("words.txt")).toBe(true);
+        expect(isReadableSampleTextFile("words.js")).toBe(true);
+        expect(isReadableSampleTextFile("words.json")).toBe(true);
+    });
+
+    it("ignores case, so a .TXT file is readable too", () => {
+        expect(isReadableSampleTextFile("WORDS.TXT")).toBe(true);
+        expect(isReadableSampleTextFile("Words.Txt")).toBe(true);
+        expect(isReadableSampleTextFile("words.JSON")).toBe(true);
+    });
+
+    it("rejects a format Bloom cannot read", () => {
+        expect(isReadableSampleTextFile("words.docx")).toBe(false);
+        expect(isReadableSampleTextFile("words.pdf")).toBe(false);
+    });
+
+    it("rejects a file with no extension at all", () => {
+        expect(isReadableSampleTextFile("words")).toBe(false);
+        expect(getFileExtension("words")).toBeUndefined();
+    });
+
+    it("uses the last extension, lowercased, on a path with dots and folders", () => {
+        expect(getFileExtension("C:/texts/my.word.list.TXT")).toBe("txt");
+        expect(isReadableSampleTextFile("C:/texts/my.word.list.TXT")).toBe(
+            true,
+        );
     });
 });

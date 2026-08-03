@@ -5,7 +5,11 @@
 import $ from "jquery";
 import jQuery from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
-import { getTheOneReaderToolsModel } from "./readerToolsModel";
+import {
+    getFileExtension,
+    getTheOneReaderToolsModel,
+    isReadableSampleTextFile,
+} from "./readerToolsModel";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import {
     theOneLanguageDataInstance,
@@ -513,6 +517,22 @@ export function getSynphonyAlwaysMatchSymbols(): string[] {
         (symbol): symbol is string =>
             typeof symbol === "string" && symbol !== "",
     );
+}
+
+/**
+ * Classifies the Sample Texts folder listing for the setup dialog, which runs in another frame
+ * and so cannot reach the model directly. Answering from here — rather than letting the dialog
+ * keep its own copy of the readable-extension list — is what keeps what the dialog shows in step
+ * with what Bloom actually loads, including the case-insensitive comparison.
+ */
+export function classifySampleTextFiles(
+    paths: string[],
+): { path: string; readable: boolean; hasExtension: boolean }[] {
+    return paths.map((path) => ({
+        path,
+        readable: isReadableSampleTextFile(path),
+        hasExtension: getFileExtension(path) !== undefined,
+    }));
 }
 
 /**
