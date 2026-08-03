@@ -206,6 +206,9 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                 <BloomTooltip
                     css={css`
                         z-index: 1002; // has to be above the disableOverlay because this is the one control we don't want to disable in show playback order mode
+                        // ...and for the same reason it has to opt back in to clicks, since
+                        // the tool body turns pointer events off while that overlay is showing.
+                        pointer-events: auto;
                     `}
                     tip={{
                         l10nKey:

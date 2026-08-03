@@ -496,7 +496,7 @@ body .cursor-progress {
     display: none;
 }
 
-// Dims and blocks clicks on the whole toolbox while in Show Playback Order mode.
+// Dims the whole toolbox while in Show Playback Order mode.
 // Anything that must remain usable (the tool headers, the Help link, the Show Playback
 // Order switch itself) gives itself a z-index above @disablingOverlayZindex.
 #disablingOverlay {
@@ -510,4 +510,25 @@ body .cursor-progress {
     background-color: @toolboxBackgroundColor;
     height: 100%;
     width: 100%;
+    // Dim only, never intercept. Because this is a full-width fixed sheet, swallowing
+    // clicks here would also swallow the toolbox scrollbar, and on a short window the
+    // user could then be unable to scroll down to the one switch that turns this mode
+    // off. The click-blocking is done by the tool body below instead, which leaves the
+    // scrollbar (owned by an ancestor) alone.
+    pointer-events: none;
+}
+
+// The click-blocking half of the disabling overlay. Kept in sync with the overlay by
+// keying off its own hidden class, so there is only one piece of state to toggle.
+// The scrollbar is unaffected because it belongs to an ancestor of .ui-audioBody, not
+// to a descendant.
+#disablingOverlay:not(.hiddenOverlay) ~ .ui-audioBody {
+    pointer-events: none;
+
+    // ...except the controls we deliberately leave live while the rest is disabled.
+    // (The Show Playback Order switch does the same thing for itself where it is
+    // defined, in talkingBookAdvancedSection.tsx.)
+    .help-link {
+        pointer-events: auto;
+    }
 }
