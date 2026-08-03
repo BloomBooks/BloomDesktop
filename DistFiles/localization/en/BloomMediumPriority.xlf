@@ -256,6 +256,26 @@
         <source xml:lang="en">Book is not Decodable</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport" sil:dynamic="true">
+        <source xml:lang="en">Generate Report</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.GenerateReport</note>
+        <note>Label on a button at the bottom of the Decodable Reader tool. Clicking it generates and opens a text-file report of the letters and words available at each decodable stage.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport.ToolTip" sil:dynamic="true">
+        <source xml:lang="en">Create and open a text file listing the letters and words available at each decodable stage.</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.GenerateReport.ToolTip</note>
+        <note>Tooltip for the "Generate Report" button at the bottom of the Decodable Reader tool. ".ToolTip" is a required suffix that Bloom's button code appends to the button's own id to find its tooltip; do not translate or remove it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNumber" sil:dynamic="true">
+        <source xml:lang="en">Stage {0}</source>
+        <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNumber</note>
+        <note>Large first part of the decodable reader stage indicator, immediately followed by the smaller "of N" (ReaderTools.OfCount). {0} is the current stage number.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ReaderTools.OfCount" sil:dynamic="true">
+        <source xml:lang="en">of {0}</source>
+        <note>ID: EditTab.Toolbox.ReaderTools.OfCount</note>
+        <note>Second, smaller part of the leveled/decodable reader phase indicator, shown right after the level/stage number (e.g. "Level 3" followed by "of 6"). {0} is the total number of levels or stages. Keep it short; it appears immediately after the number.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Theme">
         <source xml:lang="en">Theme</source>
         <note>ID: EditTab.Toolbox.Games.Theme</note>
@@ -364,6 +384,31 @@
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled" sil:dynamic="true">
         <source xml:lang="en">Book is not Leveled</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.BookIsNotLeveled</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelNumber" sil:dynamic="true">
+        <source xml:lang="en">Level {0}</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelNumber</note>
+        <note>Large first part of the leveled reader level indicator, immediately followed by the smaller "of N" (ReaderTools.OfCount). {0} is the current level number.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Measure" sil:dynamic="true">
+        <source xml:lang="en">Measure</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.Measure</note>
+        <note>Column header over the list of statistic names (e.g. "per page", "total") in the leveled reader stats table. Displayed in all-caps via styling.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.OverLevel" sil:dynamic="true">
+        <source xml:lang="en">Over level</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.OverLevel</note>
+        <note>Legend label next to an orange dot, explaining that statistics shown in orange exceed the current level's limit.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.OverLevelWarning" sil:dynamic="true">
+        <source xml:lang="en">This book reads above Level {0}</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.OverLevelWarning</note>
+        <note>Warning banner shown above the statistics when one or more measures exceed the current level's limit. {0} is replaced with the current level number.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.WithinLevel" sil:dynamic="true">
+        <source xml:lang="en">Within level</source>
+        <note>ID: EditTab.Toolbox.LeveledReaderTool.WithinLevel</note>
+        <note>Legend label next to a green dot, explaining that statistics shown in green are within the current level's limit.</note>
       </trans-unit>
       <!-- Talking Book Advanced -->
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
