@@ -81,8 +81,10 @@ function renderTextContextMenu(
     if (!root) {
         root = pageDocument.createElement("div");
         root.setAttribute("id", kTextContextMenuRootId);
-        // We don't have to worry about removing this before saving because it is above the
-        // level of the bloom-page, the only part of the body that gets saved.
+        // We don't have to worry about removing this before saving. Saving posts the whole
+        // body (getBodyContentForSavePage), but the C# side keeps only the div.bloom-page out
+        // of it, and this sits outside that -- as does the menu markup itself, which MUI
+        // portals into the body while it is open.
         pageDocument.body.appendChild(root);
     }
     ReactDOM.render(
