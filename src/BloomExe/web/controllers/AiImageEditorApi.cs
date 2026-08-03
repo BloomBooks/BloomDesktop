@@ -11,44 +11,51 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Newtonsoft.Json;
+using SIL.Core.ClearShare;
 using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Windows.Forms.ClearShare;
 
 namespace Bloom.web.controllers
 {
     /// <summary>
     /// AI Image Editor integration — host (Bloom) side.
     ///
-    /// WHAT THIS IS
-    ///   "Edit with AI…" (the image context menu) opens a separate web app — the
-    ///   `bloom-ai-image-tools` editor — as an IFRAME OVERLAY inside Bloom's existing
-    ///   edit-tab WebView2. It is NOT a separate window, and Bloom does NOT import the
-    ///   editor's code: the editor is a self-contained web app loaded by URL. There is
-    ///   no npm/bundler dependency between the two projects.
+    /// TERMS
+    ///   "AI image editor" always means the separate `bloom-ai-image-tools` web app, never
+    ///   Bloom's own edit tab. Bloom is "the host".
     ///
-    /// WHERE THE EDITOR COMES FROM  (see GetEditorUrl)
-    ///   DEFAULT: {ServerUrl}/bloom/aiImageEditor/index.html — the editor's built app
+    /// WHAT THIS IS
+    ///   "Edit with AI…" (the image context menu) opens the AI image editor as an IFRAME
+    ///   OVERLAY inside Bloom's existing edit-tab WebView2. It is NOT a separate window,
+    ///   and Bloom does NOT import the AI image editor's code: it is a self-contained web
+    ///   app loaded by URL. There is no npm/bundler dependency between the two projects.
+    ///
+    /// WHERE THE AI IMAGE EDITOR COMES FROM  (see GetAiImageEditorUrl)
+    ///   DEFAULT: {ServerUrl}/bloom/aiImageEditor/index.html — its built app
     ///            ("dist-app"), served same-origin by BloomServer so there's no CORS.
     ///            The build copies dist-app/ from the installed `bloom-ai-image-tools`
     ///            package into output/browser/aiImageEditor/ (a viteStaticCopy target,
     ///            mirroring the bloom-player copy); `./go.sh` stages the same at dev time
     ///            (scripts/aiEditorBuild.mjs), falling back to building a local checkout
     ///            until the package is published and added as a dependency.
-    ///   LINKED : set BLOOM_AI_EDITOR_URL to the editor's own Vite dev server for HMR.
+    ///   LINKED : set BLOOM_AI_EDITOR_URL to the AI image editor's own Vite dev server (HMR).
     ///            `./go.sh --with bloom-ai-image-tools` does this automatically (it starts
-    ///            the dev server and points Bloom at it); GetEditorUrl honors the env var.
+    ///            the dev server and points Bloom at it); GetAiImageEditorUrl honors it.
     ///
     /// TWO COMMUNICATION PLANES
-    ///   1. HTTP, editor/front-end JS -> this controller, over Bloom's own local server:
+    ///   1. HTTP, AI image editor / front-end JS -> this controller, over Bloom's server:
     ///        aiImageEditor/launch        mint session, make folders, enumerate book
     ///                                    images + history, return the launch payload.
     ///        aiImageEditor/file          GET/POST/DELETE files under .ai-image-editor/.
     ///        aiImageEditor/commit        apply the chosen replacements to the book.
     ///        aiImageEditor/saveCredentials  persist the user's OpenRouter API key.
     ///   2. window.postMessage on channel "bloom-ai-image-tools", between the overlay JS
-    ///      (CanvasElementContextControls.tsx) and the editor iframe: ready / init /
-    ///      commit / cancel / log / ack. The overlay JS — NOT this class —
-    ///      sends `init` (built from the launch reply) and tears the overlay down. Image
-    ///      BYTES never cross postMessage; they move only as files via aiImageEditor/file.
+    ///      (CanvasElementContextControls.tsx) and the AI image editor's iframe: ready /
+    ///      init / commit / cancel / log / ack. The overlay JS — NOT this class — sends
+    ///      `init` (built from the launch reply) and tears the overlay down. Image BYTES
+    ///      never cross postMessage; they move only as files via aiImageEditor/file.
     ///
     /// DATA ON DISK
     ///   Per-book folder `<book>/.ai-image-editor/` which contains a `history/` subfolder
@@ -63,9 +70,10 @@ namespace Bloom.web.controllers
     /// COMMIT SPLIT
     ///   Off-page images are edited directly in the whole-book DOM here and saved. The
     ///   currently-open page is owned by the live browser, so those replacements are
-    ///   returned as {oldSrc,newSrc} for the overlay JS to apply via Bloom's changeImage().
+    ///   returned as {oldSrc,newSrc,copyright,creator,license} for the overlay JS to apply via
+    ///   Bloom's changeImage().
     ///
-    /// EDITOR REPO: bloom-ai-image-tools — App.tsx (mode=bloom-iframe),
+    /// AI IMAGE EDITOR REPO: bloom-ai-image-tools — App.tsx (mode=bloom-iframe),
     ///   services/host/BloomHostBridge.ts (createIframeBloomHostBridge),
     ///   components/BloomEmbeddedShell.tsx.
     /// </summary>
@@ -77,8 +85,8 @@ namespace Bloom.web.controllers
         /// currently-open page (which the live browser owns) so we don't edit it from here.</summary>
         public EditingView View { get; set; }
 
-        // Minted at launch; torn down on the next launch (see EndSession). The editor's
-        // `cancel`/`commit` are handled in the overlay JS, which removes the overlay.
+        // Minted at launch; torn down on the next launch (see EndSession). The AI image
+        // editor's `cancel`/`commit` are handled in the overlay JS, which removes the overlay.
         private string _sessionToken;
 
         // The folder of the book the session was launched for. Every session-gated request
@@ -87,14 +95,14 @@ namespace Bloom.web.controllers
         // read/write the newly selected book's files or commit against its DOM.
         private string _sessionBookFolderPath;
 
-        // The image formats the AI editor can actually work with — the ones it can load as
-        // input, and the raster formats it stores/serves/commits as results. Deliberately a
-        // short list: formats the editor can't edit (e.g. svg, tif, bmp, gif) are excluded so
-        // we never offer, serve, or commit an image the editor can't handle. Single source of
-        // truth — AllowedFileName (below), IsImageFileName, the history-result probe, the
-        // reused-source check, and the whole-book image list all derive from this set, so the
-        // lists can't drift apart. Must stay in sync with the front-end's editable-format list
-        // (BloomBrowserUI/.../aiEditorImageFormats.ts).
+        // The image formats the AI image editor can actually work with — the ones it can load
+        // as input, and the raster formats it stores/serves/commits as results. Deliberately a
+        // short list: formats the AI image editor can't edit (e.g. svg, tif, bmp, gif) are
+        // excluded so we never offer, serve, or commit an image the AI image editor can't
+        // handle. Single source of truth — AllowedFileName (below), IsImageFileName, the
+        // history-result probe, the reused-source check, and the whole-book image list all
+        // derive from this set, so the lists can't drift apart. Must stay in sync with the
+        // front-end's editable-format list (BloomBrowserUI/.../aiEditorImageFormats.ts).
         private static readonly HashSet<string> AllowedImageExtensions = new HashSet<string>(
             StringComparer.OrdinalIgnoreCase
         )
@@ -167,7 +175,7 @@ namespace Bloom.web.controllers
         /// The selected book's ".ai-image-editor" working folder (state, history images,
         /// sidecars), or null when no book is selected.
         /// </summary>
-        private string GetEditorFolderPath()
+        private string GetAiImageEditorFolderPath()
         {
             var folderPath = _bookSelection.CurrentSelection?.FolderPath;
             return string.IsNullOrEmpty(folderPath)
@@ -175,17 +183,17 @@ namespace Bloom.web.controllers
                 : Path.Combine(folderPath, ".ai-image-editor");
         }
 
-        private string GetEditorUrl()
+        private string GetAiImageEditorUrl()
         {
-            // The editor is served by BloomServer from output/browser/aiImageEditor/. The
-            // go.mjs launcher (scripts/aiEditorBuild.mjs) builds it from the local
+            // The AI image editor is served by BloomServer from output/browser/aiImageEditor/.
+            // The go.mjs launcher (scripts/aiEditorBuild.mjs) builds it from the local
             // bloom-ai-image-tools checkout and stages it there, so `./go.sh` "just works"
             // with no separate dev server, in both Debug and Release.
             //
-            // Editor developers who want hot-module reload can instead point Bloom at the
-            // editor's own Vite dev server by setting BLOOM_AI_EDITOR_URL, e.g.
-            // BLOOM_AI_EDITOR_URL=http://localhost:3000/ and running `pnpm dev` in the
-            // editor checkout.
+            // Someone working on the AI image editor itself, who wants hot-module reload, can
+            // instead point Bloom at its own Vite dev server by setting BLOOM_AI_EDITOR_URL,
+            // e.g. BLOOM_AI_EDITOR_URL=http://localhost:3000/ and running `pnpm dev` in the
+            // bloom-ai-image-tools checkout.
             var overrideUrl = Environment.GetEnvironmentVariable("BLOOM_AI_EDITOR_URL");
             if (!string.IsNullOrWhiteSpace(overrideUrl))
                 return overrideUrl;
@@ -193,9 +201,10 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Starts an editor session for the selected book: mints the session token, ensures
-        /// the .ai-image-editor folders exist, and replies with everything the overlay JS
-        /// needs to boot the editor iframe (editor URL, book image list, history, credentials).
+        /// Starts an AI image editor session for the selected book: mints the session token,
+        /// ensures the .ai-image-editor folders exist, and replies with everything the overlay
+        /// JS needs to boot the AI image editor's iframe (its URL, book image list, history,
+        /// credentials).
         /// </summary>
         private void HandleLaunch(ApiRequest request)
         {
@@ -206,13 +215,12 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            // The editor app is a separate published package (bloom-ai-image-tools, a
-            // dependency in package.json) staged into browser/aiImageEditor at build time
-            // (see GetEditorUrl). We keep this "might be missing" guard on purpose: it is
-            // handy during development, where a build can legitimately lack the staged
-            // editor (e.g. a local checkout that hasn't been built/staged yet). Fail the
-            // launch with a clear message rather than opening an overlay whose iframe would
-            // just 404.
+            // The AI image editor app is a separate published package (bloom-ai-image-tools,
+            // a dependency in package.json) staged into browser/aiImageEditor at build time
+            // (see GetAiImageEditorUrl). We keep this "might be missing" guard on purpose: it
+            // is handy during development, where a build can legitimately lack the staged app
+            // (e.g. a local checkout that hasn't been built/staged yet). Fail the launch with
+            // a clear message rather than opening an overlay whose iframe would just 404.
             if (
                 string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("BLOOM_AI_EDITOR_URL"))
                 && BloomFileLocator.GetBrowserFile(optional: true, "aiImageEditor", "index.html")
@@ -230,19 +238,19 @@ namespace Bloom.web.controllers
             _sessionBookFolderPath = book.FolderPath;
 
             // H3: ensure .ai-image-editor and history subfolder exist.
-            var editorFolder = GetEditorFolderPath();
-            Directory.CreateDirectory(Path.Combine(editorFolder, "history"));
+            var aiImageEditorFolder = GetAiImageEditorFolderPath();
+            Directory.CreateDirectory(Path.Combine(aiImageEditorFolder, "history"));
 
             var httpBase = $"{BloomServer.ServerUrlWithBloomPrefixEndingInSlash}api/aiImageEditor";
 
-            // Return the data the JS needs to create the iframe overlay. The editor runs
-            // in iframe mode and gets its `init` from the overlay JS (which builds it from
-            // this reply and posts it to the iframe), so the whole-book image list must
+            // Return the data the JS needs to create the iframe overlay. The AI image editor
+            // runs in iframe mode and gets its `init` from the overlay JS (which builds it
+            // from this reply and posts it to the iframe), so the whole-book image list must
             // travel here rather than over any C#->iframe channel.
             request.ReplyWithJson(
                 new
                 {
-                    editorUrl = GetEditorUrl(),
+                    editorUrl = GetAiImageEditorUrl(),
                     httpBase,
                     sessionToken = _sessionToken,
                     book = new { id = book.BookInfo.Id, title = book.BookInfo.Title },
@@ -251,16 +259,23 @@ namespace Bloom.web.controllers
                     // (and their sidecars) appear even when state.json doesn't list them.
                     history = EnumerateHistoryImages(book),
                     references = Array.Empty<object>(),
-                    // Bloom owns the OpenRouter key: supply the per-user stored key so the
-                    // editor doesn't have to ask for it again. The editor hands any newly
+                    // Bloom owns the OpenRouter key: supply the per-user stored key so the AI
+                    // image editor doesn't have to ask for it again. It hands any newly
                     // obtained key back via aiImageEditor/saveCredentials.
                     apiKey = OpenRouterCredentialStore.GetApiKey(),
                     // In a Playground template book all features are unlocked for
-                    // "try it out", so the editor opens — but it's a shared demo
-                    // context, so the editor must not let the user set/save an
-                    // OpenRouter API key. The editor disables its credential UI when
-                    // this is true; HandleSaveCredentials also refuses to persist.
+                    // "try it out", so the AI image editor opens — but it's a shared demo
+                    // context, so it must not let the user set/save an OpenRouter API key.
+                    // The AI image editor disables its credential UI when this is true;
+                    // HandleSaveCredentials also refuses to persist.
                     demoOnly = book.IsPlayground,
+                    // Let the AI image editor reveal its developer/tester tools (e.g. the
+                    // "Local Dummy (No AI)" model, for cost-free testing) on developer AND
+                    // alpha/unstable builds, so human alpha testers can exercise it without
+                    // spending real AI credits. The AI image editor hides those tools unless
+                    // the host opts in, so release/beta builds (IsDevOrAlpha false) never
+                    // expose them to end users.
+                    showDeveloperTools = ApplicationUpdateSupport.IsDevOrAlpha,
                 }
             );
         }
@@ -271,8 +286,8 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Receives the user's OpenRouter API key from the editor (manual key entry) and
-        /// persists it per-user via <see cref="OpenRouterCredentialStore"/>. A null/empty
+        /// Receives the user's OpenRouter API key from the AI image editor (manual key entry)
+        /// and persists it per-user via <see cref="OpenRouterCredentialStore"/>. A null/empty
         /// apiKey clears the stored key (sign-out). Session-gated so a stray frame can't
         /// overwrite the user's stored key.
         /// </summary>
@@ -283,7 +298,7 @@ namespace Bloom.web.controllers
 
             // Defense in depth for the Playground "demo" case (see HandleLaunch): never
             // persist a key obtained during a Playground session, even if a stray frame
-            // posts here despite the editor's disabled credential UI.
+            // posts here despite the AI image editor's disabled credential UI.
             if (_bookSelection.CurrentSelection?.IsPlayground == true)
             {
                 request.PostSucceeded();
@@ -341,9 +356,10 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// The editor's persistence endpoint: GET/POST/DELETE of individual files under the
-        /// book's .ai-image-editor folder. File names are restricted to the AllowedFileName
-        /// allow-list, so the editor can only ever touch its own state/history files.
+        /// The AI image editor's persistence endpoint: GET/POST/DELETE of individual files
+        /// under the book's .ai-image-editor folder. File names are restricted to the
+        /// AllowedFileName allow-list, so the AI image editor can only ever touch its own
+        /// state/history files.
         /// </summary>
         private void HandleFile(ApiRequest request)
         {
@@ -351,8 +367,8 @@ namespace Bloom.web.controllers
             // automatically with none of our application query params (including "session"),
             // so if HasValidSession ran first it would 401 the preflight and block the real
             // cross-origin request. This only matters for the LINKED dev workflow, where the
-            // editor's own Vite dev server (localhost:3000) fetches this endpoint from a
-            // different origin; the shipped product serves the editor same-origin.
+            // AI image editor's own Vite dev server (localhost:3000) fetches this endpoint
+            // from a different origin; the shipped product serves it same-origin.
             if (request.HttpMethod == HttpMethods.Options)
             {
                 request.ReplyWithText("");
@@ -371,15 +387,15 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            var editorFolder = GetEditorFolderPath();
-            if (editorFolder == null)
+            var aiImageEditorFolder = GetAiImageEditorFolderPath();
+            if (aiImageEditorFolder == null)
             {
                 request.Failed("No book selected");
                 return;
             }
 
             var relativePath = name.Replace('/', Path.DirectorySeparatorChar);
-            var fullPath = Path.Combine(editorFolder, relativePath);
+            var fullPath = Path.Combine(aiImageEditorFolder, relativePath);
 
             switch (request.HttpMethod)
             {
@@ -399,12 +415,12 @@ namespace Bloom.web.controllers
                     var dir = Path.GetDirectoryName(fullPath);
                     if (!Directory.Exists(dir))
                         Directory.CreateDirectory(dir);
-                    // Stream the body straight to disk: history images are multi-MB, so
-                    // don't buffer them whole in memory (RawPostData would). Land the bytes
-                    // in a temp file and swap it in, so an upload that dies partway can't
-                    // leave a truncated file where a previous good one was. An empty body
-                    // is a valid save of an empty file, not a no-op: the editor must never
-                    // be told "saved" while stale content survives on disk.
+                    // Stream the body straight to disk: history images are multi-MB, so don't
+                    // buffer them whole in memory (RawPostData would). Land the bytes in a
+                    // temp file and swap it in, so an upload that dies partway can't leave a
+                    // truncated file where a previous good one was. An empty body is a valid
+                    // save of an empty file, not a no-op: the AI image editor must never be
+                    // told "saved" while stale content survives on disk.
                     var tempPath = fullPath + ".tmp";
                     using (var input = request.RawPostStream)
                     using (var output = RobustFile.Create(tempPath))
@@ -437,7 +453,7 @@ namespace Bloom.web.controllers
         // Whole-book image sharing & replacement
         // ------------------------------------------------------------------
 
-        // Book page ids and editor result ids are echoed back to us on commit and
+        // Book page ids and AI image editor result ids are echoed back to us on commit and
         // interpolated into XPath / file paths, so we restrict them to a safe charset.
         private static readonly Regex SafeId = new Regex(
             @"^[a-zA-Z0-9_\-]+$",
@@ -480,8 +496,9 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// True if an image-bearing element is one the user is allowed to replace. Branding,
-        /// license, and QR-code images are never user-changeable, so they are excluded both from
-        /// the list offered to the editor and from being overwritten at commit. Internal for testing.
+        /// license, and QR-code images are never user-changeable, so they are excluded both
+        /// from the list offered to the AI image editor and from being overwritten at commit.
+        /// Internal for testing.
         /// </summary>
         internal static bool IsUserChangeableImageElement(SafeXmlElement element) =>
             !element.HasClass("branding")
@@ -489,18 +506,19 @@ namespace Bloom.web.controllers
             && !element.HasClass("bloom-qrcode");
 
         /// <summary>
-        /// Locates the bytes for a history result by id. The editor may store a result under
-        /// any supported raster extension, so we probe history/&lt;resultId&gt;.&lt;ext&gt; across
-        /// <see cref="AllowedImageExtensions"/> and return the first match. The caller must
-        /// have already validated resultId against <see cref="SafeId"/>.
+        /// Locates the bytes for a history result by id. The AI image editor may store a
+        /// result under any supported raster extension, so we probe
+        /// history/&lt;resultId&gt;.&lt;ext&gt; across <see cref="AllowedImageExtensions"/>
+        /// and return the first match. The caller must have already validated resultId against
+        /// <see cref="SafeId"/>.
         /// </summary>
         private static bool TryFindHistoryResultFile(
-            string editorFolder,
+            string aiImageEditorFolder,
             string resultId,
             out string path
         )
         {
-            var historyFolder = Path.Combine(editorFolder, "history");
+            var historyFolder = Path.Combine(aiImageEditorFolder, "history");
             foreach (var extension in AllowedImageExtensions)
             {
                 var candidate = Path.Combine(historyFolder, resultId + extension);
@@ -524,18 +542,82 @@ namespace Bloom.web.controllers
             /// <summary>The book image slot to replace, formatted "{pageId}:{ordinal}".</summary>
             public string incomingId { get; set; }
 
-            /// <summary>The editor result id; its bytes live at history/{resultId}.png.</summary>
+            /// <summary>The AI image editor's result id; its bytes live at
+            /// history/{resultId}.png.</summary>
             public string resultId { get; set; }
 
             /// <summary>For a reused existing image: its host-served URL, resolved to a book file.</summary>
             public string sourceUrl { get; set; }
+
+            /// <summary>
+            /// The credits (intellectual-property metadata) the AI image editor determined for
+            /// this result: carried over from whatever image the result was derived from, and
+            /// possibly amended there. Null or all-empty means the AI image editor decided
+            /// this result should have no credits — e.g. the user opened an existing
+            /// illustration but then made an entirely new image — and Bloom must not invent
+            /// any for it. Only meaningful for a generated/uploaded result
+            /// (<see cref="resultId"/>).
+            /// </summary>
+            public ImageCredits credits { get; set; }
         }
 
         /// <summary>
-        /// Enumerates every image the user is allowed to change across the whole book —
-        /// all pages including front cover and xmatter, including empty placeholder slots —
-        /// excluding only branding and license images. Each entry is a reference
-        /// (id + servable URL); image bytes are fetched lazily by the editor, never inlined.
+        /// The intellectual-property metadata that travels between Bloom and the AI image
+        /// editor for a single image, in both directions: outbound on each launch
+        /// <c>bookImages</c> entry (the image's current credits) and inbound on each commit
+        /// replacement (the credits the AI image editor chose for the result). These are the
+        /// ClearShare fields Bloom reads and writes. Any field may be null/empty. The AI image
+        /// editor treats the whole object as opaque — it carries it along an edit chain and
+        /// hands it back verbatim, never reading or filling in a field — so these names are
+        /// the wire (JSON) names and match the AI image editor's ImageCredits.
+        ///
+        /// The license takes TWO fields because that is what an image file can actually hold
+        /// (dc:rights plus the cc:license URL), and either alone loses information: a CC
+        /// license may carry license notes as well as its URL, and flattening the pair into
+        /// one string dropped those notes (BL-16603).
+        /// </summary>
+        internal class ImageCredits
+        {
+            public string copyrightNotice { get; set; }
+            public string creator { get; set; }
+
+            /// <summary>The Creative Commons license URL, its canonical form. Empty for a
+            /// custom license or none at all, neither of which has a URL.</summary>
+            public string licenseUrl { get; set; }
+
+            /// <summary>The free-text rights statement (dc:rights): for a custom license the
+            /// license itself, and for a Creative Commons license the extra "license notes"
+            /// restrictions the user added alongside it. Empty for none.</summary>
+            public string licenseRightsStatement { get; set; }
+
+            public string attributionUrl { get; set; }
+            public string collectionName { get; set; }
+            public string collectionUri { get; set; }
+        }
+
+        /// <summary>
+        /// The three data-* attributes Bloom mirrors on an image element from the image file's
+        /// embedded metadata. Not the same thing as <see cref="ImageCredits"/>: this is the
+        /// small subset the edit-tab DOM carries, in the DOM's own spelling (a license here is
+        /// its short ClearShare token, e.g. "cc-by", not the URL the AI image editor uses), and
+        /// every field is a string, never null, because that is what the attributes hold.
+        /// Sent to the front-end for a current-page replacement, which is the one slot this
+        /// class can't write itself. Property names are the wire (JSON) names, matching
+        /// PageEditingModel.ImageInfoForJavascript, which the front-end already consumes.
+        /// </summary>
+        internal class ImageCreditAttributes
+        {
+            public string copyright { get; set; }
+            public string creator { get; set; }
+            public string license { get; set; }
+        }
+
+        /// <summary>
+        /// Enumerates every image the user is allowed to change across the whole book — all
+        /// pages including front cover and xmatter, including empty placeholder slots —
+        /// excluding only branding and license images. Each entry is a reference (id +
+        /// servable URL); image bytes are fetched lazily by the AI image editor, never
+        /// inlined.
         /// </summary>
         private List<object> EnumerateBookImages(Bloom.Book.Book book)
         {
@@ -567,9 +649,10 @@ namespace Bloom.web.controllers
                     if (string.IsNullOrEmpty(relativePath))
                         continue;
 
-                    // Only offer images the editor can actually edit. A book may legitimately
-                    // contain formats the editor can't open (e.g. an svg illustration); those
-                    // slots are simply omitted from the list rather than handed over to fail.
+                    // Only offer images the AI image editor can actually edit. A book may
+                    // legitimately contain formats the AI image editor can't open (e.g. an svg
+                    // illustration); those slots are simply omitted from the list rather than
+                    // handed over to fail.
                     if (!IsImageFileName(relativePath))
                         continue;
 
@@ -579,9 +662,16 @@ namespace Bloom.web.controllers
                             id = pageId + ":" + ordinal,
                             src = (folderAsUrlPrefix + "/" + relativePath).ToLocalhost(),
                             pageLabel = string.IsNullOrEmpty(pageLabel) ? null : pageLabel,
-                            // The editor shows its own placeholder graphic for empty slots
-                            // rather than trying to load the (book-less) placeHolder.png.
+                            // The AI image editor shows its own placeholder graphic for empty
+                            // slots rather than trying to load the (book-less)
+                            // placeHolder.png.
                             isPlaceholder = ImageUtils.IsPlaceholderImageFilename(relativePath),
+                            // The image's current credits, so a result derived from it can
+                            // carry (or amend) them. The AI image editor owns the credit
+                            // *decision* and hands back whatever it chose on commit; Bloom
+                            // only embeds that into the file. Null when the image has no
+                            // usable metadata.
+                            credits = GetCreditsForImageFile(book.FolderPath, relativePath),
                         }
                     );
                 }
@@ -591,21 +681,21 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Enumerates the per-book history folder so the editor can rebuild its history
-        /// from the files on disk — the folder is the source of truth. Each image is
-        /// returned as a reference (id + servable book-folder URL) plus the parsed
-        /// contents of its sibling &lt;id&gt;.json sidecar, when present. Bytes are fetched
-        /// lazily by URL, never inlined. Images with no sidecar (e.g. dropped in by hand)
-        /// are still returned; the editor recovers them. Empty placeholder files and
-        /// non-image files (including the sidecars themselves) are skipped.
+        /// Enumerates the per-book history folder so the AI image editor can rebuild its
+        /// history from the files on disk — the folder is the source of truth. Each image is
+        /// returned as a reference (id + servable book-folder URL) plus the parsed contents of
+        /// its sibling &lt;id&gt;.json sidecar, when present. Bytes are fetched lazily by URL,
+        /// never inlined. Images with no sidecar (e.g. dropped in by hand) are still returned;
+        /// the AI image editor recovers them. Empty placeholder files and non-image files
+        /// (including the sidecars themselves) are skipped.
         /// </summary>
         private List<object> EnumerateHistoryImages(Bloom.Book.Book book)
         {
             var result = new List<object>();
-            var editorFolder = GetEditorFolderPath();
-            if (editorFolder == null)
+            var aiImageEditorFolder = GetAiImageEditorFolderPath();
+            if (aiImageEditorFolder == null)
                 return result;
-            var historyFolder = Path.Combine(editorFolder, "history");
+            var historyFolder = Path.Combine(aiImageEditorFolder, "history");
             if (!Directory.Exists(historyFolder))
                 return result;
 
@@ -668,9 +758,10 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Applies the editor's chosen replacements to the book. Each replacement names a
-        /// slot (pageId:ordinal) anywhere in the book and an editor result whose bytes we
-        /// read from the per-book history folder — so no image bytes cross the bridge.
+        /// Applies the AI image editor's chosen replacements to the book. Each replacement
+        /// names a slot (pageId:ordinal) anywhere in the book and an AI image editor result
+        /// whose bytes we read from the per-book history folder — so no image bytes cross the
+        /// bridge.
         /// </summary>
         private void HandleCommit(ApiRequest request)
         {
@@ -684,8 +775,8 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            var editorFolder = GetEditorFolderPath();
-            if (editorFolder == null)
+            var aiImageEditorFolder = GetAiImageEditorFolderPath();
+            if (aiImageEditorFolder == null)
             {
                 request.Failed("No book selected");
                 return;
@@ -726,7 +817,7 @@ namespace Bloom.web.controllers
             {
                 var applied = TryApplyReplacement(
                     book,
-                    editorFolder,
+                    aiImageEditorFolder,
                     replacement,
                     currentPageId,
                     pageCache,
@@ -734,6 +825,7 @@ namespace Bloom.web.controllers
                     out var isCurrentPage,
                     out var oldSrc,
                     out var newSrc,
+                    out var creditAttributes,
                     out var pageNeedingDataDivSync
                 );
                 results.Add(
@@ -745,6 +837,11 @@ namespace Bloom.web.controllers
                         isCurrentPage,
                         oldSrc,
                         newSrc,
+                        // Only set for a current-page slot, the one case where the front-end
+                        // (not this code) writes the element's mirrored credit attributes.
+                        copyright = creditAttributes?.copyright,
+                        creator = creditAttributes?.creator,
+                        license = creditAttributes?.license,
                     }
                 );
                 if (applied)
@@ -777,7 +874,8 @@ namespace Bloom.web.controllers
             // The off-page slots now point at their new files (and the book is saved), so any
             // ai-image file we generated earlier that nothing references any more is safe to
             // remove. This runs against the current book DOM, so a file still used by another
-            // slot — or by the current page (which the front-end has yet to repoint) — survives.
+            // slot — or by the current page (which the front-end has yet to repoint) —
+            // survives.
             DeleteSupersededAiImageFiles(book.FolderPath, book.OurHtmlDom, supersededOffPageFiles);
 
             request.ReplyWithJson(
@@ -794,13 +892,14 @@ namespace Bloom.web.controllers
         /// Applies one replacement to the slot named by incomingId ("{pageId}:{ordinal}"),
         /// copying the new image bytes (from history or a reused book file) into the book
         /// folder under a fresh name. An off-page slot is edited here in the storage DOM
-        /// (caller saves); a current-page slot is left untouched — we return oldSrc/newSrc
-        /// (via the out params) for the front-end to apply to the live DOM. Returns false
-        /// with <paramref name="error"/> set when the replacement can't be applied.
+        /// (caller saves); a current-page slot is left untouched — we return oldSrc/newSrc and
+        /// the new file's <paramref name="creditAttributes"/> (via the out params) for the
+        /// front-end to apply to the live DOM. Returns false with <paramref name="error"/> set
+        /// when the replacement can't be applied.
         /// </summary>
         private bool TryApplyReplacement(
             Bloom.Book.Book book,
-            string editorFolder,
+            string aiImageEditorFolder,
             CommitReplacement replacement,
             string currentPageId,
             Dictionary<string, SafeXmlElement> pageCache,
@@ -808,6 +907,7 @@ namespace Bloom.web.controllers
             out bool isCurrentPage,
             out string oldSrc,
             out string newSrc,
+            out ImageCreditAttributes creditAttributes,
             out SafeXmlElement pageForDataDivSync
         )
         {
@@ -815,6 +915,7 @@ namespace Bloom.web.controllers
             isCurrentPage = false;
             oldSrc = null;
             newSrc = null;
+            creditAttributes = null;
             pageForDataDivSync = null;
 
             if (replacement == null || string.IsNullOrEmpty(replacement.incomingId))
@@ -875,12 +976,13 @@ namespace Bloom.web.controllers
                     error = "Invalid resultId";
                     return false;
                 }
-                // The editor may save a result in any supported raster format, so look it up
-                // by id across the allowed extensions rather than assuming .png (which would
-                // fail to commit a .jpg/.webp result that EnumerateHistoryImages happily lists).
+                // The AI image editor may save a result in any supported raster format, so
+                // look it up by id across the allowed extensions rather than assuming .png
+                // (which would fail to commit a .jpg/.webp result that EnumerateHistoryImages
+                // happily lists).
                 if (
                     !TryFindHistoryResultFile(
-                        editorFolder,
+                        aiImageEditorFolder,
                         replacement.resultId,
                         out sourceBytesPath
                     )
@@ -918,16 +1020,41 @@ namespace Bloom.web.controllers
             RobustFile.Copy(sourceBytesPath, Path.Combine(book.FolderPath, newFileName), true);
             newSrc = newFileName;
 
+            // A generated result arrives with no intellectual-property metadata of its own, so
+            // whatever credits it should have, we have to write in. The AI image editor owns
+            // that decision and sends them in replacement.credits; nothing means the result
+            // gets no credits. Reused existing images (the sourceUrl branch) keep their own
+            // file metadata, so we only do this for a freshly generated/uploaded result. See
+            // EmbedCreditsInNewImageFile for why the credits have to be written into the FILE
+            // and not just the DOM attributes.
+            if (!string.IsNullOrEmpty(replacement.resultId))
+                EmbedCreditsInNewImageFile(book.FolderPath, newFileName, replacement.credits);
+
+            // Bloom mirrors an image file's IP metadata on the element as data-copyright/
+            // data-creator/data-license, and the edit tab's credits indicator reads
+            // data-copyright to decide whether to show "missing information". Those attributes
+            // describe the OLD file, so they have to be re-derived from the new one; carrying
+            // them forward would leave the page claiming credits the new file doesn't have
+            // (BL-16603).
             if (isCurrentPage)
             {
                 // Leave the live (current) page to the front-end: it will call Bloom's
-                // changeImage() with newSrc so the canvas + normal save flow handle it.
+                // changeImage() with newSrc and these attributes so the canvas + normal save
+                // flow handle it.
+                creditAttributes = ReadCreditAttributes(book.FolderPath, newFileName);
                 return true;
             }
 
             HtmlDom.SetImageElementUrl(
                 element,
                 UrlPathString.CreateFromUnencodedString(newFileName)
+            );
+            // Now that the element points at the new file, Bloom's own updater can re-derive
+            // the mirrored attributes for us.
+            ImageUpdater.UpdateImgMetadataAttributesToMatchImage(
+                book.FolderPath,
+                element,
+                new NullProgress()
             );
 
             if (element.HasAttribute("data-book"))
@@ -937,10 +1064,10 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Resolves a host-served image URL (as handed to the editor by EnumerateBookImages)
-        /// back to a file path, requiring that it lands on an existing image file inside the
-        /// given book folder. Guards against path traversal so the editor can't have us read or
-        /// copy arbitrary files. Internal for testing.
+        /// Resolves a host-served image URL (as handed to the AI image editor by
+        /// EnumerateBookImages) back to a file path, requiring that it lands on an existing
+        /// image file inside the given book folder. Guards against path traversal so the AI
+        /// image editor can't have us read or copy arbitrary files. Internal for testing.
         /// </summary>
         internal static bool TryResolveServedUrlToBookFile(
             string bookFolderPath,
@@ -1039,5 +1166,219 @@ namespace Bloom.web.controllers
             }
             return referenced;
         }
+
+        /// <summary>
+        /// Reads one book image's intellectual-property metadata (creator, copyright, license,
+        /// collection info) into the small <see cref="ImageCredits"/> shape shared with the AI
+        /// image editor, or null when the file is missing or has no usable metadata. Used at
+        /// launch to hand each book image its current credits, so a result the AI image editor
+        /// derives from it can carry (and amend) them. Internal for testing.
+        /// </summary>
+        internal static ImageCredits GetCreditsForImageFile(
+            string bookFolderPath,
+            string relativePath
+        )
+        {
+            if (string.IsNullOrEmpty(relativePath))
+                return null;
+            // A book's image src can still be percent-encoded, so decode our way to the real
+            // file the way the rest of Bloom does (BL-3901) instead of a plain Path.Combine.
+            // Getting this wrong doesn't just miss a file: we'd report credits:null, the AI
+            // image editor would believe the image has none, and a result derived from it would
+            // legitimately get none — losing exactly the credits this code exists to carry.
+            var path = UrlPathString.GetFullyDecodedPath(bookFolderPath, ref relativePath);
+            if (!RobustFile.Exists(path))
+                return null;
+
+            Metadata meta;
+            try
+            {
+                meta = RobustFileIO.MetadataFromFile(path);
+            }
+            catch (Exception)
+            {
+                // A corrupt/unreadable image must not fail the whole launch; it simply travels
+                // to the AI image editor without credits.
+                return null;
+            }
+            if (meta == null || meta.IsEmpty || meta.ExceptionCaughtWhileLoading != null)
+                return null;
+
+            return new ImageCredits
+            {
+                copyrightNotice = meta.CopyrightNotice,
+                creator = meta.Creator,
+                // Both halves of the license travel, because a CC license can have license
+                // notes as well as a URL and sending only the URL loses them (BL-16603).
+                licenseUrl = meta.License?.Url,
+                licenseRightsStatement = meta.License?.RightsStatement,
+                attributionUrl = meta.AttributionUrl,
+                collectionName = meta.CollectionName,
+                collectionUri = meta.CollectionUri,
+            };
+        }
+
+        /// <summary>
+        /// Reads an image file's embedded metadata into the three attribute values Bloom mirrors
+        /// on the element (data-copyright/data-creator/data-license). Mirrors what
+        /// ImageUpdater.UpdateImgMetadataAttributesToMatchImage would write, so a current-page
+        /// element the front-end updates ends up saying exactly what the equivalent off-page
+        /// element does — and what the next book-up-to-date pass would say. A missing or
+        /// unreadable file yields empty strings; the updater removes the attributes outright in
+        /// that case, which comes to the same thing for every reader (they all treat an absent
+        /// attribute and an empty one alike). We can't actually get there anyway — the caller
+        /// has just copied the file into place. Internal for testing.
+        /// </summary>
+        internal static ImageCreditAttributes ReadCreditAttributes(
+            string bookFolderPath,
+            string fileName
+        )
+        {
+            var none = new ImageCreditAttributes
+            {
+                copyright = "",
+                creator = "",
+                license = "",
+            };
+            var path = Path.Combine(bookFolderPath, fileName);
+            if (!RobustFile.Exists(path))
+                return none;
+            Metadata meta;
+            try
+            {
+                meta = RobustFileIO.MetadataFromFile(path);
+            }
+            catch (Exception)
+            {
+                return none;
+            }
+            if (meta == null)
+                return none;
+            return new ImageCreditAttributes
+            {
+                copyright = meta.CopyrightNotice ?? "",
+                creator = meta.Creator ?? "",
+                // A NullLicense stringifies to "", so an image with no license gets "".
+                license = meta.License?.ToString() ?? "",
+            };
+        }
+
+        /// <summary>
+        /// Embeds in a freshly written replacement file the <paramref name="credits"/>
+        /// (intellectual-property metadata) the AI image editor chose for it, so the
+        /// illustration's credits survive.
+        ///
+        /// The AI image editor is the only authority here: it knows what the result was derived
+        /// from and whether the user amended the credits or made something entirely new. So
+        /// when it sends no credits — null, or an object whose every field is empty — that is
+        /// its answer, not a gap for Bloom to fill: we write nothing and return. In particular
+        /// we must never reach for the replaced image's credits ourselves; a new image made
+        /// while editing an old one is not the old illustration. Returning without touching the
+        /// file also leaves a user-uploaded result's own embedded metadata alone, which is the
+        /// only credit information anyone has for it.
+        ///
+        /// The credits have to be written into the FILE, not just the DOM's data-copyright/
+        /// data-creator/data-license attributes: Bloom rebuilds those attributes FROM the
+        /// file's embedded metadata (ImageUpdater.UpdateImgMetadataAttributesToMatchImage,
+        /// run on book load and whenever the data div is synced). An AI-generated result has
+        /// no metadata of its own, so without this the attributes would be silently cleared
+        /// the next time Bloom syncs — the "lost credits" bug.
+        ///
+        /// Internal for testing.
+        /// </summary>
+        internal static void EmbedCreditsInNewImageFile(
+            string bookFolderPath,
+            string newFileName,
+            ImageCredits credits
+        )
+        {
+            if (credits == null || CreditsAreEmpty(credits))
+                return;
+            var source = MetadataFromCredits(credits);
+
+            var newPath = Path.Combine(bookFolderPath, newFileName);
+            try
+            {
+                // Clear whatever the generator left in the file first: stray tags can trip up
+                // the TagLib library when we write (BL-16058). Then write just the IP fields.
+                using (var tagFile = RobustFileIO.CreateTaglibFile(newPath))
+                {
+                    tagFile.RemoveTags(TagLib.TagTypes.AllTags);
+                    RobustFileIO.SaveTaglibFile(tagFile);
+                }
+                source.WriteIntellectualPropertyOnly(newPath);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError(
+                    $"AiImageEditorApi: could not copy image credits to {newPath}",
+                    e
+                );
+            }
+        }
+
+        /// <summary>
+        /// Builds an IP-only <see cref="Metadata"/> from the credits the AI image editor sent,
+        /// reconstructing the license from its URL and/or rights statement.
+        /// </summary>
+        private static Metadata MetadataFromCredits(ImageCredits credits)
+        {
+            return new Metadata
+            {
+                Creator = credits.creator,
+                CopyrightNotice = credits.copyrightNotice,
+                AttributionUrl = credits.attributionUrl,
+                CollectionName = credits.collectionName,
+                CollectionUri = credits.collectionUri,
+                License = BuildLicense(credits.licenseUrl, credits.licenseRightsStatement),
+            };
+        }
+
+        /// <summary>
+        /// Reconstructs a ClearShare license from the wire representation (a CC license URL
+        /// and/or a free-text rights statement). This deliberately mirrors ClearShare's own
+        /// LicenseUtils.FromXmp, which is how the license comes back OUT of an image file: a
+        /// creativecommons.org URL becomes a CreativeCommonsLicense; failing that, a rights
+        /// statement becomes a CustomLicense; nothing at all becomes a NullLicense. Matching
+        /// FromXmp is what makes the round trip faithful — anything we can express here that it
+        /// can't express is a license the file could not store and Bloom would not read back.
+        ///
+        /// The rights statement rides along on a CC license rather than replacing it, because
+        /// ClearShare keeps both (a CC license plus the extra "license notes" restrictions the
+        /// user added) and dropping the notes was BL-16603.
+        ///
+        /// Always returns non-null.
+        /// </summary>
+        private static LicenseInfo BuildLicense(string licenseUrl, string rightsStatement)
+        {
+            // Only hand actual creativecommons.org URLs to the CC parser: FromLicenseUrl
+            // misparses unrelated URLs instead of throwing (see ImageGalleryApi).
+            if (!string.IsNullOrEmpty(licenseUrl) && licenseUrl.Contains("creativecommons.org"))
+            {
+                try
+                {
+                    var ccLicense = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
+                    ccLicense.RightsStatement = rightsStatement;
+                    return ccLicense;
+                }
+                catch
+                {
+                    // Malformed CC URL — fall through, so any rights statement still survives.
+                }
+            }
+            if (!string.IsNullOrEmpty(rightsStatement))
+                return new CustomLicense { RightsStatement = rightsStatement };
+            return new NullLicense();
+        }
+
+        /// <summary>True when every field of the supplied credits is null/empty.</summary>
+        private static bool CreditsAreEmpty(ImageCredits c) =>
+            string.IsNullOrEmpty(c.creator)
+            && string.IsNullOrEmpty(c.copyrightNotice)
+            && string.IsNullOrEmpty(c.licenseUrl)
+            && string.IsNullOrEmpty(c.licenseRightsStatement)
+            && string.IsNullOrEmpty(c.attributionUrl)
+            && string.IsNullOrEmpty(c.collectionName)
+            && string.IsNullOrEmpty(c.collectionUri);
     }
 }

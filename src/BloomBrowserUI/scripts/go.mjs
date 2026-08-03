@@ -1089,7 +1089,7 @@ const main = async () => {
         // at once starves Bloom's health check and makes it look unreachable.
         dev = await startDevServer();
         const url = await startIframeDevServer(iframe.entry, iframe.dir);
-        // Bloom.exe inherits process.env; AiImageEditorApi.GetEditorUrl reads this.
+        // Bloom.exe inherits process.env; AiImageEditorApi.GetAiImageEditorUrl reads this.
         process.env[iframe.entry.devUrlEnv] = url;
         console.log(`[go] AI editor: live dev server at ${url} (HMR).`);
     } else {
