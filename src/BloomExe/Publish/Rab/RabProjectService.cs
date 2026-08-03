@@ -836,6 +836,11 @@ namespace Bloom.Publish.Rab
             );
             Directory.CreateDirectory(paths.SafeApkRoot);
 
+            // Snapshot the deliverable APKs before the build so the abnormal-path cleanup below can
+            // tell a previous good APK (untouched by this attempt) from one this attempt created or
+            // rewrote. See DeleteApksWrittenDuringBuild for why this matters.
+            var preBuildApkWriteTimes = SnapshotSafeApkWriteTimes(paths);
+
             // Capture this run's RAB output so that, if no APK is produced, we can surface
             // Reading App Builder's own diagnostics (e.g. a missing font) instead of a generic
             // "no APK was found" message that gives the user nothing to act on (BL-16467).
@@ -871,13 +876,18 @@ namespace Bloom.Publish.Rab
             }
             catch (Exception)
             {
-                // The build didn't finish — the user cancelled, or RAB failed partway. Gradle may
-                // have left a partial or unsigned intermediate .apk under BuildRoot; delete those so
-                // a later status check or "Try on phone" cannot mistake one for a finished, signed
-                // app (FindLatestApkPath scans BuildRoot). This runs only on the abnormal path, so a
-                // successful build is untouched, and it never touches SafeApkRoot, so a failed
-                // rebuild still keeps the previous good APK.
+                // The build didn't finish — the user cancelled, or RAB failed partway. Clean up any
+                // APK this attempt left behind that a later status check or "Try on phone" (both
+                // scan the directories via FindLatestApkPath) could mistake for a finished, signed
+                // app: (1) partial/unsigned intermediates Gradle wrote under BuildRoot, and (2) a
+                // deliverable in SafeApkRoot that RAB was writing when it was killed — Bloom cannot
+                // see whether RAB writes that final APK atomically, so a kill mid-write could leave a
+                // truncated file at the deliverable name (BL-16350). Both run only on the abnormal
+                // path, so a successful build is untouched; and SafeApkRoot cleanup deletes only APKs
+                // this attempt created or rewrote, so a previous good APK still survives a failed
+                // rebuild.
                 DeleteIntermediateBuildApks(paths);
+                DeleteApksWrittenDuringBuild(paths, preBuildApkWriteTimes);
                 throw;
             }
             finally
@@ -2912,6 +2922,13 @@ namespace Bloom.Publish.Rab
 
             _progress.MessageWithoutLocalizing($"> {Path.GetFileName(installerPath)} {arguments}");
 
+            // Don't launch the installer if the user has already asked to cancel (BL-16350). The
+            // silent install can run for a while, and because navigation is locked while an action
+            // runs, the user would otherwise be stuck watching it finish with a dead Cancel button.
+            // The protected recovery path is exempt (it must complete). Mirrors RunProcess.
+            if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                throw new OperationCanceledException();
+
             using var process = StartShellProcess(
                 new ProcessStartInfo()
                 {
@@ -2928,7 +2945,43 @@ namespace Bloom.Publish.Rab
                     $"Bloom could not start the installer at {installerPath}."
                 );
 
-            process.WaitForExit();
+            // Register the installer so RequestCancellation can kill it (Kill(true) takes the whole
+            // process tree, covering the second-phase process a silent InnoSetup installer spawns).
+            // Skip registration when protected so a recovery install still runs to completion.
+            if (!_protectCurrentProcessFromCancellation)
+            {
+                lock (_currentProcessLock)
+                    _currentProcess = process;
+            }
+            // Close the race between StartShellProcess above and registering _currentProcess: a
+            // cancel that arrived in that window found no process to kill, so kill it now.
+            if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+            {
+                try
+                {
+                    process.Kill(true);
+                }
+                catch (Exception) { }
+            }
+
+            try
+            {
+                process.WaitForExit();
+            }
+            finally
+            {
+                if (!_protectCurrentProcessFromCancellation)
+                {
+                    lock (_currentProcessLock)
+                        _currentProcess = null;
+                }
+            }
+
+            // A cancel that killed the installer mid-run leaves a nonzero exit code; surface it as a
+            // cancellation (a killed install is recoverable — the next Prepare re-runs it) rather than
+            // as an installer "failed" error.
+            if (!_protectCurrentProcessFromCancellation && _cancelRequested)
+                throw new OperationCanceledException();
 
             if (process.ExitCode != 0)
                 throw new ApplicationException(
@@ -4008,6 +4061,79 @@ namespace Bloom.Publish.Rab
                     // A leftover we can't delete (e.g. still locked by a lingering Gradle process) is
                     // not worth failing the cancellation/failure path over; it will be superseded by
                     // the next successful build's signed APK in SafeApkRoot.
+                }
+            }
+        }
+
+        /// <summary>
+        /// Records the last-write time (UTC) of every deliverable APK currently in SafeApkRoot, keyed
+        /// by full path. Taken just before a build so <see cref="DeleteApksWrittenDuringBuild"/> can
+        /// distinguish a previous good APK the build never touched from one the build created or
+        /// rewrote.
+        /// </summary>
+        private static IReadOnlyDictionary<string, DateTime> SnapshotSafeApkWriteTimes(
+            RabWorkspacePaths paths
+        )
+        {
+            var snapshot = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
+            if (Directory.Exists(paths.SafeApkRoot))
+            {
+                foreach (
+                    var apkPath in Directory.GetFiles(
+                        paths.SafeApkRoot,
+                        "*.apk",
+                        SearchOption.AllDirectories
+                    )
+                )
+                    snapshot[apkPath] = RobustFile.GetLastWriteTimeUtc(apkPath);
+            }
+            return snapshot;
+        }
+
+        /// <summary>
+        /// Removes any deliverable APK in SafeApkRoot that this build attempt created or rewrote,
+        /// given a <paramref name="preBuildApkWriteTimes"/> snapshot taken before the build. Called
+        /// only on the abnormal path (cancel/failure). Reading App Builder writes the finished, signed
+        /// APK to SafeApkRoot as its final step, and Bloom cannot see whether that write is atomic, so
+        /// a build killed mid-write could leave a truncated APK at the deliverable name that
+        /// <see cref="GetStatus"/> and <see cref="Install"/> (both scan the directory via
+        /// <see cref="FindLatestApkPath"/>) would treat as a finished app (BL-16350). Deleting only the
+        /// files this attempt touched removes that risk while preserving a previous good APK that this
+        /// attempt left unmodified, so a failed rebuild still falls back to the last good build.
+        /// </summary>
+        private static void DeleteApksWrittenDuringBuild(
+            RabWorkspacePaths paths,
+            IReadOnlyDictionary<string, DateTime> preBuildApkWriteTimes
+        )
+        {
+            if (!Directory.Exists(paths.SafeApkRoot))
+                return;
+
+            foreach (
+                var apkPath in Directory.GetFiles(
+                    paths.SafeApkRoot,
+                    "*.apk",
+                    SearchOption.AllDirectories
+                )
+            )
+            {
+                // Keep an APK that was already present and unchanged since before this build: it is a
+                // previous good build this attempt never wrote to, so it is still trustworthy.
+                if (
+                    preBuildApkWriteTimes.TryGetValue(apkPath, out var previousWriteTimeUtc)
+                    && RobustFile.GetLastWriteTimeUtc(apkPath) == previousWriteTimeUtc
+                )
+                    continue;
+
+                try
+                {
+                    RobustFile.Delete(apkPath);
+                }
+                catch (Exception)
+                {
+                    // Best-effort, exactly like DeleteIntermediateBuildApks: a file we can't delete is
+                    // not worth failing the already-failing build over, and the next successful build
+                    // overwrites it anyway.
                 }
             }
         }

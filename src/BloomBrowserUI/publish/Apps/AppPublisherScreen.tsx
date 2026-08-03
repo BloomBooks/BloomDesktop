@@ -95,10 +95,16 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         React.useState(false);
     const [showUsbDebuggingHelpDialog, setShowUsbDebuggingHelpDialog] =
         React.useState(false);
-    // Report the running/Cancel-showing state up to the publish-tab host so it can make the
-    // operation modal: while an action runs, the host blocks switching to another publish tool
-    // (and C# blocks the main workspace tabs). The cleanup resets it to false so leaving or
-    // unmounting never leaves the publish tools stuck disabled.
+    // An effect (not an event handler) is warranted here, even though "notify the parent of a
+    // change" usually belongs in the handler that caused the change: busyAction has no single
+    // originating handler. It is set/cleared from several asynchronous sources inside
+    // useAppBuilderPublisherScreen — the "actionComplete" websocket event, the status-poll
+    // recovery that reconciles with the backend after a blank/reload, and the action-start call —
+    // so the only place that observes every transition is a render keyed on the resulting value.
+    // What we are doing is synchronizing an external system (the publish-tab host, which makes the
+    // operation modal by blocking the other publish tools while C# blocks the main workspace tabs)
+    // to that state, which is exactly what effects are for. The cleanup resets it to false so
+    // leaving or unmounting never leaves the publish tools stuck disabled.
     React.useEffect(() => {
         props.onBusyChange?.(!!screenState.busyAction);
         return () => props.onBusyChange?.(false);

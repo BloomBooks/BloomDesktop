@@ -1124,6 +1124,79 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public async Task BuildAsync_WhenKilledWhileWritingDeliverableApk_DeletesTruncatedApkButKeepsUntouchedApk()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.PrepareAsync();
+            await service.BuildAsync();
+
+            var deliverableApk = service.FindLatestApkPath(paths);
+            Assert.That(
+                deliverableApk,
+                Is.Not.Null,
+                "setup: the first build should produce an APK"
+            );
+            Assert.That(
+                Path.GetDirectoryName(deliverableApk),
+                Is.EqualTo(paths.SafeApkRoot),
+                "setup: the finished APK should live in SafeApkRoot"
+            );
+
+            // An APK from an older build that this rebuild never touches; it must survive cleanup.
+            var untouchedApk = Path.Combine(paths.SafeApkRoot, "older-build.apk");
+            RobustFile.WriteAllText(untouchedApk, "older-good-apk");
+
+            // Sanity check the starting state so a falsely-passing test can't hide a real regression.
+            Assert.That(
+                File.Exists(deliverableApk),
+                Is.True,
+                "setup: the deliverable APK should exist before the failed rebuild"
+            );
+            Assert.That(
+                File.Exists(untouchedApk),
+                Is.True,
+                "setup: the older APK should exist before the failed rebuild"
+            );
+
+            // A rebuild killed while RAB was writing the finished APK, leaving a truncated file at the
+            // deliverable name.
+            service.FailNextBuild = true;
+            service.TruncateSafeApkOnFailedBuild = true;
+            Assert.ThrowsAsync<ApplicationException>(async () => await service.BuildAsync());
+
+            // The truncated deliverable this attempt rewrote is deleted, so GetStatus/Install (which
+            // scan the directory) cannot mistake it for a finished app...
+            Assert.That(
+                File.Exists(deliverableApk),
+                Is.False,
+                "a build killed mid-write should delete the truncated deliverable APK it left behind"
+            );
+            // ...while an APK this attempt never wrote to is preserved.
+            Assert.That(
+                File.Exists(untouchedApk),
+                Is.True,
+                "cleanup should keep an APK the failed build never touched"
+            );
+            // And the only APK still offered as a finished app is the untouched one, never the
+            // truncated deliverable.
+            Assert.That(service.FindLatestApkPath(paths), Is.EqualTo(untouchedApk));
+        }
+
+        [Test]
         public void SaveDownloadStreamAtomically_WhenCancelledMidDownload_LeavesNoInstallerFile()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -2821,6 +2894,12 @@ namespace BloomTests.Publish.Rab
             // cleanup removes it.
             public bool FailNextBuild { get; set; }
 
+            // When true (used with FailNextBuild), the failing build first overwrites the deliverable
+            // APK in SafeApkRoot with a short partial, mimicking Reading App Builder being killed
+            // while writing its finished APK; the interrupted-build cleanup should delete that
+            // truncated file.
+            public bool TruncateSafeApkOnFailedBuild { get; set; }
+
             // Invoked from the simulated UninstallAppFromDevice so a test can act (e.g. request
             // cancellation) at the exact moment the phone's existing app has just been removed.
             public Action DuringUninstall { get; set; }
@@ -2963,6 +3042,17 @@ namespace BloomTests.Publish.Rab
                     EmitSimulatedBuildOutput(string.Join(" ", rabArguments));
                     if (FailNextBuild)
                     {
+                        if (TruncateSafeApkOnFailedBuild)
+                        {
+                            // Mimic RAB being killed while writing the finished APK: the deliverable
+                            // in SafeApkRoot is left truncated. The interrupted-build cleanup should
+                            // delete this file this attempt rewrote.
+                            Directory.CreateDirectory(_paths.SafeApkRoot);
+                            RobustFile.WriteAllText(
+                                Path.Combine(_paths.SafeApkRoot, GetAppSlug() + ".apk"),
+                                "PK-truncated"
+                            );
+                        }
                         // Mimic Gradle having written an unsigned intermediate .apk under the build
                         // folder before the build failed; the interrupted-build cleanup should delete
                         // it while leaving any finished app in SafeApkRoot alone.
