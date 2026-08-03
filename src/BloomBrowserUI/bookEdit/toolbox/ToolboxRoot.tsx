@@ -816,6 +816,23 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                     min-height: 32px;
                                     padding-left: 5px;
                                     padding-right: 12px;
+                                    // Keep the headers above the Talking Book tool's
+                                    // #disablingOverlay (z-index 1001), so they neither look
+                                    // grayed out nor stop responding in Show Playback Order
+                                    // mode. Until 6.4 the "#toolbox h3" rule in toolbox.less
+                                    // did this; it stopped matching once the headers became
+                                    // MUI AccordionSummaries, which is BL-16630. Only works
+                                    // while no ancestor creates a stacking context -- a
+                                    // transform, filter, opacity or z-index on the Accordion,
+                                    // the Collapse or the tool-body host would trap it.
+                                    position: relative;
+                                    z-index: 1005;
+                                    // The header has to paint its own background for that to
+                                    // help. A collapsed header would otherwise be transparent
+                                    // and show the Accordion root's background, which stays
+                                    // under the overlay and so keeps being dimmed. Same colour
+                                    // the root uses, so nothing changes visually.
+                                    background-color: ${kBloomUnselectedTabBackground};
 
                                     & .MuiAccordionSummary-content {
                                         margin: 8px 0;
