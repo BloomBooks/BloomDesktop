@@ -37,11 +37,16 @@ export function ResetLanguageDataInstance() {
  * on being counted as single letters by ReaderToolsModel.getWordLength. Clears exactly the
  * fields ReadersSynphonyWrapper.loadSettings repopulates, so call it immediately before that.
  *
- * Known limitation, reviewed and accepted 2026-08 (BL-16607): the words we keep were each split
- * into graphemes when they were added, and they hold on to that split. So after the alphabet
- * changes they still carry the *old* segmentation until something reloads them. That is narrower
- * than the bug this fixes (word lengths are right again either way), and it corrects itself on
- * the next full refresh; re-splitting the whole vocabulary here was judged not worth the cost.
+ * Known limitations of keeping the vocabulary, reviewed and accepted 2026-08 (BL-16607). Both
+ * come from the words outliving the reset, and both correct themselves on the next full refresh:
+ *   - The words were each split into graphemes when they were added and hold on to that split, so
+ *     after the alphabet changes they still carry the *old* segmentation. Narrower than the bug
+ *     this fixes -- word lengths are right again either way -- and re-splitting the whole
+ *     vocabulary here was judged not worth the cost.
+ *   - Because loadSettings re-adds the typed sample words afterwards, and addWord counts a repeat
+ *     as extra frequency, saving repeatedly in allowed-words mode inflates those counts. That
+ *     only affects frequency ordering, and allowed-words mode does not define stages from sample
+ *     words at all.
  */
 export function ResetLanguageDataGraphemes() {
     theOneLanguageDataInstance.GPCS = [];
