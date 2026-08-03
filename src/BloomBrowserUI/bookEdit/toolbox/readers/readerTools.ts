@@ -498,12 +498,21 @@ export function removeWordListChangedListener(
  * boundary the same way it asks for matching words.
  */
 export function getSynphonyAlwaysMatchSymbols(): string[] {
-    return [
-        theOneLanguageDataInstance["AlwaysMatch"],
-        theOneLanguageDataInstance["SyllableBreak"],
-        theOneLanguageDataInstance["StressSymbol"],
-        theOneLanguageDataInstance["MorphemeBreak"],
-    ].filter((symbol) => typeof symbol === "string" && symbol !== "");
+    // Match how selectWordsFromSynphony assembles its own copy of this list: it *concats*
+    // AlwaysMatch, so that field may hold either one symbol or an array of them, and pushes
+    // the other three, which are single symbols. Flattening with concat here covers both
+    // shapes — a plain `typeof === "string"` test would silently drop an array-valued
+    // AlwaysMatch, which is the sort of quiet omission this function exists to avoid.
+    const symbols: unknown[] = ([] as unknown[]).concat(
+        theOneLanguageDataInstance["AlwaysMatch"] ?? [],
+        theOneLanguageDataInstance["SyllableBreak"] ?? [],
+        theOneLanguageDataInstance["StressSymbol"] ?? [],
+        theOneLanguageDataInstance["MorphemeBreak"] ?? [],
+    );
+    return symbols.filter(
+        (symbol): symbol is string =>
+            typeof symbol === "string" && symbol !== "",
+    );
 }
 
 /** Gets the loaded sample words decodable with the given graphemes. */
