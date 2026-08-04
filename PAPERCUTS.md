@@ -116,20 +116,27 @@ House rules:
   the exit code" hazard, different cause.
 
 
-## 2026-07-27 — Three C# tests fail intermittently, on top of the nine environmental ones
+## 2026-07-27 — Three C# tests fail intermittently under load
 
-- **Cut:** One full-suite run came back with 12 failures instead of the usual 9. The extras were
-  `CheckAudioForAllText_SpansAudioMissing`, `BringBookUpToDate_MovesMetaDataToJson` and
-  `InsertPageAfter_FromAnotherBook_CopiesWidget(True)`. A second run at the *identical* commit gave
-  9 again, and all three passed when run on their own, so they are flaky rather than broken — none
-  of them were anywhere near the branch's subject (image handling). The cost is readability: on top
-  of the nine already-known environmental failures, an agent seeing 12 now has to run the suite a
-  second time to work out which are noise before it can call a run clean.
+- **Cut:** `CheckAudioForAllText_SpansAudioMissing`, `BringBookUpToDate_MovesMetaDataToJson` and
+  `InsertPageAfter_FromAnotherBook_CopiesWidget(True)` fail sometimes and pass sometimes. They
+  failed together on one full-suite run, passed on a second run at the *identical* commit, and
+  passed when run on their own — so they are flaky rather than broken, and none of them is anywhere
+  near what that branch was changing (image handling). The cost is that a full run can no longer be
+  trusted on one reading: an agent has to run the suite twice to tell noise from a real regression.
+  That matters more now than when this was first written, because the full suite otherwise comes
+  back completely green (see the 2026-08-04 note below) — these three are the only remaining noise,
+  so any other failure is signal.
 - **Idea:** Find the shared state (all three build books/collections in temp folders, so likely a
   fixture or folder-name collision when the suite runs under load) — or, cheaply, quarantine them
   with `[Retry]` so the noise stops masking real failures.
-- **Context:** BloomDesktop, seen during `/preflight` of PR #8111 (BL-16597), on runs 5 and 6 of six
-  full-suite runs that day; runs 1-4 and 6 all showed exactly the known 9.
+- **Context:** BloomDesktop, seen during `/preflight` of PR #8111 (BL-16597), on two of six
+  full-suite runs that day.
+- **2026-08-04:** All three passed on a full run of 3027 tests with **0 failures** — the first
+  entirely green full suite under `build/agent-dotnet.sh`, now that PR #8107 has fixed the nine
+  environmental failures that used to accompany them. Not evidence against this cut: intermittent
+  is intermittent. Recorded because it removes the nine-failure baseline the original wording
+  leaned on.
 
 
 ## 2026-07-24 — agent-dotnet.sh test exits 0 even when tests fail

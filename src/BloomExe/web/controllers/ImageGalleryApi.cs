@@ -108,10 +108,18 @@ namespace Bloom.web.controllers
                 HandlePickLocalImageFile,
                 false
             );
+            // requiresSync: false deliberately. Building a stand-in for a very large image
+            // decodes and re-encodes it, which takes on the order of seconds; if this ran under
+            // the api handler's global lock it would stall every other synchronized request for
+            // that whole time. Nothing here needs that lock: the only state shared between
+            // requests is the preview cache, and _previewLock already guards it (and still
+            // coalesces the gallery's near-simultaneous thumbnail and large-preview requests
+            // into a single build).
             apiHandler.RegisterEndpointHandler(
                 "imageGallery/localFilePreview",
                 HandleLocalFilePreview,
-                false
+                false,
+                requiresSync: false
             );
             apiHandler.RegisterEndpointHandler(
                 "imageGallery/local-collections/collections",
