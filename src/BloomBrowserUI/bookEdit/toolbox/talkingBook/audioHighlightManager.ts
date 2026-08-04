@@ -1,4 +1,8 @@
 import StyleEditor from "../../StyleEditor/StyleEditor";
+import {
+    makeRangeForNodeContents,
+    TextHighlightManager,
+} from "../../js/textHighlightManager";
 
 const kSegmentClass = "bloom-highlightSegment";
 const kEnableHighlightClass = "ui-enableHighlight";
@@ -10,16 +14,14 @@ const kCurrentHighlightBackgroundCssVar =
     "--bloom-audio-current-highlight-background";
 const kCurrentHighlightColorCssVar = "--bloom-audio-current-highlight-color";
 
-// This manager translates Bloom's audio-highlight classes into the CSS highlight registry and
-// ::highlight pseudo-elements.
-// In rare cases, the browser can automatically move computed css into an inline style within a contenteditable, which
-// we suspect is causing BL-15300 where TBT highlighting gets stuck in the book. This method of highlighting without
-// modifying the dom should prevent that, and is also the direction we want to move in for highlighting.
-// The DOM still decides which pieces of text are eligible and marks them with the appropriate classes, but in the Edit
-// Tab the visible paint comes from ::highlight pseudo-elements instead of the element
-// background colors, which we continue to use in Bloom Player etc. - we will need to keep the original class and css
-// rules for a while so that old versions of Bloom player display the highlights, but a next step would be to make
-// newer versions of Bloom Player switch to using pseudo-elements to display highlights like we do here
+// This translates Bloom's audio-highlight classes into the CSS highlight registry and
+// ::highlight pseudo-elements (see textHighlightManager.ts for why and how).
+// The DOM still decides which pieces of text are eligible and marks them with the appropriate
+// classes, but in the Edit Tab the visible paint comes from ::highlight pseudo-elements instead
+// of the element background colors, which we continue to use in Bloom Player etc. - we will need
+// to keep the original class and css rules for a while so that old versions of Bloom player
+// display the highlights, but a next step would be to make newer versions of Bloom Player switch
+// to using pseudo-elements to display highlights like we do here.
 
 export const currentHighlightName = "bloom-audio-current";
 
@@ -30,42 +32,6 @@ export const splitHighlightNames = [
 ] as const;
 
 const allManagedHighlightNames = [currentHighlightName, ...splitHighlightNames];
-
-type HighlightRegistry = Map<string, unknown>;
-type HighlightConstructor = new (...ranges: Range[]) => unknown;
-
-function getDocumentWindow(contextNode: Node): Window | undefined {
-    return contextNode.ownerDocument?.defaultView ?? undefined;
-}
-
-function getDocumentElement(contextNode: Node): HTMLElement | undefined {
-    return contextNode.ownerDocument?.documentElement ?? undefined;
-}
-
-function getHighlightRegistry(
-    contextNode: Node,
-): HighlightRegistry | undefined {
-    const docWindow = getDocumentWindow(contextNode) as
-        | (Window & typeof globalThis)
-        | undefined;
-    const cssWithHighlights = docWindow?.CSS as
-        | (typeof globalThis.CSS & {
-              highlights?: HighlightRegistry;
-          })
-        | undefined;
-    return cssWithHighlights?.highlights;
-}
-
-function getHighlightConstructor(
-    contextNode: Node,
-): HighlightConstructor | undefined {
-    const docWindow = getDocumentWindow(contextNode) as
-        | (Window & {
-              Highlight?: HighlightConstructor;
-          })
-        | undefined;
-    return docWindow?.Highlight;
-}
 
 // A StyleEditor instance used only to read the user's audio-highlight colors from a book's
 // userModifiedStyles sheet. We share StyleEditor's rule lookup rather than duplicating the
@@ -79,70 +45,27 @@ function getStyleEditorForColorLookup(): StyleEditor {
     return styleEditorForColorLookup;
 }
 
-export class AudioTextHighlightManager {
+function getDocumentElement(contextNode: Node): HTMLElement | undefined {
+    return contextNode.ownerDocument?.documentElement ?? undefined;
+}
+
+export class AudioHighlightManager {
+    private highlights = new TextHighlightManager(allManagedHighlightNames);
+
     // Remove all current and split highlights from the registry for the document containing contextNode.
     public clearAllManagedHighlights(contextNode?: Node): void {
-        if (!contextNode) {
-            return;
-        }
-
-        const registry = getHighlightRegistry(contextNode);
-        if (!registry) {
-            return;
-        }
-
-        allManagedHighlightNames.forEach((name) => registry.delete(name));
+        this.highlights.clearAllManagedHighlights(contextNode);
     }
 
     // Remove only the split (blue segment) highlights from the registry, leaving the current highlight intact.
     public clearSplitHighlights(contextNode?: Node): void {
-        if (!contextNode) {
-            return;
-        }
-
-        const registry = getHighlightRegistry(contextNode);
-        if (!registry) {
-            return;
-        }
-
-        splitHighlightNames.forEach((name) => registry.delete(name));
+        this.highlights.clearHighlights(splitHighlightNames, contextNode);
     }
 
-    // Returns true if the current-highlight entry in the registry for contextNode's document
-    // exists but any of its Ranges no longer cover live content, so the highlight is still
-    // registered but paints nothing (BL-15300). That happens two ways when page-setup code
-    // rewrites the DOM under the highlight:
-    // - the range's node itself was replaced (e.g. CKEditor's initialization replaces the
-    //   paragraph): the range points at a detached node;
-    // - an ANCESTOR of the range's node was removed (e.g. re-appending the bloom-editables to
-    //   reorder them): per the DOM spec the live Range is then COLLAPSED onto the
-    //   still-connected former parent, so a connectedness check alone would miss it.
+    // Returns true if the current highlight is still registered but no longer paints anything
+    // because the DOM under it was rewritten. See TextHighlightManager.hasDeadRanges().
     public currentHighlightHasDeadRanges(contextNode?: Node): boolean {
-        if (!contextNode) {
-            return false;
-        }
-        const registry = getHighlightRegistry(contextNode);
-        if (!registry) {
-            return false;
-        }
-        // A real (Chromium) Highlight is setlike over its Ranges, so we can iterate it. Test
-        // environments may register a non-iterable stand-in; treat those as healthy.
-        const highlight = registry.get(currentHighlightName) as
-            | Iterable<Range>
-            | undefined;
-        if (!highlight || typeof highlight[Symbol.iterator] !== "function") {
-            return false;
-        }
-        for (const range of highlight) {
-            if (
-                range.collapsed ||
-                !range.startContainer.isConnected ||
-                range.startContainer.ownerDocument !== contextNode.ownerDocument
-            ) {
-                return true;
-            }
-        }
-        return false;
+        return this.highlights.hasDeadRanges(currentHighlightName, contextNode);
     }
 
     // currentHighlight is the element currently selected for recording etc.
@@ -160,61 +83,60 @@ export class AudioTextHighlightManager {
             return;
         }
 
-        const registry = getHighlightRegistry(contextNode);
-        const Highlight = getHighlightConstructor(contextNode);
-        if (!registry || !Highlight) {
+        if (!this.highlights.canHighlight(contextNode)) {
             return;
         }
 
         if (suppressCurrentHighlight) {
-            allManagedHighlightNames.forEach((name) => registry.delete(name));
+            this.highlights.clearAllManagedHighlights(contextNode);
             return;
         }
 
         // Split highlights (blue segments after a textbox recording) and the current highlight
         // (yellow sentence) are mutually exclusive: split state replaces the yellow highlight.
         if (this.shouldShowSplitHighlights(currentHighlight, currentTextBox)) {
-            registry.delete(currentHighlightName);
-            this.refreshSplitHighlights(currentTextBox, registry, Highlight);
-        } else {
-            splitHighlightNames.forEach((name) => registry.delete(name));
-            this.refreshCurrentHighlight(
-                currentHighlight,
-                currentTextBox,
-                registry,
-                Highlight,
+            this.highlights.clearHighlights(
+                [currentHighlightName],
+                contextNode,
             );
+            this.refreshSplitHighlights(currentTextBox);
+        } else {
+            this.highlights.clearHighlights(splitHighlightNames, contextNode);
+            this.refreshCurrentHighlight(currentHighlight, currentTextBox);
         }
     }
 
     private refreshCurrentHighlight(
         currentHighlight: Element | null,
         currentTextBox: HTMLElement | null,
-        registry: HighlightRegistry,
-        Highlight: HighlightConstructor,
     ): void {
+        const contextNode = currentHighlight ?? currentTextBox;
+        if (!contextNode) {
+            return;
+        }
+
         const highlightInfo = this.getCurrentHighlightInfo(
             currentHighlight,
             currentTextBox,
         );
         if (!highlightInfo || highlightInfo.ranges.length === 0) {
-            registry.delete(currentHighlightName);
+            this.highlights.clearHighlights(
+                [currentHighlightName],
+                contextNode,
+            );
             return;
         }
 
         // enhance: don't check for highlight color settings changes so often
         this.updateCurrentHighlightColors(highlightInfo.styleSource);
-        registry.set(
+        this.highlights.setHighlight(
             currentHighlightName,
-            new Highlight(...highlightInfo.ranges),
+            highlightInfo.ranges,
+            contextNode,
         );
     }
 
-    private refreshSplitHighlights(
-        currentTextBox: HTMLElement,
-        registry: HighlightRegistry,
-        Highlight: HighlightConstructor,
-    ): void {
+    private refreshSplitHighlights(currentTextBox: HTMLElement): void {
         // Cycle through 3 colors using a page-relative index so adjacent paragraphs
         // never share the same color at their boundary.
         const rangesByName = new Map<string, Range[]>();
@@ -230,12 +152,11 @@ export class AudioTextHighlightManager {
         });
 
         splitHighlightNames.forEach((name) => {
-            const ranges = rangesByName.get(name) ?? [];
-            if (ranges.length > 0) {
-                registry.set(name, new Highlight(...ranges));
-            } else {
-                registry.delete(name);
-            }
+            this.highlights.setHighlight(
+                name,
+                rangesByName.get(name) ?? [],
+                currentTextBox,
+            );
         });
     }
 
@@ -259,7 +180,7 @@ export class AudioTextHighlightManager {
             currentHighlight.querySelectorAll(`span.${kEnableHighlightClass}`),
         );
         const enabledRanges = enabledDescendants
-            .map((enabledSpan) => this.makeRange(enabledSpan))
+            .map((enabledSpan) => makeRangeForNodeContents(enabledSpan))
             .filter((range): range is Range => !!range);
         if (enabledRanges.length > 0) {
             return {
@@ -275,7 +196,7 @@ export class AudioTextHighlightManager {
         if (currentHighlight === currentTextBox) {
             const paragraphs = Array.from(currentTextBox.querySelectorAll("p"));
             const paragraphRanges = paragraphs
-                .map((paragraph) => this.makeRange(paragraph))
+                .map((paragraph) => makeRangeForNodeContents(paragraph))
                 .filter((range): range is Range => !!range);
             if (paragraphRanges.length > 0) {
                 return {
@@ -285,7 +206,7 @@ export class AudioTextHighlightManager {
             }
         }
 
-        const wholeElementRange = this.makeRange(currentHighlight);
+        const wholeElementRange = makeRangeForNodeContents(currentHighlight);
         if (!wholeElementRange) {
             return undefined;
         }
@@ -302,7 +223,7 @@ export class AudioTextHighlightManager {
         const documentElement = getDocumentElement(styleSource);
         if (!documentElement) {
             console.error(
-                "AudioTextHighlightManager.updateCurrentHighlightColors() could not find documentElement for the style source.",
+                "AudioHighlightManager.updateCurrentHighlightColors() could not find documentElement for the style source.",
             );
             return;
         }
@@ -365,32 +286,14 @@ export class AudioTextHighlightManager {
         const enabledRanges = Array.from(
             segment.querySelectorAll(`span.${kEnableHighlightClass}`),
         )
-            .map((enabledSpan) => this.makeRange(enabledSpan))
+            .map((enabledSpan) => makeRangeForNodeContents(enabledSpan))
             .filter((range): range is Range => !!range);
 
         if (enabledRanges.length > 0) {
             return enabledRanges;
         }
 
-        const wholeSegmentRange = this.makeRange(segment);
+        const wholeSegmentRange = makeRangeForNodeContents(segment);
         return wholeSegmentRange ? [wholeSegmentRange] : [];
-    }
-
-    private makeRange(node: Node): Range | undefined {
-        if (node.textContent === null || node.textContent.length === 0) {
-            return undefined;
-        }
-
-        const ownerDocument = node.ownerDocument;
-        if (!ownerDocument) {
-            console.error(
-                "AudioTextHighlightManager.makeRange() could not find ownerDocument for a highlighted node.",
-            );
-            return undefined;
-        }
-
-        const range = ownerDocument.createRange();
-        range.selectNodeContents(node);
-        return range;
     }
 }
