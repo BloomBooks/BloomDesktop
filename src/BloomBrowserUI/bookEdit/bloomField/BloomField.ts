@@ -9,6 +9,7 @@ import { EditableDivUtils } from "../js/editableDivUtils";
 import $ from "jquery";
 import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
 import { getLocalization } from "../../react_components/l10n";
+import { kNoIndentClass } from "../textContextMenu/noIndent";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -27,6 +28,14 @@ import { getLocalization } from "../../react_components/l10n";
 //
 // Next, we have to keep you from accidentally losing the image placeholder when you do ctrl+a DEL. We prevent this deletion
 // for any element marked with a 'bloom-preventRemoval' class.
+
+// The block-level elements we tolerate as direct children of a bloom-editable. Bloom's own
+// editing UI only ever makes paragraphs, but content converted from other formats (e.g. by
+// BloomBridge) can legitimately arrive with real heading elements, and a box that leads with
+// one must not have an empty paragraph pushed in above it. Several places below ask "which
+// block am I in?" or "does this box have any blocks yet?"; they all consult this rather than
+// looking for a <p> specifically, so a heading counts as a block everywhere or nowhere.
+const kBlockElementSelector = "p,h1,h2,h3,h4,h5,h6";
 
 export default class BloomField {
     public static ManageField(bloomEditableDiv: HTMLElement) {
@@ -250,11 +259,36 @@ export default class BloomField {
                 }
             });
         }
+        // BL-16649: "No Indent" (see the text context menu) marks one
+        // paragraph as the continuation of a paragraph on the previous page. Pressing Enter
+        // in such a paragraph makes a genuinely new paragraph, which should indent normally
+        // -- but ckeditor builds it by shallow-cloning the paragraph it split, so it would
+        // inherit the class. We note which paragraphs existed just before the Enter, then
+        // take the class off any that the split created. Only paragraphs are considered:
+        // the class is only ever put on a <p>, never on a heading (see kBlockElementSelector).
+        let paragraphsBeforeEnter: HTMLParagraphElement[] | undefined;
         ckeditor.on("key", (event) => {
             if (event.data.keyCode === CKEDITOR.SHIFT + 13) {
                 BloomField.InsertLineBreak();
                 event.cancel();
+            } else if (event.data.keyCode === 13) {
+                paragraphsBeforeEnter = Array.from(
+                    bloomEditableDiv.getElementsByTagName("p"),
+                );
             }
+        });
+        ckeditor.on("afterCommandExec", (event) => {
+            if (event.data.name !== "enter") return;
+            const paragraphsBefore = paragraphsBeforeEnter;
+            paragraphsBeforeEnter = undefined;
+            if (!paragraphsBefore) return;
+            Array.from(bloomEditableDiv.getElementsByTagName("p")).forEach(
+                (paragraph) => {
+                    if (!paragraphsBefore.includes(paragraph)) {
+                        paragraph.classList.remove(kNoIndentClass);
+                    }
+                },
+            );
         });
         ckeditor.on("selectionChange", () => {
             this.EnsureCaretNotInsideLineBreakSpan();
@@ -657,7 +691,7 @@ export default class BloomField {
                     //see if it is one those. Anything marked with bloom-preventRemoval is probably not something we want to
                     //be merging with.
                     const previousElement = $(sel.anchorNode)
-                        .closest("P")
+                        .closest(kBlockElementSelector)
                         .prev();
                     if (
                         previousElement.length > 0 &&
@@ -693,10 +727,24 @@ export default class BloomField {
         });
     }
 
+    // True if the element is one of the block elements we allow as a direct child of a
+    // bloom-editable, i.e. a paragraph or a heading.
+    private static IsBlockElement(element: Element | undefined): boolean {
+        return (
+            !!element &&
+            kBlockElementSelector
+                .split(",")
+                .includes(element.tagName.toLowerCase())
+        );
+    }
+
     private static EnsureStartsWithParagraphElement(field: HTMLElement) {
+        // A heading counts: a box that starts with <h1> already starts with a block, and
+        // prepending an empty paragraph above it would give the reader a blank first line
+        // (and, once the page is saved, keep it).
         if (
             $(field).children().length > 0 &&
-            $(field).children().first().prop("tagName").toLowerCase() === "p"
+            BloomField.IsBlockElement($(field).children().first()[0])
         ) {
             return;
         }
@@ -705,6 +753,10 @@ export default class BloomField {
 
     private static EnsureEndsWithParagraphElement(field: HTMLElement) {
         //Enhance: move any errant paragraphs to after the bloom-canvas
+        // Deliberately still requires a paragraph rather than accepting any block: this is
+        // only used for the embedded-image case below, where the trailing paragraph is there
+        // to give the user somewhere to type text that wraps around the image. A heading is
+        // not that.
         if (
             $(field).children().length > 0 &&
             $(field).children().last().prop("tagName").toLowerCase() === "p"
@@ -773,10 +825,13 @@ export default class BloomField {
         position: CursorPosition,
     ) {
         const range = document.createRange();
+        // Any block will do, and it has to be any block: a box holding only a heading has no
+        // paragraph, and selectNodeContents(undefined) throws.
+        const blocks = $(field).find(kBlockElementSelector);
         if (position === CursorPosition.start) {
-            range.selectNodeContents($(field).find("p").first()[0]);
+            range.selectNodeContents(blocks.first()[0]);
         } else {
-            range.selectNodeContents($(field).find("p").last()[0]);
+            range.selectNodeContents(blocks.last()[0]);
         }
         range.collapse(position === CursorPosition.start); //true puts it at the start
         const sel = window.getSelection();
@@ -791,7 +846,9 @@ export default class BloomField {
         // if the user types (ctrl+a, 'blah'), then we get blah outside of any paragraph
 
         $(field).keyup((e) => {
-            if ($(field).find("p").length === 0) {
+            // Note that a heading counts as a block here, so this does not fire on every
+            // keystroke in a box that holds only a heading (which has no paragraph at all).
+            if ($(field).find(kBlockElementSelector).length === 0) {
                 BloomField.EnsureParagraphsPresent(field);
 
                 // Now put the cursor in the paragraph, *after* the character they may have just typed or the
@@ -931,7 +988,12 @@ export default class BloomField {
 
                 //Are we in the first paragraph?
                 //FYI: Nested paragraphs don't seem to be allowed. So don't need to worry about that possibility.
-                const closestP = $(sel.anchorNode).closest("P");
+                // A heading counts as a block here too. Looking only for a "P" would find
+                // nothing when the caret is in a heading, and the code below would then fall
+                // through and block the backspace even in a heading that has blocks before it.
+                const closestP = $(sel.anchorNode).closest(
+                    kBlockElementSelector,
+                );
                 const previousElement = closestP.prev();
 
                 if (previousElement.length !== 0) {

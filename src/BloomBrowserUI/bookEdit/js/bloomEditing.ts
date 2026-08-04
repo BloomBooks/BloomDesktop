@@ -77,6 +77,7 @@ import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
+import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
@@ -1092,6 +1093,7 @@ function OneTimeSetup() {
     hookupLinkHandler();
     setupDragActivityTabControl();
     setupPageLayoutMenu();
+    setupTextContextMenu();
 }
 
 function isTextSelected(): boolean {
