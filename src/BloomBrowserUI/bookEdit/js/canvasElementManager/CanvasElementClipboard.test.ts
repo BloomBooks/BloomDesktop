@@ -11,8 +11,11 @@ import {
 // this suite exists because the Ctrl+V path used to skip it (BL-16605).
 vi.mock("../bloomImages", () => ({
     kImageContainerClass: "bloom-imageContainer",
+    // Mirror the real helper's semantics (bloomImages.ts): case-insensitive, and it wants the
+    // whole "placeholder.png", not just the stem. The empty-canvas branch now leans on this
+    // predicate, so a looser stub here would let the tests pass on behavior we don't ship.
     isPlaceHolderImage: (src: string | null) =>
-        !!src && src.includes("placeHolder"),
+        !!src && src.toLowerCase().includes("placeholder.png"),
     SetupMetadataButton: vi.fn(),
 }));
 
