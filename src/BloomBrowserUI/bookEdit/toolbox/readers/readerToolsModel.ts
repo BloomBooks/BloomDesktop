@@ -63,13 +63,16 @@ export class DRTState {
  */
 export const kReadableSampleTextFileExtensions = ["txt", "js", "json"];
 
-/** Gets a file's extension, lowercased, or undefined when it has none. */
+/**
+ * Gets a file's extension, lowercased, or undefined when it has none. Only the file name is
+ * considered: a dot in a folder name (say C:\My.Books\wordlist) is not a file type, and treating
+ * it as one would make a file with no extension look like it had an unreadable one.
+ */
 export function getFileExtension(path: string): string | undefined {
-    const parts = path.split(".");
-    // "foo" (no dot) splits to one part; a leading-dot name like ".txt" is still an extension.
-    if (parts.length < 2) return undefined;
-    const extension = parts.pop();
-    return extension ? extension.toLowerCase() : undefined;
+    const fileName = path.split(/[\\/]/).pop() ?? "";
+    const lastDot = fileName.lastIndexOf(".");
+    if (lastDot === -1) return undefined;
+    return fileName.slice(lastDot + 1).toLowerCase();
 }
 
 /**

@@ -231,4 +231,16 @@ describe("sample text file readability", () => {
             true,
         );
     });
+
+    // A dot in a folder name is not a file type. Getting this wrong made a file with no
+    // extension look like it had one, so the dialog labelled it "Cannot read this format"
+    // instead of "File needs .TXT extension".
+    it("does not mistake a dot in a folder name for an extension", () => {
+        expect(getFileExtension("C:/My.Books/wordlist")).toBeUndefined();
+        expect(getFileExtension("C:\\My.Books\\wordlist")).toBeUndefined();
+        expect(isReadableSampleTextFile("C:/My.Books/wordlist")).toBe(false);
+        // ...but a real extension under such a folder is still found.
+        expect(getFileExtension("C:/My.Books/wordlist.TXT")).toBe("txt");
+        expect(isReadableSampleTextFile("C:/My.Books/wordlist.txt")).toBe(true);
+    });
 });
