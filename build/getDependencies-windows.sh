@@ -39,9 +39,31 @@ failures=()
 # say what actually matters to the developer: is anything missing, or do we have a complete
 # set that we simply could not check for updates?
 destinations=()
-borrowed=()
+borrowed_dest=()
+borrowed_from=()
+verified=()
 extraction_failed=0
 deleted_a_corrupt_zip=0
+
+# Note that the file now at $1 was checked against the server during this run -- either it
+# came down fresh or the server said our copy was current. Borrowing from another worktree
+# records nothing here, which is the distinction report_failures reports on.
+note_verified() {
+verified+=("$1")
+}
+
+# True if $1 was checked against the server during this run.
+was_verified() {
+local one
+for one in "${verified[@]}"
+do
+if [ "$one" == "$1" ]
+then
+return 0
+fi
+done
+return 1
+}
 
 # Where we record which URL each dependency was last fetched from. Without this, the only thing
 # vouching for a file on disk is its timestamp, and a timestamp cannot tell us WHICH build a
@@ -128,20 +150,33 @@ else
 echo "*** All ${#destinations[@]} dependencies are present on disk even so, so this checkout" >&2
 echo "*** can probably still build. What failed was checking them against the server, so" >&2
 echo "*** we do not know they are up to date -- which is why this is still a failure." >&2
-if [ ${#borrowed[@]} -ne 0 ]
+# Only the borrowed files whose own check never happened are unverified. One that the
+# server confirmed (304) or replaced during this run has been checked like any other, and
+# saying otherwise would send the developer looking for a problem that is not there.
+local unverified=()
+local index=0
+while [ "$index" -lt "${#borrowed_dest[@]}" ]
+do
+if ! was_verified "${borrowed_dest[$index]}"
 then
-echo "*** Note that ${#borrowed[@]} of them we copied from another worktree during this run and" >&2
+unverified+=("${borrowed_dest[$index]} (from ${borrowed_from[$index]})")
+fi
+index=$((index + 1))
+done
+if [ ${#unverified[@]} -ne 0 ]
+then
+echo "*** Note that ${#unverified[@]} of them we copied from another worktree during this run and" >&2
 echo "*** never managed to check against the server at all:" >&2
-for destination in "${borrowed[@]}"
+for destination in "${unverified[@]}"
 do
 echo "***   $destination" >&2
 done
 fi
+fi
 if [ "$extraction_failed" == "1" ]
 then
-echo "*** But a zip failed to unpack (see above), so what was extracted from it is" >&2
-echo "*** probably incomplete." >&2
-fi
+echo "*** A zip failed to unpack (see above), so what was extracted from it is probably" >&2
+echo "*** incomplete." >&2
 fi
 echo "***" >&2
 echo "*** Nothing was overwritten with whatever the server sent instead, so whatever we" >&2
@@ -268,7 +303,8 @@ echo "copy: $2 <= $newest (already downloaded by another worktree)"
 # -p to keep the timestamp, which is what makes the conditional GET meaningful
 if cp -p "$newest" "$2"
 then
-borrowed+=("$2 (from $newest)")
+borrowed_dest+=("$2")
+borrowed_from+=("$newest")
 # the donor recorded this file as coming from the URL we want, so our copy did too
 record_source "$2" "$1"
 else
@@ -340,6 +376,7 @@ then
 rm -f "$temp"
 current_temp=""
 record_source "$2" "$1"
+note_verified "$2"
 return
 fi
 if [ ! -s "$temp" ]
@@ -365,6 +402,7 @@ return
 fi
 current_temp=""
 record_source "$2" "$1"
+note_verified "$2"
 }
 
 # The wget fallback (used only where curl is missing, which on Windows is nowhere we know of)
@@ -411,6 +449,7 @@ return
 fi
 current_temp=""
 record_source "$2" "$1"
+note_verified "$2"
 }
 
 
