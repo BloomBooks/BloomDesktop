@@ -41,6 +41,47 @@ failures=()
 destinations=()
 borrowed=()
 extraction_failed=0
+deleted_a_corrupt_zip=0
+
+# Where we record which URL each dependency was last fetched from. Without this, the only thing
+# vouching for a file on disk is its timestamp, and a timestamp cannot tell us WHICH build a
+# file came from -- so an error page left behind by an older version of this script, or an
+# artifact downloaded while the worktree was on a branch that gets it from a different build
+# (Version6.4 points several of these at bloom-6.4+.tcbuildtag rather than latest.lastSuccessful),
+# would answer "not modified" for an artifact it never came from and be locked in forever.
+# One consequence worth knowing: the first run after this file gained provenance has no record
+# for anything, so it re-downloads the lot once. That is the honest outcome -- we genuinely do
+# not know where the existing files came from.
+sources_file=../Downloads/dependency-sources.txt
+
+# The partial download in flight, if any, so that Ctrl-C does not leave a
+# "something.dll.getDependencies-download" behind in DistFiles or lib -- those directories get
+# packaged, and a stray temp file there would ship.
+current_temp=""
+trap 'rm -f "$current_temp"; exit 130' INT TERM
+
+# The URL a dependency was last fetched from, per a worktree's record. $1 is the record file,
+# $2 the destination as written in the copy_auto lines. Prints nothing if there is no record.
+recorded_source() {
+if [ ! -f "$1" ]
+then
+return 0
+fi
+awk -F'\t' -v want="$2" '$1 == want { url = $2 } END { if (url != "") print url }' "$1"
+}
+
+# Remember that the file now at $1 came from $2, replacing any previous record for $1.
+record_source() {
+local temp="$sources_file.new"
+if [ -f "$sources_file" ]
+then
+awk -F'\t' -v want="$1" '$1 != want' "$sources_file" > "$temp"
+else
+: > "$temp"
+fi
+printf '%s\t%s\n' "$1" "$2" >> "$temp"
+mv -f "$temp" "$sources_file"
+}
 
 # Report one problem now (so it appears next to the download it belongs to) and remember it
 # for the summary at the end.
@@ -60,7 +101,9 @@ local missing=()
 local destination
 for destination in "${destinations[@]}"
 do
-if [ ! -s "$destination" ]
+# An error page sitting where a dependency should be does not count as "present" -- saying
+# so is how this summary would end up telling the developer their broken checkout is fine.
+if [ ! -s "$destination" ] || looks_like_html "$destination"
 then
 missing+=("$destination")
 fi
@@ -103,6 +146,11 @@ fi
 echo "***" >&2
 echo "*** Nothing was overwritten with whatever the server sent instead, so whatever we" >&2
 echo "*** already had is still there and still good." >&2
+if [ "$deleted_a_corrupt_zip" == "1" ]
+then
+echo "*** (Except a zip that turned out to be damaged, which was deleted on purpose so" >&2
+echo "*** that the next run downloads it again rather than trusting it.)" >&2
+fi
 echo "*** Check https://build.palaso.org and your network, then run this script" >&2
 echo "*** (or ./init.sh) again." >&2
 echo "**********************************************************************" >&2
@@ -165,7 +213,7 @@ done < <(git -C .. worktree list --porcelain 2>/dev/null)
 # $1 is the URL we are about to download, $2 the file we want.
 seed_from_sibling_worktree() {
 # with -f the caller wants a fresh download regardless, so there is nothing to save
-if [ -e "$2" ] || [ "$force" == "1" ]
+if [ -s "$2" ] || [ "$force" == "1" ]
 then
 return 0
 fi
@@ -178,23 +226,40 @@ local tree
 for tree in "${sibling_worktrees[@]}"
 do
 candidate="$tree/$relative"
-# Only borrow from a worktree that asks for this file from the same place we do. A
-# worktree on another branch may well fill the same path from a different build --
-# Bloom.chm comes from Bloom_Help_BloomHelp63/64/65 depending on the branch -- and its
-# copy, being newer than our artifact, would win the conditional GET below and leave us
-# holding the wrong file.
-if ! grep -qF -- "copy_auto $1 $2" "$tree/build/getDependencies-windows.sh" 2>/dev/null
+if [ ! -f "$candidate" ] || [ ! -s "$candidate" ]
 then
 continue
 fi
-# Skip anything empty or HTML: an old version of this script, or one interrupted
-# mid-download, could have left junk there, and we must not spread it around.
-if [ -f "$candidate" ] && [ -s "$candidate" ] && ! looks_like_html "$candidate"
+# Only borrow a file the other worktree recorded as having come from the same URL we are
+# about to ask for. Its script saying it would download that URL *today* is not evidence
+# about the file on its disk: a worktree that fetched its dependencies while on
+# Version6.4 (which points several of these at a different build) and has since switched
+# branches would pass that test while holding the wrong binaries -- and because we borrow
+# the newest copy, timestamp and all, that wrong file would win the conditional GET below
+# and be locked in.
+if [ "$(recorded_source "$tree/${sources_file#../}" "$2")" != "$1" ]
 then
+continue
+fi
+# Never spread around an error page, or a zip that is not a zip: junk left by an older
+# version of this script would otherwise propagate from worktree to worktree, and a
+# damaged zip would defeat extract_zip's delete-and-refetch recovery by being re-borrowed
+# every run.
+if looks_like_html "$candidate"
+then
+continue
+fi
+case "$candidate" in
+*.zip)
+if ! unzip -tqq "$candidate" > /dev/null 2>&1
+then
+continue
+fi
+;;
+esac
 if [ -z "$newest" ] || [ "$candidate" -nt "$newest" ]
 then
 newest="$candidate"
-fi
 fi
 done
 if [ -n "$newest" ]
@@ -204,6 +269,8 @@ echo "copy: $2 <= $newest (already downloaded by another worktree)"
 if cp -p "$newest" "$2"
 then
 borrowed+=("$2 (from $newest)")
+# the donor recorded this file as coming from the URL we want, so our copy did too
+record_source "$2" "$1"
 else
 rm -f "$2"
 fi
@@ -241,10 +308,19 @@ copy_curl() {
 echo "curl: $2 <= $1"
 local temp="$2.getDependencies-download"
 rm -f "$temp"
-local args=(-# -L --fail --retry 2 --connect-timeout 30 -o "$temp" -w '%{http_code}')
-if [ -e "$2" ] && [ "$force" != "1" ]
+current_temp="$temp"
+# --speed-limit/--speed-time so a server that accepts the connection and then trickles or
+# stalls eventually gives up instead of hanging init.sh for ever; the allowance is generous
+# enough that a genuinely slow connection still finishes.
+local args=(-# -L --fail --retry 2 --connect-timeout 30 --speed-limit 1024 --speed-time 120
+-o "$temp" -w '%{http_code}')
+if [ "$force" != "1" ] && [ -s "$2" ] && ! looks_like_html "$2" \
+&& [ "$(recorded_source "$sources_file" "$2")" == "$1" ]
 then
-# ask for it only if the server's copy is newer than ours
+# We have a file that is a plausible copy of this very artifact, so ask the server for it
+# only if it has something newer. All three tests matter: an empty or error-page file must
+# not be able to answer "not modified", and neither must one we last fetched from a
+# different build's URL (see the note on $sources_file above).
 args+=(-z "$2")
 fi
 local http_code
@@ -254,6 +330,7 @@ status=$?
 if [ "$status" != "0" ]
 then
 rm -f "$temp"
+current_temp=""
 note_failure "$2 <= $1: curl failed (exit code $status, HTTP status ${http_code:-none})"
 return
 fi
@@ -261,46 +338,79 @@ if [ "$http_code" == "304" ]
 then
 # our copy is already up to date; curl sent us no content at all
 rm -f "$temp"
+current_temp=""
+record_source "$2" "$1"
 return
 fi
 if [ ! -s "$temp" ]
 then
 rm -f "$temp"
+current_temp=""
 note_failure "$2 <= $1: the server sent nothing (HTTP status $http_code)"
 return
 fi
 if looks_like_html "$temp"
 then
 rm -f "$temp"
+current_temp=""
 note_failure "$2 <= $1: the server sent an HTML page (HTTP status $http_code) instead of the file we asked for"
 return
 fi
 if ! mv -f "$temp" "$2"
 then
 rm -f "$temp"
+current_temp=""
 note_failure "$2 <= $1: downloaded it, but could not put it in place (is something using the old file?)"
-fi
-}
-
-copy_wget() {
-echo "wget: $2 <= $1"
-f1=$(basename $1)
-f2=$(basename $2)
-cd $(dirname $2)
-# wget, unlike curl, does not save the body of an error response unless asked to
-# (--content-on-error), so a failure here leaves any existing file alone. We just have to
-# notice it and say so instead of carrying on as if we had the file.
-if ! wget -q -L -N "$1"
-then
-note_failure "$2 <= $1: wget failed"
-cd -
 return
 fi
-# wget has no true equivalent of curl's -o option.
-# Different versions of wget handle (or not) % escaping differently.
-# A URL query is the only reason why $f1 and $f2 should differ.
-if [ "$f1" != "$f2" ]; then mv $f2\?* $f2; fi
-cd -
+current_temp=""
+record_source "$2" "$1"
+}
+
+# The wget fallback (used only where curl is missing, which on Windows is nowhere we know of)
+# has to be just as careful as copy_curl. It is true that wget does not save the body of a 4xx
+# or 5xx response, but that is not the case this script exists to survive: an HTML page served
+# with a 200 status by a proxy or captive portal is a perfectly ordinary response, and the old
+# "wget -N" wrote it straight over the good file. So download to a temporary file and apply the
+# same checks. Using -O rules out -N (they are incompatible), meaning this path always fetches
+# the whole file rather than asking "only if newer" -- a fair price for a fallback that is
+# hardly ever taken, and it is why the basename/%-escaping dance this function used to need is
+# gone: -O names the file exactly.
+copy_wget() {
+echo "wget: $2 <= $1"
+local temp="$2.getDependencies-download"
+rm -f "$temp"
+current_temp="$temp"
+if ! wget -q -L -O "$temp" "$1"
+then
+rm -f "$temp"
+current_temp=""
+note_failure "$2 <= $1: wget failed"
+return
+fi
+if [ ! -s "$temp" ]
+then
+rm -f "$temp"
+current_temp=""
+note_failure "$2 <= $1: the server sent nothing"
+return
+fi
+if looks_like_html "$temp"
+then
+rm -f "$temp"
+current_temp=""
+note_failure "$2 <= $1: the server sent an HTML page instead of the file we asked for"
+return
+fi
+if ! mv -f "$temp" "$2"
+then
+rm -f "$temp"
+current_temp=""
+note_failure "$2 <= $1: downloaded it, but could not put it in place (is something using the old file?)"
+return
+fi
+current_temp=""
+record_source "$2" "$1"
 }
 
 
@@ -381,14 +491,20 @@ fi
 if ! unzip -tqq "$1" > /dev/null 2>&1
 then
 extraction_failed=1
+deleted_a_corrupt_zip=1
 note_failure "cannot extract $1 into $2: it is not a valid zip file (a failed or truncated download?). Deleting it so the next run fetches it afresh."
 rm -f "$1"
 return
 fi
-if ! unzip -uqo "$1" -d "$2"
+unzip -uqo "$1" -d "$2"
+# unzip's exit code 1 means "it worked, with warnings" (a filename it had to adjust, say), so
+# only 2 and up are real failures. Treating 1 as a failure would fail the whole of init.sh
+# over a cosmetic complaint.
+local status=$?
+if [ "$status" -ge 2 ]
 then
 extraction_failed=1
-note_failure "failed to extract $1 into $2"
+note_failure "failed to extract $1 into $2 (unzip exit code $status)"
 fi
 }
 
