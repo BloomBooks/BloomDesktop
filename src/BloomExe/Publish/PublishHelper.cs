@@ -157,7 +157,22 @@ namespace Bloom.Publish
                 Logger.WriteEvent(message);
 
                 if (attempt < kPageChecksAttempts)
-                    browser.StartFreshBrowser();
+                {
+                    // Asking an unresponsive browser for a clean renderer can itself time out -- this is the
+                    // same wedged browser, after all. Left uncaught that would skip the retry entirely and
+                    // surface a technical timeout instead of the explanation below, in exactly the hang this
+                    // retry exists for. So swallow it and let the loop reach its own verdict.
+                    try
+                    {
+                        browser.StartFreshBrowser();
+                    }
+                    catch (OffScreenBrowserTimeoutException e)
+                    {
+                        Logger.WriteEvent(
+                            "Could not start a fresh page-checks browser either: " + e.Message
+                        );
+                    }
+                }
             }
             throw new ApplicationException(
                 "Bloom could not determine which parts of this book are visible, so it stopped rather than "

@@ -352,9 +352,14 @@ namespace Bloom.Publish
             // the request that would unblock us can already be sitting in the queue by the time we get here.
             var server = BloomServer._theOneInstance;
             server?.NoteWorkerPoolHeadroom();
-            server?.RegisterThreadBlockingAndEnsureAFreeWorker();
+            // Register INSIDE the try, and unregister only if we got that far, so the pairing is guaranteed
+            // by structure rather than by an argument about what can throw. A leaked count would make the
+            // server permanently believe a worker is blocked.
+            var registered = false;
             try
             {
+                server?.RegisterThreadBlockingAndEnsureAFreeWorker();
+                registered = true;
                 bool completed;
                 try
                 {
@@ -387,7 +392,8 @@ namespace Bloom.Publish
             }
             finally
             {
-                server?.RegisterThreadUnblocked();
+                if (registered)
+                    server?.RegisterThreadUnblocked();
             }
         }
 

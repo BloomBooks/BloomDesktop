@@ -250,8 +250,11 @@ describe("All books", () => {
     const kRequestTimeoutMs = 45000;
     // Staging a whole BloomPUB is the slowest thing we ask Bloom for, so it gets more room.
     const kStagingTimeoutMs = 60000;
-    // A trivial read used in a polling loop; it should answer at once.
-    const kQuickReadTimeoutMs = 10000;
+    // A trivial read used in a polling loop; it should answer at once. Still generous, because a timeout
+    // here does not just fail one case -- it marks Bloom wedged and fails every remaining case. Switching
+    // to the collection tab reloads its webview, which on a loaded machine can genuinely take a while, and
+    // a spurious abort of the whole suite is far worse than waiting.
+    const kQuickReadTimeoutMs = 30000;
 
     // Set once Bloom fails to answer. Bloom is one process shared by every case in this file, so once
     // it stops answering, no later case can pass either: each would burn the full 120s testTimeout and
