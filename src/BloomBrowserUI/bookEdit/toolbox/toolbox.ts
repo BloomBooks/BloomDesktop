@@ -1552,8 +1552,12 @@ function handlePageEditing(
                 removeCommentsFromEditableHtml(editableDiv);
 
                 // If there's no tool active, we don't need to update the markup.
-                if (currentTool && toolbox.toolboxIsShowing()) {
-                    if (currentTool.isUpdateMarkupAsync()) {
+                const activeTool =
+                    currentTool && toolbox.toolboxIsShowing()
+                        ? currentTool
+                        : undefined;
+                if (activeTool) {
+                    if (activeTool.isUpdateMarkupAsync()) {
                         // It's possible that removeCommentsFromEditableHtml moved the selection, typically
                         // to the start of the editableDiv. This doesn't matter on the synchronous branch,
                         // because we restore it at the end of this method, after the other updates, and no
@@ -1572,7 +1576,7 @@ function handlePageEditing(
                         bookmarks = ckeditorSelection.createBookmarks(true);
 
                         const actualUpdateFunc =
-                            await currentTool.updateMarkupAsync();
+                            await activeTool.updateMarkupAsync();
                         if (
                             keydownEventCounter ===
                             counterValueThatIdentifiesThisKeyDown
@@ -1583,18 +1587,38 @@ function handlePageEditing(
                             // of updating for the earlier keystroke.)
                             actualUpdateFunc();
                         }
-                    } else {
-                        // Note, the updateMarkup routine must be sure to use the result of
-                        // ckEditor's getData() method, not the raw HTML of the editableDivs.
-                        // See EditableDivUtils.doCkEditorCleanup() and .restoreSelectionFromCkEditorBookmarks().
-                        // Unfortunately, we can't easily do that in a top-level (general for all tools) way because of
-                        // our current architecture. Namely, the reader tools have a lower-level
-                        // doMarkup() which gets called more than just from here.
-                        currentTool.updateMarkup();
                     }
                 }
 
                 cleanUpNbsps(editableDiv);
+
+                // The synchronous branch is used only by the decodable and leveled reader tools,
+                // and their markup no longer changes the DOM: it paints violations with
+                // ::highlight() over live Ranges (BL-16558). Those Ranges must therefore be
+                // created AFTER the last thing that rewrites this editable's content.
+                // cleanUpNbsps() ends with an unconditional `editableDiv.innerHTML = ...`, which
+                // replaces every text node in the box, so any Range pointing into them collapses.
+                // While this call came before it, the reader highlights were painted and then
+                // immediately detached on every pause in typing, and nothing reappeared until
+                // some other path redid the markup (e.g. changing the level).
+                //
+                // Not covered by a unit test: the pieces are (cleanUpNbsps in toolboxSpec.ts,
+                // which now checks that it leaves the text nodes alone when it has nothing to
+                // convert; the highlight primitives in textHighlightManagerSpec.ts), but the
+                // *ordering* between them is only exercised by running handlePageEditing, and
+                // that needs a live ckeditor instance on the editable div plus the parent
+                // window's "page" iframe and a real Selection - none of which we can stand up in
+                // jsdom. So if you reorder anything in here, test it by typing in a Leveled
+                // Reader book and watching the over-long sentences stay highlighted.
+                if (activeTool && !activeTool.isUpdateMarkupAsync()) {
+                    // Note, the updateMarkup routine must be sure to use the result of
+                    // ckEditor's getData() method, not the raw HTML of the editableDivs.
+                    // See EditableDivUtils.doCkEditorCleanup() and .restoreSelectionFromCkEditorBookmarks().
+                    // Unfortunately, we can't easily do that in a top-level (general for all tools) way because of
+                    // our current architecture. Namely, the reader tools have a lower-level
+                    // doMarkup() which gets called more than just from here.
+                    activeTool.updateMarkup();
+                }
 
                 //set the selection to wherever our bookmark node ended up
                 //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,
@@ -1659,6 +1683,13 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
     const preserveNbspAfter = [" ", "«", "—"];
     const preserveNbspBefore = [" ", "»", ":", ";", "!", "?"];
 
+    // Whether we actually converted anything. Assigning innerHTML rebuilds every node in the box
+    // even when the string is unchanged, which loses the selection and collapses any Range
+    // pointing into the old text nodes -- and the reader tools' highlights and the Talking Book
+    // tool's audio highlights are live Ranges. Almost every keystroke leaves nothing to convert,
+    // so only write when there is something to write.
+    let replacedAnNbsp = false;
+
     let i = -1;
     let j = -1;
     // Simultaneously loop through the text and the html, finding each corresponding nbsp.
@@ -1706,9 +1737,10 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
                 editableDivText.substring(0, j) +
                 " " +
                 editableDivText.substring(j + 1);
+            replacedAnNbsp = true;
         }
     }
-    editableDiv.innerHTML = editableDivHtml;
+    if (replacedAnNbsp) editableDiv.innerHTML = editableDivHtml;
 
     // Restore the bookmarks. See comment above.
     if (originalBookMarkContent)

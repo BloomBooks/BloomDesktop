@@ -124,4 +124,35 @@ describe("toolbox tests", () => {
         // important thing is to do no harm.
         runNbspTest('<span data-attr="&nbsp;yuck!">A&nbsp;B</span>');
     });
+
+    // runNbspTest only compares serialized html, which cannot tell "we left the DOM alone" apart
+    // from "we rebuilt it into something that serializes the same". These two check the actual
+    // nodes, because rebuilding matters: the reader tools' violation highlights and the Talking
+    // Book tool's audio highlights are live Ranges, and replacing a text node collapses any Range
+    // pointing into it. See the note where handlePageEditing() calls cleanUpNbsps.
+    it("cleanUpNbsps keeps the same text node when there is nothing to convert", () => {
+        const div = document.createElement("div");
+        div.innerHTML = "<p>A b&nbsp;</p>"; // trailing nbsp, so nothing to convert
+        const textNodeBefore = div.querySelector("p")!.firstChild;
+        // Sanity check the setup: we mean to be watching a text node.
+        expect(textNodeBefore?.nodeType).toBe(Node.TEXT_NODE);
+
+        cleanUpNbsps(div);
+
+        expect(div.innerHTML).toBe("<p>A b&nbsp;</p>");
+        expect(div.querySelector("p")!.firstChild).toBe(textNodeBefore);
+    });
+
+    it("cleanUpNbsps does rebuild the content when there is something to convert", () => {
+        const div = document.createElement("div");
+        div.innerHTML = "<p>A&nbsp;b c</p>";
+        const textNodeBefore = div.querySelector("p")!.firstChild;
+        // Sanity check the setup: this nbsp is one we expect to be converted.
+        expect(textNodeBefore?.textContent).toBe("A b c"); // the character after the A is U+00A0, a non-breaking space
+
+        cleanUpNbsps(div);
+
+        expect(div.innerHTML).toBe("<p>A b c</p>");
+        expect(div.querySelector("p")!.firstChild).not.toBe(textNodeBefore);
+    });
 });
