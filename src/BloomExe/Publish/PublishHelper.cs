@@ -174,6 +174,11 @@ namespace Bloom.Publish
                     }
                 }
             }
+            // Deliberately NOT localized, per the guidance in .github/skills/xlf-strings: strings seen only
+            // when something has gone wrong internally are left in English. Reaching here means the
+            // off-screen browser failed twice in a row, which is a fault condition rather than a normal
+            // outcome -- and keeping the wording identical to the log entry above is what makes a user's
+            // report match what we read in their log.
             throw new ApplicationException(
                 "Bloom could not determine which parts of this book are visible, so it stopped rather than "
                     + "publish a book with the wrong content or missing fonts. See the log for details."
