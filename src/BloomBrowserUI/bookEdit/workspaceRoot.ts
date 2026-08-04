@@ -328,6 +328,24 @@ export function ShowEditViewDialog(dialog: FunctionComponentElement<unknown>) {
     }
     let root = doc.getElementById("modal-dialog-react-root");
     // remove any left over dialog stuff
+    //
+    // Known limitation, recorded here because this is the shared place every edit-view dialog
+    // goes through: detaching the container does NOT unmount the React tree that renderRoot
+    // created in it, and renderRoot keys its root by container element, so each showing makes a
+    // new root and abandons the previous one. Those abandoned trees are never freed for the life
+    // of the edit view.
+    //
+    // What that does and does not cost, measured rather than assumed (BL-16607): it does NOT
+    // leak a dialog's subscriptions. A dialog closes by setting its own `open` to false, and
+    // BloomDialog does not pass keepMounted, so MUI unmounts the dialog's children and their
+    // effect cleanups run -- opening and closing the Decodable Reader setup dialog three times,
+    // visiting the tab that registers a window "focus" listener each time, ends with a net zero
+    // of those listeners. What is left behind is the empty shell: one root object and its
+    // top-level component per showing. Small, but unbounded over a long editing session.
+    //
+    // Fixing it means unmounting the old root here (or having the dialog close through something
+    // that does) rather than only detaching its container. That changes teardown for every
+    // dialog shown this way, so it wants its own testing pass.
     if (root) {
         doc.body.removeChild(root);
     }
