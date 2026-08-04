@@ -9,18 +9,21 @@ export const ReaderDialogTextarea: React.FunctionComponent<{
     updateSettings: (value: string) => void;
     value: string;
     extraStyles: SerializedStyles;
+    /** Accessible name for the box; it is labelled only by a nearby heading, not a <label>. */
+    ariaLabel: string;
 }> = (props) => {
-    const activateLongPressForSightWords = useCallback(
+    const activateLongPress = useCallback(
         (textarea: HTMLTextAreaElement | null) => {
             if (textarea) {
-                getToolboxBundleExports()?.activateLongPressFor($(textarea));
+                getToolboxBundleExports()!.activateLongPressFor($(textarea));
             }
         },
         [],
     );
     return (
         <textarea
-            ref={activateLongPressForSightWords}
+            ref={activateLongPress}
+            aria-label={props.ariaLabel}
             value={props.value}
             onChange={(event) => props.updateSettings(event.target.value)}
             onBlur={(event) => props.updateSettings(event.currentTarget.value)}
