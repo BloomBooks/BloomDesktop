@@ -16,6 +16,7 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace Bloom.web.controllers
 {
@@ -111,6 +112,20 @@ namespace Bloom.web.controllers
             ".jpg",
             ".jpeg",
             ".webp",
+        };
+
+        // The subset of AllowedImageExtensions that Bloom's import processing can actually
+        // open. PalasoImage decodes through GDI+, which has no WebP codec, so handing it a
+        // .webp throws every time — those are copied verbatim instead (see
+        // ImportImageIntoBookFolder). Kept as its own list rather than "everything but webp"
+        // so that adding a format above is a deliberate decision here too.
+        private static readonly HashSet<string> ProcessableImageExtensions = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase
+        )
+        {
+            ".png",
+            ".jpg",
+            ".jpeg",
         };
 
         // Regex alternation of the allowed extensions without the leading dot
@@ -890,8 +905,9 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Applies one replacement to the slot named by incomingId ("{pageId}:{ordinal}"),
-        /// copying the new image bytes (from history or a reused book file) into the book
-        /// folder under a fresh name. An off-page slot is edited here in the storage DOM
+        /// bringing the new image bytes (from history or a reused book file) into the book
+        /// folder under a fresh name via <see cref="ImportImageIntoBookFolder"/>, which also
+        /// applies Bloom's normal import processing. An off-page slot is edited here in the storage DOM
         /// (caller saves); a current-page slot is left untouched — we return oldSrc/newSrc and
         /// the new file's <paramref name="creditAttributes"/> (via the out params) for the
         /// front-end to apply to the live DOM. Returns false with <paramref name="error"/> set
@@ -1009,15 +1025,9 @@ namespace Bloom.web.controllers
                 return false;
             }
 
-            // Write the new image under a fresh name (preserving the source extension) so
-            // we never clobber a file shared by another slot or serve stale cached bytes.
-            // GetUnusedFilename guarantees fresh while keeping the name human-readable
-            // (filenames surface in image metadata and problem reports).
-            var extension = Path.GetExtension(sourceBytesPath);
-            if (string.IsNullOrEmpty(extension))
-                extension = ".png";
-            var newFileName = ImageUtils.GetUnusedFilename(book.FolderPath, "ai-image", extension);
-            RobustFile.Copy(sourceBytesPath, Path.Combine(book.FolderPath, newFileName), true);
+            // Bring the bytes into the book folder, import-processed and under a fresh
+            // "ai-image*" name.
+            var newFileName = ImportImageIntoBookFolder(sourceBytesPath, book.FolderPath);
             newSrc = newFileName;
 
             // A generated result arrives with no intellectual-property metadata of its own, so
@@ -1061,6 +1071,77 @@ namespace Bloom.web.controllers
                 pageForDataDivSync = page;
 
             return true;
+        }
+
+        /// <summary>
+        /// Brings the bytes for a replacement into the book folder under a fresh "ai-image*"
+        /// name, running the same import processing a user-added image gets — downscale
+        /// anything oversized, convert a non-web format to PNG — instead of the verbatim copy
+        /// this used to do (BL-16645). AI services can return very large PNGs, and an
+        /// unprocessed one bloats the book folder for every sync, upload and backup.
+        ///
+        /// The NAME matters as much as the bytes: <see cref="DeleteSupersededAiImageFiles"/>
+        /// reclaims our old files by their "ai-image" prefix, but ProcessAndSaveImageIntoFolder
+        /// names its output after the SOURCE file, which for us is an opaque history id. So we
+        /// let it write, then rename onto the name we reserved. Passing isSameFile:false
+        /// guarantees it wrote a brand-new file (GetUnusedFilename picked that name), so the
+        /// rename can never disturb a file another slot shares. Processing may change the
+        /// extension (a non-web format becomes .png, .jpeg becomes .jpg), so the reserved name
+        /// takes its extension from what was actually produced rather than from the source.
+        ///
+        /// Anything we can't process is copied verbatim rather than lost — unprocessed but
+        /// intact, which is what this code did for every format before BL-16645. That covers
+        /// .webp (see <see cref="ProcessableImageExtensions"/>), a placeholder (which
+        /// ProcessAndSaveImageIntoFolder deliberately short-circuits on, writing nothing), and
+        /// an image that fails to process at all. Internal for testing.
+        /// </summary>
+        /// <returns>The name (no path) of the new file in the book folder.</returns>
+        internal static string ImportImageIntoBookFolder(
+            string sourceBytesPath,
+            string bookFolderPath
+        )
+        {
+            string processedName = null;
+            if (
+                ProcessableImageExtensions.Contains(Path.GetExtension(sourceBytesPath))
+                && !ImageUtils.IsPlaceholderImageFilename(sourceBytesPath)
+            )
+            {
+                try
+                {
+                    using (var imageInfo = PalasoImage.FromFileRobustly(sourceBytesPath))
+                    {
+                        processedName = ImageUtils.ProcessAndSaveImageIntoFolder(
+                            imageInfo,
+                            bookFolderPath,
+                            isSameFile: false
+                        );
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Corrupt bytes, or an image too big for us to process at all. Falling
+                    // through to the plain copy keeps the user's image, just unprocessed.
+                    Logger.WriteError(
+                        $"AiImageEditorApi: could not import-process {sourceBytesPath}; copying it unchanged",
+                        ex
+                    );
+                }
+            }
+
+            var producedPath =
+                processedName == null ? null : Path.Combine(bookFolderPath, processedName);
+            var extension = Path.GetExtension(producedPath ?? sourceBytesPath);
+            if (string.IsNullOrEmpty(extension))
+                extension = ".png";
+            var newFileName = ImageUtils.GetUnusedFilename(bookFolderPath, "ai-image", extension);
+            var newPath = Path.Combine(bookFolderPath, newFileName);
+            // producedPath may not exist if processing bailed out early; fall back to the copy.
+            if (producedPath != null && RobustFile.Exists(producedPath))
+                RobustFile.Move(producedPath, newPath, true); // true: overwrite
+            else
+                RobustFile.Copy(sourceBytesPath, newPath, true);
+            return newFileName;
         }
 
         /// <summary>

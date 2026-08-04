@@ -162,6 +162,143 @@ namespace BloomTests.web.controllers
         }
 
         // ------------------------------------------------------------------
+        // ImportImageIntoBookFolder: brings a committed image into the book folder with
+        // Bloom's normal import processing (BL-16645). The "ai-image" name it produces is
+        // load-bearing — DeleteSupersededAiImageFiles reclaims old files by that prefix —
+        // and the processing must never be able to lose the image.
+        // ------------------------------------------------------------------
+
+        // Writes a PNG of the given size into a "source" folder OUTSIDE the book folder,
+        // standing in for the AI editor's history folder, and returns its full path.
+        private string MakeSourcePng(string name, int width, int height)
+        {
+            var sourceFolder = Path.Combine(_bookFolder.Path, "source");
+            Directory.CreateDirectory(sourceFolder);
+            var path = Path.Combine(sourceFolder, name);
+            using (var bitmap = new Bitmap(width, height))
+            {
+                RobustImageIO.SaveImage(bitmap, path, ImageFormat.Png);
+            }
+            return path;
+        }
+
+        [Test]
+        public void ImportImageIntoBookFolder_NamesTheFileAiImage_NotAfterTheSource()
+        {
+            // The source is named like an AI history result (an opaque id). The old code
+            // reserved an "ai-image*" name; ProcessAndSaveImageIntoFolder would instead name
+            // the file after the source, silently taking it out of reach of
+            // DeleteSupersededAiImageFiles.
+            var source = MakeSourcePng("a1b2c3d4.png", 10, 10);
+            Assert.That(File.Exists(source), Is.True, "setup: the source image should exist");
+
+            var newName = AiImageEditorApi.ImportImageIntoBookFolder(source, _bookFolder.Path);
+
+            Assert.That(
+                newName,
+                Does.StartWith("ai-image"),
+                "DeleteSupersededAiImageFiles reclaims our files by this prefix"
+            );
+            Assert.That(
+                newName,
+                Does.Not.Contain("a1b2c3d4"),
+                "the opaque history id must not become the book's file name"
+            );
+            Assert.That(
+                File.Exists(Path.Combine(_bookFolder.Path, newName)),
+                Is.True,
+                "the bytes must actually land in the book folder"
+            );
+        }
+
+        [Test]
+        public void ImportImageIntoBookFolder_CalledTwice_ProducesDistinctFiles()
+        {
+            // Two slots committed in one go must not collapse onto one file name.
+            var source = MakeSourcePng("result.png", 10, 10);
+
+            var first = AiImageEditorApi.ImportImageIntoBookFolder(source, _bookFolder.Path);
+            var second = AiImageEditorApi.ImportImageIntoBookFolder(source, _bookFolder.Path);
+
+            Assert.That(second, Is.Not.EqualTo(first), "each import needs its own file");
+            Assert.That(File.Exists(Path.Combine(_bookFolder.Path, first)), Is.True);
+            Assert.That(File.Exists(Path.Combine(_bookFolder.Path, second)), Is.True);
+        }
+
+        [Test]
+        public void ImportImageIntoBookFolder_OversizedImage_IsDownscaled()
+        {
+            // The point of BL-16645: an AI service can hand back a huge PNG, and copying it
+            // verbatim bloats the book folder for every sync, upload and backup.
+            var source = MakeSourcePng("huge.png", 5000, 4000);
+            using (var before = Image.FromFile(source))
+            {
+                Assert.That(
+                    before.Width,
+                    Is.EqualTo(5000),
+                    "setup: the source really is oversized"
+                );
+            }
+
+            var newName = AiImageEditorApi.ImportImageIntoBookFolder(source, _bookFolder.Path);
+
+            using (var after = Image.FromFile(Path.Combine(_bookFolder.Path, newName)))
+            {
+                Assert.That(
+                    after.Width,
+                    Is.LessThan(5000),
+                    "an oversized image should have been downscaled on the way in"
+                );
+            }
+        }
+
+        [Test]
+        public void ImportImageIntoBookFolder_UnprocessableFormat_IsCopiedVerbatim()
+        {
+            // PalasoImage decodes through GDI+, which has no WebP codec. We must still get
+            // the user's image into the book (unprocessed but intact), under our own name.
+            var sourceFolder = Path.Combine(_bookFolder.Path, "source");
+            Directory.CreateDirectory(sourceFolder);
+            var source = Path.Combine(sourceFolder, "generated.webp");
+            var bytes = new byte[] { 1, 2, 3, 4, 5 };
+            File.WriteAllBytes(source, bytes);
+
+            var newName = AiImageEditorApi.ImportImageIntoBookFolder(source, _bookFolder.Path);
+
+            Assert.That(newName, Does.StartWith("ai-image"));
+            Assert.That(
+                Path.GetExtension(newName),
+                Is.EqualTo(".webp"),
+                "a format we can't process keeps its own extension"
+            );
+            Assert.That(
+                File.ReadAllBytes(Path.Combine(_bookFolder.Path, newName)),
+                Is.EqualTo(bytes),
+                "the bytes must survive unchanged"
+            );
+        }
+
+        [Test]
+        public void ImportImageIntoBookFolder_CorruptImage_StillLandsInTheBookFolder()
+        {
+            // Processing must never be able to lose the image: a .png that isn't really a PNG
+            // throws inside PalasoImage, and we fall back to the plain copy.
+            var sourceFolder = Path.Combine(_bookFolder.Path, "source");
+            Directory.CreateDirectory(sourceFolder);
+            var source = Path.Combine(sourceFolder, "broken.png");
+            File.WriteAllText(source, "this is not a png");
+
+            var newName = AiImageEditorApi.ImportImageIntoBookFolder(source, _bookFolder.Path);
+
+            Assert.That(newName, Does.StartWith("ai-image"));
+            Assert.That(
+                File.Exists(Path.Combine(_bookFolder.Path, newName)),
+                Is.True,
+                "a corrupt image must still be copied rather than silently dropped"
+            );
+        }
+
+        // ------------------------------------------------------------------
         // TryResolveServedUrlToBookFile: the path-traversal guard that stops a
         // reused-image URL from resolving to anything outside the book folder.
         // servedUrl is passed as a plain book-folder path (FromLocalhost leaves a
