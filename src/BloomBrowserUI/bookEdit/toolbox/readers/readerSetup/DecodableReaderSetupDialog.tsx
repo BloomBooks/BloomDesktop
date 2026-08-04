@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import { ThemeProvider } from "@mui/material/styles";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as React from "react";
 import {
     getToolboxBundleExports,
@@ -20,13 +20,14 @@ import {
     DialogOkButton,
 } from "../../../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../../../react_components/l10nHooks";
+import { useMountEffect } from "../../../../utils/useMountEffect";
 import type { ReaderSettings } from "../ReaderSettings";
 import { ReaderStage } from "../ReaderSettings";
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { DecodableStagesSetup } from "./DecodableStagesSetup";
 import {
-    cleanSpaceDelimitedList,
     cloneReaderSettings,
+    prepareSettingsForSave,
 } from "./decodableStagesUtils";
 import { kBloomBlue } from "../../../../utils/colorUtils";
 import { lightTheme } from "../../../../bloomMaterialUITheme";
@@ -39,6 +40,8 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
     const model = getTheOneReaderToolsModel();
 
     const [open, setOpen] = useState(true);
+    // 2 is the Decodable Stages tab, which is the one this dialog opens on.
+    const [curTab, setCurTab] = useState(2);
     const [settings, setSettings] = useState<ReaderSettings>(() => {
         const source = model.synphony?.source;
         if (!source) {
@@ -55,13 +58,37 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
     });
     const initialSettings = useRef(settings);
 
+    // Lock the edit view from here rather than from showDecodableReaderSetupDialog, so that the
+    // same component owns both turning the lock on and (in close, below) turning it off. If the
+    // settings check above throws, this never runs, and the user is not left staring at an edit
+    // view they cannot touch with no dialog to dismiss.
+    useMountEffect(() => {
+        postBoolean("editView/setModalState", true);
+    });
+
+    const hasClosed = useRef(false);
     const close = () => {
+        // Closing twice must not post the unlock twice. Closing does not unmount this
+        // component, so the handle below stays live afterwards; without this guard a later
+        // closeSetupDialog() would re-unlock the edit view even though something else may by
+        // then be relying on it staying locked.
+        if (hasClosed.current) {
+            return;
+        }
+        hasClosed.current = true;
         setOpen(false);
-        closeDialog = () => {};
         postBoolean("editView/setModalState", false);
     };
 
-    closeDialog = close;
+    // Publish the close handle from an effect, not from the render body: assigning module-level
+    // state while rendering runs again on every re-render (and twice under StrictMode). No
+    // dependency list, so the handle always points at the current close; cleared on unmount.
+    useEffect(() => {
+        closeDialog = close;
+        return () => {
+            closeDialog = () => {};
+        };
+    });
 
     const save = () => {
         const toolboxBundle = getToolboxBundleExports();
@@ -70,23 +97,31 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
                 "The reader settings must load before they can be saved.",
             );
         }
-        const settingsToSave = cloneReaderSettings(settings);
-        settingsToSave.letters = cleanSpaceDelimitedList(
-            settingsToSave.letters,
+        const settingsToSave = prepareSettingsForSave(settings);
+        // Compare like with like: what we save has been normalized, so the "what did it
+        // look like before?" baseline has to be normalized the same way. Otherwise stored
+        // settings that happen to contain a comma or a doubled space look changed every
+        // time, and we needlessly re-read every sample text file.
+        const initialForComparison = prepareSettingsForSave(
+            initialSettings.current,
         );
-        for (const stage of settingsToSave.stages) {
-            stage.letters = cleanSpaceDelimitedList(stage.letters);
-            stage.sightWords = cleanSpaceDelimitedList(stage.sightWords);
-        }
         void toolboxBundle
             .beginSaveChangedSettings(
                 settingsToSave,
-                initialSettings.current.moreWords,
-                initialSettings.current.letters,
-                initialSettings.current.useAllowedWords,
+                initialForComparison.moreWords,
+                initialForComparison.letters,
+                initialForComparison.useAllowedWords,
             )
             .then(close);
     };
+
+    let helpId =
+        "Tasks/Edit_tasks/Decodable_Reader_Tool/Decodable_Stages_tab.htm";
+    if (curTab === 0) {
+        helpId = "Tasks/Edit_tasks/Decodable_Reader_Tool/Letters_tab.htm";
+    } else if (curTab === 1) {
+        helpId = "Tasks/Edit_tasks/Decodable_Reader_Tool/Words_tab.htm";
+    }
 
     const title = useL10n(
         "Set up Decodable Reader Tool",
@@ -135,6 +170,8 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
                             setSettings={setSettings}
                             fontName={model.fontName}
                             maxAllowedWords={model.maxAllowedWords}
+                            curTab={curTab}
+                            setCurTab={setCurTab}
                         />
                     )}
                 </DialogMiddle>
@@ -152,7 +189,7 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
                 >
                     {!props.editingForbiddenMessage && (
                         <DialogBottomLeftButtons>
-                            <DialogHelpButton helpId="Tasks/Edit_tasks/Decodable_Reader_Tool/Decodable_Stages_tab.htm" />
+                            <DialogHelpButton helpId={helpId} />
                         </DialogBottomLeftButtons>
                     )}
                     {!props.editingForbiddenMessage && (
@@ -167,8 +204,34 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
 
 /** Shows the React-hosted decodable reader setup dialog. */
 export const showDecodableReaderSetupDialog = (): void => {
+    // The dialog cannot be built without the collection's reader settings: the component
+    // reads them in its very first useState and throws if they are not there. The tool that
+    // owns this button normally loads them when it is activated, but we have no guarantee
+    // that has happened (or has survived -- the model lives on the top window and is replaced
+    // when the frame that made it reloads) by the time the button is clicked. Without this,
+    // clicking "Set Up Stages" appears to do nothing at all, which is the same complaint that
+    // BL-16732 fixed for the legacy dialog in showSetupDialog. Loading is cheap when the
+    // settings are already in the model in hand.
+    //
+    // The setTimeout builds the dialog outside the promise chain, for the reason given in that
+    // same fix: a jQuery promise turns anything thrown inside a callback into a rejection
+    // nobody is listening for, so a failure in here would be swallowed and would once again
+    // look like a button that does nothing. Outside the chain it reaches our error reporting.
+    const toolboxBundle = getToolboxBundleExports();
+    if (!toolboxBundle) {
+        throw new Error(
+            "The toolbox frame must be present to open reader setup.",
+        );
+    }
+    toolboxBundle
+        .beginLoadSynphonySettings()
+        .always(() => window.setTimeout(beginShowSetupDialog, 0));
+};
+
+/** Builds and shows the dialog, once the reader settings are known to be loaded. */
+const beginShowSetupDialog = (): void => {
     get("readers/io/readerSettingsEditForbidden", (result) => {
-        postBoolean("editView/setModalState", true);
+        // The edit view's modal lock is set by the dialog component itself, on mount.
         getWorkspaceBundleExports().ShowEditViewDialog(
             <DecodableReaderSetupDialogLauncher
                 editingForbiddenMessage={result.data || undefined}

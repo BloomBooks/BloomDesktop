@@ -16,7 +16,10 @@ import { setActiveDragActivityTab } from "./games/GameTool";
 import { registerAllToolboxTools } from "./registerAllToolboxTools";
 // Explicit imports needed so that these symbols are in local scope for the window.toolboxBundle object
 import {
+    beginLoadSynphonySettings,
+    classifySampleTextFiles,
     getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
     addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
@@ -30,6 +33,12 @@ import { theOneAudioRecorder } from "./talkingBook/audioRecording";
 import { renderToolboxRoot } from "./ToolboxRoot";
 
 export interface IToolboxFrameExports {
+    /**
+     * Loads the collection's reader settings into the one ReaderToolsModel, if they are not
+     * already in the model actually in hand. Cheap when they are. (BL-16732)
+     */
+    beginLoadSynphonySettings(): JQueryPromise<void>;
+
     beginSaveChangedSettings(
         settings: import("./readers/ReaderSettings").ReaderSettings,
         previousMoreWords: string,
@@ -45,6 +54,12 @@ export interface IToolboxFrameExports {
     removeWordListChangedListener(listenerNameAndContext: string): void;
 
     getDecodableStageMatchingWords(knownGpcs: string[]): string[];
+
+    getSynphonyAlwaysMatchSymbols(): string[];
+
+    classifySampleTextFiles(
+        paths: string[],
+    ): { path: string; readable: boolean; hasExtension: boolean }[];
 
     addSampleTextFilesChangedListener(
         listenerNameAndContext: string,
@@ -79,7 +94,10 @@ export {
     closeSetupDialog,
 } from "./readers/readerSetup/readerSetupDialog";
 export {
+    beginLoadSynphonySettings,
+    classifySampleTextFiles,
     getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
     addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
@@ -152,7 +170,10 @@ const toolboxBundle: ToolboxBundleApi = {
     showSetupDialog,
     initializeReaderSetupDialog,
     closeSetupDialog,
+    beginLoadSynphonySettings,
+    classifySampleTextFiles,
     getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
     addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
