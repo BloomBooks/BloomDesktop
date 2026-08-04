@@ -4,10 +4,15 @@
 import $ from "jquery";
 import jQuery from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
-import { getTheOneReaderToolsModel } from "./readerToolsModel";
+import {
+    getFileExtension,
+    getTheOneReaderToolsModel,
+    isReadableSampleTextFile,
+} from "./readerToolsModel";
 import {
     theOneLanguageDataInstance,
     theOneLibSynphony,
+    ResetLanguageDataGraphemes,
     ResetLanguageDataInstance,
 } from "./libSynphony/synphony_lib";
 import "./libSynphony/synphony_lib";
@@ -297,6 +302,33 @@ export function beginLoadSynphonySettings(): JQueryPromise<void> {
  * @param settingsFileContent The content of the standard JSON) file that stores the Synphony settings for the collection.
  * @global {getTheOneReaderToolsModel()) ReaderToolsModel
  */
+/**
+ * Make sure the one ReaderToolsModel has a watcher running on the collection's Sample Texts
+ * folder.
+ *
+ * Both paths that load settings into a model call this, because only one of them used to. When
+ * the model has been replaced -- the case beginLoadSynphonySettings describes, where this
+ * module's "already initialized" memory outlives the model it describes -- the settings are
+ * loaded by beginRefreshEverything, which set synphony but left directoryWatcher undefined. Then
+ * anything asking to be told about sample-file changes, such as the setup dialog's Sample Words
+ * tab, dereferenced undefined and threw. (BL-16607)
+ *
+ * It creates the watcher only when there is none, so it is safe on the paths through
+ * beginRefreshEverything that run on every settings save.
+ */
+function ensureSampleTextsDirectoryWatcher(): void {
+    const model = getTheOneReaderToolsModel();
+    if (model.directoryWatcher) {
+        return;
+    }
+    model.directoryWatcher = new DirectoryWatcher("Sample Texts", 10);
+    model.directoryWatcher.onChanged(
+        "SampleFilesChanged.ReaderTools",
+        readerSampleFilesChanged,
+    );
+    model.directoryWatcher.start();
+}
+
 function initializeSynphony(
     settingsFileContent: ReaderSettings | string,
 ): void {
@@ -307,16 +339,7 @@ function initializeSynphony(
 
     getTheOneReaderToolsModel().updateControlContents();
 
-    // set up a DirectoryWatcher on the Sample Texts directory
-    getTheOneReaderToolsModel().directoryWatcher = new DirectoryWatcher(
-        "Sample Texts",
-        10,
-    );
-    getTheOneReaderToolsModel().directoryWatcher.onChanged(
-        "SampleFilesChanged.ReaderTools",
-        readerSampleFilesChanged,
-    );
-    getTheOneReaderToolsModel().directoryWatcher.start();
+    ensureSampleTextsDirectoryWatcher();
 
     if (synphony.source.useAllowedWords) {
         // get the allowed words for each stage
@@ -371,9 +394,14 @@ function refreshSettingsExceptSampleWords(newSettings) {
  * Returns a promise which is resolved when all the sample words files are loaded and the model is ready to use.
  */
 function beginRefreshEverything(settings: ReaderSettings): JQueryPromise<void> {
-    // Allowed-word-list mode does not use sample-word data. Keep it available for
-    // a setup-dialog preview if the user temporarily switches back to stages.
-    if (!settings.useAllowedWords) {
+    if (settings.useAllowedWords) {
+        // Allowed-word-list mode does not use sample-word data, and we deliberately keep what
+        // is already loaded so the setup dialog can still preview matching words if the user
+        // switches back to stages mode. The graphemes must still be rebuilt though: loadSettings
+        // only adds them, so without this a letter combination the user just deleted would keep
+        // being counted as one letter (getWordLength) for the rest of the session.
+        ResetLanguageDataGraphemes();
+    } else {
         ResetLanguageDataInstance();
         getTheOneReaderToolsModel().allWords = {};
     }
@@ -387,6 +415,7 @@ function beginRefreshEverything(settings: ReaderSettings): JQueryPromise<void> {
     const synphony = new ReadersSynphonyWrapper();
     synphony.loadSettings(settings);
     getTheOneReaderToolsModel().setSynphony(synphony);
+    ensureSampleTextsDirectoryWatcher();
 
     if (synphony.source.useAllowedWords) {
         // reload the allowed words for each stage
@@ -462,7 +491,58 @@ export function removeWordListChangedListener(
     ];
 }
 
-/** Gets the loaded sample words decodable with the given graphemes. */
+/**
+ * Gets the symbols this language allows inside a word regardless of the reader's stage — a
+ * syllable break, a stress mark and so on. They live only on the toolbox frame's copy of the
+ * Synphony data (and only when the collection's imported language data defines them), so the
+ * setup dialog, which runs in the workspace frame, has to ask for them across the bundle
+ * boundary the same way it asks for matching words.
+ */
+export function getSynphonyAlwaysMatchSymbols(): string[] {
+    // Match how selectWordsFromSynphony assembles its own copy of this list: it *concats*
+    // AlwaysMatch, so that field may hold either one symbol or an array of them, and pushes
+    // the other three, which are single symbols. Flattening with concat here covers both
+    // shapes — a plain `typeof === "string"` test would silently drop an array-valued
+    // AlwaysMatch, which is the sort of quiet omission this function exists to avoid.
+    const symbols: unknown[] = ([] as unknown[]).concat(
+        theOneLanguageDataInstance["AlwaysMatch"] ?? [],
+        theOneLanguageDataInstance["SyllableBreak"] ?? [],
+        theOneLanguageDataInstance["StressSymbol"] ?? [],
+        theOneLanguageDataInstance["MorphemeBreak"] ?? [],
+    );
+    return symbols.filter(
+        (symbol): symbol is string =>
+            typeof symbol === "string" && symbol !== "",
+    );
+}
+
+/**
+ * Classifies the Sample Texts folder listing for the setup dialog, which runs in another frame
+ * and so cannot reach the model directly. Answering from here — rather than letting the dialog
+ * keep its own copy of the readable-extension list — is what keeps what the dialog shows in step
+ * with what Bloom actually loads, including the case-insensitive comparison.
+ */
+export function classifySampleTextFiles(
+    paths: string[],
+): { path: string; readable: boolean; hasExtension: boolean }[] {
+    return paths.map((path) => ({
+        path,
+        readable: isReadableSampleTextFile(path),
+        hasExtension: getFileExtension(path) !== undefined,
+    }));
+}
+
+/**
+ * Gets the loaded sample words decodable with the given graphemes.
+ *
+ * The `true` first argument asks for word names rather than DataWord objects, which is all the
+ * setup dialog wants. It is worth noting that this is a *different* entry point from the one the
+ * toolbox's own getStageWords uses (which passes `false`), because that looks like a discrepancy
+ * on a quick read and was raised as one during review. It is not: both end up in
+ * libSynphony's selectGPCWordsWithArrayCompare with the same arguments, and the names variant
+ * simply plucks Name off the results. The only real difference is that the `false` path memoizes
+ * through theOneWordCache while this one does not, so this always reflects the current data.
+ */
 export function getDecodableStageMatchingWords(knownGpcs: string[]): string[] {
     return getTheOneReaderToolsModel().selectWordsFromSynphony(
         true,
