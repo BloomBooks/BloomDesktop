@@ -163,9 +163,12 @@ else
 echo "*** All ${#destinations[@]} dependencies are present on disk even so, so this checkout" >&2
 echo "*** can probably still build. What failed was checking them against the server, so" >&2
 echo "*** we do not know they are up to date -- which is why this is still a failure." >&2
-# Only the borrowed files whose own check never happened are unverified. One that the
-# server confirmed (304) or replaced during this run has been checked like any other, and
-# saying otherwise would send the developer looking for a problem that is not there.
+fi
+# Only the borrowed files whose own check never happened are unverified. One that the server
+# confirmed (304) or replaced during this run has been checked like any other, and saying
+# otherwise would send the developer looking for a problem that is not there. This belongs in
+# both branches: a brand new worktree with a flaky server is exactly where a borrowed,
+# never-checked copy matters most, and that run usually has something missing too.
 local unverified=()
 local index=0
 while [ "$index" -lt "${#borrowed_dest[@]}" ]
@@ -178,13 +181,12 @@ index=$((index + 1))
 done
 if [ ${#unverified[@]} -ne 0 ]
 then
-echo "*** Note that ${#unverified[@]} of them we copied from another worktree during this run and" >&2
-echo "*** never managed to check against the server at all:" >&2
+echo "*** Note that ${#unverified[@]} of the file(s) now on disk were copied from another worktree" >&2
+echo "*** during this run, and we never managed to check them against the server at all:" >&2
 for destination in "${unverified[@]}"
 do
 echo "***   $destination" >&2
 done
-fi
 fi
 if [ "$extraction_failed" == "1" ]
 then
@@ -300,7 +302,9 @@ continue
 fi
 case "$candidate" in
 *.zip)
-if ! unzip -tqq "$candidate" > /dev/null 2>&1
+# exit code 1 is only a warning; 2 and up (or a missing unzip) mean we should not risk it
+unzip -tqq "$candidate" > /dev/null 2>&1
+if [ "$?" -ge 2 ]
 then
 continue
 fi
@@ -338,14 +342,17 @@ echo cleaning $2
 rm -f ""$2""
 else
 destinations+=("$2")
+seeded_dest=""
+seeded_source=""
+# Borrowing needs no network, so do it even when the server has stopped answering: it leaves
+# a brand new worktree usable (and the summary says which files were never checked) instead
+# of empty.
+seed_from_sibling_worktree "$1" "$2"
 if [ "$server_unreachable" == "1" ]
 then
 skipped_after_giving_up=$((skipped_after_giving_up + 1))
 return
 fi
-seeded_dest=""
-seeded_source=""
-seed_from_sibling_worktree "$1" "$2"
 where_curl=$(type -P curl)
 where_wget=$(type -P wget)
 if [ "$where_curl" != "" ]
@@ -571,15 +578,28 @@ extraction_failed=1
 note_failure "cannot extract $1 into $2: the file is not there"
 return
 fi
-if ! unzip -tqq "$1" > /dev/null 2>&1
+# Test the archive before unpacking it, but read the exit code carefully: 1 means "fine,
+# with warnings" (extra bytes around the archive, say), and 127 means unzip itself is not
+# installed. Treating either as "this archive is corrupt" would delete a perfectly good
+# download -- and since the next run would fetch it and delete it again, that is a loop that
+# never terminates and never unpacks anything.
+unzip -tqq "$1" > /dev/null 2>&1
+local test_status=$?
+if [ "$test_status" == "127" ]
+then
+extraction_failed=1
+note_failure "cannot extract $1 into $2: unzip is not installed. Leaving the archive alone; install unzip (Git Bash ships it) and run this again."
+return
+fi
+if [ "$test_status" -ge 2 ]
 then
 extraction_failed=1
 deleted_a_corrupt_zip=1
 if [ -d "$2" ] && [ -n "$(ls -A "$2" 2>/dev/null)" ]
 then
-note_failure "cannot extract $1 into $2: it is not a valid zip file (a failed or truncated download?). Deleted it so the next run fetches it afresh; what an earlier run extracted into $2 is still there."
+note_failure "cannot extract $1 into $2: it is not a valid zip file (unzip test exit code $test_status -- a failed or truncated download?). Deleted it so the next run fetches it afresh; what an earlier run extracted into $2 is still there."
 else
-note_failure "cannot extract $1 into $2: it is not a valid zip file (a failed or truncated download?). Deleted it so the next run fetches it afresh, and nothing has been extracted into $2."
+note_failure "cannot extract $1 into $2: it is not a valid zip file (unzip test exit code $test_status -- a failed or truncated download?). Deleted it so the next run fetches it afresh, and nothing has been extracted into $2."
 fi
 rm -f "$1"
 return
