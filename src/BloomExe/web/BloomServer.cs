@@ -2480,20 +2480,35 @@ namespace Bloom.Api
         {
             RegisterThreadBlocking();
             var addedWorker = false;
-            lock (_queue)
+            // Nothing from here on may throw. The caller unregisters in a finally that only covers the
+            // block AFTER this method returns, so an exception escaping here would leave
+            // _countBlockedThreads permanently incremented -- and an inflated count makes this guard fire
+            // on essentially every later block, quietly corrupting the server's own accounting. Adding a
+            // worker is an optimisation; failing to add one must never fail the caller or leak the count.
+            try
             {
-                // SpinUpAWorker mutates _workers, so it must be called inside this lock.
-                if (_countBlockedThreads >= _workers.Count)
+                lock (_queue)
                 {
-                    SpinUpAWorker();
-                    addedWorker = true;
+                    // SpinUpAWorker mutates _workers, so it must be called inside this lock.
+                    if (_countBlockedThreads >= _workers.Count)
+                    {
+                        SpinUpAWorker();
+                        addedWorker = true;
+                    }
                 }
             }
-            // Say so when we actually had to add one. This is the only POSITIVE evidence that the
-            // starvation BL-16612 suspects is real: every other diagnostic here speaks only after
-            // something has already gone wrong, which means a guard that is quietly doing its job looks
-            // exactly like a bug that quietly went away. If this line shows up in a passing run's log,
-            // the condition was real and this is what kept requests moving.
+            catch (Exception e)
+            {
+                Logger.WriteEvent(
+                    "Could not add a server worker while one was blocking: " + e.Message
+                );
+            }
+            // Say so when we actually had to add one. This is the POSITIVE evidence that the starvation
+            // behind BL-16612 is real and that this is what kept requests moving: every other diagnostic
+            // here speaks only after something has already gone wrong, so a guard quietly doing its job
+            // would otherwise be indistinguishable from a bug that quietly went away. Stacks captured at
+            // the moment of failure (nightly run 30864382766) showed 4 workers, 0 idle, so this line
+            // appearing on a run that then PASSES is the confirmation that it engaged.
             // Logged outside the lock so we never hold it while writing to a file.
             if (addedWorker)
                 Logger.WriteEvent(
