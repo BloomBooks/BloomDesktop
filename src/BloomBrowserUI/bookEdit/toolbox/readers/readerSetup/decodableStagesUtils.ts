@@ -44,6 +44,10 @@ export const cleanSampleWordList = (original: string): string => {
 };
 
 /**
+ * Prepares the settings the *Decodable* dialog is about to save. Note the stage pruning below:
+ * a Leveled Reader dialog reusing this would drop stages on the strength of data it never showed
+ * the user, so it wants its own equivalent (or an option) rather than a straight call.
+ *
  * Returns a copy of the settings with every space-delimited field normalized the way
  * storage expects. Each of these fields is later re-split on plain spaces (see
  * ReadersSynphonyWrapper.loadSettings), so the commas and newlines a user may type into
