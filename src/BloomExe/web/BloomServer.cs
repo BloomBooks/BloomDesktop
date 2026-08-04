@@ -2433,8 +2433,143 @@ namespace Bloom.Api
             }
         }
 
+        // The worker-pool snapshot from the tightest moment seen so far — the moment when the fewest
+        // workers were left able to pick up new work — since the last ResetTightestWorkerPoolReport().
+        // A hang blamed on starvation needs the pool to actually run near empty, so this is the number
+        // that makes the hypothesis testable on a HEALTHY run: if the pool never drops below a
+        // comfortable margin during a normal publish, starvation is not a plausible explanation, and we
+        // learn that without having to catch a failure in the act (BL-16612).
+        private static int _tightestIdleWorkers = int.MaxValue;
+        private static string _tightestSnapshot;
+
+        /// <summary>
+        /// Start a fresh measurement window for <see cref="GetTightestWorkerPoolReport"/> — e.g. at the
+        /// start of one publish, so the report describes that publish rather than the whole session.
+        /// </summary>
+        public static void ResetTightestWorkerPoolReport()
+        {
+            _tightestIdleWorkers = int.MaxValue;
+            _tightestSnapshot = null;
+        }
+
+        /// <summary>
+        /// How close the worker pool came to having nothing left to serve requests during the current
+        /// measurement window. "no blocking measured" means we never blocked on the server at all.
+        /// </summary>
+        public static string GetTightestWorkerPoolReport()
+        {
+            return _tightestSnapshot == null
+                ? "BloomServer: no blocking measured"
+                : "BloomServer at its tightest: " + _tightestSnapshot;
+        }
+
+        /// <summary>
+        /// Registers that the current thread is about to block (exactly as <see cref="RegisterThreadBlocking"/>)
+        /// and, if that leaves no worker free to take new work, adds one right away. Pair it with
+        /// <see cref="RegisterThreadUnblocked"/> just like the plain version.
+        /// </summary>
+        /// <remarks>
+        /// RegisterThreadBlocking on its own only makes starvation *visible*; the escape hatch in QueueRequest
+        /// acts on it when the NEXT request arrives. That is too late for a thread that blocks waiting on
+        /// something a queued request has to produce — the page an off-screen browser is loading, say — because
+        /// the request that would unblock it may already be sitting in the queue, with nothing new coming in
+        /// behind it to trigger the check. Then everyone waits forever. So callers who block on our own server
+        /// use this instead, and we do the check at the moment the count goes up (BL-16612).
+        /// </remarks>
+        public void RegisterThreadBlockingAndEnsureAFreeWorker()
+        {
+            RegisterThreadBlocking();
+            var addedWorker = false;
+            // Nothing from here on may throw. The caller unregisters in a finally that only covers the
+            // block AFTER this method returns, so an exception escaping here would leave
+            // _countBlockedThreads permanently incremented -- and an inflated count makes this guard fire
+            // on essentially every later block, quietly corrupting the server's own accounting. Adding a
+            // worker is an optimisation; failing to add one must never fail the caller or leak the count.
+            try
+            {
+                lock (_queue)
+                {
+                    // SpinUpAWorker mutates _workers, so it must be called inside this lock.
+                    if (_countBlockedThreads >= _workers.Count)
+                    {
+                        SpinUpAWorker();
+                        addedWorker = true;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEvent(
+                    "Could not add a server worker while one was blocking: " + e.Message
+                );
+            }
+            // Say so when we actually had to add one. This is the POSITIVE evidence that the starvation
+            // behind BL-16612 is real and that this is what kept requests moving: every other diagnostic
+            // here speaks only after something has already gone wrong, so a guard quietly doing its job
+            // would otherwise be indistinguishable from a bug that quietly went away. Stacks captured at
+            // the moment of failure (nightly run 30864382766) showed 4 workers, 0 idle, so this line
+            // appearing on a run that then PASSES is the confirmation that it engaged.
+            // Logged outside the lock so we never hold it while writing to a file.
+            if (addedWorker)
+                Logger.WriteEvent(
+                    "Every server worker was blocked, so added one to keep requests moving. "
+                        + GetWorkerPoolDiagnostics()
+                );
+        }
+
+        /// <summary>
+        /// Records how much headroom the worker pool has at this instant, keeping the tightest reading
+        /// seen since the last <see cref="ResetTightestWorkerPoolReport"/>. Call it right before blocking
+        /// on something this server has to serve.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately separate from <see cref="RegisterThreadBlockingAndEnsureAFreeWorker"/>, even
+        /// though both take the queue lock and callers want both: this is pure measurement and stands on
+        /// its own, whereas adding a worker is a behavior change resting on the (still unproven)
+        /// starvation theory in BL-16612. Keeping them apart means the measurement can be kept whatever
+        /// we decide about the guard. The extra lock acquisition costs nothing measurable -- it happens
+        /// once per blocking call and holds the lock for a few field reads.
+        ///
+        /// Busy (not merely blocked) is the right measure of "cannot take new work": a worker busy
+        /// serving a long request is just as unable to serve the page we are waiting for as a blocked one.
+        /// </remarks>
+        public void NoteWorkerPoolHeadroom()
+        {
+            lock (_queue)
+            {
+                var idleWorkers = _workers.Count - _busyThreads;
+                if (idleWorkers < _tightestIdleWorkers)
+                {
+                    _tightestIdleWorkers = idleWorkers;
+                    // Safe to call under the lock: it deliberately takes no lock of its own.
+                    _tightestSnapshot = GetWorkerPoolDiagnostics();
+                }
+            }
+        }
+
         private bool IsWorkerThread(Thread thread) =>
             thread?.Name?.IndexOf(WorkerThreadNamePrefix) == 0;
+
+        /// <summary>
+        /// A one-line snapshot of the worker pool's state, for logging when we suspect something is
+        /// stuck waiting on the server. If every worker is busy or blocked while requests sit in the
+        /// queue, then whatever the stuck code is waiting for cannot be served, and we are looking at
+        /// a starvation deadlock rather than mere slowness.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately reads the counters WITHOUT locking _queue: this gets called precisely when we
+        /// suspect the pool is wedged, and taking that lock could block the very report we need. The
+        /// numbers are therefore a possibly-inconsistent snapshot, which is all a diagnostic needs.
+        /// </remarks>
+        public static string GetWorkerPoolDiagnostics()
+        {
+            var server = _theOneInstance;
+            if (server == null)
+                return "BloomServer: none running";
+            return $"BloomServer: workers={server._workers.Count}, busy={server._busyThreads}, "
+                + $"blocked={server._countBlockedThreads}, "
+                + $"recursive={server._threadsDoingRecursiveRequests}, queued={server._queue.Count}";
+        }
 
         private string GetHtmlForRootOfBloomUI()
         {

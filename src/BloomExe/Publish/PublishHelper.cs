@@ -428,6 +428,7 @@ namespace Bloom.Publish
                 epubMaker.AddEpubVisibilityStylesheetAndClass(displayDom);
             if (this != _latestInstance)
                 return;
+            var pageChecksTimer = Stopwatch.StartNew();
             if (
                 !GetOrCreatePageChecksBrowser()
                     .Navigate(displayDom, 10000, () => this != _latestInstance)
@@ -438,18 +439,51 @@ namespace Bloom.Publish
                 // below will give accurate answers. Even if the browser hasn't gotten that far yet (e.g., in
                 // a long document), it may stay ahead of us. We'll report a failure (currently only for epubs, see above)
                 // if we actually can't find the element we need in IsDisplayed().
-                Debug.WriteLine("Failed to navigate fully to RemoveUnwantedContentInternal DOM");
-                Logger.WriteEvent("Failed to navigate fully to RemoveUnwantedContentInternal DOM");
+                //
+                // The elapsed time and the worker-pool snapshot are here because this line is where the
+                // BL-16612 hang begins, and the pool state at this moment is what distinguishes worker
+                // starvation from a slow renderer. Keep them: they are how a future occurrence explains
+                // itself instead of going silent.
+                var message =
+                    "Failed to navigate fully to RemoveUnwantedContentInternal DOM after "
+                    + $"{pageChecksTimer.ElapsedMilliseconds}ms. "
+                    + BloomServer.GetWorkerPoolDiagnostics();
+                Debug.WriteLine(message);
+                Logger.WriteEvent(message);
             }
             if (this != _latestInstance)
                 return;
 
             // Get and store the display and font information for each element in the DOM.
-            var elementsInfo = GetOrCreatePageChecksBrowser()
-                .RunJavascript(GetElementDisplayAndFontInfoJavascript);
-            var rawInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<ElementInfoArray>(
-                elementsInfo
-            );
+            string elementsInfo = null;
+            try
+            {
+                elementsInfo = GetOrCreatePageChecksBrowser()
+                    .RunJavascript(GetElementDisplayAndFontInfoJavascript);
+            }
+            catch (OffScreenBrowserTimeoutException e)
+            {
+                // Before BL-16612 this call could not return AT ALL once the browser stopped responding: it
+                // waited forever on a BloomServer worker, so publishing was dead for the rest of the session
+                // with no message and no progress. Now it gives up, and we carry on exactly as a failed
+                // navigation always has.
+                //
+                // Be clear-eyed about what carrying on costs: with no display information IsDisplayed()
+                // answers "displayed" for everything and FontsUsed stays empty, so the book keeps content
+                // that should have been stripped and embeds none of its fonts, while the publish reports
+                // success. That is a real defect -- but a SEPARATE, long-standing one from this hang, and
+                // deliberately not changed here. Refusing to publish instead would add a user-facing
+                // behaviour change and a new way for publishing to fail to the one change that most needs to
+                // be beyond doubt, since it reaches into the server's request handling. See BL-16612.
+                Logger.WriteEvent(
+                    "The page-checks browser stopped responding, so we have no display information "
+                        + "for this book: "
+                        + e.Message
+                );
+            }
+            var rawInfo = string.IsNullOrEmpty(elementsInfo)
+                ? null
+                : Newtonsoft.Json.JsonConvert.DeserializeObject<ElementInfoArray>(elementsInfo);
             if (rawInfo != null)
             {
                 foreach (var info in rawInfo.results)
