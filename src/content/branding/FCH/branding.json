@@ -13,6 +13,20 @@
             "//": "The Bloom badge goes at the bottom, under a hairline rule. The wrapper/anchor structure is what makes it QR-capable: at runtime BookStorage.UpdateQrCode fills in the language QR code and rewrites the href.",
             "content": "<div class='bloom-branding-wrapper'><a href='https://bloomlibrary.org/'><img class='branding' src='made-with-bloom-badge-text.svg'/></a></div>",
             "condition": "always"
+        },
+        {
+            "data-book": "copyright",
+            "lang": "*",
+            "//": "A default the user can overwrite, hence ifEmpty rather than always. Just the publisher name: BookData.MergeBrandingSettings sees no '©', no 'copyright' and no year here and so expands it to 'Copyright © <current year> Kurdish Central'.",
+            "content": "Kurdish Central",
+            "condition": "ifEmpty"
+        },
+        {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "//": "CC BY 4.0, as a default the user can change.",
+            "content": "http://creativecommons.org/licenses/by/4.0/",
+            "condition": "ifEmpty"
         }
     ]
 }
