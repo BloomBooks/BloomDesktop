@@ -17,7 +17,7 @@ import { useL10n } from "../../../../react_components/l10nHooks";
 import { Div, Span } from "../../../../react_components/l10nComponents";
 import BloomButton from "../../../../react_components/bloomButton";
 import { ReaderSettings, ReaderStage } from "../ReaderSettings";
-import { kBloomBlue } from "../../../../utils/colorUtils";
+import { kBloomBlue, kBloomRed } from "../../../../utils/colorUtils";
 import { ReaderDialogPhaseSection } from "./ReaderDialogPhaseSection";
 import {
     cleanSpaceDelimitedList,
@@ -30,7 +30,6 @@ import { BloomTooltip } from "../../../../react_components/BloomToolTip";
 import { ReaderDialogTextarea } from "./ReaderDialogTextarea";
 
 const kMutedText = "#707477";
-const kSampleTextFileExtensions = ["txt", "js", "json"];
 
 const commonTextStyles = css`
     color: ${kMutedText};
@@ -45,14 +44,12 @@ const commonHeaderStyles = css`
     text-transform: uppercase;
 `;
 
-type SettingsTabProps = {
-    settings: ReaderSettings;
-    setSettings: (value: ReaderSettings) => void;
-};
-
 /** Applies a tab change to a cloned settings object and publishes the updated draft. */
 const updateSettings = (
-    props: SettingsTabProps,
+    props: {
+        settings: ReaderSettings;
+        setSettings: (value: ReaderSettings) => void;
+    },
     update: (settings: ReaderSettings) => void,
 ) => {
     const updatedSettings = cloneReaderSettings(props.settings);
@@ -65,8 +62,13 @@ export const DecodableStagesSetup: React.FunctionComponent<{
     setSettings: React.Dispatch<React.SetStateAction<ReaderSettings>>;
     fontName: string;
     maxAllowedWords: number;
+    // The tab lives in the dialog above us because the Help button, which is down in the
+    // dialog's button row, has to open the help page for whichever tab is showing.
+    curTab: number;
+    setCurTab: (value: number) => void;
 }> = (props) => {
-    const [curTab, setCurTab] = useState(2);
+    const curTab = props.curTab;
+    const setCurTab = props.setCurTab;
     const [selectedStageIndex, setSelectedStageIndex] = useState(0);
 
     const lettersTab = useL10n("Letters", "ReaderSetup.Letters");
@@ -74,6 +76,10 @@ export const DecodableStagesSetup: React.FunctionComponent<{
     const stagesTab = useL10n(
         "Decodable Stages",
         "ReaderSetup.DecodableStages",
+    );
+    const tabsLabel = useL10n(
+        "Set up Decodable Reader Tool",
+        "ReaderSetup.SetUpDecodableReaderTool",
     );
 
     let activeTab: React.ReactNode;
@@ -121,7 +127,10 @@ export const DecodableStagesSetup: React.FunctionComponent<{
         >
             <Tabs
                 value={curTab}
-                aria-label="Reader setup tabs"
+                // onChange (rather than onClick on each Tab) is what lets MUI's own
+                // arrow-key navigation actually change tabs, not just move focus.
+                onChange={(_event, newTab: number) => setCurTab(newTab)}
+                aria-label={tabsLabel}
                 css={css`
                     min-height: 50px;
                     padding: 0 6px;
@@ -143,9 +152,9 @@ export const DecodableStagesSetup: React.FunctionComponent<{
                     }
                 `}
             >
-                <Tab label={lettersTab} onClick={() => setCurTab(0)} />
-                <Tab label={sampleWordsTab} onClick={() => setCurTab(1)} />
-                <Tab label={stagesTab} onClick={() => setCurTab(2)} />
+                <Tab label={lettersTab} />
+                <Tab label={sampleWordsTab} />
+                <Tab label={stagesTab} />
             </Tabs>
             <div
                 css={css`
@@ -165,16 +174,20 @@ export const DecodableStagesSetup: React.FunctionComponent<{
     );
 };
 
-const LettersTab: React.FunctionComponent<
-    SettingsTabProps & {
-        fontName: string;
-    }
-> = (props) => {
+const LettersTab: React.FunctionComponent<{
+    settings: ReaderSettings;
+    setSettings: (value: ReaderSettings) => void;
+    fontName: string;
+}> = (props) => {
     const updateLetters = (value: string) => {
         updateSettings(props, (updatedSettings) => {
             updatedSettings.letters = value;
         });
     };
+    const lettersBoxLabel = useL10n(
+        "Letters and Letter Combinations",
+        "ReaderSetup.Letters.Header",
+    );
     return (
         <div
             css={css`
@@ -196,6 +209,7 @@ const LettersTab: React.FunctionComponent<
             <ReaderDialogTextarea
                 updateSettings={updateLetters}
                 value={props.settings.letters}
+                ariaLabel={lettersBoxLabel}
                 extraStyles={css`
                     display: block;
                     width: 325px;
@@ -274,12 +288,14 @@ const LettersTab: React.FunctionComponent<
     );
 };
 
-const SampleWordsTab: React.FunctionComponent<
-    SettingsTabProps & {
-        fontName: string;
-    }
-> = (props) => {
-    const [sampleTextFiles, setSampleTextFiles] = useState<string[]>([]);
+const SampleWordsTab: React.FunctionComponent<{
+    settings: ReaderSettings;
+    setSettings: (value: ReaderSettings) => void;
+    fontName: string;
+}> = (props) => {
+    const [sampleTextFiles, setSampleTextFiles] = useState<
+        { path: string; readable: boolean; hasExtension: boolean }[]
+    >([]);
 
     useMountEffect(() => {
         let isMounted = true;
@@ -294,19 +310,15 @@ const SampleWordsTab: React.FunctionComponent<
         const refreshSampleTextFiles = () => {
             get("readers/ui/sampleTextsList", (result) => {
                 if (isMounted) {
+                    // Every file is listed, including ones Bloom cannot read; those are shown
+                    // with an explanation instead of being silently dropped. The toolbox does
+                    // the classifying so this agrees with the files Bloom actually loads.
                     setSampleTextFiles(
-                        result.data
-                            .split("\r")
-                            .filter((path) => path)
-                            .filter((path) => {
-                                const extension = path.split(".").pop();
-                                return (
-                                    extension !== undefined &&
-                                    kSampleTextFileExtensions.includes(
-                                        extension,
-                                    )
-                                );
-                            }),
+                        toolbox.classifySampleTextFiles(
+                            result.data
+                                .split("\r")
+                                .filter((path: string) => path),
+                        ),
                     );
                 }
             });
@@ -332,6 +344,10 @@ const SampleWordsTab: React.FunctionComponent<
             updatedSettings.moreWords = value;
         });
     };
+    const moreWordsBoxLabel = useL10n(
+        "1) Type Words Here",
+        "ReaderSetup.Words.TypeWordsHere",
+    );
 
     return (
         <div
@@ -422,6 +438,7 @@ const SampleWordsTab: React.FunctionComponent<
                             <ReaderDialogTextarea
                                 updateSettings={updateMoreWords}
                                 value={props.settings.moreWords}
+                                ariaLabel={moreWordsBoxLabel}
                                 extraStyles={css`
                                     flex: 1 1 auto;
                                     min-height: 100px;
@@ -473,9 +490,20 @@ const SampleWordsTab: React.FunctionComponent<
                                     ${commonTextStyles}
                                 `}
                             >
-                                {sampleTextFiles.map((path) => (
+                                {sampleTextFiles.length === 0 && (
+                                    <Div
+                                        l10nKey="ReaderSetup.NoSampleTextsYet"
+                                        css={css`
+                                            padding: 12px;
+                                        `}
+                                    >
+                                        No sample texts yet. Add text files to
+                                        the Sample Texts folder.
+                                    </Div>
+                                )}
+                                {sampleTextFiles.map((file) => (
                                     <div
-                                        key={path}
+                                        key={file.path}
                                         css={css`
                                             display: flex;
                                             align-items: center;
@@ -501,11 +529,46 @@ const SampleWordsTab: React.FunctionComponent<
                                                 white-space: nowrap;
                                             `}
                                         >
-                                            {path.split(/[\\/]/).pop()}
+                                            {file.path.split(/[\\/]/).pop()}
                                         </div>
+                                        {/* Say why a file is being ignored, rather than
+                                            hiding it and leaving the user to wonder. */}
+                                        {!file.readable && (
+                                            <Span
+                                                l10nKey={
+                                                    file.hasExtension
+                                                        ? "ReaderSetup.FormatNotSupported"
+                                                        : "ReaderSetup.FileNeedsTxtExtension"
+                                                }
+                                                css={css`
+                                                    flex: none;
+                                                    margin-left: 10px;
+                                                    font-style: italic;
+                                                    color: ${kBloomRed};
+                                                `}
+                                            >
+                                                {file.hasExtension
+                                                    ? "Cannot read this format"
+                                                    : "File needs .TXT extension"}
+                                            </Span>
+                                        )}
                                     </div>
                                 ))}
                             </div>
+                            {sampleTextFiles.some((file) => !file.readable) && (
+                                <Link
+                                    l10nKey="ReaderSetup.HowToExport"
+                                    href="/bloom/api/help?topic=Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm"
+                                    css={css`
+                                        margin-top: 8px;
+                                        font-size: inherit;
+                                        font-weight: inherit;
+                                    `}
+                                >
+                                    Help exporting and converting files to use
+                                    as sample texts
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </>
@@ -514,15 +577,15 @@ const SampleWordsTab: React.FunctionComponent<
     );
 };
 
-type StagesTabProps = SettingsTabProps & {
+const StagesTab: React.FunctionComponent<{
+    settings: ReaderSettings;
+    setSettings: (value: ReaderSettings) => void;
     setCurTab: (value: number) => void;
     fontName: string;
     curStageIndex: number;
     setCurStageIndex: (value: number) => void;
     maxAllowedWords: number;
-};
-
-const StagesTab: React.FunctionComponent<StagesTabProps> = (props) => {
+}> = (props) => {
     const [wordListVersion, setWordListVersion] = useState(0);
     const [allowedWords, setAllowedWords] = useState<string[]>([]);
 
@@ -543,6 +606,12 @@ const StagesTab: React.FunctionComponent<StagesTabProps> = (props) => {
         return () => toolbox.removeWordListChangedListener(listenerName);
     });
 
+    // Drops from every stage any letter that is no longer in the alphabet. Note this runs on
+    // every mount, and only the active tab is rendered, so it also runs each time the user
+    // leaves the Letters tab and comes back here — which means a letter mid-way through being
+    // retyped over there can get pruned out of the stages. Reviewed 2026-08 (BL-16607) and
+    // deliberately left alone: the legacy dialog reconciles at effectively the same moments, so
+    // this is not a regression, and making it precise is not worth the added complexity.
     useMountEffect(() => {
         const configuredLetters = new Set(
             cleanSpaceDelimitedList(props.settings.letters)
@@ -638,20 +707,27 @@ const StagesTab: React.FunctionComponent<StagesTabProps> = (props) => {
                 cleanSpaceDelimitedList(oneStage.sightWords).split(/\s+/),
             )
             .filter(Boolean);
-        const typedSampleWords = cleanSpaceDelimitedList(
-            props.settings.moreWords,
-        )
-            .split(/\s+/)
-            .filter(Boolean)
-            .filter((word) =>
-                hasOnlyKnownGraphemes(word, allLetters, knownGpcs),
-            );
         const toolbox = getToolboxBundleExports();
         if (!toolbox) {
             throw new Error(
                 "The Reader toolbox must be loaded before its setup dialog.",
             );
         }
+        // Only the toolbox frame's Synphony data knows these, so they have to come from there.
+        const alwaysMatchSymbols = toolbox.getSynphonyAlwaysMatchSymbols();
+        const typedSampleWords = cleanSpaceDelimitedList(
+            props.settings.moreWords,
+        )
+            .split(/\s+/)
+            .filter(Boolean)
+            .filter((word) =>
+                hasOnlyKnownGraphemes(
+                    word,
+                    allLetters,
+                    knownGpcs,
+                    alwaysMatchSymbols,
+                ),
+            );
         const sampleTextMatchingWords =
             knownGpcs.length === 0
                 ? []
@@ -724,6 +800,10 @@ const StagesTab: React.FunctionComponent<StagesTabProps> = (props) => {
         "Remove from this stage",
         "ReaderSetup.RemoveWordList",
     );
+    const sightWordsBoxLabel = useL10n(
+        "New Sight Words",
+        "ReaderSetup.SightWordLabel",
+    );
 
     return (
         <div
@@ -792,6 +872,7 @@ const StagesTab: React.FunctionComponent<StagesTabProps> = (props) => {
                         <ReaderDialogTextarea
                             updateSettings={updateSightWords}
                             value={stage.sightWords}
+                            ariaLabel={sightWordsBoxLabel}
                             extraStyles={css`
                                 display: block;
                                 width: 325px;
@@ -806,7 +887,9 @@ const StagesTab: React.FunctionComponent<StagesTabProps> = (props) => {
                                 ${commonTextStyles}
                             `}
                         >
-                            Separate words with spaces.
+                            <Span l10nKey="ReaderSetup.SeparateWordsWithSpaces">
+                                Separate words with spaces.
+                            </Span>
                         </div>
                         <div
                             css={css`
@@ -890,7 +973,7 @@ const StagesTab: React.FunctionComponent<StagesTabProps> = (props) => {
                             `}
                         >
                             <Span l10nKey="ReaderSetup.ClickLetter">
-                                Click a letter to add it to this stage.
+                                Click on letters to add them to this stage.
                             </Span>
                         </div>
                     </div>

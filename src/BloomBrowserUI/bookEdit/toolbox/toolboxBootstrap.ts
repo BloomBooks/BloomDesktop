@@ -23,7 +23,9 @@ import { GameTool, setActiveDragActivityTab } from "./games/GameTool";
 import { SettingsTool } from "./settings/settingsTool";
 // Explicit imports needed so that these symbols are in local scope for the window.toolboxBundle object
 import {
+    classifySampleTextFiles,
     getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
     addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
@@ -52,6 +54,12 @@ export interface IToolboxFrameExports {
     removeWordListChangedListener(listenerNameAndContext: string): void;
 
     getDecodableStageMatchingWords(knownGpcs: string[]): string[];
+
+    getSynphonyAlwaysMatchSymbols(): string[];
+
+    classifySampleTextFiles(
+        paths: string[],
+    ): { path: string; readable: boolean; hasExtension: boolean }[];
 
     addSampleTextFilesChangedListener(
         listenerNameAndContext: string,
@@ -85,7 +93,9 @@ export {
     closeSetupDialog,
 } from "./readers/readerSetup/readerSetupDialog";
 export {
+    classifySampleTextFiles,
     getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
     addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,
@@ -167,7 +177,9 @@ const toolboxBundle: ToolboxBundleApi = {
     showSetupDialog,
     initializeReaderSetupDialog,
     closeSetupDialog,
+    classifySampleTextFiles,
     getDecodableStageMatchingWords,
+    getSynphonyAlwaysMatchSymbols,
     addSampleTextFilesChangedListener,
     addWordListChangedListener,
     beginSaveChangedSettings,

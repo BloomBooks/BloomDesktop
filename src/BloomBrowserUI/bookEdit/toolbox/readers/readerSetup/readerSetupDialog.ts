@@ -197,6 +197,11 @@ export function closeSetupDialog() {
     if (setupDialogElement) {
         setupDialogElement.dialog("close");
     } else {
+        // NOTE for whoever converts the Leveled Reader's setup dialog to React (BL-16607
+        // converted only the Decodable side): this "no jQuery dialog, so it must be the
+        // decodable React one" reasoning stops being true the moment there are two React
+        // reader dialogs. It will need to dispatch on which one is actually open rather than
+        // assuming. Nothing else here cares which dialog it is, so it is the one spot to fix.
         getWorkspaceBundleExports().closeDecodableReaderSetupDialog();
     }
 }
