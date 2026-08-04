@@ -1027,7 +1027,17 @@ namespace Bloom.web.controllers
 
             // Bring the bytes into the book folder, import-processed and under a fresh
             // "ai-image*" name.
-            var newFileName = ImportImageIntoBookFolder(sourceBytesPath, book.FolderPath);
+            var newFileName = ImportImageIntoBookFolder(
+                sourceBytesPath,
+                book.FolderPath,
+                // Only a freshly generated/uploaded result needs resizing. A REUSED book image
+                // was already import-processed on its own way in, so there is nothing to gain
+                // by shrinking it again — and resizing rewrites the file through
+                // GraphicsMagick, which can drop the credits embedded in it. This path
+                // deliberately doesn't re-write credits (see EmbedCreditsInNewImageFile below),
+                // so there would be nothing to put them back.
+                resizeIfNeeded: !string.IsNullOrEmpty(replacement.resultId)
+            );
             newSrc = newFileName;
 
             // A generated result arrives with no intellectual-property metadata of its own, so
@@ -1095,10 +1105,17 @@ namespace Bloom.web.controllers
         /// ProcessAndSaveImageIntoFolder deliberately short-circuits on, writing nothing), and
         /// an image that fails to process at all. Internal for testing.
         /// </summary>
+        /// <param name="resizeIfNeeded">
+        /// False for a reused book image, which was already import-processed on its own way in.
+        /// Resizing it again would gain nothing and would rewrite the file through
+        /// GraphicsMagick, which can drop the credits embedded in it — and the reuse path
+        /// deliberately doesn't re-write credits, so they would simply be lost.
+        /// </param>
         /// <returns>The name (no path) of the new file in the book folder.</returns>
         internal static string ImportImageIntoBookFolder(
             string sourceBytesPath,
-            string bookFolderPath
+            string bookFolderPath,
+            bool resizeIfNeeded = true
         )
         {
             string processedName = null;
@@ -1114,7 +1131,8 @@ namespace Bloom.web.controllers
                         processedName = ImageUtils.ProcessAndSaveImageIntoFolder(
                             imageInfo,
                             bookFolderPath,
-                            isSameFile: false
+                            isSameFile: false,
+                            resizeFileIfNeeded: resizeIfNeeded
                         );
                     }
                 }

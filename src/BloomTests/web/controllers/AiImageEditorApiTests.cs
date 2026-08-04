@@ -253,6 +253,56 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
+        public void ImportImageIntoBookFolder_ReusedImage_IsNotResized()
+        {
+            // A reused book image was already import-processed on its own way in, so we
+            // deliberately don't resize it again: resizing rewrites the file through
+            // GraphicsMagick, and the reuse path doesn't re-write credits afterwards, so
+            // anything embedded in the original would simply be lost.
+            var source = MakeSourcePng("already-in-book.png", 5000, 4000);
+
+            var newName = AiImageEditorApi.ImportImageIntoBookFolder(
+                source,
+                _bookFolder.Path,
+                resizeIfNeeded: false
+            );
+
+            using (var after = Image.FromFile(Path.Combine(_bookFolder.Path, newName)))
+            {
+                Assert.That(
+                    after.Width,
+                    Is.EqualTo(5000),
+                    "a reused image must come through at its original size"
+                );
+                Assert.That(after.Height, Is.EqualTo(4000));
+            }
+        }
+
+        [Test]
+        public void ImportImageIntoBookFolder_ReusedImage_KeepsItsCredits()
+        {
+            // The credits live inside the image file. Nothing re-writes them on the reuse
+            // path, so whatever import processing does to the file has to leave them alone.
+            var name = MakePngWithCredits("reused.png", "Jane Doe", "Copyright 2020 Jane Doe");
+            var source = Path.Combine(_bookFolder.Path, name);
+
+            // Sanity: the credits really are in the source file, so a match below is not
+            // just two empty values agreeing.
+            var before = Metadata.FromFile(source);
+            Assert.That(before.Creator, Is.EqualTo("Jane Doe"), "setup");
+
+            var newName = AiImageEditorApi.ImportImageIntoBookFolder(
+                source,
+                _bookFolder.Path,
+                resizeIfNeeded: false
+            );
+
+            var after = Metadata.FromFile(Path.Combine(_bookFolder.Path, newName));
+            Assert.That(after.Creator, Is.EqualTo("Jane Doe"));
+            Assert.That(after.CopyrightNotice, Is.EqualTo("Copyright 2020 Jane Doe"));
+        }
+
+        [Test]
         public void ImportImageIntoBookFolder_UnprocessableFormat_IsCopiedVerbatim()
         {
             // PalasoImage decodes through GDI+, which has no WebP codec. We must still get
