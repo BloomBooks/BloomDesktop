@@ -41,6 +41,10 @@ namespace Bloom.Publish
                 );
             }
             _latestInstance = this;
+            // One PublishHelper is created per publish (BloomPubMaker wraps one in a using; EpubMaker
+            // keeps one for the whole epub), so this bounds the measurement reported in Dispose to this
+            // publish rather than the whole session.
+            BloomServer.ResetTightestWorkerPoolReport();
         }
 
         public static void Cancel()
@@ -75,6 +79,124 @@ namespace Bloom.Publish
             if (ExternalPageChecksBrowserForTests != null)
                 return ExternalPageChecksBrowserForTests;
             return _pageChecksBrowser ??= new OffScreenBrowser();
+        }
+
+        // How long to give the off-screen browser to navigate to the page-checks DOM. This is the same
+        // budget as the literal it replaced; what covers a browser that stumbles is the retry in
+        // TryGetPageChecksInfo, not a longer wait.
+        private const int kPageChecksNavigationTimeoutMs = 10000;
+
+        private const int kPageChecksAttempts = 2;
+
+        /// <summary>
+        /// Navigate the off-screen page-checks browser to the given DOM and return, in elementsInfo, the JSON
+        /// display and font information for its elements, retrying once on a clean renderer if the first
+        /// attempt does not produce it.
+        /// </summary>
+        /// <remarks>
+        /// The retry is new (BL-16612) and is a straight improvement: a browser left in an unknown state by a
+        /// timeout gets a second chance, which can turn what would have been a failure into a correct publish.
+        ///
+        /// What this deliberately does NOT do is refuse to publish when both attempts fail. It reports Failed,
+        /// and the caller carries on with whatever information it has -- which is what Bloom has always done
+        /// (BL-7892). Be clear-eyed that this is not harmless: with no element information IsDisplayed()
+        /// answers "displayed" for everything and FontsUsed comes back empty, so the book keeps content that
+        /// should have been stripped and embeds none of its fonts, while the publish reports success.
+        ///
+        /// That is a real defect, but it is a SEPARATE and long-standing one from the hang this change exists
+        /// to fix, and it is tracked on its own. Bundling a new refuse-to-publish behaviour in here would put a
+        /// user-facing behaviour change, and a new way for publishing to fail, inside the one change we most
+        /// need to be confident in -- it touches the server's request handling. See BL-16612.
+        /// </remarks>
+        /// <summary>
+        /// What GetPageChecksInfo managed to do. Three outcomes rather than two, because "a newer publish
+        /// superseded us" and "we could not get the information" call for opposite responses from the caller.
+        /// </summary>
+        private enum PageChecksOutcome
+        {
+            /// <summary>We have the display and font information.</summary>
+            Got,
+
+            /// <summary>A newer PublishHelper took over; whatever we produce is discarded. Stop.</summary>
+            Superseded,
+
+            /// <summary>We could not get it. See GetPageChecksInfo for what the caller does about that.</summary>
+            Failed,
+        }
+
+        private PageChecksOutcome GetPageChecksInfo(HtmlDom displayDom, out string elementsInfo)
+        {
+            elementsInfo = null;
+            var browser = GetOrCreatePageChecksBrowser();
+            for (var attempt = 1; attempt <= kPageChecksAttempts; attempt++)
+            {
+                var timer = Stopwatch.StartNew();
+                string whatWentWrong;
+                try
+                {
+                    if (
+                        browser.Navigate(
+                            displayDom,
+                            kPageChecksNavigationTimeoutMs,
+                            () => this != _latestInstance
+                        )
+                    )
+                    {
+                        elementsInfo = browser.RunJavascript(
+                            GetElementDisplayAndFontInfoJavascript
+                        );
+                        if (!string.IsNullOrEmpty(elementsInfo))
+                            return PageChecksOutcome.Got;
+                        whatWentWrong = "the page checks script returned nothing";
+                    }
+                    else
+                    {
+                        // Navigate also returns false when our cancelCheck fires, which is not a failure.
+                        if (this != _latestInstance)
+                            return PageChecksOutcome.Superseded;
+                        whatWentWrong =
+                            $"navigation did not complete within {kPageChecksNavigationTimeoutMs}ms";
+                    }
+                }
+                catch (OffScreenBrowserTimeoutException e)
+                {
+                    // As above: if a newer publish superseded us, this is not a failure worth retrying or
+                    // reporting — whatever we produced is being discarded anyway.
+                    if (this != _latestInstance)
+                        return PageChecksOutcome.Superseded;
+                    whatWentWrong = e.Message;
+                }
+
+                // Log the worker-pool state too: if every BloomServer worker is busy or blocked while
+                // requests sit in the queue, then the page we asked the browser to load could not be served
+                // and we are looking at starvation, not a slow renderer. That is the open question behind
+                // BL-16612, so leave this in even once the retry usually saves us.
+                var message =
+                    $"Page checks failed on attempt {attempt} of {kPageChecksAttempts} after "
+                    + $"{timer.ElapsedMilliseconds}ms: {whatWentWrong}. "
+                    + BloomServer.GetWorkerPoolDiagnostics();
+                Debug.WriteLine(message);
+                Logger.WriteEvent(message);
+
+                if (attempt < kPageChecksAttempts)
+                {
+                    // Asking an unresponsive browser for a clean renderer can itself time out -- this is the
+                    // same wedged browser, after all. Left uncaught that would skip the retry entirely and
+                    // surface a technical timeout instead of the explanation below, in exactly the hang this
+                    // retry exists for. So swallow it and let the loop reach its own verdict.
+                    try
+                    {
+                        browser.StartFreshBrowser();
+                    }
+                    catch (OffScreenBrowserTimeoutException e)
+                    {
+                        Logger.WriteEvent(
+                            "Could not start a fresh page-checks browser either: " + e.Message
+                        );
+                    }
+                }
+            }
+            return PageChecksOutcome.Failed;
         }
 
         // The only reason this isn't just ../* is performance. We could change it.  It comes from the need to actually
@@ -428,28 +550,14 @@ namespace Bloom.Publish
                 epubMaker.AddEpubVisibilityStylesheetAndClass(displayDom);
             if (this != _latestInstance)
                 return;
-            if (
-                !GetOrCreatePageChecksBrowser()
-                    .Navigate(displayDom, 10000, () => this != _latestInstance)
-            )
-            {
-                // We started having problems with timeouts here (BL-7892).
-                // We may as well carry on. We only need the browser to have navigated so calls to IsDisplayed(elt)
-                // below will give accurate answers. Even if the browser hasn't gotten that far yet (e.g., in
-                // a long document), it may stay ahead of us. We'll report a failure (currently only for epubs, see above)
-                // if we actually can't find the element we need in IsDisplayed().
-                Debug.WriteLine("Failed to navigate fully to RemoveUnwantedContentInternal DOM");
-                Logger.WriteEvent("Failed to navigate fully to RemoveUnwantedContentInternal DOM");
-            }
-            if (this != _latestInstance)
-                return;
 
-            // Get and store the display and font information for each element in the DOM.
-            var elementsInfo = GetOrCreatePageChecksBrowser()
-                .RunJavascript(GetElementDisplayAndFontInfoJavascript);
-            var rawInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<ElementInfoArray>(
-                elementsInfo
-            );
+            // Get and store the display and font information for each element in the DOM. On Failed we
+            // deliberately carry on with whatever we have -- see GetPageChecksInfo's remarks.
+            if (GetPageChecksInfo(displayDom, out var elementsInfo) == PageChecksOutcome.Superseded)
+                return; // a newer publish took over; nothing we produce here is wanted
+            var rawInfo = string.IsNullOrEmpty(elementsInfo)
+                ? null
+                : Newtonsoft.Json.JsonConvert.DeserializeObject<ElementInfoArray>(elementsInfo);
             if (rawInfo != null)
             {
                 foreach (var info in rawInfo.results)
@@ -505,8 +613,10 @@ namespace Bloom.Publish
                         // This is necessary for retaining any associated audio files to play.
                         // (If they are empty, they won't have any audio and may trigger embedding an unneeded font.)
                         // See https://issues.bloomlibrary.org/youtrack/issue/BL-7237.
-                        // As noted above, if the displayDom is not sufficiently loaded for a definitive
-                        // answer to IsDisplayed, we will throw when making epubs but not for bloom reader.
+                        // An element missing from the display information may be an individual oddity, or
+                        // may mean the page checks failed wholesale and we are carrying on with none of it
+                        // (see GetPageChecksInfo). IsDisplayed throws for that when making epubs but not for
+                        // bloom reader, which is the pre-existing behaviour.
                         if (
                             !IsDisplayed(elt, epubMaker != null) && !IsNonEmptyImageDescription(elt)
                         )
@@ -1525,6 +1635,14 @@ namespace Bloom.Publish
                 if (disposing)
                 {
                     ReleaseBrowser();
+                    // One line per publish saying how much headroom the server had while we were blocked
+                    // on the page-checks browser. Logged on success as much as on failure, on purpose:
+                    // it is what lets a HEALTHY run speak to whether worker starvation could be behind
+                    // the intermittent hang, instead of us only ever seeing the pool once it is too late
+                    // (BL-16612).
+                    Logger.WriteEvent(
+                        "Publish finished. " + BloomServer.GetTightestWorkerPoolReport()
+                    );
                 }
                 _isDisposed = true;
             }
