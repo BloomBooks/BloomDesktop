@@ -1246,10 +1246,14 @@ function makeLanguageMenuItem(
     });
 }
 
+// The labelL10nId of each of these is used to localize its item in the "Field Type:" menu.
+// Two of them reuse strings that were created for other purposes but say exactly the right
+// thing; the other two have ids of their own in BloomLowPriority.xlf.
 const fieldTypeData: Array<{
     dataBook: string;
     dataDerived: string;
     label: string;
+    labelL10nId: string;
     readOnly: boolean;
     editableClasses: string[];
     classes: string[];
@@ -1260,6 +1264,7 @@ const fieldTypeData: Array<{
         dataBook: "bookTitle",
         dataDerived: "",
         label: "Book Title",
+        labelL10nId: "EditTab.CustomCover.FieldType.BookTitle",
         readOnly: false,
         editableClasses: ["Title-On-Cover-style", "bloom-padForOverflow"],
         classes: ["bookTitle"],
@@ -1268,6 +1273,7 @@ const fieldTypeData: Array<{
         dataBook: "smallCoverCredits",
         dataDerived: "",
         label: "Cover Credits",
+        labelL10nId: "EditTab.CustomCover.FieldType.CoverCredits",
         readOnly: false,
         editableClasses: ["smallCoverCredits", "Cover-Default-style"],
         classes: [],
@@ -1276,6 +1282,7 @@ const fieldTypeData: Array<{
         dataBook: "",
         dataDerived: "languagesOfBook",
         label: "Languages",
+        labelL10nId: "BookSettings.LanguagesGroupLabel",
         readOnly: true,
         editableClasses: [],
         classes: ["coverBottomLangName", "Cover-Default-style"],
@@ -1284,6 +1291,7 @@ const fieldTypeData: Array<{
         dataBook: "",
         dataDerived: "topic",
         label: "Topic",
+        labelL10nId: "Topic",
         readOnly: true,
         editableClasses: [],
         classes: [
@@ -1395,7 +1403,7 @@ function makeFieldTypeMenuItem(
     ];
     for (const fieldType of fieldTypeData) {
         subMenu.push({
-            l10nId: null,
+            l10nId: fieldType.labelL10nId,
             english: fieldType.label,
             onClick: () => {
                 clearFieldTypeClasses();
