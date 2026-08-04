@@ -4129,19 +4129,13 @@ export default class AudioRecording implements IAudioRecorder {
 
         // The helper just recomputed this.haveAudio from the server, for whatever element is
         // current now. The Advanced section's Recording Mode radio buttons are driven by values
-        // derived from it (uiState.hasAudio and uiState.haveACurrentTextboxModeRecording), and
-        // only updateDisplay() recomputes those. Several paths that change which box is current
-        // (clicking in another text box, Next/Back, typing new text) refresh the buttons through
-        // here without otherwise calling updateDisplay, which left the radio buttons describing
-        // the *previous* box. That is BL-16632: after recording By Whole Text Box and then
-        // clicking a box with no recording, "By Sentence" stayed disabled, saying to use Clear
-        // first, even though Clear itself was (correctly) disabled because that box has no audio.
-        // Both arguments are false because this refresh must only *report* state, never change
-        // it: choosing a new current element (maySetHighlight) would recurse back into here via
-        // getCurrentTextBox, and switching the recording mode (maySwitchToSentenceMode) would
-        // change it out from under the button statuses we just computed for the mode we read at
-        // the top of this method.
-        this.updateDisplay(false, false);
+        // derived from it, so they have to be recomputed here too. Several paths that change which
+        // box is current (clicking in another text box, Next/Back, typing new text) refresh the
+        // buttons through here and nothing else, which left the radio buttons describing the
+        // *previous* box. That is BL-16632: after recording By Whole Text Box and then clicking a
+        // box with no recording, "By Sentence" stayed disabled, saying to use Clear first, even
+        // though Clear itself was (correctly) disabled because that box has no audio.
+        this.updateAudioStateInDisplay();
     }
 
     private updateButtonStateHelper(
@@ -4500,6 +4494,13 @@ export default class AudioRecording implements IAudioRecorder {
         // 1- When calling changeStateAndSetExpected() with expectedVerb = ""
         // 2- While doing auto segmenting
         // 3- An unrecoverable error has occurred
+        // Every path that gets here has nothing recordable selected: the page has no editable
+        // text, the click landed on something that can't be recorded, or we could not work out
+        // what is current. So the current selection has no audio, by definition. Saying so keeps
+        // the Advanced section honest -- otherwise it goes on reporting the audio of the box we
+        // were on before, which is the BL-16632 mismatch ("By Sentence" disabled telling you to
+        // press Clear, while Clear is disabled because there is nothing to clear).
+        this.haveAudio = false;
         this.setStatus("record", Status.Disabled);
         this.setStatus("play", Status.Disabled);
         this.setStatus("split", Status.Disabled);
@@ -4509,11 +4510,10 @@ export default class AudioRecording implements IAudioRecorder {
         this.setStatus("listen", Status.Disabled);
 
         // The Advanced section's controls (the Recording Mode radio buttons, Insert Segment
-        // Marker) are driven by derived values in uiState that only updateDisplay recomputes, so
-        // they have to be refreshed here too. Otherwise deleting all the text on a page disables
-        // every button but leaves those controls enabled, still describing the text that used to
-        // be there (BL-16632). Report only: never move the highlight or switch the mode from here.
-        this.updateDisplay(false, false);
+        // Marker) are driven by derived values that have to be refreshed here too. Otherwise
+        // deleting all the text on a page disables every button but leaves those controls enabled,
+        // still describing the text that used to be there (BL-16632).
+        this.updateAudioStateInDisplay();
     }
 
     private showBusy(): void {
@@ -4761,15 +4761,31 @@ export default class AudioRecording implements IAudioRecorder {
         await this.setShowPlaybackOrderMode(isOn);
     }
 
-    // maySwitchToSentenceMode: whether this refresh may *change* this.recordingMode, via the
-    // subscription downgrade below. A caller that has already computed something from
-    // this.recordingMode must pass false, so the mode cannot change underneath what it computed;
-    // the downgrade then happens at the next ordinary updateDisplay, just as it did before the
-    // button-state refresh started calling this at all (BL-16632).
-    private updateDisplay(
-        maySetHighlight = true,
-        maySwitchToSentenceMode = true,
-    ): void {
+    // Recompute just the parts of the display that depend on the current audio state: whether the
+    // current selection has a recording, whether that recording is a whole-text-box one, and
+    // whether the page has anything recordable. This is what the button-state refresh invalidates
+    // when it recomputes this.haveAudio, so that refresh calls this rather than the whole of
+    // updateDisplay (BL-16632). Deliberately narrow in two ways:
+    //  - It does not publish the *mode* fields (recordingMode, inShowPlaybackOrderMode,
+    //    showingImageDescriptions). Those belong to the code that changes those modes, and
+    //    republishing them from a button refresh fights it -- e.g. it would undo the uiState reset
+    //    removePlaybackOrderUi deliberately makes on page change while leaving its own field set.
+    //  - It never *changes* anything, so it can't disturb a caller further up the stack: no
+    //    highlight is chosen (which would recurse back here via getCurrentTextBox), and
+    //    this.recordingMode is left alone -- updateDisplay's subscription downgrade could
+    //    otherwise switch the mode out from under button statuses just computed for the old one.
+    private updateAudioStateInDisplay(): void {
+        const hasRecordableDivs =
+            this.getRecordableDivs(true, false).length > 0;
+        const currentPlaybackMode = this.getCurrentPlaybackMode(false);
+        this.uiState.haveACurrentTextboxModeRecording =
+            this.haveAudio && currentPlaybackMode === RecordingMode.TextBox;
+        this.uiState.hasAudio = this.haveAudio;
+        this.uiState.hasRecordableDivs = hasRecordableDivs;
+        this.notifyStateChanged();
+    }
+
+    private updateDisplay(maySetHighlight = true): void {
         // It's a bit expensive to do the test for text present, but without it,
         // Import Recording will be improperly enabled on an empty page.
         const hasRecordableDivs =
@@ -4779,7 +4795,6 @@ export default class AudioRecording implements IAudioRecorder {
         let haveACurrentTextboxModeRecording =
             this.haveAudio && currentPlaybackMode === RecordingMode.TextBox;
         if (
-            maySwitchToSentenceMode &&
             this.wholeTextBoxAudioFeatureStatus &&
             !this.wholeTextBoxAudioFeatureStatus.enabled &&
             this.recordingMode === RecordingMode.TextBox

@@ -1898,6 +1898,46 @@ describe("audio recording tests", () => {
 
             expect(recording.uiState.hasRecordableDivs).toBe(false);
         });
+
+        // Clicking something that can't be recorded (a picture, say) deselects everything and
+        // disables all the buttons. The Advanced section has to stop claiming the recording of the
+        // box we were on, or we are back to "By Sentence" disabled telling you to press a Clear
+        // button that is itself disabled.
+        it("stops claiming a recording when the click lands on something that cannot be recorded", async () => {
+            setupApiResponsesWithRecordingForBox1();
+            const box1 =
+                '<div id="box1" class="bloom-editable audio-sentence bloom-visibility-code-on" data-test-preselect="true" lang="en" data-audiorecordingmode="TextBox"><p>This box has been recorded.</p></div>';
+            SetupIFrameFromHtml(
+                `<div id="page1"><div class="bloom-translationGroup">${box1}</div><div id="justAPicture"><img src="picture.png" /></div></div>`,
+            );
+
+            const recording = new AudioRecording();
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            recording.recordingMode = RecordingMode.TextBox;
+            await recording.handleNewPageReady();
+            expect(
+                recording.uiState.hasAudio,
+                "Setup problem: box1's recording should have been found",
+            ).toBe(true);
+
+            const moveRecordingHighlightToElement = (
+                recording as unknown as {
+                    moveRecordingHighlightToElement(
+                        target: HTMLElement,
+                    ): Promise<boolean>;
+                }
+            ).moveRecordingHighlightToElement.bind(recording);
+            await moveRecordingHighlightToElement(
+                getFrameElementById("page", "justAPicture")!,
+            );
+
+            // Sanity check: nothing is selected, so every button is disabled.
+            expect(recording.uiState.buttons.clear).toBe(Status.Disabled);
+            expect(recording.uiState.hasAudio).toBe(false);
+            expect(recording.uiState.haveACurrentTextboxModeRecording).toBe(
+                false,
+            );
+        });
     });
 
     describe("- initializeAudioRecordingMode()", () => {
