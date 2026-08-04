@@ -31,6 +31,8 @@ declare global {
         initializeReaderSetupDialog: unknown;
         closeSetupDialog: unknown;
         getDecodableStageMatchingWords: unknown;
+        getSynphonyAlwaysMatchSymbols: unknown;
+        classifySampleTextFiles: unknown;
         addSampleTextFilesChangedListener: unknown;
         addWordListChangedListener: unknown;
         beginSaveChangedSettings: unknown;

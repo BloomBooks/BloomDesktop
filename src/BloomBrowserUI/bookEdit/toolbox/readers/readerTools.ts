@@ -4,10 +4,15 @@
 import $ from "jquery";
 import jQuery from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
-import { getTheOneReaderToolsModel } from "./readerToolsModel";
+import {
+    getFileExtension,
+    getTheOneReaderToolsModel,
+    isReadableSampleTextFile,
+} from "./readerToolsModel";
 import {
     theOneLanguageDataInstance,
     theOneLibSynphony,
+    ResetLanguageDataGraphemes,
     ResetLanguageDataInstance,
 } from "./libSynphony/synphony_lib";
 import "./libSynphony/synphony_lib";
@@ -371,9 +376,14 @@ function refreshSettingsExceptSampleWords(newSettings) {
  * Returns a promise which is resolved when all the sample words files are loaded and the model is ready to use.
  */
 function beginRefreshEverything(settings: ReaderSettings): JQueryPromise<void> {
-    // Allowed-word-list mode does not use sample-word data. Keep it available for
-    // a setup-dialog preview if the user temporarily switches back to stages.
-    if (!settings.useAllowedWords) {
+    if (settings.useAllowedWords) {
+        // Allowed-word-list mode does not use sample-word data, and we deliberately keep what
+        // is already loaded so the setup dialog can still preview matching words if the user
+        // switches back to stages mode. The graphemes must still be rebuilt though: loadSettings
+        // only adds them, so without this a letter combination the user just deleted would keep
+        // being counted as one letter (getWordLength) for the rest of the session.
+        ResetLanguageDataGraphemes();
+    } else {
         ResetLanguageDataInstance();
         getTheOneReaderToolsModel().allWords = {};
     }
@@ -462,7 +472,58 @@ export function removeWordListChangedListener(
     ];
 }
 
-/** Gets the loaded sample words decodable with the given graphemes. */
+/**
+ * Gets the symbols this language allows inside a word regardless of the reader's stage — a
+ * syllable break, a stress mark and so on. They live only on the toolbox frame's copy of the
+ * Synphony data (and only when the collection's imported language data defines them), so the
+ * setup dialog, which runs in the workspace frame, has to ask for them across the bundle
+ * boundary the same way it asks for matching words.
+ */
+export function getSynphonyAlwaysMatchSymbols(): string[] {
+    // Match how selectWordsFromSynphony assembles its own copy of this list: it *concats*
+    // AlwaysMatch, so that field may hold either one symbol or an array of them, and pushes
+    // the other three, which are single symbols. Flattening with concat here covers both
+    // shapes — a plain `typeof === "string"` test would silently drop an array-valued
+    // AlwaysMatch, which is the sort of quiet omission this function exists to avoid.
+    const symbols: unknown[] = ([] as unknown[]).concat(
+        theOneLanguageDataInstance["AlwaysMatch"] ?? [],
+        theOneLanguageDataInstance["SyllableBreak"] ?? [],
+        theOneLanguageDataInstance["StressSymbol"] ?? [],
+        theOneLanguageDataInstance["MorphemeBreak"] ?? [],
+    );
+    return symbols.filter(
+        (symbol): symbol is string =>
+            typeof symbol === "string" && symbol !== "",
+    );
+}
+
+/**
+ * Classifies the Sample Texts folder listing for the setup dialog, which runs in another frame
+ * and so cannot reach the model directly. Answering from here — rather than letting the dialog
+ * keep its own copy of the readable-extension list — is what keeps what the dialog shows in step
+ * with what Bloom actually loads, including the case-insensitive comparison.
+ */
+export function classifySampleTextFiles(
+    paths: string[],
+): { path: string; readable: boolean; hasExtension: boolean }[] {
+    return paths.map((path) => ({
+        path,
+        readable: isReadableSampleTextFile(path),
+        hasExtension: getFileExtension(path) !== undefined,
+    }));
+}
+
+/**
+ * Gets the loaded sample words decodable with the given graphemes.
+ *
+ * The `true` first argument asks for word names rather than DataWord objects, which is all the
+ * setup dialog wants. It is worth noting that this is a *different* entry point from the one the
+ * toolbox's own getStageWords uses (which passes `false`), because that looks like a discrepancy
+ * on a quick read and was raised as one during review. It is not: both end up in
+ * libSynphony's selectGPCWordsWithArrayCompare with the same arguments, and the names variant
+ * simply plucks Name off the results. The only real difference is that the `false` path memoizes
+ * through theOneWordCache while this one does not, so this always reflects the current data.
+ */
 export function getDecodableStageMatchingWords(knownGpcs: string[]): string[] {
     return getTheOneReaderToolsModel().selectWordsFromSynphony(
         true,
