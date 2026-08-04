@@ -22,7 +22,7 @@ export const kWordTooLongHighlight = "bloom-reader-word-too-long";
 export const kWordNotDecodableHighlight = "bloom-reader-word-not-decodable";
 export const kSightWordHighlight = "bloom-reader-sight-word";
 
-// The class we put on our hover tip. bloom-ui means Bloom strips it when saving the page.
+// The class we put on our hover tip. Accompanied by bloom-ui so the element is never saved.
 const kTipClass = "bloom-reader-highlight-tip";
 
 interface ReaderHighlightLayer {
