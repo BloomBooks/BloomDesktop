@@ -160,9 +160,15 @@ echo "***   $destination" >&2
 done
 echo "*** This checkout CANNOT build until those downloads succeed." >&2
 else
+if [ "$extraction_failed" == "1" ]
+then
+echo "*** All ${#destinations[@]} downloads are present on disk even so, but one of them could not be" >&2
+echo "*** unpacked (see above), so this checkout is missing whatever was inside it." >&2
+else
 echo "*** All ${#destinations[@]} dependencies are present on disk even so, so this checkout" >&2
 echo "*** can probably still build. What failed was checking them against the server, so" >&2
 echo "*** we do not know they are up to date -- which is why this is still a failure." >&2
+fi
 fi
 # Only the borrowed files whose own check never happened are unverified. One that the server
 # confirmed (304) or replaced during this run has been checked like any other, and saying
@@ -404,7 +410,10 @@ if [ "${http_code:-000}" == "000" ]
 then
 # nothing came back at all: no connection, or it died before sending a response
 no_response_run=$((no_response_run + 1))
-if [ "$no_response_run" -ge "$give_up_after" ]
+# Only conclude the server is down if we have never got anything from it this run. A blip in
+# the middle of an otherwise working run (a CI runner's network hiccuping, say) should not
+# abort the dependencies we have not tried yet; a server that has never once answered should.
+if [ "$no_response_run" -ge "$give_up_after" ] && [ ${#verified[@]} -eq 0 ]
 then
 server_unreachable=1
 fi
@@ -578,11 +587,13 @@ extraction_failed=1
 note_failure "cannot extract $1 into $2: the file is not there"
 return
 fi
-# Test the archive before unpacking it, but read the exit code carefully: 1 means "fine,
-# with warnings" (extra bytes around the archive, say), and 127 means unzip itself is not
-# installed. Treating either as "this archive is corrupt" would delete a perfectly good
-# download -- and since the next run would fetch it and delete it again, that is a loop that
-# never terminates and never unpacks anything.
+# Test the archive before unpacking it, reading the exit code carefully, because the wrong
+# reading here deletes a good download and then re-fetches and deletes it again for ever.
+# 0 and 1 both mean the archive is usable (1 is a warning, such as extra bytes around it).
+# 2, 3 and 9 mean the archive itself is at fault -- a truncated download, or an error page
+# saved under a .zip name, both of which this unzip reports as 9. Anything else (out of
+# memory, disk full, a compression method it lacks, unzip missing altogether) is about this
+# machine rather than the download, so the archive is left alone.
 unzip -tqq "$1" > /dev/null 2>&1
 local test_status=$?
 if [ "$test_status" == "127" ]
@@ -591,8 +602,10 @@ extraction_failed=1
 note_failure "cannot extract $1 into $2: unzip is not installed. Leaving the archive alone; install unzip (Git Bash ships it) and run this again."
 return
 fi
-if [ "$test_status" -ge 2 ]
-then
+case "$test_status" in
+0|1)
+;;
+2|3|9)
 extraction_failed=1
 deleted_a_corrupt_zip=1
 if [ -d "$2" ] && [ -n "$(ls -A "$2" 2>/dev/null)" ]
@@ -603,7 +616,13 @@ note_failure "cannot extract $1 into $2: it is not a valid zip file (unzip test 
 fi
 rm -f "$1"
 return
-fi
+;;
+*)
+extraction_failed=1
+note_failure "cannot test $1 before extracting it into $2: unzip exit code $test_status, which is about this machine rather than the archive. Leaving the archive alone."
+return
+;;
+esac
 unzip -uqo "$1" -d "$2"
 # unzip's exit code 1 means "it worked, with warnings" (a filename it had to adjust, say), so
 # only 2 and up are real failures. Treating 1 as a failure would fail the whole of init.sh

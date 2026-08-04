@@ -26,4 +26,6 @@ To add or change a dependency:
 4. Update the "*** Results ***" comment block. It is only documentation now -- a record of
    which TeamCity builds these artifacts come from -- but it is worth keeping accurate.
 
-There is no longer a getDependencies-Linux.sh; earlier versions of this file described one.
+There is no getDependencies-Linux.sh in the repo any more, although debian/rules line 24
+still invokes one -- so Linux packaging by that route is already broken, independently of
+this script. Earlier versions of this file described how to regenerate both.
