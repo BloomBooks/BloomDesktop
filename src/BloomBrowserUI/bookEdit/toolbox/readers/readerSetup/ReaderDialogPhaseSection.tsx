@@ -145,6 +145,14 @@ const DraggablePhaseRow: React.FunctionComponent<{
     );
 };
 
+/**
+ * The reorderable list of decodable stages down the left of the Decodable Stages tab.
+ *
+ * Despite the generic-sounding name, this is stage-specific: it is typed to ReaderStage and shows
+ * letters, sight words and allowed-words files. A Leveled Reader version would be showing levels,
+ * which hold entirely different fields (word and sentence maxima, things to remember), so expect
+ * to generalize this or write a sibling rather than to reuse it as-is.
+ */
 export const ReaderDialogPhaseSection: React.FunctionComponent<{
     settings: ReaderSettings;
     setSettings: (value: ReaderSettings) => void;
