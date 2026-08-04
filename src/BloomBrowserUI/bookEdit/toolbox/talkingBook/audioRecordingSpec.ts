@@ -1870,6 +1870,34 @@ describe("audio recording tests", () => {
 
             expect(recording.uiState.hasRecordableDivs).toBe(true);
         });
+
+        // The mirror image: when the last of the text goes away, the tool disables every button
+        // (the empty expected verb), and the Advanced section's controls have to follow. They used
+        // to stay enabled, still describing the text that had just been deleted.
+        it("disables the recording modes once the last of the text is deleted", async () => {
+            setupDefaultApiResponses();
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable audio-sentence bloom-visibility-code-on" data-test-preselect="true" lang="en" data-audiorecordingmode="TextBox"><p>Text that is about to be deleted.</p></div></div></div>',
+            );
+
+            const recording = new AudioRecording();
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            recording.recordingMode = RecordingMode.TextBox;
+
+            await recording.handleNewPageReady();
+            expect(
+                recording.uiState.hasRecordableDivs,
+                "Setup problem: the box starts out with text to record",
+            ).toBe(true);
+
+            // The user deletes all of it. The markup update that follows finds nothing recordable
+            // left on the page, which disables the buttons with the empty expected verb.
+            getFrameElementById("page", "box1")!.innerHTML = "<p></p>";
+
+            await recording.changeStateAndSetExpectedAsync("");
+
+            expect(recording.uiState.hasRecordableDivs).toBe(false);
+        });
     });
 
     describe("- initializeAudioRecordingMode()", () => {
