@@ -42,6 +42,10 @@ destinations=()
 borrowed_dest=()
 borrowed_from=()
 verified=()
+# A file borrowed from a sibling this run, vouched for by the donor's record but not yet by
+# the server (see seed_from_sibling_worktree).
+seeded_dest=""
+seeded_source=""
 extraction_failed=0
 deleted_a_corrupt_zip=0
 
@@ -81,6 +85,15 @@ sources_file=../Downloads/dependency-sources.txt
 # packaged, and a stray temp file there would ship.
 current_temp=""
 trap 'rm -f "$current_temp"; exit 130' INT TERM
+
+# How many dependencies in a row the server has not answered at all, and when to stop asking.
+# Without this, an unreachable build server costs 16 dependencies x connect timeout x retries --
+# minutes of silence before the summary appears, when the useful thing is to say "the server is
+# not answering" while the developer is still watching.
+no_response_run=0
+give_up_after=3
+server_unreachable=0
+skipped_after_giving_up=0
 
 # The URL a dependency was last fetched from, per a worktree's record. $1 is the record file,
 # $2 the destination as written in the copy_auto lines. Prints nothing if there is no record.
@@ -179,8 +192,9 @@ echo "*** A zip failed to unpack (see above), so what was extracted from it is p
 echo "*** incomplete." >&2
 fi
 echo "***" >&2
-echo "*** Nothing was overwritten with whatever the server sent instead, so whatever we" >&2
-echo "*** already had is still there and still good." >&2
+echo "*** No file was replaced by whatever the server sent instead: anything we could not" >&2
+echo "*** verify was left exactly as it was. (Dependencies that did download cleanly during" >&2
+echo "*** this run were of course updated.)" >&2
 if [ "$deleted_a_corrupt_zip" == "1" ]
 then
 echo "*** (Except a zip that turned out to be damaged, which was deleted on purpose so" >&2
@@ -305,8 +319,12 @@ if cp -p "$newest" "$2"
 then
 borrowed_dest+=("$2")
 borrowed_from+=("$newest")
-# the donor recorded this file as coming from the URL we want, so our copy did too
-record_source "$2" "$1"
+# Vouch for the borrowed file for this run only -- enough for the conditional GET below to be
+# meaningful -- but do not write it into our own record yet. Recording it here would make an
+# unverified borrowed copy look, on every later run, like an ordinary local file we had checked
+# ourselves. The record gets written when the server actually confirms it.
+seeded_dest="$2"
+seeded_source="$1"
 else
 rm -f "$2"
 fi
@@ -320,6 +338,13 @@ echo cleaning $2
 rm -f ""$2""
 else
 destinations+=("$2")
+if [ "$server_unreachable" == "1" ]
+then
+skipped_after_giving_up=$((skipped_after_giving_up + 1))
+return
+fi
+seeded_dest=""
+seeded_source=""
 seed_from_sibling_worktree "$1" "$2"
 where_curl=$(type -P curl)
 where_wget=$(type -P wget)
@@ -348,10 +373,11 @@ current_temp="$temp"
 # --speed-limit/--speed-time so a server that accepts the connection and then trickles or
 # stalls eventually gives up instead of hanging init.sh for ever; the allowance is generous
 # enough that a genuinely slow connection still finishes.
-local args=(-# -L --fail --retry 2 --connect-timeout 30 --speed-limit 1024 --speed-time 120
+local args=(-# -L --fail --retry 1 --connect-timeout 20 --speed-limit 1024 --speed-time 120
 -o "$temp" -w '%{http_code}')
 if [ "$force" != "1" ] && [ -s "$2" ] && ! looks_like_html "$2" \
-&& [ "$(recorded_source "$sources_file" "$2")" == "$1" ]
+&& { [ "$(recorded_source "$sources_file" "$2")" == "$1" ] \
+	|| { [ "$seeded_dest" == "$2" ] && [ "$seeded_source" == "$1" ]; }; }
 then
 # We have a file that is a plausible copy of this very artifact, so ask the server for it
 # only if it has something newer. All three tests matter: an empty or error-page file must
@@ -367,9 +393,21 @@ if [ "$status" != "0" ]
 then
 rm -f "$temp"
 current_temp=""
+if [ "${http_code:-000}" == "000" ]
+then
+# nothing came back at all: no connection, or it died before sending a response
+no_response_run=$((no_response_run + 1))
+if [ "$no_response_run" -ge "$give_up_after" ]
+then
+server_unreachable=1
+fi
+else
+no_response_run=0
+fi
 note_failure "$2 <= $1: curl failed (exit code $status, HTTP status ${http_code:-none})"
 return
 fi
+no_response_run=0
 if [ "$http_code" == "304" ]
 then
 # our copy is already up to date; curl sent us no content at all
@@ -495,6 +533,12 @@ mkdir -p ../lib
 mkdir -p ../lib/dotnet
 mkdir -p ../lib/lame
 
+# Sweep up after any previous run that was interrupted. We cannot rely on the trap above for
+# this: init.sh starts this script in the background, a non-interactive shell makes its
+# background children ignore SIGINT, and bash will not install a trap for a signal that was
+# already ignored -- so a Ctrl-C during ./init.sh never reaches us.
+rm -f ../DistFiles/*.getDependencies-download ../DistFiles/ghostscript/*.getDependencies-download 	../build/*.getDependencies-download ../Downloads/*.getDependencies-download 	../lib/*.getDependencies-download ../lib/dotnet/*.getDependencies-download 	../lib/lame/*.getDependencies-download 2>/dev/null
+
 # download artifact dependencies
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/ghostscript-win32.zip ../Downloads/ghostscript-win32.zip
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
@@ -531,7 +575,12 @@ if ! unzip -tqq "$1" > /dev/null 2>&1
 then
 extraction_failed=1
 deleted_a_corrupt_zip=1
-note_failure "cannot extract $1 into $2: it is not a valid zip file (a failed or truncated download?). Deleting it so the next run fetches it afresh."
+if [ -d "$2" ] && [ -n "$(ls -A "$2" 2>/dev/null)" ]
+then
+note_failure "cannot extract $1 into $2: it is not a valid zip file (a failed or truncated download?). Deleted it so the next run fetches it afresh; what an earlier run extracted into $2 is still there."
+else
+note_failure "cannot extract $1 into $2: it is not a valid zip file (a failed or truncated download?). Deleted it so the next run fetches it afresh, and nothing has been extracted into $2."
+fi
 rm -f "$1"
 return
 fi
@@ -546,6 +595,11 @@ extraction_failed=1
 note_failure "failed to extract $1 into $2 (unzip exit code $status)"
 fi
 }
+
+if [ "$server_unreachable" == "1" ]
+then
+note_failure "gave up asking build.palaso.org after $give_up_after dependencies in a row got no response at all; skipped the remaining $skipped_after_giving_up download(s)"
+fi
 
 # extract downloaded zip files
 extract_zip ../Downloads/ghostscript-win32.zip "../DistFiles/ghostscript"
