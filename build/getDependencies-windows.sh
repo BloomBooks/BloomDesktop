@@ -159,6 +159,11 @@ do
 echo "***   $destination" >&2
 done
 echo "*** This checkout CANNOT build until those downloads succeed." >&2
+if [ "$extraction_failed" == "1" ]
+then
+echo "*** A zip also failed to unpack (see above), so what was extracted from it is probably" >&2
+echo "*** incomplete." >&2
+fi
 else
 if [ "$extraction_failed" == "1" ]
 then
@@ -193,11 +198,6 @@ for destination in "${unverified[@]}"
 do
 echo "***   $destination" >&2
 done
-fi
-if [ "$extraction_failed" == "1" ]
-then
-echo "*** A zip failed to unpack (see above), so what was extracted from it is probably" >&2
-echo "*** incomplete." >&2
 fi
 echo "***" >&2
 echo "*** No file was replaced by whatever the server sent instead: anything we could not" >&2
