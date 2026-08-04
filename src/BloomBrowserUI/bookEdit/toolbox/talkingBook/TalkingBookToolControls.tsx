@@ -21,6 +21,7 @@ import { Menu } from "@mui/material";
 import { LocalizableMenuItem } from "../../../react_components/localizableMenuItem";
 import { useMountEffect } from "../../../utils/useMountEffect";
 import { useWatchApiData } from "../../../utils/bloomApi";
+import { kDisablingOverlayZIndex } from "../toolboxZIndexes";
 
 const RecordingMeterAndText: FunctionComponent<{
     inputDevice: { iconSrc: string; title: string } | undefined;
@@ -279,10 +280,17 @@ export const TalkingBookToolControls: FunctionComponent<{
 
     return (
         <ThemeProvider theme={toolboxTheme}>
+            {/* Dims and blocks clicks on the toolbox while in Show Playback Order mode.
+                Anything that must stay usable gives itself a z-index above this one: the
+                tool headers (see toolboxZIndexes.ts), the Help link below, and the Show
+                Playback Order switch in talkingBookAdvancedSection.tsx. The uncovered strip
+                on the right is deliberate -- it keeps the toolbox scrollbar undimmed and
+                draggable, which on a short window can be the only way to reach the switch
+                that turns the mode back off. */}
             {uiState.inShowPlaybackOrderMode && (
                 <div
                     css={css`
-                        z-index: 1001;
+                        z-index: ${kDisablingOverlayZIndex};
                         opacity: 0.7;
                         position: fixed;
                         top: inherit;
