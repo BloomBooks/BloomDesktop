@@ -4126,6 +4126,19 @@ export default class AudioRecording implements IAudioRecorder {
         );
 
         this.updateButtonStateHelper(expectedVerb, response);
+
+        // The helper just recomputed this.haveAudio from the server, for whatever element is
+        // current now. The Advanced section's Recording Mode radio buttons are driven by values
+        // derived from it (uiState.hasAudio and uiState.haveACurrentTextboxModeRecording), and
+        // only updateDisplay() recomputes those. Several paths that change which box is current
+        // (clicking in another text box, Next/Back, typing new text) refresh the buttons through
+        // here without otherwise calling updateDisplay, which left the radio buttons describing
+        // the *previous* box. That is BL-16632: after recording By Whole Text Box and then
+        // clicking a box with no recording, "By Sentence" stayed disabled, saying to use Clear
+        // first, even though Clear itself was (correctly) disabled because that box has no audio.
+        // Pass false because refreshing what the UI shows must not have the side effect of
+        // choosing a new current element.
+        this.updateDisplay(false);
     }
 
     private updateButtonStateHelper(
