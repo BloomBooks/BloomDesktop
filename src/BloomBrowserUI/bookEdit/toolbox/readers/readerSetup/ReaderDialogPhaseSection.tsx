@@ -145,6 +145,14 @@ const DraggablePhaseRow: React.FunctionComponent<{
     );
 };
 
+/**
+ * The reorderable list of decodable stages down the left of the Decodable Stages tab.
+ *
+ * Despite the generic-sounding name, this is stage-specific: it is typed to ReaderStage and shows
+ * letters, sight words and allowed-words files. A Leveled Reader version would be showing levels,
+ * which hold entirely different fields (word and sentence maxima, things to remember), so expect
+ * to generalize this or write a sibling rather than to reuse it as-is.
+ */
 export const ReaderDialogPhaseSection: React.FunctionComponent<{
     settings: ReaderSettings;
     setSettings: (value: ReaderSettings) => void;
@@ -184,7 +192,10 @@ export const ReaderDialogPhaseSection: React.FunctionComponent<{
             stageIds.filter((_, index) => index !== props.selectedStageIndex),
         );
         props.setSettings(updatedSettings);
-        // Delete the word-list file if no remaining stage references it.
+        // Delete the word-list file if no remaining stage references it. As with the trash
+        // icon on the file itself, this happens immediately rather than on save, matching the
+        // legacy dialog; see removeAllowedWordsFile in DecodableStagesSetup for what it would
+        // take to defer both to save so that Cancel undoes them. (BL-16607)
         if (removedFile) {
             const stillUsed = updatedSettings.stages.some(
                 (oneStage) => oneStage.allowedWordsFile === removedFile,
