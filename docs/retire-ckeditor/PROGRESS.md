@@ -8,9 +8,18 @@ To resume after an interruption, issue **`/resume-ckeditor`** (see
 
 ## Current state
 
-**Phase: planning complete and signed off. No code changes yet.** On `master`, nothing in flight;
-the three docs here plus the resume skill are the only artifacts. All of PLAN.md §10 is decided
-except the Stage-5 legacy-cleanup lifetime, which blocks nothing. **Stage 0 is cleared to start.**
+**Phase: Stage 0 in progress.** Branch **`BL-6681-stage0-inventory`**, not yet pushed, no PR yet.
+All of PLAN.md §10 is decided except the Stage-5 legacy-cleanup lifetime, which blocks nothing.
+
+Stage 0 checklist (PLAN.md §6):
+
+- [x] Planning docs committed (`b7e849c62`)
+- [x] `BEHAVIOR-INVENTORY.md` written — 10 sections (A–K) plus cross-cutting criteria X1–X7
+- [ ] Capture today's paste/drop behaviour → `PASTE-DROP-BASELINE.md` (inventory rows C1–C7)
+- [ ] Characterization tests pinning the pure-ish functions
+- [ ] `toolbox.ts` selection-bracket prep commit (§5.4)
+- [ ] Handler-accumulation repro attempt (§4.10)
+- [ ] Page-reload timing baseline (§4.11)
 
 ## Log
 
@@ -318,20 +327,68 @@ doesn't reopen settled ground. **One genuinely open item remains**, and it block
 the C# `LegacyCkEditorCleanup` scrubbers stay indefinitely or get a one-time book migration. Decide
 when Stage 5 lands.
 
+### 2026-08-04 — Stage 0 started
+
+Branch `BL-6681-stage0-inventory` off `master` at `2ca9f2f08c`.
+
+**Environment fix needed first.** The first commit failed: a stale **husky v4** `pre-commit` hook in
+`.git/hooks/` (installed 2026-01-29 from a *different* worktree, `…/BloomDesktop.worktrees/Version6.3`)
+hard-codes `packageManager=yarn`, and yarn then died on the pnpm workspace. The repo has already
+replaced husky with its own `.githooks` dispatcher, but `core.hooksPath` was unset in this clone, so
+git was falling back to the stale hooks. Fixed the documented way (`.githooks/README.md`, "How to
+enable it (per clone)"):
+
+```sh
+git config core.hooksPath .githooks
+```
+
+The dispatcher then correctly routed to `src/BloomBrowserUI/.vite-hooks/pre-commit` and the checks
+passed. **Worth knowing for other clones/worktrees** — the symptom is a yarn lockfile error on
+commit, and the fix is one git-config line, not `--no-verify`.
+
+**`BEHAVIOR-INVENTORY.md` written.** Sections A–K plus cross-cutting X1–X7. Design choices in it
+worth keeping:
+
+- It covers only behaviours **at risk** — implemented by CKEditor or in code we will move. It
+  deliberately excludes `BloomField.ManageField`'s CKEditor-independent behaviours (BL-786, BL-933,
+  BL-952, BL-2274, BL-7061, BL-16518 …), which stay exactly where they are; listing them would dilute
+  the rows that matter.
+- Rows are tagged **⚠ capture first** (all of section C — paste/drop filtering) and
+  **✗ must NOT survive** (workarounds we intend to delete, so nobody faithfully reimplements them).
+  The ✗ rows are: the duplicate Ctrl+V keydown handler, the CKEditor artifact scrubbers on the
+  *browser* side (C# ones stay for legacy books), the mid-word bookmark bug, and `bootstrap()`'s dead
+  BL-3125 guard.
+- Four rows need a *new* implementation rather than a port, each with the reason: **D8** (BL-12357
+  small caps — depends on `cke/id`, meaningless without CKEditor), **K4** (`bloom-preventRemoval` —
+  currently uses `execCommand("undo")`, the very stack we're fencing off), **A7/A9** (colour panel —
+  superseded by Bloom's own colour dialog), and **G1** (should get strictly *better*, since offset
+  anchors don't perturb the markup).
+- H10–H17 record the project's *new* undo behaviour as acceptance criteria, separate from H1–H9's
+  no-regression rows.
+- X4 ("no listener leak") **fails today** — stated as such, so it reads as a known-red criterion
+  rather than a passing one.
+
 ## Next actions
 
-**Planning is complete. Stage 0 is cleared to start** — every decision it depends on is settled.
+Continue Stage 0 on branch `BL-6681-stage0-inventory`, in this order:
 
-1. **Stage 0** (PLAN.md §6):
-   - `BEHAVIOR-INVENTORY.md`, with the adversarial paste/drop rows captured against *today's*
-     behaviour first.
-   - Characterization tests for the pure-ish functions.
-   - The behaviour-preserving `toolbox.ts` selection-bracket prep commit (§5.4).
-   - Attempt the handler-accumulation repro (§4.10); file its own card if it reproduces.
-   - Baseline page-reload timing with the performance-log feature (§4.11).
-2. Before designing `clipboard.ts`, read PR #8140 and `origin/BL-16459-clipboard-failure-reporting`
-   — several measurements there are expensive to rediscover.
-3. Optional, offered but not done: add a comment to **BL-13502** noting that undo is another reason
-   to want save/reload decoupled.
+1. **Capture the paste/drop baseline** → `PASTE-DROP-BASELINE.md`, covering inventory rows C1–C7.
+   Needs a running Bloom (`run-bloom` skill) and a real web-page clipboard payload, not hand-written
+   tidy HTML. Do this **before** any code change; it is the only row-set whose failure is silent.
+2. **Characterization tests** for the pure-ish functions the inventory pins — the `BloomField` paste
+   transforms (D1–D7), `removeCkEditorFillingChars`/`fixUpEmptyishParagraphs` (F1–F4),
+   `makeSelectionIn` round-trips (G4–G5).
+3. **`toolbox.ts` prep commit** (§5.4): extract the save-selection / restore-selection bracket from
+   `handleKeyboardInput` into two functions with a clean seam. Behaviour-neutral; verify with the
+   G-section rows.
+4. **Handler-accumulation repro** (§4.10): call `refreshCanvasElementEditing` repeatedly, watch for
+   duplicate `document` keydown handlers; F6 is the likeliest visible symptom. File its own card if it
+   reproduces. Add the X4 listener-count leak test either way.
+5. **Page-reload timing baseline** (§4.11) with the performance-log feature.
 
-Nothing is blocked. The one remaining open question (legacy-cleanup lifetime) is a Stage 5 decision.
+Then: open the Stage 0 PR via `preflight`.
+
+Later, not Stage 0:
+- Before designing `clipboard.ts`, read PR #8140 and `origin/BL-16459-clipboard-failure-reporting`.
+- Optional, offered but not done: comment on **BL-13502** that undo is another reason to want
+  save/reload decoupled.
