@@ -4078,13 +4078,39 @@ namespace Bloom.Book
                 // This update can be very slow, so encourage the user that something is happening.
                 // NO images should have transparency removed.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8846.
 
-                ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
-                    FolderPath,
-                    new List<string>(),
-                    progress
-                );
+                var shell = Shell.GetShellOrOtherOpenForm();
+                // shell is null when no window is open at all -- the headless CLI (bulk upload,
+                // hydrate). There is nothing to show a dialog on, and nothing to ask about thread
+                // affinity, so just do the work against whatever progress we were handed.
+                if (
+                    Program.RunningUnitTests
+                    || progress is WebProgressAdapter
+                    || shell == null
+                    || !shell.InvokeRequired
+                )
+                {
+                    ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                        FolderPath,
+                        new List<string>(),
+                        progress
+                    );
+                }
+                else
+                {
+                    using (var dlg = new ProgressDialogBackground())
+                    {
+                        dlg.Text = "Updating Image Files";
+                        dlg.ShowAndDoWork(
+                            (progress, args) =>
+                                ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                                    FolderPath,
+                                    new List<string>(),
+                                    progress
+                                )
+                        );
+                    }
+                }
             }
-
             Dom.UpdateMetaElement("mediaMaintenanceLevel", "1");
         }
 
