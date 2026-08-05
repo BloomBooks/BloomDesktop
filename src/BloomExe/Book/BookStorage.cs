@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.ExceptionServices;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -4047,10 +4048,12 @@ namespace Bloom.Book
         /// memory. However, it is still helpful for performance and reducing published file sizes.
         /// Does nothing if mediaMaintenanceLevel indicates it has already been done.
         /// </summary>
-        /// <param name="progress">Where to report the (potentially very slow) shrinking, so the
-        /// user can see why we are busy. Callers pass whatever progress they already own; headless
-        /// callers such as the bulk-upload CLI pass a NullProgress and so report nothing. Must not
-        /// be null: ImageUtils.FixSizeAndTransparencyOfImagesInFolder dereferences it.</param>
+        /// <param name="progress">Where to report the (potentially very slow) shrinking, so the user
+        /// can see why we are busy. This is used when we are already off the UI thread, or headless,
+        /// or under test: the messages then land in whatever progress the caller already owns
+        /// (headless callers pass a NullProgress and so report nothing). When we are ON the UI thread
+        /// we put up our own dialog instead and this is not used -- see the branch below. Must not be
+        /// null: ImageUtils.FixSizeAndTransparencyOfImagesInFolder dereferences it.</param>
         public void MigrateToMediaLevel1ShrinkLargeImages(IProgress progress)
         {
             var levelString = Dom.GetMetaValue("mediaMaintenanceLevel", "0");
@@ -4063,10 +4066,17 @@ namespace Bloom.Book
                 // If the book contains overlarge images, we want to fix those before editing because this can lead
                 // to thumbnails not being created properly and other bad behavior.  This is a one-time fix that can
                 // permanently change the images in the original book folder.  Shrinking can be very slow, so we
-                // report it through the caller's progress rather than putting up our own dialog (BL-16646: this
-                // used to create a WinForms dialog, which is illegal on the background threads several of these
-                // callers run on).  If nothing needs to be done, nothing is reported at all, and it usually takes
-                // a small fraction of a second to determine this.
+                // always report it somewhere -- but which way round depends on the thread we are on, because
+                // WinForms only allows a Form to be created on the UI thread.  Creating it anywhere else was the
+                // bug behind BL-16646.
+                //   - Already off the UI thread: the caller got here from something that is itself reporting
+                //     progress (a progress dialog's background worker, or a websocket progress), so we hand our
+                //     messages to the progress it passed us and add no window of our own.
+                //   - On the UI thread: there is no such progress to borrow, and doing the work inline would
+                //     freeze Bloom for the duration, so we put up our own dialog, which runs the work on a
+                //     background worker and keeps the UI alive.
+                // If nothing needs shrinking, nothing is reported at all, and it usually takes a small fraction
+                // of a second to determine that.
 
                 // Bloom 4.9 and later limit images used by Bloom books to be no larger than 3500x2550 in
                 // order to avoid out of memory errors that can happen with really large images.
@@ -4079,14 +4089,14 @@ namespace Bloom.Book
                 // NO images should have transparency removed.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8846.
 
                 var shell = Shell.GetShellOrOtherOpenForm();
-                // shell is null when no window is open at all -- the headless CLI (bulk upload,
-                // hydrate). There is nothing to show a dialog on, and nothing to ask about thread
-                // affinity, so just do the work against whatever progress we were handed.
+                // shell is null when no window is open at all -- the bulk-upload and hydrate CLI
+                // commands. There is nothing to show a dialog on and no thread affinity to respect,
+                // so use the caller's progress like any other off-the-UI-thread case.
                 if (
                     Program.RunningUnitTests
                     || progress is WebProgressAdapter
                     || shell == null
-                    || !shell.InvokeRequired
+                    || shell.InvokeRequired
                 )
                 {
                     ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
@@ -4097,21 +4107,52 @@ namespace Bloom.Book
                 }
                 else
                 {
-                    using (var dlg = new ProgressDialogBackground())
-                    {
-                        dlg.Text = "Updating Image Files";
-                        dlg.ShowAndDoWork(
-                            (progress, args) =>
-                                ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
-                                    FolderPath,
-                                    new List<string>(),
-                                    progress
-                                )
-                        );
-                    }
+                    // InvokeRequired was false, so we are on the shell's own thread and may create
+                    // the dialog right here; no marshalling needed.
+                    ShrinkImagesBehindProgressDialog();
                 }
             }
             Dom.UpdateMetaElement("mediaMaintenanceLevel", "1");
+        }
+
+        /// <summary>
+        /// Shrink this book's overlarge images behind our own "Updating Image Files" dialog, which runs
+        /// the work on a background worker so Bloom stays responsive while it happens. Must be called
+        /// on the UI thread: WinForms does not allow creating a Form anywhere else.
+        /// </summary>
+        /// <remarks>
+        /// ProgressDialogBackground never reads RunWorkerCompletedEventArgs.Error, so an exception
+        /// thrown by the work would otherwise disappear and we would carry on and record the book as
+        /// migrated when its images were not in fact shrunk -- permanently, since the level is never
+        /// revisited. So capture it and rethrow it here, which both reports the failure and leaves
+        /// mediaMaintenanceLevel alone, exactly as the direct (no-dialog) path does.
+        /// </remarks>
+        private void ShrinkImagesBehindProgressDialog()
+        {
+            Exception errorInWorker = null;
+            using (var dlg = new ProgressDialogBackground())
+            {
+                dlg.Text = "Updating Image Files";
+                dlg.ShowAndDoWork(
+                    (dialogProgress, args) =>
+                    {
+                        try
+                        {
+                            ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                                FolderPath,
+                                new List<string>(),
+                                dialogProgress
+                            );
+                        }
+                        catch (Exception e)
+                        {
+                            errorInWorker = e;
+                        }
+                    }
+                );
+            }
+            if (errorInWorker != null)
+                ExceptionDispatchInfo.Capture(errorInWorker).Throw();
         }
 
         private int GetMaintenanceLevel()

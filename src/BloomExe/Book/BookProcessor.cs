@@ -91,9 +91,10 @@ namespace Bloom.Book
             // (not gated by mediaMaintenanceLevel), and it must come BEFORE BringBookUpToDate so that
             // the off-screen per-page fix-up measures and lays out against the final, already-shrunk
             // images. (This used to have a second reason -- keeping the migration from creating its
-            // modal progress dialog on this background thread, which WinForms forbids. BL-16646
-            // removed that dialog in favor of reporting through the caller's IProgress, so only the
-            // layout reason remains.)
+            // modal progress dialog on this background thread, which WinForms forbids. Since BL-16646
+            // the migration only creates that dialog when it is already on the UI thread, and reports
+            // through the caller's IProgress otherwise, so it could no longer do that here anyway and
+            // only the layout reason remains.)
             if (ImageUtils.NeedToShrinkImages(book.FolderPath))
             {
                 Log("shrinking oversized images in the book folder");
