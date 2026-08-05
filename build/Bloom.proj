@@ -59,7 +59,6 @@
   <UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
   <UsingTask TaskName="Split" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
   <UsingTask TaskName="FileUpdate" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
-  <UsingTask TaskName="NUnit3" AssemblyFile="$(BuildTasksDll)" Condition="Exists('$(BuildTasksDll)')" />
   <UsingTask TaskName="S3BuildPublisher" AssemblyFile="$(BuildTasksAwsDll)" Condition="Exists('$(BuildTasksAwsDll)')" />
   <Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
   <UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
@@ -193,21 +192,64 @@
     <CallTarget Targets="TestOnly"/>
   </Target>
   <Target Name="TestOnly" DependsOnTargets="RunNUnit"/>
+  <!--
+	Runs the C# suite with `dotnet test` (the same runner developers use) rather than with the
+	nunit3-console that the SIL.BuildTasks NUnit3 task wraps.
+
+	The console runner launches a per-framework agent process that asks the host only for
+	Microsoft.NETCore.App, never Microsoft.WindowsDesktop.App. Managed WPF assemblies still
+	resolve through our deps.json, but the native search path is derived from what the process
+	asked for, so anything calling into WPF's native code dies with "Unable to load DLL
+	'wpfgfx_cor3.dll'". `dotnet test` starts the host from BloomTests.runtimeconfig.json, which
+	does ask for WindowsDesktop. That gap is why ImageGalleryApi's tests passed every local run
+	and turned TeamCity red the moment they merged (BL-16597). The build and the developers were
+	not running the same thing. This makes them the same thing.
+
+	We deliberately point dotnet test at the already-built assembly rather than at the csproj:
+	several tests locate content by walking up from the assembly's own folder (see
+	BloomFileLocatorTests.kRelativePathToBrowserFolder), so letting dotnet test rebuild into
+	its default bin folder would quietly change what those paths resolve to.
+
+	Note we do NOT rely on the runner to report to TeamCity. We write NUnit3 xml (the format that
+	both TeamCity's importData and the nightly's publish action already understand) and hand
+	TeamCity the file. The Exec must not abort the target on failure, or a failing run would
+	skip the import and TeamCity would lose exactly the results worth looking at; so we capture
+	the exit code, import, and only then fail.
+  -->
   <Target Name="RunNUnit">
     <PropertyGroup>
-      <TestResultsXmlFile Condition="$(isOnTeamCity) == false">$(RootDir)/output/Tests/$(Configuration)/x64/TestResults.xml</TestResultsXmlFile>
-      <ExtraExcludeCategories Condition="'$(teamcity_version)' != ''">SkipOnTeamCity,$(ExtraExcludeCategories)</ExtraExcludeCategories>
+      <TestResultsXmlFile>$(RootDir)/output/Tests/$(Configuration)/x64/TestResults.xml</TestResultsXmlFile>
+      <!-- Categories to leave out, semicolon separated, which is what MSBuild splits an Include
+	       on. Callers pass one: TeamCity /p:excludedCategories=Integration (the tests that talk
+	       to the live S3 bucket), the nightly /p:excludedCategories=SkipOnTeamCity. TeamCity
+	       additionally always wants SkipOnTeamCity, so add it there rather than making the build
+	       configuration repeat it. Note the name must differ from excludedCategories by more
+	       than case: MSBuild property names are case insensitive, so a property "ExcludedCategories"
+	       reading "$(excludedCategories)" would be reading itself. -->
+      <CategoriesToExclude>$(excludedCategories)</CategoriesToExclude>
+      <CategoriesToExclude Condition="'$(teamcity_version)' != ''">SkipOnTeamCity;$(excludedCategories)</CategoriesToExclude>
     </PropertyGroup>
-    <NUnit3
-			Assemblies="@(TestAssemblies)"
-			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.20.1/tools"
-			ExcludeCategory="$(ExtraExcludeCategories)$(excludedCategories)"
-			WorkingDirectory="$(RootDir)/output/Tests/$(Configuration)/x64"
-			Trace="Debug"
-			Verbose="true"
-			OutputXmlFile="$(TestResultsXmlFile)"
-			UseNUnit3Xml="true"
-			TeamCity="$(isOnTeamCity)"/>
+    <!-- A comma would survive as part of a category name and yield "TestCategory!=A,B", which
+	     matches nothing and so silently excludes nothing, running a suite nobody asked for. Only
+	     reachable by setting the property in the environment: on the command line MSBuild reads a
+	     comma as its own separator between properties, so /p:excludedCategories=A,B never gets
+	     this far. Worth catching anyway, since the failure it prevents is a silent one. -->
+    <Error Condition="$(CategoriesToExclude.Contains(','))"
+		   Text="excludedCategories is semicolon separated, but got '$(CategoriesToExclude)'"/>
+    <ItemGroup>
+      <ExcludedCategory Include="$(CategoriesToExclude)"/>
+    </ItemGroup>
+    <PropertyGroup>
+      <TestFilterArgument Condition="'@(ExcludedCategory)' != ''">--filter "@(ExcludedCategory->'TestCategory!=%(Identity)', '&amp;')"</TestFilterArgument>
+    </PropertyGroup>
+    <Message Importance="high" Text="Running C# tests: @(TestAssemblies) $(TestFilterArgument)"/>
+    <Exec Command='dotnet test "@(TestAssemblies)" --nologo $(TestFilterArgument) --logger:"nunit;LogFilePath=$(TestResultsXmlFile)"'
+		  WorkingDirectory="$(RootDir)/output/Tests/$(Configuration)/x64"
+		  ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="TestExitCode"/>
+    </Exec>
+    <Message Condition="$(isOnTeamCity) == true" Importance="high" Text="##teamcity[importData type='nunit' path='$(TestResultsXmlFile)']"/>
+    <Error Condition="'$(TestExitCode)' != '0'" Text="C# tests failed (dotnet test returned $(TestExitCode)). Results: $(TestResultsXmlFile)"/>
   </Target>
   <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
 		Condition="'$(OS)'=='Windows_NT'">
