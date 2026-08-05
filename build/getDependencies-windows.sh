@@ -22,10 +22,10 @@ force=0
 clean=0
 
 while getopts fc opt; do
-case $opt in
-f) force=1 ;;
-c) clean=1 ;;
-esac
+	case $opt in
+		f) force=1 ;;
+		c) clean=1 ;;
+	esac
 done
 
 shift $((OPTIND - 1))
@@ -53,20 +53,20 @@ deleted_a_corrupt_zip=0
 # came down fresh or the server said our copy was current. Borrowing from another worktree
 # records nothing here, which is the distinction report_failures reports on.
 note_verified() {
-verified+=("$1")
+	verified+=("$1")
 }
 
 # True if $1 was checked against the server during this run.
 was_verified() {
-local one
-for one in "${verified[@]}"
-do
-if [ "$one" == "$1" ]
-then
-return 0
-fi
-done
-return 1
+	local one
+	for one in "${verified[@]}"
+	do
+		if [ "$one" == "$1" ]
+		then
+			return 0
+		fi
+	done
+	return 1
 }
 
 # Where we record which URL each dependency was last fetched from. Without this, the only thing
@@ -98,120 +98,120 @@ skipped_after_giving_up=0
 # The URL a dependency was last fetched from, per a worktree's record. $1 is the record file,
 # $2 the destination as written in the copy_auto lines. Prints nothing if there is no record.
 recorded_source() {
-if [ ! -f "$1" ]
-then
-return 0
-fi
-awk -F'\t' -v want="$2" '$1 == want { url = $2 } END { if (url != "") print url }' "$1"
+	if [ ! -f "$1" ]
+	then
+		return 0
+	fi
+	awk -F'\t' -v want="$2" '$1 == want { url = $2 } END { if (url != "") print url }' "$1"
 }
 
 # Remember that the file now at $1 came from $2, replacing any previous record for $1.
 record_source() {
-local temp="$sources_file.new"
-if [ -f "$sources_file" ]
-then
-awk -F'\t' -v want="$1" '$1 != want' "$sources_file" > "$temp"
-else
-: > "$temp"
-fi
-printf '%s\t%s\n' "$1" "$2" >> "$temp"
-mv -f "$temp" "$sources_file"
+	local temp="$sources_file.new"
+	if [ -f "$sources_file" ]
+	then
+		awk -F'\t' -v want="$1" '$1 != want' "$sources_file" > "$temp"
+	else
+		: > "$temp"
+	fi
+	printf '%s\t%s\n' "$1" "$2" >> "$temp"
+	mv -f "$temp" "$sources_file"
 }
 
 # Report one problem now (so it appears next to the download it belongs to) and remember it
 # for the summary at the end.
 note_failure() {
-echo "*** ERROR: $1" >&2
-failures+=("$1")
+	echo "*** ERROR: $1" >&2
+	failures+=("$1")
 }
 
 # Fail the script if any dependency could not be obtained, with a summary loud enough to
 # spot in the middle of init.sh's interleaved parallel output.
 report_failures() {
-if [ ${#failures[@]} -eq 0 ]
-then
-return 0
-fi
-local missing=()
-local destination
-for destination in "${destinations[@]}"
-do
-# An error page sitting where a dependency should be does not count as "present" -- saying
-# so is how this summary would end up telling the developer their broken checkout is fine.
-if [ ! -s "$destination" ] || looks_like_html "$destination"
-then
-missing+=("$destination")
-fi
-done
-echo "" >&2
-echo "**********************************************************************" >&2
-echo "*** getDependencies-windows.sh FAILED: ${#failures[@]} problem(s):" >&2
-for failure in "${failures[@]}"
-do
-echo "***   $failure" >&2
-done
-echo "***" >&2
-if [ ${#missing[@]} -ne 0 ]
-then
-echo "*** ${#missing[@]} of ${#destinations[@]} dependencies are MISSING altogether:" >&2
-for destination in "${missing[@]}"
-do
-echo "***   $destination" >&2
-done
-echo "*** This checkout CANNOT build until those downloads succeed." >&2
-if [ "$extraction_failed" == "1" ]
-then
-echo "*** A zip also failed to unpack (see above), so what was extracted from it is probably" >&2
-echo "*** incomplete." >&2
-fi
-else
-if [ "$extraction_failed" == "1" ]
-then
-echo "*** All ${#destinations[@]} downloads are present on disk even so, but one of them could not be" >&2
-echo "*** unpacked (see above), so this checkout is missing whatever was inside it." >&2
-else
-echo "*** All ${#destinations[@]} dependencies are present on disk even so, so this checkout" >&2
-echo "*** can probably still build. What failed was checking them against the server, so" >&2
-echo "*** we do not know they are up to date -- which is why this is still a failure." >&2
-fi
-fi
-# Only the borrowed files whose own check never happened are unverified. One that the server
-# confirmed (304) or replaced during this run has been checked like any other, and saying
-# otherwise would send the developer looking for a problem that is not there. This belongs in
-# both branches: a brand new worktree with a flaky server is exactly where a borrowed,
-# never-checked copy matters most, and that run usually has something missing too.
-local unverified=()
-local index=0
-while [ "$index" -lt "${#borrowed_dest[@]}" ]
-do
-if ! was_verified "${borrowed_dest[$index]}"
-then
-unverified+=("${borrowed_dest[$index]} (from ${borrowed_from[$index]})")
-fi
-index=$((index + 1))
-done
-if [ ${#unverified[@]} -ne 0 ]
-then
-echo "*** Note that ${#unverified[@]} of the file(s) now on disk were copied from another worktree" >&2
-echo "*** during this run, and we never managed to check them against the server at all:" >&2
-for destination in "${unverified[@]}"
-do
-echo "***   $destination" >&2
-done
-fi
-echo "***" >&2
-echo "*** No file was replaced by whatever the server sent instead: anything we could not" >&2
-echo "*** verify was left exactly as it was. (Dependencies that did download cleanly during" >&2
-echo "*** this run were of course updated.)" >&2
-if [ "$deleted_a_corrupt_zip" == "1" ]
-then
-echo "*** (Except a zip that turned out to be damaged, which was deleted on purpose so" >&2
-echo "*** that the next run downloads it again rather than trusting it.)" >&2
-fi
-echo "*** Check https://build.palaso.org and your network, then run this script" >&2
-echo "*** (or ./init.sh) again." >&2
-echo "**********************************************************************" >&2
-exit 1
+	if [ ${#failures[@]} -eq 0 ]
+	then
+		return 0
+	fi
+	local missing=()
+	local destination
+	for destination in "${destinations[@]}"
+	do
+		# An error page sitting where a dependency should be does not count as "present" -- saying
+		# so is how this summary would end up telling the developer their broken checkout is fine.
+		if [ ! -s "$destination" ] || looks_like_html "$destination"
+		then
+			missing+=("$destination")
+		fi
+	done
+	echo "" >&2
+	echo "**********************************************************************" >&2
+	echo "*** getDependencies-windows.sh FAILED: ${#failures[@]} problem(s):" >&2
+	for failure in "${failures[@]}"
+	do
+		echo "***   $failure" >&2
+	done
+	echo "***" >&2
+	if [ ${#missing[@]} -ne 0 ]
+	then
+		echo "*** ${#missing[@]} of ${#destinations[@]} dependencies are MISSING altogether:" >&2
+		for destination in "${missing[@]}"
+		do
+			echo "***   $destination" >&2
+		done
+		echo "*** This checkout CANNOT build until those downloads succeed." >&2
+		if [ "$extraction_failed" == "1" ]
+		then
+			echo "*** A zip also failed to unpack (see above), so what was extracted from it is probably" >&2
+			echo "*** incomplete." >&2
+		fi
+	else
+		if [ "$extraction_failed" == "1" ]
+		then
+			echo "*** All ${#destinations[@]} downloads are present on disk even so, but one of them could not be" >&2
+			echo "*** unpacked (see above), so this checkout is missing whatever was inside it." >&2
+		else
+			echo "*** All ${#destinations[@]} dependencies are present on disk even so, so this checkout" >&2
+			echo "*** can probably still build. What failed was checking them against the server, so" >&2
+			echo "*** we do not know they are up to date -- which is why this is still a failure." >&2
+		fi
+	fi
+	# Only the borrowed files whose own check never happened are unverified. One that the server
+	# confirmed (304) or replaced during this run has been checked like any other, and saying
+	# otherwise would send the developer looking for a problem that is not there. This belongs in
+	# both branches: a brand new worktree with a flaky server is exactly where a borrowed,
+	# never-checked copy matters most, and that run usually has something missing too.
+	local unverified=()
+	local index=0
+	while [ "$index" -lt "${#borrowed_dest[@]}" ]
+	do
+		if ! was_verified "${borrowed_dest[$index]}"
+		then
+			unverified+=("${borrowed_dest[$index]} (from ${borrowed_from[$index]})")
+		fi
+		index=$((index + 1))
+	done
+	if [ ${#unverified[@]} -ne 0 ]
+	then
+		echo "*** Note that ${#unverified[@]} of the file(s) now on disk were copied from another worktree" >&2
+		echo "*** during this run, and we never managed to check them against the server at all:" >&2
+		for destination in "${unverified[@]}"
+		do
+			echo "***   $destination" >&2
+		done
+	fi
+	echo "***" >&2
+	echo "*** No file was replaced by whatever the server sent instead: anything we could not" >&2
+	echo "*** verify was left exactly as it was. (Dependencies that did download cleanly during" >&2
+	echo "*** this run were of course updated.)" >&2
+	if [ "$deleted_a_corrupt_zip" == "1" ]
+	then
+		echo "*** (Except a zip that turned out to be damaged, which was deleted on purpose so" >&2
+		echo "*** that the next run downloads it again rather than trusting it.)" >&2
+	fi
+	echo "*** Check https://build.palaso.org and your network, then run this script" >&2
+	echo "*** (or ./init.sh) again." >&2
+	echo "**********************************************************************" >&2
+	exit 1
 }
 
 # True if the file starts out looking like an HTML document. TeamCity, and any proxy or
@@ -221,13 +221,13 @@ exit 1
 # (Done with bash's own "read -N" rather than head|grep because in Git Bash on Windows grep
 # aborts when fed binary data through a pipe, which would make every check silently pass.)
 looks_like_html() {
-local start
-IFS= read -r -N 1024 start < "$1" || true
-start="${start,,}"
-case "$start" in
-*"<!doctype html"*|*"<html"*|*"<head>"*) return 0 ;;
-esac
-return 1
+	local start
+	IFS= read -r -N 1024 start < "$1" || true
+	start="${start,,}"
+	case "$start" in
+		*"<!doctype html"*|*"<html"*|*"<head>"*) return 0 ;;
+	esac
+	return 1
 }
 
 # The other working trees of this repo (the main checkout plus any git worktrees), as absolute
@@ -237,27 +237,27 @@ sibling_worktrees_known=0
 
 # Fill in sibling_worktrees, once.
 find_sibling_worktrees() {
-if [ "$sibling_worktrees_known" == "1" ]
-then
-return 0
-fi
-sibling_worktrees_known=1
-local here
-here=$(git -C .. rev-parse --show-toplevel 2>/dev/null) || return 0
-local line
-local tree
-while IFS= read -r line
-do
-case "$line" in
-"worktree "*)
-tree="${line#worktree }"
-if [ "$tree" != "$here" ] && [ -d "$tree" ]
-then
-sibling_worktrees+=("$tree")
-fi
-;;
-esac
-done < <(git -C .. worktree list --porcelain 2>/dev/null)
+	if [ "$sibling_worktrees_known" == "1" ]
+	then
+		return 0
+	fi
+	sibling_worktrees_known=1
+	local here
+	here=$(git -C .. rev-parse --show-toplevel 2>/dev/null) || return 0
+	local line
+	local tree
+	while IFS= read -r line
+	do
+		case "$line" in
+			"worktree "*)
+				tree="${line#worktree }"
+				if [ "$tree" != "$here" ] && [ -d "$tree" ]
+				then
+					sibling_worktrees+=("$tree")
+				fi
+			;;
+		esac
+	done < <(git -C .. worktree list --porcelain 2>/dev/null)
 }
 
 # These dependencies change rarely, and a developer typically has several worktrees of this
@@ -269,109 +269,109 @@ done < <(git -C .. worktree list --porcelain 2>/dev/null)
 # us something newer.
 # $1 is the URL we are about to download, $2 the file we want.
 seed_from_sibling_worktree() {
-# with -f the caller wants a fresh download regardless, so there is nothing to save
-if [ -s "$2" ] || [ "$force" == "1" ]
-then
-return 0
-fi
-find_sibling_worktrees
-# our destinations are all "../something"; that "something" is the path within a worktree
-local relative="${2#../}"
-local candidate
-local newest=""
-local tree
-for tree in "${sibling_worktrees[@]}"
-do
-candidate="$tree/$relative"
-if [ ! -f "$candidate" ] || [ ! -s "$candidate" ]
-then
-continue
-fi
-# Only borrow a file the other worktree recorded as having come from the same URL we are
-# about to ask for. Its script saying it would download that URL *today* is not evidence
-# about the file on its disk: a worktree that fetched its dependencies while on
-# Version6.4 (which points several of these at a different build) and has since switched
-# branches would pass that test while holding the wrong binaries -- and because we borrow
-# the newest copy, timestamp and all, that wrong file would win the conditional GET below
-# and be locked in.
-if [ "$(recorded_source "$tree/${sources_file#../}" "$2")" != "$1" ]
-then
-continue
-fi
-# Never spread around an error page, or a zip that is not a zip: junk left by an older
-# version of this script would otherwise propagate from worktree to worktree, and a
-# damaged zip would defeat extract_zip's delete-and-refetch recovery by being re-borrowed
-# every run.
-if looks_like_html "$candidate"
-then
-continue
-fi
-case "$candidate" in
-*.zip)
-# exit code 1 is only a warning; 2 and up (or a missing unzip) mean we should not risk it
-unzip -tqq "$candidate" > /dev/null 2>&1
-if [ "$?" -ge 2 ]
-then
-continue
-fi
-;;
-esac
-if [ -z "$newest" ] || [ "$candidate" -nt "$newest" ]
-then
-newest="$candidate"
-fi
-done
-if [ -n "$newest" ]
-then
-echo "copy: $2 <= $newest (already downloaded by another worktree)"
-# -p to keep the timestamp, which is what makes the conditional GET meaningful
-if cp -p "$newest" "$2"
-then
-borrowed_dest+=("$2")
-borrowed_from+=("$newest")
-# Vouch for the borrowed file for this run only -- enough for the conditional GET below to be
-# meaningful -- but do not write it into our own record yet. Recording it here would make an
-# unverified borrowed copy look, on every later run, like an ordinary local file we had checked
-# ourselves. The record gets written when the server actually confirms it.
-seeded_dest="$2"
-seeded_source="$1"
-else
-rm -f "$2"
-fi
-fi
+	# with -f the caller wants a fresh download regardless, so there is nothing to save
+	if [ -s "$2" ] || [ "$force" == "1" ]
+	then
+		return 0
+	fi
+	find_sibling_worktrees
+	# our destinations are all "../something"; that "something" is the path within a worktree
+	local relative="${2#../}"
+	local candidate
+	local newest=""
+	local tree
+	for tree in "${sibling_worktrees[@]}"
+	do
+		candidate="$tree/$relative"
+		if [ ! -f "$candidate" ] || [ ! -s "$candidate" ]
+		then
+			continue
+		fi
+		# Only borrow a file the other worktree recorded as having come from the same URL we are
+		# about to ask for. Its script saying it would download that URL *today* is not evidence
+		# about the file on its disk: a worktree that fetched its dependencies while on
+		# Version6.4 (which points several of these at a different build) and has since switched
+		# branches would pass that test while holding the wrong binaries -- and because we borrow
+		# the newest copy, timestamp and all, that wrong file would win the conditional GET below
+		# and be locked in.
+		if [ "$(recorded_source "$tree/${sources_file#../}" "$2")" != "$1" ]
+		then
+			continue
+		fi
+		# Never spread around an error page, or a zip that is not a zip: junk left by an older
+		# version of this script would otherwise propagate from worktree to worktree, and a
+		# damaged zip would defeat extract_zip's delete-and-refetch recovery by being re-borrowed
+		# every run.
+		if looks_like_html "$candidate"
+		then
+			continue
+		fi
+		case "$candidate" in
+			*.zip)
+				# exit code 1 is only a warning; 2 and up (or a missing unzip) mean we should not risk it
+				unzip -tqq "$candidate" > /dev/null 2>&1
+				if [ "$?" -ge 2 ]
+				then
+					continue
+				fi
+			;;
+		esac
+		if [ -z "$newest" ] || [ "$candidate" -nt "$newest" ]
+		then
+			newest="$candidate"
+		fi
+	done
+	if [ -n "$newest" ]
+	then
+		echo "copy: $2 <= $newest (already downloaded by another worktree)"
+		# -p to keep the timestamp, which is what makes the conditional GET meaningful
+		if cp -p "$newest" "$2"
+		then
+			borrowed_dest+=("$2")
+			borrowed_from+=("$newest")
+			# Vouch for the borrowed file for this run only -- enough for the conditional GET below to be
+			# meaningful -- but do not write it into our own record yet. Recording it here would make an
+			# unverified borrowed copy look, on every later run, like an ordinary local file we had checked
+			# ourselves. The record gets written when the server actually confirms it.
+			seeded_dest="$2"
+			seeded_source="$1"
+		else
+			rm -f "$2"
+		fi
+	fi
 }
 
 copy_auto() {
-if [ "$clean" == "1" ]
-then
-echo cleaning $2
-rm -f ""$2""
-else
-destinations+=("$2")
-seeded_dest=""
-seeded_source=""
-# Borrowing needs no network, so do it even when the server has stopped answering: it leaves
-# a brand new worktree usable (and the summary says which files were never checked) instead
-# of empty.
-seed_from_sibling_worktree "$1" "$2"
-if [ "$server_unreachable" == "1" ]
-then
-skipped_after_giving_up=$((skipped_after_giving_up + 1))
-return
-fi
-where_curl=$(type -P curl)
-where_wget=$(type -P wget)
-if [ "$where_curl" != "" ]
-then
-copy_curl "$1" "$2"
-elif [ "$where_wget" != "" ]
-then
-copy_wget "$1" "$2"
-else
-echo "Missing curl or wget"
-exit 1
-fi
-fi
+	if [ "$clean" == "1" ]
+	then
+		echo cleaning $2
+		rm -f ""$2""
+	else
+		destinations+=("$2")
+		seeded_dest=""
+		seeded_source=""
+		# Borrowing needs no network, so do it even when the server has stopped answering: it leaves
+		# a brand new worktree usable (and the summary says which files were never checked) instead
+		# of empty.
+		seed_from_sibling_worktree "$1" "$2"
+		if [ "$server_unreachable" == "1" ]
+		then
+			skipped_after_giving_up=$((skipped_after_giving_up + 1))
+			return
+		fi
+		where_curl=$(type -P curl)
+		where_wget=$(type -P wget)
+		if [ "$where_curl" != "" ]
+		then
+			copy_curl "$1" "$2"
+		elif [ "$where_wget" != "" ]
+		then
+			copy_wget "$1" "$2"
+		else
+			echo "Missing curl or wget"
+			exit 1
+		fi
+	fi
 }
 
 # Downloads into a temporary file and only replaces the real one once we are happy with what
@@ -379,84 +379,84 @@ fi
 # truncated transfer becomes, say, our copy of PodcastUtilities.PortableDevices.dll, and the
 # C# build then fails with a wildly misleading message.
 copy_curl() {
-echo "curl: $2 <= $1"
-local temp="$2.getDependencies-download"
-rm -f "$temp"
-current_temp="$temp"
-# --speed-limit/--speed-time so a server that accepts the connection and then trickles or
-# stalls eventually gives up instead of hanging init.sh for ever; the allowance is generous
-# enough that a genuinely slow connection still finishes.
-local args=(-# -L --fail --retry 1 --connect-timeout 20 --speed-limit 1024 --speed-time 120
--o "$temp" -w '%{http_code}')
-if [ "$force" != "1" ] && [ -s "$2" ] && ! looks_like_html "$2" \
-&& { [ "$(recorded_source "$sources_file" "$2")" == "$1" ] \
-	|| { [ "$seeded_dest" == "$2" ] && [ "$seeded_source" == "$1" ]; }; }
-then
-# We have a file that is a plausible copy of this very artifact, so ask the server for it
-# only if it has something newer. All three tests matter: an empty or error-page file must
-# not be able to answer "not modified", and neither must one we last fetched from a
-# different build's URL (see the note on $sources_file above).
-args+=(-z "$2")
-fi
-local http_code
-local status
-http_code=$(curl "${args[@]}" "$1")
-status=$?
-if [ "$status" != "0" ]
-then
-rm -f "$temp"
-current_temp=""
-if [ "${http_code:-000}" == "000" ]
-then
-# nothing came back at all: no connection, or it died before sending a response
-no_response_run=$((no_response_run + 1))
-# Only conclude the server is down if we have never got anything from it this run. A blip in
-# the middle of an otherwise working run (a CI runner's network hiccuping, say) should not
-# abort the dependencies we have not tried yet; a server that has never once answered should.
-if [ "$no_response_run" -ge "$give_up_after" ] && [ ${#verified[@]} -eq 0 ]
-then
-server_unreachable=1
-fi
-else
-no_response_run=0
-fi
-note_failure "$2 <= $1: curl failed (exit code $status, HTTP status ${http_code:-none})"
-return
-fi
-no_response_run=0
-if [ "$http_code" == "304" ]
-then
-# our copy is already up to date; curl sent us no content at all
-rm -f "$temp"
-current_temp=""
-record_source "$2" "$1"
-note_verified "$2"
-return
-fi
-if [ ! -s "$temp" ]
-then
-rm -f "$temp"
-current_temp=""
-note_failure "$2 <= $1: the server sent nothing (HTTP status $http_code)"
-return
-fi
-if looks_like_html "$temp"
-then
-rm -f "$temp"
-current_temp=""
-note_failure "$2 <= $1: the server sent an HTML page (HTTP status $http_code) instead of the file we asked for"
-return
-fi
-if ! mv -f "$temp" "$2"
-then
-rm -f "$temp"
-current_temp=""
-note_failure "$2 <= $1: downloaded it, but could not put it in place (is something using the old file?)"
-return
-fi
-current_temp=""
-record_source "$2" "$1"
-note_verified "$2"
+	echo "curl: $2 <= $1"
+	local temp="$2.getDependencies-download"
+	rm -f "$temp"
+	current_temp="$temp"
+	# --speed-limit/--speed-time so a server that accepts the connection and then trickles or
+	# stalls eventually gives up instead of hanging init.sh for ever; the allowance is generous
+	# enough that a genuinely slow connection still finishes.
+	local args=(-# -L --fail --retry 1 --connect-timeout 20 --speed-limit 1024 --speed-time 120
+		-o "$temp" -w '%{http_code}')
+	if [ "$force" != "1" ] && [ -s "$2" ] && ! looks_like_html "$2" \
+		&& { [ "$(recorded_source "$sources_file" "$2")" == "$1" ] \
+		|| { [ "$seeded_dest" == "$2" ] && [ "$seeded_source" == "$1" ]; }; }
+	then
+		# We have a file that is a plausible copy of this very artifact, so ask the server for it
+		# only if it has something newer. All three tests matter: an empty or error-page file must
+		# not be able to answer "not modified", and neither must one we last fetched from a
+		# different build's URL (see the note on $sources_file above).
+		args+=(-z "$2")
+	fi
+	local http_code
+	local status
+	http_code=$(curl "${args[@]}" "$1")
+	status=$?
+	if [ "$status" != "0" ]
+	then
+		rm -f "$temp"
+		current_temp=""
+		if [ "${http_code:-000}" == "000" ]
+		then
+			# nothing came back at all: no connection, or it died before sending a response
+			no_response_run=$((no_response_run + 1))
+			# Only conclude the server is down if we have never got anything from it this run. A blip in
+			# the middle of an otherwise working run (a CI runner's network hiccuping, say) should not
+			# abort the dependencies we have not tried yet; a server that has never once answered should.
+			if [ "$no_response_run" -ge "$give_up_after" ] && [ ${#verified[@]} -eq 0 ]
+			then
+				server_unreachable=1
+			fi
+		else
+			no_response_run=0
+		fi
+		note_failure "$2 <= $1: curl failed (exit code $status, HTTP status ${http_code:-none})"
+		return
+	fi
+	no_response_run=0
+	if [ "$http_code" == "304" ]
+	then
+		# our copy is already up to date; curl sent us no content at all
+		rm -f "$temp"
+		current_temp=""
+		record_source "$2" "$1"
+		note_verified "$2"
+		return
+	fi
+	if [ ! -s "$temp" ]
+	then
+		rm -f "$temp"
+		current_temp=""
+		note_failure "$2 <= $1: the server sent nothing (HTTP status $http_code)"
+		return
+	fi
+	if looks_like_html "$temp"
+	then
+		rm -f "$temp"
+		current_temp=""
+		note_failure "$2 <= $1: the server sent an HTML page (HTTP status $http_code) instead of the file we asked for"
+		return
+	fi
+	if ! mv -f "$temp" "$2"
+	then
+		rm -f "$temp"
+		current_temp=""
+		note_failure "$2 <= $1: downloaded it, but could not put it in place (is something using the old file?)"
+		return
+	fi
+	current_temp=""
+	record_source "$2" "$1"
+	note_verified "$2"
 }
 
 # The wget fallback (used only where curl is missing, which on Windows is nowhere we know of)
@@ -469,41 +469,41 @@ note_verified "$2"
 # hardly ever taken, and it is why the basename/%-escaping dance this function used to need is
 # gone: -O names the file exactly.
 copy_wget() {
-echo "wget: $2 <= $1"
-local temp="$2.getDependencies-download"
-rm -f "$temp"
-current_temp="$temp"
-if ! wget -q -L -O "$temp" "$1"
-then
-rm -f "$temp"
-current_temp=""
-note_failure "$2 <= $1: wget failed"
-return
-fi
-if [ ! -s "$temp" ]
-then
-rm -f "$temp"
-current_temp=""
-note_failure "$2 <= $1: the server sent nothing"
-return
-fi
-if looks_like_html "$temp"
-then
-rm -f "$temp"
-current_temp=""
-note_failure "$2 <= $1: the server sent an HTML page instead of the file we asked for"
-return
-fi
-if ! mv -f "$temp" "$2"
-then
-rm -f "$temp"
-current_temp=""
-note_failure "$2 <= $1: downloaded it, but could not put it in place (is something using the old file?)"
-return
-fi
-current_temp=""
-record_source "$2" "$1"
-note_verified "$2"
+	echo "wget: $2 <= $1"
+	local temp="$2.getDependencies-download"
+	rm -f "$temp"
+	current_temp="$temp"
+	if ! wget -q -L -O "$temp" "$1"
+	then
+		rm -f "$temp"
+		current_temp=""
+		note_failure "$2 <= $1: wget failed"
+		return
+	fi
+	if [ ! -s "$temp" ]
+	then
+		rm -f "$temp"
+		current_temp=""
+		note_failure "$2 <= $1: the server sent nothing"
+		return
+	fi
+	if looks_like_html "$temp"
+	then
+		rm -f "$temp"
+		current_temp=""
+		note_failure "$2 <= $1: the server sent an HTML page instead of the file we asked for"
+		return
+	fi
+	if ! mv -f "$temp" "$2"
+	then
+		rm -f "$temp"
+		current_temp=""
+		note_failure "$2 <= $1: downloaded it, but could not put it in place (is something using the old file?)"
+		return
+	fi
+	current_temp=""
+	record_source "$2" "$1"
+	note_verified "$2"
 }
 
 
@@ -553,7 +553,10 @@ mkdir -p ../lib/lame
 # this: init.sh starts this script in the background, a non-interactive shell makes its
 # background children ignore SIGINT, and bash will not install a trap for a signal that was
 # already ignored -- so a Ctrl-C during ./init.sh never reaches us.
-rm -f ../DistFiles/*.getDependencies-download ../DistFiles/ghostscript/*.getDependencies-download 	../build/*.getDependencies-download ../Downloads/*.getDependencies-download 	../lib/*.getDependencies-download ../lib/dotnet/*.getDependencies-download 	../lib/lame/*.getDependencies-download 2>/dev/null
+for directory in ../DistFiles ../DistFiles/ghostscript ../build ../Downloads ../lib ../lib/dotnet ../lib/lame
+do
+	rm -f "$directory"/*.getDependencies-download
+done
 
 # download artifact dependencies
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/ghostscript-win32.zip ../Downloads/ghostscript-win32.zip
@@ -577,67 +580,67 @@ copy_auto https://build.palaso.org/guestAuth/repository/download/XliffForHtml_Wi
 # the archive first, and throw away a bad one so that the next run downloads it again
 # instead of trusting its timestamp.
 extract_zip() {
-if [ "$clean" == "1" ]
-then
-return 0
-fi
-if [ ! -f "$1" ]
-then
-extraction_failed=1
-note_failure "cannot extract $1 into $2: the file is not there"
-return
-fi
-# Test the archive before unpacking it, reading the exit code carefully, because the wrong
-# reading here deletes a good download and then re-fetches and deletes it again for ever.
-# 0 and 1 both mean the archive is usable (1 is a warning, such as extra bytes around it).
-# 2, 3 and 9 mean the archive itself is at fault -- a truncated download, or an error page
-# saved under a .zip name, both of which this unzip reports as 9. Anything else (out of
-# memory, disk full, a compression method it lacks, unzip missing altogether) is about this
-# machine rather than the download, so the archive is left alone.
-unzip -tqq "$1" > /dev/null 2>&1
-local test_status=$?
-if [ "$test_status" == "127" ]
-then
-extraction_failed=1
-note_failure "cannot extract $1 into $2: unzip is not installed. Leaving the archive alone; install unzip (Git Bash ships it) and run this again."
-return
-fi
-case "$test_status" in
-0|1)
-;;
-2|3|9)
-extraction_failed=1
-deleted_a_corrupt_zip=1
-if [ -d "$2" ] && [ -n "$(ls -A "$2" 2>/dev/null)" ]
-then
-note_failure "cannot extract $1 into $2: it is not a valid zip file (unzip test exit code $test_status -- a failed or truncated download?). Deleted it so the next run fetches it afresh; what an earlier run extracted into $2 is still there."
-else
-note_failure "cannot extract $1 into $2: it is not a valid zip file (unzip test exit code $test_status -- a failed or truncated download?). Deleted it so the next run fetches it afresh, and nothing has been extracted into $2."
-fi
-rm -f "$1"
-return
-;;
-*)
-extraction_failed=1
-note_failure "cannot test $1 before extracting it into $2: unzip exit code $test_status, which is about this machine rather than the archive. Leaving the archive alone."
-return
-;;
-esac
-unzip -uqo "$1" -d "$2"
-# unzip's exit code 1 means "it worked, with warnings" (a filename it had to adjust, say), so
-# only 2 and up are real failures. Treating 1 as a failure would fail the whole of init.sh
-# over a cosmetic complaint.
-local status=$?
-if [ "$status" -ge 2 ]
-then
-extraction_failed=1
-note_failure "failed to extract $1 into $2 (unzip exit code $status)"
-fi
+	if [ "$clean" == "1" ]
+	then
+		return 0
+	fi
+	if [ ! -f "$1" ]
+	then
+		extraction_failed=1
+		note_failure "cannot extract $1 into $2: the file is not there"
+		return
+	fi
+	# Test the archive before unpacking it, reading the exit code carefully, because the wrong
+	# reading here deletes a good download and then re-fetches and deletes it again for ever.
+	# 0 and 1 both mean the archive is usable (1 is a warning, such as extra bytes around it).
+	# 2, 3 and 9 mean the archive itself is at fault -- a truncated download, or an error page
+	# saved under a .zip name, both of which this unzip reports as 9. Anything else (out of
+	# memory, disk full, a compression method it lacks, unzip missing altogether) is about this
+	# machine rather than the download, so the archive is left alone.
+	unzip -tqq "$1" > /dev/null 2>&1
+	local test_status=$?
+	if [ "$test_status" == "127" ]
+	then
+		extraction_failed=1
+		note_failure "cannot extract $1 into $2: unzip is not installed. Leaving the archive alone; install unzip (Git Bash ships it) and run this again."
+		return
+	fi
+	case "$test_status" in
+		0|1)
+		;;
+		2|3|9)
+			extraction_failed=1
+			deleted_a_corrupt_zip=1
+			if [ -d "$2" ] && [ -n "$(ls -A "$2" 2>/dev/null)" ]
+			then
+				note_failure "cannot extract $1 into $2: it is not a valid zip file (unzip test exit code $test_status -- a failed or truncated download?). Deleted it so the next run fetches it afresh; what an earlier run extracted into $2 is still there."
+			else
+				note_failure "cannot extract $1 into $2: it is not a valid zip file (unzip test exit code $test_status -- a failed or truncated download?). Deleted it so the next run fetches it afresh, and nothing has been extracted into $2."
+			fi
+			rm -f "$1"
+			return
+		;;
+		*)
+			extraction_failed=1
+			note_failure "cannot test $1 before extracting it into $2: unzip exit code $test_status, which is about this machine rather than the archive. Leaving the archive alone."
+			return
+		;;
+	esac
+	unzip -uqo "$1" -d "$2"
+	# unzip's exit code 1 means "it worked, with warnings" (a filename it had to adjust, say), so
+	# only 2 and up are real failures. Treating 1 as a failure would fail the whole of init.sh
+	# over a cosmetic complaint.
+	local status=$?
+	if [ "$status" -ge 2 ]
+	then
+		extraction_failed=1
+		note_failure "failed to extract $1 into $2 (unzip exit code $status)"
+	fi
 }
 
 if [ "$server_unreachable" == "1" ]
 then
-note_failure "gave up asking build.palaso.org after $give_up_after dependencies in a row got no response at all; skipped the remaining $skipped_after_giving_up download(s)"
+	note_failure "gave up asking build.palaso.org after $give_up_after dependencies in a row got no response at all; skipped the remaining $skipped_after_giving_up download(s)"
 fi
 
 # extract downloaded zip files
