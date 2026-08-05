@@ -243,6 +243,13 @@
       <TestFilterArgument Condition="'@(ExcludedCategory)' != ''">--filter "@(ExcludedCategory->'TestCategory!=%(Identity)', '&amp;')"</TestFilterArgument>
     </PropertyGroup>
     <Message Importance="high" Text="Running C# tests: @(TestAssemblies) $(TestFilterArgument)"/>
+    <!-- The logger only writes the results file once a run completes, so a run that dies before
+	     that (crashed test host, a filter dotnet test rejects, no dotnet on PATH) would leave
+	     the previous run's file sitting there for importData to hand the build server. The build
+	     still goes red on the exit code, but the report it shows would be a different run's, and
+	     plausibly all green. Delete it first so a missing report reads as missing. TeamCity
+	     checkouts persist between builds, which is what makes this reachable. -->
+    <Delete Files="$(TestResultsXmlFile)"/>
     <Exec Command='dotnet test "@(TestAssemblies)" --nologo $(TestFilterArgument) --logger:"nunit;LogFilePath=$(TestResultsXmlFile)"'
 		  WorkingDirectory="$(RootDir)/output/Tests/$(Configuration)/x64"
 		  ContinueOnError="true">
