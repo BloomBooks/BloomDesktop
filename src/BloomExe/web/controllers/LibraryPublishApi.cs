@@ -324,7 +324,7 @@ namespace Bloom.web.controllers
 
         private void SetParentControlsState(bool enable)
         {
-            GetWorkspaceView()?.SetTabsEnabled(enable, WorkspaceView.LibraryUploadTabLock);
+            GetWorkspaceView()?.SetTabsEnabled(enable);
         }
 
         private WorkspaceView GetWorkspaceView()

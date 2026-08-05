@@ -20,7 +20,6 @@ using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
-using Bloom.Workspace;
 using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -149,8 +148,7 @@ namespace Bloom.Edit
                         _view.OnHideEditTab();
                     }
                 },
-                enableStateTransitions: (enabled) =>
-                    _view?.WorkspaceView?.SetTabsEnabled(enabled, WorkspaceView.EditSaveTabLock)
+                enableStateTransitions: (enabled) => _view?.WorkspaceView?.SetTabsEnabled(enabled)
             );
 
             bookSelection.SelectionChanged += OnBookSelectionChanged;

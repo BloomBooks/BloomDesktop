@@ -1463,7 +1463,7 @@ namespace Bloom.Edit
 
             var isActuallyModal = _modalDialogDepth > 0;
             _pageListView.Enabled = !isActuallyModal;
-            _workspaceView?.SetTabsEnabled(!isActuallyModal, WorkspaceView.EditModalTabLock);
+            _workspaceView?.SetTabsEnabled(!isActuallyModal);
         }
 
         public void ShowAddPageDialog()

@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Bloom.Api;
-using Bloom.Workspace;
 
 namespace Bloom.Publish.Rab
 {
@@ -36,13 +35,13 @@ namespace Bloom.Publish.Rab
         /// it finishes or is cancelled. Mirrors how a BloomLibrary upload locks the tabs (see
         /// LibraryPublishApi.SetParentControlsState). The publish-tool switcher on the Publish tab is
         /// blocked separately on the React side (PublishTabPane).
+        /// Note that SetTabsEnabled is a single shared flag, so if an upload and an Apps action ever
+        /// overlap, whichever finishes first unlocks the tabs for both; making the lock compose across
+        /// its several independent users is BL-16654.
         /// </summary>
         private void SetWorkspaceTabsEnabled(bool enable)
         {
-            _publishView?.WorkspaceView?.SetTabsEnabled(
-                enable,
-                WorkspaceView.AppBuilderActionTabLock
-            );
+            _publishView?.WorkspaceView?.SetTabsEnabled(enable);
         }
 
         /// <summary>
