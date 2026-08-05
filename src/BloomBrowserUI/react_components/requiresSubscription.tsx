@@ -156,7 +156,13 @@ export const SubscriptionBadgeWithTooltipAndDialog: React.FunctionComponent<{
                     cursor: ${featureStatus?.enabled ? "default" : "pointer"};
                 `}
                 src={badgeUrl}
-                onClick={() => {
+                onClick={(event) => {
+                    // Clicking the badge must do nothing beyond (possibly) showing the
+                    // dialog. In the toolbox, the badge sits inside the accordion header,
+                    // which toggles the tool open/closed when clicked, so letting the click
+                    // bubble collapsed the active tool (and the toolbox then immediately
+                    // re-expanded it), making everything below it jump. (BL-16533)
+                    event.stopPropagation();
                     if (!featureStatus?.enabled) {
                         showRequiresSubscriptionDialogInAnyView(
                             props.featureName,
