@@ -372,6 +372,15 @@ namespace BloomTests.ImageProcessing
             );
 
             var newSize = GetImageDimensions(path);
+            // An untouched file is the signature of GraphicsMagick being missing or failing:
+            // ResizeImageFileWithOptionalTransparency bails out and leaves the image oversized.
+            // Say so, rather than leaving a bare dimension mismatch for someone to decode.
+            Assert.That(
+                newSize,
+                Is.Not.EqualTo(originalSize),
+                $"{label} was left at its original size. The usual cause is that GraphicsMagick "
+                    + "(the 'gm' folder beside the test assembly) is missing or failed to run."
+            );
             Assert.That(
                 Math.Max(newSize.Width, newSize.Height),
                 Is.LessThanOrEqualTo(ImageUtils.MaxLength),
