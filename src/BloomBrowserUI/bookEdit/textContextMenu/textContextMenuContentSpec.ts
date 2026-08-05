@@ -90,10 +90,17 @@ describe("getTextContextMenuContent", () => {
         // No paragraph: the image sits among the paragraphs, not inside one. So "No Indent",
         // which has nothing to act on, is not offered.
         expect(content!.paragraph).toBeUndefined();
+        // The standard image menu (same registry as the canvas element menu, filtered by
+        // the normal availability rules), then a divider and Delete.
         expect(l10nIdsOf(content)).toEqual([
-            "EditTab.Image.ChangeImage",
             "EditTab.Image.EditMetadataOverlay",
-            "EditTab.InlineImage.RemoveImage",
+            "EditTab.Image.ChooseImage",
+            "EditTab.Image.CopyImage",
+            "EditTab.Image.PasteImage",
+            "EditTab.Image.Reset",
+            "EditTab.Image.Transparency",
+            "-",
+            "Common.Delete",
         ]);
         // Deciding the commands also selects the image they act on, which is what the
         // inline-image undo layer gates ctrl+z on.

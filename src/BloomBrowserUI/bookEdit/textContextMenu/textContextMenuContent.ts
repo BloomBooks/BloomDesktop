@@ -2,8 +2,11 @@
 // component, in the same spirit as noIndent.ts, so that the decision can be unit tested
 // against a plain DOM.
 
-import { ILocalizableMenuItemProps } from "../../react_components/localizableMenuItem";
-import { getInlineImageMenuItemsForClick } from "../js/inlineImageInteractions";
+import { IMenuItemWithSubmenu } from "../js/canvasElementManager/canvasControlMenuRendering";
+import {
+    CloseMenuFunction,
+    getInlineImageMenuItemsForClick,
+} from "../js/inlineImageInteractions";
 import { findParagraphForTextContextMenu } from "./noIndent";
 
 export interface ITextContextMenuContent {
@@ -12,7 +15,9 @@ export interface ITextContextMenuContent {
     // paragraphs of the text box, never inside one.
     paragraph?: HTMLElement;
     // What inline images contribute for this click; empty when they have nothing to offer.
-    inlineImageItems: ILocalizableMenuItemProps[];
+    // For an existing image this is the standard image menu (dividers and submenus
+    // included), which is why the shape is richer than plain ILocalizableMenuItemProps.
+    inlineImageItems: IMenuItemWithSubmenu[];
 }
 
 /**
@@ -23,13 +28,19 @@ export interface ITextContextMenuContent {
  * Call this once per right-click, not once per render of the menu: working out the inline
  * image's commands also selects the image they will act on. See
  * getInlineImageMenuItemsForClick.
+ *
+ * closeMenu is what the inline-image commands call to dismiss the menu (the paragraph
+ * commands close through the component instead); the no-op default is for tests that only
+ * inspect the items.
  */
 export function getTextContextMenuContent(
     target: EventTarget | null,
+    closeMenu: CloseMenuFunction = () => {},
 ): ITextContextMenuContent | undefined {
     const paragraph = findParagraphForTextContextMenu(target);
     const inlineImageItems = getInlineImageMenuItemsForClick(
         target instanceof HTMLElement ? target : undefined,
+        closeMenu,
     );
     if (!paragraph && inlineImageItems.length === 0) return undefined;
     return { paragraph, inlineImageItems };

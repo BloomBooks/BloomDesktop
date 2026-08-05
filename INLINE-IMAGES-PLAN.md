@@ -85,7 +85,9 @@ Decision (John): give no weight to the old `imagePusherDowner` two-element trick
 - crossing horizontal thirds of the box switches dock class (left / middle band / right);
 - vertical delta writes `--inline-image-offset`, clamped so the whole wrapper stays inside the block (the maximum is measured live from the wrapper's rendered bottom, since a same-side float above shifts where the offset starts);
 - the bottom zone (last fifth) belongs to the bottom dock only in the MIDDLE third and anywhere below the block; in the outer thirds the side docks win all the way down, so the lower corners are reachable (John, live testing);
-- a dock switch into a side with no room (an earlier same-side float fills it) is refused: the image stays on its previous side rather than hanging outside the block;
+- several images share a side by stacking (DOM order within the floating cluster = vertical order); dragging an image above/below a neighbor reorders the cluster, and cluster order is normalized to visual order at drag end;
+- moving one image never moves the others (John): every move holds all neighbors at their drag-start positions, and removing an image holds the survivors in place instead of letting them spring up;
+- each move either fits or is undone: if a move adds scroll overflow to the block (measured on the whole block, since a full-width band can displace a NEIGHBOR out the bottom), the move reverts to the start-of-move arrangement, so nothing ever hangs below the block. This is what refuses a drag into a side or bottom with no room;
 - drop in the bottom dock moves the wrapper to last child (`bloom-inlineImageBottom`); dragging out moves it back;
 - corner handles write `width` (aspect-ratio keeps height honest). Continuous drag-resize, not presets.
 Then one call to `syncInlineImagesFromEditable()` stamps the wrapper into sibling editables, plus overflow re-check. Floats clear per side (left clears left, right clears right), so same-side images stack down that edge while opposite sides are independent; `clear: both` forced every new image below all existing ones, which dropped a new image below the block itself when one had been dragged low (John, live testing).
@@ -121,7 +123,15 @@ Then one call to `syncInlineImagesFromEditable()` stamps the wrapper into siblin
 
 ## Deferred (later phases)
 
-Captions (bubble-stripping + `StripOutText` interplay); crop (canvas-element crop machinery reuse); contour wrap (`shape-outside: circle()`); Word-style in-text anchoring as an advanced mode for monolingual books; spreadsheet import/export; possible `FeatureVersionRequirement` entry for old-Bloom editing warnings; publish-time ePub spacer fallback only if reader QA demands it.
+Captions (bubble-stripping + `StripOutText` interplay); crop (canvas-element crop machinery reuse); contour wrap (see below); Word-style in-text anchoring as an advanced mode for monolingual books; spreadsheet import/export; possible `FeatureVersionRequirement` entry for old-Bloom editing warnings; publish-time ePub spacer fallback only if reader QA demands it.
+
+### Contour wrap (designed 2026-08-05, not built)
+
+Text wrapping the image's alpha silhouette instead of its rectangle: `shape-outside: url(<same src as the img>)` on the wrapper, set per-element by JS at image-change time (the value is a URL, so it can't live in static CSS). The browser scales the alpha mask to the float's box and shortens each wrap-side line where it meets the contour; `shape-image-threshold: ~0.2` ignores lossy-alpha edge fringe, `shape-margin` provides the gap along the contour.
+
+Prerequisite change: the mask is scaled over the wrapper's *whole* box, so the current `padding-top` offset would paint the image lower than its silhouette. Switch the offset to `margin-top` on the wrapper (text above a float's margin box flows normally), making the box coincide with the `<img>`, and move the wrap gap from side margins into `shape-margin`. This *replaces* the `inset()` value — one element gets one `shape-outside` — which is fine, since margin-top then carries the offset.
+
+Apply only when the image has real transparency: extension sniffing fails for WebP (lossy photo compression + alpha channel in one file — the main format where "photo" ≠ "opaque rectangle"), so detect by drawing once to an offscreen canvas at image-change time and scanning for alpha < 255. Opaque images keep the plain rectangle wrap and margin gap. Limits: contour affects only the wrap side; interior transparent holes are not flowed through (each line ends at first contact with the shape). Same-origin serving makes CORS a non-issue in edit/PDF/player; ePub readers without image-shape support degrade to rectangle wrap.
 
 ## Critical files
 

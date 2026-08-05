@@ -39,6 +39,11 @@ export async function getFeatureStatusAsync(
             (result) => {
                 resolve(result.data);
             },
+            // Without this the promise would never settle when the api is unreachable
+            // (e.g. unit tests), and the error would go to the global reporter.
+            () => {
+                resolve(undefined);
+            },
         );
     });
 }

@@ -26,6 +26,7 @@ import {
     cleanupInlineImageInteractions,
     clampInlineImageOffset,
     clampInlineImageWidthPercent,
+    computeInlineImageClusterIndex,
     computeInlineImageDock,
     computeInlineImageWidthPercent,
     deselectAllInlineImages,
@@ -184,6 +185,17 @@ describe("inlineImageInteractions", () => {
         });
     });
 
+    describe("computeInlineImageClusterIndex", () => {
+        it("counts how many neighbors sit at or above the target", () => {
+            expect(computeInlineImageClusterIndex(50, [])).toBe(0);
+            expect(computeInlineImageClusterIndex(50, [100, 300])).toBe(0);
+            expect(computeInlineImageClusterIndex(150, [100, 300])).toBe(1);
+            expect(computeInlineImageClusterIndex(500, [100, 300])).toBe(2);
+            // A tie belongs after the neighbor already at that height.
+            expect(computeInlineImageClusterIndex(100, [100, 300])).toBe(1);
+        });
+    });
+
     describe("clampInlineImageOffset", () => {
         it("never goes above the top of the block", () => {
             expect(clampInlineImageOffset(-1)).toBe(0);
@@ -338,34 +350,104 @@ describe("inlineImageInteractions", () => {
             ]);
         });
 
-        it("offers change, credits and remove for an existing image", () => {
+        it("offers the standard image menu plus Delete for an existing image", () => {
             const group = makeSimpleGroup();
             const wrapper = insertInlineImage(group);
             const items = buildInlineImageMenuItems(
                 getInlineImageActionTarget(wrapper),
             );
+            // The registry's "image" section, filtered by its normal availability rules:
+            // "Expand image to fill space" is for background images only, and Become
+            // Background / Use for book thumbnail are excluded for an image inside a text
+            // block. "Edit with AI" is behind a feature flag that is off here. Then a
+            // divider and Delete.
             expect(items.map((i) => i.l10nId)).toEqual([
-                "EditTab.Image.ChangeImage",
                 "EditTab.Image.EditMetadataOverlay",
-                "EditTab.InlineImage.RemoveImage",
+                "EditTab.Image.ChooseImage",
+                "EditTab.Image.CopyImage",
+                "EditTab.Image.PasteImage",
+                "EditTab.Image.Reset",
+                "EditTab.Image.Transparency",
+                "-",
+                "Common.Delete",
             ]);
-            // A new inline image holds a placeholder, so there are no credits to edit yet.
-            expect(items[1].disabled).toBe(true);
+            // A new inline image holds a placeholder: no credits to edit, nothing to copy,
+            // and no transparency of a real picture to control...
+            const byId = (id: string) => items.find((i) => i.l10nId === id)!;
+            expect(byId("EditTab.Image.EditMetadataOverlay").disabled).toBe(
+                true,
+            );
+            expect(byId("EditTab.Image.CopyImage").disabled).toBe(true);
+            expect(byId("EditTab.Image.Transparency").disabled).toBe(true);
+            // ...but choosing a picture is exactly what a placeholder is waiting for.
+            expect(byId("EditTab.Image.ChooseImage").disabled).toBeFalsy();
+            // Transparency is a submenu, as on the canvas element menu.
+            expect(
+                byId("EditTab.Image.Transparency").subMenu?.length,
+            ).toBeGreaterThan(0);
         });
 
-        it("enables the credits command once a real picture is in place", () => {
+        it("enables the picture-dependent commands once a real picture is in place", () => {
             const group = makeSimpleGroup();
             const wrapper = insertInlineImage(group);
             wrapper.querySelector("img")!.setAttribute("src", "flower.jpg");
             const items = buildInlineImageMenuItems(
                 getInlineImageActionTarget(wrapper),
             );
-            expect(items[1].l10nId).toBe("EditTab.Image.EditMetadataOverlay");
-            expect(items[1].disabled).toBe(false);
+            const byId = (id: string) => items.find((i) => i.l10nId === id)!;
+            expect(byId("EditTab.Image.EditMetadataOverlay").disabled).toBe(
+                false,
+            );
+            expect(byId("EditTab.Image.CopyImage").disabled).toBe(false);
+            expect(byId("EditTab.Image.Transparency").disabled).toBe(false);
         });
 
         it("offers nothing where there is nothing to act on", () => {
             expect(buildInlineImageMenuItems({ kind: "none" })).toEqual([]);
+        });
+
+        it("a standard command acts on the clicked image and syncs the other languages", async () => {
+            const group = makeSimpleGroup();
+            const wrapper = insertInlineImage(group);
+            wrapper.querySelector("img")!.setAttribute("src", "flower.jpg");
+            const items = buildInlineImageMenuItems(
+                getInlineImageActionTarget(wrapper),
+            );
+            const transparency = items.find(
+                (i) => i.l10nId === "EditTab.Image.Transparency",
+            )!;
+            const transparent = transparency.subMenu!.find(
+                (s) => s.l10nId === "EditTab.Image.Transparency.Transparent",
+            )!;
+            // Sanity check: the command finds its image through the registry's own
+            // plumbing (getImage), which must cope with the inline wrapper's shape --
+            // an img that is a direct child, with no bloom-imageContainer.
+            expect(
+                wrapper
+                    .querySelector("img")!
+                    .classList.contains("bloom-transparent"),
+            ).toBe(false);
+
+            (transparent.onClick as () => void)();
+            // The command itself is synchronous, but the sync that follows it awaits it
+            // first; give the microtask a beat.
+            await new Promise((resolve) => setTimeout(resolve));
+
+            // It acted on the clicked copy...
+            expect(
+                wrapper
+                    .querySelector("img")!
+                    .classList.contains("bloom-transparent"),
+            ).toBe(true);
+            // ...and the follow-up sync stamped the result onto the other language.
+            const frenchWrapper = getInlineImageInEditable(
+                editableFor(group, "fr"),
+            )!;
+            expect(
+                frenchWrapper
+                    .querySelector("img")!
+                    .classList.contains("bloom-transparent"),
+            ).toBe(true);
         });
 
         it("selects the image a right-click landed on, so its commands have a subject", () => {
@@ -380,7 +462,7 @@ describe("inlineImageInteractions", () => {
                 wrapper.querySelector("img") as HTMLElement,
             );
 
-            expect(items.length).toBe(3);
+            expect(items.length).toBeGreaterThan(0);
             // The undo layer's gate is the selection, so this is not merely cosmetic.
             expect(wrapper.classList.contains(kInlineImageSelectedClass)).toBe(
                 true,
@@ -398,7 +480,7 @@ describe("inlineImageInteractions", () => {
             ).toBeNull();
         });
 
-        it("Remove Image removes just the clicked image, in every language", () => {
+        it("Delete removes just the clicked image, in every language", () => {
             const group = makeSimpleGroup();
             const first = insertInlineImage(group);
             const second = insertInlineImage(group);
@@ -417,10 +499,8 @@ describe("inlineImageInteractions", () => {
             const items = buildInlineImageMenuItems(
                 getInlineImageActionTarget(first),
             );
-            const remove = items.find(
-                (i) => i.l10nId === "EditTab.InlineImage.RemoveImage",
-            );
-            expect(remove, "expected a Remove Image item").toBeTruthy();
+            const remove = items.find((i) => i.l10nId === "Common.Delete");
+            expect(remove, "expected a Delete item").toBeTruthy();
             // Actually invoke the command (a gap a real runtime break slipped through once).
             (remove!.onClick as () => void)();
 

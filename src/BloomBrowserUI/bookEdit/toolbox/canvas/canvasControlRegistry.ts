@@ -42,7 +42,6 @@ import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
 import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
 import {
     doImageCommand,
-    getImageFromCanvasElement,
     getImageFromContainer,
     getImageTransparencyMode,
     getImageUrlFromImageContainer,
@@ -114,7 +113,12 @@ const getImageContainer = (ctx: IControlContext): HTMLElement | undefined => {
     if (imageContainer) {
         return imageContainer;
     }
-    return getImageFromCanvasElement(ctx.canvasElement)
+    // An element whose img is a direct child, with no bloom-imageContainer -- a legacy
+    // shape, or an inline image in a text block (whose wrapper is the "canvas element"
+    // here) -- is its own container. Same fallback as
+    // buildCanvasElementControlRegistryContext, whose hasImage these commands are
+    // offered against.
+    return getImageFromContainer(ctx.canvasElement)
         ? ctx.canvasElement
         : undefined;
 };

@@ -29,21 +29,27 @@
 // once it decides to act.
 import * as React from "react";
 import { default as AddImageIcon } from "@mui/icons-material/AddPhotoAlternateOutlined";
-import { default as ChangeImageIcon } from "@mui/icons-material/Search";
-import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
-import { ILocalizableMenuItemProps } from "../../react_components/localizableMenuItem";
+import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
+import { buildCanvasElementControlRegistryContext } from "../toolbox/canvas/buildCanvasElementControlRegistryContext";
+import { imageAvailabilityRules } from "../toolbox/canvas/canvasControlAvailabilityRules";
+import { getMenuSections } from "../toolbox/canvas/canvasControlResolution";
 import {
-    doImageCommand,
-    GetRawImageUrl,
-    isPlaceHolderImage,
-} from "./bloomImages";
+    ICanvasElementControlConfiguration,
+    IControlContext,
+    IControlMenuRow,
+    IControlRuntime,
+} from "../toolbox/canvas/canvasControlTypes";
+import {
+    convertControlMenuRows,
+    IMenuItemWithSubmenu,
+    joinMenuSectionsWithSingleDividers,
+} from "./canvasElementManager/canvasControlMenuRendering";
 import {
     commitPendingInlineImageUndo,
     getEditables,
-    getInlineImage,
     InlineImageDock,
     insertInlineImage,
     kInlineImageBottomClass,
@@ -62,7 +68,6 @@ import {
     setInlineImageDock,
     syncInlineImagesFromEditable,
 } from "./inlineImages";
-import { getWorkspaceBundleExports } from "./workspaceFrames";
 
 // The four resize handles, and the frame they hang off. Both are bloom-ui, so Cleanup()
 // strips them before the page is saved and syncInlineImagesFromEditable leaves them out of
@@ -292,6 +297,11 @@ export function setupInlineImageInteractions(container: HTMLElement): void {
     // needing attention. Both events bubble, so one listener at the document covers the page.
     doc.addEventListener(kInlineImagesRestoredEvent, onInlineImagesRestored);
     doc.addEventListener(kInlineImageChangedEvent, onInlineImageChanged);
+    // See aiImageEditingIsAvailable: fetched here because the menu is composed
+    // synchronously at right-click time, long after this resolves.
+    void getFeatureStatusAsync("AiImageEditing").then((status) => {
+        aiImageEditingIsAvailable = status?.visible ?? false;
+    });
 }
 
 /**
@@ -308,54 +318,126 @@ export function cleanupInlineImageInteractions(): void {
 
 // --- the commands ------------------------------------------------------------
 
+// An existing inline image gets the STANDARD image menu: the same "image" section of
+// canvasControlRegistry the canvas element menu draws from, resolved through the same
+// availability rules, so an image offers the same commands with the same wording wherever
+// the user meets one. This configuration says only what is different here, which is what
+// cannot apply to an image living inside a text block. ("Expand image to fill space" needs
+// no entry: its normal rule already limits it to background images.)
+const inlineImageControlConfiguration: ICanvasElementControlConfiguration = {
+    // Not really a canvas element, but "image" is the truth about what the commands act on,
+    // and nothing in menu resolution consults the type.
+    type: "image",
+    menuSections: ["image"],
+    toolbar: [],
+    toolPanel: [],
+    availabilityRules: {
+        ...imageAvailabilityRules,
+        // Both of these turn the image into canvas furniture (the page's background image,
+        // the book-thumbnail source), which an image inside a text block cannot become.
+        becomeBackground: "exclude",
+        imageFieldType: "exclude",
+    },
+};
+
+// Whether the experimental "Edit with AI" feature is on, which the availability rules need
+// synchronously at right-click time; the status lives on the C# side, so it is fetched at
+// page setup and remembered.
+let aiImageEditingIsAvailable = false;
+
+/** What a menu item calls to dismiss the menu it is on. See IControlRuntime.closeMenu. */
+export type CloseMenuFunction = (launchingDialog?: boolean) => void;
+
 /**
- * The commands to offer for what the user right-clicked, in the shape TextContextMenu renders
- * (which is why this returns ILocalizableMenuItemProps rather than anything of our own).
- *
- * "Change image" and the credits dialog deliberately share their l10n ids with the canvas
- * element menu's equivalents, so that the same command reads the same wherever the user meets
- * it.
+ * The commands to offer for what the user right-clicked, in the shape TextContextMenu
+ * renders. For an existing image this is the standard image menu (see
+ * inlineImageControlConfiguration above) plus Delete; for an eligible text block it is
+ * Add Image. closeMenu is how the commands dismiss the menu they are chosen from; it
+ * defaults to a no-op for tests that only inspect the items.
  */
 export function buildInlineImageMenuItems(
     target: InlineImageActionTarget,
-): ILocalizableMenuItemProps[] {
+    closeMenu: CloseMenuFunction = () => {},
+): IMenuItemWithSubmenu[] {
     if (target.kind === "add") {
         return [
             {
                 l10nId: "EditTab.InlineImage.AddImage",
                 english: "Add Image",
                 icon: React.createElement(AddImageIcon, null),
-                onClick: () => addInlineImage(target.translationGroup),
+                onClick: () => {
+                    closeMenu();
+                    addInlineImage(target.translationGroup);
+                },
             },
         ];
     }
     if (target.kind === "existing") {
-        const img = getImageOf(target.wrapper);
-        return [
-            {
-                l10nId: "EditTab.Image.ChangeImage",
-                english: "Change image",
-                icon: React.createElement(ChangeImageIcon, null),
-                onClick: () => doImageCommand(img, "change"),
-            },
-            {
-                l10nId: "EditTab.Image.EditMetadataOverlay",
-                english: "Set image information...",
-                subLabelL10nId: "EditTab.Image.EditMetadataOverlayMore",
-                icon: React.createElement(CopyrightIcon, null),
-                // Nothing to describe until a real picture has been chosen.
-                disabled: !img || isPlaceHolderImage(GetRawImageUrl(img)),
-                onClick: () => showInlineImageMetadata(target.wrapper),
-            },
-            {
-                l10nId: "EditTab.InlineImage.RemoveImage",
-                english: "Remove Image",
-                icon: React.createElement(DeleteIcon, null),
-                onClick: () => removeInlineImageCommand(target.wrapper),
-            },
-        ];
+        const runtime: IControlRuntime = { closeMenu };
+        const ctx: IControlContext = {
+            ...buildCanvasElementControlRegistryContext(target.wrapper),
+            aiImageEditingAvailable: aiImageEditingIsAvailable,
+        };
+        const imageSections = getMenuSections(
+            inlineImageControlConfiguration,
+            ctx,
+            runtime,
+        ).map((section) =>
+            convertControlMenuRows(
+                withInlineImageSync(
+                    section
+                        .map((item) => item.menuRow)
+                        .filter((row): row is IControlMenuRow => !!row),
+                    target,
+                ),
+                ctx,
+                runtime,
+            ),
+        );
+        return joinMenuSectionsWithSingleDividers([
+            ...imageSections,
+            [
+                // The same words and icon as the canvas element menu's Delete, but the
+                // action is ours: deleting an inline image means removing THIS image's
+                // copy from every language's editable, which the canvas-element manager
+                // behind the registry's delete knows nothing about.
+                {
+                    l10nId: "Common.Delete",
+                    english: "Delete",
+                    icon: React.createElement(DeleteIcon, null),
+                    onClick: () => {
+                        closeMenu();
+                        removeInlineImageCommand(target.wrapper);
+                    },
+                },
+            ],
+        ]);
     }
     return [];
+}
+
+// The registry's commands were written for canvas element images, so they mutate only the
+// img they are given -- which for an inline image is one language's copy. Ending every
+// command with a sync stamps whatever it did onto the other languages' copies and re-checks
+// overflow, exactly like the end of a drag. Commands that change the picture itself go out
+// through changeImageInfo, which already syncs (see handleInlineImageChanged), so for them
+// this is a harmless second pass over unchanged markup; the ones that mutate the img in
+// place (the transparency submenu) have only this.
+function withInlineImageSync(
+    rows: IControlMenuRow[],
+    target: InlineImageActionTarget & { kind: "existing" },
+): IControlMenuRow[] {
+    return rows.map((row) => ({
+        ...row,
+        subMenuItems: row.subMenuItems
+            ? withInlineImageSync(row.subMenuItems, target)
+            : undefined,
+        onSelect: async (rowCtx, rowRuntime) => {
+            await row.onSelect(rowCtx, rowRuntime);
+            syncInlineImagesFromEditable(target.editable);
+            refreshOverflow(target.translationGroup);
+        },
+    }));
 }
 
 // Adds an inline image to the block, leaving it selected and holding a placeholder. It
@@ -371,23 +453,38 @@ function addInlineImage(translationGroup: HTMLElement): void {
 }
 
 // removeInlineImage records its own undo point and clears THIS image's copy (matched by its
-// identity attribute) out of every language, leaving any other inline images alone.
+// identity attribute) out of every language, leaving any other inline images alone -- and
+// leaving them WHERE THEY ARE: removing an image above another frees the space it cleared,
+// which would otherwise make the lower one spring upward (John: moving one image must not
+// move the others).
 function removeInlineImageCommand(wrapper: HTMLElement): void {
     const translationGroup = wrapper.closest(
         ".bloom-translationGroup",
     ) as HTMLElement;
-    removeInlineImage(wrapper);
-    refreshOverflow(translationGroup);
-}
-
-function showInlineImageMetadata(wrapper: HTMLElement): void {
-    const img = getImageOf(wrapper);
-    if (!img) return;
-    // Launch via the workspace (top window) bundle, not this page iframe, so that saving the
-    // metadata -- which reloads the page iframe -- doesn't tear the dialog down.
-    getWorkspaceBundleExports().showCopyrightAndLicenseDialog(
-        img.getAttribute("src") ?? "",
+    const editable = wrapper.closest(".bloom-editable") as HTMLElement;
+    const survivors = getFloatingWrappersIn(editable).filter(
+        (other) => other !== wrapper,
     );
+    const keptTops = new Map(
+        survivors.map((other) => [other, getImageBox(other).top]),
+    );
+    removeInlineImage(wrapper);
+    if (editable.getBoundingClientRect().height > 0) {
+        for (let pass = 0; pass < 2; pass++) {
+            survivors.forEach((other) => {
+                if (!other.isConnected) return;
+                const wanted = keptTops.get(other);
+                if (wanted === undefined) return;
+                const current = getImageBox(other).top;
+                if (Math.abs(wanted - current) <= 1) return;
+                nudgeInlineImageOffset(other, wanted - current);
+            });
+        }
+        // The offset corrections above happened in this editable; the other languages
+        // get the same values.
+        syncInlineImagesFromEditable(editable);
+    }
+    refreshOverflow(translationGroup);
 }
 
 // --- keeping the selection honest when inlineImages.ts replaces things -------
@@ -404,10 +501,11 @@ function showInlineImageMetadata(wrapper: HTMLElement): void {
  */
 export function getInlineImageMenuItemsForClick(
     clickedElement: HTMLElement | undefined | null,
-): ILocalizableMenuItemProps[] {
+    closeMenu: CloseMenuFunction = () => {},
+): IMenuItemWithSubmenu[] {
     const target = getInlineImageActionTarget(clickedElement);
     if (target.kind === "existing") selectInlineImage(target.wrapper);
-    return buildInlineImageMenuItems(target);
+    return buildInlineImageMenuItems(target, closeMenu);
 }
 
 // Undo replaces every wrapper in the group with a fresh element built from serialized markup,
@@ -450,6 +548,15 @@ interface IInlineImageDragState {
     startOffsetPx: number;
     dock: InlineImageDock;
     started: boolean;
+    // Every OTHER floating image's absolute image-box top at drag start: moving one
+    // image must not move the others, so they are held at these positions on every move
+    // of the drag.
+    neighborImageTops: Map<HTMLElement, number>;
+    // The block's scroll overflow before the drag began. The fit test at the end of each
+    // move is "did this move ADD overflow", measured on the whole block, because the
+    // dragged image can fit while having pushed a NEIGHBOR out (a full-width band
+    // crossing another image's level displaces it -- floats cannot overlap).
+    startScrollOverflow: number;
 }
 
 interface IInlineImageResizeState {
@@ -541,6 +648,12 @@ function startDrag(
         startOffsetPx: getInlineImageOffsetPx(wrapper),
         dock: getInlineImageDock(wrapper),
         started: false,
+        neighborImageTops: new Map(
+            getFloatingWrappersIn(editable)
+                .filter((other) => other !== wrapper)
+                .map((other) => [other, getImageBox(other).top]),
+        ),
+        startScrollOverflow: editable.scrollHeight - editable.clientHeight,
     };
     addPointerListeners(editable.ownerDocument);
 }
@@ -554,69 +667,158 @@ function continueDrag(state: IInlineImageDragState, event: PointerEvent): void {
         )
     )
         return;
+    // Snapshot of the start-of-move state, which fit inside the block (each move either
+    // ends fitting or reverts to this, so by induction every move starts from a fitting
+    // arrangement). The next sibling pins the wrapper's cluster position; it is stable
+    // during a gesture, since only the dragged wrapper moves in the DOM.
     const previousDock = state.dock;
     const previousOffsetPx = getInlineImageOffsetPx(state.wrapper);
-    const dock = computeInlineImageDock(
-        {
-            x: event.clientX + state.grabOffsetX,
-            y: event.clientY + state.grabOffsetY,
-        },
-        state.editableBox,
-    );
+    const previousNextSibling = state.wrapper.nextElementSibling;
+    const imageCenter = {
+        x: event.clientX + state.grabOffsetX,
+        y: event.clientY + state.grabOffsetY,
+    };
+    const dock = computeInlineImageDock(imageCenter, state.editableBox);
+    // jsdom reports every box as empty; there we keep the simple delta arithmetic the
+    // gesture tests exercise and skip the geometry that needs real layout.
+    const degenerate = !(state.editableBox.height > 0);
+    const blockBottom = state.editableBox.top + state.editableBox.height;
     if (dock !== previousDock) {
-        // setInlineImageDock also moves the wrapper between the first-child and last-child
-        // slots, which is the only DOM difference between the bottom dock and the others.
+        // setInlineImageDock also moves the wrapper between the leading and trailing
+        // clusters, which is the only DOM difference between the bottom dock and the others.
         setInlineImageDock(state.wrapper, dock);
         state.dock = dock;
     }
-    // The bottom dock is in normal flow at the end of the block, so it has no offset; the
-    // value stays in the style attribute, ready for when the image is dragged back up.
-    if (dock === kInlineImageBottomClass) return;
-    // The maximum keeps the whole wrapper (offset padding + image) inside the block: an
-    // offset that pushes the image past the bottom makes the block scroll (John, live
-    // testing). The offset is measured from where the float NATURALLY starts, which is
-    // below any earlier same-side float, not from the top of the block -- so the room
-    // left is computed from the wrapper's live rendered bottom: however far that sits
-    // above the block's bottom is how much further the current offset may grow. This
-    // remeasures every move, so it also self-corrects after a dock switch. A block with
-    // no measurable height (jsdom) gives no maximum at all.
-    const blockBottom = state.editableBox.top + state.editableBox.height;
-    let maxPx: number | undefined;
-    if (state.editableBox.height > 0) {
-        const wrapperBottom = state.wrapper.getBoundingClientRect().bottom;
-        maxPx =
-            getInlineImageOffsetPx(state.wrapper) +
-            (blockBottom - wrapperBottom);
-    }
-    const offsetPx = clampInlineImageOffset(
-        state.startOffsetPx + (event.clientY - state.startY),
-        maxPx,
-    );
-    state.wrapper.style.setProperty(kInlineImageOffsetVar, `${offsetPx}px`);
-    if (state.editableBox.height <= 0) return;
-    // The maximum above was measured before this move's offset was applied, so a fast
-    // move can land a few pixels long; measure once more and take back any remainder.
-    let over = state.wrapper.getBoundingClientRect().bottom - blockBottom;
-    if (over > 0) {
-        state.wrapper.style.setProperty(
-            kInlineImageOffsetVar,
-            `${clampInlineImageOffset(offsetPx - over)}px`,
+    if (dock === kInlineImageBottomClass) {
+        // The bottom dock is in normal flow at the end of the block, so it has no offset;
+        // the value stays in the style attribute, ready for when the image is dragged
+        // back up.
+    } else {
+        // Where the top of the IMAGE should end up, from the pointer and the grab offsets.
+        const targetTop = imageCenter.y - getImageBox(state.wrapper).height / 2;
+        // DOM order within the floating cluster is the images' vertical order (each float
+        // starts below the earlier ones it must clear), so dragging an image above a
+        // neighbor has to reorder them -- that is what frees the space ABOVE an image
+        // whose offset padding otherwise fills its column from the top, and what lets
+        // several images share one side (John, live testing).
+        if (!degenerate) reorderInFloatingCluster(state, targetTop);
+        // A dock switch or reorder changes where the NEIGHBORS start; hold them at their
+        // drag-start positions before measuring anything for this wrapper.
+        if (!degenerate) restoreNeighborImagePositions(state);
+        // The maximum keeps the whole wrapper (offset padding + image) inside the block:
+        // an offset that pushes the image past the bottom makes the block scroll (John,
+        // live testing). The offset is measured from where the float NATURALLY starts
+        // (below any earlier float it clears), so the room left is computed from the
+        // wrapper's live rendered bottom: however far that sits above the block's bottom
+        // is how much further the current offset may grow.
+        let maxPx: number | undefined;
+        const currentOffsetPx = getInlineImageOffsetPx(state.wrapper);
+        if (!degenerate) {
+            const wrapperBottom = state.wrapper.getBoundingClientRect().bottom;
+            maxPx = currentOffsetPx + (blockBottom - wrapperBottom);
+        }
+        // In a real layout the offset is target-based (where should the image's top be,
+        // given where it is right now), which stays correct across reorders and reflows.
+        const offsetPx = clampInlineImageOffset(
+            degenerate
+                ? state.startOffsetPx + (event.clientY - state.startY)
+                : currentOffsetPx +
+                      (targetTop - getImageBox(state.wrapper).top),
+            maxPx,
         );
-        over = state.wrapper.getBoundingClientRect().bottom - blockBottom;
+        state.wrapper.style.setProperty(kInlineImageOffsetVar, `${offsetPx}px`);
+        if (!degenerate) {
+            // The maximum above was measured before this move's offset was applied, so a
+            // fast move can land a few pixels long; take back any remainder.
+            const over =
+                state.wrapper.getBoundingClientRect().bottom - blockBottom;
+            if (over > 0) {
+                state.wrapper.style.setProperty(
+                    kInlineImageOffsetVar,
+                    `${clampInlineImageOffset(offsetPx - over)}px`,
+                );
+            }
+        }
     }
-    // If the wrapper hangs past the block's bottom even with its offset clamped to
-    // nothing, the side the drag just entered has no room (an earlier same-side float
-    // fills it). Hanging outside the block scrolls the text and puts the image where it
-    // cannot even be clicked, so refuse the switch: put the image back on the side it
-    // came from, with the offset it had.
-    if (over > 1 && dock !== previousDock) {
+    if (degenerate) return;
+    // Whatever this move did, the OTHER images stay exactly where the user put them --
+    // on every move, not just at the end (John).
+    restoreNeighborImagePositions(state);
+    // FIT OR REVERT. With the neighbors held in place, either the whole block still fits
+    // (no NEW scroll overflow -- measured on the block, not just this wrapper, because a
+    // move can fit the dragged image while pushing a neighbor out) or this move went
+    // somewhere with no room: a full side, the bottom dock of a full block, or a band
+    // crossing another image's level. Then the whole move is undone -- dock, cluster
+    // position, offset -- returning to the start-of-move arrangement, which fit. Nothing
+    // may hang below the block, where it scrolls the text and cannot even be clicked.
+    if (
+        state.editable.scrollHeight - state.editable.clientHeight >
+        state.startScrollOverflow + 1
+    ) {
+        state.editable.insertBefore(state.wrapper, previousNextSibling);
         setInlineImageDock(state.wrapper, previousDock);
         state.wrapper.style.setProperty(
             kInlineImageOffsetVar,
             `${previousOffsetPx}px`,
         );
         state.dock = previousDock;
+        restoreNeighborImagePositions(state);
     }
+}
+
+/**
+ * Where in the floating cluster an image whose image-box top will be targetTop belongs:
+ * after every image whose own image-box top is at or above it. Exported for tests.
+ */
+export function computeInlineImageClusterIndex(
+    targetTop: number,
+    otherImageTops: number[],
+): number {
+    return otherImageTops.filter((top) => top <= targetTop).length;
+}
+
+// The floating (non-bottom) inline images of this editable, in DOM order, which is also
+// their vertical order since each one starts below the earlier floats it has to clear.
+function getFloatingWrappersIn(editable: HTMLElement): HTMLElement[] {
+    return Array.from(
+        editable.querySelectorAll(
+            `:scope > .${kInlineImageClass}:not(.${kInlineImageBottomClass})`,
+        ),
+    ) as HTMLElement[];
+}
+
+// Sets a neighbor's offset so its image lands deltaPx from where it is now (clamped at
+// its natural start). Only restoreNeighborImagePositions uses this.
+function nudgeInlineImageOffset(wrapper: HTMLElement, deltaPx: number): void {
+    wrapper.style.setProperty(
+        kInlineImageOffsetVar,
+        `${clampInlineImageOffset(getInlineImageOffsetPx(wrapper) + deltaPx)}px`,
+    );
+}
+
+// Moves the dragged wrapper to the cluster position its target vertical position calls
+// for. Purely a DOM move: the neighbors this displaces are held in place separately by
+// restoreNeighborImagePositions, which runs on every move of the drag.
+function reorderInFloatingCluster(
+    state: IInlineImageDragState,
+    targetTop: number,
+): void {
+    const floats = getFloatingWrappersIn(state.editable);
+    if (floats.length < 2) return;
+    const currentIndex = floats.indexOf(state.wrapper);
+    if (currentIndex < 0) return;
+    const others = floats.filter((w) => w !== state.wrapper);
+    const desiredIndex = computeInlineImageClusterIndex(
+        targetTop,
+        others.map((other) => getImageBox(other).top),
+    );
+    if (desiredIndex === currentIndex) return;
+    state.editable.insertBefore(
+        state.wrapper,
+        others[desiredIndex] ??
+            others[others.length - 1].nextElementSibling ??
+            null,
+    );
 }
 
 function startResize(event: PointerEvent, handle: HTMLElement): void {
@@ -685,6 +887,7 @@ function onPointerMove(event: PointerEvent): void {
 // Both gestures end the same way, including a cancelled one: whatever was applied to the
 // wrapper is on the screen, so it had better be replicated and undoable.
 function onPointerEnd(): void {
+    const drag = dragState;
     const state = resizeState ?? dragState;
     resizeState = undefined;
     dragState = undefined;
@@ -694,7 +897,61 @@ function onPointerEnd(): void {
         kInlineImageDraggingClass,
     );
     if (!state.started) return; // it was a click: nothing changed, nothing prepared
+    if (drag && drag === state) {
+        restoreNeighborImagePositions(drag);
+        normalizeFloatingClusterOrder(drag.editable, drag.editableBox);
+    }
     commitInlineImageChange(state.wrapper, state.editable);
+}
+
+// Rewrites the floating cluster's DOM order to match the images' visual order, keeping
+// every image exactly where it is. DOM order is what each float clears past, so an order
+// that contradicts the visual order (which can arrive from a book edited before this
+// rule, or from insertions) quietly limits where the images can go; a drag is the moment
+// the user is rearranging things, so its end is the moment to straighten this out.
+function normalizeFloatingClusterOrder(
+    editable: HTMLElement,
+    editableBox: IBox,
+): void {
+    if (!(editableBox.height > 0)) return; // no real layout to measure (jsdom)
+    const floats = getFloatingWrappersIn(editable);
+    if (floats.length < 2) return;
+    const wantedTops = new Map(floats.map((w) => [w, getImageBox(w).top]));
+    const sorted = [...floats].sort(
+        (a, b) => wantedTops.get(a)! - wantedTops.get(b)!,
+    );
+    if (sorted.every((w, i) => w === floats[i])) return;
+    const anchor = floats[floats.length - 1].nextElementSibling;
+    sorted.forEach((w) => editable.insertBefore(w, anchor));
+    // The reordering changed what each float clears, so put them all back where they
+    // were; two passes, since correcting an earlier float shifts the later ones.
+    for (let pass = 0; pass < 2; pass++) {
+        getFloatingWrappersIn(editable).forEach((w) => {
+            const wanted = wantedTops.get(w);
+            if (wanted === undefined) return;
+            const current = getImageBox(w).top;
+            if (Math.abs(wanted - current) <= 1) return;
+            nudgeInlineImageOffset(w, wanted - current);
+        });
+    }
+}
+
+// Puts every image the drag did NOT move back exactly where it was when the drag began,
+// as far as the new geometry allows (an image cannot rise above its natural start, so a
+// neighbor whose old spot is now occupied lands as close below it as floats permit). Two
+// passes, because correcting an earlier float shifts where the later ones start.
+function restoreNeighborImagePositions(state: IInlineImageDragState): void {
+    if (state.editableBox.height <= 0) return; // no real layout to measure (jsdom)
+    for (let pass = 0; pass < 2; pass++) {
+        getFloatingWrappersIn(state.editable).forEach((wrapper) => {
+            if (wrapper === state.wrapper) return;
+            const wantedTop = state.neighborImageTops.get(wrapper);
+            if (wantedTop === undefined) return;
+            const currentTop = getImageBox(wrapper).top;
+            if (Math.abs(wantedTop - currentTop) <= 1) return;
+            nudgeInlineImageOffset(wrapper, wantedTop - currentTop);
+        });
+    }
 }
 
 // The end of any completed change to an inline image's geometry.
